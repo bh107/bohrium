@@ -48,11 +48,13 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
         case BH_RANDOM:
 
             tpl_opcode = "random.";
+            tpl_layout = "cont.";
             break;
 
         case BH_RANGE:
 
             tpl_opcode = "range.";
+            tpl_layout = "cont.";
             break;
 
         case BH_ADD_ACCUMULATE:

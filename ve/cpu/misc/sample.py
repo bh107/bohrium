@@ -7,14 +7,15 @@ def sample(args):
     elif args.be == 'numpy':
         import numpy as np
 
-    a = np.ones(args.shape, dtype=np.float32)[1::2]
+    #a = np.arange(sum(args.shape), dtype=np.float32)
+    a = np.random.random(args.shape, dtype=np.float32)
     #a = np.ones(args.shape, dtype=np.float32)
     for _ in range(args.iterations[0]):
         b = np.sin(a)
         c = np.cos(b)
         d = np.absolute(c)
 
-    return d
+    return np.sum(d)
 
 def main():
     p = argparse.ArgumentParser('Run a dummy program')

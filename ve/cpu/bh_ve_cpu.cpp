@@ -343,16 +343,25 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
         //
         int lmask = kernel->lmask[i];
 
+        // The output is always an array
+        kernel->args.data[nargs]     = bh_base_array(&instr->operand[0])->data;
+        kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[0])->nelem;
+        kernel->args.ndim[nargs]     = instr->operand[0].ndim;
+        kernel->args.start[nargs]    = instr->operand[0].start;
+        kernel->args.shape[nargs]    = instr->operand[0].shape;
+        kernel->args.stride[nargs++] = instr->operand[0].stride;
+
+        //
+        // The input, however, might be a constant
+        //
         switch (instr->opcode) {    // [OPCODE_SWITCH]
 
             case BH_RANDOM:
-                kernel->args.data[nargs++] = bh_base_array(&instr->operand[0])->data;
                 kernel->args.data[nargs++] = &(instr->constant.value.r123.start);
                 kernel->args.data[nargs++] = &(instr->constant.value.r123.key);
                 break;
 
             case BH_RANGE:
-                kernel->args.data[nargs++] = bh_base_array(&instr->operand[0])->data;
                 break;
 
             case BH_ADD_ACCUMULATE:                 // Scan
@@ -369,8 +378,13 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
             case BH_BITWISE_OR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
 
-                kernel->args.data[nargs++] = bh_base_array(&instr->operand[0])->data;
-                kernel->args.data[nargs++] = bh_base_array(&instr->operand[1])->data;
+                kernel->args.data[nargs]     = bh_base_array(&instr->operand[1])->data;
+                kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[1])->nelem;
+                kernel->args.ndim[nargs]     = instr->operand[1].ndim;
+                kernel->args.start[nargs]    = instr->operand[1].start;
+                kernel->args.shape[nargs]    = instr->operand[1].shape;
+                kernel->args.stride[nargs++] = instr->operand[1].stride;
+
                 kernel->args.data[nargs++] = &(instr->constant.value);
                 break;
 
@@ -398,16 +412,38 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
             case BH_ARCTAN2:
             case BH_MOD:
 
-                kernel->args.data[nargs++] = bh_base_array(&instr->operand[0])->data;
-                if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // CCK
-                    kernel->args.data[nargs++] = bh_base_array(&instr->operand[1])->data;
+                if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
+                    kernel->args.data[nargs]     = bh_base_array(&instr->operand[1])->data;
+                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[1])->nelem;
+                    kernel->args.ndim[nargs]     = instr->operand[1].ndim;
+                    kernel->args.start[nargs]    = instr->operand[1].start;
+                    kernel->args.shape[nargs]    = instr->operand[1].shape;
+                    kernel->args.stride[nargs++] = instr->operand[1].stride;
+
                     kernel->args.data[nargs++] = &(instr->constant.value);
-                } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // CKC
+                } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args.data[nargs++] = &(instr->constant.value);
-                    kernel->args.data[nargs++] = bh_base_array(&instr->operand[2])->data;
-                } else {                                            // CCC
-                    kernel->args.data[nargs++] = bh_base_array(&instr->operand[1])->data;
-                    kernel->args.data[nargs++] = bh_base_array(&instr->operand[2])->data;
+
+                    kernel->args.data[nargs]     = bh_base_array(&instr->operand[2])->data;
+                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[2])->nelem;
+                    kernel->args.ndim[nargs]     = instr->operand[2].ndim;
+                    kernel->args.start[nargs]    = instr->operand[2].start;
+                    kernel->args.shape[nargs]    = instr->operand[2].shape;
+                    kernel->args.stride[nargs++] = instr->operand[2].stride;
+                } else {                                            // AAA
+                    kernel->args.data[nargs]     = bh_base_array(&instr->operand[1])->data;
+                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[1])->nelem;
+                    kernel->args.ndim[nargs]     = instr->operand[1].ndim;
+                    kernel->args.start[nargs]    = instr->operand[1].start;
+                    kernel->args.shape[nargs]    = instr->operand[1].shape;
+                    kernel->args.stride[nargs++] = instr->operand[1].stride;
+
+                    kernel->args.data[nargs]     = bh_base_array(&instr->operand[2])->data;
+                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[2])->nelem;
+                    kernel->args.ndim[nargs]     = instr->operand[2].ndim;
+                    kernel->args.start[nargs]    = instr->operand[2].start;
+                    kernel->args.shape[nargs]    = instr->operand[2].shape;
+                    kernel->args.stride[nargs++] = instr->operand[2].stride;
                 }
 
                 break;
@@ -444,14 +480,6 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
             case BH_ISNAN:
             case BH_ISINF:
             case BH_IDENTITY:
-
-                // Output is always an array...
-                kernel->args.data[nargs]     = bh_base_array(&instr->operand[0])->data;
-                kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[0])->nelem;
-                kernel->args.ndim[nargs]     = instr->operand[0].ndim;
-                kernel->args.start[nargs]    = instr->operand[0].start;
-                kernel->args.shape[nargs]    = instr->operand[0].shape;
-                kernel->args.stride[nargs++] = instr->operand[0].stride;
 
                 // Input might be a constant
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {

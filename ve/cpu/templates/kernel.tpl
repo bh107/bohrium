@@ -41,6 +41,9 @@ typedef struct bh_kernel_args {
     int64_t* stride[30];
 } bh_kernel_args_t;
 
+// hopefully this thing will be short-lived...
+typedef struct { uint64_t start, key; } bh_r123;
+
 void {{SYMBOL}}(bh_kernel_args_t* args)
 {
     //
