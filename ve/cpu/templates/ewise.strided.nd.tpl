@@ -1,23 +1,34 @@
+// Elementwise operation on strided arrays of any dimension/rank.
 {
-    int64_t nelements = a{{NR_OUTPUT}}_nelem;
+    int64_t nelements = 1;
+    for(int k=0; k<a{{NR_OUTPUT}}_ndim; ++k) {
+        nelements *= a{{NR_OUTPUT}}_shape[k];
+    }
+
+    int64_t last_dim  = a{{NR_OUTPUT}}_ndim-1;
+    int64_t shape_ld  = a{{NR_OUTPUT}}_shape[last_dim];
+    int64_t last_e    = nelements-1;
+    int64_t cur_e     = 0;
+    int64_t j;
+
+    {{#OPERAND}}
+    {{#ARRAY}}
+    int64_t  a{{NR}}_start      = args->start[{{NR}}];
+    int64_t  a{{NR}}_stride_ld  = args->stride[{{NR}}][last_dim];
+    {{/ARRAY}}
+    {{/OPERAND}}
+
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
-
-    int64_t cur_e = 0;
-
-    {{#OPERAND}}{{#ARRAY}}
-    {{TYPE}} *a{{NR}}_first   = a{{NR}}_current;
-    int64_t a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];
-    {{/ARRAY}}{{/OPERAND}}
 
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
     while (cur_e <= last_e) {
-        
-        {{#OPERAND}}{{#ARRAY}}
-        a{{NR}}_current = a{{NR}}_first + a{{NR}}_start;         // Reset offsets
-        {{/ARRAY}}{{/OPERAND}}
+        // Reset offsets
+        {{#OPERAND}}
+        {{TYPE}}* a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + a{{NR}}_start{{/ARRAY}};
+        {{/OPERAND}}
 
         for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
             {{#OPERAND}}{{#ARRAY}}
@@ -26,9 +37,9 @@
         }
 
         for (j = 0; j < shape_ld; j++) {        // Iterate over "last" / "innermost" dimension
-            {{#LOOP_BODY}}
+            {{#OPERATORS}}
             {{OPERATOR}};
-            {{/LOOP_BODY}}
+            {{/OPERATORS}}
 
             {{#OPERAND}}{{#ARRAY}}
             a{{NR}}_current += a{{NR}}_stride_ld;
@@ -39,7 +50,7 @@
         // coord[last_dim] is never used, only all the other coord[dim!=last_dim]
         for (j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
             coord[j]++;
-            if (coord[j] < shape[j]) {      // Still within this dimension
+            if (coord[j] < a{{NR_OUTPUT}}_shape[j]) {      // Still within this dimension
                 break;
             } else {                        // Reached the end of this dimension
                 coord[j] = 0;               // Reset coordinate
