@@ -26,8 +26,8 @@ purge:
 	rm -fr $(INSTALLDIR)/cpu/
 
 sample:
-	python misc/sample.py 10 3 --be numpy
-	BH_VE_CPU_JIT_DUMPSRC=1 python misc/sample.py 10 3 --be bohrium
+	python misc/sample.py 3 3 3 3 3 --be numpy
+	BH_VE_CPU_JIT_DUMPSRC=1 python misc/sample.py 3 3 3 3 3 --be bohrium
 
 graph:
 	dot -T svg graph-1.dot > /tmp/graph-1.svg

@@ -1,32 +1,9 @@
 {
-    va_list list;               // Unpack arguments
-    va_start(list, tool);
-
-    int64_t *shape      = va_arg(list, int64_t*);
-    int64_t ndim        = va_arg(list, int64_t);
-
-    {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_current   = va_arg(list, {{TYPE}}*);
-    {{#ARRAY}}
-    int64_t  a{{NR}}_start   = va_arg(list, int64_t);
-    int64_t *a{{NR}}_stride  = va_arg(list, int64_t*);
-    {{/ARRAY}}
-    {{/OPERAND}}
-
-    va_end(list);
-
-    int64_t nelements = 1;      // Compute number of elements
-    int k;
-    for (k = 0; k<ndim; ++k){
-        nelements *= shape[k];
-    }
-
-    int64_t j,                  // Traversal variables
-            last_dim    = ndim-1,
-            last_e      = nelements-1;
+    int64_t nelements = a{{NR_OUTPUT}}_nelem;
+    int mthreads = omp_get_max_threads();
+    int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
     int64_t cur_e = 0;
-    int64_t shape_ld = shape[last_dim];
 
     {{#OPERAND}}{{#ARRAY}}
     {{TYPE}} *a{{NR}}_first   = a{{NR}}_current;

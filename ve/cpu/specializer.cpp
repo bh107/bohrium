@@ -8,28 +8,23 @@ static ctemplate::Strip strip_mode = ctemplate::STRIP_BLANK_LINES;
 void specializer_init()
 {
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
-    ctemplate::LoadTemplate("license.tpl",  strip_mode);
-    ctemplate::LoadTemplate("kernel.tpl",   strip_mode);
-
-    ctemplate::LoadTemplate("range.1d.tpl",    strip_mode);
-    ctemplate::LoadTemplate("random.1d.tpl",   strip_mode);
-
-    ctemplate::LoadTemplate("ewise.1d.tpl",      strip_mode);
-    ctemplate::LoadTemplate("ewise.2d.tpl",      strip_mode);
-    ctemplate::LoadTemplate("ewise.3d.tpl",      strip_mode);
-    ctemplate::LoadTemplate("ewise.nd.ccc.tpl",  strip_mode);
-    ctemplate::LoadTemplate("ewise.nd.tpl",      strip_mode);
-
-    ctemplate::LoadTemplate("reduce.1d.tpl", strip_mode);
-    ctemplate::LoadTemplate("reduce.2d.tpl", strip_mode);
-    ctemplate::LoadTemplate("reduce.3d.tpl", strip_mode);
-    ctemplate::LoadTemplate("reduce.nd.tpl", strip_mode);
-
-    ctemplate::LoadTemplate("scan.1d.tpl",  strip_mode);
-    ctemplate::LoadTemplate("scan.2d.tpl",  strip_mode);
-    ctemplate::LoadTemplate("scan.3d.tpl",  strip_mode);
-    ctemplate::LoadTemplate("scan.nd.tpl",  strip_mode);
-
+    ctemplate::LoadTemplate("ewise.cont.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.2d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.3d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("kernel.tpl", strip_mode);
+    ctemplate::LoadTemplate("license.tpl", strip_mode);
+    ctemplate::LoadTemplate("random.cont.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("range.cont.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.2d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.3d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("scan.strided.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("scan.strided.2d.tpl", strip_mode);
+    ctemplate::LoadTemplate("scan.strided.3d.tpl", strip_mode);
+    ctemplate::LoadTemplate("scan.strided.nd.tpl", strip_mode);
     ctemplate::mutable_default_template_cache()->Freeze();
 }
 
@@ -40,7 +35,7 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
 {
     string tpl_ndim,
            tpl_opcode,
-           tpl_lmask = "";
+           tpl_layout = "strided.";
 
     if (optimized && (ndim <= 3)) {
         tpl_ndim = to_string(ndim) + "d.";
@@ -109,7 +104,7 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
                 (lmask == (A0_CONTIGUOUS + A1_CONSTANT      + A2_CONTIGUOUS)) || \
                 (lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT))) {
                 tpl_ndim    = "nd.";
-                tpl_lmask   = "ccc.";
+                tpl_layout   = "cont.";
             }
             break;
 
@@ -150,7 +145,7 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
             if ((lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
                 (lmask == (A0_CONTIGUOUS + A1_CONSTANT))) {
                 tpl_ndim  = "nd.";
-                tpl_lmask = "ccc.";
+                tpl_layout = "cont.";
             }
             break;
 
@@ -161,7 +156,7 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
             throw runtime_error("template_filename: No template for opcode.");
     }
 
-    return tpl_opcode + tpl_ndim + tpl_lmask + "tpl";
+    return tpl_opcode + tpl_layout + tpl_ndim  + "tpl";
 }
 
 /**
@@ -287,6 +282,7 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
         //
         ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
         string tf = template_filename(instr, optimized, kernel.ndim[j], kernel.lmask[j]);
+        cout << "KRN: " << kernel.symbol << ", " << "TF: " << tf << endl;
         operation_d->SetFilename(tf);
 
         //
