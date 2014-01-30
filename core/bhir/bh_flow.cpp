@@ -30,7 +30,11 @@ using namespace std;
 //Registrate access by the 'node_idx'
 void bh_flow::add_access(bh_intp node_idx)
 {
-    bases[node_list[node_idx].view->base].push_back(node_idx);
+    const bh_flow_node &n = node_list[node_idx];
+    bases[n.view->base].push_back(node_idx);
+
+    //All nodes is in sub-DAG zero initially
+    set_sub_dag(0, node_idx);
 }
 
 //Get the latest access that conflicts with 'view'
@@ -199,15 +203,17 @@ void bh_flow::dot(const char* filename)
         for(v=b->second.begin(); v != b->second.end(); v++)
         {
             const bh_flow_node &n = node_list[*v];
-            fs << "n" << *v << "[label=\"t" << n.timestep;
+            fs << "n" << *v << "[label=\"" << n.timestep;
             if(n.readonly)
                 fs << "R";
             else
                 fs << "W";
-
+            fs << n.sub_dag;
             fs << "_" << bh_opcode_text(instr_list[n.instr_idx].opcode)+3;
             fs << "(" << n.instr_idx << ")\"";
-            fs << " shape=box style=rounded]";
+            fs << " shape=box style=filled,rounded";
+            fs << " colorscheme=paired12 fillcolor=" << n.sub_dag%12+1;
+            fs << "]" << endl;
 
         }
         //Write invisible edges in order to get correct layout
@@ -246,3 +252,10 @@ void bh_flow::dot(const char* filename)
     fs << "}" << std::endl;
     fs.close();
 }
+
+//Assign a node to a sub-DAG
+void bh_flow::set_sub_dag(bh_intp sub_dag, bh_intp node_idx)
+{
+    sub_dags[sub_dag].insert(node_idx);
+}
+

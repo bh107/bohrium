@@ -41,17 +41,19 @@ public:
     const bh_view *view;
     //The origin of the incoming flow (node indices)
     std::set<bh_intp> parents;
+    //The sub-DAG index this node is part of (default is 0)
+    bh_intp sub_dag;
     //The constructor
     bh_flow_node(bh_intp t, bool r, bh_intp i, const bh_view *v):
                  timestep(t), readonly(r), instr_idx(i), view(v),
-                 parents() {}
+                 parents(), sub_dag(0) {}
 };
 
 
 class bh_flow
 {
 private:
-    //List of nodes in a topological order
+    //List of nodes in a topological order, which also defines node IDs.
     std::vector<bh_flow_node> node_list;
     //Collection of vectors that contains indices to
     //flow-nodes that all access the same base array
@@ -62,6 +64,8 @@ private:
     void add_access(bh_intp node_idx);
     //Get the latest access that conflicts with 'view'
     bh_intp get_latest_conflicting_access(const bh_view *view, bool readonly);
+    //A map of all the nodes in each sub-DAG
+    std::map<bh_intp, std::set<bh_intp> > sub_dags;
 
 public:
     //Create a new flow object based on an instruction list
@@ -72,8 +76,10 @@ public:
     void pprint(void);
     //Pretty print the flow object to file 'filename'
     void fprint(const char* filename);
-    // Write the flow object in the DOT format.
+    //Write the flow object in the DOT format
     void dot(const char* filename);
+    //Assign a node to a sub-DAG
+    void set_sub_dag(bh_intp sub_dag, bh_intp node_idx);
 };
 
 
