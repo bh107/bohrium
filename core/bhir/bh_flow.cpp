@@ -32,9 +32,6 @@ void bh_flow::add_access(bh_intp node_idx)
 {
     const bh_flow_node &n = node_list[node_idx];
     bases[n.view->base].push_back(node_idx);
-
-    //All nodes is in sub-DAG zero initially
-    set_sub_dag(0, node_idx);
 }
 
 //Get the latest access that conflicts with 'view'
@@ -119,6 +116,21 @@ bh_flow::bh_flow(bh_intp ninstr, const bh_instruction *instr_list)
             it->timestep = timestep;
         }
     }
+    sub_dag_clustering();
+}
+
+//Assign a node to a sub-DAG
+void bh_flow::set_sub_dag(bh_intp sub_dag, bh_intp node_idx)
+{
+    sub_dags[sub_dag].insert(node_idx);
+}
+
+//Cluster the flow object into sub-DAGs suitable as kernals
+void bh_flow::sub_dag_clustering(void)
+{
+    //Assign all nodes to the sub-DAG that equals their timestep
+    for(vector<bh_flow_node>::iterator n=node_list.begin(); n!=node_list.end(); n++)
+        n->sub_dag = n->timestep;
 }
 
 //Pretty print the flow object to 'buf'
@@ -212,7 +224,8 @@ void bh_flow::dot(const char* filename)
             fs << "_" << bh_opcode_text(instr_list[n.instr_idx].opcode)+3;
             fs << "(" << n.instr_idx << ")\"";
             fs << " shape=box style=filled,rounded";
-            fs << " colorscheme=paired12 fillcolor=" << n.sub_dag%12+1;
+            if(n.sub_dag >= 0)
+                fs << " colorscheme=paired12 fillcolor=" << n.sub_dag%12+1;
             fs << "]" << endl;
 
         }
@@ -253,9 +266,4 @@ void bh_flow::dot(const char* filename)
     fs.close();
 }
 
-//Assign a node to a sub-DAG
-void bh_flow::set_sub_dag(bh_intp sub_dag, bh_intp node_idx)
-{
-    sub_dags[sub_dag].insert(node_idx);
-}
 

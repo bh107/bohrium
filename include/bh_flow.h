@@ -41,12 +41,12 @@ public:
     const bh_view *view;
     //The origin of the incoming flow (node indices)
     std::set<bh_intp> parents;
-    //The sub-DAG index this node is part of (default is 0)
+    //The sub-DAG index this node is part of (-1 means none)
     bh_intp sub_dag;
     //The constructor
     bh_flow_node(bh_intp t, bool r, bh_intp i, const bh_view *v):
                  timestep(t), readonly(r), instr_idx(i), view(v),
-                 parents(), sub_dag(0) {}
+                 parents(), sub_dag(-1) {}
 };
 
 
@@ -66,6 +66,10 @@ private:
     bh_intp get_latest_conflicting_access(const bh_view *view, bool readonly);
     //A map of all the nodes in each sub-DAG
     std::map<bh_intp, std::set<bh_intp> > sub_dags;
+    //Cluster the flow object into sub-DAGs suitable as kernals
+    void sub_dag_clustering(void);
+    //Assign a node to a sub-DAG
+    void set_sub_dag(bh_intp sub_dag, bh_intp node_idx);
 
 public:
     //Create a new flow object based on an instruction list
@@ -78,8 +82,6 @@ public:
     void fprint(const char* filename);
     //Write the flow object in the DOT format
     void dot(const char* filename);
-    //Assign a node to a sub-DAG
-    void set_sub_dag(bh_intp sub_dag, bh_intp node_idx);
 };
 
 
