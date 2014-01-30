@@ -1,59 +1,29 @@
+// Reduction operation of a strided n-dimensional array
 {
-    /*
-    int reduction(
-        int tool,
-
-        T       *a0_first,
-        int64_t  a0_start,
-        int64_t *a0_stride,
-        int64_t *a1_shape,
-        int64_t  a1_ndim,
-
-        T       *a1_first,
-        int64_t  a1_start,
-        int64_t *a1_stride,
-        int64_t *a1_shape,
-        int64_t  a1_ndim,
-
-        T       *a2_first
-    )
-    */
-
-    va_list list;                                   // **UNPACK PARAMETERS**
-    va_start(list, tool);
-
     {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_first   = va_arg(list, {{TYPE}}*);
-    {{#ARRAY}}
-    int64_t  a{{NR}}_start   = va_arg(list, int64_t);
-    int64_t *a{{NR}}_stride  = va_arg(list, int64_t*);
-    int64_t *a{{NR}}_shape   = va_arg(list, int64_t*);
-    int64_t  a{{NR}}_ndim    = va_arg(list, int64_t);
-    {{TYPE}} *a{{NR}}_current = a{{NR}}_first + a{{NR}}_start;
-    {{/ARRAY}}
+    {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + a{{NR}}_start{{/ARRAY}};
     {{/OPERAND}}
 
-    va_end(list);                                   // **DONE UNPACKING**
+    {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
 
-    {{TYPE_AXIS}} axis = *a2_first;                 // Use the first element as temp
-
-    int64_t a1_i;               // Iterator variables...
+    int64_t a{{NR_FINPUT}}_i;       // Iterator variables...
 
     {{TYPE_INPUT}} *tmp_current;    // Intermediate array
     {{TYPE_INPUT}} *tmp_first;      
     int64_t tmp_start;
     int64_t tmp_stride[CPU_MAXDIM];    
 
-    if (1 == a1_ndim) {                             // ** 1D Special Case **
-        a0_current = a0_first + a0_start;           // Point to first element in output.
-        {{TYPE_INPUT}} rvar = *(a1_first+a1_start);    // Use the first element as temp
-        for(tmp_current = a1_first+a1_start+a1_stride[axis], a1_i=1;
-            a1_i < a1_shape[axis];
-            tmp_current += a1_stride[axis], a1_i++) {
+    if (1 == a{{NR_FINPUT}}_ndim) {                             // ** 1D Special Case **
+                                                    // Point to first element in output.
+        a{{NR_OUTPUT}}_current = a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start;
+        {{TYPE_INPUT}} rvar = *(a{{NR_FINPUT}}_first+a{{NR_FINPUT}}_start);    // Use the first element as temp
+        for(tmp_current = a{{NR_FINPUT}}_first+a{{NR_FINPUT}}_start+a{{NR_FINPUT}}_stride[axis], a{{NR_FINPUT}}_i=1;
+            a{{NR_FINPUT}}_i < a{{NR_FINPUT}}_shape[axis];
+            tmp_current += a{{NR_FINPUT}}_stride[axis], a{{NR_FINPUT}}_i++) {
 
-            {{#LOOP_BODY}}
+            {{#OPERATORS}}
             {{OPERATOR}};
-            {{/LOOP_BODY}}
+            {{/OPERATORS}}
         }
         *a0_current = rvar;
     } else {                                    // ** ND General Case **
@@ -116,9 +86,9 @@
                     ) {
                         {{TYPE_INPUT}} rvar = *a0_current; // Scalar-temp
 
-                        {{#LOOP_BODY}}
+                        {{#OPERATORS}}
                         {{OPERATOR}};
-                        {{/LOOP_BODY}}
+                        {{/OPERATORS}}
 
                         *a0_current = rvar;
 

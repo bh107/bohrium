@@ -1,43 +1,12 @@
 {
 #define OUTER 1
 #define INNER 0
-    /*
-    int reduction(
-        int tool,
-
-        T       *a0_first,
-        int64_t  a0_start,
-        int64_t *a0_stride,
-        int64_t *a1_shape,
-        int64_t  a1_ndim,
-
-        T       *a1_first,
-        int64_t  a1_start,
-        int64_t *a1_stride,
-        int64_t *a1_shape,
-        int64_t  a1_ndim,
-
-        T       *a2_first
-    )
-    */
-
-    va_list list;                                   // **UNPACK PARAMETERS**
-    va_start(list, tool);
 
     {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_first   = va_arg(list, {{TYPE}}*);
-    {{#ARRAY}}
-    int64_t  a{{NR}}_start   = va_arg(list, int64_t);
-    int64_t *a{{NR}}_stride  = va_arg(list, int64_t*);
-    int64_t *a{{NR}}_shape   = va_arg(list, int64_t*);
-    int64_t  a{{NR}}_ndim    = va_arg(list, int64_t);
-    {{TYPE}} *a{{NR}}_current = a{{NR}}_first + a{{NR}}_start;
-    {{/ARRAY}}
+    {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + a{{NR}}_start;{{/ARRAY}};
     {{/OPERAND}}
 
-    va_end(list);                                   // **DONE UNPACKING**
-
-    {{TYPE_AXIS}} axis = *a2_first;                 // Use the first element as temp
+    {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
 
     {{TYPE_AXIS}} outer_axis;
     {{TYPE_AXIS}} inner_axis;
@@ -52,26 +21,26 @@
         inner_axis = 0;
     }
     
-    int64_t nelements = a0_shape[OUTER]+a1_shape[INNER];
-    int mthreads = omp_get_max_threads();
-    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+    int64_t nelements   = a{{NR_FINPUT}}_shape[OUTER]+a{{NR_FINPUT}}_shape[INNER];
+    int mthreads        = omp_get_max_threads();
+    int64_t nworkers    = nelements > mthreads ? mthreads : 1;
 
     #pragma omp parallel for num_threads(nworkers) collapse(2)
-    for(int64_t i=0; i<a0_shape[OUTER]; ++i) {
-        for(int64_t j=0; j<a0_shape[INNER]; ++j) {
-            {{TYPE_INPUT}} *tmp_current = a1_first + a1_start + \
-                                       i*a1_stride[outer_axis] + \
-                                       j*a1_stride[inner_axis];
+    for(int64_t i=0; i<a{{NR_OUTPUT}}_shape[OUTER]; ++i) {
+        for(int64_t j=0; j<a{{NR_OUTPUT}}_shape[INNER]; ++j) {
+            {{TYPE_INPUT}} *tmp_current = a{{NR_FINPUT}}_first + a{{NR_FINPUT}}_start + \
+                                        i*a{{NR_FINPUT}}_stride[outer_axis] + \
+                                        j*a{{NR_FINPUT}}_stride[inner_axis];
 
             {{TYPE_INPUT}} rvar = *tmp_current;
-            for(int64_t k=1; k<a1_shape[axis]; ++k) {
-                tmp_current += a1_stride[axis];
+            for(int64_t k=1; k<a{{NR_FINPUT}}_shape[axis]; ++k) {
+                tmp_current += a{{NR_FINPUT}}_stride[axis];
 
-                {{#LOOP_BODY}}
+                {{#OPERATORS}}
                 {{OPERATOR}};
-                {{/LOOP_BODY}}
+                {{/OPERATORS}}
             }
-            *(a0_first + a0_start + i*a0_stride[OUTER] + j*a0_stride[INNER]) = rvar;
+            *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + i*a{{NR_OUTPUT}}_stride[OUTER] + j*a{{NR_OUTPUT}}_stride[INNER]) = rvar;
         }
     }
 }

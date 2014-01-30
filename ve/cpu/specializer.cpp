@@ -302,10 +302,10 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
             ((instr->opcode >= BH_ADD_ACCUMULATE) && (instr->opcode <= BH_MULTIPLY_ACCUMULATE))) {
             operation_d->SetValue("TYPE_INPUT", enum_to_ctypestr(instr->operand[1].base->type));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
-            operation_d->SetValue("NR_OUTPUT", std::to_string(nops_kernel+1));
-        } else {
-            operation_d->SetValue("NR_OUTPUT", std::to_string(nops_kernel));
         }
+        operation_d->SetValue("NR_OUTPUT", std::to_string(nops_kernel));
+        operation_d->SetValue("NR_FINPUT", std::to_string(nops_kernel+1));  // Not all have
+        operation_d->SetValue("NR_SINPUT", std::to_string(nops_kernel+2));  // Not all have
 
         //
         // Fill out the instruction operands globally such that they

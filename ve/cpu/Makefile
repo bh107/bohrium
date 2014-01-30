@@ -30,8 +30,13 @@ sample:
 	BH_VE_CPU_JIT_DUMPSRC=1 python misc/sample.py 3 3 3 3 3 --be bohrium
 
 graph:
-	dot -T svg graph-1.dot > /tmp/graph-1.svg
+	[ -f graph-1.dot ] && dot -T svg graph-1.dot > /tmp/graph-1.svg
 	[ -f /tmp/graph-1.svg ] && xdg-open /tmp/graph-1.svg
+	[ -f graph-2.dot ] && dot -T svg graph-2.dot > /tmp/graph-2.svg
+	[ -f /tmp/graph-2.svg ] && xdg-open /tmp/graph-2.svg
+	[ -f graph-3.dot ] && dot -T svg graph-3.dot > /tmp/graph-3.svg
+	[ -f /tmp/graph-3.svg ] && xdg-open /tmp/graph-3.svg
+
 
 %.o: %.c $(HEADER)
 	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
