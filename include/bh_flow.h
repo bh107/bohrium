@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_FLOW_H
 
 #ifdef __cplusplus
-
+#include<bh.h>
 #include<set>
 #include<vector>
 #include<map>
@@ -62,6 +62,10 @@ private:
     bh_intp ninstr; const bh_instruction *instr_list;
     //Registrate access by the 'node_idx'
     void add_access(bh_intp node_idx);
+    //Add accesses that conflicts with the 'node_idx' to 'conflicts'
+    void get_conflicting_access(bh_intp node_idx, std::set<bh_intp> &conflicts);
+    //Get access that conflicts with the 'node_idx'
+    bh_intp get_conflicting_access(bh_intp node_idx);
     //Get the latest access that conflicts with 'view'
     bh_intp get_latest_conflicting_access(const bh_view *view, bool readonly);
     //A map of all the nodes in each sub-DAG
@@ -74,6 +78,8 @@ private:
 public:
     //Create a new flow object based on an instruction list
     bh_flow(bh_intp ninstr, const bh_instruction *instr_list);
+    //Fill 'bhir' based on the flow object
+    void bhir_fill(bh_ir *bhir);
     //Pretty print the flow object to 'buf'
     void sprint(char *buf);
     //Pretty print the flow object to stdout

@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <bh_flow.h>
+#include <bh_vector.h>
 #include <assert.h>
 #include <iostream>
 #include <string>
@@ -32,6 +33,35 @@ void bh_flow::add_access(bh_intp node_idx)
 {
     const bh_flow_node &n = node_list[node_idx];
     bases[n.view->base].push_back(node_idx);
+}
+
+//Add accesses that conflicts with the 'node_idx' to 'conflicts'
+void bh_flow::get_conflicting_access(bh_intp node_idx, set<bh_intp> &conflicts)
+{
+    //Search through all nodes with the same base as 'node_idx'
+    const bh_flow_node &node = node_list[node_idx];
+    const vector<bh_intp> &same_base = bases[node.view->base];
+
+    //Iterate 'it' to where the 'node_idx' is in 'same_base'
+    vector<bh_intp>::const_reverse_iterator it = same_base.rbegin();
+    for(it = same_base.rbegin(); it != same_base.rend(); ++it)
+    {
+        if(*it == node_idx)
+            break;
+    }
+    assert(it != same_base.rend());//'node_idx' must be found in 'same_base'
+
+    //Now continue iterating through possible conflicts
+    for(++it; it != same_base.rend(); ++it)
+    {
+        const bh_flow_node &n = node_list[*it];
+
+        if(node.readonly && n.readonly)
+            continue;//No possible conflict when both is read only
+
+        if(bh_view_overlap(n.view, node.view))
+            conflicts.insert(*it);
+    }
 }
 
 //Get the latest access that conflicts with 'view'
@@ -119,6 +149,80 @@ bh_flow::bh_flow(bh_intp ninstr, const bh_instruction *instr_list)
     sub_dag_clustering();
 }
 
+//Fill the uninitialized 'bhir' based on the flow object
+void bh_flow::bhir_fill(bh_ir *bhir)
+{
+    assert(bhir->dag_list == NULL);
+
+
+    //Allocate the DAG list, for now we only have one DAG
+    bh_intp ndags = 1;
+    bhir->dag_list = (bh_dag*) bh_vector_create(sizeof(bh_dag), ndags, ndags);
+    if(bhir->dag_list == NULL)
+        throw std::bad_alloc();
+    bhir->ndag = ndags;
+
+    //A set of dependencies for each write-node (i.e. instruction) in the one DAG
+    //An index in 'wnode' corresponds to a index in 'instr_list'
+    vector<set<bh_intp> > wnodes(ninstr);
+
+    for(vector<bh_flow_node>::size_type i = 0; i<node_list.size(); ++i)
+    {
+        const bh_flow_node &n = node_list[i];
+        if(!n.readonly)//A write instruction
+        {
+            set<bh_intp> deps;
+            //Check write conflicts
+            get_conflicting_access(i, deps);
+            //Check read conflicts
+            for(set<bh_intp>::const_iterator p=n.parents.begin(); p!=n.parents.end(); ++p)
+            {
+                get_conflicting_access(*p, deps);
+            }
+            //Convert node_list indices to instruction indices before writing them to 'wnodes'
+            for(set<bh_intp>::const_iterator it = deps.begin(); it != deps.end(); it++)
+            {
+                bh_intp c = node_list[*it].instr_idx;
+                if(n.instr_idx != c)//We cannot conflict with ourself
+                    wnodes[n.instr_idx].insert(c);
+            }
+        }
+    }
+
+    //Allocate the one dag
+    bh_dag *dag = &bhir->dag_list[0];
+    dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), wnodes.size(), wnodes.size());
+    if(dag->node_map == NULL)
+        throw std::bad_alloc();
+    dag->nnode = wnodes.size();
+    dag->tag = 0;
+    dag->adjmat = bh_adjmat_create(wnodes.size());
+    if(dag->adjmat == NULL)
+        throw std::bad_alloc();
+
+    for(vector<set<bh_intp> >::size_type i=0; i<wnodes.size(); i++)
+    {
+        const std::set<bh_intp> &deps = wnodes[i];
+
+        dag->node_map[i] = i;
+
+        if(deps.size() > 0)
+        {
+            vector<bh_intp> sorted_vector;
+            for(set<bh_intp>::iterator it = deps.begin(); it != deps.end(); it++)
+                sorted_vector.push_back(*it);
+
+            bh_error e = bh_adjmat_fill_empty_col(dag->adjmat, i,
+                                                  sorted_vector.size(),
+                                                  &sorted_vector[0]);
+            if(e != BH_SUCCESS)
+                throw std::bad_alloc();
+        }
+    }
+    if(bh_adjmat_finalize(dag->adjmat) != BH_SUCCESS)
+        throw std::bad_alloc();
+}
+
 //Assign a node to a sub-DAG
 void bh_flow::set_sub_dag(bh_intp sub_dag, bh_intp node_idx)
 {
@@ -155,7 +259,7 @@ void bh_flow::sprint(char *buf)
                 else
                     str << " W ";
                 str << "\t" << "[";
-                for(set<bh_intp>::const_iterator p=n.parents.begin(); p!=n.parents.end(); p++)
+                for(set<bh_intp>::const_iterator p=n.parents.begin(); p!=n.parents.end(); ++p)
                 {
                     if(p != n.parents.begin())//Not the first iteration
                         str << ",";
@@ -179,7 +283,7 @@ void bh_flow::sprint(char *buf)
 //Pretty print the flow object to stdout
 void bh_flow::pprint(void)
 {
-    char buf[10000];
+    char buf[100000];
     sprint(buf);
     puts(buf);
 }
@@ -187,7 +291,7 @@ void bh_flow::pprint(void)
 //Pretty print the flow object to file 'filename'
 void bh_flow::fprint(const char* filename)
 {
-    char buf[10000];
+    char buf[100000];
     FILE *file;
     file = fopen(filename, "w");
     sprint(buf);
@@ -215,7 +319,7 @@ void bh_flow::dot(const char* filename)
         for(v=b->second.begin(); v != b->second.end(); v++)
         {
             const bh_flow_node &n = node_list[*v];
-            fs << "n" << *v << "[label=\"" << n.timestep;
+            fs << "n" << *v << "[label=\"" << *v << "T" << n.timestep;
             if(n.readonly)
                 fs << "R";
             else
