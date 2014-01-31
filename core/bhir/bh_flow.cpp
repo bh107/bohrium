@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <sstream>
 #include <fstream>
+#include <stdexcept>
 using namespace std;
 
 //Registrate access by the 'node_idx'
@@ -60,7 +61,10 @@ void bh_flow::get_conflicting_access(bh_intp node_idx, set<bh_intp> &conflicts)
             continue;//No possible conflict when both is read only
 
         if(bh_view_overlap(n.view, node.view))
+        {
+            assert(*it != node_idx);//We cannot conflict with ourself
             conflicts.insert(*it);
+        }
     }
 }
 
@@ -154,19 +158,34 @@ void bh_flow::bhir_fill(bh_ir *bhir)
 {
     assert(bhir->dag_list == NULL);
 
-
-    //Allocate the DAG list, for now we only have one DAG
-    bh_intp ndags = 1;
-    bhir->dag_list = (bh_dag*) bh_vector_create(sizeof(bh_dag), ndags, ndags);
-    if(bhir->dag_list == NULL)
-        throw std::bad_alloc();
-    bhir->ndag = ndags;
-
-    //A set of dependencies for each write-node (i.e. instruction) in the one DAG
+    //A set of dependencies for each write-node (i.e. instruction) in the flow
     //An index in 'wnode' corresponds to a index in 'instr_list'
     vector<set<bh_intp> > wnodes(ninstr);
 
-    for(vector<bh_flow_node>::size_type i = 0; i<node_list.size(); ++i)
+    //Map between flow and bhir sub-DAG indices
+    map<bh_intp, bh_intp> dag_f2b;
+    //Number of sub-DAGs
+    map<bh_intp, bh_intp>::size_type ndags = 0;
+    //Initiate the sub-DAGs
+    for(vector<bh_flow_node>::size_type i=0; i<node_list.size(); ++i)
+    {
+        const bh_flow_node &n = node_list[i];
+        if(n.sub_dag == -1)
+        {
+            throw runtime_error("All nodes must be assigned to a sub_dag (no -1 indices) "
+                                "before calling bhir_fill()");
+        }
+        if(dag_f2b.count(n.sub_dag) == 0)
+            dag_f2b[n.sub_dag] = ndags++;
+    }
+    //A set of dependencies for each sub-DAG in the bhir
+    vector<set<bh_intp> > dag_deps(ndags);
+
+    //A set of wnodes for each sub-DAG in the flow
+    vector<set<bh_intp> > dag_nodes(ndags);
+
+    //Compute dependencies both between nodes and sub-DAGs
+    for(vector<bh_flow_node>::size_type i=0; i<node_list.size(); ++i)
     {
         const bh_flow_node &n = node_list[i];
         if(!n.readonly)//A write instruction
@@ -179,48 +198,103 @@ void bh_flow::bhir_fill(bh_ir *bhir)
             {
                 get_conflicting_access(*p, deps);
             }
-            //Convert node_list indices to instruction indices before writing them to 'wnodes'
             for(set<bh_intp>::const_iterator it = deps.begin(); it != deps.end(); it++)
             {
-                bh_intp c = node_list[*it].instr_idx;
-                if(n.instr_idx != c)//We cannot conflict with ourself
-                    wnodes[n.instr_idx].insert(c);
+                const bh_flow_node &d = node_list[*it];
+                if(n.sub_dag == d.sub_dag)//The dependency is within a sub-DAG
+                {
+                    if(n.instr_idx != d.instr_idx)//We cannot conflict with ourself
+                        wnodes[n.instr_idx].insert(d.instr_idx);
+                }
+                else//The dependency is to another sub-DAG
+                {
+                    dag_deps[dag_f2b[n.sub_dag]].insert(dag_f2b[d.sub_dag]);
+                }
+            }
+            dag_nodes[n.sub_dag].insert(n.instr_idx);
+        }
+    }
+    //Allocate the DAG list
+    bhir->ndag = ndags+1;//which includes the root DAG
+    bhir->dag_list = (bh_dag*) bh_vector_create(sizeof(bh_dag), bhir->ndag, bhir->ndag);
+    if(bhir->dag_list == NULL)
+        throw std::bad_alloc();
+
+    //Create the root DAG where all nodes a sub-DAGs
+    {
+        bh_dag *dag = &bhir->dag_list[0];
+        dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), ndags, ndags);
+        if(dag->node_map == NULL)
+            throw std::bad_alloc();
+        for(map<bh_intp, bh_intp>::size_type i=0; i<ndags; ++i)
+            dag->node_map[i] = (-1*(i+1)-1);
+        dag->nnode = ndags;
+        dag->tag = 0;
+        dag->adjmat = bh_adjmat_create(ndags);
+        if(dag->adjmat == NULL)
+            throw std::bad_alloc();
+
+        //Fill each row in the adjacency matrix with the dependencies between sub-DAGs
+        for(vector<set<bh_intp> >::size_type i=0; i < ndags; i++)
+        {
+            const std::set<bh_intp> &deps = dag_deps[i];
+            if(deps.size() > 0)
+            {
+                std::vector<bh_intp> sorted_vector(deps.begin(), deps.end());
+                bh_error e = bh_adjmat_fill_empty_col(dag->adjmat, i,
+                                                      deps.size(),
+                                                      &sorted_vector[0]);
+                if(e != BH_SUCCESS)
+                    throw std::bad_alloc();
             }
         }
+        if(bh_adjmat_finalize(dag->adjmat) != BH_SUCCESS)
+            throw std::bad_alloc();
     }
-
-    //Allocate the one dag
-    bh_dag *dag = &bhir->dag_list[0];
-    dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), wnodes.size(), wnodes.size());
-    if(dag->node_map == NULL)
-        throw std::bad_alloc();
-    dag->nnode = wnodes.size();
-    dag->tag = 0;
-    dag->adjmat = bh_adjmat_create(wnodes.size());
-    if(dag->adjmat == NULL)
-        throw std::bad_alloc();
-
-    for(vector<set<bh_intp> >::size_type i=0; i<wnodes.size(); i++)
+    //Create all sub-DAGs
+    for(vector<set<bh_intp> >::size_type dag_idx=0; dag_idx<dag_nodes.size(); ++dag_idx)
     {
-        const std::set<bh_intp> &deps = wnodes[i];
+        const set<bh_intp> &nodes = dag_nodes[dag_idx];
+        bh_dag *dag = &bhir->dag_list[dag_idx+1];
+        dag->node_map = (bh_intp*) bh_vector_create(sizeof(bh_intp), nodes.size(), nodes.size());
+        if(dag->node_map == NULL)
+            throw std::bad_alloc();
+        dag->nnode = nodes.size();
+        dag->tag = 0;
+        dag->adjmat = bh_adjmat_create(nodes.size());
+        if(dag->adjmat == NULL)
+            throw std::bad_alloc();
 
-        dag->node_map[i] = i;
-
-        if(deps.size() > 0)
+        //Fill the adjmat sequentially starting at row zero
+        bh_intp node_count = 0;
+        map<bh_intp,bh_intp> wnodes_f2b;//flow to bhir index map
+        for(set<bh_intp>::const_iterator it=nodes.begin(); it!=nodes.end(); it++)
         {
-            vector<bh_intp> sorted_vector;
-            for(set<bh_intp>::iterator it = deps.begin(); it != deps.end(); it++)
-                sorted_vector.push_back(*it);
+            const set<bh_intp> &deps = wnodes[*it];
+            //Note that the order of 'it' is ascending thus the topological order is preserved.
+            dag->node_map[node_count] = *it;
+            //Mapping from flow index to node index within the sub-DAG.
+            wnodes_f2b[*it] = node_count;
 
-            bh_error e = bh_adjmat_fill_empty_col(dag->adjmat, i,
-                                                  sorted_vector.size(),
-                                                  &sorted_vector[0]);
-            if(e != BH_SUCCESS)
-                throw std::bad_alloc();
+            if(deps.size() > 0)
+            {
+                //Convert flow indices to indices in the local sub-DAG
+                vector<bh_intp> sorted_vector;
+                for(set<bh_intp>::iterator d = deps.begin(); d != deps.end(); d++)
+                {
+                    sorted_vector.push_back(wnodes_f2b[*d]);
+                }
+                bh_error e = bh_adjmat_fill_empty_col(dag->adjmat, node_count,
+                                                      sorted_vector.size(),
+                                                      &sorted_vector[0]);
+                if(e != BH_SUCCESS)
+                    throw std::bad_alloc();
+            }
+            node_count++;
         }
+        if(bh_adjmat_finalize(dag->adjmat) != BH_SUCCESS)
+            throw std::bad_alloc();
     }
-    if(bh_adjmat_finalize(dag->adjmat) != BH_SUCCESS)
-        throw std::bad_alloc();
 }
 
 //Assign a node to a sub-DAG
