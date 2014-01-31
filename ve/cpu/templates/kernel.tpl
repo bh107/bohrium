@@ -51,14 +51,15 @@ void {{SYMBOL}}(bh_kernel_args_t* args)
     //
     {{#ARGUMENT}}
     {{TYPE}} *a{{NR}}_first = args->data[{{NR}}];
-    assert(a{{NR}}_first != NULL);
     {{#ARRAY}}
     int64_t  a{{NR}}_nelem  = args->nelem[{{NR}}];
     int64_t  a{{NR}}_ndim   = args->ndim[{{NR}}];
     int64_t  a{{NR}}_start  = args->start[{{NR}}];
     int64_t *a{{NR}}_shape  = args->shape[{{NR}}];
     int64_t *a{{NR}}_stride = args->stride[{{NR}}];
+    a{{NR}}_first += a{{NR}}_start;
     {{/ARRAY}}
+    assert(a{{NR}}_first != NULL);
     {{/ARGUMENT}}
     
     //
