@@ -26,8 +26,12 @@ purge:
 	rm -fr $(INSTALLDIR)/cpu/
 
 sample:
-	python misc/sample.py 3 3 3 3 3 --be numpy
-	BH_VE_CPU_JIT_DUMPSRC=1 python misc/sample.py 3 3 3 3 3 --be bohrium
+	python misc/sample.py 3 3 3 --be numpy
+	BH_VE_CPU_JIT_DUMPSRC=1 python misc/sample.py 3 3 3 --be bohrium
+
+jacobi:
+	python ../../benchmark/Python/jacobi_stencil.py --size=10*10*1 --verbose
+	BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/jacobi_stencil.py --size=10*10*1 --bohrium=True --verbose
 
 graph:
 	[ -f graph-1.dot ] && dot -T svg graph-1.dot > /tmp/graph-1.svg

@@ -7,22 +7,21 @@ def sample(args):
     elif args.be == 'numpy':
         import numpy as np
 
+    grid = np.zeros((args.shape[0]+2,args.shape[0]+2))
+    grid[:,0]  = -273.15
+    grid[:,-1] = -273.15
+    grid[-1,:] = -273.15
+    grid[0,:]  = 40.0
     """
-    #a = np.arange(sum(args.shape), dtype=np.float32)
-    #a = np.random.random(args.shape, dtype=np.float32)
-    a = np.ones(args.shape, dtype=np.float32)
-    for _ in range(args.iterations[0]):
-        b = np.sin(a)
-        c = np.cos(b)
-        d = np.absolute(c)
-    print d
-    #return d
+    center = grid[1:-1, 1:-1]
+    north  = grid[0:-2, 1:-1]
+    east   = grid[1:-1, 2:  ]
+    west   = grid[1:-1, 0:-2]
+    south  = grid[2:  , 1:-1]
+    for i in xrange(int(args.iterations)):
+        center[:] = 0.2*(center+north+east+west+south)
     """
-    a = np.arange(np.prod(args.shape)).reshape(args.shape)
-
-    b = np.sum(a[::2])
-
-    return a, b
+    return grid
 
 def main():
     p = argparse.ArgumentParser('Run a dummy program')
@@ -31,8 +30,7 @@ def main():
         nargs='+', help="Shape of the input."
     )
     p.add_argument(
-        'iterations', metavar='I', type=int,
-        nargs=1, help="Number of iterations to run."
+        'iterations', metavar='I', type=int, help="Number of iterations to run."
     )
     p.add_argument(
         '--be', choices=['bohrium', 'numpy'], default='bohrium',
