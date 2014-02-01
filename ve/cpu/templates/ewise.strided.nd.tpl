@@ -11,12 +11,9 @@
     int64_t cur_e     = 0;
     int64_t j;
 
-    {{#OPERAND}}
-    {{#ARRAY}}
-    int64_t  a{{NR}}_start      = args->start[{{NR}}];
-    int64_t  a{{NR}}_stride_ld  = args->stride[{{NR}}][last_dim];
-    {{/ARRAY}}
-    {{/OPERAND}}
+    {{#OPERAND}}{{#ARRAY}}
+    int64_t  a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];
+    {{/ARRAY}}{{/OPERAND}}
 
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;

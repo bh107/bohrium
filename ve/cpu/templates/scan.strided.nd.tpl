@@ -14,7 +14,7 @@
     int64_t ndim        = a{{NR_OUTPUT}}_ndim;
 
     {{#OPERAND}}{{#ARRAY}}
-    int64_t  a{{NR}}_stride_axis = args->stride[{{NR}}][axis];
+    int64_t  a{{NR}}_stride_axis = a{{NR_OUTPUT}}_stride[axis];
     {{/ARRAY}}{{/OPERAND}}
 
     int mthreads = omp_get_max_threads();

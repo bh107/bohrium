@@ -58,18 +58,15 @@ static char* template_path;
 // NOTE: Changes to bk_kernel_args_t must be 
 //       replicated to "templates/kernel.tpl".
 //
-// TODO: Change this structure....
-//
-typedef struct bh_kernel_args { 
-    int nargs;                  
+typedef struct bh_kernel_arg {
+    void*   data;       // Pointer to memory allocated for the array
+    int64_t start;      // Offset from memory allocation to start of array
+    int64_t nelem;      // Number of elements available in the allocation
 
-    void*    data[30];
-    int64_t  nelem[30];
-    int64_t  ndim[30];
-    int64_t  start[30];
-    int64_t* shape[30];
-    int64_t* stride[30];
-} bh_kernel_args_t;
+    int64_t ndim;       // Number of dimensions of the array
+    int64_t* shape;     // Shape of the array
+    int64_t* stride;    // Stride in each dimension of the array
+} bh_kernel_arg_t;
 
 typedef struct bh_kernel {
     int ninstr;
@@ -80,7 +77,8 @@ typedef struct bh_kernel {
     int lmask[10];
     int64_t ndim[10];
 
-    bh_kernel_args_t args;
+    int nargs;
+    bh_kernel_arg_t args[30]; // TODO: Dynamically allocate these
 
     string symbol;
 } bh_kernel_t;
@@ -90,233 +88,6 @@ typedef struct bh_kernel {
 
 process* target;
 
-/**
- *  Dispatches / executes a single instruction from a kernel.
- *
- *  Note: System opcodes (including BH_FREE) are ignored.
- *
- *  @param kernel Pointer to the kernel.
- *  @param idx Index of the instruction to execute.
- *  @returns bh_error BH_SUCCESS or BH_ERROR
-static bh_error dispatch_si(bh_kernel_t* kernel, int idx)
-{
-    bh_instruction* instr = kernel->instr[idx];
-    int lmask = kernel->lmask[idx];
-    bh_error res = BH_ERROR;
-    func f = target->funcs[kernel->symbol];
-
-    bh_kernel_operand_t operands;
-
-    switch (instr->opcode) {    // OPCODE_SWITCH    - DISPATCH
-
-        case BH_NONE:               // NOOP.
-        case BH_DISCARD:
-        case BH_SYNC:
-        case BH_FREE:
-            res = BH_SUCCESS;
-            break;
-
-        case BH_RANDOM:
-            f(0,
-                bh_base_array(&instr->operand[0])->nelem,
-                instr->constant.value.r123.start,
-                instr->constant.value.r123.key,
-                bh_base_array(&instr->operand[0])->data
-            );
-            res = BH_SUCCESS;
-            break;
-
-        case BH_RANGE:
-            f(0,
-                bh_base_array(&instr->operand[0])->nelem,
-                bh_base_array(&instr->operand[0])->data
-            );
-            res = BH_SUCCESS;
-            break;
-
-        case BH_ADD_ACCUMULATE:                 // Scan
-        case BH_MULTIPLY_ACCUMULATE:
-
-        case BH_ADD_REDUCE:                     // Partial Reductions
-        case BH_MULTIPLY_REDUCE:
-        case BH_MINIMUM_REDUCE:
-        case BH_MAXIMUM_REDUCE:
-        case BH_LOGICAL_AND_REDUCE:
-        case BH_BITWISE_AND_REDUCE:
-        case BH_LOGICAL_OR_REDUCE:
-        case BH_LOGICAL_XOR_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-
-            f(0,
-                bh_base_array(&instr->operand[0])->data,
-                instr->operand[0].start,
-                instr->operand[0].stride,
-                instr->operand[0].shape,
-                instr->operand[0].ndim,
-
-                bh_base_array(&instr->operand[1])->data,
-                instr->operand[1].start,
-                instr->operand[1].stride,
-                instr->operand[1].shape,
-                instr->operand[1].ndim,
-
-                &(instr->constant.value)
-            );
-            res = BH_SUCCESS;
-            break;
-
-        case BH_ADD:
-        case BH_SUBTRACT:
-        case BH_MULTIPLY:
-        case BH_DIVIDE:
-        case BH_POWER:
-        case BH_GREATER:
-        case BH_GREATER_EQUAL:
-        case BH_LESS:
-        case BH_LESS_EQUAL:
-        case BH_EQUAL:
-        case BH_NOT_EQUAL:
-        case BH_LOGICAL_AND:
-        case BH_LOGICAL_OR:
-        case BH_LOGICAL_XOR:
-        case BH_MAXIMUM:
-        case BH_MINIMUM:
-        case BH_BITWISE_AND:
-        case BH_BITWISE_OR:
-        case BH_BITWISE_XOR:
-        case BH_LEFT_SHIFT:
-        case BH_RIGHT_SHIFT:
-        case BH_ARCTAN2:
-        case BH_MOD:
-
-            if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // DDC
-                f(0,
-                    instr->operand[0].shape,
-                    instr->operand[0].ndim,
-
-                    bh_base_array(&instr->operand[0])->data,
-                    instr->operand[0].start,
-                    instr->operand[0].stride,
-
-                    bh_base_array(&instr->operand[1])->data,
-                    instr->operand[1].start,
-                    instr->operand[1].stride,
-
-                    &(instr->constant.value)
-                );
-            } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) { // DCD
-                f(0,
-                    instr->operand[0].shape,
-                    instr->operand[0].ndim,
-
-                    bh_base_array(&instr->operand[0])->data,
-                    instr->operand[0].start,
-                    instr->operand[0].stride,
-
-                    &(instr->constant.value),
-
-                    bh_base_array(&instr->operand[2])->data,
-                    instr->operand[2].start,
-                    instr->operand[2].stride
-                );
-            } else {                                        // DDD
-                f(0,
-                    instr->operand[0].shape,
-                    instr->operand[0].ndim,
-
-                    bh_base_array(&instr->operand[0])->data,
-                    instr->operand[0].start,
-                    instr->operand[0].stride,
-
-                    bh_base_array(&instr->operand[1])->data,
-                    instr->operand[1].start,
-                    instr->operand[1].stride,
-
-                    bh_base_array(&instr->operand[2])->data,
-                    instr->operand[2].start,
-                    instr->operand[2].stride
-                );
-            }
-
-            res = BH_SUCCESS;
-            break;
-
-        case BH_REAL:
-        case BH_IMAG:
-        case BH_ABSOLUTE:
-        case BH_LOGICAL_NOT:
-        case BH_INVERT:
-        case BH_COS:
-        case BH_SIN:
-        case BH_TAN:
-        case BH_COSH:
-        case BH_SINH:
-        case BH_TANH:
-        case BH_ARCSIN:
-        case BH_ARCCOS:
-        case BH_ARCTAN:
-        case BH_ARCSINH:
-        case BH_ARCCOSH:
-        case BH_ARCTANH:
-        case BH_EXP:
-        case BH_EXP2:
-        case BH_EXPM1:
-        case BH_LOG:
-        case BH_LOG2:
-        case BH_LOG10:
-        case BH_LOG1P:
-        case BH_SQRT:
-        case BH_CEIL:
-        case BH_TRUNC:
-        case BH_FLOOR:
-        case BH_RINT:
-        case BH_ISNAN:
-        case BH_ISINF:
-        case BH_IDENTITY:
-
-            if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
-                f(0,
-                    instr->operand[0].shape,
-                    instr->operand[0].ndim,
-
-                    bh_base_array(&instr->operand[0])->data,
-                    instr->operand[0].start,
-                    instr->operand[0].stride,
-
-                    &(instr->constant.value)
-                );
-            } else {
-                f(0,
-                    instr->operand[0].shape,
-                    instr->operand[0].ndim,
-
-                    bh_base_array(&instr->operand[0])->data,
-                    instr->operand[0].start,
-                    instr->operand[0].stride,
-
-                    bh_base_array(&instr->operand[1])->data,
-                    instr->operand[1].start,
-                    instr->operand[1].stride
-                );
-            }
-            res = BH_SUCCESS;
-            break;
-
-        default:                            // Shit hit the fan
-            res = BH_ERROR;
-            printf("cpu-exec: Err=[Unsupported ufunc] {\n");
-            bh_pprint_instr(instr);
-            printf("}\n");
-    }
-
-    return res;
-}
-
-*/
-
-/// I WILL DO SOME SERIOUS AMON TOBIN ON THIS CODE!!!
-//
 /**
  *  Pack kernel arguments and execute kernel-function.
  *
@@ -344,12 +115,12 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
         int lmask = kernel->lmask[i];
 
         // The output is always an array
-        kernel->args.data[nargs]     = bh_base_array(&instr->operand[0])->data;
-        kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[0])->nelem;
-        kernel->args.ndim[nargs]     = instr->operand[0].ndim;
-        kernel->args.start[nargs]    = instr->operand[0].start;
-        kernel->args.shape[nargs]    = instr->operand[0].shape;
-        kernel->args.stride[nargs++] = instr->operand[0].stride;
+        kernel->args[nargs].data     = bh_base_array(&instr->operand[0])->data;
+        kernel->args[nargs].nelem    = bh_base_array(&instr->operand[0])->nelem;
+        kernel->args[nargs].ndim     = instr->operand[0].ndim;
+        kernel->args[nargs].start    = instr->operand[0].start;
+        kernel->args[nargs].shape    = instr->operand[0].shape;
+        kernel->args[nargs++].stride = instr->operand[0].stride;
 
         //
         // The input, however, might be a constant
@@ -357,8 +128,8 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
         switch (instr->opcode) {    // [OPCODE_SWITCH]
 
             case BH_RANDOM:
-                kernel->args.data[nargs++] = &(instr->constant.value.r123.start);
-                kernel->args.data[nargs++] = &(instr->constant.value.r123.key);
+                kernel->args[nargs++].data = &(instr->constant.value.r123.start);
+                kernel->args[nargs++].data = &(instr->constant.value.r123.key);
                 break;
 
             case BH_RANGE:
@@ -378,14 +149,14 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
             case BH_BITWISE_OR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
 
-                kernel->args.data[nargs]     = bh_base_array(&instr->operand[1])->data;
-                kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[1])->nelem;
-                kernel->args.ndim[nargs]     = instr->operand[1].ndim;
-                kernel->args.start[nargs]    = instr->operand[1].start;
-                kernel->args.shape[nargs]    = instr->operand[1].shape;
-                kernel->args.stride[nargs++] = instr->operand[1].stride;
+                kernel->args[nargs].data     = bh_base_array(&instr->operand[1])->data;
+                kernel->args[nargs].nelem    = bh_base_array(&instr->operand[1])->nelem;
+                kernel->args[nargs].ndim     = instr->operand[1].ndim;
+                kernel->args[nargs].start    = instr->operand[1].start;
+                kernel->args[nargs].shape    = instr->operand[1].shape;
+                kernel->args[nargs++].stride = instr->operand[1].stride;
 
-                kernel->args.data[nargs++] = &(instr->constant.value);
+                kernel->args[nargs++].data = &(instr->constant.value);
                 break;
 
             case BH_ADD:
@@ -413,37 +184,37 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
             case BH_MOD:
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
-                    kernel->args.data[nargs]     = bh_base_array(&instr->operand[1])->data;
-                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args.ndim[nargs]     = instr->operand[1].ndim;
-                    kernel->args.start[nargs]    = instr->operand[1].start;
-                    kernel->args.shape[nargs]    = instr->operand[1].shape;
-                    kernel->args.stride[nargs++] = instr->operand[1].stride;
+                    kernel->args[nargs].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
+                    kernel->args[nargs].ndim   = instr->operand[1].ndim;
+                    kernel->args[nargs].start  = instr->operand[1].start;
+                    kernel->args[nargs].shape  = instr->operand[1].shape;
+                    kernel->args[nargs++].stride = instr->operand[1].stride;
 
-                    kernel->args.data[nargs++] = &(instr->constant.value);
+                    kernel->args[nargs++].data = &(instr->constant.value);
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
-                    kernel->args.data[nargs++] = &(instr->constant.value);
+                    kernel->args[nargs++].data = &(instr->constant.value);
 
-                    kernel->args.data[nargs]     = bh_base_array(&instr->operand[2])->data;
-                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[2])->nelem;
-                    kernel->args.ndim[nargs]     = instr->operand[2].ndim;
-                    kernel->args.start[nargs]    = instr->operand[2].start;
-                    kernel->args.shape[nargs]    = instr->operand[2].shape;
-                    kernel->args.stride[nargs++] = instr->operand[2].stride;
+                    kernel->args[nargs].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[2])->nelem;
+                    kernel->args[nargs].ndim   = instr->operand[2].ndim;
+                    kernel->args[nargs].start  = instr->operand[2].start;
+                    kernel->args[nargs].shape  = instr->operand[2].shape;
+                    kernel->args[nargs++].stride = instr->operand[2].stride;
                 } else {                                            // AAA
-                    kernel->args.data[nargs]     = bh_base_array(&instr->operand[1])->data;
-                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args.ndim[nargs]     = instr->operand[1].ndim;
-                    kernel->args.start[nargs]    = instr->operand[1].start;
-                    kernel->args.shape[nargs]    = instr->operand[1].shape;
-                    kernel->args.stride[nargs++] = instr->operand[1].stride;
+                    kernel->args[nargs].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
+                    kernel->args[nargs].ndim   = instr->operand[1].ndim;
+                    kernel->args[nargs].start  = instr->operand[1].start;
+                    kernel->args[nargs].shape  = instr->operand[1].shape;
+                    kernel->args[nargs++].stride = instr->operand[1].stride;
 
-                    kernel->args.data[nargs]     = bh_base_array(&instr->operand[2])->data;
-                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[2])->nelem;
-                    kernel->args.ndim[nargs]     = instr->operand[2].ndim;
-                    kernel->args.start[nargs]    = instr->operand[2].start;
-                    kernel->args.shape[nargs]    = instr->operand[2].shape;
-                    kernel->args.stride[nargs++] = instr->operand[2].stride;
+                    kernel->args[nargs].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[2])->nelem;
+                    kernel->args[nargs].ndim   = instr->operand[2].ndim;
+                    kernel->args[nargs].start  = instr->operand[2].start;
+                    kernel->args[nargs].shape  = instr->operand[2].shape;
+                    kernel->args[nargs++].stride = instr->operand[2].stride;
                 }
 
                 break;
@@ -483,14 +254,14 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
 
                 // Input might be a constant
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
-                    kernel->args.data[nargs++] = &(instr->constant.value);
+                    kernel->args[nargs++].data = &(instr->constant.value);
                 } else {
-                    kernel->args.data[nargs]     = bh_base_array(&instr->operand[1])->data;
-                    kernel->args.nelem[nargs]    = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args.ndim[nargs]     = instr->operand[1].ndim;
-                    kernel->args.start[nargs]    = instr->operand[1].start;
-                    kernel->args.shape[nargs]    = instr->operand[1].shape;
-                    kernel->args.stride[nargs++] = instr->operand[1].stride;
+                    kernel->args[nargs].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
+                    kernel->args[nargs].ndim   = instr->operand[1].ndim;
+                    kernel->args[nargs].start  = instr->operand[1].start;
+                    kernel->args[nargs].shape  = instr->operand[1].shape;
+                    kernel->args[nargs++].stride = instr->operand[1].stride;
                 }
 
                 break;
@@ -506,7 +277,7 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
     //
     // Update the argument count for the kernel
     //
-    kernel->args.nargs = nargs; 
+    kernel->nargs = nargs;
         
     return BH_SUCCESS;
 }
@@ -593,7 +364,7 @@ static bh_error exec_kernel(bh_instruction *instr)
                             "called from bh_ve_cpu_exec_kernel(...)\n");
             return res;
         }
-        target->funcs[kernel.symbol](&kernel.args);
+        target->funcs[kernel.symbol](kernel.args);
     }
 
     //
