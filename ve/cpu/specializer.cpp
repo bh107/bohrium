@@ -22,8 +22,6 @@ void specializer_init()
     ctemplate::LoadTemplate("reduce.strided.3d.tpl", strip_mode);
     ctemplate::LoadTemplate("reduce.strided.nd.tpl", strip_mode);
     ctemplate::LoadTemplate("scan.strided.1d.tpl", strip_mode);
-    ctemplate::LoadTemplate("scan.strided.2d.tpl", strip_mode);
-    ctemplate::LoadTemplate("scan.strided.3d.tpl", strip_mode);
     ctemplate::LoadTemplate("scan.strided.nd.tpl", strip_mode);
     ctemplate::mutable_default_template_cache()->Freeze();
 }
@@ -61,6 +59,9 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
         case BH_MULTIPLY_ACCUMULATE:
 
             tpl_opcode = "scan.";
+            if (ndim>1) {
+                tpl_ndim = "nd.";
+            }
             break;
 
         case BH_ADD_REDUCE:
@@ -306,6 +307,11 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
             operation_d->SetValue("TYPE_OUTPUT", enum_to_ctypestr(instr->operand[0].base->type));
             operation_d->SetValue("TYPE_INPUT", enum_to_ctypestr(instr->operand[1].base->type));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
+        }
+        if (instr->opcode == BH_ADD_ACCUMULATE) {
+            operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(0));
+        } else if (instr->opcode == BH_MULTIPLY_ACCUMULATE) {
+            operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(1));
         }
         operation_d->SetValue("NR_OUTPUT", std::to_string(nops_kernel));
         operation_d->SetValue("NR_FINPUT", std::to_string(nops_kernel+1));  // Not all have

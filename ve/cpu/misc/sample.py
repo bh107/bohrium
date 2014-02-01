@@ -8,10 +8,10 @@ def sample(args):
     elif args.be == 'numpy':
         import numpy as np
 
-    #a = np.ones(args.shape)
-    a = np.arange(np.prod(args.shape)).reshape(args.shape)
-    b = np.add.reduce(a,0)
-    c = np.add.reduce(a,1)
+    a = np.ones(args.shape)
+    #a = np.arange(np.prod(args.shape)).reshape(args.shape)
+    b = np.cumsum(a,0)
+    c = np.cumsum(a,1)
     #d = np.add.reduce(a,2)
 
     return a, b, c
