@@ -288,7 +288,7 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
         //
         ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
         string tf = template_filename(instr, optimized, kernel.ndim[j], kernel.lmask[j]);
-        cout << "KRN: " << kernel.symbol << ", " << "TF: " << tf << endl;
+        //cout << "KRN: " << kernel.symbol << ", " << "TF: " << tf << endl;
         operation_d->SetFilename(tf);
 
         //
