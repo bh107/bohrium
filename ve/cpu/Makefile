@@ -26,8 +26,8 @@ purge:
 	rm -fr $(INSTALLDIR)/cpu/
 
 sample:
-	python misc/sample.py 3 3 3 --be numpy
-	BH_VE_CPU_JIT_DUMPSRC=1 python misc/sample.py 3 3 3 --be bohrium
+	python misc/sample.py 3 4 2 1 --be numpy
+	BH_VE_CPU_JIT_DUMPSRC=1 python misc/sample.py 3 4 2 1 --be bohrium
 
 jacobi:
 	python ../../benchmark/Python/jacobi_stencil.py --size=10*10*1 --verbose
@@ -41,6 +41,8 @@ graph:
 	[ -f graph-3.dot ] && dot -T svg graph-3.dot > /tmp/graph-3.svg
 	[ -f /tmp/graph-3.svg ] && xdg-open /tmp/graph-3.svg
 
+test:
+	BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_accumulate.py
 
 %.o: %.c $(HEADER)
 	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include

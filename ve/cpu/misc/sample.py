@@ -1,4 +1,5 @@
 import argparse
+import pprint
 import os
 
 def sample(args):
@@ -7,21 +8,14 @@ def sample(args):
     elif args.be == 'numpy':
         import numpy as np
 
-    grid = np.zeros((args.shape[0]+2,args.shape[0]+2))
-    grid[:,0]  = -273.15
-    grid[:,-1] = -273.15
-    grid[-1,:] = -273.15
-    grid[0,:]  = 40.0
-    """
-    center = grid[1:-1, 1:-1]
-    north  = grid[0:-2, 1:-1]
-    east   = grid[1:-1, 2:  ]
-    west   = grid[1:-1, 0:-2]
-    south  = grid[2:  , 1:-1]
-    for i in xrange(int(args.iterations)):
-        center[:] = 0.2*(center+north+east+west+south)
-    """
-    return grid
+    #a = np.ones(args.shape)
+    a = np.arange(np.prod(args.shape)).reshape(args.shape)
+    b = np.add.reduce(a,0)
+    c = np.add.reduce(a,1)
+    #d = np.add.reduce(a,2)
+
+    return a, b, c
+    #return a, b, c, d
 
 def main():
     p = argparse.ArgumentParser('Run a dummy program')
@@ -38,7 +32,7 @@ def main():
     )
     args = p.parse_args()
 
-    print sample(args)
+    pprint.pprint(sample(args))
 
 if __name__ == "__main__":
     main()
