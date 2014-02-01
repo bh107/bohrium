@@ -75,6 +75,9 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
         case BH_BITWISE_XOR_REDUCE:
 
             tpl_opcode = "reduce.";
+            if (ndim>1) {
+                tpl_ndim = "nd.";
+            }
             break;
 
         case BH_ADD:
@@ -300,6 +303,7 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
         //
         if (((instr->opcode >= BH_ADD_REDUCE) && (instr->opcode <= BH_BITWISE_XOR_REDUCE)) || \
             ((instr->opcode >= BH_ADD_ACCUMULATE) && (instr->opcode <= BH_MULTIPLY_ACCUMULATE))) {
+            operation_d->SetValue("TYPE_OUTPUT", enum_to_ctypestr(instr->operand[0].base->type));
             operation_d->SetValue("TYPE_INPUT", enum_to_ctypestr(instr->operand[1].base->type));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
         }
