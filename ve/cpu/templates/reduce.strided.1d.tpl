@@ -1,6 +1,6 @@
 {
     {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + a{{NR}}_start{{/ARRAY}};
+    {{TYPE}} *a{{NR}}_current = a{{NR}}_first;
     {{/OPERAND}}
 
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;

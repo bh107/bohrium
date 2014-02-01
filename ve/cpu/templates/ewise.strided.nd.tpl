@@ -27,7 +27,7 @@
     while (cur_e <= last_e) {
         // Reset offsets
         {{#OPERAND}}
-        {{TYPE}}* a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + a{{NR}}_start{{/ARRAY}};
+        {{TYPE}}* a{{NR}}_current = a{{NR}}_first;
         {{/OPERAND}}
 
         for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate

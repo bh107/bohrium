@@ -18,7 +18,7 @@
         int64_t work_end = work_offset+work;
 
         {{#OPERAND}}
-        {{TYPE}} *a{{NR}}_current = a{{NR}}_first + a{{NR}}_start;
+        {{TYPE}} *a{{NR}}_current = a{{NR}}_first;
         {{/OPERAND}}
                                                 // Fill up the array
         for(int64_t i=work_offset; i<work_end; ++i) {

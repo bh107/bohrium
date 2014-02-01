@@ -1,6 +1,6 @@
 {
     {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + a{{NR}}_start{{/ARRAY}};
+    {{TYPE}} *a{{NR}}_current = a{{NR}}_first;
     {{/OPERAND}}
 
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
@@ -14,8 +14,7 @@
     for(int64_t j=0; j<a{{NR_FINPUT}}_shape[other_axis]; ++j) {
         
         {{TYPE_INPUT}} *tmp_current = a{{NR_FINPUT}}_first + \
-                                        a{{NR_FINPUT}}_start + \
-                                        a{{NR_FINPUT}}_stride[other_axis]*j;
+                                      a{{NR_FINPUT}}_stride[other_axis] * j;
 
         {{TYPE_INPUT}} rvar = *tmp_current;                   // Scalar-temp 
         for(int64_t i=1; i<a{{NR_FINPUT}}_shape[axis]; ++i) { // Accumulate
