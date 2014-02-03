@@ -27,7 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_type.h"
 #include "bh_array.h"
 #include "bh_instruction.h"
-#include "bh_typeutil.h"
 #include "bh_bundler.h"
 #include "bh_component.h"
 #include "bh_pprint.h"
