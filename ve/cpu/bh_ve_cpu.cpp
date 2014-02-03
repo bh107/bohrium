@@ -70,7 +70,7 @@ typedef struct bh_kernel_arg {
 
 typedef struct bh_kernel {
     int ninstr;
-    int nnonsys;
+    int ninstr_nonsys;
 
     bh_instruction* instr[10];
     int tsig[10];
@@ -91,7 +91,7 @@ process* target;
 /**
  *  Pack kernel arguments and execute kernel-function.
  *
- *  Contract: Do not call this function the kernel.nnonsys == 0.
+ *  Contract: Do not call this function the kernel.ninstr_nonsys == 0.
  */
 static bh_error pack_arguments(bh_kernel_t* kernel)
 {
@@ -309,8 +309,8 @@ static bh_error exec_kernel(bh_instruction *instr)
     // Allocate space for args, we allocate much more than needed since we do not
     // yet know how many arguments the kernel will contain, the upper-bound
     // bound of number of instructions * 3 is therefore used instead.
-    if (kernel.nnonsys>0) {
-        kernel.args = (bh_kernel_arg_t*)malloc(3*kernel.nnonsys*sizeof(bh_kernel_arg_t));
+    if (kernel.ninstr_nonsys>0) {
+        kernel.args = (bh_kernel_arg_t*)malloc(3*kernel.ninstr_nonsys*sizeof(bh_kernel_arg_t));
     }
 
     //
@@ -365,7 +365,7 @@ static bh_error exec_kernel(bh_instruction *instr)
     //
     // Execute kernel handling array operations.
     // 
-    if (kernel.nnonsys>0) {
+    if (kernel.ninstr_nonsys>0) {
         res = pack_arguments(&kernel);
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by dispatch_kernel "
@@ -390,7 +390,7 @@ static bh_error exec_kernel(bh_instruction *instr)
 
     //
     // De-allocate metadata for kernel arguments
-    if (kernel.nnonsys>0) {
+    if (kernel.ninstr_nonsys>0) {
         free(kernel.args);
     }
 
