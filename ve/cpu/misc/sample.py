@@ -1,4 +1,5 @@
 import argparse
+import pprint
 import os
 
 def sample(args):
@@ -7,14 +8,14 @@ def sample(args):
     elif args.be == 'numpy':
         import numpy as np
 
-    a = np.ones(args.shape, dtype=np.float32)
-    for _ in range(args.iterations[0]):
-        a += 42
-        b = a*a
-        c = np.sqrt(b)
-        d = c+c
+    a = np.ones(args.shape)
+    #a = np.arange(np.prod(args.shape)).reshape(args.shape)
+    b = np.cumsum(a,0)
+    c = np.cumsum(a,1)
+    #d = np.add.reduce(a,2)
 
-    return d
+    return a, b, c
+    #return a, b, c, d
 
 def main():
     p = argparse.ArgumentParser('Run a dummy program')
@@ -23,8 +24,7 @@ def main():
         nargs='+', help="Shape of the input."
     )
     p.add_argument(
-        'iterations', metavar='I', type=int,
-        nargs=1, help="Number of iterations to run."
+        'iterations', metavar='I', type=int, help="Number of iterations to run."
     )
     p.add_argument(
         '--be', choices=['bohrium', 'numpy'], default='bohrium',
@@ -32,7 +32,7 @@ def main():
     )
     args = p.parse_args()
 
-    print sample(args)
+    pprint.pprint(sample(args))
 
 if __name__ == "__main__":
     main()

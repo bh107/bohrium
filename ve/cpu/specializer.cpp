@@ -3,31 +3,26 @@
 
 #include <ctemplate/template.h>
 
+static ctemplate::Strip strip_mode = ctemplate::STRIP_BLANK_LINES;
+
 void specializer_init()
 {
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
-    ctemplate::LoadTemplate("license.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("skeleton.tpl", ctemplate::STRIP_BLANK_LINES);
-
-    ctemplate::LoadTemplate("range.1d.tpl",    ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("random.1d.tpl",   ctemplate::STRIP_BLANK_LINES);
-
-    ctemplate::LoadTemplate("ewise.1d.tpl",      ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("ewise.2d.tpl",      ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("ewise.3d.tpl",      ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("ewise.nd.ccc.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("ewise.nd.tpl",      ctemplate::STRIP_BLANK_LINES);
-
-    ctemplate::LoadTemplate("reduce.1d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduce.2d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduce.3d.tpl", ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("reduce.nd.tpl", ctemplate::STRIP_BLANK_LINES);
-
-    ctemplate::LoadTemplate("scan.1d.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("scan.2d.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("scan.3d.tpl",  ctemplate::STRIP_BLANK_LINES);
-    ctemplate::LoadTemplate("scan.nd.tpl",  ctemplate::STRIP_BLANK_LINES);
-
+    ctemplate::LoadTemplate("ewise.cont.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.2d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.3d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("kernel.tpl", strip_mode);
+    ctemplate::LoadTemplate("license.tpl", strip_mode);
+    ctemplate::LoadTemplate("random.cont.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("range.cont.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.2d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.3d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("scan.strided.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("scan.strided.nd.tpl", strip_mode);
     ctemplate::mutable_default_template_cache()->Freeze();
 }
 
@@ -38,7 +33,7 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
 {
     string tpl_ndim,
            tpl_opcode,
-           tpl_lmask = "";
+           tpl_layout = "strided.";
 
     if (optimized && (ndim <= 3)) {
         tpl_ndim = to_string(ndim) + "d.";
@@ -51,17 +46,22 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
         case BH_RANDOM:
 
             tpl_opcode = "random.";
+            tpl_layout = "cont.";
             break;
 
         case BH_RANGE:
 
             tpl_opcode = "range.";
+            tpl_layout = "cont.";
             break;
 
         case BH_ADD_ACCUMULATE:
         case BH_MULTIPLY_ACCUMULATE:
 
             tpl_opcode = "scan.";
+            if (ndim>1) {
+                tpl_ndim = "nd.";
+            }
             break;
 
         case BH_ADD_REDUCE:
@@ -76,6 +76,9 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
         case BH_BITWISE_XOR_REDUCE:
 
             tpl_opcode = "reduce.";
+            if (ndim>1) {
+                tpl_ndim = "nd.";
+            }
             break;
 
         case BH_ADD:
@@ -107,7 +110,7 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
                 (lmask == (A0_CONTIGUOUS + A1_CONSTANT      + A2_CONTIGUOUS)) || \
                 (lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT))) {
                 tpl_ndim    = "nd.";
-                tpl_lmask   = "ccc.";
+                tpl_layout   = "cont.";
             }
             break;
 
@@ -148,33 +151,36 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
             if ((lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
                 (lmask == (A0_CONTIGUOUS + A1_CONSTANT))) {
                 tpl_ndim  = "nd.";
-                tpl_lmask = "ccc.";
+                tpl_layout = "cont.";
             }
             break;
 
         default:
-            printf("specializer: Err=[Unsupported opcode.] {\n");
+            printf("template_filename: Err=[Unsupported opcode.] {\n");
             bh_pprint_instr(instr);
             printf("}\n");
-            throw runtime_error("cpu-ve: Failed specializing code.");
+            throw runtime_error("template_filename: No template for opcode.");
     }
 
-    return tpl_opcode + tpl_ndim + tpl_lmask + "tpl";
+    return tpl_opcode + tpl_layout + tpl_ndim  + "tpl";
 }
 
 /**
  *  Create a symbol for the kernel.
  *
  *  NOTE: System opcodes are ignored.
+ *        If a kernel consists of nothing but system opcodes
+ *        then no symbol will be created.
  */
 bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
 
-    int non_system = 0;
     std::string symbol_opcode, 
                 symbol_lmask,
                 symbol_tsig,
                 symbol_ndim;
 
+    kernel.symbol   = "";
+    kernel.nnonsys  = 0;        // Count the amount of system opcodes.
     for (int i=0; i<kernel.ninstr; ++i) {
 
         bh_instruction *instr = kernel.instr[i];
@@ -183,7 +189,7 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
         if ((instr->opcode >= BH_DISCARD) && (instr->opcode <= BH_NONE)) {  
             continue;
         }
-        ++non_system;
+        kernel.nnonsys++;
 
         int tsig    = bh_typesig(instr);
         int lmask   = bh_layoutmask(instr);
@@ -235,8 +241,8 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
     //  If the kernel contained nothing but system opcodes, then
     //  a symbol must not be created.
     //
-    if (non_system>0) {
-        kernel.symbol += "BH_" + \
+    if (kernel.nnonsys>0) {
+        kernel.symbol = "BH_" + \
                         symbol_opcode  + "_" +\
                         symbol_tsig    + "_" +\
                         symbol_lmask   + "_" +\
@@ -259,69 +265,102 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
 
     string sourcecode  = "";
 
-    ctemplate::TemplateDictionary skeleton_dict("SKELETON");    // Skeleton code
-    skeleton_dict.SetValue("SYMBOL", kernel.symbol);
-    ctemplate::ExpandTemplate(
-        "skeleton.tpl", 
-        ctemplate::STRIP_BLANK_LINES,
-        &skeleton_dict,
-        &sourcecode
-    );
-
-    ctemplate::TemplateDictionary dict("KERNEL");               // Kernel code
+    ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
+    kernel_d.SetValue("SYMBOL", kernel.symbol);
 
     int nops_kernel = 0;
     for(int j=0; j<kernel.ninstr; ++j) {
+        
+        //
+        // Grab the instruction for which to generate sourcecode
         bh_instruction *instr = kernel.instr[j];
 
         //
-        // Ignore system opcodes
-        //
+        // Skip code generation if the instruction has a system opcode
         if ((instr->opcode >= BH_DISCARD) && (instr->opcode <= BH_NONE)) {  
             continue;
         }
 
+        //
+        // The operation (ewise, reduction, scan, random, range).
+        ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
+        string tf = template_filename(instr, optimized, kernel.ndim[j], kernel.lmask[j]);
+        operation_d->SetFilename(tf);
+
+        //
+        // The operator +, -, /, min, max, sin, sqrt, etc...
+        //
+        ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
         bh_type type = instr->operand[0].base->type;
-
-        int nops_instr = bh_operands(instr->opcode);
-
-        ctemplate::TemplateDictionary* operator_dict = dict.AddSectionDictionary("LOOP_BODY");
-        operator_dict->SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode, type));
-
-        for(int i=0; i<nops_instr; ++i, ++nops_kernel) {        // Operand dict
-            ctemplate::TemplateDictionary* op_dict = dict.AddSectionDictionary("OPERAND");
-
-            op_dict->SetIntValue("NR", nops_kernel);
-            if (bh_is_constant(&instr->operand[i])) {           // Constant
-                op_dict->SetValue(
-                    "TYPE",
-                    enum_to_ctypestr(instr->constant.type)
-                );  
-            } else {                                            // Array
-                op_dict->SetValue(
-                    "TYPE", 
-                    enum_to_ctypestr(instr->operand[i].base->type)
-                );
-                op_dict->ShowSection("ARRAY");
-            }
-        }
+        operator_d->SetValue("OPERATOR", bhopcode_to_cexpr(instr->opcode, type));
 
         //
         // Reduction and scan specific expansions
+        // TODO: fix for multiple instructions
         //
         if (((instr->opcode >= BH_ADD_REDUCE) && (instr->opcode <= BH_BITWISE_XOR_REDUCE)) || \
             ((instr->opcode >= BH_ADD_ACCUMULATE) && (instr->opcode <= BH_MULTIPLY_ACCUMULATE))) {
-            dict.SetValue("TYPE_INPUT", enum_to_ctypestr(instr->operand[1].base->type));
-            dict.SetValue("TYPE_AXIS",  "int64_t");
+            operation_d->SetValue("TYPE_OUTPUT", enum_to_ctypestr(instr->operand[0].base->type));
+            operation_d->SetValue("TYPE_INPUT", enum_to_ctypestr(instr->operand[1].base->type));
+            operation_d->SetValue("TYPE_AXIS",  "int64_t");
         }
-        string tf = template_filename(instr, optimized, kernel.ndim[j], kernel.lmask[j]);
-        ctemplate::ExpandTemplate(
-            tf,
-            ctemplate::STRIP_BLANK_LINES,
-            &dict,
-            &sourcecode
-        );
+        if (instr->opcode == BH_ADD_ACCUMULATE) {
+            operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(0));
+        } else if (instr->opcode == BH_MULTIPLY_ACCUMULATE) {
+            operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(1));
+        }
+        operation_d->SetValue("NR_OUTPUT", std::to_string(nops_kernel));
+        operation_d->SetValue("NR_FINPUT", std::to_string(nops_kernel+1));  // Not all have
+        operation_d->SetValue("NR_SINPUT", std::to_string(nops_kernel+2));  // Not all have
+
+        //
+        // Fill out the instruction operands globally such that they
+        // are available to both for the kernel argument unpacking, the operations and the operators.
+        //
+        // TODO: this should actually distinguish between the total set of operands
+        // and those used for a single instruction depending on the amount of loops that can be
+        // fused
+        //
+        int nops_instr = bh_operands(instr->opcode);
+        for(int i=0; i<nops_instr; ++i, ++nops_kernel) {        // Operand dict
+            ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
+            ctemplate::TemplateDictionary* operand_d  = operation_d->AddSectionDictionary("OPERAND");
+
+            argument_d->SetIntValue("NR", nops_kernel);
+            operand_d->SetIntValue("NR",  nops_kernel);
+            if (bh_is_constant(&instr->operand[i])) {   // Constant
+                argument_d->SetValue(                   // As argument
+                    "TYPE",
+                    enum_to_ctypestr(instr->constant.type)
+                );
+                operand_d->SetValue(                    // As operand
+                    "TYPE",
+                    enum_to_ctypestr(instr->constant.type)
+                );  
+            } else {                                    // Array
+                argument_d->SetValue(                   // As argument
+                    "TYPE", 
+                    enum_to_ctypestr(instr->operand[i].base->type)
+                );
+                argument_d->ShowSection("ARRAY");
+                operand_d->SetValue(                    // As operand
+                    "TYPE", 
+                    enum_to_ctypestr(instr->operand[i].base->type)
+                );
+                operand_d->ShowSection("ARRAY");
+            }
+        }
     }
+
+    //
+    // Fill out the template and return the generated sourcecode
+    //
+    ctemplate::ExpandTemplate(
+        "kernel.tpl", 
+        strip_mode,
+        &kernel_d,
+        &sourcecode
+    );
 
     return sourcecode;
 }

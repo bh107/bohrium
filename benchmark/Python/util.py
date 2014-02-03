@@ -27,7 +27,8 @@ class Benchmark:
         self.info['dtype'] = "float64"
         options, self.argv = getopt.gnu_getopt(sys.argv[1:], \
                 'p:n:c:s:',\
-                ['bohrium=','nnodes=','ncores=','size=','batch','dtype=', 'visualize'])
+                ['bohrium=','nnodes=','ncores=','size=','batch','dtype=',
+                 'visualize', 'verbose'])
 
         for opt, arg in options:
             if opt in ('-p', '--bohrium'):
@@ -40,6 +41,8 @@ class Benchmark:
                 self.batch_mode = True
             if opt in ('--visualize'):
                 self.visualize = True
+            if opt in ('--verbose'):
+                self.verbose = True
             if opt in ('--size'):
                 #Jobsize use the syntax: dim_size*dim_size fx. 10*20
                 self.info['size'] = [int(i) for i in arg.split("*") if len(i)]

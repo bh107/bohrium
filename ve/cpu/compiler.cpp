@@ -42,7 +42,8 @@ int error(const char *err_msg, const char *fmt, ...) {
     return ret;
 }
 
-typedef void (*func)(int tool, ...);
+//typedef void (*func)(int tool, ...);
+typedef void (*func)(bh_kernel_arg_t args[]);
 
 typedef std::unordered_map<std::string, func> func_storage;
 typedef std::unordered_map<std::string, void*> handle_storage;
