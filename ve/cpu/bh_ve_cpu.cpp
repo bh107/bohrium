@@ -75,7 +75,6 @@ typedef struct bh_kernel {
     bh_instruction* instr[10];
     int tsig[10];
     int lmask[10];
-    int64_t ndim[10];
 
     int nargs;
     bh_kernel_arg_t* args;
@@ -91,7 +90,7 @@ process* target;
 /**
  *  Pack kernel arguments and execute kernel-function.
  *
- *  Contract: Do not call this function the kernel.ninstr_nonsys == 0.
+ *  Contract: Do not call this function when kernel.ninstr_nonsys == 0.
  */
 static bh_error pack_arguments(bh_kernel_t* kernel)
 {

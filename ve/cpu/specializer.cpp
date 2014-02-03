@@ -29,38 +29,29 @@ void specializer_init()
 /**
  *  Choose the template.
  */
-string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim, int lmask)
+string template_filename(bh_instruction *instr, bh_intp optimized, int lmask)
 {
-    string tpl_ndim,
+    string tpl_ndim = "nd.",
            tpl_opcode,
            tpl_layout = "strided.";
-
-    if (optimized && (ndim <= 3)) {
-        tpl_ndim = to_string(ndim) + "d.";
-    } else {
-        tpl_ndim = "nd.";
-    }
 
     switch (instr->opcode) {                    // OPCODE_SWITCH
 
         case BH_RANDOM:
-
             tpl_opcode = "random.";
             tpl_layout = "cont.";
             break;
 
         case BH_RANGE:
-
             tpl_opcode = "range.";
             tpl_layout = "cont.";
             break;
 
         case BH_ADD_ACCUMULATE:
         case BH_MULTIPLY_ACCUMULATE:
-
             tpl_opcode = "scan.";
-            if (ndim>1) {
-                tpl_ndim = "nd.";
+            if (optimized && (instr->operand[1].ndim == 1)) {
+                tpl_ndim = "1d.";
             }
             break;
 
@@ -74,10 +65,13 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
         case BH_LOGICAL_XOR_REDUCE:
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
-
             tpl_opcode = "reduce.";
-            if (ndim>1) {
-                tpl_ndim = "nd.";
+            if (optimized && (instr->operand[1].ndim == 1)) {
+                tpl_ndim = "1d.";
+            } else if (optimized && (instr->operand[1].ndim == 2)) {
+                tpl_ndim = "2d.";
+            } else if (optimized && (instr->operand[1].ndim == 3)) {
+                tpl_ndim = "3d.";
             }
             break;
 
@@ -106,11 +100,17 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
         case BH_MOD:
             
             tpl_opcode  = "ewise.";
-            if ((lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONTIGUOUS)) || \
+            if ((optimized) && ( \
+                (lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS + A2_CONTIGUOUS)) || \
                 (lmask == (A0_CONTIGUOUS + A1_CONSTANT      + A2_CONTIGUOUS)) || \
-                (lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT))) {
-                tpl_ndim    = "nd.";
-                tpl_layout   = "cont.";
+                (lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS    + A2_CONSTANT)))) {
+                tpl_layout  = "cont.";
+            } else if ((optimized) && (instr->operand[0].ndim == 1)) {
+                tpl_ndim = "1d.";
+            } else if ((optimized) && (instr->operand[0].ndim == 2)) {
+                tpl_ndim = "2d.";
+            } else if ((optimized) && (instr->operand[0].ndim == 3)) {
+                tpl_ndim = "3d.";
             }
             break;
 
@@ -148,10 +148,15 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
         case BH_IDENTITY:
 
             tpl_opcode  = "ewise.";
-            if ((lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
-                (lmask == (A0_CONTIGUOUS + A1_CONSTANT))) {
-                tpl_ndim  = "nd.";
-                tpl_layout = "cont.";
+            if ((optimized) && ((lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
+                (lmask == (A0_CONTIGUOUS + A1_CONSTANT)))) {
+                tpl_layout  = "cont.";
+            } else if ((optimized) && (instr->operand[0].ndim == 1)) {
+                tpl_ndim = "1d.";
+            } else if ((optimized) && (instr->operand[0].ndim == 2)) {
+                tpl_ndim = "2d.";
+            } else if ((optimized) && (instr->operand[0].ndim == 3)) {
+                tpl_ndim = "3d.";
             }
             break;
 
@@ -165,84 +170,6 @@ string template_filename(bh_instruction *instr, bh_intp optimized, bh_intp ndim,
     return tpl_opcode + tpl_layout + tpl_ndim  + "tpl";
 }
 
-/**
- *  Create a symbol for the kernel.
- *
- *  NOTE: System opcodes are ignored.
- *        If a kernel consists of nothing but system opcodes
- *        then no symbol will be created.
- */
-bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
-
-    std::string symbol_opcode, 
-                symbol_lmask,
-                symbol_tsig,
-                symbol_ndim;
-
-    kernel.symbol   = "";
-    kernel.ninstr_nonsys  = 0;        // Count the amount of system opcodes.
-    for (int i=0; i<kernel.ninstr; ++i) {
-
-        bh_instruction *instr = kernel.instr[i];
-    
-        // Do not include system opcodes in the kernel symbol.
-        if ((instr->opcode >= BH_DISCARD) && (instr->opcode <= BH_NONE)) {  
-            continue;
-        }
-        kernel.ninstr_nonsys++;
-
-        int tsig    = bh_type_sig(instr);
-        int lmask   = bh_layoutmask(instr);
-        int ndim;
-        
-        switch (instr->opcode) {   // [OPCODE_SWITCH]
-            case BH_ADD_REDUCE:
-            case BH_MULTIPLY_REDUCE:
-            case BH_MINIMUM_REDUCE:
-            case BH_MAXIMUM_REDUCE:
-            case BH_LOGICAL_AND_REDUCE:
-            case BH_BITWISE_AND_REDUCE:
-            case BH_LOGICAL_OR_REDUCE:
-            case BH_LOGICAL_XOR_REDUCE:
-            case BH_BITWISE_OR_REDUCE:
-            case BH_BITWISE_XOR_REDUCE:
-                ndim = instr->operand[1].ndim;
-                break;
-
-            default:
-                ndim = instr->operand[0].ndim;
-                break;
-        }
-
-        symbol_opcode  += std::string(bh_opcode_to_cstr_short(instr->opcode));
-        symbol_tsig    += std::string(bh_typesig_to_shorthand(tsig));
-        symbol_lmask   += std::string(bh_layoutmask_to_shorthand(lmask));
-
-        if (optimized && (ndim <= 3)) {        // Optimized
-            symbol_ndim += std::to_string(ndim);
-        } else {
-            symbol_ndim += std::string("N");
-        }
-        symbol_ndim += "D";
-
-        kernel.tsig[i]  = tsig;
-        kernel.lmask[i] = lmask;
-        kernel.ndim[i]  = ndim;
-    }
-
-    //
-    //  If the kernel contained nothing but system opcodes, then
-    //  a symbol must not be created.
-    //
-    if (kernel.ninstr_nonsys>0) {
-        kernel.symbol = "BH_" + \
-                        symbol_opcode  + "_" +\
-                        symbol_tsig    + "_" +\
-                        symbol_lmask   + "_" +\
-                        symbol_ndim;    
-    }
-    return true;
-}
 
 /**
  *  Construct the c-sourcecode for the given kernel.
@@ -277,7 +204,7 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
         //
         // The operation (ewise, reduction, scan, random, range).
         ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
-        string tf = template_filename(instr, optimized, kernel.ndim[j], kernel.lmask[j]);
+        string tf = template_filename(instr, optimized, kernel.lmask[j]);
         operation_d->SetFilename(tf);
 
         //
@@ -357,6 +284,85 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
 
     return sourcecode;
 }
+
+/**
+ *  Create a symbol for the kernel.
+ *
+ *  NOTE: System opcodes are ignored.
+ *        If a kernel consists of nothing but system opcodes
+ *        then no symbol will be created.
+ */
+bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
+
+    std::string symbol_opcode, 
+                symbol_lmask,
+                symbol_tsig,
+                symbol_ndim;
+
+    kernel.symbol   = "";
+    kernel.ninstr_nonsys  = 0;        // Count the amount of system opcodes.
+    for (int i=0; i<kernel.ninstr; ++i) {
+
+        bh_instruction *instr = kernel.instr[i];
+    
+        // Do not include system opcodes in the kernel symbol.
+        if ((instr->opcode >= BH_DISCARD) && (instr->opcode <= BH_NONE)) {  
+            continue;
+        }
+        kernel.ninstr_nonsys++;
+
+        int tsig    = bh_type_sig(instr);
+        int lmask   = bh_layoutmask(instr);
+        int ndim;
+        
+        switch (instr->opcode) {   // [OPCODE_SWITCH]
+            case BH_ADD_REDUCE:
+            case BH_MULTIPLY_REDUCE:
+            case BH_MINIMUM_REDUCE:
+            case BH_MAXIMUM_REDUCE:
+            case BH_LOGICAL_AND_REDUCE:
+            case BH_BITWISE_AND_REDUCE:
+            case BH_LOGICAL_OR_REDUCE:
+            case BH_LOGICAL_XOR_REDUCE:
+            case BH_BITWISE_OR_REDUCE:
+            case BH_BITWISE_XOR_REDUCE:
+                ndim = instr->operand[1].ndim;
+                break;
+
+            default:
+                ndim = instr->operand[0].ndim;
+                break;
+        }
+
+        symbol_opcode  += std::string(bh_opcode_to_cstr_short(instr->opcode));
+        symbol_tsig    += std::string(bh_typesig_to_shorthand(tsig));
+        symbol_lmask   += std::string(bh_layoutmask_to_shorthand(lmask));
+
+        if (optimized && (ndim <= 3)) {        // Optimized
+            symbol_ndim += std::to_string(ndim);
+        } else {
+            symbol_ndim += std::string("N");
+        }
+        symbol_ndim += "D";
+
+        kernel.tsig[i]  = tsig;
+        kernel.lmask[i] = lmask;
+    }
+
+    //
+    //  If the kernel contained nothing but system opcodes, then
+    //  a symbol must not be created.
+    //
+    if (kernel.ninstr_nonsys>0) {
+        kernel.symbol = "BH_" + \
+                        symbol_opcode  + "_" +\
+                        symbol_tsig    + "_" +\
+                        symbol_lmask   + "_" +\
+                        symbol_ndim;    
+    }
+    return true;
+}
+
 
 #endif
 
