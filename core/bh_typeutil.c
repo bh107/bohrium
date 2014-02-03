@@ -25,57 +25,57 @@ If not, see <http://www.gnu.org/licenses/>.
  *  @param instr The instruction for which to deduct a signature.
  *  @return The deducted signature.
  */
-int bh_typesig(bh_instruction *instr)
+int bh_type_sig(bh_instruction *instr)
 {
-    int typesig;
+    int type_sig;
     const int nops = bh_operands(instr->opcode);
     switch(nops) {
         case 3:
-            typesig = instr->operand[0].base->type+1;
+            type_sig = instr->operand[0].base->type+1;
 
             if (bh_is_constant(&instr->operand[1])) {
-                typesig += ((1+instr->constant.type) << 4) \
+                type_sig += ((1+instr->constant.type) << 4) \
                           +((1+instr->operand[2].base->type) << 8);
 
             } else if (bh_is_constant(&instr->operand[2])) {
-                typesig += ((1+instr->operand[1].base->type) << 4) \
+                type_sig += ((1+instr->operand[1].base->type) << 4) \
                           +((1+instr->constant.type) << 8);
 
             } else {
-                typesig += ((1+instr->operand[1].base->type) << 4) \
+                type_sig += ((1+instr->operand[1].base->type) << 4) \
                           +((1+instr->operand[2].base->type) << 8);
             }
             break;
         case 2:
-            typesig = instr->operand[0].base->type+1;
+            type_sig = instr->operand[0].base->type+1;
 
             if (bh_is_constant(&instr->operand[1])) {
-                typesig += ((1+instr->constant.type) << 4);
+                type_sig += ((1+instr->constant.type) << 4);
             } else {
-                typesig += ((1+instr->operand[1].base->type) << 4);
+                type_sig += ((1+instr->operand[1].base->type) << 4);
             }
             break;
         case 1:
-            typesig = (1+instr->operand[0].base->type);
+            type_sig = (1+instr->operand[0].base->type);
             break;
         case 0:
         default:
-            typesig = 0;
+            type_sig = 0;
             break;
     }
 
-    return typesig;
+    return type_sig;
 }
 
 /**
- *  Determine whether the given typesig, in the coding produced by bh_typesig, is valid.
+ *  Determine whether the given type_sig, in the coding produced by bh_type_sig, is valid.
  *
  *  @param instr The instruction for which to deduct a signature.
  *  @return The deducted signature.
  */
-bool bh_typesig_check(int typesig)
+bool bh_type_sig_check(int type_sig)
 {
-    switch(typesig) {
+    switch(type_sig) {
         case 273: return true; // zzz: BH_BOOL + (BH_BOOL << 4) + (BH_BOOL << 8)
         case 3549: return true; // CCC: BH_COMPLEX128 + (BH_COMPLEX128 << 4) + (BH_COMPLEX128 << 8)
         case 3276: return true; // ccc: BH_COMPLEX64 + (BH_COMPLEX64 << 4) + (BH_COMPLEX64 << 8)
