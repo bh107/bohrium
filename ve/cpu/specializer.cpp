@@ -273,22 +273,18 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
         
         //
         // Grab the instruction for which to generate sourcecode
-        //
         bh_instruction *instr = kernel.instr[j];
 
         //
         // Skip code generation if the instruction has a system opcode
-        //
         if ((instr->opcode >= BH_DISCARD) && (instr->opcode <= BH_NONE)) {  
             continue;
         }
 
         //
         // The operation (ewise, reduction, scan, random, range).
-        //
         ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
         string tf = template_filename(instr, optimized, kernel.ndim[j], kernel.lmask[j]);
-        //cout << "KRN: " << kernel.symbol << ", " << "TF: " << tf << endl;
         operation_d->SetFilename(tf);
 
         //

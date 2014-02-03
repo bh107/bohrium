@@ -78,7 +78,7 @@ typedef struct bh_kernel {
     int64_t ndim[10];
 
     int nargs;
-    bh_kernel_arg_t args[30]; // TODO: Dynamically allocate these
+    bh_kernel_arg_t* args;
 
     string symbol;
 } bh_kernel_t;
@@ -306,6 +306,14 @@ static bh_error exec_kernel(bh_instruction *instr)
     }
 
     //
+    // Allocate space for args, we allocate much more than needed since we do not
+    // yet know how many arguments the kernel will contain, the upper-bound
+    // bound of number of instructions * 3 is therefore used instead.
+    if (kernel.nnonsys>0) {
+        kernel.args = (bh_kernel_arg_t*)malloc(3*kernel.nnonsys*sizeof(bh_kernel_arg_t));
+    }
+
+    //
     // JIT-compile the kernel if enabled
     //
     if (jit_enabled && \
@@ -368,8 +376,7 @@ static bh_error exec_kernel(bh_instruction *instr)
     }
 
     //
-    // De-Allocate memory
-    //
+    // De-Allocate operand memory
     for(int i=0; i<kernel.ninstr; ++i) {
         if (kernel.instr[i]->opcode == BH_FREE) {
             res = bh_vcache_free(kernel.instr[i]);
@@ -379,6 +386,12 @@ static bh_error exec_kernel(bh_instruction *instr)
                 return res;
             }
         }
+    }
+
+    //
+    // De-allocate metadata for kernel arguments
+    if (kernel.nnonsys>0) {
+        free(kernel.args);
     }
 
     return res;

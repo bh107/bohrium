@@ -42,7 +42,7 @@ graph:
 	[ -f /tmp/graph-3.svg ] && xdg-open /tmp/graph-3.svg
 
 test:
-	BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_accumulate.py
+	BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
 
 %.o: %.c $(HEADER)
 	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
