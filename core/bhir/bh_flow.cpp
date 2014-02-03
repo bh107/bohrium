@@ -211,7 +211,7 @@ void bh_flow::bhir_fill(bh_ir *bhir)
                     dag_deps[dag_f2b[n.sub_dag]].insert(dag_f2b[d.sub_dag]);
                 }
             }
-            dag_nodes[n.sub_dag].insert(n.instr_idx);
+            dag_nodes[dag_f2b[n.sub_dag]].insert(n.instr_idx);
         }
     }
     //Allocate the DAG list
@@ -300,6 +300,7 @@ void bh_flow::bhir_fill(bh_ir *bhir)
 //Assign a node to a sub-DAG
 void bh_flow::set_sub_dag(bh_intp sub_dag, bh_intp node_idx)
 {
+    assert(0 <= sub_dag && sub_dag < (int)sub_dags.size());
     sub_dags[sub_dag].insert(node_idx);
 }
 
