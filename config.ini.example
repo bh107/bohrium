@@ -50,6 +50,11 @@ type = filter
 impl = /opt/bohrium/libbh_filter_pprint.so
 children = cpu
 
+[validate]
+type = filter
+impl = /opt/bohrium/libbh_filter_validate.so
+children = cpu
+
 [range]
 type = filter
 impl = /opt/bohrium/libbh_filter_range.so

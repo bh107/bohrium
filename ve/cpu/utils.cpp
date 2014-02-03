@@ -146,48 +146,6 @@ int bh_layoutmask(bh_instruction *instr)
     return mask;
 }
 
-int bh_typesig(bh_instruction *instr)
-{
-    int typesig;
-    const int nops = bh_operands(instr->opcode);
-    switch(nops) {
-        case 3:
-            typesig = instr->operand[0].base->type+1;
-
-            if (bh_is_constant(&instr->operand[1])) {
-                typesig += ((1+instr->constant.type) << 4) \
-                          +((1+instr->operand[2].base->type) << 8);
-
-            } else if (bh_is_constant(&instr->operand[2])) {
-                typesig += ((1+instr->operand[1].base->type) << 4) \
-                          +((1+instr->constant.type) << 8);
-
-            } else {
-                typesig += ((1+instr->operand[1].base->type) << 4) \
-                          +((1+instr->operand[2].base->type) << 8);
-            }
-            break;
-        case 2:
-            typesig = instr->operand[0].base->type+1;
-
-            if (bh_is_constant(&instr->operand[1])) {
-                typesig += ((1+instr->constant.type) << 4);
-            } else {
-                typesig += ((1+instr->operand[1].base->type) << 4);
-            }
-            break;
-        case 1:
-            typesig = (1+instr->operand[0].base->type);
-            break;
-        case 0:
-        default:
-            typesig = 0;
-            break;
-    }
-
-    return typesig;
-}
-
 const char* bhopcode_to_cexpr(bh_opcode const opcode, const bh_type type)
 {
     switch(opcode) {

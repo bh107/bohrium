@@ -180,7 +180,7 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
                 symbol_ndim;
 
     kernel.symbol   = "";
-    kernel.nnonsys  = 0;        // Count the amount of system opcodes.
+    kernel.ninstr_nonsys  = 0;        // Count the amount of system opcodes.
     for (int i=0; i<kernel.ninstr; ++i) {
 
         bh_instruction *instr = kernel.instr[i];
@@ -189,18 +189,11 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
         if ((instr->opcode >= BH_DISCARD) && (instr->opcode <= BH_NONE)) {  
             continue;
         }
-        kernel.nnonsys++;
+        kernel.ninstr_nonsys++;
 
-        int tsig    = bh_typesig(instr);
+        int tsig    = bh_type_sig(instr);
         int lmask   = bh_layoutmask(instr);
         int ndim;
-
-        if (!bh_typesig_check(tsig)) {
-            printf("cpu( Invalid type signature[%lld] ): Bridge check yourself! Instruction:\n", (long long)tsig);
-            bh_pprint_instr(instr);
-            printf("\n");
-            return false;
-        }
         
         switch (instr->opcode) {   // [OPCODE_SWITCH]
             case BH_ADD_REDUCE:
@@ -241,7 +234,7 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
     //  If the kernel contained nothing but system opcodes, then
     //  a symbol must not be created.
     //
-    if (kernel.nnonsys>0) {
+    if (kernel.ninstr_nonsys>0) {
         kernel.symbol = "BH_" + \
                         symbol_opcode  + "_" +\
                         symbol_tsig    + "_" +\
