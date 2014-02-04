@@ -54,6 +54,7 @@ static char* kernel_path;
 static char* object_path;
 static char* template_path;
 
+/*
 typedef enum BH_OPERATION {
     EWISE,
     REDUCTION,
@@ -68,6 +69,15 @@ typedef enum BH_OPERATOR {
     SUBTRACT,
     MULTIPLY,
 } BH_OPERATOR;
+
+typedef struct bh_bytecode {
+    BH_OPERATION op;    // Operation
+    BH_OPERATOR oper;   // Operator
+    uint16_t out;       // Output operand
+    uint16_t in1;       // First input operand
+    uint16_t in2;       // Second input operand
+} bh_bytecode_t;
+*/
 
 //
 // NOTE: Changes to bk_kernel_args_t must be 
@@ -96,15 +106,6 @@ typedef struct bh_kernel {
 
     string symbol;              // Textual representation of the kernel
 } bh_kernel_t;                  // Meta-data to construct and execute a kernel-function
-
-
-typedef struct bh_bytecode {
-    BH_OPERATION op;    // Operation
-    BH_OPERATOR oper;   // Operator
-    uint16_t out;       // Output operand
-    uint16_t in1;       // First input operand
-    uint16_t in2;       // Second input operand
-} bh_bytecode_t;
 
 #include "compiler.cpp"
 #include "specializer.cpp"
@@ -329,7 +330,7 @@ static bh_error execute(bh_instruction *instr)
     kernel.ninstr_nonsys = 0;
     for(int i=0; i<kernel.ninstr; ++i) {
         kernel.instr[i] = instr;
-        kernel.ninstr   = i;
+        kernel.ninstr   = i+1;
         switch(instr->opcode) {
             case BH_DISCARD:
             case BH_FREE:
