@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <map>
 #include <bh.h>
-#include <CL/cl.hpp>
+#include "cl.hpp"
 #include "UserFuncArg.hpp"
 #include "Kernel.hpp"
 

@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BUFFER_HPP
 
 #include <deque>
-#include <CL/cl.hpp>
+#include "cl.hpp"
 #include "OCLtype.h"
 #include "KernelParameter.hpp"
 #include "ResourceManager.hpp"

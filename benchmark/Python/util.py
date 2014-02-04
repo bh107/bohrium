@@ -39,10 +39,16 @@ class Benchmark:
                 self.info['ncores'] = int(arg)
             if opt in ('--batch'):
                 self.batch_mode = True
+            else:
+                self.batch_mode = False
             if opt in ('--visualize'):
                 self.visualize = True
+            else:
+                self.visualize = False
             if opt in ('--verbose'):
                 self.verbose = True
+            else:
+                self.verbose = False
             if opt in ('--size'):
                 #Jobsize use the syntax: dim_size*dim_size fx. 10*20
                 self.info['size'] = [int(i) for i in arg.split("*") if len(i)]
