@@ -54,6 +54,21 @@ static char* kernel_path;
 static char* object_path;
 static char* template_path;
 
+typedef enum BH_OPERATION {
+    EWISE,
+    REDUCTION,
+    SCAN,
+    RANGE,
+    RANDOM,
+    SYSTEM
+} BH_OPERATION;
+
+typedef enum BH_OPERATOR {
+    ADD,
+    SUBTRACT,
+    MULTIPLY,
+} BH_OPERATOR;
+
 //
 // NOTE: Changes to bk_kernel_args_t must be 
 //       replicated to "templates/kernel.tpl".
@@ -66,21 +81,30 @@ typedef struct bh_kernel_arg {
     int64_t ndim;       // Number of dimensions of the array
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
-} bh_kernel_arg_t;
+} bh_kernel_arg_t;      // Meta-data for a kernel argument
 
 typedef struct bh_kernel {
-    int ninstr;
-    int ninstr_nonsys;
+    int ninstr;                 // Number of instructions in kernel
+    int ninstr_nonsys;          // Number of instructions without a system opcode
 
-    bh_instruction* instr[10];
-    int tsig[10];
-    int lmask[10];
+    bh_instruction* instr[10];  // Pointers to instructions
+    int tsig[10];               // Typesignature of the instructions
+    int lmask[10];              // Layoutmask of the instructions
 
-    int nargs;
-    bh_kernel_arg_t* args;
+    int nargs;                  // Number of arguments to the kernel
+    bh_kernel_arg_t* args;      // Array of kernel arguments
 
-    string symbol;
-} bh_kernel_t;
+    string symbol;              // Textual representation of the kernel
+} bh_kernel_t;                  // Meta-data to construct and execute a kernel-function
+
+
+typedef struct bh_bytecode {
+    BH_OPERATION op;    // Operation
+    BH_OPERATOR oper;   // Operator
+    uint16_t out;       // Output operand
+    uint16_t in1;       // First input operand
+    uint16_t in2;       // Second input operand
+} bh_bytecode_t;
 
 #include "compiler.cpp"
 #include "specializer.cpp"
@@ -282,7 +306,7 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
 }
 
 // Execute a kernel
-static bh_error exec_kernel(bh_instruction *instr)
+static bh_error execute(bh_instruction *instr)
 {
     bh_error res = BH_SUCCESS;
 
@@ -297,9 +321,28 @@ static bh_error exec_kernel(bh_instruction *instr)
     }
 
     bh_kernel_t kernel;
-    kernel.instr[0] = instr;
-    kernel.ninstr = 1;
 
+    //
+    // Do this as the subgraph is iterated over...
+    //
+    kernel.ninstr = 1;
+    kernel.ninstr_nonsys = 0;
+    for(int i=0; i<kernel.ninstr; ++i) {
+        kernel.instr[i] = instr;
+        kernel.ninstr   = i;
+        switch(instr->opcode) {
+            case BH_DISCARD:
+            case BH_FREE:
+            case BH_SYNC:
+            case BH_NONE:
+               break;
+            default:
+                kernel.ninstr_nonsys++; 
+        }
+    }
+
+    //
+    // We start by creating a symbol
     if (!symbolize(kernel, jit_optimize)) {
         return BH_ERROR;
     }
@@ -356,7 +399,7 @@ static bh_error exec_kernel(bh_instruction *instr)
         res = bh_vcache_malloc(kernel.instr[i]);
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                            "called from bh_ve_cpu_exec_kernel()\n");
+                            "called from bh_ve_cpu_execute()\n");
             return res;
         }
     }
@@ -368,7 +411,7 @@ static bh_error exec_kernel(bh_instruction *instr)
         res = pack_arguments(&kernel);
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by dispatch_kernel "
-                            "called from bh_ve_cpu_exec_kernel(...)\n");
+                            "called from bh_ve_cpu_execute(...)\n");
             return res;
         }
         target->funcs[kernel.symbol](kernel.args);
@@ -381,7 +424,7 @@ static bh_error exec_kernel(bh_instruction *instr)
             res = bh_vcache_free(kernel.instr[i]);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
-                                "called from bh_ve_cpu_exec_kernel)\n");
+                                "called from bh_ve_cpu_execute)\n");
                 return res;
             }
         }
@@ -511,7 +554,7 @@ bh_error bh_ve_cpu_init(const char *name)
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     // Execute one instruction at a time starting at the root DAG.
-    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &exec_kernel);
+    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &execute);
 }
 
 /* Component interface: shutdown (see bh_component.h) */

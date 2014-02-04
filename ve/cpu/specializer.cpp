@@ -313,8 +313,8 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
 
         int tsig    = bh_type_sig(instr);
         int lmask   = bh_layoutmask(instr);
+
         int ndim;
-        
         switch (instr->opcode) {   // [OPCODE_SWITCH]
             case BH_ADD_REDUCE:
             case BH_MULTIPLY_REDUCE:
