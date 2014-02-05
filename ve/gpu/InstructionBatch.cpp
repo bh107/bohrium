@@ -339,6 +339,7 @@ std::string InstructionBatch::generateCode()
     for (InstructionList::iterator iit = instructions.begin(); iit != instructions.end(); ++iit)
     {
         std::vector<std::string> operands;
+        std::vector<OCLtype> types;
         // Has the output operand been assigned a variable name?
         VariableMap::iterator kvit = kernelVariables.find(iit->second[0]);
         if (kvit == kernelVariables.end())
@@ -356,16 +357,16 @@ std::string InstructionBatch::generateCode()
         // find variable names for input operands
         for (int op = 1; op < bh_operands(iit->first->opcode); ++op)
         {
-            operands.push_back(kernelVariables[iit->second[op]]);  
+            operands.push_back(kernelVariables[iit->second[op]]);
+        }
+        for (int op = 0; op < bh_operands(iit->first->opcode); ++op)
+        {
+            types.push_back(oclType(iit->first->operand[op].base ? 
+                                    iit->first->operand[op].base->type : 
+                                    iit->first->constant.type));
         } 
         // generate source code for the instruction
-        generateInstructionSource(iit->first->opcode, 
-                                  std::make_pair(oclType(iit->first->operand[0].base->type),
-                                                 bh_operands(iit->first->opcode) > 1 ? 
-                                                 (oclType(iit->first->operand[1].base ? 
-                                                          iit->first->operand[1].base->type : 
-                                                          iit->first->constant.type)) : OCL_UNKNOWN), 
-                                  operands, source);
+        generateInstructionSource(iit->first->opcode, types, operands, source);
     }
 
     // Save output parameters

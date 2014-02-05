@@ -19,6 +19,259 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 
+/**
+ *  Deduct a numerical value representing the types of the given instruction.
+ *
+ *  @param instr The instruction for which to deduct a signature.
+ *  @return The deducted signature.
+ */
+int bh_type_sig(bh_instruction *instr)
+{
+    int type_sig;
+    const int nops = bh_operands(instr->opcode);
+    switch(nops) {
+        case 3:
+            type_sig = instr->operand[0].base->type+1;
+
+            if (bh_is_constant(&instr->operand[1])) {
+                type_sig += ((1+instr->constant.type) << 4) \
+                          +((1+instr->operand[2].base->type) << 8);
+
+            } else if (bh_is_constant(&instr->operand[2])) {
+                type_sig += ((1+instr->operand[1].base->type) << 4) \
+                          +((1+instr->constant.type) << 8);
+
+            } else {
+                type_sig += ((1+instr->operand[1].base->type) << 4) \
+                          +((1+instr->operand[2].base->type) << 8);
+            }
+            break;
+        case 2:
+            type_sig = instr->operand[0].base->type+1;
+
+            if (bh_is_constant(&instr->operand[1])) {
+                type_sig += ((1+instr->constant.type) << 4);
+            } else {
+                type_sig += ((1+instr->operand[1].base->type) << 4);
+            }
+            break;
+        case 1:
+            type_sig = (1+instr->operand[0].base->type);
+            break;
+        case 0:
+        default:
+            type_sig = 0;
+            break;
+    }
+
+    return type_sig;
+}
+
+/**
+ *  Determine whether the given type_sig, in the coding produced by bh_type_sig, is valid.
+ *
+ *  @param instr The instruction for which to deduct a signature.
+ *  @return The deducted signature.
+ */
+bool bh_type_sig_check(int type_sig)
+{
+    switch(type_sig) {
+        case 273: return true; // zzz: BH_BOOL + (BH_BOOL << 4) + (BH_BOOL << 8)
+        case 3549: return true; // CCC: BH_COMPLEX128 + (BH_COMPLEX128 << 4) + (BH_COMPLEX128 << 8)
+        case 3276: return true; // ccc: BH_COMPLEX64 + (BH_COMPLEX64 << 4) + (BH_COMPLEX64 << 8)
+        case 2730: return true; // fff: BH_FLOAT32 + (BH_FLOAT32 << 4) + (BH_FLOAT32 << 8)
+        case 3003: return true; // ddd: BH_FLOAT64 + (BH_FLOAT64 << 4) + (BH_FLOAT64 << 8)
+        case 819: return true; // sss: BH_INT16 + (BH_INT16 << 4) + (BH_INT16 << 8)
+        case 1092: return true; // iii: BH_INT32 + (BH_INT32 << 4) + (BH_INT32 << 8)
+        case 1365: return true; // lll: BH_INT64 + (BH_INT64 << 4) + (BH_INT64 << 8)
+        case 546: return true; // bbb: BH_INT8 + (BH_INT8 << 4) + (BH_INT8 << 8)
+        case 1911: return true; // SSS: BH_UINT16 + (BH_UINT16 << 4) + (BH_UINT16 << 8)
+        case 2184: return true; // III: BH_UINT32 + (BH_UINT32 << 4) + (BH_UINT32 << 8)
+        case 2457: return true; // LLL: BH_UINT64 + (BH_UINT64 << 4) + (BH_UINT64 << 8)
+        case 1638: return true; // BBB: BH_UINT8 + (BH_UINT8 << 4) + (BH_UINT8 << 8)
+        case 2721: return true; // zff: BH_BOOL + (BH_FLOAT32 << 4) + (BH_FLOAT32 << 8)
+        case 2993: return true; // zdd: BH_BOOL + (BH_FLOAT64 << 4) + (BH_FLOAT64 << 8)
+        case 817: return true; // zss: BH_BOOL + (BH_INT16 << 4) + (BH_INT16 << 8)
+        case 1089: return true; // zii: BH_BOOL + (BH_INT32 << 4) + (BH_INT32 << 8)
+        case 1361: return true; // zll: BH_BOOL + (BH_INT64 << 4) + (BH_INT64 << 8)
+        case 545: return true; // zbb: BH_BOOL + (BH_INT8 << 4) + (BH_INT8 << 8)
+        case 1905: return true; // zSS: BH_BOOL + (BH_UINT16 << 4) + (BH_UINT16 << 8)
+        case 2177: return true; // zII: BH_BOOL + (BH_UINT32 << 4) + (BH_UINT32 << 8)
+        case 2449: return true; // zLL: BH_BOOL + (BH_UINT64 << 4) + (BH_UINT64 << 8)
+        case 1633: return true; // zBB: BH_BOOL + (BH_UINT8 << 4) + (BH_UINT8 << 8)
+        case 3537: return true; // zCC: BH_BOOL + (BH_COMPLEX128 << 4) + (BH_COMPLEX128 << 8)
+        case 3265: return true; // zcc: BH_BOOL + (BH_COMPLEX64 << 4) + (BH_COMPLEX64 << 8)
+        case 1297: return true; // zzl: BH_BOOL + (BH_BOOL << 4) + (BH_INT64 << 8)
+        case 1501: return true; // CCl: BH_COMPLEX128 + (BH_COMPLEX128 << 4) + (BH_INT64 << 8)
+        case 1484: return true; // ccl: BH_COMPLEX64 + (BH_COMPLEX64 << 4) + (BH_INT64 << 8)
+        case 1450: return true; // ffl: BH_FLOAT32 + (BH_FLOAT32 << 4) + (BH_INT64 << 8)
+        case 1467: return true; // ddl: BH_FLOAT64 + (BH_FLOAT64 << 4) + (BH_INT64 << 8)
+        case 1331: return true; // ssl: BH_INT16 + (BH_INT16 << 4) + (BH_INT64 << 8)
+        case 1348: return true; // iil: BH_INT32 + (BH_INT32 << 4) + (BH_INT64 << 8)
+        case 1314: return true; // bbl: BH_INT8 + (BH_INT8 << 4) + (BH_INT64 << 8)
+        case 1399: return true; // SSl: BH_UINT16 + (BH_UINT16 << 4) + (BH_INT64 << 8)
+        case 1416: return true; // IIl: BH_UINT32 + (BH_UINT32 << 4) + (BH_INT64 << 8)
+        case 1433: return true; // LLl: BH_UINT64 + (BH_UINT64 << 4) + (BH_INT64 << 8)
+        case 1382: return true; // BBl: BH_UINT8 + (BH_UINT8 << 4) + (BH_INT64 << 8)
+        case 17: return true; // zz: BH_BOOL + (BH_BOOL << 4)
+        case 170: return true; // ff: BH_FLOAT32 + (BH_FLOAT32 << 4)
+        case 187: return true; // dd: BH_FLOAT64 + (BH_FLOAT64 << 4)
+        case 51: return true; // ss: BH_INT16 + (BH_INT16 << 4)
+        case 68: return true; // ii: BH_INT32 + (BH_INT32 << 4)
+        case 85: return true; // ll: BH_INT64 + (BH_INT64 << 4)
+        case 34: return true; // bb: BH_INT8 + (BH_INT8 << 4)
+        case 119: return true; // SS: BH_UINT16 + (BH_UINT16 << 4)
+        case 136: return true; // II: BH_UINT32 + (BH_UINT32 << 4)
+        case 153: return true; // LL: BH_UINT64 + (BH_UINT64 << 4)
+        case 102: return true; // BB: BH_UINT8 + (BH_UINT8 << 4)
+        case 221: return true; // CC: BH_COMPLEX128 + (BH_COMPLEX128 << 4)
+        case 204: return true; // cc: BH_COMPLEX64 + (BH_COMPLEX64 << 4)
+        case 161: return true; // zf: BH_BOOL + (BH_FLOAT32 << 4)
+        case 177: return true; // zd: BH_BOOL + (BH_FLOAT64 << 4)
+        case 49: return true; // zs: BH_BOOL + (BH_INT16 << 4)
+        case 65: return true; // zi: BH_BOOL + (BH_INT32 << 4)
+        case 81: return true; // zl: BH_BOOL + (BH_INT64 << 4)
+        case 33: return true; // zb: BH_BOOL + (BH_INT8 << 4)
+        case 113: return true; // zS: BH_BOOL + (BH_UINT16 << 4)
+        case 129: return true; // zI: BH_BOOL + (BH_UINT32 << 4)
+        case 145: return true; // zL: BH_BOOL + (BH_UINT64 << 4)
+        case 97: return true; // zB: BH_BOOL + (BH_UINT8 << 4)
+        case 29: return true; // Cz: BH_COMPLEX128 + (BH_BOOL << 4)
+        case 205: return true; // Cc: BH_COMPLEX128 + (BH_COMPLEX64 << 4)
+        case 173: return true; // Cf: BH_COMPLEX128 + (BH_FLOAT32 << 4)
+        case 189: return true; // Cd: BH_COMPLEX128 + (BH_FLOAT64 << 4)
+        case 61: return true; // Cs: BH_COMPLEX128 + (BH_INT16 << 4)
+        case 77: return true; // Ci: BH_COMPLEX128 + (BH_INT32 << 4)
+        case 93: return true; // Cl: BH_COMPLEX128 + (BH_INT64 << 4)
+        case 45: return true; // Cb: BH_COMPLEX128 + (BH_INT8 << 4)
+        case 125: return true; // CS: BH_COMPLEX128 + (BH_UINT16 << 4)
+        case 141: return true; // CI: BH_COMPLEX128 + (BH_UINT32 << 4)
+        case 157: return true; // CL: BH_COMPLEX128 + (BH_UINT64 << 4)
+        case 109: return true; // CB: BH_COMPLEX128 + (BH_UINT8 << 4)
+        case 28: return true; // cz: BH_COMPLEX64 + (BH_BOOL << 4)
+        case 220: return true; // cC: BH_COMPLEX64 + (BH_COMPLEX128 << 4)
+        case 172: return true; // cf: BH_COMPLEX64 + (BH_FLOAT32 << 4)
+        case 188: return true; // cd: BH_COMPLEX64 + (BH_FLOAT64 << 4)
+        case 60: return true; // cs: BH_COMPLEX64 + (BH_INT16 << 4)
+        case 76: return true; // ci: BH_COMPLEX64 + (BH_INT32 << 4)
+        case 92: return true; // cl: BH_COMPLEX64 + (BH_INT64 << 4)
+        case 44: return true; // cb: BH_COMPLEX64 + (BH_INT8 << 4)
+        case 124: return true; // cS: BH_COMPLEX64 + (BH_UINT16 << 4)
+        case 140: return true; // cI: BH_COMPLEX64 + (BH_UINT32 << 4)
+        case 156: return true; // cL: BH_COMPLEX64 + (BH_UINT64 << 4)
+        case 108: return true; // cB: BH_COMPLEX64 + (BH_UINT8 << 4)
+        case 26: return true; // fz: BH_FLOAT32 + (BH_BOOL << 4)
+        case 186: return true; // fd: BH_FLOAT32 + (BH_FLOAT64 << 4)
+        case 58: return true; // fs: BH_FLOAT32 + (BH_INT16 << 4)
+        case 74: return true; // fi: BH_FLOAT32 + (BH_INT32 << 4)
+        case 90: return true; // fl: BH_FLOAT32 + (BH_INT64 << 4)
+        case 42: return true; // fb: BH_FLOAT32 + (BH_INT8 << 4)
+        case 122: return true; // fS: BH_FLOAT32 + (BH_UINT16 << 4)
+        case 138: return true; // fI: BH_FLOAT32 + (BH_UINT32 << 4)
+        case 154: return true; // fL: BH_FLOAT32 + (BH_UINT64 << 4)
+        case 106: return true; // fB: BH_FLOAT32 + (BH_UINT8 << 4)
+        case 27: return true; // dz: BH_FLOAT64 + (BH_BOOL << 4)
+        case 171: return true; // df: BH_FLOAT64 + (BH_FLOAT32 << 4)
+        case 59: return true; // ds: BH_FLOAT64 + (BH_INT16 << 4)
+        case 75: return true; // di: BH_FLOAT64 + (BH_INT32 << 4)
+        case 91: return true; // dl: BH_FLOAT64 + (BH_INT64 << 4)
+        case 43: return true; // db: BH_FLOAT64 + (BH_INT8 << 4)
+        case 123: return true; // dS: BH_FLOAT64 + (BH_UINT16 << 4)
+        case 139: return true; // dI: BH_FLOAT64 + (BH_UINT32 << 4)
+        case 155: return true; // dL: BH_FLOAT64 + (BH_UINT64 << 4)
+        case 107: return true; // dB: BH_FLOAT64 + (BH_UINT8 << 4)
+        case 19: return true; // sz: BH_INT16 + (BH_BOOL << 4)
+        case 163: return true; // sf: BH_INT16 + (BH_FLOAT32 << 4)
+        case 179: return true; // sd: BH_INT16 + (BH_FLOAT64 << 4)
+        case 67: return true; // si: BH_INT16 + (BH_INT32 << 4)
+        case 83: return true; // sl: BH_INT16 + (BH_INT64 << 4)
+        case 35: return true; // sb: BH_INT16 + (BH_INT8 << 4)
+        case 115: return true; // sS: BH_INT16 + (BH_UINT16 << 4)
+        case 131: return true; // sI: BH_INT16 + (BH_UINT32 << 4)
+        case 147: return true; // sL: BH_INT16 + (BH_UINT64 << 4)
+        case 99: return true; // sB: BH_INT16 + (BH_UINT8 << 4)
+        case 20: return true; // iz: BH_INT32 + (BH_BOOL << 4)
+        case 164: return true; // if: BH_INT32 + (BH_FLOAT32 << 4)
+        case 180: return true; // id: BH_INT32 + (BH_FLOAT64 << 4)
+        case 52: return true; // is: BH_INT32 + (BH_INT16 << 4)
+        case 84: return true; // il: BH_INT32 + (BH_INT64 << 4)
+        case 36: return true; // ib: BH_INT32 + (BH_INT8 << 4)
+        case 116: return true; // iS: BH_INT32 + (BH_UINT16 << 4)
+        case 132: return true; // iI: BH_INT32 + (BH_UINT32 << 4)
+        case 148: return true; // iL: BH_INT32 + (BH_UINT64 << 4)
+        case 100: return true; // iB: BH_INT32 + (BH_UINT8 << 4)
+        case 21: return true; // lz: BH_INT64 + (BH_BOOL << 4)
+        case 165: return true; // lf: BH_INT64 + (BH_FLOAT32 << 4)
+        case 181: return true; // ld: BH_INT64 + (BH_FLOAT64 << 4)
+        case 53: return true; // ls: BH_INT64 + (BH_INT16 << 4)
+        case 69: return true; // li: BH_INT64 + (BH_INT32 << 4)
+        case 37: return true; // lb: BH_INT64 + (BH_INT8 << 4)
+        case 117: return true; // lS: BH_INT64 + (BH_UINT16 << 4)
+        case 133: return true; // lI: BH_INT64 + (BH_UINT32 << 4)
+        case 149: return true; // lL: BH_INT64 + (BH_UINT64 << 4)
+        case 101: return true; // lB: BH_INT64 + (BH_UINT8 << 4)
+        case 18: return true; // bz: BH_INT8 + (BH_BOOL << 4)
+        case 162: return true; // bf: BH_INT8 + (BH_FLOAT32 << 4)
+        case 178: return true; // bd: BH_INT8 + (BH_FLOAT64 << 4)
+        case 50: return true; // bs: BH_INT8 + (BH_INT16 << 4)
+        case 66: return true; // bi: BH_INT8 + (BH_INT32 << 4)
+        case 82: return true; // bl: BH_INT8 + (BH_INT64 << 4)
+        case 114: return true; // bS: BH_INT8 + (BH_UINT16 << 4)
+        case 130: return true; // bI: BH_INT8 + (BH_UINT32 << 4)
+        case 146: return true; // bL: BH_INT8 + (BH_UINT64 << 4)
+        case 98: return true; // bB: BH_INT8 + (BH_UINT8 << 4)
+        case 23: return true; // Sz: BH_UINT16 + (BH_BOOL << 4)
+        case 167: return true; // Sf: BH_UINT16 + (BH_FLOAT32 << 4)
+        case 183: return true; // Sd: BH_UINT16 + (BH_FLOAT64 << 4)
+        case 55: return true; // Ss: BH_UINT16 + (BH_INT16 << 4)
+        case 71: return true; // Si: BH_UINT16 + (BH_INT32 << 4)
+        case 87: return true; // Sl: BH_UINT16 + (BH_INT64 << 4)
+        case 39: return true; // Sb: BH_UINT16 + (BH_INT8 << 4)
+        case 135: return true; // SI: BH_UINT16 + (BH_UINT32 << 4)
+        case 151: return true; // SL: BH_UINT16 + (BH_UINT64 << 4)
+        case 103: return true; // SB: BH_UINT16 + (BH_UINT8 << 4)
+        case 24: return true; // Iz: BH_UINT32 + (BH_BOOL << 4)
+        case 168: return true; // If: BH_UINT32 + (BH_FLOAT32 << 4)
+        case 184: return true; // Id: BH_UINT32 + (BH_FLOAT64 << 4)
+        case 56: return true; // Is: BH_UINT32 + (BH_INT16 << 4)
+        case 72: return true; // Ii: BH_UINT32 + (BH_INT32 << 4)
+        case 88: return true; // Il: BH_UINT32 + (BH_INT64 << 4)
+        case 40: return true; // Ib: BH_UINT32 + (BH_INT8 << 4)
+        case 120: return true; // IS: BH_UINT32 + (BH_UINT16 << 4)
+        case 152: return true; // IL: BH_UINT32 + (BH_UINT64 << 4)
+        case 104: return true; // IB: BH_UINT32 + (BH_UINT8 << 4)
+        case 25: return true; // Lz: BH_UINT64 + (BH_BOOL << 4)
+        case 169: return true; // Lf: BH_UINT64 + (BH_FLOAT32 << 4)
+        case 185: return true; // Ld: BH_UINT64 + (BH_FLOAT64 << 4)
+        case 57: return true; // Ls: BH_UINT64 + (BH_INT16 << 4)
+        case 73: return true; // Li: BH_UINT64 + (BH_INT32 << 4)
+        case 89: return true; // Ll: BH_UINT64 + (BH_INT64 << 4)
+        case 41: return true; // Lb: BH_UINT64 + (BH_INT8 << 4)
+        case 121: return true; // LS: BH_UINT64 + (BH_UINT16 << 4)
+        case 137: return true; // LI: BH_UINT64 + (BH_UINT32 << 4)
+        case 105: return true; // LB: BH_UINT64 + (BH_UINT8 << 4)
+        case 22: return true; // Bz: BH_UINT8 + (BH_BOOL << 4)
+        case 166: return true; // Bf: BH_UINT8 + (BH_FLOAT32 << 4)
+        case 182: return true; // Bd: BH_UINT8 + (BH_FLOAT64 << 4)
+        case 54: return true; // Bs: BH_UINT8 + (BH_INT16 << 4)
+        case 70: return true; // Bi: BH_UINT8 + (BH_INT32 << 4)
+        case 86: return true; // Bl: BH_UINT8 + (BH_INT64 << 4)
+        case 38: return true; // Bb: BH_UINT8 + (BH_INT8 << 4)
+        case 118: return true; // BS: BH_UINT8 + (BH_UINT16 << 4)
+        case 134: return true; // BI: BH_UINT8 + (BH_UINT32 << 4)
+        case 150: return true; // BL: BH_UINT8 + (BH_UINT64 << 4)
+        case 232: return true; // IR: BH_UINT32 + (BH_R123 << 4)
+        case 233: return true; // LR: BH_UINT64 + (BH_R123 << 4)
+        case 219: return true; // dC: BH_FLOAT64 + (BH_COMPLEX128 << 4)
+        case 202: return true; // fc: BH_FLOAT32 + (BH_COMPLEX64 << 4)
+        case 8: return true; // I: BH_UINT32
+        case 9: return true; // L: BH_UINT64
+
+        default:
+            return false;
+    }
+}
+
 /* Determines if the types are acceptable for the operation
  *
  * @opcode Opcode for operation

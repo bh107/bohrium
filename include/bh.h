@@ -150,6 +150,21 @@ DLLEXPORT bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inpu
  */
 DLLEXPORT bool bh_get_type_conversion(bh_opcode opcode, bh_type outtype, bh_type* inputtype1, bh_type* inputtype2, bh_type* constanttype);
 
+/**
+ *  Deduct a numerical value representing the types of the given instruction.
+ *
+ *  @param instr The instruction for which to deduct a signature.
+ *  @return The deducted signature.
+ */
+DLLEXPORT int bh_type_sig(bh_instruction *instr);
+
+/**
+ *  Determine whether the given typesig, in the coding produced by bh_typesig, is valid.
+ *
+ *  @param instr The instruction for which to deduct a signature.
+ *  @return The deducted signature.
+ */
+DLLEXPORT bool bh_type_sig_check(int type_sig);
 
 /* Byte size for type
  *

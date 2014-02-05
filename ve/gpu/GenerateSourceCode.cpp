@@ -55,14 +55,14 @@ void generateOffsetSource(const bh_view& operand, std::ostream& source)
     source << "gidx*" << operand.stride[ndim-1] << " + " << operand.start;
 }
 
-#define TYPE ((type.second == OCL_COMPLEX64) ? "float" : "double")
+#define TYPE ((type[1] == OCL_COMPLEX64) ? "float" : "double")
 void generateInstructionSource(bh_opcode opcode,
-                               std::pair<OCLtype,OCLtype> type,
+                               std::vector<OCLtype> type,
                                std::vector<std::string>& parameters, 
                                std::ostream& source)
 {
     assert(parameters.size() == (size_t)bh_operands(opcode));
-    if (isComplex(type.first) || isComplex(type.second))
+    if (isComplex(type[0]) || (type.size()>1 && isComplex(type[1])))
     {
 
         switch(opcode)
@@ -122,7 +122,7 @@ void generateInstructionSource(bh_opcode opcode,
             source << "\tCSQRT(" << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_IDENTITY:
-            if (isComplex(type.second))
+            if (isComplex(type[1]))
                 source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
             else
                 source << "\t" << parameters[0] << ".s0 = " << parameters[1] << ";\n";
@@ -157,19 +157,19 @@ void generateInstructionSource(bh_opcode opcode,
             source << "\t" << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
             break;
         case BH_POWER:
-            if (isFloat(type.second))
+            if (isFloat(type[1]))
                 source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
             else
                 source << "\t" << parameters[0] << " = pow((float)" << parameters[1] << ", (float)" << parameters[2] << ");\n";   
             break;
         case BH_MOD:
-            if (isFloat(type.second))
+            if (isFloat(type[1]))
                 source << "\t" << parameters[0] << " = fmod(" << parameters[1] << ", " << parameters[2] << ");\n";
             else
                 source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
             break;
         case BH_ABSOLUTE:
-            if (isFloat(type.second))
+            if (isFloat(type[1]))
                 source << "\t" << parameters[0] << " = fabs(" << parameters[1] << ");\n";
             else
                 source << "\t" << parameters[0] << " = abs(" << parameters[1] << ");\n";

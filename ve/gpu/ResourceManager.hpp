@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __RESOURCEMANAGER_HPP
 #define __RESOURCEMANAGER_HPP
 
-#include <CL/cl.hpp>
+#include "cl.hpp"
 #include <vector>
 #include <map>
 #include <bh.h>
