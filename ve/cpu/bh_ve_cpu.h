@@ -23,16 +23,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 
 typedef enum OPERATION {
-    EWISE       = 1,
-    REDUCE      = 2,
-    SCAN        = 4,
-    GENERATOR   = 8,
-    SYSTEM      = 16,
-    EXTENSION   = 32,
+    EWISE_U     = 1,    // aka map
+    EWISE_B     = 2,    // aka zip
+    REDUCE      = 4,
+    SCAN        = 8,
+    GENERATOR   = 16,   // examples: iota, random numbers etc.
+    SYSTEM      = 32,
+    EXTENSION   = 64,
 } OPERATION;
 
 typedef enum OPERATOR {
-    // Used by elementwise, reduce and scan operations
+    // Used by elementwise operations
     ABSOLUTE,
     ARCCOS,
     ARCCOSH,
@@ -66,7 +67,7 @@ typedef enum OPERATOR {
     TANH,
     TRUNC,
 
-    // Used by elementwise, reduce and scan operations
+    // Used by elementwise, reduce, and scan operations
     ADD,
     ARCTAN2,
     BITWISE_AND,
@@ -121,6 +122,7 @@ typedef struct bytecode {
 //
 typedef struct bh_kernel_arg {
     void*   data;       // Pointer to memory allocated for the array
+    int64_t type;       // Type of the elements stored
     int64_t start;      // Offset from memory allocation to start of array
     int64_t nelem;      // Number of elements available in the allocation
 

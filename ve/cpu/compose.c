@@ -11,6 +11,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
     for (int i=0; i<dag->nnode; ++i) {
         bh_instruction* instr = &ir->instr_list[dag->node_map[i]];
         int lmask = bh_layoutmask(instr);
+        kernel->lmask[i] = lmask;
 
         int out=0, in1=0, in2=0;
 
@@ -19,6 +20,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
             out = (kernel->nargs)++;
 
             kernel->args[out].data      = bh_base_array(&instr->operand[0])->data;
+            kernel->args[out].type      = bh_base_array(&instr->operand[0])->type;
             kernel->args[out].nelem     = bh_base_array(&instr->operand[0])->nelem;
             kernel->args[out].ndim      = instr->operand[0].ndim;
             kernel->args[out].start     = instr->operand[0].start;
@@ -76,6 +78,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -83,6 +86,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, ADD, out, in1, in2};
                 // Setup bytecode
@@ -97,6 +101,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -104,6 +109,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, BITWISE_AND, out, in1, in2};
                 // Setup bytecode
@@ -118,6 +124,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -125,6 +132,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, BITWISE_OR, out, in1, in2};
                 // Setup bytecode
@@ -139,6 +147,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -146,6 +155,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, BITWISE_XOR, out, in1, in2};
                 // Setup bytecode
@@ -160,6 +170,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -167,6 +178,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, LOGICAL_AND, out, in1, in2};
                 // Setup bytecode
@@ -181,6 +193,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -188,6 +201,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, LOGICAL_OR, out, in1, in2};
                 // Setup bytecode
@@ -202,6 +216,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -209,6 +224,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, LOGICAL_XOR, out, in1, in2};
                 // Setup bytecode
@@ -223,6 +239,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -230,6 +247,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, MAXIMUM, out, in1, in2};
                 // Setup bytecode
@@ -244,6 +262,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -251,6 +270,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, MINIMUM, out, in1, in2};
                 // Setup bytecode
@@ -265,6 +285,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -272,6 +293,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {REDUCE, MULTIPLY, out, in1, in2};
                 // Setup bytecode
@@ -290,6 +312,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -297,6 +320,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {SCAN, ADD, out, in1, in2};
                 // Setup bytecode
@@ -311,6 +335,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 in2 = (kernel->nargs)++;                
 
                 kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
+                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
                 kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
                 kernel->args[in1].ndim      = instr->operand[1].ndim;
                 kernel->args[in1].start     = instr->operand[1].start;
@@ -318,6 +343,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in1].stride    = instr->operand[1].stride;
 
                 kernel->args[in2].data = &(instr->constant.value);
+                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
 
                 //kernel->program[i] = {SCAN, MULTIPLY, out, in1, in2};
                 // Setup bytecode
@@ -336,8 +362,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -345,9 +373,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ABSOLUTE, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, ABSOLUTE, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = ABSOLUTE;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -358,8 +386,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -367,9 +397,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ARCCOS, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, ARCCOS, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = ARCCOS;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -380,8 +410,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -389,9 +421,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ARCCOSH, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, ARCCOSH, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = ARCCOSH;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -402,8 +434,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -411,9 +445,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ARCSIN, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, ARCSIN, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = ARCSIN;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -424,8 +458,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -433,9 +469,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ARCSINH, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, ARCSINH, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = ARCSINH;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -446,8 +482,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -455,9 +493,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ARCTAN, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, ARCTAN, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = ARCTAN;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -468,8 +506,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -477,9 +517,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ARCTANH, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, ARCTANH, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = ARCTANH;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -490,8 +530,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -499,9 +541,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, CEIL, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, CEIL, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = CEIL;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -512,8 +554,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -521,9 +565,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, COS, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, COS, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = COS;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -534,8 +578,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -543,9 +589,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, COSH, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, COSH, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = COSH;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -556,8 +602,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -565,9 +613,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, EXP, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, EXP, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = EXP;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -578,8 +626,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -587,9 +637,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, EXP2, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, EXP2, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = EXP2;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -600,8 +650,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -609,9 +661,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, EXPM1, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, EXPM1, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = EXPM1;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -622,8 +674,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -631,9 +685,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, FLOOR, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, FLOOR, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = FLOOR;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -644,8 +698,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -653,9 +709,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, IDENTITY, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, IDENTITY, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = IDENTITY;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -666,8 +722,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -675,9 +733,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, IMAG, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, IMAG, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = IMAG;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -688,8 +746,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -697,9 +757,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, INVERT, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, INVERT, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = INVERT;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -710,8 +770,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -719,9 +781,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ISINF, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, ISINF, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = ISINF;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -732,8 +794,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -741,9 +805,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ISNAN, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, ISNAN, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = ISNAN;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -754,8 +818,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -763,9 +829,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LOG, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, LOG, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = LOG;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -776,8 +842,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -785,9 +853,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LOG10, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, LOG10, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = LOG10;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -798,8 +866,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -807,9 +877,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LOG1P, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, LOG1P, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = LOG1P;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -820,8 +890,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -829,9 +901,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LOG2, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, LOG2, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = LOG2;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -842,8 +914,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -851,9 +925,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LOGICAL_NOT, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, LOGICAL_NOT, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = LOGICAL_NOT;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -864,8 +938,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -873,9 +949,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, REAL, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, REAL, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = REAL;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -886,8 +962,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -895,9 +973,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, RINT, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, RINT, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = RINT;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -908,8 +986,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -917,9 +997,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, SIN, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, SIN, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = SIN;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -930,8 +1010,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -939,9 +1021,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, SINH, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, SINH, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = SINH;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -952,8 +1034,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -961,9 +1045,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, SQRT, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, SQRT, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = SQRT;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -974,8 +1058,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -983,9 +1069,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, TAN, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, TAN, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = TAN;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -996,8 +1082,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1005,9 +1093,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, TANH, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, TANH, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = TANH;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1018,8 +1106,10 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                 } else {
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1027,9 +1117,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
                 }
 
-                //kernel->program[i] = {EWISE, TRUNC, out, in1, 0};
+                //kernel->program[i] = {EWISE_U, TRUNC, out, in1, 0};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_U;
                 kernel->program[i].oper  = TRUNC;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1045,6 +1135,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1052,10 +1143,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1063,6 +1157,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1070,6 +1165,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1077,9 +1173,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ADD, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, ADD, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = ADD;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1091,6 +1187,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1098,10 +1195,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1109,6 +1209,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1116,6 +1217,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1123,9 +1225,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, ARCTAN2, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, ARCTAN2, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = ARCTAN2;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1137,6 +1239,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1144,10 +1247,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1155,6 +1261,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1162,6 +1269,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1169,9 +1277,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, BITWISE_AND, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, BITWISE_AND, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = BITWISE_AND;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1183,6 +1291,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1190,10 +1299,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1201,6 +1313,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1208,6 +1321,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1215,9 +1329,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, BITWISE_OR, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, BITWISE_OR, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = BITWISE_OR;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1229,6 +1343,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1236,10 +1351,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1247,6 +1365,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1254,6 +1373,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1261,9 +1381,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, BITWISE_XOR, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, BITWISE_XOR, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = BITWISE_XOR;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1275,6 +1395,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1282,10 +1403,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1293,6 +1417,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1300,6 +1425,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1307,9 +1433,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, DIVIDE, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, DIVIDE, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = DIVIDE;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1321,6 +1447,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1328,10 +1455,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1339,6 +1469,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1346,6 +1477,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1353,9 +1485,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, EQUAL, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, EQUAL, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = EQUAL;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1367,6 +1499,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1374,10 +1507,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1385,6 +1521,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1392,6 +1529,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1399,9 +1537,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, GREATER, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, GREATER, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = GREATER;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1413,6 +1551,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1420,10 +1559,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1431,6 +1573,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1438,6 +1581,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1445,9 +1589,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, GREATER_EQUAL, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, GREATER_EQUAL, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = GREATER_EQUAL;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1459,6 +1603,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1466,10 +1611,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1477,6 +1625,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1484,6 +1633,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1491,9 +1641,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LEFT_SHIFT, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, LEFT_SHIFT, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = LEFT_SHIFT;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1505,6 +1655,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1512,10 +1663,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1523,6 +1677,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1530,6 +1685,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1537,9 +1693,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LESS, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, LESS, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = LESS;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1551,6 +1707,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1558,10 +1715,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1569,6 +1729,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1576,6 +1737,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1583,9 +1745,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LESS_EQUAL, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, LESS_EQUAL, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = LESS_EQUAL;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1597,6 +1759,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1604,10 +1767,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1615,6 +1781,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1622,6 +1789,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1629,9 +1797,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LOGICAL_AND, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, LOGICAL_AND, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = LOGICAL_AND;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1643,6 +1811,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1650,10 +1819,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1661,6 +1833,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1668,6 +1841,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1675,9 +1849,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LOGICAL_OR, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, LOGICAL_OR, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = LOGICAL_OR;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1689,6 +1863,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1696,10 +1871,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1707,6 +1885,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1714,6 +1893,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1721,9 +1901,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, LOGICAL_XOR, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, LOGICAL_XOR, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = LOGICAL_XOR;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1735,6 +1915,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1742,10 +1923,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1753,6 +1937,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1760,6 +1945,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1767,9 +1953,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, MAXIMUM, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, MAXIMUM, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = MAXIMUM;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1781,6 +1967,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1788,10 +1975,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1799,6 +1989,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1806,6 +1997,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1813,9 +2005,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, MINIMUM, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, MINIMUM, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = MINIMUM;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1827,6 +2019,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1834,10 +2027,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1845,6 +2041,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1852,6 +2049,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1859,9 +2057,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, MOD, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, MOD, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = MOD;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1873,6 +2071,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1880,10 +2079,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1891,6 +2093,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1898,6 +2101,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1905,9 +2109,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, MULTIPLY, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, MULTIPLY, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = MULTIPLY;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1919,6 +2123,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1926,10 +2131,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1937,6 +2145,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1944,6 +2153,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1951,9 +2161,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, NOT_EQUAL, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, NOT_EQUAL, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = NOT_EQUAL;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -1965,6 +2175,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1972,10 +2183,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1983,6 +2197,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -1990,6 +2205,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -1997,9 +2213,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, POWER, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, POWER, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = POWER;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -2011,6 +2227,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -2018,10 +2235,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -2029,6 +2249,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -2036,6 +2257,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -2043,9 +2265,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, RIGHT_SHIFT, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, RIGHT_SHIFT, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = RIGHT_SHIFT;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -2057,6 +2279,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -2064,10 +2287,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data = &(instr->constant.value);
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
                     kernel->args[in1].data = &(instr->constant.value);
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -2075,6 +2301,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 } else {                                            // AAA
                     kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
                     kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
                     kernel->args[in1].ndim   = instr->operand[1].ndim;
                     kernel->args[in1].start  = instr->operand[1].start;
@@ -2082,6 +2309,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in1].stride = instr->operand[1].stride;
 
                     kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
                     kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
                     kernel->args[in2].ndim   = instr->operand[2].ndim;
                     kernel->args[in2].start  = instr->operand[2].start;
@@ -2089,9 +2317,9 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->args[in2].stride = instr->operand[2].stride;
                 }
 
-                //kernel->program[i] = {EWISE, SUBTRACT, out, in1, in2};
+                //kernel->program[i] = {EWISE_B, SUBTRACT, out, in1, in2};
                 // Setup bytecode
-                kernel->program[i].op    = EWISE;
+                kernel->program[i].op    = EWISE_B;
                 kernel->program[i].oper  = SUBTRACT;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
@@ -2100,6 +2328,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 
             default:
                 if (instr->opcode>=BH_MAX_OPCODE_ID) {   // Handle extensions here
+
+                    kernel->program[i].op   = EXTENSION; // TODO: Be clever about it
+                    kernel->program[i].oper = EXT_OFFSET;
+                    kernel->program[i].out  = 0;
+                    kernel->program[i].in1  = 0;
+                    kernel->program[i].in2  = 0;
+                    
                     cout << "Extension method." << endl;
                 } else {
                     in1 = -1;

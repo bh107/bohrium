@@ -115,9 +115,9 @@ def compose(opcodes, types):
             else:
                 operator = '_'.join(opcode.split('_')[1:])
                 if o['nop'] == 3:
-                    ewise_b.append([opcode, 'EWISE', operator])                    
+                    ewise_b.append([opcode, 'EWISE_B', operator])                    
                 elif o['nop'] == 2:
-                    ewise_u.append([opcode, 'EWISE', operator])
+                    ewise_u.append([opcode, 'EWISE_U', operator])
                 else:
                     huh.append([opcode, '?', operator])
     

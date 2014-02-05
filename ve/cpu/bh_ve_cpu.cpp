@@ -62,7 +62,6 @@ typedef struct bh_kernel {
     int tsig[10];               // Typesignature of the instructions
     int lmask[10];              // Layoutmask of the instructions
 
-    int len;
     bytecode_t* program;        // Ordered list of bytecodes
 
     int nargs;                  // Number of arguments to the kernel
@@ -70,16 +69,6 @@ typedef struct bh_kernel {
 
     string symbol;              // Textual representation of the kernel
 } bh_kernel_t;                  // Meta-data to construct and execute a kernel-function
-
-typedef struct bh_block {
-    int len;
-    bytecode_t* program;
-
-    int nargs;
-    bh_kernel_arg_t args;
-
-    string symbol;
-} bh_block_t;
 
 #include "compiler.cpp"
 #include "specializer.cpp"
@@ -319,7 +308,7 @@ static bh_error execute(bh_instruction *instr)
 
     //
     // We start by creating a symbol
-    if (!symbolize(kernel, jit_optimize)) {
+    if (!symbolize_old(kernel, jit_optimize)) {
         return BH_ERROR;
     }
 
@@ -338,7 +327,7 @@ static bh_error execute(bh_instruction *instr)
         (kernel.symbol!="") && \
         (!target->symbol_ready(kernel.symbol))) {   
                                                     // Specialize sourcecode
-        string sourcecode = specialize(kernel, jit_optimize);   
+        string sourcecode = specialize_old(kernel, jit_optimize);   
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file
             target->src_to_file(
                 kernel.symbol,
@@ -357,7 +346,7 @@ static bh_error execute(bh_instruction *instr)
         (!target->load(kernel.symbol, kernel.symbol))) {// Need but cannot load
 
         if (jit_optimize) {                             // Unoptimized fallback
-            symbolize(kernel, false);
+            symbolize_old(kernel, false);
             if ((kernel.symbol!="") && \
                 (!target->symbol_ready(kernel.symbol)) && \
                 (!target->load(kernel.symbol, kernel.symbol))) {        // Fail
@@ -546,6 +535,12 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         // instructions
         bh_kernel_t kernel;
         compose(&kernel, bhir, &bhir->dag_list[node]);
+
+        // Symbolize...
+        
+        // Check object cache
+
+        // Execute
 
         // Map to cpuIR
         res = bh_ir_map_instr(bhir, &bhir->dag_list[node], &execute);
