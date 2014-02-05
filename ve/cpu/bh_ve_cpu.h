@@ -23,27 +23,87 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 
 typedef enum OPERATION {
-    EWISE       =1,
-    REDUCTION   =2,
-    SCAN        =4,
-    RANGE       =8,
-    RANDOM      =16,
-    SYSTEM      =32
+    EWISE       = 1,
+    REDUCTION   = 2,
+    SCAN        = 4,
+    GENERATOR   = 8
+    SYSTEM      = 16
+    EXTENSION   = 32,
 } OPERATION;
 
 typedef enum OPERATOR {
-    ADD,
-    SUBTRACT,
-    MULTIPLY,
-
-    SIN,
+    // Used by elementwise, reduce and scan operations
+    ABSOLUTE,
+    ARCCOS,
+    ARCCOSH,
+    ARCSIN,
+    ARCSINH,
+    ARCTAN,
+    ARCTANH,
+    CEIL,
     COS,
-    ABS,
+    COSH,
+    EXP,
+    EXP2,
+    EXPM1,
+    FLOOR,
+    IDENTITY,
+    IMAG,
+    INVERT,
+    ISINF,
+    ISNAN,
+    LOG,
+    LOG10,
+    LOG1P,
+    LOG2,
+    LOGICAL_NOT,
+    REAL,
+    RINT,
+    SIN,
+    SINH,
+    SQRT,
+    TAN,
+    TANH,
+    TRUNC,
 
-    NONE,
-    FREE,
+    // Used by elementwise, reduce and scan operations
+    ADD,
+    ARCTAN2,
+    BITWISE_AND,
+    BITWISE_OR,
+    BITWISE_XOR,
+    DIVIDE,
+    EQUAL,
+    GREATER,
+    GREATER_EQUAL,
+    LEFT_SHIFT,
+    LESS,
+    LESS_EQUAL,
+    LOGICAL_AND,
+    LOGICAL_OR,
+    LOGICAL_XOR,
+    MAXIMUM,
+    MINIMUM,
+    MOD,
+    MULTIPLY,
+    NOT_EQUAL,
+    POWER,
+    RIGHT_SHIFT,
+    SUBTRACT,
+
+    // Used by system operations
     DISCARD,
-    SYNC
+    FREE,
+    NONE,
+    SYNC,
+
+    // Used by generator operations
+    FLOOD,
+    RANDOM,
+    RANGE,
+
+    NOPER
+
 } OPERATOR;
 
 typedef struct bytecode {
@@ -68,7 +128,7 @@ typedef struct bh_kernel_arg {
     int64_t* stride;    // Stride in each dimension of the array
 } bh_kernel_arg_t;      // Meta-data for a kernel argument
 
-// Single-Expression-Jit hash: OPCODE_NDIM_LAYOUT_TYPESIG
+// Layoutmask
 #define A0_CONSTANT     (1 << 0)
 #define A0_CONTIGUOUS   (1 << 1)
 #define A0_STRIDED      (1 << 2)

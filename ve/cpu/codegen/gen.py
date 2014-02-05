@@ -42,6 +42,47 @@ def enumstr_to_ctypestr(opcodes,types):
 def enumstr_to_shorthand(opcodes, types):
     return [{"types": [(t["enum"], t["shorthand"]) for t in types]}]
 
+def operators(opcodes, types):
+    unary   = []
+    binary  = []
+    huh     = []
+    system  = []
+    userdef = ['USERDEFINED']
+    generators = ["RANGE", "RANDOM", "FLOOD"]
+
+    for opc in opcodes:
+        opcode = opc['opcode'].replace('BH_','')
+        if 'REDUCE' in opcode:
+            continue
+        if 'ACCUMULATE' in opcode:
+            continue
+        if 'RANDOM' in opcode:
+            continue
+        if 'RANGE' in opcode:
+            continue
+
+        if opc['system_opcode']:
+            system.append(opcode)
+        else:
+            if opc['nop'] == 3:
+                binary.append(opcode)
+            elif opc['nop'] == 2:
+                unary.append(opcode)
+            else:
+                huh.append(opcode)
+    
+    if len(huh)>0:
+        print "Something is weird here!", huh
+
+    operators = [{
+        'unary':        sorted(unary),
+        'binary':       sorted(binary),
+        'system':       sorted(system),
+        'generators':   sorted(generators)
+    }]
+
+    return operators
+
 def layoutmask_to_shorthand(opcodes, types):
     A0_CONSTANT = 1 << 0;
     A0_CONTIGUOUS    = 1 << 1;
