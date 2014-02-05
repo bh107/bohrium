@@ -19,9 +19,10 @@ def main(self):
         if fn in self.__dict__:
             template = Template(
                 file = "%s%s%s.tpl" % ("templates", os.sep, fn),
-                searchList = self.__dict__[fn](opcodes, types)
+                searchList=globals()[fn](opcodes, types)
             )
-            print template
+            with open('output/%s.c' % fn, 'w') as fd:
+                fd.write(str(template))
 
 def bh_opcode_to_cstr(opcodes, types):
     return [{"opcodes": [(o["opcode"], o["opcode"], o["opcode"].replace('BH_','')) for o in opcodes
@@ -82,6 +83,57 @@ def operators(opcodes, types):
     }]
 
     return operators
+
+def compose(opcodes, types):
+    """Construct the data need to create a map from bh_instruction to bh_bytecode_t."""
+
+    ewise_u     = []
+    ewise_b     = []    
+    scans       = []
+    reductions  = []
+    generators  = []
+    system      = []
+
+    huh = []
+
+    for o in opcodes:
+        opcode = o['opcode']
+
+        if o['system_opcode']:
+            system.append([opcode, 'SYSTEM', opcode.replace('BH_','')])
+        else:
+            if 'REDUCE' in opcode:
+                operator = '_'.join(opcode.split('_')[1:-1])
+                reductions.append([opcode, 'REDUCE', operator])
+            elif 'ACCUMULATE' in opcode:
+                operator = '_'.join(opcode.split('_')[1:-1])
+                scans.append([opcode, 'SCAN', operator])
+            elif 'RANDOM' in opcode:
+                generators.append([opcode, 'GENERATOR', 'RANDOM'])
+            elif 'RANGE' in opcode:
+                generators.append([opcode, 'GENERATOR', 'RANGE'])
+            else:
+                operator = '_'.join(opcode.split('_')[1:])
+                if o['nop'] == 3:
+                    ewise_b.append([opcode, 'EWISE', operator])                    
+                elif o['nop'] == 2:
+                    ewise_u.append([opcode, 'EWISE', operator])
+                else:
+                    huh.append([opcode, '?', operator])
+    
+    if len(huh)>0:
+        print "Something is weird here!", huh
+
+    operations = [{
+        'ewise_u':      sorted(ewise_u),
+        'ewise_b':      sorted(ewise_b),
+        'reductions':   sorted(reductions),
+        'scans':        sorted(scans),
+        'generators':   sorted(generators),
+        'system':       sorted(system)
+    }]
+
+    return operations
 
 def layoutmask_to_shorthand(opcodes, types):
     A0_CONSTANT = 1 << 0;

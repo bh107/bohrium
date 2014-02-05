@@ -62,14 +62,28 @@ typedef struct bh_kernel {
     int tsig[10];               // Typesignature of the instructions
     int lmask[10];              // Layoutmask of the instructions
 
+    int len;
+    bytecode_t* program;        // Ordered list of bytecodes
+
     int nargs;                  // Number of arguments to the kernel
     bh_kernel_arg_t* args;      // Array of kernel arguments
 
     string symbol;              // Textual representation of the kernel
 } bh_kernel_t;                  // Meta-data to construct and execute a kernel-function
 
+typedef struct bh_block {
+    int len;
+    bytecode_t* program;
+
+    int nargs;
+    bh_kernel_arg_t args;
+
+    string symbol;
+} bh_block_t;
+
 #include "compiler.cpp"
 #include "specializer.cpp"
+#include "compose.c"
 
 process* target;
 
@@ -516,7 +530,7 @@ bh_error bh_ve_cpu_init(const char *name)
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     bh_error res = BH_SUCCESS;
-    bh_dag* root = &bhir->dag_list[0];  // The root dag contains only dags
+    bh_dag* root = &bhir->dag_list[0];  // Start at the root DAG
 
     for(bh_intp i=0; i<root->nnode; ++i) {
         bh_intp node = root->node_map[i];
@@ -526,7 +540,17 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         }
         node = -1*node-1; // Compute the node-index
 
+        //
+        // We are now looking at a graph in which we hope that all nodes are instructions
+        // we map this to a kernel in a slightly different format than a list of
+        // instructions
+        bh_kernel_t kernel;
+        compose(&kernel, bhir, &bhir->dag_list[node]);
+
+        // Map to cpuIR
         res = bh_ir_map_instr(bhir, &bhir->dag_list[node], &execute);
+
+
         if (res !=BH_SUCCESS) {
             break;
         }

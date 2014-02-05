@@ -11,6 +11,7 @@ ifeq ($(PLATFORM_OS),OSX)
 endif
 
 LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
+#LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=gnu++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
 LDFLAGS=-L../../core $(ARCH_OPTS) -lbh $(EXTRA_LIBS) -lctemplate -shared -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(ALL_CPP_FILES) $(ALL_C_FILES)

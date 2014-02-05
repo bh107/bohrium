@@ -24,10 +24,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 typedef enum OPERATION {
     EWISE       = 1,
-    REDUCTION   = 2,
+    REDUCE      = 2,
     SCAN        = 4,
-    GENERATOR   = 8
-    SYSTEM      = 16
+    GENERATOR   = 8,
+    SYSTEM      = 16,
     EXTENSION   = 32,
 } OPERATION;
 
@@ -102,16 +102,17 @@ typedef enum OPERATOR {
     RANDOM,
     RANGE,
 
-    NOPER
+    NBUILTIN,   // Not an operator but a count of built-in operators
+    EXT_OFFSET  // Wildcard for extension opcodes
 
 } OPERATOR;
 
 typedef struct bytecode {
     OPERATION op;       // Operation
     OPERATOR  oper;     // Operator
-    uint16_t  out;      // Output operand
-    uint16_t  in1;      // First input operand
-    uint16_t  in2;      // Second input operand
+    uint32_t  out;      // Output operand
+    uint32_t  in1;      // First input operand
+    uint32_t  in2;      // Second input operand
 } bytecode_t;
 
 //
