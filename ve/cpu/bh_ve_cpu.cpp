@@ -54,45 +54,6 @@ static char* kernel_path;
 static char* object_path;
 static char* template_path;
 
-/*
-typedef enum BH_OPERATION {
-    EWISE,
-    REDUCTION,
-    SCAN,
-    RANGE,
-    RANDOM,
-    SYSTEM
-} BH_OPERATION;
-
-typedef enum BH_OPERATOR {
-    ADD,
-    SUBTRACT,
-    MULTIPLY,
-} BH_OPERATOR;
-
-typedef struct bh_bytecode {
-    BH_OPERATION op;    // Operation
-    BH_OPERATOR oper;   // Operator
-    uint16_t out;       // Output operand
-    uint16_t in1;       // First input operand
-    uint16_t in2;       // Second input operand
-} bh_bytecode_t;
-*/
-
-//
-// NOTE: Changes to bk_kernel_args_t must be 
-//       replicated to "templates/kernel.tpl".
-//
-typedef struct bh_kernel_arg {
-    void*   data;       // Pointer to memory allocated for the array
-    int64_t start;      // Offset from memory allocation to start of array
-    int64_t nelem;      // Number of elements available in the allocation
-
-    int64_t ndim;       // Number of dimensions of the array
-    int64_t* shape;     // Shape of the array
-    int64_t* stride;    // Stride in each dimension of the array
-} bh_kernel_arg_t;      // Meta-data for a kernel argument
-
 typedef struct bh_kernel {
     int ninstr;                 // Number of instructions in kernel
     int ninstr_nonsys;          // Number of instructions without a system opcode
@@ -554,8 +515,23 @@ bh_error bh_ve_cpu_init(const char *name)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    // Execute one instruction at a time starting at the root DAG.
-    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &execute);
+    bh_error res = BH_SUCCESS;
+    bh_dag* root = &bhir->dag_list[0];  // The root dag contains only dags
+
+    for(bh_intp i=0; i<root->nnode; ++i) {
+        bh_intp node = root->node_map[i];
+        if (node>0) {
+            cout << "Encountered an instruction in the root-dag." << endl;
+            return BH_ERROR;
+        }
+        node = -1*node-1; // Compute the node-index
+
+        res = bh_ir_map_instr(bhir, &bhir->dag_list[node], &execute);
+        if (res !=BH_SUCCESS) {
+            break;
+        }
+    }
+    return res;
 }
 
 /* Component interface: shutdown (see bh_component.h) */

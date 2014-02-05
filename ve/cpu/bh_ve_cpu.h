@@ -22,6 +22,52 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh.h>
 
+typedef enum OPERATION {
+    EWISE       =1,
+    REDUCTION   =2,
+    SCAN        =4,
+    RANGE       =8,
+    RANDOM      =16,
+    SYSTEM      =32
+} OPERATION;
+
+typedef enum OPERATOR {
+    ADD,
+    SUBTRACT,
+    MULTIPLY,
+
+    SIN,
+    COS,
+    ABS,
+
+    NONE,
+    FREE,
+    DISCARD,
+    SYNC
+} OPERATOR;
+
+typedef struct bytecode {
+    OPERATION op;       // Operation
+    OPERATOR  oper;     // Operator
+    uint16_t  out;      // Output operand
+    uint16_t  in1;      // First input operand
+    uint16_t  in2;      // Second input operand
+} bytecode_t;
+
+//
+// NOTE: Changes to bk_kernel_args_t must be 
+//       replicated to "templates/kernel.tpl".
+//
+typedef struct bh_kernel_arg {
+    void*   data;       // Pointer to memory allocated for the array
+    int64_t start;      // Offset from memory allocation to start of array
+    int64_t nelem;      // Number of elements available in the allocation
+
+    int64_t ndim;       // Number of dimensions of the array
+    int64_t* shape;     // Shape of the array
+    int64_t* stride;    // Stride in each dimension of the array
+} bh_kernel_arg_t;      // Meta-data for a kernel argument
+
 // Single-Expression-Jit hash: OPCODE_NDIM_LAYOUT_TYPESIG
 #define A0_CONSTANT     (1 << 0)
 #define A0_CONTIGUOUS   (1 << 1)
