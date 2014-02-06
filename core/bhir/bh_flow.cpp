@@ -319,11 +319,31 @@ void bh_flow::dot(const char* filename)
     fs.close();
 }
 
+//In order to remove duplicates, we need a view compare function
+struct view_compare {
+  bool operator() (const bh_view *v1, const bh_view *v2) const
+  {
+      //First we compare base, ndim, and start
+      int ret = memcmp(v1, v2, 3*sizeof(bh_intp));
+      if(ret == 0)
+      {//Then we compare shape and stride
+        ret = memcmp(v1->shape, v2->shape, v1->ndim*sizeof(bh_index));
+        if(ret == 0)
+            ret = memcmp(v1->stride, v2->stride, v1->ndim*sizeof(bh_index));
+      }
+      if(ret < 0)
+          return true;
+      else
+          return false;
+  }
+};
+
 // Write the flow object in the DOT format.
 void bh_flow::html(const char* filename)
 {
     ofstream fs(filename);
-    fs << "<!DOCTYPE html><html><body><table border=\"1\">" << std::endl;
+    fs << "<!DOCTYPE html><html><body><table border=\"1\" cellpadding=\"5\" ";
+    fs << "style=\"text-align:center\">" << endl;
 
     //'table' contains a string for each cell in the html table (excl. the header)
     //such that table[x][y] returns the string at coordinate (x,y).
@@ -331,7 +351,7 @@ void bh_flow::html(const char* filename)
     map<uint64_t, map<uint64_t, string> > table;
 
     //Create a map over all views in each base
-    map<const bh_base *, set<const bh_view*> > view_in_base;
+    map<const bh_base *, set<const bh_view*, view_compare> > view_in_base;
     for(map<const bh_base *, vector<flow_node> >::const_iterator b=bases.begin();
         b != bases.end(); b++)
     {
@@ -342,43 +362,61 @@ void bh_flow::html(const char* filename)
 
     //Fill 'table'
     uint64_t ncol=0;
-    for(map<const bh_base *, set<const bh_view*> >::const_iterator b=view_in_base.begin();
-        b != view_in_base.end(); b++)
+    map<const bh_base *, set<const bh_view*, view_compare> >::const_iterator b;
+    for(b=view_in_base.begin(); b != view_in_base.end(); b++)
     {
-        set<const bh_view*>::const_iterator v;
+        set<const bh_view*, view_compare>::const_iterator v;
         for(v=b->second.begin(); v!= b->second.end(); v++, ncol++)
         {
             vector<flow_node>::const_iterator n;
             for(n=bases[b->first].begin(); n != bases[b->first].end(); n++)
             {
-                if(n->view == *v)
+                if(bh_view_identical(n->view, *v))
                 {
+                    char str[100];
                     if(n->readonly)
-                    {
-                        char str[100];
-                        snprintf(str, 100, "R(%ld)", (long) n->instr->idx);
-                        table[n->instr->timestep][ncol] += str;
-                    }
+                        snprintf(str, 100, "%ld<sub>R</sub>", (long) n->instr->idx);
                     else
-                    {
-                        char str[100];
-                        snprintf(str, 100, "W(%ld)", (long) n->instr->idx);
-                        table[n->instr->timestep][ncol] += str;
-                    }
+                        snprintf(str, 100, "%ld<sub>W</sub>", (long) n->instr->idx);
+                    table[n->instr->timestep][ncol] += str;
                 }
             }
         }
     }
 
-    //Write view base header
-    fs << "<tr>";
-    for(map<const bh_base *, set<const bh_view*> >::const_iterator b=view_in_base.begin();
-        b != view_in_base.end(); b++)
+    //Write base header
+    fs << "<tr>" << endl;
+    for(b=view_in_base.begin(); b != view_in_base.end(); b++)
     {
-        set<const bh_view*>::const_iterator v;
+        fs << "\t<td colspan=\"" << b->second.size() << "\">" << b->first << "<br>";
+        fs << " (#elem: " << b->first->nelem << ", dtype: " << bh_type_text(b->first->type);
+        fs << ")</td>" << endl;
+    }
+    fs << "</tr>" << endl;
+
+    //Write view header
+    fs << "<tr>" << endl;
+    for(b=view_in_base.begin(); b != view_in_base.end(); b++)
+    {
+        set<const bh_view*, view_compare>::const_iterator v;
         for(v=b->second.begin(); v!= b->second.end(); v++)
         {
-            fs << "\t<td>" << *v << "</td>" << endl;
+            fs << "\t<td>";
+            fs << (*v)->start << "(";
+            for(bh_intp i=0; i<(*v)->ndim; ++i)
+            {
+                fs << (*v)->shape[i];
+                if(i < (*v)->ndim-1)
+                    fs << ",";
+            }
+            fs << ")(";
+            for(bh_intp i=0; i<(*v)->ndim; ++i)
+            {
+                fs << (*v)->stride[i];
+                if(i < (*v)->ndim-1)
+                    fs << ",";
+            }
+            fs << ")</td>" << endl;
         }
     }
     fs << "</tr>" << endl;
