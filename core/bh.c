@@ -355,6 +355,8 @@ bool bh_view_identical(const bh_view *a, const bh_view *b)
         return false;
     if(a->ndim != b->ndim)
         return false;
+    if(a->start != b->start)
+        return false;
     for(i=0; i<a->ndim; ++i)
     {
         if(a->shape[i] != b->shape[i])
