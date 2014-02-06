@@ -29,15 +29,17 @@ void pprint_filter(bh_ir *bhir)
     char graph_fn[8000];
     char trace_fn[8000];
     char flowd_fn[8000];
+    char flowh_fn[8000];
 
     ++count;
     snprintf(graph_fn, 8000, "graph-%d.dot", count);
     snprintf(trace_fn, 8000, "trace-%d.txt", count);
     snprintf(flowd_fn, 8000, "flow-%d.dot",  count);
+    snprintf(flowh_fn, 8000, "flow-%d.html",  count);
 
     printf(
-        "pprint-filter: writing graph('%s'), trace('%s'), and flow('%s').\n",
-        graph_fn, trace_fn, flowd_fn
+        "pprint-filter: writing graph('%s'), trace('%s'), and flow('%s', '%s').\n",
+        graph_fn, trace_fn, flowd_fn, flowh_fn
     );
 
     bh_bhir2dot(bhir, graph_fn);            // Graph
@@ -46,5 +48,6 @@ void pprint_filter(bh_ir *bhir)
     printf("Warning - the flow is generated based on the original instruction list\n");
     bh_flow flow = bh_flow(bhir->ninstr, bhir->instr_list);
     flow.dot(flowd_fn);
+    flow.html(flowh_fn);
 }
 

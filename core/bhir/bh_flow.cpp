@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <sstream>
 #include <fstream>
+#include <string>
 #include <stdexcept>
 using namespace std;
 
@@ -35,8 +36,13 @@ bh_flow::flow_node &bh_flow::create_node(bool readonly, flow_instr *instr, const
 {
     //Create the new node at the base it accesses
     bases[view->base].push_back(flow_node(nnodes++, readonly, instr, view));
+    flow_node &ret = bases[view->base].back();
+    if(readonly)
+        instr->reads.insert(ret);
+    else
+        instr->writes.insert(ret);
     ++nnodes;
-    return bases[view->base].back();
+    return ret;
 }
 
 
@@ -147,9 +153,9 @@ void bh_flow::bhir_fill(bh_ir *bhir)
     {
         //For each instruction, we find all dependencies
         set<flow_node> deps;
-        for(set<flow_node>::const_iterator n=i->writes.begin(); n!=i->writes.end(); ++i)
+        for(set<flow_node>::const_iterator n=i->writes.begin(); n!=i->writes.end(); ++n)
             get_conflicting_access(*n, deps);
-        for(set<flow_node>::const_iterator n=i->reads.begin(); n!=i->reads.end(); ++i)
+        for(set<flow_node>::const_iterator n=i->reads.begin(); n!=i->reads.end(); ++n)
             get_conflicting_access(*n, deps);
 
         for(set<flow_node>::const_iterator d=deps.begin(); d != deps.end(); d++)
@@ -310,5 +316,90 @@ void bh_flow::dot(const char* filename)
         fs << "}" << endl;
     }
     fs << "}" << std::endl;
+    fs.close();
+}
+
+// Write the flow object in the DOT format.
+void bh_flow::html(const char* filename)
+{
+    ofstream fs(filename);
+    fs << "<!DOCTYPE html><html><body><table border=\"1\">" << std::endl;
+
+    //'table' contains a string for each cell in the html table (excl. the header)
+    //such that table[x][y] returns the string at coordinate (x,y).
+    //We write to 'table' before writing to file.
+    map<uint64_t, map<uint64_t, string> > table;
+
+    //Create a map over all views in each base
+    map<const bh_base *, set<const bh_view*> > view_in_base;
+    for(map<const bh_base *, vector<flow_node> >::const_iterator b=bases.begin();
+        b != bases.end(); b++)
+    {
+        vector<flow_node>::const_iterator n;
+        for(n=b->second.begin(); n != b->second.end(); n++)
+            view_in_base[b->first].insert(n->view);
+    }
+
+    //Fill 'table'
+    uint64_t ncol=0;
+    for(map<const bh_base *, set<const bh_view*> >::const_iterator b=view_in_base.begin();
+        b != view_in_base.end(); b++)
+    {
+        set<const bh_view*>::const_iterator v;
+        for(v=b->second.begin(); v!= b->second.end(); v++, ncol++)
+        {
+            vector<flow_node>::const_iterator n;
+            for(n=bases[b->first].begin(); n != bases[b->first].end(); n++)
+            {
+                if(n->view == *v)
+                {
+                    if(n->readonly)
+                    {
+                        char str[100];
+                        snprintf(str, 100, "R(%ld)", (long) n->instr->idx);
+                        table[n->instr->timestep][ncol] += str;
+                    }
+                    else
+                    {
+                        char str[100];
+                        snprintf(str, 100, "W(%ld)", (long) n->instr->idx);
+                        table[n->instr->timestep][ncol] += str;
+                    }
+                }
+            }
+        }
+    }
+
+    //Write view base header
+    fs << "<tr>";
+    for(map<const bh_base *, set<const bh_view*> >::const_iterator b=view_in_base.begin();
+        b != view_in_base.end(); b++)
+    {
+        set<const bh_view*>::const_iterator v;
+        for(v=b->second.begin(); v!= b->second.end(); v++)
+        {
+            fs << "\t<td>" << *v << "</td>" << endl;
+        }
+    }
+    fs << "</tr>" << endl;
+
+    //Write 'table'
+    for(uint64_t row=0; row<timesteps.size(); ++row)
+    {
+        fs << "<tr>" << endl;
+        for(uint64_t col=0; col<ncol; ++col)
+        {
+            if(table[row].count(col) == 1)
+            {
+                fs << "\t<td>" << table[row][col] << "</td>" << endl;
+            }
+            else
+            {
+                fs << "\t<td></td>" << endl;
+            }
+        }
+        fs << "</tr>" << endl;
+    }
+    fs << "</table></body></html>" << endl;
     fs.close();
 }

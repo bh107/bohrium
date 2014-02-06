@@ -115,6 +115,9 @@ public:
 
     //Write the flow object in the DOT format
     void dot(const char* filename);
+
+    //Write the flow object in the HTML format
+    void html(const char* filename);
 };
 
 
