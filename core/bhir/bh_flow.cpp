@@ -342,8 +342,8 @@ struct view_compare {
 void bh_flow::html(const char* filename)
 {
     ofstream fs(filename);
-    fs << "<!DOCTYPE html><html><body><table border=\"1\" cellpadding=\"5\" ";
-    fs << "style=\"text-align:center\">" << endl;
+    fs << "<!DOCTYPE html><html><body>" << endl << "<div style=\"float:left;\">";
+    fs << "<table border=\"1\" cellpadding=\"5\" style=\"text-align:center\">" << endl;
 
     //'table' contains a string for each cell in the html table (excl. the header)
     //such that table[x][y] returns the string at coordinate (x,y).
@@ -438,6 +438,15 @@ void bh_flow::html(const char* filename)
         }
         fs << "</tr>" << endl;
     }
-    fs << "</table></body></html>" << endl;
+    fs << "</table></div>" << endl;
+    //Write the instruction list
+    fs << "<div style=\"float:right;\">" << endl;
+    for(bh_intp i=0; i<ninstr; ++i)
+    {
+        char buf[100000];
+        bh_sprint_instr(&instr_list[i], buf, "<br>");
+        fs << "<b>" << i << "</b>)" << buf << "<br>";
+    }
+    fs << "</div></body></html>" << endl;
     fs.close();
 }
