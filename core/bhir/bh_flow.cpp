@@ -72,7 +72,7 @@ void bh_flow::get_conflicting_access(const flow_node &node, set<flow_node> &conf
         if(node.instr->idx == it->instr->idx)
             continue;//No possible conflict within the same instruction
 
-        if(bh_view_overlap(node.view, it->view))
+        if(!bh_view_disjoint(node.view, it->view))
         {
             conflicts.insert(*it);
         }
@@ -125,7 +125,7 @@ void bh_flow::bhir_fill(bh_ir *bhir)
     assert(bhir->dag_list == NULL);
 
     //A set of dependencies for each instruction index in the flow
-    vector<set<bh_intp> > instr_deps(ninstr);
+    vector<set<flow_instr*> > instr_deps(ninstr);
     //Map between flow and bhir sub-DAG indices
     map<bh_intp, bh_intp> dag_f2b;
     //Number of sub-DAGs
@@ -163,7 +163,7 @@ void bh_flow::bhir_fill(bh_ir *bhir)
             if(i->sub_dag == d->instr->sub_dag)//The dependency is within a sub-DAG
             {
                 if(i->idx != d->instr->idx)//We cannot conflict with ourself
-                    instr_deps[i->idx].insert(d->instr->idx);
+                    instr_deps[i->idx].insert(d->instr);
             }
             else//The dependency is to another sub-DAG
             {
@@ -229,7 +229,7 @@ void bh_flow::bhir_fill(bh_ir *bhir)
         set<flow_instr*>::size_type row=0;
         for(set<flow_instr*>::const_iterator instr=nodes.begin(); instr!=nodes.end(); ++instr, ++row)
         {
-            const set<bh_intp> &deps = instr_deps[row];
+            const set<flow_instr*> &deps = instr_deps[(*instr)->idx];
 
             //Note that the order of 'row' is ascending thus the topological order is preserved.
             dag->node_map[row] = (*instr)->idx;
@@ -240,9 +240,9 @@ void bh_flow::bhir_fill(bh_ir *bhir)
             {
                 //Convert flow indices to indices in the local sub-DAG
                 vector<bh_intp> sorted_vector;
-                for(set<bh_intp>::iterator d = deps.begin(); d != deps.end(); d++)
+                for(set<flow_instr*>::const_iterator d = deps.begin(); d != deps.end(); d++)
                 {
-                    sorted_vector.push_back(instr2row[*d]);
+                    sorted_vector.push_back(instr2row[(*d)->idx]);
                 }
                 bh_error e = bh_adjmat_fill_empty_col(dag->adjmat, row,
                                                       sorted_vector.size(),
