@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 
 #include <iostream>
+#include "bh_visualizer.h"
 #include "visualizer.hpp"
 
 /**
@@ -31,18 +32,19 @@ If not, see <http://www.gnu.org/licenses/>.
  *
  */
 bool bh_visualize_initialized = false;
-bh_error bh_visualizer(bh_userfunc *arg, void* ve_arg)
+bh_error bh_visualizer(bh_instruction *instr, void* arg)
 {
-    bh_visualize_type *m_arg = (bh_visualize_type *) arg;
-    assert(m_arg->nout == 1);
-    assert(m_arg->nin == 1);
-    bh_view *A   = &m_arg->operand[0];
+    bh_view *A   = &instr->operand[0];
+    bh_float64 *args  = (bh_float64*) instr->operand[1].base->data;
+    assert(args != NULL);
+    assert(instr->operand[1].base->nelem == 5);
+    assert(instr->operand[1].base->type == BH_FLOAT64);
 
-    bh_int32 cm = m_arg->cm;
-    bh_float32 min = m_arg->min;
-    bh_float32 max = m_arg->max;
-    bh_bool flat = m_arg->flat;
-    bh_bool cube = m_arg->cube;
+    bh_int32 cm    = args[0];
+    bh_bool flat   = args[1];
+    bh_bool cube   = args[2];
+    bh_float32 min = args[3];
+    bh_float32 max = args[4];
 
     //Make sure that the arrays memory are allocated.
     if(bh_data_malloc(A->base) != BH_SUCCESS)
