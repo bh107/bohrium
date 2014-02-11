@@ -26,6 +26,32 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <vector>
 
+
+/* Returns True when the instructions in A do conflict with
+ * instruction B (all represented through indices in 'instr_list')
+ * There is conflict when the output of B overlaps with any inputs of A
+ * unless they views are identical.
+ */
+static bool check_data_conflict(const bh_instruction *instr_list,
+                                const std::set<bh_intp> &A, bh_intp B)
+{
+    const bh_instruction *b = &instr_list[B];
+    const bh_view *b_op = &b->operand[0];//Output operand
+
+    for(std::set<bh_intp>::iterator it=A.begin(); it!=A.end(); it++)
+    {
+        const bh_instruction *a = &instr_list[*it];
+        bh_intp nop = bh_operands_in_instruction(a);
+        for(bh_intp o=1; o < nop; ++o)//Input operands
+        {
+            const bh_view *a_op = &a->operand[o];
+            if(!bh_view_disjoint(a_op, b_op))
+                return true;
+        }
+    }
+    return false;
+}
+
 /* Creates an adjacency list based on a instruction list
  * where an index in the instruction list refer to a row or
  * a column index in the adjacency matrix.
@@ -41,8 +67,8 @@ void bh_adjlist_create_from_instr(bh_adjlist &adjlist, bh_intp ninstr,
     assert(adjlist.node.size() == 0 && adjlist.sub_dag.size() == 0);
 
     //Record over which instructions (identified by indexes in the instruction list)
-    //are reading to a specific array. We use a std::vector since multiple instructions
-    //may read to the same array.
+    //are reading from a specific array. We use a std::vector since multiple instructions
+    //may read from the same array.
     std::map<bh_base*, std::vector<bh_intp> > reads;
 
     //Record over the last instruction (identified by indexes in the instruction list)
@@ -53,6 +79,8 @@ void bh_adjlist_create_from_instr(bh_adjlist &adjlist, bh_intp ninstr,
 
     for(bh_intp i=0; i<ninstr; ++i)
     {
+//        bh_adjlist_pprint(adjlist);
+
         const bh_instruction *inst = &instr_list[i];
         const bh_view *ops = bh_inst_operands((bh_instruction *)inst);
         int nops = bh_operands_in_instruction(inst);
@@ -94,15 +122,45 @@ void bh_adjlist_create_from_instr(bh_adjlist &adjlist, bh_intp ninstr,
             bh_base *base = bh_base_array(&ops[j]);
             reads[base].push_back(i);
         }
+//        printf("\n");
+//        bh_pprint_instr(inst);
+        if(deps.size() == 1)
+        {
+            bh_intp sub_dag = adjlist.node[*deps.begin()].sub_dag;
+//            printf("merge candidate sub_dag: %ld\n", sub_dag);
 
-        //For now all nodes gets its own sub-DAG
-        node.sub_dag = i;
-        adjlist.node.push_back(node);
+            //Check if i'th instruction should be part of 'sub_dag'
+            if(!check_data_conflict(instr_list, adjlist.sub_dag[sub_dag].node, adjlist.node.size()))
+            {
+    //                    printf("merge\n");
+                node.sub_dag = sub_dag;//Join the found sub-DAG
+                adjlist.sub_dag[sub_dag].node.insert(adjlist.node.size());
+                //Update the sub-DAG's adjacencies
+                for(std::set<bh_intp>::iterator it=deps.begin(); it!=deps.end(); it++)
+                {
+                    if(adjlist.node[*it].sub_dag != sub_dag)
+                    {
+                        adjlist.sub_dag[sub_dag].adj.insert(adjlist.node[*it].sub_dag);
+                    }
+                }
+                adjlist.node.push_back(node);
+                continue;
+            }
+        }
+//        printf("Uniqe, get its own sub-DAG\n");
+        node.sub_dag = adjlist.sub_dag.size();
         bh_adjlist_sub_dag sub_dag;
-        sub_dag.adj.insert(deps.begin(), deps.end());
-        sub_dag.node.insert(i);
+        sub_dag.node.insert(adjlist.node.size());
+        //Update the sub-DAG's adjacencies
+        for(std::set<bh_intp>::iterator it=deps.begin(); it!=deps.end(); it++)
+        {
+            sub_dag.adj.insert(adjlist.node[*it].sub_dag);
+        }
         adjlist.sub_dag.push_back(sub_dag);
+        adjlist.node.push_back(node);
     }
+//    printf("FINAL:\n");
+//    bh_adjlist_pprint(adjlist);
 }
 
 /* Fills the dag_list in the ‘bhir’ based on the adjacency list ‘adjlist’

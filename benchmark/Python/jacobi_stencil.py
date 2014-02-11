@@ -13,4 +13,6 @@ B.start()
 #ft = js.solve(ft,max_iterations=I)
 ft = js.iterate(ft, I)
 B.stop()
+if B.verbose:
+    print ft
 B.pprint()

@@ -43,6 +43,15 @@ DLLEXPORT void bh_pprint_array(const bh_view *view);
  */
 DLLEXPORT void bh_pprint_instr(const bh_instruction *instr);
 
+/* Pretty print an instruction.
+ *
+ * @instr   The instruction in question
+ * @buf     Output buffer (must have sufficient size)
+ * @newline The new line string
+ */
+DLLEXPORT void bh_sprint_instr(const bh_instruction *instr, char buf[],
+                               const char newline[]);
+
 /* Pretty print an instruction list.
  *
  * @instr_list  The instruction list in question

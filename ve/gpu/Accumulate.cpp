@@ -131,7 +131,7 @@ std::string Accumulate::generateCode(bh_instruction* inst,
     source << "\tout[element] = accu;\n";
     source << "\tfor (int i = 1; i < " << in->shape[axis] << "; ++i)\n\t{\n";
     source << "\t\telement += " << in->stride[axis] << ";\n\t";
-    generateInstructionSource(opcode, std::make_pair(outType,inType), operands, source);
+    generateInstructionSource(opcode, {outType, inType}, operands, source);
     source << "\t\tout[element] = accu;\n\t}\n}\n";
     return source.str();
 }

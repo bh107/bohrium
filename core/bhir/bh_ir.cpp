@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_ir.h"
 #include "bh_vector.h"
 #include "bh_adjlist.h"
+#include "bh_flow.h"
 
 /* Returns the total size of the BhIR including overhead (in bytes).
  *

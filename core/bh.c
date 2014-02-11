@@ -267,13 +267,16 @@ inline int gcd(int a, int b)
     }
     return b;
 }
+
 /* Determines whether two views access some of the same data points
+ * NB: This functions may return True on non-overlapping views.
+ *     But will always return False on overlapping views.
  *
  * @a The first view
  * @b The second view
  * @return The boolean answer
  */
-bool bh_disjoint_views(const bh_view *a, const bh_view *b)
+bool bh_view_disjoint(const bh_view *a, const bh_view *b)
 {
     if (bh_is_constant(a) || bh_is_constant(b)) // One is a constant
         return true;
@@ -302,43 +305,6 @@ bool bh_disjoint_views(const bh_view *a, const bh_view *b)
     return false;
 }
 
-/* Determines whether two views overlap.
- * NB: This functions may return True on non-overlapping views.
- *     But will always return False on overlapping views.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_view_overlap(const bh_view *a, const bh_view *b)
-{
-    if(bh_is_constant(a) || bh_is_constant(b))
-        return false;
-
-    if(bh_base_array(a) != bh_base_array(b))
-        return false;
-
-    bh_intp a_nelem = bh_nelements(a->ndim, a->shape);
-    bh_intp b_nelem = bh_nelements(b->ndim, b->shape);
-
-    if(a_nelem <= 0 || b_nelem <= 0)
-        return false;
-
-    //Check for obvious data overlap
-    bh_intp a_end = a->start + a_nelem;
-    bh_intp b_end = b->start + b_nelem;
-    if(a->start <= b->start && b->start < a_end)
-        return true;
-    if(a->start <= b_end && b_end < a_end)
-        return true;
-    if(b->start <= a->start && a->start < b_end)
-        return true;
-    if(b->start <= a_end && a_end < b_end)
-        return true;
-
-    return false;
-}
-
 /* Determines whether two views are identical and points
  * to the same base array.
  *
@@ -354,6 +320,8 @@ bool bh_view_identical(const bh_view *a, const bh_view *b)
     if(a->base != b->base)
         return false;
     if(a->ndim != b->ndim)
+        return false;
+    if(a->start != b->start)
         return false;
     for(i=0; i<a->ndim; ++i)
     {

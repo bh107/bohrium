@@ -150,6 +150,21 @@ DLLEXPORT bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inpu
  */
 DLLEXPORT bool bh_get_type_conversion(bh_opcode opcode, bh_type outtype, bh_type* inputtype1, bh_type* inputtype2, bh_type* constanttype);
 
+/**
+ *  Deduct a numerical value representing the types of the given instruction.
+ *
+ *  @param instr The instruction for which to deduct a signature.
+ *  @return The deducted signature.
+ */
+DLLEXPORT int bh_type_sig(bh_instruction *instr);
+
+/**
+ *  Determine whether the given typesig, in the coding produced by bh_typesig, is valid.
+ *
+ *  @param instr The instruction for which to deduct a signature.
+ *  @return The deducted signature.
+ */
+DLLEXPORT bool bh_type_sig_check(int type_sig);
 
 /* Byte size for type
  *
@@ -234,23 +249,7 @@ DLLEXPORT bool bh_is_constant(const bh_view* o);
  */
 DLLEXPORT void bh_flag_constant(bh_view* o);
 
-/* Determines whether the two views are the same
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_same_view(const bh_view* a, const bh_view* b);
-
 /* Determines whether two views access some of the same data points
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_disjoint_views(const bh_view *a, const bh_view *b);
-
-/* Determines whether two views overlap.
  * NB: This functions may return True on non-overlapping views.
  *     But will always return False on overlapping views.
  *
@@ -258,7 +257,7 @@ DLLEXPORT bool bh_disjoint_views(const bh_view *a, const bh_view *b);
  * @b The second view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_view_overlap(const bh_view *a, const bh_view *b);
+DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
 
 /* Determines whether two views are identical and points
  * to the same base array.

@@ -1,12 +1,6 @@
-void {{SYMBOL}}(int tool, ...)
+// Unclassified operation... iota/range/generator of data..
 {
-    va_list list;
-    va_start(list,tool);
-    int64_t nelements = va_arg(list, int64_t);
-    {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_data = va_arg(list, {{TYPE}}*);
-    {{/OPERAND}}
-    va_end(list);
+    int64_t nelements = a{{NR_OUTPUT}}_nelem;
 
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
@@ -22,10 +16,14 @@ void {{SYMBOL}}(int tool, ...)
             work += nelements % nthreads;
         }
         int64_t work_end = work_offset+work;
+
+        {{#OPERAND}}
+        {{TYPE}} *a{{NR}}_current = a{{NR}}_first;
+        {{/OPERAND}}
                                                 // Fill up the array
         for(int64_t i=work_offset; i<work_end; ++i) {
             {{#OPERAND}}
-            a{{NR}}_data[i] = i;
+            a{{NR}}_current[i] = i;
             {{/OPERAND}}
         }
     }

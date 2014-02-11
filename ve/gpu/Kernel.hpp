@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __KERNEL_HPP
 #define __KERNEL_HPP
 
-#include <CL/cl.hpp>
+#include "cl.hpp"
 #include <vector>
 #include <bh.h>
 #include "ResourceManager.hpp"

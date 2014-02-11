@@ -23,6 +23,13 @@ def main(self):
             )
             print template
 
+def bh_opcode_to_cstr(opcodes, types):
+    return [{"opcodes": [(o["opcode"], o["opcode"], o["opcode"].replace('BH_','')) for o in opcodes
+    ]}]
+
+def bh_opcode_to_cstr_short(opcodes, types):
+    return bh_opcode_to_cstr(opcodes, types)
+
 def enum_to_ctypestr(opcodes, types):
     return [{"types": [(t["enum"], t["c"]) for t in types]}]
 
