@@ -108,9 +108,9 @@ bh_flow::bh_flow(bh_intp ninstr, const bh_instruction *instr_list):
             }
         }
         //Add the final timestep of the instruction to 'timesteps'
-        if(instr.timestep >= timesteps.size())
+        if(instr.timestep >= (bh_intp)timesteps.size())
         {
-            assert(instr.timestep == timesteps.size());
+            assert(instr.timestep == (bh_intp)timesteps.size());
             timesteps.resize(instr.timestep+1);
         }
         timesteps[instr.timestep].push_back(&instr);
