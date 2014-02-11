@@ -4,7 +4,7 @@ LIB=libbh_vem_cluster.$(LIB_SUFFIX)
 SLAVE=bh_vem_cluster_slave
 CXX=mpic++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=gnu++0x -fno-strict-aliasing -I$(ROOT)/include -I$(ROOT)/iniparser/src
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=gnu++11 -fno-strict-aliasing -I$(ROOT)/include -I$(ROOT)/iniparser/src
 LDFLAGS= $(ARCH_OPTS) -L../../core -lbh -ldl -o
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(ALL_CPP_FILES) $(ALL_C_FILES)

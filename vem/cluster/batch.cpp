@@ -113,7 +113,7 @@ void batch_schedule_comm(bool direction, int rank, const bh_view &local_view)
  */
 void batch_flush()
 {
-    bh_uint64 stime = bh_timing();
+    bh_uint64 stime = bh_timer_stamp();
 
     for(std::vector<task>::iterator it=task_store.begin();
         it != task_store.end(); ++it)
@@ -145,7 +145,7 @@ void batch_flush()
                 bh_intp s     = bh_type_size(bh_base_array(view)->type);
                 bh_intp nelem = bh_nelements_nbcast(view);
 
-                bh_uint64 stime = bh_timing();
+                bh_uint64 stime = bh_timer_stamp();
                 if(dir)//Sending
                 {
                     char *data = (char*) view->base->data;
@@ -166,7 +166,7 @@ void batch_flush()
                                      MPI_STATUS_IGNORE)) != MPI_SUCCESS)
                         EXCEPT_MPI(e);
                 }
-                bh_timing_save(timing_comm_p2p, stime, bh_timing());
+                bh_timer_add(timing_comm_p2p, stime, bh_timer_stamp());
                 break;
             }
             default:
@@ -179,7 +179,7 @@ void batch_flush()
     }
     task_store.clear();
     discard_store.clear();
-    bh_timing_save(timing_flush, stime, bh_timing());
+    bh_timer_add(timing_flush, stime, bh_timer_stamp());
 }
 
 

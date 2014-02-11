@@ -310,7 +310,7 @@ static bh_error execute_instr(bh_instruction *inst)
 bh_error exec_execute(bh_ir *bhir)
 {
 //    bh_pprint_instr_list(inst_list, count, "GLOBAL");
-    bh_uint64 stime = bh_timing();
+    bh_uint64 stime = bh_timer_stamp();
 
     //Execute each instruction in the BhIR starting at the root DAG
     bh_ir_map_instr(bhir, &bhir->dag_list[0], &execute_instr);
@@ -320,7 +320,7 @@ bh_error exec_execute(bh_ir *bhir)
     //And remove all tmp data structures
     tmp_clear();
 
-    bh_timing_save(timing_exec_execute, stime, bh_timing());
+    bh_timer_add(timing_exec_execute, stime, bh_timer_stamp());
     return BH_SUCCESS;
 }
 

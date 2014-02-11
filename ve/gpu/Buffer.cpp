@@ -80,8 +80,8 @@ cl::Event Buffer::getWriteEvent()
 
 void Buffer::cleanReadEvents()
 {
-    while (!readEvents.empty() && readEvents.front().getInfo<CL_EVENT_COMMAND_EXECUTION_STATUS>() == CL_COMPLETE)
-        readEvents.pop_front();
+//    while (!readEvents.empty() && readEvents.front().getInfo<CL_EVENT_COMMAND_EXECUTION_STATUS>() == CL_COMPLETE)
+//        readEvents.pop_front();
 }
 
 void Buffer::addReadEvent(cl::Event event)
