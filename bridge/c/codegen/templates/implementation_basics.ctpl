@@ -211,6 +211,17 @@ void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, 
     (*((multi_array<${ctype}>*)self))(*((multi_array<${ctype}>*)other));
 }
 
+// Flatten view
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_flatten(bh_multi_array_${bh_ctype}_p self) {
+    return (bh_multi_array_${bh_ctype}_p)&flatten((*((multi_array<${ctype}>*)self)));
+}
+
+
+// Transpose view
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_transpose(bh_multi_array_${bh_ctype}_p self) {
+    return (bh_multi_array_${bh_ctype}_p)&transpose((*((multi_array<${ctype}>*)self)));
+}
+
 %for $opname, $enum in $reduce_ops
 // Partial ${opname} reduction
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis) {
