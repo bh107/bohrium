@@ -1,4 +1,4 @@
-Running gen_opcodes.py will generate include/bh_opcode.h and core/bh_opcode.c
+Running gen_opcodes.py will generate include/bh_opcode.h and core/bh_opcode.cpp
 
 The file ''opcodes.json'' contains a definition of all opcodes in Bohrium,
 it uses the JSON (JavaScript Object Notation) syntax <http://json.org>.
