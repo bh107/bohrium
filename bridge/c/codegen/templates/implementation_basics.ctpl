@@ -150,11 +150,19 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t
 }
 
 // Construct a new array, filled with the specified value
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${ctype} value, uint64_t rank, const int64_t* shape) {
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${bh_atype} value, uint64_t rank, const int64_t* shape) {
     multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
     result->setTemp(true);
     result->link();
+%if $bh_ctype == "complex64" or $bh_ctype == "complex128"
+    ${ctype} t;
+    t.real(value.real);
+    t.imag(value.imag);
+
+    *result = t;
+%else
     *result = value;
+%end if
 
     return (bh_multi_array_${bh_ctype}_p)result;
 }
