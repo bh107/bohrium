@@ -525,8 +525,8 @@ multi_array<T>& flatten(multi_array<T>& rhs)
 
     throw std::runtime_error("flatten: Not implemented.\n");
 
-    multi_array<T>* result = &Runtime::instance().temp<T>();
-    result->meta.ndims = 1;
+    /*multi_array<T>* result = &Runtime::instance().temp<T>();
+    result->meta.ndim = 1;
     result->meta.start = 0;
     result->meta.shape[rhs.len()];
     result->meta.stride[0] = 1;
@@ -534,7 +534,7 @@ multi_array<T>& flatten(multi_array<T>& rhs)
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
 
-    return *result;
+    return *result;*/
 }
 
 template <typename T>
