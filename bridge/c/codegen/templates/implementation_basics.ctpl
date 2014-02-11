@@ -193,8 +193,17 @@ uint64_t bh_multi_array_${bh_ctype}_get_dimension_size(bh_multi_array_${bh_ctype
 }
 
 // Update with a scalar
-void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctype}_p self, const ${ctype} value) {
+void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctype}_p self, const ${bh_atype} value) {
+%if $bh_ctype == "complex64" or $bh_ctype == "complex128"
+    ${ctype} t;
+    t.real(value.real);
+    t.imag(value.imag);
+
+    (*((multi_array<${ctype}>*)self))(t);
+%else
     (*((multi_array<${ctype}>*)self))(value);
+%end if
+
 }
 
 // Update with an array
