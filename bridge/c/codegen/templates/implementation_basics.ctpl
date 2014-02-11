@@ -150,11 +150,19 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t
 }
 
 // Construct a new array, filled with the specified value
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${ctype} value, uint64_t rank, const int64_t* shape) {
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${bh_atype} value, uint64_t rank, const int64_t* shape) {
     multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
     result->setTemp(true);
     result->link();
+%if $bh_ctype == "complex64" or $bh_ctype == "complex128"
+    ${ctype} t;
+    t.real(value.real);
+    t.imag(value.imag);
+
+    *result = t;
+%else
     *result = value;
+%end if
 
     return (bh_multi_array_${bh_ctype}_p)result;
 }
@@ -185,13 +193,33 @@ uint64_t bh_multi_array_${bh_ctype}_get_dimension_size(bh_multi_array_${bh_ctype
 }
 
 // Update with a scalar
-void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctype}_p self, const ${ctype} value) {
+void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctype}_p self, const ${bh_atype} value) {
+%if $bh_ctype == "complex64" or $bh_ctype == "complex128"
+    ${ctype} t;
+    t.real(value.real);
+    t.imag(value.imag);
+
+    (*((multi_array<${ctype}>*)self))(t);
+%else
     (*((multi_array<${ctype}>*)self))(value);
+%end if
+
 }
 
 // Update with an array
 void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, bh_multi_array_${bh_ctype}_p other) {
     (*((multi_array<${ctype}>*)self))(*((multi_array<${ctype}>*)other));
+}
+
+// Flatten view
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_flatten(bh_multi_array_${bh_ctype}_p self) {
+    return (bh_multi_array_${bh_ctype}_p)&flatten((*((multi_array<${ctype}>*)self)));
+}
+
+
+// Transpose view
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_transpose(bh_multi_array_${bh_ctype}_p self) {
+    return (bh_multi_array_${bh_ctype}_p)&transpose((*((multi_array<${ctype}>*)self)));
 }
 
 %for $opname, $enum in $reduce_ops
