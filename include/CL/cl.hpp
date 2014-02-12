@@ -1726,7 +1726,10 @@ protected:
 public:
     Wrapper() : object_(NULL) { }
 
-    Wrapper(const cl_type &obj) : object_(obj) { }
+    Wrapper(const cl_type &obj) : object_(obj) 
+    { 
+        if (object_ != NULL) { detail::errHandler(retain(), __RETAIN_ERR); }
+    }
 
     ~Wrapper()
     {
@@ -1751,6 +1754,7 @@ public:
     {
         if (object_ != NULL) { detail::errHandler(release(), __RELEASE_ERR); }
         object_ = rhs;
+        if (object_ != NULL) { detail::errHandler(retain(), __RETAIN_ERR); }
         return *this;
     }
 
