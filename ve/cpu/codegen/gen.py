@@ -108,7 +108,11 @@ def compose(opcodes, types, opers):
         opcode = o['opcode']
 
         if o['system_opcode']:
-            system.append([opcode, 'SYSTEM', opcode.replace('BH_','')])
+            nin = 1
+            if 'BH_FREE' in opcode:
+                nin = 0
+            system.append([opcode, 'SYSTEM', opcode.replace('BH_',''), nin])
+
         else:
             if 'REDUCE' in opcode:
                 operator = '_'.join(opcode.split('_')[1:-1])
@@ -123,22 +127,22 @@ def compose(opcodes, types, opers):
             else:
                 operator = '_'.join(opcode.split('_')[1:])
                 if o['nop'] == 3:
-                    ewise_b.append([opcode, 'EWISE_B', operator, 2])
+                    ewise_b.append([opcode, 'ZIP', operator, 2])
                 elif o['nop'] == 2:
-                    ewise_u.append([opcode, 'EWISE_U', operator, 1])
+                    ewise_u.append([opcode, 'MAP', operator, 1])
                 else:
-                    huh.append([opcode, '?', operator])
+                    huh.append([opcode, '?', operator, 0])
     
     if len(huh)>0:
         print "Something is weird here!", huh
 
-    operations = [{
-        'ewise_u':      sorted(ewise_u),
-        'ewise_b':      sorted(ewise_b),
-        'reductions':   sorted(reductions),
-        'scans':        sorted(scans),
-        'generators':   sorted(generators),
-        'system':       sorted(system)
+    operations = [{'operations': \
+        sorted(ewise_u)         +\
+        sorted(ewise_b)         +\
+        sorted(reductions)      +\
+        sorted(scans)           +\
+        sorted(generators)      +\
+        sorted(system)
     }]
 
     return operations

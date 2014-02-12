@@ -104,19 +104,19 @@ bool is_contiguous(bh_kernel_arg_t* arg)
     return false;
 }
 
-int noperands(OPERATION op, OPERATOR oper)
+int noperands(tac_t* tac)
 {
-    switch(op) {
-        case EWISE_U:
+    switch(tac->op) {
+        case MAP:
             return 2;
-        case EWISE_B:
+        case ZIP:
             return 3;
         case SCAN:
             return 3;
         case REDUCE:
             return 3;
-        case GENERATOR:
-            switch(oper) {
+        case GENERATE:
+            switch(tac->oper) {
                 case FLOOD:
                     return 2;
                 case RANDOM:
@@ -128,7 +128,7 @@ int noperands(OPERATION op, OPERATOR oper)
                     return 0;
             }
         case SYSTEM:
-            switch(oper) {
+            switch(tac->oper) {
                 case DISCARD:
                 case FREE:
                 case SYNC:
@@ -145,15 +145,15 @@ int noperands(OPERATION op, OPERATOR oper)
     }
 }
 
-int layoutmask(bytecode_t* bytecode, bh_args_t* args)
+int layoutmask(tac_t* tac, bh_kernel_arg_t* args)
 {
-    switch(noperands(bytecode)) {
+    switch(noperands(tac)) {
         case 3:
-            return args[bytecode->out].layoutmask | args[bytecode->in1].layoutmask | args[bytecode->in2].layoutmask;
+            return args[tac->out].layout | args[tac->in1].layout | args[tac->in2].layout;
         case 2:
-            return args[bytecode->out].layoutmask | args[bytecode->in1].layoutmask;
+            return args[tac->out].layout | args[tac->in1].layout;
         case 1:
-            return args[bytecode->out].layoutmask;
+            return args[tac->out].layout;
     }
-    return mask;
+    return 0;
 }

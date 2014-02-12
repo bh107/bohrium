@@ -9,25 +9,41 @@ string template_filename(bh_kernel_t& kernel, int pc, bh_intp optimized)
            tpl_opcode,
            tpl_layout = "strided.";
 
-    bytecode_t* bytecode = &kernel.program[pc];
-    int ndim = (bytecode->op == REDUCE)         ? \
-               kernel.args[bytecode->in1].ndim : \
-               kernel.args[bytecode->out].ndim;
+    tac_t* tac = &kernel.program[pc];
+    int ndim = (tac->op == REDUCE)         ? \
+               kernel.scope[tac->in1].ndim : \
+               kernel.scope[tac->out].ndim;
     int lmask = kernel.lmask[pc];
 
-    switch (bytecode->op) {                    // OPCODE_SWITCH
+    switch (tac->op) {                    // OPCODE_SWITCH
+        case MAP:
 
-        case GENERATOR:
-            switch(bytecode->oper) {
-                case RANDOM:
-                    tpl_opcode = "random.";
-                    break;
-                case RANGE:
-                    tpl_opcode = "range.";
-                default:
-                    printf("Operator x is not supported with operation y\n");
+            tpl_opcode  = "ewise.";
+            if ((optimized) && ((lmask == LMASK_CC) || \
+                                (lmask == LMASK_CK))) {
+                tpl_layout  = "cont.";
+            } else if ((optimized) && (ndim == 1)) {
+                tpl_ndim = "1d.";
+            } else if ((optimized) && (ndim == 2)) {
+                tpl_ndim = "2d.";
+            } else if ((optimized) && (ndim == 3)) {
+                tpl_ndim = "3d.";
             }
-            tpl_layout = "cont.";
+            break;
+
+        case ZIP:
+            tpl_opcode  = "ewise.";
+            if ((optimized) && (
+                (lmask == LMASK_CCC) || (lmask == LMASK_CKC) || (lmask == LMASK_CCK)
+                )) {
+                tpl_layout  = "cont.";
+            } else if ((optimized) && (ndim == 1)) {
+                tpl_ndim = "1d.";
+            } else if ((optimized) && (ndim == 2)) {
+                tpl_ndim = "2d.";
+            } else if ((optimized) && (ndim == 3)) {
+                tpl_ndim = "3d.";
+            }
             break;
 
         case SCAN:
@@ -48,40 +64,21 @@ string template_filename(bh_kernel_t& kernel, int pc, bh_intp optimized)
             }
             break;
 
-        case EWISE_B:
-            
-            tpl_opcode  = "ewise.";
-            if ((optimized) && ( \
-                (lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS + A2_CONTIGUOUS)) || \
-                (lmask == (A0_CONTIGUOUS + A1_CONSTANT   + A2_CONTIGUOUS)) || \
-                (lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS + A2_CONSTANT)))) {
-                tpl_layout  = "cont.";
-            } else if ((optimized) && (ndim == 1)) {
-                tpl_ndim = "1d.";
-            } else if ((optimized) && (ndim == 2)) {
-                tpl_ndim = "2d.";
-            } else if ((optimized) && (ndim == 3)) {
-                tpl_ndim = "3d.";
+        case GENERATE:
+            switch(tac->oper) {
+                case RANDOM:
+                    tpl_opcode = "random.";
+                    break;
+                case RANGE:
+                    tpl_opcode = "range.";
+                default:
+                    printf("Operator x is not supported with operation y\n");
             }
-            break;
-
-        case EWISE_U:
-
-            tpl_opcode  = "ewise.";
-            if ((optimized) && ((lmask == (A0_CONTIGUOUS + A1_CONTIGUOUS)) || \
-                (lmask == (A0_CONTIGUOUS + A1_CONSTANT)))) {
-                tpl_layout  = "cont.";
-            } else if ((optimized) && (ndim == 1)) {
-                tpl_ndim = "1d.";
-            } else if ((optimized) && (ndim == 2)) {
-                tpl_ndim = "2d.";
-            } else if ((optimized) && (ndim == 3)) {
-                tpl_ndim = "3d.";
-            }
+            tpl_layout = "cont.";
             break;
 
         default:
-            printf("template_filename: Err=[Unsupported operation %d.]\n", bytecode->oper);
+            printf("template_filename: Err=[Unsupported operation %d.]\n", tac->oper);
             throw runtime_error("template_filename: No template for opcode.");
     }
 
@@ -109,12 +106,12 @@ string specialize(bh_kernel_t& kernel, bh_intp const optimized) {
     for(int j=0; j<kernel.ninstr; ++j) {
         
         //
-        // Grab the instruction for which to generate sourcecode
-        bytecode_t *instr = &kernel.program[j];
+        // Grab the tacuction for which to generate sourcecode
+        tac_t *tac = &kernel.program[j];
 
         //
         // Skip code generation for system and extensions
-        if ((instr->op == SYSTEM) || (instr->op == EXTENSION)) {
+        if ((tac->op == SYSTEM) || (tac->op == EXTENSION)) {
             continue;
         }
 
@@ -132,59 +129,43 @@ string specialize(bh_kernel_t& kernel, bh_intp const optimized) {
         // The operator +, -, /, min, max, sin, sqrt, etc...
         //
         ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
-        operator_d->SetValue("OPERATOR", operator_cexpr(instr->op, instr->oper, kernel.args[instr->out].type));
+        operator_d->SetValue("OPERATOR", operator_cexpr(tac->op, tac->oper, kernel.scope[tac->out].type));
 
         //
         // Reduction and scan specific expansions
-        // TODO: fix for multiple instructions
-        if ((instr->op == REDUCE) || (instr->op == SCAN)) {
-            operation_d->SetValue("TYPE_OUTPUT", enum_to_ctypestr(kernel.args[instr->out].type));
-            operation_d->SetValue("TYPE_INPUT",  enum_to_ctypestr(kernel.args[instr->in1].type));
+        // TODO: fix for multiple tacuctions
+        if ((tac->op == REDUCE) || (tac->op == SCAN)) {
+            operation_d->SetValue("TYPE_OUTPUT", enum_to_ctypestr(kernel.scope[tac->out].type));
+            operation_d->SetValue("TYPE_INPUT",  enum_to_ctypestr(kernel.scope[tac->in1].type));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
-            if (instr->oper == ADD) {
+            if (tac->oper == ADD) {
                 operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(0));
-            } else if (instr->oper == MULTIPLY) {
+            } else if (tac->oper == MULTIPLY) {
                 operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(1));
             }
         }
-        operation_d->SetValue("NR_OUTPUT", std::to_string(instr->out));
-        operation_d->SetValue("NR_FINPUT", std::to_string(instr->in1));  // Not all have
-        operation_d->SetValue("NR_SINPUT", std::to_string(instr->in2));  // Not all have
+        operation_d->SetValue("NR_OUTPUT", std::to_string(tac->out));
+        operation_d->SetValue("NR_FINPUT", std::to_string(tac->in1));  // Not all have
+        operation_d->SetValue("NR_SINPUT", std::to_string(tac->in2));  // Not all have
 
         //
-        // Fill out the instruction operands globally such that they
+        // Fill out the tacuction operands globally such that they
         // are available to both for the kernel argument unpacking, the operations and the operators.
         //
         // TODO: this should actually distinguish between the total set of operands
-        // and those used for a single instruction depending on the amount of loops that can be
+        // and those used for a single tacuction depending on the amount of loops that can be
         // fused
         //
-        int nops_instr = noperands(instr->op, instr->oper);
-        for(int i=0; i<nops_instr; ++i) {        // Operand dict
+        int nops_tac = noperands(tac);
+        for(int i=0; i<nops_tac; ++i) {        // Operand dict
             ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
             ctemplate::TemplateDictionary* operand_d  = operation_d->AddSectionDictionary("OPERAND");
 
-            argument_d->SetIntValue("NR", instr->out);
-            operand_d->SetIntValue("NR",  instr->out);
-            if (bh_is_constant(&instr->operand[i])) {   // Constant
-                argument_d->SetValue(                   // As argument
-                    "TYPE",
-                    enum_to_ctypestr(instr->constant.type)
-                );
-                operand_d->SetValue(                    // As operand
-                    "TYPE",
-                    enum_to_ctypestr(instr->constant.type)
-                );  
-            } else {                                    // Array
-                argument_d->SetValue(                   // As argument
-                    "TYPE", 
-                    enum_to_ctypestr(instr->operand[i].base->type)
-                );
+            argument_d->SetIntValue("NR", tac->out);
+            operand_d->SetIntValue("NR",  tac->out);
+            argument_d->SetValue("TYPE", enum_to_ctypestr(kernel.scope[tac->out]);
+            if (tac->scope[out].layout != CONSTANT) {
                 argument_d->ShowSection("ARRAY");
-                operand_d->SetValue(                    // As operand
-                    "TYPE", 
-                    enum_to_ctypestr(instr->operand[i].base->type)
-                );
                 operand_d->ShowSection("ARRAY");
             }
         }
@@ -220,7 +201,7 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
     kernel.symbol   = "";
 
     for (int i=0; i<kernel.ninstr; ++i) {
-        bytecode_t *instr = kernel.program[i];
+        tac_t *instr = kernel.program[i];
 
         // Do not include system opcodes in the kernel symbol.
         if ((instr->opcode == SYSTEM) || (instr->opcode == EXTENSION)) {

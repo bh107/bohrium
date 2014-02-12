@@ -61,15 +61,16 @@ typedef struct bh_kernel {
     int tsig[10];               // Typesignature of the instructions
     int lmask[10];              // Layoutmask of the instructions
 
-    bytecode_t* program;        // Ordered list of bytecodes    
+    tac_t* program;        // Ordered list of bytecodes    
 
     int nargs;                  // Number of arguments to the kernel
-    bh_kernel_arg_t* args;      // Array of kernel arguments
+    bh_kernel_arg_t* scope;     // Array of kernel arguments
 
     uint32_t omask;             // Mask of the OPERATIONS in the kernel
     string symbol;              // Textual representation of the kernel
 } bh_kernel_t;                  // Meta-data to construct and execute a kernel-function
 
+#include "utils.cpp"
 #include "operator_cexpr.c"
 #include "compiler.cpp"
 #include "specializer.cpp"
@@ -104,12 +105,12 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
         int lmask = kernel->lmask[i];
 
         // The output is always an array
-        kernel->args[nargs].data     = bh_base_array(&instr->operand[0])->data;
-        kernel->args[nargs].nelem    = bh_base_array(&instr->operand[0])->nelem;
-        kernel->args[nargs].ndim     = instr->operand[0].ndim;
-        kernel->args[nargs].start    = instr->operand[0].start;
-        kernel->args[nargs].shape    = instr->operand[0].shape;
-        kernel->args[nargs++].stride = instr->operand[0].stride;
+        kernel->scope[nargs].data     = bh_base_array(&instr->operand[0])->data;
+        kernel->scope[nargs].nelem    = bh_base_array(&instr->operand[0])->nelem;
+        kernel->scope[nargs].ndim     = instr->operand[0].ndim;
+        kernel->scope[nargs].start    = instr->operand[0].start;
+        kernel->scope[nargs].shape    = instr->operand[0].shape;
+        kernel->scope[nargs++].stride = instr->operand[0].stride;
 
         //
         // The input, however, might be a constant
@@ -117,8 +118,8 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
         switch (instr->opcode) {    // [OPCODE_SWITCH]
 
             case BH_RANDOM:
-                kernel->args[nargs++].data = &(instr->constant.value.r123.start);
-                kernel->args[nargs++].data = &(instr->constant.value.r123.key);
+                kernel->scope[nargs++].data = &(instr->constant.value.r123.start);
+                kernel->scope[nargs++].data = &(instr->constant.value.r123.key);
                 break;
 
             case BH_RANGE:
@@ -138,14 +139,14 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
             case BH_BITWISE_OR_REDUCE:
             case BH_BITWISE_XOR_REDUCE:
 
-                kernel->args[nargs].data     = bh_base_array(&instr->operand[1])->data;
-                kernel->args[nargs].nelem    = bh_base_array(&instr->operand[1])->nelem;
-                kernel->args[nargs].ndim     = instr->operand[1].ndim;
-                kernel->args[nargs].start    = instr->operand[1].start;
-                kernel->args[nargs].shape    = instr->operand[1].shape;
-                kernel->args[nargs++].stride = instr->operand[1].stride;
+                kernel->scope[nargs].data     = bh_base_array(&instr->operand[1])->data;
+                kernel->scope[nargs].nelem    = bh_base_array(&instr->operand[1])->nelem;
+                kernel->scope[nargs].ndim     = instr->operand[1].ndim;
+                kernel->scope[nargs].start    = instr->operand[1].start;
+                kernel->scope[nargs].shape    = instr->operand[1].shape;
+                kernel->scope[nargs++].stride = instr->operand[1].stride;
 
-                kernel->args[nargs++].data = &(instr->constant.value);
+                kernel->scope[nargs++].data = &(instr->constant.value);
                 break;
 
             case BH_ADD:
@@ -173,37 +174,37 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
             case BH_MOD:
 
                 if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[1])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[1].ndim;
-                    kernel->args[nargs].start  = instr->operand[1].start;
-                    kernel->args[nargs].shape  = instr->operand[1].shape;
-                    kernel->args[nargs++].stride = instr->operand[1].stride;
+                    kernel->scope[nargs].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->scope[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
+                    kernel->scope[nargs].ndim   = instr->operand[1].ndim;
+                    kernel->scope[nargs].start  = instr->operand[1].start;
+                    kernel->scope[nargs].shape  = instr->operand[1].shape;
+                    kernel->scope[nargs++].stride = instr->operand[1].stride;
 
-                    kernel->args[nargs++].data = &(instr->constant.value);
+                    kernel->scope[nargs++].data = &(instr->constant.value);
                 } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
-                    kernel->args[nargs++].data = &(instr->constant.value);
+                    kernel->scope[nargs++].data = &(instr->constant.value);
 
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[2])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[2])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[2].ndim;
-                    kernel->args[nargs].start  = instr->operand[2].start;
-                    kernel->args[nargs].shape  = instr->operand[2].shape;
-                    kernel->args[nargs++].stride = instr->operand[2].stride;
+                    kernel->scope[nargs].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->scope[nargs].nelem  = bh_base_array(&instr->operand[2])->nelem;
+                    kernel->scope[nargs].ndim   = instr->operand[2].ndim;
+                    kernel->scope[nargs].start  = instr->operand[2].start;
+                    kernel->scope[nargs].shape  = instr->operand[2].shape;
+                    kernel->scope[nargs++].stride = instr->operand[2].stride;
                 } else {                                            // AAA
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[1])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[1].ndim;
-                    kernel->args[nargs].start  = instr->operand[1].start;
-                    kernel->args[nargs].shape  = instr->operand[1].shape;
-                    kernel->args[nargs++].stride = instr->operand[1].stride;
+                    kernel->scope[nargs].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->scope[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
+                    kernel->scope[nargs].ndim   = instr->operand[1].ndim;
+                    kernel->scope[nargs].start  = instr->operand[1].start;
+                    kernel->scope[nargs].shape  = instr->operand[1].shape;
+                    kernel->scope[nargs++].stride = instr->operand[1].stride;
 
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[2])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[2])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[2].ndim;
-                    kernel->args[nargs].start  = instr->operand[2].start;
-                    kernel->args[nargs].shape  = instr->operand[2].shape;
-                    kernel->args[nargs++].stride = instr->operand[2].stride;
+                    kernel->scope[nargs].data   = bh_base_array(&instr->operand[2])->data;
+                    kernel->scope[nargs].nelem  = bh_base_array(&instr->operand[2])->nelem;
+                    kernel->scope[nargs].ndim   = instr->operand[2].ndim;
+                    kernel->scope[nargs].start  = instr->operand[2].start;
+                    kernel->scope[nargs].shape  = instr->operand[2].shape;
+                    kernel->scope[nargs++].stride = instr->operand[2].stride;
                 }
 
                 break;
@@ -243,14 +244,14 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
 
                 // Input might be a constant
                 if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
-                    kernel->args[nargs++].data = &(instr->constant.value);
+                    kernel->scope[nargs++].data = &(instr->constant.value);
                 } else {
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[1])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[1].ndim;
-                    kernel->args[nargs].start  = instr->operand[1].start;
-                    kernel->args[nargs].shape  = instr->operand[1].shape;
-                    kernel->args[nargs++].stride = instr->operand[1].stride;
+                    kernel->scope[nargs].data   = bh_base_array(&instr->operand[1])->data;
+                    kernel->scope[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
+                    kernel->scope[nargs].ndim   = instr->operand[1].ndim;
+                    kernel->scope[nargs].start  = instr->operand[1].start;
+                    kernel->scope[nargs].shape  = instr->operand[1].shape;
+                    kernel->scope[nargs++].stride = instr->operand[1].stride;
                 }
 
                 break;

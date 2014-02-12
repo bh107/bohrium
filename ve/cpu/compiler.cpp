@@ -14,7 +14,6 @@
 #include "dirent.h"
 #include <dlfcn.h>
 #include <unistd.h>
-#include "utils.cpp"
 #include <fcntl.h>
 
 // Create nice error-messages...

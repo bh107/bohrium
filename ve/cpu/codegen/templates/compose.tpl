@@ -10,7 +10,7 @@ directiveStartToken= %
  *  @param operand_idx   Index of the operand to represent as arg_t
  *  @param kernel        The kernel in which scope the argument will exist.
  */
-int add_argument(bh_instruction* instr, operand_idx, bh_kernel_t* kernel)
+int add_argument(bh_kernel_t* kernel, bh_instruction* instr, int operand_idx)
 {
     int arg_idx = (kernel->nargs)++;
     if (bh_is_constant(instr->operand[operand_idx])) {
@@ -54,30 +54,14 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
         // Program packing: output argument
         // NOTE: All but BH_NONE has an output which is an array
         if (instr->opcode != BH_NONE) {
-            out = add_argument(instr, 0, kernel);
+            out = add_argument(kernel, instr, 0);
         }
 
         //
         // Program packing; operator, operand and input argument(s).
         switch (instr->opcode) {    // [OPCODE_SWITCH]
 
-            //
-            //  System operation
-            %for $opcode, $operation, $operator in $system
-            case $opcode:
-                kernel->program[i].op    = $operation;  // TAC
-                kernel->program[i].oper  = $operator;
-                kernel->program[i].out   = out;
-                kernel->program[i].in1   = in1;
-                kernel->program[i].in2   = in2;
-            
-                kernel->omask |= $operation;    // Operationmask
-                break;
-            %end for
-
-            //
-            //  Array Generator
-            %for $opcode, $operation, $operator in $generators
+            %for $opcode, $operation, $operator, $nin in $operations
             case $opcode:
                 %if $opcode == 'BH_RANDOM'
                 // This one requires special-handling... what a beaty...
@@ -92,6 +76,13 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->args[in2].data      = &(instr->constant.value.r123.key);
                 kernel->args[in2].type      = BH_UINT64;
                 kernel->args[in2].nelem     = 1;
+                %else
+                %if nin >= 1
+                in2 = add_argument(kernel, instr, 1);
+                %end if
+                %if nin >= 2
+                in2 = add_argument(kernel, instr, 2);
+                %end if
                 %end if
 
                 kernel->program[i].op    = $operation;  // TAC
@@ -100,74 +91,6 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
             
-                kernel->omask |= $operation;    // Operationmask
-                break;
-            %end for
-
-            //
-            %for $opcode, $operation, $operator, $nin in $reductions
-            case $opcode:
-                %if $nin == 2
-                in1 = add_argument(instr, 1, kernel);   // Input
-                in2 = add_argument(instr, 2, kernel);
-
-                kernel->program[i].op    = $operation;  // TAC
-                kernel->program[i].oper  = $operator;
-                kernel->program[i].out   = out;
-                kernel->program[i].in1   = in1;
-                kernel->program[i].in2   = in2;
-
-                kernel->omask |= $operation;    // Operationmask
-                break;
-            %end for
-
-            //
-            //  Scan operation
-            %for $opcode, $operation, $operator in $scans
-            case $opcode:
-                in1 = assign_layout(instr, 1, kernel);  // Input
-                in2 = assign_layout(instr, 2, kernel);
-
-                kernel->program[i].op    = $operation;  // TAC
-                kernel->program[i].oper  = $operator;
-                kernel->program[i].out   = out;
-                kernel->program[i].in1   = in1;
-                kernel->program[i].in2   = in2;
-
-                kernel->omask |= $operation;      // Operationmask
-                break;
-            %end for
-
-            //
-            //  Zip / Elementwise binary
-            %for $opcode, $operation, $operator in $ewise_b
-            case $opcode:
-                in1 = assign_layout(instr, 1, kernel);      // Input
-                in2 = assign_layout(instr, 2, kernel);
-
-                kernel->program[i].op    = $operation;      // TAC
-                kernel->program[i].oper  = $operator;
-                kernel->program[i].out   = out;
-                kernel->program[i].in1   = in1;
-                kernel->program[i].in2   = in2;
-
-                kernel->omask =| $operation;   // Operationmask
-                break;
-            %end for
-
-            //
-            //  Map / Elementiwse unary
-            %for $opcode, $operation, $operator in $ewise_u
-            case $opcode:
-                in1 = assign_layout(instr, 1, kernel);      // Input
-                in2 = 0;
-
-                kernel->program[i].op    = $operation;      // TAC
-                kernel->program[i].oper  = $operator;
-                kernel->program[i].out   = out;
-                kernel->program[i].in1   = in1;
-                kernel->program[i].in2   = in2;
-
                 kernel->omask |= $operation;    // Operationmask
                 break;
             %end for
