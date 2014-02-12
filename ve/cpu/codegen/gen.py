@@ -112,20 +112,20 @@ def compose(opcodes, types, opers):
         else:
             if 'REDUCE' in opcode:
                 operator = '_'.join(opcode.split('_')[1:-1])
-                reductions.append([opcode, 'REDUCE', operator])
+                reductions.append([opcode, 'REDUCE', operator, 2])
             elif 'ACCUMULATE' in opcode:
                 operator = '_'.join(opcode.split('_')[1:-1])
-                scans.append([opcode, 'SCAN', operator])
+                scans.append([opcode, 'SCAN', operator, 2])
             elif 'RANDOM' in opcode:
-                generators.append([opcode, 'GENERATOR', 'RANDOM'])
+                generators.append([opcode, 'GENERATOR', 'RANDOM', 2])
             elif 'RANGE' in opcode:
-                generators.append([opcode, 'GENERATOR', 'RANGE'])
+                generators.append([opcode, 'GENERATOR', 'RANGE', 0])
             else:
                 operator = '_'.join(opcode.split('_')[1:])
                 if o['nop'] == 3:
-                    ewise_b.append([opcode, 'EWISE_B', operator])                    
+                    ewise_b.append([opcode, 'EWISE_B', operator, 2])
                 elif o['nop'] == 2:
-                    ewise_u.append([opcode, 'EWISE_U', operator])
+                    ewise_u.append([opcode, 'EWISE_U', operator, 1])
                 else:
                     huh.append([opcode, '?', operator])
     

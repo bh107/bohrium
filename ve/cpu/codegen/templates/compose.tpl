@@ -71,7 +71,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
             
-                kernel->omask |= SYSTEM;    // Operationmask
+                kernel->omask |= $operation;    // Operationmask
                 break;
             %end for
 
@@ -100,14 +100,14 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
             
-                kernel->omask |= SYSTEM;    // Operationmask
+                kernel->omask |= $operation;    // Operationmask
                 break;
             %end for
 
             //
-            //  Array Reduction
-            %for $opcode, $operation, $operator in $reductions
+            %for $opcode, $operation, $operator, $nin in $reductions
             case $opcode:
+                %if $nin == 2
                 in1 = add_argument(instr, 1, kernel);   // Input
                 in2 = add_argument(instr, 2, kernel);
 
@@ -117,7 +117,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
 
-                kernel->omask |= REDUCE;    // Operationmask
+                kernel->omask |= $operation;    // Operationmask
                 break;
             %end for
 
@@ -134,24 +134,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
 
-                kernel->omask |= SCAN;      // Operationmask
-                break;
-            %end for
-
-            //
-            //  Map / Elementiwse unary
-            %for $opcode, $operation, $operator in $ewise_u
-            case $opcode:
-                in1 = assign_layout(instr, 1, kernel);      // Input
-                in2 = 0;
-
-                kernel->program[i].op    = $operation;      // TAC
-                kernel->program[i].oper  = $operator;
-                kernel->program[i].out   = out;
-                kernel->program[i].in1   = in1;
-                kernel->program[i].in2   = in2;
-
-                kernel->omask |= EWISE_U;   // Operationmask
+                kernel->omask |= $operation;      // Operationmask
                 break;
             %end for
 
@@ -168,7 +151,24 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
 
-                kernel->omask =| EWISE_B;   // Operationmask
+                kernel->omask =| $operation;   // Operationmask
+                break;
+            %end for
+
+            //
+            //  Map / Elementiwse unary
+            %for $opcode, $operation, $operator in $ewise_u
+            case $opcode:
+                in1 = assign_layout(instr, 1, kernel);      // Input
+                in2 = 0;
+
+                kernel->program[i].op    = $operation;      // TAC
+                kernel->program[i].oper  = $operator;
+                kernel->program[i].out   = out;
+                kernel->program[i].in1   = in1;
+                kernel->program[i].in2   = in2;
+
+                kernel->omask |= $operation;    // Operationmask
                 break;
             %end for
 
