@@ -42,6 +42,13 @@ namespace bh
 {
     struct timing2 {bh_uint64 start; bh_uint64 end;}; 
     struct timing4 {bh_uint64 queued; bh_uint64 submit; bh_uint64 start; bh_uint64 end;}; 
+}
+
+std::ostream& operator<< (std::ostream& os, bh::timing2 const& t);
+std::ostream& operator<< (std::ostream& os, bh::timing4 const& t);
+
+namespace bh
+{
     template <typename T=timing2, bh_uint64 GRANULARITY=1000000>
     class Timer 
     {
@@ -108,9 +115,6 @@ namespace bh
         } 
     }; 
 }
-
-std::ostream& operator<< (std::ostream& os, bh::timing2 const& t);
-std::ostream& operator<< (std::ostream& os, bh::timing4 const& t);
 
 //Only when BH_TIMING is defined will the bh_timing* functions do anything.
 #ifdef BH_TIMING
