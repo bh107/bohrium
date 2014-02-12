@@ -61,8 +61,7 @@ typedef struct bh_kernel {
     int tsig[10];               // Typesignature of the instructions
     int lmask[10];              // Layoutmask of the instructions
 
-    tac_t* program;        // Ordered list of bytecodes    
-
+    tac_t* program;             // Ordered list of TACs
     int nargs;                  // Number of arguments to the kernel
     bh_kernel_arg_t* scope;     // Array of kernel arguments
 
@@ -116,7 +115,7 @@ static bh_error execute(bh_instruction *instr)
 
     //
     // We start by creating a symbol
-    if (!symbolize_old(kernel, jit_optimize)) {
+    if (!symbolize(kernel, jit_optimize)) {
         return BH_ERROR;
     }
 
@@ -125,7 +124,7 @@ static bh_error execute(bh_instruction *instr)
     // yet know how many arguments the kernel will contain, the upper-bound
     // bound of number of instructions * 3 is therefore used instead.
     if (kernel.ninstr_nonsys>0) {
-        kernel.args = (bh_kernel_arg_t*)malloc(3*kernel.ninstr_nonsys*sizeof(bh_kernel_arg_t));
+        kernel.scope = (bh_kernel_arg_t*)malloc(3*kernel.ninstr_nonsys*sizeof(bh_kernel_arg_t));
     }
 
     //
@@ -135,7 +134,7 @@ static bh_error execute(bh_instruction *instr)
         (kernel.symbol!="") && \
         (!target->symbol_ready(kernel.symbol))) {   
                                                     // Specialize sourcecode
-        string sourcecode = specialize_old(kernel, jit_optimize);   
+        string sourcecode = specialize(kernel, jit_optimize);   
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file
             target->src_to_file(
                 kernel.symbol,
@@ -154,7 +153,7 @@ static bh_error execute(bh_instruction *instr)
         (!target->load(kernel.symbol, kernel.symbol))) {// Need but cannot load
 
         if (jit_optimize) {                             // Unoptimized fallback
-            symbolize_old(kernel, false);
+            symbolize(kernel, false);
             if ((kernel.symbol!="") && \
                 (!target->symbol_ready(kernel.symbol)) && \
                 (!target->load(kernel.symbol, kernel.symbol))) {        // Fail
@@ -180,14 +179,13 @@ static bh_error execute(bh_instruction *instr)
     //
     // Execute kernel handling array operations.
     // 
-    if (kernel.ninstr_nonsys>0) {
-        res = pack_arguments(&kernel);
+    if (kernel.omask == HAS_ARRAY_OP) {
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by dispatch_kernel "
                             "called from bh_ve_cpu_execute(...)\n");
             return res;
         }
-        target->funcs[kernel.symbol](kernel.args);
+        target->funcs[kernel.symbol](kernel.scope);
     }
 
     //
@@ -206,7 +204,7 @@ static bh_error execute(bh_instruction *instr)
     //
     // De-allocate metadata for kernel arguments
     if (kernel.ninstr_nonsys>0) {
-        free(kernel.args);
+        free(kernel.scope);
     }
 
     return res;

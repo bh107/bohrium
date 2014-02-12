@@ -1,3 +1,31 @@
+#ifndef __BH_VE_CPU_SPECIALIZER
+#define __BH_VE_CPU_SPECIALIZER
+
+#include <ctemplate/template.h>
+
+static ctemplate::Strip strip_mode = ctemplate::STRIP_BLANK_LINES;
+
+void specializer_init()
+{
+    ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
+    ctemplate::LoadTemplate("ewise.cont.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.2d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.3d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("kernel.tpl", strip_mode);
+    ctemplate::LoadTemplate("license.tpl", strip_mode);
+    ctemplate::LoadTemplate("random.cont.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("range.cont.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.2d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.3d.tpl", strip_mode);
+    ctemplate::LoadTemplate("reduce.strided.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("scan.strided.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("scan.strided.nd.tpl", strip_mode);
+    ctemplate::mutable_default_template_cache()->Freeze();
+}
+
 /**
  *  Choose the template.
  *
@@ -161,10 +189,12 @@ string specialize(bh_kernel_t& kernel, bh_intp const optimized) {
             ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
             ctemplate::TemplateDictionary* operand_d  = operation_d->AddSectionDictionary("OPERAND");
 
+            argument_d->SetValue("TYPE", enum_to_ctypestr(kernel.scope[tac->out].type));
             argument_d->SetIntValue("NR", tac->out);
+
+            operand_d->SetValue("TYPE", enum_to_ctypestr(kernel.scope[tac->out].type));
             operand_d->SetIntValue("NR",  tac->out);
-            argument_d->SetValue("TYPE", enum_to_ctypestr(kernel.scope[tac->out]);
-            if (tac->scope[out].layout != CONSTANT) {
+            if (kernel.scope[tac->out].layout != CONSTANT) {
                 argument_d->ShowSection("ARRAY");
                 operand_d->ShowSection("ARRAY");
             }
@@ -201,20 +231,20 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
     kernel.symbol   = "";
 
     for (int i=0; i<kernel.ninstr; ++i) {
-        tac_t *instr = kernel.program[i];
+        tac_t* tac = &kernel.program[i];
 
         // Do not include system opcodes in the kernel symbol.
-        if ((instr->opcode == SYSTEM) || (instr->opcode == EXTENSION)) {
+        if ((tac->op == SYSTEM) || (tac->op == EXTENSION)) {
             continue;
         }
         
-        symbol_opcode  += std::string(bh_opcode_to_cstr_short(instr->opcode));
-        symbol_tsig    += std::string(bh_typesig_to_shorthand(kernel->tsig[i]));
-        symbol_lmask   += std::string(bh_layoutmask_to_shorthand(kernel->lmask[i]));
+        symbol_opcode  += std::string(bh_opcode_to_cstr_short(tac->op));
+        symbol_tsig    += std::string(bh_typesig_to_shorthand(kernel.tsig[i]));
+        symbol_lmask   += std::string(bh_layoutmask_to_shorthand(kernel.lmask[i]));
     
-        int ndim = kernel->args[instr->out];
-        if (instr->op == REDUCE) {
-            ndim = kernel->args[instr->in1];
+        int ndim = kernel.scope[tac->out].ndim;
+        if (tac->op == REDUCE) {
+            ndim = kernel.scope[tac->in1].ndim;
         }
         if (optimized && (ndim <= 3)) {        // Optimized
             symbol_ndim += std::to_string(ndim);
@@ -227,7 +257,7 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
         kernel.lmask[i] = lmask;
     }
 
-    if (kernel.ninstr_nonsys>0) {
+    if (kernel.omask == HAS_ARRAY_OP) {
         kernel.symbol = "BH_" + \
                         symbol_opcode  + "_" +\
                         symbol_tsig    + "_" +\
@@ -236,3 +266,5 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
     }
     return true;
 }
+
+#endif

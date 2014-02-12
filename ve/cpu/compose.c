@@ -10,23 +10,23 @@ int add_argument(bh_kernel_t* kernel, bh_instruction* instr, int operand_idx)
 {
     int arg_idx = (kernel->nargs)++;
     if (bh_is_constant(instr->operand[operand_idx])) {
-        kernel->args[arg_idx].layout    = CONSTANT;
-        kernel->args[arg_idx].data      = &(instr->constant.value);
-        kernel->args[arg_idx].type      = bh_base_array(&instr->operand[operand_idx])->type;
-        kernel->args[arg_idx].nelem     = 1;
+        kernel->scope[arg_idx].layout    = CONSTANT;
+        kernel->scope[arg_idx].data      = &(instr->constant.value);
+        kernel->scope[arg_idx].type      = bh_base_array(&instr->operand[operand_idx])->type;
+        kernel->scope[arg_idx].nelem     = 1;
     } else {
-        if (is_contigouos(&kernel->args[arg_idx])) {
-            kernel->args[arg_idx].layout = CONTIGUOUS;
+        if (is_contigouos(&kernel->scope[arg_idx])) {
+            kernel->scope[arg_idx].layout = CONTIGUOUS;
         } else {
-            kernel->args[arg_idx].layout = STRIDED;
+            kernel->scope[arg_idx].layout = STRIDED;
         }
-        kernel->args[arg_idx].data      = bh_base_array(&instr->operand[operand_idx])->data;
-        kernel->args[arg_idx].type      = bh_base_array(&instr->operand[operand_idx])->type;
-        kernel->args[arg_idx].nelem     = bh_base_array(&instr->operand[operand_idx])->nelem;
-        kernel->args[arg_idx].ndim      = instr->operand[operand_idx].ndim;
-        kernel->args[arg_idx].start     = instr->operand[operand_idx].start;
-        kernel->args[arg_idx].shape     = instr->operand[operand_idx].shape;
-        kernel->args[arg_idx].stride    = instr->operand[operand_idx].stride;
+        kernel->scope[arg_idx].data      = bh_base_array(&instr->operand[operand_idx])->data;
+        kernel->scope[arg_idx].type      = bh_base_array(&instr->operand[operand_idx])->type;
+        kernel->scope[arg_idx].nelem     = bh_base_array(&instr->operand[operand_idx])->nelem;
+        kernel->scope[arg_idx].ndim      = instr->operand[operand_idx].ndim;
+        kernel->scope[arg_idx].start     = instr->operand[operand_idx].start;
+        kernel->scope[arg_idx].shape     = instr->operand[operand_idx].shape;
+        kernel->scope[arg_idx].stride    = instr->operand[operand_idx].stride;
     }
     return arg_idx;
 }
@@ -37,7 +37,7 @@ int add_argument(bh_kernel_t* kernel, bh_instruction* instr, int operand_idx)
 static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 {
     kernel->nargs   = 0;
-    kernel->args    = (bh_kernel_arg_t*)malloc(3*dag->nnode*sizeof(bh_kernel_arg_t));
+    kernel->scope   = (bh_kernel_arg_t*)malloc(3*dag->nnode*sizeof(bh_kernel_arg_t));
     kernel->program = (bytecode_t*)malloc(dag->nnode*sizeof(bytecode_t));
 
     for (int i=0; i<dag->nnode; ++i) {
@@ -832,34 +832,34 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
             case BH_RANDOM:
                 // This one requires special-handling... what a beaty...
                 in1 = (kernel->nargs)++;                // Input
-                kernel->args[in1].layout    = CONSTANT;
-                kernel->args[in1].data      = &(instr->constant.value.r123.start);
-                kernel->args[in1].type      = BH_UINT64;
-                kernel->args[in1].nelem     = 1;
+                kernel->scope[in1].layout    = CONSTANT;
+                kernel->scope[in1].data      = &(instr->constant.value.r123.start);
+                kernel->scope[in1].type      = BH_UINT64;
+                kernel->scope[in1].nelem     = 1;
 
                 in2 = (kernel->nargs)++;
-                kernel->args[in2].layout    = CONSTANT;
-                kernel->args[in2].data      = &(instr->constant.value.r123.key);
-                kernel->args[in2].type      = BH_UINT64;
-                kernel->args[in2].nelem     = 1;
+                kernel->scope[in2].layout    = CONSTANT;
+                kernel->scope[in2].data      = &(instr->constant.value.r123.key);
+                kernel->scope[in2].type      = BH_UINT64;
+                kernel->scope[in2].nelem     = 1;
 
-                kernel->program[i].op    = GENERATOR;  // TAC
+                kernel->program[i].op    = GENERATE;  // TAC
                 kernel->program[i].oper  = RANDOM;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
             
-                kernel->omask |= GENERATOR;    // Operationmask
+                kernel->omask |= GENERATE;    // Operationmask
                 break;
             case BH_RANGE:
 
-                kernel->program[i].op    = GENERATOR;  // TAC
+                kernel->program[i].op    = GENERATE;  // TAC
                 kernel->program[i].oper  = RANGE;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
             
-                kernel->omask |= GENERATOR;    // Operationmask
+                kernel->omask |= GENERATE;    // Operationmask
                 break;
             case BH_DISCARD:
                 in2 = add_argument(kernel, instr, 1);
