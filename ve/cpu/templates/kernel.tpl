@@ -31,14 +31,16 @@ inline int omp_get_num_threads() { return 1; }
 #endif
 
 typedef struct bh_kernel_arg {
+    LAYOUT  layout;     // The layout of the data
     void*   data;       // Pointer to memory allocated for the array
+    int64_t type;       // Type of the elements stored
     int64_t start;      // Offset from memory allocation to start of array
     int64_t nelem;      // Number of elements available in the allocation
 
     int64_t ndim;       // Number of dimensions of the array
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
-} bh_kernel_arg_t;
+} bh_kernel_arg_t;      // Meta-data for a kernel argument
 
 // hopefully this thing will be short-lived...
 typedef struct { uint64_t start, key; } bh_r123;

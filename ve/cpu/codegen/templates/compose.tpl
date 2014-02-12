@@ -4,7 +4,39 @@ directiveStartToken= %
 %slurp
 
 /**
- *  Compose a kernel based on a bunch of bh_instructions.
+ *  Add instruction operand as argument to kernel.
+ *
+ *  @param instr         The instruction whos operand should be converted.
+ *  @param operand_idx   Index of the operand to represent as arg_t
+ *  @param kernel        The kernel in which scope the argument will exist.
+ */
+int add_argument(bh_instruction* instr, operand_idx, bh_kernel_t* kernel)
+{
+    int arg_idx = (kernel->nargs)++;
+    if (bh_is_constant(instr->operand[operand_idx])) {
+        kernel->args[arg_idx].layout    = CONSTANT;
+        kernel->args[arg_idx].data      = &(instr->constant.value);
+        kernel->args[arg_idx].type      = bh_base_array(&instr->operand[operand_idx])->type;
+        kernel->args[arg_idx].nelem     = 1;
+    } else {
+        if (is_contigouos(&kernel->args[arg_idx])) {
+            kernel->args[arg_idx].layout = CONTIGUOUS;
+        } else {
+            kernel->args[arg_idx].layout = STRIDED;
+        }
+        kernel->args[arg_idx].data      = bh_base_array(&instr->operand[operand_idx])->data;
+        kernel->args[arg_idx].type      = bh_base_array(&instr->operand[operand_idx])->type;
+        kernel->args[arg_idx].nelem     = bh_base_array(&instr->operand[operand_idx])->nelem;
+        kernel->args[arg_idx].ndim      = instr->operand[operand_idx].ndim;
+        kernel->args[arg_idx].start     = instr->operand[operand_idx].start;
+        kernel->args[arg_idx].shape     = instr->operand[operand_idx].shape;
+        kernel->args[arg_idx].stride    = instr->operand[operand_idx].stride;
+    }
+    return arg_idx;
+}
+
+/**
+ *  Compose a kernel based on the instruction-nodes within a dag.
  */
 static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 {
@@ -13,185 +45,130 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
     kernel->program = (bytecode_t*)malloc(dag->nnode*sizeof(bytecode_t));
 
     for (int i=0; i<dag->nnode; ++i) {
-        bh_instruction* instr = &ir->instr_list[dag->node_map[i]];
-        int lmask = bh_layoutmask(instr);
-        kernel->lmask[i] = lmask;
+        kernel->tsig[i]  = bh_type_sig(instr);
 
+        bh_instruction* instr = kernel->instr[i] = &ir->instr_list[dag->node_map[i]];
         int out=0, in1=0, in2=0;
 
-        // All but BH_NONE has an output which is an array
+        //
+        // Program packing: output argument
+        // NOTE: All but BH_NONE has an output which is an array
         if (instr->opcode != BH_NONE) {
-            out = (kernel->nargs)++;
-
-            kernel->args[out].data      = bh_base_array(&instr->operand[0])->data;
-            kernel->args[out].type      = bh_base_array(&instr->operand[0])->type;
-            kernel->args[out].nelem     = bh_base_array(&instr->operand[0])->nelem;
-            kernel->args[out].ndim      = instr->operand[0].ndim;
-            kernel->args[out].start     = instr->operand[0].start;
-            kernel->args[out].shape     = instr->operand[0].shape;
-            kernel->args[out].stride    = instr->operand[0].stride;
+            out = add_argument(instr, 0, kernel);
         }
 
         //
-        // Program packing
+        // Program packing; operator, operand and input argument(s).
         switch (instr->opcode) {    // [OPCODE_SWITCH]
 
-            // System operation
+            //
+            //  System operation
             %for $opcode, $operation, $operator in $system
             case $opcode:
-                //kernel->program[i] = {$operation, $operator, out, in1, in2};
-                // Setup bytecode
-                kernel->program[i].op    = $operation;
+                kernel->program[i].op    = $operation;  // TAC
                 kernel->program[i].oper  = $operator;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
+            
+                kernel->omask |= SYSTEM;    // Operationmask
                 break;
             %end for
 
             //
-            // Reduce operation with binary operator
+            //  Array Generator
+            %for $opcode, $operation, $operator in $generators
+            case $opcode:
+                %if $opcode == 'BH_RANDOM'
+                // This one requires special-handling... what a beaty...
+                in1 = (kernel->nargs)++;                // Input
+                kernel->args[in1].layout    = CONSTANT;
+                kernel->args[in1].data      = &(instr->constant.value.r123.start);
+                kernel->args[in1].type      = BH_UINT64;
+                kernel->args[in1].nelem     = 1;
+
+                in2 = (kernel->nargs)++;
+                kernel->args[in2].layout    = CONSTANT;
+                kernel->args[in2].data      = &(instr->constant.value.r123.key);
+                kernel->args[in2].type      = BH_UINT64;
+                kernel->args[in2].nelem     = 1;
+                %end if
+
+                kernel->program[i].op    = $operation;  // TAC
+                kernel->program[i].oper  = $operator;
+                kernel->program[i].out   = out;
+                kernel->program[i].in1   = in1;
+                kernel->program[i].in2   = in2;
+            
+                kernel->omask |= SYSTEM;    // Operationmask
+                break;
+            %end for
+
             //
+            //  Array Reduction
             %for $opcode, $operation, $operator in $reductions
             case $opcode:
-                in1 = (kernel->nargs)++;
-                in2 = (kernel->nargs)++;                
+                in1 = add_argument(instr, 1, kernel);   // Input
+                in2 = add_argument(instr, 2, kernel);
 
-                kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
-                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
-                kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
-                kernel->args[in1].ndim      = instr->operand[1].ndim;
-                kernel->args[in1].start     = instr->operand[1].start;
-                kernel->args[in1].shape     = instr->operand[1].shape;
-                kernel->args[in1].stride    = instr->operand[1].stride;
-
-                kernel->args[in2].data = &(instr->constant.value);
-                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
-
-                //kernel->program[i] = {$operation, $operator, out, in1, in2};
-                // Setup bytecode
-                kernel->program[i].op    = $operation;
+                kernel->program[i].op    = $operation;  // TAC
                 kernel->program[i].oper  = $operator;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
+
+                kernel->omask |= REDUCE;    // Operationmask
                 break;
             %end for
 
             //
-            // Scan operation with binary operator
-            //
+            //  Scan operation
             %for $opcode, $operation, $operator in $scans
             case $opcode:
-                in1 = (kernel->nargs)++;
-                in2 = (kernel->nargs)++;                
+                in1 = assign_layout(instr, 1, kernel);  // Input
+                in2 = assign_layout(instr, 2, kernel);
 
-                kernel->args[in1].data      = bh_base_array(&instr->operand[1])->data;
-                kernel->args[in1].type      = bh_base_array(&instr->operand[1])->type;
-                kernel->args[in1].nelem     = bh_base_array(&instr->operand[1])->nelem;
-                kernel->args[in1].ndim      = instr->operand[1].ndim;
-                kernel->args[in1].start     = instr->operand[1].start;
-                kernel->args[in1].shape     = instr->operand[1].shape;
-                kernel->args[in1].stride    = instr->operand[1].stride;
-
-                kernel->args[in2].data = &(instr->constant.value);
-                kernel->args[in2].type = bh_base_array(&instr->operand[2])->type;
-
-                //kernel->program[i] = {$operation, $operator, out, in1, in2};
-                // Setup bytecode
-                kernel->program[i].op    = $operation;
+                kernel->program[i].op    = $operation;  // TAC
                 kernel->program[i].oper  = $operator;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
+
+                kernel->omask |= SCAN;      // Operationmask
                 break;
             %end for
 
             //
-            // Elementwise operation with unary operator
-            //
+            //  Map / Elementiwse unary
             %for $opcode, $operation, $operator in $ewise_u
             case $opcode:
-                in1 = (kernel->nargs)++;
+                in1 = assign_layout(instr, 1, kernel);      // Input
+                in2 = 0;
 
-                if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
-                    kernel->args[in1].data = &(instr->constant.value);
-                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
-                } else {
-                    kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
-                    kernel->args[in1].type = bh_base_array(&instr->operand[1])->type;
-                    kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args[in1].ndim   = instr->operand[1].ndim;
-                    kernel->args[in1].start  = instr->operand[1].start;
-                    kernel->args[in1].shape  = instr->operand[1].shape;
-                    kernel->args[in1].stride = instr->operand[1].stride;
-                }
-
-                //kernel->program[i] = {$operation, $operator, out, in1, 0};
-                // Setup bytecode
-                kernel->program[i].op    = $operation;
-                kernel->program[i].oper  = $operator;
-                kernel->program[i].out   = out;
-                kernel->program[i].in1   = in1;
-                kernel->program[i].in2   = 0;
-                break;
-            %end for
-
-            //
-            // Elementwise operation with binary operator
-            //
-            %for $opcode, $operation, $operator in $ewise_b
-            case $opcode:
-                in1 = (kernel->nargs)++;
-                in2 = (kernel->nargs)++;
-
-                if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
-                    kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
-                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
-                    kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args[in1].ndim   = instr->operand[1].ndim;
-                    kernel->args[in1].start  = instr->operand[1].start;
-                    kernel->args[in1].shape  = instr->operand[1].shape;
-                    kernel->args[in1].stride = instr->operand[1].stride;
-
-                    kernel->args[in2].data = &(instr->constant.value);
-                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
-                } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
-                    kernel->args[in1].data = &(instr->constant.value);
-                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
-
-                    kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
-                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
-                    kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
-                    kernel->args[in2].ndim   = instr->operand[2].ndim;
-                    kernel->args[in2].start  = instr->operand[2].start;
-                    kernel->args[in2].shape  = instr->operand[2].shape;
-                    kernel->args[in2].stride = instr->operand[2].stride;
-                } else {                                            // AAA
-                    kernel->args[in1].data   = bh_base_array(&instr->operand[1])->data;
-                    kernel->args[in1].type   = bh_base_array(&instr->operand[1])->type;
-                    kernel->args[in1].nelem  = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args[in1].ndim   = instr->operand[1].ndim;
-                    kernel->args[in1].start  = instr->operand[1].start;
-                    kernel->args[in1].shape  = instr->operand[1].shape;
-                    kernel->args[in1].stride = instr->operand[1].stride;
-
-                    kernel->args[in2].data   = bh_base_array(&instr->operand[2])->data;
-                    kernel->args[in2].type   = bh_base_array(&instr->operand[2])->type;
-                    kernel->args[in2].nelem  = bh_base_array(&instr->operand[2])->nelem;
-                    kernel->args[in2].ndim   = instr->operand[2].ndim;
-                    kernel->args[in2].start  = instr->operand[2].start;
-                    kernel->args[in2].shape  = instr->operand[2].shape;
-                    kernel->args[in2].stride = instr->operand[2].stride;
-                }
-
-                //kernel->program[i] = {$operation, $operator, out, in1, in2};
-                // Setup bytecode
-                kernel->program[i].op    = $operation;
+                kernel->program[i].op    = $operation;      // TAC
                 kernel->program[i].oper  = $operator;
                 kernel->program[i].out   = out;
                 kernel->program[i].in1   = in1;
                 kernel->program[i].in2   = in2;
+
+                kernel->omask |= EWISE_U;   // Operationmask
+                break;
+            %end for
+
+            //
+            //  Zip / Elementwise binary
+            %for $opcode, $operation, $operator in $ewise_b
+            case $opcode:
+                in1 = assign_layout(instr, 1, kernel);      // Input
+                in2 = assign_layout(instr, 2, kernel);
+
+                kernel->program[i].op    = $operation;      // TAC
+                kernel->program[i].oper  = $operator;
+                kernel->program[i].out   = out;
+                kernel->program[i].in1   = in1;
+                kernel->program[i].in2   = in2;
+
+                kernel->omask =| EWISE_B;   // Operationmask
                 break;
             %end for
 
@@ -203,7 +180,7 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
                     kernel->program[i].out  = 0;
                     kernel->program[i].in1  = 0;
                     kernel->program[i].in2  = 0;
-                    
+
                     cout << "Extension method." << endl;
                 } else {
                     in1 = -1;

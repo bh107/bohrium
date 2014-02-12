@@ -56,20 +56,21 @@ static char* template_path;
 
 typedef struct bh_kernel {
     int ninstr;                 // Number of instructions in kernel
-    int ninstr_nonsys;          // Number of instructions without a system opcode
 
     bh_instruction* instr[10];  // Pointers to instructions
     int tsig[10];               // Typesignature of the instructions
     int lmask[10];              // Layoutmask of the instructions
 
-    bytecode_t* program;        // Ordered list of bytecodes
+    bytecode_t* program;        // Ordered list of bytecodes    
 
     int nargs;                  // Number of arguments to the kernel
     bh_kernel_arg_t* args;      // Array of kernel arguments
 
+    uint32_t omask;             // Mask of the OPERATIONS in the kernel
     string symbol;              // Textual representation of the kernel
 } bh_kernel_t;                  // Meta-data to construct and execute a kernel-function
 
+#include "operator_cexpr.c"
 #include "compiler.cpp"
 #include "specializer.cpp"
 #include "compose.c"

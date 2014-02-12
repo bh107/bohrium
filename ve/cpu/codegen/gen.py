@@ -12,6 +12,7 @@ def main(self):
     prefix  = "../../../core/codegen"
     types   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'types')))
     opcodes = json.load(open("%s%s%s.json" % (prefix, os.sep, 'opcodes')))
+    opers   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'operators')))
 
     # Map template names to mapping-functons and fill out the template
     for fn in glob.glob('templates/*.tpl'):
@@ -19,31 +20,31 @@ def main(self):
         if fn in self.__dict__:
             template = Template(
                 file = "%s%s%s.tpl" % ("templates", os.sep, fn),
-                searchList=globals()[fn](opcodes, types)
+                searchList=globals()[fn](opcodes, types, opers)
             )
             with open('output/%s.c' % fn, 'w') as fd:
                 fd.write(str(template))
 
-def bh_opcode_to_cstr(opcodes, types):
+def bh_opcode_to_cstr(opcodes, types, opers):
     return [{"opcodes": [(o["opcode"], o["opcode"], o["opcode"].replace('BH_','')) for o in opcodes
     ]}]
 
-def bh_opcode_to_cstr_short(opcodes, types):
-    return bh_opcode_to_cstr(opcodes, types)
+def bh_opcode_to_cstr_short(opcodes, types, opers):
+    return bh_opcode_to_cstr(opcodes, types, opers)
 
-def enum_to_ctypestr(opcodes, types):
+def enum_to_ctypestr(opcodes, types, opers):
     return [{"types": [(t["enum"], t["c"]) for t in types]}]
 
-def enum_to_shorthand(opcodes, types):
+def enum_to_shorthand(opcodes, types, opers):
     return [{"types": [(t["enum"], t["shorthand"]) for t in types]}]
 
-def enumstr_to_ctypestr(opcodes,types):
+def enumstr_to_ctypestr(opcodes,types, opers):
     return [{"types": [(t["enum"], t["c"]) for t in types]}]
 
-def enumstr_to_shorthand(opcodes, types):
+def enumstr_to_shorthand(opcodes, types, opers):
     return [{"types": [(t["enum"], t["shorthand"]) for t in types]}]
 
-def operators(opcodes, types):
+def operators(opcodes, types, opers):
     unary   = []
     binary  = []
     huh     = []
@@ -84,7 +85,14 @@ def operators(opcodes, types):
 
     return operators
 
-def compose(opcodes, types):
+def operator_cexpr(opcodes, types, opers):
+    operators = []
+    for op in opers:
+        operators.append((op, opers[op]['code']))
+
+    return {'operators': operators}
+
+def compose(opcodes, types, opers):
     """Construct the data need to create a map from bh_instruction to bh_bytecode_t."""
 
     ewise_u     = []
@@ -135,7 +143,7 @@ def compose(opcodes, types):
 
     return operations
 
-def layoutmask_to_shorthand(opcodes, types):
+def layoutmask_to_shorthand(opcodes, types, opers):
     A0_CONSTANT = 1 << 0;
     A0_CONTIGUOUS    = 1 << 1;
     A0_STRIDED  = 1 << 2;
@@ -277,7 +285,7 @@ def layoutmask_to_shorthand(opcodes, types):
 
     return [{'masks': masks}]
 
-def cexpr_todo(opcodes, types):
+def cexpr_todo(opcodes, types, opers):
 
     def expr(opcode):
         opcode["code"] = opcode["code"].replace("op1", "*a0_current")
@@ -317,7 +325,7 @@ def cexpr_todo(opcodes, types):
     return [data, {'opcodes': opcodes}]
 
 
-def typesig_to_shorthand(opcodes, types):
+def typesig_to_shorthand(opcodes, types, opers):
 
     etu = dict([(t["enum"], t["id"]+1) for t in types])
     ets = dict([(t["enum"], t["shorthand"]) for t in types])
@@ -368,8 +376,8 @@ def typesig_to_shorthand(opcodes, types):
 
     return [{"cases": cases}]
 
-def bh_typesig_check(opcodes, types):
-    return typesig_to_shorthand(opcodes, types)
+def bh_typesig_check(opcodes, types, opers):
+    return typesig_to_shorthand(opcodes, types, opers)
 
 if __name__ == "__main__":
     main(sys.modules[__name__])

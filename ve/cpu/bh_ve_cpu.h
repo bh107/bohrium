@@ -32,6 +32,8 @@ typedef enum OPERATION {
     EXTENSION   = 64,
 } OPERATION;
 
+#define HAS_ARRAY_OP EWISE_U | EWISE_B | REDUCE | SCAN | GENERATOR
+
 typedef enum OPERATOR {
     // Used by elementwise operations
     ABSOLUTE,
@@ -116,11 +118,19 @@ typedef struct bytecode {
     uint32_t  in2;      // Second input operand
 } bytecode_t;
 
+typedef enum LAYOUT {
+    CONSTANT,
+    CONTIGUOUS,
+    STRIDED,
+    SPARSE
+} LAYOUT;
+
 //
 // NOTE: Changes to bk_kernel_args_t must be 
 //       replicated to "templates/kernel.tpl".
 //
 typedef struct bh_kernel_arg {
+    LAYOUT  layout;     // The layout of the data
     void*   data;       // Pointer to memory allocated for the array
     int64_t type;       // Type of the elements stored
     int64_t start;      // Offset from memory allocation to start of array
@@ -130,22 +140,6 @@ typedef struct bh_kernel_arg {
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
 } bh_kernel_arg_t;      // Meta-data for a kernel argument
-
-// Layoutmask
-#define A0_CONSTANT     (1 << 0)
-#define A0_CONTIGUOUS   (1 << 1)
-#define A0_STRIDED      (1 << 2)
-#define A0_SPARSE       (1 << 3)
-
-#define A1_CONSTANT     (1 << 4)
-#define A1_CONTIGUOUS   (1 << 5)
-#define A1_STRIDED      (1 << 6)
-#define A1_SPARSE       (1 << 7)
-
-#define A2_CONSTANT     (1 << 8)
-#define A2_CONTIGUOUS   (1 << 9)
-#define A2_STRIDED      (1 << 10)
-#define A2_SPARSE       (1 << 11)
 
 #ifdef __cplusplus
 extern "C" {
