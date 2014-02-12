@@ -257,7 +257,7 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
         kernel.lmask[i] = lmask;
     }
 
-    if (kernel.omask == HAS_ARRAY_OP) {
+    if (kernel.omask == (HAS_ARRAY_OP)) {
         kernel.symbol = "BH_" + \
                         symbol_opcode  + "_" +\
                         symbol_tsig    + "_" +\

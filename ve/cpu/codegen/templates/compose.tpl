@@ -13,13 +13,13 @@ directiveStartToken= %
 int add_argument(bh_kernel_t* kernel, bh_instruction* instr, int operand_idx)
 {
     int arg_idx = (kernel->nargs)++;
-    if (bh_is_constant(instr->operand[operand_idx])) {
+    if (bh_is_constant(&instr->operand[operand_idx])) {
         kernel->scope[arg_idx].layout    = CONSTANT;
         kernel->scope[arg_idx].data      = &(instr->constant.value);
         kernel->scope[arg_idx].type      = bh_base_array(&instr->operand[operand_idx])->type;
         kernel->scope[arg_idx].nelem     = 1;
     } else {
-        if (is_contigouos(&kernel->scope[arg_idx])) {
+        if (is_contiguous(&kernel->scope[arg_idx])) {
             kernel->scope[arg_idx].layout = CONTIGUOUS;
         } else {
             kernel->scope[arg_idx].layout = STRIDED;
@@ -42,12 +42,11 @@ static bh_error compose(bh_kernel_t* kernel, bh_ir* ir, bh_dag* dag)
 {
     kernel->nargs   = 0;
     kernel->scope   = (bh_kernel_arg_t*)malloc(3*dag->nnode*sizeof(bh_kernel_arg_t));
-    kernel->program = (bytecode_t*)malloc(dag->nnode*sizeof(bytecode_t));
+    kernel->program = (tac_t*)malloc(dag->nnode*sizeof(tac_t));
 
     for (int i=0; i<dag->nnode; ++i) {
-        kernel->tsig[i]  = bh_type_sig(instr);
-
         bh_instruction* instr = kernel->instr[i] = &ir->instr_list[dag->node_map[i]];
+        kernel->tsig[i]  = bh_type_sig(instr);
         int out=0, in1=0, in2=0;
 
         //
