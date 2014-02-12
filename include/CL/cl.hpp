@@ -2809,21 +2809,40 @@ public:
     }
 
 #if defined(CL_VERSION_1_1)
+private:
+    typedef struct {
+        void (CL_CALLBACK * pfn_notify)(cl_event, cl_int, void *); 
+        void * user_data;
+    } fp_ud_t;
+    
+    static void CL_CALLBACK callbackWrapper(cl_event event, cl_int status, void* _fp_ud)
+    {
+        fp_ud_t *fp_ud = (fp_ud_t *)_fp_ud;
+        fp_ud->pfn_notify(event,status,fp_ud->user_data);
+        detail::errHandler(::clReleaseEvent(event), __RELEASE_ERR);
+        delete fp_ud;
+    }
+public:
     /*! \brief Registers a user callback function for a specific command execution status.
      *
      *  Wraps clSetEventCallback().
+     *  
      */
     cl_int setCallback(
         cl_int type,
         void (CL_CALLBACK * pfn_notify)(cl_event, cl_int, void *),		
         void * user_data = NULL)
     {
+        detail::errHandler(retain(), __RETAIN_ERR);
+        fp_ud_t *fp_ud = new fp_ud_t();
+        fp_ud->pfn_notify = pfn_notify;
+        fp_ud->user_data = user_data;
         return detail::errHandler(
             ::clSetEventCallback(
                 object_,
                 type,
-                pfn_notify,
-                user_data), 
+                &callbackWrapper,
+                fp_ud), 
             __SET_EVENT_CALLBACK_ERR);
     }
 #endif
