@@ -92,7 +92,7 @@ def operator_cexpr(opcodes, types, opers):
 
     return {'operators': operators}
 
-def compose(opcodes, types, opers):
+def block(opcodes, types, opers):
     """Construct the data need to create a map from bh_instruction to bh_bytecode_t."""
 
     ewise_u     = []

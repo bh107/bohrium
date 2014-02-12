@@ -31,17 +31,17 @@ void specializer_init()
  *
  *  Contract: Do not call this for system or extension operations.
  */
-string template_filename(bh_kernel_t& kernel, int pc, bh_intp optimized)
+string template_filename(block_t& block, int pc, bh_intp optimized)
 {
     string tpl_ndim   = "nd.",
            tpl_opcode,
            tpl_layout = "strided.";
 
-    tac_t* tac = &kernel.program[pc];
+    tac_t* tac = &block.program[pc];
     int ndim = (tac->op == REDUCE)         ? \
-               kernel.scope[tac->in1].ndim : \
-               kernel.scope[tac->out].ndim;
-    int lmask = kernel.lmask[pc];
+               block.scope[tac->in1].ndim : \
+               block.scope[tac->out].ndim;
+    int lmask = block.lmask[pc];
 
     switch (tac->op) {                    // OPCODE_SWITCH
         case MAP:
@@ -115,27 +115,27 @@ string template_filename(bh_kernel_t& kernel, int pc, bh_intp optimized)
 
 
 /**
- *  Construct the c-sourcecode for the given kernel.
+ *  Construct the c-sourcecode for the given block.
  *
  *  NOTE: System opcodes are ignored.
  *
  *  @param optimized The level of optimizations to apply to the generated code.
- *  @param kernel The kernel to generate sourcecode for.
+ *  @param block The block to generate sourcecode for.
  *  @return The generated sourcecode.
  *
  */
-string specialize(bh_kernel_t& kernel, bh_intp const optimized) {
+string specialize(block_t& block, bh_intp const optimized) {
 
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
-    kernel_d.SetValue("SYMBOL", kernel.symbol);
+    kernel_d.SetValue("SYMBOL", block.symbol);
 
-    for(int j=0; j<kernel.ninstr; ++j) {
+    for(int j=0; j<block.ninstr; ++j) {
         
         //
         // Grab the tacuction for which to generate sourcecode
-        tac_t *tac = &kernel.program[j];
+        tac_t *tac = &block.program[j];
 
         //
         // Skip code generation for system and extensions
@@ -147,7 +147,7 @@ string specialize(bh_kernel_t& kernel, bh_intp const optimized) {
         // The operation (ewise, reduction, scan, random, range).
         ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
         string tf = template_filename(
-            kernel,
+            block,
             j,
             optimized
         );
@@ -157,14 +157,14 @@ string specialize(bh_kernel_t& kernel, bh_intp const optimized) {
         // The operator +, -, /, min, max, sin, sqrt, etc...
         //
         ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
-        operator_d->SetValue("OPERATOR", operator_cexpr(tac->op, tac->oper, kernel.scope[tac->out].type));
+        operator_d->SetValue("OPERATOR", operator_cexpr(tac->op, tac->oper, block.scope[tac->out].type));
 
         //
         // Reduction and scan specific expansions
         // TODO: fix for multiple tacuctions
         if ((tac->op == REDUCE) || (tac->op == SCAN)) {
-            operation_d->SetValue("TYPE_OUTPUT", enum_to_ctypestr(kernel.scope[tac->out].type));
-            operation_d->SetValue("TYPE_INPUT",  enum_to_ctypestr(kernel.scope[tac->in1].type));
+            operation_d->SetValue("TYPE_OUTPUT", enum_to_ctypestr(block.scope[tac->out].type));
+            operation_d->SetValue("TYPE_INPUT",  enum_to_ctypestr(block.scope[tac->in1].type));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
             if (tac->oper == ADD) {
                 operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(0));
@@ -189,12 +189,12 @@ string specialize(bh_kernel_t& kernel, bh_intp const optimized) {
             ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
             ctemplate::TemplateDictionary* operand_d  = operation_d->AddSectionDictionary("OPERAND");
 
-            argument_d->SetValue("TYPE", enum_to_ctypestr(kernel.scope[tac->out].type));
+            argument_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->out].type));
             argument_d->SetIntValue("NR", tac->out);
 
-            operand_d->SetValue("TYPE", enum_to_ctypestr(kernel.scope[tac->out].type));
+            operand_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->out].type));
             operand_d->SetIntValue("NR",  tac->out);
-            if (kernel.scope[tac->out].layout != CONSTANT) {
+            if (block.scope[tac->out].layout != CONSTANT) {
                 argument_d->ShowSection("ARRAY");
                 operand_d->ShowSection("ARRAY");
             }

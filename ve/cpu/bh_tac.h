@@ -111,7 +111,7 @@ typedef enum LMASK {
 // NOTE: Changes to bk_kernel_args_t must be 
 //       replicated to "templates/kernel.tpl".
 //
-typedef struct bh_kernel_arg {
+typedef struct block_arg {
     LAYOUT  layout;     // The layout of the data
     void*   data;       // Pointer to memory allocated for the array
     int64_t type;       // Type of the elements stored
@@ -121,7 +121,7 @@ typedef struct bh_kernel_arg {
     int64_t ndim;       // Number of dimensions of the array
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
-} bh_kernel_arg_t;      // Meta-data for a kernel argument
+} block_arg_t;      // Meta-data for a kernel argument
 
 #define HAS_ARRAY_OP MAP | ZIP | REDUCE | SCAN | GENERATE
 

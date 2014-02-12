@@ -85,7 +85,7 @@ void assign_string(char*& output, const char* input)
 /**
  *  Determine whether or not a kernel argument i contiguous or strided.
  */
-bool is_contiguous(bh_kernel_arg_t* arg)
+bool is_contiguous(block_arg_t* arg)
 {
     if ((arg->ndim == 3) && \
         (arg->stride[2] == 1) && \
@@ -145,7 +145,7 @@ int noperands(tac_t* tac)
     }
 }
 
-int layoutmask(tac_t* tac, bh_kernel_arg_t* args)
+int layoutmask(tac_t* tac, block_arg_t* args)
 {
     switch(noperands(tac)) {
         case 3:

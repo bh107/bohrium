@@ -54,31 +54,16 @@ static char* kernel_path;
 static char* object_path;
 static char* template_path;
 
-typedef struct bh_kernel {
-    int ninstr;                 // Number of instructions in kernel
-
-    bh_instruction* instr[10];  // Pointers to instructions
-    int tsig[10];               // Typesignature of the instructions
-    int lmask[10];              // Layoutmask of the instructions
-
-    tac_t* program;             // Ordered list of TACs
-    int nargs;                  // Number of arguments to the kernel
-    bh_kernel_arg_t* scope;     // Array of kernel arguments
-
-    uint32_t omask;             // Mask of the OPERATIONS in the kernel
-    string symbol;              // Textual representation of the kernel
-} bh_kernel_t;                  // Meta-data to construct and execute a kernel-function
-
 #include "utils.cpp"
+#include "block.c"
 #include "operator_cexpr.c"
 #include "compiler.cpp"
 #include "specializer.cpp"
-#include "compose.c"
 
 process* target;
 
 // Execute a kernel
-static bh_error execute(bh_instruction *instr)
+static bh_error execute(bh_kernel_t* kernel)
 {
     bh_error res = BH_SUCCESS;
 
@@ -95,36 +80,9 @@ static bh_error execute(bh_instruction *instr)
     bh_kernel_t kernel;
 
     //
-    // Do this as the subgraph is iterated over...
-    //
-    kernel.ninstr = 1;
-    kernel.ninstr_nonsys = 0;
-    for(int i=0; i<kernel.ninstr; ++i) {
-        kernel.instr[i] = instr;
-        kernel.ninstr   = i+1;
-        switch(instr->opcode) {
-            case BH_DISCARD:
-            case BH_FREE:
-            case BH_SYNC:
-            case BH_NONE:
-               break;
-            default:
-                kernel.ninstr_nonsys++; 
-        }
-    }
-
-    //
     // We start by creating a symbol
     if (!symbolize(kernel, jit_optimize)) {
         return BH_ERROR;
-    }
-
-    //
-    // Allocate space for args, we allocate much more than needed since we do not
-    // yet know how many arguments the kernel will contain, the upper-bound
-    // bound of number of instructions * 3 is therefore used instead.
-    if (kernel.ninstr_nonsys>0) {
-        kernel.scope = (bh_kernel_arg_t*)malloc(3*kernel.ninstr_nonsys*sizeof(bh_kernel_arg_t));
     }
 
     //
@@ -199,12 +157,6 @@ static bh_error execute(bh_instruction *instr)
                 return res;
             }
         }
-    }
-
-    //
-    // De-allocate metadata for kernel arguments
-    if (kernel.ninstr_nonsys>0) {
-        free(kernel.scope);
     }
 
     return res;
@@ -350,7 +302,6 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
         // Map to cpuIR
         res = bh_ir_map_instr(bhir, &bhir->dag_list[node], &execute);
-
 
         if (res !=BH_SUCCESS) {
             break;
