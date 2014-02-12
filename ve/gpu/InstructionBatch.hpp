@@ -77,9 +77,8 @@ public:
 
 class BatchException 
 {
-private:
-    int code;
 public:
+    int code;
     BatchException(int code_) : code(code_) {}
 };
 
