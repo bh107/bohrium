@@ -29,6 +29,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <ctemplate/template.h>
 #include <bh.h>
 #include <bh_vcache.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "bh_ve_cpu.h"
 
 // Execution Profile
@@ -80,7 +82,7 @@ typedef struct bh_bytecode {
 */
 
 //
-// NOTE: Changes to bk_kernel_args_t must be 
+// NOTE: Changes to bk_kernel_args_t must be
 //       replicated to "templates/kernel.tpl".
 //
 typedef struct bh_kernel_arg {
@@ -302,7 +304,7 @@ static bh_error pack_arguments(bh_kernel_t* kernel)
     // Update the argument count for the kernel
     //
     kernel->nargs = nargs;
-        
+
     return BH_SUCCESS;
 }
 
@@ -338,7 +340,7 @@ static bh_error execute(bh_instruction *instr)
             case BH_NONE:
                break;
             default:
-                kernel.ninstr_nonsys++; 
+                kernel.ninstr_nonsys++;
         }
     }
 
@@ -361,9 +363,9 @@ static bh_error execute(bh_instruction *instr)
     //
     if (jit_enabled && \
         (kernel.symbol!="") && \
-        (!target->symbol_ready(kernel.symbol))) {   
+        (!target->symbol_ready(kernel.symbol))) {
                                                     // Specialize sourcecode
-        string sourcecode = specialize(kernel, jit_optimize);   
+        string sourcecode = specialize(kernel, jit_optimize);
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file
             target->src_to_file(
                 kernel.symbol,
@@ -404,10 +406,10 @@ static bh_error execute(bh_instruction *instr)
             return res;
         }
     }
-    
+
     //
     // Execute kernel handling array operations.
-    // 
+    //
     if (kernel.ninstr_nonsys>0) {
         res = pack_arguments(&kernel);
         if (BH_SUCCESS != res) {
@@ -520,6 +522,10 @@ bh_error bh_ve_cpu_init(const char *name)
     bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");
     bh_path_option(     template_path,  "BH_VE_CPU_TEMPLATE_PATH", "template_path");
     bh_string_option(   compiler_cmd,   "BH_VE_CPU_COMPILER",      "compiler_cmd");
+
+    //Make sure that kernel and object path exists
+    mkdir(kernel_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    mkdir(object_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     if (!jit_enabled) {
         jit_preload     = 1;
