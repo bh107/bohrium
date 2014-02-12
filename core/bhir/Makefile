@@ -2,7 +2,7 @@ ROOT=../..
 include $(ROOT)/platform.mk
 CXX=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -std=c++98 -fPIC -I$(ROOT)/include
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -std=gnu++11 -fPIC -I$(ROOT)/include
 HEADER=$(ROOT)/include/*
 SRC=$(ALL_CPP_FILES) $(ALL_C_FILES)
 OBJTMP=$(SRC:.c=.o)

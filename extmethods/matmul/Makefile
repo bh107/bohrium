@@ -1,7 +1,6 @@
 ROOT=../..
 include $(ROOT)/platform.mk
 LIB=libbh_matmul.$(LIB_SUFFIX)
-VISDIR?=/usr/local
 CXX?=g++
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -I$(ROOT)/include
