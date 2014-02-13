@@ -50,13 +50,13 @@ Kernel Accumulate::getKernel(bh_instruction* inst,
                          UserFuncArg* userFuncArg,
                          std::vector<bh_index> shape)
 {
-#ifdef BH_TIMIMG
-    bh_uint64 start = bh::Timer::stamp();
+#ifdef BH_TIMING
+    bh_uint64 start = bh::Timer<>::stamp();
 #endif
     std::string code = generateCode(inst, userFuncArg->operands[0]->type(), 
                                     userFuncArg->operands[1]->type(), shape);
-#ifdef BH_TIMIMG
-    userFuncArg->resourceManager->codeGen({start, bh::Timer::stamp()}); 
+#ifdef BH_TIMING
+    userFuncArg->resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
 #endif
     size_t codeHash = string_hasher(code);
     KernelMap::iterator kit = kernelMap.find(codeHash);

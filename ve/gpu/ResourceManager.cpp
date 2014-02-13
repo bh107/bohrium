@@ -184,7 +184,7 @@ void ResourceManager::readBuffer(const cl::Buffer& buffer,
     } catch (cl::Error e) {
         std::cerr << "[VE-GPU] Could not enqueueReadBuffer: \"" << e.err() << "\"" << std::endl;
     }
-#ifdef BH_TIMIMG
+#ifdef BH_TIMING
     event->setCallback(CL_COMPLETE, &eventProfiler, bufferRead);
 #endif
 }
@@ -327,6 +327,7 @@ bool ResourceManager::float64support()
 void CL_CALLBACK ResourceManager::eventProfiler(cl_event ev, cl_int eventStatus, void* timer)
 {
     assert(eventStatus == CL_COMPLETE);
+    clRetainEvent(ev);
     cl::Event event(ev);
     ((bh::Timer<bh::timing4,1000000000>*)timer)->add({ event.getProfilingInfo<CL_PROFILING_COMMAND_QUEUED>(),
                 event.getProfilingInfo<CL_PROFILING_COMMAND_SUBMIT>(),

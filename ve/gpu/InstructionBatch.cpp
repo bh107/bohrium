@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <stdexcept>
 #include <bh.h>
+#include <bh_timing.hpp>
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
 
@@ -238,12 +239,12 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
 
 Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
 {
-#ifdef BH_TIMIMG
-    bh_uint64 start = bh::Timer::stamp();
+#ifdef BH_TIMING
+    bh_uint64 start = bh::Timer<>::stamp();
 #endif
     std::string code = generateCode();
-#ifdef BH_TIMIMG
-    userFuncArg->resourceManager->codeGen({start, bh::Timer::stamp()}); 
+#ifdef BH_TIMING
+    resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
 #endif
     size_t codeHash = string_hasher(code);
 
