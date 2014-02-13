@@ -19,7 +19,6 @@ else
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "test" ]; then
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/test_accumulate.py
-    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py --exclude=test_accumulate.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
 fi
 
