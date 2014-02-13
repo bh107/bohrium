@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
-include(../../CMakeLists.inc)
+include_directories(../../include)
 
-file(GLOB SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB SRC *.cpp)
 
 add_library(bh_vem_node SHARED ${SRC})
 
