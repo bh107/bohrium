@@ -171,12 +171,12 @@ void ResourceManager::readBuffer(const cl::Buffer& buffer,
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
     std::vector<cl::Event> readerWaitFor(1,waitFor);
 #ifdef BH_TIMING
-    cl::Event * event = new cl::Event();
+    cl::Event event;
 #endif
     try {
         commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, &readerWaitFor, 
 #ifdef BH_TIMING
-                                                event
+                                                &event
 #else
                                                 NULL
 #endif
@@ -185,7 +185,7 @@ void ResourceManager::readBuffer(const cl::Buffer& buffer,
         std::cerr << "[VE-GPU] Could not enqueueReadBuffer: \"" << e.err() << "\"" << std::endl;
     }
 #ifdef BH_TIMING
-    event->setCallback(CL_COMPLETE, &eventProfiler, bufferRead);
+    event.setCallback(CL_COMPLETE, &eventProfiler, bufferRead);
 #endif
 }
 
@@ -324,11 +324,9 @@ bool ResourceManager::float64support()
 }
 
 #ifdef BH_TIMING
-void CL_CALLBACK ResourceManager::eventProfiler(cl_event ev, cl_int eventStatus, void* timer)
+void CL_CALLBACK ResourceManager::eventProfiler(cl::Event event, cl_int eventStatus, void* timer)
 {
     assert(eventStatus == CL_COMPLETE);
-    clRetainEvent(ev);
-    cl::Event event(ev);
     ((bh::Timer<bh::timing4,1000000000>*)timer)->add({ event.getProfilingInfo<CL_PROFILING_COMMAND_QUEUED>(),
                 event.getProfilingInfo<CL_PROFILING_COMMAND_SUBMIT>(),
                 event.getProfilingInfo<CL_PROFILING_COMMAND_START>(),

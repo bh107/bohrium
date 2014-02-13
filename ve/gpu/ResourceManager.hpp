@@ -53,7 +53,7 @@ public:
     bh::Timer<bh::timing4,1000000000>* bufferRead;
     bh::Timer<bh::timing4,1000000000>* kernelExec;
     ~ResourceManager();
-    static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
+    static void CL_CALLBACK eventProfiler(cl::Event event, cl_int eventStatus, void* total);
 #endif
     ResourceManager(bh_component* _component);
     cl::Buffer* createBuffer(size_t size);
