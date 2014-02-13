@@ -1726,10 +1726,7 @@ protected:
 public:
     Wrapper() : object_(NULL) { }
 
-    Wrapper(const cl_type &obj) : object_(obj) 
-    { 
-        if (object_ != NULL) { detail::errHandler(retain(), __RETAIN_ERR); }
-    }
+    Wrapper(const cl_type &obj) : object_(obj) { }
 
     ~Wrapper()
     {
@@ -1754,7 +1751,6 @@ public:
     {
         if (object_ != NULL) { detail::errHandler(release(), __RELEASE_ERR); }
         object_ = rhs;
-        if (object_ != NULL) { detail::errHandler(retain(), __RETAIN_ERR); }
         return *this;
     }
 
@@ -2810,27 +2806,33 @@ public:
 
 #if defined(CL_VERSION_1_1)
 private:
+    /* struct only used by callbackWrapper and setCallback
+     */
     typedef struct {
-        void (CL_CALLBACK * pfn_notify)(cl_event, cl_int, void *); 
+        void (CL_CALLBACK * pfn_notify)(Event, cl_int, void *); 
         void * user_data;
     } fp_ud_t;
     
+    /*! \brief wrapper-function used by setCallback
+     *
+     *  Wrapperfunction used to maintaining Event object interface and refcount 
+     */
     static void CL_CALLBACK callbackWrapper(cl_event event, cl_int status, void* _fp_ud)
     {
         fp_ud_t *fp_ud = (fp_ud_t *)_fp_ud;
-        fp_ud->pfn_notify(event,status,fp_ud->user_data);
-        detail::errHandler(::clReleaseEvent(event), __RELEASE_ERR);
+        fp_ud->pfn_notify(Event(event),status,fp_ud->user_data);
+        /* Implicite clReleaseEvent caused by object destruction after functioncall */
         delete fp_ud;
     }
 public:
     /*! \brief Registers a user callback function for a specific command execution status.
      *
-     *  Wraps clSetEventCallback().
-     *  
+     *  Wraps clSetEventCallback(), Converting the cl_event to a Event object and maintaining
+     *  reference count till after callback function call.
      */
     cl_int setCallback(
         cl_int type,
-        void (CL_CALLBACK * pfn_notify)(cl_event, cl_int, void *),		
+        void (CL_CALLBACK * pfn_notify)(Event, cl_int, void *),             
         void * user_data = NULL)
     {
         detail::errHandler(retain(), __RETAIN_ERR);
@@ -2843,6 +2845,24 @@ public:
                 type,
                 &callbackWrapper,
                 fp_ud), 
+            __SET_EVENT_CALLBACK_ERR);
+    }
+    
+    /*! \brief Registers a user callback function for a specific command execution status.
+     *
+     *  Wraps clSetEventCallback().
+     */
+    cl_int setCallback(
+        cl_int type,
+        void (CL_CALLBACK * pfn_notify)(cl_event, cl_int, void *),		
+        void * user_data = NULL)
+    {
+        return detail::errHandler(
+            ::clSetEventCallback(
+                object_,
+                type,
+                pfn_notify,
+                user_data), 
             __SET_EVENT_CALLBACK_ERR);
     }
 #endif

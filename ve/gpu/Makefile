@@ -1,11 +1,11 @@
 ROOT=../..
 include $(ROOT)/platform.mk
 LIB=libbh_ve_gpu.$(LIB_SUFFIX)
-CC?=gcc
-CXX?=g++
+CC=clang
+CXX=clang++ -D__float128=void 
 WARNOPTS=-Wall
 LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=gnu++11 -I$(ROOT)/include -I$(ROOT)/iniparser/src \
-         -DBH_TIMING #-DDEBUG 
+        #-DBH_TIMING #-DDEBUG 
 LDFLAGS= $(ARCH_OPTS) -shared -L../../core -L/usr/lib/nvidia-current -lOpenCL -lbh -pthread -Wl,$(LD_LIB_COMMAND),$(LIB)
 SRC=$(ALL_CPP_FILES) $(ALL_C_FILES)
 HEADER=$(ALL_H_FILES) $(ALL_HPP_FILES)
@@ -23,7 +23,7 @@ all: $(LIB)
 
 
 $(LIB): $(OBJ)
-	$(CXX) $(OBJ) -o $@ $(LDFLAGS)
+	$(CC) $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
 	rm -rf *.o *~ $(LIB)
