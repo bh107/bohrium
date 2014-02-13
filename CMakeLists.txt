@@ -32,6 +32,6 @@ set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH})
 set(CPACK_PACKAGE_FILE_NAME "bohrium-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}_x86_64")
 
 #Debian specific
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libctemplate-dev (>= 2)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libctemplate-dev (>= 2), libfftw3-dev")
 
 include(CPack)
