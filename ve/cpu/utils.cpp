@@ -143,6 +143,7 @@ int noperands(tac_t* tac)
         case EXTENSION:
             return 3;
     }
+    return 0;
 }
 
 int layoutmask(tac_t* tac, block_arg_t* args)

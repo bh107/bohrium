@@ -253,8 +253,8 @@ bool symbolize(block_t &block, bh_intp const optimized) {
         }
         symbol_ndim += "D";
 
-        block.tsig[i]  = tsig;
-        block.lmask[i] = lmask;
+        //block.tsig[i]  = tsig;
+        //block.lmask[i] = lmask;
     }
 
     if (block.omask == (HAS_ARRAY_OP)) {

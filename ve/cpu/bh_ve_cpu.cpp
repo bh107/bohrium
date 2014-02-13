@@ -62,110 +62,6 @@ static char* template_path;
 
 Compiler* target;
 
-// Execute a kernel
-static bh_error execute(bh_kernel_t* kernel)
-{
-    bh_error res = BH_SUCCESS;
-
-    // Lets check if it is a known extension method
-    {
-        map<bh_opcode,bh_extmethod_impl>::iterator ext;
-        ext = extmethod_op2impl.find(instr->opcode);
-        if (ext != extmethod_op2impl.end()) {
-            bh_extmethod_impl extmethod = ext->second;
-            return extmethod(instr, NULL);
-        }
-    }
-
-    bh_kernel_t kernel;
-
-    //
-    // We start by creating a symbol
-    if (!symbolize(kernel, jit_optimize)) {
-        return BH_ERROR;
-    }
-
-    //
-    // JIT-compile the kernel if enabled
-    //
-    if (jit_enabled && \
-        (kernel.symbol!="") && \
-        (!target->symbol_ready(kernel.symbol))) {   
-                                                    // Specialize sourcecode
-        string sourcecode = specialize(kernel, jit_optimize);   
-        if (jit_dumpsrc==1) {                       // Dump sourcecode to file
-            target->src_to_file(
-                kernel.symbol,
-                sourcecode.c_str(),
-                sourcecode.size()
-            );
-        }                                           // Send to compiler
-        target->compile(kernel.symbol, sourcecode.c_str(), sourcecode.size());
-    }
-
-    //
-    // Load the compiled code
-    //
-    if ((kernel.symbol!="") && \
-        (!target->symbol_ready(kernel.symbol)) && \
-        (!target->load(kernel.symbol))) {// Need but cannot load
-
-        if (jit_optimize) {                             // Unoptimized fallback
-            symbolize(kernel, false);
-            if ((kernel.symbol!="") && \
-                (!target->symbol_ready(kernel.symbol)) && \
-                (!target->load(kernel.symbol))) {        // Fail
-                return BH_ERROR;
-            }
-        } else {
-            return BH_ERROR;
-        }
-    }
-
-    //
-    // Allocate memory for output
-    //
-    for(int i=0; i<kernel.ninstr; ++i) {
-        res = bh_vcache_malloc(kernel.instr[i]);
-        if (BH_SUCCESS != res) {
-            fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                            "called from bh_ve_cpu_execute()\n");
-            return res;
-        }
-    }
-    
-    //
-    // Execute kernel handling array operations.
-    // 
-    if (kernel.omask == HAS_ARRAY_OP) {
-        if (BH_SUCCESS != res) {
-            fprintf(stderr, "Unhandled error returned by dispatch_kernel "
-                            "called from bh_ve_cpu_execute(...)\n");
-            return res;
-        }
-        target->funcs[kernel.symbol](kernel.scope);
-    }
-
-    //
-    // De-Allocate operand memory
-    for(int i=0; i<kernel.ninstr; ++i) {
-        if (kernel.instr[i]->opcode == BH_FREE) {
-            res = bh_vcache_free(kernel.instr[i]);
-            if (BH_SUCCESS != res) {
-                fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
-                                "called from bh_ve_cpu_execute)\n");
-                return res;
-            }
-        }
-    }
-
-    return res;
-}
-
-//
-//  Methods below implement the component interface
-//
-
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {
@@ -289,23 +185,101 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
         //
         // We are now looking at a graph in which we hope that all nodes are instructions
-        // we map this to a kernel in a slightly different format than a list of
-        // instructions
-        bh_kernel_t kernel;
-        compose(&kernel, bhir, &bhir->dag_list[node]);
+        // we map this to a block in a slightly different format than a list of instructions
+        block_t block;
+        compose(&block, bhir, &bhir->dag_list[node]);
 
-        // Symbolize...
-        
-        // Check object cache
-
-        // Execute
-
-        // Map to cpuIR
-        res = bh_ir_map_instr(bhir, &bhir->dag_list[node], &execute);
-
-        if (res !=BH_SUCCESS) {
-            break;
+        //
+        // We start by creating a symbol
+        if (!symbolize(block, jit_optimize)) {
+            return BH_ERROR;
         }
+
+        /* TODO: fix this
+        // Lets check if it is a known extension method
+        {
+            map<bh_opcode,bh_extmethod_impl>::iterator ext;
+            ext = extmethod_op2impl.find(instr->opcode);
+            if (ext != extmethod_op2impl.end()) {
+                bh_extmethod_impl extmethod = ext->second;
+                return extmethod(instr, NULL);
+            }
+        }
+        */
+        //
+        // JIT-compile the block if enabled
+        //
+        if (jit_enabled && \
+            (block.symbol!="") && \
+            (!target->symbol_ready(block.symbol))) {   
+                                                        // Specialize sourcecode
+            string sourcecode = specialize(block, jit_optimize);   
+            if (jit_dumpsrc==1) {                       // Dump sourcecode to file
+                target->src_to_file(
+                    block.symbol,
+                    sourcecode.c_str(),
+                    sourcecode.size()
+                );
+            }                                           // Send to compiler
+            target->compile(block.symbol, sourcecode.c_str(), sourcecode.size());
+        }
+
+        //
+        // Load the compiled code
+        //
+        if ((block.symbol!="") && \
+            (!target->symbol_ready(block.symbol)) && \
+            (!target->load(block.symbol))) {// Need but cannot load
+
+            if (jit_optimize) {                             // Unoptimized fallback
+                symbolize(block, false);
+                if ((block.symbol!="") && \
+                    (!target->symbol_ready(block.symbol)) && \
+                    (!target->load(block.symbol))) {        // Fail
+                    return BH_ERROR;
+                }
+            } else {
+                return BH_ERROR;
+            }
+        }
+
+        //
+        // Allocate memory for output
+        //
+        for(int i=0; i<block.ninstr; ++i) {
+            res = bh_vcache_malloc(block.instr[i]);
+            if (BH_SUCCESS != res) {
+                fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                                "called from bh_ve_cpu_execute()\n");
+                return res;
+            }
+        }
+
+        //
+        // Execute block handling array operations.
+        // 
+        if (block.omask == (HAS_ARRAY_OP)) {
+            if (BH_SUCCESS != res) {
+                fprintf(stderr, "Unhandled error returned by dispatch_block "
+                                "called from bh_ve_cpu_execute(...)\n");
+                return res;
+            }
+            target->funcs[block.symbol](block.scope);
+        }
+
+        //
+        // De-Allocate operand memory
+        for(int i=0; i<block.ninstr; ++i) {
+            if (block.instr[i]->opcode == BH_FREE) {
+                res = bh_vcache_free(block.instr[i]);
+                if (BH_SUCCESS != res) {
+                    fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
+                                    "called from bh_ve_cpu_execute)\n");
+                    return res;
+                }
+            }
+        }
+
     }
     return res;
 }
