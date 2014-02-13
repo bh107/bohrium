@@ -104,6 +104,55 @@ bool is_contiguous(block_arg_t* arg)
     return false;
 }
 
+std::string operation_text(OPERATION op)
+{
+    switch(op) {
+        case MAP:
+            return "MAP";
+        case ZIP:
+            return "ZIP";
+        case SCAN:
+            return "SCAN";
+        case REDUCE:
+            return "REDUCE";
+        case GENERATE:
+            return "GENERATE";
+        case SYSTEM:
+            return "SYSTEM";
+        case EXTENSION:
+            return "EXTENSION";
+        default:
+            return "_ERR_";
+    }
+}
+
+std::string tac_text(tac_t* tac)
+{
+    std::stringstream ss;
+    ss << "["<< operation_text(tac->op) << "(" << tac->op << ")";
+    ss << ", oper=" << tac->oper;
+    ss << ", out=" << tac->out;
+    ss << ", in1=" << tac->in1;
+    ss << ", in2=" << tac->in2;
+    ss << "]" << endl;
+    return ss.str();
+}
+
+std::string block_text(block_t* block)
+{
+    std::stringstream ss;
+    ss << "block {";
+    ss << " length=" << std::to_string(block->length);
+    ss << ", nargs= " << block->nargs;
+    ss << endl;
+    for(int i=0; i<block->length; ++i) {
+        ss << "  " << tac_text(&block->program[i]);
+    }
+    ss << "}";
+
+    return ss.str();
+}
+
 int noperands(tac_t* tac)
 {
     switch(tac->op) {

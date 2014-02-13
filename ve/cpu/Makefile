@@ -10,7 +10,8 @@ ifeq ($(PLATFORM_OS),OSX)
 	EXTRA_LIBS+=-L$(ROOT)/thirdparty/ctemplate/osx-lib 
 endif
 
-LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
+LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O0 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
+#LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
 #LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=gnu++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
 LDFLAGS=-L../../core $(ARCH_OPTS) -lbh $(EXTRA_LIBS) -lctemplate -shared -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.h $(ROOT)/include/*

@@ -8,7 +8,7 @@ if [ ! -z "$1" ] && [ "$1" == "reset" ]; then
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "sample" ]; then
-    BH_VE_CPU_JIT_DUMPSRC=1 ./sample bohrium
+    BH_VE_CPU_JIT_DUMPSRC=1 make sample
 fi
 
 if [ -f graph-1.dot ]; then

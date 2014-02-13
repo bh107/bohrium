@@ -1,19 +1,4 @@
 
-typedef struct block {
-    int ninstr;                 // Number of instructions in block
-
-    int tsig[10];               // Typesignature of the instructions
-    int lmask[10];              // Layoutmask of the instructions
-
-    bh_instruction* instr[10];  // Pointers to instructions
-    tac_t* program;             // Ordered list of TACs
-    int nargs;                  // Number of arguments to the block
-    block_arg_t* scope;         // Array of block arguments
-
-    uint32_t omask;             // Mask of the OPERATIONS in the block
-    string symbol;              // Textual representation of the block
-} block_t;                      // Meta-data to construct and execute a block-function
-
 /**
  *  Add instruction operand as argument to block.
  *
@@ -21,9 +6,9 @@ typedef struct block {
  *  @param operand_idx   Index of the operand to represent as arg_t
  *  @param block        The block in which scope the argument will exist.
  */
-static int add_argument(block_t* block, bh_instruction* instr, int operand_idx)
+static uint32_t add_argument(block_t* block, bh_instruction* instr, int operand_idx)
 {
-    int arg_idx = (block->nargs)++;
+    uint32_t arg_idx = (block->nargs)++;
     if (bh_is_constant(&instr->operand[operand_idx])) {
         block->scope[arg_idx].layout    = CONSTANT;
         block->scope[arg_idx].data      = &(instr->constant.value);
@@ -54,11 +39,12 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
     block->nargs   = 0;
     block->scope   = (block_arg_t*)malloc(3*dag->nnode*sizeof(block_arg_t));
     block->program = (tac_t*)malloc(dag->nnode*sizeof(tac_t));
+    block->length  = dag->nnode;
 
     for (int i=0; i<dag->nnode; ++i) {
         bh_instruction* instr = block->instr[i] = &ir->instr_list[dag->node_map[i]];
         block->tsig[i] = bh_type_sig(instr);
-        int out=0, in1=0, in2=0;
+        uint32_t out=0, in1=0, in2=0;
 
         //
         // Program packing: output argument
@@ -72,7 +58,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
         switch (instr->opcode) {    // [OPCODE_SWITCH]
 
             case BH_ABSOLUTE:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = ABSOLUTE;
@@ -83,7 +69,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCCOS:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = ARCCOS;
@@ -94,7 +80,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCCOSH:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = ARCCOSH;
@@ -105,7 +91,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCSIN:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = ARCSIN;
@@ -116,7 +102,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCSINH:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = ARCSINH;
@@ -127,7 +113,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCTAN:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = ARCTAN;
@@ -138,7 +124,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCTANH:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = ARCTANH;
@@ -149,7 +135,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_CEIL:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = CEIL;
@@ -160,7 +146,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_COS:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = COS;
@@ -171,7 +157,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_COSH:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = COSH;
@@ -182,7 +168,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_EXP:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = EXP;
@@ -193,7 +179,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_EXP2:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = EXP2;
@@ -204,7 +190,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_EXPM1:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = EXPM1;
@@ -215,7 +201,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_FLOOR:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = FLOOR;
@@ -226,7 +212,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_IDENTITY:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = IDENTITY;
@@ -237,7 +223,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_IMAG:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = IMAG;
@@ -248,7 +234,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_INVERT:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = INVERT;
@@ -259,7 +245,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_ISINF:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = ISINF;
@@ -270,7 +256,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_ISNAN:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = ISNAN;
@@ -281,7 +267,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_LOG:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = LOG;
@@ -292,7 +278,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_LOG10:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = LOG10;
@@ -303,7 +289,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_LOG1P:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = LOG1P;
@@ -314,7 +300,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_LOG2:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = LOG2;
@@ -325,7 +311,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_LOGICAL_NOT:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = LOGICAL_NOT;
@@ -336,7 +322,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_REAL:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = REAL;
@@ -347,7 +333,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_RINT:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = RINT;
@@ -358,7 +344,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_SIN:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = SIN;
@@ -369,7 +355,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_SINH:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = SINH;
@@ -380,7 +366,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_SQRT:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = SQRT;
@@ -391,7 +377,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_TAN:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = TAN;
@@ -402,7 +388,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_TANH:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = TANH;
@@ -413,7 +399,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_TRUNC:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = MAP;  // TAC
                 block->program[i].oper  = TRUNC;
@@ -424,7 +410,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= MAP;    // Operationmask
                 break;
             case BH_ADD:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -436,7 +422,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_ARCTAN2:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -448,7 +434,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_BITWISE_AND:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -460,7 +446,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_BITWISE_OR:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -472,7 +458,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_BITWISE_XOR:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -484,7 +470,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_DIVIDE:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -496,7 +482,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_EQUAL:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -508,7 +494,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_GREATER:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -520,7 +506,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_GREATER_EQUAL:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -532,7 +518,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_LEFT_SHIFT:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -544,7 +530,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_LESS:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -556,7 +542,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_LESS_EQUAL:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -568,7 +554,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_LOGICAL_AND:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -580,7 +566,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_LOGICAL_OR:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -592,7 +578,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_LOGICAL_XOR:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -604,7 +590,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_MAXIMUM:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -616,7 +602,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_MINIMUM:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -628,7 +614,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_MOD:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -640,7 +626,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_MULTIPLY:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -652,7 +638,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_NOT_EQUAL:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -664,7 +650,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_POWER:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -676,7 +662,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_RIGHT_SHIFT:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -688,7 +674,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_SUBTRACT:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 in2 = add_argument(block, instr, 2);
 
                 block->program[i].op    = ZIP;  // TAC
@@ -700,8 +686,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= ZIP;    // Operationmask
                 break;
             case BH_ADD_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = ADD;
@@ -712,8 +703,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_AND_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = BITWISE_AND;
@@ -724,8 +720,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_OR_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = BITWISE_OR;
@@ -736,8 +737,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_XOR_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = BITWISE_XOR;
@@ -748,8 +754,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_AND_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = LOGICAL_AND;
@@ -760,8 +771,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_OR_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = LOGICAL_OR;
@@ -772,8 +788,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_XOR_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = LOGICAL_XOR;
@@ -784,8 +805,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_MAXIMUM_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = MAXIMUM;
@@ -796,8 +822,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_MINIMUM_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = MINIMUM;
@@ -808,8 +839,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_MULTIPLY_REDUCE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = REDUCE;  // TAC
                 block->program[i].oper  = MULTIPLY;
@@ -820,8 +856,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= REDUCE;    // Operationmask
                 break;
             case BH_ADD_ACCUMULATE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = SCAN;  // TAC
                 block->program[i].oper  = ADD;
@@ -832,8 +873,13 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= SCAN;    // Operationmask
                 break;
             case BH_MULTIPLY_ACCUMULATE:
-                in2 = add_argument(block, instr, 1);
-                in2 = add_argument(block, instr, 2);
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
 
                 block->program[i].op    = SCAN;  // TAC
                 block->program[i].oper  = MULTIPLY;
@@ -876,7 +922,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= GENERATE;    // Operationmask
                 break;
             case BH_DISCARD:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = SYSTEM;  // TAC
                 block->program[i].oper  = DISCARD;
@@ -897,7 +943,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= SYSTEM;    // Operationmask
                 break;
             case BH_NONE:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = SYSTEM;  // TAC
                 block->program[i].oper  = NONE;
@@ -908,7 +954,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->omask |= SYSTEM;    // Operationmask
                 break;
             case BH_SYNC:
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
 
                 block->program[i].op    = SYSTEM;  // TAC
                 block->program[i].oper  = SYNC;
@@ -921,13 +967,14 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
 
             default:
                 if (instr->opcode>=BH_MAX_OPCODE_ID) {   // Handle extensions here
+
                     block->program[i].op   = EXTENSION; // TODO: Be clever about it
                     block->program[i].oper = EXT_OFFSET;
                     block->program[i].out  = 0;
                     block->program[i].in1  = 0;
                     block->program[i].in2  = 0;
 
-                    printf("Extension-method.\n");
+                    cout << "Extension method." << endl;
                 } else {
                     in1 = -1;
                     in2 = -2;
@@ -938,7 +985,6 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 }
         }
     }
-    
     return BH_SUCCESS;
 }
 

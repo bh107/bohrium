@@ -131,7 +131,7 @@ string specialize(block_t& block, bh_intp const optimized) {
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
     kernel_d.SetValue("SYMBOL", block.symbol);
 
-    for(int j=0; j<block.ninstr; ++j) {
+    for(int j=0; j<block.length; ++j) {
         
         //
         // Grab the tacuction for which to generate sourcecode
@@ -230,9 +230,9 @@ bool symbolize(block_t &block, bh_intp const optimized) {
 
     block.symbol   = "";
 
-    for (int i=0; i<block.ninstr; ++i) {
+    for (int i=0; i<block.length; ++i) {
         tac_t* tac = &block.program[i];
-
+        
         // Do not include system opcodes in the kernel symbol.
         if ((tac->op == SYSTEM) || (tac->op == EXTENSION)) {
             continue;

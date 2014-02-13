@@ -3,21 +3,6 @@ directiveStartToken= %
 #end compiler-settings
 %slurp
 
-typedef struct block {
-    int ninstr;                 // Number of instructions in block
-
-    int tsig[10];               // Typesignature of the instructions
-    int lmask[10];              // Layoutmask of the instructions
-
-    bh_instruction* instr[10];  // Pointers to instructions
-    tac_t* program;             // Ordered list of TACs
-    int nargs;                  // Number of arguments to the block
-    block_arg_t* scope;         // Array of block arguments
-
-    uint32_t omask;             // Mask of the OPERATIONS in the block
-    string symbol;              // Textual representation of the block
-} block_t;                      // Meta-data to construct and execute a block-function
-
 /**
  *  Add instruction operand as argument to block.
  *
@@ -25,9 +10,9 @@ typedef struct block {
  *  @param operand_idx   Index of the operand to represent as arg_t
  *  @param block        The block in which scope the argument will exist.
  */
-static int add_argument(block_t* block, bh_instruction* instr, int operand_idx)
+static uint32_t add_argument(block_t* block, bh_instruction* instr, int operand_idx)
 {
-    int arg_idx = (block->nargs)++;
+    uint32_t arg_idx = (block->nargs)++;
     if (bh_is_constant(&instr->operand[operand_idx])) {
         block->scope[arg_idx].layout    = CONSTANT;
         block->scope[arg_idx].data      = &(instr->constant.value);
@@ -58,11 +43,12 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
     block->nargs   = 0;
     block->scope   = (block_arg_t*)malloc(3*dag->nnode*sizeof(block_arg_t));
     block->program = (tac_t*)malloc(dag->nnode*sizeof(tac_t));
+    block->length  = dag->nnode;
 
     for (int i=0; i<dag->nnode; ++i) {
         bh_instruction* instr = block->instr[i] = &ir->instr_list[dag->node_map[i]];
         block->tsig[i] = bh_type_sig(instr);
-        int out=0, in1=0, in2=0;
+        uint32_t out=0, in1=0, in2=0;
 
         //
         // Program packing: output argument
@@ -90,9 +76,17 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 block->scope[in2].data      = &(instr->constant.value.r123.key);
                 block->scope[in2].type      = BH_UINT64;
                 block->scope[in2].nelem     = 1;
+                %else if 'ACCUMULATE' in $opcode or 'REDUCE' in $opcode
+                in1 = add_argument(block, instr, 1);
+
+                in2 = (block->nargs)++;
+                block->scope[in2].layout    = CONSTANT;
+                block->scope[in2].data      = &(instr->constant.value.r123.key);
+                block->scope[in2].type      = BH_UINT64;
+                block->scope[in2].nelem     = 1;
                 %else
                 %if nin >= 1
-                in2 = add_argument(block, instr, 1);
+                in1 = add_argument(block, instr, 1);
                 %end if
                 %if nin >= 2
                 in2 = add_argument(block, instr, 2);
@@ -129,7 +123,6 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
                 }
         }
     }
-    
     return BH_SUCCESS;
 }
 

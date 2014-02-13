@@ -54,6 +54,20 @@ static char* kernel_path;
 static char* object_path;
 static char* template_path;
 
+typedef struct block {
+    int tsig[10];               // Typesignature of the instructions
+    int lmask[10];              // Layoutmask of the instructions
+    bh_instruction* instr[10];  // Pointers to instructions
+
+    int length;                 // Number of tacs in program
+    tac_t* program;             // Ordered list of TACs
+    uint32_t nargs;             // Number of arguments to the block
+    block_arg_t* scope;         // Array of block arguments
+
+    uint32_t omask;             // Mask of the OPERATIONS in the block
+    string symbol;              // Textual representation of the block
+} block_t;                      // Meta-data to construct and execute a block-function
+
 #include "utils.cpp"
 #include "block.c"
 #include "operator_cexpr.c"
@@ -188,6 +202,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         // we map this to a block in a slightly different format than a list of instructions
         block_t block;
         compose(&block, bhir, &bhir->dag_list[node]);
+        cout << block_text(&block) << endl;
 
         //
         // We start by creating a symbol
@@ -246,7 +261,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         //
         // Allocate memory for output
         //
-        for(int i=0; i<block.ninstr; ++i) {
+        for(int i=0; i<block.length; ++i) {
             res = bh_vcache_malloc(block.instr[i]);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
@@ -269,7 +284,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
         //
         // De-Allocate operand memory
-        for(int i=0; i<block.ninstr; ++i) {
+        for(int i=0; i<block.length; ++i) {
             if (block.instr[i]->opcode == BH_FREE) {
                 res = bh_vcache_free(block.instr[i]);
                 if (BH_SUCCESS != res) {
