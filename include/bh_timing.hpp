@@ -101,6 +101,7 @@ namespace bh
         void add(T v)
         {
             mtx.lock();
+            total = v.end - v.start;
 #ifndef BH_TIMING_SUM
             values.push_back(v);
 #endif
