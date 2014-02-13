@@ -3,7 +3,7 @@ include $(ROOT)/platform.mk
 LIB=libbh.$(LIB_SUFFIX)
 CXX?=g++
 WARNOPTS=-Wall
-LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=gnu++11 -I$(ROOT)/include
+LCFLAGS= $(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=gnu++0x -I$(ROOT)/include
 LDFLAGS= $(ARCH_OPTS) -shared -ldl $(EXTRA_LIBS) -pthread -Wl,$(LD_LIB_COMMAND),$(LIB)
 SRC=$(ALL_CPP_FILES) $(ALL_C_FILES)
 OBJC=$(SRC:.c=.o)
