@@ -12,12 +12,10 @@ add_subdirectory(core)
 add_subdirectory(vem/node)
 add_subdirectory(ve/cpu)
 add_subdirectory(bridge/cpp)
+add_subdirectory(extmethods/matmul)
+add_subdirectory(extmethods/fftw)
 
 install(DIRECTORY thirdparty/Random123/include/Random123 DESTINATION include)
-
-
-
-
 
 #Package setup
 set(CPACK_GENERATOR "DEB")
@@ -36,6 +34,4 @@ set(CPACK_PACKAGE_FILE_NAME "bohrium-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION
 #Debian specific
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libctemplate-dev (>= 2)")
 
-
-
-INCLUDE(CPack)
+include(CPack)
