@@ -69,6 +69,9 @@ core
 linalg
     Common linear algebra functions
 
+fft
+    Discrete Fourier Transform
+
 Available subpackages
 ~~~~~~~~~~~~~~~~~~~~~
 examples
@@ -78,6 +81,7 @@ examples
 from core import *
 import linalg
 import random
+import fft
 
 from numpy import bool8 as bool
 from numpy import amin as min

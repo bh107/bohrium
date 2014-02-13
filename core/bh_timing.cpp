@@ -18,20 +18,16 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "timing.h"
+#include <bh_timing.hpp>
 
-#ifdef _WIN32
-int gettimeofday(timeval *tp, void *tzp) { 
-    LARGE_INTEGER freq;
-    LARGE_INTEGER s1;
-    QueryPerformanceFrequency(&freq);					
-    QueryPerformanceCounter(&s1);
-    long s = s1.QuadPart/freq.QuadPart;
-    long rm = s1.QuadPart % freq.QuadPart;
-    long us = long(rm / (freq.QuadPart/1000000.0));
-    
-    tp->tv_sec = s;
-    tp->tv_usec = us ;// us;
-    return 0; 
+std::ostream& operator<< (std::ostream& os, bh::timing2 const& t)
+{
+    os << t.start << " " << t.end << std::endl;
+    return os;
 }
-#endif
+
+std::ostream& operator<< (std::ostream& os, bh::timing4 const& t)
+{
+    os << t.queued << " " << t.submit << " " << t.start << " " << t.end << std::endl;
+    return os;
+}

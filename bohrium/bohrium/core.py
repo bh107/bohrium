@@ -1168,3 +1168,25 @@ def range(size, dtype=uint64):
         return B
     else:
         return A
+
+def visualize(a, mode, colormap, min, max):
+    if not (a.ndim == 2 or a.ndim == 3):
+        raise ValueError("Input must be 2-D or 3-D.")
+    if not a.bohrium:
+        raise ValueError("Input must be a Bohrium array")
+
+    if mode == "2d":
+        flat = True
+        cube = False
+    elif mode == "3d":
+        if a.ndim == 2:
+            flat = False
+            cube = False
+        else:
+            flat = False
+            cube = True
+    else:
+        raise ValueError("Unknown mode '%s'"%mode)
+
+    args = array([float(colormap), float(flat), float(cube), float(min), float(max)], bohrium=True)
+    bridge.extmethod_exec("visualizer",a,args,a)

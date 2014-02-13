@@ -7,7 +7,6 @@ So what does this code example illustrate?
 Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
 """
 import bohrium as np
-import bohriumbridge as bridge
 
 g = 9.80665 # gravitational acceleration
 
@@ -89,7 +88,6 @@ def step(H, U, V, dt=0.02, dx=1.0, dy=1.0):
                              (Ux[:-1,:]*Vx[:-1,:]/Hx[:-1,:])) + \
                     (dt/dy)*((Vy[:,1:]**2/Hy[:,1:] + g/2*Hy[:,1:]**2) -
                              (Vy[:,:-1]**2/Hy[:,:-1] + g/2*Hy[:,:-1]**2))
-
     return (H, U, V)
 
 def simulate(H, timesteps, visualize=False):
@@ -99,6 +97,5 @@ def simulate(H, timesteps, visualize=False):
         (H, U, V) = step(H, U, V)
         if visualize:
             assert H.dtype == np.float32
-            bridge.visualize(H, "3d", 0, 0.0, 5.5)
-
+            np.visualize(H, "3d", 0, 0.0, 5.5)
     return H

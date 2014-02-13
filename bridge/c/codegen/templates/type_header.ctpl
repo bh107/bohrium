@@ -144,13 +144,14 @@ DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_any(bh_multi_array_${bh_ctype}_
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis);
 
 %end for
-%end if
 
 // Sum
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self);
 
 // Product
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self);
+
+%end if
 
 %if $bh_ctype != "complex64" and $bh_ctype != "complex128"
 // Max

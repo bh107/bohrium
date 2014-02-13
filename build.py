@@ -198,6 +198,8 @@ if __name__ == "__main__":
                   ("FILTER-VALIDATE", "filter/validate", True),\
                   ("FILTER-TRANSITIVE-REDUCTION", "filter/transitive_reduction", True),\
                   ("EXT-METHOD-MATMUL", "extmethods/matmul", True),\
+                  ("EXT-METHOD-VISUALIZER", "extmethods/visualizer", False),\
+                  ("EXT-METHOD-FFTW", "extmethods/fftw", False),\
                   ("BRIDGE-C++", "bridge/cpp", True),\
                   ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   ("BRIDGE-C", "bridge/c", True),\

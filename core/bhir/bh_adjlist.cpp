@@ -45,9 +45,7 @@ static bool check_data_conflict(const bh_instruction *instr_list,
         for(bh_intp o=1; o < nop; ++o)//Input operands
         {
             const bh_view *a_op = &a->operand[o];
-            if(bh_is_constant(a_op))
-                continue;
-            if(bh_view_overlap(a_op, b_op))
+            if(!bh_view_disjoint(a_op, b_op))
                 return true;
         }
     }

@@ -140,33 +140,6 @@ static void bh_sprint_view(const bh_view *op, char buf[] ) {
 
 }
 
-static void bh_sprint_instr(const bh_instruction *instr, char buf[])
-{
-
-    char op_str[PPRINT_BUF_OPSTR_SIZE];
-    char tmp[PPRINT_BUF_OPSTR_SIZE];
-    int op_count = bh_operands(instr->opcode);
-    int i;
-    if(instr->opcode > BH_MAX_OPCODE_ID)//It is a extension method
-        sprintf(buf, "Extension Method (%d) OPS=%d{\n", (int)instr->opcode, op_count);
-    else
-        sprintf(buf, "%s OPS=%d{\n", bh_opcode_text(instr->opcode), op_count);
-    for(i=0; i < op_count; i++) {
-
-        if (!bh_is_constant(&instr->operand[i]))
-            bh_sprint_view(&instr->operand[i], op_str );
-        else
-            //sprintf(op_str, "CONSTANT");
-            bh_sprint_const( instr, op_str );
-
-        sprintf(tmp, "  OP%d %s\n", i, op_str);
-        strcat(buf, tmp);
-    }
-
-    strcat(buf, "}");
-
-}
-
 static void bh_sprint_coord( char buf[], const bh_index coord[], bh_index dims ) {
 
     char tmp[PPRINT_BUF_SHAPE_SIZE];
@@ -278,7 +251,7 @@ static void bh_sprint_bhir(char buf[], const bh_ir *bhir)
     for(bh_intp i=0; i < bhir->ninstr; ++i)
     {
         sprintf(buf+strlen(buf), "%3ld: ", (long) i);
-        bh_sprint_instr(&bhir->instr_list[i], buf+strlen(buf));
+        bh_sprint_instr(&bhir->instr_list[i], buf+strlen(buf), "\n");
     }
     sprintf(buf+strlen(buf), "}\n");
 
@@ -298,13 +271,44 @@ static void bh_sprint_bhir(char buf[], const bh_ir *bhir)
 
 /* Pretty print an instruction.
  *
+ * @instr   The instruction in question
+ * @buf     Output buffer (must have sufficient size)
+ * @newline The new line string
+ */
+void bh_sprint_instr(const bh_instruction *instr, char buf[], const char newline[])
+{
+
+    char op_str[PPRINT_BUF_OPSTR_SIZE];
+    char tmp[PPRINT_BUF_OPSTR_SIZE];
+    int op_count = bh_operands(instr->opcode);
+    int i;
+    if(instr->opcode > BH_MAX_OPCODE_ID)//It is a extension method
+        sprintf(buf, "Extension Method (%d) OPS=%d{%s", (int)instr->opcode, op_count, newline);
+    else
+        sprintf(buf, "%s OPS=%d{%s", bh_opcode_text(instr->opcode), op_count, newline);
+    for(i=0; i < op_count; i++) {
+
+        if (!bh_is_constant(&instr->operand[i]))
+            bh_sprint_view(&instr->operand[i], op_str );
+        else
+            //sprintf(op_str, "CONSTANT");
+            bh_sprint_const( instr, op_str );
+
+        sprintf(tmp, "  OP%d %s%s", i, op_str, newline);
+        strcat(buf, tmp);
+    }
+    strcat(buf, "}");
+}
+
+/* Pretty print an instruction.
+ *
  * @instr  The instruction in question
  */
 void bh_pprint_instr(const bh_instruction *instr)
 {
 
     char buf[PPRINT_BUF_SIZE];
-    bh_sprint_instr( instr, buf );
+    bh_sprint_instr( instr, buf, "\n" );
     puts( buf );
 }
 
@@ -394,7 +398,7 @@ void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[])
     FILE *file;
     file = fopen(trace_fn, "w");
     for(bh_intp i=0; i<bhir->ninstr; ++i) {
-        bh_sprint_instr(&bhir->instr_list[i], instr);
+        bh_sprint_instr(&bhir->instr_list[i], instr, "\n");
         fputs(instr, file);
         fputs("\n", file);
     }

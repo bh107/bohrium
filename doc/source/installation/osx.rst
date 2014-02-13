@@ -31,6 +31,7 @@ As Bohrium is still under active development you want to build the current devel
   git submodule update
 
 Make sure your system compiler is the one provided by Xcode, you can run the following command to verify that your compiler is the Apple version of clang::
+  
   > gcc --version
   Configured with: --prefix=/Applications/Xcode.app/Contents/Developer/usr --with-gxx-include-dir=/usr/include/c++/4.2.1
   Apple LLVM version 5.0 (clang-500.2.79) (based on LLVM 3.3svn)
@@ -44,7 +45,7 @@ When building and installing Bohrium we need to specify the newly installed Pyth
 
 .. note:: If you want to make a system-wide installation, run the make install command with sudo.
           If you run the install command as a normal user, it will install all files to ``~/.local``.
-          If you run the install command with sduo, it will install all files to ``/opt/bohrium``.
+          If you run the install command with sudo, it will install all files to ``/opt/bohrium``.
 
 Since version 0.2 of Bohrium uses JIT compilation, you also need to edit your Bohrium configuration file, which is normally found in ``~/.bohrium/config.ini``. Find the section named ``cpu`` and edit the compiler command::
 

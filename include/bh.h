@@ -33,7 +33,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_osx.h"
 #include "bh_win.h"
 #include "bh_memory.h"
-#include "bh_timing.h"
 #include "bh_ir.h"
 #include "bh_ir_map.h"
 
@@ -250,14 +249,6 @@ DLLEXPORT bool bh_is_constant(const bh_view* o);
 DLLEXPORT void bh_flag_constant(bh_view* o);
 
 /* Determines whether two views access some of the same data points
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_disjoint_views(const bh_view *a, const bh_view *b);
-
-/* Determines whether two views overlap.
  * NB: This functions may return True on non-overlapping views.
  *     But will always return False on overlapping views.
  *
@@ -265,7 +256,7 @@ DLLEXPORT bool bh_disjoint_views(const bh_view *a, const bh_view *b);
  * @b The second view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_view_overlap(const bh_view *a, const bh_view *b);
+DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
 
 /* Determines whether two views are identical and points
  * to the same base array.

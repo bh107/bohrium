@@ -9,12 +9,12 @@ def sample(args):
         import numpy as np
 
     a = np.ones(args.shape)
+    return a + a
     #a = np.arange(np.prod(args.shape)).reshape(args.shape)
-    b = np.cumsum(a,0)
-    c = np.cumsum(a,1)
+    #b = np.cumsum(a,0)
+    #c = np.cumsum(a,1)
     #d = np.add.reduce(a,2)
-
-    return a, b, c
+    #return a, b, c
     #return a, b, c, d
 
 def main():

@@ -22,72 +22,102 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_FLOW_H
 
 #ifdef __cplusplus
-#include<bh.h>
-#include<set>
-#include<vector>
-#include<map>
+#include <stdint.h>
+#include <bh.h>
+#include <set>
+#include <vector>
+#include <map>
 
-
-class bh_flow_node
-{
-public:
-    //The time step of this node
-    bh_intp timestep;
-    //Whether the node is read only
-    bool readonly;
-    //The instruction index this node is referring
-    bh_intp instr_idx;
-    //The access pattern of this node
-    const bh_view *view;
-    //The origin of the incoming flow (node indices)
-    std::set<bh_intp> parents;
-    //The sub-DAG index this node is part of (-1 means none)
-    bh_intp sub_dag;
-    //The constructor
-    bh_flow_node(bh_intp t, bool r, bh_intp i, const bh_view *v):
-                 timestep(t), readonly(r), instr_idx(i), view(v),
-                 parents(), sub_dag(-1) {}
-};
-
+using namespace std;
 
 class bh_flow
 {
 private:
-    //List of nodes in a topological order, which also defines node IDs.
-    std::vector<bh_flow_node> node_list;
-    //Collection of vectors that contains indices to
-    //flow-nodes that all access the same base array
-    std::map<const bh_base *, std::vector<bh_intp> > bases;
+    class flow_node;//forward declaration
+
+    class flow_instr
+    {
+    public:
+        //The bh_instruction index this instruction is referring
+        bh_intp idx;
+        //Set of read and write nodes
+        set<flow_node> reads;
+        set<flow_node> writes;
+        //The time step of this instruction
+        bh_intp timestep;
+        //The sub-DAG index this instruction is part of (-1 means none)
+        bh_intp sub_dag;
+        //The constructor
+        flow_instr(void):idx(-1), timestep(0), sub_dag(-1){};
+    };
+
+    class flow_node
+    {
+    public:
+        //The id of this node
+        uint64_t id;
+        //Whether the node is read only
+        bool readonly;
+        //The instruction this node is referring
+        flow_instr *instr;
+        //The access pattern of this node
+        const bh_view *view;
+
+        //Comparison of flow nodes
+        bool operator<(const flow_node& rhs) const
+        {
+            return this->id < rhs.id;
+        }
+        bool operator==(const flow_node& rhs) const
+        {
+            return this->id == rhs.id;
+        }
+
+        //The constructor
+        flow_node(uint64_t id, bool r, flow_instr *i, const bh_view *v):
+                  id(id), readonly(r), instr(i), view(v){};
+    };
+
+    //Create a new flow_node. Use this function for creating flow nodes exclusively
+    flow_node &create_node(bool readonly, flow_instr *instr, const bh_view *view);
+
     //The original instruction list
-    bh_intp ninstr; const bh_instruction *instr_list;
-    //Registrate access by the 'node_idx'
-    void add_access(bh_intp node_idx);
-    //Add accesses that conflicts with the 'node_idx' to 'conflicts'
-    void get_conflicting_access(bh_intp node_idx, std::set<bh_intp> &conflicts);
-    //Get access that conflicts with the 'node_idx'
-    bh_intp get_conflicting_access(bh_intp node_idx);
-    //Get the latest access that conflicts with 'view'
-    bh_intp get_latest_conflicting_access(const bh_view *view, bool readonly);
-    //A map of all the nodes in each sub-DAG
-    std::map<bh_intp, std::set<bh_intp> > sub_dags;
+    const bh_intp ninstr;
+    const bh_instruction * const instr_list;
+
+    //The flow instruction list. NB: the length of this vector and
+    //the associated memory addresses are fixed through the execution
+    vector<flow_instr> flow_instr_list;
+
+    //Collection of vectors that contains nodes that all access the same
+    //base array in topological order
+    map<const bh_base *, vector<flow_node> > bases;
+
+    //Vector of flow instructions in each timestep
+    vector<vector<flow_instr *> > timesteps;
+
+    //Number of flow nodes
+    uint64_t nnodes;
+
+    //Add conflicting nodes to 'conflicts'
+    void get_conflicting_access(const flow_node &node,
+                                set<flow_node> &conflicts);
+
     //Cluster the flow object into sub-DAGs suitable as kernals
     void sub_dag_clustering(void);
-    //Assign a node to a sub-DAG
-    void set_sub_dag(bh_intp sub_dag, bh_intp node_idx);
 
 public:
     //Create a new flow object based on an instruction list
     bh_flow(bh_intp ninstr, const bh_instruction *instr_list);
+
     //Fill 'bhir' based on the flow object
     void bhir_fill(bh_ir *bhir);
-    //Pretty print the flow object to 'buf'
-    void sprint(char *buf);
-    //Pretty print the flow object to stdout
-    void pprint(void);
-    //Pretty print the flow object to file 'filename'
-    void fprint(const char* filename);
+
     //Write the flow object in the DOT format
     void dot(const char* filename);
+
+    //Write the flow object in the HTML format
+    void html(const char* filename);
 };
 
 

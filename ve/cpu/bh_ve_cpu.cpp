@@ -60,7 +60,7 @@ static char* template_path;
 #include "compiler.cpp"
 #include "specializer.cpp"
 
-process* target;
+Compiler* target;
 
 // Execute a kernel
 static bh_error execute(bh_kernel_t* kernel)
@@ -108,13 +108,13 @@ static bh_error execute(bh_kernel_t* kernel)
     //
     if ((kernel.symbol!="") && \
         (!target->symbol_ready(kernel.symbol)) && \
-        (!target->load(kernel.symbol, kernel.symbol))) {// Need but cannot load
+        (!target->load(kernel.symbol))) {// Need but cannot load
 
         if (jit_optimize) {                             // Unoptimized fallback
             symbolize(kernel, false);
             if ((kernel.symbol!="") && \
                 (!target->symbol_ready(kernel.symbol)) && \
-                (!target->load(kernel.symbol, kernel.symbol))) {        // Fail
+                (!target->load(kernel.symbol))) {        // Fail
                 return BH_ERROR;
             }
         } else {
@@ -262,7 +262,7 @@ bh_error bh_ve_cpu_init(const char *name)
     }
 
     // JIT machinery
-    target = new process(compiler_cmd, object_path, kernel_path, jit_preload);
+    target = new Compiler(compiler_cmd, object_path, kernel_path, jit_preload);
     specializer_init();     // Code templates and opcode-specialization.
 
     #ifdef PROFILE

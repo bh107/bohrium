@@ -35,7 +35,7 @@ object_path=/opt/bohrium/cpu/objects
 kernel_path=/opt/bohrium/cpu/kernels
 template_path=/opt/bohrium/cpu/templates
 impl = /opt/bohrium/libbh_ve_cpu.so
-libs = /opt/bohrium/libbh_matmul.so
+libs = /opt/bohrium/libbh_matmul.so,/opt/bohrium/libbh_visualizer.so,/opt/bohrium/libbh_fftw.so
 
 #
 # Filters

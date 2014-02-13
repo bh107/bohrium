@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 class Buffer : public KernelParameter
 {
 private:
+    Buffer() {}
     ResourceManager* resourceManager;
     unsigned int device;
     OCLtype dataType;

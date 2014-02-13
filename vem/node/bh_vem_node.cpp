@@ -23,8 +23,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <bh.h>
 #include <set>
+#include <bh_timing.hpp>
 
 #include "bh_vem_node.h"
+
 
 //Function pointers to our child.
 static bh_component_iface *child;
@@ -63,7 +65,7 @@ bh_error bh_vem_node_init(const char* name)
     if((err = child->init(child->name)) != 0)
         return err;
 
-    exec_timing = bh_timing_new("node-execution");
+    exec_timing = bh_timer_new("node-execution");
 
     return BH_SUCCESS;
 }
@@ -92,7 +94,7 @@ bh_error bh_vem_node_shutdown(void)
             }
         }
     }
-    bh_timing_dump_all();
+    bh_timer_finalize(exec_timing);
 
     #ifdef BH_TIMING
         printf("Number of elements executed: %ld\n", total_execution_size);
@@ -144,14 +146,14 @@ static bh_error inspect(bh_instruction *instr)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_vem_node_execute(bh_ir* bhir)
 {
-    bh_uint64 start = bh_timing();
+    bh_uint64 start = bh_timer_stamp();
 
     //Inspect the BhIR for new base arrays starting at the root DAG
     bh_ir_map_instr(bhir, &bhir->dag_list[0], &inspect);
 
     bh_error ret = child->execute(bhir);
 
-    bh_timing_save(exec_timing, start, bh_timing());
+    bh_timer_add(exec_timing, start, bh_timer_stamp());
 
     return ret;
 }

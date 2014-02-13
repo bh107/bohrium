@@ -242,13 +242,13 @@ void mapping_chunks(bh_intp nop,
                     bh_view *operands,
                     std::vector<ary_chunk>& chunks)
 {
-    bh_uint64 stime = bh_timing();
+    bh_uint64 stime = bh_timer_stamp();
 
     bh_intp coord[BH_MAXDIM];
     memset(coord, 0, operands[0].ndim * sizeof(bh_intp));
     get_chunks(nop, operands, chunks, coord, operands[0].shape);
 
-    bh_timing_save(timing_mapping, stime, bh_timing());
+    bh_timer_add(timing_mapping, stime, bh_timer_stamp());
 }
 
 

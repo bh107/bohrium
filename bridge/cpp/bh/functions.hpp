@@ -51,6 +51,16 @@ multi_array<T>& pow (multi_array<T> &lhs, const T &rhs)
 }
 
 template <typename T>
+multi_array<T>& pow (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
 multi_array<T>& abs (multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
@@ -80,6 +90,16 @@ multi_array<T>& max (multi_array<T> &lhs, const T &rhs)
 }
 
 template <typename T>
+multi_array<T>& max (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
 multi_array<T>& min (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
@@ -93,6 +113,16 @@ template <typename T>
 multi_array<T>& min (multi_array<T> &lhs, const T &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& min (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);

@@ -25,9 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <map>
 #include <bh.h>
-#ifdef STATS
-#include "timing.h"
-#endif
+#include <bh_timing.hpp>
 
 class ResourceManager
 {
@@ -47,16 +45,15 @@ private:
     void calcLocalShape();
     void registerExtensions(std::vector<std::string> extensions);
 public:
-#ifdef STATS
-    struct cl_stat {cl_ulong queued; cl_ulong submit; cl_ulong start; cl_ulong end;}; 
-    double batchBuild;
-    double batchSource;
-    double resourceCreateKernel;
-    std::vector<cl_stat> resourceBufferWrite;
-    std::vector<cl_stat> resourceBufferRead;
-    std::vector<cl_stat> resourceKernelExecute;
+#ifdef BH_TIMING
+    bh::Timer<>* batchBuild;
+    bh::Timer<>* codeGen;
+    bh::Timer<>* kernelGen;
+    bh::Timer<bh::timing4,1000000000>* bufferWrite;
+    bh::Timer<bh::timing4,1000000000>* bufferRead;
+    bh::Timer<bh::timing4,1000000000>* kernelExec;
     ~ResourceManager();
-    static void CL_CALLBACK eventProfiler(cl_event event, cl_int eventStatus, void* total);
+    static void CL_CALLBACK eventProfiler(cl::Event event, cl_int eventStatus, void* total);
 #endif
     ResourceManager(bh_component* _component);
     cl::Buffer* createBuffer(size_t size);
@@ -93,4 +90,3 @@ public:
 };
 
 #endif
-
