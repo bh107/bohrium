@@ -218,20 +218,20 @@ string specialize(block_t& block, bh_intp const optimized) {
  *  Create a symbol for the kernel.
  *
  *  NOTE: System and extension opcodes are ignored.
- *        If a kernel consists of nothing but system and/or extension
+ *        If a block consists of nothing but system and/or extension
  *        opcodes then the symbol will be the empty string "".
  */
-bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
+bool symbolize(block_t &block, bh_intp const optimized) {
 
     std::string symbol_opcode, 
                 symbol_lmask,
                 symbol_tsig,
                 symbol_ndim;
 
-    kernel.symbol   = "";
+    block.symbol   = "";
 
-    for (int i=0; i<kernel.ninstr; ++i) {
-        tac_t* tac = &kernel.program[i];
+    for (int i=0; i<block.ninstr; ++i) {
+        tac_t* tac = &block.program[i];
 
         // Do not include system opcodes in the kernel symbol.
         if ((tac->op == SYSTEM) || (tac->op == EXTENSION)) {
@@ -239,12 +239,12 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
         }
         
         symbol_opcode  += std::string(bh_opcode_to_cstr_short(tac->op));
-        symbol_tsig    += std::string(bh_typesig_to_shorthand(kernel.tsig[i]));
-        symbol_lmask   += std::string(bh_layoutmask_to_shorthand(kernel.lmask[i]));
+        symbol_tsig    += std::string(bh_typesig_to_shorthand(block.tsig[i]));
+        symbol_lmask   += std::string(bh_layoutmask_to_shorthand(block.lmask[i]));
     
-        int ndim = kernel.scope[tac->out].ndim;
+        int ndim = block.scope[tac->out].ndim;
         if (tac->op == REDUCE) {
-            ndim = kernel.scope[tac->in1].ndim;
+            ndim = block.scope[tac->in1].ndim;
         }
         if (optimized && (ndim <= 3)) {        // Optimized
             symbol_ndim += std::to_string(ndim);
@@ -253,12 +253,12 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
         }
         symbol_ndim += "D";
 
-        kernel.tsig[i]  = tsig;
-        kernel.lmask[i] = lmask;
+        block.tsig[i]  = tsig;
+        block.lmask[i] = lmask;
     }
 
-    if (kernel.omask == (HAS_ARRAY_OP)) {
-        kernel.symbol = "BH_" + \
+    if (block.omask == (HAS_ARRAY_OP)) {
+        block.symbol = "BH_" + \
                         symbol_opcode  + "_" +\
                         symbol_tsig    + "_" +\
                         symbol_lmask   + "_" +\
