@@ -6,13 +6,12 @@ directiveStartToken= %
 /**
  *  Add instruction operand as argument to block.
  *
- *  @param instr         The instruction whos operand should be converted.
- *  @param operand_idx   Index of the operand to represent as arg_t
+ *  @param instr        The instruction whos operand should be converted.
+ *  @param operand_idx  Index of the operand to represent as arg_t
  *  @param block        The block in which scope the argument will exist.
  */
 static uint32_t add_argument(block_t* block, bh_instruction* instr, int operand_idx)
 {
-    bh_pprint_instr(instr);
     uint32_t arg_idx = ++(block->nargs);
     if (bh_is_constant(&instr->operand[operand_idx])) {
         block->scope[arg_idx].layout    = CONSTANT;
@@ -49,7 +48,6 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
 
     for (int i=0; i<dag->nnode; ++i) {
         bh_instruction* instr = block->instr[i] = &ir->instr_list[dag->node_map[i]];
-        block->tsig[i] = bh_type_sig(instr);
         uint32_t out=0, in1=0, in2=0;
 
         //
@@ -116,8 +114,8 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
 
                     cout << "Extension method." << endl;
                 } else {
-                    in1 = -1;
-                    in2 = -2;
+                    in1 = 1;
+                    in2 = 2;
                     printf("compose: Err=[Unsupported instruction] {\n");
                     bh_pprint_instr(instr);
                     printf("}\n");

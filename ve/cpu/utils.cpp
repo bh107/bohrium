@@ -155,7 +155,22 @@ std::string block_text(block_t* block)
     return ss.str();
 }
 
-int noperands(tac_t* tac)
+std::string layout_text_short(LAYOUT layout)
+{
+    switch(layout) {
+        case CONSTANT:
+            return "K";
+        case CONTIGUOUS:
+            return "C";
+        case STRIDED:
+            return "S";
+        case SPARSE:
+            return "P";
+    }
+    return "ERR";
+}
+
+const int noperands(tac_t* tac)
 {
     switch(tac->op) {
         case MAP:
@@ -197,15 +212,59 @@ int noperands(tac_t* tac)
     return 0;
 }
 
-int layoutmask(tac_t* tac, block_arg_t* args)
+std::string bh_type_text_short(bh_type type)
+{
+    switch(type) {
+        case BH_BOOL: return "z";
+        case BH_INT8: return "b";
+        case BH_INT16: return "s";
+        case BH_INT32: return "i";
+        case BH_INT64: return "l";
+        case BH_UINT8: return "B";
+        case BH_UINT16: return "S";
+        case BH_UINT32: return "I";
+        case BH_UINT64: return "L";
+        case BH_FLOAT32: return "f";
+        case BH_FLOAT64: return "d";
+        case BH_COMPLEX64: return "c";
+        case BH_COMPLEX128: return "C";
+        case BH_R123: return "R";
+        case BH_UNKNOWN: return "U";
+        default:
+            return "{{UNKNOWN}}";
+    }
+}
+
+std::string tac_typesig_text(tac_t* tac, block_arg_t* scope)
 {
     switch(noperands(tac)) {
         case 3:
-            return args[tac->out].layout | args[tac->in1].layout | args[tac->in2].layout;
+            return  bh_type_text_short(scope[tac->out].type)+\
+                    bh_type_text_short(scope[tac->in1].type)+\
+                    bh_type_text_short(scope[tac->in2].type);
         case 2:
-            return args[tac->out].layout | args[tac->in1].layout;
+            return  bh_type_text_short(scope[tac->out].type)+\
+                    bh_type_text_short(scope[tac->in1].type);
         case 1:
-            return args[tac->out].layout;
+            return  bh_type_text_short(scope[tac->out].type);
+        default:
+            return "";
     }
-    return 0;
+}
+
+std::string tac_layout_text(tac_t* tac, block_arg_t* scope)
+{
+    switch(noperands(tac)) {
+        case 3:
+            return  layout_text_short(scope[tac->out].layout)+\
+                    layout_text_short(scope[tac->in1].layout)+\
+                    layout_text_short(scope[tac->in2].layout);
+        case 2:
+            return  layout_text_short(scope[tac->out].layout)+\
+                    layout_text_short(scope[tac->in1].layout);
+        case 1:
+            return  layout_text_short(scope[tac->out].layout);
+        default:
+            return "";
+    }
 }

@@ -55,10 +55,7 @@ static char* object_path;
 static char* template_path;
 
 typedef struct block {
-    int tsig[10];               // Typesignature of the instructions
-    int lmask[10];              // Layoutmask of the instructions
     bh_instruction* instr[10];  // Pointers to instructions
-
     tac_t* program;             // Ordered list of TACs
     block_arg_t* scope;         // Array of block arguments
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from itertools import product
 from pprint import pprint
 import glob
 import json
@@ -146,6 +147,31 @@ def block(opcodes, types, opers):
     }]
 
     return operations
+
+def layoutmask_shorthand(opcodes, types, opers):
+
+    array_l     = ["CONTIGUOUS", "STRIDED", "SPARSE"]
+    scalar_l    = ["CONSTANT"]
+
+    mapping = {"CONTIGUOUS": "C", "STRIDED": "S", "SPARSE": "P", "CONSTANT": "K"}
+
+    def shorten(mask):
+        right = ''.join([mapping[layout] for layout in mask])
+        
+        return ('LMASK_'+right, right)
+
+    lmasks = {
+        3: [(shorten(x)[0], x) for x in product(array_l, scalar_l+array_l, scalar_l+array_l)],
+        2: [(shorten(x)[0], x) for x in product(array_l, scalar_l+array_l)],
+        1: [(shorten(x)[0], x) for x in product(array_l)],
+    }
+
+    
+    lsh =   [shorten(x) for x in product(array_l, scalar_l+array_l, scalar_l+array_l)]   +\
+            [shorten(x) for x in product(array_l, scalar_l+array_l)]                     +\
+            [shorten(x) for x in product(array_l)]
+    
+    return {'lmasks': lmasks, 'lshort': lsh}
 
 def layoutmask_to_shorthand(opcodes, types, opers):
     A0_CONSTANT = 1 << 0;

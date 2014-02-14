@@ -41,14 +41,20 @@ string template_filename(block_t& block, int pc, bh_intp optimized)
     int ndim = (tac->op == REDUCE)         ? \
                block.scope[tac->in1].ndim : \
                block.scope[tac->out].ndim;
-    int lmask = block.lmask[pc];
+
+    LAYOUT layout_out = block.scope[tac->out].layout, 
+           layout_in1 = block.scope[tac->in1].layout,
+           layout_in2 = block.scope[tac->in2].layout;
 
     switch (tac->op) {                    // OPCODE_SWITCH
         case MAP:
 
             tpl_opcode  = "ewise.";
-            if ((optimized) && ((lmask == LMASK_CC) || \
-                                (lmask == LMASK_CK))) {
+            if (optimized && \
+                ((layout_out == CONTIGUOUS) && \
+                 ((layout_in1 == CONTIGUOUS) || (layout_out == CONSTANT))
+                )
+               ) {
                 tpl_layout  = "cont.";
             } else if ((optimized) && (ndim == 1)) {
                 tpl_ndim = "1d.";
@@ -61,9 +67,13 @@ string template_filename(block_t& block, int pc, bh_intp optimized)
 
         case ZIP:
             tpl_opcode  = "ewise.";
-            if ((optimized) && (
-                (lmask == LMASK_CCC) || (lmask == LMASK_CKC) || (lmask == LMASK_CCK)
-                )) {
+            if (optimized && \
+               (layout_out == CONTIGUOUS) && \
+                (((layout_in1 == CONTIGUOUS) && (layout_in2 == CONTIGUOUS)) || \
+                 ((layout_in1 == CONTIGUOUS) && (layout_in2 == CONSTANT)) || \
+                 ((layout_in1 == CONSTANT) && (layout_in2 == CONTIGUOUS)) \
+                )
+               ) {
                 tpl_layout  = "cont.";
             } else if ((optimized) && (ndim == 1)) {
                 tpl_ndim = "1d.";
@@ -235,8 +245,8 @@ bool symbolize(block_t &block, bh_intp const optimized) {
         }
         
         symbol_op_oper  += "_"+operation_text(tac->op)+std::to_string(tac->oper);
-        symbol_tsig     += std::string(bh_typesig_to_shorthand(block.tsig[i]));
-        symbol_layout   += std::string(bh_layoutmask_to_shorthand(block.lmask[i]));
+        symbol_tsig     += tac_typesig_text(tac, block.scope);
+        symbol_layout   += tac_layout_text(tac, block.scope);
     
         int ndim = block.scope[tac->out].ndim;
         if (tac->op == REDUCE) {

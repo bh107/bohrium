@@ -97,15 +97,7 @@ typedef enum LAYOUT {
     CONTIGUOUS  = 2,
     STRIDED     = 4,
     SPARSE      = 8
-} LAYOUT;
-
-typedef enum LMASK {
-    LMASK_CC    = CONTIGUOUS | CONTIGUOUS,
-    LMASK_CK    = CONTIGUOUS | CONSTANT,
-    LMASK_CCC   = CONTIGUOUS | CONTIGUOUS   | CONTIGUOUS,
-    LMASK_CKC   = CONTIGUOUS | CONSTANT     | CONSTANT,
-    LMASK_CCK   = CONTIGUOUS | CONTIGUOUS   | CONSTANT
-} LMASK;
+} LAYOUT;   // Uses a single byte
 
 //
 // NOTE: Changes to bk_kernel_args_t must be 
