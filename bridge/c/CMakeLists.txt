@@ -19,8 +19,6 @@ add_custom_command(
 
 add_library(bhc SHARED ${SRC})
 
-set_target_properties(bhc PROPERTIES COMPILE_FLAGS "-std=c++0x")
-
 #We depend on bh.so
 target_link_libraries(bhc bh)
 

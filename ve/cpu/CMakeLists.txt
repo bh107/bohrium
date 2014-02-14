@@ -8,8 +8,6 @@ add_library(bh_ve_cpu SHARED ${SRC})
 #We depend on bh.so
 target_link_libraries(bh_ve_cpu bh)
 
-set_target_properties(bh_ve_cpu PROPERTIES COMPILE_FLAGS "-std=c++0x")
-
 install(TARGETS bh_ve_cpu DESTINATION lib)
 
 #External dependencies
@@ -21,7 +19,7 @@ target_link_libraries(bh_ve_cpu ${LIBS})
 #Install all kernal templates
 install(DIRECTORY templates DESTINATION share/bh FILES_MATCHING PATTERN "*.tpl")
 
-#We need some empty dirs writable by all 
+#We need some empty dirs writable by all
 file(MAKE_DIRECTORY kernels)
 file(MAKE_DIRECTORY objects)
 install(DIRECTORY kernels DESTINATION var/bh DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE)

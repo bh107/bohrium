@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 
+#We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
+if(DEFINED CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are:
+    None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used), Debug, Release, RelWithDebInfo, and MinSizeRel.")
+else()
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are:
+    None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used), Debug, Release, RelWithDebInfo, and MinSizeRel.")
+endif()
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
 project(BOHRIUM)
 
 set(VERSION_MAJOR "0")
@@ -7,6 +17,9 @@ set(VERSION_MINOR "3")
 set(VERSION_PATCH "1")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+#Set global compile flags TODO: support other compilers
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 add_subdirectory(core)
 add_subdirectory(vem/node)
