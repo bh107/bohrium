@@ -86,7 +86,12 @@ ResourceManager::ResourceManager(bh_component* _component)
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
-    
+    if (devices[0].getInfo<CL_DEVICE_ADDRESS_BITS>() == 64)
+    {
+        intpType_ = OCL_INT64;
+    } else {
+        intpType_ = OCL_INT32;
+    }
     calcLocalShape();
     registerExtensions(extensions);
 
@@ -98,6 +103,11 @@ ResourceManager::ResourceManager(bh_component* _component)
     bufferRead = new bh::Timer<bh::timing4,1000000000>("[GPU] Reading buffers");
     kernelExec = new bh::Timer<bh::timing4,1000000000>("[GPU] Kernel execution");
 #endif
+}
+
+OCLtype ResourceManager::intpType()
+{
+    return intpType_;
 }
 
 #ifdef BH_TIMING
@@ -244,24 +254,24 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     bh_uint64 start = bh::Timer<>::stamp(); 
 #endif
 
-#ifdef DEBUG
+//#ifdef DEBUG
     std::cout << "Program build :\n";
     std::cout << "------------------- SOURCE -----------------------\n";
     std::cout << source;
     std::cout << "------------------ SOURCE END --------------------" << std::endl;
-#endif
+//#endif
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
         program.build(devices,getIncludeStr().c_str());
     } catch (cl::Error) {
-#ifdef DEBUG
+//#ifdef DEBUG
         std::cerr << "Program build error:\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
         std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
-#endif
+//#endif
         throw std::runtime_error("Could not build Kernel.");
     }
     

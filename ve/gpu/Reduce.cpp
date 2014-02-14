@@ -22,21 +22,37 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <cassert>
 #include <stdexcept>
+#include <vector>
 #include "GenerateSourceCode.hpp"
 #include "Reduce.hpp"
+#include "KernelParameter.hpp"
+#include "Scalar.hpp"
+
+typedef std::vector<std::pair<std::string, KernelParameter*>> ParameterList;
+static ParameterList parameterList;
 
 bh_error Reduce::bh_reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
 {
     bh_view* out = &inst->operand[0];
     std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
-    Kernel kernel = getKernel(inst, userFuncArg, shape);
     Kernel::Parameters kernelParameters;
     kernelParameters.push_back(std::make_pair(userFuncArg->operands[0], true));
+    parameterList.push_back(std::make_pair("out",userFuncArg->operands[0]));
     kernelParameters.push_back(std::make_pair(userFuncArg->operands[1], false));
+    parameterList.push_back(std::make_pair("in",userFuncArg->operands[0]));
+    for (int i = 0; i < shape.size(); ++i)
+    {
+        kernelParameters.push_back(std::make_pair(new Scalar(shape[i]), false));
+        std::stringstream ss;
+        ss << "ds" << i;
+        parameterList.push_back(std::make_pair(ss.str(), new Scalar(shape[i])));
+    }
+    Kernel kernel = getKernel(inst, userFuncArg, shape);
     std::vector<size_t> globalShape;
     for (int i = shape.size()-1; i>=0; --i)
         globalShape.push_back(shape[i]);
     kernel.call(kernelParameters, globalShape);
+    parameterList.clear();
     return BH_SUCCESS;
 }
 
@@ -125,8 +141,15 @@ std::string Reduce::generateCode(bh_instruction* inst,
     operands[0] = "accu";
     operands[1] = "accu";
     operands[2] = "in[element]";
-    source << "( __global " << oclTypeStr(outType) << "* out\n" 
-        "                     , __global " << oclTypeStr(inType) << "* in)\n{\n";
+    source << "( ";
+    // Add kernel parameters
+    ParameterList::iterator pit = parameterList.begin();
+    source << *(pit->second) << " " << pit->first;
+    for (++pit; pit != parameterList.end(); ++pit)
+    {
+        source << "\n                     , " << *(pit->second) << " " << pit->first;
+    }
+    source << ")\n{\n";
     bh_view inn(inst->operand[1]);
     inn.ndim = in->ndim - 1;
     int i = 0;
@@ -139,7 +162,7 @@ std::string Reduce::generateCode(bh_instruction* inst,
         if (i == axis)
             ++a;
     }
-    generateGIDSource(shape, source);
+    generateGIDSource(shape.size(), source);
     source << "\tsize_t element = ";
     generateOffsetSource(inn, source);
     source << ";\n";

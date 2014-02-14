@@ -27,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_timing.hpp>
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
+#include "Scalar.hpp"
 
 InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
 
@@ -284,6 +285,12 @@ void InstructionBatch::run(ResourceManager* resourceManager)
     {
         for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
             parameterList.insert(std::make_pair(pit->second, pit->first));
+        for (int i = 0; i < shape.size(); ++i)
+        {
+            std::stringstream ss;
+            ss << "ds" << i;
+            parameterList.insert(std::make_pair(ss.str(), new Scalar(shape[i])));
+        }
         for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
             inputList.insert(std::make_pair(iit->second, iit->first));
         for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
@@ -292,7 +299,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
         Kernel::Parameters kernelParameters;
         for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
         {
-            if (output.find(static_cast<BaseArray*>(pit->second)) == output.end())
+            if (output.find(dynamic_cast<BaseArray*>(pit->second)) == output.end())
                 kernelParameters.push_back(std::make_pair(pit->second, false));
             else
                 kernelParameters.push_back(std::make_pair(pit->second, true));
@@ -308,7 +315,7 @@ std::string InstructionBatch::generateCode()
 {
     std::stringstream source;
     source << "( ";
-    // Add Array kernel parameters
+    // Add kernel parameters
     ParameterList::iterator pit = parameterList.begin();
     source << *(pit->second) << " " << pit->first;
     for (++pit; pit != parameterList.end(); ++pit)
@@ -318,7 +325,7 @@ std::string InstructionBatch::generateCode()
 
     source << ")\n{\n";
     
-    generateGIDSource(shape, source);
+    generateGIDSource(shape.size(), source);
     
     // Load input parameters
     for (ArrayList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)

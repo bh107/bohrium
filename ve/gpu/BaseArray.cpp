@@ -50,7 +50,7 @@ void BaseArray::update()
     write(spec->data);
 }
 
-size_t BaseArray::size()
+bh_index BaseArray::size()
 {
     return spec->nelem;
 }

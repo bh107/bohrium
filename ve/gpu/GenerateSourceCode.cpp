@@ -22,22 +22,21 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include "GenerateSourceCode.hpp"
 
-void generateGIDSource(std::vector<bh_index> shape, std::ostream& source)
+void generateGIDSource(size_t ndim, std::ostream& source)
 {
-    size_t ndim = shape.size();
     assert(ndim > 0);    
     if (ndim > 2)
     {
         source << "\tconst size_t gidz = get_global_id(2);\n";
-        source << "\tif (gidz >= " << shape[ndim-3] << ")\n\t\treturn;\n";
+        source << "\tif (gidz >= ds" << ndim-3 << ")\n\t\treturn;\n";
     }
     if (ndim > 1)
     {
         source << "\tconst size_t gidy = get_global_id(1);\n";
-        source << "\tif (gidy >= " << shape[ndim-2] << ")\n\t\treturn;\n";
+        source << "\tif (gidy >= ds" << ndim-2 << ")\n\t\treturn;\n";
     }
     source << "\tconst size_t gidx = get_global_id(0);\n";
-    source << "\tif (gidx >= " << shape[ndim-1] << ")\n\t\treturn;\n";
+    source << "\tif (gidx >= ds" << ndim-1 << ")\n\t\treturn;\n";
 }
 
 void generateOffsetSource(const bh_view& operand, std::ostream& source)
