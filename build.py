@@ -185,7 +185,7 @@ if __name__ == "__main__":
 
     components = [\
                   ("OPCODES","core/codegen",True),\
-                  ("INIPARSER","iniparser",True),\
+                  ("CORE-INIPARSER","core/iniparser",True),\
                   ("CORE-BHIR", "core/bhir", True),\
                   ("CORE", "core", True),\
                   ("THIRDPARTY", "thirdparty", True),\
