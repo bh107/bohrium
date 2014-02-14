@@ -26,13 +26,25 @@ bh_intp timing_comm_p2p, timing_exec_execute, timing_flush, timing_dispatch, tim
 /* Initiate the timings related to the cluster-vem */
 void timing_init(void)
 {
-    timing_comm_p2p            = bh_timing_new("cluster-comm-p2p      ");
-    timing_exec_execute        = bh_timing_new("cluster-exec-execute  ");
-    timing_flush               = bh_timing_new("cluster-flush         ");
-    timing_dispatch            = bh_timing_new("cluster-dispatch      ");
-    timing_dispatch_array_data = bh_timing_new("cluster-dispatch-data ");
-    timing_reduce              = bh_timing_new("cluster-reduce        ");
-    timing_mapping             = bh_timing_new("cluster-mapping       ");
+    timing_comm_p2p            = bh_timer_new("cluster-comm-p2p      ");
+    timing_exec_execute        = bh_timer_new("cluster-exec-execute  ");
+    timing_flush               = bh_timer_new("cluster-flush         ");
+    timing_dispatch            = bh_timer_new("cluster-dispatch      ");
+    timing_dispatch_array_data = bh_timer_new("cluster-dispatch-data ");
+    timing_reduce              = bh_timer_new("cluster-reduce        ");
+    timing_mapping             = bh_timer_new("cluster-mapping       ");
+}
+
+/* Finalize the timings related to the cluster-vem */
+void timing_finalize(void)
+{
+    bh_timer_finalize(timing_comm_p2p);
+    bh_timer_finalize(timing_exec_execute);
+    bh_timer_finalize(timing_flush);
+    bh_timer_finalize(timing_dispatch);
+    bh_timer_finalize(timing_dispatch_array_data);
+    bh_timer_finalize(timing_reduce);
+    bh_timer_finalize(timing_mapping);
 }
 
 

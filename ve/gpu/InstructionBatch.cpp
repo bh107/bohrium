@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <stdexcept>
 #include <bh.h>
+#include <bh_timing.hpp>
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
 
@@ -36,8 +37,8 @@ InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<Kerne
     , float64(false)
     , complex(false)
 {
-#ifdef STATS
-    gettimeofday(&createTime,NULL);
+#ifdef BH_TIMING
+    createTime = bh::Timer<>::stamp();
 #endif
     if (inst->operand[0].ndim > 3)
         throw std::runtime_error("More than 3 dimensions not supported.");        
@@ -238,14 +239,12 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
 
 Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
 {
-#ifdef STATS
-    timeval start, end;
-    gettimeofday(&start,NULL);
+#ifdef BH_TIMING
+    bh_uint64 start = bh::Timer<>::stamp();
 #endif
     std::string code = generateCode();
-#ifdef STATS
-    gettimeofday(&end,NULL);
-    resourceManager->batchSource += (end.tv_sec - start.tv_sec)*1000000.0 + (end.tv_usec - start.tv_usec);
+#ifdef BH_TIMING
+    resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
 #endif
     size_t codeHash = string_hasher(code);
 
@@ -277,10 +276,8 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
 
 void InstructionBatch::run(ResourceManager* resourceManager)
 {
-#ifdef STATS
-    timeval now;
-    gettimeofday(&now,NULL);
-    resourceManager->batchBuild += (now.tv_sec - createTime.tv_sec)*1000000.0 + (now.tv_usec - createTime.tv_usec);
+#ifdef BH_TIMING
+    resourceManager->batchBuild->add({createTime, bh::Timer<>::stamp()}); 
 #endif
 
     if (output.begin() != output.end())

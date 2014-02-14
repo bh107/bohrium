@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-static int count=0;
+static int pprint_filter_count=0;
 void pprint_filter(bh_ir *bhir)
 {
     char graph_fn[8000];
@@ -31,11 +31,11 @@ void pprint_filter(bh_ir *bhir)
     char flowd_fn[8000];
     char flowh_fn[8000];
 
-    ++count;
-    snprintf(graph_fn, 8000, "graph-%d.dot", count);
-    snprintf(trace_fn, 8000, "trace-%d.txt", count);
-    snprintf(flowd_fn, 8000, "flow-%d.dot",  count);
-    snprintf(flowh_fn, 8000, "flow-%d.html",  count);
+    ++pprint_filter_count;
+    snprintf(graph_fn, 8000, "graph-%d.dot", pprint_filter_count);
+    snprintf(trace_fn, 8000, "trace-%d.txt", pprint_filter_count);
+    snprintf(flowd_fn, 8000, "flow-%d.dot",  pprint_filter_count);
+    snprintf(flowh_fn, 8000, "flow-%d.html",  pprint_filter_count);
 
     printf(
         "pprint-filter: writing graph('%s'), trace('%s'), and flow('%s', '%s').\n",

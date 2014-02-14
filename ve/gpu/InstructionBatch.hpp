@@ -29,10 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "Kernel.hpp"
 #include "StringHasher.hpp"
 
-#ifdef STATS
-#include "timing.h"
-#endif
-
 #define SCALAR_OFFSET (1<<16)
 class InstructionBatch
 {
@@ -61,8 +57,8 @@ private:
     bool float64;
     bool complex;
     static KernelMap kernelMap;
-#ifdef STATS
-    timeval createTime;
+#ifdef BH_TIMING
+    bh_uint64 createTime;
 #endif
     bool shapeMatch(bh_intp ndim, const bh_index dims[]);
     bool sameView(const bh_view& a, const bh_view& b);
@@ -81,9 +77,8 @@ public:
 
 class BatchException 
 {
-private:
-    int code;
 public:
+    int code;
     BatchException(int code_) : code(code_) {}
 };
 

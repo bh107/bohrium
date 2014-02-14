@@ -20,12 +20,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_fftw.h"
 #include <bh.h>
 #include <complex.h>
-#include <fftw3.h>
 #include <assert.h>
-
-#ifdef BH_FFTW_USE_OMP
-    #include <omp.h>
+#include <fftw3.h>
+#if defined(_OPENMP)
+#include <omp.h>
+#else
+inline int omp_get_max_threads() { return 1; }
+inline int omp_get_thread_num()  { return 0; }
+inline int omp_get_num_threads() { return 1; }
 #endif
+
 
 /* Implements fftn */
 bh_error bh_fftw(bh_instruction *instr, void* arg)
@@ -58,10 +62,8 @@ bh_error bh_fftw(bh_instruction *instr, void* arg)
         assert(shape[i] == out->shape[i]);
     }
 
-#ifdef BH_FFTW_USE_OMP
     fftw_init_threads();
     fftw_plan_with_nthreads(omp_get_max_threads());
-#endif
 
     fftw_plan p = fftw_plan_dft(in->ndim, shape, i, o, sign, FFTW_ESTIMATE);
     if(p == NULL)
@@ -69,10 +71,8 @@ bh_error bh_fftw(bh_instruction *instr, void* arg)
 
     fftw_execute(p);
     fftw_destroy_plan(p);
-
-#ifdef BH_FFTW_USE_OMP
     fftw_cleanup_threads();
-#endif
+
     return BH_SUCCESS;
 }
 

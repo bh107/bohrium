@@ -48,10 +48,11 @@ else
 
         PLATFORM_OS:=OSX
         CCFLAGS += -D OSX
+        CFLAGS += -I/opt/local/include
 
         LIB_SUFFIX=dylib
         LD_LIB_COMMAND=-dylib_install_name
-        EXTRA_LIBS=
+        EXTRA_LIBS= -L/opt/local/lib
         ARCH_OPTS=-arch i386 -arch x86_64
         ALL_C_FILES=$(shell find . -iname '*.c')
         ALL_H_FILES=$(shell find . -iname '*.h')
