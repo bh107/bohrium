@@ -1758,6 +1758,13 @@ public:
 
     cl_type& operator ()() { return object_; }
 
+    bool operator<(const Wrapper<cl_type> & rhs) const
+    {
+        return object_ < rhs.object_;
+    }
+
+
+
 protected:
     template<typename Func, typename U>
     friend inline cl_int getInfoHelper(Func, cl_uint, U*, int, typename U::cl_type);
