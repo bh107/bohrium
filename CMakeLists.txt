@@ -12,9 +12,11 @@ add_subdirectory(core)
 add_subdirectory(vem/node)
 add_subdirectory(ve/cpu)
 add_subdirectory(bridge/cpp)
+add_subdirectory(bridge/c)
 add_subdirectory(extmethods/matmul)
 add_subdirectory(extmethods/fftw)
-add_subdirectory(bridge/numpy)
+
+#add_subdirectory(bridge/numpy)
 
 install(DIRECTORY thirdparty/Random123/include/Random123 DESTINATION include)
 
