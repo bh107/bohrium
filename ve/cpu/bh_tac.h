@@ -93,18 +93,18 @@ typedef struct tac {
 } tac_t;
 
 typedef enum LAYOUT {
-    CONSTANT,
-    CONTIGUOUS,
-    STRIDED,
-    SPARSE
+    CONSTANT    = 1,
+    CONTIGUOUS  = 2,
+    STRIDED     = 4,
+    SPARSE      = 8
 } LAYOUT;
 
 typedef enum LMASK {
-    LMASK_CC,
-    LMASK_CK,
-    LMASK_CCC,
-    LMASK_CKC,
-    LMASK_CCK
+    LMASK_CC    = CONTIGUOUS | CONTIGUOUS,
+    LMASK_CK    = CONTIGUOUS | CONSTANT,
+    LMASK_CCC   = CONTIGUOUS | CONTIGUOUS   | CONTIGUOUS,
+    LMASK_CKC   = CONTIGUOUS | CONSTANT     | CONSTANT,
+    LMASK_CCK   = CONTIGUOUS | CONTIGUOUS   | CONSTANT
 } LMASK;
 
 //
@@ -121,7 +121,6 @@ typedef struct block_arg {
     int64_t ndim;       // Number of dimensions of the array
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
-} block_arg_t;      // Meta-data for a kernel argument
+} block_arg_t;          // Meta-data for a block argument
 
-#define HAS_ARRAY_OP MAP | ZIP | REDUCE | SCAN | GENERATE
-
+#define BUILTIN_ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)

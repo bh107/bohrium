@@ -59,11 +59,11 @@ typedef struct block {
     int lmask[10];              // Layoutmask of the instructions
     bh_instruction* instr[10];  // Pointers to instructions
 
-    int length;                 // Number of tacs in program
     tac_t* program;             // Ordered list of TACs
-    uint32_t nargs;             // Number of arguments to the block
     block_arg_t* scope;         // Array of block arguments
 
+    uint32_t nargs;             // Number of arguments to the block
+    int length;                 // Number of tacs in program
     uint32_t omask;             // Mask of the OPERATIONS in the block
     string symbol;              // Textual representation of the block
 } block_t;                      // Meta-data to construct and execute a block-function
@@ -202,13 +202,15 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         // we map this to a block in a slightly different format than a list of instructions
         block_t block;
         compose(&block, bhir, &bhir->dag_list[node]);
-        cout << block_text(&block) << endl;
 
         //
         // We start by creating a symbol
         if (!symbolize(block, jit_optimize)) {
+            cout << "FAILED CREATING SYMBOL" << endl;
             return BH_ERROR;
         }
+
+        cout << block_text(&block) << endl;
 
         /* TODO: fix this
         // Lets check if it is a known extension method
@@ -273,7 +275,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         //
         // Execute block handling array operations.
         // 
-        if (block.omask == (HAS_ARRAY_OP)) {
+        if ((block.omask & (BUILTIN_ARRAY_OPS)) > 0) {
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by dispatch_block "
                                 "called from bh_ve_cpu_execute(...)\n");

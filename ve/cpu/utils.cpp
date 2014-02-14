@@ -129,7 +129,7 @@ std::string operation_text(OPERATION op)
 std::string tac_text(tac_t* tac)
 {
     std::stringstream ss;
-    ss << "["<< operation_text(tac->op) << "(" << tac->op << ")";
+    ss << "[op="<< operation_text(tac->op) << "(" << tac->op << ")";
     ss << ", oper=" << tac->oper;
     ss << ", out=" << tac->out;
     ss << ", in1=" << tac->in1;
@@ -141,15 +141,17 @@ std::string tac_text(tac_t* tac)
 std::string block_text(block_t* block)
 {
     std::stringstream ss;
-    ss << "block {";
-    ss << " length=" << std::to_string(block->length);
-    ss << ", nargs= " << block->nargs;
-    ss << endl;
+    ss << "block(";
+    ss << "length=" << std::to_string(block->length);
+    ss << ", nargs=" << block->nargs;
+    ss << ", omask=" << block->omask;
+    ss << ") {" << endl;
     for(int i=0; i<block->length; ++i) {
         ss << "  " << tac_text(&block->program[i]);
     }
+    ss << "  (" << block->symbol << ")" << endl;
     ss << "}";
-
+    
     return ss.str();
 }
 

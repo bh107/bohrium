@@ -146,11 +146,7 @@ string specialize(block_t& block, bh_intp const optimized) {
         //
         // The operation (ewise, reduction, scan, random, range).
         ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
-        string tf = template_filename(
-            block,
-            j,
-            optimized
-        );
+        string tf = template_filename(block, j, optimized);
         operation_d->SetFilename(tf);
 
         //
@@ -215,17 +211,17 @@ string specialize(block_t& block, bh_intp const optimized) {
 }
 
 /**
- *  Create a symbol for the kernel.
+ *  Create a symbol for the block.
  *
- *  NOTE: System and extension opcodes are ignored.
+ *  NOTE: System and extension operations are ignored.
  *        If a block consists of nothing but system and/or extension
  *        opcodes then the symbol will be the empty string "".
  */
 bool symbolize(block_t &block, bh_intp const optimized) {
 
-    std::string symbol_opcode, 
-                symbol_lmask,
+    std::string symbol_op_oper, 
                 symbol_tsig,
+                symbol_layout,
                 symbol_ndim;
 
     block.symbol   = "";
@@ -238,9 +234,9 @@ bool symbolize(block_t &block, bh_intp const optimized) {
             continue;
         }
         
-        symbol_opcode  += std::string(bh_opcode_to_cstr_short(tac->op));
-        symbol_tsig    += std::string(bh_typesig_to_shorthand(block.tsig[i]));
-        symbol_lmask   += std::string(bh_layoutmask_to_shorthand(block.lmask[i]));
+        symbol_op_oper  += "_"+operation_text(tac->op)+std::to_string(tac->oper);
+        symbol_tsig     += std::string(bh_typesig_to_shorthand(block.tsig[i]));
+        symbol_layout   += std::string(bh_layoutmask_to_shorthand(block.lmask[i]));
     
         int ndim = block.scope[tac->out].ndim;
         if (tac->op == REDUCE) {
@@ -252,17 +248,14 @@ bool symbolize(block_t &block, bh_intp const optimized) {
             symbol_ndim += std::string("N");
         }
         symbol_ndim += "D";
-
-        //block.tsig[i]  = tsig;
-        //block.lmask[i] = lmask;
     }
 
-    if (block.omask == (HAS_ARRAY_OP)) {
-        block.symbol = "BH_" + \
-                        symbol_opcode  + "_" +\
-                        symbol_tsig    + "_" +\
-                        symbol_lmask   + "_" +\
-                        symbol_ndim;    
+    if ((block.omask & (BUILTIN_ARRAY_OPS)) > 0) {
+        block.symbol = "BH" + \
+                        symbol_op_oper  + "_" +\
+                        symbol_tsig     + "_" +\
+                        symbol_layout   + "_" +\
+                        symbol_ndim;
     }
     return true;
 }
