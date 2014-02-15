@@ -64,3 +64,4 @@ install: all
 	mkdir -p $(INSTALLDIR)/cpu/objects
 	mkdir -p $(INSTALLDIR)/cpu/templates
 	cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
+	cp bh_tac.h $(INSTALLDIR)/include/

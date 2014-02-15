@@ -47,7 +47,9 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
     block->length   = dag->nnode;
 
     for (int i=0; i<dag->nnode; ++i) {
-        bh_instruction* instr = block->instr[i] = &ir->instr_list[dag->node_map[i]];
+        block->instr[i] = &ir->instr_list[dag->node_map[i]];
+        bh_instruction* instr = block->instr[i];
+
         uint32_t out=0, in1=0, in2=0;
 
         //

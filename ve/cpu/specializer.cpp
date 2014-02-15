@@ -144,7 +144,7 @@ string specialize(block_t& block, bh_intp const optimized) {
     for(int j=0; j<block.length; ++j) {
         
         //
-        // Grab the tacuction for which to generate sourcecode
+        // Grab the tac for which to generate sourcecode
         tac_t *tac = &block.program[j];
 
         //
@@ -155,19 +155,11 @@ string specialize(block_t& block, bh_intp const optimized) {
 
         //
         // The operation (ewise, reduction, scan, random, range).
-        ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
-        string tf = template_filename(block, j, optimized);
-        operation_d->SetFilename(tf);
-
-        //
-        // The operator +, -, /, min, max, sin, sqrt, etc...
-        //
-        ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
-        operator_d->SetValue("OPERATOR", operator_cexpr(tac->op, tac->oper, block.scope[tac->out].type));
+        ctemplate::TemplateDictionary* operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
+        operation_d->SetFilename(template_filename(block, j, optimized));
 
         //
         // Reduction and scan specific expansions
-        // TODO: fix for multiple tacuctions
         if ((tac->op == REDUCE) || (tac->op == SCAN)) {
             operation_d->SetValue("TYPE_OUTPUT", enum_to_ctypestr(block.scope[tac->out].type));
             operation_d->SetValue("TYPE_INPUT",  enum_to_ctypestr(block.scope[tac->in1].type));
@@ -178,33 +170,66 @@ string specialize(block_t& block, bh_intp const optimized) {
                 operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(1));
             }
         }
-        operation_d->SetValue("NR_OUTPUT", std::to_string(tac->out));
-        operation_d->SetValue("NR_FINPUT", std::to_string(tac->in1));  // Not all have
-        operation_d->SetValue("NR_SINPUT", std::to_string(tac->in2));  // Not all have
+
+        ctemplate::TemplateDictionary* operator_d   = operation_d->AddSectionDictionary("OPERATORS");
+        ctemplate::TemplateDictionary* argument_d;  // Block arguments
+        ctemplate::TemplateDictionary* operand_d;   // Operator operands
 
         //
-        // Fill out the tacuction operands globally such that they
-        // are available to both for the kernel argument unpacking, the operations and the operators.
-        //
-        // TODO: this should actually distinguish between the total set of operands
-        // and those used for a single tacuction depending on the amount of loops that can be
-        // fused
-        //
-        int nops_tac = noperands(tac);
-        for(int i=0; i<nops_tac; ++i) {        // Operand dict
-            ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-            ctemplate::TemplateDictionary* operand_d  = operation_d->AddSectionDictionary("OPERAND");
+        // The operator +, -, /, min, max, sin, sqrt, etc...
+        //        
+        operator_d->SetValue("OPERATOR", operator_cexpr(tac->op, tac->oper, block.scope[tac->out].type));
 
-            argument_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->out].type));
-            argument_d->SetIntValue("NR", tac->out);
+        //
+        //  The arguments / operands
+        switch(noperands(tac)) {
+            case 3:
+                operation_d->SetValue("NR_SINPUT", std::to_string(tac->in2));  // Not all have
+                operator_d->SetIntValue("NR_SINPUT", tac->out);
+                argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
+                operand_d   = operation_d->AddSectionDictionary("OPERAND");
+                argument_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->in2].type));
+                operand_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->in2].type));
 
-            operand_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->out].type));
-            operand_d->SetIntValue("NR",  tac->out);
-            if (block.scope[tac->out].layout != CONSTANT) {
+                argument_d->SetIntValue("NR", tac->in2);
+                operand_d->SetIntValue("NR", tac->in2);
+
+                if (CONSTANT != block.scope[tac->in2].layout) {
+                    argument_d->ShowSection("ARRAY");
+                    operand_d->ShowSection("ARRAY");
+                }
+            case 2:
+                operation_d->SetValue("NR_FINPUT", std::to_string(tac->in1));  // Not all have
+                operator_d->SetIntValue("NR_FINPUT", tac->in1);
+
+                argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
+                operand_d   = operation_d->AddSectionDictionary("OPERAND");
+
+                argument_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->in1].type));
+                operand_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->in1].type));
+
+                argument_d->SetIntValue("NR", tac->in1);
+                operand_d->SetIntValue("NR", tac->in1);
+
+                if (CONSTANT != block.scope[tac->in1].layout) {
+                    argument_d->ShowSection("ARRAY");
+                    operand_d->ShowSection("ARRAY");
+                }
+            case 1:
+                argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
+                argument_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->out].type));
+                argument_d->SetIntValue("NR", tac->out);
                 argument_d->ShowSection("ARRAY");
+
+                operation_d->SetValue("NR_OUTPUT", std::to_string(tac->out));
+                operator_d->SetIntValue("NR_OUTPUT", tac->out);
+
+                operand_d = operation_d->AddSectionDictionary("OPERAND");
+                operand_d->SetValue("TYPE", enum_to_ctypestr(block.scope[tac->out].type));
+                operand_d->SetIntValue("NR", tac->out);
                 operand_d->ShowSection("ARRAY");
-            }
         }
+
     }
 
     //
@@ -244,7 +269,9 @@ bool symbolize(block_t &block, bh_intp const optimized) {
             continue;
         }
         
-        symbol_op_oper  += "_"+operation_text(tac->op)+std::to_string(tac->oper);
+        symbol_op_oper  += "_";
+        symbol_op_oper  += operation_text(tac->op);
+        symbol_op_oper  += std::to_string(tac->oper);
         symbol_tsig     += tac_typesig_text(tac, block.scope);
         symbol_layout   += tac_layout_text(tac, block.scope);
     
