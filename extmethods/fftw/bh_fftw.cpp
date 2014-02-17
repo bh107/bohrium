@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_fftw.h"
 #include <bh.h>
 #include <complex.h>
+#include <assert.h>
 #include <fftw3.h>
 #if defined(_OPENMP)
 #include <omp.h>
@@ -28,7 +29,7 @@ inline int omp_get_max_threads() { return 1; }
 inline int omp_get_thread_num()  { return 0; }
 inline int omp_get_num_threads() { return 1; }
 #endif
-#include <assert.h>
+
 
 /* Implements fftn */
 bh_error bh_fftw(bh_instruction *instr, void* arg)

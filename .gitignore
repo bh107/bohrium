@@ -43,7 +43,7 @@ bridge/cpp/codegen/output/*
 bridge/cpp/bin/*
 benchmark/cpp/bin/*
 include/bh_opcode.h
-core/bh_opcode.c
+core/bh_opcode.cpp
 core/compute/codegen/out
 bohrium/build
 OpCodes.cs
@@ -65,8 +65,4 @@ benchmark/CIL/Csharp/blackscholes/bin
 benchmark/CIL/Csharp/blackscholes/obj
 benchmark/CIL/Csharp/jacobi/bin
 benchmark/CIL/Csharp/jacobi/obj
-bridge/c/bh_c_implementation.cpp
-bridge/c/bh_c_implementation_basics.cpp
-bridge/c/bh_c_type_definitions.hpp
-bridge/c/include/bh_c_data_types.h
-bridge/c/include/bh_c_interface.h
+bridge/c/codegen/output/

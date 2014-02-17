@@ -144,7 +144,7 @@ def main(script_dir):
     set_timestamp(name, timestamp)
 
     # Write the c file
-    name = os.path.join(script_dir,'..','bh_opcode.c')
+    name = os.path.join(script_dir,'..','bh_opcode.cpp')
     h = open(name,"w")
     h.write(cfile)
     h.close()
