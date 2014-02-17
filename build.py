@@ -201,9 +201,9 @@ if __name__ == "__main__":
                   ("EXT-METHOD-VISUALIZER", "extmethods/visualizer", False),\
                   ("EXT-METHOD-FFTW", "extmethods/fftw", False),\
                   ("BRIDGE-C++", "bridge/cpp", True),\
-                  ("BRIDGE-NUMPY", "bridge/numpy", True),\
+#                 ("BRIDGE-NUMPY", "bridge/numpy", True),\
                   ("BRIDGE-C", "bridge/c", True),\
-                  ("BHNUMPY", "bohrium", True),\
+#                  ("BHNUMPY", "bohrium", True),\
 #                  ("FILTER-POWER", "filter/power", False),\
 #                  ("FILTER-FUSION", "filter/fusion", False),\
 #                  ("FILTER-STREAMING", "filter/streaming", False),\
