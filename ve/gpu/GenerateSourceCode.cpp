@@ -25,33 +25,32 @@ If not, see <http://www.gnu.org/licenses/>.
 void generateGIDSource(size_t ndim, std::ostream& source)
 {
     assert(ndim > 0);    
-    if (ndim > 2)
-    {
-        source << "\tconst size_t gidz = get_global_id(2);\n";
-        source << "\tif (gidz >= ds" << ndim-3 << ")\n\t\treturn;\n";
-    }
+    source << "\tconst size_t gidx = get_global_id(0);\n";
+    source << "\tif (gidx >= ds0)\n\t\treturn;\n";
     if (ndim > 1)
     {
         source << "\tconst size_t gidy = get_global_id(1);\n";
-        source << "\tif (gidy >= ds" << ndim-2 << ")\n\t\treturn;\n";
+        source << "\tif (gidy >= ds1)\n\t\treturn;\n";
     }
-    source << "\tconst size_t gidx = get_global_id(0);\n";
-    source << "\tif (gidx >= ds" << ndim-1 << ")\n\t\treturn;\n";
+    if (ndim > 2)
+    {
+        source << "\tconst size_t gidz = get_global_id(2);\n";
+        source << "\tif (gidz >= ds2)\n\t\treturn;\n";
+    }
 }
 
-void generateOffsetSource(const bh_view& operand, std::ostream& source)
+void generateOffsetSource(unsigned int id, bh_index ndim, std::ostream& source)
 {
-    bh_index ndim = operand.ndim;
     assert(ndim > 0);
     if (ndim > 2)
     {
-        source << "gidz*" << operand.stride[ndim-3] << " + ";
+        source << "gidz*v" << id << "s3 + ";
     }
     if (ndim > 1)
     {
-        source << "gidy*" << operand.stride[ndim-2] << " + ";
+        source << "gidy*v" << id << "s2 + ";
     }
-    source << "gidx*" << operand.stride[ndim-1] << " + " << operand.start;
+    source << "gidx*v" << id << "s1 + v" << id << "s0";
 }
 
 #define TYPE ((type[1] == OCL_COMPLEX64) ? "float" : "double")

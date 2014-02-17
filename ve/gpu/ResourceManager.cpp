@@ -254,24 +254,24 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     bh_uint64 start = bh::Timer<>::stamp(); 
 #endif
 
-//#ifdef DEBUG
+#ifdef DEBUG
     std::cout << "Program build :\n";
     std::cout << "------------------- SOURCE -----------------------\n";
     std::cout << source;
     std::cout << "------------------ SOURCE END --------------------" << std::endl;
-//#endif
+#endif
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
         program.build(devices,getIncludeStr().c_str());
     } catch (cl::Error) {
-//#ifdef DEBUG
+#ifdef DEBUG
         std::cerr << "Program build error:\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
         std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
-//#endif
+#endif
         throw std::runtime_error("Could not build Kernel.");
     }
     

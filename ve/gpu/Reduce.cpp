@@ -35,35 +35,66 @@ bh_error Reduce::bh_reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
 {
     bh_view* out = &inst->operand[0];
     std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
-    Kernel::Parameters kernelParameters;
-    kernelParameters.push_back(std::make_pair(userFuncArg->operands[0], true));
+    bh_view* in = &inst->operand[1];
+    bh_view inn(*in);
+    bh_int64 axis = inst->constant.value.int64;
+    {
+        inn.ndim = in->ndim - 1;
+        int i = 0;
+        bh_int64 a = (axis)?0:1;
+        while (a < in->ndim)
+        {
+            inn.shape[i] = in->shape[a];
+            inn.stride[i++] = in->stride[a++];
+            if (i == axis)
+                ++a;
+        }
+    }
     parameterList.push_back(std::make_pair("out",userFuncArg->operands[0]));
-    kernelParameters.push_back(std::make_pair(userFuncArg->operands[1], false));
-    parameterList.push_back(std::make_pair("in",userFuncArg->operands[0]));
+    parameterList.push_back(std::make_pair("in",userFuncArg->operands[1]));
     for (int i = 0; i < shape.size(); ++i)
     {
-        kernelParameters.push_back(std::make_pair(new Scalar(shape[i]), false));
-        std::stringstream ss;
-        ss << "ds" << i;
-        parameterList.push_back(std::make_pair(ss.str(), new Scalar(shape[i])));
+        {
+            std::stringstream ss;
+            ss << "ds" << shape.size()-(i+1);
+            parameterList.push_back(std::make_pair(ss.str(), new Scalar(shape[i])));
+        }{
+            std::stringstream ss;
+            ss << "v0s" << shape.size()-i;
+            parameterList.push_back(std::make_pair(ss.str(), new Scalar(out->stride[i])));
+        }{
+            std::stringstream ss;
+            ss << "v1s" << shape.size()-i;
+            parameterList.push_back(std::make_pair(ss.str(), new Scalar(inn.stride[i])));
+        }
     }
-    Kernel kernel = getKernel(inst, userFuncArg, shape);
+    parameterList.push_back(std::make_pair("v0s0", new Scalar(out->start)));
+    parameterList.push_back(std::make_pair("v1s0", new Scalar(inn.start)));
+    parameterList.push_back(std::make_pair("N", new Scalar(in->shape[axis])));
+    parameterList.push_back(std::make_pair("S", new Scalar(in->stride[axis])));
+    Kernel kernel = getKernel(inst, inn, userFuncArg, shape);
     std::vector<size_t> globalShape;
     for (int i = shape.size()-1; i>=0; --i)
         globalShape.push_back(shape[i]);
+    Kernel::Parameters kernelParameters;
+    ParameterList::iterator pit = parameterList.begin();
+    kernelParameters.push_back(std::make_pair(pit->second, true));
+    for (++pit; pit != parameterList.end(); ++pit)
+        kernelParameters.push_back(std::make_pair(pit->second, false));
     kernel.call(kernelParameters, globalShape);
     parameterList.clear();
     return BH_SUCCESS;
 }
 
-Kernel Reduce::getKernel(bh_instruction* inst, 
+Kernel Reduce::getKernel(bh_instruction* inst,
+                         bh_view& inn,
                          UserFuncArg* userFuncArg,
                          std::vector<bh_index> shape)
 {
 #ifdef BH_TIMING
     bh_uint64 start = bh::Timer<>::stamp();
 #endif
-    std::string code = generateCode(inst, userFuncArg->operands[0]->type(), 
+    std::string code = generateCode(inst, inn, userFuncArg->operands[0]->type(), 
                                     userFuncArg->operands[1]->type(), shape);
 #ifdef BH_TIMING
     userFuncArg->resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
@@ -94,7 +125,7 @@ Kernel Reduce::getKernel(bh_instruction* inst,
 }
 
 
-std::string Reduce::generateCode(bh_instruction* inst, 
+std::string Reduce::generateCode(bh_instruction* inst, bh_view& inn,
                                  OCLtype outType, OCLtype inType,
                                  std::vector<bh_index> shape)
 {
@@ -135,7 +166,6 @@ std::string Reduce::generateCode(bh_instruction* inst,
         assert(false);
     }
     bh_view* out = &inst->operand[0];
-    bh_view* in = &inst->operand[1];
     std::stringstream source;
     std::vector<std::string> operands(3);
     operands[0] = "accu";
@@ -150,28 +180,16 @@ std::string Reduce::generateCode(bh_instruction* inst,
         source << "\n                     , " << *(pit->second) << " " << pit->first;
     }
     source << ")\n{\n";
-    bh_view inn(inst->operand[1]);
-    inn.ndim = in->ndim - 1;
-    int i = 0;
-    bh_int64 axis = inst->constant.value.int64;
-    bh_int64 a = (axis)?0:1;
-    while (a < in->ndim)
-    {
-        inn.shape[i] = in->shape[a];
-        inn.stride[i++] = in->stride[a++];
-        if (i == axis)
-            ++a;
-    }
     generateGIDSource(shape.size(), source);
     source << "\tsize_t element = ";
-    generateOffsetSource(inn, source);
+    generateOffsetSource(1, inn.ndim, source);
     source << ";\n";
     source << "\t" << oclTypeStr(outType) << " accu = in[element];\n";
-    source << "\tfor (int i = 1; i < " << in->shape[axis] << "; ++i)\n\t{\n";
-    source << "\t\telement += " << in->stride[axis] << ";\n\t";
+    source << "\tfor (int i = 1; i < N; ++i)\n\t{\n";
+    source << "\t\telement += S;\n\t";
     generateInstructionSource(opcode, {outType, inType}, operands, source);
     source << "\t}\n\tout[";
-    generateOffsetSource(*out, source);
+    generateOffsetSource(0, out->ndim, source);
     source << "] = accu;\n}\n";
     return source.str();
 }

@@ -163,7 +163,11 @@ OCLtype Scalar::type() const
 
 void Scalar::printOn(std::ostream& os) const
 {
-    os << "const " << oclTypeStr(mytype);
+    os << "const " << oclTypeStr(mytype)
+#ifdef DEBUG
+       << "/*" << value.i << "*/"
+#endif
+        ;
 }
 
 void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)

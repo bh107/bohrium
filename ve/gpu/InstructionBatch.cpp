@@ -288,13 +288,42 @@ void InstructionBatch::run(ResourceManager* resourceManager)
         for (int i = 0; i < shape.size(); ++i)
         {
             std::stringstream ss;
-            ss << "ds" << i;
+            ss << "ds" << shape.size() -(i+1);
             parameterList.insert(std::make_pair(ss.str(), new Scalar(shape[i])));
         }
         for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
+        {
+            {
+                std::stringstream ss;
+                ss << "v" << iit->second << "s0";
+                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[iit->second].start)));
+            }
+            bh_intp vndim = views[iit->second].ndim;
+            for (bh_intp d = 0; d < vndim; ++d)
+            {
+                std::stringstream ss;
+                ss << "v" << iit->second << "s" << vndim-d;
+                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[iit->second].stride[d])));
+            }
             inputList.insert(std::make_pair(iit->second, iit->first));
+
+        }
         for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
+        {
+            {
+                std::stringstream ss;
+                ss << "v" << oit->second << "s0";
+                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[oit->second].start)));
+            }
+            bh_intp vndim = views[oit->second].ndim;
+            for (bh_intp d = 0; d < vndim; ++d)
+            {
+                std::stringstream ss;
+                ss << "v" << oit->second << "s" << vndim-d;
+                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[oit->second].stride[d])));
+            }
             outputList.insert(std::make_pair(oit->second, oit->first));
+        }
         Kernel kernel = generateKernel(resourceManager);
         Kernel::Parameters kernelParameters;
         for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
@@ -335,7 +364,7 @@ std::string InstructionBatch::generateCode()
         kernelVariables[iit->first] = ss.str();
         source << "\t" << oclTypeStr(iit->second->type()) << " " << ss.str() << " = " <<
             parameters[iit->second] << "[";
-        generateOffsetSource(views[iit->first], source);
+        generateOffsetSource(iit->first, views[iit->first].ndim, source);
         source << "];\n";
     }
 
@@ -377,7 +406,7 @@ std::string InstructionBatch::generateCode()
     for (ArrayList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
     {
         source << "\t" << parameters[oit->second] << "[";
-        generateOffsetSource(views[oit->first], source);
+        generateOffsetSource(oit->first, views[oit->first].ndim, source);
         source << "] = " <<  kernelVariables[oit->first] << ";\n";
     }
 

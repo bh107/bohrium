@@ -143,7 +143,7 @@ std::string Accumulate::generateCode(bh_instruction* inst,
     }
     generateGIDSource(shape.size(), source);
     source << "\tsize_t element = ";
-    generateOffsetSource(inn, source);
+    generateOffsetSource(1, inn.ndim, source);
     source << ";\n";
     source << "\t" << oclTypeStr(outType) << " accu = in[element];\n";
     source << "\tout[element] = accu;\n";

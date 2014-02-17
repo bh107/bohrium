@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "OCLtype.h"
 
 void generateGIDSource(size_t ndim, std::ostream& source);
-void generateOffsetSource(const bh_view& operand, std::ostream& source);
+void generateOffsetSource(unsigned int id, bh_index ndim, std::ostream& source);
 void generateInstructionSource(bh_opcode opcode,
                                std::vector<OCLtype> type, 
                                std::vector<std::string>& parameters, 
