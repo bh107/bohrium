@@ -30,11 +30,41 @@ If not, see <http://www.gnu.org/licenses/>.
 
 typedef std::vector<std::pair<std::string, KernelParameter*>> ParameterList;
 static ParameterList parameterList;
+static bool accumulate;
 
 bh_error Reduce::bh_reduce(bh_instruction* inst, UserFuncArg* userFuncArg)
 {
+    switch (inst->opcode)
+    {
+    case BH_ADD_ACCUMULATE:
+    case BH_MULTIPLY_ACCUMULATE:
+        accumulate = true;
+        break;
+    case BH_ADD_REDUCE:
+    case BH_MULTIPLY_REDUCE:
+    case BH_MINIMUM_REDUCE:
+    case BH_MAXIMUM_REDUCE:
+    case BH_LOGICAL_AND_REDUCE:
+    case BH_BITWISE_AND_REDUCE:
+    case BH_LOGICAL_OR_REDUCE:
+    case BH_BITWISE_OR_REDUCE:
+    case BH_LOGICAL_XOR_REDUCE:
+    case BH_BITWISE_XOR_REDUCE:
+        accumulate = false;
+        break;
+    default:
+        assert(false);
+    }
+
     bh_view* out = &inst->operand[0];
-    std::vector<bh_index> shape = std::vector<bh_index>(out->shape, out->shape + out->ndim);
+    std::vector<bh_index> shape;
+    for (int i = 0; i < out->ndim; ++i)
+    {
+        if(accumulate && i == inst->constant.value.int64)
+            continue;
+        shape.push_back(out->shape[i]);
+    }
+
     bh_view* in = &inst->operand[1];
     bh_view inn(*in);
     bh_int64 axis = inst->constant.value.int64;
@@ -116,7 +146,7 @@ Kernel Reduce::getKernel(bh_instruction* inst,
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
         }
         source << "__kernel void " << kname.str() << code;
-        Kernel kernel(userFuncArg->resourceManager, inst->operand[0].ndim, source.str(), kname.str());
+        Kernel kernel(userFuncArg->resourceManager, shape.size(), source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));
         return kernel;
     } else {
@@ -133,9 +163,11 @@ std::string Reduce::generateCode(bh_instruction* inst, bh_view& inn,
     switch (inst->opcode)
     {
     case BH_ADD_REDUCE:
+    case BH_ADD_ACCUMULATE:
         opcode = BH_ADD;
         break;
     case BH_MULTIPLY_REDUCE:
+    case BH_MULTIPLY_ACCUMULATE:
         opcode = BH_MULTIPLY;
         break;
     case BH_MINIMUM_REDUCE:
@@ -185,11 +217,18 @@ std::string Reduce::generateCode(bh_instruction* inst, bh_view& inn,
     generateOffsetSource(1, inn.ndim, source);
     source << ";\n";
     source << "\t" << oclTypeStr(outType) << " accu = in[element];\n";
+    if (accumulate)
+        source << "\tout[element] = accu;\n";
     source << "\tfor (int i = 1; i < N; ++i)\n\t{\n";
     source << "\t\telement += S;\n\t";
     generateInstructionSource(opcode, {outType, inType}, operands, source);
-    source << "\t}\n\tout[";
-    generateOffsetSource(0, out->ndim, source);
-    source << "] = accu;\n}\n";
+    if (accumulate)
+    {
+        source << "\t\tout[element] = accu;\n\t}\n}\n";
+    } else {
+        source << "\t}\n\tout[";
+        generateOffsetSource(0, out->ndim, source);
+        source << "] = accu;\n}\n";
+    }
     return source.str();
 }
