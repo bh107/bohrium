@@ -27,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "Reduce.hpp"
 #include "KernelParameter.hpp"
 #include "Scalar.hpp"
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 typedef std::vector<std::pair<std::string, KernelParameter*>> ParameterList;
 static ParameterList parameterList;
@@ -79,8 +80,6 @@ bh_error Reduce::bh_reduce(const bh_instruction* inst, const UserFuncArg* userFu
                 ++a;
         }
     }
-    parameterList.push_back(std::make_pair("out",userFuncArg->operands[0]));
-    parameterList.push_back(std::make_pair("in",userFuncArg->operands[1]));
 #ifndef STATIC_KERNEL
     for (int i = 0; i < shape.size(); ++i)
     {
@@ -103,12 +102,14 @@ bh_error Reduce::bh_reduce(const bh_instruction* inst, const UserFuncArg* userFu
     parameterList.push_back(std::make_pair("N", new Scalar(in->shape[axis])));
     parameterList.push_back(std::make_pair("S", new Scalar(in->stride[axis])));
 #endif
+    parameterList.push_back(std::make_pair("out",userFuncArg->operands[0]));
+    parameterList.push_back(std::make_pair("in",userFuncArg->operands[1]));
     std::vector<bh_view> views;
     views.push_back(inst->operand[0]);
     views.push_back(inn);
     Kernel kernel = getKernel(inst, views, userFuncArg, shape);
     std::vector<size_t> globalShape;
-    for (int i = shape.size()-1; i>=0; --i)
+    for (int i = shape.size()-1; i>=0 && shape.size()-i < 4; --i)
         globalShape.push_back(shape[i]);
     Kernel::Parameters kernelParameters;
     ParameterList::iterator pit = parameterList.begin();
@@ -150,7 +151,7 @@ Kernel Reduce::getKernel(const bh_instruction* inst,
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
         }
         source << "__kernel void " << kname.str() << code;
-        Kernel kernel(userFuncArg->resourceManager, shape.size(), source.str(), kname.str());
+        Kernel kernel(userFuncArg->resourceManager, MIN(shape.size(),3), source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));
         return kernel;
     } else {
@@ -217,29 +218,46 @@ std::string Reduce::generateCode(const bh_instruction* inst,
     }
     source << ")\n{\n";
     generateGIDSource(shape, source);
-    source << "\tsize_t element = ";
+    std::stringstream indentss;
+    indentss << "\t";
+    for (size_t d = 3; d < shape.size(); ++d)
+    {
+#ifdef STATIC_KERNEL
+        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < " << shape[d-3] << 
+            "; ++ids" << d << ")\n" << indentss.str() << "{\n";
+#else
+        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < ds" << d << 
+            "; ++ids" << d << ")\n" << indentss.str() << "{\n";
+#endif
+        indentss << "\t";
+    }
+    std::string indent = indentss.str();
+    source << indent << "size_t element = ";
     generateOffsetSource(views, 1, source);
     source << ";\n";
-    source << "\t" << oclTypeStr(outType) << " accu = in[element];\n";
+    source << indent << oclTypeStr(outType) << " accu = in[element];\n";
     if (accumulate)
-        source << "\tout[element] = accu;\n";
+        source << indent << "out[element] = accu;\n";
 #ifdef STATIC_KERNEL
     const bh_view* in = &inst->operand[1];
     bh_int64 axis = inst->constant.value.int64;
-    source << "\tfor (int i = 1; i < " << in->shape[axis] << "; ++i)\n\t{\n";
-    source << "\t\telement += " << in->stride[axis] << ";\n\t";
+    source << indent "for (int i = 1; i < " << in->shape[axis] << "; ++i)\n" << indent 
+           << "{\n" << indent << "\telement += " << in->stride[axis] << ";\n" << indent;
 #else
-    source << "\tfor (int i = 1; i < N; ++i)\n\t{\n";
-    source << "\t\telement += S;\n\t";
+    source << indent << "for (int i = 1; i < N; ++i)\n" << indent 
+           << "{\n" << indent << "\telement += S;\n" << indent;
 #endif
     generateInstructionSource(opcode, {outType, inType}, operands, source);
     if (accumulate)
     {
-        source << "\t\tout[element] = accu;\n\t}\n}\n";
+        source << indent << "\tout[element] = accu;\n" << indent << "}\n";
     } else {
-        source << "\t}\n\tout[";
+        source << indent << "}\n" << indent << "out[";
         generateOffsetSource(views, 0, source);
-        source << "] = accu;\n}\n";
+        source << "] = accu;\n";
     }
+    source << indent.substr(1) << "}\n";
+    for (size_t d = 3; d < shape.size(); ++d)
+        source << indent.substr(d-1) << "}\n";
     return source.str();
 }

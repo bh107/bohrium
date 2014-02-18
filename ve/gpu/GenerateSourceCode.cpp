@@ -57,6 +57,14 @@ void generateOffsetSource(const std::vector<bh_view>& views, unsigned int id, st
     const bh_view& operand = views[id];
     const bh_index ndim = operand.ndim;
     assert(ndim > 0);
+    for (int d = 3; d<ndim; ++d)
+    {
+#ifdef STATIC_KERNEL
+        source << "ids" << d << "*" << operand.stride[ndim-(d+1)] << " + ";
+#else
+        source << "ids" << d << "*v" << id << "s" << d+1 << " + ";
+#endif
+    }
     if (ndim > 2)
     {
 #ifdef STATIC_KERNEL
