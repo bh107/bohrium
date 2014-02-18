@@ -283,16 +283,17 @@ void InstructionBatch::run(ResourceManager* resourceManager)
 
     if (output.begin() != output.end())
     {
-        for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
-            parameterList.insert(std::make_pair(pit->second, pit->first));
+#ifndef STATIC_KERNEL
         for (int i = 0; i < shape.size(); ++i)
         {
             std::stringstream ss;
             ss << "ds" << shape.size() -(i+1);
             parameterList.insert(std::make_pair(ss.str(), new Scalar(shape[i])));
         }
+#endif
         for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
         {
+#ifndef STATIC_KERNEL
             {
                 std::stringstream ss;
                 ss << "v" << iit->second << "s0";
@@ -305,11 +306,12 @@ void InstructionBatch::run(ResourceManager* resourceManager)
                 ss << "v" << iit->second << "s" << vndim-d;
                 parameterList.insert(std::make_pair(ss.str(), new Scalar(views[iit->second].stride[d])));
             }
+#endif
             inputList.insert(std::make_pair(iit->second, iit->first));
-
         }
         for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
         {
+#ifndef STATIC_KERNEL
             {
                 std::stringstream ss;
                 ss << "v" << oit->second << "s0";
@@ -322,8 +324,11 @@ void InstructionBatch::run(ResourceManager* resourceManager)
                 ss << "v" << oit->second << "s" << vndim-d;
                 parameterList.insert(std::make_pair(ss.str(), new Scalar(views[oit->second].stride[d])));
             }
+#endif
             outputList.insert(std::make_pair(oit->second, oit->first));
         }
+        for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+            parameterList.insert(std::make_pair(pit->second, pit->first));
         Kernel kernel = generateKernel(resourceManager);
         Kernel::Parameters kernelParameters;
         for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
@@ -354,7 +359,7 @@ std::string InstructionBatch::generateCode()
 
     source << ")\n{\n";
     
-    generateGIDSource(shape.size(), source);
+    generateGIDSource(shape, source);
     
     // Load input parameters
     for (ArrayList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
@@ -364,7 +369,7 @@ std::string InstructionBatch::generateCode()
         kernelVariables[iit->first] = ss.str();
         source << "\t" << oclTypeStr(iit->second->type()) << " " << ss.str() << " = " <<
             parameters[iit->second] << "[";
-        generateOffsetSource(iit->first, views[iit->first].ndim, source);
+        generateOffsetSource(views, iit->first, source);
         source << "];\n";
     }
 
@@ -406,7 +411,7 @@ std::string InstructionBatch::generateCode()
     for (ArrayList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
     {
         source << "\t" << parameters[oit->second] << "[";
-        generateOffsetSource(oit->first, views[oit->first].ndim, source);
+        generateOffsetSource(views, oit->first, source);
         source << "] = " <<  kernelVariables[oit->first] << ";\n";
     }
 
