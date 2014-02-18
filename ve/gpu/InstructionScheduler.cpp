@@ -26,7 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
 #include "Reduce.hpp"
-#include "Accumulate.hpp"
 #include "HybridTaus.hpp"
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
