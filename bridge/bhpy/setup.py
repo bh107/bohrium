@@ -24,10 +24,24 @@ If not, see <http://www.gnu.org/licenses/>.
 from distutils.core import setup, Extension
 from os.path import join
 
-setup(name='Bohrium Internal Interface',
-      version='1.0',
+SRC  = ['_bhmodule.c']
+DEPS = ['types.c', 'types.h']
+
+setup(name='Bohrium',
+      version='0.1',
+      description='Bohrium NumPy',
+      long_description='Bohrium NumPy',
+      author='The Bohrium Team',
+      author_email='contact@bh107.org',
+      url='http://www.bh107.org',
+      license='LGPLv3',
+      platforms='Linux, OSX',
+
+      packages=['bohrium'],
+      ext_package='bohrium',
       ext_modules=[Extension(name='_bhmodule',
-                             sources=[join('src','_bhmodule.c')],
+                             sources=[join('bohrium',f) for f in SRC],
+                             depends=[join('bohrium',f) for f in DEPS],
                              include_dirs=[join('../c/codegen/output'),
                                            join('..','..','include')],
                              libraries=['dl','bhc', 'bh'],
@@ -35,6 +49,5 @@ setup(name='Bohrium Internal Interface',
                                            join('..','..','core')],
                              extra_compile_args=[],
 #                             extra_link_args=['-L%s'%join(bohrium_install_dir,'core'), '-lbh'],
-                             depends=[],
                              )],
      )

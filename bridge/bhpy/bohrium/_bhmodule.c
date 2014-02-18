@@ -20,14 +20,38 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <Python.h>
 #include <dlfcn.h>
-#include <bh_c.h>
 #include <bh.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+#include "types.h"
+#include "types.c"
+
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
 
+static void *bhc_handle;
+static PyObject *dtype_npy2bh=NULL;
+
+static PyObject *
+dtype_set_map(PyObject *self, PyObject *args)
+{
+    PyObject *map;
+
+    if(!PyArg_ParseTuple(args, "O", &map))
+        return NULL;
+
+    if(!PyDict_Check(map))
+    {
+        PyErr_Format(PyExc_TypeError, "The argument must be a dict that maps "
+            "data types from NumPy to Bohrium (e.g. NPY_FLOAT32 to BH_FLOAT32)");
+        return NULL;
+    }
+    Py_XDECREF(map);
+    dtype_npy2bh = map;
+
+    Py_RETURN_NONE;
+}
 
 typedef struct
 {
@@ -35,13 +59,54 @@ typedef struct
     bh_base *ary;
 }BhArray;
 
+static PyObject *
+BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    bh_error err;
+    if(dtype_npy2bh == NULL)
+    {
+        PyErr_Format(PyExc_RuntimeError, "Must call dtype_set_map() once, "
+                                         "before creating new arrays");
+        return NULL;
+    }
+
+    //First we lets NumPy create the base ndarray
+    BhArray *self = (BhArray*) PyArray_Type.tp_new(type, args, kwds);
+
+    //Convert data type to Bohrium
+    bh_type t = type_py2cph(PyArray_TYPE(&self->base));
+    if(t == BH_UNKNOWN)
+    {
+        PyErr_Format(PyExc_TypeError, "The dtype %s is not supported by Bohrium",
+                     bh_npy_type_text(PyArray_TYPE(&self->base)));
+        return NULL;
+    }
+
+    printf("BhArray_new(dtype: %s)\n", bh_type_text(t));
+    err = bh_create_base(t, PyArray_SIZE((PyArrayObject*)self), &self->ary);
+    if(err != BH_SUCCESS)
+    {
+        PyErr_Format(PyExc_RuntimeError, "Couldn't create new Bohrium array: %s",
+                     bh_error_text(err));
+        return NULL;
+
+    }
+
+    return (PyObject *)self;
+}
+
+static void
+BhArray_dealloc(BhArray* self)
+{
+}
+
 static PyTypeObject BhArrayType = {
     PyObject_HEAD_INIT(NULL)
     0,                       /* ob_size */
     "bohrium.ndarray",       /* tp_name */
     sizeof(BhArray),         /* tp_basicsize */
     0,                       /* tp_itemsize */
-    0,                       /* tp_dealloc */
+    (destructor) BhArray_dealloc,/* tp_dealloc */
     0,                       /* tp_print */
     0,                       /* tp_getattr */
     0,                       /* tp_setattr */
@@ -75,10 +140,8 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_dictoffset */
     0,                       /* tp_init */
     0,                       /* tp_alloc */
-    0,                       /* tp_new */
+    (newfunc)BhArray_new,    /* tp_new */
 };
-
-static void *bhc_handle;
 
 static PyObject *
 bh_exec(PyObject *self, PyObject *args)
@@ -86,6 +149,8 @@ bh_exec(PyObject *self, PyObject *args)
     const char *name;
     PyObject *ops;
     Py_ssize_t i;
+//    char s[1024];
+
 
     if(!PyArg_ParseTuple(args, "sO", &name, &ops))
         return NULL;
@@ -112,6 +177,8 @@ bh_exec(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef BohriumMethods[] = {
+    {"dtype_set_map", dtype_set_map, METH_VARARGS,
+     "Set the data type map (dict) from NumPy to Bohrium (e.g. NPY_FLOAT32 to BH_FLOAT32)"},
     {"execute", bh_exec, METH_VARARGS,
      "Execute function exec(name, args)"},
     {NULL, NULL, 0, NULL} /* Sentinel */
