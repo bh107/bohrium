@@ -241,7 +241,7 @@ std::string Reduce::generateCode(const bh_instruction* inst,
 #ifdef STATIC_KERNEL
     const bh_view* in = &inst->operand[1];
     bh_int64 axis = inst->constant.value.int64;
-    source << indent "for (int i = 1; i < " << in->shape[axis] << "; ++i)\n" << indent 
+    source << indent << "for (int i = 1; i < " << in->shape[axis] << "; ++i)\n" << indent 
            << "{\n" << indent << "\telement += " << in->stride[axis] << ";\n" << indent;
 #else
     source << indent << "for (int i = 1; i < N; ++i)\n" << indent 
