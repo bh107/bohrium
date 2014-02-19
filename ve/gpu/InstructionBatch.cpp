@@ -29,7 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
 #include "Scalar.hpp"
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
 
@@ -43,6 +42,8 @@ InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<Kerne
 #ifdef BH_TIMING
     createTime = bh::Timer<>::stamp();
 #endif
+    if (inst->operand[0].ndim > 3)
+        throw std::runtime_error("More than 3 dimensions not supported.");        
     shape = std::vector<bh_index>(inst->operand[0].shape, inst->operand[0].shape + inst->operand[0].ndim);
     add(inst, operands);
 }
@@ -267,7 +268,7 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
             source << "#include <complex.h>\n";
         }
         source << "__kernel void " << kname.str() << code;
-        Kernel kernel(resourceManager, MIN(shape.size(),3), source.str(), kname.str());
+        Kernel kernel(resourceManager, shape.size(), source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));
         return kernel;
     } else {
@@ -344,7 +345,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
                 kernelParameters.push_back(std::make_pair(pit->second, true));
         }
         std::vector<size_t> globalShape;
-        for (int i = shape.size()-1; i>=0 && shape.size()-i < 4; --i)
+        for (int i = shape.size()-1; i>=0; --i)
             globalShape.push_back(shape[i]);
         kernel.call(kernelParameters, globalShape);
     }
@@ -365,20 +366,6 @@ std::string InstructionBatch::generateCode()
     source << ")\n{\n";
     
     generateGIDSource(shape, source);
-    std::stringstream indentss;
-    indentss << "\t";
-    for (size_t d = shape.size()-1; d > 2; --d)
-    {
-#ifdef STATIC_KERNEL
-        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < " << 
-            shape[shape.size()-(d+1)] << "; ++ids" << d << ")\n" << indentss.str() << "{\n";
-#else
-        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < ds" << d << 
-            "; ++ids" << d << ")\n" << indentss.str() << "{\n";
-#endif
-        indentss << "\t";
-    }
-    std::string indent = indentss.str();
     
     // Load input parameters
     for (ArrayList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
@@ -386,7 +373,7 @@ std::string InstructionBatch::generateCode()
         std::stringstream ss;
         ss << "v" << iit->first;
         kernelVariables[iit->first] = ss.str();
-        source << indent << oclTypeStr(iit->second->type()) << " " << ss.str() << " = " <<
+        source << "\t" << oclTypeStr(iit->second->type()) << " " << ss.str() << " = " <<
             parameters[iit->second] << "[";
         generateOffsetSource(views, iit->first, source);
         source << "];\n";
@@ -405,7 +392,7 @@ std::string InstructionBatch::generateCode()
             ss << "v" << iit->second[0];
             kernelVariables[(iit->second)[0]] = ss.str();
             operands.push_back(ss.str());
-            source << indent << oclTypeStr(oclType(iit->first->operand[0].base->type)) << " " << ss.str() << ";\n";
+            source << "\t" << oclTypeStr(oclType(iit->first->operand[0].base->type)) << " " << ss.str() << ";\n";
         }
         else
         {
@@ -423,18 +410,17 @@ std::string InstructionBatch::generateCode()
                                     iit->first->constant.type));
         } 
         // generate source code for the instruction
-        generateInstructionSource(iit->first->opcode, types, operands, indent, source);
+        generateInstructionSource(iit->first->opcode, types, operands, source);
     }
 
     // Save output parameters
     for (ArrayList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
     {
-        source << indent << parameters[oit->second] << "[";
+        source << "\t" << parameters[oit->second] << "[";
         generateOffsetSource(views, oit->first, source);
         source << "] = " <<  kernelVariables[oit->first] << ";\n";
     }
-    for (size_t d = 3; d < shape.size(); ++d)
-        source << indent.substr(d-2) << "}\n";
+
     source << "}\n";
     return source.str();
 }

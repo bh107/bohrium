@@ -220,11 +220,11 @@ std::string Reduce::generateCode(const bh_instruction* inst,
     generateGIDSource(shape, source);
     std::stringstream indentss;
     indentss << "\t";
-    for (size_t d = shape.size()-1; d > 2; --d)
+    for (size_t d = 3; d < shape.size(); ++d)
     {
 #ifdef STATIC_KERNEL
-        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < " << 
-            shape[shape.size()-(d+1)] << "; ++ids" << d << ")\n" << indentss.str() << "{\n";
+        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < " << shape[d-3] << 
+            "; ++ids" << d << ")\n" << indentss.str() << "{\n";
 #else
         source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < ds" << d << 
             "; ++ids" << d << ")\n" << indentss.str() << "{\n";
@@ -242,12 +242,12 @@ std::string Reduce::generateCode(const bh_instruction* inst,
     const bh_view* in = &inst->operand[1];
     bh_int64 axis = inst->constant.value.int64;
     source << indent << "for (int i = 1; i < " << in->shape[axis] << "; ++i)\n" << indent 
-           << "{\n" << indent << "\telement += " << in->stride[axis] << ";\n\t";
+           << "{\n" << indent << "\telement += " << in->stride[axis] << ";\n" << indent;
 #else
     source << indent << "for (int i = 1; i < N; ++i)\n" << indent 
-           << "{\n" << indent << "\telement += S;\n\t";
+           << "{\n" << indent << "\telement += S;\n" << indent;
 #endif
-    generateInstructionSource(opcode, {outType, inType}, operands, indent, source);
+    generateInstructionSource(opcode, {outType, inType}, operands, source);
     if (accumulate)
     {
         source << indent << "\tout[element] = accu;\n" << indent << "}\n";
