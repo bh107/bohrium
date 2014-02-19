@@ -86,7 +86,12 @@ ResourceManager::ResourceManager(bh_component* _component)
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
-    
+    if (devices[0].getInfo<CL_DEVICE_ADDRESS_BITS>() == 64)
+    {
+        intpType_ = OCL_INT64;
+    } else {
+        intpType_ = OCL_INT32;
+    }
     calcLocalShape();
     registerExtensions(extensions);
 
@@ -98,6 +103,11 @@ ResourceManager::ResourceManager(bh_component* _component)
     bufferRead = new bh::Timer<bh::timing4,1000000000>("[GPU] Reading buffers");
     kernelExec = new bh::Timer<bh::timing4,1000000000>("[GPU] Kernel execution");
 #endif
+}
+
+OCLtype ResourceManager::intpType()
+{
+    return intpType_;
 }
 
 #ifdef BH_TIMING

@@ -32,13 +32,16 @@ namespace Reduce
 {
     typedef std::map<size_t, Kernel> KernelMap;
     static KernelMap kernelMap;
-    bh_error bh_reduce(bh_instruction* inst, UserFuncArg* userFuncArg);
-    Kernel getKernel(bh_instruction* inst,
-                     UserFuncArg* userFuncArg,
-                     std::vector<bh_index> shape);
-    std::string generateCode(bh_instruction* inst,
-                             OCLtype outType, OCLtype inType,
-                             std::vector<bh_index> shape);
+    bh_error bh_reduce(const bh_instruction* inst, 
+                       const UserFuncArg* userFuncArg);
+    Kernel getKernel(const bh_instruction* inst,
+                     const std::vector<bh_view>& views,
+                     const UserFuncArg* userFuncArg,
+                     const std::vector<bh_index> shape);
+    std::string generateCode(const bh_instruction* inst, 
+                             const std::vector<bh_view>& views,
+                             const OCLtype outType, const OCLtype inType,
+                             const std::vector<bh_index> shape);
 }
 
 #endif

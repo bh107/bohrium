@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <bh.h>
 #include "Scalar.hpp"
+#include "bh_ve_gpu.h"
 
 Scalar::Scalar(bh_constant constant)
     : mytype(oclType(constant.type))
@@ -137,10 +138,22 @@ Scalar::Scalar(bh_base* spec)
     }
 }
 
-Scalar::Scalar(cl_long v)
-    : mytype(OCL_INT64)
+Scalar::Scalar(bh_intp ip)
 {
-    value.l = v;
+    switch (resourceManager->intpType())
+    {
+    case OCL_INT32:
+        mytype = OCL_INT32;
+        value.i = ip;
+        break;
+    case OCL_INT64:
+        mytype = OCL_INT64;
+        value.l = ip;
+        break;
+    default:
+        throw std::runtime_error("Scalar: Unknown intp type.");
+    }    
+
 }
 
 OCLtype Scalar::type() const
@@ -150,7 +163,11 @@ OCLtype Scalar::type() const
 
 void Scalar::printOn(std::ostream& os) const
 {
-    os << "const " << oclTypeStr(mytype);
+    os << "const " << oclTypeStr(mytype)
+#ifdef DEBUG
+       << "/*" << value.i << "*/"
+#endif
+        ;
 }
 
 void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)

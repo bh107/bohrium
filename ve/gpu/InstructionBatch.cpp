@@ -27,6 +27,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_timing.hpp>
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
+#include "Scalar.hpp"
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
 
@@ -40,8 +42,6 @@ InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<Kerne
 #ifdef BH_TIMING
     createTime = bh::Timer<>::stamp();
 #endif
-    if (inst->operand[0].ndim > 3)
-        throw std::runtime_error("More than 3 dimensions not supported.");        
     shape = std::vector<bh_index>(inst->operand[0].shape, inst->operand[0].shape + inst->operand[0].ndim);
     add(inst, operands);
 }
@@ -266,7 +266,7 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
             source << "#include <complex.h>\n";
         }
         source << "__kernel void " << kname.str() << code;
-        Kernel kernel(resourceManager, shape.size(), source.str(), kname.str());
+        Kernel kernel(resourceManager, MIN(shape.size(),3), source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));
         return kernel;
     } else {
@@ -282,23 +282,63 @@ void InstructionBatch::run(ResourceManager* resourceManager)
 
     if (output.begin() != output.end())
     {
+#ifndef STATIC_KERNEL
+        for (int i = 0; i < shape.size(); ++i)
+        {
+            std::stringstream ss;
+            ss << "ds" << shape.size() -(i+1);
+            parameterList.insert(std::make_pair(ss.str(), new Scalar(shape[i])));
+        }
+#endif
+        for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
+        {
+#ifndef STATIC_KERNEL
+            {
+                std::stringstream ss;
+                ss << "v" << iit->second << "s0";
+                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[iit->second].start)));
+            }
+            bh_intp vndim = views[iit->second].ndim;
+            for (bh_intp d = 0; d < vndim; ++d)
+            {
+                std::stringstream ss;
+                ss << "v" << iit->second << "s" << vndim-d;
+                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[iit->second].stride[d])));
+            }
+#endif
+            inputList.insert(std::make_pair(iit->second, iit->first));
+        }
+        for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
+        {
+#ifndef STATIC_KERNEL
+            {
+                std::stringstream ss;
+                ss << "v" << oit->second << "s0";
+                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[oit->second].start)));
+            }
+            bh_intp vndim = views[oit->second].ndim;
+            for (bh_intp d = 0; d < vndim; ++d)
+            {
+                std::stringstream ss;
+                ss << "v" << oit->second << "s" << vndim-d;
+                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[oit->second].stride[d])));
+            }
+#endif
+            outputList.insert(std::make_pair(oit->second, oit->first));
+        }
         for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
             parameterList.insert(std::make_pair(pit->second, pit->first));
-        for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
-            inputList.insert(std::make_pair(iit->second, iit->first));
-        for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
-            outputList.insert(std::make_pair(oit->second, oit->first));
         Kernel kernel = generateKernel(resourceManager);
         Kernel::Parameters kernelParameters;
         for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
         {
-            if (output.find(static_cast<BaseArray*>(pit->second)) == output.end())
+            if (output.find(dynamic_cast<BaseArray*>(pit->second)) == output.end())
                 kernelParameters.push_back(std::make_pair(pit->second, false));
             else
                 kernelParameters.push_back(std::make_pair(pit->second, true));
         }
         std::vector<size_t> globalShape;
-        for (int i = shape.size()-1; i>=0; --i)
+        for (int i = shape.size()-1; i>=0 && shape.size()-i < 4; --i)
             globalShape.push_back(shape[i]);
         kernel.call(kernelParameters, globalShape);
     }
@@ -308,7 +348,7 @@ std::string InstructionBatch::generateCode()
 {
     std::stringstream source;
     source << "( ";
-    // Add Array kernel parameters
+    // Add kernel parameters
     ParameterList::iterator pit = parameterList.begin();
     source << *(pit->second) << " " << pit->first;
     for (++pit; pit != parameterList.end(); ++pit)
@@ -319,6 +359,20 @@ std::string InstructionBatch::generateCode()
     source << ")\n{\n";
     
     generateGIDSource(shape, source);
+    std::stringstream indentss;
+    indentss << "\t";
+    for (size_t d = shape.size()-1; d > 2; --d)
+    {
+#ifdef STATIC_KERNEL
+        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < " << 
+            shape[shape.size()-(d+1)] << "; ++ids" << d << ")\n" << indentss.str() << "{\n";
+#else
+        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < ds" << d << 
+            "; ++ids" << d << ")\n" << indentss.str() << "{\n";
+#endif
+        indentss << "\t";
+    }
+    std::string indent = indentss.str();
     
     // Load input parameters
     for (ArrayList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
@@ -326,9 +380,9 @@ std::string InstructionBatch::generateCode()
         std::stringstream ss;
         ss << "v" << iit->first;
         kernelVariables[iit->first] = ss.str();
-        source << "\t" << oclTypeStr(iit->second->type()) << " " << ss.str() << " = " <<
+        source << indent << oclTypeStr(iit->second->type()) << " " << ss.str() << " = " <<
             parameters[iit->second] << "[";
-        generateOffsetSource(views[iit->first], source);
+        generateOffsetSource(views, iit->first, source);
         source << "];\n";
     }
 
@@ -345,7 +399,7 @@ std::string InstructionBatch::generateCode()
             ss << "v" << iit->second[0];
             kernelVariables[(iit->second)[0]] = ss.str();
             operands.push_back(ss.str());
-            source << "\t" << oclTypeStr(oclType(iit->first->operand[0].base->type)) << " " << ss.str() << ";\n";
+            source << indent << oclTypeStr(oclType(iit->first->operand[0].base->type)) << " " << ss.str() << ";\n";
         }
         else
         {
@@ -363,17 +417,18 @@ std::string InstructionBatch::generateCode()
                                     iit->first->constant.type));
         } 
         // generate source code for the instruction
-        generateInstructionSource(iit->first->opcode, types, operands, source);
+        generateInstructionSource(iit->first->opcode, types, operands, indent, source);
     }
 
     // Save output parameters
     for (ArrayList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
     {
-        source << "\t" << parameters[oit->second] << "[";
-        generateOffsetSource(views[oit->first], source);
+        source << indent << parameters[oit->second] << "[";
+        generateOffsetSource(views, oit->first, source);
         source << "] = " <<  kernelVariables[oit->first] << ";\n";
     }
-
+    for (size_t d = 3; d < shape.size(); ++d)
+        source << indent.substr(d-2) << "}\n";
     source << "}\n";
     return source.str();
 }

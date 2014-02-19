@@ -22,43 +22,77 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include "GenerateSourceCode.hpp"
 
-void generateGIDSource(std::vector<bh_index> shape, std::ostream& source)
+void generateGIDSource(const std::vector<bh_index>& shape, std::ostream& source)
 {
     size_t ndim = shape.size();
     assert(ndim > 0);    
-    if (ndim > 2)
-    {
-        source << "\tconst size_t gidz = get_global_id(2);\n";
-        source << "\tif (gidz >= " << shape[ndim-3] << ")\n\t\treturn;\n";
-    }
+    source << "\tconst size_t gidx = get_global_id(0);\n";
+#ifdef STATIC_KERNEL
+    source << "\tif (gidx >= " << shape[ndim-1] << ")\n\t\treturn;\n";
+#else
+    source << "\tif (gidx >= ds0)\n\t\treturn;\n";
+#endif
     if (ndim > 1)
     {
         source << "\tconst size_t gidy = get_global_id(1);\n";
+#ifdef STATIC_KERNEL
         source << "\tif (gidy >= " << shape[ndim-2] << ")\n\t\treturn;\n";
+#else
+        source << "\tif (gidy >= ds1)\n\t\treturn;\n";
+#endif
     }
-    source << "\tconst size_t gidx = get_global_id(0);\n";
-    source << "\tif (gidx >= " << shape[ndim-1] << ")\n\t\treturn;\n";
-}
-
-void generateOffsetSource(const bh_view& operand, std::ostream& source)
-{
-    bh_index ndim = operand.ndim;
-    assert(ndim > 0);
     if (ndim > 2)
     {
+        source << "\tconst size_t gidz = get_global_id(2);\n";
+#ifdef STATIC_KERNEL
+        source << "\tif (gidz >= " << shape[ndim-3] << ")\n\t\treturn;\n";
+#else
+        source << "\tif (gidz >= ds2)\n\t\treturn;\n";
+#endif
+    }
+}
+
+void generateOffsetSource(const std::vector<bh_view>& views, unsigned int id, std::ostream& source)
+{
+    const bh_view& operand = views[id];
+    const bh_index ndim = operand.ndim;
+    assert(ndim > 0);
+    for (size_t d = ndim-1; d > 2; --d)
+    {
+#ifdef STATIC_KERNEL
+        source << "ids" << d << "*" << operand.stride[ndim-(d+1)] << " + ";
+#else
+        source << "ids" << d << "*v" << id << "s" << d+1 << " + ";
+#endif
+    }
+    if (ndim > 2)
+    {
+#ifdef STATIC_KERNEL
         source << "gidz*" << operand.stride[ndim-3] << " + ";
+#else
+        source << "gidz*v" << id << "s3 + ";
+#endif
     }
     if (ndim > 1)
     {
+#ifdef STATIC_KERNEL
         source << "gidy*" << operand.stride[ndim-2] << " + ";
+#else
+        source << "gidy*v" << id << "s2 + ";
+#endif
     }
+#ifdef STATIC_KERNEL
     source << "gidx*" << operand.stride[ndim-1] << " + " << operand.start;
+#else
+    source << "gidx*v" << id << "s1 + v" << id << "s0";
+#endif
 }
 
 #define TYPE ((type[1] == OCL_COMPLEX64) ? "float" : "double")
-void generateInstructionSource(bh_opcode opcode,
-                               std::vector<OCLtype> type,
-                               std::vector<std::string>& parameters, 
+void generateInstructionSource(const bh_opcode opcode,
+                               const std::vector<OCLtype>& type,
+                               const std::vector<std::string>& parameters,
+                               const std::string& indent,
                                std::ostream& source)
 {
     assert(parameters.size() == (size_t)bh_operands(opcode));
@@ -68,70 +102,75 @@ void generateInstructionSource(bh_opcode opcode,
         switch(opcode)
         {
         case BH_ADD:
-            source << "\tCADD(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
+            source << indent << "CADD(" << parameters[0] << ", " << parameters[1] << ", " << 
+                parameters[2] << ")\n";
             break;
         case BH_SUBTRACT:
-            source << "\tCSUB(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
+            source << indent << "CSUB(" << parameters[0] << ", " << parameters[1] << ", " << 
+                parameters[2] << ")\n";
             break;
         case BH_MULTIPLY:
-            source << "\tCMUL(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
+            source << indent << "CMUL(" << parameters[0] << ", " << parameters[1] << ", " << 
+                parameters[2] << ")\n";
             break;
         case BH_DIVIDE:
-            source << "\tCDIV(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " << 
+            source << indent << "CDIV(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " << 
                 parameters[2] << ")\n";
             break;
         case BH_POWER:
-            source << "\tCPOW(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " << 
+            source << indent << "CPOW(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " << 
                 parameters[2] << ")\n";
             break;
         case BH_EQUAL:
-            source << "\tCEQ(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
+            source << indent << "CEQ(" << parameters[0] << ", " << parameters[1] << ", " << 
+                parameters[2] << ")\n";
             break;
         case BH_NOT_EQUAL:
-            source << "\tCNEQ(" << parameters[0] << ", " << parameters[1] << ", " << parameters[2] << ")\n";
+            source << indent << "CNEQ(" << parameters[0] << ", " << parameters[1] << ", " << 
+                parameters[2] << ")\n";
             break;
         case BH_COS:
-            source << "\tCCOS(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << "CCOS(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_SIN:
-            source << "\tCSIN(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << "CSIN(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_TAN:
-            source << "\tCTAN(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << "CTAN(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_COSH:
-            source << "\tCCOSH(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << "CCOSH(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_SINH:
-            source << "\tCSINH(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << "CSINH(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_TANH:
-            source << "\tCTANH(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << "CTANH(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_EXP:
-            source << "\tCEXP(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << "CEXP(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_LOG:
-            source << "\tCLOG(" << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << "CLOG(" << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_LOG10:
-            source << "\tCLOG(" << parameters[0] << ", " << parameters[1] << ")\n";
-            source << "\t" << parameters[0] << " /= log(10.0f);\n";
+            source << indent << "CLOG(" << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << parameters[0] << " /= log(10.0f);\n";
             break;
         case BH_SQRT:
-            source << "\tCSQRT(" << parameters[0] << ", " << parameters[1] << ")\n";
+            source << indent << "CSQRT(" << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_IDENTITY:
             if (isComplex(type[1]))
-                source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
+                source << indent << parameters[0] << " = " << parameters[1] << ";\n";
             else
-                source << "\t" << parameters[0] << ".s0 = " << parameters[1] << ";\n";
+                source << indent << parameters[0] << ".s0 = " << parameters[1] << ";\n";
             break;
         case BH_REAL:
-            source << "\t" << parameters[0] << " = " << parameters[1] << ".s0;\n";
+            source << indent << parameters[0] << " = " << parameters[1] << ".s0;\n";
             break;
         case BH_IMAG:
-            source << "\t" << parameters[0] << " = " << parameters[1] << ".s1;\n";
+            source << indent << parameters[0] << " = " << parameters[1] << ".s1;\n";
             break;
         default:
 #ifdef DEBUG
@@ -145,175 +184,177 @@ void generateInstructionSource(bh_opcode opcode,
         switch(opcode)
         {
         case BH_ADD:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
             break;
         case BH_SUBTRACT:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
             break;
         case BH_MULTIPLY:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " * " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " * " << parameters[2] << ";\n";
             break;
         case BH_DIVIDE:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " / " << parameters[2] << ";\n";
             break;
         case BH_POWER:
             if (isFloat(type[1]))
-                source << "\t" << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
+                source << indent << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
             else
-                source << "\t" << parameters[0] << " = pow((float)" << parameters[1] << ", (float)" << parameters[2] << ");\n";   
+                source << indent << parameters[0] << " = pow((float)" << parameters[1] << ", (float)" << 
+                    parameters[2] << ");\n";   
             break;
         case BH_MOD:
             if (isFloat(type[1]))
-                source << "\t" << parameters[0] << " = fmod(" << parameters[1] << ", " << parameters[2] << ");\n";
+                source << indent << parameters[0] << " = fmod(" << parameters[1] << ", " << 
+                    parameters[2] << ");\n";
             else
-                source << "\t" << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
+                source << indent << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
             break;
         case BH_ABSOLUTE:
             if (isFloat(type[1]))
-                source << "\t" << parameters[0] << " = fabs(" << parameters[1] << ");\n";
+                source << indent << parameters[0] << " = fabs(" << parameters[1] << ");\n";
             else
-                source << "\t" << parameters[0] << " = abs(" << parameters[1] << ");\n";
+                source << indent << parameters[0] << " = abs(" << parameters[1] << ");\n";
             break;
         case BH_RINT:
-            source << "\t" << parameters[0] << " = rint(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = rint(" << parameters[1] << ");\n";
             break;
         case BH_EXP:
-            source << "\t" << parameters[0] << " = exp(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = exp(" << parameters[1] << ");\n";
             break;
         case BH_EXP2:
-            source << "\t" << parameters[0] << " = exp2(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = exp2(" << parameters[1] << ");\n";
             break;
         case BH_LOG:
-            source << "\t" << parameters[0] << " = log(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = log(" << parameters[1] << ");\n";
             break;
         case BH_LOG10:
-            source << "\t" << parameters[0] << " = log10(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = log10(" << parameters[1] << ");\n";
             break;
         case BH_EXPM1:
-            source << "\t" << parameters[0] << " = expm1(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = expm1(" << parameters[1] << ");\n";
             break;
         case BH_LOG1P:
-            source << "\t" << parameters[0] << " = log1p(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = log1p(" << parameters[1] << ");\n";
             break;
         case BH_SQRT:
-            source << "\t" << parameters[0] << " = sqrt(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = sqrt(" << parameters[1] << ");\n";
             break;
         case BH_SIN:
-            source << "\t" << parameters[0] << " = sin(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = sin(" << parameters[1] << ");\n";
             break;
         case BH_COS:
-            source << "\t" << parameters[0] << " = cos(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = cos(" << parameters[1] << ");\n";
             break;
         case BH_TAN:
-            source << "\t" << parameters[0] << " = tan(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = tan(" << parameters[1] << ");\n";
             break;
         case BH_ARCSIN:
-            source << "\t" << parameters[0] << " = asin(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = asin(" << parameters[1] << ");\n";
             break;
         case BH_ARCCOS:
-            source << "\t" << parameters[0] << " = acos(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = acos(" << parameters[1] << ");\n";
             break;
         case BH_ARCTAN:
-            source << "\t" << parameters[0] << " = atan(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = atan(" << parameters[1] << ");\n";
             break;
         case BH_ARCTAN2:
-            source << "\t" << parameters[0] << " = atan2(" << parameters[1] << ", " << parameters[2] << ");\n";
+            source << indent << parameters[0] << " = atan2(" << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         case BH_SINH:
-            source << "\t" << parameters[0] << " = sinh(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = sinh(" << parameters[1] << ");\n";
             break;
         case BH_COSH:
-            source << "\t" << parameters[0] << " = cosh(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = cosh(" << parameters[1] << ");\n";
             break;
         case BH_TANH:
-            source << "\t" << parameters[0] << " = tanh(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = tanh(" << parameters[1] << ");\n";
             break;
         case BH_ARCSINH:
-            source << "\t" << parameters[0] << " = asinh(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = asinh(" << parameters[1] << ");\n";
             break;
         case BH_ARCCOSH:
-            source << "\t" << parameters[0] << " = acosh(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = acosh(" << parameters[1] << ");\n";
             break;
         case BH_ARCTANH:
-            source << "\t" << parameters[0] << " = atanh(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = atanh(" << parameters[1] << ");\n";
             break;
         case BH_BITWISE_AND:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
             break;
         case BH_BITWISE_OR:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
             break;
         case BH_BITWISE_XOR:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " ^ " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " ^ " << parameters[2] << ";\n";
             break;
         case BH_LOGICAL_NOT:
-            source << "\t" << parameters[0] << " = !" << parameters[1] << ";\n";
+            source << indent << parameters[0] << " = !" << parameters[1] << ";\n";
             break;
         case BH_LOGICAL_AND:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " && " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " && " << parameters[2] << ";\n";
             break;
         case BH_LOGICAL_OR:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " || " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " || " << parameters[2] << ";\n";
             break;
         case BH_LOGICAL_XOR:
-            source << "\t" << parameters[0] << " = !" << parameters[1] << " != !" << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = !" << parameters[1] << " != !" << parameters[2] << ";\n";
             break;
         case BH_INVERT:
-            source << "\t" << parameters[0] << " = ~" << parameters[1] << ";\n";
+            source << indent << parameters[0] << " = ~" << parameters[1] << ";\n";
             break;
         case BH_LEFT_SHIFT:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " << " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " << " << parameters[2] << ";\n";
             break;
         case BH_RIGHT_SHIFT:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " >> " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " >> " << parameters[2] << ";\n";
             break;
         case BH_GREATER:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " > " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " > " << parameters[2] << ";\n";
             break;
         case BH_GREATER_EQUAL:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " >= " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " >= " << parameters[2] << ";\n";
             break;
         case BH_LESS:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " < " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " < " << parameters[2] << ";\n";
             break;
         case BH_LESS_EQUAL:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " <= " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " <= " << parameters[2] << ";\n";
             break;
         case BH_NOT_EQUAL:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " != " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " != " << parameters[2] << ";\n";
             break;
         case BH_EQUAL:
-            source << "\t" << parameters[0] << " = " << parameters[1] << " == " << parameters[2] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << " == " << parameters[2] << ";\n";
             break;
         case BH_MAXIMUM:
-            source << "\t" << parameters[0] << " = max(" << parameters[1] << ", " << parameters[2] << ");\n";
+            source << indent << parameters[0] << " = max(" << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         case BH_MINIMUM:
-            source << "\t" << parameters[0] << " = min(" << parameters[1] << ", " << parameters[2] << ");\n";
+            source << indent << parameters[0] << " = min(" << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         case BH_IDENTITY:
-            source << "\t" << parameters[0] << " = " << parameters[1] << ";\n";
+            source << indent << parameters[0] << " = " << parameters[1] << ";\n";
             break;
         case BH_FLOOR:
-            source << "\t" << parameters[0] << " = floor(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = floor(" << parameters[1] << ");\n";
             break;
         case BH_CEIL:
-            source << "\t" << parameters[0] << " = ceil(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = ceil(" << parameters[1] << ");\n";
             break;
         case BH_TRUNC:
-            source << "\t" << parameters[0] << " = trunc(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = trunc(" << parameters[1] << ");\n";
             break;
         case BH_LOG2:
-            source << "\t" << parameters[0] << " = log2(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = log2(" << parameters[1] << ");\n";
             break;
         case BH_ISNAN:
-            source << "\t" << parameters[0] << " = isnan(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = isnan(" << parameters[1] << ");\n";
             break;
         case BH_ISINF:
-            source << "\t" << parameters[0] << " = isinf(" << parameters[1] << ");\n";
+            source << indent << parameters[0] << " = isinf(" << parameters[1] << ");\n";
             break;
         case BH_RANGE:
-            source << "\t" << parameters[0] << " = gidx;\n";
+            source << indent << parameters[0] << " = gidx;\n";
             break;
         default:
 #ifdef DEBUG
