@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <cassert>
 #include <stdexcept>
+#include <set>
 #include <bh.h>
 #include <bh_timing.hpp>
 #include "InstructionBatch.hpp"
@@ -283,51 +284,56 @@ void InstructionBatch::run(ResourceManager* resourceManager)
     if (output.begin() != output.end())
     {
 #ifndef STATIC_KERNEL
+        std::set<unsigned int> loaded;
         for (int i = 0; i < shape.size(); ++i)
         {
             std::stringstream ss;
             ss << "ds" << shape.size() -(i+1);
-            parameterList.insert(std::make_pair(ss.str(), new Scalar(shape[i])));
+            parameterList.push_back(std::make_pair(ss.str(), new Scalar(shape[i])));
         }
 #endif
         for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
         {
 #ifndef STATIC_KERNEL
-            {
-                std::stringstream ss;
-                ss << "v" << iit->second << "s0";
-                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[iit->second].start)));
-            }
             bh_intp vndim = views[iit->second].ndim;
             for (bh_intp d = 0; d < vndim; ++d)
             {
                 std::stringstream ss;
                 ss << "v" << iit->second << "s" << vndim-d;
-                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[iit->second].stride[d])));
+                parameterList.push_back(std::make_pair(ss.str(), new Scalar(views[iit->second].stride[d])));
             }
+            {
+                std::stringstream ss;
+                ss << "v" << iit->second << "s0";
+                parameterList.push_back(std::make_pair(ss.str(), new Scalar(views[iit->second].start)));
+            }
+            loaded.insert(iit->second);
 #endif
-            inputList.insert(std::make_pair(iit->second, iit->first));
+            inputList.push_back(std::make_pair(iit->second, iit->first));
         }
         for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
         {
 #ifndef STATIC_KERNEL
+            if (loaded.find(oit->second) == loaded.end())
             {
-                std::stringstream ss;
-                ss << "v" << oit->second << "s0";
-                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[oit->second].start)));
-            }
-            bh_intp vndim = views[oit->second].ndim;
-            for (bh_intp d = 0; d < vndim; ++d)
-            {
-                std::stringstream ss;
-                ss << "v" << oit->second << "s" << vndim-d;
-                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[oit->second].stride[d])));
+                bh_intp vndim = views[oit->second].ndim;
+                for (bh_intp d = 0; d < vndim; ++d)
+                {
+                    std::stringstream ss;
+                    ss << "v" << oit->second << "s" << vndim-d;
+                    parameterList.push_back(std::make_pair(ss.str(), new Scalar(views[oit->second].stride[d])));
+                }
+                {
+                    std::stringstream ss;
+                    ss << "v" << oit->second << "s0";
+                    parameterList.push_back(std::make_pair(ss.str(), new Scalar(views[oit->second].start)));
+                }
             }
 #endif
-            outputList.insert(std::make_pair(oit->second, oit->first));
+            outputList.push_back(std::make_pair(oit->second, oit->first));
         }
         for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
-            parameterList.insert(std::make_pair(pit->second, pit->first));
+            parameterList.push_back(std::make_pair(pit->second, pit->first));
         Kernel kernel = generateKernel(resourceManager);
         Kernel::Parameters kernelParameters;
         for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)

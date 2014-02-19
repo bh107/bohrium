@@ -33,10 +33,10 @@ If not, see <http://www.gnu.org/licenses/>.
 class InstructionBatch
 {
     typedef std::map<KernelParameter*, std::string> ParameterMap;
-    typedef std::map<std::string, KernelParameter*> ParameterList;
+    typedef std::vector<std::pair<std::string, KernelParameter*>> ParameterList;
     typedef std::map<unsigned int, std::string> VariableMap;
     typedef std::multimap<BaseArray*, unsigned int> ArrayMap;
-    typedef std::map<unsigned int, BaseArray*> ArrayList;
+    typedef std::vector<std::pair<unsigned int, BaseArray*>> ArrayList;
     typedef std::pair<ArrayMap::iterator, ArrayMap::iterator> ArrayRange;
     typedef std::map<size_t, Kernel> KernelMap;
     typedef std::list<std::pair<bh_instruction*, std::vector<int>>> InstructionList;
