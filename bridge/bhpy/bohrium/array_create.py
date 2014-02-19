@@ -16,8 +16,6 @@ def empty(shape, dtype=float):
         Shape of the empty matrix.
     dtype : data-type, optional
         Desired output data-type.
-    bohrium : boolean, optional
-        Determines whether it is a Bohrium-enabled array or a regular NumPy array
 
     See Also
     --------
@@ -57,6 +55,7 @@ class Tests(unittest.TestCase):
 
     def test_empty_dtypes(self):
         for t in _util.dtype_npy_supported:
+            print t
             a = empty((4,4), dtype=t)
 
 

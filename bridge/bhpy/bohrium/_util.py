@@ -20,9 +20,11 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
+import numpy
 import json
 from os.path import join
 import _bh
+import bhc
 
 dtype_npy2bh = {} #NumPy to Bohrium enum conversion e.g. NPY_FLOAT32 to BH_FLOAT32
 dtype_npy_supported = [] #List of support NumPy data types e.g. float32
@@ -31,7 +33,7 @@ with open(join('/home/madsbk/repos/bohrium/core/codegen','types.json'), 'r') as 
     dtypes = json.loads(f.read())
 
     for t in dtypes:
-        if t == "unknown":
+        if t['numpy'] == "unknown":
             continue
         npy = t['enum'].replace("BH", "NPY", 1);
         dtype_npy2bh[npy] = t['enum']
@@ -45,8 +47,21 @@ with open(join('/home/madsbk/repos/bohrium/core/codegen','opcodes.json'), 'r') a
     opcodes = json.loads(f.read())
     for op in opcodes:
         if op['elementwise'] and op['opcode'] != "BH_NONE":
-            o = {'opcode': op['opcode'],
-                 'doc':    op['doc'],
-                 'nop':    op['nop'],
-                 'npy':    op['opcode'].lower()[3:]}#Removing BH_
+            o = {'opcode_name': op['opcode'],
+                 'opcode_id':   int(op['id']),
+                 'doc':         op['doc'],
+                 'nop':         op['nop'],
+                 'npy':         op['opcode'].lower()[3:]}#Removing BH_
             elementwise_opcodes.append(o)
+
+#Return a new bhc array based on 'numpy_array'
+#NB: we always creates a flat array
+def create_bhc_array(numpy_array):
+    dtype = numpy_array.dtype.name
+    if dtype == "bool":
+        dtype = "bool8"
+    size = numpy_array.size
+    exec "ret = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
+    return ret
+
+

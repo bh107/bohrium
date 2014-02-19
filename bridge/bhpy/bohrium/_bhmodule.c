@@ -57,6 +57,7 @@ typedef struct
 {
     PyArrayObject base;
     bh_base *ary;
+    PyObject *bhc_ary;
 }BhArray;
 
 static PyObject *
@@ -82,7 +83,7 @@ BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    printf("BhArray_new(dtype: %s)\n", bh_type_text(t));
+//#    printf("BhArray_new(dtype: %s)\n", bh_type_text(t));
     err = bh_create_base(t, PyArray_SIZE((PyArrayObject*)self), &self->ary);
     if(err != BH_SUCCESS)
     {
@@ -92,13 +93,38 @@ BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
     }
 
+    PyObject *m = PyImport_ImportModule("_util");
+    if(m == NULL)
+        return NULL;
+
+    self->bhc_ary = PyObject_CallMethod(m, "create_bhc_array", "O", (PyObject *)self);
+    if(self->bhc_ary == NULL)
+        return NULL;
+    Py_DECREF(m);
+
     return (PyObject *)self;
 }
 
 static void
 BhArray_dealloc(BhArray* self)
 {
+    Py_XDECREF(self->bhc_ary);
 }
+
+static PyObject *
+BhArray_get_bhc_ary(BhArray *self, void *closure)
+{
+    Py_INCREF(self->bhc_ary);
+    return self->bhc_ary;
+}
+static PyGetSetDef BhArray_getseters[] = {
+    {"bhc_ary",
+     (getter)BhArray_get_bhc_ary,
+     (setter)NULL,
+     "The Bohrium C-Bridge array",
+     NULL},
+    {NULL}  /* Sentinel */
+};
 
 static PyTypeObject BhArrayType = {
     PyObject_HEAD_INIT(NULL)
@@ -132,7 +158,7 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_iternext */
     0,                       /* tp_methods */
     0,                       /* tp_members */
-    0,                       /* tp_getset */
+    BhArray_getseters,       /* tp_getset */
     0,                       /* tp_base */
     0,                       /* tp_dict */
     0,                       /* tp_descr_get */
@@ -144,23 +170,25 @@ static PyTypeObject BhArrayType = {
 };
 
 static PyObject *
-bh_exec(PyObject *self, PyObject *args)
+bh_exec_instr(PyObject *self, PyObject *args)
 {
-    const char *name;
+    PyObject *instr_dict;
     PyObject *ops;
-    Py_ssize_t i;
-//    char s[1024];
+//    Py_ssize_t i;
 
 
-    if(!PyArg_ParseTuple(args, "sO", &name, &ops))
+    if(!PyArg_ParseTuple(args, "OO", &instr_dict, &ops))
         return NULL;
 
-    if(PyString_Check(ops) || !PySequence_Check(ops))
+    if(PyDict_Check(instr_dict) || !PySequence_Check(ops))
     {
-        PyErr_Format(PyExc_TypeError, "The first argument 'name' must be a string and "
-                "the second argument 'operands' must be a list of bohrium arrays");
+        PyErr_Format(PyExc_TypeError, "The first argument 'instr_dict' must "
+                "be a dict describing the operation and the second argument "
+                "'operands' must be a list of bohrium arrays");
         return NULL;
     }
+/*
+    bh_instruction instr;
 
     for(i=0; i<PySequence_Size(ops); ++i)
     {
@@ -169,18 +197,21 @@ bh_exec(PyObject *self, PyObject *args)
             return NULL;
         if(!BhArray_CheckExact(o))
         {
-            PyErr_Format(PyExc_TypeError, "The operands must bohrium arrays");
+            PyErr_Format(PyExc_TypeError, "The operands must be bohrium arrays");
             return NULL;
         }
+        bh_ir bhir;
+        bh_error err = bh_ir_create(&bhir, 1, &instr);
     }
+*/
     Py_RETURN_NONE;
 }
 
 static PyMethodDef BohriumMethods[] = {
     {"dtype_set_map", dtype_set_map, METH_VARARGS,
      "Set the data type map (dict) from NumPy to Bohrium (e.g. NPY_FLOAT32 to BH_FLOAT32)"},
-    {"execute", bh_exec, METH_VARARGS,
-     "Execute function exec(name, args)"},
+    {"exec_instr", bh_exec_instr, METH_VARARGS,
+     "Execute a instruction(instr_dict, args)"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
