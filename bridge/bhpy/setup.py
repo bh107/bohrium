@@ -24,6 +24,13 @@ If not, see <http://www.gnu.org/licenses/>.
 from distutils.core import setup, Extension
 from os.path import join
 
+#Merge bhc.i.head with the bh_c.h to create our SWIG interface bhc.i
+with open("bhc.i", 'w') as outfile:
+    for fname in ["bhc.i.head","../c/codegen/output/bh_c.h"]:
+        with open(fname) as infile:
+            for line in infile:
+                outfile.write(line)
+
 SRC  = ['_bhmodule.c']
 DEPS = ['types.c', 'types.h']
 

@@ -105,7 +105,10 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_b
 
 // Construct a new sized array
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(uint64_t rank, const int64_t* shape) {
-    return (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(rank, shape);
+    multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
+    result->setTemp(false);
+    result->link();
+    return (bh_multi_array_${bh_ctype}_p)result;
 }
 
 %if $bh_ctype != "bool8"
@@ -235,7 +238,7 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}
 ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self) {
     ${bh_atype} t1;
     ${ctype} t0 = scalar(sum(*((multi_array<${ctype}>*)self)));
-    t1.real = t0.real();     
+    t1.real = t0.real();
     t1.imag = t0.imag();
     return t1;
 }
@@ -243,7 +246,7 @@ ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self) {
 ${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self) {
     ${bh_atype} t1;
     ${ctype} t0 = scalar(product(*((multi_array<${ctype}>*)self)));
-    t1.real = t0.real();     
+    t1.real = t0.real();
     t1.imag = t0.imag();
     return t1;
 }
