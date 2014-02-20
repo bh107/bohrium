@@ -11,6 +11,10 @@
     $1 = PyInt_AsLong($input);
 }
 
+%typemap(in) bh_float64 const {
+    $1 = PyFloat_AsDouble($input);
+}
+
 %typemap(in) int64_t const * {
     Py_ssize_t i = PySequence_Size($input);
     int64_t l[10];

@@ -21,17 +21,20 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 """
 import _util
+import _bh
 import array_create
 import bhc
 import numpy as np
+import _info
 
-def assign(a, out=None):
-    if out is None:
-        out = array_create.empty(a.shape, a.dtype)
-
+def assign(a, out):
+    dtype = _util.dtype_name(out)
     if np.isscalar(a):
-        cmd = "bhc.bh_multi_array_%s_assign_scalar(out.bhc_ary,a)"%(out.dtype.name)
-        exec cmd
+        cmd = "bhc.bh_multi_array_%s_assign_scalar(out.bhc_ary,a)"%(dtype)
+    else:
+        assert(dtype == _util.dtype_name(a))
+        cmd = "bhc.bh_multi_array_%s_assign_array(out.bhc_ary,a.bhc_ary)"%(dtype)
+    exec cmd
     return out
 
 class ufunc:
@@ -39,24 +42,51 @@ class ufunc:
         """A Bohrium Universal Function"""
         self.info = info
     def __str__(self):
-        return "<bohrium ufunc '%s'>"%self.info['npy']
+        return "<bohrium ufunc '%s'>"%self.info['bhc_name']
+    def __call__(self, *args):
 
-class ufunc_binary(ufunc):
-    """A Binary Bohrium Universal Function"""
-    def __call__(self, X, Y, out=None):
-        assert X.dtype == Y.dtype
-        print "ret = bhc.bh_multi_array_%s_%s ("%(X.dtype.name,self.info['npy']),
-        exec "ret = bhc.bh_multi_array_%s_%s(X.bhc_ary,Y.bhc_ary)"%(X.dtype.name,self.info['npy'])
+        #Check number of arguments
+        if len(args) > self.info['nop'] or len(args) < self.info['nop']-1:
+            raise ValueError("invalid number of arguments")
+
+        #Find the data type of the input array
+        dtype = None
+        for a in args:
+            if isinstance(a, _bh.ndarray):
+                dtype = a.dtype
+            else:
+                raise NotImplementedError("For now we only supports Bohrium arrays")
+
+        if dtype is None:
+            raise ValueError("at least one of inputs must be a bohrium array")
+
+        #Find the output array
+        if len(args) < self.info['nop']:#No output given
+            out = array_create.empty(dtype)
+        else:
+            out = args[-1]
+
+        #Check for not implemented errors
+        for a in args:
+            if not isinstance(a, _bh.ndarray):
+                raise NotImplementedError("All operands must be Bohrium arrays")
+            if a.base is not None:
+                raise NotImplementedError("We do not support views")
+
+        f = eval("bhc.bh_multi_array_%s_%s"%(dtype, self.info['bhc_name']))
+
+        if self.info['nop'] == 2:
+            ret = f(args[0].bhc_ary)
+        elif self.info['nop'] == 3:
+            ret = f(args[0].bhc_ary, args[1].bhc_ary)
+
+        #Copy result into the output array
+        exec "bhc.bh_multi_array_%s_assign_array(out.bhc_ary,ret)"%(dtype)
         return ret
 
 ufuncs = []
-for op in _util.elementwise_opcodes:
-    if op['nop'] == 2:
-        pass
-    elif op['nop'] == 3:
-        f = ufunc_binary(op)
-    ufuncs.append(f)
-
+for op in _info.op.itervalues():
+    ufuncs.append(ufunc(op))
 
 
 ###############################################################################
@@ -67,21 +97,23 @@ import unittest
 
 class Tests(unittest.TestCase):
 
-    def test_assign(self):
-        A = array_create.empty((4,4), dtype=np.float32)
-        assign(np.float32(42), A)
+    def tes1t_assign_copy(self):
+        A = array_create.empty((4,4), dtype=int)
+        B = array_create.empty((4,4), dtype=int)
+        assign(42, A)
+        assign(A, B)
 
-    def t1est_ufunc(self):
+    def test_ufunc(self):
         for f in ufuncs:
             print f
             A = array_create.empty((4,4))
-            B = array_create.empty((4,4))
-            print A.bhc_ary
-            C = f(A,B)
-            return
-
-
-
+            assign(2, A)
+            if f.info['nop'] == 2:
+                res = f(A)
+            elif f.info['nop'] == 3:
+                B = array_create.empty((4,4))
+                assign(3, B)
+                res = f(A,B)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Tests)

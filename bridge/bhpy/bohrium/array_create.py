@@ -4,7 +4,7 @@ Array Create Routines
 
 """
 import _bh
-import _util
+import _info
 
 def empty(shape, dtype=float):
     """
@@ -41,7 +41,6 @@ def empty(shape, dtype=float):
             [ 6586976, 22740995]])                          #random
 
     """
-
     return _bh.ndarray(shape, dtype=dtype)
 
 
@@ -54,8 +53,7 @@ import unittest
 class Tests(unittest.TestCase):
 
     def test_empty_dtypes(self):
-        for t in _util.dtype_npy_supported:
-            print t
+        for t in _info.numpy_types:
             a = empty((4,4), dtype=t)
 
 

@@ -23,45 +23,32 @@ If not, see <http://www.gnu.org/licenses/>.
 import atexit
 import numpy
 import json
+import os
 from os.path import join
 import _bh
 import bhc
 
-dtype_npy2bh = {} #NumPy to Bohrium enum conversion e.g. NPY_FLOAT32 to BH_FLOAT32
-dtype_npy_supported = [] #List of support NumPy data types e.g. float32
+#Returns the Bohrium name of the data type of the Bohrium-C array
+def dtype_from_bhc(bhc_ary):
+    return  bhc_ary.__str__().rsplit("_",1)[-1]
 
-with open(join('/home/madsbk/repos/bohrium/core/codegen','types.json'), 'r') as f:
-    dtypes = json.loads(f.read())
-
-    for t in dtypes:
-        if t['numpy'] == "unknown":
-            continue
-        npy = t['enum'].replace("BH", "NPY", 1);
-        dtype_npy2bh[npy] = t['enum']
-        dtype_npy_supported.append(t['numpy'])
-
-    _bh.dtype_set_map(dtype_npy2bh)
-
-elementwise_opcodes = []; #NumPy/Bohrium ufunc e.g. multiply/BH_MULTIPLY (list of dicts)
-
-with open(join('/home/madsbk/repos/bohrium/core/codegen','opcodes.json'), 'r') as f:
-    opcodes = json.loads(f.read())
-    for op in opcodes:
-        if op['elementwise'] and op['opcode'] != "BH_NONE":
-            o = {'opcode_name': op['opcode'],
-                 'opcode_id':   int(op['id']),
-                 'doc':         op['doc'],
-                 'nop':         op['nop'],
-                 'npy':         op['opcode'].lower()[3:]}#Removing BH_
-            elementwise_opcodes.append(o)
+#Returns the Bohrium name of the data type of the object 'obj'
+#NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array
+def dtype_name(obj):
+    if isinstance(obj, numpy.ndarray):
+        t = obj.dtype
+    else:
+        t = numpy.dtype(type(obj))
+    if t == 'bool':
+        t = 'bool8'
+    return t
 
 #Return a new bhc array based on 'numpy_array'
 #NB: we always creates a flat array
 def create_bhc_array(numpy_array):
-    dtype = numpy_array.dtype.name
-    if dtype == "bool":
-        dtype = "bool8"
+    dtype = dtype_name(numpy_array)
     size = numpy_array.size
+    print "ret = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
     exec "ret = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
     return ret
 
@@ -69,6 +56,5 @@ bhc_arys_to_destroy = []
 @atexit.register
 def goodbye():
     for a in bhc_arys_to_destroy:
-        dtype = a.__str__().rsplit("_",1)[-1]
-        exec "bhc.bh_multi_array_%s_destroy(a)"%dtype
-
+        print "bhc.bh_multi_array_%s_destroy(a)"%dtype_from_bhc(a)
+        exec "bhc.bh_multi_array_%s_destroy(a)"%dtype_from_bhc(a)
