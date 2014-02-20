@@ -108,7 +108,24 @@ BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static void
 BhArray_dealloc(BhArray* self)
 {
-    Py_XDECREF(self->bhc_ary);
+    PyObject *m = PyImport_ImportModule("_util");
+    if(m == NULL)
+    {
+        PyErr_Print();
+        return;
+    }
+    PyObject *arys_to_destory = PyObject_GetAttrString(m,"bhc_arys_to_destroy");
+    if(arys_to_destory == NULL)
+    {
+        PyErr_Print();
+        return;
+    }
+    if(PyList_Append(arys_to_destory, self->bhc_ary) != 0)
+    {
+        PyErr_Print();
+        return;
+    }
+    Py_DECREF(m);
 }
 
 static PyObject *
