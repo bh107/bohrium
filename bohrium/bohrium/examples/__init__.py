@@ -11,3 +11,4 @@ import k_nearest_neighbor
 import shallow_water
 import sor
 import black_scholes
+import ndstencil
