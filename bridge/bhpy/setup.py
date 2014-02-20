@@ -23,13 +23,30 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from distutils.core import setup, Extension
 from os.path import join
+import os
+import stat
+
+def get_timestamp(f):
+    st = os.stat(f)
+    atime = st[stat.ST_ATIME] #access time
+    mtime = st[stat.ST_MTIME] #modification time
+    return (atime,mtime)
+
+def set_timestamp(f,timestamp):
+    os.utime(f,timestamp)
+
 
 #Merge bhc.i.head with the bh_c.h to create our SWIG interface bhc.i
+time = 0
 with open("bhc.i", 'w') as outfile:
     for fname in ["bhc.i.head","../c/codegen/output/bh_c.h"]:
+        t = get_timestamp(fname)
+        if t[1] > time:
+            time = t[1]
         with open(fname) as infile:
             for line in infile:
                 outfile.write(line)
+set_timestamp("bhc.i",(time,time))
 
 SRC  = ['_bhmodule.c']
 DEPS = ['types.c', 'types.h']
