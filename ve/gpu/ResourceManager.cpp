@@ -113,7 +113,11 @@ OCLtype ResourceManager::intpType()
 #ifdef BH_TIMING
 ResourceManager::~ResourceManager()
 {
-    std::cout << "------------------ STATS ------------------------" << std::endl;
+#ifdef STATIC_KERNEL
+    std::cout << "---------------- STATS: STATIC_KERNEL -------------------" << std::endl;
+#else
+    std::cout << "---------------- STATS: DYNAMIC_KERNEL ------------------" << std::endl;
+#endif
     delete batchBuild;
     delete codeGen;
     delete kernelGen;
@@ -265,13 +269,13 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     try {
         program.build(devices,getIncludeStr().c_str());
     } catch (cl::Error) {
-#ifdef DEBUG
+//#ifdef DEBUG
         std::cerr << "Program build error:\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
         std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
-#endif
+//#endif
         throw std::runtime_error("Could not build Kernel.");
     }
     
