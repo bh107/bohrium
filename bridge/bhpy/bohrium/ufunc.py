@@ -49,22 +49,27 @@ class ufunc:
         if len(args) > self.info['nop'] or len(args) < self.info['nop']-1:
             raise ValueError("invalid number of arguments")
 
-        #Find the data type of the input array
-        dtype = None
-        for a in args:
-            if isinstance(a, _bh.ndarray):
-                dtype = a.dtype
-            else:
-                raise NotImplementedError("For now we only supports Bohrium arrays")
-
-        if dtype is None:
-            raise ValueError("at least one of inputs must be a bohrium array")
+        #Find the target data type
+        dtype = np.result_type(args)
 
         #Find the output array
-        if len(args) < self.info['nop']:#No output given
-            out = array_create.empty(dtype)
-        else:
-            out = args[-1]
+        out = None
+        out_final = None #If not None the output needs type conversion
+        if len(args) == self.info['nop']:#output given
+            out = args.pop()
+            if out.dtype != dtype:
+                out_final = out
+                out = None
+
+        #Broadcast the inputs
+        args = np.broadcast_arrays(args)
+
+        #Create output array
+        if out is None:
+            out = array_create.empty(args[0].shape, dtype)
+
+        if not np.array_equal(out.shape, args[0].shape):
+            raise ValueError("the output and input shape doesn't match")
 
         #Check for not implemented errors
         for a in args:

@@ -25,10 +25,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+#define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
+static PyTypeObject BhArrayType;
+
 typedef struct
 {
-    PyArrayObject base;
-    bh_base *ary;
+    PyArrayObject_fields base;
     PyObject *bhc_ary;
 }BhArray;
 
@@ -64,12 +66,14 @@ BhArray_dealloc(BhArray* self)
         PyErr_Print();
         return;
     }
+    assert(self->bhc_ary != NULL);
     if(PyList_Append(arys_to_destory, self->bhc_ary) != 0)
     {
         PyErr_Print();
         return;
     }
     Py_DECREF(m);
+    PyObject_Del(self);
 }
 
 static PyObject *
