@@ -1,6 +1,6 @@
 import bohrium as np
 from numpytest import numpytest
-from bohrium import examples as exp
+import bohrium.examples.ndstencil as nds
 
 class test_ndstencil(numpytest):
     def __init__(self):
@@ -10,11 +10,11 @@ class test_ndstencil(numpytest):
         for dim in xrange (1,5):
             a = {}
             self.size = (dim,10,100)
-            cmd = "a[0] = exp.ndstencil.worldND({0},{1},dtype=np.float32,bohrium=False);".format(*self.size)
+            cmd = "a[0] = np.random.random(nds.shape({0},{1}),bohrium=False);".format(*self.size)
             exec cmd
             yield (a,cmd)
 
     def test_ndstencil(self,a):
-        cmd = "res = exp.ndstencil.solveND(a[0],{2});".format(*self.size)
+        cmd = "res = nds.solve(a[0],{2});".format(*self.size)
         exec cmd
         return (res,cmd)
