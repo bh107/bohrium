@@ -99,10 +99,6 @@ typedef enum LAYOUT {
     SPARSE      = 8
 } LAYOUT;   // Uses a single byte
 
-//
-// NOTE: Changes to bk_kernel_args_t must be 
-//       replicated to "templates/kernel.tpl".
-//
 typedef struct block_arg {
     LAYOUT  layout;     // The layout of the data
     void*   data;       // Pointer to memory allocated for the array

@@ -55,7 +55,7 @@ static char* object_path;
 static char* template_path;
 
 typedef struct block {
-    bh_instruction* instr[10];  // Pointers to instructions
+    bh_instruction** instr;     // Pointers to instructions
     tac_t* program;             // Ordered list of TACs
     block_arg_t* scope;         // Array of block arguments
 
@@ -209,7 +209,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
         cout << block_text(&block) << endl;
 
-        /* TODO: fix this
+        /*
         // Lets check if it is a known extension method
         {
             map<bh_opcode,bh_extmethod_impl>::iterator ext;
@@ -218,8 +218,8 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                 bh_extmethod_impl extmethod = ext->second;
                 return extmethod(instr, NULL);
             }
-        }
-        */
+        }*/
+
         //
         // JIT-compile the block if enabled
         //
