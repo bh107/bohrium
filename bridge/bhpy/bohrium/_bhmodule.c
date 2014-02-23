@@ -34,26 +34,15 @@ typedef struct
     PyObject *bhc_ary;
 }BhArray;
 
-static PyObject *
-BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-    BhArray *self = (BhArray*) PyArray_Type.tp_new(type, args, kwds);
-
-    PyObject *m = PyImport_ImportModule("_util");
-    if(m == NULL)
-        return NULL;
-
-    self->bhc_ary = PyObject_CallMethod(m, "create_bhc_array", "O", (PyObject *)self);
-    if(self->bhc_ary == NULL)
-        return NULL;
-    Py_DECREF(m);
-
-    return (PyObject *)self;
-}
-
 static void
 BhArray_dealloc(BhArray* self)
 {
+    assert(BhArray_CheckExact(self));
+
+    printf("BhArray_dealloc %p\n", self);
+    if(self->bhc_ary == NULL)
+        return;
+
     PyObject *m = PyImport_ImportModule("_util");
     if(m == NULL)
     {
@@ -66,7 +55,6 @@ BhArray_dealloc(BhArray* self)
         PyErr_Print();
         return;
     }
-    assert(self->bhc_ary != NULL);
     if(PyList_Append(arys_to_destory, self->bhc_ary) != 0)
     {
         PyErr_Print();
@@ -77,15 +65,69 @@ BhArray_dealloc(BhArray* self)
 }
 
 static PyObject *
+BhArray_finalize(PyObject *self, PyObject *args)
+{
+    printf("BhArray_finalize %p \n",self);
+    int e = PyObject_IsInstance(self, (PyObject*) &BhArrayType);
+    if(e == -1)
+    {
+        return NULL;
+    }
+    else if (e == 0)
+    {
+        Py_RETURN_NONE;
+    }
+    ((BhArray*)self)->bhc_ary = NULL;
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef BhArrayMethods[] = {
+    {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
+    {NULL, NULL, 0, NULL} /* Sentinel */
+};
+
+static PyObject *
 BhArray_get_bhc_ary(BhArray *self, void *closure)
 {
-    Py_INCREF(self->bhc_ary);
-    return self->bhc_ary;
+    if(self->bhc_ary == NULL)
+    {
+        Py_RETURN_NONE;
+    }
+    else
+    {
+        Py_INCREF(self->bhc_ary);
+        return self->bhc_ary;
+    }
+}
+static int
+BhArray_setfirst(BhArray *self, PyObject *value, void *closure)
+{
+    if(self->bhc_ary != NULL)
+    {
+        PyErr_SetString(PyExc_TypeError, "Cannot delete or overwrite the 'bhc_ary' attribute");
+        return -1;
+    }
+    /*
+    int e = PyObject_IsInstance(value, (PyObject*) &BhArrayType);
+    if(e == -1)
+    {
+        return -1;
+    }
+    else if (e == 0)
+    {
+        PyErr_SetString(PyExc_TypeError, "'bhc_ary' must be of type bohrium.ndarray");
+        return -1;
+    }
+    */
+    Py_INCREF(value);
+    self->bhc_ary = value;
+    return 0;
+
 }
 static PyGetSetDef BhArray_getseters[] = {
     {"bhc_ary",
      (getter)BhArray_get_bhc_ary,
-     (setter)NULL,
+     (setter)BhArray_setfirst,
      "The Bohrium C-Bridge array",
      NULL},
     {NULL}  /* Sentinel */
@@ -121,7 +163,7 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_weaklistoffset */
     0,                       /* tp_iter */
     0,                       /* tp_iternext */
-    0,                       /* tp_methods */
+    BhArrayMethods,          /* tp_methods */
     0,                       /* tp_members */
     BhArray_getseters,       /* tp_getset */
     0,                       /* tp_base */
@@ -131,11 +173,7 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_dictoffset */
     0,                       /* tp_init */
     0,                       /* tp_alloc */
-    (newfunc)BhArray_new,    /* tp_new */
-};
-
-static PyMethodDef BohriumMethods[] = {
-    {NULL, NULL, 0, NULL} /* Sentinel */
+    0,                       /* tp_new */
 };
 
 PyMODINIT_FUNC
@@ -143,7 +181,7 @@ init_bh(void)
 {
     PyObject *m;
 
-    m = Py_InitModule("_bh", BohriumMethods);
+    m = Py_InitModule("_bh", NULL);
     if (m == NULL)
         return;
 

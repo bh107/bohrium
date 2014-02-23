@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 """
 import atexit
-import numpy
+import numpy as np
 import json
 import os
 from os.path import join
@@ -35,22 +35,42 @@ def dtype_from_bhc(bhc_ary):
 #Returns the Bohrium name of the data type of the object 'obj'
 #NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array
 def dtype_name(obj):
-    if isinstance(obj, numpy.ndarray):
+    if isinstance(obj, np.ndarray):
         t = obj.dtype
     else:
-        t = numpy.dtype(type(obj))
+        t = np.dtype(type(obj))
     if t == 'bool':
         t = 'bool8'
     return t
 
-#Return a new bhc array based on 'numpy_array'
-#NB: we always creates a flat array
-def create_bhc_array(numpy_array):
-    dtype = dtype_name(numpy_array)
-    size = numpy_array.size
-    print "ret = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
-    exec "ret = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
-    return ret
+#Returns the Bohrium-C array
+def get_bhc(ary):
+    #Find the base array
+    if ary.base is None:
+        base = ary
+    else:
+        base = ary.base
+        while base.base is not None:
+            base = base.base
+
+    #Create the base array in Bohrium
+    if base.bhc_ary is None:
+        if not ary.flags['BEHAVED']:
+            raise ValueError("Bohrium arrays must be aligned, writeable, and in machine byte-order")
+        if not ary.flags['OWNDATA']:
+            raise ValueError("Bohrium base arrays must own its data")
+        if not ary.flags['C_CONTIGUOUS']:
+            raise ValueError("For now Bohrium only supports C-style arrays")
+
+        #Lets create the new base array
+        dtype = dtype_name(ary)
+        size = ary.size
+        print "ret = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
+        exec "ret = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
+        base.bhc_ary = ret
+
+    if ary is base:#We a returning a base array
+        return base.bhc_ary
 
 bhc_arys_to_destroy = []
 @atexit.register

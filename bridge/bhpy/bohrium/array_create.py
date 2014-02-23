@@ -5,6 +5,8 @@ Array Create Routines
 """
 import _bh
 import _info
+import _util
+
 
 def empty(shape, dtype=float):
     """
@@ -41,7 +43,9 @@ def empty(shape, dtype=float):
             [ 6586976, 22740995]])                          #random
 
     """
-    return _bh.ndarray(shape, dtype=dtype)
+    ret = _bh.ndarray(shape, dtype=dtype)
+    _util.get_bhc(ret)#Trigger Bohrium creations
+    return ret
 
 
 ###############################################################################
