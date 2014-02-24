@@ -6,15 +6,47 @@
 %typemap(in) uint64_t {
     $1 = PyInt_AsUnsignedLongMask($input);
 }
-
+%typemap(in) bh_bool const {
+    $1 = PyBool_Check($input);
+}
+%typemap(in) bh_int8 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int16 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int32 const {
+    $1 = PyInt_AsLong($input);
+}
 %typemap(in) bh_int64 const {
     $1 = PyInt_AsLong($input);
 }
-
+%typemap(in) bh_uint8 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint16 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint32 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint64 const {
+    $1 = PyInt_AsLong($input);
+}
 %typemap(in) bh_float64 const {
     $1 = PyFloat_AsDouble($input);
 }
-
+%typemap(in) bh_float32 const {
+    $1 = PyFloat_AsDouble($input);
+}
+%typemap(in) bh_complex64 const {
+    $1.real = PyComplex_RealAsDouble($input);
+    $1.imag = PyComplex_ImagAsDouble($input);
+}
+%typemap(in) bh_complex128 const {
+    $1.real = PyComplex_RealAsDouble($input);
+    $1.imag = PyComplex_ImagAsDouble($input);
+}
 %typemap(in) int64_t const * {
     Py_ssize_t i = PySequence_Size($input);
     int64_t l[10];
@@ -24,7 +56,6 @@
     }
     $1 = l;
 }
-
 %typemap(out) bh_float32 {
     $result = PyFloat_FromDouble($1);
 }

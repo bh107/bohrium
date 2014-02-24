@@ -38,8 +38,6 @@ static void
 BhArray_dealloc(BhArray* self)
 {
     assert(BhArray_CheckExact(self));
-
-    printf("BhArray_dealloc %p\n", self);
     if(self->bhc_ary == NULL)
         return;
 
@@ -67,7 +65,6 @@ BhArray_dealloc(BhArray* self)
 static PyObject *
 BhArray_finalize(PyObject *self, PyObject *args)
 {
-    printf("BhArray_finalize %p \n",self);
     int e = PyObject_IsInstance(self, (PyObject*) &BhArrayType);
     if(e == -1)
     {

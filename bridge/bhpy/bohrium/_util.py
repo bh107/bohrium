@@ -26,6 +26,7 @@ import json
 import os
 from os.path import join
 import _bh
+import _info
 import bhc
 
 #Returns the Bohrium name of the data type of the Bohrium-C array
@@ -35,13 +36,28 @@ def dtype_from_bhc(bhc_ary):
 #Returns the Bohrium name of the data type of the object 'obj'
 #NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array
 def dtype_name(obj):
-    if isinstance(obj, np.ndarray):
+    if hasattr(obj, "dtype"):
         t = obj.dtype
+    elif isinstance(obj, np.dtype):
+        t = obj
+    elif isinstance(obj, basestring):
+        t = np.dtype(obj)
     else:
         t = np.dtype(type(obj))
-    if t == 'bool':
-        t = 'bool8'
-    return t
+    if t == np.bool_:
+        return 'bool8'
+    else:
+        return t.name
+
+#Returns the type signature (output, input) to use with the given operation.
+#NB: we only returns the type of the first input thus all input types must be identical
+def type_sig(op_name, inputs):
+    f = _info.op[op_name]
+    dtype = np.result_type(*inputs).name
+    for sig in f['type_sig']:
+        if dtype == sig[1]:
+            return (np.dtype(sig[0]),np.dtype(sig[1]))
+    raise TypeError("Cannot detement the correct signature (%s:%s)"%(op_name,dtype))
 
 #Returns the Bohrium-C array
 def get_bhc(ary):

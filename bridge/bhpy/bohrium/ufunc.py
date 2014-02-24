@@ -26,14 +26,21 @@ import array_create
 import bhc
 import numpy as np
 import _info
+from _util import get_bhc, dtype_name
 
 def assign(a, out):
-    dtype = _util.dtype_name(out)
+    out_dtype = dtype_name(out)
+    out_bhc = _util.get_bhc(out)
     if np.isscalar(a):
-        cmd = "bhc.bh_multi_array_%s_assign_scalar(out.bhc_ary,a)"%(dtype)
+        cmd = "bhc.bh_multi_array_%s_assign_scalar(out_bhc,a)"%(out_dtype)
     else:
-        assert(dtype == _util.dtype_name(a))
-        cmd = "bhc.bh_multi_array_%s_assign_array(out.bhc_ary,a.bhc_ary)"%(dtype)
+        a_bhc = get_bhc(a)
+        a_dtype = dtype_name(a)
+        if out_dtype != a_dtype:
+            print "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
+            exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
+        cmd = "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(dtype)
+    print cmd
     exec cmd
     return out
 
@@ -49,27 +56,30 @@ class ufunc:
         if len(args) > self.info['nop'] or len(args) < self.info['nop']-1:
             raise ValueError("invalid number of arguments")
 
-        #Find the target data type
-        dtype = np.result_type(args)
-
-        #Find the output array
+        #Pop the ouput from the 'args' list
         out = None
-        out_final = None #If not None the output needs type conversion
         if len(args) == self.info['nop']:#output given
             out = args.pop()
-            if out.dtype != dtype:
-                out_final = out
-                out = None
 
-        #Broadcast the inputs
-        args = np.broadcast_arrays(args)
+        #Broadcast the inputs. In order to avoid hanging views we do
+        #the broadcast before any array creation
+        bviews = np.broadcast_arrays(*args)
+        if out is not None:
+            if not np.array_equal(out.shape, bviews[0].shape):
+                raise ValueError("the output and input shape doesn't match")
+
+        #Find the type signature
+        (out_dtype,in_dtype) = _util.type_sig(self.info['np_name'], args)
+
+        #If 'out_final' is not None the output needs type conversion at the end
+        out_final = None
+        if out is not None and out.dtype != out_dtype:
+            out_final = out
+            out = None
 
         #Create output array
         if out is None:
-            out = array_create.empty(args[0].shape, dtype)
-
-        if not np.array_equal(out.shape, args[0].shape):
-            raise ValueError("the output and input shape doesn't match")
+            out = array_create.empty(args[0].shape, out_dtype)
 
         #Check for not implemented errors
         for a in args:
@@ -78,15 +88,15 @@ class ufunc:
             if a.base is not None:
                 raise NotImplementedError("We do not support views")
 
-        f = eval("bhc.bh_multi_array_%s_%s"%(dtype, self.info['bhc_name']))
+        f = eval("bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), self.info['bhc_name']))
 
         if self.info['nop'] == 2:
-            ret = f(args[0].bhc_ary)
+            ret = f(get_bhc(args[0]))
         elif self.info['nop'] == 3:
-            ret = f(args[0].bhc_ary, args[1].bhc_ary)
+            ret = f(get_bhc(args[0]), get_bhc(args[1]))
 
         #Copy result into the output array
-        exec "bhc.bh_multi_array_%s_assign_array(out.bhc_ary,ret)"%(dtype)
+        exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),ret)"%(dtype_name(out_dtype))
         return ret
 
 ufuncs = []
@@ -110,15 +120,18 @@ class Tests(unittest.TestCase):
 
     def test_ufunc(self):
         for f in ufuncs:
-            print f
-            A = array_create.empty((4,4))
-            assign(2, A)
-            if f.info['nop'] == 2:
-                res = f(A)
-            elif f.info['nop'] == 3:
-                B = array_create.empty((4,4))
-                assign(3, B)
-                res = f(A,B)
+            for type_sig in f.info['type_sig']:
+                if f.info['bhc_name'] == "assign":
+                    continue
+                print f, type_sig
+                A = array_create.empty((4,4), dtype=type_sig[1])
+                assign(2, A)
+                if f.info['nop'] == 2:
+                    res = f(A)
+                elif f.info['nop'] == 3:
+                    B = array_create.empty((4,4), dtype=type_sig[2])
+                    assign(3, B)
+                    res = f(A,B)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Tests)
