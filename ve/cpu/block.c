@@ -40,6 +40,7 @@ static bh_error compose(block_t* block, bh_ir* ir, bh_dag* dag)
     block->omask    = 0;
     block->scope    = (block_arg_t*)malloc(1+3*dag->nnode*sizeof(block_arg_t));
     block->program  = (tac_t*)malloc(dag->nnode*sizeof(tac_t));
+    block->instr    = (bh_instruction**)malloc(dag->nnode*sizeof(bh_instruction*));
     block->length   = dag->nnode;
 
     for (int i=0; i<dag->nnode; ++i) {
