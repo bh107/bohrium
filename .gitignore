@@ -66,3 +66,4 @@ benchmark/CIL/Csharp/blackscholes/obj
 benchmark/CIL/Csharp/jacobi/bin
 benchmark/CIL/Csharp/jacobi/obj
 bridge/c/codegen/output/
+vem/proxy/bh_proxy_client
