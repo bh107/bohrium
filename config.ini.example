@@ -5,6 +5,12 @@ children = node
 #
 # Managers
 #
+[proxy]
+type = vem
+#port = 3490
+impl = /opt/bohrium/libbh_proxy_server.so
+children = node
+
 [cluster]
 type = vem
 children = node
