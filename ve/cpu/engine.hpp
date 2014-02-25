@@ -35,7 +35,7 @@ public:
 
     std::string text();
 
-    bh_error execute(bh_ir* ir);
+    bh_error execute(bh_ir& ir);
 
 private:
 

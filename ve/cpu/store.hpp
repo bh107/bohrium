@@ -49,11 +49,12 @@ public:
     bool load(std::string symbol, std::string library);
     size_t preload();
 
+    func_storage funcs;
+
 private:
     handle_storage handles;
     symbol_library_map libraries;
     std::string object_dir;
-    func_storage funcs;
     char uid[7];
 };
 

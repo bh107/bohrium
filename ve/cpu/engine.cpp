@@ -73,16 +73,15 @@ string Engine::text()
     return ss.str();    
 }
 
-bh_error Engine::execute(bh_ir* ir)
+bh_error Engine::execute(bh_ir& bhir)
 {
     cout << ">> Engine::execute(...)" << endl;
     bh_error res = BH_SUCCESS;
-    /*
     
-    bh_dag* root = &bhir->dag_list[0];  // Start at the root DAG
+    bh_dag& root = bhir.dag_list[0];  // Start at the root DAG
 
-    for(bh_intp i=0; i<root->nnode; ++i) {
-        bh_intp node = root->node_map[i];
+    for(bh_intp i=0; i<root.nnode; ++i) {
+        bh_intp node = root.node_map[i];
         if (node>0) {
             cout << "Encountered an instruction in the root-dag." << endl;
             return BH_ERROR;
@@ -92,18 +91,16 @@ bh_error Engine::execute(bh_ir* ir)
         //
         // We are now looking at a graph in which we hope that all nodes are instructions
         // we map this to a block in a slightly different format than a list of instructions
-        block_t block;
-        compose(&block, bhir, &bhir->dag_list[node]);
+        Block block(bhir, bhir.dag_list[node]);
 
         //
         // We start by creating a symbol
-        if (!symbolize(block, jit_optimize)) {
+        if (!block.symbolize(jit_optimize)) {
             cout << "FAILED CREATING SYMBOL" << endl;
             return BH_ERROR;
         }
 
-        cout << block_text(&block) << endl;
-
+        cout << block.text() << endl;
         
         //    // Lets check if it is a known extension method
         //    {
@@ -120,31 +117,32 @@ bh_error Engine::execute(bh_ir* ir)
         //
         if (jit_enabled && \
             (block.symbol!="") && \
-            (!target->symbol_ready(block.symbol))) {   
+            (!storage.symbol_ready(block.symbol))) {   
                                                         // Specialize sourcecode
-            string sourcecode = specialize(block, jit_optimize);   
+            string sourcecode = specializer.specialize(block, jit_optimize);   
             if (jit_dumpsrc==1) {                       // Dump sourcecode to file
+                /*
                 target->src_to_file(
                     block.symbol,
                     sourcecode.c_str(),
                     sourcecode.size()
-                );
+                );*/
             }                                           // Send to compiler
-            target->compile(block.symbol, sourcecode.c_str(), sourcecode.size());
+            compiler.compile(block.symbol, "bahh", sourcecode.c_str(), sourcecode.size());
         }
 
         //
         // Load the compiled code
         //
         if ((block.symbol!="") && \
-            (!target->symbol_ready(block.symbol)) && \
-            (!target->load(block.symbol))) {// Need but cannot load
+            (!storage.symbol_ready(block.symbol)) && \
+            (!storage.load(block.symbol))) {// Need but cannot load
 
             if (jit_optimize) {                             // Unoptimized fallback
-                symbolize(block, false);
+                block.symbolize(false);
                 if ((block.symbol!="") && \
-                    (!target->symbol_ready(block.symbol)) && \
-                    (!target->load(block.symbol))) {        // Fail
+                    (!storage.symbol_ready(block.symbol)) && \
+                    (!storage.load(block.symbol))) {        // Fail
                     return BH_ERROR;
                 }
             } else {
@@ -173,7 +171,7 @@ bh_error Engine::execute(bh_ir* ir)
                                 "called from bh_ve_cpu_execute(...)\n");
                 return res;
             }
-            target->funcs[block.symbol](block.scope);
+            storage.funcs[block.symbol](block.scope);
         }
 
         //
@@ -190,9 +188,9 @@ bh_error Engine::execute(bh_ir* ir)
         }
 
     }
-    */
-    return res;
+    
     cout << "<< Engine::execute(...)" << endl;
+    return res;
 }
 
 }}}

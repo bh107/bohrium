@@ -193,7 +193,7 @@ bh_error bh_ve_cpu_init(const char *name)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    return engine->execute(bhir);
+    return engine->execute(*bhir);
 }
 
 /* Component interface: shutdown (see bh_component.h) */
