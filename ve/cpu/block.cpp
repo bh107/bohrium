@@ -5,7 +5,7 @@ namespace bohrium{
 namespace engine{
 namespace cpu{
 
-Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0)
+Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
 {
     scope    = (operand_t*)malloc(1+3*dag.nnode*sizeof(operand_t));
     program  = (tac_t*)malloc(dag.nnode*sizeof(tac_t));

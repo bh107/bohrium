@@ -17,6 +17,7 @@ public:
 
     std::string text();
 
+    bool compose();
     bool symbolize(int64_t const optimized);    
 
     bh_instruction** instr;     // Pointers to instructions
@@ -31,6 +32,8 @@ public:
 
 private:
     uint32_t add_operand(bh_instruction& instr, int operand_idx);
+    bh_ir& ir;
+    bh_dag& dag;
 };
 
 }}}

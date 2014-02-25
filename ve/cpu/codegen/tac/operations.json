@@ -5,7 +5,7 @@
     ],
     "operators": [
         "IDENTITY", "ABSOLUTE", "INVERT", "LOGICAL_NOT", "SQRT", 
-        "REAL", "IMAG", "RINT", "ISINF", "ISNAN"
+        "REAL", "IMAG", "RINT", "ISINF", "ISNAN",
         "CEIL", "FLOOR", "TRUNC",                
         "COS", "COSH", "SIN", "SINH", "TAN", "TANH",
         "ARCCOS", "ARCCOSH", "ARCSIN", "ARCSINH", "ARCTAN", "ARCTANH",         
@@ -29,7 +29,7 @@
         "RIGHT_SHIFT", "LEFT_SHIFT",
         "MAXIMUM", "MINIMUM",
         "ARCTAN2"
-    ]    
+    ]
 },
 
 {
@@ -41,7 +41,7 @@
     "operators": [
         "ADD", "MULTIPLY",
         "MINIMUM", "MAXIMUM", 
-        "LOGICAL_AND", "LOGICAL_OR", "LOGICAL_XOR"
+        "LOGICAL_AND", "LOGICAL_OR", "LOGICAL_XOR",
         "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR"
     ]
 },
