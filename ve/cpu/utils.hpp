@@ -1,5 +1,5 @@
-#ifndef __BH_VE_CPU_STORE
-#define __BH_VE_CPU_STORE
+#ifndef __BH_VE_CPU_UTILS
+#define __BH_VE_CPU_UTILS
 #include <fstream>
 #include <cstdlib>
 #include <cstring>

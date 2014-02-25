@@ -1,7 +1,7 @@
 using namespace std;
 #include "utils.hpp"
 
-std::string bh_type_text_short(bh_type type)
+std::string bh_type_text_shand(bh_type type)
 {
     switch(type) {
         case BH_BOOL: return "z";
@@ -46,6 +46,22 @@ std::string operation_text(OPERATION op)
     }
 }
 
+// TODO: implement
+std::string operator_text(OPERATOR op)
+{
+    return "IMPLEMENT_ME";
+}
+
+std::string etype_text(ETYPE type)
+{
+    return "IMPLEMENT_ME";
+}
+
+std::string etype_text_shand(ETYPE type)
+{
+    return "IMPLEMENT_ME";
+}
+
 /**
  *  Determine whether an operand has a contiguous layout.
  */
@@ -68,6 +84,11 @@ bool is_contiguous(operand_t& arg)
     return false;
 }
 
+std::string tac_text_cexpr(tac& tac)
+{
+    return "IMPLEMENT_ME";
+}
+
 std::string tac_text(tac_t& tac)
 {
     std::stringstream ss;
@@ -80,7 +101,7 @@ std::string tac_text(tac_t& tac)
     return ss.str();
 }
 
-std::string layout_text_short(LAYOUT layout)
+std::string layout_text_shand(LAYOUT layout)
 {
     switch(layout) {
         case CONSTANT:
@@ -141,14 +162,14 @@ std::string tac_typesig_text(tac_t& tac, operand_t* scope)
 {
     switch(tac_noperands(tac)) {
         case 3:
-            return  bh_type_text_short(scope[tac.out].type)+\
-                    bh_type_text_short(scope[tac.in1].type)+\
-                    bh_type_text_short(scope[tac.in2].type);
+            return  bh_type_text_shand(scope[tac.out].type)+\
+                    bh_type_text_shand(scope[tac.in1].type)+\
+                    bh_type_text_shand(scope[tac.in2].type);
         case 2:
-            return  bh_type_text_short(scope[tac.out].type)+\
-                    bh_type_text_short(scope[tac.in1].type);
+            return  bh_type_text_shand(scope[tac.out].type)+\
+                    bh_type_text_shand(scope[tac.in1].type);
         case 1:
-            return  bh_type_text_short(scope[tac.out].type);
+            return  bh_type_text_shand(scope[tac.out].type);
         default:
             return "";
     }
@@ -158,14 +179,14 @@ std::string tac_layout_text(tac_t& tac, operand_t* scope)
 {
     switch(tac_noperands(tac)) {
         case 3:
-            return  layout_text_short(scope[tac.out].layout)+\
-                    layout_text_short(scope[tac.in1].layout)+\
-                    layout_text_short(scope[tac.in2].layout);
+            return  layout_text_shand(scope[tac.out].layout)+\
+                    layout_text_shand(scope[tac.in1].layout)+\
+                    layout_text_shand(scope[tac.in2].layout);
         case 2:
-            return  layout_text_short(scope[tac.out].layout)+\
-                    layout_text_short(scope[tac.in1].layout);
+            return  layout_text_shand(scope[tac.out].layout)+\
+                    layout_text_shand(scope[tac.in1].layout);
         case 1:
-            return  layout_text_short(scope[tac.out].layout);
+            return  layout_text_shand(scope[tac.out].layout);
         default:
             return "";
     }

@@ -89,13 +89,25 @@ typedef enum OPERATOR {
 
 } OPERATOR;
 
-typedef struct tac {
-    OPERATION op;       // Operation
-    OPERATOR  oper;     // Operator
-    uint32_t  out;      // Output operand
-    uint32_t  in1;      // First input operand
-    uint32_t  in2;      // Second input operand
-} tac_t;
+typedef enum ETYPE {
+    BOOL        = 1,   
+        
+    INT8        = 2,   
+    INT16       = 4,   
+    INT32       = 8,   
+    INT64       = 16,  
+        
+    UINT8       = 32,  
+    UINT16      = 64,  
+    UINT32      = 128, 
+    UINT64      = 256, 
+
+    FLOAT32     = 512, 
+    FLOAT64     = 1024,
+
+    COMPLEX64   = 2048,
+    COMPLEX128  = 4096,
+} ETYPE;
 
 typedef enum LAYOUT {
     CONSTANT    = 1,
@@ -104,17 +116,25 @@ typedef enum LAYOUT {
     SPARSE      = 8
 } LAYOUT;   // Uses a single byte
 
+typedef struct tac {
+    OPERATION op;       // Operation
+    OPERATOR  oper;     // Operator
+    uint32_t  out;      // Output operand
+    uint32_t  in1;      // First input operand
+    uint32_t  in2;      // Second input operand
+} tac_t;
+
 typedef struct operand {
     LAYOUT  layout;     // The layout of the data
     void*   data;       // Pointer to memory allocated for the array
-    int64_t type;       // Type of the elements stored
+    ETYPE   type;       // Type of the elements stored
     int64_t start;      // Offset from memory allocation to start of array
     int64_t nelem;      // Number of elements available in the allocation
 
     int64_t ndim;       // Number of dimensions of the array
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
-} operand_t;          // Meta-data for a block argument
+} operand_t;            // Meta-data for a block argument
 
 #define BUILTIN_ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 

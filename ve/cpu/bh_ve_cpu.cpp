@@ -17,61 +17,23 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <string>
-#include <sstream>
-#include <vector>
-#include <set>
 #include <stdexcept>
-#include <unordered_map>
+#include <map>
+
 #include <errno.h>
 #include <unistd.h>
 #include <inttypes.h>
-#include <ctemplate/template.h>
-#include <bh.h>
-#include <bh_vcache.h>
-#include "bh_ve_cpu.h"
 
-// Execution Profile
-#ifdef PROFILE
-static bh_uint64 times[BH_NO_OPCODES+2]; // opcodes and: +1=malloc, +2=kernel
-static bh_uint64 calls[BH_NO_OPCODES+2];
-#endif
+#include <bh.h>
+#include "engine.hpp"
+#include "bh_ve_cpu.h"
 
 using namespace std;
 
 static bh_component myself;
 static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 
-static bh_intp vcache_size  = 10;
-static bh_intp jit_enabled  = 1;
-static bh_intp jit_preload  = 1;
-static bh_intp jit_fusion   = 0;
-static bh_intp jit_optimize = 1;
-static bh_intp jit_dumpsrc  = 0;
-
-static char* compiler_cmd;   // cpu Arguments
-static char* kernel_path;
-static char* object_path;
-static char* template_path;
-
-typedef struct block {
-    bh_instruction** instr;     // Pointers to instructions
-    tac_t* program;             // Ordered list of TACs
-    block_arg_t* scope;         // Array of block arguments
-
-    uint32_t nargs;             // Number of arguments to the block
-    int length;                 // Number of tacs in program
-    uint32_t omask;             // Mask of the OPERATIONS in the block
-    string symbol;              // Textual representation of the block
-} block_t;                      // Meta-data to construct and execute a block-function
-
-#include "utils.cpp"
-#include "block.c"
-#include "operator_cexpr.c"
-#include "compiler.cpp"
-#include "specializer.cpp"
-
-Compiler* target;
+static Engine* engine;
 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
@@ -114,6 +76,18 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {
+    bh_intp vcache_size  = 10;
+    bh_intp jit_enabled  = 1;
+    bh_intp jit_preload  = 1;
+    bh_intp jit_fusion   = 0;
+    bh_intp jit_optimize = 1;
+    bh_intp jit_dumpsrc  = 0;
+
+    char* compiler_cmd;   // cpu Arguments
+    char* kernel_path;
+    char* object_path;
+    char* template_path;
+
     char *env;
     bh_error err;
 
@@ -178,10 +152,7 @@ bh_error bh_ve_cpu_init(const char *name)
          fprintf(stderr, "BH_VE_CPU_JIT_DUMPSRC (%ld) should 0 or 1.\n", (long int)jit_dumpsrc);
         return BH_ERROR;
     }
-
-    // Victim cache
-    bh_vcache_init(vcache_size);
-
+        
     // Configuration
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
     bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");
@@ -195,187 +166,19 @@ bh_error bh_ve_cpu_init(const char *name)
         jit_dumpsrc     = 0;
     }
 
-    if (false) {
-        std::cout << "ENVIRONMENT {" << std::endl;
-        std::cout << "  BH_CORE_VCACHE_SIZE="     << vcache_size  << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_ENABLED="   << jit_enabled  << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_PRELOAD="   << jit_preload  << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_FUSION="    << jit_fusion   << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_OPTIMIZE="  << jit_optimize << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_DUMPSRC="   << jit_dumpsrc  << std::endl;
-        std::cout << "}" << std::endl;
-    }
-
-    // JIT machinery
-    target = new Compiler(compiler_cmd, object_path, kernel_path, jit_preload);
-    specializer_init();     // Code templates and opcode-specialization.
-
-    #ifdef PROFILE
-    memset(&times, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
-    memset(&calls, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
-    #endif
-
     return BH_SUCCESS;
 }
 
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    bh_error res = BH_SUCCESS;
-    bh_dag* root = &bhir->dag_list[0];  // Start at the root DAG
-
-    for(bh_intp i=0; i<root->nnode; ++i) {
-        bh_intp node = root->node_map[i];
-        if (node>0) {
-            cout << "Encountered an instruction in the root-dag." << endl;
-            return BH_ERROR;
-        }
-        node = -1*node-1; // Compute the node-index
-
-        //
-        // We are now looking at a graph in which we hope that all nodes are instructions
-        // we map this to a block in a slightly different format than a list of instructions
-        block_t block;
-        compose(&block, bhir, &bhir->dag_list[node]);
-
-        //
-        // We start by creating a symbol
-        if (!symbolize(block, jit_optimize)) {
-            cout << "FAILED CREATING SYMBOL" << endl;
-            return BH_ERROR;
-        }
-
-        cout << block_text(&block) << endl;
-
-        /*
-        // Lets check if it is a known extension method
-        {
-            map<bh_opcode,bh_extmethod_impl>::iterator ext;
-            ext = extmethod_op2impl.find(instr->opcode);
-            if (ext != extmethod_op2impl.end()) {
-                bh_extmethod_impl extmethod = ext->second;
-                return extmethod(instr, NULL);
-            }
-        }*/
-
-        //
-        // JIT-compile the block if enabled
-        //
-        if (jit_enabled && \
-            (block.symbol!="") && \
-            (!target->symbol_ready(block.symbol))) {   
-                                                        // Specialize sourcecode
-            string sourcecode = specialize(block, jit_optimize);   
-            if (jit_dumpsrc==1) {                       // Dump sourcecode to file
-                target->src_to_file(
-                    block.symbol,
-                    sourcecode.c_str(),
-                    sourcecode.size()
-                );
-            }                                           // Send to compiler
-            target->compile(block.symbol, sourcecode.c_str(), sourcecode.size());
-        }
-
-        //
-        // Load the compiled code
-        //
-        if ((block.symbol!="") && \
-            (!target->symbol_ready(block.symbol)) && \
-            (!target->load(block.symbol))) {// Need but cannot load
-
-            if (jit_optimize) {                             // Unoptimized fallback
-                symbolize(block, false);
-                if ((block.symbol!="") && \
-                    (!target->symbol_ready(block.symbol)) && \
-                    (!target->load(block.symbol))) {        // Fail
-                    return BH_ERROR;
-                }
-            } else {
-                return BH_ERROR;
-            }
-        }
-
-        //
-        // Allocate memory for output
-        //
-        for(int i=0; i<block.length; ++i) {
-            res = bh_vcache_malloc(block.instr[i]);
-            if (BH_SUCCESS != res) {
-                fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                                "called from bh_ve_cpu_execute()\n");
-                return res;
-            }
-        }
-
-        //
-        // Execute block handling array operations.
-        // 
-        if ((block.omask & (BUILTIN_ARRAY_OPS)) > 0) {
-            if (BH_SUCCESS != res) {
-                fprintf(stderr, "Unhandled error returned by dispatch_block "
-                                "called from bh_ve_cpu_execute(...)\n");
-                return res;
-            }
-            target->funcs[block.symbol](block.scope);
-        }
-
-        //
-        // De-Allocate operand memory
-        for(int i=0; i<block.length; ++i) {
-            if (block.instr[i]->opcode == BH_FREE) {
-                res = bh_vcache_free(block.instr[i]);
-                if (BH_SUCCESS != res) {
-                    fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
-                                    "called from bh_ve_cpu_execute)\n");
-                    return res;
-                }
-            }
-        }
-
-    }
-    return res;
+    return engine->execute(bhir);
 }
 
 /* Component interface: shutdown (see bh_component.h) */
 bh_error bh_ve_cpu_shutdown(void)
 {
-    if (vcache_size>0) {
-        bh_vcache_clear();  // De-allocate the malloc-cache
-        bh_vcache_delete();
-    }
-
-    delete target;          // De-allocate code-generator
-
-    #ifdef PROFILE
-    bh_uint64 sum = 0;
-    for(size_t i=0; i<BH_NO_OPCODES; ++i) {
-        if (times[i]>0) {
-            sum += times[i];
-            printf(
-                "%s, %ld, %f\n",
-                bh_opcode_text(i), calls[i], (times[i]/1000000.0)
-            );
-        }
-    }
-    if (calls[BH_NO_OPCODES]>0) {
-        sum += times[BH_NO_OPCODES];
-        printf(
-            "%s, %ld, %f\n",
-            "Memory", calls[BH_NO_OPCODES], (times[BH_NO_OPCODES]/1000000.0)
-        );
-    }
-    if (calls[BH_NO_OPCODES+1]>0) {
-        sum += times[BH_NO_OPCODES+1];
-        printf(
-            "%s, %ld, %f\n",
-            "Kernels", calls[BH_NO_OPCODES+1], (times[BH_NO_OPCODES+1]/1000000.0)
-        );
-    }
-    printf("TOTAL, %f\n", sum/1000000.0);
-    #endif
-
     bh_component_destroy(&myself);
-
     return BH_SUCCESS;
 }
 

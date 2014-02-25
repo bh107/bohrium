@@ -9,15 +9,6 @@
 class Block {
 public:
 
-    Block(bh_ir& ir, bh_dag& dag);
-    ~Block();
-
-    std::string text();
-
-private:
-    bool symbolize(int64_t const optimized);
-    uint32_t add_operand(bh_instruction& instr, int operand_idx);
-
     bh_instruction** instr;     // Pointers to instructions
 
     tac_t* program;             // Ordered list of TACs
@@ -28,6 +19,14 @@ private:
     uint32_t omask;             // Mask of the OPERATIONS in the block
     std::string symbol;         // Textual representation of the block
 
+    Block(bh_ir& ir, bh_dag& dag);
+    ~Block();
+
+    std::string text();
+
+private:
+    bool symbolize(int64_t const optimized);
+    uint32_t add_operand(bh_instruction& instr, int operand_idx);
 };
 
 #endif
