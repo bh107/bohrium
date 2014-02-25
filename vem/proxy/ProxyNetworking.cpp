@@ -188,7 +188,6 @@ int Shutdown_Networking()
 
 bh_error nw_init(const char *component_name)
 {
-	return Perform_Command(BH_PTC_INIT, strlen(component_name) + 1, (void *) component_name);
 }
 
 bh_error nw_shutdown()
@@ -248,6 +247,7 @@ bh_error Perform_Command(packet_protocol ptc, long packetSize, void * data)
 	bh_packet pack;
 	pack.header.packetID = ptc;
 	pack.header.packetSize = packetSize;
+	pack.header.key = 0;
 	pack.data = data;
 
 	int res = SendPacket(&pack, proxyfd);

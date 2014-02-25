@@ -105,7 +105,7 @@ bh_error ArrayMan_reserve_payload(bh_intp size, void ** pointer)
     if(buf_size < new_msg_size)
     {
         while(buf_size < new_msg_size)
-            buf_size = 2*buf_size;
+            buf_size = 2*(buf_size+DEFAULT_MSG_SIZE);
 
         msg->data = realloc(msg->data, buf_size);
         if(msg == NULL)
