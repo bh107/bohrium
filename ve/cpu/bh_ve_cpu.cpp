@@ -33,7 +33,7 @@ using namespace std;
 static bh_component myself;
 static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 
-static Engine* engine;
+static bohrium::engine::cpu::Engine* engine;
 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {

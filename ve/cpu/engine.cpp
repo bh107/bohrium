@@ -1,19 +1,21 @@
 #include "engine.hpp"
 
 using namespace std;
+namespace bohrium{
+namespace engine {
+namespace cpu {
 
-Engine::Engine(string compiler_cmd,
-    string template_directory,
-    string kernel_directory,
-    string object_directory,
-    size_t vcache_size,
-    bool preload,
-    bool jit_enabled,
-    bool jit_fusion,
-    bool jit_optimize,
-    bool jit_dumpsrc
-) :
-    compiler_cmd(compiler_cmd),
+Engine::Engine(
+    const string compiler_cmd,
+    const string template_directory,
+    const string kernel_directory,
+    const string object_directory,
+    const size_t vcache_size,
+    const bool preload,
+    const bool jit_enabled,
+    const bool jit_fusion,
+    const bool jit_optimize,
+    const bool jit_dumpsrc) : compiler_cmd(compiler_cmd),
     template_directory(template_directory),
     kernel_directory(kernel_directory),
     object_directory(object_directory),
@@ -22,7 +24,10 @@ Engine::Engine(string compiler_cmd,
     jit_enabled(jit_enabled),
     jit_fusion(jit_fusion),
     jit_optimize(jit_optimize),
-    jit_dumpsrc(jit_dumpsrc)
+    jit_dumpsrc(jit_dumpsrc),    
+    storage(object_directory),
+    specializer(kernel_directory),
+    compiler(compiler_cmd, object_directory)
 {
     cout << ">> Engine(...)" << endl;
     
@@ -31,20 +36,6 @@ Engine::Engine(string compiler_cmd,
     // Compiler
     // Specializer
     cout << "<< Engine(...)" << endl;
-}
-
-Engine::Engine( string compiler_cmd,
-                string template_directory,
-                string kernel_directory, 
-                string object_directory )
-{
-    Engine( compiler_cmd,
-            template_directory,
-            kernel_directory,
-            object_directory,
-            10, 
-            true, true, true, true, false
-    )
 }
 
 Engine::~Engine()
@@ -62,16 +53,16 @@ Engine::~Engine()
     cout << "<< ~Engine()" << endl;
 }
 
-string text()
+string Engine::text()
 {
     stringstream ss;
     ss << "ENVIRONMENT {" << endl;
-    ss << "  BH_CORE_VCACHE_SIZE="      << vcache_size  << endl;
-    ss << "  BH_VE_CPU_PRELOAD="        << preload      << endl;    
-    ss << "  BH_VE_CPU_JIT_ENABLED="    << jit_enabled  << endl;    
-    ss << "  BH_VE_CPU_JIT_FUSION="     << jit_fusion   << endl;
-    ss << "  BH_VE_CPU_JIT_OPTIMIZE="   << jit_optimize << endl;
-    ss << "  BH_VE_CPU_JIT_DUMPSRC="    << jit_dumpsrc  << endl;
+    ss << "  BH_CORE_VCACHE_SIZE="      << this->vcache_size  << endl;
+    ss << "  BH_VE_CPU_PRELOAD="        << this->preload      << endl;    
+    ss << "  BH_VE_CPU_JIT_ENABLED="    << this->jit_enabled  << endl;    
+    ss << "  BH_VE_CPU_JIT_FUSION="     << this->jit_fusion   << endl;
+    ss << "  BH_VE_CPU_JIT_OPTIMIZE="   << this->jit_optimize << endl;
+    ss << "  BH_VE_CPU_JIT_DUMPSRC="    << this->jit_dumpsrc  << endl;
     ss << "}" << endl;
 
     return ss.str();    
@@ -81,6 +72,8 @@ bh_error Engine::execute(bh_ir* ir)
 {
     cout << ">> Engine::execute(...)" << endl;
     bh_error res = BH_SUCCESS;
+    /*
+    
     bh_dag* root = &bhir->dag_list[0];  // Start at the root DAG
 
     for(bh_intp i=0; i<root->nnode; ++i) {
@@ -106,16 +99,16 @@ bh_error Engine::execute(bh_ir* ir)
 
         cout << block_text(&block) << endl;
 
-        /*
-        // Lets check if it is a known extension method
-        {
-            map<bh_opcode,bh_extmethod_impl>::iterator ext;
-            ext = extmethod_op2impl.find(instr->opcode);
-            if (ext != extmethod_op2impl.end()) {
-                bh_extmethod_impl extmethod = ext->second;
-                return extmethod(instr, NULL);
-            }
-        }*/
+        
+        //    // Lets check if it is a known extension method
+        //    {
+        //        map<bh_opcode,bh_extmethod_impl>::iterator ext;
+        //        ext = extmethod_op2impl.find(instr->opcode);
+        //        if (ext != extmethod_op2impl.end()) {
+        //            bh_extmethod_impl extmethod = ext->second;
+        //            return extmethod(instr, NULL);
+        //        }
+        //    }
 
         //
         // JIT-compile the block if enabled
@@ -192,6 +185,9 @@ bh_error Engine::execute(bh_ir* ir)
         }
 
     }
+    */
     return res;
     cout << "<< Engine::execute(...)" << endl;
 }
+
+}}}

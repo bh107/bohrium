@@ -1,16 +1,28 @@
 #ifndef __BH_VE_CPU_SPECIALIZER
 #define __BH_VE_CPU_SPECIALIZER
-#include <string>
+#include "block.hpp"
+#include "utils.hpp"
 
 #include <ctemplate/template.h>
-#include "block.hpp"
+#include <string>
+
+namespace bohrium {
+namespace engine {
+namespace cpu {
 
 class Specializer {
 public:
 
-    Specializer(std::string kernel_directory, ctemplate::Strip strip_mode);
-    Specializer(std::string kernel_directory);
+    Specializer(
+        const std::string template_directory,
+        const ctemplate::Strip strip_mode);
+    
+    Specializer(const std::string template_directory);
+
+    std::string tac_cexpr(tac& tac, Block& block);
+
     std::string template_filename(Block& block, int pc, int64_t optimized);
+
     std::string specialize(Block& block, int64_t optimized);
 
 private:
@@ -18,4 +30,5 @@ private:
 
 };
 
+}}}
 #endif

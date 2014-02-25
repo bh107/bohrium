@@ -1,10 +1,15 @@
 #include "specializer.hpp"
 
 using namespace std;
+namespace bohrium {
+namespace engine {
+namespace cpu {
 
-Specializer::Specializer(string kernel_directory, ctemplate::Strip strip_mode) : strip_mode(strip_mode)
+Specializer::Specializer(
+    const string template_directory,
+    const ctemplate::Strip strip_mode) : strip_mode(strip_mode)
 {
-    ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_path);
+    ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_directory);
     ctemplate::LoadTemplate("ewise.cont.nd.tpl", strip_mode);
     ctemplate::LoadTemplate("ewise.strided.1d.tpl", strip_mode);
     ctemplate::LoadTemplate("ewise.strided.2d.tpl", strip_mode);
@@ -23,9 +28,9 @@ Specializer::Specializer(string kernel_directory, ctemplate::Strip strip_mode) :
     ctemplate::mutable_default_template_cache()->Freeze();
 }
 
-Specializer::Specializer(string kernel_directory)
+Specializer::Specializer(const string template_directory)
 {
-    Specializer(kernel_directory, ctemplate::STRIP_BLANK_LINES);
+    Specializer(template_directory, ctemplate::STRIP_BLANK_LINES);
 }
 
 /**
@@ -125,6 +130,11 @@ string Specializer::template_filename(Block& block, int pc, bh_intp optimized)
     return tpl_opcode + tpl_layout + tpl_ndim  + "tpl";
 }
 
+string Specializer::tac_cexpr(tac& tac, Block& block)
+{
+    return "IMPLEMENT_ME";
+}
+
 /**
  *  Construct the c-sourcecode for the given block.
  *
@@ -162,13 +172,13 @@ string Specializer::specialize(Block& block, bh_intp optimized)
         //
         // Reduction and scan specific expansions
         if ((tac.op == REDUCE) || (tac.op == SCAN)) {
-            operation_d->SetValue("TYPE_OUTPUT", etype_text_shand(block.scope[tac.out].type));
-            operation_d->SetValue("TYPE_INPUT",  etype_text_shand(block.scope[tac.in1].type));
+            operation_d->SetValue("TYPE_OUTPUT", utils::etype_text_shand(block.scope[tac.out].type));
+            operation_d->SetValue("TYPE_INPUT",  utils::etype_text_shand(block.scope[tac.in1].type));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
             if (tac.oper == ADD) {
-                operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(0));
+                operation_d->SetValue("NEUTRAL_ELEMENT", to_string(0));
             } else if (tac.oper == MULTIPLY) {
-                operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(1));
+                operation_d->SetValue("NEUTRAL_ELEMENT", to_string(1));
             }
         }
 
@@ -179,18 +189,18 @@ string Specializer::specialize(Block& block, bh_intp optimized)
         //
         // The operator +, -, /, min, max, sin, sqrt, etc...
         //        
-        operator_d->SetValue("OPERATOR", operator_cexpr(tac.op, tac.oper, block.scope[tac.out].type));
+        operator_d->SetValue("OPERATOR", tac_cexpr(tac, block));
 
         //
         //  The arguments / operands
-        switch(tac_noperands(tac)) {
+        switch(utils::tac_noperands(tac)) {
             case 3:
-                operation_d->SetValue("NR_SINPUT", std::to_string(tac.in2));  // Not all have
+                operation_d->SetValue("NR_SINPUT", to_string(tac.in2));  // Not all have
                 operator_d->SetIntValue("NR_SINPUT", tac.out);
                 argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
                 operand_d   = operation_d->AddSectionDictionary("OPERAND");
-                argument_d->SetValue("TYPE", etype_text_shand(block.scope[tac.in2].type));
-                operand_d->SetValue("TYPE",  etype_text_shand(block.scope[tac.in2].type));
+                argument_d->SetValue("TYPE", utils::etype_text_shand(block.scope[tac.in2].type));
+                operand_d->SetValue("TYPE",  utils::etype_text_shand(block.scope[tac.in2].type));
 
                 argument_d->SetIntValue("NR", tac.in2);
                 operand_d->SetIntValue("NR", tac.in2);
@@ -200,14 +210,14 @@ string Specializer::specialize(Block& block, bh_intp optimized)
                     operand_d->ShowSection("ARRAY");
                 }
             case 2:
-                operation_d->SetValue("NR_FINPUT", std::to_string(tac.in1));  // Not all have
+                operation_d->SetValue("NR_FINPUT", to_string(tac.in1));  // Not all have
                 operator_d->SetIntValue("NR_FINPUT", tac.in1);
 
                 argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
                 operand_d   = operation_d->AddSectionDictionary("OPERAND");
 
-                argument_d->SetValue("TYPE", etype_text_shand(block.scope[tac.in1].type));
-                operand_d->SetValue("TYPE", etype_text_shand(block.scope[tac.in1].type));
+                argument_d->SetValue("TYPE", utils::etype_text_shand(block.scope[tac.in1].type));
+                operand_d->SetValue("TYPE", utils::etype_text_shand(block.scope[tac.in1].type));
 
                 argument_d->SetIntValue("NR", tac.in1);
                 operand_d->SetIntValue("NR", tac.in1);
@@ -218,15 +228,15 @@ string Specializer::specialize(Block& block, bh_intp optimized)
                 }
             case 1:
                 argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-                argument_d->SetValue("TYPE", etype_text_shand(block.scope[tac.out].type));
+                argument_d->SetValue("TYPE", utils::etype_text_shand(block.scope[tac.out].type));
                 argument_d->SetIntValue("NR", tac.out);
                 argument_d->ShowSection("ARRAY");
 
-                operation_d->SetValue("NR_OUTPUT", std::to_string(tac.out));
+                operation_d->SetValue("NR_OUTPUT", to_string(tac.out));
                 operator_d->SetIntValue("NR_OUTPUT", tac.out);
 
                 operand_d = operation_d->AddSectionDictionary("OPERAND");
-                operand_d->SetValue("TYPE", etype_text_shand(block.scope[tac.out].type));
+                operand_d->SetValue("TYPE", utils::etype_text_shand(block.scope[tac.out].type));
                 operand_d->SetIntValue("NR", tac.out);
                 operand_d->ShowSection("ARRAY");
         }
@@ -245,3 +255,5 @@ string Specializer::specialize(Block& block, bh_intp optimized)
 
     return sourcecode;
 }
+
+}}}

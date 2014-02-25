@@ -7,7 +7,9 @@
 
 class Compiler {
 public:
-    Compiler(std::string process_str, std::string object_directory);
+    Compiler(const std::string process_str,
+             const std::string object_directory);
+    
     ~Compiler();
 
     bool compile(

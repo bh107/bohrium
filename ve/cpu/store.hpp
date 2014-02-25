@@ -18,6 +18,11 @@
 #include <errno.h>
 
 #include "tac.h"
+#include "utils.hpp"
+
+namespace bohrium {
+namespace engine {
+namespace cpu {
 
 typedef void (*func)(operand_t args[]);
 
@@ -40,6 +45,7 @@ public:
     const char* get_uid(void);
     bool load(std::string symbol);
     bool load(std::string symbol, std::string library);
+    size_t preload();
 
 private:
     handle_storage handles;
@@ -49,4 +55,5 @@ private:
     char uid[7];
 };
 
+}}}
 #endif

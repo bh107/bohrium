@@ -6,6 +6,10 @@
 #include "tac.h"
 #include "utils.hpp"
 
+namespace bohrium{
+namespace engine{
+namespace cpu{
+
 class Block {
 public:
 
@@ -29,4 +33,5 @@ private:
     uint32_t add_operand(bh_instruction& instr, int operand_idx);
 };
 
+}}}
 #endif

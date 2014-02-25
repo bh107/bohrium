@@ -1,6 +1,9 @@
 #include "store.hpp"
 
 using namespace std;
+namespace bohrium {
+namespace engine {
+namespace cpu {
 
 Store::Store(string object_dir) : object_dir(object_dir)
 {
@@ -127,7 +130,7 @@ size_t Store::preload()
     //
     // This is the part that actually loads them...
     // This could be postponed...
-    unordered_map<string, string>::iterator it;    // Iterator
+    map<string, string>::iterator it;    // Iterator
     for(it=libraries.begin(); (it != libraries.end()) && res; ++it) {
 
         res = load(it->first, it->second);
@@ -173,7 +176,7 @@ bool Store::load(string symbol, string library)
     );
     error_msg = dlerror();
     if (error_msg) {
-        error(
+        utils::error(
             error_msg,
             "dlsym( handle='%s', symbol='%s' )\n",
             library_path.c_str(),
@@ -184,3 +187,5 @@ bool Store::load(string symbol, string library)
     }
     return true;
 }
+
+}}}

@@ -1,6 +1,9 @@
 #include "block.hpp"
 
 using namespace std;
+namespace bohrium{
+namespace engine{
+namespace cpu{
 
 Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0)
 {
@@ -26,7 +29,7 @@ string Block::text()
     ss << ", omask=" << omask;
     ss << ") {" << endl;
     for(int i=0; i<length; ++i) {
-        ss << "  " << tac_text(program[i]);
+        ss << "  " << utils::tac_text(program[i]);
     }
     ss << "  (" << symbol << ")" << endl;
     ss << "}";
@@ -59,19 +62,19 @@ bool Block::symbolize(bh_intp const optimized) {
         }
         
         symbol_op_oper  += "_";
-        symbol_op_oper  += operation_text(tac.op);
-        symbol_op_oper  += std::to_string(tac.oper);
-        symbol_tsig     += tac_typesig_text(tac, scope);
-        symbol_layout   += tac_layout_text(tac, scope);
+        symbol_op_oper  += utils::operation_text(tac.op);
+        symbol_op_oper  += to_string(tac.oper);
+        symbol_tsig     += utils::tac_typesig_text(tac, scope);
+        symbol_layout   += utils::tac_layout_text(tac, scope);
     
         int ndim = scope[tac.out].ndim;
         if (tac.op == REDUCE) {
             ndim = scope[tac.in1].ndim;
         }
         if (optimized && (ndim <= 3)) {        // Optimized
-            symbol_ndim += std::to_string(ndim);
+            symbol_ndim += to_string(ndim);
         } else {
-            symbol_ndim += std::string("N");
+            symbol_ndim += string("N");
         }
         symbol_ndim += "D";
     }
@@ -99,16 +102,16 @@ uint32_t Block::add_operand(bh_instruction& instr, int operand_idx)
     if (bh_is_constant(&instr.operand[operand_idx])) {
         scope[arg_idx].layout    = CONSTANT;
         scope[arg_idx].data      = &(instr.constant.value);
-        scope[arg_idx].type      = instr.constant.type;
+        scope[arg_idx].type      = utils::bhtype_to_etype(instr.constant.type);
         scope[arg_idx].nelem     = 1;
     } else {
-        if (is_contiguous(scope[arg_idx])) {
+        if (utils::is_contiguous(scope[arg_idx])) {
             scope[arg_idx].layout = CONTIGUOUS;
         } else {
             scope[arg_idx].layout = STRIDED;
         }
         scope[arg_idx].data      = bh_base_array(&instr.operand[operand_idx])->data;
-        scope[arg_idx].type      = bh_base_array(&instr.operand[operand_idx])->type;
+        scope[arg_idx].type      = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
         scope[arg_idx].nelem     = bh_base_array(&instr.operand[operand_idx])->nelem;
         scope[arg_idx].ndim      = instr.operand[operand_idx].ndim;
         scope[arg_idx].start     = instr.operand[operand_idx].start;
@@ -117,3 +120,5 @@ uint32_t Block::add_operand(bh_instruction& instr, int operand_idx)
     }
     return arg_idx;
 }
+
+}}}

@@ -1,7 +1,5 @@
 #ifndef __BH_VE_CPU_ENGINE
 #define __BH_VE_CPU_ENGINE
-#include <string>
-
 #include "bh.h"
 #include "bh_vcache.h"
 
@@ -11,28 +9,27 @@
 #include "compiler.hpp"
 #include "specializer.hpp"
 
+#include <string>
+
+namespace bohrium{
+namespace engine {
+namespace cpu {
+
 class Engine {
 
 public:
-    Engine(
-        std::string compiler_cmd,
-        std::string template_directory,
-        std::string kernel_directory,
-        std::string object_directory
-    );
 
     Engine(
-        std::string compiler_cmd,
-        std::string template_directory,
-        std::string kernel_directory,
-        std::string object_directory,
-        int vcache_size,
-        bool preload,
-        bool jit_enabled,
-        bool jit_fusion,
-        bool jit_optimize,
-        bool jit_dumpsrc
-    );
+        const std::string compiler_cmd,
+        const std::string template_directory,
+        const std::string kernel_directory,
+        const std::string object_directory,
+        const size_t vcache_size,
+        const bool preload,
+        const bool jit_enabled,
+        const bool jit_fusion,
+        const bool jit_optimize,
+        const bool jit_dumpsrc);
 
     ~Engine();
 
@@ -54,10 +51,10 @@ private:
          jit_optimize,
          jit_dumpsrc;
     
-    Compiler    compiler;
-    Store       storage;
-    Specializer specializer;
-
+    Store          storage;
+    Specializer    specializer;
+    Compiler       compiler;
 };
 
+}}}
 #endif

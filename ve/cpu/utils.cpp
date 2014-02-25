@@ -1,5 +1,8 @@
-using namespace std;
 #include "utils.hpp"
+
+using namespace std;
+namespace bohrium{
+namespace utils{
 
 std::string bh_type_text_shand(bh_type type)
 {
@@ -62,6 +65,11 @@ std::string etype_text_shand(ETYPE type)
     return "IMPLEMENT_ME";
 }
 
+ETYPE bhtype_to_etype(bh_type type)
+{
+    return FLOAT32;
+}
+
 /**
  *  Determine whether an operand has a contiguous layout.
  */
@@ -82,11 +90,6 @@ bool is_contiguous(operand_t& arg)
     }
 
     return false;
-}
-
-std::string tac_text_cexpr(tac& tac)
-{
-    return "IMPLEMENT_ME";
 }
 
 std::string tac_text(tac_t& tac)
@@ -222,3 +225,5 @@ int error(const char *err_msg, const char *fmt, ...)
     va_end(va);
     return ret;
 }
+
+}}

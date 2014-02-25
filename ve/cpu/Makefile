@@ -1,6 +1,7 @@
 ROOT=../..
 include $(ROOT)/platform.mk
 LIB=libbh_ve_cpu.$(LIB_SUFFIX)
+CC?=gcc
 CXX?=g++
 #CXX?=clang
 WARNOPTS=-Wall
@@ -10,16 +11,12 @@ ifeq ($(PLATFORM_OS),OSX)
 	EXTRA_LIBS+=-L$(ROOT)/thirdparty/ctemplate/osx-lib 
 endif
 
-LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O0 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
-#LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
-#LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=gnu++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
+LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=c++0x -I$(ROOT)/include
 LDFLAGS=-L../../core $(ARCH_OPTS) -lbh $(EXTRA_LIBS) -lctemplate -shared -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.h $(ROOT)/include/*
-SRC= $(ALL_CPP_FILES) $(ALL_C_FILES)
-OBJTMP=$(SRC:.c=.o)
-OBJ=$(OBJTMP:.cpp=.o) 
-OBJ=bh_ve_cpu.o 
-
+SRC=$(ALL_CPP_FILES)
+HEADER=$(ALL_H_FILES) $(ALL_HPP_FILES)
+OBJ=$(SRC:.cpp=.o)
 INSTALLDIR?=/opt/bohrium/
 
 all: $(LIB)
@@ -45,9 +42,6 @@ graph:
 
 test:
 	BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
-
-%.o: %.c $(HEADER)
-	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
 
 %.o: %.cpp $(HEADER)
 	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)
