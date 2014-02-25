@@ -38,6 +38,7 @@ public:
     bh_error execute(bh_ir* ir);
 
 private:
+
     std::string compiler_cmd,
                 template_directory,
                 kernel_directory,

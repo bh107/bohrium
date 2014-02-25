@@ -15,7 +15,8 @@ Engine::Engine(
     const bool jit_enabled,
     const bool jit_fusion,
     const bool jit_optimize,
-    const bool jit_dumpsrc) : compiler_cmd(compiler_cmd),
+    const bool jit_dumpsrc)
+: compiler_cmd(compiler_cmd),
     template_directory(template_directory),
     kernel_directory(kernel_directory),
     object_directory(object_directory),

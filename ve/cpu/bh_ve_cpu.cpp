@@ -25,14 +25,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <inttypes.h>
 
 #include <bh.h>
-#include "engine.hpp"
 #include "bh_ve_cpu.h"
+#include "engine.hpp"
 
 using namespace std;
 
 static bh_component myself;
 static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 
+//
+// This is where the actual engine implementation is
 static bohrium::engine::cpu::Engine* engine;
 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
@@ -76,7 +78,7 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {
-    bh_intp vcache_size  = 10;
+    bh_intp vcache_size  = 10;  // Default...
     bh_intp jit_enabled  = 1;
     bh_intp jit_preload  = 1;
     bh_intp jit_fusion   = 0;
@@ -166,6 +168,20 @@ bh_error bh_ve_cpu_init(const char *name)
         jit_dumpsrc     = 0;
     }
 
+    //
+    // VROOM VROOM VROOOOOOMMMM!!! VROOOOM!!
+    engine = new bohrium::engine::cpu::Engine(
+        string(compiler_cmd),
+        string(template_path),
+        string(kernel_path),
+        string(object_path),
+        (size_t)vcache_size,
+        (bool)jit_enabled,
+        (bool)jit_preload,
+        (bool)jit_fusion,
+        (bool)jit_optimize,
+        (bool)jit_dumpsrc
+    );
     return BH_SUCCESS;
 }
 
