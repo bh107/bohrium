@@ -1,36 +1,3 @@
-
-/**
- *  Add instruction operand as argument to block.
- *
- *  @param instr        The instruction whos operand should be converted.
- *  @param operand_idx  Index of the operand to represent as arg_t
- *  @param block        The block in which scope the argument will exist.
- */
-static uint32_t add_argument(block_t* block, bh_instruction* instr, int operand_idx)
-{
-    uint32_t arg_idx = ++(block->nargs);
-    if (bh_is_constant(&instr->operand[operand_idx])) {
-        block->scope[arg_idx].layout    = CONSTANT;
-        block->scope[arg_idx].data      = &(instr->constant.value);
-        block->scope[arg_idx].type      = instr->constant.type;
-        block->scope[arg_idx].nelem     = 1;
-    } else {
-        if (is_contiguous(&block->scope[arg_idx])) {
-            block->scope[arg_idx].layout = CONTIGUOUS;
-        } else {
-            block->scope[arg_idx].layout = STRIDED;
-        }
-        block->scope[arg_idx].data      = bh_base_array(&instr->operand[operand_idx])->data;
-        block->scope[arg_idx].type      = bh_base_array(&instr->operand[operand_idx])->type;
-        block->scope[arg_idx].nelem     = bh_base_array(&instr->operand[operand_idx])->nelem;
-        block->scope[arg_idx].ndim      = instr->operand[operand_idx].ndim;
-        block->scope[arg_idx].start     = instr->operand[operand_idx].start;
-        block->scope[arg_idx].shape     = instr->operand[operand_idx].shape;
-        block->scope[arg_idx].stride    = instr->operand[operand_idx].stride;
-    }
-    return arg_idx;
-}
-
 /**
  *  Compose a block based on the instruction-nodes within a dag.
  */

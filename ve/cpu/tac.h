@@ -1,3 +1,8 @@
+#ifndef __BH_VE_CPU_TAC
+#define __BH_VE_CPU_TAC
+
+#include "stdint.h"
+
 typedef enum OPERATION {
     MAP         = 1,    // aka elementwise operation unary operator
     ZIP         = 2,    // aka elementwise operation with binary operator
@@ -99,7 +104,7 @@ typedef enum LAYOUT {
     SPARSE      = 8
 } LAYOUT;   // Uses a single byte
 
-typedef struct block_arg {
+typedef struct operand {
     LAYOUT  layout;     // The layout of the data
     void*   data;       // Pointer to memory allocated for the array
     int64_t type;       // Type of the elements stored
@@ -109,6 +114,8 @@ typedef struct block_arg {
     int64_t ndim;       // Number of dimensions of the array
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
-} block_arg_t;          // Meta-data for a block argument
+} operand_t;          // Meta-data for a block argument
 
 #define BUILTIN_ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
+
+#endif

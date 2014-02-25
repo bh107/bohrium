@@ -73,6 +73,44 @@ typedef struct block {
 
 Compiler* target;
 
+void bh_string_option(char *&option, const char *env_name, const char *conf_name)
+{
+    option = getenv(env_name);           // For the compiler
+    if (NULL==option) {
+        option = bh_component_config_lookup(&myself, conf_name);
+    }
+    char err_msg[100];
+
+    if (!option) {
+        sprintf(err_msg, "cpu-ve: String is not set; option (%s).\n", conf_name);
+        throw runtime_error(err_msg);
+    }
+}
+
+void bh_path_option(char *&option, const char *env_name, const char *conf_name)
+{
+    option = getenv(env_name);           // For the compiler
+    if (NULL==option) {
+        option = bh_component_config_lookup(&myself, conf_name);
+    }
+    char err_msg[100];
+
+    if (!option) {
+        sprintf(err_msg, "cpu-ve: Path is not set; option (%s).\n", conf_name);
+        throw runtime_error(err_msg);
+    }
+    if (0 != access(option, F_OK)) {
+        if (ENOENT == errno) {
+            sprintf(err_msg, "cpu-ve: Path does not exist; path (%s).\n", option);
+        } else if (ENOTDIR == errno) {
+            sprintf(err_msg, "cpu-ve: Path is not a directory; path (%s).\n", option);
+        } else {
+            sprintf(err_msg, "cpu-ve: Path is broken somehow; path (%s).\n", option);
+        }
+        throw runtime_error(err_msg);
+    }
+}
+
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {

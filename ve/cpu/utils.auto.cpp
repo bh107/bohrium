@@ -19,7 +19,6 @@ const char* enumstr_to_shorthand(const char* enumstr)
     else { return "{{UNKNOWN}}"; }
 }
 
-
 const char* bh_layoutmask_to_shorthand(const int mask)
 {
     switch(mask) {
