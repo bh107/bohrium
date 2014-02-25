@@ -26,11 +26,12 @@ import array_create
 import bhc
 import numpy as np
 import _info
-from _util import get_bhc, dtype_name
+from _util import dtype_name
+from ndarray import get_bhc, data_bhc2np
 
 def assign(a, out):
     out_dtype = dtype_name(out)
-    out_bhc = _util.get_bhc(out)
+    out_bhc = get_bhc(out)
     if np.isscalar(a):
         cmd = "bhc.bh_multi_array_%s_assign_scalar(out_bhc,a)"%(out_dtype)
     else:
@@ -39,7 +40,7 @@ def assign(a, out):
         if out_dtype != a_dtype:
             print "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
             exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
-        cmd = "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(dtype)
+        cmd = "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
     print cmd
     exec cmd
     return out
@@ -97,7 +98,7 @@ class ufunc:
 
         #Copy result into the output array
         exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),ret)"%(dtype_name(out_dtype))
-        return ret
+        return out
 
 ufuncs = []
 for op in _info.op.itervalues():
@@ -112,18 +113,29 @@ import unittest
 
 class Tests(unittest.TestCase):
 
-    def tes1t_assign_copy(self):
+    def test_assign_copy(self):
         A = array_create.empty((4,4), dtype=int)
         B = array_create.empty((4,4), dtype=int)
         assign(42, A)
         assign(A, B)
+        data_bhc2np(A)
 
-    def test_ufunc(self):
+
+    def t1est_ufunc(self):
         for f in ufuncs:
             for type_sig in f.info['type_sig']:
                 if f.info['bhc_name'] == "assign":
                     continue
                 print f, type_sig
+                A = np.empty((4,4), dtype=type_sig[1])
+                A[:] = 2
+                B = np.empty((4,4), dtype=type_sig[1])
+                B[:] = 3
+                if f.info['nop'] == 2:
+                    exec "np_res = np.%s(A)"%f.info['np_name']
+                elif f.info['nop'] == 3:
+                    exec "np_res = np.%s(A,B)"%f.info['np_name']
+                """
                 A = array_create.empty((4,4), dtype=type_sig[1])
                 assign(2, A)
                 if f.info['nop'] == 2:
@@ -132,6 +144,11 @@ class Tests(unittest.TestCase):
                     B = array_create.empty((4,4), dtype=type_sig[2])
                     assign(3, B)
                     res = f(A,B)
+                """
+                #data_bhc2np(res)
+                #print res
+                #return
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Tests)

@@ -41,6 +41,12 @@ BhArray_dealloc(BhArray* self)
     if(self->bhc_ary == NULL)
         return;
 
+    if(self->bhc_ary == Py_None)
+    {
+        Py_DECREF(Py_None);
+        return;
+    }
+
     PyObject *m = PyImport_ImportModule("_util");
     if(m == NULL)
     {
@@ -74,7 +80,8 @@ BhArray_finalize(PyObject *self, PyObject *args)
     {
         Py_RETURN_NONE;
     }
-    ((BhArray*)self)->bhc_ary = NULL;
+    ((BhArray*)self)->bhc_ary = Py_None;
+    Py_INCREF(Py_None);
     Py_RETURN_NONE;
 }
 
@@ -86,36 +93,12 @@ static PyMethodDef BhArrayMethods[] = {
 static PyObject *
 BhArray_get_bhc_ary(BhArray *self, void *closure)
 {
-    if(self->bhc_ary == NULL)
-    {
-        Py_RETURN_NONE;
-    }
-    else
-    {
-        Py_INCREF(self->bhc_ary);
-        return self->bhc_ary;
-    }
+    Py_INCREF(self->bhc_ary);
+    return self->bhc_ary;
 }
 static int
-BhArray_setfirst(BhArray *self, PyObject *value, void *closure)
+BhArray_set_bhc_ary(BhArray *self, PyObject *value, void *closure)
 {
-    if(self->bhc_ary != NULL)
-    {
-        PyErr_SetString(PyExc_TypeError, "Cannot delete or overwrite the 'bhc_ary' attribute");
-        return -1;
-    }
-    /*
-    int e = PyObject_IsInstance(value, (PyObject*) &BhArrayType);
-    if(e == -1)
-    {
-        return -1;
-    }
-    else if (e == 0)
-    {
-        PyErr_SetString(PyExc_TypeError, "'bhc_ary' must be of type bohrium.ndarray");
-        return -1;
-    }
-    */
     Py_INCREF(value);
     self->bhc_ary = value;
     return 0;
@@ -124,7 +107,7 @@ BhArray_setfirst(BhArray *self, PyObject *value, void *closure)
 static PyGetSetDef BhArray_getseters[] = {
     {"bhc_ary",
      (getter)BhArray_get_bhc_ary,
-     (setter)BhArray_setfirst,
+     (setter)BhArray_set_bhc_ary,
      "The Bohrium C-Bridge array",
      NULL},
     {NULL}  /* Sentinel */

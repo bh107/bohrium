@@ -59,38 +59,10 @@ def type_sig(op_name, inputs):
             return (np.dtype(sig[0]),np.dtype(sig[1]))
     raise TypeError("Cannot detement the correct signature (%s:%s)"%(op_name,dtype))
 
-#Returns the Bohrium-C array
-def get_bhc(ary):
-    #Find the base array
-    if ary.base is None:
-        base = ary
-    else:
-        base = ary.base
-        while base.base is not None:
-            base = base.base
-
-    #Create the base array in Bohrium
-    if base.bhc_ary is None:
-        if not ary.flags['BEHAVED']:
-            raise ValueError("Bohrium arrays must be aligned, writeable, and in machine byte-order")
-        if not ary.flags['OWNDATA']:
-            raise ValueError("Bohrium base arrays must own its data")
-        if not ary.flags['C_CONTIGUOUS']:
-            raise ValueError("For now Bohrium only supports C-style arrays")
-
-        #Lets create the new base array
-        dtype = dtype_name(ary)
-        size = ary.size
-        print "ret = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
-        exec "ret = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
-        base.bhc_ary = ret
-
-    if ary is base:#We a returning a base array
-        return base.bhc_ary
-
 bhc_arys_to_destroy = []
 @atexit.register
 def goodbye():
     for a in bhc_arys_to_destroy:
         print "bhc.bh_multi_array_%s_destroy(a)"%dtype_from_bhc(a)
         exec "bhc.bh_multi_array_%s_destroy(a)"%dtype_from_bhc(a)
+

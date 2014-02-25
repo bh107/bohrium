@@ -6,6 +6,7 @@ Array Create Routines
 import _bh
 import _info
 import _util
+import ndarray
 
 
 def empty(shape, dtype=float):
@@ -44,7 +45,7 @@ def empty(shape, dtype=float):
 
     """
     ret = _bh.ndarray(shape, dtype=dtype)
-    _util.get_bhc(ret)#Trigger Bohrium creations
+    ndarray.new_bhc_base(ret)#Trigger Bohrium creations
     return ret
 
 
