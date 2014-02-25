@@ -5,9 +5,8 @@ namespace bohrium {
 namespace engine {
 namespace cpu {
 
-Specializer::Specializer(
-    const string template_directory,
-    const ctemplate::Strip strip_mode) : strip_mode(strip_mode)
+Specializer::Specializer(const string template_directory)
+: strip_mode(ctemplate::STRIP_BLANK_LINES), template_directory(template_directory)
 {
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_directory);
     ctemplate::LoadTemplate("ewise.cont.nd.tpl", strip_mode);
@@ -28,9 +27,13 @@ Specializer::Specializer(
     ctemplate::mutable_default_template_cache()->Freeze();
 }
 
-Specializer::Specializer(const string template_directory)
+string Specializer::text()
 {
-    Specializer(template_directory, ctemplate::STRIP_BLANK_LINES);
+    stringstream ss;
+    ss << "Specializer(\"" << template_directory;
+    ss << "\", " << strip_mode << ");" << endl;
+
+    return ss.str();
 }
 
 /**

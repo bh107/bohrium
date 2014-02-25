@@ -16,7 +16,6 @@ using namespace std;
  *  Compiler clang("clang -O2 -march=core2 -fPIC -x c -shared - -o ");
  *
  */
-
 Compiler::Compiler(string process_str, string object_directory ) : 
     process_str(process_str), object_directory(object_directory)
 {}
@@ -27,6 +26,17 @@ Compiler::~Compiler()
         dlclose(handle);
         handle = NULL;
     }*/
+}
+
+string Compiler::text()
+{
+    
+    stringstream ss;
+    ss << "Compiler(\"" << process_str << "\", ";
+    ss << "\"" << object_directory << "\");";
+    ss << endl;
+
+    return ss.str();
 }
 
 /**

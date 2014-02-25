@@ -40,7 +40,9 @@ typedef std::map<std::string, std::string> symbol_library_map;
 
 class Store {
 public:
-    Store(std::string object_dir);
+    Store(const std::string object_dir);
+    std::string text();
+
     bool symbol_ready(std::string symbol);
     const char* get_uid(void);
     bool load(std::string symbol);

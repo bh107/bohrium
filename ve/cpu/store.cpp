@@ -5,7 +5,7 @@ namespace bohrium {
 namespace engine {
 namespace cpu {
 
-Store::Store(string object_dir) : object_dir(object_dir)
+Store::Store(const string object_dir) : object_dir(object_dir)
 {
 
     // Create an identifier with low collision...
@@ -20,6 +20,13 @@ Store::Store(string object_dir) : object_dir(object_dir)
     }
     uid[6] = 0;
 
+}
+
+string Store::text()
+{
+    stringstream ss;
+    ss << "Store(\"" << object_dir << "\");" << endl;
+    return ss.str();
 }
 
 /**

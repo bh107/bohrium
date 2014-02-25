@@ -12,12 +12,10 @@ namespace cpu {
 
 class Specializer {
 public:
-
-    Specializer(
-        const std::string template_directory,
-        const ctemplate::Strip strip_mode);
-    
+   
     Specializer(const std::string template_directory);
+
+    std::string text();
 
     std::string tac_cexpr(tac& tac, Block& block);
 
@@ -27,6 +25,7 @@ public:
 
 private:
     ctemplate::Strip strip_mode;
+    std::string template_directory;
 
 };
 

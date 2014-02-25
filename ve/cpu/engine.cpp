@@ -27,7 +27,7 @@ Engine::Engine(
     jit_optimize(jit_optimize),
     jit_dumpsrc(jit_dumpsrc),    
     storage(object_directory),
-    specializer(kernel_directory),
+    specializer(template_directory),
     compiler(compiler_cmd, object_directory)
 {
     cout << ">> Engine(...)" << endl;
@@ -65,6 +65,10 @@ string Engine::text()
     ss << "  BH_VE_CPU_JIT_OPTIMIZE="   << this->jit_optimize << endl;
     ss << "  BH_VE_CPU_JIT_DUMPSRC="    << this->jit_dumpsrc  << endl;
     ss << "}" << endl;
+
+    ss << storage.text();
+    ss << specializer.text();    
+    ss << compiler.text();
 
     return ss.str();    
 }

@@ -2,6 +2,7 @@
 #define __BH_VE_CPU_COMPILER
 
 #include <string>
+#include <sstream>
 #include <cstdio>
 #include <iostream>
 
@@ -11,6 +12,8 @@ public:
              const std::string object_directory);
     
     ~Compiler();
+
+    std::string text();
 
     bool compile(
         std::string symbol,
