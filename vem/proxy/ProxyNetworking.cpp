@@ -28,6 +28,7 @@ static bool proxyInit = false;
 static int  proxyfd;
 
 bool no_delay = true;
+bool reuse_addr = true;
 
 // function definitions
 bh_error Perform_Command(packet_protocol ptc, long packetSize, void * data);
@@ -49,17 +50,25 @@ int Init_Networking(uint16_t port)
     }
 
     // 
-    // Set socket options
+    // Socket options
+    int yes = 1;
     if (no_delay) {
-        int flag = 1;
-        int sockopt_res = setsockopt(socket_descriptor, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
-
-        if(sockopt_res < 0) {
+        int sockopt_res = setsockopt(socket_descriptor, IPPROTO_TCP, TCP_NODELAY, (char *) &yes, sizeof(int));
+        if (sockopt_res < 0) {
             fprintf(stderr,
-                    "Setsockopt failed with error: %s\n",
+                    "Setsockopt(TCP_NODELAY) failed with error: %s\n",
                     strerror(errno));
-            return BH_SRVR_ACCEPT_ERR;
+            return BH_ERROR;
         }
+    }
+    if (reuse_addr) {
+        int sockopt_res = setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, (char *) &yes, sizeof(int));
+        if (sockopt_res < 0) {
+            fprintf(stderr,
+                    "Setsockopt(SO_REUSEADDR) failed with error: %s\n",
+                    strerror(errno));
+            return BH_ERROR;
+        }   
     }
 
     //
