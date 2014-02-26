@@ -30,7 +30,7 @@ std::string tac_text(tac_t& tac)
 {
     std::stringstream ss;
     ss << "[op="<< operation_text(tac.op) << "(" << tac.op << ")";
-    ss << ", oper=" << tac.oper;
+    ss << ", oper=" << operator_text(tac.oper) << "(" << tac.oper << ")";
     ss << ", out="  << tac.out;
     ss << ", in1="  << tac.in1;
     ss << ", in2="  << tac.in2;
