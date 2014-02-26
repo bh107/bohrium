@@ -33,16 +33,9 @@ If not, see <http://www.gnu.org/licenses/>.
 //Our self
 static bh_component vem_proxy_server_myself;
 
-//Allocated base arrays
-static std::set<bh_base*> allocated_bases;
-
-
-//Network status
-//static bool netstat = false;
-
 #ifdef BH_TIMING
-    //Number of elements executed
-    static bh_intp total_execution_size = 0;
+//Number of elements executed
+static bh_intp total_execution_size = 0;
 #endif
 
 bool bh_string_option(char *&option, const char *env_name, const char *conf_name)
@@ -61,31 +54,27 @@ bool bh_string_option(char *&option, const char *env_name, const char *conf_name
 /* Component interface: init (see bh_component.h) */
 bh_error bh_vem_proxy_init(const char* name)
 {
-    bh_error err;
+    bh_error res = BH_SUCCESS;
+    
+    res = bh_component_init(&vem_proxy_server_myself, name);
+    if (BH_SUCCESS != res) {
+        return res;
+    }
 
-    //std::cout << "Initializing client" << std::endl;
-
-    if((err = bh_component_init(&vem_proxy_server_myself, name)) != BH_SUCCESS)
-        return err;
-
-    // set configurations
-
-    char * port;
-
-    bh_string_option( port,   "BH_VE_PROXY_PORT", "port");
+    char* port;
+    bh_string_option(port, "BH_VE_PROXY_PORT", "port");
 
     // set up network
-
-    if(Init_Networking(port) != BH_SUCCESS)
+    res = Init_Networking(atoi(port));
+    if (BH_SUCCESS != res) {
         return BH_ERROR;
+    }
 
-
-
-    //Let us initiate the child.
-    err = nw_init(name);
-    if(err != 0)
-        return err;
-
+    // Let us initiate the child.
+    res = nw_init(name);
+    if (BH_SUCCESS != res) {
+        return res;
+    }
 
     return BH_SUCCESS;
 }
@@ -98,10 +87,9 @@ bh_error bh_vem_proxy_shutdown(void)
     Shutdown_Networking();
 
     #ifdef BH_TIMING
-        printf("Number of elements executed: %ld\n", total_execution_size);
+    printf("Number of elements executed: %ld\n", total_execution_size);
     #endif
 
-    // shut down network
     return err;
 }
 
@@ -114,8 +102,8 @@ bh_error bh_vem_proxy_extmethod(const char *name, bh_opcode opcode)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_vem_proxy_execute(bh_ir* bhir)
 {
-
     bh_error ret = nw_execute(bhir);
 
     return ret;
 }
+
