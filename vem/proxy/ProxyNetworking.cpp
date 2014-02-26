@@ -48,6 +48,20 @@ int Init_Networking(uint16_t port)
         return BH_ERROR;
     }
 
+    // 
+    // Set socket options
+    if (no_delay) {
+        int flag = 1;
+        int sockopt_res = setsockopt(socket_descriptor, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
+
+        if(sockopt_res < 0) {
+            fprintf(stderr,
+                    "Setsockopt failed with error: %s\n",
+                    strerror(errno));
+            return BH_SRVR_ACCEPT_ERR;
+        }
+    }
+
     //
     // Setup data-structure for binding on the socket
     struct sockaddr_in server_addr;

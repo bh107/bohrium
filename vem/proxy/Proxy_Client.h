@@ -18,14 +18,14 @@ extern "C" {
 
 // Initializes the Client
 // if Client has started will return an already started signal
-int Client_Init(const char * port_no, int * maxconnect);
+int Client_Init(uint16_t port, int * maxconnect);
 
 // starts the Client
 // will return a data not initialied exception if Client_Init_Data
 // has not been performed. Will also return an already started signal
 // if this function has been run before
 
-int Client_Start(char* address);
+int Client_Start(const char* ipaddr);
 
 // Causes the Client to block while it waits for a client to connect
 // Will accept one new client and register it. Will fail if Client

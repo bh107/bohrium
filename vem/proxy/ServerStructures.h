@@ -38,7 +38,7 @@ typedef socketList * socketListPtr;
 
 typedef struct
 {
-	char	 		port_no[6];
+	uint16_t	 	port;
 	int 			max_listening_queue;
 	struct addrinfo address_info;
 	int 			socket_file_descriptor;
