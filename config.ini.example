@@ -7,7 +7,7 @@ children = node
 #
 [proxy]
 type = vem
-#port = 3490
+port = 4200
 impl = /opt/bohrium/libbh_proxy_server.so
 children = node
 

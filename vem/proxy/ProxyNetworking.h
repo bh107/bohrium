@@ -15,8 +15,7 @@ extern "C" {
 #endif
 //#define PROXY_DEBUG
 
-
-int Init_Networking( char * port);
+int Init_Networking(uint16_t port);
 int Shutdown_Networking();
 
 bh_error nw_init(const char *component_name);
