@@ -8,14 +8,25 @@ import os
 
 from Cheetah.Template import Template
 
+def forward_everything(opcodes, ops, opers, types, layouts):
+    return {
+        'opcodes':  opcodes,
+        'ops':      ops,
+        'opers':    opers,
+        'types':    types,
+        'layouts':  layouts
+    }
+
 def main(self):
 
     root    = "../../../core/codegen"
     prefix  = "./tac/"
-    types   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'types')))
+
+    opcodes = json.load(open("%s%s%s.json" % (root,   os.sep, 'opcodes')))
     ops     = json.load(open("%s%s%s.json" % (prefix, os.sep, 'operations')))
     opers   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'operators')))
-    opcodes = json.load(open("%s%s%s.json" % (root,   os.sep, 'opcodes')))
+    types   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'types')))
+    layouts = json.load(open("%s%s%s.json" % (prefix, os.sep, 'layouts')))
 
     # Map template names to mapping-functons and fill out the template
     for fn in glob.glob('templates/*.tpl'):
@@ -23,12 +34,15 @@ def main(self):
         if fn in self.__dict__:
             template = Template(
                 file = "%s%s%s.tpl" % ("templates", os.sep, fn),
-                searchList=globals()[fn](opcodes, types, opers)
+                searchList=globals()[fn](opcodes, ops, opers, types, layouts)
             )
             with open('output/%s.cpp' % fn, 'w') as fd:
                 fd.write(str(template))
 
-def block_compose(opcodes, types, opers):
+def utils_mapping(opcodes, ops, opers, types, layouts):
+    return forward_everything(opcodes, ops, opers, types, layouts)
+
+def block_compose(opcodes, ops, opers, types, layouts):
     """Construct the data need to create a map from bh_instruction to tac_t."""
 
     ewise_u     = []
@@ -82,157 +96,6 @@ def block_compose(opcodes, types, opers):
     }]
 
     return operations
-
-"""
-
-def bh_opcode_to_cstr(opcodes, types, opers):
-    return [{"opcodes": [(o["opcode"], o["opcode"], o["opcode"].replace('BH_','')) for o in opcodes
-    ]}]
-
-def bh_opcode_to_cstr_short(opcodes, types, opers):
-    return bh_opcode_to_cstr(opcodes, types, opers)
-
-def enum_to_ctypestr(opcodes, types, opers):
-    return [{"types": [(t["enum"], t["c"]) for t in types]}]
-
-def enum_to_shorthand(opcodes, types, opers):
-    return [{"types": [(t["enum"], t["shorthand"]) for t in types]}]
-
-def enumstr_to_ctypestr(opcodes,types, opers):
-    return [{"types": [(t["enum"], t["c"]) for t in types]}]
-
-def enumstr_to_shorthand(opcodes, types, opers):
-    return [{"types": [(t["enum"], t["shorthand"]) for t in types]}]
-
-def operators(opcodes, types, opers):
-    unary   = []
-    binary  = []
-    huh     = []
-    system  = []
-    userdef = ['USERDEFINED']
-    generators = ["RANGE", "RANDOM", "FLOOD"]
-
-    for opc in opcodes:
-        opcode = opc['opcode'].replace('BH_','')
-        if 'REDUCE' in opcode:
-            continue
-        if 'ACCUMULATE' in opcode:
-            continue
-        if 'RANDOM' in opcode:
-            continue
-        if 'RANGE' in opcode:
-            continue
-
-        if opc['system_opcode']:
-            system.append(opcode)
-        else:
-            if opc['nop'] == 3:
-                binary.append(opcode)
-            elif opc['nop'] == 2:
-                unary.append(opcode)
-            else:
-                huh.append(opcode)
-    
-    if len(huh)>0:
-        print "Something is weird here!", huh
-
-    operators = [{
-        'unary':        sorted(unary),
-        'binary':       sorted(binary),
-        'system':       sorted(system),
-        'generators':   sorted(generators)
-    }]
-
-    return operators
-
-def operator_cexpr(opcodes, types, opers):
-    operators = []
-    for op in opers:
-        operators.append((op, opers[op]['code']))
-
-    return {'operators': operators}
-
-
-def layoutmask_shorthand(opcodes, types, opers):
-
-    array_l     = ["CONTIGUOUS", "STRIDED", "SPARSE"]
-    scalar_l    = ["CONSTANT"]
-
-    mapping = {"CONTIGUOUS": "C", "STRIDED": "S", "SPARSE": "P", "CONSTANT": "K"}
-
-    def shorten(mask):
-        right = ''.join([mapping[layout] for layout in mask])
-        
-        return ('LMASK_'+right, right)
-
-    lmasks = {
-        3: [(shorten(x)[0], x) for x in product(array_l, scalar_l+array_l, scalar_l+array_l)],
-        2: [(shorten(x)[0], x) for x in product(array_l, scalar_l+array_l)],
-        1: [(shorten(x)[0], x) for x in product(array_l)],
-    }
-
-    
-    lsh =   [shorten(x) for x in product(array_l, scalar_l+array_l, scalar_l+array_l)]   +\
-            [shorten(x) for x in product(array_l, scalar_l+array_l)]                     +\
-            [shorten(x) for x in product(array_l)]
-    
-    return {'lmasks': lmasks, 'lshort': lsh}
-
-def typesig_to_shorthand(opcodes, types, opers):
-
-    etu = dict([(t["enum"], t["id"]+1) for t in types])
-    ets = dict([(t["enum"], t["shorthand"]) for t in types])
-
-    typesigs = {
-        3: [],
-        2: [],
-        1: [],
-        0: []
-    }
-
-    for opcode in opcodes:
-        for typesig in opcode['types']:
-            slen = len(typesig)
-            if typesig not in typesigs[slen]:
-                typesigs[slen].append(typesig)
-
-    nsigs = []
-    tsigs = []
-    hsigs = []
-    cases = []
-    p_slen = -1
-    for slen, typesig in ((slen, typesig) for slen in xrange(3,-1,-1) for typesig in typesigs[slen]):
-
-        if slen == 3:
-            tsig = "%s + (%s << 4) + (%s << 8)" % tuple(typesig)
-            nsig = etu[typesig[0]] + (etu[typesig[1]]<<4) + (etu[typesig[2]]<<8)
-            hsig = ets[typesig[0]] + (ets[typesig[1]]) + (ets[typesig[2]])
-        elif slen == 2:
-            tsig = "%s + (%s << 4)" % tuple(typesig)
-            nsig = etu[typesig[0]] + (etu[typesig[1]]<<4)
-            hsig = ets[typesig[0]] + (ets[typesig[1]])
-        elif slen == 1:
-            tsig = "%s" % tuple(typesig)
-            nsig = etu[typesig[0]]
-            hsig = ets[typesig[0]]
-        elif slen == 0:
-            tsig = "0"
-            nsig = 0
-            hsig = "_"
-        tsigs.append(tsig)
-        nsigs.append(nsig)
-        hsigs.append(hsig)
-
-        if slen != p_slen:
-            p_slen = slen
-        cases.append((nsig, hsig, tsig))
-
-    return [{"cases": cases}]
-
-def bh_typesig_check(opcodes, types, opers):
-    return typesig_to_shorthand(opcodes, types, opers)
-
-"""
 
 if __name__ == "__main__":
     main(sys.modules[__name__])

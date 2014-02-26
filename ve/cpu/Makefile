@@ -41,7 +41,7 @@ graph:
 	[ -f /tmp/graph-3.svg ] && xdg-open /tmp/graph-3.svg
 
 docs:
-	mkdir doc/output
+	mkdir -p doc/output
 	doxygen doc/cpu_engine.doxy
 
 test:

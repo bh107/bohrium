@@ -11,6 +11,7 @@ typedef enum OPERATION {
     GENERATE    = 16,   // examples: iota, random numbers etc.
     SYSTEM      = 32,
     EXTENSION   = 64,
+    NOOP        = 128
 } OPERATION;
 
 typedef enum OPERATOR {

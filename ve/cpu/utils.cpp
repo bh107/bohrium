@@ -4,81 +4,6 @@ using namespace std;
 namespace bohrium{
 namespace utils{
 
-std::string operation_text(OPERATION op)
-{
-    switch(op) {
-        case MAP:
-            return "MAP";
-        case ZIP:
-            return "ZIP";
-        case SCAN:
-            return "SCAN";
-        case REDUCE:
-            return "REDUCE";
-        case GENERATE:
-            return "GENERATE";
-        case SYSTEM:
-            return "SYSTEM";
-        case EXTENSION:
-            return "EXTENSION";
-        default:
-            return "_ERR_";
-    }
-}
-
-// TODO: implement
-std::string operator_text(OPERATOR op)
-{
-    return "IMPLEMENT_ME";
-}
-
-std::string etype_text(ETYPE type)
-{
-    return "IMPLEMENT_ME";
-}
-
-std::string etype_text_shand(ETYPE type)
-{
-    switch(type) {
-        case BOOL:       return "z";
-        case INT8:       return "b";
-        case INT16:      return "s";
-        case INT32:      return "i";
-        case INT64:      return "l";
-        case UINT8:      return "B";
-        case UINT16:     return "S";
-        case UINT32:     return "I";
-        case UINT64:     return "L";
-        case FLOAT32:    return "f";
-        case FLOAT64:    return "d";
-        case COMPLEX64:  return "c";
-        case COMPLEX128: return "C";
-        default:
-            return "{{UNKNOWN}}";
-    }
-}
-
-ETYPE bhtype_to_etype(bh_type type)
-{
-    switch(type) {
-        case BH_BOOL:       return BOOL;
-        case BH_INT8:       return INT8;
-        case BH_INT16:      return INT16;
-        case BH_INT32:      return INT32;
-        case BH_INT64:      return INT64;
-        case BH_UINT8:      return UINT8;
-        case BH_UINT16:     return UINT16;
-        case BH_UINT32:     return UINT32;
-        case BH_UINT64:     return UINT64;
-        case BH_FLOAT32:    return FLOAT32;
-        case BH_FLOAT64:    return FLOAT64;
-        case BH_COMPLEX64:  return COMPLEX64;
-        case BH_COMPLEX128: return COMPLEX128;
-        default:
-            throw runtime_error("Unsupported bhtype, cannot map to etype.");
-    }
-}
-
 /**
  *  Determine whether an operand has a contiguous layout.
  */
@@ -111,21 +36,6 @@ std::string tac_text(tac_t& tac)
     ss << ", in2="  << tac.in2;
     ss << "]" << endl;
     return ss.str();
-}
-
-std::string layout_text_shand(LAYOUT layout)
-{
-    switch(layout) {
-        case CONSTANT:
-            return "K";
-        case CONTIGUOUS:
-            return "C";
-        case STRIDED:
-            return "S";
-        case SPARSE:
-            return "P";
-    }
-    return "ERR";
 }
 
 int tac_noperands(tac_t& tac)
@@ -166,6 +76,8 @@ int tac_noperands(tac_t& tac)
             break;
         case EXTENSION:
             return 3;
+        case NOOP:
+            return 0;
     }
     return 0;
 }
