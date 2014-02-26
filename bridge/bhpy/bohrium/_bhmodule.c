@@ -27,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
 static PyTypeObject BhArrayType;
+PyObject *_util = NULL; //The _util Python module
 
 typedef struct
 {
@@ -37,34 +38,26 @@ typedef struct
 static void
 BhArray_dealloc(BhArray* self)
 {
-    assert(BhArray_CheckExact(self));
     if(self->bhc_ary == NULL)
-        return;
+        goto finish;
 
     if(self->bhc_ary == Py_None)
     {
         Py_DECREF(Py_None);
-        return;
+        goto finish;
     }
-
-    PyObject *m = PyImport_ImportModule("_util");
-    if(m == NULL)
-    {
-        PyErr_Print();
-        return;
-    }
-    PyObject *arys_to_destory = PyObject_GetAttrString(m,"bhc_arys_to_destroy");
+    PyObject *arys_to_destory = PyObject_GetAttrString(_util,"bhc_arys_to_destroy");
     if(arys_to_destory == NULL)
     {
         PyErr_Print();
-        return;
+        goto finish;
     }
     if(PyList_Append(arys_to_destory, self->bhc_ary) != 0)
     {
         PyErr_Print();
-        return;
+        goto finish;
     }
-    Py_DECREF(m);
+finish:
     PyObject_Del(self);
 }
 
@@ -85,8 +78,28 @@ BhArray_finalize(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+
+static PyObject *
+BhArray_set_np_data(PyObject *self, PyObject *args)
+{
+    PyObject *data;
+    if (!PyArg_ParseTuple(args, "O", &data))
+        return NULL;
+
+    if(!PyInt_Check(data))
+    {
+        PyErr_SetString(PyExc_TypeError, "'data' must be a integer "
+                "that represents a memory address");
+        return NULL;
+    }
+    void *d = PyLong_AsVoidPtr(data);
+    memcpy(PyArray_DATA((PyArrayObject*)self), d, PyArray_NBYTES((PyArrayObject*)self));
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
+    {"set_np_data", BhArray_set_np_data, METH_VARARGS, "set_np_data(data)"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
@@ -173,4 +186,8 @@ init_bh(void)
         return;
 
     PyModule_AddObject(m, "ndarray", (PyObject *)&BhArrayType);
+
+    _util = PyImport_ImportModule("_util");
+    if(_util == NULL)
+        return;
 }

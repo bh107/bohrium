@@ -119,14 +119,35 @@ class Tests(unittest.TestCase):
         assign(42, A)
         assign(A, B)
         data_bhc2np(A)
+        data_bhc2np(B)
+        #Compare result to NumPy
+        N = np.empty((4,4), dtype=int)
+        N[:] = 42
+        self.assertTrue(np.array_equal(B,N))
+        self.assertTrue(np.array_equal(A,N))
 
-
-    def t1est_ufunc(self):
+    def test_ufunc(self):
         for f in ufuncs:
             for type_sig in f.info['type_sig']:
                 if f.info['bhc_name'] == "assign":
                     continue
                 print f, type_sig
+                A = array_create.empty((4,4), dtype=type_sig[1])
+                if type_sig[1] == "bool":
+                    assign(False, A)
+                else:
+                    assign(2, A)
+                if f.info['nop'] == 2:
+                    res = f(A)
+                elif f.info['nop'] == 3:
+                    B = array_create.empty((4,4), dtype=type_sig[2])
+                    if type_sig[1] == "bool":
+                        assign(True, B)
+                    else:
+                        assign(3, B)
+                    res = f(A,B)
+                data_bhc2np(res)
+                #Compare result to NumPy
                 A = np.empty((4,4), dtype=type_sig[1])
                 A[:] = 2
                 B = np.empty((4,4), dtype=type_sig[1])
@@ -135,20 +156,7 @@ class Tests(unittest.TestCase):
                     exec "np_res = np.%s(A)"%f.info['np_name']
                 elif f.info['nop'] == 3:
                     exec "np_res = np.%s(A,B)"%f.info['np_name']
-                """
-                A = array_create.empty((4,4), dtype=type_sig[1])
-                assign(2, A)
-                if f.info['nop'] == 2:
-                    res = f(A)
-                elif f.info['nop'] == 3:
-                    B = array_create.empty((4,4), dtype=type_sig[2])
-                    assign(3, B)
-                    res = f(A,B)
-                """
-                #data_bhc2np(res)
-                #print res
-                #return
-
+                self.assertTrue(np.array_equal(res,np_res))
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Tests)

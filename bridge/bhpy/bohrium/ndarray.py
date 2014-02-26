@@ -38,8 +38,10 @@ def new_bhc_base(ary):
 
     if not ary.flags['BEHAVED']:
         raise ValueError("Bohrium arrays must be aligned, writeable, and in machine byte-order")
+
     if not ary.flags['OWNDATA']:
         raise ValueError("Bohrium base arrays must own its data")
+
     if not ary.flags['C_CONTIGUOUS']:
         raise ValueError("For now Bohrium only supports C-style arrays")
 
@@ -78,12 +80,14 @@ def data_bhc2np(ary):
         raise TypeError("must be a Bohrium array")
     ary = get_base(ary)
     dtype = _util.dtype_name(ary)
-    exec "bhc.bh_multi_array_%s_sync(ary.bhc_ary)"%dtype
-    exec "base = bhc.bh_multi_array_%s_get_base(ary.bhc_ary)"%dtype
+    bhc_ary = get_bhc(ary)
+    exec "bhc.bh_multi_array_%s_sync(bhc_ary)"%dtype
+    exec "base = bhc.bh_multi_array_%s_get_base(bhc_ary)"%dtype
     exec "data = bhc.bh_multi_array_%s_get_base_data(base)"%dtype
-    print "base:",base.__str__()
-    print "data:",data.__str__()
-
+    if data is not None:
+        ary.set_np_data(int(data))
+    exec "bhc.bh_multi_array_%s_destroy(bhc_ary)"%dtype
+    ary.bhc_ary = None
 
 def data_np2bhc(ary):
     if not hasattr(ary, "bhc_ary"):
