@@ -9,6 +9,26 @@ using namespace std;
 namespace bohrium{ 
 namespace utils{
 
+ETYPE bhtype_to_etype(bh_type bhtype)
+{
+    switch(bhtype) {
+        case BH_BOOL: return BOOL;
+        case BH_INT8: return INT8;
+        case BH_INT16: return INT16;
+        case BH_INT32: return INT32;
+        case BH_INT64: return INT64;
+        case BH_UINT8: return UINT8;
+        case BH_UINT16: return UINT16;
+        case BH_UINT32: return UINT32;
+        case BH_UINT64: return UINT64;
+        case BH_FLOAT32: return FLOAT32;
+        case BH_FLOAT64: return FLOAT64;
+        case BH_COMPLEX64: return COMPLEX64;
+        case BH_COMPLEX128: return COMPLEX128;
+    }
+    throw runtime_error("Unsupported bhtype, cannot map to etype.");
+}
+
 string operation_text(OPERATION op)
 {
     switch(op) {
@@ -134,6 +154,26 @@ string etype_text_shand(ETYPE etype)
     return "_ERR_";
 }
 
+string etype_to_ctype_text(ETYPE etype)
+{
+    switch(etype) {
+        case BOOL: return "unsigned char";
+        case INT8: return "int8_t";
+        case INT16: return "int16_t";
+        case INT32: return "int32_t";
+        case INT64: return "int64_t";
+        case UINT8: return "uint8_t";
+        case UINT16: return "uint16_t";
+        case UINT32: return "uint32_t";
+        case UINT64: return "uint64_t";
+        case FLOAT32: return "float";
+        case FLOAT64: return "double";
+        case COMPLEX64: return "float complex";
+        case COMPLEX128: return "double complex";
+    }
+    return "_ERR_";
+}
+
 string layout_text(LAYOUT layout)
 {
     switch(layout) {
@@ -164,25 +204,7 @@ string layout_text_shand(LAYOUT layout)
     return "_ERR_";
 }
 
-ETYPE bhtype_to_etype(bh_type bhtype)
-{
-    switch(bhtype) {
-        case BH_BOOL: return BOOL;
-        case BH_INT8: return INT8;
-        case BH_INT16: return INT16;
-        case BH_INT32: return INT32;
-        case BH_INT64: return INT64;
-        case BH_UINT8: return UINT8;
-        case BH_UINT16: return UINT16;
-        case BH_UINT32: return UINT32;
-        case BH_UINT64: return UINT64;
-        case BH_FLOAT32: return FLOAT32;
-        case BH_FLOAT64: return FLOAT64;
-        case BH_COMPLEX64: return COMPLEX64;
-        case BH_COMPLEX128: return COMPLEX128;
-    }
-    throw runtime_error("Unsupported bhtype, cannot map to etype.");
-}
+
 
 }}
 

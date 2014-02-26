@@ -13,6 +13,16 @@ using namespace std;
 namespace bohrium{ 
 namespace utils{
 
+ETYPE bhtype_to_etype(bh_type bhtype)
+{
+    switch(bhtype) {
+        %for $type in $types
+        case $type['enum']: return ${type['name']};
+        %end for
+    }
+    throw runtime_error("Unsupported bhtype, cannot map to etype.");
+}
+
 string operation_text(OPERATION op)
 {
     switch(op) {
@@ -53,6 +63,16 @@ string etype_text_shand(ETYPE etype)
     return "_ERR_";
 }
 
+string etype_to_ctype_text(ETYPE etype)
+{
+    switch(etype) {
+        %for $type in $types
+        case $type['name']: return "${type['c']}";
+        %end for
+    }
+    return "_ERR_";
+}
+
 string layout_text(LAYOUT layout)
 {
     switch(layout) {
@@ -75,15 +95,7 @@ string layout_text_shand(LAYOUT layout)
     return "_ERR_";
 }
 
-ETYPE bhtype_to_etype(bh_type bhtype)
-{
-    switch(bhtype) {
-        %for $type in $types
-        case $type['enum']: return ${type['name']};
-        %end for
-    }
-    throw runtime_error("Unsupported bhtype, cannot map to etype.");
-}
+
 
 }}
 
