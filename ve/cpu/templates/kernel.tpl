@@ -9,7 +9,7 @@
 #include <complex.h>
 #include <math.h>
 #include <Random123/threefry.h>
-#include <bh_tac.h>
+#include <tac.h>
 #if defined(_OPENMP)
 #include <omp.h>
 #else
@@ -31,10 +31,7 @@ inline int omp_get_num_threads() { return 1; }
 #define CPU_MAXDIM 16
 #endif
 
-// hopefully this thing will be short-lived...
-typedef struct { uint64_t start, key; } bh_r123;
-
-void {{SYMBOL}}(block_arg_t* args)
+void {{SYMBOL}}(operand_t* args)
 {
     //
     // Argument unpacking
