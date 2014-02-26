@@ -40,6 +40,13 @@ graph:
 	[ -f graph-3.dot ] && dot -T svg graph-3.dot > /tmp/graph-3.svg
 	[ -f /tmp/graph-3.svg ] && xdg-open /tmp/graph-3.svg
 
+gen:
+	cd codegen && ./gen.py
+	cp codegen/output/block_compose.cpp .
+	cp codegen/output/utils_mapping.cpp .
+	cp codegen/output/tac.cpp tac.h
+	rm codegen/output/*.cpp
+
 docs:
 	mkdir -p doc/output
 	doxygen doc/cpu_engine.doxy
@@ -54,7 +61,7 @@ $(LIB): $(OBJ)
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-	rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot doc/output
+	rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot doc/output codegen/output/*
 
 install: all
 	cp $(LIB) $(INSTALLDIR)/
