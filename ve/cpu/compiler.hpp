@@ -6,6 +6,10 @@
 #include <cstdio>
 #include <iostream>
 
+namespace bohrium{
+namespace engine {
+namespace cpu {
+
 class Compiler {
 public:
     Compiler(const std::string process_str,
@@ -27,5 +31,7 @@ private:
     std::string object_directory;
 
 };
+
+}}}
 
 #endif

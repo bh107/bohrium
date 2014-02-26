@@ -2,6 +2,10 @@
 
 using namespace std;
 
+namespace bohrium{
+namespace engine {
+namespace cpu {
+
 /**
  * compile() forks and executes a system process, the process along with
  * arguments must be provided as argument at time of construction.
@@ -81,3 +85,4 @@ bool Compiler::compile(string symbol, string library, const char* sourcecode, si
     return true;
 }
 
+}}}

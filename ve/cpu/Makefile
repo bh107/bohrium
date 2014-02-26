@@ -40,6 +40,10 @@ graph:
 	[ -f graph-3.dot ] && dot -T svg graph-3.dot > /tmp/graph-3.svg
 	[ -f /tmp/graph-3.svg ] && xdg-open /tmp/graph-3.svg
 
+docs:
+	mkdir doc/output
+	doxygen doc/cpu_engine.doxy
+
 test:
 	BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
 
@@ -50,7 +54,7 @@ $(LIB): $(OBJ)
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-	rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot
+	rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot doc/output
 
 install: all
 	cp $(LIB) $(INSTALLDIR)/
