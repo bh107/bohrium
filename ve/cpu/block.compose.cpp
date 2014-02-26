@@ -939,7 +939,7 @@ bool Block::compose()
                 if (instr.opcode>=BH_MAX_OPCODE_ID) {   // Handle extensions here
 
                     this->program[i].op   = EXTENSION; // TODO: Be clever about it
-                    this->program[i].oper = EXT_OFFSET;
+                    this->program[i].oper = EXTENSION_OPERATOR;
                     this->program[i].out  = 0;
                     this->program[i].in1  = 0;
                     this->program[i].in2  = 0;

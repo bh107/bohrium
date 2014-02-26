@@ -63,5 +63,7 @@
 
     {"id": 61, "name": "FLOOD",     "nop": 1, "types": []},
     {"id": 62, "name": "RANDOM",    "nop": 2, "types": []},
-    {"id": 63, "name": "RANGE",     "nop": 0, "types": []}
+    {"id": 63, "name": "RANGE",     "nop": 0, "types": []},
+
+    {"id": 64, "name": "EXTENSION_OPERATOR","nop": 0, "types": []}
 ]

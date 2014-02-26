@@ -8,6 +8,17 @@ import os
 
 from Cheetah.Template import Template
 
+class BohriumTemplate(Template):
+    def addw(text, nw=10):
+        w = ' '*nw
+        return text+w[len(text):] if nw > len(text) else text
+    
+    def addsep(element, elements):
+        cur_id  = element['id']
+        last_id = elements[-1]['id']
+
+        return '' if cur_id == last_id else ','
+
 def forward_everything(opcodes, ops, opers, types, layouts):
     return {
         'opcodes':  opcodes,
@@ -32,7 +43,7 @@ def main(self):
     for fn in glob.glob('templates/*.tpl'):
         fn, _ = os.path.basename(fn).split('.tpl')
         if fn in self.__dict__:
-            template = Template(
+            template = BohriumTemplate(
                 file = "%s%s%s.tpl" % ("templates", os.sep, fn),
                 searchList=globals()[fn](opcodes, ops, opers, types, layouts)
             )
@@ -40,6 +51,9 @@ def main(self):
                 fd.write(str(template))
 
 def utils_mapping(opcodes, ops, opers, types, layouts):
+    return forward_everything(opcodes, ops, opers, types, layouts)
+
+def tac(opcodes, ops, opers, types, layouts):
     return forward_everything(opcodes, ops, opers, types, layouts)
 
 def block_compose(opcodes, ops, opers, types, layouts):

@@ -85,8 +85,7 @@ typedef enum OPERATOR {
     RANDOM,
     RANGE,
 
-    NBUILTIN,   // Not an operator but a count of built-in operators
-    EXT_OFFSET  // Wildcard for extension opcodes
+    EXTENSION_OPERATOR  // Wildcard for extension opcodes
 
 } OPERATOR;
 
