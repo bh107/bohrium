@@ -78,28 +78,41 @@ BhArray_finalize(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-
 static PyObject *
-BhArray_set_np_data(PyObject *self, PyObject *args)
+BhArray_data_bhc2np(PyObject *self, PyObject *args)
 {
-    PyObject *data;
-    if (!PyArg_ParseTuple(args, "O", &data))
+    if(!PyArg_ParseTuple(args, ""))
         return NULL;
 
+    PyObject *ndarray = PyImport_ImportModule("ndarray");
+    if(ndarray == NULL)
+        return NULL;
+
+    PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "O", self);
+    if(data == NULL)
+        return NULL;
     if(!PyInt_Check(data))
     {
-        PyErr_SetString(PyExc_TypeError, "'data' must be a integer "
-                "that represents a memory address");
+        PyErr_SetString(PyExc_TypeError, "get_bhc_data_pointer(ary) should "
+                "return a Python integer that represents a memory address");
         return NULL;
     }
+    //Lets copy data
     void *d = PyLong_AsVoidPtr(data);
-    memcpy(PyArray_DATA((PyArrayObject*)self), d, PyArray_NBYTES((PyArrayObject*)self));
+    if(d != NULL)
+    {
+        memcpy(PyArray_DATA((PyArrayObject*)self), d, PyArray_NBYTES((PyArrayObject*)self));
+    }
+    //Lets remove the current bhc_ary
+    Py_DECREF(((BhArray*)self)->bhc_ary);
+    ((BhArray*)self)->bhc_ary = Py_None;
+    Py_INCREF(Py_None);
     Py_RETURN_NONE;
 }
 
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
-    {"set_np_data", BhArray_set_np_data, METH_VARARGS, "set_np_data(data)"},
+    {"_data_bhc2np", BhArray_data_bhc2np, METH_VARARGS, "Copy the Bohrium-C data to NumPy data"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 

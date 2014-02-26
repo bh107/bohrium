@@ -27,7 +27,7 @@ import bhc
 import numpy as np
 import _info
 from _util import dtype_name
-from ndarray import get_bhc, data_bhc2np
+from ndarray import get_bhc
 
 def assign(a, out):
     out_dtype = dtype_name(out)
@@ -118,8 +118,8 @@ class Tests(unittest.TestCase):
         B = array_create.empty((4,4), dtype=int)
         assign(42, A)
         assign(A, B)
-        data_bhc2np(A)
-        data_bhc2np(B)
+        A._data_bhc2np()
+        B._data_bhc2np()
         #Compare result to NumPy
         N = np.empty((4,4), dtype=int)
         N[:] = 42
@@ -146,7 +146,7 @@ class Tests(unittest.TestCase):
                     else:
                         assign(3, B)
                     res = f(A,B)
-                data_bhc2np(res)
+                res._data_bhc2np()
                 #Compare result to NumPy
                 A = np.empty((4,4), dtype=type_sig[1])
                 A[:] = 2

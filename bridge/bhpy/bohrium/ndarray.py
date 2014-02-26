@@ -75,7 +75,8 @@ def get_bhc(ary):
     else:
         raise NotImplementedError("TODO: handle views")
 
-def data_bhc2np(ary):
+#Return the Bohrium-C data pointer (represented by a Python integer)
+def get_bhc_data_pointer(ary):
     if not hasattr(ary, "bhc_ary"):
         raise TypeError("must be a Bohrium array")
     ary = get_base(ary)
@@ -84,10 +85,10 @@ def data_bhc2np(ary):
     exec "bhc.bh_multi_array_%s_sync(bhc_ary)"%dtype
     exec "base = bhc.bh_multi_array_%s_get_base(bhc_ary)"%dtype
     exec "data = bhc.bh_multi_array_%s_get_base_data(base)"%dtype
-    if data is not None:
-        ary.set_np_data(int(data))
-    exec "bhc.bh_multi_array_%s_destroy(bhc_ary)"%dtype
-    ary.bhc_ary = None
+    if data is None:
+        return 0
+    else:
+        return int(data)
 
 def data_np2bhc(ary):
     if not hasattr(ary, "bhc_ary"):
