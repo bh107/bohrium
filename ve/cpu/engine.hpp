@@ -34,6 +34,7 @@ public:
     ~Engine();
 
     std::string text();
+    bool src_to_file(std::string symbol, const char* sourcecode, size_t source_len);
 
     bh_error execute(bh_ir& ir);
 

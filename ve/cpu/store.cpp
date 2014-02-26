@@ -7,8 +7,7 @@ namespace cpu {
 
 Store::Store(const string object_dir) : object_dir(object_dir)
 {
-
-    // Create an identifier with low collision...
+    char uid[7];    // Create an identifier with low collision...    
     static const char alphanum[] =
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -20,9 +19,10 @@ Store::Store(const string object_dir) : object_dir(object_dir)
     }
     uid[6] = 0;
 
+    this->uid = string(uid);
 }
 
-string Store::text()
+string Store::text(void)
 {
     stringstream ss;
     ss << "Store(\"" << object_dir << "\");" << endl;
@@ -32,9 +32,9 @@ string Store::text()
 /**
  *  Get the id of the store.
  */
-const char* Store::get_uid(void)
+string Store::get_uid(void)
 {
-    return uid;
+    return this->uid;
 }
 
 /**
@@ -49,7 +49,7 @@ bool Store::symbol_ready(string symbol)
  *  Construct a mapping of all symbols and from where they can be loaded.
  *  Populates compiler->libraries
  */
-size_t Store::preload()
+size_t Store::preload(void)
 {
     DIR *dir;
     struct dirent *ent;

@@ -4,29 +4,6 @@ using namespace std;
 namespace bohrium{
 namespace utils{
 
-std::string bh_type_text_shand(bh_type type)
-{
-    switch(type) {
-        case BH_BOOL: return "z";
-        case BH_INT8: return "b";
-        case BH_INT16: return "s";
-        case BH_INT32: return "i";
-        case BH_INT64: return "l";
-        case BH_UINT8: return "B";
-        case BH_UINT16: return "S";
-        case BH_UINT32: return "I";
-        case BH_UINT64: return "L";
-        case BH_FLOAT32: return "f";
-        case BH_FLOAT64: return "d";
-        case BH_COMPLEX64: return "c";
-        case BH_COMPLEX128: return "C";
-        case BH_R123: return "R";
-        case BH_UNKNOWN: return "U";
-        default:
-            return "{{UNKNOWN}}";
-    }
-}
-
 std::string operation_text(OPERATION op)
 {
     switch(op) {
@@ -62,12 +39,44 @@ std::string etype_text(ETYPE type)
 
 std::string etype_text_shand(ETYPE type)
 {
-    return "IMPLEMENT_ME";
+    switch(type) {
+        case BOOL:       return "z";
+        case INT8:       return "b";
+        case INT16:      return "s";
+        case INT32:      return "i";
+        case INT64:      return "l";
+        case UINT8:      return "B";
+        case UINT16:     return "S";
+        case UINT32:     return "I";
+        case UINT64:     return "L";
+        case FLOAT32:    return "f";
+        case FLOAT64:    return "d";
+        case COMPLEX64:  return "c";
+        case COMPLEX128: return "C";
+        default:
+            return "{{UNKNOWN}}";
+    }
 }
 
 ETYPE bhtype_to_etype(bh_type type)
 {
-    return FLOAT32;
+    switch(type) {
+        case BH_BOOL:       return BOOL;
+        case BH_INT8:       return INT8;
+        case BH_INT16:      return INT16;
+        case BH_INT32:      return INT32;
+        case BH_INT64:      return INT64;
+        case BH_UINT8:      return UINT8;
+        case BH_UINT16:     return UINT16;
+        case BH_UINT32:     return UINT32;
+        case BH_UINT64:     return UINT64;
+        case BH_FLOAT32:    return FLOAT32;
+        case BH_FLOAT64:    return FLOAT64;
+        case BH_COMPLEX64:  return COMPLEX64;
+        case BH_COMPLEX128: return COMPLEX128;
+        default:
+            throw runtime_error("Unsupported bhtype, cannot map to etype.");
+    }
 }
 
 /**
@@ -165,14 +174,14 @@ std::string tac_typesig_text(tac_t& tac, operand_t* scope)
 {
     switch(tac_noperands(tac)) {
         case 3:
-            return  bh_type_text_shand(scope[tac.out].type)+\
-                    bh_type_text_shand(scope[tac.in1].type)+\
-                    bh_type_text_shand(scope[tac.in2].type);
+            return  etype_text_shand(scope[tac.out].type)+\
+                    etype_text_shand(scope[tac.in1].type)+\
+                    etype_text_shand(scope[tac.in2].type);
         case 2:
-            return  bh_type_text_shand(scope[tac.out].type)+\
-                    bh_type_text_shand(scope[tac.in1].type);
+            return  etype_text_shand(scope[tac.out].type)+\
+                    etype_text_shand(scope[tac.in1].type);
         case 1:
-            return  bh_type_text_shand(scope[tac.out].type);
+            return  etype_text_shand(scope[tac.out].type);
         default:
             return "";
     }

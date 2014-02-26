@@ -44,7 +44,7 @@ public:
     std::string text();
 
     bool symbol_ready(std::string symbol);
-    const char* get_uid(void);
+    std::string get_uid(void);
     bool load(std::string symbol);
     bool load(std::string symbol, std::string library);
     size_t preload();
@@ -55,7 +55,7 @@ private:
     handle_storage handles;
     symbol_library_map libraries;
     std::string object_dir;
-    char uid[7];
+    std::string uid;
 };
 
 }}}

@@ -44,14 +44,14 @@ bool Block::compose()
                 in2 = ++(this->noperands);
                 this->scope[in2].layout    = CONSTANT;
                 this->scope[in2].data      = &(instr.constant.value.r123.key);
-                this->scope[in2].type      = BH_UINT64;
+                this->scope[in2].type      = UINT64;
                 this->scope[in2].nelem     = 1;
                 %else if 'ACCUMULATE' in $opcode or 'REDUCE' in $opcode
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
                 this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].data      = &(instr.constant.value.r123.key);
+                this->scope[in2].data      = &(instr.constant.value.uint64);
                 this->scope[in2].type      = UINT64;
                 this->scope[in2].nelem     = 1;
                 %else

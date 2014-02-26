@@ -92,6 +92,7 @@ bh_error Engine::execute(bh_ir& bhir)
         // We are now looking at a graph in which we hope that all nodes are instructions
         // we map this to a block in a slightly different format than a list of instructions
         Block block(bhir, bhir.dag_list[node]);
+        block.compose();
 
         //
         // We start by creating a symbol
@@ -120,15 +121,19 @@ bh_error Engine::execute(bh_ir& bhir)
             (!storage.symbol_ready(block.symbol))) {   
                                                         // Specialize sourcecode
             string sourcecode = specializer.specialize(block, jit_optimize);   
-            if (jit_dumpsrc==1) {                       // Dump sourcecode to file
-                /*
-                target->src_to_file(
-                    block.symbol,
-                    sourcecode.c_str(),
+            if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
+                this->src_to_file(
+                    block.symbol, 
+                    sourcecode.c_str(), 
                     sourcecode.size()
-                );*/
+                );
             }                                           // Send to compiler
-            compiler.compile(block.symbol, "bahh", sourcecode.c_str(), sourcecode.size());
+            compiler.compile(
+                block.symbol, 
+                block.symbol+"_"+storage.get_uid(), 
+                sourcecode.c_str(), 
+                sourcecode.size()
+            );
         }
 
         //
@@ -191,6 +196,42 @@ bh_error Engine::execute(bh_ir& bhir)
     
     cout << "<< Engine::execute(...)" << endl;
     return res;
+}
+
+/**
+ *  Write source-code to file.
+ *  Filename will be along the lines of: kernel/<symbol>_<UID>.c
+ *  NOTE: Does not overwrite existing files.
+ */
+bool Engine::src_to_file(string symbol, const char* sourcecode, size_t source_len)
+{
+    int kernel_fd;              // Kernel file-descriptor
+    FILE *kernel_fp = NULL;     // Handle for kernel-file
+    const char *mode = "w";
+    int err;
+    string kernel_path = this->kernel_directory         \
+                         +"/"+ symbol                   \
+                         +"_"+ this->storage.get_uid()  \
+                         + ".c";
+
+    kernel_fd = open(kernel_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
+    if ((!kernel_fd) || (kernel_fd<1)) {
+        err = errno;
+        utils::error(err, "Failed opening kernel-file [%s] in src_to_file(...).\n", kernel_path.c_str());
+        return false;
+    }
+    kernel_fp = fdopen(kernel_fd, mode);
+    if (!kernel_fp) {
+        err = errno;
+        utils::error(err, "fdopen(fildes= %d, flags= %s).", kernel_fd, mode);
+        return false;
+    }
+    fwrite(sourcecode, 1, source_len, kernel_fp);
+    fflush(kernel_fp);
+    fclose(kernel_fp);
+    close(kernel_fd);
+
+    return true;
 }
 
 }}}
