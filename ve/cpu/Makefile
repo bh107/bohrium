@@ -44,6 +44,7 @@ gen:
 	cd codegen && ./gen.py
 	cp codegen/output/block_compose.cpp .
 	cp codegen/output/utils_mapping.cpp .
+	cp codegen/output/specializer_cexpression.cpp .
 	cp codegen/output/tac.cpp tac.h
 	rm codegen/output/*.cpp
 
