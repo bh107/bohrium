@@ -13,15 +13,14 @@
 #include <cstdarg>
 #include <memory>
 
-namespace bohrium {
-namespace utils {
 #ifdef DEBUGGING
-#define DEBUG(x) do { \
-  if (debugging_enabled) { std::cerr << x << std::endl; } \
-} while (0);
+#define DEBUG(x) do { std::cerr << x << std::endl; } while (0);
 #else
 #define DEBUG(X)
 #endif
+
+namespace bohrium {
+namespace utils {
 
 ETYPE bhtype_to_etype(bh_type bhtype);
 

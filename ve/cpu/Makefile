@@ -11,7 +11,7 @@ ifeq ($(PLATFORM_OS),OSX)
 	EXTRA_LIBS+=-L$(ROOT)/thirdparty/ctemplate/osx-lib 
 endif
 
-LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=c++0x -I$(ROOT)/include
+LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=c++0x -I$(ROOT)/include $(EXTRAS)
 LDFLAGS=-L../../core $(ARCH_OPTS) -lbh $(EXTRA_LIBS) -lctemplate -shared -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.h $(ROOT)/include/*
 SRC=$(ALL_CPP_FILES)
@@ -41,12 +41,12 @@ graph:
 	[ -f /tmp/graph-3.svg ] && xdg-open /tmp/graph-3.svg
 
 gen:
-	cd codegen && ./gen.py
-	cp codegen/output/block_compose.cpp .
-	cp codegen/output/utils_mapping.cpp .
-	cp codegen/output/specializer_cexpression.cpp .
-	cp codegen/output/tac.cpp tac.h
-	rm codegen/output/*.cpp
+	cd autogen && ./gen.py
+	cp autogen/output/block_compose.cpp .
+	cp autogen/output/utils_mapping.cpp .
+	cp autogen/output/specializer_cexpression.cpp .
+	cp autogen/output/tac.cpp tac.h
+	rm autogen/output/*.cpp
 
 docs:
 	mkdir -p doc/output
@@ -62,7 +62,7 @@ $(LIB): $(OBJ)
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-	rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot doc/output codegen/output/*
+	rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot doc/output autogen/output/*
 
 install: all
 	cp $(LIB) $(INSTALLDIR)/

@@ -21,7 +21,7 @@ class BohriumTemplate(Template):
 
         return '' if cur_id == last_id else ','
 
-def forward_everything(opcodes, ops, opers, types, layouts, cexpr):
+def forward_everything(opcodes, ops, opers, types, layouts, cexprs):
     """This is for those functions that do not need some sort of mangling, they just want it all."""
 
     return {
@@ -30,16 +30,16 @@ def forward_everything(opcodes, ops, opers, types, layouts, cexpr):
         'opers':    opers,
         'types':    types,
         'layouts':  layouts,
-        'cexpr':    cexpr
+        'cexprs':    cexprs
     }
 
-def utils_mapping(opcodes, ops, opers, types, layouts, cexpr):
-    return forward_everything(opcodes, ops, opers, types, layouts, cexpr)
+def utils_mapping(opcodes, ops, opers, types, layouts, cexprs):
+    return forward_everything(opcodes, ops, opers, types, layouts, cexprs)
 
-def tac(opcodes, ops, opers, types, layouts, cexpr):
-    return forward_everything(opcodes, ops, opers, types, layouts, cexpr)
+def tac(opcodes, ops, opers, types, layouts, cexprs):
+    return forward_everything(opcodes, ops, opers, types, layouts, cexprs)
 
-def block_compose(opcodes, ops, opers, types, layouts, cexpr):
+def block_compose(opcodes, ops, opers, types, layouts, cexprs):
     """Construct the data need to create a map from bh_instruction to tac_t."""
 
     ewise_u     = []
@@ -55,10 +55,7 @@ def block_compose(opcodes, ops, opers, types, layouts, cexpr):
         opcode = o['opcode']
 
         if o['system_opcode']:
-            nin = 1
-            if 'BH_FREE' in opcode:
-                nin = 0
-            system.append([opcode, 'SYSTEM', opcode.replace('BH_',''), nin])
+            system.append([opcode, 'SYSTEM', opcode.replace('BH_',''), 0])
 
         else:
             if 'REDUCE' in opcode:
@@ -94,10 +91,38 @@ def block_compose(opcodes, ops, opers, types, layouts, cexpr):
 
     return operations
 
-def specializer_cexpression(opcodes, ops, opers, types, layouts, cexpr):
+def specializer_cexpression(opcodes, ops, opers, types, layouts, cexprs):
     """Apply a naming convention to the pseud-variables, and make it string-formattable."""
 
-    return forward_everything(opcodes, ops, opers, types, layouts, cexpr)
+    def naming_convention(expression):        
+        return expression.replace('out', '*a%d_current').replace('in1', '*a%d_current').replace('in2', '*a%d_current')
+
+    expressions = {}
+    for cexpr in cexprs:
+        op      = cexpr['op']
+        oper    = cexpr['oper']
+
+        # Grab the expressing and apply the naming convention
+        oper_expr = [                                   
+            (case, naming_convention(expr))             
+            for case, expr in cexpr['scalar'].items()  
+            if expr
+        ]
+
+        if oper in expressions:
+            expressions[oper].append((op, oper_expr))
+        else:
+            expressions[oper] = [(op, oper_expr)]
+
+    expr_list = []
+    for oper in expressions:
+        for op, oper_expr in expressions[oper]:
+            oper_expr.sort()
+        expr_list.append((oper, expressions[oper]))
+
+    expr_list.sort()
+
+    return {'expressions': expr_list}
 
 def main(self):
 
@@ -109,7 +134,7 @@ def main(self):
     opers   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'operators')))
     types   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'types')))
     layouts = json.load(open("%s%s%s.json" % (prefix, os.sep, 'layouts')))
-    cexpr   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'cexpressions')))
+    cexprs  = json.load(open("%s%s%s.json" % (prefix, os.sep, 'cexpressions')))
 
     # Map template names to mapping-functons and fill out the template
     for fn in glob.glob('templates/*.tpl'):
@@ -117,7 +142,7 @@ def main(self):
         if fn in self.__dict__:
             template = BohriumTemplate(
                 file = "%s%s%s.tpl" % ("templates", os.sep, fn),
-                searchList=globals()[fn](opcodes, ops, opers, types, layouts, cexpr)
+                searchList=globals()[fn](opcodes, ops, opers, types, layouts, cexprs)
             )
             with open('output/%s.cpp' % fn, 'w') as fd:
                 fd.write(str(template))

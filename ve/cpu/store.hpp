@@ -43,6 +43,8 @@ public:
     Store(const std::string object_dir);
     std::string text();
 
+    void add_symbol(std::string symbol, std::string library);
+
     bool symbol_ready(std::string symbol);
     std::string get_uid(void);
     bool load(std::string symbol);

@@ -26,6 +26,7 @@ string Store::text(void)
 {
     stringstream ss;
     ss << "Store(\"" << object_dir << "\");" << endl;
+    ss << "Store.uid = \"" << this->uid << "\"" << endl;
     return ss.str();
 }
 
@@ -148,6 +149,11 @@ size_t Store::preload(void)
     return nloaded;
 }
 
+void Store::add_symbol(string symbol, string library)
+{
+    libraries.insert(pair<string, string>(symbol, library));
+}
+
 /**
  *  Load a single symbol from library symbol into func-storage.
  */
@@ -159,7 +165,7 @@ bool Store::load(string symbol) {
 
 bool Store::load(string symbol, string library)
 {
-    DEBUG("Store::load("<< symbol << ", " << library ");");
+    DEBUG("Store::load("<< symbol << ", " << library << ");");
     
     char *error_msg = NULL;             // Buffer for dlopen errors
     int errnum = 0;

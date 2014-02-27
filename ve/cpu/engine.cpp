@@ -33,6 +33,7 @@ Engine::Engine(
     DEBUG(">>Engine(...)");
     
     bh_vcache_init(vcache_size);    // Victim cache
+    DEBUG(this->text());
 
     DEBUG("<<Engine(...)");
 }
@@ -100,7 +101,7 @@ bh_error Engine::execute(bh_ir& bhir)
             return BH_ERROR;
         }
 
-        cout << block.text() << endl;
+        DEBUG(block.text());
         
         //    // Lets check if it is a known extension method
         //    {
@@ -132,7 +133,8 @@ bh_error Engine::execute(bh_ir& bhir)
                 block.symbol+"_"+storage.get_uid(), 
                 sourcecode.c_str(), 
                 sourcecode.size()
-            );
+            );                                          // Inform storage
+            storage.add_symbol(block.symbol, block.symbol+"_"+storage.get_uid());
         }
 
         //
@@ -158,6 +160,7 @@ bh_error Engine::execute(bh_ir& bhir)
         // Allocate memory for output
         //
         for(size_t i=0; i<block.length; ++i) {
+            DEBUG("Allocating for "<< i << "?");
             res = bh_vcache_malloc(block.instr[i]);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "

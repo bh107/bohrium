@@ -101,7 +101,8 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
     size_t arg_idx = ++(noperands);
     if (bh_is_constant(&instr.operand[operand_idx])) {
         scope[arg_idx].layout    = CONSTANT;
-        scope[arg_idx].data      = &(instr.constant.value);
+        scope[arg_idx].const_data= &(instr.constant.value);
+        scope[arg_idx].data      = &scope[arg_idx].const_data;
         scope[arg_idx].type      = utils::bhtype_to_etype(instr.constant.type);
         scope[arg_idx].nelem     = 1;
     } else {
@@ -110,7 +111,12 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
         } else {
             scope[arg_idx].layout = STRIDED;
         }
-        scope[arg_idx].data      = bh_base_array(&instr.operand[operand_idx])->data;
+
+        DEBUG("base_array[" << bh_base_array(&instr.operand[operand_idx])->data << "]");
+        DEBUG("scope_operand["   << scope[arg_idx].data << "]");
+
+        scope[arg_idx].data      = &bh_base_array(&instr.operand[operand_idx])->data;
+        scope[arg_idx].const_data= 0x0;
         scope[arg_idx].type      = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
         scope[arg_idx].nelem     = bh_base_array(&instr.operand[operand_idx])->nelem;
         scope[arg_idx].ndim      = instr.operand[operand_idx].ndim;

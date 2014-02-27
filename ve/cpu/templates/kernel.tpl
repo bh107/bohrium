@@ -37,7 +37,7 @@ void {{SYMBOL}}(operand_t* args)
     // Argument unpacking
     //
     {{#ARGUMENT}}
-    {{TYPE}} *a{{NR}}_first = args[{{NR}}].data;
+    {{TYPE}} *a{{NR}}_first = *args[{{NR}}].data;
     {{#ARRAY}}
     int64_t  a{{NR}}_start  = args[{{NR}}].start;
     int64_t  a{{NR}}_nelem  = args[{{NR}}].nelem;

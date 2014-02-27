@@ -183,10 +183,6 @@ bh_error bh_ve_cpu_init(const char *name)
         (bool)jit_dumpsrc
     );
     
-    #ifdef DEBUG
-    cout << engine->text() << endl;
-    #endif
-
     return BH_SUCCESS;
 }
 

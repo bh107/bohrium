@@ -14,10 +14,11 @@ namespace cpu{
  */
 bool Block::compose()
 {
+    DEBUG(">> Block::compose()");
     for (int i=0; i< this->dag.nnode; ++i) {
         this->instr[i] = &this->ir.instr_list[dag.node_map[i]];
         bh_instruction& instr = *this->instr[i];
-
+        DEBUG("   Instruction i=" << i);
         uint32_t out=0, in1=0, in2=0;
 
         //
@@ -37,13 +38,15 @@ bool Block::compose()
                 // This one requires special-handling... what a beaty...
                 in1 = ++(this->noperands);                // Input
                 this->scope[in1].layout    = CONSTANT;
-                this->scope[in1].data      = &(instr.constant.value.r123.start);
+                this->scope[in1].const_data= &(instr.constant.value.r123.start);
+                this->scope[in1].data      = &(this->scope[in1].const_data);
                 this->scope[in1].type      = UINT64;
                 this->scope[in1].nelem     = 1;
 
                 in2 = ++(this->noperands);
                 this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].data      = &(instr.constant.value.r123.key);
+                this->scope[in2].const_data= &(instr.constant.value.r123.key);
+                this->scope[in2].data      = &(this->scope[in2].const_data);
                 this->scope[in2].type      = UINT64;
                 this->scope[in2].nelem     = 1;
                 %else if 'ACCUMULATE' in $opcode or 'REDUCE' in $opcode
@@ -51,7 +54,8 @@ bool Block::compose()
 
                 in2 = ++(this->noperands);
                 this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].data      = &(instr.constant.value.uint64);
+                this->scope[in2].const_data= &(instr.constant.value.uint64);
+                this->scope[in2].data      = &(this->scope[in2].const_data);
                 this->scope[in2].type      = UINT64;
                 this->scope[in2].nelem     = 1;
                 %else
@@ -89,10 +93,12 @@ bool Block::compose()
                     printf("compose: Err=[Unsupported instruction] {\n");
                     bh_pprint_instr(&instr);
                     printf("}\n");
+                    DEBUG("<< Block::compose(ERROR)");
                     return BH_ERROR;
                 }
         }
     }
+    DEBUG("<< Block::compose(SUCCESS)");
     return BH_SUCCESS;
 }
 
