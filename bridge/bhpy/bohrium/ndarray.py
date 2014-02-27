@@ -59,7 +59,7 @@ def get_base(ary):
             base = base.base
         return base
 
-#Returns the Bohrium-C array
+#Returns the Bohrium-C part of the bohrium.ndarray
 def get_bhc(ary):
     if not hasattr(ary, "bhc_ary"):
         raise TypeError("must be a Bohrium array")
@@ -75,7 +75,21 @@ def get_bhc(ary):
     else:
         raise NotImplementedError("TODO: handle views")
 
+#Delete the Bohrium-C part of the bohrium.ndarray
+def del_bhc(ary):
+    if not hasattr(ary, "bhc_ary"):
+        raise TypeError("must be a Bohrium array")
+
+    ary = get_base(ary)
+    if ary.bhc_ary is None:
+        return
+    dtype = _util.dtype_name(ary)
+    exec "bhc.bh_multi_array_%s_destroy(ary.bhc_ary)"%dtype
+    ary.bhc_ary = None
+
+
 #Return the Bohrium-C data pointer (represented by a Python integer)
+#Primarily used by _bhmodule.c
 def get_bhc_data_pointer(ary):
     if not hasattr(ary, "bhc_ary"):
         raise TypeError("must be a Bohrium array")

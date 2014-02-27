@@ -103,11 +103,9 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     {
         memcpy(PyArray_DATA((PyArrayObject*)self), d, PyArray_NBYTES((PyArrayObject*)self));
     }
-    //Lets remove the current bhc_ary
-    Py_DECREF(((BhArray*)self)->bhc_ary);
-    ((BhArray*)self)->bhc_ary = Py_None;
-    Py_INCREF(Py_None);
-    Py_RETURN_NONE;
+
+    //Lets delete the current bhc_ary
+    return PyObject_CallMethod(ndarray, "del_bhc", "O", self);
 }
 
 static PyObject *

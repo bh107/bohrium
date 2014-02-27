@@ -38,10 +38,8 @@ def assign(a, out):
         a_bhc = get_bhc(a)
         a_dtype = dtype_name(a)
         if out_dtype != a_dtype:
-            print "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
             exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
         cmd = "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
-    print cmd
     exec cmd
     return out
 
