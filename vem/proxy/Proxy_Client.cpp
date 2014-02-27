@@ -87,7 +87,7 @@ int Client_Start(const char* ipaddr)
            fprintf(stderr, "Not in presentation format");
         } else {
            fprintf(stderr, "Invalid server-ip: %s\n", strerror(errno));
-           return BH_ERROR;
+           return BH_SRVR_FAILURE;
         }
     }
 
@@ -98,7 +98,7 @@ int Client_Start(const char* ipaddr)
         fprintf(stderr,
                 "Failed creating socket got error: %s\n",
                 strerror(errno));
-        return BH_ERROR;
+        return BH_SRVR_FAILURE;
     }
 
     // 
@@ -124,7 +124,7 @@ int Client_Start(const char* ipaddr)
         fprintf(stderr,
                 "Failed connecting to server, got error: %s\n",
                 strerror(errno));
-        return BH_ERROR;
+        return BH_SRVR_FAILURE;
     }
 
 	int handshake_res = PerformClientHandshake(socket_descriptor);

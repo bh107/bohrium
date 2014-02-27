@@ -37,7 +37,7 @@ bh_error GetResponse(packet_protocol ptc);
 int Init_Networking(uint16_t port)
 {
     if (proxyInit == true) {
-        return BH_ERROR;
+        return BH_SRVR_FAILURE;
     }
 
     //
@@ -46,7 +46,7 @@ int Init_Networking(uint16_t port)
     int socket_descriptor = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (-1 == socket_descriptor) {
         printf("Failed creating socket.\n");
-        return BH_ERROR;
+        return BH_SRVR_FAILURE;
     }
 
     // 
