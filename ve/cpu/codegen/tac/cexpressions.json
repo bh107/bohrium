@@ -1,0 +1,719 @@
+[
+    {
+        "op":   "ZIP", 
+        "oper": "ADD", 
+        "scalar": {
+            "default":    "out = in1 + in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "SCAN", 
+        "oper": "ADD", 
+        "scalar": {
+            "default":    "state += in1; out = state",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "ADD", 
+        "scalar": {
+            "default":    "state += *tmp_current",
+            "COMPLEX64":  "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "SUBTRACT", 
+        "scalar": {
+            "default":    "out = in1 - in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "MULTIPLY", 
+        "scalar": {
+            "default":    "out = in1 * in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "SCAN", 
+        "oper": "MULTIPLY", 
+        "scalar": {
+            "default":    "state *= in1; out = state",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "MULTIPLY", 
+        "scalar": {
+            "default":    "state *= *tmp_current",
+            "COMPLEX64": "",
+            "COMPLEX128": "",
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "DIVIDE", 
+        "scalar": {
+            "default":    "out = in1 / in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "ZIP", 
+        "oper": "POWER", 
+        "scalar": {
+            "default":    "out = in1 / in2",
+            "COMPLEX64":  "out = cpowf( in1, in2 )",
+            "COMPLEX128": "out = cpow( in1, in2 )"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "ZIP", 
+        "oper": "GREATER",
+        "scalar": {
+            "default":    "out = in1 > in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "ZIP", 
+        "oper": "GREATER_EQUAL",
+        "scalar": {
+            "default":    "out = in1 >= in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "ZIP", 
+        "oper": "LESS",
+        "scalar": {
+            "default":    "out = in1 < in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "ZIP", 
+        "oper": "LESS_EQUAL",
+        "scalar": {
+            "default":    "out = in1 <= in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "ZIP", 
+        "oper": "EQUAL",
+        "scalar": {
+            "default":    "out = in1 == in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "ZIP", 
+        "oper": "NOT_EQUAL",
+        "scalar": {
+            "default":    "out = in1 != in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "LOGICAL_AND", 
+        "scalar": {
+            "default":    "out = in1 && in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "LOGICAL_AND",
+        "scalar": {
+            "default":    "state = state && *tmp_current",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "LOGICAL_OR", 
+        "scalar": {
+            "default":    "out = in1 || in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "LOGICAL_OR",
+        "scalar": {
+            "default":    "state = state || *tmp_current",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "LOGICAL_XOR", 
+        "scalar": {
+            "default":    "out = (!in1 != !in2)",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "LOGICAL_XOR",
+        "scalar": {
+            "default":    "state = !state != !*tmp_current",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "MAXIMUM",
+        "scalar": {
+            "default":    "out = in1 < in2 ? in2 : in1",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "MAXIMUM",
+        "scalar": {
+            "default":    "state = state < *tmp_current ? *tmp_current : state",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "MINIMUM",
+        "scalar": {
+            "default":    "out = in1 < in2 ? in1 : in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "MINIMUM",
+        "scalar": {
+            "default":    "state = state < *tmp_current ? state : *tmp_current",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "BITWISE_AND",
+        "scalar": {
+            "default":    "out = in1 & in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "BITWISE_AND",
+        "scalar": {
+            "default":    "state &= *tmp_current",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "BITWISE_OR",
+        "scalar": {
+            "default":    "out = in1 | in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "BITWISE_OR",
+        "scalar": {
+            "default":    "state = state | *tmp_current",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "BITWISE_XOR",
+        "scalar": {
+            "default":    "out = in1 ^ in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+    {
+        "op":   "REDUCE", 
+        "oper": "BITWISE_XOR",
+        "scalar": {
+            "default":    "state = state ^ *tmp_current",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "LEFT_SHIFT",
+        "scalar": {
+            "default":    "out = (in1) << (in2)",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "RIGHT_SHIFT",
+        "scalar": {
+            "default":    "out = (in1) >> (in2)",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "ARCTAN2",
+        "scalar": {
+            "default":    "out = atan2( in1, in2 )",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "ZIP", 
+        "oper": "MOD",
+        "scalar": {
+            "default":    "out = in1 - floor(in1 / in2) * in2",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "ABSOLUTE",
+        "scalar": {
+            "default":    "out = in1 < 0.0 ? -in1: in1",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "LOGICAL_NOT",
+        "scalar": {
+            "default":    "out = !in1",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "INVERT",
+        "scalar": {
+            "default":    "out = ~in1",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "SIN",
+        "scalar": {
+            "default":    "out = sin( in1 )",
+            "COMPLEX64": "out = csinf( in1 )",
+            "COMPLEX128": "out = csin( in1 )"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "MAP", 
+        "oper": "COS",
+        "scalar": {
+            "default":    "out = cos( in1 )",
+            "COMPLEX64": "out = ccosf( in1 )",
+            "COMPLEX128": "out = ccos( in1 )"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "MAP", 
+        "oper": "TAN",
+        "scalar": {
+            "default":    "out = tan( in1 )",
+            "COMPLEX64": "out = ctanf( in1 )",
+            "COMPLEX128": "out = ctan( in1 )"
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "SINH",
+        "scalar": {
+            "default":    "out = sinh( in1 )",
+            "COMPLEX64": "out = csinhf( in1 )",
+            "COMPLEX128": "out = csinh( in1 )"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "MAP", 
+        "oper": "COSH",
+        "scalar": {
+            "default":    "out = cosh( in1 )",
+            "COMPLEX64": "out = ccoshf( in1 )",
+            "COMPLEX128": "out = ccosh( in1 )"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "MAP", 
+        "oper": "TANH",
+        "scalar": {
+            "default":    "out = tanh( in1 )",
+            "COMPLEX64": "out = ctanhf( in1 )",
+            "COMPLEX128": "out = ctanh( in1 )"
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "ARCSIN",
+        "scalar": {
+            "default":    "out = asin( in1 )",
+            "COMPLEX64": "out = casinf( in1 )",
+            "COMPLEX128": "out = casin( in1 )"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "MAP", 
+        "oper": "ARCCOS",
+        "scalar": {
+            "default":    "out = acos( in1 )",
+            "COMPLEX64": "out = cacosf( in1 )",
+            "COMPLEX128": "out = cacos( in1 )"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "MAP", 
+        "oper": "ARCTAN",
+        "scalar": {
+            "default":    "out = atan( in1 )",
+            "COMPLEX64": "out = catanf( in1 )",
+            "COMPLEX128": "out = catan( in1 )"
+        },
+        "simd": {}
+    },    
+
+    {
+        "op":   "MAP", 
+        "oper": "ARCSINH",
+        "scalar": {
+            "default":    "out = asinh( in1 )",
+            "COMPLEX64": "out = casinhf( in1 )",
+            "COMPLEX128": "out = casinh( in1 )"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "MAP", 
+        "oper": "ARCCOSH",
+        "scalar": {
+            "default":    "out = acosh( in1 )",
+            "COMPLEX64": "out = cacoshf( in1 )",
+            "COMPLEX128": "out = cacosh( in1 )"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "MAP", 
+        "oper": "ARCTANH",
+        "scalar": {
+            "default":    "out = atanh( in1 )",
+            "COMPLEX64": "out = catanhf( in1 )",
+            "COMPLEX128": "out = catanh( in1 )"
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "EXP",
+        "scalar": {
+            "default":    "out = exp( in1 )",
+            "COMPLEX64": "out = cexpf( in1 )",
+            "COMPLEX128": "out = cexp( in1 )"
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "EXP2",
+        "scalar": {
+            "default":    "out = pow( 2, in1 )",
+            "COMPLEX64": "out = cpowf( 2, in1 )",
+            "COMPLEX128": "out = cpow( 2, in1 )"
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "EXPM1",
+        "scalar": {
+            "default":    "out = expm1( in1 )",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "LOG",
+        "scalar": {
+            "default":    "out = log( in1 )",
+            "COMPLEX64": "out = clogf( in1 )",
+            "COMPLEX128": "out = clog( in1 )"
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "LOG2",
+        "scalar": {
+            "default":    "out = log2( in1 )",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },    
+
+    {
+        "op":   "MAP", 
+        "oper": "LOG10",
+        "scalar": {
+            "default":    "out = log( in1 )/log(10)",
+            "COMPLEX64": "out = clogf( in1 )/log(10)",
+            "COMPLEX128": "out = clog( in1 )/log(10)"
+        },
+        "simd": {}
+    },   
+
+    {
+        "op":   "MAP", 
+        "oper": "LOG1P",
+        "scalar": {
+            "default":    "out = log1p( in1 )",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "SQRT",
+        "scalar": {
+            "default":    "out = sqrt( in1 )",
+            "COMPLEX64": "out = csqrtf( in1 )",
+            "COMPLEX128": "out = csqrt( in1 )"
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "CEIL",
+        "scalar": {
+            "default":    "out = ceil( in1 )",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "TRUNC",
+        "scalar": {
+            "default":    "out = trunc( in1 )",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },    
+
+    {
+        "op":   "MAP", 
+        "oper": "FLOOR",
+        "scalar": {
+            "default":    "out = floor( in1 )",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "RINT",
+        "scalar": {
+            "default":    "out = (in1 > 0.0) ? floor(in1 + 0.5) : ceil(in1 - 0.5)",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },  
+
+    {
+        "op":   "MAP", 
+        "oper": "ISNAN",
+        "scalar": {
+            "default":    "out = isnan(in1)",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },      
+
+    {
+        "op":   "MAP", 
+        "oper": "ISINF",
+        "scalar": {
+            "default":    "out = isinf(in1)",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },       
+    
+    {
+        "op":   "MAP", 
+        "oper": "IDENTITY",
+        "scalar": {
+            "default":    "out = in1",
+            "COMPLEX64": "",
+            "COMPLEX128": ""
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "REAL",
+        "scalar": {
+            "default":  "out = creal(in1)",
+            "FLOAT32":  "out = crealf(in1)",
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "MAP", 
+        "oper": "IMAG",
+        "scalar": {
+            "default":  "out = cimag(in1)",
+            "FLOAT32":  "out = cimagf(in1)",
+        },
+        "simd": {}
+    },
+
+    {
+        "op":   "GENERATOR",
+        "oper": "RANGE",
+        "scalar": {
+            "default":  "out = state",
+        },
+        "simd": {}
+    },         
+
+]
