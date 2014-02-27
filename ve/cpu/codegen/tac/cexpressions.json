@@ -67,7 +67,7 @@
         "scalar": {
             "default":    "state *= *tmp_current",
             "COMPLEX64": "",
-            "COMPLEX128": "",
+            "COMPLEX128": ""
         },
         "simd": {}
     },
@@ -692,7 +692,7 @@
         "oper": "REAL",
         "scalar": {
             "default":  "out = creal(in1)",
-            "FLOAT32":  "out = crealf(in1)",
+            "FLOAT32":  "out = crealf(in1)"
         },
         "simd": {}
     },
@@ -702,7 +702,7 @@
         "oper": "IMAG",
         "scalar": {
             "default":  "out = cimag(in1)",
-            "FLOAT32":  "out = cimagf(in1)",
+            "FLOAT32":  "out = cimagf(in1)"
         },
         "simd": {}
     },
@@ -711,9 +711,9 @@
         "op":   "GENERATOR",
         "oper": "RANGE",
         "scalar": {
-            "default":  "out = state",
+            "default":  "out = state"
         },
         "simd": {}
-    },         
+    }
 
 ]

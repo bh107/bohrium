@@ -138,7 +138,9 @@ string Specializer::template_filename(Block& block, size_t pc, bool optimized)
  *  This generates something along the lines of: *a0_current = *a1_current + *a2_current;
  *  For a MAP of the ADD operator.
  */
-string Specializer::tac_operator_cexpr(Block& block, size_t tac_idx)
+
+ /*
+string Specializer::cexpression(Block& block, size_t tac_idx)
 {
     tac_t& tac  = block.program[tac_idx];
     ETYPE etype = block.scope[tac.out].type;
@@ -459,7 +461,7 @@ string Specializer::tac_operator_cexpr(Block& block, size_t tac_idx)
             return (etype==FLOAT32) ? "*a0_current = cimagf(*a1_current)": "*a0_current = cimagf(*a1_current)";        
     }
     return "__ERR_OPER__";
-}
+}*/
 
 /**
  *  Construct the c-sourcecode for the given block.
@@ -515,7 +517,7 @@ string Specializer::specialize(Block& block, bool optimized)
         //
         // The operator +, -, /, min, max, sin, sqrt, etc...
         //        
-        operator_d->SetValue("OPERATOR", tac_operator_cexpr(block, j));
+        operator_d->SetValue("OPERATOR", cexpression(block, j));
 
         //
         //  The arguments / operands

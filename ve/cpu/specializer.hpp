@@ -17,7 +17,7 @@ public:
 
     std::string text();
 
-    std::string tac_operator_cexpr(Block& block, size_t tac_idx);
+    std::string cexpression(Block& block, size_t tac_idx);
 
     std::string template_filename(Block& block, size_t pc, bool optimized);
 

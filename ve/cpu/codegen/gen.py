@@ -9,6 +9,8 @@ import os
 from Cheetah.Template import Template
 
 class BohriumTemplate(Template):
+    """This class adds a couple of functions which can be used within the template."""
+
     def addw(text, nw=10):
         w = ' '*nw
         return text+w[len(text):] if nw > len(text) else text
@@ -19,44 +21,25 @@ class BohriumTemplate(Template):
 
         return '' if cur_id == last_id else ','
 
-def forward_everything(opcodes, ops, opers, types, layouts):
+def forward_everything(opcodes, ops, opers, types, layouts, cexpr):
+    """This is for those functions that do not need some sort of mangling, they just want it all."""
+
     return {
         'opcodes':  opcodes,
         'ops':      ops,
         'opers':    opers,
         'types':    types,
-        'layouts':  layouts
+        'layouts':  layouts,
+        'cexpr':    cexpr
     }
 
-def main(self):
+def utils_mapping(opcodes, ops, opers, types, layouts, cexpr):
+    return forward_everything(opcodes, ops, opers, types, layouts, cexpr)
 
-    root    = "../../../core/codegen"
-    prefix  = "./tac/"
+def tac(opcodes, ops, opers, types, layouts, cexpr):
+    return forward_everything(opcodes, ops, opers, types, layouts, cexpr)
 
-    opcodes = json.load(open("%s%s%s.json" % (root,   os.sep, 'opcodes')))
-    ops     = json.load(open("%s%s%s.json" % (prefix, os.sep, 'operations')))
-    opers   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'operators')))
-    types   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'types')))
-    layouts = json.load(open("%s%s%s.json" % (prefix, os.sep, 'layouts')))
-
-    # Map template names to mapping-functons and fill out the template
-    for fn in glob.glob('templates/*.tpl'):
-        fn, _ = os.path.basename(fn).split('.tpl')
-        if fn in self.__dict__:
-            template = BohriumTemplate(
-                file = "%s%s%s.tpl" % ("templates", os.sep, fn),
-                searchList=globals()[fn](opcodes, ops, opers, types, layouts)
-            )
-            with open('output/%s.cpp' % fn, 'w') as fd:
-                fd.write(str(template))
-
-def utils_mapping(opcodes, ops, opers, types, layouts):
-    return forward_everything(opcodes, ops, opers, types, layouts)
-
-def tac(opcodes, ops, opers, types, layouts):
-    return forward_everything(opcodes, ops, opers, types, layouts)
-
-def block_compose(opcodes, ops, opers, types, layouts):
+def block_compose(opcodes, ops, opers, types, layouts, cexpr):
     """Construct the data need to create a map from bh_instruction to tac_t."""
 
     ewise_u     = []
@@ -110,6 +93,34 @@ def block_compose(opcodes, ops, opers, types, layouts):
     }]
 
     return operations
+
+def specializer_cexpression(opcodes, ops, opers, types, layouts, cexpr):
+    """Apply a naming convention to the pseud-variables, and make it string-formattable."""
+
+    return forward_everything(opcodes, ops, opers, types, layouts, cexpr)
+
+def main(self):
+
+    root    = "../../../core/codegen"
+    prefix  = "./tac/"
+
+    opcodes = json.load(open("%s%s%s.json" % (root,   os.sep, 'opcodes')))
+    ops     = json.load(open("%s%s%s.json" % (prefix, os.sep, 'operations')))
+    opers   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'operators')))
+    types   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'types')))
+    layouts = json.load(open("%s%s%s.json" % (prefix, os.sep, 'layouts')))
+    cexpr   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'cexpressions')))
+
+    # Map template names to mapping-functons and fill out the template
+    for fn in glob.glob('templates/*.tpl'):
+        fn, _ = os.path.basename(fn).split('.tpl')
+        if fn in self.__dict__:
+            template = BohriumTemplate(
+                file = "%s%s%s.tpl" % ("templates", os.sep, fn),
+                searchList=globals()[fn](opcodes, ops, opers, types, layouts, cexpr)
+            )
+            with open('output/%s.cpp' % fn, 'w') as fd:
+                fd.write(str(template))
 
 if __name__ == "__main__":
     main(sys.modules[__name__])
