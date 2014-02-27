@@ -166,7 +166,6 @@ bh_error Engine::execute(bh_ir& bhir)
         // Allocate memory for output
         //
         for(size_t i=0; i<block.length; ++i) {
-            DEBUG("Allocating for "<< i << "?");
             res = bh_vcache_malloc(block.instr[i]);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
