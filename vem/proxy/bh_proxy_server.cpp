@@ -55,14 +55,20 @@ bool bh_string_option(char *&option, const char *env_name, const char *conf_name
 bh_error bh_vem_proxy_init(const char* name)
 {
     bh_error res = BH_SUCCESS;
-    
+
     res = bh_component_init(&vem_proxy_server_myself, name);
     if (BH_SUCCESS != res) {
         return res;
     }
 
     char* port;
-    bh_string_option(port, "BH_VE_PROXY_PORT", "port");
+    bh_string_option(port, "BH_VEM_PROXY_PORT", "port");
+    if(port == NULL)
+    {
+        fprintf(stderr, "[PROXY-VEM] The server port must be specified "
+                "through the config file or the env BH_VEM_PROXY_PORT \n");
+        return BH_ERROR;
+    }
 
     // set up network
     res = Init_Networking(atoi(port));
