@@ -158,7 +158,7 @@ bh_error Engine::execute(bh_ir& bhir)
         //
         // Allocate memory for output
         //
-        for(int i=0; i<block.length; ++i) {
+        for(size_t i=0; i<block.length; ++i) {
             res = bh_vcache_malloc(block.instr[i]);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
@@ -181,7 +181,7 @@ bh_error Engine::execute(bh_ir& bhir)
 
         //
         // De-Allocate operand memory
-        for(int i=0; i<block.length; ++i) {
+        for(size_t i=0; i<block.length; ++i) {
             if (block.instr[i]->opcode == BH_FREE) {
                 res = bh_vcache_free(block.instr[i]);
                 if (BH_SUCCESS != res) {

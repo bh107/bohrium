@@ -17,11 +17,11 @@ public:
 
     std::string text();
 
-    std::string tac_cexpr(tac& tac, Block& block);
+    std::string tac_operator_cexpr(Block& block, size_t tac_idx);
 
-    std::string template_filename(Block& block, int pc, int64_t optimized);
+    std::string template_filename(Block& block, size_t pc, bool optimized);
 
-    std::string specialize(Block& block, int64_t optimized);
+    std::string specialize(Block& block, bool optimized);
 
 private:
     ctemplate::Strip strip_mode;

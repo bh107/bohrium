@@ -28,7 +28,7 @@ string Block::text()
     ss << ", noperands=" << noperands;
     ss << ", omask=" << omask;
     ss << ") {" << endl;
-    for(int i=0; i<length; ++i) {
+    for(size_t i=0; i<length; ++i) {
         ss << "  " << utils::tac_text(program[i]);
     }
     ss << "  (" << symbol << ")" << endl;
@@ -44,7 +44,7 @@ string Block::text()
  *        If a block consists of nothing but system and/or extension
  *        opcodes then the symbol will be the empty string "".
  */
-bool Block::symbolize(bh_intp const optimized) {
+bool Block::symbolize(const bool optimized) {
 
     std::string symbol_op_oper, 
                 symbol_tsig,
@@ -53,7 +53,7 @@ bool Block::symbolize(bh_intp const optimized) {
 
         symbol   = "";
 
-    for (int i=0; i<length; ++i) {
+    for (size_t i=0; i<length; ++i) {
         tac_t& tac = program[i];
         
         // Do not include system opcodes in the kernel symbol.
@@ -67,7 +67,7 @@ bool Block::symbolize(bh_intp const optimized) {
         symbol_tsig     += utils::tac_typesig_text(tac, scope);
         symbol_layout   += utils::tac_layout_text(tac, scope);
     
-        int ndim = scope[tac.out].ndim;
+        size_t ndim = scope[tac.out].ndim;
         if (tac.op == REDUCE) {
             ndim = scope[tac.in1].ndim;
         }
@@ -96,9 +96,9 @@ bool Block::symbolize(bh_intp const optimized) {
  *  @param operand_idx  Index of the operand to represent as arg_t
  *  @param block        The block in which scope the argument will exist.
  */
-uint32_t Block::add_operand(bh_instruction& instr, int operand_idx)
+size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 {
-    uint32_t arg_idx = ++(noperands);
+    size_t arg_idx = ++(noperands);
     if (bh_is_constant(&instr.operand[operand_idx])) {
         scope[arg_idx].layout    = CONSTANT;
         scope[arg_idx].data      = &(instr.constant.value);
