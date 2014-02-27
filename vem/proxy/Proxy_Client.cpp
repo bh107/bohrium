@@ -77,7 +77,7 @@ int Client_Start(const char* ipaddr)
     struct sockaddr_in server_addr;
     memset(&server_addr, '0', sizeof(server_addr));
     server_addr.sin_family  = AF_INET;
-    server_addr.sin_port    = htons(4200);    
+    server_addr.sin_port    = htons(client.port);
 
     //
     // Convert ip-address to binary form
