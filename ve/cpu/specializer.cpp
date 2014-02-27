@@ -167,7 +167,8 @@ string tac_operator_cexpr(Block& block, size_t tac_idx)
                 case MAP:
                     return "*a0_current = *a1_current + *a2_current";
                 case SCAN:
-                    return "cvar += *a1_current; *a0_current = cvar;";
+                    return  "cvar += *a1_current;"
+                            "*a0_current = cvar;";
                 case REDUCE:
                     return "rvar += *tmp_current";
                 default:
@@ -180,7 +181,8 @@ string tac_operator_cexpr(Block& block, size_t tac_idx)
                 case MAP:
                     return "*a0_current = *a1_current * *a2_current";
                 case SCAN:
-                    return "cvar *= *a1_current; *a0_current = cvar;";
+                    return  "cvar *= *a1_current;"
+                            "*a0_current = cvar;";
                 case REDUCE:
                     return "rvar *= *tmp_current";
                 default:
