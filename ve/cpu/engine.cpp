@@ -64,10 +64,12 @@ string Engine::text()
     ss << "  BH_VE_CPU_JIT_OPTIMIZE="   << this->jit_optimize << endl;
     ss << "  BH_VE_CPU_JIT_DUMPSRC="    << this->jit_dumpsrc  << endl;
     ss << "}" << endl;
-
-    ss << storage.text();
-    ss << specializer.text();    
-    ss << compiler.text();
+    
+    ss << "Attributes {" << endl;
+    ss << "  " << storage.text();
+    ss << "  " << specializer.text();    
+    ss << "  " << compiler.text();
+    ss << "}" << endl;
 
     return ss.str();    
 }
@@ -128,12 +130,16 @@ bh_error Engine::execute(bh_ir& bhir)
                     sourcecode.size()
                 );
             }                                           // Send to compiler
-            compiler.compile(
+            bool compile_res = compiler.compile(
                 block.symbol, 
                 block.symbol+"_"+storage.get_uid(), 
                 sourcecode.c_str(), 
                 sourcecode.size()
-            );                                          // Inform storage
+            );                 
+            if (!compile_res) {
+                return BH_ERROR;
+            }
+                                                        // Inform storage
             storage.add_symbol(block.symbol, block.symbol+"_"+storage.get_uid());
         }
 

@@ -32,7 +32,7 @@
                                         i*a{{NR_FINPUT}}_stride[outer_axis] + \
                                         j*a{{NR_FINPUT}}_stride[inner_axis];
 
-            {{TYPE_INPUT}} rvar = *tmp_current;
+            {{TYPE_INPUT}} state = *tmp_current;
             for(int64_t k=1; k<a{{NR_FINPUT}}_shape[axis]; ++k) {
                 tmp_current += a{{NR_FINPUT}}_stride[axis];
 
@@ -40,7 +40,7 @@
                 {{OPERATOR}};
                 {{/OPERATORS}}
             }
-            *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + i*a{{NR_OUTPUT}}_stride[OUTER] + j*a{{NR_OUTPUT}}_stride[INNER]) = rvar;
+            *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + i*a{{NR_OUTPUT}}_stride[OUTER] + j*a{{NR_OUTPUT}}_stride[INNER]) = state;
         }
     }
 }

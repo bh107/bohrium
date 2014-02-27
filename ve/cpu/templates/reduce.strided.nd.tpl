@@ -67,7 +67,7 @@
             //
             // Do the reduction over the axis dimension
             //
-            {{TYPE_OUTPUT}} rvar = *a{{NR_FINPUT}}_current;
+            {{TYPE_OUTPUT}} state = *a{{NR_FINPUT}}_current;
             for(int64_t k=1; k<a{{NR_FINPUT}}_shape[axis]; ++k) {
                 //
                 // Walk to the next element input-element along the axis dimension
@@ -76,10 +76,10 @@
                 //
                 // Apply the operator
                 //
-                rvar += *a{{NR_FINPUT}}_current;
+                state += *a{{NR_FINPUT}}_current;
             }
             // Write the accumulation output
-            *a{{NR_OUTPUT}}_current = rvar;
+            *a{{NR_OUTPUT}}_current = state;
 
             // Now increment the output
             a{{NR_OUTPUT}}_current += a{{NR_OUTPUT}}_stride_ld;

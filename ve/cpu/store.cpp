@@ -22,11 +22,16 @@ Store::Store(const string object_dir) : object_dir(object_dir)
     this->uid = string(uid);
 }
 
+Store::~Store()
+{
+    DEBUG(">>Store::~Store()");
+    DEBUG("<<Store::~Store()");
+}
+
 string Store::text(void)
 {
     stringstream ss;
-    ss << "Store(\"" << object_dir << "\");" << endl;
-    ss << "Store.uid = \"" << this->uid << "\"" << endl;
+    ss << "Store(\"" << object_dir << "\") : uid(" << this->uid << ");" << endl;
     return ss.str();
 }
 

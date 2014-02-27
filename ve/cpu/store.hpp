@@ -41,6 +41,7 @@ typedef std::map<std::string, std::string> symbol_library_map;
 class Store {
 public:
     Store(const std::string object_dir);
+    ~Store();
     std::string text();
 
     void add_symbol(std::string symbol, std::string library);

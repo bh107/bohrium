@@ -27,6 +27,12 @@ Specializer::Specializer(const string template_directory)
     ctemplate::mutable_default_template_cache()->Freeze();
 }
 
+Specializer::~Specializer()
+{
+    DEBUG(">>Specializer::~Specializer()");
+    DEBUG("<<Specializer::~Specializer()");
+}
+
 string Specializer::text()
 {
     stringstream ss;

@@ -15,9 +15,11 @@ Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
 
 Block::~Block()
 {
+    DEBUG(">>Block::~Block()");
     free(scope);
     free(program);
     free(instr);
+    DEBUG("<<Block::~Block()");
 }
 
 string Block::text()

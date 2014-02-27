@@ -35,7 +35,7 @@ static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 
 //
 // This is where the actual engine implementation is
-static bohrium::engine::cpu::Engine* engine;
+static bohrium::engine::cpu::Engine* engine = nullptr;
 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
@@ -196,6 +196,9 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 bh_error bh_ve_cpu_shutdown(void)
 {
     bh_component_destroy(&myself);
+    delete engine;
+    engine = nullptr;
+
     return BH_SUCCESS;
 }
 

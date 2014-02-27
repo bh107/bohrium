@@ -14,6 +14,7 @@ class Specializer {
 public:
    
     Specializer(const std::string template_directory);
+    ~Specializer();
 
     std::string text();
 

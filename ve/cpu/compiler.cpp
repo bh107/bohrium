@@ -1,3 +1,4 @@
+#include "utils.hpp"
 #include "compiler.hpp"
 
 using namespace std;
@@ -25,11 +26,9 @@ Compiler::Compiler(string process_str, string object_directory ) :
 {}
 
 Compiler::~Compiler()
-{   /*
-    if (handle) {
-        dlclose(handle);
-        handle = NULL;
-    }*/
+{
+    DEBUG(">>Compiler::~Compiler()");
+    DEBUG("<<Compiler::~Compiler()");
 }
 
 string Compiler::text()
@@ -55,6 +54,8 @@ bool Compiler::compile(string symbol, const char* sourcecode, size_t source_len)
 
 /**
  *  Compile a shared library for the given symbol.
+ *
+ *  @returns True the system compiler returns exit-code 0 and False othervise.
  */
 bool Compiler::compile(string symbol, string library, const char* sourcecode, size_t source_len)
 {
@@ -71,18 +72,9 @@ bool Compiler::compile(string symbol, string library, const char* sourcecode, si
     }
     fwrite(sourcecode, 1, source_len, cmd_stdin);   // Write sourcecode to stdin
     fflush(cmd_stdin);
-    pclose(cmd_stdin);
+    int exit_code = pclose(cmd_stdin);
 
-    /*
-
-    //
-    // Update the library mapping such that a load for the symbol
-    // can the resolve the library that it needs
-    libraries.insert(
-        pair<string, string>(symbol, library)
-    );
-    */
-    return true;
+    return ((exit_code/256) == 0);
 }
 
 }}}

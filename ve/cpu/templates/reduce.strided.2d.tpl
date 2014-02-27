@@ -16,7 +16,7 @@
         {{TYPE_INPUT}} *tmp_current = a{{NR_FINPUT}}_first + \
                                       a{{NR_FINPUT}}_stride[other_axis] * j;
 
-        {{TYPE_INPUT}} rvar = *tmp_current;                   // Scalar-temp 
+        {{TYPE_INPUT}} state = *tmp_current;                   // Scalar-temp 
         for(int64_t i=1; i<a{{NR_FINPUT}}_shape[axis]; ++i) { // Accumulate
             tmp_current += a{{NR_FINPUT}}_stride[axis];
 
@@ -25,7 +25,7 @@
             {{/OPERATORS}}
         }
         // Update array
-        *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + a{{NR_OUTPUT}}_stride[0]*j) = rvar; 
+        *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + a{{NR_OUTPUT}}_stride[0]*j) = state; 
     }
 }
 
