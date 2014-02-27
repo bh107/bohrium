@@ -30,18 +30,16 @@ Engine::Engine(
     specializer(template_directory),
     compiler(compiler_cmd, object_directory)
 {
-    cout << ">> Engine(...)" << endl;
+    DEBUG(">>Engine(...)");
     
     bh_vcache_init(vcache_size);    // Victim cache
-    // Store
-    // Compiler
-    // Specializer
-    cout << "<< Engine(...)" << endl;
+
+    DEBUG("<<Engine(...)");
 }
 
 Engine::~Engine()
 {
-    cout << ">> ~Engine()" << endl;
+    DEBUG(">>~Engine(...)");
 
     if (vcache_size>0) {    // De-allocate the malloc-cache
         bh_vcache_clear();
@@ -51,7 +49,7 @@ Engine::~Engine()
     // Store
     // Compiler
     // Specializer
-    cout << "<< ~Engine()" << endl;
+    DEBUG("<<~Engine(...)");
 }
 
 string Engine::text()
@@ -75,7 +73,8 @@ string Engine::text()
 
 bh_error Engine::execute(bh_ir& bhir)
 {
-    cout << ">> Engine::execute(...)" << endl;
+    DEBUG(">>Engine::execute(...)");
+
     bh_error res = BH_SUCCESS;
     
     bh_dag& root = bhir.dag_list[0];  // Start at the root DAG
@@ -194,7 +193,7 @@ bh_error Engine::execute(bh_ir& bhir)
 
     }
     
-    cout << "<< Engine::execute(...)" << endl;
+    DEBUG("<<Engine::execute(...)");
     return res;
 }
 
@@ -205,6 +204,8 @@ bh_error Engine::execute(bh_ir& bhir)
  */
 bool Engine::src_to_file(string symbol, const char* sourcecode, size_t source_len)
 {
+    DEBUG(">>Engine::src_to_file("<< symbol << ", ..., " << source_len << ");");
+
     int kernel_fd;              // Kernel file-descriptor
     FILE *kernel_fp = NULL;     // Handle for kernel-file
     const char *mode = "w";
@@ -231,6 +232,7 @@ bool Engine::src_to_file(string symbol, const char* sourcecode, size_t source_le
     fclose(kernel_fp);
     close(kernel_fd);
 
+    DEBUG("<<Engine::src_to_file(...);");
     return true;
 }
 

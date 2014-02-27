@@ -34,6 +34,7 @@ string Store::text(void)
  */
 string Store::get_uid(void)
 {
+    DEBUG("Store::get_uid(void);");
     return this->uid;
 }
 
@@ -42,6 +43,7 @@ string Store::get_uid(void)
  */
 bool Store::symbol_ready(string symbol)
 {
+    DEBUG("Store::symbol_ready("<< symbol << ")");
     return funcs.count(symbol) > 0;
 }
 
@@ -150,12 +152,15 @@ size_t Store::preload(void)
  *  Load a single symbol from library symbol into func-storage.
  */
 bool Store::load(string symbol) {
+    DEBUG("Store::load("<< symbol << ");");
+
     return load(symbol, libraries[symbol]);
 }
 
 bool Store::load(string symbol, string library)
 {
-    //cout << "LOAD: {" << symbol << ", " << library << "}" << endl;
+    DEBUG("Store::load("<< symbol << ", " << library ");");
+    
     char *error_msg = NULL;             // Buffer for dlopen errors
     int errnum = 0;
     string library_path = object_dir + "/" + library + ".so";

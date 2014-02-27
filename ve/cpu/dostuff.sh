@@ -3,7 +3,7 @@
 if [ ! -z "$1" ] && [ "$1" == "reset" ]; then
     WHERE=`pwd`
     rm -r ~/.local/cpu/
-    INSTALLDIR="~/.local" DEBUG="" make clean install
+    INSTALLDIR="~/.local" EXTRAS="-dDEBUGGING" make clean install
     cd $WHERE
 fi
 

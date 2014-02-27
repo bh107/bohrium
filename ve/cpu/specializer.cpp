@@ -138,34 +138,16 @@ string Specializer::template_filename(Block& block, size_t pc, bool optimized)
  *  This generates something along the lines of: *a0_current = *a1_current + *a2_current;
  *  For a MAP of the ADD operator.
  */
-string tac_operator_cexpr(Block& block, size_t tac_idx)
+string Specializer::tac_operator_cexpr(Block& block, size_t tac_idx)
 {
     tac_t& tac  = block.program[tac_idx];
     ETYPE etype = block.scope[tac.out].type;
 
     switch(tac.oper) {
-        /*
-        case BH_MAXIMUM_REDUCE:
-            return "rvar = rvar < *tmp_current ? *tmp_current : rvar";
-        case BH_LOGICAL_AND_REDUCE:
-            return "rvar = rvar && *tmp_current";
-        case BH_BITWISE_AND_REDUCE:
-            return "rvar = rvar | *tmp_current";
-        case BH_LOGICAL_OR_REDUCE:
-            return "rvar = rvar || *tmp_current";
-        case BH_BITWISE_OR_REDUCE:
-            return "rvar |= *tmp_current";
-
-        case BH_LOGICAL_XOR_REDUCE:
-            return "rvar = !rvar != !*tmp_current";
-        case BH_BITWISE_XOR_REDUCE:
-            return "rvar = rvar ^ *tmp_current";
-        */
-
         case ADD:
             switch(tac.op) {
-                case MAP:
-                    return "*a0_current = *a1_current + *a2_current";
+                case ZIP:
+                    return utils::string_format("*a%d_current = *a%d_current + *a%d_current", tac.out, tac.in1, tac.in2);
                 case SCAN:
                     return  "cvar += *a1_current;"
                             "*a0_current = cvar;";
@@ -178,7 +160,7 @@ string tac_operator_cexpr(Block& block, size_t tac_idx)
             return "*a0_current = *a1_current - *a2_current";
         case MULTIPLY:
             switch(tac.op) {
-                case MAP:
+                case ZIP:
                     return "*a0_current = *a1_current * *a2_current";
                 case SCAN:
                     return  "cvar *= *a1_current;"
@@ -212,16 +194,40 @@ string tac_operator_cexpr(Block& block, size_t tac_idx)
         case NOT_EQUAL:
             return "*a0_current = *a1_current != *a2_current";
         case LOGICAL_AND:
-            return "*a0_current = *a1_current && *a2_current";
+            switch (tac.op) {
+                case ZIP:
+                    return "*a0_current = *a1_current && *a2_current";
+                case REDUCE:
+                    return "rvar = rvar && *tmp_current";
+            }
+            return "__ERR_OPER__";
         case LOGICAL_OR:
-            return "*a0_current = *a1_current || *a2_current";
+            switch(tac.op) {
+                case ZIP:                    
+                    return "*a0_current = *a1_current || *a2_current";
+                case REDUCE:
+                    return "rvar = rvar || *tmp_current";
+            }
+            return "__ERR_OPER__";
         case LOGICAL_XOR:
-            return "*a0_current = (!*a1_current != !*a2_current)";
+            switch(tac.op) {
+                case ZIP:
+                    return "*a0_current = (!*a1_current != !*a2_current)";
+                case REDUCE:
+                    return "rvar = !rvar != !*tmp_current";
+            }
+            return "__ERR_OPER__";
         case MAXIMUM:
-            return "*a0_current = *a1_current < *a2_current ? *a2_current : *a1_current";
+            switch(tac.op) {
+                case ZIP:
+                    return "*a0_current = *a1_current < *a2_current ? *a2_current : *a1_current";
+                case REDUCE:
+                    return "rvar = rvar < *tmp_current ? *tmp_current : rvar";
+            }
+            return "__ERR_OPER__";
         case MINIMUM:
             switch(tac.op) {
-                case MAP:
+                case ZIP:
                     return "*a0_current = *a1_current < *a2_current ? *a1_current : *a2_current";
                 case REDUCE:
                     return "rvar = rvar < *tmp_current ? rvar : *tmp_current";                
@@ -230,7 +236,7 @@ string tac_operator_cexpr(Block& block, size_t tac_idx)
 
         case BITWISE_AND:
             switch(tac.op) {
-                case MAP:
+                case ZIP:
                     return "*a0_current = *a1_current & *a2_current";
                 case REDUCE:
                     return "rvar &= *tmp_current";
@@ -238,9 +244,23 @@ string tac_operator_cexpr(Block& block, size_t tac_idx)
             return "__ERR_OPER__";
 
         case BITWISE_OR:
-            return "*a0_current = *a1_current | *a2_current";
+            switch (tac.op) {
+                case ZIP:
+                    return "*a0_current = *a1_current | *a2_current";
+                case REDUCE:
+                    return "rvar = rvar | *tmp_current";
+            }
+            return "__ERR_OPER__";
+
         case BITWISE_XOR:
-            return "*a0_current = *a1_current ^ *a2_current";
+            switch(tac.op) {
+                case ZIP:
+                    return "*a0_current = *a1_current ^ *a2_current";
+                case REDUCE:
+                    return "rvar = rvar ^ *tmp_current";
+            }
+            return "__ERR_OPER__";
+
         case LEFT_SHIFT:
             return "*a0_current = (*a1_current) << (*a2_current)";
         case RIGHT_SHIFT:
@@ -431,7 +451,8 @@ string tac_operator_cexpr(Block& block, size_t tac_idx)
         case ISINF:
             return "*a0_current = isinf(*a1_current)";
         case IDENTITY:
-            return "*a0_current = *a1_current";
+            return utils::string_format("*a%d_current = *a%d_current",
+                                        tac.out, tac.in1);
         case REAL:
             return (etype==FLOAT32) ? "*a0_current = crealf(*a1_current)": "*a0_current = creal(*a1_current)";
         case IMAG:

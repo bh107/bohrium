@@ -11,9 +11,17 @@
 #include <sstream>
 #include <stdexcept>
 #include <cstdarg>
+#include <memory>
 
 namespace bohrium {
 namespace utils {
+#ifdef DEBUGGING
+#define DEBUG(x) do { \
+  if (debugging_enabled) { std::cerr << x << std::endl; } \
+} while (0);
+#else
+#define DEBUG(X)
+#endif
 
 ETYPE bhtype_to_etype(bh_type bhtype);
 
@@ -27,6 +35,8 @@ std::string layout_text_shand(LAYOUT layout);
 std::string tac_text(tac_t& tac);
 std::string tac_typesig_text(tac_t& tac, operand_t* scope);
 std::string tac_layout_text(tac_t& tac, operand_t* scope);
+
+std::string string_format(const std::string & fmt_str, ...);
 
 int tac_noperands(tac_t& tac);
 bool is_contiguous(operand_t& arg);
