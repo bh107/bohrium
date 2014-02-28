@@ -23,6 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <unistd.h>
 #include <inttypes.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <bh.h>
 #include "bh_ve_cpu.h"
@@ -167,6 +169,12 @@ bh_error bh_ve_cpu_init(const char *name)
         jit_optimize    = 0;
         jit_dumpsrc     = 0;
     }
+
+	//
+    // Make sure that kernel and object path exists
+	// TODO: This is anti-portable and should be fixed.
+    mkdir(kernel_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    mkdir(object_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     //
     // VROOM VROOM VROOOOOOMMMM!!! VROOOOM!!

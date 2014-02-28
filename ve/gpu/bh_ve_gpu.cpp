@@ -23,6 +23,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "bh_ve_gpu.h"
 
+bh_component component;
+InstructionScheduler* instructionScheduler;
+ResourceManager* resourceManager;
+
 bh_error bh_ve_gpu_init(const char *name)
 {
     bh_error err;

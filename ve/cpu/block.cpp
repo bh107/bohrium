@@ -7,10 +7,14 @@ namespace cpu{
 
 Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
 {
-    scope    = (operand_t*)malloc(1+3*dag.nnode*sizeof(operand_t));
-    program  = (tac_t*)malloc(dag.nnode*sizeof(tac_t));
-    instr    = (bh_instruction**)malloc(dag.nnode*sizeof(bh_instruction*));
-    length   = dag.nnode;
+    size_t ps = (size_t)dag.nnode;
+    if (ps<1) {
+        fprintf(stderr, "This block is the empty program! You should not have called this!");
+    }
+    scope    = (operand_t*)malloc(1+3*ps*sizeof(operand_t));
+    program  = (tac_t*)malloc(ps*sizeof(tac_t));
+    instr    = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
+    length   = ps;
 }
 
 Block::~Block()
@@ -57,6 +61,7 @@ bool Block::symbolize(const bool optimized) {
 
     DEBUG(">> Block::symbolize("<< optimized << ") : length("<< length << ");");
 
+    symbol_op_oper << "BH";
     for (size_t i=0; i<length; ++i) {
         tac_t& tac = this->program[i];
         
@@ -65,18 +70,11 @@ bool Block::symbolize(const bool optimized) {
             continue;
         }
         
-        DEBUG(" 3.1");
-
-        symbol_tsig     << utils::tac_typesig_text(tac, scope);
-        DEBUG(" 3.2");
-        symbol_op_oper <<"_";
-        DEBUG(" 3.3");
+        symbol_op_oper  << "_";
         symbol_op_oper  << utils::operation_text(tac.op);
-        DEBUG(" 3.4");
         symbol_op_oper  << tac.oper;
-        DEBUG(" 3.5");
         symbol_layout   << utils::tac_layout_text(tac, scope);
-        DEBUG("   3.6");
+        symbol_tsig     << utils::tac_typesig_text(tac, scope);
         size_t ndim = scope[tac.out].ndim;
         if (tac.op == REDUCE) {
             ndim = scope[tac.in1].ndim;
@@ -90,13 +88,11 @@ bool Block::symbolize(const bool optimized) {
     }
 
     if ((omask & (BUILTIN_ARRAY_OPS)) > 0) {
-        stringstream symbol_stream;
-        symbol_stream   << "BH"                  \
-                        << symbol_op_oper << "_" \
-                        << symbol_tsig    << "_" \
-                        << symbol_layout  << "_" \
-                        << symbol_ndim;
-        symbol = symbol_stream.str();
+        symbol_op_oper << "_" \
+                        << symbol_tsig.str()    << "_" \
+                        << symbol_layout.str()  << "_" \
+                        << symbol_ndim.str();
+        symbol = symbol_op_oper.str();
     }
 
     DEBUG("<< Block::symbolize(...) : symbol("<< symbol << ");");
@@ -114,26 +110,30 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 {
     size_t arg_idx = ++(noperands);
     if (bh_is_constant(&instr.operand[operand_idx])) {
-        scope[arg_idx].layout    = CONSTANT;
         scope[arg_idx].const_data= &(instr.constant.value);
         scope[arg_idx].data      = &scope[arg_idx].const_data;
         scope[arg_idx].type      = utils::bhtype_to_etype(instr.constant.type);
         scope[arg_idx].nelem     = 1;
+        scope[arg_idx].ndim      = 1;
+        scope[arg_idx].start     = 0;
+        scope[arg_idx].shape[0]  = 1;
+        scope[arg_idx].stride[0] = 0;
+        scope[arg_idx].layout    = CONSTANT;
     } else {
-        if (utils::is_contiguous(scope[arg_idx])) {
-            scope[arg_idx].layout = CONTIGUOUS;
-        } else {
-            scope[arg_idx].layout = STRIDED;
-        }
-
-        scope[arg_idx].data      = &bh_base_array(&instr.operand[operand_idx])->data;
         scope[arg_idx].const_data= 0x0;
+        scope[arg_idx].data      = &(bh_base_array(&instr.operand[operand_idx])->data);
         scope[arg_idx].type      = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
         scope[arg_idx].nelem     = bh_base_array(&instr.operand[operand_idx])->nelem;
         scope[arg_idx].ndim      = instr.operand[operand_idx].ndim;
         scope[arg_idx].start     = instr.operand[operand_idx].start;
         scope[arg_idx].shape     = instr.operand[operand_idx].shape;
         scope[arg_idx].stride    = instr.operand[operand_idx].stride;
+
+        if (utils::is_contiguous(scope[arg_idx])) {
+            scope[arg_idx].layout = CONTIGUOUS;
+        } else {
+            scope[arg_idx].layout = STRIDED;
+        }
     }
     return arg_idx;
 }

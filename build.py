@@ -185,7 +185,7 @@ if __name__ == "__main__":
 
     components = [\
                   ("OPCODES","core/codegen",True),\
-                  ("INIPARSER","iniparser",True),\
+                  ("CORE-INIPARSER","core/iniparser",True),\
                   ("CORE-BHIR", "core/bhir", True),\
                   ("CORE", "core", True),\
                   ("THIRDPARTY", "thirdparty", True),\
@@ -193,6 +193,7 @@ if __name__ == "__main__":
                   ("VE-CPU", "ve/cpu", True),\
                   ("VEM-NODE", "vem/node", True),\
                   ("VEM-CLUSTER", "vem/cluster", False),\
+                  ("VEM-PROXY", "vem/proxy", False),\
                   ("FILTER-RANGE", "filter/range", False),\
                   ("FILTER-PPRINT", "filter/pprint", True),\
                   ("FILTER-VALIDATE", "filter/validate", True),\

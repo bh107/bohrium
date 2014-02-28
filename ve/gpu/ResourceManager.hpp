@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <bh.h>
 #include <bh_timing.hpp>
+#include "OCLtype.h"
 
 class ResourceManager
 {
@@ -36,6 +37,7 @@ private:
     std::vector<cl::CommandQueue> commandQueues;
     size_t maxWorkGroupSize;
     cl_uint maxWorkItemDims;
+    OCLtype intpType_;
     std::vector<size_t> maxWorkItemSizes;
     std::vector<size_t> localShape1D;
     std::vector<size_t> localShape2D;
@@ -87,6 +89,7 @@ public:
     bool float16support();
     bool float64support();
     bh_error childExecute(bh_ir* bhir);
+    OCLtype intpType();
 };
 
 #endif

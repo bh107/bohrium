@@ -114,5 +114,12 @@ def main():
 
     render( gens, tmpl_dir, output_dir, mtime)
 
+    #Merge bh_c_data_types.h and bh_c_interface.h into bhc.h
+    with open(join(output_dir,"bh_c.h"), 'w') as outfile:
+        for fname in [join(output_dir,"bh_c_data_types.h"), join(output_dir,"bh_c_interface.h")]:
+            with open(fname) as infile:
+                for line in infile:
+                    outfile.write(line)
+
 if __name__ == "__main__":
     main()

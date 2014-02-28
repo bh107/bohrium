@@ -49,7 +49,7 @@ protected:
 public:
     Scalar(bh_base* spec);
     Scalar(bh_constant constant);
-    Scalar(cl_long);
+    Scalar(bh_intp);
     OCLtype type() const;
     void addToKernel(cl::Kernel& kernel, unsigned int argIndex);
 };

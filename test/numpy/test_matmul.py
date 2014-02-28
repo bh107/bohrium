@@ -3,6 +3,7 @@ from numpytest import numpytest
 
 class test_matmul(numpytest):
     def init(self):
+        self.config['maxerror'] = 0.00001
         for t in ['np.float32','np.float64','np.int64']:
             maxdim = 6
             for m in range(1,maxdim+1):

@@ -27,6 +27,8 @@ bool Block::compose()
 
         this->instr[i] = &this->ir.instr_list[dag.node_map[i]];
         bh_instruction& instr = *this->instr[i];
+
+        bh_pprint_instr(&instr);
         uint32_t out=0, in1=0, in2=0;
 
         //
@@ -672,11 +674,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = ADD;
@@ -690,11 +697,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = BITWISE_AND;
@@ -708,11 +720,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = BITWISE_OR;
@@ -726,11 +743,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = BITWISE_XOR;
@@ -744,11 +766,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = LOGICAL_AND;
@@ -762,11 +789,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = LOGICAL_OR;
@@ -780,11 +812,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = LOGICAL_XOR;
@@ -798,11 +835,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = MAXIMUM;
@@ -816,11 +858,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = MINIMUM;
@@ -834,11 +881,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = REDUCE;  // TAC
                 this->program[i].oper  = MULTIPLY;
@@ -852,11 +904,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = SCAN;  // TAC
                 this->program[i].oper  = ADD;
@@ -870,11 +927,16 @@ bool Block::compose()
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
 
                 this->program[i].op    = SCAN;  // TAC
                 this->program[i].oper  = MULTIPLY;
@@ -885,20 +947,29 @@ bool Block::compose()
                 this->omask |= SCAN;    // Operationmask
                 break;
             case BH_RANDOM:
-                // This one requires special-handling... what a beaty...
+                // This one requires special-handling... what a beauty...
                 in1 = ++(this->noperands);                // Input
-                this->scope[in1].layout    = CONSTANT;
-                this->scope[in1].const_data= &(instr.constant.value.r123.start);
-                this->scope[in1].data      = &(this->scope[in1].const_data);
-                this->scope[in1].type      = UINT64;
-                this->scope[in1].nelem     = 1;
+                this->scope[in1].const_data = &(instr.constant.value.r123.start);
+                this->scope[in1].data       = &(this->scope[in1].const_data);
+                this->scope[in1].type       = UINT64;
+                this->scope[in1].nelem      = 1;
+                this->scope[in1].ndim       = 1;
+                this->scope[in1].start      = 0;
+                this->scope[in1].shape[0]   = 1;
+                this->scope[in1].stride[0]  = 0;
+                this->scope[in1].layout     = CONSTANT;
 
                 in2 = ++(this->noperands);
+                this->scope[in2].const_data = &(instr.constant.value.r123.key);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
                 this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.r123.key);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+
 
                 this->program[i].op    = GENERATE;  // TAC
                 this->program[i].oper  = RANDOM;

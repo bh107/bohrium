@@ -102,38 +102,48 @@ int tac_noperands(tac_t& tac)
     return 0;
 }
 
-std::string tac_typesig_text(tac_t& tac, operand_t* scope)
-{
+string tac_typesig_text(tac_t& tac, operand_t* scope)
+{   
+    stringstream ss;
     switch(tac_noperands(tac)) {
         case 3:
-            return  etype_text_shand(scope[tac.out].type)+\
-                    etype_text_shand(scope[tac.in1].type)+\
-                    etype_text_shand(scope[tac.in2].type);
+            ss << etype_text_shand(scope[tac.out].type);
+            ss << etype_text_shand(scope[tac.in1].type);
+            ss << etype_text_shand(scope[tac.in2].type);
+            break;
         case 2:
-            return  etype_text_shand(scope[tac.out].type)+\
-                    etype_text_shand(scope[tac.in1].type);
+            ss << etype_text_shand(scope[tac.out].type);
+            ss << etype_text_shand(scope[tac.in1].type);
+            break;
         case 1:
-            return  etype_text_shand(scope[tac.out].type);
+            ss << etype_text_shand(scope[tac.out].type);
+            break;
         default:
-            return "";
+            return string("");
     }
+    return ss.str();
 }
 
-std::string tac_layout_text(tac_t& tac, operand_t* scope)
+string tac_layout_text(tac_t& tac, operand_t* scope)
 {
+    stringstream ss;
     switch(tac_noperands(tac)) {
         case 3:
-            return  layout_text_shand(scope[tac.out].layout)+\
-                    layout_text_shand(scope[tac.in1].layout)+\
-                    layout_text_shand(scope[tac.in2].layout);
+            ss << layout_text_shand(scope[tac.out].layout);
+            ss << layout_text_shand(scope[tac.in1].layout);
+            ss << layout_text_shand(scope[tac.in2].layout);
+            break;
         case 2:
-            return  layout_text_shand(scope[tac.out].layout)+\
-                    layout_text_shand(scope[tac.in1].layout);
+            ss << layout_text_shand(scope[tac.out].layout);
+            ss << layout_text_shand(scope[tac.in1].layout);
+            break;
         case 1:
-            return  layout_text_shand(scope[tac.out].layout);
+            ss << layout_text_shand(scope[tac.out].layout);
+            break;
         default:
-            return "";
+            return string("");
     }
+    return ss.str();
 }
 
 //

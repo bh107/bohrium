@@ -86,7 +86,12 @@ ResourceManager::ResourceManager(bh_component* _component)
     } else {
         throw std::runtime_error("Could not find valid OpenCL platform.");
     }
-    
+    if (devices[0].getInfo<CL_DEVICE_ADDRESS_BITS>() == 64)
+    {
+        intpType_ = OCL_INT64;
+    } else {
+        intpType_ = OCL_INT32;
+    }
     calcLocalShape();
     registerExtensions(extensions);
 
@@ -100,10 +105,19 @@ ResourceManager::ResourceManager(bh_component* _component)
 #endif
 }
 
+OCLtype ResourceManager::intpType()
+{
+    return intpType_;
+}
+
 #ifdef BH_TIMING
 ResourceManager::~ResourceManager()
 {
-    std::cout << "------------------ STATS ------------------------" << std::endl;
+#ifdef STATIC_KERNEL
+    std::cout << "---------------- STATS: STATIC_KERNEL -------------------" << std::endl;
+#else
+    std::cout << "---------------- STATS: DYNAMIC_KERNEL ------------------" << std::endl;
+#endif
     delete batchBuild;
     delete codeGen;
     delete kernelGen;
@@ -255,13 +269,13 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     try {
         program.build(devices,getIncludeStr().c_str());
     } catch (cl::Error) {
-#ifdef DEBUG
+//#ifdef DEBUG
         std::cerr << "Program build error:\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
         std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
-#endif
+//#endif
         throw std::runtime_error("Could not build Kernel.");
     }
     

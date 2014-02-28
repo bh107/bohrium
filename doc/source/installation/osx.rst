@@ -12,13 +12,13 @@ You also need the following packages from MacPorts::
 
   sudo port install python27
 
-If you also want to build the Mono libraries, you also need the Mono package::
+If you also want to build the Mono libraries (only required for the C# NumCIL package), you also need the Mono package::
 
   sudo port install mono
 
 .. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ does not support 64bit execution, and will not work with a normal build. You need to build a 32 bit version of Bohrium if you want to use the official Mono binaries.
 
-Download and extract the current version (v0.2)::
+Download and extract the current version (v0.2) (not recommended on OSX)::
 
   wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.2.tgz
   tar -xzf bohrium-v0.2.tgz
@@ -29,6 +29,26 @@ As Bohrium is still under active development you want to build the current devel
   cd bohrium
   git submodule init
   git submodule update
+
+If you see an error about a ``missing pubkey``, you need to edit the ``.git/config`` file, find the line::
+
+  [submodule "bridge/numpy"]
+    url = git@bitbucket.org:bohrium/numpy.git
+
+and change it to::
+
+  [submodule "bridge/numpy"]
+    url = https://bitbucket.org/bohrium/numpy.git
+
+Then run the submodule command again::
+
+  git submodule update
+
+If at some point you wish to update to get the latest fixes for Bohrium, simply run::
+
+  cd bohrium
+  git pull
+
 
 Make sure your system compiler is the one provided by Xcode, you can run the following command to verify that your compiler is the Apple version of clang::
   
@@ -57,6 +77,7 @@ This change is required to ensure that the kernels are compiled as 64-bit kernel
 
   rm -rf ~/.local/cpu/objects/*
 
+.. note:: If you update your installation, you may want to delete your ``~/.bohrium/config.ini`` file and run the install command again. Remember to edit the compiler command again if you do this.
 
 Python / NumPy
 ~~~~~~~~~~~~~~

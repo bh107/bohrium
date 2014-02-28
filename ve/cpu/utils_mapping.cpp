@@ -135,21 +135,21 @@ string etype_text(ETYPE etype)
 string etype_text_shand(ETYPE etype)
 {
     switch(etype) {
-        case BOOL: return "z";
-        case INT8: return "b";
-        case INT16: return "s";
-        case INT32: return "i";
-        case INT64: return "l";
-        case UINT8: return "B";
-        case UINT16: return "S";
-        case UINT32: return "I";
-        case UINT64: return "L";
-        case FLOAT32: return "f";
-        case FLOAT64: return "d";
-        case COMPLEX64: return "c";
-        case COMPLEX128: return "C";
+        case BOOL: return string("z");
+        case INT8: return string("b");
+        case INT16: return string("s");
+        case INT32: return string("i");
+        case INT64: return string("l");
+        case UINT8: return string("B");
+        case UINT16: return string("S");
+        case UINT32: return string("I");
+        case UINT64: return string("L");
+        case FLOAT32: return string("f");
+        case FLOAT64: return string("d");
+        case COMPLEX64: return string("c");
+        case COMPLEX128: return string("C");
     }
-    return "_ERR_";
+    return string("_ERR_");
 }
 
 string etype_to_ctype_text(ETYPE etype)

@@ -31,6 +31,8 @@ bool Block::compose()
 
         this->instr[i] = &this->ir.instr_list[dag.node_map[i]];
         bh_instruction& instr = *this->instr[i];
+
+        bh_pprint_instr(&instr);
         uint32_t out=0, in1=0, in2=0;
 
         //
@@ -47,29 +49,43 @@ bool Block::compose()
             %for $opcode, $operation, $operator, $nin in $operations
             case $opcode:
                 %if $opcode == 'BH_RANDOM'
-                // This one requires special-handling... what a beaty...
+                // This one requires special-handling... what a beauty...
                 in1 = ++(this->noperands);                // Input
-                this->scope[in1].layout    = CONSTANT;
-                this->scope[in1].const_data= &(instr.constant.value.r123.start);
-                this->scope[in1].data      = &(this->scope[in1].const_data);
-                this->scope[in1].type      = UINT64;
-                this->scope[in1].nelem     = 1;
+                this->scope[in1].const_data = &(instr.constant.value.r123.start);
+                this->scope[in1].data       = &(this->scope[in1].const_data);
+                this->scope[in1].type       = UINT64;
+                this->scope[in1].nelem      = 1;
+                this->scope[in1].ndim       = 1;
+                this->scope[in1].start      = 0;
+                this->scope[in1].shape[0]   = 1;
+                this->scope[in1].stride[0]  = 0;
+                this->scope[in1].layout     = CONSTANT;
 
                 in2 = ++(this->noperands);
+                this->scope[in2].const_data = &(instr.constant.value.r123.key);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
                 this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.r123.key);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+
                 %else if 'ACCUMULATE' in $opcode or 'REDUCE' in $opcode
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
-                this->scope[in2].layout    = CONSTANT;
-                this->scope[in2].const_data= &(instr.constant.value.uint64);
-                this->scope[in2].data      = &(this->scope[in2].const_data);
-                this->scope[in2].type      = UINT64;
-                this->scope[in2].nelem     = 1;
+                this->scope[in2].const_data = &(instr.constant.value.uint64);
+                this->scope[in2].data       = &(this->scope[in2].const_data);
+                this->scope[in2].type       = UINT64;
+                this->scope[in2].nelem      = 1;
+                this->scope[in2].ndim       = 1;
+                this->scope[in2].start      = 0;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].layout     = CONSTANT;
+
                 %else
                 %if nin >= 1
                 in1 = this->add_operand(instr, 1);

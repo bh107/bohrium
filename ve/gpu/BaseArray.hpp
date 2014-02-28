@@ -33,7 +33,7 @@ public:
     BaseArray(bh_base* spec, ResourceManager* resourceManager);
     void sync();
     void update();
-    size_t size();
+    bh_index size();
 };
 
 

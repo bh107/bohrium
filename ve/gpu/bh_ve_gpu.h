@@ -29,9 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-static bh_component component;
-static InstructionScheduler* instructionScheduler;
-static ResourceManager* resourceManager;
+extern ResourceManager* resourceManager;
 
 /* Component interface: init (see bh_component.h) */
 DLLEXPORT bh_error bh_ve_gpu_init(const char *name);

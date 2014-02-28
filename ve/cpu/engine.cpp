@@ -137,6 +137,7 @@ bh_error Engine::execute(bh_ir& bhir)
                 sourcecode.size()
             );                 
             if (!compile_res) {
+                DEBUG("Compilation failed... exiting.");
                 return BH_ERROR;
             }
                                                         // Inform storage
@@ -155,9 +156,11 @@ bh_error Engine::execute(bh_ir& bhir)
                 if ((block.symbol!="") && \
                     (!storage.symbol_ready(block.symbol)) && \
                     (!storage.load(block.symbol))) {        // Fail
+                    DEBUG("Engine::execute(...) - Failed loading code... exiting...");
                     return BH_ERROR;
                 }
             } else {
+                DEBUG("Engine::execute(...) - Failed loading code... exiting...");
                 return BH_ERROR;
             }
         }

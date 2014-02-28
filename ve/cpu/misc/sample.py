@@ -8,8 +8,18 @@ def sample(args):
     elif args.be == 'numpy':
         import numpy as np
 
-    a = np.ones(args.shape)
-    return a + a
+    a = np.ones(args.shape, bohrium=False)
+    b = np.ones(args.shape, bohrium=False)
+    c = np.ones(args.shape, bohrium=False)
+    a.bohrium=True
+    b.bohrium=True
+    c.bohrium=True
+    np.add(a,b,c)
+    a.bohrium=False
+    b.bohrium=False
+    c.bohrium=False
+
+    return a,b,c
     #a = np.arange(np.prod(args.shape)).reshape(args.shape)
     #b = np.cumsum(a,0)
     #c = np.cumsum(a,1)

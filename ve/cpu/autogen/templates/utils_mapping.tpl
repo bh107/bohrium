@@ -55,10 +55,10 @@ string etype_text_shand(ETYPE etype)
 {
     switch(etype) {
         %for $type in $types
-        case $type['name']: return "${type['shorthand']}";
+        case $type['name']: return string("${type['shorthand']}");
         %end for
     }
-    return "_ERR_";
+    return string("_ERR_");
 }
 
 string etype_to_ctype_text(ETYPE etype)
