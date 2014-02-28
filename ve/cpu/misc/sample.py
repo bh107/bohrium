@@ -8,24 +8,8 @@ def sample(args):
     elif args.be == 'numpy':
         import numpy as np
 
-    a = np.ones(args.shape, bohrium=False)
-    b = np.ones(args.shape, bohrium=False)
-    c = np.ones(args.shape, bohrium=False)
-    a.bohrium=True
-    b.bohrium=True
-    c.bohrium=True
-    np.add(a,b,c)
-    a.bohrium=False
-    b.bohrium=False
-    c.bohrium=False
-
-    return a,b,c
-    #a = np.arange(np.prod(args.shape)).reshape(args.shape)
-    #b = np.cumsum(a,0)
-    #c = np.cumsum(a,1)
-    #d = np.add.reduce(a,2)
-    #return a, b, c
-    #return a, b, c, d
+    a = np.ones(27)
+    return a+a
 
 def main():
     p = argparse.ArgumentParser('Run a dummy program')

@@ -17,7 +17,7 @@ namespace cpu{
  */
 bool Block::compose()
 {
-    DEBUG(">> Block::compose() : nnode("<< this->dag.nnode << ")");
+    DEBUG("++ Block::compose() : nnode("<< this->dag.nnode << ")");
     if (this->dag.nnode<1) {
         fprintf(stderr, "Got an empty dag. This cannot be right...\n");
         return false;
@@ -54,10 +54,10 @@ bool Block::compose()
                 this->scope[in1].data       = &(this->scope[in1].const_data);
                 this->scope[in1].type       = UINT64;
                 this->scope[in1].nelem      = 1;
-                this->scope[in1].ndim       = 1;
+                this->scope[in1].ndim       = 0;
                 this->scope[in1].start      = 0;
-                this->scope[in1].shape[0]   = 1;
-                this->scope[in1].stride[0]  = 0;
+                this->scope[in1].shape      = nullptr;
+                this->scope[in1].stride     = nullptr;
                 this->scope[in1].layout     = CONSTANT;
 
                 in2 = ++(this->noperands);
@@ -65,11 +65,11 @@ bool Block::compose()
                 this->scope[in2].data       = &(this->scope[in2].const_data);
                 this->scope[in2].type       = UINT64;
                 this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
+                this->scope[in2].ndim       = 0;
                 this->scope[in2].start      = 0;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout    = CONSTANT;
+                this->scope[in2].shape      = nullptr;
+                this->scope[in2].stride     = nullptr;
+                this->scope[in2].layout     = CONSTANT;
 
                 %else if 'ACCUMULATE' in $opcode or 'REDUCE' in $opcode
                 in1 = this->add_operand(instr, 1);
@@ -79,10 +79,10 @@ bool Block::compose()
                 this->scope[in2].data       = &(this->scope[in2].const_data);
                 this->scope[in2].type       = UINT64;
                 this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
+                this->scope[in2].ndim       = 0;
                 this->scope[in2].start      = 0;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride[0]  = 0;
+                this->scope[in2].shape      = nullptr;
+                this->scope[in2].stride     = nullptr;
                 this->scope[in2].layout     = CONSTANT;
 
                 %else
@@ -120,12 +120,12 @@ bool Block::compose()
                     printf("compose: Err=[Unsupported instruction] {\n");
                     bh_pprint_instr(&instr);
                     printf("}\n");
-                    DEBUG("<< Block::compose(ERROR)");
+                    DEBUG("-- Block::compose(ERROR)");
                     return BH_ERROR;
                 }
         }
     }
-    DEBUG("<< Block::compose(SUCCESS)");
+    DEBUG("-- Block::compose(SUCCESS)");
     return BH_SUCCESS;
 }
 

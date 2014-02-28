@@ -19,11 +19,11 @@ Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
 
 Block::~Block()
 {
-    DEBUG(">>Block::~Block()");
+    DEBUG("++ Block::~Block()");
     free(scope);
     free(program);
     free(instr);
-    DEBUG("<<Block::~Block()");
+    DEBUG("-- Block::~Block()");
 }
 
 string Block::scope_text(string prefix)
@@ -70,7 +70,8 @@ string Block::scope_text()
 string Block::text(std::string prefix)
 {
     stringstream ss;
-    ss << prefix << "block(";
+    ss << prefix;
+    ss << "block(";
     ss << prefix << "length="       << length;
     ss << prefix << ", noperands="  << noperands;
     ss << prefix << ", omask="      << omask;
@@ -83,7 +84,7 @@ string Block::text(std::string prefix)
     }
     ss << prefix << "  }" << endl;
 
-    ss << prefix << scope_text("  ");
+    ss << scope_text(prefix+"  ");
     ss << prefix << "}";
     
     return ss.str();
@@ -110,7 +111,7 @@ bool Block::symbolize(const bool optimized) {
 
     symbol   = "";
 
-    DEBUG(">> Block::symbolize("<< optimized << ") : length("<< length << ");");
+    DEBUG("++ Block::symbolize("<< optimized << ") : length("<< length << ");");
 
     symbol_op_oper << "BH";
     for (size_t i=0; i<length; ++i) {
@@ -146,7 +147,7 @@ bool Block::symbolize(const bool optimized) {
         symbol = symbol_op_oper.str();
     }
 
-    DEBUG("<< Block::symbolize(...) : symbol("<< symbol << ");");
+    DEBUG("-- Block::symbolize(...) : symbol("<< symbol << ");");
     return true;
 }
 
@@ -161,24 +162,24 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 {
     size_t arg_idx = ++(noperands);
     if (bh_is_constant(&instr.operand[operand_idx])) {
-        scope[arg_idx].const_data= &(instr.constant.value);
-        scope[arg_idx].data      = &scope[arg_idx].const_data;
-        scope[arg_idx].type      = utils::bhtype_to_etype(instr.constant.type);
-        scope[arg_idx].nelem     = 1;
-        scope[arg_idx].ndim      = 1;
-        scope[arg_idx].start     = 0;
-        scope[arg_idx].shape[0]  = 1;
-        scope[arg_idx].stride[0] = 0;
-        scope[arg_idx].layout    = CONSTANT;
+        scope[arg_idx].const_data   = &(instr.constant.value);
+        scope[arg_idx].data         = &scope[arg_idx].const_data;
+        scope[arg_idx].type         = utils::bhtype_to_etype(instr.constant.type);
+        scope[arg_idx].nelem        = 1;
+        scope[arg_idx].ndim         = 0;
+        scope[arg_idx].start        = 0;
+        scope[arg_idx].shape        = nullptr;
+        scope[arg_idx].stride       = nullptr;
+        scope[arg_idx].layout       = CONSTANT;
     } else {
         scope[arg_idx].const_data= nullptr;
-        scope[arg_idx].data      = &(bh_base_array(&instr.operand[operand_idx])->data);
-        scope[arg_idx].type      = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
-        scope[arg_idx].nelem     = bh_base_array(&instr.operand[operand_idx])->nelem;
-        scope[arg_idx].ndim      = instr.operand[operand_idx].ndim;
-        scope[arg_idx].start     = instr.operand[operand_idx].start;
-        scope[arg_idx].shape     = instr.operand[operand_idx].shape;
-        scope[arg_idx].stride    = instr.operand[operand_idx].stride;
+        scope[arg_idx].data     = &(bh_base_array(&instr.operand[operand_idx])->data);
+        scope[arg_idx].type     = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
+        scope[arg_idx].nelem    = bh_base_array(&instr.operand[operand_idx])->nelem;
+        scope[arg_idx].ndim     = instr.operand[operand_idx].ndim;
+        scope[arg_idx].start    = instr.operand[operand_idx].start;
+        scope[arg_idx].shape    = instr.operand[operand_idx].shape;
+        scope[arg_idx].stride   = instr.operand[operand_idx].stride;
 
         if (utils::is_contiguous(scope[arg_idx])) {
             scope[arg_idx].layout = CONTIGUOUS;

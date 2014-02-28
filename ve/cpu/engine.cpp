@@ -30,27 +30,20 @@ Engine::Engine(
     specializer(template_directory),
     compiler(compiler_cmd, object_directory)
 {
-    DEBUG(">>Engine(...)");
-    
+    DEBUG("++ Engine::Engine(...)");
     bh_vcache_init(vcache_size);    // Victim cache
     DEBUG(this->text());
-
-    DEBUG("<<Engine(...)");
+    DEBUG("-- Engine::Engine(...)");
 }
 
 Engine::~Engine()
 {
-    DEBUG(">>~Engine(...)");
-
+    DEBUG("++ ~Engine(...)");
     if (vcache_size>0) {    // De-allocate the malloc-cache
         bh_vcache_clear();
         bh_vcache_delete();
     }
-
-    // Store
-    // Compiler
-    // Specializer
-    DEBUG("<<~Engine(...)");
+    DEBUG("-- ~Engine(...)");
 }
 
 string Engine::text()
@@ -76,13 +69,15 @@ string Engine::text()
 
 bh_error Engine::execute(bh_ir& bhir)
 {
-    DEBUG(">>Engine::execute(...)");
+    DEBUG("++ Engine::execute(...)");
 
     bh_error res = BH_SUCCESS;
     
     bh_dag& root = bhir.dag_list[0];  // Start at the root DAG
 
+    DEBUG("   Engine::execute(...) == Dag-Loop");
     for(bh_intp i=0; i<root.nnode; ++i) {
+        DEBUG("   ++Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
         bh_intp node = root.node_map[i];
         if (node>0) {
             cout << "Encountered an instruction in the root-dag." << endl;
@@ -103,7 +98,7 @@ bh_error Engine::execute(bh_ir& bhir)
             return BH_ERROR;
         }
 
-        DEBUG(block.text());
+        DEBUG(block.text("   "));
         
         //    // Lets check if it is a known extension method
         //    {
@@ -137,7 +132,7 @@ bh_error Engine::execute(bh_ir& bhir)
                 sourcecode.size()
             );                 
             if (!compile_res) {
-                DEBUG("Compilation failed... exiting.");
+                DEBUG("  Compilation failed... exiting.");
                 return BH_ERROR;
             }
                                                         // Inform storage
@@ -156,15 +151,16 @@ bh_error Engine::execute(bh_ir& bhir)
                 if ((block.symbol!="") && \
                     (!storage.symbol_ready(block.symbol)) && \
                     (!storage.load(block.symbol))) {        // Fail
-                    DEBUG("Engine::execute(...) - Failed loading code... exiting...");
+                    DEBUG("  Engine::execute(...) - Failed loading code... exiting...");
                     return BH_ERROR;
                 }
             } else {
-                DEBUG("Engine::execute(...) - Failed loading code... exiting...");
+                DEBUG("   Engine::execute(...) - Failed loading code... exiting...");
                 return BH_ERROR;
             }
         }
 
+        DEBUG("   Engine::execute(...) == Allocating memory.");
         //
         // Allocate memory for output
         //
@@ -177,6 +173,7 @@ bh_error Engine::execute(bh_ir& bhir)
             }
         }
 
+        DEBUG("   Engine::execute(...) == Call kernel function!");
         //
         // Execute block handling array operations.
         // 
@@ -189,6 +186,7 @@ bh_error Engine::execute(bh_ir& bhir)
             storage.funcs[block.symbol](block.scope);
         }
 
+        DEBUG("   Engine::execute(...) == De-Allocate memory!");
         //
         // De-Allocate operand memory
         for(size_t i=0; i<block.length; ++i) {
@@ -201,10 +199,10 @@ bh_error Engine::execute(bh_ir& bhir)
                 }
             }
         }
-
+        DEBUG("   --Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
     }
     
-    DEBUG("<<Engine::execute(...)");
+    DEBUG("-- Engine::execute(...)");
     return res;
 }
 
@@ -215,7 +213,7 @@ bh_error Engine::execute(bh_ir& bhir)
  */
 bool Engine::src_to_file(string symbol, const char* sourcecode, size_t source_len)
 {
-    DEBUG(">>Engine::src_to_file("<< symbol << ", ..., " << source_len << ");");
+    DEBUG("++ Engine::src_to_file("<< symbol << ", ..., " << source_len << ");");
 
     int kernel_fd;              // Kernel file-descriptor
     FILE *kernel_fp = NULL;     // Handle for kernel-file
@@ -243,7 +241,7 @@ bool Engine::src_to_file(string symbol, const char* sourcecode, size_t source_le
     fclose(kernel_fp);
     close(kernel_fd);
 
-    DEBUG("<<Engine::src_to_file(...);");
+    DEBUG("-- Engine::src_to_file(...);");
     return true;
 }
 

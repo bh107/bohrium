@@ -80,6 +80,8 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {
+    DEBUG("++ bh_ve_cpu_init(...);");
+
     bh_intp vcache_size  = 10;  // Default...
     bh_intp jit_enabled  = 1;
     bh_intp jit_preload  = 1;
@@ -190,40 +192,53 @@ bh_error bh_ve_cpu_init(const char *name)
         (bool)jit_optimize,
         (bool)jit_dumpsrc
     );
-    
+
+    DEBUG("-- bh_ve_cpu_init(...);");
     return BH_SUCCESS;
 }
 
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    return engine->execute(*bhir);
+    bh_error res = BH_SUCCESS;
+    DEBUG("++ bh_ve_cpu_execute(...);");
+    res = engine->execute(*bhir);
+    DEBUG("-- bh_ve_cpu_execute(...);");
+    return res;
 }
 
 /* Component interface: shutdown (see bh_component.h) */
 bh_error bh_ve_cpu_shutdown(void)
 {
+    DEBUG("++ bh_ve_cpu_shutdown(void)>");
+
     bh_component_destroy(&myself);
+    
     delete engine;
     engine = nullptr;
 
+    DEBUG("-- bh_ve_cpu_shutdown(...)>");
     return BH_SUCCESS;
 }
 
 /* Component interface: extmethod (see bh_component.h) */
 bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
+    DEBUG("++ bh_ve_cpu_extemethod(...,...)>");
+
     bh_extmethod_impl extmethod;
     bh_error err = bh_component_extmethod(&myself, name, &extmethod);
-    if(err != BH_SUCCESS)
+    if (err != BH_SUCCESS) {
         return err;
+    }
 
-    if(extmethod_op2impl.find(opcode) != extmethod_op2impl.end())
-    {
+    if(extmethod_op2impl.find(opcode) != extmethod_op2impl.end()) {
         printf("[CPU-VE] Warning, multiple registrations of the same"
                "extension method '%s' (opcode: %d)\n", name, (int)opcode);
     }
     extmethod_op2impl[opcode] = extmethod;
+
+    DEBUG("-- bh_ve_cpu_extmethod(...);");
     return BH_SUCCESS;
 }
 

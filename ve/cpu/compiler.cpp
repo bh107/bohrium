@@ -27,8 +27,8 @@ Compiler::Compiler(string process_str, string object_directory ) :
 
 Compiler::~Compiler()
 {
-    DEBUG(">>Compiler::~Compiler()");
-    DEBUG("<<Compiler::~Compiler()");
+    DEBUG("++ Compiler::~Compiler()");
+    DEBUG("-- Compiler::~Compiler()");
 }
 
 string Compiler::text()
@@ -59,7 +59,7 @@ bool Compiler::compile(string symbol, const char* sourcecode, size_t source_len)
  */
 bool Compiler::compile(string symbol, string library, const char* sourcecode, size_t source_len)
 {
-    DEBUG(">> Compiler::compile(" << symbol << ", " << library << ", ..., ..." << ");");
+    DEBUG("++ Compiler::compile(" << symbol << ", " << library << ", ..., ..." << ");");
     //
     // Constuct the compiler command
     string cmd = process_str +" "+ object_directory +"/"+ library +".so";
@@ -74,7 +74,7 @@ bool Compiler::compile(string symbol, string library, const char* sourcecode, si
     fwrite(sourcecode, 1, source_len, cmd_stdin);   // Write sourcecode to stdin
     fflush(cmd_stdin);
     int exit_code = (pclose(cmd_stdin)/256);
-    DEBUG("<< Compiler::compile(...) : exit_code("<< exit_code << ");");
+    DEBUG("-- Compiler::compile(...) : exit_code("<< exit_code << ");");
     return (exit_code==0);
 }
 

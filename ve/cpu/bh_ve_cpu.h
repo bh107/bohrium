@@ -21,9 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_VE_CPU_H
 
 #include <bh.h>
-#include "tac.h"
-
-
 
 #ifdef __cplusplus
 extern "C" {
