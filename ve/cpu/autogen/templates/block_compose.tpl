@@ -17,8 +17,18 @@ namespace cpu{
  */
 bool Block::compose()
 {
-    DEBUG(">> Block::compose()");
+    DEBUG(">> Block::compose() : nnode("<< this->dag.nnode << ")");
+    if (this->dag.nnode<1) {
+        fprintf(stderr, "Got an empty dag. This cannot be right...\n");
+        return false;
+    }
+
     for (int i=0; i< this->dag.nnode; ++i) {
+        if (dag.node_map[i] <0) {
+            fprintf(stderr, "Code-generation for subgraphs is not supported yet.\n");
+            return false;
+        }
+
         this->instr[i] = &this->ir.instr_list[dag.node_map[i]];
         bh_instruction& instr = *this->instr[i];
         uint32_t out=0, in1=0, in2=0;

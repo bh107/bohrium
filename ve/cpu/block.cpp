@@ -48,46 +48,58 @@ string Block::text()
  */
 bool Block::symbolize(const bool optimized) {
 
-    std::string symbol_op_oper, 
-                symbol_tsig,
-                symbol_layout,
-                symbol_ndim;
+    stringstream symbol_op_oper, 
+                 symbol_tsig,
+                 symbol_layout,
+                 symbol_ndim;
 
-        symbol   = "";
+    symbol   = "";
+
+    DEBUG(">> Block::symbolize("<< optimized << ") : length("<< length << ");");
 
     for (size_t i=0; i<length; ++i) {
-        tac_t& tac = program[i];
+        tac_t& tac = this->program[i];
         
         // Do not include system opcodes in the kernel symbol.
         if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
             continue;
         }
         
-        symbol_op_oper  += "_";
-        symbol_op_oper  += utils::operation_text(tac.op);
-        symbol_op_oper  += to_string(tac.oper);
-        symbol_tsig     += utils::tac_typesig_text(tac, scope);
-        symbol_layout   += utils::tac_layout_text(tac, scope);
-    
+        DEBUG(" 3.1");
+
+        symbol_tsig     << utils::tac_typesig_text(tac, scope);
+        DEBUG(" 3.2");
+        symbol_op_oper <<"_";
+        DEBUG(" 3.3");
+        symbol_op_oper  << utils::operation_text(tac.op);
+        DEBUG(" 3.4");
+        symbol_op_oper  << tac.oper;
+        DEBUG(" 3.5");
+        symbol_layout   << utils::tac_layout_text(tac, scope);
+        DEBUG("   3.6");
         size_t ndim = scope[tac.out].ndim;
         if (tac.op == REDUCE) {
             ndim = scope[tac.in1].ndim;
         }
         if (optimized && (ndim <= 3)) {        // Optimized
-            symbol_ndim += to_string(ndim);
+            symbol_ndim << ndim;
         } else {
-            symbol_ndim += string("N");
+            symbol_ndim << "N";
         }
-        symbol_ndim += "D";
+        symbol_ndim << "D";
     }
 
     if ((omask & (BUILTIN_ARRAY_OPS)) > 0) {
-        symbol = "BH" + \
-                        symbol_op_oper  + "_" +\
-                        symbol_tsig     + "_" +\
-                        symbol_layout   + "_" +\
-                        symbol_ndim;
+        stringstream symbol_stream;
+        symbol_stream   << "BH"                  \
+                        << symbol_op_oper << "_" \
+                        << symbol_tsig    << "_" \
+                        << symbol_layout  << "_" \
+                        << symbol_ndim;
+        symbol = symbol_stream.str();
     }
+
+    DEBUG("<< Block::symbolize(...) : symbol("<< symbol << ");");
     return true;
 }
 
