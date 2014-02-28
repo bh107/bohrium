@@ -11,7 +11,7 @@ Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
     if (ps<1) {
         fprintf(stderr, "This block is the empty program! You should not have called this!");
     }
-    scope    = (operand_t*)malloc(1+3*ps*sizeof(operand_t));
+    scope    = (operand_t*)malloc((1+3)*ps*sizeof(operand_t));
     program  = (tac_t*)malloc(ps*sizeof(tac_t));
     instr    = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
     length   = ps;
@@ -120,7 +120,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
         scope[arg_idx].stride[0] = 0;
         scope[arg_idx].layout    = CONSTANT;
     } else {
-        scope[arg_idx].const_data= 0x0;
+        scope[arg_idx].const_data= nullptr;
         scope[arg_idx].data      = &(bh_base_array(&instr.operand[operand_idx])->data);
         scope[arg_idx].type      = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
         scope[arg_idx].nelem     = bh_base_array(&instr.operand[operand_idx])->nelem;
