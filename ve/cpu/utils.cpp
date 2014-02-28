@@ -49,12 +49,12 @@ bool is_contiguous(operand_t& arg)
 std::string tac_text(tac_t& tac)
 {
     std::stringstream ss;
-    ss << "[op="<< operation_text(tac.op) << "(" << tac.op << ")";
-    ss << ", oper=" << operator_text(tac.oper) << "(" << tac.oper << ")";
-    ss << ", out="  << tac.out;
-    ss << ", in1="  << tac.in1;
-    ss << ", in2="  << tac.in2;
-    ss << "]" << endl;
+    ss << "{ op("<< operation_text(tac.op) << "(" << tac.op << ")),";
+    ss << " oper(" << operator_text(tac.oper) << "(" << tac.oper << ")),";
+    ss << " out("  << tac.out << "),";
+    ss << " in1("  << tac.in1 << "),";
+    ss << " in2("  << tac.in2 << ")";
+    ss << " }";
     return ss.str();
 }
 

@@ -28,7 +28,6 @@ bool Block::compose()
         this->instr[i] = &this->ir.instr_list[dag.node_map[i]];
         bh_instruction& instr = *this->instr[i];
 
-        bh_pprint_instr(&instr);
         uint32_t out=0, in1=0, in2=0;
 
         //

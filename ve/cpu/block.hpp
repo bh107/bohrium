@@ -15,7 +15,11 @@ public:
     Block(bh_ir& ir, bh_dag& dag);
     ~Block();
 
+    std::string text(std::string prefix);
     std::string text();
+
+    std::string scope_text(std::string prefix);
+    std::string scope_text();
 
     bool compose();
     bool symbolize(const bool optimized);    

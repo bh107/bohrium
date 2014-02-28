@@ -26,21 +26,72 @@ Block::~Block()
     DEBUG("<<Block::~Block()");
 }
 
-string Block::text()
+string Block::scope_text(string prefix)
 {
     stringstream ss;
-    ss << "block(";
-    ss << "length=" << to_string(length);
-    ss << ", noperands=" << noperands;
-    ss << ", omask=" << omask;
-    ss << ") {" << endl;
-    for(size_t i=0; i<length; ++i) {
-        ss << "  " << utils::tac_text(program[i]);
+    ss << prefix << "scope {" << endl;
+    for(size_t i=1; i<=noperands; ++i) {
+        ss << prefix << "  [" << i << "]{";
+        ss << " layout(" << utils::layout_text(scope[i].layout) << "),";
+        ss << " nelem(" << scope[i].nelem << "),";
+        ss << " data(" << *(scope[i].data) << "),";
+        ss << " const_data(" << scope[i].const_data << "),";
+        ss << " etype(" << utils::etype_text(scope[i].type) << "),";
+        ss << " ndim(" << scope[i].ndim << "),";
+        ss << " start(" << scope[i].start << "),";        
+        ss << " shape(";
+        for(int64_t dim=0; dim < scope[i].ndim; ++dim) {
+            ss << scope[i].shape[dim];
+            if (dim != (scope[i].ndim-1)) {
+                ss << prefix << ", ";
+            }
+        }
+        ss << "),";
+        ss << " stride(";
+        for(int64_t dim=0; dim < scope[i].ndim; ++dim) {
+            ss << scope[i].stride[dim];
+            if (dim != (scope[i].ndim-1)) {
+                ss << prefix << ", ";
+            }
+        }
+        ss << ")";
+        ss << "}" << endl;
     }
-    ss << "  (" << symbol << ")" << endl;
-    ss << "}";
+    ss << prefix << "}" << endl;
+
+    return ss.str();
+}
+
+string Block::scope_text()
+{
+    return scope_text("");
+}
+
+string Block::text(std::string prefix)
+{
+    stringstream ss;
+    ss << prefix << "block(";
+    ss << prefix << "length="       << length;
+    ss << prefix << ", noperands="  << noperands;
+    ss << prefix << ", omask="      << omask;
+    ss << prefix << ") {"           << endl;
+    ss << prefix << "  (" << symbol << ")" << endl;
+
+    ss << prefix << "  program {" << endl;
+    for(size_t i=0; i<length; ++i) {
+        ss << prefix << "    [" << i << "]" << utils::tac_text(program[i]) << endl;
+    }
+    ss << prefix << "  }" << endl;
+
+    ss << prefix << scope_text("  ");
+    ss << prefix << "}";
     
     return ss.str();
+}
+
+string Block::text()
+{
+    return text("");
 }
 
 /**

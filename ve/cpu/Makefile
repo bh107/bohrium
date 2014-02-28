@@ -53,7 +53,7 @@ docs:
 	doxygen doc/cpu_engine.doxy
 
 test:
-	BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
+	BH_VE_CPU_JIT_DUMPSRC=1 dython ../../test/numpy/numpytest.py
 
 %.o: %.cpp $(HEADER)
 	$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)

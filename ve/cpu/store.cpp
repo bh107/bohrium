@@ -24,8 +24,8 @@ Store::Store(const string object_dir) : object_dir(object_dir)
 
 Store::~Store()
 {
-    DEBUG(">>Store::~Store()");
-    DEBUG("<<Store::~Store()");
+    DEBUG(">> Store::~Store()");
+    DEBUG("<< Store::~Store()");
 }
 
 string Store::text(void)
@@ -40,7 +40,7 @@ string Store::text(void)
  */
 string Store::get_uid(void)
 {
-    DEBUG("Store::get_uid(void);");
+    DEBUG("   Store::get_uid(void) : uid(" << this->uid << ");");
     return this->uid;
 }
 
@@ -49,7 +49,7 @@ string Store::get_uid(void)
  */
 bool Store::symbol_ready(string symbol)
 {
-    DEBUG("Store::symbol_ready("<< symbol << ")");
+    DEBUG("   Store::symbol_ready("<< symbol << ") : return(" << (funcs.count(symbol) > 0) << ");");
     return funcs.count(symbol) > 0;
 }
 
@@ -163,14 +163,14 @@ void Store::add_symbol(string symbol, string library)
  *  Load a single symbol from library symbol into func-storage.
  */
 bool Store::load(string symbol) {
-    DEBUG("Store::load("<< symbol << ");");
+    DEBUG("   Store::load("<< symbol << ");");
 
     return load(symbol, libraries[symbol]);
 }
 
 bool Store::load(string symbol, string library)
 {
-    DEBUG("Store::load("<< symbol << ", " << library << ");");
+    DEBUG("   Store::load("<< symbol << ", " << library << ");");
     
     char *error_msg = NULL;             // Buffer for dlopen errors
     int errnum = 0;
