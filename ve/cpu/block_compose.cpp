@@ -14,12 +14,38 @@ namespace cpu{
 bool Block::compose()
 {
     DEBUG("++ Block::compose() : nnode("<< this->dag.nnode << ")");
+
     if (this->dag.nnode<1) {
         fprintf(stderr, "Got an empty dag. This cannot be right...\n");
         return false;
     }
+    bool compose_res = compose(0, this->dag.nnode-1);
 
-    for (int i=0; i< this->dag.nnode; ++i) {
+    DEBUG("-- Block::compose();");
+    return compose_res;
+}
+
+/**
+ *  Compose a block based on the instruction-nodes within a dag.
+ *  Starting from and including node_start to and including node_end.
+ */
+bool Block::compose(bh_intp node_start, bh_intp node_end)
+{
+    bh_intp node_span = (node_end-node_start)+1;
+    DEBUG("++ Block::compose("<< node_start <<", "<< node_end << ") : node_span("<< node_span << ")");
+    if (this->dag.nnode<1) {
+        fprintf(stderr, "Got an empty dag. This cannot be right...\n");
+        return false;
+    }
+    
+    // Reset metadata
+    length      = 0; // The length of the block
+    noperands   = 0; // The number of operands
+    omask       = 0; // And the operation mask
+    symbol      = "";
+    symbol_text = "";
+
+    for (int i=node_start; i<=node_end; ++i, ++length) {
         if (dag.node_map[i] <0) {
             fprintf(stderr, "Code-generation for subgraphs is not supported yet.\n");
             return false;
@@ -1067,8 +1093,8 @@ bool Block::compose()
                     this->program[i].in1  = 0;
                     this->program[i].in2  = 0;
 
-                    this->omask |= SYSTEM;
-                    cout << "Extension method." << endl;
+                    this->omask |= EXTENSION;
+                    //cout << "Extension method." << endl;
                     break;
 
                 } else {

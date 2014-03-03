@@ -22,15 +22,14 @@ fi
 if [ ! -z "$1" ] && [ "$1" == "test" ]; then
     #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_matmul.py
     BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_accumulate.py
-    
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_benchmarks.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_array_create.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_ndstencil.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_primitives.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_specials.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_sor.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_types.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_views.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_reduce.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_benchmarks.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_array_create.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_ndstencil.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_primitives.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_specials.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_sor.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_types.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_views.py
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_reduce.py
 fi
 

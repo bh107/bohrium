@@ -3,13 +3,14 @@ import pprint
 import os
 
 def sample(args):
-    if args.be == 'bohrium':
-        import bohrium as np
-    elif args.be == 'numpy':
-        import numpy as np
+    import bohrium as np
+    with_bohrium= (args.be == 'bohrium')
 
-    a = np.ones(27)
-    return a+a
+    a = np.ones((3,3),bohrium=with_bohrium)
+    b = np.ones((3,3),bohrium=with_bohrium)
+    c = np.matmul(a,b)
+    d = np.dot(a,b)
+    return c,d
 
 def main():
     p = argparse.ArgumentParser('Run a dummy program')

@@ -22,6 +22,7 @@ public:
     std::string scope_text();
 
     bool compose();
+    bool compose(bh_intp node_start, bh_intp node_end);
     bool symbolize(const bool optimized);    
 
     bh_instruction** instr;     // Pointers to instructions
