@@ -10,6 +10,7 @@
 #include "specializer.hpp"
 
 #include <string>
+#include <map>
 
 namespace bohrium{
 namespace engine {
@@ -35,6 +36,7 @@ public:
 
     std::string text();
     bool src_to_file(std::string symbol, const char* sourcecode, size_t source_len);
+    bh_error register_extension(bh_component& instance, const char* name, bh_opcode opcode);
 
     bh_error execute(bh_ir& ir);
 
@@ -56,6 +58,8 @@ private:
     Store          storage;
     Specializer    specializer;
     Compiler       compiler;
+
+    std::map<bh_opcode, bh_extmethod_impl> extensions;
 };
 
 }}}

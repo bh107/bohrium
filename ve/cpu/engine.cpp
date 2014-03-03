@@ -245,4 +245,23 @@ bool Engine::src_to_file(string symbol, const char* sourcecode, size_t source_le
     return true;
 }
 
+
+bh_error Engine::register_extension(bh_component& instance, const char* name, bh_opcode opcode)
+{
+    bh_extmethod_impl extmethod;
+    bh_error err = bh_component_extmethod(&instance, name, &extmethod);
+    if (err != BH_SUCCESS) {
+        return err;
+    }
+
+    if (extensions.find(opcode) != extensions.end()) {
+        fprintf(stderr, "[CPU-VE] Warning, multiple registrations of the same"
+               "extension method '%s' (opcode: %d)\n", name, (int)opcode);
+    }
+    extensions[opcode] = extmethod;
+
+    DEBUG("-- bh_ve_cpu_extmethod(...);");
+    return BH_SUCCESS;
+}
+
 }}}

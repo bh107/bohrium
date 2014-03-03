@@ -33,7 +33,6 @@ If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 
 static bh_component myself;
-static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 
 //
 // This is where the actual engine implementation is
@@ -226,19 +225,9 @@ bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
     DEBUG("++ bh_ve_cpu_extemethod(...,...)");
 
-    bh_extmethod_impl extmethod;
-    bh_error err = bh_component_extmethod(&myself, name, &extmethod);
-    if (err != BH_SUCCESS) {
-        return err;
-    }
-
-    if(extmethod_op2impl.find(opcode) != extmethod_op2impl.end()) {
-        printf("[CPU-VE] Warning, multiple registrations of the same"
-               "extension method '%s' (opcode: %d)\n", name, (int)opcode);
-    }
-    extmethod_op2impl[opcode] = extmethod;
+    bh_error register_res = engine->register_extension(myself, name, opcode);
 
     DEBUG("-- bh_ve_cpu_extmethod(...);");
-    return BH_SUCCESS;
+    return register_res;
 }
 
