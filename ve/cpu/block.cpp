@@ -72,11 +72,12 @@ string Block::text(std::string prefix)
     stringstream ss;
     ss << prefix;
     ss << "block(";
-    ss << prefix << "length="       << length;
-    ss << prefix << ", noperands="  << noperands;
-    ss << prefix << ", omask="      << omask;
-    ss << prefix << ") {"           << endl;
-    ss << prefix << "  (" << symbol << ")" << endl;
+    ss << "length="       << length;
+    ss << ", noperands="  << noperands;
+    ss << ", omask="      << omask;
+    ss << ") {"           << endl;
+    ss << prefix << "  symbol(" << symbol << ")" << endl;
+    ss << prefix << "  symbol_text(" << symbol_text << ")" << endl;
 
     ss << prefix << "  program {" << endl;
     for(size_t i=0; i<length; ++i) {
@@ -109,20 +110,19 @@ bool Block::symbolize(const bool optimized) {
                  symbol_layout,
                  symbol_ndim;
 
-    symbol   = "";
-
     DEBUG("++ Block::symbolize("<< optimized << ") : length("<< length << ");");
 
-    symbol_op_oper << "BH";
     for (size_t i=0; i<length; ++i) {
         tac_t& tac = this->program[i];
-        
+       
+        /* 
         // Do not include system opcodes in the kernel symbol.
         if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
             continue;
+        }*/
+        if (i>0) {    
+            symbol_op_oper  << "_";
         }
-        
-        symbol_op_oper  << "_";
         symbol_op_oper  << utils::operation_text(tac.op);
         symbol_op_oper  << tac.oper;
         symbol_layout   << utils::tac_layout_text(tac, scope);
@@ -139,15 +139,14 @@ bool Block::symbolize(const bool optimized) {
         symbol_ndim << "D";
     }
 
-    if ((omask & (BUILTIN_ARRAY_OPS)) > 0) {
-        symbol_op_oper << "_" \
-                        << symbol_tsig.str()    << "_" \
-                        << symbol_layout.str()  << "_" \
-                        << symbol_ndim.str();
-        symbol = symbol_op_oper.str();
-    }
+    symbol_text = symbol_op_oper.str()+ "_" +\
+                symbol_tsig.str()   + "_" +\
+                symbol_layout.str() + "_" +\
+                symbol_ndim.str();
 
-    DEBUG("-- Block::symbolize(...) : symbol("<< symbol << ");");
+    symbol = "BH_" + utils::hash_text(symbol_text);
+
+    DEBUG("-- Block::symbolize(...) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
     return true;
 }
 
@@ -166,10 +165,12 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
         scope[arg_idx].data         = &scope[arg_idx].const_data;
         scope[arg_idx].type         = utils::bhtype_to_etype(instr.constant.type);
         scope[arg_idx].nelem        = 1;
-        scope[arg_idx].ndim         = 0;
+        scope[arg_idx].ndim         = 1;
         scope[arg_idx].start        = 0;
-        scope[arg_idx].shape        = nullptr;
-        scope[arg_idx].stride       = nullptr;
+        scope[arg_idx].shape        = instr.operand[operand_idx].shape;
+        scope[arg_idx].shape[0]     = 1;
+        scope[arg_idx].stride       = instr.operand[operand_idx].shape;
+        scope[arg_idx].stride[0]    = 0;
         scope[arg_idx].layout       = CONSTANT;
     } else {
         scope[arg_idx].const_data= nullptr;

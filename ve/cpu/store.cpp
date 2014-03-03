@@ -1,5 +1,7 @@
 #include "store.hpp"
 
+#include "thirdparty/MurmurHash3.h"
+
 using namespace std;
 namespace bohrium {
 namespace engine {

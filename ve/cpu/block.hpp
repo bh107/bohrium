@@ -32,7 +32,9 @@ public:
     size_t noperands;           // Number of arguments to the block
     size_t length;                 // Number of tacs in program
     uint32_t omask;             // Mask of the OPERATIONS in the block
-    std::string symbol;         // Textual representation of the block
+
+    std::string symbol_text;    // Textual representation of the block
+    std::string symbol;         // Hash of textual representation
 
 private:
     size_t add_operand(bh_instruction& instr, size_t operand_idx);

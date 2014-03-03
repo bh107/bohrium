@@ -37,6 +37,9 @@ std::string tac_layout_text(tac_t& tac, operand_t* scope);
 
 std::string string_format(const std::string & fmt_str, ...);
 
+uint32_t hash(std::string);
+std::string hash_text(std::string text);
+
 int tac_noperands(tac_t& tac);
 bool is_contiguous(operand_t& arg);
 

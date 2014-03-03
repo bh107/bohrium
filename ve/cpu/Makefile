@@ -2,8 +2,8 @@ ROOT=../..
 include $(ROOT)/platform.mk
 LIB=libbh_ve_cpu.$(LIB_SUFFIX)
 CC?=gcc
-CXX?=g++
-#CXX?=clang
+#CXX?=g++
+CXX?=clang
 WARNOPTS=-Wall
 EXTRAS+=
 ifeq ($(PLATFORM_OS),OSX)

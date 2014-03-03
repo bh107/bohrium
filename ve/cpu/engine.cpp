@@ -72,7 +72,6 @@ bh_error Engine::execute(bh_ir& bhir)
     DEBUG("++ Engine::execute(...)");
 
     bh_error res = BH_SUCCESS;
-    
     bh_dag& root = bhir.dag_list[0];  // Start at the root DAG
 
     DEBUG("   Engine::execute(...) == Dag-Loop");
@@ -80,7 +79,8 @@ bh_error Engine::execute(bh_ir& bhir)
         DEBUG("   ++Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
         bh_intp node = root.node_map[i];
         if (node>0) {
-            cout << "Encountered an instruction in the root-dag." << endl;
+            fprintf(stderr, "Engine::execute(...) == ERROR: Instruction in the root-dag."
+                            "It should only contain sub-dags.\n");
             return BH_ERROR;
         }
         node = -1*node-1; // Compute the node-index
@@ -94,7 +94,7 @@ bh_error Engine::execute(bh_ir& bhir)
         //
         // We start by creating a symbol
         if (!block.symbolize(jit_optimize)) {
-            cout << "FAILED CREATING SYMBOL" << endl;
+            fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
             return BH_ERROR;
         }
 
@@ -114,7 +114,7 @@ bh_error Engine::execute(bh_ir& bhir)
         // JIT-compile the block if enabled
         //
         if (jit_enabled && \
-            (block.symbol!="") && \
+            ((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
             (!storage.symbol_ready(block.symbol))) {   
                                                         // Specialize sourcecode
             string sourcecode = specializer.specialize(block, jit_optimize);   
@@ -132,7 +132,7 @@ bh_error Engine::execute(bh_ir& bhir)
                 sourcecode.size()
             );                 
             if (!compile_res) {
-                DEBUG("  Compilation failed... exiting.");
+                fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
                 return BH_ERROR;
             }
                                                         // Inform storage
@@ -142,7 +142,7 @@ bh_error Engine::execute(bh_ir& bhir)
         //
         // Load the compiled code
         //
-        if ((block.symbol!="") && \
+        if (((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
             (!storage.symbol_ready(block.symbol)) && \
             (!storage.load(block.symbol))) {// Need but cannot load
 
@@ -151,11 +151,11 @@ bh_error Engine::execute(bh_ir& bhir)
                 if ((block.symbol!="") && \
                     (!storage.symbol_ready(block.symbol)) && \
                     (!storage.load(block.symbol))) {        // Fail
-                    DEBUG("  Engine::execute(...) - Failed loading code... exiting...");
+                    fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
                     return BH_ERROR;
                 }
             } else {
-                DEBUG("   Engine::execute(...) - Failed loading code... exiting...");
+                fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
                 return BH_ERROR;
             }
         }
@@ -227,7 +227,7 @@ bool Engine::src_to_file(string symbol, const char* sourcecode, size_t source_le
     kernel_fd = open(kernel_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
     if ((!kernel_fd) || (kernel_fd<1)) {
         err = errno;
-        utils::error(err, "Failed opening kernel-file [%s] in src_to_file(...).\n", kernel_path.c_str());
+        utils::error(err, "Engine::src_to_file [%s] in src_to_file(...).\n", kernel_path.c_str());
         return false;
     }
     kernel_fp = fdopen(kernel_fd, mode);

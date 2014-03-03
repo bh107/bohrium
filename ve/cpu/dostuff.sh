@@ -3,8 +3,8 @@
 if [ ! -z "$1" ] && [ "$1" == "reset" ]; then
     WHERE=`pwd`
     rm -r ~/.local/cpu/
-    INSTALLDIR="~/.local" EXTRAS="-DDEBUGGING" make clean gen install
-    #INSTALLDIR="~/.local" make clean gen install
+    #INSTALLDIR="~/.local" EXTRAS="-DDEBUGGING" make clean gen install
+    INSTALLDIR="~/.local" make clean gen install
     cd $WHERE
 fi
 

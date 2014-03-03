@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "thirdparty/MurmurHash3.h"
 
 using namespace std;
 namespace bohrium{
@@ -56,6 +57,26 @@ std::string tac_text(tac_t& tac)
     ss << " in2("  << tac.in2 << ")";
     ss << " }";
     return ss.str();
+}
+
+uint32_t hash(std::string text)
+{
+    uint32_t seed = 4200;
+    uint32_t hash[4];
+    
+    MurmurHash3_x86_128(text.c_str(), text.length(), seed, &hash);
+    
+    return hash[0];
+}
+
+string hash_text(std::string text)
+{
+    uint32_t seed = 4200;
+    uint32_t hash[4];
+    
+    MurmurHash3_x86_128(text.c_str(), text.length(), seed, &hash);
+    
+    return to_string(hash[0])+to_string(hash[1])+to_string(hash[2])+to_string(hash[3]);
 }
 
 int tac_noperands(tac_t& tac)

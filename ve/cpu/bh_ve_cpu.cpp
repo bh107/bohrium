@@ -201,7 +201,7 @@ bh_error bh_ve_cpu_init(const char *name)
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     bh_error res = BH_SUCCESS;
-    DEBUG("++ bh_ve_cpu_execute(...);");
+    DEBUG("++ bh_ve_cpu_execute(...)");
     res = engine->execute(*bhir);
     DEBUG("-- bh_ve_cpu_execute(...);");
     return res;
@@ -210,21 +210,21 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 /* Component interface: shutdown (see bh_component.h) */
 bh_error bh_ve_cpu_shutdown(void)
 {
-    DEBUG("++ bh_ve_cpu_shutdown(void)>");
+    DEBUG("++ bh_ve_cpu_shutdown(void)");
 
     bh_component_destroy(&myself);
     
     delete engine;
     engine = nullptr;
 
-    DEBUG("-- bh_ve_cpu_shutdown(...)>");
+    DEBUG("-- bh_ve_cpu_shutdown(...);");
     return BH_SUCCESS;
 }
 
 /* Component interface: extmethod (see bh_component.h) */
 bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
-    DEBUG("++ bh_ve_cpu_extemethod(...,...)>");
+    DEBUG("++ bh_ve_cpu_extemethod(...,...)");
 
     bh_extmethod_impl extmethod;
     bh_error err = bh_component_extmethod(&myself, name, &extmethod);

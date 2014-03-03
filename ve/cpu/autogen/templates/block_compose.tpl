@@ -54,10 +54,13 @@ bool Block::compose()
                 this->scope[in1].data       = &(this->scope[in1].const_data);
                 this->scope[in1].type       = UINT64;
                 this->scope[in1].nelem      = 1;
-                this->scope[in1].ndim       = 0;
+                this->scope[in1].ndim       = 1;
                 this->scope[in1].start      = 0;
-                this->scope[in1].shape      = nullptr;
-                this->scope[in1].stride     = nullptr;
+                this->scope[in1].shape      = instr.operand[1].shape;
+                this->scope[in1].shape[0]   = 1;
+                this->scope[in1].stride     = instr.operand[1].stride;
+                this->scope[in1].stride[0]  = 0;
+
                 this->scope[in1].layout     = CONSTANT;
 
                 in2 = ++(this->noperands);
@@ -67,8 +70,10 @@ bool Block::compose()
                 this->scope[in2].nelem      = 1;
                 this->scope[in2].ndim       = 0;
                 this->scope[in2].start      = 0;
-                this->scope[in2].shape      = nullptr;
-                this->scope[in2].stride     = nullptr;
+                this->scope[in2].shape      = instr.operand[2].shape;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride     = instr.operand[2].stride;
+                this->scope[in2].stride[0]  = 0;
                 this->scope[in2].layout     = CONSTANT;
 
                 %else if 'ACCUMULATE' in $opcode or 'REDUCE' in $opcode
@@ -79,10 +84,12 @@ bool Block::compose()
                 this->scope[in2].data       = &(this->scope[in2].const_data);
                 this->scope[in2].type       = UINT64;
                 this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 0;
+                this->scope[in2].ndim       = 1;
                 this->scope[in2].start      = 0;
-                this->scope[in2].shape      = nullptr;
-                this->scope[in2].stride     = nullptr;
+                this->scope[in2].shape      = instr.operand[2].shape;
+                this->scope[in2].shape[0]   = 1;
+                this->scope[in2].stride     = instr.operand[2].stride;
+                this->scope[in2].stride[0]  = 0;
                 this->scope[in2].layout     = CONSTANT;
 
                 %else
@@ -113,14 +120,14 @@ bool Block::compose()
                     this->program[i].in1  = 0;
                     this->program[i].in2  = 0;
 
+                    this->omask |= $operation;
                     cout << "Extension method." << endl;
+                    break;
+
                 } else {
-                    in1 = 1;
-                    in2 = 2;
-                    printf("compose: Err=[Unsupported instruction] {\n");
+                    fprintf(stderr, "Block::compose: Err=[Unsupported instruction] {\n");
                     bh_pprint_instr(&instr);
-                    printf("}\n");
-                    DEBUG("-- Block::compose(ERROR)");
+                    fprintf(stderr, "}\n");
                     return BH_ERROR;
                 }
         }

@@ -12,6 +12,10 @@ namespace bohrium {
 namespace engine {
 namespace cpu {
 
+//
+// NOTE: This function relies on the posix entension for positional arguments
+// to print format string.
+//
 string Specializer::cexpression(Block& block, size_t tac_idx)
 {
     tac_t& tac  = block.program[tac_idx];
@@ -45,6 +49,7 @@ string Specializer::cexpression(Block& block, size_t tac_idx)
             }            
             %else            
             %set $op, $etype_expr = $op_and_etype_expr[0]
+            
             %if len($etype_expr) > 1
             switch(etype) {
                 %for $etype, $expr in $etype_expr

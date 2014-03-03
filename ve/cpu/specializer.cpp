@@ -121,10 +121,12 @@ string Specializer::template_filename(Block& block, size_t pc, bool optimized)
         case GENERATE:
             switch(tac.oper) {
                 case RANDOM:
-                    tpl_opcode = "random.";
+                    tpl_opcode  = "random.";
+                    tpl_ndim    = "1d.";
                     break;
                 case RANGE:
                     tpl_opcode = "range.";
+                    tpl_ndim    = "1d.";
                 default:
                     printf("Operator x is not supported with operation y\n");
             }
@@ -155,6 +157,7 @@ string Specializer::specialize(Block& block, bool optimized)
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
     kernel_d.SetValue("SYMBOL", block.symbol);
+    kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text);
 
     for(size_t j=0; j<block.length; ++j) {
         

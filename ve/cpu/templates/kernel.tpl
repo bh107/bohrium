@@ -31,12 +31,15 @@ inline int omp_get_num_threads() { return 1; }
 #define CPU_MAXDIM 16
 #endif
 
+//
+// {{SYMBOL_TEXT}}
 void {{SYMBOL}}(operand_t* args)
 {
     //
     // Argument unpacking
     //
     {{#ARGUMENT}}
+    // Argument {{NR}}
     {{TYPE}} *a{{NR}}_first = *args[{{NR}}].data;
     {{#ARRAY}}
     int64_t  a{{NR}}_start  = args[{{NR}}].start;

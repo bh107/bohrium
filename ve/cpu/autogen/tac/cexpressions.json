@@ -86,7 +86,7 @@
         "op":   "ZIP", 
         "oper": "POWER", 
         "scalar": {
-            "default":    "out = in1 / in2",
+            "default":    "out = pow( in1, in2 )",
             "COMPLEX64":  "out = cpowf( in1, in2 )",
             "COMPLEX128": "out = cpow( in1, in2 )"
         },
