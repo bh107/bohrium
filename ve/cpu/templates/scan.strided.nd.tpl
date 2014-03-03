@@ -43,14 +43,14 @@
         //
         // Iterate over axis dimension
         //
-        {{TYPE_INPUT}} cvar = ({{TYPE_INPUT}}){{NEUTRAL_ELEMENT}};
+        {{TYPE_INPUT}} state = ({{TYPE_INPUT}}){{NEUTRAL_ELEMENT}};
         for (int64_t j = 0; j<shape_axis; ++j) {
             {{#OPERATORS}}
-            {{OPERATOR}}
+            {{OPERATOR}};
             {{/OPERATORS}}
 
             // Update the output
-            *a{{NR_OUTPUT}}_current = cvar;
+            *a{{NR_OUTPUT}}_current = state;
             
             a{{NR_OUTPUT}}_current += a{{NR_OUTPUT}}_stride_axis;
             a{{NR_FINPUT}}_current += a{{NR_FINPUT}}_stride_axis;

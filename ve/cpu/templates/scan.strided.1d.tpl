@@ -10,7 +10,7 @@
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
-    {{TYPE_INPUT}} cvar = ({{TYPE_INPUT}}){{NEUTRAL_ELEMENT}};
+    {{TYPE_INPUT}} state = ({{TYPE_INPUT}}){{NEUTRAL_ELEMENT}};
     for(int64_t j=0; j<a{{NR_OUTPUT}}_shape[axis]; ++j) {
         {{#OPERATORS}}
         {{OPERATOR}};
