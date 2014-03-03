@@ -16,8 +16,8 @@ int main(int argc, char * argv[])
 	bool running = true;
 
 	char* address = NULL;
-	int port = NULL;
-    
+	int port = 0;
+
 	if (argc == 5 &&                          \
         (strncmp(argv[1], "-a\0", 3) == 0) && \
         (strncmp(argv[3], "-p\0", 3) == 0)) {

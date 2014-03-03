@@ -46,6 +46,15 @@ bh_error bh_visualizer(bh_instruction *instr, void* arg)
     bh_float32 min = args[3];
     bh_float32 max = args[4];
 
+    for(bh_intp i=0; i<A->ndim; ++i)
+    {
+        if(A->shape[i] < 16)
+        {
+           fprintf(stderr, "Cannot visualize because of input shape\n");
+           return BH_ERROR;
+        }
+    }
+
     //Make sure that the arrays memory are allocated.
     if(bh_data_malloc(A->base) != BH_SUCCESS)
         return BH_OUT_OF_MEMORY;

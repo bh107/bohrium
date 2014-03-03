@@ -5,6 +5,12 @@ children = node
 #
 # Managers
 #
+
+[visualizer]
+type = ve
+children = node
+impl = /home/madsbk/.local/libbh_ve_visualizer.so
+
 [proxy]
 type = vem
 port = 4200
