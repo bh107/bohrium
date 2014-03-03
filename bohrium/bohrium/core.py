@@ -1188,5 +1188,9 @@ def visualize(a, mode, colormap, min, max):
     else:
         raise ValueError("Unknown mode '%s'"%mode)
 
+    for s in a.shape:
+        if s < 16:
+            raise ValueError("Input shape must be greater than 15 element in each dimension")
+
     args = array([float(colormap), float(flat), float(cube), float(min), float(max)], bohrium=True)
     bridge.extmethod_exec("visualizer",a,args,a)

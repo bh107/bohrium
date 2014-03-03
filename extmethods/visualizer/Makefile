@@ -12,7 +12,7 @@ OBJTMP=$(SRC:.c=.o)
 OBJ=$(OBJTMP:.cpp=.o)
 INSTALLDIR?=/opt/bh
 
-all: $(LIB)
+all: $(LIB) libbh_ve_visualizer.so
 
 %.o: %.c $(HEADER)
 		$(CXX) -c $< -o $@ $(LCFLAGS) $(CFLAGS)  -I$(ROOT)/include
@@ -28,3 +28,8 @@ clean:
 
 install: all
 		cp $(LIB) $(INSTALLDIR)
+		cp libbh_ve_visualizer.so $(INSTALLDIR)
+
+libbh_ve_visualizer.so: $(SRC) $(HEADER)
+	g++ bh_ve_visualizer.cpp -Wall -g -O2 -fPIC -I../../include -L../../core -lbh -lrt -L./ -lbh_visualizer -o libbh_ve_visualizer.so -shared -lm -Wl,-soname,libbh_ve_visualizer.so
+
