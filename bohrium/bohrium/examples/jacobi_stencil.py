@@ -30,7 +30,6 @@ def solve(grid, epsilon=0.005, max_iterations=None, visualize=False):
         if max_iterations != None and max_iterations <= iteration:
             break
         if visualize:
-            assert grid.dtype == np.float32
             np.visualize(grid, "2d", 0, 0.0, 5.5)
     return grid
 
@@ -43,7 +42,6 @@ def iterate(grid, iterations, visualize=False):
     for i in xrange(iterations):
         center[:] = 0.2*(center+north+east+west+south)
         if visualize:
-            assert grid.dtype == np.float32
             np.visualize(grid, "2d", 0, 0.0, 5.5)
     return grid
 

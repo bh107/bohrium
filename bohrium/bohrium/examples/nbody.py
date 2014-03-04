@@ -64,7 +64,6 @@ def simulate(galaxy, timesteps, visualize=False):
     for i in xrange(timesteps):
         move(galaxy,dt)
         if visualize:#NB: this is only for experiments
-            assert galaxy['x'].dtype == np.float32
             T = np.zeros((3, len(galaxy['x'])), dtype=np.float32)
             T[0,:] = galaxy['x']
             T[1,:] = galaxy['y']
