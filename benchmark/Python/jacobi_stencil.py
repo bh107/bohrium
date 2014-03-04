@@ -10,8 +10,7 @@ I = B.size[2]
 ft = js.freezetrap(H,W,dtype=B.dtype,bohrium=B.bohrium)
 
 B.start()
-#ft = js.solve(ft,max_iterations=I)
-ft = js.iterate(ft, I)
+ft = js.iterate(ft, I, visualize=B.visualize)
 B.stop()
 if B.verbose:
     print ft
