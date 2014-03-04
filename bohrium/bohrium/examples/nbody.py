@@ -36,13 +36,13 @@ def move(galaxy, dt):
     # Euclidian distances (all bodys)
     r = np.sqrt(dx**2 + dy**2 + dz**2)
     np.diagonal(r)[:] = 1.0
-    
+
     # prevent collition
     mask = r < 1.0
     r = r * ~mask + 1.0 * mask
 
     m = galaxy['m'][np.newaxis,:].T
-    
+
     # Calculate the acceleration component wise
     Fx = G*m*dx/r**3
     Fy = G*m*dy/r**3
@@ -51,15 +51,23 @@ def move(galaxy, dt):
     np.diagonal(Fx)[:] = 0.0
     np.diagonal(Fy)[:] = 0.0
     np.diagonal(Fz)[:] = 0.0
-    
+
     galaxy['vx'] += dt*np.sum(Fx, axis=0)
     galaxy['vy'] += dt*np.sum(Fy, axis=0)
     galaxy['vz'] += dt*np.sum(Fz, axis=0)
-    
+
     galaxy['x'] += dt*galaxy['vx']
     galaxy['y'] += dt*galaxy['vy']
     galaxy['z'] += dt*galaxy['vz']
 
-def simulate(galaxy, timesteps):
+def simulate(galaxy, timesteps, visualize=False):
     for i in xrange(timesteps):
         move(galaxy,dt)
+        if visualize:#NB: this is only for experiments
+            assert galaxy['x'].dtype == np.float32
+            T = np.zeros((3, len(galaxy['x'])), dtype=np.float32)
+            T[0,:] = galaxy['x']
+            T[1,:] = galaxy['y']
+            T[2,:] = galaxy['z']
+            np.visualize(T, "3d", 0, 0.0, 10)
+
