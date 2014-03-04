@@ -1191,6 +1191,6 @@ def visualize(a, mode, colormap, min, max):
     for s in a.shape:
         if s < 16:
             raise ValueError("Input shape must be greater than 15 element in each dimension")
-
+    bridge.flush()#We will not delay the visualization
     args = array([float(colormap), float(flat), float(cube), float(min), float(max)], bohrium=True)
     bridge.extmethod_exec("visualizer",a,args,a)
