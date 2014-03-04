@@ -227,8 +227,6 @@ bh_server_error receiveall(size_t msgsize, void * buffer, int file_descriptor) {
     // pointer to the data buffer
     void * ptr = buffer;
 
-    timing_sleep();
-
     do {
         recvlen = recv(file_descriptor, ptr, recvSize, 0);
         if (recvlen == 0) {
@@ -258,6 +256,9 @@ bh_server_error receiveall(size_t msgsize, void * buffer, int file_descriptor) {
             printf("Receive error in receiveall\n");
         }
     }
+
+    timing_sleep();
+
     //after the header is sent we should handle any preprocessing and then send the data
     return BH_SRVR_SUCCESS;
 }
