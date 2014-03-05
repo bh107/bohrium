@@ -1174,6 +1174,8 @@ def visualize(a, mode, colormap, min, max):
         raise ValueError("Input must be 2-D or 3-D.")
     if not a.bohrium:
         raise ValueError("Input must be a Bohrium array")
+    if a.dtype == numpy.float32:
+        raise ValueError("For now visualize only supports float32 arrays")
 
     if mode == "2d":
         flat = True
