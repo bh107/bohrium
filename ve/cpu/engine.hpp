@@ -42,6 +42,9 @@ public:
 
 private:
 
+    bh_error sij_mode(Block& block);
+    ///bh_error fuse_mode(block& block);
+
     std::string compiler_cmd,
                 template_directory,
                 kernel_directory,

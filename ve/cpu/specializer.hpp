@@ -23,6 +23,7 @@ public:
     std::string template_filename(Block& block, size_t pc, bool optimized);
 
     std::string specialize(Block& block, bool optimized);
+    std::string specialize(Block& block, bool optimized, size_t tac_start, size_t tac_end);
 
 private:
     ctemplate::Strip strip_mode;

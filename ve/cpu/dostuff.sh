@@ -3,8 +3,14 @@
 if [ ! -z "$1" ] && [ "$1" == "reset" ]; then
     WHERE=`pwd`
     rm -r ~/.local/cpu/
-    #INSTALLDIR="~/.local" EXTRAS="-DDEBUGGING" make clean gen install
     INSTALLDIR="~/.local" make clean gen install
+    cd $WHERE
+fi
+
+if [ ! -z "$1" ] && [ "$1" == "deset" ]; then
+    WHERE=`pwd`
+    rm -r ~/.local/cpu/
+    INSTALLDIR="~/.local" EXTRAS="-DDEBUGGING" make clean gen install
     cd $WHERE
 fi
 
@@ -20,8 +26,8 @@ else
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "test" ]; then
+    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py --exclude test_matmul.py --exclude test_ndstencil.py
     #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_matmul.py
-    BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py --exclude test_matmul.py
     #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_accumulate.py
     #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_benchmarks.py
     #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_array_create.py

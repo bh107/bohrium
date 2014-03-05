@@ -31,8 +31,7 @@ bool Block::compose()
  */
 bool Block::compose(bh_intp node_start, bh_intp node_end)
 {
-    bh_intp node_span = (node_end-node_start)+1;
-    DEBUG("++ Block::compose("<< node_start <<", "<< node_end << ") : node_span("<< node_span << ")");
+    DEBUG("++ Block::compose("<< node_start <<", "<< node_end << ") : node_span(" << ((node_end-node_start)+1) << ")");
     if (this->dag.nnode<1) {
         fprintf(stderr, "Got an empty dag. This cannot be right...\n");
         return false;

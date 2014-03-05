@@ -67,6 +67,262 @@ string Engine::text()
     return ss.str();    
 }
 
+/**
+ *  Compile and execute the given block one tac/instruction at a time.
+ *
+ *  This execution mode is used when:
+ *
+ *      - jit_fusion=False,
+ *      - The block does not contain any array operations
+ *      - The block contains an extension
+ */
+bh_error Engine::sij_mode(Block& block)
+{
+    DEBUG("++ Engine::sij_mode(...)");
+
+    bh_error res = BH_SUCCESS;
+
+    for(size_t i=0; i<block.length; ++i) {
+        bh_instruction* instr = block.instr[i];
+        tac_t& tac = block.program[i];
+        switch(tac.op) {
+            case NOOP:
+                break;
+
+            case SYSTEM:
+                switch(tac.oper) {
+                    case DISCARD:
+                    case SYNC:
+                        break;
+
+                    case FREE:
+                        DEBUG("   Engine::execute(...) == De-Allocate memory!");
+                    
+                        res = bh_vcache_free(block.instr[i]);
+                        if (BH_SUCCESS != res) {
+                            fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
+                                            "called from bh_ve_cpu_execute)\n");
+                            return res;
+                        }
+                        break;
+
+                    default:
+                        fprintf(stderr, "Yeah that does not fly...\n");
+                        return BH_ERROR;
+                }
+                break;
+
+            case EXTENSION:
+                {
+                    map<bh_opcode,bh_extmethod_impl>::iterator ext;
+                    ext = extensions.find(instr->opcode);
+                    if (ext != extensions.end()) {
+                        bh_extmethod_impl extmethod = ext->second;
+                        res = extmethod(instr, NULL);
+                        if (BH_SUCCESS != res) {
+                            fprintf(stderr, "Unhandled error returned by extmethod(...) \n");
+                            return res;
+                        }
+                    }
+                }
+                break;
+
+            default:   // Array operations
+
+                //
+                // We start by creating a symbol
+                if (!block.symbolize(i, i, jit_optimize)) {
+                    fprintf(stderr, "Engine::sij_mode(...) == Failed creating symbol.\n");
+                    return BH_ERROR;
+                }
+
+                //
+                // JIT-compile the block if enabled
+                if (jit_enabled && \
+                    (!storage.symbol_ready(block.symbol))) {   
+                                                                // Specialize sourcecode
+                    string sourcecode = specializer.specialize(block, jit_optimize, i, i);
+                    if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
+                        this->src_to_file(
+                            block.symbol, 
+                            sourcecode.c_str(), 
+                            sourcecode.size()
+                        );
+                    }                                           // Send to compiler
+                    bool compile_res = compiler.compile(
+                        block.symbol, 
+                        block.symbol+"_"+storage.get_uid(), 
+                        sourcecode.c_str(), 
+                        sourcecode.size()
+                    );                 
+                    if (!compile_res) {
+                        fprintf(stderr, "Engine::sij_mode(...) == Compilation failed.\n");
+                        return BH_ERROR;
+                    }
+                                                                // Inform storage
+                    storage.add_symbol(block.symbol, block.symbol+"_"+storage.get_uid());
+                }
+
+                //
+                // Load the compiled code
+                //
+                if ((!storage.symbol_ready(block.symbol)) && \
+                    (!storage.load(block.symbol))) {                // Need but cannot load
+
+                    if (jit_optimize) {                             // Try non-optimized fallback
+                        block.symbolize(i ,i, false);
+                        if ((block.symbol!="") && \
+                            (!storage.symbol_ready(block.symbol)) && \
+                            (!storage.load(block.symbol))) {        // Fail
+                            fprintf(stderr, "Engine::sij_mode(...) == Failed loading object.\n");
+                            return BH_ERROR;
+                        }
+                    } else {
+                        fprintf(stderr, "Engine::sij_mode(...) == Failed loading object.\n");
+                        return BH_ERROR;
+                    }
+                }
+
+                //
+                // Allocate memory for operands
+                DEBUG("   Engine::sij_mode(...) == Allocating memory.");
+                res = bh_vcache_malloc(block.instr[i]);
+                if (BH_SUCCESS != res) {
+                    fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                                    "called from bh_ve_cpu_execute()\n");
+                    return res;
+                }
+
+                //
+                // Execute block handling array operations.
+                // 
+                DEBUG("   Engine::sij_mode(...) == Call kernel function!");
+                DEBUG(utils::tac_text(tac)); 
+                DEBUG(block.scope_text());
+                storage.funcs[block.symbol](block.scope);
+
+                break;
+        }
+    }
+
+    DEBUG("-- Engine::sij_mode(...);")
+    return BH_SUCCESS;
+}
+
+/**
+ *  Compile and execute multiple tac/instructions at a time.
+ *
+ *  This execution mode is used when
+ *
+ *      - jit_fusion=true,
+ *      - The block contains at least one array operation (should be increased to more than 1)
+ *      - The block contains does contain any extensions
+ *
+bh_error Engine::fuse_mode(Block& block)
+{
+    //
+    // We start by creating a symbol
+    if (!block.symbolize(jit_optimize)) {
+        fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
+        return BH_ERROR;
+    }
+
+    DEBUG(block.text("   "));
+
+    //
+    // JIT-compile the block if enabled
+    //
+    if (jit_enabled && \
+        ((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
+        (!storage.symbol_ready(block.symbol))) {   
+                                                    // Specialize sourcecode
+        string sourcecode = specializer.specialize(block, jit_optimize);   
+        if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
+            this->src_to_file(
+                block.symbol, 
+                sourcecode.c_str(), 
+                sourcecode.size()
+            );
+        }                                           // Send to compiler
+        bool compile_res = compiler.compile(
+            block.symbol, 
+            block.symbol+"_"+storage.get_uid(), 
+            sourcecode.c_str(), 
+            sourcecode.size()
+        );                 
+        if (!compile_res) {
+            fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
+            return BH_ERROR;
+        }
+                                                    // Inform storage
+        storage.add_symbol(block.symbol, block.symbol+"_"+storage.get_uid());
+    }
+
+    //
+    // Load the compiled code
+    //
+    if (((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
+        (!storage.symbol_ready(block.symbol)) && \
+        (!storage.load(block.symbol))) {// Need but cannot load
+
+        if (jit_optimize) {                             // Unoptimized fallback
+            block.symbolize(false);
+            if ((block.symbol!="") && \
+                (!storage.symbol_ready(block.symbol)) && \
+                (!storage.load(block.symbol))) {        // Fail
+                fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
+                return BH_ERROR;
+            }
+        } else {
+            fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
+            return BH_ERROR;
+        }
+    }
+
+    DEBUG("   Engine::execute(...) == Allocating memory.");
+    //
+    // Allocate memory for output
+    //
+    for(size_t i=0; i<block.length; ++i) {
+        res = bh_vcache_malloc(block.instr[i]);
+        if (BH_SUCCESS != res) {
+            fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                            "called from bh_ve_cpu_execute()\n");
+            return res;
+        }
+    }
+
+    DEBUG("   Engine::execute(...) == Call kernel function!");
+    //
+    // Execute block handling array operations.
+    // 
+    if ((block.omask & (BUILTIN_ARRAY_OPS)) > 0) {
+        if (BH_SUCCESS != res) {
+            fprintf(stderr, "Unhandled error returned by dispatch_block "
+                            "called from bh_ve_cpu_execute(...)\n");
+            return res;
+        }
+        storage.funcs[block.symbol](block.scope);
+    }
+
+    DEBUG("   Engine::execute(...) == De-Allocate memory!");
+    //
+    // De-Allocate operand memory
+    for(size_t i=0; i<block.length; ++i) {
+        if (block.instr[i]->opcode == BH_FREE) {
+            res = bh_vcache_free(block.instr[i]);
+            if (BH_SUCCESS != res) {
+                fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
+                                "called from bh_ve_cpu_execute)\n");
+                return res;
+            }
+        }
+    }
+    DEBUG("   --Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
+
+    return BH_SUCCESS;
+}*/
+
 bh_error Engine::execute(bh_ir& bhir)
 {
     DEBUG("++ Engine::execute(...)");
@@ -86,120 +342,26 @@ bh_error Engine::execute(bh_ir& bhir)
         node = -1*node-1; // Compute the node-index
 
         //
-        // We are now looking at a graph in which we hope that all nodes are instructions
-        // we map this to a block in a slightly different format than a list of instructions
+        // Compose a block based on nodes within the given DAG
         Block block(bhir, bhir.dag_list[node]);
         block.compose();
 
         //
-        // We start by creating a symbol
-        if (!block.symbolize(jit_optimize)) {
-            fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
-            return BH_ERROR;
+        // Determine if we want and can do instruction compositioning or
+        // whether we prefer or only can do instruction-by-instruction interpretation
+        // for the given block.
+        bh_error mode_res = sij_mode(block);
+        if (BH_SUCCESS!=mode_res) {
+            return mode_res;
         }
-
-        DEBUG(block.text("   "));
-        
-        //    // Lets check if it is a known extension method
-        //    {
-        //        map<bh_opcode,bh_extmethod_impl>::iterator ext;
-        //        ext = extmethod_op2impl.find(instr->opcode);
-        //        if (ext != extmethod_op2impl.end()) {
-        //            bh_extmethod_impl extmethod = ext->second;
-        //            return extmethod(instr, NULL);
-        //        }
-        //    }
-
-        //
-        // JIT-compile the block if enabled
-        //
-        if (jit_enabled && \
-            ((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
-            (!storage.symbol_ready(block.symbol))) {   
-                                                        // Specialize sourcecode
-            string sourcecode = specializer.specialize(block, jit_optimize);   
-            if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
-                this->src_to_file(
-                    block.symbol, 
-                    sourcecode.c_str(), 
-                    sourcecode.size()
-                );
-            }                                           // Send to compiler
-            bool compile_res = compiler.compile(
-                block.symbol, 
-                block.symbol+"_"+storage.get_uid(), 
-                sourcecode.c_str(), 
-                sourcecode.size()
-            );                 
-            if (!compile_res) {
-                fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
-                return BH_ERROR;
-            }
-                                                        // Inform storage
-            storage.add_symbol(block.symbol, block.symbol+"_"+storage.get_uid());
-        }
-
-        //
-        // Load the compiled code
-        //
-        if (((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
-            (!storage.symbol_ready(block.symbol)) && \
-            (!storage.load(block.symbol))) {// Need but cannot load
-
-            if (jit_optimize) {                             // Unoptimized fallback
-                block.symbolize(false);
-                if ((block.symbol!="") && \
-                    (!storage.symbol_ready(block.symbol)) && \
-                    (!storage.load(block.symbol))) {        // Fail
-                    fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
-                    return BH_ERROR;
-                }
-            } else {
-                fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
-                return BH_ERROR;
-            }
-        }
-
-        DEBUG("   Engine::execute(...) == Allocating memory.");
-        //
-        // Allocate memory for output
-        //
-        for(size_t i=0; i<block.length; ++i) {
-            res = bh_vcache_malloc(block.instr[i]);
-            if (BH_SUCCESS != res) {
-                fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                                "called from bh_ve_cpu_execute()\n");
-                return res;
-            }
-        }
-
-        DEBUG("   Engine::execute(...) == Call kernel function!");
-        //
-        // Execute block handling array operations.
-        // 
-        if ((block.omask & (BUILTIN_ARRAY_OPS)) > 0) {
-            if (BH_SUCCESS != res) {
-                fprintf(stderr, "Unhandled error returned by dispatch_block "
-                                "called from bh_ve_cpu_execute(...)\n");
-                return res;
-            }
-            storage.funcs[block.symbol](block.scope);
-        }
-
-        DEBUG("   Engine::execute(...) == De-Allocate memory!");
-        //
-        // De-Allocate operand memory
-        for(size_t i=0; i<block.length; ++i) {
-            if (block.instr[i]->opcode == BH_FREE) {
-                res = bh_vcache_free(block.instr[i]);
-                if (BH_SUCCESS != res) {
-                    fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
-                                    "called from bh_ve_cpu_execute)\n");
-                    return res;
-                }
-            }
-        }
-        DEBUG("   --Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
+        /*
+        if (jit_fusion && \
+            ((block.omask & (BUILTIN_ARRAY_OPS)) > 0) && \
+            ((block.omask & (EXTENSION)) == 0)) {
+            mode_res = fuse_mode(block);            
+        } else {
+            mode_res = sij_mode(block);
+        }*/
     }
     
     DEBUG("-- Engine::execute(...)");
@@ -244,7 +406,6 @@ bool Engine::src_to_file(string symbol, const char* sourcecode, size_t source_le
     DEBUG("-- Engine::src_to_file(...);");
     return true;
 }
-
 
 bh_error Engine::register_extension(bh_component& instance, const char* name, bh_opcode opcode)
 {

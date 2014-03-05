@@ -153,17 +153,22 @@ string Specializer::template_filename(Block& block, size_t pc, bool optimized)
  */
 string Specializer::specialize(Block& block, bool optimized)
 {
+    return specialize(block, optimized, 0, block.length-1);
+}
+
+string Specializer::specialize(Block& block, bool optimized, size_t tac_start, size_t tac_end)
+{
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
     kernel_d.SetValue("SYMBOL", block.symbol);
     kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text);
 
-    for(size_t j=0; j<block.length; ++j) {
+    for(size_t i=tac_start; i<=tac_end; ++i) {
         
         //
         // Grab the tac for which to generate sourcecode
-        tac_t& tac = block.program[j];
+        tac_t& tac = block.program[i];
 
         //
         // Skip code generation for system and extensions
@@ -174,7 +179,7 @@ string Specializer::specialize(Block& block, bool optimized)
         //
         // The operation (ewise, reduction, scan, random, range).
         ctemplate::TemplateDictionary* operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
-        operation_d->SetFilename(template_filename(block, j, optimized));
+        operation_d->SetFilename(template_filename(block, i, optimized));
 
         //
         // Reduction and scan specific expansions
@@ -196,7 +201,7 @@ string Specializer::specialize(Block& block, bool optimized)
         //
         // The operator +, -, /, min, max, sin, sqrt, etc...
         //        
-        operator_d->SetValue("OPERATOR", cexpression(block, j));
+        operator_d->SetValue("OPERATOR", cexpression(block, i));
 
         //
         //  The arguments / operands

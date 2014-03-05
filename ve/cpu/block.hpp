@@ -24,6 +24,7 @@ public:
     bool compose();
     bool compose(bh_intp node_start, bh_intp node_end);
     bool symbolize(const bool optimized);    
+    bool symbolize(size_t tac_start, size_t tac_end, const bool optimized);
 
     bh_instruction** instr;     // Pointers to instructions
 
@@ -31,7 +32,7 @@ public:
     operand_t* scope;           // Array of block arguments
 
     size_t noperands;           // Number of arguments to the block
-    size_t length;                 // Number of tacs in program
+    size_t length;              // Number of tacs in program
     uint32_t omask;             // Mask of the OPERATIONS in the block
 
     std::string symbol_text;    // Textual representation of the block
@@ -41,6 +42,8 @@ private:
     size_t add_operand(bh_instruction& instr, size_t operand_idx);
     bh_ir& ir;
     bh_dag& dag;
+
+    static const char TAG[];
 };
 
 }}}

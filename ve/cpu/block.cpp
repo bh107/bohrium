@@ -5,6 +5,8 @@ namespace bohrium{
 namespace engine{
 namespace cpu{
 
+const char Block::TAG[] = "Block";
+
 Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
 {
     size_t ps = (size_t)dag.nnode;
@@ -19,11 +21,11 @@ Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
 
 Block::~Block()
 {
-    DEBUG("++ Block::~Block()");
+    DEBUG(TAG << "::~Block() ++");
     free(scope);
     free(program);
     free(instr);
-    DEBUG("-- Block::~Block()");
+    DEBUG(TAG << "::~Block() --");
 }
 
 string Block::scope_text(string prefix)
@@ -103,26 +105,35 @@ string Block::text()
  *        If a block consists of nothing but system and/or extension
  *        opcodes then the symbol will be the empty string "".
  */
-bool Block::symbolize(const bool optimized) {
+bool Block::symbolize(const bool optimized)
+{   
+    DEBUG("++ Block::symbolize("<< optimized << ") : length("<< length << ")" << "optimized(" << optimized << ")");
+    bool symbolize_res = symbolize(0, length-1, optimized);
+    DEBUG("-- Block::symbolize(...) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
+    return symbolize_res;
+}
 
+bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
+{
     stringstream symbol_op_oper, 
                  symbol_tsig,
                  symbol_layout,
                  symbol_ndim;
 
-    DEBUG("++ Block::symbolize("<< optimized << ") : length("<< length << ");");
+    DEBUG("++ Block::symbolize("<< tac_start << ", " << tac_end << "," << optimized << ")");
 
-    for (size_t i=0; i<length; ++i) {
+    bool first = true;
+    for (size_t i=tac_start; i<=tac_end; ++i) {
         tac_t& tac = this->program[i];
        
-        /* 
         // Do not include system opcodes in the kernel symbol.
         if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
             continue;
-        }*/
-        if (i>0) {    
+        }
+        if (!first) {
             symbol_op_oper  << "_";
         }
+        first = false;
         symbol_op_oper  << utils::operation_text(tac.op);
         symbol_op_oper  << tac.oper;
         symbol_layout   << utils::tac_layout_text(tac, scope);
