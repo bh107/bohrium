@@ -23,6 +23,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 add_subdirectory(core)
 add_subdirectory(vem/node)
+add_subdirectory(vem/proxy)
 add_subdirectory(ve/cpu)
 add_subdirectory(bridge/cpp)
 add_subdirectory(bridge/c)
