@@ -6,17 +6,17 @@ CXX?=g++
 WARNOPTS=-Wall
 EXTRAS+=
 ifeq ($(PLATFORM_OS),OSX)
-	EXTRAS+=-I$(ROOT)/thirdparty/ctemplate/include 
-	EXTRA_LIBS+=-L$(ROOT)/thirdparty/ctemplate/osx-lib 
+	EXTRAS+=-I$(ROOT)/thirdparty/ctemplate/include
+	EXTRA_LIBS+=-L$(ROOT)/thirdparty/ctemplate/osx-lib
 endif
 
-LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++0x -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
+LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -std=c++98 -g -O2 -fPIC -I$(ROOT)/include -I$(ROOT)/core $(EXTRAS)
 LDFLAGS=-L../../core $(ARCH_OPTS) -lbh $(EXTRA_LIBS) -lctemplate -shared -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.h $(ROOT)/include/*
 SRC= $(ALL_CPP_FILES) $(ALL_C_FILES)
 OBJTMP=$(SRC:.c=.o)
-OBJ=$(OBJTMP:.cpp=.o) 
-OBJ=bh_ve_cpu.o 
+OBJ=$(OBJTMP:.cpp=.o)
+OBJ=bh_ve_cpu.o
 
 INSTALLDIR?=/opt/bohrium/
 
