@@ -18,20 +18,28 @@ set(VERSION_PATCH "1")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
+set(USE_CXX98 false CACHE BOOL "Choose to use the only C++98 standard instead of C++11 (some Bohrium components requires C++11 and will not be ignored.")
+message(STATUS "USE_CXX98: ${USE_CXX98}")
+
 #Set global compile flags TODO: support other compilers
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+if(USE_CXX98)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
 add_subdirectory(core)
 add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
 add_subdirectory(vem/cluster)
 add_subdirectory(ve/cpu)
-add_subdirectory(bridge/cpp)
-add_subdirectory(bridge/c)
 add_subdirectory(extmethods/matmul)
 add_subdirectory(extmethods/fftw)
 
-#add_subdirectory(bridge/numpy)
+if(NOT USE_CXX98)
+    add_subdirectory(bridge/cpp)
+    add_subdirectory(bridge/c)
+endif()
 
 install(DIRECTORY thirdparty/Random123/include/Random123 DESTINATION include)
 
@@ -77,3 +85,10 @@ set(CPACK_PACKAGE_FILE_NAME "bohrium_${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libctemplate-dev, libfftw3-dev")
 
 include(CPack)
+
+
+MESSAGE(STATUS "Compiler flags:" ${CMAKE_CXX_COMPILE_FLAGS})
+MESSAGE(STATUS "Compiler cxx debug flags:" ${CMAKE_CXX_FLAGS_DEBUG})
+MESSAGE(STATUS "Compiler cxx release flags:" ${CMAKE_CXX_FLAGS_RELEASE})
+MESSAGE(STATUS "Compiler cxx min size flags:" ${CMAKE_CXX_FLAGS_MINSIZEREL})
+MESSAGE(STATUS "Compiler cxx flags:" ${CMAKE_CXX_FLAGS})
