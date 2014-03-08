@@ -68,6 +68,10 @@ else()
     set(SYS_VERSION 1.0)
 endif()
 
+#Install the config file
+configure_file(config.ini.in bohrium.ini)
+install(FILES ${CMAKE_BINARY_DIR}/bohrium.ini DESTINATION etc)
+
 #Package setup
 set(CPACK_GENERATOR "DEB")
 
