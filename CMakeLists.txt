@@ -18,7 +18,7 @@ set(VERSION_PATCH "1")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-set(USE_CXX98 false CACHE BOOL "Choose to use the only C++98 standard instead of C++11 (some Bohrium components requires C++11 and will not be ignored.")
+set(USE_CXX98 false CACHE BOOL "Choose to use the old C++98 standard instead of C++11 (some Bohrium components requires C++11 and will not be skipped.")
 message(STATUS "USE_CXX98: ${USE_CXX98}")
 
 #Set global compile flags TODO: support other compilers
