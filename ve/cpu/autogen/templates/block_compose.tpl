@@ -48,14 +48,16 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
     symbol      = "";
     symbol_text = "";
 
-    for (int i=node_start; i<=node_end; ++i, ++length) {
-        if (dag.node_map[i] <0) {
+    size_t pc = 0;
+    for (int node_idx=node_start; node_idx<=node_end; ++node_idx, ++pc, ++length) {
+        
+        if (dag.node_map[node_idx] <0) {
             fprintf(stderr, "Code-generation for subgraphs is not supported yet.\n");
             return false;
         }
 
-        this->instr[i] = &this->ir.instr_list[dag.node_map[i]];
-        bh_instruction& instr = *this->instr[i];
+        this->instr[pc] = &this->ir.instr_list[dag.node_map[node_idx]];
+        bh_instruction& instr = *this->instr[pc];
 
         uint32_t out=0, in1=0, in2=0;
 
@@ -126,11 +128,11 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 %end if
                 %end if
 
-                this->program[i].op    = $operation;  // TAC
-                this->program[i].oper  = $operator;
-                this->program[i].out   = out;
-                this->program[i].in1   = in1;
-                this->program[i].in2   = in2;
+                this->program[pc].op    = $operation;  // TAC
+                this->program[pc].oper  = $operator;
+                this->program[pc].out   = out;
+                this->program[pc].in1   = in1;
+                this->program[pc].in2   = in2;
             
                 this->omask |= $operation;    // Operationmask
                 break;
@@ -139,11 +141,11 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
             default:
                 if (instr.opcode>=BH_MAX_OPCODE_ID) {   // Handle extensions here
 
-                    this->program[i].op   = EXTENSION; // TODO: Be clever about it
-                    this->program[i].oper = EXTENSION_OPERATOR;
-                    this->program[i].out  = 0;
-                    this->program[i].in1  = 0;
-                    this->program[i].in2  = 0;
+                    this->program[pc].op   = EXTENSION; // TODO: Be clever about it
+                    this->program[pc].oper = EXTENSION_OPERATOR;
+                    this->program[pc].out  = 0;
+                    this->program[pc].in1  = 0;
+                    this->program[pc].in2  = 0;
 
                     this->omask |= EXTENSION;
                     //cout << "Extension method." << endl;
@@ -153,12 +155,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                     fprintf(stderr, "Block::compose: Err=[Unsupported instruction] {\n");
                     bh_pprint_instr(&instr);
                     fprintf(stderr, "}\n");
-                    return BH_ERROR;
+                    return false;
                 }
         }
     }
     DEBUG("-- Block::compose(SUCCESS)");
-    return BH_SUCCESS;
+    return true;
 }
 
 }}}

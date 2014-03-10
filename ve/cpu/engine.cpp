@@ -70,21 +70,34 @@ string Engine::text()
 /**
  *  Compile and execute the given block one tac/instruction at a time.
  *
- *  This execution mode is used when:
+ *  This execution mode is used when for one reason or another want to
+ *  do interpret the execution instruction-by-instruction.
  *
- *      - jit_fusion=False,
- *      - The block does not contain any array operations
- *      - The block contains an extension
+ *  This will happen when
+ *  
+ *  The block does not contain array operations
+ *  The block does contain array operations but also an extension
+ *
  */
 bh_error Engine::sij_mode(Block& block)
 {
-    DEBUG("++ Engine::sij_mode(...)");
+    DEBUG("++ Engine::sij_mode(...) : length(" << block.length << ")");
 
     bh_error res = BH_SUCCESS;
 
-    for(size_t i=0; i<block.length; ++i) {
-        bh_instruction* instr = block.instr[i];
-        tac_t& tac = block.program[i];
+    size_t orig_length = block.length;
+
+    for(size_t i=0; i<orig_length; ++i) {
+
+        bool compose_res = block.compose(i, i); // Recompose the block
+        if (!compose_res) {
+            fprintf(stderr, "Engine::sij_mode(...) == ERROR: Failed composing block.\n");
+            return BH_ERROR;
+        }
+
+        bh_instruction* instr = block.instr[0];
+        tac_t& tac = block.program[0];
+
         switch(tac.op) {
             case NOOP:
                 break;
@@ -98,7 +111,7 @@ bh_error Engine::sij_mode(Block& block)
                     case FREE:
                         DEBUG("   Engine::execute(...) == De-Allocate memory!");
                     
-                        res = bh_vcache_free(block.instr[i]);
+                        res = bh_vcache_free(instr);
                         if (BH_SUCCESS != res) {
                             fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
                                             "called from bh_ve_cpu_execute)\n");
@@ -131,7 +144,7 @@ bh_error Engine::sij_mode(Block& block)
 
                 //
                 // We start by creating a symbol
-                if (!block.symbolize(i, i, jit_optimize)) {
+                if (!block.symbolize(0, 0, jit_optimize)) {
                     fprintf(stderr, "Engine::sij_mode(...) == Failed creating symbol.\n");
                     return BH_ERROR;
                 }
@@ -141,7 +154,7 @@ bh_error Engine::sij_mode(Block& block)
                 if (jit_enabled && \
                     (!storage.symbol_ready(block.symbol))) {   
                                                                 // Specialize sourcecode
-                    string sourcecode = specializer.specialize(block, jit_optimize, i, i);
+                    string sourcecode = specializer.specialize(block, jit_optimize, 0, 0);
                     if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
                         this->src_to_file(
                             block.symbol, 
@@ -170,7 +183,7 @@ bh_error Engine::sij_mode(Block& block)
                     (!storage.load(block.symbol))) {                // Need but cannot load
 
                     if (jit_optimize) {                             // Try non-optimized fallback
-                        block.symbolize(i ,i, false);
+                        block.symbolize(0, 0, false);
                         if ((block.symbol!="") && \
                             (!storage.symbol_ready(block.symbol)) && \
                             (!storage.load(block.symbol))) {        // Fail
@@ -186,19 +199,19 @@ bh_error Engine::sij_mode(Block& block)
                 //
                 // Allocate memory for operands
                 DEBUG("   Engine::sij_mode(...) == Allocating memory.");
-                res = bh_vcache_malloc(block.instr[i]);
+                res = bh_vcache_malloc(instr);
                 if (BH_SUCCESS != res) {
                     fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                                     "called from bh_ve_cpu_execute()\n");
                     return res;
                 }
-
                 //
                 // Execute block handling array operations.
                 // 
                 DEBUG("   Engine::sij_mode(...) == Call kernel function!");
                 DEBUG(utils::tac_text(tac)); 
                 DEBUG(block.scope_text());
+                bh_pprint_instr(instr);
                 storage.funcs[block.symbol](block.scope);
 
                 break;
@@ -344,14 +357,18 @@ bh_error Engine::execute(bh_ir& bhir)
         //
         // Compose a block based on nodes within the given DAG
         Block block(bhir, bhir.dag_list[node]);
-        block.compose();
+        bool compose_res = block.compose();
+        if (!compose_res) {
+            fprintf(stderr, "Engine:execute(...) == ERROR: Failed composing block.\n");
+            return BH_ERROR;
+        }
 
         //
         // Determine if we want and can do instruction compositioning or
         // whether we prefer or only can do instruction-by-instruction interpretation
         // for the given block.
         bh_error mode_res = sij_mode(block);
-        if (BH_SUCCESS!=mode_res) {
+        if (BH_SUCCESS != mode_res) {
             return mode_res;
         }
         /*
