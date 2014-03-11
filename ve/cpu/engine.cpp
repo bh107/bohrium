@@ -211,7 +211,6 @@ bh_error Engine::sij_mode(Block& block)
                 DEBUG("   Engine::sij_mode(...) == Call kernel function!");
                 DEBUG(utils::tac_text(tac)); 
                 DEBUG(block.scope_text());
-                bh_pprint_instr(instr);
                 storage.funcs[block.symbol](block.scope);
 
                 break;

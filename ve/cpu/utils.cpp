@@ -128,16 +128,16 @@ string tac_typesig_text(tac_t& tac, operand_t* scope)
     stringstream ss;
     switch(tac_noperands(tac)) {
         case 3:
-            ss << etype_text_shand(scope[tac.out].type);
-            ss << etype_text_shand(scope[tac.in1].type);
-            ss << etype_text_shand(scope[tac.in2].type);
+            ss << etype_text_shand(scope[tac.out].etype);
+            ss << etype_text_shand(scope[tac.in1].etype);
+            ss << etype_text_shand(scope[tac.in2].etype);
             break;
         case 2:
-            ss << etype_text_shand(scope[tac.out].type);
-            ss << etype_text_shand(scope[tac.in1].type);
+            ss << etype_text_shand(scope[tac.out].etype);
+            ss << etype_text_shand(scope[tac.in1].etype);
             break;
         case 1:
-            ss << etype_text_shand(scope[tac.out].type);
+            ss << etype_text_shand(scope[tac.out].etype);
             break;
         default:
             return string("");

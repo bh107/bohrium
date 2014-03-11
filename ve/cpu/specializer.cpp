@@ -184,8 +184,8 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
         //
         // Reduction and scan specific expansions
         if ((tac.op == REDUCE) || (tac.op == SCAN)) {
-            operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(block.scope[tac.out].type));
-            operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1].type));
+            operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(block.scope[tac.out].etype));
+            operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1].etype));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
             if (tac.oper == ADD) {
                 operation_d->SetValue("NEUTRAL_ELEMENT", to_string(0));
@@ -211,8 +211,8 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
                 operator_d->SetIntValue("NR_SINPUT", tac.out);
                 argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
                 operand_d   = operation_d->AddSectionDictionary("OPERAND");
-                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in2].type));
-                operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[tac.in2].type));
+                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in2].etype));
+                operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[tac.in2].etype));
 
                 argument_d->SetIntValue("NR", tac.in2);
                 operand_d->SetIntValue("NR", tac.in2);
@@ -228,8 +228,8 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
                 argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
                 operand_d   = operation_d->AddSectionDictionary("OPERAND");
 
-                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].type));
-                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].type));
+                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].etype));
+                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].etype));
 
                 argument_d->SetIntValue("NR", tac.in1);
                 operand_d->SetIntValue("NR", tac.in1);
@@ -240,7 +240,7 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
                 }
             case 1:
                 argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].type));
+                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].etype));
                 argument_d->SetIntValue("NR", tac.out);
                 argument_d->ShowSection("ARRAY");
 
@@ -248,7 +248,7 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
                 operator_d->SetIntValue("NR_OUTPUT", tac.out);
 
                 operand_d = operation_d->AddSectionDictionary("OPERAND");
-                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].type));
+                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].etype));
                 operand_d->SetIntValue("NR", tac.out);
                 operand_d->ShowSection("ARRAY");
         }

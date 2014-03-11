@@ -46,7 +46,7 @@ typedef struct operand {
     LAYOUT  layout;     // The layout of the data
     void**  data;       // Pointer to pointer that points memory allocated for the array
     void*   const_data; // Pointer to constant
-    ETYPE   type;       // Type of the elements stored
+    ETYPE   etype;      // Type of the elements stored
     int64_t start;      // Offset from memory allocation to start of array
     int64_t nelem;      // Number of elements available in the allocation
 

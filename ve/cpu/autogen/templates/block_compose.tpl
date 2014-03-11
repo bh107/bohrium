@@ -79,7 +79,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 in1 = ++(this->noperands);                // Input
                 this->scope[in1].const_data = &(instr.constant.value.r123.start);
                 this->scope[in1].data       = &(this->scope[in1].const_data);
-                this->scope[in1].type       = UINT64;
+                this->scope[in1].etype      = UINT64;
                 this->scope[in1].nelem      = 1;
                 this->scope[in1].ndim       = 1;
                 this->scope[in1].start      = 0;
@@ -93,7 +93,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 in2 = ++(this->noperands);
                 this->scope[in2].const_data = &(instr.constant.value.r123.key);
                 this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].type       = UINT64;
+                this->scope[in2].etype      = UINT64;
                 this->scope[in2].nelem      = 1;
                 this->scope[in2].ndim       = 0;
                 this->scope[in2].start      = 0;
@@ -109,7 +109,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 in2 = ++(this->noperands);
                 this->scope[in2].const_data = &(instr.constant.value.uint64);
                 this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].type       = UINT64;
+                this->scope[in2].etype      = UINT64;
                 this->scope[in2].nelem      = 1;
                 this->scope[in2].ndim       = 1;
                 this->scope[in2].start      = 0;

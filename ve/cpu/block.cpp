@@ -38,7 +38,7 @@ string Block::scope_text(string prefix)
         ss << " nelem(" << scope[i].nelem << "),";
         ss << " data(" << *(scope[i].data) << "),";
         ss << " const_data(" << scope[i].const_data << "),";
-        ss << " etype(" << utils::etype_text(scope[i].type) << "),";
+        ss << " etype(" << utils::etype_text(scope[i].etype) << "),";
         ss << " ndim(" << scope[i].ndim << "),";
         ss << " start(" << scope[i].start << "),";        
         ss << " shape(";
@@ -115,10 +115,8 @@ bool Block::symbolize(const bool optimized)
 
 bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
 {
-    stringstream symbol_op_oper, 
-                 symbol_tsig,
-                 symbol_layout,
-                 symbol_ndim;
+    stringstream tacs,
+                 operands;
 
     DEBUG("++ Block::symbolize("<< tac_start << ", " << tac_end << "," << optimized << ")");
 
@@ -130,32 +128,72 @@ bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
         if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
             continue;
         }
-        if (!first) {
-            symbol_op_oper  << "_";
+        if (!first) {   // Separate op+oper with "_"
+            tacs  << "_";
         }
         first = false;
-        symbol_op_oper  << utils::operation_text(tac.op);
-        symbol_op_oper  << tac.oper;
-        symbol_layout   << utils::tac_layout_text(tac, scope);
-        symbol_tsig     << utils::tac_typesig_text(tac, scope);
-        size_t ndim = scope[tac.out].ndim;
-        if (tac.op == REDUCE) {
-            ndim = scope[tac.in1].ndim;
-        }
+
+        tacs << utils::operation_text(tac.op);
+        tacs << "-" << utils::operator_text(tac.oper);
+        tacs << "-";
+        size_t ndim = (tac.op == REDUCE) ? scope[tac.out].ndim : scope[tac.in1].ndim;
         if (optimized && (ndim <= 3)) {        // Optimized
-            symbol_ndim << ndim;
+            tacs << ndim;
         } else {
-            symbol_ndim << "N";
+            tacs << "N";
         }
-        symbol_ndim << "D";
+        tacs << "D";
+        
+        switch(utils::tac_noperands(tac)) {
+            case 3:
+                tacs << "-" << tac.out;
+                tacs << "-" << tac.in1;
+                tacs << "-" << tac.in2;
+
+                operands << "~" << tac.out;
+                operands << utils::layout_text_shand(scope[tac.out].layout);
+                operands << utils::etype_text_shand(scope[tac.out].etype);
+
+                operands << "~" << tac.in1;
+                operands << utils::layout_text_shand(scope[tac.in1].layout);
+                operands << utils::etype_text_shand(scope[tac.in1].etype);
+
+                operands << "~" << tac.in2;
+                operands << utils::layout_text_shand(scope[tac.in2].layout);
+                operands << utils::etype_text_shand(scope[tac.in2].etype);
+                break;
+
+            case 2:
+                tacs << "-" << tac.out;
+                tacs << "-" << tac.in1;
+
+                operands << "~" << tac.out;
+                operands << utils::layout_text_shand(scope[tac.out].layout);
+                operands << utils::etype_text_shand(scope[tac.out].etype);
+
+                operands << "~" << tac.in1;
+                operands << utils::layout_text_shand(scope[tac.in1].layout);
+                operands << utils::etype_text_shand(scope[tac.in1].etype);
+                break;
+
+            case 1:
+                tacs << "-" << tac.out;
+
+                operands << "~" << tac.out;
+                operands << utils::layout_text_shand(scope[tac.out].layout);
+                operands << utils::etype_text_shand(scope[tac.out].etype);
+                break;
+
+            case 0:
+                break;
+
+            default:
+                fprintf(stderr, "Something horrible happened...\n");
+        }
     }
 
-    symbol_text = symbol_op_oper.str()+ "_" +\
-                symbol_tsig.str()   + "_" +\
-                symbol_layout.str() + "_" +\
-                symbol_ndim.str();
-
-    symbol = "BH_" + utils::hash_text(symbol_text);
+    symbol_text = tacs.str() + operands.str();
+    symbol      = "BH_" + utils::hash_text(symbol_text);
 
     DEBUG("-- Block::symbolize(...) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
     return true;
@@ -174,7 +212,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
     if (bh_is_constant(&instr.operand[operand_idx])) {
         scope[arg_idx].const_data   = &(instr.constant.value);
         scope[arg_idx].data         = &scope[arg_idx].const_data;
-        scope[arg_idx].type         = utils::bhtype_to_etype(instr.constant.type);
+        scope[arg_idx].etype        = utils::bhtype_to_etype(instr.constant.type);
         scope[arg_idx].nelem        = 1;
         scope[arg_idx].ndim         = 1;
         scope[arg_idx].start        = 0;
@@ -186,7 +224,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
     } else {
         scope[arg_idx].const_data= nullptr;
         scope[arg_idx].data     = &(bh_base_array(&instr.operand[operand_idx])->data);
-        scope[arg_idx].type     = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
+        scope[arg_idx].etype    = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
         scope[arg_idx].nelem    = bh_base_array(&instr.operand[operand_idx])->nelem;
         scope[arg_idx].ndim     = instr.operand[operand_idx].ndim;
         scope[arg_idx].start    = instr.operand[operand_idx].start;
