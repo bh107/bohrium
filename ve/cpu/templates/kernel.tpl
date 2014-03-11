@@ -33,7 +33,7 @@ inline int omp_get_num_threads() { return 1; }
 
 //
 // {{SYMBOL_TEXT}}
-void {{SYMBOL}}(operand_t* args)
+void KRN_{{SYMBOL}}(operand_t* args)
 {
     //
     // Argument unpacking

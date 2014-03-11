@@ -14,7 +14,6 @@
 #include <dirent.h>
 #include <dlfcn.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <errno.h>
 
 #include "tac.h"
@@ -40,25 +39,31 @@ typedef std::map<std::string, std::string> symbol_library_map;
 
 class Store {
 public:
-    Store(const std::string object_dir);
+    func_storage funcs;
+
+    Store(const std::string object_directory, const std::string kernel_directory);
     ~Store();
     std::string text();
 
     void add_symbol(std::string symbol, std::string library);
 
     bool symbol_ready(std::string symbol);
-    std::string get_uid(void);
     bool load(std::string symbol);
     bool load(std::string symbol, std::string library);
     size_t preload();
 
-    func_storage funcs;
+    std::string get_uid(void);
+    std::string obj_abspath(std::string symbol);
+    std::string src_abspath(std::string symbol);
 
 private:
     handle_storage handles;
     symbol_library_map libraries;
-    std::string object_dir;
+    std::string object_directory;
+    std::string kernel_directory;
     std::string uid;
+    std::string kernel_prefix;
+    std::string library_prefix;
 };
 
 }}}

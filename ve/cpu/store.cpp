@@ -7,9 +7,12 @@ namespace bohrium {
 namespace engine {
 namespace cpu {
 
-Store::Store(const string object_dir) : object_dir(object_dir)
+Store::Store(const string object_directory, const string kernel_directory) 
+: object_directory(object_directory), kernel_directory(kernel_directory), kernel_prefix("KRN_"), library_prefix("LIB_")
 {
-    char uid[7];    // Create an identifier with low collision...    
+    //
+    // Create an identifier with low collision...
+    char uid[7];    
     static const char alphanum[] =
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -33,7 +36,7 @@ Store::~Store()
 string Store::text(void)
 {
     stringstream ss;
-    ss << "Store(\"" << object_dir << "\") : uid(" << this->uid << ");" << endl;
+    ss << "Store(\"" << object_directory << "\") : uid(" << this->uid << ");" << endl;
     return ss.str();
 }
 
@@ -44,6 +47,28 @@ string Store::get_uid(void)
 {
     DEBUG("   Store::get_uid(void) : uid(" << this->uid << ");");
     return this->uid;
+}
+
+string Store::obj_abspath(string symbol)
+{
+    return  this->object_directory  +\
+            "/"                     +\
+            this->kernel_prefix     +\
+            symbol                  +\
+            "_"                     +\
+            this->uid               +\
+            ".so";
+}
+
+string Store::src_abspath(string symbol)
+{
+    return  this->kernel_directory  +\
+            "/"                     +\
+            this->kernel_prefix     +\
+            symbol                  +\
+            "_"                     +\
+            this->uid               +\
+            ".c";
 }
 
 /**
@@ -61,6 +86,7 @@ bool Store::symbol_ready(string symbol)
  */
 size_t Store::preload(void)
 {
+    DEBUG("Store::preload(void)");
     DIR *dir;
     struct dirent *ent;
     bool res = true;
@@ -70,14 +96,17 @@ size_t Store::preload(void)
     //  Index of a library containing multiple symbols
     //
     //  The file:
-    //  BH_whateveryoumig_htlike.idx
+    //  LIB_[a-z0-9]+_xxxxxx.idx
     //
-    //  Will create a new-line delimited list of symbol
-    //  names which are available in:
+    //  Contains a new-line delimited list of names such as:
     //
-    //  BH_whateveryoumig_htlike.so
+    //  KRN_\d+_xxxxxx
     //
-    if ((dir = opendir (object_dir.c_str())) != NULL) {
+    //  Which can be loaded from:
+    //
+    //  LIB_[a-z0-9]+_xxxxxx.so
+    //
+    if ((dir = opendir (object_directory.c_str())) != NULL) {
         while ((ent = readdir (dir)) != NULL) {     // Go over dir-entries
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
@@ -92,7 +121,7 @@ size_t Store::preload(void)
                 library.assign(filename, 0, fn_len-4);
                
                 // Fill path to index filename 
-                string index_fn = object_dir + "/" + filename;
+                string index_fn = object_directory + "/" + filename;
 
                 ifstream symbol_file(index_fn);
                 for(string symbol; getline(symbol_file, symbol) && res;) {
@@ -114,9 +143,9 @@ size_t Store::preload(void)
     //  A library containing a single symbol, the filename
     //  provides the symbol based on the naming convention:
     //
-    //  BH_OPCODE_TYPESIG_LAYOUT_NDIM_XXXXXX.so
+    //  BH_\d+_XXXXXX.so
     //
-    if ((dir = opendir (object_dir.c_str())) != NULL) {
+    if ((dir = opendir (object_directory.c_str())) != NULL) {
         while((ent = readdir(dir)) != NULL) {
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
@@ -132,9 +161,7 @@ size_t Store::preload(void)
                 library.assign(filename, 0, fn_len-3);  // Remove ".so"
 
                 if (0==libraries.count(symbol)) {
-                    libraries.insert(
-                        pair<string, string>(symbol, library)
-                    );
+                    add_symbol(symbol, library);
                 }
             }
         }
@@ -143,16 +170,17 @@ size_t Store::preload(void)
         throw runtime_error("Failed opening object-path.");
     }
 
-    //cout << "PRELOADING... " << endl;
     //
     // This is the part that actually loads them...
     // This could be postponed...
     map<string, string>::iterator it;    // Iterator
     for(it=libraries.begin(); (it != libraries.end()) && res; ++it) {
-
         res = load(it->first, it->second);
         nloaded += res;
     }
+
+    DEBUG("Store::preload(void) : nloaded("<< nloaded << ");");
+
     return nloaded;
 }
 
@@ -176,11 +204,10 @@ bool Store::load(string symbol, string library)
     
     char *error_msg = NULL;             // Buffer for dlopen errors
     int errnum = 0;
-    string library_path = object_dir + "/" + library + ".so";
-
+    
     if (0==handles.count(library)) {    // Open library
         handles[library] = dlopen(
-            library_path.c_str(),
+            library.c_str(),
             RTLD_NOW
         );
         errnum = errno;
@@ -189,7 +216,7 @@ bool Store::load(string symbol, string library)
         utils::error(
             errnum,
             "Failed openening library; dlopen(filename='%s', RTLF_NOW) failed.",
-            library_path.c_str()
+            library.c_str()
         );
         return false;
     }
@@ -197,14 +224,14 @@ bool Store::load(string symbol, string library)
     dlerror();                          // Clear any existing error then,
     funcs[symbol] = (func)dlsym(        // Load symbol/function
         handles[library],
-        symbol.c_str()
+        (kernel_prefix+symbol).c_str()
     );
     error_msg = dlerror();
     if (error_msg) {
         utils::error(
             error_msg,
             "dlsym( handle='%s', symbol='%s' )\n",
-            library_path.c_str(),
+            library.c_str(),
             symbol.c_str()
         );
         //free(error_msg); TODO: This should not be freed!?

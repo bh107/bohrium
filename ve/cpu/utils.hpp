@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <cstdarg>
 #include <memory>
+#include <fcntl.h>
 
 #ifdef DEBUGGING
 #define DEBUG(x) do { std::cerr << x << std::endl; } while (0);
@@ -42,6 +43,8 @@ std::string hash_text(std::string text);
 
 int tac_noperands(tac_t& tac);
 bool is_contiguous(operand_t& arg);
+
+bool write_file(std::string file_path, const char* sourcecode, size_t source_len);
 
 /* these should be part of core */
 void bh_string_option(char *&option, const char *env_name, const char *conf_name);

@@ -17,9 +17,7 @@ namespace engine {
 namespace cpu {
 
 class Engine {
-
 public:
-
     Engine(
         const std::string compiler_cmd,
         const std::string template_directory,
@@ -35,13 +33,11 @@ public:
     ~Engine();
 
     std::string text();
-    bool src_to_file(std::string symbol, const char* sourcecode, size_t source_len);
-    bh_error register_extension(bh_component& instance, const char* name, bh_opcode opcode);
 
+    bh_error register_extension(bh_component& instance, const char* name, bh_opcode opcode);
     bh_error execute(bh_ir& ir);
 
 private:
-
     bh_error sij_mode(Block& block);
     bh_error fuse_mode(Block& block);
 

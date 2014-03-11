@@ -167,6 +167,41 @@ string tac_layout_text(tac_t& tac, operand_t* scope)
     return ss.str();
 }
 
+/**
+ *  Write source-code to file.
+ *  Filename will be along the lines of: kernel/<symbol>_<UID>.c
+ *  NOTE: Does not overwrite existing files.
+ */
+bool write_file(string file_path, const char* sourcecode, size_t source_len)
+{
+    DEBUG("++ utils::write_file("<< file_path << ", ..., " << source_len << ");");
+
+    int fd;              // Kernel file-descriptor
+    FILE *fp = NULL;     // Handle for kernel-file
+    const char *mode = "w";
+    int err;
+
+    fd = open(file_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
+    if ((!fd) || (fd<1)) {
+        err = errno;
+        utils::error(err, "Engine::write_file [%s] in write_file(...).\n", file_path.c_str());
+        return false;
+    }
+    fp = fdopen(fd, mode);
+    if (!fp) {
+        err = errno;
+        utils::error(err, "fdopen(fildes= %d, flags= %s).", fd, mode);
+        return false;
+    }
+    fwrite(sourcecode, 1, source_len, fp);
+    fflush(fp);
+    fclose(fp);
+    close(fd);
+
+    DEBUG("-- utils::write_file(...);");
+    return true;
+}
+
 //
 //  MOVE THESE TO CORE
 //

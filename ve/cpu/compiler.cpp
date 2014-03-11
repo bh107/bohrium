@@ -21,9 +21,7 @@ namespace cpu {
  *  Compiler clang("clang -O2 -march=core2 -fPIC -x c -shared - -o ");
  *
  */
-Compiler::Compiler(string process_str, string object_directory ) : 
-    process_str(process_str), object_directory(object_directory)
-{}
+Compiler::Compiler(string process_str) : process_str(process_str) {}
 
 Compiler::~Compiler()
 {
@@ -33,38 +31,26 @@ Compiler::~Compiler()
 
 string Compiler::text()
 {
-    
     stringstream ss;
-    ss << "Compiler(\"" << process_str << "\", ";
-    ss << "\"" << object_directory << "\");";
+    ss << "Compiler(\"" << process_str << "\")";
     ss << endl;
 
     return ss.str();
 }
 
 /**
- *  Compile a shared library for the given symbol.
- *  The library name is constructed using the uid of the process.
- *
-bool Compiler::compile(string symbol, const char* sourcecode, size_t source_len)
-{
-    string library = symbol + "_" + string(get_uid());
-    return compile(symbol, library, sourcecode, source_len);
-}*/
-
-/**
- *  Compile a shared library for the given symbol.
+ *  Compile the given sourcecode into a shared object.
  *
  *  @returns True the system compiler returns exit-code 0 and False othervise.
  */
-bool Compiler::compile(string symbol, string library, const char* sourcecode, size_t source_len)
+bool Compiler::compile(string object_abspath, const char* sourcecode, size_t source_len)
 {
-    DEBUG("++ Compiler::compile(" << symbol << ", " << library << ", ..., ..." << ");");
+    DEBUG("++ Compiler::compile(" << object_abspath<< ", ..., ..." << ");");
     //
     // Constuct the compiler command
-    string cmd = process_str +" "+ object_directory +"/"+ library +".so";
+    string cmd = process_str +" "+ object_abspath;
 
-    // Execute it
+    // Execute the process
     FILE *cmd_stdin = NULL;                     // Handle for library-file
     cmd_stdin = popen(cmd.c_str(), "w");        // Execute the command
     if (!cmd_stdin) {

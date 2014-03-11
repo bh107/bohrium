@@ -101,6 +101,14 @@ string Block::text()
 /**
  *  Create a symbol for the block.
  *
+ *  The textual version of the  symbol looks something like::
+ *  
+ *  symbol_text = ZIP-ADD-2D~1~2~3_~1Cf~2Cf~3Cf
+ *
+ *  Which will be hashed to some uint32_t value::
+ *
+ *  symbol = 2111321312412321432424
+ *
  *  NOTE: System and extension operations are ignored.
  *        If a block consists of nothing but system and/or extension
  *        opcodes then the symbol will be the empty string "".
@@ -146,9 +154,9 @@ bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
         
         switch(utils::tac_noperands(tac)) {
             case 3:
-                tacs << "-" << tac.out;
-                tacs << "-" << tac.in1;
-                tacs << "-" << tac.in2;
+                tacs << "~" << tac.out;
+                tacs << "~" << tac.in1;
+                tacs << "~" << tac.in2;
 
                 operands << "~" << tac.out;
                 operands << utils::layout_text_shand(scope[tac.out].layout);
@@ -164,8 +172,8 @@ bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
                 break;
 
             case 2:
-                tacs << "-" << tac.out;
-                tacs << "-" << tac.in1;
+                tacs << "~" << tac.out;
+                tacs << "~" << tac.in1;
 
                 operands << "~" << tac.out;
                 operands << utils::layout_text_shand(scope[tac.out].layout);
@@ -177,7 +185,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
                 break;
 
             case 1:
-                tacs << "-" << tac.out;
+                tacs << "~" << tac.out;
 
                 operands << "~" << tac.out;
                 operands << utils::layout_text_shand(scope[tac.out].layout);
@@ -192,8 +200,8 @@ bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
         }
     }
 
-    symbol_text = tacs.str() + operands.str();
-    symbol      = "BH_" + utils::hash_text(symbol_text);
+    symbol_text = tacs.str() +"_"+ operands.str();
+    symbol      = utils::hash_text(symbol_text);
 
     DEBUG("-- Block::symbolize(...) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
     return true;

@@ -25,10 +25,10 @@ Engine::Engine(
     jit_enabled(jit_enabled),
     jit_fusion(jit_fusion),
     jit_optimize(jit_optimize),
-    jit_dumpsrc(jit_dumpsrc),    
-    storage(object_directory),
+    jit_dumpsrc(jit_dumpsrc),
+    storage(object_directory, kernel_directory),
     specializer(template_directory),
-    compiler(compiler_cmd, object_directory)
+    compiler(compiler_cmd)
 {
     DEBUG("++ Engine::Engine(...)");
     bh_vcache_init(vcache_size);    // Victim cache
@@ -156,15 +156,14 @@ bh_error Engine::sij_mode(Block& block)
                                                                 // Specialize sourcecode
                     string sourcecode = specializer.specialize(block, jit_optimize, 0, 0);
                     if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
-                        this->src_to_file(
-                            block.symbol, 
+                        utils::write_file(
+                            storage.src_abspath(block.symbol),
                             sourcecode.c_str(), 
                             sourcecode.size()
                         );
                     }                                           // Send to compiler
                     bool compile_res = compiler.compile(
-                        block.symbol, 
-                        block.symbol+"_"+storage.get_uid(), 
+                        storage.obj_abspath(block.symbol), 
                         sourcecode.c_str(), 
                         sourcecode.size()
                     );                 
@@ -173,7 +172,7 @@ bh_error Engine::sij_mode(Block& block)
                         return BH_ERROR;
                     }
                                                                 // Inform storage
-                    storage.add_symbol(block.symbol, block.symbol+"_"+storage.get_uid());
+                    storage.add_symbol(block.symbol, storage.obj_abspath(block.symbol));
                 }
 
                 //
@@ -251,15 +250,14 @@ bh_error Engine::fuse_mode(Block& block)
                                                     // Specialize sourcecode
         string sourcecode = specializer.specialize(block, jit_optimize);   
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
-            this->src_to_file(
-                block.symbol, 
+            utils::write_file(
+                storage.src_abspath(block.symbol),
                 sourcecode.c_str(), 
                 sourcecode.size()
             );
         }                                           // Send to compiler
         bool compile_res = compiler.compile(
-            block.symbol, 
-            block.symbol+"_"+storage.get_uid(), 
+            storage.obj_abspath(block.symbol),
             sourcecode.c_str(), 
             sourcecode.size()
         );                 
@@ -268,7 +266,7 @@ bh_error Engine::fuse_mode(Block& block)
             return BH_ERROR;
         }
                                                     // Inform storage
-        storage.add_symbol(block.symbol, block.symbol+"_"+storage.get_uid());
+        storage.add_symbol(block.symbol, storage.obj_abspath(block.symbol));
     }
 
     //
@@ -376,45 +374,6 @@ bh_error Engine::execute(bh_ir& bhir)
     
     DEBUG("-- Engine::execute(...)");
     return res;
-}
-
-/**
- *  Write source-code to file.
- *  Filename will be along the lines of: kernel/<symbol>_<UID>.c
- *  NOTE: Does not overwrite existing files.
- */
-bool Engine::src_to_file(string symbol, const char* sourcecode, size_t source_len)
-{
-    DEBUG("++ Engine::src_to_file("<< symbol << ", ..., " << source_len << ");");
-
-    int kernel_fd;              // Kernel file-descriptor
-    FILE *kernel_fp = NULL;     // Handle for kernel-file
-    const char *mode = "w";
-    int err;
-    string kernel_path = this->kernel_directory         \
-                         +"/"+ symbol                   \
-                         +"_"+ this->storage.get_uid()  \
-                         + ".c";
-
-    kernel_fd = open(kernel_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
-    if ((!kernel_fd) || (kernel_fd<1)) {
-        err = errno;
-        utils::error(err, "Engine::src_to_file [%s] in src_to_file(...).\n", kernel_path.c_str());
-        return false;
-    }
-    kernel_fp = fdopen(kernel_fd, mode);
-    if (!kernel_fp) {
-        err = errno;
-        utils::error(err, "fdopen(fildes= %d, flags= %s).", kernel_fd, mode);
-        return false;
-    }
-    fwrite(sourcecode, 1, source_len, kernel_fp);
-    fflush(kernel_fp);
-    fclose(kernel_fp);
-    close(kernel_fd);
-
-    DEBUG("-- Engine::src_to_file(...);");
-    return true;
 }
 
 bh_error Engine::register_extension(bh_component& instance, const char* name, bh_opcode opcode)
