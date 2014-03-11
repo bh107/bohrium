@@ -106,29 +106,37 @@ size_t Store::preload(void)
     //
     //  LIB_[a-z0-9]+_xxxxxx.so
     //
-    if ((dir = opendir (object_directory.c_str())) != NULL) {
+    if ((dir = opendir(object_directory.c_str())) != NULL) {
+        DEBUG("Store::preload(...) -- GOING MULTI!");
         while ((ent = readdir (dir)) != NULL) {     // Go over dir-entries
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
                 continue;
             }
             string filename(ent->d_name);
-            string symbol;                     // BH_ADD_fff_CCC_3d
-            string library;                    // BH_ADD_fff_CCC_3d_yAycwd
+            DEBUG("We have a potential: " << filename);
+            string symbol;                     // KRN_\d+
+            string library;                    // LIB_whatever_xxxxxx.so
 
             if (0==filename.compare(fn_len-4, 4, ".idx")) {
+                string basename;
+                basename.assign(filename, 0, filename.length()-4);
+
                 // Library
-                library.assign(filename, 0, fn_len-4);
+                library = object_directory  +\
+                          "/"               +\
+                          basename          +\
+                          ".so";
                
                 // Fill path to index filename 
-                string index_fn = object_directory + "/" + filename;
-
+                string index_fn = object_directory  +\
+                                  "/"               +\
+                                  filename;
+                DEBUG("MULTI: " << library << " ||| " << index_fn);
                 ifstream symbol_file(index_fn);
                 for(string symbol; getline(symbol_file, symbol) && res;) {
                     if (0==libraries.count(symbol)) {
-                        libraries.insert(
-                            pair<string, string>(symbol, library)
-                        );
+                        add_symbol(symbol, library);
                     }
                 }
                 symbol_file.close();
@@ -143,9 +151,10 @@ size_t Store::preload(void)
     //  A library containing a single symbol, the filename
     //  provides the symbol based on the naming convention:
     //
-    //  BH_\d+_XXXXXX.so
+    //  KRN_[\d+]_XXXXXX.so
     //
     if ((dir = opendir (object_directory.c_str())) != NULL) {
+        DEBUG("GOING SINGLE!");
         while((ent = readdir(dir)) != NULL) {
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
@@ -154,11 +163,24 @@ size_t Store::preload(void)
             string filename(ent->d_name);
             string symbol;                     // BH_ADD_fff_CCC_3d
             string library;                    // BH_ADD_fff_CCC_3d_yAycwd
+           
+            // Must begin with "KRN_" 
+            // Must end with ".so"
+            if ((0==filename.compare(0, this->kernel_prefix.length(), this->kernel_prefix)) && \
+                (0==filename.compare(fn_len-3, 3, ".so"))) {
 
-            if ((0==filename.compare(0,3, "BH_")) && \
-                (0==filename.compare(fn_len-3, 3, ".so"))) { 
-                symbol.assign(filename, 0, fn_len-10);  // Remove "_xxxxxx.so"
-                library.assign(filename, 0, fn_len-3);  // Remove ".so"
+                // Construct the abspath for the library
+                library = object_directory  +\
+                          "/"               +\
+                          filename;
+
+                // Extract the symbol "KRN_(d+)_xxxxxx.so"
+                symbol.assign(
+                    filename,
+                    this->kernel_prefix.length(),
+                    fn_len-10-this->kernel_prefix.length()
+                );
+                DEBUG("[SYMBOL="<< symbol <<",LIBRARY="<<library<<"]");
 
                 if (0==libraries.count(symbol)) {
                     add_symbol(symbol, library);
@@ -186,6 +208,7 @@ size_t Store::preload(void)
 
 void Store::add_symbol(string symbol, string library)
 {
+    DEBUG("Store::add_symbol("<< symbol <<", "<< library <<");");
     libraries.insert(pair<string, string>(symbol, library));
 }
 

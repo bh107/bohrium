@@ -32,6 +32,9 @@ Engine::Engine(
 {
     DEBUG("++ Engine::Engine(...)");
     bh_vcache_init(vcache_size);    // Victim cache
+    if (preload) {
+        storage.preload();
+    }
     DEBUG(this->text());
     DEBUG("-- Engine::Engine(...)");
 }
