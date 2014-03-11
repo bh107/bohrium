@@ -43,7 +43,7 @@ public:
 private:
 
     bh_error sij_mode(Block& block);
-    ///bh_error fuse_mode(block& block);
+    bh_error fuse_mode(Block& block);
 
     std::string compiler_cmd,
                 template_directory,

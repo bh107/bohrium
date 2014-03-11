@@ -228,10 +228,11 @@ bh_error Engine::sij_mode(Block& block)
  *
  *      - jit_fusion=true,
  *      - The block contains at least one array operation (should be increased to more than 1)
- *      - The block contains does contain any extensions
- *
+ *      - The block contains does not contain any extensions
+ */
 bh_error Engine::fuse_mode(Block& block)
 {
+    bh_error res = BH_SUCCESS;
     //
     // We start by creating a symbol
     if (!block.symbolize(jit_optimize)) {
@@ -296,7 +297,7 @@ bh_error Engine::fuse_mode(Block& block)
     // Allocate memory for output
     //
     for(size_t i=0; i<block.length; ++i) {
-        res = bh_vcache_malloc(block.instr[i]);
+        bh_error res = bh_vcache_malloc(block.instr[i]);
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                             "called from bh_ve_cpu_execute()\n");
@@ -308,14 +309,7 @@ bh_error Engine::fuse_mode(Block& block)
     //
     // Execute block handling array operations.
     // 
-    if ((block.omask & (BUILTIN_ARRAY_OPS)) > 0) {
-        if (BH_SUCCESS != res) {
-            fprintf(stderr, "Unhandled error returned by dispatch_block "
-                            "called from bh_ve_cpu_execute(...)\n");
-            return res;
-        }
-        storage.funcs[block.symbol](block.scope);
-    }
+    storage.funcs[block.symbol](block.scope);
 
     DEBUG("   Engine::execute(...) == De-Allocate memory!");
     //
@@ -330,10 +324,9 @@ bh_error Engine::fuse_mode(Block& block)
             }
         }
     }
-    DEBUG("   --Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
 
     return BH_SUCCESS;
-}*/
+}
 
 bh_error Engine::execute(bh_ir& bhir)
 {
@@ -366,18 +359,19 @@ bh_error Engine::execute(bh_ir& bhir)
         // Determine if we want and can do instruction compositioning or
         // whether we prefer or only can do instruction-by-instruction interpretation
         // for the given block.
-        bh_error mode_res = sij_mode(block);
-        if (BH_SUCCESS != mode_res) {
-            return mode_res;
-        }
-        /*
+        bh_error mode_res;
         if (jit_fusion && \
             ((block.omask & (BUILTIN_ARRAY_OPS)) > 0) && \
             ((block.omask & (EXTENSION)) == 0)) {
             mode_res = fuse_mode(block);            
         } else {
             mode_res = sij_mode(block);
-        }*/
+        }
+        if (BH_SUCCESS!=mode_res) {
+            fprintf(stderr, "Engine:execute(...) == ERROR: Failed running *_mode(...).\n");
+            return BH_ERROR;
+        }
+        DEBUG("   --Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
     }
     
     DEBUG("-- Engine::execute(...)");
