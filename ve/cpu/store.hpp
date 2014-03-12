@@ -53,6 +53,10 @@ public:
     size_t preload();
 
     std::string get_uid(void);
+
+    std::string obj_filename(std::string symbol);
+    std::string src_filename(std::string symbol);
+
     std::string obj_abspath(std::string symbol);
     std::string src_abspath(std::string symbol);
 

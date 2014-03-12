@@ -49,26 +49,36 @@ string Store::get_uid(void)
     return this->uid;
 }
 
-string Store::obj_abspath(string symbol)
+string Store::obj_filename(string symbol)
 {
-    return  this->object_directory  +\
-            "/"                     +\
-            this->kernel_prefix     +\
+    return  this->kernel_prefix     +\
             symbol                  +\
             "_"                     +\
             this->uid               +\
             ".so";
 }
 
-string Store::src_abspath(string symbol)
+string Store::obj_abspath(string symbol)
 {
-    return  this->kernel_directory  +\
+    return  this->object_directory  +\
             "/"                     +\
-            this->kernel_prefix     +\
+            this->obj_filename(symbol);
+}
+
+string Store::src_filename(string symbol)
+{
+    return  this->kernel_prefix     +\
             symbol                  +\
             "_"                     +\
             this->uid               +\
             ".c";
+}
+
+string Store::src_abspath(string symbol)
+{
+    return  this->kernel_directory  +\
+            "/"                     +\
+            this->src_filename(symbol);
 }
 
 /**
@@ -120,15 +130,15 @@ size_t Store::preload(void)
 
             if (0==filename.compare(fn_len-4, 4, ".idx")) {
                 string basename;
+                // Remove the ".idx" extension
                 basename.assign(filename, 0, filename.length()-4);
 
-                // Library
-                library = object_directory  +\
-                          "/"               +\
-                          basename          +\
-                          ".so";
+                // Add the ".so" extension
+                library = basename +".so";
                
-                // Fill path to index filename 
+                //
+                // Construct the absolute path to the file since we need
+                // to open and read it.
                 string index_fn = object_directory  +\
                                   "/"               +\
                                   filename;
@@ -162,17 +172,11 @@ size_t Store::preload(void)
             }
             string filename(ent->d_name);
             string symbol;                     // BH_ADD_fff_CCC_3d
-            string library;                    // BH_ADD_fff_CCC_3d_yAycwd
            
             // Must begin with "KRN_" 
             // Must end with ".so"
             if ((0==filename.compare(0, this->kernel_prefix.length(), this->kernel_prefix)) && \
                 (0==filename.compare(fn_len-3, 3, ".so"))) {
-
-                // Construct the abspath for the library
-                library = object_directory  +\
-                          "/"               +\
-                          filename;
 
                 // Extract the symbol "KRN_(d+)_xxxxxx.so"
                 symbol.assign(
@@ -180,10 +184,9 @@ size_t Store::preload(void)
                     this->kernel_prefix.length(),
                     fn_len-10-this->kernel_prefix.length()
                 );
-                DEBUG("[SYMBOL="<< symbol <<",LIBRARY="<<library<<"]");
 
                 if (0==libraries.count(symbol)) {
-                    add_symbol(symbol, library);
+                    add_symbol(symbol, filename);
                 }
             }
         }
@@ -228,9 +231,11 @@ bool Store::load(string symbol, string library)
     char *error_msg = NULL;             // Buffer for dlopen errors
     int errnum = 0;
     
+    string library_abspath = this->object_directory+"/"+library;
+
     if (0==handles.count(library)) {    // Open library
         handles[library] = dlopen(
-            library.c_str(),
+            library_abspath.c_str(),
             RTLD_NOW
         );
         errnum = errno;
@@ -238,8 +243,8 @@ bool Store::load(string symbol, string library)
     if (!handles[library]) {            // Check that it opened
         utils::error(
             errnum,
-            "Failed openening library; dlopen(filename='%s', RTLF_NOW) failed.",
-            library.c_str()
+            "Store::load(...,...) : dlopen(filename='%s', RTLF_NOW).",
+            library_abspath.c_str()
         );
         return false;
     }

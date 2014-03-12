@@ -175,7 +175,7 @@ bh_error Engine::sij_mode(Block& block)
                         return BH_ERROR;
                     }
                                                                 // Inform storage
-                    storage.add_symbol(block.symbol, storage.obj_abspath(block.symbol));
+                    storage.add_symbol(block.symbol, storage.obj_filename(block.symbol));
                 }
 
                 //
@@ -269,7 +269,7 @@ bh_error Engine::fuse_mode(Block& block)
             return BH_ERROR;
         }
                                                     // Inform storage
-        storage.add_symbol(block.symbol, storage.obj_abspath(block.symbol));
+        storage.add_symbol(block.symbol, storage.obj_filename(block.symbol));
     }
 
     //

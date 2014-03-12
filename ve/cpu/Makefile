@@ -11,7 +11,7 @@ ifeq ($(PLATFORM_OS),OSX)
 	EXTRA_LIBS+=-L$(ROOT)/thirdparty/ctemplate/osx-lib 
 endif
 
-LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -g -O0 -fPIC -std=c++98 -I$(ROOT)/include $(EXTRAS)
+LCFLAGS=$(WARNOPTS) $(ARCH_OPTS) -g -O2 -fPIC -std=c++98 -I$(ROOT)/include $(EXTRAS)
 LDFLAGS=-L../../core $(ARCH_OPTS) -lbh $(EXTRA_LIBS) -lctemplate -shared -Wl,$(LD_LIB_COMMAND)
 HEADER=./*.h $(ROOT)/include/*
 SRC=$(ALL_CPP_FILES)
