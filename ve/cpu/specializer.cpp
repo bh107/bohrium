@@ -188,9 +188,9 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
             operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1].etype));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
             if (tac.oper == ADD) {
-                operation_d->SetValue("NEUTRAL_ELEMENT", to_string(0));
+                operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
             } else if (tac.oper == MULTIPLY) {
-                operation_d->SetValue("NEUTRAL_ELEMENT", to_string(1));
+                operation_d->SetIntValue("NEUTRAL_ELEMENT", 1);
             }
         }
 
@@ -207,7 +207,7 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
         //  The arguments / operands
         switch(utils::tac_noperands(tac)) {
             case 3:
-                operation_d->SetValue("NR_SINPUT", to_string(tac.in2));  // Not all have
+                operation_d->SetIntValue("NR_SINPUT", tac.in2);  // Not all have
                 operator_d->SetIntValue("NR_SINPUT", tac.out);
                 argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
                 operand_d   = operation_d->AddSectionDictionary("OPERAND");
@@ -222,7 +222,7 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
                     operand_d->ShowSection("ARRAY");
                 }
             case 2:
-                operation_d->SetValue("NR_FINPUT", to_string(tac.in1));  // Not all have
+                operation_d->SetIntValue("NR_FINPUT", tac.in1);  // Not all have
                 operator_d->SetIntValue("NR_FINPUT", tac.in1);
 
                 argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
@@ -244,7 +244,7 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
                 argument_d->SetIntValue("NR", tac.out);
                 argument_d->ShowSection("ARRAY");
 
-                operation_d->SetValue("NR_OUTPUT", to_string(tac.out));
+                operation_d->SetIntValue("NR_OUTPUT", tac.out);
                 operator_d->SetIntValue("NR_OUTPUT", tac.out);
 
                 operand_d = operation_d->AddSectionDictionary("OPERAND");

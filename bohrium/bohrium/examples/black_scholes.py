@@ -29,12 +29,15 @@ def BS(CallPutFlag,S,X,T,r,v):
     else:
         return X*np.exp(-r*T)*CND(-d2)-S*CND(-d1)
 
-def price(S,I,flag='c',X=65.0,dT=(1.0/365.0),r=0.08,v=0.3):
+def price(S,I,flag='c',X=65.0,dT=(1.0/365.0),r=0.08,v=0.3, visualize=False):
     T = dT
     p = []
     N = len(S)
     for i in xrange (I):
-        p += [np.sum(BS(flag,S,X,T,r,v)) / N]
+        P = np.sum(BS(flag,S,X,T,r,v)) / N
+        p.append(P)
         T += dT
+        if visualize:#NB: this is only for experiments
+            np.visualize(P, "3d", 0, 0.0, 10)
     return p
 

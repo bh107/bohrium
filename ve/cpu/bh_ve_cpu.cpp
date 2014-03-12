@@ -36,7 +36,7 @@ static bh_component myself;
 
 //
 // This is where the actual engine implementation is
-static bohrium::engine::cpu::Engine* engine = nullptr;
+static bohrium::engine::cpu::Engine* engine = NULL;
 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
@@ -214,7 +214,7 @@ bh_error bh_ve_cpu_shutdown(void)
     bh_component_destroy(&myself);
     
     delete engine;
-    engine = nullptr;
+    engine = NULL;
 
     DEBUG("-- bh_ve_cpu_shutdown(...);");
     return BH_SUCCESS;

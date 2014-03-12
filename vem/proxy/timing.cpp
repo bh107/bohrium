@@ -37,16 +37,16 @@ void timing_sleep(void)
             bh_sleep = 0;
         else
             bh_sleep = atoi(str);
-        fprintf(stderr,"sleep enabled: %dms\n", bh_sleep);
+        printf("sleep enabled: %dms\n", bh_sleep);
     }
     if(bh_sleep == 0)
         return;
 
     struct timespec tim, tim2;
-    tim.tv_sec = bh_sleep/1000000;
-    tim.tv_nsec = bh_sleep%1000000 * 1000;
+    tim.tv_sec = bh_sleep/1000;
+    tim.tv_nsec = bh_sleep%1000 * 1000000;
 
     if(nanosleep(&tim , &tim2) < 0 )
-        printf("Nano sleep system call failed \n");
+        fprintf(stderr,"Nano sleep system call failed \n");
 }
 

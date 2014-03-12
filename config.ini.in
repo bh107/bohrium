@@ -1,0 +1,64 @@
+[bridge]
+type = bridge
+children = node
+
+#
+# Managers
+#
+
+[visualizer]
+type = ve
+children = node
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_visualizer.so
+
+[proxy]
+type = vem
+port = 4200
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_proxy_server.so
+children = node
+
+[cluster]
+type = vem
+children = node
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_cluster.so
+
+[node]
+type = vem
+children = cpu
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node.so
+
+#
+# Engines
+#
+[cpu]
+type = ve
+compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include -lm -O3 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
+object_path=${CMAKE_INSTALL_PREFIX}/cpu/objects
+kernel_path=${CMAKE_INSTALL_PREFIX}/cpu/kernels
+template_path=${CMAKE_INSTALL_PREFIX}/cpu/templates
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu.so
+libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul.so,${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer.so,${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw.so
+
+#
+# Filters
+#
+[transitive_reduction]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_transitive_reduction.so
+children = cpu
+
+[pprint]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pprint.so
+children = cpu
+
+[validate]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_validate.so
+children = cpu
+
+[range]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_range.so
+children = cpu
+

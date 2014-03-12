@@ -133,7 +133,7 @@ size_t Store::preload(void)
                                   "/"               +\
                                   filename;
                 DEBUG("MULTI: " << library << " ||| " << index_fn);
-                ifstream symbol_file(index_fn);
+                ifstream symbol_file(index_fn.c_str(), ifstream::in);
                 for(string symbol; getline(symbol_file, symbol) && res;) {
                     if (0==libraries.count(symbol)) {
                         add_symbol(symbol, library);

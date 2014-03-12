@@ -9,7 +9,7 @@ children = node
 [visualizer]
 type = ve
 children = node
-impl = /home/madsbk/.local/libbh_ve_visualizer.so
+impl = /opt/bohrium/.local/libbh_ve_visualizer.so
 
 [proxy]
 type = vem

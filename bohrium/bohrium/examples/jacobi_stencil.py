@@ -14,7 +14,7 @@ def freezetrap(height, width, dtype=np.float32, bohrium=True):
     grid[0,:]  = dtype(40.0)
     return grid
 
-def solve(grid, epsilon=0.005, max_iterations=None):
+def solve(grid, epsilon=0.005, max_iterations=None, visualize=False):
     center = grid[1:-1, 1:-1]
     north  = grid[0:-2, 1:-1]
     east   = grid[1:-1, 2:  ]
@@ -29,9 +29,11 @@ def solve(grid, epsilon=0.005, max_iterations=None):
         center[:] = work
         if max_iterations != None and max_iterations <= iteration:
             break
+        if visualize:
+            np.visualize(grid, "2d", 0, 0.0, 5.5)
     return grid
 
-def iterate(grid, iterations):
+def iterate(grid, iterations, visualize=False):
     center = grid[1:-1, 1:-1]
     north  = grid[0:-2, 1:-1]
     east   = grid[1:-1, 2:  ]
@@ -39,5 +41,7 @@ def iterate(grid, iterations):
     south  = grid[2:  , 1:-1]
     for i in xrange(iterations):
         center[:] = 0.2*(center+north+east+west+south)
+        if visualize:
+            np.visualize(grid, "2d", 0, 0.0, 5.5)
     return grid
 

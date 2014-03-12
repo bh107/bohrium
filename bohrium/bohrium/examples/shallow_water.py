@@ -96,6 +96,5 @@ def simulate(H, timesteps, visualize=False):
     for i in xrange(timesteps):
         (H, U, V) = step(H, U, V)
         if visualize:
-            assert H.dtype == np.float32
             np.visualize(H, "3d", 0, 0.0, 5.5)
     return H

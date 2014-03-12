@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <cstdarg>
 #include <memory>
+#include <cerrno>
 #include <fcntl.h>
 
 #ifdef DEBUGGING
@@ -36,7 +37,7 @@ std::string tac_text(tac_t& tac);
 std::string tac_typesig_text(tac_t& tac, operand_t* scope);
 std::string tac_layout_text(tac_t& tac, operand_t* scope);
 
-std::string string_format(const std::string & fmt_str, ...);
+std::string string_format(const std::string fmt_str, ...);
 
 uint32_t hash(std::string);
 std::string hash_text(std::string text);

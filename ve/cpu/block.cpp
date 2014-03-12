@@ -230,7 +230,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
         scope[arg_idx].stride[0]    = 0;
         scope[arg_idx].layout       = CONSTANT;
     } else {
-        scope[arg_idx].const_data= nullptr;
+        scope[arg_idx].const_data= NULL;
         scope[arg_idx].data     = &(bh_base_array(&instr.operand[operand_idx])->data);
         scope[arg_idx].etype    = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
         scope[arg_idx].nelem    = bh_base_array(&instr.operand[operand_idx])->nelem;
