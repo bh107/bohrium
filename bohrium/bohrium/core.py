@@ -5,10 +5,11 @@ Core
 The ``core`` module provide the essential functions, such as all the array creation functions, diagonal and matrix multiplication.
 
 """
+import math
 import numpy
 from numpy import *
 import bohriumbridge as bridge
-from math import ceil
+
 def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohrium=True):
     """
     Create an array.
@@ -1135,7 +1136,7 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     if (not stop):
         stop = start
         start = type(stop)(0)
-    size = int(ceil((float(stop) - float(start)) / float(step)))
+    size = int(math.ceil((float(stop) - float(start)) / float(step)))
     if (dtype):
         start = dtype(start)
         stop  = dtype(stop)
