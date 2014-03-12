@@ -127,8 +127,15 @@ string Specializer::template_filename(Block& block, size_t pc, bool optimized)
                 case RANGE:
                     tpl_opcode = "range.";
                     tpl_ndim    = "1d.";
+                    break;
+
                 default:
-                    printf("Operator x is not supported with operation y\n");
+                    fprintf(
+                        stderr,
+                        "Operator %s is not supported with operation %s\n",
+                        utils::operation_text(tac.op).c_str(),
+                        utils::operator_text(tac.oper).c_str()
+                    );
             }
             tpl_layout = "cont.";
             break;
