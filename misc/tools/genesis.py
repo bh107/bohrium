@@ -76,6 +76,9 @@ numpy_map = {
     "BH_LOGICAL_XOR_REDUCE":    "np.logical_xor.reduce",
     "BH_BITWISE_XOR_REDUCE":    "np.bitwise_xor.reduce",
 
+    "BH_ADD_ACCUMULATE":        "np.cumsum",
+    "BH_MULTIPLY_ACCUMULATE":   "np.cumprod",
+
     "BH_RANDOM":    "np.random.random",
     "BH_RANGE":     "np.arange",
     "BH_IDENTITY":  "copy_operands",
@@ -177,7 +180,6 @@ def genesis(bytecodes, types):
     # Execute it 
     #
     for opcode, typesig, layout in earth:
-
         func = eval(numpy_map[opcode])  # Grab the NumPy functions
 
         # Ignore functions with signatures containing ignored types
@@ -207,6 +209,13 @@ def genesis(bytecodes, types):
                     typemap[typesig[0]],
                     operands[typesig[0]][ndim-1][0][layout[0]]
                 ]
+            elif "_ACCUMULATE" in opcode:
+                op_setup = [
+                    operands[typesig[1]][ndim][1][layout[1]],
+                    0,
+                    typemap[typesig[0]],
+                    operands[typesig[0]][ndim][1][layout[1]]
+                ]               
             else:
                 if len(typesig) == 3:
                     op_setup = [
