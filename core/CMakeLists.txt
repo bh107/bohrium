@@ -9,10 +9,11 @@ if(USE_CXX98)
     list(REMOVE_ITEM SRC ${EXCLUDE_SRC})
 endif()
 
-message(STATUS ${SRC})
-add_library(bh SHARED ${SRC})
+add_library(bh SHARED ${SRC} bh_opcode.cpp)
 
-add_custom_command(TARGET bh PRE_BUILD COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen_opcodes.py)
+#Rules for how to generate bh_opcode.cpp and bh_opcode.h
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/bh_opcode.cpp COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen_opcodes.py VERBATIM)
+set_source_files_properties(bh_opcode.cpp PROPERTIES GENERATED TRUE)
 
 #We depend on iniparser
 add_subdirectory(iniparser)
