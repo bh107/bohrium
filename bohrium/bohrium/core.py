@@ -1174,6 +1174,8 @@ def visualize(a, mode, colormap, min, max):
         raise ValueError("Input must be 2-D or 3-D.")
     if not a.bohrium:
         raise ValueError("Input must be a Bohrium array")
+    if a.dtype == numpy.float32:
+        raise ValueError("For now visualize only supports float32 arrays")
 
     if mode == "2d":
         flat = True
@@ -1188,5 +1190,9 @@ def visualize(a, mode, colormap, min, max):
     else:
         raise ValueError("Unknown mode '%s'"%mode)
 
+    for s in a.shape:
+        if s < 16:
+            raise ValueError("Input shape must be greater than 15 element in each dimension")
+    bridge.flush()#We will not delay the visualization
     args = array([float(colormap), float(flat), float(cube), float(min), float(max)], bohrium=True)
     bridge.extmethod_exec("visualizer",a,args,a)

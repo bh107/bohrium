@@ -18,7 +18,7 @@ I = B.size[1]
 galaxy = nb.random_galaxy( N, B.dtype, B.bohrium)
 
 B.start()
-nb.simulate(galaxy,I)
+nb.simulate(galaxy,I, visualize=B.visualize)
 r = np.add.reduce(galaxy['x'] + galaxy['y'] + galaxy['z'])
 B.stop()
 B.pprint()

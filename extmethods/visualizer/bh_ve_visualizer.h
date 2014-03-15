@@ -17,19 +17,22 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef __bh_ve_visualizer_H
+#define __bh_ve_visualizer_H
 
-#define BH_TIMING
-#include <bh_timing.hpp>
-#undef BH_TIMING
+#include <bh.h>
 
-std::ostream& operator<< (std::ostream& os, bh::timing2 const& t)
-{
-    os << t.start << " " << t.end << std::endl;
-    return os;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+DLLEXPORT bh_error bh_ve_visualizer_init(const char* name);
+DLLEXPORT bh_error bh_ve_visualizer_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_ve_visualizer_shutdown(void);
+DLLEXPORT bh_error bh_ve_visualizer_extmethod(const char *name, bh_opcode opcode);
+
+#ifdef __cplusplus
 }
+#endif
 
-std::ostream& operator<< (std::ostream& os, bh::timing4 const& t)
-{
-    os << t.queued << " " << t.submit << " " << t.start << " " << t.end << std::endl;
-    return os;
-}
+#endif

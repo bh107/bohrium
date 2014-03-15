@@ -183,8 +183,8 @@ string template_filename(bh_instruction *instr, bh_intp optimized, int lmask)
  *  @return The generated sourcecode.
  *
  */
-string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
-
+string specialize(bh_kernel_t &kernel, bh_intp const optimized) 
+{
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
@@ -227,13 +227,13 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
         }
         if (instr->opcode == BH_ADD_ACCUMULATE) {
-            operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(0));
+            operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
         } else if (instr->opcode == BH_MULTIPLY_ACCUMULATE) {
-            operation_d->SetValue("NEUTRAL_ELEMENT", std::to_string(1));
+            operation_d->SetIntValue("NEUTRAL_ELEMENT", 1);
         }
-        operation_d->SetValue("NR_OUTPUT", std::to_string(nops_kernel));
-        operation_d->SetValue("NR_FINPUT", std::to_string(nops_kernel+1));  // Not all have
-        operation_d->SetValue("NR_SINPUT", std::to_string(nops_kernel+2));  // Not all have
+        operation_d->SetIntValue("NR_OUTPUT", nops_kernel);
+        operation_d->SetIntValue("NR_FINPUT", nops_kernel+1);  // Not all have
+        operation_d->SetIntValue("NR_SINPUT", nops_kernel+2);  // Not all have
 
         //
         // Fill out the instruction operands globally such that they
@@ -294,9 +294,9 @@ string specialize(bh_kernel_t &kernel, bh_intp const optimized) {
  *        If a kernel consists of nothing but system opcodes
  *        then no symbol will be created.
  */
-bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
-
-    std::string symbol_opcode, 
+bool symbolize(bh_kernel_t &kernel, bh_intp const optimized)
+{
+    stringstream symbol_opcode, 
                 symbol_lmask,
                 symbol_tsig,
                 symbol_ndim;
@@ -336,16 +336,16 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
                 break;
         }
 
-        symbol_opcode  += std::string(bh_opcode_to_cstr_short(instr->opcode));
-        symbol_tsig    += std::string(bh_typesig_to_shorthand(tsig));
-        symbol_lmask   += std::string(bh_layoutmask_to_shorthand(lmask));
+        symbol_opcode  << bh_opcode_to_cstr_short(instr->opcode);
+        symbol_tsig    << bh_typesig_to_shorthand(tsig);
+        symbol_lmask   << bh_layoutmask_to_shorthand(lmask);
 
         if (optimized && (ndim <= 3)) {        // Optimized
-            symbol_ndim += std::to_string(ndim);
+            symbol_ndim << ndim;
         } else {
-            symbol_ndim += std::string("N");
+            symbol_ndim << "N";
         }
-        symbol_ndim += "D";
+        symbol_ndim << "D";
 
         kernel.tsig[i]  = tsig;
         kernel.lmask[i] = lmask;
@@ -357,10 +357,10 @@ bool symbolize(bh_kernel_t &kernel, bh_intp const optimized) {
     //
     if (kernel.ninstr_nonsys>0) {
         kernel.symbol = "BH_" + \
-                        symbol_opcode  + "_" +\
-                        symbol_tsig    + "_" +\
-                        symbol_lmask   + "_" +\
-                        symbol_ndim;    
+                        symbol_opcode.str()  + "_" +\
+                        symbol_tsig.str()    + "_" +\
+                        symbol_lmask.str()   + "_" +\
+                        symbol_ndim.str();    
     }
     return true;
 }

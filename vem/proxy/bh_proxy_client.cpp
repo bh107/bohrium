@@ -16,8 +16,8 @@ int main(int argc, char * argv[])
 	bool running = true;
 
 	char* address = NULL;
-	int port = NULL;
-    
+	int port = 0;
+
 	if (argc == 5 &&                          \
         (strncmp(argv[1], "-a\0", 3) == 0) && \
         (strncmp(argv[3], "-p\0", 3) == 0)) {
@@ -36,7 +36,8 @@ int main(int argc, char * argv[])
 
 	// first initialize the data structure
 	// then initialize the binding to the port
-	if (Client_Init(port, 0) == BH_SRVR_SUCCESS && Client_Start(address) == BH_SRVR_SUCCESS) {
+	if (Client_Init(port, 0) == BH_SRVR_SUCCESS && \
+        Client_Start(address) == BH_SRVR_SUCCESS) {
 
 		fd_set read_fds;
 		// while the Client is running

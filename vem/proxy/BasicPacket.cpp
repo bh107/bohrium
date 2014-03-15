@@ -13,6 +13,7 @@
 
 #include "BasicPacket.h"
 #include "Server_Error.h"
+#include "timing.h"
 
 //function definitions
 
@@ -179,10 +180,11 @@ bh_server_error ReceiveArrayPacket(int filedesc, bh_packet * packet, long dataBu
 // basic send and receive functions
 
 bh_server_error sendall(size_t msgsize, void * buffer, int file_descriptor) {
-
     //
     if(msgsize == 0 || buffer == NULL)
         return BH_SRVR_SUCCESS;
+
+    timing_sleep();
 
     size_t sendSize = msgsize;
     int sendlen;
@@ -254,6 +256,9 @@ bh_server_error receiveall(size_t msgsize, void * buffer, int file_descriptor) {
             printf("Receive error in receiveall\n");
         }
     }
+
+    timing_sleep();
+
     //after the header is sent we should handle any preprocessing and then send the data
     return BH_SRVR_SUCCESS;
 }

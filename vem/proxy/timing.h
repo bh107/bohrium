@@ -18,18 +18,20 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define BH_TIMING
-#include <bh_timing.hpp>
-#undef BH_TIMING
+#ifndef __BH_VEM_PROXY_TIMING_H
+#define __BH_VEM_PROXY_TIMING_H
 
-std::ostream& operator<< (std::ostream& os, bh::timing2 const& t)
-{
-    os << t.start << " " << t.end << std::endl;
-    return os;
-}
+#include <bh.h>
 
-std::ostream& operator<< (std::ostream& os, bh::timing4 const& t)
-{
-    os << t.queued << " " << t.submit << " " << t.start << " " << t.end << std::endl;
-    return os;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+DLLEXPORT void timing_sleep(void);
+
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif

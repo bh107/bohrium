@@ -18,18 +18,35 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define BH_TIMING
-#include <bh_timing.hpp>
-#undef BH_TIMING
+#include <cassert>
+#include <cstring>
+#include <iostream>
+#include <bh.h>
+#include "timing.h"
+#include <set>
 
-std::ostream& operator<< (std::ostream& os, bh::timing2 const& t)
+static int bh_sleep = -1;
+
+//Sleep a period based on BH_VEM_PROXY_SLEEP (in ms)
+void timing_sleep(void)
 {
-    os << t.start << " " << t.end << std::endl;
-    return os;
+    if(bh_sleep == -1)
+    {
+        const char *str = getenv("BH_VEM_PROXY_SLEEP");
+        if(str == NULL)
+            bh_sleep = 0;
+        else
+            bh_sleep = atoi(str);
+        printf("sleep enabled: %dms\n", bh_sleep);
+    }
+    if(bh_sleep == 0)
+        return;
+
+    struct timespec tim, tim2;
+    tim.tv_sec = bh_sleep/1000;
+    tim.tv_nsec = bh_sleep%1000 * 1000000;
+
+    if(nanosleep(&tim , &tim2) < 0 )
+        fprintf(stderr,"Nano sleep system call failed \n");
 }
 
-std::ostream& operator<< (std::ostream& os, bh::timing4 const& t)
-{
-    os << t.queued << " " << t.submit << " " << t.start << " " << t.end << std::endl;
-    return os;
-}

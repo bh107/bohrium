@@ -10,7 +10,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include "dirent.h"
 #include <dlfcn.h>
 #include <unistd.h>
@@ -47,15 +47,15 @@ typedef void (*func)(bh_kernel_arg_t args[]);
 
 //
 //  Retrieve a function pointer for the symbol (SYMBOL -> func)
-typedef std::unordered_map<std::string, func> func_storage;
+typedef std::map<std::string, func> func_storage;
 
 //
 //  Retrieve the library handle for a library (LIBRARY -> handle)
-typedef std::unordered_map<std::string, void*> handle_storage;
+typedef std::map<std::string, void*> handle_storage;
 
 //
 //  In which library is the symbol stored (SYMBOL -> LIBRARY)
-typedef std::unordered_map<std::string, std::string> symbol_library_map;
+typedef std::map<std::string, std::string> symbol_library_map;
 
 /**
  * compile() forks and executes a system process, the process along with
@@ -144,11 +144,11 @@ public:
                 if (0==filename.compare(fn_len-4, 4, ".idx")) {
                     // Library
                     library.assign(filename, 0, fn_len-4);
-                   
-                    // Fill path to index filename 
+
+                    // Fill path to index filename
                     std::string index_fn = object_dir + "/" + filename;
 
-                    std::ifstream symbol_file(index_fn);
+                    std::ifstream symbol_file(index_fn.c_str());
                     for(std::string symbol; getline(symbol_file, symbol) && res;) {
                         if (0==libraries.count(symbol)) {
                             libraries.insert(
@@ -181,7 +181,7 @@ public:
                 std::string library;                    // BH_ADD_fff_CCC_3d_yAycwd
 
                 if ((0==filename.compare(0,3, "BH_")) && \
-                    (0==filename.compare(fn_len-3, 3, ".so"))) { 
+                    (0==filename.compare(fn_len-3, 3, ".so"))) {
                     symbol.assign(filename, 0, fn_len-10);  // Remove "_xxxxxx.so"
                     library.assign(filename, 0, fn_len-3);  // Remove ".so"
 
@@ -201,7 +201,7 @@ public:
         //
         // This is the part that actually loads them...
         // This could be postponed...
-        std::unordered_map<std::string, std::string>::iterator it;    // Iterator
+        std::map<std::string, std::string>::iterator it;    // Iterator
         for(it=libraries.begin(); (it != libraries.end()) && res; ++it) {
 
             res = load(it->first, it->second);
