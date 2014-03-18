@@ -17,7 +17,6 @@ gen:
 clean:
 	rm -rf bin/
 
-
 #
 # Examples
 #
