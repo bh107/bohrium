@@ -30,11 +30,6 @@ def calcB(B_x0, alpha=0.0,
     z = np.linspace(z_min,z_max,num=n).astype(B_x0.dtype,copy=False)
     u = np.arange(n,dtype=B_x0.dtype)
 
-    
-    Bx = np.empty((n,n,n),dtype=B_x0.dtype)
-    By = np.empty((n,n,n),dtype=B_x0.dtype)
-    Bz = np.empty((n,n,n),dtype=B_x0.dtype)
-    
     #Making C
     C = np.empty_like(B_x0)
     l = np.empty_like(B_x0)
@@ -48,7 +43,13 @@ def calcB(B_x0, alpha=0.0,
     l[0,0] = 1.0
     
     r = np.sqrt(l - alpha**2)
-    print "Calculating"
+
+
+    # Calculating B
+    Bx = np.empty((n,n,n),dtype=B_x0.dtype)
+    By = np.empty((n,n,n),dtype=B_x0.dtype)
+    Bz = np.empty((n,n,n),dtype=B_x0.dtype)
+    
     for i in range(n):
         print i
         for j in range(n):
@@ -58,9 +59,9 @@ def calcB(B_x0, alpha=0.0,
             temp_y = C / l * (alpha * np.pi / z_max * sincos - r * np.pi / y_max * cossin)
             temp_z = C / l * (alpha * np.pi / y_max * cossin + r * np.pi / z_max * sincos)
             
-            Bx[:,i,j] = np.sum(np.sum(temp_x * np.exp(-r * x[:,None,None]),1),1)
-            By[:,i,j] = np.sum(np.sum(temp_y * np.exp(-r * x[:,None,None]),1),1)
-            Bz[:,i,j] = np.sum(np.sum(temp_z * np.exp(-r * x[:,None,None]),1),1)
+            Bx[:,i,j] = np.sum(temp_x * np.exp(-r * x[:,None,None]),(1,2))
+            By[:,i,j] = np.sum(temp_y * np.exp(-r * x[:,None,None]),(1,2))
+            Bz[:,i,j] = np.sum(temp_z * np.exp(-r * x[:,None,None]),(1,2))
     return (Bx, By, Bz)
 
 if __name__ == '__main__':
