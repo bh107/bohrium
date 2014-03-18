@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
 #include <complex>
-#include <bh.hpp>
+#include <bh/bh.hpp>
 
 using namespace bh;
 
@@ -63,6 +63,18 @@ void compute()
     complex_constant<float>();
     */
 
+    float* diller = (float*)malloc(100*sizeof(float));
+    for(int i=0; i<100;++i) {
+        diller[i] = i;
+    }
+
+    multi_array<float> hullet;
+    hullet = empty<float>(100);
+    hullet(diller);
+
+    std::cout << "Hvad er der i hullet? " << hullet << "." << std::endl;
+
+    /*1
     // Scan
     multi_array<float> a;
     a = ones<float>(20);
@@ -72,7 +84,6 @@ void compute()
     std::cout << "prefix-sum(a): "  << scan(a, SUM, 0) << std::endl;
     std::cout << "prefix-prod(a): " << scan(a, PRODUCT, 0) << std::endl;
 
-    /*
     multi_array<float> a;
     multi_array<float> b;
 
