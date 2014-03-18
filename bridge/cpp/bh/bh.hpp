@@ -170,6 +170,8 @@ public:
     multi_array& operator()(const T& n);            // Update
     multi_array& operator()(multi_array<T>& rhs);
 
+    multi_array& operator()(const void* data);      // Update / copy from a void pointer
+
     multi_array& operator=(const T& rhs);           // Initialization / assignment.
     multi_array& operator=(multi_array<T>& rhs);    // Initialization / assignment.
 
@@ -214,14 +216,15 @@ public:
     multi_array& operator--(int);
 
     void link();                            // Bohrium Runtime Specifics
-    void link(bh_base *base_ptr);     // Bohrium Runtime Specifics
+    void link(bh_base *base_ptr);           // Bohrium Runtime Specifics
     bh_base* unlink();
 
     bh_base* getBase() const;
     bool getTemp() const;
     void setTemp(bool temp);
     bool linked() const;
-    bool initialized() const;
+    bool initialized() const;               // Determine if the array is initialized (has a bh_base)
+    bool allocated() const;                 // Determine if the array is intitialized and data for it is allocated
     void sync();
 
 protected:
