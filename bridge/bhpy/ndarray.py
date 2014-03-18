@@ -87,7 +87,6 @@ def del_bhc(ary):
     exec "bhc.bh_multi_array_%s_destroy(ary.bhc_ary)"%dtype
     ary.bhc_ary = None
 
-
 #Return the Bohrium-C data pointer (represented by a Python integer)
 #Primarily used by _bhmodule.c
 def get_bhc_data_pointer(ary):

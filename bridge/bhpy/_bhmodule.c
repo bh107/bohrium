@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
 static PyTypeObject BhArrayType;
 PyObject *_util = NULL; //The _util Python module
+PyObject *ndarray = NULL; //The ndarray Python module
 
 typedef struct
 {
@@ -84,10 +85,6 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, ""))
         return NULL;
 
-    PyObject *ndarray = PyImport_ImportModule("ndarray");
-    if(ndarray == NULL)
-        return NULL;
-
     PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "O", self);
     if(data == NULL)
         return NULL;
@@ -120,10 +117,6 @@ BhArray_data_fill(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_TypeError, "must be a NumPy array");
         return NULL;
     }
-    PyObject *ndarray = PyImport_ImportModule("ndarray");
-    if(ndarray == NULL)
-        return NULL;
-
     PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "O", self);
     if(data == NULL)
         return NULL;
@@ -236,7 +229,11 @@ init_bh(void)
 
     PyModule_AddObject(m, "ndarray", (PyObject *)&BhArrayType);
 
-    _util = PyImport_ImportModule("_util");
+    _util = PyImport_ImportModule("bohrium._util");
     if(_util == NULL)
+        return;
+
+    ndarray = PyImport_ImportModule("bohrium.ndarray");
+    if(ndarray == NULL)
         return;
 }

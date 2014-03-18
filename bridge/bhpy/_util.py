@@ -22,9 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 import atexit
 import numpy as np
-import json
-import os
-from os.path import join
 import _bh
 import _info
 import bhc

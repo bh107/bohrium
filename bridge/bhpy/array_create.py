@@ -7,6 +7,7 @@ import _bh
 import _info
 import _util
 import ndarray
+import numpy
 
 
 def empty(shape, dtype=float):
@@ -47,6 +48,34 @@ def empty(shape, dtype=float):
     ret = _bh.ndarray(shape, dtype=dtype)
     ndarray.new_bhc_base(ret)#Trigger Bohrium creations
     return ret
+
+def array(object, dtype=None, ndmin=0, bohrium=True):
+    """
+    Create an Bohrium array. Will copy and use C-contiguous order always
+
+    Parameters
+    ----------
+    object : array_like
+        An array, any object exposing the array interface, an object
+        whose __array__ method returns an array, or any (nested) sequence.
+    dtype : data-type, optional
+        The desired data-type for the array. If not given, then the type
+        will be determined as the minimum type required to hold the objects
+        in the sequence. This argument can only be used to 'upcast' the array.
+        For downcasting, use the .astype(t) method.s
+    ndmin : int, optional
+        Specifies the minimum number of dimensions that the resulting array should have.
+        Ones will be pre-pended to the shape as needed to meet this requirement.
+
+    Returns
+    -------
+    out : ndarray
+        An array object satisfying the specified requirements.
+    """
+    a = numpy.array(object, dtype=dtype, ndmin=ndmin)
+    ret = empty(a.shape, dtype=dtype)
+    ret._data_fill(a)
+    return a
 
 
 ###############################################################################
