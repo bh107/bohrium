@@ -17,7 +17,7 @@ def calcB(B_x0, alpha=0.0,
           z_min = 0.0, z_max = 1.0):
     
     n = len(B_x0)
-    
+    start = time()
     x = np.linspace(x_min,x_max,num=n,endpoint=False).astype(B_x0.dtype,copy=False)
     y = np.linspace(y_min,y_max,num=n).astype(B_x0.dtype,copy=False)
     z = np.linspace(z_min,z_max,num=n).astype(B_x0.dtype,copy=False)
@@ -38,22 +38,24 @@ def calcB(B_x0, alpha=0.0,
     By = np.empty((n,n,n),dtype=B_x0.dtype)
     Bz = np.empty((n,n,n),dtype=B_x0.dtype)
     
-    exr = np.exp(-r * x[:,None,None])
-    sinz = np.sin(np.pi/z_max * u * z[:,None])
-    cosz = np.cos(np.pi/z_max * u * z[:,None])
+    exr = np.exp(-r * x[:,None,None])                                                            # n³
+    sinuz = np.sin(np.pi/z_max * u * z[:,None])                                                  # n²
+    cosuz = np.cos(np.pi/z_max * u * z[:,None])                                                  # n²
+    sinuy = np.sin(np.pi/y_max * u * y[:,None])                                                  # n²
+    cosuy = np.cos(np.pi/y_max * u * y[:,None])                                                  # n²
+    print "Setup calc:", time() -start
     for i in xrange(n):
-        sinyi = np.sin(np.pi * y[i] / y_max * u)
-        cosyi = np.cos(np.pi * y[i] / y_max * u)
         for j in xrange(n):
-            sincos = sinyi[:,None] * (u * cosz[j])
-            cossin = (u * cosyi)[:,None] * sinz[j]
-            temp_x = C * sinyi[:,None] * sinz[j]
-            Cl = C/l
-            temp_y = Cl * (alpha * np.pi / z_max * sincos - np.pi / y_max * r * cossin)
-            temp_z = Cl * (alpha * np.pi / y_max * cossin + np.pi / z_max * r * sincos)
+            sincos = sinuy[i][:,None] * (u * cosuz[j])                                          # n²
+            cossin = (u * cosuy[i])[:,None] * sinuz[j]                                          # n²
+            temp_x = C * sinuy[i][:,None] * sinuz[j]                                            # n²
+            Cl = C/l                                                                            # n²
+            temp_y = Cl * (alpha * np.pi / z_max * sincos - np.pi / y_max * r * cossin)         # n²
+            temp_z = Cl * (alpha * np.pi / y_max * cossin + np.pi / z_max * r * sincos)         # n²
             Bx[:,i,j] = np.sum(np.sum(temp_x * exr,2),1)
             By[:,i,j] = np.sum(np.sum(temp_y * exr,2),1)
             Bz[:,i,j] = np.sum(np.sum(temp_z * exr,2),1)
+        print "Outer loop:", time()-start
     return (Bx, By, Bz)
 
 if __name__ == '__main__':
