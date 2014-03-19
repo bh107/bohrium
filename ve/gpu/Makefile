@@ -30,6 +30,6 @@ clean:
 
 install: all
 	cp $(LIB) $(INSTALLDIR)
-	mkdir $(INSTALLDIR)/gpu/
+	mkdir -p $(INSTALLDIR)/gpu/
 	cp -r ocl_source $(INSTALLDIR)/gpu/
 	cp -r include $(INSTALLDIR)/gpu/
