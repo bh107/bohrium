@@ -1275,11 +1275,9 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
         if num == 1:
             return array([dtype(start)])
         step = (stop-start)/float((num-1))
-        y = range(num,dtype=dtype) * step + start
-        y[-1] = stop
     else:
         step = (stop-start)/float(num)
-        y = range(num,dtype=dtype) * step + start
+    y = range(num,dtype=dtype) * step + start
     if retstep:
         return y, step
     else:
