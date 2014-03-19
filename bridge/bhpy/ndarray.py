@@ -25,9 +25,13 @@ import bhc
 
 # This module consist of bohrium.ndarray methods
 
+#Returns True if 'ary' is a Bohrium array
+def check(ary):
+    return hasattr(ary, "bhc_ary")
+
 #Creates a new Bohrium-C base array.
 def new_bhc_base(ary):
-    if not hasattr(ary, "bhc_ary"):
+    if not check(ary):
         raise TypeError("must be a Bohrium array")
 
     if ary.base is not None:
@@ -61,7 +65,7 @@ def get_base(ary):
 
 #Returns the Bohrium-C part of the bohrium.ndarray
 def get_bhc(ary):
-    if not hasattr(ary, "bhc_ary"):
+    if not check(ary):
         raise TypeError("must be a Bohrium array")
 
     #Find the base array and make sure it has a Bohrium-C base array
@@ -77,7 +81,7 @@ def get_bhc(ary):
 
 #Delete the Bohrium-C part of the bohrium.ndarray
 def del_bhc(ary):
-    if not hasattr(ary, "bhc_ary"):
+    if not check(ary):
         raise TypeError("must be a Bohrium array")
 
     ary = get_base(ary)
@@ -90,7 +94,7 @@ def del_bhc(ary):
 #Return the Bohrium-C data pointer (represented by a Python integer)
 #When allocate is True, it allocates memory instead of returning None
 def get_bhc_data_pointer(ary, allocate=False):
-    if not hasattr(ary, "bhc_ary"):
+    if not check(ary):
         raise TypeError("must be a Bohrium array")
     ary = get_base(ary)
     dtype = _util.dtype_name(ary)
@@ -107,6 +111,6 @@ def get_bhc_data_pointer(ary, allocate=False):
     return int(data)
 
 def data_np2bhc(ary):
-    if not hasattr(ary, "bhc_ary"):
+    if not check(ary):
         raise TypeError("must be a Bohrium array")
     raise NotImplementedError("TODO: data_np2bhc")

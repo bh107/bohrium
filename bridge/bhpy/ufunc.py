@@ -58,7 +58,8 @@ class ufunc:
         #Pop the ouput from the 'args' list
         out = None
         if len(args) == self.info['nop']:#output given
-            out = args.pop()
+            out = args[-1]
+            args = args[:-1]
 
         #Broadcast the inputs. In order to avoid hanging views we do
         #the broadcast before any array creation

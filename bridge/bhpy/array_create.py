@@ -75,7 +75,7 @@ def array(object, dtype=None, ndmin=0, bohrium=True):
     a = numpy.array(object, dtype=dtype, ndmin=ndmin)
     ret = empty(a.shape, dtype=dtype)
     ret._data_fill(a)
-    return a
+    return ret
 
 
 ###############################################################################
