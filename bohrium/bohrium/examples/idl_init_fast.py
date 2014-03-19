@@ -25,11 +25,11 @@ def calcB(B_x0, alpha=0.0,
 
     # Making C
     C = np.empty_like(B_x0)
-    sinu = np.sin((np.pi/z_max) * u[:,None] * z)
+    sinuy = np.sin(np.pi/y_max * u[:,None] * y)
+    sinuz = np.sin(np.pi/z_max * u[:,None] * z)
     for i in xrange(n):            
-        C[i,:] =  4.0 / (n-1.0)**2 * np.sum(np.sum(B_x0 * 
-                                                   np.sin(np.pi/y_max*u[i] * y[:,None]) * 
-                                                   sinu[:,None],2),1)
+        C[i,:] =  4.0 / (n-1.0)**2 * np.sum(np.sum(B_x0 * sinuy[i][:,None] * sinuz[:,None],2),1)
+    l = np.pi**2 * ((u**2 / y_max)[:,None] + (u**2 / z_max))
     l[0,0] = 1.0
     r = np.sqrt(l - alpha**2)
 
@@ -41,10 +41,10 @@ def calcB(B_x0, alpha=0.0,
     exr = np.exp(-r * x[:,None,None])
     sinz = np.sin(np.pi/z_max * u * z[:,None])
     cosz = np.cos(np.pi/z_max * u * z[:,None])
-    for i in range(n):
+    for i in xrange(n):
         sinyi = np.sin(np.pi * y[i] / y_max * u)
         cosyi = np.cos(np.pi * y[i] / y_max * u)
-        for j in range(n):
+        for j in xrange(n):
             sincos = sinyi[:,None] * (u * cosz[j])
             cossin = (u * cosyi)[:,None] * sinz[j]
             temp_x = C * sinyi[:,None] * sinz[j]

@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from time import time
+from sys import argv
 import bohrium as np
 import bohriumbridge
 
@@ -18,7 +19,7 @@ def calcB(B_x0, alpha=0.0,
           z_min = 0.0, z_max = 1.0):
     
     n = len(B_x0)
-    
+    start = time()
     x = np.linspace(x_min,x_max,num=n,endpoint=False,dtype=B_x0.dtype)
     y = np.linspace(y_min,y_max,num=n,dtype=B_x0.dtype)
     z = np.linspace(z_min,z_max,num=n,dtype=B_x0.dtype)
@@ -26,13 +27,14 @@ def calcB(B_x0, alpha=0.0,
 
     # Making C
     C = np.empty_like(B_x0)
-    sinu = np.sin((np.pi/z_max) * u[:,None] * z)
+    sinuy = np.sin(np.pi/y_max * u[:,None] * y)
+    sinuz = np.sin(np.pi/z_max * u[:,None] * z)
     for i in xrange(n):            
-        C1[i,:] =  4.0 / (n-1.0)**2 * np.sum(np.sum(B_x0 * 
-                                                    np.sin(np.pi/y_max*u[i] * y[:,None]) * 
-                                                    sinu[:,None],2),1)
-    del sinu
-    l = np.pi**2 * ((u[:,None]**2 / y_max) + (u**2 / z_max))
+        C[i,:] =  4.0 / (n-1.0)**2 * np.sum(np.sum(B_x0 * sinuy[i][:,None] * sinuz[:,None],2),1)
+    del sinuy
+    del sinuz
+    bohriumbridge.flush()
+    l = np.pi**2 * ((u**2 / y_max)[:,None] + (u**2 / z_max))
     l[0,0] = 1.0
     r = np.sqrt(l - alpha**2)
 
@@ -42,16 +44,18 @@ def calcB(B_x0, alpha=0.0,
     Bz = np.empty((n,n,n),dtype=B_x0.dtype,bohrium=False)
     
     exr = np.exp(-r * x[:,None,None])
-    sinz = np.sin(np.pi/z_max * u * z[:,None])
-    cosz = np.cos(np.pi/z_max * u * z[:,None])
+    sinuz = np.sin(np.pi/z_max * u * z[:,None])
+    cosuz = np.cos(np.pi/z_max * u * z[:,None])
+    sinuy = np.sin(np.pi/y_max * u * y[:,None])
+    cosuy = np.cos(np.pi/y_max * u * y[:,None])
     bohriumbridge.flush()
-    for i in range(n):
-        sinyi = np.sin(np.pi * y[i] / y_max * u)
-        cosyi = np.cos(np.pi * y[i] / y_max * u)
-        for j in range(n):
-            sincos = sinyi[:,None] * (u * cosz[j])
-            cossin = (u * cosyi)[:,None] * sinz[j]
-            temp_x = C * sinyi[:,None] * sinz[j]
+    print "Setup calc:", time() -start
+    for i in xrange(n):
+        start = time()
+        for j in xrange(n):
+            sincos = sinuy[i][:,None] * (u * cosuz[j])
+            cossin = (u * cosuy[i])[:,None] * sinuz[j]
+            temp_x = C * sinuy[i][:,None] * sinuz[j]
             Cl = C/l
             temp_y = Cl * (alpha * np.pi / z_max * sincos - np.pi / y_max * r * cossin)
             temp_z = Cl * (alpha * np.pi / y_max * cossin + np.pi / z_max * r * sincos)
@@ -70,14 +74,17 @@ def calcB(B_x0, alpha=0.0,
             del temp_z
             bzij.bohrium=False
             Bz[:,i,j] = bzij
+        print "Outer loop:", time()-start
     return (Bx, By, Bz)
 
 if __name__ == '__main__':
     fname = 'large.dat'
     dtype = np.float64
     #B_x0 = np.loadtxt(fname,dtype=dtype)
-    #B_x0.bohrium = True
     n = 64
-    B_x0 = (np.random.random((n,n)) -0.5) * 20.0
+    B_x0 = (np.random.random((n,n),bohrium=False) -0.5) * 20.0
+    B_x0.bohrium = True
+    start = time()
     B_x0 = window(B_x0)
+    print "Windowing: ", time() - start
     (Bx, By, Bz) = calcB(B_x0)
