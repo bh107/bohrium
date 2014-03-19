@@ -258,6 +258,8 @@ void bh_flag_constant(bh_view* o)
 
 inline int gcd(int a, int b)
 {
+    if (b==0)
+        return a;
     int c = a % b;
     while(c != 0)
     {
