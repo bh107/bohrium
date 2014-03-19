@@ -117,7 +117,8 @@ BhArray_data_fill(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_TypeError, "must be a NumPy array");
         return NULL;
     }
-    PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "O", self);
+    //Calling get_bhc_data_pointer(self, allocate=True)
+    PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "Oi", self,1);
     if(data == NULL)
         return NULL;
     if(!PyInt_Check(data))
@@ -129,8 +130,9 @@ BhArray_data_fill(PyObject *self, PyObject *args)
     void *d = PyLong_AsVoidPtr(data);
     if(d == NULL)
     {
-        //We need to allocate data
-        assert(d != NULL);
+        PyErr_SetString(PyExc_TypeError, "get_bhc_data_pointer(ary, allocate=True) "
+                                         "shouldn't return a NULL pointer");
+        return NULL;
     }
 
     memcpy(d, PyArray_DATA((PyArrayObject*)np_ary), PyArray_NBYTES((PyArrayObject*)np_ary));
