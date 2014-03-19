@@ -117,6 +117,13 @@ BhArray_data_fill(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_TypeError, "must be a NumPy array");
         return NULL;
     }
+
+    if(!PyArray_ISCARRAY_RO((PyArrayObject*)np_ary))
+    {
+        PyErr_SetString(PyExc_TypeError, "must be a C-style contiguous array");
+        return NULL;
+    }
+
     //Calling get_bhc_data_pointer(self, allocate=True)
     PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "Oi", self,1);
     if(data == NULL)
