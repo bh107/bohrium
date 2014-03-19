@@ -73,7 +73,7 @@ def array(object, dtype=None, ndmin=0, bohrium=True):
         An array object satisfying the specified requirements.
     """
     a = numpy.array(object, dtype=dtype, ndmin=ndmin)
-    ret = empty(a.shape, dtype=dtype)
+    ret = empty(a.shape, dtype=a.dtype)
     ret._data_fill(a)
     return ret
 
