@@ -31,11 +31,11 @@ typedef struct bh_slice_range* bh_slice_range_p;
 #ifndef __BH_ARRAY_H
 struct bh_base;
 struct bh_view;
-typedef struct bh_base* bh_base_p; 
-typedef struct bh_view* bh_view_p; 
+typedef struct bh_base* bh_base_p;
+typedef struct bh_view* bh_view_p;
 #else
-typedef bh_base* bh_base_p; 
-typedef bh_view* bh_view_p; 
+typedef bh_base* bh_base_p;
+typedef bh_view* bh_view_p;
 #endif
 
 %set $ops = $data[0]
@@ -68,6 +68,10 @@ DLLEXPORT void bh_multi_array_${bh_ctype}_destroy_base(bh_base_p base);
 
 // Gets the data pointer from a base
 DLLEXPORT ${bh_atype}* bh_multi_array_${bh_ctype}_get_base_data(bh_base_p base);
+
+// Gets the data pointer from a base and force memory allocation
+// Return NULL when out of memory
+DLLEXPORT ${bh_atype}* bh_multi_array_${bh_ctype}_get_base_data_and_force_alloc(bh_base_p base);
 
 // Gets the number of elements in a base
 DLLEXPORT int64_t bh_multi_array_${bh_ctype}_get_base_nelem(bh_base_p base);
@@ -125,6 +129,9 @@ DLLEXPORT void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctyp
 // Update with an array
 DLLEXPORT void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, bh_multi_array_${bh_ctype}_p other);
 
+// Update with an data
+DLLEXPORT void bh_multi_array_${bh_ctype}_assign_data(bh_multi_array_${bh_ctype}_p self, const void* data);
+
 // Flatten view
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_flatten(bh_multi_array_${bh_ctype}_p self);
 
@@ -140,7 +147,7 @@ DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_all(bh_multi_array_${bh_ctype}_
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_any(bh_multi_array_${bh_ctype}_p self);
 %else
 %for $opname, $enum in $reduce_ops
-// Partial ${opname} reduction 
+// Partial ${opname} reduction
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis);
 
 %end for

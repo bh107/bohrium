@@ -11,6 +11,7 @@ directiveStartToken = %
 #include <bh_c_data_types.h>
 #include <bh_c_interface.h>
 #include "bh_c_type_definitions.hpp"
+#include <bh.h>
 
 using namespace bh;
 
@@ -46,6 +47,16 @@ ${bh_atype}* bh_multi_array_${bh_ctype}_get_base_data(bh_base_p base)
     return (${bh_atype}*)base->data;
 }
 
+// Gets the data pointer from a base and force memory allocation
+// Return NULL when out of memory
+${bh_atype}* bh_multi_array_${bh_ctype}_get_base_data_and_force_alloc(bh_base_p base)
+{
+    if(bh_data_malloc(base) != 0)
+        return NULL;
+
+    return (${bh_atype}*)base->data;
+}
+
 // Gets the number of elements in a base
 int64_t bh_multi_array_${bh_ctype}_get_base_nelem(bh_base_p base)
 {
@@ -57,7 +68,6 @@ void bh_multi_array_${bh_ctype}_set_base_data(bh_base_p base, ${bh_atype}* data)
 {
     base->data = data;
 }
-
 
 // Get the base from an existing array
 bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
@@ -214,11 +224,15 @@ void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, 
     (*((multi_array<${ctype}>*)self))(*((multi_array<${ctype}>*)other));
 }
 
+// Update with an data
+void bh_multi_array_${bh_ctype}_assign_data(bh_multi_array_${bh_ctype}_p self, const void* data) {
+    (*((multi_array<${ctype}>*)self))((${ctype}*)data);
+}
+
 // Flatten view
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_flatten(bh_multi_array_${bh_ctype}_p self) {
     return (bh_multi_array_${bh_ctype}_p)&flatten((*((multi_array<${ctype}>*)self)));
 }
-
 
 // Transpose view
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_transpose(bh_multi_array_${bh_ctype}_p self) {
