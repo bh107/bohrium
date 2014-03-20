@@ -56,9 +56,3 @@ def type_sig(op_name, inputs):
             return (np.dtype(sig[0]),np.dtype(sig[1]))
     raise TypeError("Cannot detement the correct signature (%s:%s)"%(op_name,dtype))
 
-bhc_arys_to_destroy = []
-@atexit.register
-def goodbye():
-    for a in bhc_arys_to_destroy:
-        exec "bhc.bh_multi_array_%s_destroy(a)"%dtype_from_bhc(a)
-

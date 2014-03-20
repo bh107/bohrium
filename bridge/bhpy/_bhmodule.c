@@ -27,7 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
 static PyTypeObject BhArrayType;
-PyObject *_util = NULL; //The _util Python module
 PyObject *ndarray = NULL; //The ndarray Python module
 
 typedef struct
@@ -47,13 +46,8 @@ BhArray_dealloc(BhArray* self)
         Py_DECREF(Py_None);
         goto finish;
     }
-    PyObject *arys_to_destory = PyObject_GetAttrString(_util,"bhc_arys_to_destroy");
-    if(arys_to_destory == NULL)
-    {
-        PyErr_Print();
-        goto finish;
-    }
-    if(PyList_Append(arys_to_destory, self->bhc_ary) != 0)
+    PyObject *r = PyObject_CallMethod(ndarray, "del_bhc_obj", "O", self->bhc_ary);
+    if(r == NULL)
     {
         PyErr_Print();
         goto finish;
@@ -237,10 +231,6 @@ init_bh(void)
         return;
 
     PyModule_AddObject(m, "ndarray", (PyObject *)&BhArrayType);
-
-    _util = PyImport_ImportModule("bohrium._util");
-    if(_util == NULL)
-        return;
 
     ndarray = PyImport_ImportModule("bohrium.ndarray");
     if(ndarray == NULL)

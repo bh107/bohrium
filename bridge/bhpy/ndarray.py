@@ -79,6 +79,10 @@ def get_bhc(ary):
     else:
         raise NotImplementedError("TODO: handle views")
 
+#Delete the Bohrium-C object
+def del_bhc_obj(bhc_obj):
+    exec "bhc.bh_multi_array_%s_destroy(bhc_obj)"%_util.dtype_from_bhc(bhc_obj)
+
 #Delete the Bohrium-C part of the bohrium.ndarray
 def del_bhc(ary):
     if not check(ary):
@@ -87,8 +91,7 @@ def del_bhc(ary):
     ary = get_base(ary)
     if ary.bhc_ary is None:
         return
-    dtype = _util.dtype_name(ary)
-    exec "bhc.bh_multi_array_%s_destroy(ary.bhc_ary)"%dtype
+    del_bhc_obj(ary.bhc_ary)
     ary.bhc_ary = None
 
 #Return the Bohrium-C data pointer (represented by a Python integer)
