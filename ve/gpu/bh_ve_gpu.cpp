@@ -56,29 +56,17 @@ bh_error bh_ve_gpu_init(const char *name)
     return BH_SUCCESS;
 }
 
-std::vector<bh_instruction*> inst_list;
-
-static bh_error create_inst_list(bh_instruction* inst)
-{
-    inst_list.push_back(inst);
-    return BH_SUCCESS;
-}
-
 bh_error bh_ve_gpu_execute(bh_ir* bhir)
 {
-    
-    bh_ir_map_instr(bhir, &bhir->dag_list[0], &create_inst_list);
-    
     bh_error ret_val = BH_ERROR;
     try
     { 
-        ret_val =  instructionScheduler->schedule(inst_list);
+        ret_val =  instructionScheduler->schedule(bhir);
     }
     catch (std::exception& e)
     {
         std::cerr << e.what() << std::endl;
     }
-    inst_list.clear();
     return ret_val;
 }
 
