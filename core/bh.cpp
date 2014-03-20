@@ -293,6 +293,8 @@ bool bh_view_disjoint(const bh_view *a, const bh_view *b)
     for (int i = 0; i < a->ndim; ++i)
     {
         stride = gcd(a->stride[i], b->stride[i]);
+        if (stride == 0) // stride is 0 in both views: dimension is virtual
+            continue;
         int as = astart / stride;
         int bs = bstart / stride;
         int ae = as + a->shape[i] * (a->stride[i]/stride);
