@@ -61,8 +61,6 @@ private:
     bh_uint64 createTime;
 #endif
     bool shapeMatch(bh_intp ndim, const bh_index dims[]);
-    bool sameView(const bh_view& a, const bh_view& b);
-    bool disjointView(const bh_view& a, const bh_view& b);
     std::string generateCode();
 public:
     InstructionBatch(bh_instruction* inst, const std::vector<KernelParameter*>& operands);
