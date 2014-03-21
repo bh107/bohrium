@@ -13,10 +13,8 @@ g = 9.80665 # gravitational acceleration
 def droplet(height, width, data_type=np.float32):
     """Generate grid of droplets"""
 
-    x = np.linspace(-1, 1, num=width,
-                    endpoint=True).astype(data_type)
-    y = np.linspace(-1, 1, num=width,
-                    endpoint=True).astype(data_type)
+    x = np.linspace(-1, 1, num=width, endpoint=True, dtype=data_type, bohrium=False)
+    y = np.linspace(-1, 1, num=width, endpoint=True, dtype=data_type, bohrium=False)
 
     (xx, yy) = np.meshgrid(x, y)
 
