@@ -37,6 +37,8 @@ def model(height, width, dtype=np.float32, bohrium=True):
 
     return m
 
+#FLOP count: i*(12*s + 4*s**2 + 14*s**2 + 9*s**2 + 4*s**2 + 9*s**2 + 14*s**2 + 6*s**2 + 19*s**2 + 19*s**2)
+#where s is size and i is iterations
 def step(H, U, V, dt=0.02, dx=1.0, dy=1.0):
     # Reflecting boundary conditions
     H[:,0] = H[:,1]   ; U[:,0] = U[:,1]     ; V[:,0] = -V[:,1]
