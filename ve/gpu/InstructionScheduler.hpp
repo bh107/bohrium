@@ -50,7 +50,7 @@ private:
 public:
     InstructionScheduler(ResourceManager* resourceManager);
     void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);
-    bh_error schedule(std::vector<bh_instruction*> inst_list);
+    bh_error schedule(bh_ir* bhir);
 };
 
 #endif

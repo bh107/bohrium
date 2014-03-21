@@ -172,51 +172,57 @@ void Scalar::printOn(std::ostream& os) const
 
 void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
 {
-    switch(mytype)
+    try {
+        switch(mytype)
+        {
+        case OCL_INT8:
+            kernel.setArg(argIndex, value.c);
+            break;
+        case OCL_INT16:
+            kernel.setArg(argIndex, value.s);
+            break;
+        case OCL_INT32:
+            kernel.setArg(argIndex, value.i);
+            break;
+        case OCL_INT64:
+            kernel.setArg(argIndex, value.l);
+            break;
+        case OCL_UINT8:
+            kernel.setArg(argIndex, value.uc);
+            break;
+        case OCL_UINT16:
+            kernel.setArg(argIndex, value.us);
+            break;
+        case OCL_UINT32:
+            kernel.setArg(argIndex, value.ui);
+            break;
+        case OCL_UINT64:
+            kernel.setArg(argIndex, value.ul);
+            break;
+            // case OCL_FLOAT16:
+            //     kernel.setArg(argIndex, value.h);
+            //     break;
+        case OCL_FLOAT32:
+            kernel.setArg(argIndex, value.f);
+            break;
+        case OCL_FLOAT64:
+            kernel.setArg(argIndex, value.d);
+            break;
+        case OCL_COMPLEX64:
+            kernel.setArg(argIndex, value.fcx);
+            break;
+        case OCL_COMPLEX128:
+            kernel.setArg(argIndex, value.dcx);
+            break;
+        case OCL_R123:
+            kernel.setArg(argIndex, value.r123);
+            break;
+        default:
+            assert(false);
+        }    
+    } catch (cl::Error err)
     {
-    case OCL_INT8:
-        kernel.setArg(argIndex, value.c);
-        break;
-    case OCL_INT16:
-        kernel.setArg(argIndex, value.s);
-        break;
-    case OCL_INT32:
-        kernel.setArg(argIndex, value.i);
-        break;
-    case OCL_INT64:
-        kernel.setArg(argIndex, value.l);
-        break;
-    case OCL_UINT8:
-        kernel.setArg(argIndex, value.uc);
-        break;
-    case OCL_UINT16:
-        kernel.setArg(argIndex, value.us);
-        break;
-    case OCL_UINT32:
-        kernel.setArg(argIndex, value.ui);
-        break;
-    case OCL_UINT64:
-        kernel.setArg(argIndex, value.ul);
-        break;
-    // case OCL_FLOAT16:
-    //     kernel.setArg(argIndex, value.h);
-    //     break;
-    case OCL_FLOAT32:
-        kernel.setArg(argIndex, value.f);
-        break;
-    case OCL_FLOAT64:
-        kernel.setArg(argIndex, value.d);
-        break;
-    case OCL_COMPLEX64:
-        kernel.setArg(argIndex, value.fcx);
-        break;
-    case OCL_COMPLEX128:
-        kernel.setArg(argIndex, value.dcx);
-        break;
-    case OCL_R123:
-        kernel.setArg(argIndex, value.r123);
-        break;
-    default:
-        assert(false);
-    }    
+        std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
+        throw err;
+    }
 }

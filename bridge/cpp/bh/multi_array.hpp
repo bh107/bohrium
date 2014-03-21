@@ -334,6 +334,13 @@ bool multi_array<T>::initialized() const
     return (meta.base != NULL);
 }
 
+template <typename T>
+inline
+bool multi_array<T>::allocated() const
+{
+    return ((meta.base != NULL) && (meta.base->data != NULL));
+}
+
 // Linking - Assign a base to the multi_array.
 template <typename T>
 void multi_array<T>::link()
@@ -480,6 +487,28 @@ multi_array<T>& multi_array<T>::operator()(const T& value) {
                                  "something that does not exist!");
     }
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, value);
+
+    return *this;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::operator()(const void* data) {
+
+    // We know nothing about the shape and size of this array
+    if (!initialized()) {    
+        throw std::runtime_error("Err: You are trying to update "
+                                 "something that does not exist!");
+    }
+
+    size_t nbytes = (this->base->nelem) * bh_type_size(this->base->type);
+
+    // Ensure that we have memory to write to.
+    if (!allocated()) {
+        this->base->data = bh_memory_malloc(nbytes);
+    }
+
+    // Copy the data
+    memcpy(this->base->data, data, nbytes);
 
     return *this;
 }
