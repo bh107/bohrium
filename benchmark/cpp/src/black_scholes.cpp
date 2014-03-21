@@ -3,8 +3,8 @@ This file is part of Bohrium and Copyright (c) 2012 the Bohrium team:
 http://bohrium.bitbucket.org
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -51,6 +51,7 @@ multi_array<T>& cnd(multi_array<T>& x)
     return w * as<T>(!mask) + (1.0-w)* as<T>(mask);
 }
 
+//FLOP count: 2*s+i*(s*8+2*s*26) where s is samples and i is iterations
 template <typename T>
 T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
 {
@@ -84,7 +85,7 @@ int main(int argc, char* argv[])
         cout << usage << endl;
         return 1;
     }
-    
+
     arguments_t args;                   // Parse command-line
     if (!parse_args(argc, argv, args)) {
         cout << "Err: Invalid argument(s)." << endl;
@@ -109,7 +110,7 @@ int main(int argc, char* argv[])
         0.08, 0.3
     );
                                         // Output timing
-    cout << "{elapsed-time: "<< (_bh_timing()-start)/1000000.0 <<"";          
+    cout << "{elapsed-time: "<< (_bh_timing()-start)/1000000.0 <<"";
     if (args.verbose) {                 // and values.
         cout << ", \"output\": [";
         for(size_t i=0; i<args.size[1]; i++) {

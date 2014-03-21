@@ -65,6 +65,8 @@ T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
     return p;
 }
 
+//FLOP count: 2*s+i*(s*8+2*s*23) where s is samples and i is iterations
+
 int main(int argc, char* argv[])
 {
     const char usage[] = "usage: ./black_scholes --size=1000*10 [--verbose]";
@@ -72,7 +74,7 @@ int main(int argc, char* argv[])
         cout << usage << endl;
         return 1;
     }
-    
+
     arguments_t args;                   // Parse command-line
     if (!parse_args(argc, argv, args)) {
         cout << "Err: Invalid argument(s)." << endl;
@@ -98,7 +100,7 @@ int main(int argc, char* argv[])
     );
     size_t end = sample_time();
                                         // Output timing
-    cout << "{elapsed-time: "<< (end-start)/1000000.0 <<"";          
+    cout << "{elapsed-time: "<< (end-start)/1000000.0 <<"";
     if (args.verbose) {                 // and values.
         cout << ", \"output\": [";
         for(size_t i=0; i<args.size[1]; i++) {
