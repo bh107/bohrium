@@ -1137,12 +1137,12 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
         stop = start
         start = type(stop)(0)
     size = int(math.ceil((float(stop) - float(start)) / float(step)))
-    if (dtype):
-        start = dtype(start)
-        stop  = dtype(stop)
-        step  = dtype(step)
-    else:
+    if (dtype is None):
         dtype = int64
+    else:
+        start = numpy.dtype(dtype).type(start)
+        stop  = numpy.dtype(dtype).type(stop)
+        step  = numpy.dtype(dtype).type(step)
     return range(size,dtype=dtype) * step + start
 
 def range(size, dtype=uint64):
@@ -1150,15 +1150,16 @@ def range(size, dtype=uint64):
         raise ValueError("size must be an integer")
     if (size < 1):
         raise ValueError("size must be greater than 0")
-    if (dtype == int8 or
-        dtype == int16 or
-        dtype == int32 or
-        dtype == uint8 or
-        dtype == uint16 or
-        dtype == uint32 or
-        dtype == float16 or
-        dtype == float32 or
-        dtype == complex64):
+    dtype = numpy.dtype(dtype).type
+    if (dtype is int8 or
+        dtype is int16 or
+        dtype is int32 or
+        dtype is uint8 or
+        dtype is uint16 or
+        dtype is uint32 or
+        dtype is float16 or
+        dtype is float32 or
+        dtype is complex64):
         A = empty(size,dtype=uint32,bohrium=True)
     else:
         A = empty(size,dtype=uint64,bohrium=True)
@@ -1274,7 +1275,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
         return array([], dtype=dtype)
     if endpoint:
         if num == 1:
-            return array([dtype(start)])
+            return array([numpy.dtype(dtype).type(start)])
         step = (stop-start)/float((num-1))
     else:
         step = (stop-start)/float(num)
