@@ -33,11 +33,11 @@ InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
     , batch(0)
 {}
 
-bh_error InstructionScheduler::schedule(std::vector<bh_instruction*> inst_list)
+bh_error InstructionScheduler::schedule(bh_ir* bhir)
 {
-    for (std::vector<bh_instruction*>::iterator it = inst_list.begin(); it != inst_list.end(); ++it)
+    for (bh_intp i = 0; i < bhir->ninstr; ++i)
     {
-        bh_instruction* inst = *it;
+        bh_instruction* inst = &(bhir->instr_list[i]);
         if (inst->opcode != BH_NONE)
         {
 #ifdef DEBUG

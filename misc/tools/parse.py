@@ -4,8 +4,8 @@
 # http://cphvb.bitbucket.org
 #
 # Bohrium is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as 
-# published by the Free Software Foundation, either version 3 
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3
 # of the License, or (at your option) any later version.
 #
 # Bohrium is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-# You should have received a copy of the 
-# GNU Lesser General Public License along with Bohrium. 
+# You should have received a copy of the
+# GNU Lesser General Public License along with Bohrium.
 #
 # If not, see <http://www.gnu.org/licenses/>.
 #
@@ -180,9 +180,9 @@ class Parser(object):
                 opcode, n_ops = (m.group('OPCODE'), int(m.group('N_OPS')))
                 operands = []
                 op_line = i
-                while(True):                # Parse instruction operands
-                    print opcode
-                    print lines[i]
+                while( i<len(lines)):                # Parse instruction operands
+#                    print opcode
+#                    print lines[i]
                     op_m = re.match(Parser.re_meta, lines[i], re.DOTALL)
                     if not op_m:            # No match -> no more operands
                         break
@@ -308,7 +308,7 @@ def dot_to_file(filename, dotstring, formats = ["svg", "fig", "xdot"]):
         cmd = out.strip()
     except:
         pass
-    
+
     if cmd:
         errors = ''
         output = ''
@@ -361,7 +361,7 @@ def main():
     p = Parser( args.filename )
     dotdata = p.dotify_list(p.parse(), args.exclude)
     return dot_to_file(output_fn, dotdata, args.formats)
-    
+
 if __name__ == "__main__":
 
     out = None

@@ -61,54 +61,6 @@ bool InstructionBatch::shapeMatch(bh_intp ndim,const bh_index dims[])
     return false;
 }
 
-bool InstructionBatch::sameView(const bh_view& a, const bh_view& b)
-{
-    //assumes the the views shape are the same and they have the same base
-    if (a.start != b.start)
-        return false;
-    for (size_t i = 0; i < shape.size(); ++i)
-    {
-        if (a.stride[i] != b.stride[i])
-            return false;
-    }
-    return true;
-}
-
-inline int gcd(int a, int b)
-{
-    int c = a % b;
-    while(c != 0)
-    {
-        a = b;
-        b = c;
-        c = a % b;
-    }
-    return b;
-}
-
-bool InstructionBatch::disjointView(const bh_view& a, const bh_view& b)
-{
-    //assumes the the views shape are the same and they have the same base
-    int astart = a.start;
-    int bstart = b.start;
-    int stride = 1;
-    for (int i = 0; i < a.ndim; ++i)
-    {
-        stride = gcd(a.stride[i], b.stride[i]);
-        int as = astart / stride;
-        int bs = bstart / stride;
-        int ae = as + a.shape[i] * (a.stride[i]/stride);
-        int be = bs + b.shape[i] * (b.stride[i]/stride);
-        if (ae <= bs || be <= as)
-            return true;
-        astart %= stride;
-        bstart %= stride;
-    }
-    if (stride > 1 && a.start % stride != b.start % stride)
-        return true;
-    return false;
-}
-
 void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParameter*>& operands)
 {
     assert(!isScalar(operands[0]));
@@ -128,13 +80,13 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             ArrayRange orange = output.equal_range(ba);
             for (ArrayMap::iterator oit = orange.first ; oit != orange.second; ++oit)
             {
-                if (sameView(views[oit->second], inst->operand[op]))
+                if (bh_view_identical(&views[oit->second], &inst->operand[op]))
                 {
                     // Same view so we use the ID for it
                     opids[op] = oit->second;
                     load_store[op] = false; // Allready exists
                 } 
-                else if (!disjointView(views[oit->second], inst->operand[op])) 
+                else if (!bh_view_disjoint(&views[oit->second], &inst->operand[op])) 
                 { 
                     throw BatchException(0);
                 }
@@ -143,14 +95,14 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             ArrayRange irange = input.equal_range(ba);
             for (ArrayMap::iterator iit = irange.first ; iit != irange.second; ++iit)
             {
-                if (sameView(views[iit->second], inst->operand[op]))
+                if (bh_view_identical(&views[iit->second], &inst->operand[op]))
                 {
                     // Same view so we use the same ID for it
                     opids[op] =  iit->second;
                     if (op > 0) // also input: no need to load again
                         load_store[op] = false;
                 } 
-                else if (op == 0 && !disjointView(views[iit->second], inst->operand[0]))
+                else if (op == 0 && !bh_view_disjoint(&views[iit->second], &inst->operand[0]))
                 {
                     throw BatchException(0);
                 }
@@ -169,7 +121,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             for (; i >= 0; --i)
             {   //catch when same view is used twice within oparation and doesn't allready have an id
                 if (inst->operand[op].base == inst->operand[i].base && 
-                    sameView(inst->operand[op], inst->operand[i]))
+                    bh_view_identical(&inst->operand[op], &inst->operand[i]))
                 {
                     opids[op] = opids[i];
                     if (op > 0 && i > 0) // both input: no need to load twice
