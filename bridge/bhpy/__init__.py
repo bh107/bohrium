@@ -1,4 +1,5 @@
 from array_create import *
+from array_manipulation import *
 from ufunc import ufuncs
 from ndarray import check
 from _info import numpy_types
