@@ -1267,7 +1267,8 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
 
     """
     if (not bohrium):
-        return numpy.linspace(start, stop, num=num, endpoint=endpoint, retstep=retstep).astype(dtype,copy=False)
+        #TODO: add copy=False to .astype()
+        return numpy.linspace(start, stop, num=num, endpoint=endpoint, retstep=retstep).astype(dtype)
     num = int(num)
     if num <= 0:
         return array([], dtype=dtype)

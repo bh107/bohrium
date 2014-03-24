@@ -425,7 +425,7 @@ namespace nbody
 			b.t0.Mul(dt, b.t0);
 			b.vz.Add(b.t0, b.vz);
 		}
-
+		//FLOP count: i*(s*s*3+s*s*29) where s is #bodies and i is iterations
 		private static void Move(Galaxy galaxy)
 		{
 			CalcForce(galaxy);
