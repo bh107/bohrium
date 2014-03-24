@@ -251,7 +251,7 @@ bh_error Engine::fuse_mode(Block& block)
         ((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol))) {   
                                                     // Specialize sourcecode
-        string sourcecode = specializer.specialize(block, jit_optimize);   
+        string sourcecode = specializer.fuse(block, jit_optimize, 0, block.length-1);
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
             utils::write_file(
                 storage.src_abspath(block.symbol),

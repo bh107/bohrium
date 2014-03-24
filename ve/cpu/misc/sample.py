@@ -8,9 +8,8 @@ def sample(args):
 
     a = np.ones((3,3),bohrium=with_bohrium)
     b = np.ones((3,3),bohrium=with_bohrium)
-    c = np.matmul(a,b)
-    d = np.dot(a,b)
-    return c,d
+
+    return a*b*b*b*a*b*a
 
 def main():
     p = argparse.ArgumentParser('Run a dummy program')

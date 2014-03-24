@@ -25,6 +25,8 @@ public:
     std::string specialize(Block& block, bool optimized);
     std::string specialize(Block& block, bool optimized, size_t tac_start, size_t tac_end);
 
+    std::string fuse(Block& block, bool optimized, size_t tac_start, size_t tac_end);
+
 private:
     ctemplate::Strip strip_mode;
     std::string template_directory;

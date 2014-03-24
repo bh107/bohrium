@@ -259,7 +259,117 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
                 operand_d->SetIntValue("NR", tac.out);
                 operand_d->ShowSection("ARRAY");
         }
+    }
 
+    //
+    // Fill out the template and return the generated sourcecode
+    //
+    ctemplate::ExpandTemplate(
+        "kernel.tpl", 
+        strip_mode,
+        &kernel_d,
+        &sourcecode
+    );
+
+    return sourcecode;
+}
+
+string Specializer::fuse(Block& block, bool optimized, size_t tac_start, size_t tac_end)
+{
+    string sourcecode  = "";
+
+    ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
+    kernel_d.SetValue("SYMBOL", block.symbol);
+    kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text);
+
+    for(size_t i=tac_start; i<=tac_end; ++i) {
+        
+        //
+        // Grab the tac for which to generate sourcecode
+        tac_t& tac = block.program[i];
+
+        //
+        // Skip code generation for system and extensions
+        if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
+            continue;
+        }
+
+        //
+        // The operation (ewise, reduction, scan, random, range).
+        ctemplate::TemplateDictionary* operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
+        operation_d->SetFilename(template_filename(block, i, optimized));
+
+        //
+        // Reduction and scan specific expansions
+        if ((tac.op == REDUCE) || (tac.op == SCAN)) {
+            operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(block.scope[tac.out].etype));
+            operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1].etype));
+            operation_d->SetValue("TYPE_AXIS",  "int64_t");
+            if (tac.oper == ADD) {
+                operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
+            } else if (tac.oper == MULTIPLY) {
+                operation_d->SetIntValue("NEUTRAL_ELEMENT", 1);
+            }
+        }
+
+        ctemplate::TemplateDictionary* operator_d   = operation_d->AddSectionDictionary("OPERATORS");
+        ctemplate::TemplateDictionary* argument_d;  // Block arguments
+        ctemplate::TemplateDictionary* operand_d;   // Operator operands
+
+        //
+        // The operator +, -, /, min, max, sin, sqrt, etc...
+        //        
+        operator_d->SetValue("OPERATOR", cexpression(block, i));
+
+        //
+        //  The arguments / operands
+        switch(utils::tac_noperands(tac)) {
+            case 3:
+                operation_d->SetIntValue("NR_SINPUT", tac.in2);  // Not all have
+                operator_d->SetIntValue("NR_SINPUT", tac.out);
+                argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
+                operand_d   = operation_d->AddSectionDictionary("OPERAND");
+                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in2].etype));
+                operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[tac.in2].etype));
+
+                argument_d->SetIntValue("NR", tac.in2);
+                operand_d->SetIntValue("NR", tac.in2);
+
+                if (CONSTANT != block.scope[tac.in2].layout) {
+                    argument_d->ShowSection("ARRAY");
+                    operand_d->ShowSection("ARRAY");
+                }
+            case 2:
+                operation_d->SetIntValue("NR_FINPUT", tac.in1);  // Not all have
+                operator_d->SetIntValue("NR_FINPUT", tac.in1);
+
+                argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
+                operand_d   = operation_d->AddSectionDictionary("OPERAND");
+
+                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].etype));
+                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].etype));
+
+                argument_d->SetIntValue("NR", tac.in1);
+                operand_d->SetIntValue("NR", tac.in1);
+
+                if (CONSTANT != block.scope[tac.in1].layout) {
+                    argument_d->ShowSection("ARRAY");
+                    operand_d->ShowSection("ARRAY");
+                }
+            case 1:
+                argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
+                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].etype));
+                argument_d->SetIntValue("NR", tac.out);
+                argument_d->ShowSection("ARRAY");
+
+                operation_d->SetIntValue("NR_OUTPUT", tac.out);
+                operator_d->SetIntValue("NR_OUTPUT", tac.out);
+
+                operand_d = operation_d->AddSectionDictionary("OPERAND");
+                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].etype));
+                operand_d->SetIntValue("NR", tac.out);
+                operand_d->ShowSection("ARRAY");
+        }
     }
 
     //
