@@ -79,24 +79,31 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, ""))
         return NULL;
 
-    PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "O", self);
+    //We move the whole array (i.e. the base array) from Bohrium to NumPy
+    PyObject *base = PyObject_CallMethod(ndarray, "get_base", "O", self);
+    if(base == NULL)
+        return NULL;
+
+    PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "O", base);
     if(data == NULL)
         return NULL;
+
     if(!PyInt_Check(data))
     {
         PyErr_SetString(PyExc_TypeError, "get_bhc_data_pointer(ary) should "
                 "return a Python integer that represents a memory address");
         return NULL;
     }
+
     //Lets copy data
     void *d = PyLong_AsVoidPtr(data);
     if(d != NULL)
     {
-        memcpy(PyArray_DATA((PyArrayObject*)self), d, PyArray_NBYTES((PyArrayObject*)self));
+        memcpy(PyArray_DATA((PyArrayObject*)base), d, PyArray_NBYTES((PyArrayObject*)base));
     }
 
     //Lets delete the current bhc_ary
-    return PyObject_CallMethod(ndarray, "del_bhc", "O", self);
+    return PyObject_CallMethod(ndarray, "del_bhc", "O", base);
 }
 
 static PyObject *
