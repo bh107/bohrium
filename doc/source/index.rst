@@ -25,7 +25,7 @@ Features
 Get Started!
 ------------
 
-.. * `Downloads <https://bitbucket.org/bohrium/bohrium/downloads/>`_
+* `Downloads <https://bitbucket.org/bohrium/bohrium/downloads/>`_
 
 .. toctree::
    :maxdepth: 2
@@ -41,6 +41,8 @@ Get Started!
    :maxdepth: 1
 
    developers/index
+
+* `Student Projects <https://docs.google.com/document/d/1bMxKi86q-F0kVHLZoQzzt7BhTde4GOco9cA_fhJf45c/edit?usp=sharing/>`_
 
 .. toctree::
    :maxdepth: 1
