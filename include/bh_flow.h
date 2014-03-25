@@ -93,17 +93,20 @@ private:
     //base array in topological order
     map<const bh_base *, vector<flow_node> > bases;
 
+    map<bh_intp, vector<flow_instr*> > sub_dags;
+    bh_intp get_sub_dag_id(flow_instr* instr);
+    bool sub_dag_merge(bh_intp sub_dag_id1, bh_intp sub_dag_id2);
+
     //Vector of flow instructions in each timestep
     vector<vector<flow_instr *> > timesteps;
 
     //Number of flow nodes
     uint64_t nnodes;
 
-    //Add conflicting nodes to 'conflicts'
-    void get_conflicting_access(const flow_node &node,
-                                set<flow_node> &conflicts);
+    //Get conflicting nodes
+    set<flow_node> get_conflicting_access(const flow_node &node);
 
-    //Cluster the flow object into sub-DAGs suitable as kernals
+    //Cluster the flow object into sub-DAGs suitable as kernels
     void sub_dag_clustering(void);
 
 public:

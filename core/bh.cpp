@@ -336,3 +336,34 @@ bool bh_view_identical(const bh_view *a, const bh_view *b)
     }
     return true;
 }
+
+/* Determines whether two views are aligned and points
+ * to the same base array.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+bool bh_view_aligned(const bh_view *a, const bh_view *b)
+{
+    if(bh_is_constant(a) || bh_is_constant(b))
+        return false;
+    if(a->base != b->base)
+        return false;
+    if(a->start != b->start)
+        return false;
+    for(int ia=0,ib=0; ia<a->ndim && ib<b->ndim; ++ia,++ib)
+    {
+        while (a->stride[ia] == 0)
+            if (++ia >= a->ndim)
+                break;
+        while (b->stride[ib] == 0)
+            if (++ib >= b->ndim)
+                break;
+        if(a->shape[ia] != b->shape[ib])
+            return false;
+        if(a->stride[ia] != b->stride[ib])
+            return false;
+    }
+    return true;
+}

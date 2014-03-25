@@ -46,6 +46,9 @@ extern "C" {
 #include <stdbool.h>
 #endif
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) >= (b) ? (a) : (b))
+
 /* Find the base array for a given view
  *
  * @view   The view in question
@@ -266,6 +269,15 @@ DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
  * @return The boolean answer
  */
 DLLEXPORT bool bh_view_identical(const bh_view *a, const bh_view *b);
+
+/* Determines whether two views are aligned and points
+ * to the same base array.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_view_aligned(const bh_view *a, const bh_view *b);
 
 #ifdef __cplusplus
 }
