@@ -28,6 +28,8 @@ import numpy as np
 import _info
 from _util import dtype_name
 from ndarray import get_bhc
+import ndarray
+from numbers import Number
 
 def assign(a, out):
     out_dtype = dtype_name(out)
@@ -57,9 +59,9 @@ class ufunc:
 
         #Pop the ouput from the 'args' list
         out = None
+        args = list(args)
         if len(args) == self.info['nop']:#output given
-            out = args[-1]
-            args = args[:-1]
+            out = args.pop()
 
         #Broadcast the inputs. In order to avoid hanging views we do
         #the broadcast before any array creation
@@ -82,11 +84,13 @@ class ufunc:
             out = array_create.empty(args[0].shape, out_dtype)
 
         #Check for not implemented errors
-        for a in args:
-            if not isinstance(a, _bh.ndarray):
-                raise NotImplementedError("All operands must be Bohrium arrays")
+        for i, a in enumerate(args):
+            if isinstance(a, Number):
+                raise NotImplementedError("We do not support Python scalars")
             if a.base is not None:
                 raise NotImplementedError("We do not support views")
+            if not ndarray.check(a):
+                args[i] = array_create.array(a)
 
         f = eval("bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), self.info['bhc_name']))
 

@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
 static PyTypeObject BhArrayType;
 PyObject *ndarray = NULL; //The ndarray Python module
+PyObject *bohrium = NULL; //The Bohrium Python module
 
 typedef struct
 {
@@ -38,6 +39,8 @@ typedef struct
 static void
 BhArray_dealloc(BhArray* self)
 {
+    assert(BhArray_CheckExact(self));
+
     if(self->bhc_ary == NULL)
         goto finish;
 
@@ -178,6 +181,9 @@ static PyGetSetDef BhArray_getseters[] = {
     {NULL}  /* Sentinel */
 };
 
+//Importing the array_as_number struct
+#include "operator_overload.c"
+
 static PyTypeObject BhArrayType = {
     PyObject_HEAD_INIT(NULL)
     0,                       /* ob_size */
@@ -190,7 +196,7 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_setattr */
     0,                       /* tp_compare */
     0,                       /* tp_repr */
-    0,                       /* tp_as_number */
+    &array_as_number,         /* tp_as_number */
     0,                       /* tp_as_sequence */
     0,                       /* tp_as_mapping */
     0,                       /* tp_hash */
@@ -200,7 +206,8 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_setattro */
     0,                       /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT |
-      Py_TPFLAGS_BASETYPE,   /* tp_flags */
+      Py_TPFLAGS_BASETYPE |
+      Py_TPFLAGS_CHECKTYPES, /* tp_flags */
     0,                       /* tp_doc */
     0,                       /* tp_traverse */
     0,                       /* tp_clear */
@@ -241,5 +248,8 @@ init_bh(void)
 
     ndarray = PyImport_ImportModule("bohrium.ndarray");
     if(ndarray == NULL)
+        return;
+    bohrium = PyImport_ImportModule("bohrium");
+    if(bohrium == NULL)
         return;
 }
