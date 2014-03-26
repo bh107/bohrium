@@ -171,6 +171,11 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
     kernel_d.SetValue("SYMBOL", block.symbol);
     kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text);
 
+    kernel_d.SetValue("MODE", "SIJ");
+    kernel_d.SetIntValue("NINSTR", block.length);
+    kernel_d.SetIntValue("NARGS", block.noperands);
+    kernel_d.SetIntValue("OPTIMIZED", optimized);
+
     for(size_t i=tac_start; i<=tac_end; ++i) {
         
         //
@@ -281,6 +286,11 @@ string Specializer::fuse(Block& block, bool optimized, size_t tac_start, size_t 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
     kernel_d.SetValue("SYMBOL", block.symbol);
     kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text);
+
+    kernel_d.SetValue("MODE", "Fused");
+    kernel_d.SetIntValue("NINSTR", block.length);
+    kernel_d.SetIntValue("NARGS", block.noperands);
+    kernel_d.SetIntValue("OPTIMIZED", optimized);
 
     for(size_t i=tac_start; i<=tac_end; ++i) {
         

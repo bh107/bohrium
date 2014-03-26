@@ -31,8 +31,10 @@ inline int omp_get_num_threads() { return 1; }
 #define CPU_MAXDIM 16
 #endif
 
-//
-// {{SYMBOL_TEXT}}
+// KERNEL-DESCRIPTION [
+//  MODE={{MODE}}, NINSTR={{NINSTR}}, NARGS={{NARGS}}, OPTIMIZED={{OPTIMIZED}}
+//  SYMBOL_TEXT {{SYMBOL_TEXT}}
+// ]
 void KRN_{{SYMBOL}}(operand_t* args)
 {
     //
