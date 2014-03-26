@@ -38,6 +38,8 @@ public:
     std::string symbol_text;    // Textual representation of the block
     std::string symbol;         // Hash of textual representation
 
+    bh_dag& get_dag(void);
+
 private:
     size_t add_operand(bh_instruction& instr, size_t operand_idx);
     bh_ir& ir;

@@ -88,9 +88,8 @@ bh_error Engine::sij_mode(Block& block)
 
     bh_error res = BH_SUCCESS;
 
-    size_t orig_length = block.length;
-
-    for(size_t i=0; i<orig_length; ++i) {
+    bh_intp nnode = block.get_dag().nnode;
+    for(bh_intp i=0; i<nnode; ++i) {
 
         bool compose_res = block.compose(i, i); // Recompose the block
         if (!compose_res) {

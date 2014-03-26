@@ -28,6 +28,11 @@ Block::~Block()
     DEBUG(TAG << "::~Block() --");
 }
 
+bh_dag& Block::get_dag()
+{
+    return this->dag;
+}
+
 string Block::scope_text(string prefix)
 {
     stringstream ss;
@@ -144,7 +149,8 @@ bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
         tacs << utils::operation_text(tac.op);
         tacs << "-" << utils::operator_text(tac.oper);
         tacs << "-";
-        size_t ndim = (tac.op == REDUCE) ? scope[tac.out].ndim : scope[tac.in1].ndim;
+        DEBUG("Block::symbolize(...) : tac.out.ndim(" << scope[tac.out].ndim << ")");
+        size_t ndim = (tac.op == REDUCE) ? scope[tac.in1].ndim : scope[tac.out].ndim;
         if (optimized && (ndim <= 3)) {        // Optimized
             tacs << ndim;
         } else {

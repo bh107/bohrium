@@ -165,6 +165,7 @@ string Specializer::specialize(Block& block, bool optimized)
 
 string Specializer::specialize(Block& block, bool optimized, size_t tac_start, size_t tac_end)
 {
+    DEBUG("Specializer::specialize(..., " << optimized << ", " << tac_start << ", " << tac_end << ")");
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
@@ -182,12 +183,14 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
         // Grab the tac for which to generate sourcecode
         tac_t& tac = block.program[i];
 
+
         //
         // Skip code generation for system and extensions
         if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
             continue;
         }
 
+        DEBUG("Specializer::specialize(...) : tac.out->ndim(" << block.scope[tac.out].ndim << ")");
         //
         // The operation (ewise, reduction, scan, random, range).
         ctemplate::TemplateDictionary* operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
@@ -276,11 +279,13 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
         &sourcecode
     );
 
+    DEBUG("Specializer::specialize(...);");
     return sourcecode;
 }
 
 string Specializer::fuse(Block& block, bool optimized, size_t tac_start, size_t tac_end)
 {
+    DEBUG("Specializer::fuse(..., "<< optimized << ", " << tac_start << ", " << tac_end << ")");
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
@@ -392,6 +397,7 @@ string Specializer::fuse(Block& block, bool optimized, size_t tac_start, size_t 
         &sourcecode
     );
 
+    DEBUG("Specializer::fuse(...);");
     return sourcecode;
 }
 
