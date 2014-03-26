@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <string>
 #include <stdexcept>
-using namespace std;
+//using namespace std;
 
 
 //Create a new flow_node. Use this function for creating flow nodes exclusively
@@ -45,9 +45,8 @@ bh_flow::flow_node &bh_flow::create_node(bool readonly, flow_instr *instr, const
     return ret;
 }
 
-
 //Add accesses that conflicts with the 'node' to 'conflicts'
-void bh_flow::get_conflicting_access(const flow_node &node, set<flow_node> &conflicts)
+set<bh_flow::flow_node> bh_flow::get_conflicting_access(const flow_node &node) 
 {
     //Search through all nodes with the same base as 'node'
     const vector<flow_node> &same_base = bases[node.view->base];
@@ -61,6 +60,7 @@ void bh_flow::get_conflicting_access(const flow_node &node, set<flow_node> &conf
     }
     assert(it != same_base.rend());//'node' must be found in 'same_base'
 
+    set<flow_node> conflicts;
     //Now continue iterating through possible conflicts
     for(++it; it != same_base.rend(); ++it)
     {
@@ -77,6 +77,7 @@ void bh_flow::get_conflicting_access(const flow_node &node, set<flow_node> &conf
             conflicts.insert(*it);
         }
     }
+    return conflicts;
 }
 
 //Create a new flow object based on an instruction list
@@ -99,8 +100,7 @@ bh_flow::bh_flow(bh_intp ninstr, const bh_instruction *instr_list):
             flow_node &node = create_node(readonly, &instr, op);
 
             //The timestep of the instruction must be greater than any conflicting instructions
-            set<flow_node> conflicts;
-            get_conflicting_access(node, conflicts);
+            set<flow_node> conflicts = get_conflicting_access(node);
             for(set<flow_node>::const_iterator it=conflicts.begin(); it!=conflicts.end(); ++it)
             {
                 if(node.instr->timestep <= it->instr->timestep)
@@ -154,10 +154,15 @@ void bh_flow::bhir_fill(bh_ir *bhir)
         //For each instruction, we find all dependencies
         set<flow_node> deps;
         for(set<flow_node>::const_iterator n=i->writes.begin(); n!=i->writes.end(); ++n)
-            get_conflicting_access(*n, deps);
+        {
+            set<flow_node> ndeps = get_conflicting_access(*n);
+            deps.insert(ndeps.begin(),ndeps.end());
+        }
         for(set<flow_node>::const_iterator n=i->reads.begin(); n!=i->reads.end(); ++n)
-            get_conflicting_access(*n, deps);
-
+        {
+            set<flow_node> ndeps = get_conflicting_access(*n);
+            deps.insert(ndeps.begin(),ndeps.end());
+        }
         for(set<flow_node>::const_iterator d=deps.begin(); d != deps.end(); d++)
         {
             if(i->sub_dag == d->instr->sub_dag)//The dependency is within a sub-DAG
@@ -256,14 +261,84 @@ void bh_flow::bhir_fill(bh_ir *bhir)
     }
 }
 
+bh_intp bh_flow::get_sub_dag_id(flow_instr* instr)
+{
+    if (instr->sub_dag == -1)
+    {
+        instr->sub_dag = instr->idx;
+        assert(sub_dags.insert(std::make_pair(instr->sub_dag,std::vector<flow_instr*>(1,instr))).second);
+    } else {
+        assert(sub_dags.find(instr->sub_dag) != sub_dags.end());
+    }
+    return instr->sub_dag;
+}
+
+bool bh_flow::sub_dag_merge(bh_intp sub_dag_id1, bh_intp sub_dag_id2)
+{
+    auto sdi1 = sub_dags.find(sub_dag_id1);
+    auto sdi2 = sub_dags.find(sub_dag_id2);
+    assert(sdi1 != sub_dags.end() && sdi2 != sub_dags.end());
+    if (sub_dag_id1 == sub_dag_id2)
+    {
+        return true;
+    }
+    for (flow_instr* instr1: sdi1->second)
+    {
+        if (instr_list[instr1->idx].opcode == BH_FREE || instr_list[instr1->idx].opcode == BH_DISCARD)
+            continue;
+        for (flow_instr* instr2: sdi2->second)
+        {
+            if (instr_list[instr2->idx].opcode == BH_FREE || instr_list[instr2->idx].opcode == BH_DISCARD)
+                continue;
+            for (const flow_node& o1: instr1->writes)
+            {
+                for (const flow_node& i2: instr2->reads)
+                {
+                    if (!(bh_view_disjoint(o1.view, i2.view) || bh_view_aligned(o1.view, i2.view)))
+                        return false;
+                }
+            }
+            for (const flow_node& o1: instr1->writes)
+            {
+                for (const flow_node& o2: instr2->writes)
+                {
+                    if (!(bh_view_disjoint(o1.view, o2.view) || bh_view_aligned(o1.view, o2.view)))
+                        return false;
+                }
+            }
+            for (const flow_node& i1: instr1->reads)
+            {
+                for (const flow_node& o2: instr2->writes)
+                {
+                    if (!(bh_view_disjoint(i1.view, o2.view) || bh_view_aligned(i1.view, o2.view)))
+                        return false;
+                }
+            }
+        }
+    }
+    for (flow_instr* instr2: sdi2->second)
+    {
+        instr2->sub_dag = sdi1->first;
+        sdi1->second.push_back(instr2);
+    }
+    sub_dags.erase(sdi2);
+    return true;
+}
+
 //Cluster the flow object into sub-DAGs suitable as kernals
 void bh_flow::sub_dag_clustering(void)
 {
-    //Assign all instructions to the sub-DAG that equals their timestep
-    vector<flow_instr>::iterator i;
-    for(i=flow_instr_list.begin(); i!=flow_instr_list.end(); i++)
+    for (auto &base: bases)
     {
-        i->sub_dag = i->timestep;
+        auto fni = base.second.begin();
+        auto instr1 = fni->instr;
+        
+        for (++fni; fni != base.second.end(); ++fni)
+        {
+            auto instr2 = fni->instr;
+            sub_dag_merge(get_sub_dag_id(instr1), get_sub_dag_id(instr2));
+            instr1 = instr2;
+        }
     }
 }
 
@@ -375,9 +450,9 @@ void bh_flow::html(const char* filename)
                 {
                     char str[100];
                     if(n->readonly)
-                        snprintf(str, 100, "%ld<sub>R</sub>", (long) n->instr->idx);
+                        snprintf(str, 100, "%ld<sub>R</sub><sup>%ld</sup>", (long) n->instr->idx, (long) n->instr->sub_dag);
                     else
-                        snprintf(str, 100, "%ld<sub>W</sub>", (long) n->instr->idx);
+                        snprintf(str, 100, "%ld<sub>W</sub><sup>%ld</sup>", (long) n->instr->idx, (long) n->instr->sub_dag);
                     table[n->instr->timestep][ncol] += str;
                 }
             }
@@ -440,13 +515,18 @@ void bh_flow::html(const char* filename)
     }
     fs << "</table></div>" << endl;
     //Write the instruction list
-    fs << "<div style=\"float:right;\">" << endl;
-    for(bh_intp i=0; i<ninstr; ++i)
+    fs << "<div style=\"float:right;\"><table  border=\"1\">" << endl;
+    for (const auto &sub_dag: sub_dags)
     {
-        char buf[100000];
-        bh_sprint_instr(&instr_list[i], buf, "<br>");
-        fs << "<b>" << i << "</b>)" << buf << "<br>";
+        fs << "<tr><td>" << endl;
+        for (const flow_instr* instr: sub_dag.second)
+        {
+            char buf[100000];
+            bh_sprint_instr(&instr_list[instr->idx], buf, "<br>");
+            fs << "<b>" << instr->idx << "</b>)" << buf << "<br>";
+        }
+        fs << "</tr></td>" << endl;
     }
-    fs << "</div></body></html>" << endl;
+    fs << "</table></div></body></html>" << endl;
     fs.close();
 }
