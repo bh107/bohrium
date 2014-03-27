@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
 static PyTypeObject BhArrayType;
 PyObject *ndarray = NULL; //The ndarray Python module
+PyObject *ufunc = NULL; //The ufunc Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
 
 typedef struct
@@ -181,6 +182,60 @@ static PyGetSetDef BhArray_getseters[] = {
     {NULL}  /* Sentinel */
 };
 
+static int
+BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
+{
+    PyObject *view = PyArray_Type.tp_as_mapping->mp_subscript(o, key);
+    if(view == NULL)
+        return -1;
+
+    PyObject *ret = PyObject_CallMethod(ndarray, "assign", "OO", v, view);
+    if(ret == NULL)
+    {
+        Py_DECREF(view);
+        return -1;
+    }
+    Py_DECREF(view);
+    Py_DECREF(ret);
+    return 0;
+}
+
+static int
+BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
+{
+    PyObject *view = PyArray_Type.tp_as_sequence->sq_slice(o, ilow, ihigh);
+    if(view == NULL)
+        return -1;
+
+    PyObject *ret = PyObject_CallMethod(ufunc, "assign", "OO", v, view);
+    if(ret == NULL)
+    {
+        Py_DECREF(view);
+        return -1;
+    }
+    Py_DECREF(view);
+    Py_DECREF(ret);
+    return 0;
+}
+
+static PyMappingMethods array_as_mapping = {
+    (lenfunc)0,                     /*mp_length*/
+    (binaryfunc)0,                  /*mp_subscript*/
+    (objobjargproc)BhArray_SetItem, /*mp_ass_subscript*/
+};
+static PySequenceMethods array_as_sequence = {
+    (lenfunc)0,                              /*sq_length*/
+    (binaryfunc)NULL,                        /*sq_concat is handled by nb_add*/
+    (ssizeargfunc)NULL,                      /*sq_repeat*/
+    (ssizeargfunc)0,                         /*sq_item*/
+    (ssizessizeargfunc)0,                    /*sq_slice (Not in the Python doc)*/
+    (ssizeobjargproc)BhArray_SetItem,        /*sq_ass_item*/
+    (ssizessizeobjargproc)BhArray_SetSlice,  /*sq_ass_slice (Not in the Python doc*/
+    (objobjproc) 0,                          /*sq_contains */
+    (binaryfunc) NULL,                       /*sg_inplace_concat */
+    (ssizeargfunc)NULL,                      /*sg_inplace_repeat */
+};
+
 //Importing the array_as_number struct
 #include "operator_overload.c"
 
@@ -196,9 +251,9 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_setattr */
     0,                       /* tp_compare */
     0,                       /* tp_repr */
-    &array_as_number,         /* tp_as_number */
-    0,                       /* tp_as_sequence */
-    0,                       /* tp_as_mapping */
+    &array_as_number,        /* tp_as_number */
+    &array_as_sequence,      /* tp_as_sequence */
+    &array_as_mapping,       /* tp_as_mapping */
     0,                       /* tp_hash */
     0,                       /* tp_call */
     0,                       /* tp_str */
@@ -247,6 +302,9 @@ init_bh(void)
     PyModule_AddObject(m, "ndarray", (PyObject *)&BhArrayType);
 
     ndarray = PyImport_ImportModule("bohrium.ndarray");
+    if(ndarray == NULL)
+        return;
+    ufunc = PyImport_ImportModule("bohrium.ufunc");
     if(ndarray == NULL)
         return;
     bohrium = PyImport_ImportModule("bohrium");

@@ -23,8 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 static PyObject *
 array_add(PyObject *m1, PyObject *m2)
 {
-    if(bohrium == NULL)
-        return NULL;
     return PyObject_CallMethod(bohrium, "add", "OO", m1, m2);
 }
 
