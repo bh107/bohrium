@@ -118,20 +118,20 @@ string Block::text()
  *        If a block consists of nothing but system and/or extension
  *        opcodes then the symbol will be the empty string "".
  */
-bool Block::symbolize(const bool optimized)
+bool Block::symbolize()
 {   
-    DEBUG("++ Block::symbolize("<< optimized << ") : length("<< length << ")" << "optimized(" << optimized << ")");
-    bool symbolize_res = symbolize(0, length-1, optimized);
-    DEBUG("-- Block::symbolize(...) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
+    DEBUG("++ Block::symbolize(void) : length("<< length << ")");
+    bool symbolize_res = symbolize(0, length-1);
+    DEBUG("-- Block::symbolize(void) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
     return symbolize_res;
 }
 
-bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
+bool Block::symbolize(size_t tac_start, size_t tac_end)
 {
     stringstream tacs,
                  operands;
 
-    DEBUG("++ Block::symbolize("<< tac_start << ", " << tac_end << "," << optimized << ")");
+    DEBUG("++ Block::symbolize("<< tac_start << ", " << tac_end << ")");
 
     bool first = true;
     for (size_t i=tac_start; i<=tac_end; ++i) {
@@ -151,7 +151,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
         tacs << "-";
         DEBUG("Block::symbolize(...) : tac.out.ndim(" << scope[tac.out].ndim << ")");
         size_t ndim = (tac.op == REDUCE) ? scope[tac.in1].ndim : scope[tac.out].ndim;
-        if (optimized && (ndim <= 3)) {        // Optimized
+        if (ndim <= 3) {
             tacs << ndim;
         } else {
             tacs << "N";
@@ -214,7 +214,41 @@ bool Block::symbolize(size_t tac_start, size_t tac_end, const bool optimized)
 }
 
 /**
+ *  Determines whether two operand have equivalent meta-data.
+ *
+ *  This function serves the same purpose as bh_view_identical, 
+ *  but for tac-operands instead of bh_instruction.operand[...].
+ *
+ */
+bool equivalent_operands(const operand_t& one, const operand_t& other)
+{
+    if (one.layout != other.layout) {
+        return false;
+    }
+    if (*(one.data) != *(other.data)) {
+        return false;
+    }
+    if (one.ndim != other.ndim) {
+        return false;
+    }
+    if (one.start != other.start) {
+        return false;
+    }
+    for(bh_intp j=0; j<one.ndim; ++j) {
+        if (one.stride[j] != other.stride[j]) {
+            return false;
+        }
+        if (one.shape[j] != other.shape[j]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
  *  Add instruction operand as argument to block.
+ *
+ *  Reuses operands of equivalent meta-data.
  *
  *  @param instr        The instruction whos operand should be converted.
  *  @param operand_idx  Index of the operand to represent as arg_t
@@ -251,6 +285,20 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
             scope[arg_idx].layout = STRIDED;
         }
     }
+
+    /*
+    //
+    // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
+    for(size_t i=0; i<arg_idx; ++i) {
+        if (!equivalent_operands(scope[i], scope[arg_idx])) {
+            continue; // Not equivalent, continue search.
+        }
+        // Found one! Use it instead of the incremented identifier.
+        --noperands;
+        arg_idx = i;
+        break;
+    }
+    */
     return arg_idx;
 }
 

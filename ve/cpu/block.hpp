@@ -23,8 +23,8 @@ public:
 
     bool compose();
     bool compose(bh_intp node_start, bh_intp node_end);
-    bool symbolize(const bool optimized);    
-    bool symbolize(size_t tac_start, size_t tac_end, const bool optimized);
+    bool symbolize();    
+    bool symbolize(size_t tac_start, size_t tac_end);
 
     bh_instruction** instr;     // Pointers to instructions
 

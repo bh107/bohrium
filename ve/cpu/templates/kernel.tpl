@@ -32,7 +32,7 @@ inline int omp_get_num_threads() { return 1; }
 #endif
 
 // KERNEL-DESCRIPTION [
-//  MODE={{MODE}}, NINSTR={{NINSTR}}, NARGS={{NARGS}}, OPTIMIZED={{OPTIMIZED}}
+//  MODE={{MODE}}, NINSTR={{NINSTR}}, NARGS={{NARGS}}
 //  SYMBOL_TEXT {{SYMBOL_TEXT}}
 // ]
 void KRN_{{SYMBOL}}(operand_t* args)

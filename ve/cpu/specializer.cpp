@@ -47,7 +47,7 @@ string Specializer::text()
  *
  *  Contract: Do not call this for system or extension operations.
  */
-string Specializer::template_filename(Block& block, size_t pc, bool optimized)
+string Specializer::template_filename(Block& block, size_t pc)
 {
     string tpl_ndim   = "nd.",
            tpl_opcode,
@@ -66,54 +66,52 @@ string Specializer::template_filename(Block& block, size_t pc, bool optimized)
         case MAP:
 
             tpl_opcode  = "ewise.";
-            if (optimized && \
-                ((layout_out == CONTIGUOUS) && \
-                 ((layout_in1 == CONTIGUOUS) || (layout_out == CONSTANT))
-                )
+            if (
+                (layout_out == CONTIGUOUS) && \
+                ((layout_in1 == CONTIGUOUS) || (layout_out == CONSTANT))
                ) {
                 tpl_layout  = "cont.";
-            } else if ((optimized) && (ndim == 1)) {
+            } else if (ndim == 1) {
                 tpl_ndim = "1d.";
-            } else if ((optimized) && (ndim == 2)) {
+            } else if (ndim == 2) {
                 tpl_ndim = "2d.";
-            } else if ((optimized) && (ndim == 3)) {
+            } else if (ndim == 3) {
                 tpl_ndim = "3d.";
             }
             break;
 
         case ZIP:
             tpl_opcode  = "ewise.";
-            if (optimized && \
-               (layout_out == CONTIGUOUS) && \
-                (((layout_in1 == CONTIGUOUS) && (layout_in2 == CONTIGUOUS)) || \
-                 ((layout_in1 == CONTIGUOUS) && (layout_in2 == CONSTANT)) || \
-                 ((layout_in1 == CONSTANT) && (layout_in2 == CONTIGUOUS)) \
-                )
+            if ( (layout_out == CONTIGUOUS) && \
+                 (((layout_in1 == CONTIGUOUS) && (layout_in2 == CONTIGUOUS)) || \
+                  ((layout_in1 == CONTIGUOUS) && (layout_in2 == CONSTANT)) || \
+                  ((layout_in1 == CONSTANT) && (layout_in2 == CONTIGUOUS)) \
+                 )
                ) {
                 tpl_layout  = "cont.";
-            } else if ((optimized) && (ndim == 1)) {
+            } else if (ndim == 1) {
                 tpl_ndim = "1d.";
-            } else if ((optimized) && (ndim == 2)) {
+            } else if (ndim == 2) {
                 tpl_ndim = "2d.";
-            } else if ((optimized) && (ndim == 3)) {
+            } else if (ndim == 3) {
                 tpl_ndim = "3d.";
             }
             break;
 
         case SCAN:
             tpl_opcode = "scan.";
-            if (optimized && (ndim == 1)) {
+            if (ndim == 1) {
                 tpl_ndim = "1d.";
             }
             break;
 
         case REDUCE:
             tpl_opcode = "reduce.";
-            if (optimized && (ndim == 1)) {
+            if (ndim == 1) {
                 tpl_ndim = "1d.";
-            } else if (optimized && (ndim == 2)) {
+            } else if (ndim == 2) {
                 tpl_ndim = "2d.";
-            } else if (optimized && (ndim == 3)) {
+            } else if (ndim == 3) {
                 tpl_ndim = "3d.";
             }
             break;
@@ -153,19 +151,27 @@ string Specializer::template_filename(Block& block, size_t pc, bool optimized)
  *
  *  NOTE: System opcodes are ignored.
  *
- *  @param optimized The level of optimizations to apply to the generated code.
  *  @param block The block to generate sourcecode for.
  *  @return The generated sourcecode.
  *
  */
-string Specializer::specialize(Block& block, bool optimized)
+string Specializer::specialize(Block& block, bool apply_fusion)
 {
-    return specialize(block, optimized, 0, block.length-1);
+    return specialize(block, 0, block.length-1, apply_fusion);
 }
 
-string Specializer::specialize(Block& block, bool optimized, size_t tac_start, size_t tac_end)
+/**
+ *  Construct the c-sourcecode for the given block.
+ *
+ *  NOTE: System opcodes are ignored.
+ *
+ *  @param block The block to generate sourcecode for.
+ *  @return The generated sourcecode.
+ *
+ */
+string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, bool apply_fusion)
 {
-    DEBUG("Specializer::specialize(..., " << optimized << ", " << tac_start << ", " << tac_end << ")");
+    DEBUG("Specializer::specialize(..., " << tac_start << ", " << tac_end << ")");
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
@@ -175,14 +181,27 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
     kernel_d.SetValue("MODE", "SIJ");
     kernel_d.SetIntValue("NINSTR", block.length);
     kernel_d.SetIntValue("NARGS", block.noperands);
-    kernel_d.SetIntValue("OPTIMIZED", optimized);
 
+    //
+    // Assign information needed for argument unpacking
+    for(size_t i=1; i<=block.noperands; ++i) {
+        ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
+        argument_d->SetIntValue("NR", i);
+        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[i].etype));
+        if (CONSTANT != block.scope[i].layout) {
+            argument_d->ShowSection("ARRAY");
+        }
+    }
+
+    //
+    // Assign information for needed for generation of operation and operator code
+    ctemplate::TemplateDictionary* operation_d = NULL;
+    int64_t prev_idx = -1;
     for(size_t i=tac_start; i<=tac_end; ++i) {
         
         //
         // Grab the tac for which to generate sourcecode
         tac_t& tac = block.program[i];
-
 
         //
         // Skip code generation for system and extensions
@@ -191,10 +210,36 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
         }
 
         DEBUG("Specializer::specialize(...) : tac.out->ndim(" << block.scope[tac.out].ndim << ")");
+
+        //
+        // Basic fusability-check
+        bool fusable = false;
+        if (apply_fusion) {
+            if (prev_idx >=0) {
+                tac_t& prev = block.program[prev_idx];
+                fusable = ( ((tac.op == MAP)    || (tac.op == ZIP))                         &&  \
+                            ((prev.op == MAP)   || (prev.op == ZIP))                        &&  \
+                            ((block.scope[tac.out].layout == block.scope[prev.out].layout)) &&  \
+                            ((block.scope[tac.out].ndim == block.scope[prev.out].ndim))         \
+                );
+                if (fusable) {  // Check shape
+                    for(int64_t dim=0; dim<block.scope[tac.out].ndim; ++dim) {
+                        if (block.scope[tac.out].shape[dim] != block.scope[prev.out].shape[dim]) {
+                            fusable = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            prev_idx = i;
+        }
+
         //
         // The operation (ewise, reduction, scan, random, range).
-        ctemplate::TemplateDictionary* operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
-        operation_d->SetFilename(template_filename(block, i, optimized));
+        if (!fusable) {
+            operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
+            operation_d->SetFilename(template_filename(block, i));
+        }
 
         //
         // Reduction and scan specific expansions
@@ -210,7 +255,6 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
         }
 
         ctemplate::TemplateDictionary* operator_d   = operation_d->AddSectionDictionary("OPERATORS");
-        ctemplate::TemplateDictionary* argument_d;  // Block arguments
         ctemplate::TemplateDictionary* operand_d;   // Operator operands
 
         //
@@ -224,41 +268,26 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
             case 3:
                 operation_d->SetIntValue("NR_SINPUT", tac.in2);  // Not all have
                 operator_d->SetIntValue("NR_SINPUT", tac.out);
-                argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
-                operand_d   = operation_d->AddSectionDictionary("OPERAND");
-                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in2].etype));
-                operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[tac.in2].etype));
 
-                argument_d->SetIntValue("NR", tac.in2);
+                operand_d   = operation_d->AddSectionDictionary("OPERAND");
+                operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[tac.in2].etype));
                 operand_d->SetIntValue("NR", tac.in2);
 
                 if (CONSTANT != block.scope[tac.in2].layout) {
-                    argument_d->ShowSection("ARRAY");
                     operand_d->ShowSection("ARRAY");
                 }
             case 2:
                 operation_d->SetIntValue("NR_FINPUT", tac.in1);  // Not all have
                 operator_d->SetIntValue("NR_FINPUT", tac.in1);
 
-                argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
                 operand_d   = operation_d->AddSectionDictionary("OPERAND");
-
-                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].etype));
                 operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].etype));
-
-                argument_d->SetIntValue("NR", tac.in1);
                 operand_d->SetIntValue("NR", tac.in1);
 
                 if (CONSTANT != block.scope[tac.in1].layout) {
-                    argument_d->ShowSection("ARRAY");
                     operand_d->ShowSection("ARRAY");
                 }
             case 1:
-                argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].etype));
-                argument_d->SetIntValue("NR", tac.out);
-                argument_d->ShowSection("ARRAY");
-
                 operation_d->SetIntValue("NR_OUTPUT", tac.out);
                 operator_d->SetIntValue("NR_OUTPUT", tac.out);
 
@@ -280,151 +309,6 @@ string Specializer::specialize(Block& block, bool optimized, size_t tac_start, s
     );
 
     DEBUG("Specializer::specialize(...);");
-    return sourcecode;
-}
-
-string Specializer::fuse(Block& block, bool optimized, size_t tac_start, size_t tac_end)
-{
-    DEBUG("Specializer::fuse(..., "<< optimized << ", " << tac_start << ", " << tac_end << ")");
-    string sourcecode  = "";
-
-    ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
-    kernel_d.SetValue("SYMBOL", block.symbol);
-    kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text);
-
-    kernel_d.SetValue("MODE", "Fused");
-    kernel_d.SetIntValue("NINSTR", block.length);
-    kernel_d.SetIntValue("NARGS", block.noperands);
-    kernel_d.SetIntValue("OPTIMIZED", optimized);
-    
-    ctemplate::TemplateDictionary* operation_d = NULL;
-
-    int64_t prev_idx = -1;
-
-    for(size_t i=tac_start; i<=tac_end; ++i) {
-        
-        //
-        // Grab the tac for which to generate sourcecode
-        tac_t& tac = block.program[i];
-
-        //
-        // Skip/ignore code generation for system and extensions
-        if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
-            continue;
-        }
-
-        //
-        // Basic fusability-check
-        bool fusable = false;
-        if (prev_idx >=0) {
-            tac_t& prev = block.program[prev_idx];
-            fusable = ( ((tac.op == MAP)    || (tac.op == ZIP))                         &&  \
-                        ((prev.op == MAP)   || (prev.op == ZIP))                        &&  \
-                        ((block.scope[tac.out].layout == block.scope[prev.out].layout)) &&  \
-                        ((block.scope[tac.out].ndim == block.scope[prev.out].ndim))         \
-            );
-            if (fusable) {  // Check shape
-                for(int64_t dim=0; dim<block.scope[tac.out].ndim; ++dim) {
-                    if (block.scope[tac.out].shape[dim] != block.scope[prev.out].shape[dim]) {
-                        fusable = false;
-                        break;
-                    }
-                }
-            }
-        }
-        prev_idx = i;
-
-        //
-        // The operation (ewise, reduction, scan, random, range).
-        if (!fusable) {
-            operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
-            operation_d->SetFilename(template_filename(block, i, optimized));
-        }
-
-        //
-        // Reduction and scan specific expansions
-        if ((tac.op == REDUCE) || (tac.op == SCAN)) {
-            operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(block.scope[tac.out].etype));
-            operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1].etype));
-            operation_d->SetValue("TYPE_AXIS",  "int64_t");
-            if (tac.oper == ADD) {
-                operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
-            } else if (tac.oper == MULTIPLY) {
-                operation_d->SetIntValue("NEUTRAL_ELEMENT", 1);
-            }
-        }
-
-        ctemplate::TemplateDictionary* operator_d   = operation_d->AddSectionDictionary("OPERATORS");
-        ctemplate::TemplateDictionary* argument_d;  // Block arguments
-        ctemplate::TemplateDictionary* operand_d;   // Operator operands
-
-        //
-        // The operator +, -, /, min, max, sin, sqrt, etc...
-        //        
-        operator_d->SetValue("OPERATOR", cexpression(block, i));
-
-        //
-        //  The arguments / operands
-        switch(utils::tac_noperands(tac)) {
-            case 3:
-                operation_d->SetIntValue("NR_SINPUT", tac.in2);  // Not all have
-                operator_d->SetIntValue("NR_SINPUT", tac.out);
-                argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
-                operand_d   = operation_d->AddSectionDictionary("OPERAND");
-                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in2].etype));
-                operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[tac.in2].etype));
-
-                argument_d->SetIntValue("NR", tac.in2);
-                operand_d->SetIntValue("NR", tac.in2);
-
-                if (CONSTANT != block.scope[tac.in2].layout) {
-                    argument_d->ShowSection("ARRAY");
-                    operand_d->ShowSection("ARRAY");
-                }
-            case 2:
-                operation_d->SetIntValue("NR_FINPUT", tac.in1);  // Not all have
-                operator_d->SetIntValue("NR_FINPUT", tac.in1);
-
-                argument_d  = kernel_d.AddSectionDictionary("ARGUMENT");
-                operand_d   = operation_d->AddSectionDictionary("OPERAND");
-
-                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].etype));
-                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].etype));
-
-                argument_d->SetIntValue("NR", tac.in1);
-                operand_d->SetIntValue("NR", tac.in1);
-
-                if (CONSTANT != block.scope[tac.in1].layout) {
-                    argument_d->ShowSection("ARRAY");
-                    operand_d->ShowSection("ARRAY");
-                }
-            case 1:
-                argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-                argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].etype));
-                argument_d->SetIntValue("NR", tac.out);
-                argument_d->ShowSection("ARRAY");
-
-                operation_d->SetIntValue("NR_OUTPUT", tac.out);
-                operator_d->SetIntValue("NR_OUTPUT", tac.out);
-
-                operand_d = operation_d->AddSectionDictionary("OPERAND");
-                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].etype));
-                operand_d->SetIntValue("NR", tac.out);
-                operand_d->ShowSection("ARRAY");
-        }
-    }
-
-    //
-    // Fill out the template and return the generated sourcecode
-    //
-    ctemplate::ExpandTemplate(
-        "kernel.tpl", 
-        strip_mode,
-        &kernel_d,
-        &sourcecode
-    );
-
-    DEBUG("Specializer::fuse(...);");
     return sourcecode;
 }
 

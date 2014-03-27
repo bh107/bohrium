@@ -20,12 +20,10 @@ public:
 
     std::string cexpression(Block& block, size_t tac_idx);
 
-    std::string template_filename(Block& block, size_t pc, bool optimized);
+    std::string template_filename(Block& block, size_t pc);
 
-    std::string specialize(Block& block, bool optimized);
-    std::string specialize(Block& block, bool optimized, size_t tac_start, size_t tac_end);
-
-    std::string fuse(Block& block, bool optimized, size_t tac_start, size_t tac_end);
+    std::string specialize(Block& block, bool apply_fusion);
+    std::string specialize(Block& block, size_t tac_start, size_t tac_end, bool apply_fusion);
 
 private:
     ctemplate::Strip strip_mode;

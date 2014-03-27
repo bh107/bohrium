@@ -27,7 +27,6 @@ public:
         const bool preload,
         const bool jit_enabled,
         const bool jit_fusion,
-        const bool jit_optimize,
         const bool jit_dumpsrc);
 
     ~Engine();
@@ -51,7 +50,6 @@ private:
     bool preload,
          jit_enabled,
          jit_fusion,
-         jit_optimize,
          jit_dumpsrc;
     
     Store          storage;

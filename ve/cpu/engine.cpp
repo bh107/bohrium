@@ -14,7 +14,6 @@ Engine::Engine(
     const bool preload,
     const bool jit_enabled,
     const bool jit_fusion,
-    const bool jit_optimize,
     const bool jit_dumpsrc)
 : compiler_cmd(compiler_cmd),
     template_directory(template_directory),
@@ -24,7 +23,6 @@ Engine::Engine(
     preload(preload),
     jit_enabled(jit_enabled),
     jit_fusion(jit_fusion),
-    jit_optimize(jit_optimize),
     jit_dumpsrc(jit_dumpsrc),
     storage(object_directory, kernel_directory),
     specializer(template_directory),
@@ -57,7 +55,6 @@ string Engine::text()
     ss << "  BH_VE_CPU_PRELOAD="        << this->preload      << endl;    
     ss << "  BH_VE_CPU_JIT_ENABLED="    << this->jit_enabled  << endl;    
     ss << "  BH_VE_CPU_JIT_FUSION="     << this->jit_fusion   << endl;
-    ss << "  BH_VE_CPU_JIT_OPTIMIZE="   << this->jit_optimize << endl;
     ss << "  BH_VE_CPU_JIT_DUMPSRC="    << this->jit_dumpsrc  << endl;
     ss << "}" << endl;
     
@@ -146,7 +143,7 @@ bh_error Engine::sij_mode(Block& block)
 
                 //
                 // We start by creating a symbol
-                if (!block.symbolize(0, 0, jit_optimize)) {
+                if (!block.symbolize(0, 0)) {
                     fprintf(stderr, "Engine::sij_mode(...) == Failed creating symbol.\n");
                     return BH_ERROR;
                 }
@@ -156,7 +153,7 @@ bh_error Engine::sij_mode(Block& block)
                 if (jit_enabled && \
                     (!storage.symbol_ready(block.symbol))) {   
                                                                 // Specialize sourcecode
-                    string sourcecode = specializer.specialize(block, jit_optimize, 0, 0);
+                    string sourcecode = specializer.specialize(block, 0, 0, false);
                     if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
                         utils::write_file(
                             storage.src_abspath(block.symbol),
@@ -183,18 +180,8 @@ bh_error Engine::sij_mode(Block& block)
                 if ((!storage.symbol_ready(block.symbol)) && \
                     (!storage.load(block.symbol))) {                // Need but cannot load
 
-                    if (jit_optimize) {                             // Try non-optimized fallback
-                        block.symbolize(0, 0, false);
-                        if ((block.symbol!="") && \
-                            (!storage.symbol_ready(block.symbol)) && \
-                            (!storage.load(block.symbol))) {        // Fail
-                            fprintf(stderr, "Engine::sij_mode(...) == Failed loading object.\n");
-                            return BH_ERROR;
-                        }
-                    } else {
-                        fprintf(stderr, "Engine::sij_mode(...) == Failed loading object.\n");
-                        return BH_ERROR;
-                    }
+                    fprintf(stderr, "Engine::sij_mode(...) == Failed loading object.\n");
+                    return BH_ERROR;
                 }
 
                 //
@@ -236,7 +223,7 @@ bh_error Engine::fuse_mode(Block& block)
     bh_error res = BH_SUCCESS;
     //
     // We start by creating a symbol
-    if (!block.symbolize(jit_optimize)) {
+    if (!block.symbolize()) {
         fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
         return BH_ERROR;
     }
@@ -250,7 +237,7 @@ bh_error Engine::fuse_mode(Block& block)
         ((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol))) {   
                                                     // Specialize sourcecode
-        string sourcecode = specializer.fuse(block, jit_optimize, 0, block.length-1);
+        string sourcecode = specializer.specialize(block, true);
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
             utils::write_file(
                 storage.src_abspath(block.symbol),
@@ -278,18 +265,8 @@ bh_error Engine::fuse_mode(Block& block)
         (!storage.symbol_ready(block.symbol)) && \
         (!storage.load(block.symbol))) {// Need but cannot load
 
-        if (jit_optimize) {                             // Unoptimized fallback
-            block.symbolize(false);
-            if ((block.symbol!="") && \
-                (!storage.symbol_ready(block.symbol)) && \
-                (!storage.load(block.symbol))) {        // Fail
-                fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
-                return BH_ERROR;
-            }
-        } else {
-            fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
-            return BH_ERROR;
-        }
+        fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
+        return BH_ERROR;
     }
 
     DEBUG("   Engine::execute(...) == Allocating memory.");

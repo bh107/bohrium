@@ -85,7 +85,6 @@ bh_error bh_ve_cpu_init(const char *name)
     bh_intp jit_enabled  = 1;
     bh_intp jit_preload  = 1;
     bh_intp jit_fusion   = 1;
-    bh_intp jit_optimize = 1;
     bh_intp jit_dumpsrc  = 0;
 
     char* compiler_cmd;   // cpu Arguments
@@ -140,15 +139,6 @@ bh_error bh_ve_cpu_init(const char *name)
         return BH_ERROR;
     }
 
-    env = getenv("BH_VE_CPU_JIT_OPTIMIZE");
-    if (NULL != env) {
-        jit_optimize = atoi(env);
-    }
-    if (!((0==jit_optimize) || (1==jit_optimize))) {
-        fprintf(stderr, "BH_VE_CPU_JIT_OPTIMIZE (%ld) should 0 or 1.\n", (long int)jit_optimize);
-        return BH_ERROR;
-    }
-
     env = getenv("BH_VE_CPU_JIT_DUMPSRC");
     if (NULL != env) {
         jit_dumpsrc = atoi(env);
@@ -167,7 +157,6 @@ bh_error bh_ve_cpu_init(const char *name)
     if (!jit_enabled) {
         jit_preload     = 1;
         jit_fusion      = 0;
-        jit_optimize    = 0;
         jit_dumpsrc     = 0;
     }
 
@@ -188,7 +177,6 @@ bh_error bh_ve_cpu_init(const char *name)
         (bool)jit_enabled,
         (bool)jit_preload,
         (bool)jit_fusion,
-        (bool)jit_optimize,
         (bool)jit_dumpsrc
     );
 
