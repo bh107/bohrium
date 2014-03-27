@@ -189,7 +189,7 @@ BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
     if(view == NULL)
         return -1;
 
-    PyObject *ret = PyObject_CallMethod(ndarray, "assign", "OO", v, view);
+    PyObject *ret = PyObject_CallMethod(ufunc, "assign", "OO", v, view);
     if(ret == NULL)
     {
         Py_DECREF(view);
