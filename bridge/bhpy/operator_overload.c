@@ -29,151 +29,151 @@ array_add(PyObject *m1, PyObject *m2)
 static PyObject *
 array_subtract(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.subtract);
+    return PyObject_CallMethod(bohrium, "subtract", "OO", m1, m2);
 }
 
 static PyObject *
 array_multiply(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.multiply);
+    return PyObject_CallMethod(bohrium, "multiply", "OO", m1, m2);
 }
 
 static PyObject *
 array_divide(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.divide);
+    return PyObject_CallMethod(bohrium, "divide", "OO", m1, m2);
 }
 
 static PyObject *
 array_remainder(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.remainder);
+    return PyObject_CallMethod(bohrium, "remainder", "OO", m1, m2);
 }
 
 static PyObject *
 array_negative(PyObject *m1)
 {
-    return NULL;
+    return PyObject_CallMethod(bohrium, "negative", "O", m1);
 }
 
 static PyObject *
 array_absolute(PyObject *m1)
 {
-    return NULL;//ay_GenericUnaryFunction(m1, n_ops.absolute);
+    return PyObject_CallMethod(bohrium, "absolute", "O", m1);
 }
 
 static PyObject *
 array_invert(PyObject *m1)
 {
-    return NULL;//ay_GenericUnaryFunction(m1, n_ops.invert);
+    return PyObject_CallMethod(bohrium, "invert", "O", m1);
 }
 
 static PyObject *
 array_left_shift(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.left_shift);
+    return PyObject_CallMethod(bohrium, "left_shift", "OO", m1, m2);
 }
 
 static PyObject *
 array_right_shift(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.right_shift);
+    return PyObject_CallMethod(bohrium, "right_shift", "OO", m1, m2);
 }
 
 static PyObject *
 array_bitwise_and(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.bitwise_and);
+    return PyObject_CallMethod(bohrium, "bitwise_and", "OO", m1, m2);
 }
 
 static PyObject *
 array_bitwise_or(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.bitwise_or);
+    return PyObject_CallMethod(bohrium, "bitwise_or", "OO", m1, m2);
 }
 
 static PyObject *
 array_bitwise_xor(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.bitwise_xor);
+    return PyObject_CallMethod(bohrium, "bitwise_xor", "OO", m1, m2);
 }
 
 static PyObject *
 array_inplace_add(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.add);
+    return PyObject_CallMethod(bohrium, "add", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_inplace_subtract(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.subtract);
+    return PyObject_CallMethod(bohrium, "subtract", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_inplace_multiply(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.multiply);
+    return PyObject_CallMethod(bohrium, "multiply", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_inplace_divide(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.divide);
+    return PyObject_CallMethod(bohrium, "divide", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_inplace_remainder(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.remainder);
+    return PyObject_CallMethod(bohrium, "remainder", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_inplace_left_shift(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.left_shift);
+    return PyObject_CallMethod(bohrium, "left_shift", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_inplace_right_shift(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.right_shift);
+    return PyObject_CallMethod(bohrium, "right_shift", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_inplace_bitwise_and(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.bitwise_and);
+    return PyObject_CallMethod(bohrium, "bitwise_and", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_inplace_bitwise_or(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.bitwise_or);
+    return PyObject_CallMethod(bohrium, "bitwise_or", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_inplace_bitwise_xor(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.bitwise_xor);
+    return PyObject_CallMethod(bohrium, "bitwise_xor", "OOO", m1, m1, m2);
 }
 
 static PyObject *
 array_floor_divide(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.floor_divide);
+    return PyObject_CallMethod(bohrium, "floor_divide", "OO", m1, m2);
 }
 
 static PyObject *
 array_true_divide(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericBinaryFunction(m1, m2, n_ops.true_divide);
+    return PyObject_CallMethod(bohrium, "true_divide", "OO", m1, m2);
 }
 
 static PyObject *
 array_inplace_floor_divide(PyObject *m1, PyObject *m2)
 {
-    return NULL;//ay_GenericInplaceBinaryFunction(m1, m2, n_ops.floor_divide);
+    return PyObject_CallMethod(bohrium, "floor_divide", "OOO", m1, m1, m2);
 }
 
 static PyObject *
