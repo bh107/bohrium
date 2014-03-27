@@ -296,6 +296,10 @@ string Specializer::fuse(Block& block, bool optimized, size_t tac_start, size_t 
     kernel_d.SetIntValue("NINSTR", block.length);
     kernel_d.SetIntValue("NARGS", block.noperands);
     kernel_d.SetIntValue("OPTIMIZED", optimized);
+    
+    ctemplate::TemplateDictionary* operation_d = NULL;
+
+    int64_t prev_idx = -1;
 
     for(size_t i=tac_start; i<=tac_end; ++i) {
         
@@ -304,15 +308,38 @@ string Specializer::fuse(Block& block, bool optimized, size_t tac_start, size_t 
         tac_t& tac = block.program[i];
 
         //
-        // Skip code generation for system and extensions
+        // Skip/ignore code generation for system and extensions
         if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
             continue;
         }
 
         //
+        // Basic fusability-check
+        bool fusable = false;
+        if (prev_idx >=0) {
+            tac_t& prev = block.program[prev_idx];
+            fusable = ( ((tac.op == MAP)    || (tac.op == ZIP))                         &&  \
+                        ((prev.op == MAP)   || (prev.op == ZIP))                        &&  \
+                        ((block.scope[tac.out].layout == block.scope[prev.out].layout)) &&  \
+                        ((block.scope[tac.out].ndim == block.scope[prev.out].ndim))         \
+            );
+            if (fusable) {  // Check shape
+                for(int64_t dim=0; dim<block.scope[tac.out].ndim; ++dim) {
+                    if (block.scope[tac.out].shape[dim] != block.scope[prev.out].shape[dim]) {
+                        fusable = false;
+                        break;
+                    }
+                }
+            }
+        }
+        prev_idx = i;
+
+        //
         // The operation (ewise, reduction, scan, random, range).
-        ctemplate::TemplateDictionary* operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
-        operation_d->SetFilename(template_filename(block, i, optimized));
+        if (!fusable) {
+            operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
+            operation_d->SetFilename(template_filename(block, i, optimized));
+        }
 
         //
         // Reduction and scan specific expansions
