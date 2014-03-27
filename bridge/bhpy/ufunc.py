@@ -39,6 +39,7 @@ def assign(a, out):
     else:
         a_bhc = get_bhc(a)
         a_dtype = dtype_name(a)
+        np.broadcast_arrays(a,out)#We only do this for the dimension mismatch check
         if out_dtype != a_dtype:
             exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
         cmd = "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
