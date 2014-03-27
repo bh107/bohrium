@@ -81,7 +81,14 @@ def get_bhc(ary):
         offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
         if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
             raise TypeError("The view offset must be element aligned")
-        exec "ret = bhc.bh_multi_array_%s_new_from_view(bh_base, ary.ndim, offset, ary.shape, ary.strides)"%dtype
+        strides = []
+        for s in ary.strides:
+            strides.append(s / base.itemsize)
+            if s % base.itemsize != 0:
+                raise TypeError("The strides must be element aligned")
+
+        exec "ret = bhc.bh_multi_array_%s_new_from_view(bh_base, ary.ndim, "\
+                    "offset, ary.shape, strides)"%dtype
         return ret
 
 #Delete the Bohrium-C object
