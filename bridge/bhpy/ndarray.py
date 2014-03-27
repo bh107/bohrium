@@ -76,7 +76,13 @@ def get_bhc(ary):
     if ary is base:#We a returning a base array
         return base.bhc_ary
     else:
-        raise NotImplementedError("TODO: handle views")
+        dtype = _util.dtype_name(ary)
+        exec "bh_base = bhc.bh_multi_array_%s_get_base(base.bhc_ary)"%dtype
+        offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
+        if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
+            raise TypeError("The view offset must be element aligned")
+        exec "ret = bhc.bh_multi_array_%s_new_from_view(bh_base, ary.ndim, offset, ary.shape, ary.strides)"%dtype
+        return ret
 
 #Delete the Bohrium-C object
 def del_bhc_obj(bhc_obj):

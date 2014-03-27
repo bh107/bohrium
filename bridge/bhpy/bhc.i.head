@@ -50,6 +50,9 @@
 %typemap(out) bh_float32 {
     $result = PyFloat_FromDouble($1);
 }
+%typemap(in) int64_t const {
+    $1 = PyInt_AsLong($input);
+}
 %typemap(in) int64_t const * (int64_t temp[32]) {
   int i;
   if (!PySequence_Check($input)) {
