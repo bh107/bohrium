@@ -47,15 +47,27 @@
     $1.real = PyComplex_RealAsDouble($input);
     $1.imag = PyComplex_ImagAsDouble($input);
 }
-%typemap(in) int64_t const * {
-    Py_ssize_t i = PySequence_Size($input);
-    int64_t l[10];
-    for(i=0; i<PySequence_Size($input); ++i)
-    {
-        l[i] = PyInt_AsUnsignedLongMask(PySequence_GetItem($input, i));
-    }
-    $1 = l;
-}
 %typemap(out) bh_float32 {
     $result = PyFloat_FromDouble($1);
+}
+%typemap(in) int64_t const * (int64_t temp[32]) {
+  int i;
+  if (!PySequence_Check($input)) {
+    PyErr_SetString(PyExc_ValueError,"Expected a sequence");
+    return NULL;
+  }
+  if (PySequence_Length($input) > 32) {
+    PyErr_SetString(PyExc_ValueError,"Max list length is 32");
+    return NULL;
+  }
+  for (i = 0; i < PySequence_Length($input); i++) {
+    PyObject *o = PySequence_GetItem($input,i);
+    if(PyInt_Check(o)) {
+      temp[i] = PyInt_AsLong(o);
+    } else {
+      PyErr_SetString(PyExc_ValueError,"Sequence elements must be Python integers");
+      return NULL;
+    }
+  }
+  $1 = temp;
 }

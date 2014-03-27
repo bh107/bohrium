@@ -50,8 +50,7 @@ def new_bhc_base(ary):
         raise ValueError("For now Bohrium only supports C-style arrays")
 
     dtype = _util.dtype_name(ary)
-    size = ary.size
-    exec "ary.bhc_ary = bhc.bh_multi_array_%s_new_empty(1, (%d,))"%(dtype,size)
+    exec "ary.bhc_ary = bhc.bh_multi_array_%s_new_empty(ary.ndim, ary.shape)"%dtype
 
 #Get the final base array of 'ary'
 def get_base(ary):
