@@ -57,7 +57,7 @@ BhArray_dealloc(BhArray* self)
         goto finish;
     }
 finish:
-    PyObject_Del(self);
+    BhArrayType.tp_base->tp_dealloc((PyObject*)self);
 }
 
 static PyObject *
@@ -149,6 +149,7 @@ BhArray_data_fill(PyObject *self, PyObject *args)
 
     memcpy(d, PyArray_DATA((PyArrayObject*)np_ary), PyArray_NBYTES((PyArrayObject*)np_ary));
 
+    Py_DECREF(data);
     Py_RETURN_NONE;
 }
 
@@ -185,36 +186,45 @@ static PyGetSetDef BhArray_getseters[] = {
 static int
 BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
 {
+    if(v == NULL)
+    {
+        PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
+        return -1;
+    }
+    if(PyArray_FailUnlessWriteable((PyArrayObject *)o, "assignment destination") < 0)
+        return -1;
+
     PyObject *view = PyArray_Type.tp_as_mapping->mp_subscript(o, key);
     if(view == NULL)
         return -1;
 
     PyObject *ret = PyObject_CallMethod(ufunc, "assign", "OO", v, view);
-    if(ret == NULL)
-    {
-        Py_DECREF(view);
-        return -1;
-    }
     Py_DECREF(view);
-    Py_DECREF(ret);
+    if(ret == NULL)
+        return -1;
+
     return 0;
 }
 
 static int
 BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
 {
+    if(v == NULL)
+    {
+        PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
+        return -1;
+    }
+    if(PyArray_FailUnlessWriteable((PyArrayObject *)o, "assignment destination") < 0)
+        return -1;
+
     PyObject *view = PyArray_Type.tp_as_sequence->sq_slice(o, ilow, ihigh);
     if(view == NULL)
         return -1;
 
     PyObject *ret = PyObject_CallMethod(ufunc, "assign", "OO", v, view);
-    if(ret == NULL)
-    {
-        Py_DECREF(view);
-        return -1;
-    }
     Py_DECREF(view);
-    Py_DECREF(ret);
+    if(ret == NULL)
+        return -1;
     return 0;
 }
 
@@ -230,7 +240,7 @@ static PySequenceMethods array_as_sequence = {
     (ssizeargfunc)0,                         /*sq_item*/
     (ssizessizeargfunc)0,                    /*sq_slice (Not in the Python doc)*/
     (ssizeobjargproc)BhArray_SetItem,        /*sq_ass_item*/
-    (ssizessizeobjargproc)BhArray_SetSlice,  /*sq_ass_slice (Not in the Python doc*/
+    (ssizessizeobjargproc)BhArray_SetSlice,  /*sq_ass_slice (Not in the Python doc)*/
     (objobjproc) 0,                          /*sq_contains */
     (binaryfunc) NULL,                       /*sg_inplace_concat */
     (ssizeargfunc)NULL,                      /*sg_inplace_repeat */

@@ -35,16 +35,16 @@ def assign(a, out):
     out_dtype = dtype_name(out)
     out_bhc = get_bhc(out)
     if np.isscalar(a):
-        cmd = "bhc.bh_multi_array_%s_assign_scalar(out_bhc,a)"%(out_dtype)
+        exec "bhc.bh_multi_array_%s_assign_scalar(out_bhc,a)"%(out_dtype)
     else:
         a_bhc = get_bhc(a)
         a_dtype = dtype_name(a)
         np.broadcast_arrays(a,out)#We only do this for the dimension mismatch check
         if out_dtype != a_dtype:
             exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
-        cmd = "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
-    exec cmd
-    return out
+        exec "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
+        if out_dtype != a_dtype:
+            ndarray.del_bhc_obj(a_bhc)#Delete the tmp array
 
 class ufunc:
     def __init__(self, info):
@@ -55,21 +55,17 @@ class ufunc:
     def __call__(self, *args):
 
         #Check number of arguments
-        if len(args) > self.info['nop'] or len(args) < self.info['nop']-1:
+        if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
             raise ValueError("invalid number of arguments")
 
-        #Pop the ouput from the 'args' list
+        #Check for shape mismatch
+        np.broadcast(*args)
+
+        #Pop the output from the 'args' list
         out = None
         args = list(args)
         if len(args) == self.info['nop']:#output given
             out = args.pop()
-
-        #Broadcast the inputs. In order to avoid hanging views we do
-        #the broadcast before any array creation
-        bviews = np.broadcast_arrays(*args)
-        if out is not None:
-            if not np.array_equal(out.shape, bviews[0].shape):
-                raise ValueError("the output and input shape doesn't match")
 
         #Find the type signature
         (out_dtype,in_dtype) = _util.type_sig(self.info['np_name'], args)
@@ -85,13 +81,12 @@ class ufunc:
             out = array_create.empty(args[0].shape, out_dtype)
 
         #Check for not implemented errors
-        for i, a in enumerate(args):
+        for a in args:
             if isinstance(a, Number):
                 raise NotImplementedError("We do not support Python scalars")
-            if a.base is not None:
-                raise NotImplementedError("We do not support views")
-            if not ndarray.check(a):
-                args[i] = array_create.array(a)
+
+        #Convert 'args' to Bohrium arrays
+        args = [array_create.array(a) if not ndarray.check(a) else a for a in args]
 
         f = eval("bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), self.info['bhc_name']))
 
@@ -99,6 +94,8 @@ class ufunc:
             ret = f(get_bhc(args[0]))
         elif self.info['nop'] == 3:
             ret = f(get_bhc(args[0]), get_bhc(args[1]))
+        else:
+            raise NotImplementedError("nop is not supported: d"%self.info['nop'])
 
         #Copy result into the output array
         exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),ret)"%(dtype_name(out_dtype))

@@ -87,9 +87,9 @@ def get_bhc(ary):
             if s % base.itemsize != 0:
                 raise TypeError("The strides must be element aligned")
 
-        exec "ret = bhc.bh_multi_array_%s_new_from_view(bh_base, ary.ndim, "\
-                    "offset, ary.shape, strides)"%dtype
-        return ret
+        exec "ary.bhc_ary = bhc.bh_multi_array_%s_new_from_view(bh_base, ary.ndim, "\
+                            "offset, ary.shape, strides)"%dtype
+        return ary.bhc_ary
 
 #Delete the Bohrium-C object
 def del_bhc_obj(bhc_obj):
