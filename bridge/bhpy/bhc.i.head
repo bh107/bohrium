@@ -47,8 +47,46 @@
     $1.real = PyComplex_RealAsDouble($input);
     $1.imag = PyComplex_ImagAsDouble($input);
 }
-%typemap(out) bh_float32 {
-    $result = PyFloat_FromDouble($1);
+%typemap(in) bh_bool {
+    $1 = PyBool_Check($input);
+}
+%typemap(in) bh_int8 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int16 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int32 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int64 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint8 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint16 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint32 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint64 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_float64 {
+    $1 = PyFloat_AsDouble($input);
+}
+%typemap(in) bh_float32 {
+    $1 = PyFloat_AsDouble($input);
+}
+%typemap(in) bh_complex64 {
+    $1.real = PyComplex_RealAsDouble($input);
+    $1.imag = PyComplex_ImagAsDouble($input);
+}
+%typemap(in) bh_complex128 {
+    $1.real = PyComplex_RealAsDouble($input);
+    $1.imag = PyComplex_ImagAsDouble($input);
 }
 %typemap(in) int64_t const {
     $1 = PyInt_AsLong($input);

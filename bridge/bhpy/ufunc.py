@@ -67,6 +67,9 @@ class ufunc:
         if len(args) == self.info['nop']:#output given
             out = args.pop()
 
+        if len(args) > 2:
+            raise ValueError("Bohrium do not support ufunc with more than two inputs")
+
         #Find the type signature
         (out_dtype,in_dtype) = _util.type_sig(self.info['np_name'], args)
 
@@ -80,22 +83,33 @@ class ufunc:
         if out is None:
             out = array_create.empty(args[0].shape, out_dtype)
 
-        #Check for not implemented errors
+        #Check for Python scalars
+        py_scalar = None
+        for i, a in enumerate(args):
+            if isinstance(a, Number):
+                if py_scalar is not None:
+                    raise ValueError("Bohrium ufuncs do not support multiple scalar inputs")
+                py_scalar = i#The i'th input is a Python scalar
+
+        #Convert 'args' to Bohrium-C arrays
+        bhcs = []
         for a in args:
             if isinstance(a, Number):
-                raise NotImplementedError("We do not support Python scalars")
+                bhcs.append(a)
+            elif ndarray.check(a):
+                bhcs.append(get_bhc(a))
+            else:
+                bhcs.append(get_bhc(array_create.array(a)))
 
-        #Convert 'args' to Bohrium arrays
-        args = [array_create.array(a) if not ndarray.check(a) else a for a in args]
-
-        f = eval("bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), self.info['bhc_name']))
-
-        if self.info['nop'] == 2:
-            ret = f(get_bhc(args[0]))
-        elif self.info['nop'] == 3:
-            ret = f(get_bhc(args[0]), get_bhc(args[1]))
-        else:
-            raise NotImplementedError("nop is not supported: d"%self.info['nop'])
+        cmd = "bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), self.info['bhc_name'])
+        if py_scalar is not None:
+            if py_scalar == 0:
+                cmd += "_scalar_lhs"
+            else:
+                cmd += "_scalar_rhs"
+ 
+        f = eval(cmd)
+        ret = f(*bhcs)
 
         #Copy result into the output array
         exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),ret)"%(dtype_name(out_dtype))
