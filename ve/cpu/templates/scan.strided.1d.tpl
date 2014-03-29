@@ -1,3 +1,4 @@
+//
 // Scan operation on one-dimensional arrays with strided access.
 {
     {{#OPERAND}}{{#ARRAY}}

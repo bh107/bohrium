@@ -1,3 +1,4 @@
+//
 // Elementwise operation on one-dimensional arrays using strided indexing
 {
     int mthreads      = omp_get_max_threads();

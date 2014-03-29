@@ -1,3 +1,5 @@
+//
+// Reduction of on one-dimensional arrays using strided indexing
 {
     {{#OPERAND}}
     {{TYPE}} *a{{NR}}_current = a{{NR}}_first;

@@ -1,3 +1,4 @@
+//
 // RANDOM, unclassified operation
 {
     uint64_t nelements  = a{{NR_OUTPUT}}_nelem;

@@ -1,3 +1,5 @@
+//
+// Elementwise operation on three-dimensional arrays using strided indexing
 {
     {{#OPERAND}}{{#ARRAY}}
     int64_t a{{NR}}_shape_ld    = a{{NR}}_shape[2];

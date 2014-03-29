@@ -1,3 +1,5 @@
+//
+// Reduction on three-dimensional arrays using strided indexing
 {
 #define OUTER 1
 #define INNER 0

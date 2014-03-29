@@ -1,4 +1,4 @@
-// Reduction operation of a strided n-dimensional array where n>1
+// Scan operation of a strided n-dimensional array where n>1
 // TODO: openmp
 //       dimension-based optimizations
 //       loop collapsing...
