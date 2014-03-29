@@ -49,6 +49,66 @@ std::string string_format(const std::string fmt_str, ...) {
 }
 
 /**
+ *  Determines whether two operand have equivalent meta-data.
+ *
+ *  This function serves the same purpose as bh_view_identical, 
+ *  but for tac-operands instead of bh_instruction.operand[...].
+ *
+ */
+bool equivalent_operands(const operand_t& one, const operand_t& other)
+{
+    if (one.layout != other.layout) {
+        return false;
+    }
+    if (*(one.data) != *(other.data)) {
+        return false;
+    }
+    if (one.ndim != other.ndim) {
+        return false;
+    }
+    if (one.start != other.start) {
+        return false;
+    }
+    for(bh_intp j=0; j<one.ndim; ++j) {
+        if (one.stride[j] != other.stride[j]) {
+            return false;
+        }
+        if (one.shape[j] != other.shape[j]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ *  Determines whether two operand have compatible meta-data.
+ *
+ *  This function serves the same purpose as bh_view_identical, 
+ *  but for tac-operands instead of bh_instruction.operand[...].
+ *
+ */
+bool compatible_operands(const operand_t& one, const operand_t& other)
+{
+    if ((one.layout == CONSTANT) || (other.layout == CONSTANT)) {
+        return true;
+    } 
+    if (one.layout != other.layout) {
+        cout << "Invalid layout." << endl;
+        return false;
+    }
+    if (one.ndim != other.ndim) {
+            cout << "Invalid ndim." << endl;
+        return false;
+    }
+    for(bh_intp j=0; j<one.ndim; ++j) {
+        if (one.shape[j] != other.shape[j]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
  *  Determine whether an operand has a contiguous layout.
  */
 bool is_contiguous(operand_t& arg)

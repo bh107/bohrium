@@ -26,6 +26,9 @@ namespace utils {
 
 ETYPE bhtype_to_etype(bh_type bhtype);
 
+bool compatible_operands(const operand_t& one, const operand_t& other);
+bool equivalent_operands(const operand_t& one, const operand_t& other);
+
 std::string operation_text(OPERATION op);
 std::string operator_text(OPERATOR op);
 std::string etype_text(ETYPE etype);

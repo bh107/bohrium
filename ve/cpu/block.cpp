@@ -133,6 +133,16 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
 
     DEBUG("++ Block::symbolize("<< tac_start << ", " << tac_end << ")");
 
+    //
+    // Scope
+    for(size_t i=1; i<=noperands; ++i) {
+        operands << "~" << i;
+        operands << utils::layout_text_shand(scope[i].layout);
+        operands << utils::etype_text_shand(scope[i].etype);
+    }
+
+    //
+    // Program
     bool first = true;
     for (size_t i=tac_start; i<=tac_end; ++i) {
         tac_t& tac = this->program[i];
@@ -163,39 +173,15 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
                 tacs << "~" << tac.out;
                 tacs << "~" << tac.in1;
                 tacs << "~" << tac.in2;
-
-                operands << "~" << tac.out;
-                operands << utils::layout_text_shand(scope[tac.out].layout);
-                operands << utils::etype_text_shand(scope[tac.out].etype);
-
-                operands << "~" << tac.in1;
-                operands << utils::layout_text_shand(scope[tac.in1].layout);
-                operands << utils::etype_text_shand(scope[tac.in1].etype);
-
-                operands << "~" << tac.in2;
-                operands << utils::layout_text_shand(scope[tac.in2].layout);
-                operands << utils::etype_text_shand(scope[tac.in2].etype);
                 break;
 
             case 2:
                 tacs << "~" << tac.out;
                 tacs << "~" << tac.in1;
-
-                operands << "~" << tac.out;
-                operands << utils::layout_text_shand(scope[tac.out].layout);
-                operands << utils::etype_text_shand(scope[tac.out].etype);
-
-                operands << "~" << tac.in1;
-                operands << utils::layout_text_shand(scope[tac.in1].layout);
-                operands << utils::etype_text_shand(scope[tac.in1].etype);
                 break;
 
             case 1:
                 tacs << "~" << tac.out;
-
-                operands << "~" << tac.out;
-                operands << utils::layout_text_shand(scope[tac.out].layout);
-                operands << utils::etype_text_shand(scope[tac.out].etype);
                 break;
 
             case 0:
@@ -210,38 +196,6 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
     symbol      = utils::hash_text(symbol_text);
 
     DEBUG("-- Block::symbolize(...) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
-    return true;
-}
-
-/**
- *  Determines whether two operand have equivalent meta-data.
- *
- *  This function serves the same purpose as bh_view_identical, 
- *  but for tac-operands instead of bh_instruction.operand[...].
- *
- */
-bool equivalent_operands(const operand_t& one, const operand_t& other)
-{
-    if (one.layout != other.layout) {
-        return false;
-    }
-    if (*(one.data) != *(other.data)) {
-        return false;
-    }
-    if (one.ndim != other.ndim) {
-        return false;
-    }
-    if (one.start != other.start) {
-        return false;
-    }
-    for(bh_intp j=0; j<one.ndim; ++j) {
-        if (one.stride[j] != other.stride[j]) {
-            return false;
-        }
-        if (one.shape[j] != other.shape[j]) {
-            return false;
-        }
-    }
     return true;
 }
 
@@ -286,11 +240,10 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
         }
     }
 
-    /*
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
     for(size_t i=0; i<arg_idx; ++i) {
-        if (!equivalent_operands(scope[i], scope[arg_idx])) {
+        if (!utils::equivalent_operands(scope[i], scope[arg_idx])) {
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.
@@ -298,7 +251,6 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
         arg_idx = i;
         break;
     }
-    */
     return arg_idx;
 }
 
