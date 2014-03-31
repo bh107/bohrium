@@ -194,7 +194,7 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
             argument_d->ShowSection("ARRAY");
         }
     }
-    //apply_fusion = false;
+
     //
     // Now process the array operations
     for(size_t i=tac_start; i<=tac_end; ++i) {
@@ -225,15 +225,15 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
             for(size_t j=i; (apply_fusion) && (j<=tac_end); ++j) {
                 tac_t& next = block.program[j];
                 if (next.op == SYSTEM) {   // Ignore
-                    cout << "Ignoring sstem operation." << endl;
+                    DEBUG(TAG, "Ignoring sstem operation.");
                     continue;
                 }
                 if (next.op == EXTENSION) {
-                    cout << "WE GOT AN EXTENSION!!!!" << endl;
+                    DEBUG(TAG, "WE GOT AN EXTENSION!!!!");
                     break;
                 }
                 if (!((next.op == ZIP) || (next.op == MAP))) {
-                    cout << "Incompatible operation " << utils::operation_text(next.op) << endl;
+                    DEBUG(TAG, "Incompatible operation " << utils::operation_text(next.op));
                     break;
                 }
                 // At this point the operation is an array operation
@@ -272,7 +272,7 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
         set<size_t> operands;
         set<size_t>::iterator operands_it;
 
-        cout << "FOPS " << fuse_ops << " START " << fuse_start << " END " << fuse_end << endl;
+        DEBUG(TAG, "FOPS " << fuse_ops << " START " << fuse_start << " END " << fuse_end);
         for(i=fuse_start; i<=fuse_end; ++i) {
 
             tac_t& tac = block.program[i];

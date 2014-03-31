@@ -53,16 +53,22 @@ if [ ! -z "$1" ] && [ "$1" == "fusion" ]; then
     mkdir -p /tmp/code/fuse
     rm /tmp/code/fuse/*.c
     ./dostuff.sh reset
-    BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
+    #BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
     python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "black" ]; then
     ./dostuff.sh reset
     python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
+
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
-    BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+
 fi
 
