@@ -31,6 +31,36 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bh {
 
 template <typename T>
+multi_array<T>& logical_xor (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& logical_xor (multi_array<T> &lhs, const T &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& logical_xor (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
 multi_array<T>& pow (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
