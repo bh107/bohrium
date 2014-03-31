@@ -7,7 +7,7 @@ namespace cpu{
 
 const char Block::TAG[] = "Block";
 
-Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
+Block::Block(const bh_ir& ir, const bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
 {
     size_t ps = (size_t)dag.nnode;
     if (ps<1) {
@@ -28,7 +28,7 @@ Block::~Block()
     DEBUG(TAG, "~Block() --");
 }
 
-bh_dag& Block::get_dag()
+const bh_dag& Block::get_dag()
 {
     return this->dag;
 }

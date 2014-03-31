@@ -12,7 +12,7 @@ namespace cpu{
 
 class Block {
 public:
-    Block(bh_ir& ir, bh_dag& dag);
+    Block(const bh_ir& ir, const bh_dag& dag);
     ~Block();
 
     std::string text(std::string prefix);
@@ -38,12 +38,12 @@ public:
     std::string symbol_text;    // Textual representation of the block
     std::string symbol;         // Hash of textual representation
 
-    bh_dag& get_dag(void);
+    const bh_dag& get_dag(void);
 
 private:
     size_t add_operand(bh_instruction& instr, size_t operand_idx);
-    bh_ir& ir;
-    bh_dag& dag;
+    const bh_ir& ir;
+    const bh_dag& dag;
 
     static const char TAG[];
 };
