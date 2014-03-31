@@ -1,7 +1,7 @@
 [
 
 
-["=", "BH_IDENTITY", "assign", false], 
+["=", "BH_IDENTITY", "assign", false],
 
 ["+=",  "BH_ADD",       "add", true],
 ["-=",  "BH_SUBTRACT",  "subtract", true],
@@ -14,23 +14,24 @@
 
 ["+", "BH_ADD",      "add", false],
 ["-", "BH_SUBTRACT", "subtract", false],
-["*", "BH_MULTIPLY", "multiply", false], 
-["/", "BH_DIVIDE",   "divide", false], 
+["*", "BH_MULTIPLY", "multiply", false],
+["/", "BH_DIVIDE",   "divide", false],
 ["%", "BH_MOD",      "modulo", false],
 
-["==",  "BH_EQUAL",          "equal_to", false], 
-["!=",  "BH_NOT_EQUAL",      "not_equal_to", false], 
-[">",   "BH_GREATER",        "greater_than", false], 
-[">=",  "BH_GREATER_EQUAL",  "greater_than_or_equal_to", false], 
+["==",  "BH_EQUAL",          "equal_to", false],
+["!=",  "BH_NOT_EQUAL",      "not_equal_to", false],
+[">",   "BH_GREATER",        "greater_than", false],
+[">=",  "BH_GREATER_EQUAL",  "greater_than_or_equal_to", false],
 ["<",   "BH_LESS",           "less_than", false],
 ["<=",  "BH_LESS_EQUAL",     "less_than_or_equal_to", false],
 
-["&&",  "BH_LOGICAL_AND",    "logical_and", false], 
-["||",  "BH_LOGICAL_OR",     "logical_or", false],
+["&&",          "BH_LOGICAL_AND",  "logical_and", false],
+["||",          "BH_LOGICAL_OR",   "logical_or", false],
+["logical_xor", "BH_LOGICAL_XOR",  "logical_xor", false],
 
 ["&",   "BH_BITWISE_AND",    "bitwise_and", false],
 ["|",   "BH_BITWISE_OR",     "bitwise_or", false],
-["^",   "BH_BITWISE_XOR",    "bitwise_xor", false], 
+["^",   "BH_BITWISE_XOR",    "bitwise_xor", false],
 
 ["!", "BH_LOGICAL_NOT",  "logical_not", false],
 ["~", "BH_INVERT",       "bitwise_invert", false],
