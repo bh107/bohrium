@@ -36,6 +36,9 @@
 ["!", "BH_LOGICAL_NOT",  "logical_not", false],
 ["~", "BH_INVERT",       "bitwise_invert", false],
 
+["left_shift",  "BH_LEFT_SHIFT", "left_shift", false],
+["right_shift", "BH_RIGHT_SHIFT", "right_shift", false],
+
 ["pow",     "BH_POWER", "power", false],
 ["abs",     "BH_ABSOLUTE", "absolute", false],
 ["max",     "BH_MAXIMUM", "maximum", false],
@@ -49,6 +52,7 @@
 ["asin",    "BH_ARCSIN", "asin", false],
 ["acos",    "BH_ARCCOS", "acos", false],
 ["atan",    "BH_ARCTAN", "atan", false],
+["atan2",   "BH_ARCTAN2", "atan2", false],
 ["asinh",   "BH_ARCSINH", "asinh", false],
 ["acosh",   "BH_ARCCOSH", "acosh", false],
 ["atanh",   "BH_ARCTANH", "atanh", false],
@@ -56,10 +60,16 @@
 ["exp2",    "BH_EXP2", "exp2", false],
 ["expm1",   "BH_EXPM1", "expm1", false],
 
+["isnan",   "BH_ISNAN", "isnan", false],
+["isinf",   "BH_ISINF", "isinf", false],
+
 ["log",     "BH_LOG", "log", false],
 ["log2",    "BH_LOG2", "log2", false],
 ["log10",   "BH_LOG10", "log10", false],
 ["log1p",   "BH_LOG1P", "log1p", false],
+
+["imag",   "BH_IMAG", "imag", false],
+["real",   "BH_REAL", "real", false],
 
 ["sqrt",    "BH_SQRT", "sqrt", false],
 ["ceil",    "BH_CEIL", "ceil", false],

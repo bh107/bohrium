@@ -61,6 +61,66 @@ multi_array<T>& logical_xor (const T &lhs, multi_array<T> &rhs)
 }
 
 template <typename T>
+multi_array<T>& left_shift (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& left_shift (multi_array<T> &lhs, const T &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& left_shift (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& right_shift (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& right_shift (multi_array<T> &lhs, const T &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& right_shift (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
 multi_array<T>& pow (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
@@ -241,6 +301,36 @@ multi_array<T>& atan (multi_array<T> &rhs)
     return *result;
 }
 template <typename T>
+multi_array<T>& atan2 (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& atan2 (multi_array<T> &lhs, const T &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& atan2 (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
 multi_array<T>& asinh (multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
@@ -292,6 +382,24 @@ multi_array<T>& expm1 (multi_array<T> &rhs)
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXPM1, *result, rhs);
+    return *result;
+}
+template <typename T>
+multi_array<T>& isnan (multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ISNAN, *result, rhs);
+    return *result;
+}
+template <typename T>
+multi_array<T>& isinf (multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ISINF, *result, rhs);
     return *result;
 }
 template <typename T>
