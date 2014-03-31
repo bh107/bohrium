@@ -26,6 +26,7 @@ public:
 private:
     std::string process_str;
 
+    static const char TAG[];
 };
 
 }}}

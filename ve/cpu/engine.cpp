@@ -5,6 +5,8 @@ namespace bohrium{
 namespace engine {
 namespace cpu {
 
+const char Engine::TAG[] = "Engine";
+
 Engine::Engine(
     const string compiler_cmd,
     const string template_directory,
@@ -28,23 +30,23 @@ Engine::Engine(
     specializer(template_directory),
     compiler(compiler_cmd)
 {
-    DEBUG("++ Engine::Engine(...)");
+    DEBUG(TAG, "Engine(...)");
     bh_vcache_init(vcache_size);    // Victim cache
     if (preload) {
         storage.preload();
     }
-    DEBUG(this->text());
-    DEBUG("-- Engine::Engine(...)");
+    DEBUG(TAG,this->text());
+    DEBUG(TAG, "Engine(...)");
 }
 
 Engine::~Engine()
 {
-    DEBUG("++ ~Engine(...)");
+    DEBUG(TAG, "~Engine(...)");
     if (vcache_size>0) {    // De-allocate the malloc-cache
         bh_vcache_clear();
         bh_vcache_delete();
     }
-    DEBUG("-- ~Engine(...)");
+    DEBUG(TAG, "~Engine(...)");
 }
 
 string Engine::text()
@@ -81,7 +83,7 @@ string Engine::text()
  */
 bh_error Engine::sij_mode(Block& block)
 {
-    DEBUG("++ Engine::sij_mode(...) : length(" << block.length << ")");
+    DEBUG(TAG, "sij_mode(...) : length(" << block.length << ")");
 
     bh_error res = BH_SUCCESS;
 
@@ -108,7 +110,7 @@ bh_error Engine::sij_mode(Block& block)
                         break;
 
                     case FREE:
-                        DEBUG("   Engine::execute(...) == De-Allocate memory!");
+                        DEBUG(TAG,"sij_mode(...) == De-Allocate memory!");
                     
                         res = bh_vcache_free(instr);
                         if (BH_SUCCESS != res) {
@@ -186,7 +188,7 @@ bh_error Engine::sij_mode(Block& block)
 
                 //
                 // Allocate memory for operands
-                DEBUG("   Engine::sij_mode(...) == Allocating memory.");
+                DEBUG(TAG,"sij_mode(...) == Allocating memory.");
                 res = bh_vcache_malloc(instr);
                 if (BH_SUCCESS != res) {
                     fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
@@ -196,16 +198,16 @@ bh_error Engine::sij_mode(Block& block)
                 //
                 // Execute block handling array operations.
                 // 
-                DEBUG("   Engine::sij_mode(...) == Call kernel function!");
-                DEBUG(utils::tac_text(tac)); 
-                DEBUG(block.scope_text());
+                DEBUG(TAG,"sij_mode(...) == Call kernel function!");
+                DEBUG(TAG,utils::tac_text(tac)); 
+                DEBUG(TAG,block.scope_text());
                 storage.funcs[block.symbol](block.scope);
 
                 break;
         }
     }
 
-    DEBUG("-- Engine::sij_mode(...);")
+    DEBUG(TAG,"sij_mode(...);")
     return BH_SUCCESS;
 }
 
@@ -220,15 +222,18 @@ bh_error Engine::sij_mode(Block& block)
  */
 bh_error Engine::fuse_mode(Block& block)
 {
+    DEBUG(TAG, "fuse_mode(...)");
+
     bh_error res = BH_SUCCESS;
     //
     // We start by creating a symbol
     if (!block.symbolize()) {
         fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
+        DEBUG(TAG, "fuse_mode(...);");
         return BH_ERROR;
     }
 
-    DEBUG(block.text("   "));
+    DEBUG(TAG, "fuse_mode(...) block: " << endl << block.text("   "));
 
     //
     // JIT-compile the block if enabled
@@ -252,6 +257,8 @@ bh_error Engine::fuse_mode(Block& block)
         );                 
         if (!compile_res) {
             fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
+
+            DEBUG(TAG, "fuse_mode(...);");
             return BH_ERROR;
         }
                                                     // Inform storage
@@ -266,10 +273,11 @@ bh_error Engine::fuse_mode(Block& block)
         (!storage.load(block.symbol))) {// Need but cannot load
 
         fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
+        DEBUG(TAG, "fuse_mode(...);");
         return BH_ERROR;
     }
 
-    DEBUG("   Engine::execute(...) == Allocating memory.");
+    DEBUG(TAG, "fuse_mode(...) == Allocating memory.");
     //
     // Allocate memory for output
     //
@@ -278,17 +286,18 @@ bh_error Engine::fuse_mode(Block& block)
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                             "called from bh_ve_cpu_execute()\n");
+            DEBUG(TAG, "fuse_mode(...);");
             return res;
         }
     }
 
-    DEBUG("   Engine::execute(...) == Call kernel function!");
+    DEBUG(TAG, "fuse_mode(...) == Call kernel function!");
     //
     // Execute block handling array operations.
     // 
     storage.funcs[block.symbol](block.scope);
 
-    DEBUG("   Engine::execute(...) == De-Allocate memory!");
+    DEBUG(TAG, "fuse_mode(...) == De-Allocate memory!");
     //
     // De-Allocate operand memory
     for(size_t i=0; i<block.length; ++i) {
@@ -297,24 +306,25 @@ bh_error Engine::fuse_mode(Block& block)
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
                                 "called from bh_ve_cpu_execute)\n");
+                DEBUG(TAG,"Engine::fuse_mode(...);");
                 return res;
             }
         }
     }
-
+    DEBUG(TAG,"Engine::fuse_mode(...);");
     return BH_SUCCESS;
 }
 
 bh_error Engine::execute(bh_ir& bhir)
 {
-    DEBUG("++ Engine::execute(...)");
+    DEBUG(TAG,"++ Engine::execute(...)");
 
     bh_error res = BH_SUCCESS;
     bh_dag& root = bhir.dag_list[0];  // Start at the root DAG
 
-    DEBUG("   Engine::execute(...) == Dag-Loop");
+    DEBUG(TAG,"   Engine::execute(...) == Dag-Loop("<< root.nnode << ")");
     for(bh_intp i=0; i<root.nnode; ++i) {
-        DEBUG("   ++Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
+        DEBUG(TAG,"   ++Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
         bh_intp node = root.node_map[i];
         if (node>0) {
             fprintf(stderr, "Engine::execute(...) == ERROR: Instruction in the root-dag."
@@ -348,10 +358,10 @@ bh_error Engine::execute(bh_ir& bhir)
             fprintf(stderr, "Engine:execute(...) == ERROR: Failed running *_mode(...).\n");
             return BH_ERROR;
         }
-        DEBUG("   --Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
+        DEBUG(TAG,"   --Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
     }
     
-    DEBUG("-- Engine::execute(...)");
+    DEBUG(TAG,"execute(...)");
     return res;
 }
 
@@ -369,7 +379,7 @@ bh_error Engine::register_extension(bh_component& instance, const char* name, bh
     }
     extensions[opcode] = extmethod;
 
-    DEBUG("-- bh_ve_cpu_extmethod(...);");
+    DEBUG(TAG, "bh_ve_cpu_extmethod(...);");
     return BH_SUCCESS;
 }
 

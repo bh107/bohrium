@@ -25,8 +25,8 @@ purge:
 	rm -fr $(INSTALLDIR)/cpu/
 
 sample:
-	$(BH_PYTHON) misc/sample.py 3 4 1 --be numpy
-	BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) misc/sample.py 3 4 1 --be bohrium
+	$(BH_PYTHON) tools/sample.py 3 4 1 --be numpy
+	BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) tools/sample.py 3 4 1 --be bohrium
 
 jacobi:
 	$(BH_PYTHON) ../../benchmark/Python/jacobi_stencil.py --size=10*10*1 --verbose

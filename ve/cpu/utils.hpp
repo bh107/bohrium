@@ -16,9 +16,9 @@
 #include <fcntl.h>
 
 #ifdef DEBUGGING
-#define DEBUG(x) do { std::cerr << x << std::endl; } while (0);
+#define DEBUG(tag,x) do { std::cerr << TAG << "::" << x << std::endl; } while (0);
 #else
-#define DEBUG(X)
+#define DEBUG(tag,x)
 #endif
 
 namespace bohrium {

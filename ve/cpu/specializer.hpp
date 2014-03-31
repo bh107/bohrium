@@ -29,6 +29,7 @@ private:
     ctemplate::Strip strip_mode;
     std::string template_directory;
 
+    static const char TAG[];
 };
 
 }}}

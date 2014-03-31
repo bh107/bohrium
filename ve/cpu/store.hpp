@@ -23,6 +23,7 @@ namespace bohrium {
 namespace engine {
 namespace cpu {
 
+
 typedef void (*func)(operand_t* args);
 
 //
@@ -68,6 +69,8 @@ private:
     std::string uid;
     std::string kernel_prefix;
     std::string library_prefix;
+
+    static const char TAG[];
 };
 
 }}}

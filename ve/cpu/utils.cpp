@@ -5,6 +5,8 @@ using namespace std;
 namespace bohrium{
 namespace utils{
 
+const char TAG[] = "Utils";
+
 /* Requires C++0x
 std::string string_format(const std::string & fmt_str, ...)
 {
@@ -263,7 +265,7 @@ string tac_layout_text(tac_t& tac, operand_t* scope)
  */
 bool write_file(string file_path, const char* sourcecode, size_t source_len)
 {
-    DEBUG("++ utils::write_file("<< file_path << ", ..., " << source_len << ");");
+    DEBUG(TAG, "write_file("<< file_path << ", ..., " << source_len << ");");
 
     int fd;              // Kernel file-descriptor
     FILE *fp = NULL;     // Handle for kernel-file
@@ -287,7 +289,7 @@ bool write_file(string file_path, const char* sourcecode, size_t source_len)
     fclose(fp);
     close(fd);
 
-    DEBUG("-- utils::write_file(...);");
+    DEBUG(TAG, "write_file(...);");
     return true;
 }
 

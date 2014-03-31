@@ -31,6 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "engine.hpp"
 
 using namespace std;
+const char TAG[] = "Component";
 
 static bh_component myself;
 
@@ -79,7 +80,7 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {
-    DEBUG("++ bh_ve_cpu_init(...);");
+    DEBUG(TAG,"++ bh_ve_cpu_init(...);");
 
     bh_intp vcache_size  = 10;  // Default...
     bh_intp jit_enabled  = 1;
@@ -180,42 +181,38 @@ bh_error bh_ve_cpu_init(const char *name)
         (bool)jit_dumpsrc
     );
 
-    DEBUG("-- bh_ve_cpu_init(...);");
+    DEBUG(TAG,"-- bh_ve_cpu_init(...);");
     return BH_SUCCESS;
 }
 
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    bh_error res = BH_SUCCESS;
-    DEBUG("++ bh_ve_cpu_execute(...)");
-    res = engine->execute(*bhir);
-    DEBUG("-- bh_ve_cpu_execute(...);");
-    return res;
+    return engine->execute(*bhir);
 }
 
 /* Component interface: shutdown (see bh_component.h) */
 bh_error bh_ve_cpu_shutdown(void)
 {
-    DEBUG("++ bh_ve_cpu_shutdown(void)");
+    DEBUG(TAG,"++ bh_ve_cpu_shutdown(void)");
 
     bh_component_destroy(&myself);
     
     delete engine;
     engine = NULL;
 
-    DEBUG("-- bh_ve_cpu_shutdown(...);");
+    DEBUG(TAG,"-- bh_ve_cpu_shutdown(...);");
     return BH_SUCCESS;
 }
 
 /* Component interface: extmethod (see bh_component.h) */
 bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
-    DEBUG("++ bh_ve_cpu_extemethod(...,...)");
+    DEBUG(TAG,"++ bh_ve_cpu_extmethod(...,...)");
 
     bh_error register_res = engine->register_extension(myself, name, opcode);
 
-    DEBUG("-- bh_ve_cpu_extmethod(...);");
+    
     return register_res;
 }
 

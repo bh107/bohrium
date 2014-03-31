@@ -7,6 +7,8 @@ namespace bohrium {
 namespace engine {
 namespace cpu {
 
+const char Store::TAG[] = "Store";
+
 Store::Store(const string object_directory, const string kernel_directory) 
 : object_directory(object_directory), kernel_directory(kernel_directory), kernel_prefix("KRN_"), library_prefix("LIB_")
 {
@@ -29,8 +31,7 @@ Store::Store(const string object_directory, const string kernel_directory)
 
 Store::~Store()
 {
-    DEBUG("++ Store::~Store()");
-    DEBUG("-- Store::~Store()");
+    DEBUG(TAG,"~Store()");
 }
 
 string Store::text(void)
@@ -45,7 +46,7 @@ string Store::text(void)
  */
 string Store::get_uid(void)
 {
-    DEBUG("   Store::get_uid(void) : uid(" << this->uid << ");");
+    DEBUG(TAG,"get_uid(void) : uid(" << this->uid << ");");
     return this->uid;
 }
 
@@ -86,7 +87,7 @@ string Store::src_abspath(string symbol)
  */
 bool Store::symbol_ready(string symbol)
 {
-    DEBUG("   Store::symbol_ready("<< symbol << ") : return(" << (funcs.count(symbol) > 0) << ");");
+    DEBUG(TAG,"symbol_ready("<< symbol << ") : return(" << (funcs.count(symbol) > 0) << ");");
     return funcs.count(symbol) > 0;
 }
 
@@ -96,7 +97,7 @@ bool Store::symbol_ready(string symbol)
  */
 size_t Store::preload(void)
 {
-    DEBUG("Store::preload(void)");
+    DEBUG(TAG,"preload(void)");
     DIR *dir;
     struct dirent *ent;
     bool res = true;
@@ -117,14 +118,14 @@ size_t Store::preload(void)
     //  LIB_[a-z0-9]+_xxxxxx.so
     //
     if ((dir = opendir(object_directory.c_str())) != NULL) {
-        DEBUG("Store::preload(...) -- GOING MULTI!");
+        DEBUG(TAG,"preload(...) -- GOING MULTI!");
         while ((ent = readdir (dir)) != NULL) {     // Go over dir-entries
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
                 continue;
             }
             string filename(ent->d_name);
-            DEBUG("We have a potential: " << filename);
+            DEBUG(TAG," We have a potential: " << filename);
             string symbol;                     // KRN_\d+
             string library;                    // LIB_whatever_xxxxxx.so
 
@@ -142,7 +143,7 @@ size_t Store::preload(void)
                 string index_fn = object_directory  +\
                                   "/"               +\
                                   filename;
-                DEBUG("MULTI: " << library << " ||| " << index_fn);
+                DEBUG(TAG," MULTI: " << library << " ||| " << index_fn);
                 ifstream symbol_file(index_fn.c_str(), ifstream::in);
                 for(string symbol; getline(symbol_file, symbol) && res;) {
                     if (0==libraries.count(symbol)) {
@@ -164,7 +165,7 @@ size_t Store::preload(void)
     //  KRN_[\d+]_XXXXXX.so
     //
     if ((dir = opendir (object_directory.c_str())) != NULL) {
-        DEBUG("GOING SINGLE!");
+        DEBUG(TAG," GOING SINGLE!");
         while((ent = readdir(dir)) != NULL) {
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
@@ -204,14 +205,14 @@ size_t Store::preload(void)
         nloaded += res;
     }
 
-    DEBUG("Store::preload(void) : nloaded("<< nloaded << ");");
+    DEBUG(TAG," preload(void) : nloaded("<< nloaded << ");");
 
     return nloaded;
 }
 
 void Store::add_symbol(string symbol, string library)
 {
-    DEBUG("Store::add_symbol("<< symbol <<", "<< library <<");");
+    DEBUG(TAG,"add_symbol("<< symbol <<", "<< library <<");");
     libraries.insert(pair<string, string>(symbol, library));
 }
 
@@ -219,14 +220,14 @@ void Store::add_symbol(string symbol, string library)
  *  Load a single symbol from library symbol into func-storage.
  */
 bool Store::load(string symbol) {
-    DEBUG("   Store::load("<< symbol << ");");
+    DEBUG(TAG,"load("<< symbol << ");");
 
     return load(symbol, libraries[symbol]);
 }
 
 bool Store::load(string symbol, string library)
 {
-    DEBUG("   Store::load("<< symbol << ", " << library << ");");
+    DEBUG(TAG,"load("<< symbol << ", " << library << ");");
     
     char *error_msg = NULL;             // Buffer for dlopen errors
     int errnum = 0;

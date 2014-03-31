@@ -26,23 +26,43 @@ else
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "test" ]; then
-    #BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
-    BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
-    #BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
 
-    #BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_ndstencil.py
-    #BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py --exclude test_ndstencil.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_matmul.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_accumulate.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_benchmarks.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_array_create.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_ndstencil.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_primitives.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_specials.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_sor.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_types.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_views.py
-    #BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py -f test_reduce.py
+    echo "About to 'reset' and run test wo_fusion... Hit enter to continue..."
+    read
+    clear && reset
+    mkdir -p /tmp/code/sij
+    rm /tmp/code/sij/*.c
+    ./dostuff.sh reset
+    BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py --file=test_types.py
+    python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/sij/
+
+    echo "About to 'reset' and run test w_fusion... Hit enter to continue..."
+    read
+    clear && reset
+    mkdir -p /tmp/code/fuse
+    rm /tmp/code/fuse/*.c
+    ./dostuff.sh reset
+    BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py --file=test_types.py
+    python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
+fi
+
+if [ ! -z "$1" ] && [ "$1" == "fusion" ]; then
+    echo "About to 'reset' and run test fusion... Hit enter to continue..."
+    read
+    clear && reset
+    mkdir -p /tmp/code/fuse
+    rm /tmp/code/fuse/*.c
+    ./dostuff.sh reset
+    BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
+    python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
+fi
+
+if [ ! -z "$1" ] && [ "$1" == "black" ]; then
+    ./dostuff.sh reset
+    python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
 fi
 

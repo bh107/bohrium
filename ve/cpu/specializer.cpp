@@ -1,9 +1,12 @@
 #include "specializer.hpp"
+#include <set>
 
 using namespace std;
 namespace bohrium {
 namespace engine {
 namespace cpu {
+
+const char Specializer::TAG[] = "Specializer";
 
 Specializer::Specializer(const string template_directory)
 : strip_mode(ctemplate::STRIP_BLANK_LINES), template_directory(template_directory)
@@ -29,8 +32,7 @@ Specializer::Specializer(const string template_directory)
 
 Specializer::~Specializer()
 {
-    DEBUG("++ Specializer::~Specializer()");
-    DEBUG("-- Specializer::~Specializer()");
+    DEBUG(TAG, "~Specializer()");
 }
 
 string Specializer::text()
@@ -171,14 +173,14 @@ string Specializer::specialize(Block& block, bool apply_fusion)
  */
 string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, bool apply_fusion)
 {
-    DEBUG("Specializer::specialize(..., " << tac_start << ", " << tac_end << ")");
+    DEBUG(TAG,"specialize(..., " << tac_start << ", " << tac_end << ")");
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
     kernel_d.SetValue("SYMBOL", block.symbol);
     kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text);
 
-    kernel_d.SetValue("MODE", "SIJ");
+    kernel_d.SetValue("MODE", (apply_fusion ? "FUSED" : "SIJ"));
     kernel_d.SetIntValue("NINSTR", block.length);
     kernel_d.SetIntValue("NARGS", block.noperands);
 
@@ -192,110 +194,143 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
             argument_d->ShowSection("ARRAY");
         }
     }
-
+    //apply_fusion = false;
     //
-    // Assign information for needed for generation of operation and operator code
-    ctemplate::TemplateDictionary* operation_d = NULL;
-    int64_t prev_idx = -1;
+    // Now process the array operations
     for(size_t i=tac_start; i<=tac_end; ++i) {
-        
-        //
-        // Grab the tac for which to generate sourcecode
-        tac_t& tac = block.program[i];
 
         //
         // Skip code generation for system and extensions
-        if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
+        if ((block.program[i].op == SYSTEM) || (block.program[i].op == EXTENSION)) {
             continue;
         }
-
-        DEBUG("Specializer::specialize(...) : tac.out->ndim(" << block.scope[tac.out].ndim << ")");
-
+        
         //
-        // Basic fusability-check
-        bool fusable = false;
+        // Fusion setup
+        //
+        
+        //
+        // Basic fusion approach; count the amount of ops and create a range
+        size_t  fuse_ops    = 0,
+                fuse_start  = i,
+                fuse_end    = i;
+
         if (apply_fusion) {
-            if (prev_idx >=0) {
-                tac_t& prev = block.program[prev_idx];
-                fusable = ( ((tac.op == MAP)    || (tac.op == ZIP))                         &&  \
-                            ((prev.op == MAP)   || (prev.op == ZIP))                        &&  \
-                            ((block.scope[tac.out].layout == block.scope[prev.out].layout)) &&  \
-                            ((block.scope[tac.out].ndim == block.scope[prev.out].ndim))         \
-                );
-                if (fusable) {  // Check shape
-                    for(int64_t dim=0; dim<block.scope[tac.out].ndim; ++dim) {
-                        if (block.scope[tac.out].shape[dim] != block.scope[prev.out].shape[dim]) {
-                            fusable = false;
-                            break;
-                        }
-                    }
+            //
+            // The first operation in a potential range of fusable operations
+            tac_t& first = block.program[i];
+
+            //
+            // Examine potential expansion of the range of fusable operations
+            for(size_t j=i; (apply_fusion) && (j<=tac_end); ++j) {
+                tac_t& next = block.program[j];
+                if (next.op == SYSTEM) {   // Ignore
+                    cout << "Ignoring sstem operation." << endl;
+                    continue;
+                }
+                if (next.op == EXTENSION) {
+                    cout << "WE GOT AN EXTENSION!!!!" << endl;
+                    break;
+                }
+                if (!((next.op == ZIP) || (next.op == MAP))) {
+                    cout << "Incompatible operation " << utils::operation_text(next.op) << endl;
+                    break;
+                }
+                // At this point the operation is an array operation
+                bool compat_operands = true;
+                
+                switch(utils::tac_noperands(next)) {
+                    case 3:
+                        compat_operands = compat_operands && (utils::compatible_operands(block.scope[first.out], block.scope[next.in2]));
+                    case 2:
+                        compat_operands = compat_operands && (utils::compatible_operands(block.scope[first.out], block.scope[next.in1]));
+                        compat_operands = compat_operands && (utils::compatible_operands(block.scope[first.out], block.scope[next.out]));
+                    break;
+
+                    default:
+                        fprintf(stderr, "ARGGG!!!!\n");
+                }
+                if (!compat_operands) {
+                    break;
+                }
+
+                if (fuse_ops == 0) {    // First
+                    fuse_start  = j;
+                    fuse_end    = j;
+                } else {                // Some point later
+                    fuse_end = j;
+                }
+                fuse_ops++;
+            }
+        }
+
+        //
+        // Assign information needed for generation of operation and operator code
+        ctemplate::TemplateDictionary* operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
+        operation_d->SetFilename(template_filename(block, fuse_start));
+
+        set<size_t> operands;
+        set<size_t>::iterator operands_it;
+
+        cout << "FOPS " << fuse_ops << " START " << fuse_start << " END " << fuse_end << endl;
+        for(i=fuse_start; i<=fuse_end; ++i) {
+
+            tac_t& tac = block.program[i];
+            //
+            // Reduction and scan specific expansions
+            if ((tac.op == REDUCE) || (tac.op == SCAN)) {
+                operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(block.scope[tac.out].etype));
+                operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1].etype));
+                operation_d->SetValue("TYPE_AXIS",  "int64_t");
+                if (tac.oper == ADD) {
+                    operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
+                } else if (tac.oper == MULTIPLY) {
+                    operation_d->SetIntValue("NEUTRAL_ELEMENT", 1);
                 }
             }
-            prev_idx = i;
-        }
 
-        //
-        // The operation (ewise, reduction, scan, random, range).
-        if (!fusable) {
-            operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
-            operation_d->SetFilename(template_filename(block, i));
-        }
+            //
+            // The operator +, -, /, min, max, sin, sqrt, etc...
+            //        
+            ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
+            operator_d->SetValue("OPERATOR", cexpression(block, i));
 
-        //
-        // Reduction and scan specific expansions
-        if ((tac.op == REDUCE) || (tac.op == SCAN)) {
-            operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(block.scope[tac.out].etype));
-            operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1].etype));
-            operation_d->SetValue("TYPE_AXIS",  "int64_t");
-            if (tac.oper == ADD) {
-                operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
-            } else if (tac.oper == MULTIPLY) {
-                operation_d->SetIntValue("NEUTRAL_ELEMENT", 1);
+            //
+            //  The arguments / operands
+            switch(utils::tac_noperands(tac)) {
+                case 3:
+                    operation_d->SetIntValue("NR_SINPUT", tac.in2);  // Not all have
+                    operator_d->SetIntValue("NR_SINPUT", tac.in2);
+
+                    operands.insert(tac.in2);
+
+                case 2:
+                    operation_d->SetIntValue("NR_FINPUT", tac.in1);  // Not all have
+                    operator_d->SetIntValue("NR_FINPUT", tac.in1);
+
+                    operands.insert(tac.in1);
+
+                case 1:
+                    operation_d->SetIntValue("NR_OUTPUT", tac.out);
+                    operator_d->SetIntValue("NR_OUTPUT", tac.out);
+
+                    operands.insert(tac.out);
             }
         }
 
-        ctemplate::TemplateDictionary* operator_d   = operation_d->AddSectionDictionary("OPERATORS");
-        ctemplate::TemplateDictionary* operand_d;   // Operator operands
-
         //
-        // The operator +, -, /, min, max, sin, sqrt, etc...
-        //        
-        operator_d->SetValue("OPERATOR", cexpression(block, i));
+        // Assign operands to the operation, we use a set to avoid redeclaration.
+        for(operands_it=operands.begin(); operands_it != operands.end(); operands_it++) {
+            ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
+            operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[*operands_it].etype));
+            operand_d->SetIntValue("NR", *operands_it);
 
-        //
-        //  The arguments / operands
-        switch(utils::tac_noperands(tac)) {
-            case 3:
-                operation_d->SetIntValue("NR_SINPUT", tac.in2);  // Not all have
-                operator_d->SetIntValue("NR_SINPUT", tac.out);
-
-                operand_d   = operation_d->AddSectionDictionary("OPERAND");
-                operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[tac.in2].etype));
-                operand_d->SetIntValue("NR", tac.in2);
-
-                if (CONSTANT != block.scope[tac.in2].layout) {
-                    operand_d->ShowSection("ARRAY");
-                }
-            case 2:
-                operation_d->SetIntValue("NR_FINPUT", tac.in1);  // Not all have
-                operator_d->SetIntValue("NR_FINPUT", tac.in1);
-
-                operand_d   = operation_d->AddSectionDictionary("OPERAND");
-                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.in1].etype));
-                operand_d->SetIntValue("NR", tac.in1);
-
-                if (CONSTANT != block.scope[tac.in1].layout) {
-                    operand_d->ShowSection("ARRAY");
-                }
-            case 1:
-                operation_d->SetIntValue("NR_OUTPUT", tac.out);
-                operator_d->SetIntValue("NR_OUTPUT", tac.out);
-
-                operand_d = operation_d->AddSectionDictionary("OPERAND");
-                operand_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[tac.out].etype));
-                operand_d->SetIntValue("NR", tac.out);
+            if (CONSTANT != block.scope[*operands_it].layout) {
                 operand_d->ShowSection("ARRAY");
+            }   
         }
+        operands.clear();
+        i = fuse_end;
     }
 
     //
@@ -308,7 +343,7 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
         &sourcecode
     );
 
-    DEBUG("Specializer::specialize(...);");
+    DEBUG(TAG,"specialize(...);");
     return sourcecode;
 }
 

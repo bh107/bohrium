@@ -21,11 +21,11 @@ Block::Block(bh_ir& ir, bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
 
 Block::~Block()
 {
-    DEBUG(TAG << "::~Block() ++");
+    DEBUG(TAG, "~Block() ++");
     free(scope);
     free(program);
     free(instr);
-    DEBUG(TAG << "::~Block() --");
+    DEBUG(TAG, "~Block() --");
 }
 
 bh_dag& Block::get_dag()
@@ -120,9 +120,9 @@ string Block::text()
  */
 bool Block::symbolize()
 {   
-    DEBUG("++ Block::symbolize(void) : length("<< length << ")");
+    DEBUG(TAG,"symbolize(void) : length("<< length << ")");
     bool symbolize_res = symbolize(0, length-1);
-    DEBUG("-- Block::symbolize(void) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
+    DEBUG(TAG,"symbolize(void) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
     return symbolize_res;
 }
 
@@ -131,7 +131,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
     stringstream tacs,
                  operands;
 
-    DEBUG("++ Block::symbolize("<< tac_start << ", " << tac_end << ")");
+    DEBUG(TAG,"symbolize("<< tac_start << ", " << tac_end << ")");
 
     //
     // Scope
@@ -159,7 +159,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         tacs << utils::operation_text(tac.op);
         tacs << "-" << utils::operator_text(tac.oper);
         tacs << "-";
-        DEBUG("Block::symbolize(...) : tac.out.ndim(" << scope[tac.out].ndim << ")");
+        DEBUG(TAG, "symbolize(...) : tac.out.ndim(" << scope[tac.out].ndim << ")");
         size_t ndim = (tac.op == REDUCE) ? scope[tac.in1].ndim : scope[tac.out].ndim;
         if (ndim <= 3) {
             tacs << ndim;
@@ -195,7 +195,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
     symbol_text = tacs.str() +"_"+ operands.str();
     symbol      = utils::hash_text(symbol_text);
 
-    DEBUG("-- Block::symbolize(...) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
+    DEBUG(TAG,"symbolize(...) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
     return true;
 }
 
@@ -242,14 +242,16 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
-    for(size_t i=0; i<arg_idx; ++i) {
-        if (!utils::equivalent_operands(scope[i], scope[arg_idx])) {
-            continue; // Not equivalent, continue search.
+    if (NULL!=*(scope[arg_idx].data)) {
+        for(size_t i=0; i<arg_idx; ++i) {
+            if (!utils::equivalent_operands(scope[i], scope[arg_idx])) {
+                continue; // Not equivalent, continue search.
+            }
+            // Found one! Use it instead of the incremented identifier.
+            --noperands;
+            arg_idx = i;
+            break;
         }
-        // Found one! Use it instead of the incremented identifier.
-        --noperands;
-        arg_idx = i;
-        break;
     }
     return arg_idx;
 }

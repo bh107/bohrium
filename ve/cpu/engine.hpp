@@ -57,6 +57,8 @@ private:
     Compiler       compiler;
 
     std::map<bh_opcode, bh_extmethod_impl> extensions;
+
+    static const char TAG[];
 };
 
 }}}
