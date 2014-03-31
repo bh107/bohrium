@@ -80,8 +80,9 @@ BhArray_finalize(PyObject *self, PyObject *args)
 static PyObject *
 BhArray_data_bhc2np(PyObject *self, PyObject *args)
 {
-    if(!PyArg_ParseTuple(args, ""))
-        return NULL;
+    if(args != NULL)
+        if(!PyArg_ParseTuple(args, ""))
+            return NULL;
 
     //We move the whole array (i.e. the base array) from Bohrium to NumPy
     PyObject *base = PyObject_CallMethod(ndarray, "get_base", "O", self);
@@ -228,16 +229,29 @@ BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
     return 0;
 }
 
+static PyObject *
+BhArray_GetItem(PyObject *o, PyObject *k)
+{
+    //If the result is a scalar we let NumPy handle it
+    if((PyArray_IsIntegerScalar(k) || (PyIndex_Check(k) && !PySequence_Check(k))) ||
+       (PyTuple_Check(k) && (PyTuple_GET_SIZE(k) == PyArray_NDIM((PyArrayObject*)o))))
+    {
+        if(BhArray_data_bhc2np(o, NULL) == NULL)
+            return NULL;
+    }
+    return PyArray_Type.tp_as_mapping->mp_subscript(o, k);
+}
+
 static PyMappingMethods array_as_mapping = {
     (lenfunc)0,                     /*mp_length*/
-    (binaryfunc)0,                  /*mp_subscript*/
+    (binaryfunc)BhArray_GetItem,    /*mp_subscript*/
     (objobjargproc)BhArray_SetItem, /*mp_ass_subscript*/
 };
 static PySequenceMethods array_as_sequence = {
     (lenfunc)0,                              /*sq_length*/
     (binaryfunc)NULL,                        /*sq_concat is handled by nb_add*/
     (ssizeargfunc)NULL,                      /*sq_repeat*/
-    (ssizeargfunc)0,                         /*sq_item*/
+    (ssizeargfunc)BhArray_GetItem,           /*sq_item*/
     (ssizessizeargfunc)0,                    /*sq_slice (Not in the Python doc)*/
     (ssizeobjargproc)BhArray_SetItem,        /*sq_ass_item*/
     (ssizessizeobjargproc)BhArray_SetSlice,  /*sq_ass_slice (Not in the Python doc)*/
