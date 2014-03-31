@@ -242,16 +242,14 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
-    if (NULL!=*(scope[arg_idx].data)) {
-        for(size_t i=0; i<arg_idx; ++i) {
-            if (!utils::equivalent_operands(scope[i], scope[arg_idx])) {
-                continue; // Not equivalent, continue search.
-            }
-            // Found one! Use it instead of the incremented identifier.
-            --noperands;
-            arg_idx = i;
-            break;
+    for(size_t i=0; i<arg_idx; ++i) {
+        if (!utils::equivalent_operands(scope[i], scope[arg_idx])) {
+            continue; // Not equivalent, continue search.
         }
+        // Found one! Use it instead of the incremented identifier.
+        --noperands;
+        arg_idx = i;
+        break;
     }
     return arg_idx;
 }

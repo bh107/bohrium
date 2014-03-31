@@ -62,7 +62,7 @@ bool equivalent_operands(const operand_t& one, const operand_t& other)
     if (one.layout != other.layout) {
         return false;
     }
-    if (*(one.data) != *(other.data)) {
+    if (one.data != other.data) {
         return false;
     }
     if (one.ndim != other.ndim) {
@@ -95,11 +95,9 @@ bool compatible_operands(const operand_t& one, const operand_t& other)
         return true;
     } 
     if (one.layout != other.layout) {
-        cout << "Invalid layout." << endl;
         return false;
     }
     if (one.ndim != other.ndim) {
-            cout << "Invalid ndim." << endl;
         return false;
     }
     for(bh_intp j=0; j<one.ndim; ++j) {
