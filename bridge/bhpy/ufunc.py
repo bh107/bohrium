@@ -39,7 +39,7 @@ def assign(a, out):
     else:
         a_bhc = get_bhc(a)
         a_dtype = dtype_name(a)
-        np.broadcast_arrays(a,out)#We only do this for the dimension mismatch check
+        np.broadcast(a,out)#We only do this for the dimension mismatch check
         if out_dtype != a_dtype:
             exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
         exec "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
@@ -59,7 +59,8 @@ class ufunc:
             raise ValueError("invalid number of arguments")
 
         #Check for shape mismatch
-        np.broadcast(*args)
+        if len(args) > 1:
+            np.broadcast(*args)
 
         #Pop the output from the 'args' list
         out = None
@@ -107,7 +108,7 @@ class ufunc:
                 cmd += "_scalar_lhs"
             else:
                 cmd += "_scalar_rhs"
- 
+
         f = eval(cmd)
         ret = f(*bhcs)
 
