@@ -188,6 +188,7 @@ if __name__ == "__main__":
                         res1 = res1.copy()
 
                         #Execute using Bohrium
+                        print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
                         (res2,cmd2) = getattr(cls_inst,mth)(bh_arys)
                         cmd += cmd1
                         try:

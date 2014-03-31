@@ -43,8 +43,6 @@ def assign(a, out):
         if out_dtype != a_dtype:
             exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
         exec "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
-        if out_dtype != a_dtype:
-            ndarray.del_bhc_obj(a_bhc)#Delete the tmp array
 
 class ufunc:
     def __init__(self, info):
@@ -58,31 +56,22 @@ class ufunc:
         if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
             raise ValueError("invalid number of arguments")
 
-        #Check for shape mismatch
-        if len(args) > 1:
-            np.broadcast(*args)
+        #Check for shape mismatch and get the final output shape
+        out_shape = np.broadcast(*args).shape if len(args) > 1 else args[0].shape
 
         #Pop the output from the 'args' list
         out = None
         args = list(args)
         if len(args) == self.info['nop']:#output given
             out = args.pop()
+            if out.shape != out_shape:
+                raise ValueError("Could not broadcast to the shape of the output array")
 
         if len(args) > 2:
             raise ValueError("Bohrium do not support ufunc with more than two inputs")
 
         #Find the type signature
         (out_dtype,in_dtype) = _util.type_sig(self.info['np_name'], args)
-
-        #If 'out_final' is not None the output needs type conversion at the end
-        out_final = None
-        if out is not None and out.dtype != out_dtype:
-            out_final = out
-            out = None
-
-        #Create output array
-        if out is None:
-            out = array_create.empty(args[0].shape, out_dtype)
 
         #Check for Python scalars
         py_scalar = None
@@ -102,6 +91,17 @@ class ufunc:
             else:
                 bhcs.append(get_bhc(array_create.array(a)))
 
+        #Convert dtype of all inputs
+        inputs = []
+        for i, a in enumerate(bhcs):
+            a_dtype = _util.dtype_from_bhc(a)
+            t_dtype = dtype_name(in_dtype)
+            if i != py_scalar and a_dtype != t_dtype:
+                exec "t = bhc.bh_multi_array_%s_convert_%s(a)"%(t_dtype, a_dtype)
+                inputs.append(t)
+            else:
+                inputs.append(a)
+
         cmd = "bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), self.info['bhc_name'])
         if py_scalar is not None:
             if py_scalar == 0:
@@ -110,10 +110,20 @@ class ufunc:
                 cmd += "_scalar_rhs"
 
         f = eval(cmd)
-        ret = f(*bhcs)
+        ret = f(*inputs)
 
-        #Copy result into the output array
-        exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),ret)"%(dtype_name(out_dtype))
+        if out is None: #Create a new output with the returned Bohrium-C array
+            out = _bh.ndarray(out_shape, dtype=out_dtype)
+            out.bhc_ary = ret
+        else: #We have to use the output given
+            if not ndarray.check(out):
+                raise NotImplementedError("For now, the output must be a Bohrium array")
+            if out.dtype == out_dtype:
+                t = ret
+            else:
+                exec "t = bhc.bh_multi_array_%s_convert_%s(ret)"%(dtype_name(out.dtype), dtype_name(out_dtype))
+            #Copy result into the output array
+            exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),t)"%(dtype_name(out_dtype))
         return out
 
 ufuncs = []
@@ -172,7 +182,7 @@ class Tests(unittest.TestCase):
                     exec "np_res = np.%s(A)"%f.info['np_name']
                 elif f.info['nop'] == 3:
                     exec "np_res = np.%s(A,B)"%f.info['np_name']
-                self.assertTrue(np.array_equal(res,np_res))
+                self.assertTrue(np.allclose(res,np_res))
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Tests)
