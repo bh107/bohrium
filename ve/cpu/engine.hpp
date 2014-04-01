@@ -37,6 +37,10 @@ public:
     bh_error execute(bh_ir& ir);
 
 private:
+
+    size_t map_operand(bh_instruction& instr, size_t operand_idx);
+    bool map_operands(bh_instruction& instr);
+
     bh_error sij_mode(Block& block);
     bh_error fuse_mode(Block& block);
 
@@ -57,6 +61,9 @@ private:
     Compiler       compiler;
 
     std::map<bh_opcode, bh_extmethod_impl> extensions;
+
+    operand_t* symbol_table;
+    size_t nsymbols;
 
     static const char TAG[];
 };

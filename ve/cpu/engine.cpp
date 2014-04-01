@@ -29,7 +29,9 @@ Engine::Engine(
     jit_dumpsrc(jit_dumpsrc),
     storage(object_directory, kernel_directory),
     specializer(template_directory),
-    compiler(compiler_cmd)
+    compiler(compiler_cmd),
+    symbol_table(NULL),
+    nsymbols(0)
 {
     DEBUG(TAG, "Engine(...)");
     bh_vcache_init(vcache_size);    // Victim cache
@@ -213,6 +215,77 @@ bh_error Engine::sij_mode(Block& block)
 }
 
 /**
+ *  Add instruction operand as argument to block.
+ *
+ *  Reuses operands of equivalent meta-data.
+ *
+ *  @param instr        The instruction whos operand should be converted.
+ *  @param operand_idx  Index of the operand to represent as arg_t
+ *  @param block        The block in which scope the argument will exist.
+ */
+size_t Engine::map_operand(bh_instruction& instr, size_t operand_idx)
+{
+    size_t arg_idx = ++(nsymbols);
+    if (bh_is_constant(&instr.operand[operand_idx])) {
+        symbol_table[arg_idx].const_data   = &(instr.constant.value);
+        symbol_table[arg_idx].data         = &symbol_table[arg_idx].const_data;
+        symbol_table[arg_idx].etype        = utils::bhtype_to_etype(instr.constant.type);
+        symbol_table[arg_idx].nelem        = 1;
+        symbol_table[arg_idx].ndim         = 1;
+        symbol_table[arg_idx].start        = 0;
+        symbol_table[arg_idx].shape        = instr.operand[operand_idx].shape;
+        symbol_table[arg_idx].shape[0]     = 1;
+        symbol_table[arg_idx].stride       = instr.operand[operand_idx].shape;
+        symbol_table[arg_idx].stride[0]    = 0;
+        symbol_table[arg_idx].layout       = CONSTANT;
+    } else {
+        symbol_table[arg_idx].const_data= NULL;
+        symbol_table[arg_idx].data     = &(bh_base_array(&instr.operand[operand_idx])->data);
+        symbol_table[arg_idx].etype    = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
+        symbol_table[arg_idx].nelem    = bh_base_array(&instr.operand[operand_idx])->nelem;
+        symbol_table[arg_idx].ndim     = instr.operand[operand_idx].ndim;
+        symbol_table[arg_idx].start    = instr.operand[operand_idx].start;
+        symbol_table[arg_idx].shape    = instr.operand[operand_idx].shape;
+        symbol_table[arg_idx].stride   = instr.operand[operand_idx].stride;
+
+        if (utils::is_contiguous(symbol_table[arg_idx])) {
+            symbol_table[arg_idx].layout = CONTIGUOUS;
+        } else {
+            symbol_table[arg_idx].layout = STRIDED;
+        }
+    }
+
+    //
+    // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
+    for(size_t i=1; i<=arg_idx; ++i) {
+        if (!utils::equivalent_operands(symbol_table[i], symbol_table[arg_idx])) {
+            continue; // Not equivalent, continue search.
+        }
+        // Found one! Use it instead of the incremented identifier.
+        --nsymbols;
+        arg_idx = i;
+        break;
+    }
+    return arg_idx;
+}
+
+bool Engine::map_operands(bh_instruction& instr)
+{
+    switch(bh_operands(instr.opcode)) {
+        case 3:
+            map_operand(instr, 2);
+        case 2:
+            map_operand(instr, 1);
+        case 1:
+            map_operand(instr, 0);
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+/**
  *  Compile and execute multiple tac/instructions at a time.
  *
  *  This execution mode is used when
@@ -384,51 +457,68 @@ bh_error Engine::fuse_mode(Block& block)
 
 bh_error Engine::execute(bh_ir& bhir)
 {
-    DEBUG(TAG,"++ Engine::execute(...)");
+    DEBUG(TAG,"execute(...) ++");
 
     bh_error res = BH_SUCCESS;
     bh_dag& root = bhir.dag_list[0];  // Start at the root DAG
 
-    DEBUG(TAG,"   Engine::execute(...) == Dag-Loop("<< root.nnode << ")");
+    //
+    // Map bh_instruction operands to tac.operand_t
+
+    //
+    // Note: The first block-pointer is unused.
+    Block** blocks = (Block**)malloc((1+root.nnode)*sizeof(operand_t*));
+
+    //
+    // Map DAGs to Blocks.
     for(bh_intp i=0; i<root.nnode; ++i) {
-        DEBUG(TAG,"   ++Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
+
+        DEBUG(TAG, "   ++Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
         bh_intp node = root.node_map[i];
         if (node>0) {
             fprintf(stderr, "Engine::execute(...) == ERROR: Instruction in the root-dag."
                             "It should only contain sub-dags.\n");
             return BH_ERROR;
         }
-        node = -1*node-1; // Compute the node-index
+        bh_intp dag_idx = -1*node-1; // Compute the node-index
 
         //
         // Compose a block based on nodes within the given DAG
-        Block block(bhir, bhir.dag_list[node]);
-        bool compose_res = block.compose();
+        //Block block(bhir, bhir.dag_list[node]);
+        blocks[dag_idx] = new Block(bhir, bhir.dag_list[dag_idx]);
+        bool compose_res = blocks[dag_idx]->compose();
         if (!compose_res) {
             fprintf(stderr, "Engine:execute(...) == ERROR: Failed composing block.\n");
             return BH_ERROR;
         }
+    }
 
-        //
-        // Determine if we want and can do instruction compositioning or
-        // whether we prefer or only can do instruction-by-instruction interpretation
-        // for the given block.
+    //
+    // Now execute the Blocks
+    for(bh_intp dag_idx=1; dag_idx<=root.nnode; ++dag_idx) {
+        Block* block = blocks[dag_idx];
         bh_error mode_res;
         if (jit_fusion && \
-            ((block.omask & (BUILTIN_ARRAY_OPS)) > 0) && \
-            ((block.omask & (EXTENSION)) == 0)) {
-            mode_res = fuse_mode(block);            
+            ((block->omask & (BUILTIN_ARRAY_OPS)) > 0) && \
+            ((block->omask & (EXTENSION)) == 0)) {
+            mode_res = fuse_mode(*block);
         } else {
-            mode_res = sij_mode(block);
+            mode_res = sij_mode(*block);
         }
         if (BH_SUCCESS!=mode_res) {
             fprintf(stderr, "Engine:execute(...) == ERROR: Failed running *_mode(...).\n");
             return BH_ERROR;
         }
-        DEBUG(TAG,"   --Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
+        DEBUG(TAG,"block("<< (dag_idx) << ") of " << root.nnode << ".");
+    }
+
+    //
+    // De-allocate the blocks
+    for(bh_intp dag_idx=1; dag_idx<=root.nnode; ++dag_idx) {
+        delete blocks[dag_idx];
     }
     
-    DEBUG(TAG,"execute(...)");
+    DEBUG(TAG,"execute(...);");
     return res;
 }
 

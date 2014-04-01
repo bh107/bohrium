@@ -62,7 +62,7 @@ $(LIB): $(OBJ)
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS),$(LIB) $(CFLAGS) -I$(ROOT)/include
 
 clean:
-	rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt graph-*.dot doc/output autogen/output/*
+	rm -rf *.o *~ *.$(LIB_SUFFIX) kernels/* objects/* core trace-*.txt flow*.dot flow*.html graph-*.dot doc/output autogen/output/*
 
 install: all
 	cp $(LIB) $(INSTALLDIR)/

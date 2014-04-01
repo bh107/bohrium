@@ -186,22 +186,22 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
 
     //
     // Assign information needed for argument unpacking
-    for(size_t i=1; i<=block.noperands; ++i) {
+    for(size_t op_idx=1; op_idx<=block.noperands; ++op_idx) {
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-        argument_d->SetIntValue("NR", i);
-        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[i].etype));
-        if (CONSTANT != block.scope[i].layout) {
+        argument_d->SetIntValue("NR", op_idx);
+        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[op_idx].etype));
+        if (CONSTANT != block.scope[op_idx].layout) {
             argument_d->ShowSection("ARRAY");
         }
     }
 
     //
     // Now process the array operations
-    for(size_t i=tac_start; i<=tac_end; ++i) {
+    for(size_t tac_idx=tac_start; tac_idx<=tac_end; ++tac_idx) {
 
         //
         // Skip code generation for system and extensions
-        if ((block.program[i].op == SYSTEM) || (block.program[i].op == EXTENSION)) {
+        if ((block.program[tac_idx].op == SYSTEM) || (block.program[tac_idx].op == EXTENSION)) {
             continue;
         }
         
@@ -212,17 +212,17 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
         //
         // Basic fusion approach; count the amount of ops and create a range
         size_t  fuse_ops    = 0,
-                fuse_start  = i,
-                fuse_end    = i;
+                fuse_start  = tac_idx,
+                fuse_end    = tac_idx;
 
         if (apply_fusion) {
             //
             // The first operation in a potential range of fusable operations
-            tac_t& first = block.program[i];
+            tac_t& first = block.program[tac_idx];
 
             //
             // Examine potential expansion of the range of fusable operations
-            for(size_t j=i; (apply_fusion) && (j<=tac_end); ++j) {
+            for(size_t j=tac_idx; (apply_fusion) && (j<=tac_end); ++j) {
                 tac_t& next = block.program[j];
                 if (next.op == SYSTEM) {   // Ignore
                     DEBUG(TAG, "Ignoring sstem operation.");
@@ -273,9 +273,9 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
         set<size_t>::iterator operands_it;
 
         DEBUG(TAG, "FOPS " << fuse_ops << " START " << fuse_start << " END " << fuse_end);
-        for(i=fuse_start; i<=fuse_end; ++i) {
+        for(tac_idx=fuse_start; tac_idx<=fuse_end; ++tac_idx) {
 
-            tac_t& tac = block.program[i];
+            tac_t& tac = block.program[tac_idx];
             //
             // Reduction and scan specific expansions
             if ((tac.op == REDUCE) || (tac.op == SCAN)) {
@@ -293,7 +293,7 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
             // The operator +, -, /, min, max, sin, sqrt, etc...
             //        
             ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
-            operator_d->SetValue("OPERATOR", cexpression(block, i));
+            operator_d->SetValue("OPERATOR", cexpression(block, tac_idx));
 
             //
             //  The arguments / operands
@@ -330,7 +330,7 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
             }   
         }
         operands.clear();
-        i = fuse_end;
+        tac_idx = fuse_end;
     }
 
     //
