@@ -7,7 +7,8 @@ namespace cpu{
 
 const char Block::TAG[] = "Block";
 
-Block::Block(const bh_ir& ir, const bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
+//Block::Block(const bh_ir& ir, const bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
+Block::Block(const bh_ir& ir, size_t dag_idx) : noperands(0), omask(0), ir(ir), dag(ir.dag_list[dag_idx])
 {
     size_t ps = (size_t)dag.nnode;
     if (ps<1) {
@@ -242,7 +243,11 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
-    for(size_t i=0; i<arg_idx; ++i) {
+    // This is done by comparing the currently investigated operand (arg_idx)
+    // with all other operands in the current scope [1,arg_idx[
+    // Do remember that 0 is is not a valid operand and we therefore index from 1.
+    // Also we do not want to compare with selv, that is when i == arg_idx.
+    for(size_t i=1; i<arg_idx; ++i) {
         if (!utils::equivalent_operands(scope[i], scope[arg_idx])) {
             continue; // Not equivalent, continue search.
         }

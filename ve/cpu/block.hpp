@@ -12,7 +12,8 @@ namespace cpu{
 
 class Block {
 public:
-    Block(const bh_ir& ir, const bh_dag& dag);
+    //Block(const bh_ir& ir, const bh_dag& dag);
+    Block(const bh_ir& ir, size_t dag_idx);
     ~Block();
 
     std::string text(std::string prefix);

@@ -257,7 +257,11 @@ size_t Engine::map_operand(bh_instruction& instr, size_t operand_idx)
 
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
-    for(size_t i=1; i<=arg_idx; ++i) {
+    // This is done by comparing the currently investigated operand (arg_idx)
+    // with all other operands in the current scope [1,arg_idx[
+    // Do remember that 0 is is not a valid operand and we therefore index from 1.
+    // Also we do not want to compare with selv, that is when i == arg_idx.
+    for(size_t i=1; i<arg_idx; ++i) {
         if (!utils::equivalent_operands(symbol_table[i], symbol_table[arg_idx])) {
             continue; // Not equivalent, continue search.
         }
@@ -485,7 +489,8 @@ bh_error Engine::execute(bh_ir& bhir)
         //
         // Compose a block based on nodes within the given DAG
         //Block block(bhir, bhir.dag_list[node]);
-        blocks[dag_idx] = new Block(bhir, bhir.dag_list[dag_idx]);
+        //blocks[dag_idx] = new Block(bhir, bhir.dag_list[dag_idx]);
+        blocks[dag_idx] = new Block(bhir, dag_idx);
         bool compose_res = blocks[dag_idx]->compose();
         if (!compose_res) {
             fprintf(stderr, "Engine:execute(...) == ERROR: Failed composing block.\n");
