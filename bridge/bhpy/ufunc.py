@@ -115,6 +115,7 @@ class ufunc:
         if out is None: #Create a new output with the returned Bohrium-C array
             out = _bh.ndarray(out_shape, dtype=out_dtype)
             out.bhc_ary = ret
+            exec "bhc.bh_multi_array_%s_set_temp(ret, 0)"%dtype_name(out_dtype)
         else: #We have to use the output given
             if not ndarray.check(out):
                 raise NotImplementedError("For now, the output must be a Bohrium array")
