@@ -135,6 +135,22 @@ class ufunc:
             exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),t)"%(dtype_name(out_dtype))
         return out
 
+    def reduce(self, a, axis=0):
+        """ A Bohrium Reduction """
+
+        if a.ndim == 1:
+            shape = (1,)
+        else:
+            shape = [s for i, s in enumerate(a.shape) if i != axis]
+
+        exec "ret = bhc.bh_multi_array_%s_partial_reduce_%s(get_bhc(a),axis)"%(dtype_name(a), self.info['bhc_name'])
+
+        out = _bh.ndarray(shape, dtype=a.dtype)
+        out.bhc_ary = ret
+        exec "bhc.bh_multi_array_%s_set_temp(ret, 0)"%dtype_name(out.dtype)
+        return out
+
+
 ufuncs = []
 for op in _info.op.itervalues():
     ufuncs.append(ufunc(op))
