@@ -30,6 +30,7 @@ static PyTypeObject BhArrayType;
 PyObject *ndarray = NULL; //The ndarray Python module
 PyObject *ufunc = NULL; //The ufunc Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
+PyObject *array_create = NULL; //The array_create Python module
 
 typedef struct
 {
@@ -80,10 +81,7 @@ BhArray_finalize(PyObject *self, PyObject *args)
 static PyObject *
 BhArray_data_bhc2np(PyObject *self, PyObject *args)
 {
-    if(args != NULL)
-        if(!PyArg_ParseTuple(args, ""))
-            return NULL;
-
+    assert(args == NULL);
     //We move the whole array (i.e. the base array) from Bohrium to NumPy
     PyObject *base = PyObject_CallMethod(ndarray, "get_base", "O", self);
     if(base == NULL)
@@ -154,10 +152,27 @@ BhArray_data_fill(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+BhArray_copy(PyObject *self, PyObject *args)
+{
+    assert(args == NULL);
+    PyObject *ret = PyObject_CallMethod(array_create, "empty_like", "O", self);
+    if(ret == NULL)
+        return NULL;
+    PyObject *err = PyObject_CallMethod(ufunc, "assign", "OO", self, ret);
+    if(err == NULL)
+    {
+        Py_DECREF(err);
+        return NULL;
+    }
+    return ret;
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
-    {"_data_bhc2np", BhArray_data_bhc2np, METH_VARARGS, "Copy the Bohrium-C data to NumPy data"},
+    {"_data_bhc2np", BhArray_data_bhc2np, METH_NOARGS, "Copy the Bohrium-C data to NumPy data"},
     {"_data_fill", BhArray_data_fill, METH_VARARGS, "Fill the Bohrium-C data from a numpy NumPy"},
+    {"copy", BhArray_copy, METH_NOARGS, "Copy the array in C-style memory layout"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
@@ -333,5 +348,8 @@ init_bh(void)
         return;
     bohrium = PyImport_ImportModule("bohrium");
     if(bohrium == NULL)
+        return;
+    array_create = PyImport_ImportModule("bohrium.array_create");
+    if(array_create == NULL)
         return;
 }
