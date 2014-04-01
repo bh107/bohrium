@@ -65,7 +65,7 @@ def block_compose(opcodes, ops, opers, types, layouts, cexprs):
                 operator = '_'.join(opcode.split('_')[1:-1])
                 scans.append([opcode, 'SCAN', operator, 2])
             elif 'RANDOM' in opcode:
-                generators.append([opcode, 'GENERATE', 'RANDOM', 2])
+                generators.append([opcode, 'GENERATE', 'RANDOM', 1])
             elif 'RANGE' in opcode:
                 generators.append([opcode, 'GENERATE', 'RANGE', 0])
             else:

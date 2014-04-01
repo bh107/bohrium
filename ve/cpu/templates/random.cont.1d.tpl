@@ -2,8 +2,8 @@
 // RANDOM, unclassified operation
 {
     uint64_t nelements  = a{{NR_OUTPUT}}_nelem;
-    uint64_t r_start    = *a{{NR_FINPUT}}_first;
-    uint64_t r_key      = *a{{NR_FINPUT}}_first;
+    uint64_t r_start    = a{{NR_FINPUT}}_first->first;
+    uint64_t r_key      = a{{NR_FINPUT}}_first->second;
 
     threefry2x64_ctr_t ctr123;
     ctr123.v[0] = r_start;

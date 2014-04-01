@@ -10,6 +10,11 @@ directiveStartToken= %
 //
 #include "stdint.h"
 
+// Bohrium custom types, used of representing
+// two inputs in one constant... hopefully we can get
+// rid of it... at some point...
+typedef struct { uint64_t first, second; } pair_LL; 
+
 typedef enum OPERATION {
     %for $op in $ops
     $addw($op['name']) = ${op['id']}$addsep($op, $ops)

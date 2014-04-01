@@ -23,6 +23,7 @@ ETYPE bhtype_to_etype(bh_type bhtype)
         case BH_FLOAT64: return FLOAT64;
         case BH_COMPLEX64: return COMPLEX64;
         case BH_COMPLEX128: return COMPLEX128;
+        case BH_R123: return PAIRLL;
     }
     throw runtime_error("Unsupported bhtype, cannot map to etype.");
 }
@@ -128,6 +129,7 @@ string etype_text(ETYPE etype)
         case FLOAT64: return "FLOAT64";
         case COMPLEX64: return "COMPLEX64";
         case COMPLEX128: return "COMPLEX128";
+        case PAIRLL: return "PAIRLL";
     }
     return "_ERR_";
 }
@@ -148,6 +150,7 @@ string etype_text_shand(ETYPE etype)
         case FLOAT64: return string("d");
         case COMPLEX64: return string("c");
         case COMPLEX128: return string("C");
+        case PAIRLL: return string("P");
     }
     return string("_ERR_");
 }
@@ -168,6 +171,7 @@ string etype_to_ctype_text(ETYPE etype)
         case FLOAT64: return "double";
         case COMPLEX64: return "float complex";
         case COMPLEX128: return "double complex";
+        case PAIRLL: return "pair_LL";
     }
     return "_ERR_";
 }

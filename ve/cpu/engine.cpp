@@ -273,15 +273,15 @@ size_t Engine::map_operand(bh_instruction& instr, size_t operand_idx)
     return arg_idx;
 }
 
-bool Engine::map_operands(bh_instruction& instr)
+bh_error Engine::map_operands(bh_instruction* instr)
 {
-    switch(bh_operands(instr.opcode)) {
+    switch(bh_operands(instr->opcode)) {
         case 3:
-            map_operand(instr, 2);
+            map_operand(*instr, 2);
         case 2:
-            map_operand(instr, 1);
+            map_operand(*instr, 1);
         case 1:
-            map_operand(instr, 0);
+            map_operand(*instr, 0);
             return true;
 
         default:
@@ -459,6 +459,45 @@ bh_error Engine::fuse_mode(Block& block)
     return BH_SUCCESS;
 }
 
+/**
+ * Create a textual representation of the symbol_table.
+ */
+string Engine::symbol_table_text(string prefix)
+{
+    stringstream ss;
+    ss << prefix << "symbol_table {" << endl;
+    for(size_t sbl_idx=1; sbl_idx<=nsymbols; ++sbl_idx) {
+        ss << prefix << "  [" << sbl_idx << "]{";
+        ss << " layout("    << utils::layout_text(symbol_table[sbl_idx].layout) << "),";
+        ss << " nelem("     << symbol_table[sbl_idx].nelem << "),";
+        ss << " data("      << *(symbol_table[sbl_idx].data) << "),";
+        ss << " const_data("<< symbol_table[sbl_idx].const_data << "),";
+        ss << " etype(" << utils::etype_text(symbol_table[sbl_idx].etype) << "),";
+        ss << " ndim("  << symbol_table[sbl_idx].ndim << "),";
+        ss << " start(" << symbol_table[sbl_idx].start << "),";        
+        ss << " shape(";
+        for(int64_t dim_idx=0; dim_idx < symbol_table[sbl_idx].ndim; ++dim_idx) {
+            ss << symbol_table[sbl_idx].shape[dim_idx];
+            if (dim_idx != (symbol_table[sbl_idx].ndim-1)) {
+                ss << prefix << ", ";
+            }
+        }
+        ss << "),";
+        ss << " stride(";
+        for(int64_t dim_idx=0; dim_idx < symbol_table[sbl_idx].ndim; ++dim_idx) {
+            ss << symbol_table[sbl_idx].stride[dim_idx];
+            if (dim_idx != (symbol_table[sbl_idx].ndim-1)) {
+                ss << prefix << ", ";
+            }
+        }
+        ss << ")";
+        ss << "}" << endl;
+    }
+    ss << prefix << "}" << endl;
+
+    return ss.str();
+}
+
 bh_error Engine::execute(bh_ir& bhir)
 {
     DEBUG(TAG,"execute(...) ++");
@@ -468,6 +507,15 @@ bh_error Engine::execute(bh_ir& bhir)
 
     //
     // Map bh_instruction operands to tac.operand_t
+    /*
+    nsymbols = 0;   // Reset symbol-count
+    symbol_table = (operand_t*)malloc((1+3*bhir.ninstr)*sizeof(operand_t));
+    for(bh_intp instr_idx=0; instr_idx<bhir.ninstr; ++instr_idx) {
+        map_operands(&bhir.instr_list[instr_idx]);
+    }
+    cout << "Synbol ta" << endl;
+    cout << symbol_table_text("") << endl;
+    */
 
     //
     // Note: The first block-pointer is unused.
@@ -477,7 +525,6 @@ bh_error Engine::execute(bh_ir& bhir)
     // Map DAGs to Blocks.
     for(bh_intp i=0; i<root.nnode; ++i) {
 
-        DEBUG(TAG, "   ++Dag-Loop, Node("<< (i+1) << ") of " << root.nnode << ".");
         bh_intp node = root.node_map[i];
         if (node>0) {
             fprintf(stderr, "Engine::execute(...) == ERROR: Instruction in the root-dag."
@@ -488,8 +535,6 @@ bh_error Engine::execute(bh_ir& bhir)
 
         //
         // Compose a block based on nodes within the given DAG
-        //Block block(bhir, bhir.dag_list[node]);
-        //blocks[dag_idx] = new Block(bhir, bhir.dag_list[dag_idx]);
         blocks[dag_idx] = new Block(bhir, dag_idx);
         bool compose_res = blocks[dag_idx]->compose();
         if (!compose_res) {
@@ -514,7 +559,6 @@ bh_error Engine::execute(bh_ir& bhir)
             fprintf(stderr, "Engine:execute(...) == ERROR: Failed running *_mode(...).\n");
             return BH_ERROR;
         }
-        DEBUG(TAG,"block("<< (dag_idx) << ") of " << root.nnode << ".");
     }
 
     //
@@ -522,6 +566,11 @@ bh_error Engine::execute(bh_ir& bhir)
     for(bh_intp dag_idx=1; dag_idx<=root.nnode; ++dag_idx) {
         delete blocks[dag_idx];
     }
+
+    //
+    // De-allocate the symbol_table
+    free(symbol_table);
+    symbol_table = NULL;
     
     DEBUG(TAG,"execute(...);");
     return res;

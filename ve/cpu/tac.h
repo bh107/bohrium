@@ -6,6 +6,11 @@
 //
 #include "stdint.h"
 
+// Bohrium custom types, used of representing
+// two inputs in one constant... hopefully we can get
+// rid of it... at some point...
+typedef struct { uint64_t first, second; } pair_LL; 
+
 typedef enum OPERATION {
     MAP        = 1,
     ZIP        = 2,
@@ -96,7 +101,8 @@ typedef enum ETYPE {
     FLOAT32    = 512,
     FLOAT64    = 1024,
     COMPLEX64  = 2048,
-    COMPLEX128 = 4096
+    COMPLEX128 = 4096,
+    PAIRLL     = 8192
 } ETYPE;
 
 typedef enum LAYOUT {

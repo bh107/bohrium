@@ -694,6 +694,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_ADD_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -719,6 +722,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_AND_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -744,6 +750,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_OR_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -769,6 +778,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_XOR_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -794,6 +806,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_AND_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -819,6 +834,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_OR_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -844,6 +862,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_XOR_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -869,6 +890,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_MAXIMUM_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -894,6 +918,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_MINIMUM_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -919,6 +946,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_MULTIPLY_REDUCE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -944,6 +974,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_ADD_ACCUMULATE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -969,6 +1002,9 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= SCAN;    // Operationmask
                 break;
             case BH_MULTIPLY_ACCUMULATE:
+                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // due to an error in the language bridge.
+                // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
 
                 in2 = ++(this->noperands);
@@ -994,34 +1030,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= SCAN;    // Operationmask
                 break;
             case BH_RANDOM:
-                // This one requires special-handling... what a beauty...
-                in1 = ++(this->noperands);                // Input
-                this->scope[in1].const_data = &(instr.constant.value.r123.start);
-                this->scope[in1].data       = &(this->scope[in1].const_data);
-                this->scope[in1].etype      = UINT64;
-                this->scope[in1].nelem      = 1;
-                this->scope[in1].ndim       = 1;
-                this->scope[in1].start      = 0;
-                this->scope[in1].shape      = instr.operand[1].shape;
-                this->scope[in1].shape[0]   = 1;
-                this->scope[in1].stride     = instr.operand[1].stride;
-                this->scope[in1].stride[0]  = 0;
-
-                this->scope[in1].layout     = CONSTANT;
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.r123.key);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 0;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = GENERATE;  // TAC
                 this->program[pc].oper  = RANDOM;
@@ -1085,14 +1094,16 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
             default:
                 if (instr.opcode>=BH_MAX_OPCODE_ID) {   // Handle extensions here
 
-                    this->program[pc].op   = EXTENSION; // TODO: Be clever about it
+                    in1 = this->add_operand(instr, 1);
+                    in2 = this->add_operand(instr, 2);
+
+                    this->program[pc].op   = EXTENSION;
                     this->program[pc].oper = EXTENSION_OPERATOR;
-                    this->program[pc].out  = 0;
-                    this->program[pc].in1  = 0;
-                    this->program[pc].in2  = 0;
+                    this->program[pc].out  = out;
+                    this->program[pc].in1  = in1;
+                    this->program[pc].in2  = in2;
 
                     this->omask |= EXTENSION;
-                    //cout << "Extension method." << endl;
                     break;
 
                 } else {
