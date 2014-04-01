@@ -1,11 +1,11 @@
 [
-["=", "BH_IDENTITY", "operator.int", false], 
-["[]", "CUSTOM_2", "operator.int", false], 
-["()", "CUSTOM_2", "operator.int", false], 
-["->", "CUSTOM_2", "operator.int", false], 
+["=", "BH_IDENTITY", "operator.int", false],
+["[]", "CUSTOM_2", "operator.int", false],
+["()", "CUSTOM_2", "operator.int", false],
+["->", "CUSTOM_2", "operator.int", false],
 
 ["++", "CUSTOM_2","operator.ext.prefix", true],
-["++", "CUSTOM_2","operator.ext.postfix", true], 
+["++", "CUSTOM_2","operator.ext.postfix", true],
 ["--", "CUSTOM_2","operator.ext.prefix", true],
 ["--", "CUSTOM_2","operator.ext.postfix", true],
 
@@ -22,23 +22,24 @@
 
 ["+", "BH_ADD",      "operator.ext", true],
 ["-", "BH_SUBTRACT", "operator.ext", true],
-["*", "BH_MULTIPLY", "operator.ext", true], 
-["/", "BH_DIVIDE",   "operator.ext", true], 
+["*", "BH_MULTIPLY", "operator.ext", true],
+["/", "BH_DIVIDE",   "operator.ext", true],
 ["%", "BH_MOD",      "operator.ext", true],
 
-["==",  "BH_EQUAL",          "operator.ext", true], 
-["!=",  "BH_NOT_EQUAL",      "operator.ext", true], 
-[">",   "BH_GREATER",        "operator.ext", true], 
-[">=",  "BH_GREATER_EQUAL",  "operator.ext", true], 
+["==",  "BH_EQUAL",          "operator.ext", true],
+["!=",  "BH_NOT_EQUAL",      "operator.ext", true],
+[">",   "BH_GREATER",        "operator.ext", true],
+[">=",  "BH_GREATER_EQUAL",  "operator.ext", true],
 ["<",   "BH_LESS",           "operator.ext", true],
 ["<=",  "BH_LESS_EQUAL",     "operator.ext", true],
 
-["&&",  "BH_LOGICAL_AND",    "operator.ext", true], 
-["||",  "BH_LOGICAL_OR",     "operator.ext", true],
+["&&",          "BH_LOGICAL_AND", "operator.ext", true],
+["||",          "BH_LOGICAL_OR",  "operator.ext", true],
+["logical_xor", "BH_LOGICAL_XOR", "operator.fun", true],
 
 ["&",   "BH_BITWISE_AND",    "operator.ext", true],
 ["|",   "BH_BITWISE_OR",     "operator.ext", true],
-["^",   "BH_BITWISE_XOR",    "operator.ext", true], 
+["^",   "BH_BITWISE_XOR",    "operator.ext", true],
 
 ["<<",  "BH_LEFT_SHIFT",     "operator.ext", false],
 [">>",  "BH_RIGHT_SHIFT",    "operator.ext", false],
