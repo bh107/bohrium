@@ -186,11 +186,11 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
 
     //
     // Assign information needed for argument unpacking
-    for(size_t op_idx=1; op_idx<=block.noperands; ++op_idx) {
+    for(size_t opr_idx=1; opr_idx<=block.noperands; ++opr_idx) {
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-        argument_d->SetIntValue("NR", op_idx);
-        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[op_idx].etype));
-        if (CONSTANT != block.scope[op_idx].layout) {
+        argument_d->SetIntValue("NR", opr_idx);
+        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[opr_idx].etype));
+        if (CONSTANT != block.scope[opr_idx].layout) {
             argument_d->ShowSection("ARRAY");
         }
     }
@@ -321,11 +321,15 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
         //
         // Assign operands to the operation, we use a set to avoid redeclaration.
         for(operands_it=operands.begin(); operands_it != operands.end(); operands_it++) {
+            size_t opr_idx = *operands_it;
+            if (0 == opr_idx) {
+                fprintf(stderr, "THIS SHOULD NEVER MAPPEN! OPERAND 0 is used!\n");
+            }
             ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
-            operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[*operands_it].etype));
-            operand_d->SetIntValue("NR", *operands_it);
+            operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[opr_idx].etype));
+            operand_d->SetIntValue("NR", opr_idx);
 
-            if (CONSTANT != block.scope[*operands_it].layout) {
+            if (CONSTANT != block.scope[opr_idx].layout) {
                 operand_d->ShowSection("ARRAY");
             }   
         }
