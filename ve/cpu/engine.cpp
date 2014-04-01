@@ -29,9 +29,7 @@ Engine::Engine(
     jit_dumpsrc(jit_dumpsrc),
     storage(object_directory, kernel_directory),
     specializer(template_directory),
-    compiler(compiler_cmd),
-    symbol_table(NULL),
-    nsymbols(0)
+    compiler(compiler_cmd)
 {
     DEBUG(TAG, "Engine(...)");
     bh_vcache_init(vcache_size);    // Victim cache
@@ -215,81 +213,6 @@ bh_error Engine::sij_mode(Block& block)
 }
 
 /**
- *  Add instruction operand as argument to block.
- *
- *  Reuses operands of equivalent meta-data.
- *
- *  @param instr        The instruction whos operand should be converted.
- *  @param operand_idx  Index of the operand to represent as arg_t
- *  @param block        The block in which scope the argument will exist.
- */
-size_t Engine::map_operand(bh_instruction& instr, size_t operand_idx)
-{
-    size_t arg_idx = ++(nsymbols);
-    if (bh_is_constant(&instr.operand[operand_idx])) {
-        symbol_table[arg_idx].const_data   = &(instr.constant.value);
-        symbol_table[arg_idx].data         = &symbol_table[arg_idx].const_data;
-        symbol_table[arg_idx].etype        = utils::bhtype_to_etype(instr.constant.type);
-        symbol_table[arg_idx].nelem        = 1;
-        symbol_table[arg_idx].ndim         = 1;
-        symbol_table[arg_idx].start        = 0;
-        symbol_table[arg_idx].shape        = instr.operand[operand_idx].shape;
-        symbol_table[arg_idx].shape[0]     = 1;
-        symbol_table[arg_idx].stride       = instr.operand[operand_idx].shape;
-        symbol_table[arg_idx].stride[0]    = 0;
-        symbol_table[arg_idx].layout       = CONSTANT;
-    } else {
-        symbol_table[arg_idx].const_data= NULL;
-        symbol_table[arg_idx].data     = &(bh_base_array(&instr.operand[operand_idx])->data);
-        symbol_table[arg_idx].etype    = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
-        symbol_table[arg_idx].nelem    = bh_base_array(&instr.operand[operand_idx])->nelem;
-        symbol_table[arg_idx].ndim     = instr.operand[operand_idx].ndim;
-        symbol_table[arg_idx].start    = instr.operand[operand_idx].start;
-        symbol_table[arg_idx].shape    = instr.operand[operand_idx].shape;
-        symbol_table[arg_idx].stride   = instr.operand[operand_idx].stride;
-
-        if (utils::is_contiguous(symbol_table[arg_idx])) {
-            symbol_table[arg_idx].layout = CONTIGUOUS;
-        } else {
-            symbol_table[arg_idx].layout = STRIDED;
-        }
-    }
-
-    //
-    // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
-    // This is done by comparing the currently investigated operand (arg_idx)
-    // with all other operands in the current scope [1,arg_idx[
-    // Do remember that 0 is is not a valid operand and we therefore index from 1.
-    // Also we do not want to compare with selv, that is when i == arg_idx.
-    for(size_t i=1; i<arg_idx; ++i) {
-        if (!utils::equivalent_operands(symbol_table[i], symbol_table[arg_idx])) {
-            continue; // Not equivalent, continue search.
-        }
-        // Found one! Use it instead of the incremented identifier.
-        --nsymbols;
-        arg_idx = i;
-        break;
-    }
-    return arg_idx;
-}
-
-bh_error Engine::map_operands(bh_instruction* instr)
-{
-    switch(bh_operands(instr->opcode)) {
-        case 3:
-            map_operand(*instr, 2);
-        case 2:
-            map_operand(*instr, 1);
-        case 1:
-            map_operand(*instr, 0);
-            return true;
-
-        default:
-            return false;
-    }
-}
-
-/**
  *  Compile and execute multiple tac/instructions at a time.
  *
  *  This execution mode is used when
@@ -459,63 +382,12 @@ bh_error Engine::fuse_mode(Block& block)
     return BH_SUCCESS;
 }
 
-/**
- * Create a textual representation of the symbol_table.
- */
-string Engine::symbol_table_text(string prefix)
-{
-    stringstream ss;
-    ss << prefix << "symbol_table {" << endl;
-    for(size_t sbl_idx=1; sbl_idx<=nsymbols; ++sbl_idx) {
-        ss << prefix << "  [" << sbl_idx << "]{";
-        ss << " layout("    << utils::layout_text(symbol_table[sbl_idx].layout) << "),";
-        ss << " nelem("     << symbol_table[sbl_idx].nelem << "),";
-        ss << " data("      << *(symbol_table[sbl_idx].data) << "),";
-        ss << " const_data("<< symbol_table[sbl_idx].const_data << "),";
-        ss << " etype(" << utils::etype_text(symbol_table[sbl_idx].etype) << "),";
-        ss << " ndim("  << symbol_table[sbl_idx].ndim << "),";
-        ss << " start(" << symbol_table[sbl_idx].start << "),";        
-        ss << " shape(";
-        for(int64_t dim_idx=0; dim_idx < symbol_table[sbl_idx].ndim; ++dim_idx) {
-            ss << symbol_table[sbl_idx].shape[dim_idx];
-            if (dim_idx != (symbol_table[sbl_idx].ndim-1)) {
-                ss << prefix << ", ";
-            }
-        }
-        ss << "),";
-        ss << " stride(";
-        for(int64_t dim_idx=0; dim_idx < symbol_table[sbl_idx].ndim; ++dim_idx) {
-            ss << symbol_table[sbl_idx].stride[dim_idx];
-            if (dim_idx != (symbol_table[sbl_idx].ndim-1)) {
-                ss << prefix << ", ";
-            }
-        }
-        ss << ")";
-        ss << "}" << endl;
-    }
-    ss << prefix << "}" << endl;
-
-    return ss.str();
-}
-
 bh_error Engine::execute(bh_ir& bhir)
 {
     DEBUG(TAG,"execute(...) ++");
 
     bh_error res = BH_SUCCESS;
     bh_dag& root = bhir.dag_list[0];  // Start at the root DAG
-
-    //
-    // Map bh_instruction operands to tac.operand_t
-    /*
-    nsymbols = 0;   // Reset symbol-count
-    symbol_table = (operand_t*)malloc((1+3*bhir.ninstr)*sizeof(operand_t));
-    for(bh_intp instr_idx=0; instr_idx<bhir.ninstr; ++instr_idx) {
-        map_operands(&bhir.instr_list[instr_idx]);
-    }
-    cout << "Synbol ta" << endl;
-    cout << symbol_table_text("") << endl;
-    */
 
     //
     // Note: The first block-pointer is unused.
@@ -566,13 +438,6 @@ bh_error Engine::execute(bh_ir& bhir)
     for(bh_intp dag_idx=1; dag_idx<=root.nnode; ++dag_idx) {
         delete blocks[dag_idx];
     }
-
-    /*
-    //
-    // De-allocate the symbol_table
-    free(symbol_table);
-    symbol_table = NULL;
-    */
     
     DEBUG(TAG,"execute(...);");
     return res;

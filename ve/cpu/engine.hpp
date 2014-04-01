@@ -32,16 +32,11 @@ public:
     ~Engine();
 
     std::string text();
-    std::string symbol_table_text(std::string prefix);
 
     bh_error register_extension(bh_component& instance, const char* name, bh_opcode opcode);
     bh_error execute(bh_ir& ir);
 
 private:
-
-    size_t map_operand(bh_instruction& instr, size_t operand_idx);
-    bh_error map_operands(bh_instruction* instr);
-
     bh_error sij_mode(Block& block);
     bh_error fuse_mode(Block& block);
 
@@ -62,9 +57,6 @@ private:
     Compiler       compiler;
 
     std::map<bh_opcode, bh_extmethod_impl> extensions;
-
-    operand_t* symbol_table;
-    size_t nsymbols;
 
     static const char TAG[];
 };
