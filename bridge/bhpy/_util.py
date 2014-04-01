@@ -26,6 +26,10 @@ import _bh
 import _info
 import bhc
 
+#Flush the delayed operations for Bohrium execution
+def flush():
+    bhc.bh_runtime_flush()
+
 #Returns the Bohrium name of the data type of the Bohrium-C array
 def dtype_from_bhc(bhc_ary):
     return  bhc_ary.__str__().rsplit("_",1)[-1]
