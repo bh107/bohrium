@@ -12,6 +12,7 @@ import datetime
 import os
 import bhc
 import _util
+import _bh
 
 
 def random123(shape, key, start_index=0, dtype=np.uint64, bohrium=True):
@@ -121,10 +122,11 @@ class Random:
                 s = shape #It might be a tuble already
 
         #Generate random numbers as uint
-        r = random123(s, self.seed, start_index=self.index, dtype=dtype_uint, bohrium=bohrium)
+        r_int = random123(s, self.seed, start_index=self.index, dtype=dtype_uint, bohrium=bohrium)
         #Convert random numbers to float in the interval [0.0, 1.0).
-        r = np.asarray(r, dtype=dtype)
-        r /= float(np.iinfo(dtype_uint).max)
+        r = np.empty_like(r_int, dtype=dtype)
+        r[:] = r_int
+        r /= float(numpy.iinfo(dtype_uint).max)
 
         #Update the index offset for the next random call
         self.index += reduce(operator.mul, s, 1)
