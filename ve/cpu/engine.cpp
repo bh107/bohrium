@@ -567,10 +567,12 @@ bh_error Engine::execute(bh_ir& bhir)
         delete blocks[dag_idx];
     }
 
+    /*
     //
     // De-allocate the symbol_table
     free(symbol_table);
     symbol_table = NULL;
+    */
     
     DEBUG(TAG,"execute(...);");
     return res;

@@ -694,7 +694,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_ADD_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -722,7 +722,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_AND_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -750,7 +750,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_OR_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -778,7 +778,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_XOR_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -806,7 +806,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_AND_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -834,7 +834,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_OR_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -862,7 +862,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_XOR_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -890,7 +890,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_MAXIMUM_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -918,7 +918,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_MINIMUM_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -946,7 +946,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_MULTIPLY_REDUCE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -974,7 +974,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= REDUCE;    // Operationmask
                 break;
             case BH_ADD_ACCUMULATE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
@@ -1002,7 +1002,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= SCAN;    // Operationmask
                 break;
             case BH_MULTIPLY_ACCUMULATE:
-                // bh_is_constant breaks for ACCUMULATE and SCAN
+                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
                 // due to an error in the language bridge.
                 // so we need to manually map the constant here...
                 in1 = this->add_operand(instr, 1);
