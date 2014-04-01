@@ -4,6 +4,7 @@ from ufunc import ufuncs
 from ndarray import check
 from _info import numpy_types
 from _util import flush
+import linalg
 
 #Expose all ufuncs
 for f in ufuncs:
