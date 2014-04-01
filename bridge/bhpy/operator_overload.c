@@ -101,61 +101,61 @@ array_bitwise_xor(PyObject *m1, PyObject *m2)
 static PyObject *
 array_inplace_add(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "add", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "add", "OOO", m1, m2, m1);
 }
 
 static PyObject *
 array_inplace_subtract(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "subtract", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "subtract", "OOO", m1, m2, m1);
 }
 
 static PyObject *
 array_inplace_multiply(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "multiply", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "multiply", "OOO", m1, m2, m1);
 }
 
 static PyObject *
 array_inplace_divide(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "divide", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "divide", "OOO", m1, m2, m1);
 }
 
 static PyObject *
 array_inplace_remainder(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "remainder", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "remainder", "OOO", m1, m2, m1);
 }
 
 static PyObject *
 array_inplace_left_shift(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "left_shift", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "left_shift", "OOO", m1, m2, m1);
 }
 
 static PyObject *
 array_inplace_right_shift(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "right_shift", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "right_shift", "OOO", m1, m2, m1);
 }
 
 static PyObject *
 array_inplace_bitwise_and(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "bitwise_and", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "bitwise_and", "OOO", m1, m2, m1);
 }
 
 static PyObject *
 array_inplace_bitwise_or(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "bitwise_or", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "bitwise_or", "OOO", m1, m2, m1);
 }
 
 static PyObject *
 array_inplace_bitwise_xor(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "bitwise_xor", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "bitwise_xor", "OOO", m1, m2, m1);
 }
 
 static PyObject *
@@ -173,7 +173,7 @@ array_true_divide(PyObject *m1, PyObject *m2)
 static PyObject *
 array_inplace_floor_divide(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "floor_divide", "OOO", m1, m1, m2);
+    return PyObject_CallMethod(bohrium, "floor_divide", "OOO", m1, m2, m1);
 }
 
 static PyObject *
