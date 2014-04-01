@@ -8,15 +8,17 @@ namespace cpu{
 
 SymbolTable::SymbolTable(size_t capacity) : nsymbols(0), table(NULL)
 {
-    //
-    // Map bh_instruction operands to tac.operand_t
-    nsymbols = 0;   // Reset symbol-count
-    table = (operand_t*)malloc(capacity*sizeof(operand_t));
+    init(capacity);
 }
 
-SymbolTable::SymbolTable(void)
+SymbolTable::SymbolTable(void) : nsymbols(0), table(NULL)
 {
-    
+    init(100);
+}
+
+void SymbolTable::init(size_t capacity)
+{
+    table = (operand_t*)malloc(capacity*sizeof(operand_t));
 }
 
 SymbolTable::~SymbolTable(void)
@@ -128,22 +130,6 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         break;
     }
     return arg_idx;
-}
-
-bh_error SymbolTable::map_operands(bh_instruction* instr)
-{
-    switch(bh_operands(instr->opcode)) {
-        case 3:
-            map_operand(*instr, 2);
-        case 2:
-            map_operand(*instr, 1);
-        case 1:
-            map_operand(*instr, 0);
-            return true;
-
-        default:
-            return false;
-    }
 }
 
 }}}

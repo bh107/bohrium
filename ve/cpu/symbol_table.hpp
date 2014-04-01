@@ -19,9 +19,10 @@ public:
     std::string text(std::string prefix);
 
     size_t map_operand(bh_instruction& instr, size_t operand_idx);
-    bh_error map_operands(bh_instruction* instr);
 
 private:
+    void init(size_t capacity);
+
     size_t nsymbols;
     operand_t* table;
 

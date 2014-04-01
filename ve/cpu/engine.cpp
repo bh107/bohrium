@@ -416,7 +416,7 @@ bh_error Engine::execute(bh_ir& bhir)
     }
 
     //
-    // Now execute the Blocks
+    // Execute the Blocks
     for(bh_intp dag_idx=1; dag_idx<=root.nnode; ++dag_idx) {
         Block* block = blocks[dag_idx];
         bh_error mode_res;
