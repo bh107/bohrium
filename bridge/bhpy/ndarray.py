@@ -71,7 +71,7 @@ def get_bhc(ary):
     base = get_base(ary)
     if base.bhc_ary is None:
         new_bhc_base(base)
-        data_np2bhc(base)
+        base._data_fill(base)
 
     if ary is base:#We a returning a base array
         return base.bhc_ary
@@ -125,7 +125,3 @@ def get_bhc_data_pointer(ary, allocate=False):
             raise MemoryError()
     return int(data)
 
-def data_np2bhc(ary):
-    if not check(ary):
-        raise TypeError("must be a Bohrium array")
-    raise NotImplementedError("TODO: data_np2bhc")
