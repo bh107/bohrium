@@ -67,6 +67,16 @@ class ufunc:
             if out.shape != out_shape:
                 raise ValueError("Could not broadcast to the shape of the output array")
 
+        if any([ndarray.check(a) for a in args]):
+            if out is not None and not ndarray.check(out):
+                raise NotImplementedError("For now, the output must be a Bohrium "\
+                                          "array when the input arrays are")
+        elif not ndarray.check(out):#All operands are regular NumPy arrays
+            f = eval("np.%s"%self.info['np_name'])
+            if out is not None:
+                args.append(out)
+            return f(*args)
+
         if len(args) > 2:
             raise ValueError("Bohrium do not support ufunc with more than two inputs")
 
@@ -117,8 +127,6 @@ class ufunc:
             out.bhc_ary = ret
             exec "bhc.bh_multi_array_%s_set_temp(ret, 0)"%dtype_name(out_dtype)
         else: #We have to use the output given
-            if not ndarray.check(out):
-                raise NotImplementedError("For now, the output must be a Bohrium array")
             if out.dtype == out_dtype:
                 t = ret
             else:
