@@ -714,6 +714,62 @@
             "default":  "out = state"
         },
         "simd": {}
-    }
+    },
 
+    {
+        "op":   "SYSTEM",
+        "oper": "DISCARD",
+        "scalar": {
+            "default": "__ERROR__SYSTEM_DISCARD_SHOULD_NOT_BE_HERE__"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "SYSTEM",
+        "oper": "FREE",
+        "scalar": {
+            "default": "__ERROR__SYSTEM_FREE_SHOULD_NOT_BE_HERE__"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "SYSTEM",
+        "oper": "SYNC",
+        "scalar": {
+            "default": "__ERROR__SYSTEM_SYNC_SHOULD_NOT_BE_HERE__"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "SYSTEM",
+        "oper": "NONE",
+        "scalar": {
+            "default": "__ERROR__SYSTEM_NONE_SHOULD_NOT_BE_HERE__"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "GENERATOR",
+        "oper": "FLOOD",
+        "scalar": {
+            "default": "__ERROR__GENERATOR_FLOOD_NOT_IMLEMENTED__"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "GENERATOR",
+        "oper": "RANDOM",
+        "scalar": {
+            "default": "__ERROR__GENERATOR_RANDOM_NOT_IMLEMENTED__"
+        },
+        "simd": {}
+    },
+    {
+        "op":   "EXTENSION",
+        "oper": "EXTENSION_OPERATOR",
+        "scalar": {
+            "default": "__ERROR__EXTENSION_EXTENSION_OPERATOR_SHOULD_NOT_BE_HERE__"
+        },
+        "simd": {}
+    }
 ]

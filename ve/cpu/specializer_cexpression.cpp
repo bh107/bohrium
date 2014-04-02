@@ -137,6 +137,10 @@ string Specializer::cexpression(Block& block, size_t tac_idx)
                 default: expr_text = "*a%1$d_current = cosh( *a%2$d_current )"; break;
             }
             break;
+        case DISCARD:            
+            
+            expr_text = "__ERROR__SYSTEM_DISCARD_SHOULD_NOT_BE_HERE__"; break;
+            break;
         case DIVIDE:            
             
             expr_text = "*a%1$d_current = *a%2$d_current / *a%3$d_current"; break;
@@ -165,9 +169,21 @@ string Specializer::cexpression(Block& block, size_t tac_idx)
             
             expr_text = "*a%1$d_current = expm1( *a%2$d_current )"; break;
             break;
+        case EXTENSION_OPERATOR:            
+            
+            expr_text = "__ERROR__EXTENSION_EXTENSION_OPERATOR_SHOULD_NOT_BE_HERE__"; break;
+            break;
+        case FLOOD:            
+            
+            expr_text = "__ERROR__GENERATOR_FLOOD_NOT_IMLEMENTED__"; break;
+            break;
         case FLOOR:            
             
             expr_text = "*a%1$d_current = floor( *a%2$d_current )"; break;
+            break;
+        case FREE:            
+            
+            expr_text = "__ERROR__SYSTEM_FREE_SHOULD_NOT_BE_HERE__"; break;
             break;
         case GREATER:            
             
@@ -306,6 +322,10 @@ string Specializer::cexpression(Block& block, size_t tac_idx)
                     expr_text = "__ERR_UNS_OPER__"; break;
             }            
             break;
+        case NONE:            
+            
+            expr_text = "__ERROR__SYSTEM_NONE_SHOULD_NOT_BE_HERE__"; break;
+            break;
         case NOT_EQUAL:            
             
             expr_text = "*a%1$d_current = *a%2$d_current != *a%3$d_current"; break;
@@ -317,6 +337,10 @@ string Specializer::cexpression(Block& block, size_t tac_idx)
                 case COMPLEX64: expr_text = "*a%1$d_current = cpowf( *a%2$d_current, *a%3$d_current )"; break;
                 default: expr_text = "*a%1$d_current = pow( *a%2$d_current, *a%3$d_current )"; break;
             }
+            break;
+        case RANDOM:            
+            
+            expr_text = "__ERROR__GENERATOR_RANDOM_NOT_IMLEMENTED__"; break;
             break;
         case RANGE:            
             
@@ -364,6 +388,10 @@ string Specializer::cexpression(Block& block, size_t tac_idx)
         case SUBTRACT:            
             
             expr_text = "*a%1$d_current = *a%2$d_current - *a%3$d_current"; break;
+            break;
+        case SYNC:            
+            
+            expr_text = "__ERROR__SYSTEM_SYNC_SHOULD_NOT_BE_HERE__"; break;
             break;
         case TAN:            
             
