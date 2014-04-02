@@ -71,13 +71,6 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
 
             %for $opcode, $operation, $operator, $nin in $operations
             case $opcode:
-                %if 'ACCUMULATE' in $opcode or 'REDUCE' in $opcode
-                // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge which does not
-                // assign it correctly we correct it here...
-                instr.operand[2].base = NULL;
-                %end if
-
                 %if nin >= 1
                 in1 = this->add_operand(instr, 1);
                 %end if
