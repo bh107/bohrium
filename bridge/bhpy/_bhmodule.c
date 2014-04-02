@@ -38,6 +38,33 @@ typedef struct
     PyObject *bhc_ary;
 }BhArray;
 
+static PyObject *
+BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    BhArray *ret = (BhArray *) PyArray_Type.tp_new(type, args, kwds);
+    if(!PyArray_CHKFLAGS((PyArrayObject*)ret, NPY_ARRAY_OWNDATA))
+        return (PyObject *) ret;//The array doesn't own the array data
+
+    free(ret->base.data);
+
+    //Allocate page-size aligned memory.
+    //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
+    //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
+    void *addr = mmap(0, PyArray_NBYTES((PyArrayObject*)ret), PROT_READ|PROT_WRITE,
+                      MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    if(addr == MAP_FAILED)
+    {
+        int errsv = errno;//mmap() sets the errno.
+        PyErr_Format(PyExc_RuntimeError, "The Array Data Protection "
+                     "could not mmap a data region. "
+                     "Returned error code by mmap: %s.", strerror(errsv));
+        return NULL;
+    }
+    //Update the ary data pointer.
+    ret->base.data = addr;
+    return (PyObject *) ret;
+}
+
 static void
 BhArray_dealloc(BhArray* self)
 {
@@ -58,6 +85,24 @@ BhArray_dealloc(BhArray* self)
         goto finish;
     }
 finish:
+    if(!PyArray_CHKFLAGS((PyArrayObject*)self, NPY_ARRAY_OWNDATA))
+    {
+        BhArrayType.tp_base->tp_dealloc((PyObject*)self);
+        return;//The array doesn't own the array data
+    }
+
+    assert(!PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*)self), NPY_ITEM_REFCOUNT));
+
+    void *addr = PyArray_DATA((PyArrayObject*)self);
+    if(munmap(addr, PyArray_NBYTES((PyArrayObject*)self)) == -1)
+    {
+        int errsv = errno;//munmmap() sets the errno.
+        PyErr_Format(PyExc_RuntimeError, "The Array Data Protection "
+                     "could not mummap a data region. "
+                     "Returned error code by mmap: %s.", strerror(errsv));
+        PyErr_Print();
+    }
+    self->base.data = NULL;
     BhArrayType.tp_base->tp_dealloc((PyObject*)self);
 }
 
@@ -337,7 +382,7 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_dictoffset */
     0,                       /* tp_init */
     0,                       /* tp_alloc */
-    0,                       /* tp_new */
+    BhArray_new,             /* tp_new */
 };
 
 PyMODINIT_FUNC
@@ -370,4 +415,8 @@ init_bh(void)
     array_create = PyImport_ImportModule("bohrium.array_create");
     if(array_create == NULL)
         return;
+
+    //Initialize the signal handler
+    init_signal();
+
 }
