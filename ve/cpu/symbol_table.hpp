@@ -33,11 +33,11 @@ public:
     SymbolTable(void);
     
     /**
-     *  Construct a symbol table with the given capacity of symbols.
+     *  Construct a symbol table a capacity of n elements.
      *
-     *  @param capacity Upper bound on the amount of symbols in the table.
+     *  @param n Upper bound on the amount of symbols in the table.
      */
-    SymbolTable(size_t capacity);
+    SymbolTable(size_t n);
 
     /**
      *  Deconstructor.
@@ -45,10 +45,25 @@ public:
     ~SymbolTable(void);
 
     /**
+     *  Return the number of operands which can be stored in the symbol table.
+     */
+    size_t capacity(void);
+
+    /**
+     *  Return the current amount of operands stored in the symbol table.
+     */
+    size_t size(void);
+
+    /**
      * Create a textual representation of the table.
      */
     std::string text(void);
     
+    /**
+     *  Return a textual representation of meta-data; size, capacity, etc.
+     */
+    std::string text_meta(void);
+
     /**
      * Create a textual representation of the table, using a prefix.
      */
@@ -68,11 +83,10 @@ public:
 private:
     /**
      *  Initialization function used by constructors.
-     *
-     *  @param capacity Upper bound on the amount of symbols in the table.
      */
-    void init(size_t capacity);
+    void init(void);
 
+    size_t reserved;    // Capacity reserved
     size_t nsymbols;    // The current number of symbols in the table
     operand_t* table;   // The actual symbol-table
 

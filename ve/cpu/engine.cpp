@@ -394,7 +394,10 @@ bh_error Engine::execute(bh_ir& bhir)
     //
     // Note: The first block-pointer is unused.
     Block** blocks = (Block**)malloc((1+root.nnode)*sizeof(operand_t*));
-    SymbolTable symbol_table(root.nnode*3+1);
+
+    //
+    // Instantiate the symbol-table
+    SymbolTable symbol_table(bhir.ninstr*6+2);
 
     //
     // Map DAGs to Blocks.

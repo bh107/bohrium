@@ -6,19 +6,29 @@ namespace bohrium{
 namespace engine{
 namespace cpu{
 
-SymbolTable::SymbolTable(void) : nsymbols(0), table(NULL)
+SymbolTable::SymbolTable(void) : reserved(100), nsymbols(0), table(NULL)
 {
-    init(100);
+    init();
 }
 
-SymbolTable::SymbolTable(size_t capacity) : nsymbols(0), table(NULL)
+SymbolTable::SymbolTable(size_t n) : reserved(n), nsymbols(0), table(NULL)
 {
-    init(capacity);
+    init();
 }
 
-void SymbolTable::init(size_t capacity)
+void SymbolTable::init()
 {
-    table = (operand_t*)malloc(capacity*sizeof(operand_t));
+    table = (operand_t*)malloc(reserved*sizeof(operand_t));
+}
+
+size_t SymbolTable::capacity(void)
+{
+    return reserved;
+}
+
+size_t SymbolTable::size(void)
+{
+    return nsymbols;
 }
 
 SymbolTable::~SymbolTable(void)
@@ -32,6 +42,18 @@ SymbolTable::~SymbolTable(void)
 string SymbolTable::text(void)
 {
     return text("");
+}
+
+string SymbolTable::text_meta(void)
+{
+    stringstream ss;
+    ss << "[";
+    ss << "capacity=" << capacity() << ",";
+    ss << "size=" << size();
+    ss << "]";
+    ss << endl;
+
+    return ss.str();
 }
 
 string SymbolTable::text(string prefix)
