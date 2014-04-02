@@ -24,7 +24,7 @@ namespace engine {
 namespace cpu {
 
 
-typedef void (*func)(operand_t* args);
+typedef void (*func)(operand_t** args);
 
 //
 //  Retrieve a function pointer for the symbol (SYMBOL -> func)

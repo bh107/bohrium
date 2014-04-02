@@ -15,7 +15,7 @@ namespace cpu {
 string Specializer::cexpression(Block& block, size_t tac_idx)
 {
     tac_t& tac  = block.program[tac_idx];
-    ETYPE etype = block.scope[tac.out].etype;
+    ETYPE etype = block.scope[tac.out]->etype;
     string expr_text;
 
     switch(tac.oper) {

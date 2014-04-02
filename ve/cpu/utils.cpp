@@ -92,6 +92,38 @@ bool contiguous(const operand_t& arg)
     return false;
 }
 
+std::string operand_text(const operand_t& operand)
+{
+    stringstream ss;
+    ss << "{";
+    ss << " layout("    << utils::layout_text(operand.layout) << "),";
+    ss << " nelem("     << operand.nelem << "),";
+    ss << " data("      << *(operand.data) << "),";
+    ss << " const_data("<< operand.const_data << "),";
+    ss << " etype("     << utils::etype_text(operand.etype) << "),";
+    ss << " ndim("      << operand.ndim << "),";
+    ss << " start("     << operand.start << "),";        
+    ss << " shape(";
+    for(int64_t dim=0; dim < operand.ndim; ++dim) {
+        ss << operand.shape[dim];
+        if (dim != (operand.ndim-1)) {
+            ss << ", ";
+        }
+    }
+    ss << "),";
+    ss << " stride(";
+    for(int64_t dim=0; dim < operand.ndim; ++dim) {
+        ss << operand.stride[dim];
+        if (dim != (operand.ndim-1)) {
+            ss << ", ";
+        }
+    }
+    ss << ") ";
+    ss << "}" << endl;
+
+    return ss.str();
+}
+
 std::string tac_text(const tac_t& tac)
 {
     std::stringstream ss;

@@ -8,13 +8,16 @@ namespace cpu{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx)
-: noperands(0), omask(0), symbol_table(symbol_table), ir(ir), dag(ir.dag_list[dag_idx])
+: scope(NULL), noperands(0), omask(0), symbol_table(symbol_table), ir(ir), dag(ir.dag_list[dag_idx])
 {
     size_t ps = (size_t)dag.nnode;
     if (ps<1) {
         fprintf(stderr, "This block is the empty program! You should not have called this!");
     }
-    scope    = (operand_t*)malloc((1+3)*ps*sizeof(operand_t));
+
+    scope    = (operand_t**)malloc((1+3)*ps*sizeof(operand_t*));
+    scope[0] = &symbol_table.table[0];  // Always point to the pseudo-operand.
+
     program  = (tac_t*)malloc(ps*sizeof(tac_t));
     instr    = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
     length   = ps;
@@ -39,31 +42,12 @@ string Block::scope_text(string prefix)
     stringstream ss;
     ss << prefix << "scope {" << endl;
     for(size_t i=1; i<=noperands; ++i) {
-        ss << prefix << "  [" << i << "]{";
-        ss << " layout(" << utils::layout_text(scope[i].layout) << "),";
-        ss << " nelem(" << scope[i].nelem << "),";
-        ss << " data(" << *(scope[i].data) << "),";
-        ss << " const_data(" << scope[i].const_data << "),";
-        ss << " etype(" << utils::etype_text(scope[i].etype) << "),";
-        ss << " ndim(" << scope[i].ndim << "),";
-        ss << " start(" << scope[i].start << "),";        
-        ss << " shape(";
-        for(int64_t dim=0; dim < scope[i].ndim; ++dim) {
-            ss << scope[i].shape[dim];
-            if (dim != (scope[i].ndim-1)) {
-                ss << prefix << ", ";
-            }
-        }
-        ss << "),";
-        ss << " stride(";
-        for(int64_t dim=0; dim < scope[i].ndim; ++dim) {
-            ss << scope[i].stride[dim];
-            if (dim != (scope[i].ndim-1)) {
-                ss << prefix << ", ";
-            }
-        }
-        ss << ")";
-        ss << "}" << endl;
+        operand_t& operand = *scope[i];
+        ss << prefix;
+        ss << "[" << i << "] {";
+        ss << utils::operand_text(operand);
+        ss << "}";
+        ss << endl;
     }
     ss << prefix << "}" << endl;
 
@@ -122,9 +106,11 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
     //
     // Scope
     for(size_t i=1; i<=noperands; ++i) {
+        operand_t& operand = *scope[i];
+
         operands << "~" << i;
-        operands << utils::layout_text_shand(scope[i].layout);
-        operands << utils::etype_text_shand(scope[i].etype);
+        operands << utils::layout_text_shand(operand.layout);
+        operands << utils::etype_text_shand(operand.etype);
     }
 
     //
@@ -145,8 +131,8 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         tacs << utils::operation_text(tac.op);
         tacs << "-" << utils::operator_text(tac.oper);
         tacs << "-";
-        DEBUG(TAG, "symbolize(...) : tac.out.ndim(" << scope[tac.out].ndim << ")");
-        size_t ndim = (tac.op == REDUCE) ? scope[tac.in1].ndim : scope[tac.out].ndim;
+        DEBUG(TAG, "symbolize(...) : tac.out.ndim(" << scope[tac.out]->ndim << ")");
+        size_t ndim = (tac.op == REDUCE) ? scope[tac.in1]->ndim : scope[tac.out]->ndim;
         if (ndim <= 3) {
             tacs << ndim;
         } else {
@@ -197,7 +183,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 
     //
     // TODO: Replace this with references instead of copies
-    scope[arg_idx] = symbol_table.table[arg_symbol];
+    scope[arg_idx] = &symbol_table.table[arg_symbol];
 
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
@@ -206,7 +192,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
     // Do remember that 0 is is not a valid operand and we therefore index from 1.
     // Also we do not want to compare with selv, that is when i == arg_idx.
     for(size_t i=1; i<arg_idx; ++i) {
-        if (!utils::equivalent(scope[i], scope[arg_idx])) {
+        if (!utils::equivalent(*scope[i], *scope[arg_idx])) {
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.

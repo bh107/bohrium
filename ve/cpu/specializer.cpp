@@ -57,12 +57,12 @@ string Specializer::template_filename(Block& block, size_t pc)
 
     tac_t& tac = block.program[pc];
     int ndim = (tac.op == REDUCE)         ? \
-               block.scope[tac.in1].ndim : \
-               block.scope[tac.out].ndim;
+               block.scope[tac.in1]->ndim : \
+               block.scope[tac.out]->ndim;
 
-    LAYOUT layout_out = block.scope[tac.out].layout, 
-           layout_in1 = block.scope[tac.in1].layout,
-           layout_in2 = block.scope[tac.in2].layout;
+    LAYOUT layout_out = block.scope[tac.out]->layout, 
+           layout_in1 = block.scope[tac.in1]->layout,
+           layout_in2 = block.scope[tac.in2]->layout;
 
     switch (tac.op) {                    // OPCODE_SWITCH
         case MAP:
@@ -189,8 +189,8 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
     for(size_t opr_idx=1; opr_idx<=block.noperands; ++opr_idx) {
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);
-        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[opr_idx].etype));
-        if (CONSTANT != block.scope[opr_idx].layout) {
+        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[opr_idx]->etype));
+        if (CONSTANT != block.scope[opr_idx]->layout) {
             argument_d->ShowSection("ARRAY");
         }
     }
@@ -241,10 +241,10 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
                 
                 switch(utils::tac_noperands(next)) {
                     case 3:
-                        compat_operands = compat_operands && (utils::compatible(block.scope[first.out], block.scope[next.in2]));
+                        compat_operands = compat_operands && (utils::compatible(*block.scope[first.out], *block.scope[next.in2]));
                     case 2:
-                        compat_operands = compat_operands && (utils::compatible(block.scope[first.out], block.scope[next.in1]));
-                        compat_operands = compat_operands && (utils::compatible(block.scope[first.out], block.scope[next.out]));
+                        compat_operands = compat_operands && (utils::compatible(*block.scope[first.out], *block.scope[next.in1]));
+                        compat_operands = compat_operands && (utils::compatible(*block.scope[first.out], *block.scope[next.out]));
                     break;
 
                     default:
@@ -279,8 +279,8 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
             //
             // Reduction and scan specific expansions
             if ((tac.op == REDUCE) || (tac.op == SCAN)) {
-                operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(block.scope[tac.out].etype));
-                operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1].etype));
+                operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(block.scope[tac.out]->etype));
+                operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1]->etype));
                 operation_d->SetValue("TYPE_AXIS",  "int64_t");
                 if (tac.oper == ADD) {
                     operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
@@ -326,10 +326,10 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
                 fprintf(stderr, "THIS SHOULD NEVER MAPPEN! OPERAND 0 is used!\n");
             }
             ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
-            operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[opr_idx].etype));
+            operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[opr_idx]->etype));
             operand_d->SetIntValue("NR", opr_idx);
 
-            if (CONSTANT != block.scope[opr_idx].layout) {
+            if (CONSTANT != block.scope[opr_idx]->layout) {
                 operand_d->ShowSection("ARRAY");
             }   
         }

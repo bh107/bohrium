@@ -30,6 +30,7 @@ namespace utils {
 //
 std::string operation_text(OPERATION op);
 std::string operator_text(OPERATOR op);
+std::string operand_text(const operand_t& operand);
 
 std::string etype_text(ETYPE etype);
 std::string etype_text_shand(ETYPE etype);

@@ -46,7 +46,7 @@ public:
     bh_instruction** instr;     // Pointers to instructions
 
     tac_t* program;             // Ordered list of TACs
-    operand_t* scope;           // Array of block arguments
+    operand_t** scope;          // Array of pointers to block operands
 
     size_t noperands;           // Number of arguments to the block
     size_t length;              // Number of tacs in program

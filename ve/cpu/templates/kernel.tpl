@@ -35,20 +35,20 @@ inline int omp_get_num_threads() { return 1; }
 //  MODE={{MODE}}, NINSTR={{NINSTR}}, NARGS={{NARGS}}
 //  SYMBOL_TEXT {{SYMBOL_TEXT}}
 // ]
-void KRN_{{SYMBOL}}(operand_t* args)
+void KRN_{{SYMBOL}}(operand_t** args)
 {
     //
     // Argument unpacking
     //
     {{#ARGUMENT}}
     // Argument {{NR}}
-    {{TYPE}} *a{{NR}}_first = *args[{{NR}}].data;
+    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
     {{#ARRAY}}
-    int64_t  a{{NR}}_start  = args[{{NR}}].start;
-    int64_t  a{{NR}}_nelem  = args[{{NR}}].nelem;
-    int64_t  a{{NR}}_ndim   = args[{{NR}}].ndim;    
-    int64_t *a{{NR}}_shape  = args[{{NR}}].shape;
-    int64_t *a{{NR}}_stride = args[{{NR}}].stride;
+    int64_t  a{{NR}}_start  = args[{{NR}}]->start;
+    int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
+    int64_t  a{{NR}}_ndim   = args[{{NR}}]->ndim;    
+    int64_t *a{{NR}}_shape  = args[{{NR}}]->shape;
+    int64_t *a{{NR}}_stride = args[{{NR}}]->stride;
     a{{NR}}_first += a{{NR}}_start;
     {{/ARRAY}}
     assert(a{{NR}}_first != NULL);
