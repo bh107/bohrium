@@ -37,7 +37,29 @@ public:
     bh_error execute(bh_ir& ir);
 
 private:
+    /**
+     *  Compile and execute the given block one tac/instruction at a time.
+     *
+     *  This execution mode is used when for one reason or another want to
+     *  do interpret the execution instruction-by-instruction.
+     *
+     *  This will happen when
+     *  
+     *  The block does not contain array operations
+     *  The block does contain array operations but also an extension
+     *
+     */
     bh_error sij_mode(Block& block);
+
+    /**
+     *  Compile and execute multiple tac/instructions at a time.
+     *
+     *  This execution mode is used when
+     *
+     *      - jit_fusion=true,
+     *      - The block contains at least one array operation (should be increased to more than 1)
+     *      - The block contains does not contain any extensions
+     */
     bh_error fuse_mode(Block& block);
 
     std::string compiler_cmd,

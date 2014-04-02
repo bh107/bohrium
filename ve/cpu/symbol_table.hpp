@@ -3,6 +3,7 @@
 #include "bh.h"
 #include "tac.h"
 #include <string>
+#include <set>
 
 namespace bohrium {
 namespace engine {
@@ -81,6 +82,7 @@ public:
     size_t map_operand(bh_instruction& instr, size_t operand_idx);
 
     operand_t* table;   // The actual symbol-table
+
 private:
     /**
      *  Initialization function used by constructors.
@@ -89,6 +91,15 @@ private:
 
     size_t reserved;    // Capacity reserved
     size_t nsymbols;    // The current number of symbols in the table
+
+    //
+    // The following are used to detect temporary arrays
+    //
+    std::set<size_t> potentials;// Operands which could be temps
+    std::set<size_t> temps;     // Operands which are temps
+
+    size_t* reads;              // Read-count of operands
+    size_t* writes;             // Write-cout of operands
 
 };
 
