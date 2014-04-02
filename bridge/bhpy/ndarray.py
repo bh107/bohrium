@@ -20,7 +20,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
-import _util
+from _util import dtype_from_bhc, dtype_name
 import bhc
 
 # This module consist of bohrium.ndarray methods
@@ -28,6 +28,18 @@ import bhc
 #Returns True if 'ary' is a Bohrium array
 def check(ary):
     return hasattr(ary, "bhc_ary")
+
+#Creates a new bohrium.ndarray with 'bhc_ary' as the Bohrium-C part.
+#Use a new Bohrium-C array when 'bhc_ary' is None.
+def new(shape, dtype, bhc_ary=None):
+    import _bh #We import locally in order to avoid cycles
+    ret = _bh.ndarray(shape, dtype=dtype)
+    if bhc_ary is None:
+        new_bhc_base(ret)
+    else:
+        ret.bhc_ary = bhc_ary
+    exec "bhc.bh_multi_array_%s_set_temp(ret.bhc_ary, 0)"%dtype_name(dtype)
+    return ret
 
 #Creates a new Bohrium-C base array.
 def new_bhc_base(ary):
@@ -49,7 +61,7 @@ def new_bhc_base(ary):
     if not ary.flags['C_CONTIGUOUS']:
         raise ValueError("For now Bohrium only supports C-style arrays")
 
-    dtype = _util.dtype_name(ary)
+    dtype = dtype_name(ary)
     exec "ary.bhc_ary = bhc.bh_multi_array_%s_new_empty(ary.ndim, ary.shape)"%dtype
 
 #Get the final base array of 'ary'
@@ -76,7 +88,7 @@ def get_bhc(ary):
     if ary is base:#We a returning a base array
         return base.bhc_ary
     else:
-        dtype = _util.dtype_name(ary)
+        dtype = dtype_name(ary)
         exec "bh_base = bhc.bh_multi_array_%s_get_base(base.bhc_ary)"%dtype
         offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
         if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
@@ -93,7 +105,7 @@ def get_bhc(ary):
 
 #Delete the Bohrium-C object
 def del_bhc_obj(bhc_obj):
-    exec "bhc.bh_multi_array_%s_destroy(bhc_obj)"%_util.dtype_from_bhc(bhc_obj)
+    exec "bhc.bh_multi_array_%s_destroy(bhc_obj)"%dtype_from_bhc(bhc_obj)
 
 #Delete the Bohrium-C part of the bohrium.ndarray
 def del_bhc(ary):
@@ -112,7 +124,7 @@ def get_bhc_data_pointer(ary, allocate=False):
     if not check(ary):
         raise TypeError("must be a Bohrium array")
     ary = get_base(ary)
-    dtype = _util.dtype_name(ary)
+    dtype = dtype_name(ary)
     bhc_ary = get_bhc(ary)
     exec "bhc.bh_multi_array_%s_sync(bhc_ary)"%dtype
     exec "base = bhc.bh_multi_array_%s_get_base(bhc_ary)"%dtype

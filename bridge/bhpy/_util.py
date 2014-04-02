@@ -20,9 +20,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
-import atexit
 import numpy as np
-import _bh
 import _info
 import bhc
 

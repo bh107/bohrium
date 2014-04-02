@@ -3,9 +3,6 @@ Array Create Routines
 ~~~~
 
 """
-import _bh
-import _info
-import _util
 import ndarray
 import numpy
 
@@ -76,9 +73,7 @@ def empty(shape, dtype=float, bohrium=True):
     """
     if not bohrium:
         return numpy.empty(shape, dtype=dtype)
-    ret = _bh.ndarray(shape, dtype=dtype)
-    ndarray.new_bhc_base(ret)#Trigger Bohrium creations
-    return ret
+    return ndarray.new(shape, dtype)
 
 def ones(shape, dtype=float, bohrium=True):
     """
@@ -349,6 +344,7 @@ def ones_like(a, dtype=None, bohrium=None):
 ###############################################################################
 
 import unittest
+import _info
 
 class Tests(unittest.TestCase):
 

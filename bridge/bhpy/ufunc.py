@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 """
 import _util
-import _bh
 import array_create
 import bhc
 import numpy as np
@@ -123,9 +122,7 @@ class ufunc:
         ret = f(*inputs)
 
         if out is None: #Create a new output with the returned Bohrium-C array
-            out = _bh.ndarray(out_shape, dtype=out_dtype)
-            out.bhc_ary = ret
-            exec "bhc.bh_multi_array_%s_set_temp(ret, 0)"%dtype_name(out_dtype)
+            out = ndarray.new(out_shape, out_dtype, ret)
         else: #We have to use the output given
             if out.dtype == out_dtype:
                 t = ret
@@ -151,10 +148,7 @@ class ufunc:
 
         f = eval("bhc.bh_multi_array_%s_partial_reduce_%s"%(dtype_name(a), self.info['bhc_name']))
         ret = f(get_bhc(a),axis)
-        t = _bh.ndarray(shape, dtype=a.dtype)
-        t.bhc_ary = ret
-        f = eval("bhc.bh_multi_array_%s_set_temp"%dtype_name(t.dtype))
-        f(ret, 0)
+        t = ndarray.new(shape, a.dtype, ret)
 
         if a.ndim == 1:#return a Python Scalar
             return t[0]

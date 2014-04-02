@@ -12,7 +12,6 @@ import datetime
 import os
 import bhc
 import _util
-import _bh
 
 
 def random123(shape, key, start_index=0, dtype=np.uint64, bohrium=True):
