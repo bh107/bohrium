@@ -143,11 +143,14 @@ class ufunc:
         else:
             shape = [s for i, s in enumerate(a.shape) if i != axis]
 
-        exec "ret = bhc.bh_multi_array_%s_partial_reduce_%s(get_bhc(a),axis)"%(dtype_name(a), self.info['bhc_name'])
-
+        f = eval("bhc.bh_multi_array_%s_partial_reduce_%s"%(dtype_name(a), self.info['bhc_name']))
+        ret = f(get_bhc(a),axis)
         out = _bh.ndarray(shape, dtype=a.dtype)
         out.bhc_ary = ret
         exec "bhc.bh_multi_array_%s_set_temp(ret, 0)"%dtype_name(out.dtype)
+
+        if a.ndim == 1:#We will return a Python Scalar
+            return out[0]
         return out
 
 
