@@ -80,6 +80,7 @@ public:
      */
     size_t map_operand(bh_instruction& instr, size_t operand_idx);
 
+    operand_t* table;   // The actual symbol-table
 private:
     /**
      *  Initialization function used by constructors.
@@ -88,7 +89,6 @@ private:
 
     size_t reserved;    // Capacity reserved
     size_t nsymbols;    // The current number of symbols in the table
-    operand_t* table;   // The actual symbol-table
 
 };
 

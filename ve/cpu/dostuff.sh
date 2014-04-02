@@ -33,7 +33,7 @@ if [ ! -z "$1" ] && [ "$1" == "test" ]; then
     mkdir -p /tmp/code/sij
     rm /tmp/code/sij/*.c
     ./dostuff.sh reset
-    BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
+    BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
     python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/sij/
 
     echo "About to 'reset' and run test w_fusion... Hit enter to continue..."
@@ -42,7 +42,7 @@ if [ ! -z "$1" ] && [ "$1" == "test" ]; then
     mkdir -p /tmp/code/fuse
     rm /tmp/code/fuse/*.c
     ./dostuff.sh reset
-    BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../test/numpy/numpytest.py
+    BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
     python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
 fi
 

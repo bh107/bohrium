@@ -187,35 +187,17 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
 
 size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 {
-    size_t arg_idx = ++(noperands);
-    if (bh_is_constant(&instr.operand[operand_idx])) {
-        scope[arg_idx].const_data   = &(instr.constant.value);
-        scope[arg_idx].data         = &scope[arg_idx].const_data;
-        scope[arg_idx].etype        = utils::bhtype_to_etype(instr.constant.type);
-        scope[arg_idx].nelem        = 1;
-        scope[arg_idx].ndim         = 1;
-        scope[arg_idx].start        = 0;
-        scope[arg_idx].shape        = instr.operand[operand_idx].shape;
-        scope[arg_idx].shape[0]     = 1;
-        scope[arg_idx].stride       = instr.operand[operand_idx].shape;
-        scope[arg_idx].stride[0]    = 0;
-        scope[arg_idx].layout       = CONSTANT;
-    } else {
-        scope[arg_idx].const_data= NULL;
-        scope[arg_idx].data     = &(bh_base_array(&instr.operand[operand_idx])->data);
-        scope[arg_idx].etype    = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
-        scope[arg_idx].nelem    = bh_base_array(&instr.operand[operand_idx])->nelem;
-        scope[arg_idx].ndim     = instr.operand[operand_idx].ndim;
-        scope[arg_idx].start    = instr.operand[operand_idx].start;
-        scope[arg_idx].shape    = instr.operand[operand_idx].shape;
-        scope[arg_idx].stride   = instr.operand[operand_idx].stride;
+    //
+    // Map operands through the SymbolTable
+    size_t arg_symbol = symbol_table.map_operand(instr, operand_idx);
 
-        if (utils::is_contiguous(scope[arg_idx])) {
-            scope[arg_idx].layout = CONTIGUOUS;
-        } else {
-            scope[arg_idx].layout = STRIDED;
-        }
-    }
+    //
+    // Map operands into block-scope.
+    size_t arg_idx = ++(noperands);
+
+    //
+    // TODO: Replace this with references instead of copies
+    scope[arg_idx] = symbol_table.table[arg_symbol];
 
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the name.

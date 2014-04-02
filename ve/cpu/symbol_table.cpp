@@ -6,12 +6,12 @@ namespace bohrium{
 namespace engine{
 namespace cpu{
 
-SymbolTable::SymbolTable(void) : reserved(100), nsymbols(0), table(NULL)
+SymbolTable::SymbolTable(void) : table(NULL), reserved(100), nsymbols(0)
 {
     init();
 }
 
-SymbolTable::SymbolTable(size_t n) : reserved(n), nsymbols(0), table(NULL)
+SymbolTable::SymbolTable(size_t n) : table(NULL), reserved(n), nsymbols(0)
 {
     init();
 }
