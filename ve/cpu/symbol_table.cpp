@@ -6,17 +6,17 @@ namespace bohrium{
 namespace engine{
 namespace cpu{
 
-SymbolTable::SymbolTable(void) : table(NULL), reserved(100), nsymbols(0), reads(NULL), writes(NULL)
+SymbolTable::SymbolTable(void) : table(NULL), reads(NULL), writes(NULL), reserved(100), nsymbols(0)
 {
     init();
 }
 
-SymbolTable::SymbolTable(size_t n) : table(NULL), reserved(n), nsymbols(0), reads(NULL), writes(NULL)
+SymbolTable::SymbolTable(size_t n) : table(NULL), reads(NULL), writes(NULL), reserved(n), nsymbols(0)
 {
     init();
 }
 
-void SymbolTable::init()
+void SymbolTable::init(void)
 {
     table = (operand_t*)malloc(reserved*sizeof(operand_t)); // Storage for symbol_table / operands
 
@@ -76,6 +76,7 @@ string SymbolTable::text(string prefix)
         ss << " data("      << *(table[sbl_idx].data) << "),";
         ss << " const_data("<< table[sbl_idx].const_data << "),";
         ss << " etype(" << utils::etype_text(table[sbl_idx].etype) << "),";
+        ss << endl << prefix << "  ";
         ss << " ndim("  << table[sbl_idx].ndim << "),";
         ss << " start(" << table[sbl_idx].start << "),";        
         ss << " shape(";
@@ -93,7 +94,10 @@ string SymbolTable::text(string prefix)
                 ss << prefix << ", ";
             }
         }
-        ss << ")";
+        ss << "),";
+        ss << " reads(" << reads[sbl_idx] << "),";
+        ss << " writes(" << writes[sbl_idx] << ")";
+        ss << endl << prefix << "  ";
         ss << "}" << endl;
     }
     ss << prefix << "}" << endl;
@@ -192,6 +196,7 @@ void SymbolTable::ref_count(const tac_t& tac)
             }
             break;
     }
+    utils::tac_text(tac);
 }
 
 }}}

@@ -206,72 +206,6 @@ bh_error Engine::fuse_mode(Block& block)
 {
     DEBUG(TAG, "fuse_mode(...)");
 
-    /* This cannot be done at the block-level...
-
-    //
-    // See if we can create temps...
-    // TODO: This should be part of block_compose...
-    // or perhaps at an even larger scope...
-    cout << "see if we can find temps" << endl;
-    set<size_t> potentials;
-    set<size_t> temps;
-    for(size_t idx=0; idx<block.length; ++idx) {
-        if (block.program[idx].oper == FREE) {
-            potentials.insert(block.program[idx].out);
-        }
-    }
-
-    cout << "We found " << potentials.size() << " potentials." << endl;
-    for(set<size_t>::iterator potentials_it=potentials.begin();
-        potentials_it != potentials.end();
-        potentials_it++) {
-
-        size_t potential = *potentials_it;
-        size_t reads[block.noperands];
-        size_t writes[block.noperands];
-
-        for(size_t idx=0; idx<block.length; ++idx) {
-            tac_t& tac = block.program[idx];
-
-            // These do not count towards its read/write use
-            if ((FREE == tac.oper) || (DISCARD == tac.oper)) {
-                continue;
-            }
-
-            // Count writes
-            if (potential == tac.out) {
-                writes[tac.out]++;
-            }
-
-            // Count reads
-            size_t input = 0;   
-            switch(utils::tac_noperands(tac)) {
-                case 3:
-                    input = tac.in2;
-                    if (potential == tac.in2) {
-                        reads[tac.in2]++;
-                    }
-                case 2:
-                    if ((potential != input) && (potential == tac.in1)) {
-                        reads[tac.in1]++;
-                    }
-            }
-        }
-        if ((1 == reads[potential]) && (1 == writes[potential])) {
-            temps.insert(potential);
-        }
-    }
-    for(set<size_t>::iterator temps_it=temps.begin();
-        temps_it != temps.end();
-        temps_it++) {
-        cout << "This one has potential for scalar-replacement: " << *temps_it << "." << endl;
-    }
-
-    //
-    // Done looking for temps.
-    //
-    */
-
     bh_error res = BH_SUCCESS;
     //
     // We start by creating a symbol
@@ -399,6 +333,42 @@ bh_error Engine::execute(bh_ir& bhir)
             return BH_ERROR;
         }
     }
+   
+    /* 
+    //
+    // Looking for temps
+    //
+    if (symbol_table.size() > 5) {
+        size_t* reads           = symbol_table.reads;
+        size_t* writes          = symbol_table.writes;
+
+        set<size_t>& potentials = symbol_table.potentials;
+        set<size_t>& temps      = symbol_table.temps;
+
+        cout << "+++ BOOOOM +++" << endl;
+        cout << symbol_table.text_meta() << endl;
+        cout << symbol_table.text() << endl;
+        cout << "--- JAMMMM ---" << endl;
+
+        cout << "We found " << potentials.size() << " potentials." << endl;
+        for(set<size_t>::iterator potentials_it=potentials.begin();
+            potentials_it != potentials.end();
+            potentials_it++) {
+
+            size_t potential = *potentials_it;
+
+            if ((1 == reads[potential]) && (1 == writes[potential])) {
+                temps.insert(potential);
+            }
+        }
+        for(set<size_t>::iterator temps_it=temps.begin();
+            temps_it != temps.end();
+            temps_it++) {
+            cout << "This one has potential for scalar-replacement: " << *temps_it << "." << endl;
+        }
+        cout << "--- BOOOOM ---" << endl;
+    }
+    */
 
     //
     // Execute the Blocks

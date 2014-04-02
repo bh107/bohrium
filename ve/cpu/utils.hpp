@@ -49,7 +49,7 @@ ETYPE bhtype_to_etype(bh_type bhtype);
 /**
  * Returns a textual representation of a tac.
  */
-std::string tac_text(tac_t& tac);
+std::string tac_text(const tac_t& tac);
 
 int tac_noperands(const tac_t& tac);
 

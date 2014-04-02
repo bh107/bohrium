@@ -98,15 +98,6 @@ public:
 
     operand_t* table;   // The actual symbol-table
 
-private:
-    /**
-     *  Initialization function used by constructors.
-     */
-    void init(void);
-
-    size_t reserved;    // Capacity reserved
-    size_t nsymbols;    // The current number of symbols in the table
-
     //
     // The following are used to detect temporary arrays
     //
@@ -115,6 +106,15 @@ private:
 
     size_t* reads;              // Read-count of operands
     size_t* writes;             // Write-cout of operands
+
+private:
+    /**
+     *  Initialization function used by constructors.
+     */
+    void init(void);
+
+    size_t reserved;    // Capacity reserved
+    size_t nsymbols;    // The current number of symbols in the table
 
 };
 

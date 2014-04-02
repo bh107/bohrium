@@ -92,7 +92,7 @@ bool contiguous(const operand_t& arg)
     return false;
 }
 
-std::string tac_text(tac_t& tac)
+std::string tac_text(const tac_t& tac)
 {
     std::stringstream ss;
     ss << "{ op("<< operation_text(tac.op) << "(" << tac.op << ")),";
