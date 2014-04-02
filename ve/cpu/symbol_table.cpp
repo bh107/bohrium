@@ -6,19 +6,24 @@ namespace bohrium{
 namespace engine{
 namespace cpu{
 
-SymbolTable::SymbolTable(void) : table(NULL), reserved(100), nsymbols(0)
+SymbolTable::SymbolTable(void) : table(NULL), reserved(100), nsymbols(0), reads(NULL), writes(NULL)
 {
     init();
 }
 
-SymbolTable::SymbolTable(size_t n) : table(NULL), reserved(n), nsymbols(0)
+SymbolTable::SymbolTable(size_t n) : table(NULL), reserved(n), nsymbols(0), reads(NULL), writes(NULL)
 {
     init();
 }
 
 void SymbolTable::init()
 {
-    table = (operand_t*)malloc(reserved*sizeof(operand_t));
+    table = (operand_t*)malloc(reserved*sizeof(operand_t)); // Storage for symbol_table / operands
+
+    reads   = (size_t*)malloc(reserved*sizeof(size_t));     // Storage for counting reads
+    memset(reads, 0, reserved);
+    writes  = (size_t*)malloc(reserved*sizeof(size_t));     // Storage for counting writes
+    memset(writes, 0, reserved);
 }
 
 size_t SymbolTable::capacity(void)
@@ -34,9 +39,13 @@ size_t SymbolTable::size(void)
 SymbolTable::~SymbolTable(void)
 {
     //
-    // De-allocate the table
+    // De-allocate storage for symbol_table, reads, and writes.
     free(table);
+    free(reads);
+    free(writes);
     table = NULL;
+    reads = NULL;
+    writes = NULL;
 }
 
 string SymbolTable::text(void)

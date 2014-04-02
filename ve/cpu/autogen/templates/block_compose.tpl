@@ -110,6 +110,10 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                     return false;
                 }
         }
+
+        //
+        // Update the ref count
+        symbol_table.ref_count(this->program[pc]);
     }
     DEBUG(TAG, "compose(SUCCESS)");
     return true;
