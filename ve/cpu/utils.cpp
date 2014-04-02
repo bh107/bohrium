@@ -7,27 +7,6 @@ namespace utils{
 
 const char TAG[] = "Utils";
 
-/* Requires C++0x
-std::string string_format(const std::string & fmt_str, ...)
-{
-    int final_n, n = fmt_str.size() * 2;    // reserve 2 times as much as the length of the fmt_str
-    std::string str;
-    std::unique_ptr<char[]> formatted;
-    va_list ap;
-    while(1) {
-        formatted.reset(new char[n]);       // wrap the plain char array into the unique_ptr 
-        strcpy(&formatted[0], fmt_str.c_str());
-        va_start(ap, fmt_str);
-        final_n = vsnprintf(&formatted[0], n, fmt_str.c_str(), ap);
-        va_end(ap);
-        if (final_n < 0 || final_n >= n)
-            n += abs(final_n - n + 1);
-        else
-            break;
-    }
-    return std::string(formatted.get());
-}
-*/
 std::string string_format(const std::string fmt_str, ...) {
     int size = 100;
     std::string str;
@@ -50,14 +29,7 @@ std::string string_format(const std::string fmt_str, ...) {
     return str;
 }
 
-/**
- *  Determines whether two operand have equivalent meta-data.
- *
- *  This function serves the same purpose as bh_view_identical, 
- *  but for tac-operands instead of bh_instruction.operand[...].
- *
- */
-bool equivalent_operands(const operand_t& one, const operand_t& other)
+bool equivalent(const operand_t& one, const operand_t& other)
 {
     if (one.layout != other.layout) {
         return false;
@@ -82,14 +54,7 @@ bool equivalent_operands(const operand_t& one, const operand_t& other)
     return true;
 }
 
-/**
- *  Determines whether two operand have compatible meta-data.
- *
- *  This function serves the same purpose as bh_view_identical, 
- *  but for tac-operands instead of bh_instruction.operand[...].
- *
- */
-bool compatible_operands(const operand_t& one, const operand_t& other)
+bool compatible(const operand_t& one, const operand_t& other)
 {
     if ((one.layout == CONSTANT) || (other.layout == CONSTANT)) {
         return true;
@@ -108,10 +73,7 @@ bool compatible_operands(const operand_t& one, const operand_t& other)
     return true;
 }
 
-/**
- *  Determine whether an operand has a contiguous layout.
- */
-bool is_contiguous(operand_t& arg)
+bool contiguous(const operand_t& arg)
 {
     if ((arg.ndim == 3) && \
         (arg.stride[2] == 1) && \
@@ -168,7 +130,7 @@ string hash_text(std::string text)
     return ss.str();
 }
 
-int tac_noperands(tac_t& tac)
+int tac_noperands(const tac_t& tac)
 {
     switch(tac.op) {
         case MAP:
@@ -212,55 +174,6 @@ int tac_noperands(tac_t& tac)
     return 0;
 }
 
-string tac_typesig_text(tac_t& tac, operand_t* scope)
-{   
-    stringstream ss;
-    switch(tac_noperands(tac)) {
-        case 3:
-            ss << etype_text_shand(scope[tac.out].etype);
-            ss << etype_text_shand(scope[tac.in1].etype);
-            ss << etype_text_shand(scope[tac.in2].etype);
-            break;
-        case 2:
-            ss << etype_text_shand(scope[tac.out].etype);
-            ss << etype_text_shand(scope[tac.in1].etype);
-            break;
-        case 1:
-            ss << etype_text_shand(scope[tac.out].etype);
-            break;
-        default:
-            return string("");
-    }
-    return ss.str();
-}
-
-string tac_layout_text(tac_t& tac, operand_t* scope)
-{
-    stringstream ss;
-    switch(tac_noperands(tac)) {
-        case 3:
-            ss << layout_text_shand(scope[tac.out].layout);
-            ss << layout_text_shand(scope[tac.in1].layout);
-            ss << layout_text_shand(scope[tac.in2].layout);
-            break;
-        case 2:
-            ss << layout_text_shand(scope[tac.out].layout);
-            ss << layout_text_shand(scope[tac.in1].layout);
-            break;
-        case 1:
-            ss << layout_text_shand(scope[tac.out].layout);
-            break;
-        default:
-            return string("");
-    }
-    return ss.str();
-}
-
-/**
- *  Write source-code to file.
- *  Filename will be along the lines of: kernel/<symbol>_<UID>.c
- *  NOTE: Does not overwrite existing files.
- */
 bool write_file(string file_path, const char* sourcecode, size_t source_len)
 {
     DEBUG(TAG, "write_file("<< file_path << ", ..., " << source_len << ");");
@@ -291,11 +204,6 @@ bool write_file(string file_path, const char* sourcecode, size_t source_len)
     return true;
 }
 
-//
-//  MOVE THESE TO CORE
-//
-
-// Create nice error-messages...
 int error(int errnum, const char *fmt, ...)
 {
     va_list va;

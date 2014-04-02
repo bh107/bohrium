@@ -241,10 +241,10 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
                 
                 switch(utils::tac_noperands(next)) {
                     case 3:
-                        compat_operands = compat_operands && (utils::compatible_operands(block.scope[first.out], block.scope[next.in2]));
+                        compat_operands = compat_operands && (utils::compatible(block.scope[first.out], block.scope[next.in2]));
                     case 2:
-                        compat_operands = compat_operands && (utils::compatible_operands(block.scope[first.out], block.scope[next.in1]));
-                        compat_operands = compat_operands && (utils::compatible_operands(block.scope[first.out], block.scope[next.out]));
+                        compat_operands = compat_operands && (utils::compatible(block.scope[first.out], block.scope[next.in1]));
+                        compat_operands = compat_operands && (utils::compatible(block.scope[first.out], block.scope[next.out]));
                     break;
 
                     default:

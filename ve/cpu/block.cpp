@@ -206,7 +206,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
     // Do remember that 0 is is not a valid operand and we therefore index from 1.
     // Also we do not want to compare with selv, that is when i == arg_idx.
     for(size_t i=1; i<arg_idx; ++i) {
-        if (!utils::equivalent_operands(scope[i], scope[arg_idx])) {
+        if (!utils::equivalent(scope[i], scope[arg_idx])) {
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.

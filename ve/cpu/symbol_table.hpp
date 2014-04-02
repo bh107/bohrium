@@ -80,6 +80,21 @@ public:
      *  @param block        The block in which scope the argument will exist.
      */
     size_t map_operand(bh_instruction& instr, size_t operand_idx);
+    
+    /**
+     * Maintain records of how many times an operand has been read, written,
+     * and whether it is potentially a temporary operand.
+     *
+     * "Potentially Temporary" are operands which are subject to the FREE operator.
+     * "Temporary" operands, are operands which within their life-time, that means
+     * up until they are subject to FREE have the state:
+     *
+     * (reads[operand_symbol] == writes[operand_symbol] == 1)
+     *
+     * NOTE:
+     * When a (in1 == in2) for binary operators then it only counts as a single "read".
+     */
+    void ref_count(const tac_t& tac);
 
     operand_t* table;   // The actual symbol-table
 

@@ -117,7 +117,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         table[arg_idx].shape    = instr.operand[operand_idx].shape;
         table[arg_idx].stride   = instr.operand[operand_idx].stride;
 
-        if (utils::is_contiguous(table[arg_idx])) {
+        if (utils::contiguous(table[arg_idx])) {
             table[arg_idx].layout = CONTIGUOUS;
         } else {
             table[arg_idx].layout = STRIDED;
@@ -131,7 +131,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
     // Do remember that 0 is is not a valid operand and we therefore index from 1.
     // Also we do not want to compare with selv, that is when i == arg_idx.
     for(size_t i=1; i<arg_idx; ++i) {
-        if (!utils::equivalent_operands(table[i], table[arg_idx])) {
+        if (!utils::equivalent(table[i], table[arg_idx])) {
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.
@@ -140,6 +140,23 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         break;
     }
     return arg_idx;
+}
+
+void SymbolTable::ref_count(const tac_t& tac)
+{
+    switch(utils::tac_noperands(tac)) {
+        case 3:
+            if (tac.in2 != tac.in1) {
+                reads[tac.in2]++;
+            }
+        case 2:
+            reads[tac.in1]++;
+        case 1:
+            writes[tac.out]++;
+    }
+    if (FREE == tac.oper) {
+        potentials.insert(tac.out);
+    }
 }
 
 }}}
