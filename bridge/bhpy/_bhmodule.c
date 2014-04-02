@@ -168,10 +168,28 @@ BhArray_copy(PyObject *self, PyObject *args)
     return ret;
 }
 
+static PyObject *
+BhArray_mprotect(PyObject *self, PyObject *args)
+{
+    assert(args == NULL);
+    PyArrayObject *o = (PyArrayObject*) self;
+    if(mprotect(PyArray_DATA(o), PyArray_NBYTES(o), PROT_NONE) == -1)
+    {
+        printf("BhArray_mprotect() - data: %p, nbytes: %ld\n", PyArray_DATA(o), PyArray_NBYTES(o));
+        int errsv = errno;//mprotect() sets the errno.
+        PyErr_Format(PyExc_RuntimeError,"Error - could not protect a data"
+                     "data region. Returned error code by mprotect: %s.\n",
+                     strerror(errsv));
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
     {"_data_bhc2np", BhArray_data_bhc2np, METH_NOARGS, "Copy the Bohrium-C data to NumPy data"},
     {"_data_fill", BhArray_data_fill, METH_VARARGS, "Fill the Bohrium-C data from a numpy NumPy"},
+    {"_mprotect", BhArray_mprotect, METH_NOARGS, "Memory protects the NumPy part of the array"},
     {"copy", BhArray_copy, METH_NOARGS, "Copy the array in C-style memory layout"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
