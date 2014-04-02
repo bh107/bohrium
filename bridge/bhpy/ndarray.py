@@ -74,6 +74,11 @@ def get_base(ary):
             base = base.base
         return base
 
+#Return True when 'ary' is a base array
+def is_base(ary):
+    b = get_base(ary)
+    return b is ary
+
 #Returns the Bohrium-C part of the bohrium.ndarray
 def get_bhc(ary):
     if not check(ary):
