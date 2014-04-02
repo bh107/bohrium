@@ -6,14 +6,14 @@ namespace bohrium{
 namespace engine{
 namespace cpu{
 
-SymbolTable::SymbolTable(size_t capacity) : nsymbols(0), table(NULL)
-{
-    init(capacity);
-}
-
 SymbolTable::SymbolTable(void) : nsymbols(0), table(NULL)
 {
     init(100);
+}
+
+SymbolTable::SymbolTable(size_t capacity) : nsymbols(0), table(NULL)
+{
+    init(capacity);
 }
 
 void SymbolTable::init(size_t capacity)
@@ -29,9 +29,6 @@ SymbolTable::~SymbolTable(void)
     table = NULL;
 }
 
-/**
- * Create a textual representation of the table.
- */
 string SymbolTable::text(void)
 {
     return text("");
@@ -73,15 +70,6 @@ string SymbolTable::text(string prefix)
     return ss.str();
 }
 
-/**
- *  Add instruction operand as argument to block.
- *
- *  Reuses operands of equivalent meta-data.
- *
- *  @param instr        The instruction whos operand should be converted.
- *  @param operand_idx  Index of the operand to represent as arg_t
- *  @param block        The block in which scope the argument will exist.
- */
 size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
 {
     size_t arg_idx = ++(nsymbols);

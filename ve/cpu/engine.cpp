@@ -1,4 +1,6 @@
 #include "engine.hpp"
+#include "symbol_table.hpp"
+
 #include <set>
 
 using namespace std;
@@ -392,6 +394,7 @@ bh_error Engine::execute(bh_ir& bhir)
     //
     // Note: The first block-pointer is unused.
     Block** blocks = (Block**)malloc((1+root.nnode)*sizeof(operand_t*));
+    SymbolTable symbol_table(root.nnode*3+1);
 
     //
     // Map DAGs to Blocks.
