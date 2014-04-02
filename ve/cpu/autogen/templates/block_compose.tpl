@@ -73,30 +73,16 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
             case $opcode:
                 %if 'ACCUMULATE' in $opcode or 'REDUCE' in $opcode
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
-                in1 = this->add_operand(instr, 1);
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+                %end if
 
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
-                %else
                 %if nin >= 1
                 in1 = this->add_operand(instr, 1);
                 %end if
                 %if nin >= 2
                 in2 = this->add_operand(instr, 2);
-                %end if
                 %end if
 
                 this->program[pc].op    = $operation;  // TAC

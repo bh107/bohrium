@@ -66,6 +66,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
         switch (instr.opcode) {    // [OPCODE_SWITCH]
 
             case BH_ABSOLUTE:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -77,6 +78,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCCOS:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -88,6 +90,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCCOSH:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -99,6 +102,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCSIN:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -110,6 +114,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCSINH:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -121,6 +126,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCTAN:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -132,6 +138,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_ARCTANH:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -143,6 +150,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_CEIL:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -154,6 +162,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_COS:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -165,6 +174,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_COSH:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -176,6 +186,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_EXP:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -187,6 +198,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_EXP2:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -198,6 +210,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_EXPM1:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -209,6 +222,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_FLOOR:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -220,6 +234,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_IDENTITY:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -231,6 +246,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_IMAG:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -242,6 +258,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_INVERT:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -253,6 +270,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_ISINF:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -264,6 +282,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_ISNAN:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -275,6 +294,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_LOG:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -286,6 +306,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_LOG10:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -297,6 +318,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_LOG1P:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -308,6 +330,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_LOG2:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -319,6 +342,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_LOGICAL_NOT:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -330,6 +354,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_REAL:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -341,6 +366,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_RINT:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -352,6 +378,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_SIN:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -363,6 +390,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_SINH:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -374,6 +402,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_SQRT:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -385,6 +414,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_TAN:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -396,6 +426,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_TANH:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -407,6 +438,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_TRUNC:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = MAP;  // TAC
@@ -418,6 +450,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= MAP;    // Operationmask
                 break;
             case BH_ADD:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -430,6 +463,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_ARCTAN2:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -442,6 +476,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_BITWISE_AND:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -454,6 +489,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_BITWISE_OR:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -466,6 +502,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_BITWISE_XOR:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -478,6 +515,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_DIVIDE:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -490,6 +528,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_EQUAL:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -502,6 +541,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_GREATER:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -514,6 +554,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_GREATER_EQUAL:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -526,6 +567,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_LEFT_SHIFT:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -538,6 +580,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_LESS:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -550,6 +593,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_LESS_EQUAL:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -562,6 +606,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_LOGICAL_AND:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -574,6 +619,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_LOGICAL_OR:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -586,6 +632,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_LOGICAL_XOR:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -598,6 +645,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_MAXIMUM:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -610,6 +658,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_MINIMUM:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -622,6 +671,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_MOD:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -634,6 +684,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_MULTIPLY:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -646,6 +697,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_NOT_EQUAL:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -658,6 +710,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_POWER:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -670,6 +723,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_RIGHT_SHIFT:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -682,6 +736,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= ZIP;    // Operationmask
                 break;
             case BH_SUBTRACT:
+
                 in1 = this->add_operand(instr, 1);
                 in2 = this->add_operand(instr, 2);
 
@@ -695,23 +750,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_ADD_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = ADD;
@@ -723,23 +767,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_BITWISE_AND_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = BITWISE_AND;
@@ -751,23 +784,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_BITWISE_OR_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = BITWISE_OR;
@@ -779,23 +801,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_BITWISE_XOR_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = BITWISE_XOR;
@@ -807,23 +818,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_LOGICAL_AND_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = LOGICAL_AND;
@@ -835,23 +835,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_LOGICAL_OR_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = LOGICAL_OR;
@@ -863,23 +852,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_LOGICAL_XOR_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = LOGICAL_XOR;
@@ -891,23 +869,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_MAXIMUM_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = MAXIMUM;
@@ -919,23 +886,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_MINIMUM_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = MINIMUM;
@@ -947,23 +903,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_MULTIPLY_REDUCE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = REDUCE;  // TAC
                 this->program[pc].oper  = MULTIPLY;
@@ -975,23 +920,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_ADD_ACCUMULATE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = SCAN;  // TAC
                 this->program[pc].oper  = ADD;
@@ -1003,23 +937,12 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_MULTIPLY_ACCUMULATE:
                 // bh_is_constant breaks for *_ACCUMULATE and *_REDUCE
-                // due to an error in the language bridge.
-                // so we need to manually map the constant here...
+                // due to an error in the language bridge which does not
+                // assign it correctly we correct it here...
+                instr.operand[2].base == NULL;
+
                 in1 = this->add_operand(instr, 1);
-
-                in2 = ++(this->noperands);
-                this->scope[in2].const_data = &(instr.constant.value.uint64);
-                this->scope[in2].data       = &(this->scope[in2].const_data);
-                this->scope[in2].etype      = UINT64;
-                this->scope[in2].nelem      = 1;
-                this->scope[in2].ndim       = 1;
-                this->scope[in2].start      = 0;
-                this->scope[in2].shape      = instr.operand[2].shape;
-                this->scope[in2].shape[0]   = 1;
-                this->scope[in2].stride     = instr.operand[2].stride;
-                this->scope[in2].stride[0]  = 0;
-                this->scope[in2].layout     = CONSTANT;
-
+                in2 = this->add_operand(instr, 2);
 
                 this->program[pc].op    = SCAN;  // TAC
                 this->program[pc].oper  = MULTIPLY;
@@ -1030,6 +953,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= SCAN;    // Operationmask
                 break;
             case BH_RANDOM:
+
                 in1 = this->add_operand(instr, 1);
 
                 this->program[pc].op    = GENERATE;  // TAC
@@ -1042,6 +966,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_RANGE:
 
+
                 this->program[pc].op    = GENERATE;  // TAC
                 this->program[pc].oper  = RANGE;
                 this->program[pc].out   = out;
@@ -1051,6 +976,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= GENERATE;    // Operationmask
                 break;
             case BH_DISCARD:
+
 
                 this->program[pc].op    = SYSTEM;  // TAC
                 this->program[pc].oper  = DISCARD;
@@ -1062,6 +988,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_FREE:
 
+
                 this->program[pc].op    = SYSTEM;  // TAC
                 this->program[pc].oper  = FREE;
                 this->program[pc].out   = out;
@@ -1072,6 +999,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 break;
             case BH_NONE:
 
+
                 this->program[pc].op    = SYSTEM;  // TAC
                 this->program[pc].oper  = NONE;
                 this->program[pc].out   = out;
@@ -1081,6 +1009,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->omask |= SYSTEM;    // Operationmask
                 break;
             case BH_SYNC:
+
 
                 this->program[pc].op    = SYSTEM;  // TAC
                 this->program[pc].oper  = SYNC;
