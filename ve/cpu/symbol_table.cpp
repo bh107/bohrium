@@ -153,18 +153,44 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
 
 void SymbolTable::ref_count(const tac_t& tac)
 {
-    switch(utils::tac_noperands(tac)) {
-        case 3:
-            if (tac.in2 != tac.in1) {
+    switch(tac.op) {    // Do read/write counting ...
+        case MAP:
+            reads[tac.in1]++;
+            writes[tac.out]++;
+            break;
+
+        case ZIP:
+        case EXTENSION:
+            if (tac.in2!=tac.in1) {
                 reads[tac.in2]++;
             }
-        case 2:
             reads[tac.in1]++;
-        case 1:
             writes[tac.out]++;
-    }
-    if (FREE == tac.oper) {
-        potentials.insert(tac.out);
+            break;
+
+        case REDUCE:
+        case SCAN:
+            reads[tac.in2]++;
+            reads[tac.in1]++;
+            writes[tac.out]++;
+            break;
+
+        case GENERATE:
+            switch(tac.oper) {
+                case RANDOM:
+                case FLOOD:
+                    reads[tac.in1]++;
+                default:
+                    writes[tac.out]++;
+            }
+            break;
+
+        case NOOP:
+        case SYSTEM:    // ... or annotate operands with temp potential.
+            if (FREE == tac.oper) {
+                potentials.insert(tac.out);
+            }
+            break;
     }
 }
 

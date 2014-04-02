@@ -60,15 +60,22 @@ fi
 
 if [ ! -z "$1" ] && [ "$1" == "black" ]; then
     ./dostuff.sh reset
-    python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
+    clear && reset
 
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    echo "*** NUMPY ***"
+    $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
+    $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
+    $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
 
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    echo "*** WITHOUT Fusion **"
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+
+    echo "** WITH Fusion ***"
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
 
 fi
 
