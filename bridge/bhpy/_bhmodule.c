@@ -344,7 +344,7 @@ init_bh(void)
     if(ndarray == NULL)
         return;
     ufunc = PyImport_ImportModule("bohrium.ufunc");
-    if(ndarray == NULL)
+    if(ufunc == NULL)
         return;
     bohrium = PyImport_ImportModule("bohrium");
     if(bohrium == NULL)
