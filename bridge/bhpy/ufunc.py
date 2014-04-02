@@ -138,6 +138,10 @@ class ufunc:
     def reduce(self, a, axis=0):
         """ A Bohrium Reduction """
 
+        if not ndarray.check(a):#Let NumPy handle NumPy array reductions
+            f = eval("np.%s.reduce"%self.info['np_name'])
+            return f(a, axis=axis)
+
         if a.ndim == 1:
             shape = (1,)
         else:
