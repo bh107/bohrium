@@ -25,6 +25,5 @@ class test_largedim(numpytest):
 
     def test_largedim(self,a):
         cmd = "res = a[0] + (a[0] * 4)"
-        print cmd
         exec cmd
         return (res,cmd)

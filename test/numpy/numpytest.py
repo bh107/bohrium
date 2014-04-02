@@ -11,6 +11,7 @@ import warnings
 import copy
 from operator import mul
 from itertools import izip as zip
+from numbers import Number
 
 class TYPES:
     NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
@@ -188,11 +189,11 @@ if __name__ == "__main__":
                         res1 = res1.copy()
 
                         #Execute using Bohrium
-                        print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
                         (res2,cmd2) = getattr(cls_inst,mth)(bh_arys)
                         cmd += cmd1
                         try:
-                            res2._data_bhc2np()
+                            if not np.isscalar(res2):
+                                res2._data_bhc2np()
                         except RuntimeError as error_msg:
                             print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
                             print _C.FAIL + str(error_msg) + _C.ENDC

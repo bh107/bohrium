@@ -5,6 +5,7 @@ from ndarray import check
 from _info import numpy_types
 from _util import flush
 import linalg
+from numpy import newaxis
 
 #Expose all ufuncs
 for f in ufuncs:

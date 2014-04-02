@@ -135,28 +135,34 @@ class ufunc:
             exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),t)"%(dtype_name(out_dtype))
         return out
 
-    def reduce(self, a, axis=0):
+    def reduce(self, a, axis=0, out=None):
         """ A Bohrium Reduction """
 
         if not ndarray.check(a):#Let NumPy handle NumPy array reductions
             f = eval("np.%s.reduce"%self.info['np_name'])
-            return f(a, axis=axis)
+            return f(a, axis=axis, out=None)
 
         if a.ndim == 1:
             shape = (1,)
         else:
-            shape = [s for i, s in enumerate(a.shape) if i != axis]
+            shape = tuple(s for i, s in enumerate(a.shape) if i != axis)
+            if out is not None and out.shape != shape:
+                raise ValueError("output dimension mismatch expect shape '%s' got '%s'"%(shape, out.shape))
 
         f = eval("bhc.bh_multi_array_%s_partial_reduce_%s"%(dtype_name(a), self.info['bhc_name']))
         ret = f(get_bhc(a),axis)
-        out = _bh.ndarray(shape, dtype=a.dtype)
-        out.bhc_ary = ret
-        exec "bhc.bh_multi_array_%s_set_temp(ret, 0)"%dtype_name(out.dtype)
+        t = _bh.ndarray(shape, dtype=a.dtype)
+        t.bhc_ary = ret
+        f = eval("bhc.bh_multi_array_%s_set_temp"%dtype_name(t.dtype))
+        f(ret, 0)
 
-        if a.ndim == 1:#We will return a Python Scalar
-            return out[0]
-        return out
-
+        if a.ndim == 1:#return a Python Scalar
+            return t[0]
+        elif out is None:#return the new array output
+            return t
+        else:
+            out[:] = t#Copy the new array to the given output array
+            return out
 
 ufuncs = []
 for op in _info.op.itervalues():
