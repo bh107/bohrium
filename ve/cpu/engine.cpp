@@ -410,7 +410,7 @@ bh_error Engine::execute(bh_ir& bhir)
 
         //
         // Compose a block based on nodes within the given DAG
-        blocks[dag_idx] = new Block(bhir, dag_idx);
+        blocks[dag_idx] = new Block(symbol_table, bhir, dag_idx);
         bool compose_res = blocks[dag_idx]->compose();
         if (!compose_res) {
             fprintf(stderr, "Engine:execute(...) == ERROR: Failed composing block.\n");

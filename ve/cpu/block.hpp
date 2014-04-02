@@ -4,6 +4,7 @@
 
 #include "bh.h"
 #include "tac.h"
+#include "symbol_table.hpp"
 #include "utils.hpp"
 
 namespace bohrium{
@@ -12,18 +13,33 @@ namespace cpu{
 
 class Block {
 public:
-    //Block(const bh_ir& ir, const bh_dag& dag);
-    Block(const bh_ir& ir, size_t dag_idx);
+    Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx);
     ~Block();
 
     std::string text(std::string prefix);
-    std::string text();
+    std::string text(void);
 
     std::string scope_text(std::string prefix);
     std::string scope_text();
 
     bool compose();
     bool compose(bh_intp node_start, bh_intp node_end);
+
+    /**
+     *  Create a symbol for the block.
+     *
+     *  The textual version of the  symbol looks something like::
+     *  
+     *  symbol_text = ZIP-ADD-2D~1~2~3_~1Cf~2Cf~3Cf
+     *
+     *  Which will be hashed to some uint32_t value::
+     *
+     *  symbol = 2111321312412321432424
+     *
+     *  NOTE: System and extension operations are ignored.
+     *        If a block consists of nothing but system and/or extension
+     *        opcodes then the symbol will be the empty string "".
+     */
     bool symbolize();    
     bool symbolize(size_t tac_start, size_t tac_end);
 
@@ -42,7 +58,19 @@ public:
     const bh_dag& get_dag(void);
 
 private:
+
+    /**
+     *  Add instruction operand as argument to block.
+     *
+     *  Reuses operands of equivalent meta-data.
+     *
+     *  @param instr        The instruction whos operand should be converted.
+     *  @param operand_idx  Index of the operand to represent as arg_t
+     *  @param block        The block in which scope the argument will exist.
+     */
     size_t add_operand(bh_instruction& instr, size_t operand_idx);
+    
+    SymbolTable& symbol_table;
     const bh_ir& ir;
     const bh_dag& dag;
 

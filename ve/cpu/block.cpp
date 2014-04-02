@@ -7,8 +7,8 @@ namespace cpu{
 
 const char Block::TAG[] = "Block";
 
-//Block::Block(const bh_ir& ir, const bh_dag& dag) : noperands(0), omask(0), ir(ir), dag(dag)
-Block::Block(const bh_ir& ir, size_t dag_idx) : noperands(0), omask(0), ir(ir), dag(ir.dag_list[dag_idx])
+Block::Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx)
+: noperands(0), omask(0), symbol_table(symbol_table), ir(ir), dag(ir.dag_list[dag_idx])
 {
     size_t ps = (size_t)dag.nnode;
     if (ps<1) {
@@ -104,21 +104,6 @@ string Block::text()
     return text("");
 }
 
-/**
- *  Create a symbol for the block.
- *
- *  The textual version of the  symbol looks something like::
- *  
- *  symbol_text = ZIP-ADD-2D~1~2~3_~1Cf~2Cf~3Cf
- *
- *  Which will be hashed to some uint32_t value::
- *
- *  symbol = 2111321312412321432424
- *
- *  NOTE: System and extension operations are ignored.
- *        If a block consists of nothing but system and/or extension
- *        opcodes then the symbol will be the empty string "".
- */
 bool Block::symbolize()
 {   
     DEBUG(TAG,"symbolize(void) : length("<< length << ")");
@@ -200,15 +185,6 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
     return true;
 }
 
-/**
- *  Add instruction operand as argument to block.
- *
- *  Reuses operands of equivalent meta-data.
- *
- *  @param instr        The instruction whos operand should be converted.
- *  @param operand_idx  Index of the operand to represent as arg_t
- *  @param block        The block in which scope the argument will exist.
- */
 size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 {
     size_t arg_idx = ++(noperands);
