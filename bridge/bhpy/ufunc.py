@@ -30,17 +30,27 @@ from ndarray import get_bhc
 import ndarray
 
 def assign(a, out):
-    out_dtype = dtype_name(out)
-    out_bhc = get_bhc(out)
-    if np.isscalar(a):
-        exec "bhc.bh_multi_array_%s_assign_scalar(out_bhc,a)"%(out_dtype)
-    else:
-        a_bhc = get_bhc(a)
-        a_dtype = dtype_name(a)
+    if ndarray.check(out):
         np.broadcast(a,out)#We only do this for the dimension mismatch check
-        if out_dtype != a_dtype:
-            exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
-        exec "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
+        out_dtype = dtype_name(out)
+        out_bhc = get_bhc(out)
+        if np.isscalar(a):
+            exec "bhc.bh_multi_array_%s_assign_scalar(out_bhc,a)"%(out_dtype)
+        else:
+            if not ndarray.check(a):
+                a = array_create.array(a)#Convert the NumPy array to bohrium
+            a_bhc = get_bhc(a)
+            a_dtype = dtype_name(a)
+            if out_dtype != a_dtype:
+                exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
+            exec "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
+    elif ndarray.check(a):
+        a._data_bhc2np()
+        a.__array_priority__ = -1.0#Force NumPy to handle the assignment
+        out[:] = a
+        a.__array_priority__ = 2.0
+    else:
+        out[:] = a#Regular NumPy assignment
 
 class ufunc:
     def __init__(self, info):
