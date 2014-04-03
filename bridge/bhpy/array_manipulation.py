@@ -141,12 +141,9 @@ def diagflat(d,k=0):
            [0, 0, 0]])
 
     """
-
-    if not ndarray.check(d):
-        d = array_create.array(d)
     d = flatten(d)
     size = d.size+abs(k)
-    A = array_create.zeros((size,size), dtype=d.dtype)
+    A = array_create.zeros((size,size), dtype=d.dtype, bohrium=ndarray.check(d))
     Ad = diagonal(A, offset=k)
     Ad[:] = d
     return A
