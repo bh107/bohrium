@@ -52,6 +52,7 @@ def gauss(a, b):
     return x
 
 def jacobi(a, b, tol=0.0005):
+    raise NotImplementedError("norm() isn't implemented")
     """
     Solve a linear matrix equation, or system of linear scalar equations
     using the Jacobi Method.
