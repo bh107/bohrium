@@ -81,7 +81,7 @@ def jacobi(a, b, tol=0.0005):
     >>> (np.dot(a, x) == b).all()
     True
     """
-    x = np.ones(np.shape(b), dtype=b.dtype, bohrium=b.bohrium)
+    x = np.ones_like(b)
     D = 1/np.diag(a)
     R = np.diag(np.diag(a)) - a
     T = D[:,np.newaxis]*R
