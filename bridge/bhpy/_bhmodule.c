@@ -166,16 +166,15 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     void *d = NULL;
     if(get_bhc_data_pointer(base, 0, &d) == -1)
         return NULL;
-
+    Py_DECREF(base);
     if(d != NULL)
     {
         memcpy(PyArray_DATA((PyArrayObject*)base), d, PyArray_NBYTES((PyArrayObject*)base));
     }
 
     //Lets delete the current bhc_ary
-    if(PyObject_CallMethod(ndarray, "del_bhc", "O", base) == NULL)
+    if(PyObject_CallMethod(ndarray, "del_bhc", "O", self) == NULL)
         return NULL;
-    Py_DECREF(base);
     Py_RETURN_NONE;
 }
 
@@ -221,6 +220,7 @@ BhArray_copy(PyObject *self, PyObject *args)
         Py_DECREF(ret);
         return NULL;
     }
+    Py_DECREF(err);
     return ret;
 }
 
