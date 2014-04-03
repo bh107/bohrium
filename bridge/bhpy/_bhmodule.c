@@ -36,6 +36,7 @@ typedef struct
 {
     PyArrayObject_fields base;
     PyObject *bhc_ary;
+    PyObject *array_priority;
 }BhArray;
 
 //Help function to retrieve the Bohrium-C data pointer
@@ -146,6 +147,8 @@ BhArray_finalize(PyObject *self, PyObject *args)
         Py_RETURN_NONE;
     }
     ((BhArray*)self)->bhc_ary = Py_None;
+    //The __array_priority__ should be greater than 0.0 to give Bohrium precedence
+    ((BhArray*)self)->array_priority = PyFloat_FromDouble(2.0);
     Py_INCREF(Py_None);
     Py_RETURN_NONE;
 }
@@ -261,11 +264,29 @@ BhArray_set_bhc_ary(BhArray *self, PyObject *value, void *closure)
     return 0;
 
 }
+static PyObject *
+BhArray_get_ary_pri(BhArray *self, void *closure)
+{
+    Py_INCREF(self->array_priority);
+    return self->array_priority;
+}
+static int
+BhArray_set_ary_pri(BhArray *self, PyObject *value, void *closure)
+{
+    Py_INCREF(value);
+    self->array_priority = value;
+    return 0;
+}
 static PyGetSetDef BhArray_getseters[] = {
     {"bhc_ary",
      (getter)BhArray_get_bhc_ary,
      (setter)BhArray_set_bhc_ary,
      "The Bohrium C-Bridge array",
+     NULL},
+    {"__array_priority__",
+     (getter)BhArray_get_ary_pri,
+     (setter)BhArray_set_ary_pri,
+     "The NumPy / Bohrium array precedence",
      NULL},
     {NULL}  /* Sentinel */
 };
