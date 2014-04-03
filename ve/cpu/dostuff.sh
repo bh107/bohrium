@@ -18,6 +18,14 @@ if [ ! -z "$1" ] && [ "$1" == "sample" ]; then
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "test" ]; then
+    echo "About to 'reset' and run test w_fusion... Hit enter to continue..."
+    read
+    clear && reset
+    mkdir -p /tmp/code/fuse
+    rm /tmp/code/fuse/*.c
+    ./dostuff.sh reset
+    BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
+    python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
 
     echo "About to 'reset' and run test wo_fusion... Hit enter to continue..."
     read
@@ -27,15 +35,6 @@ if [ ! -z "$1" ] && [ "$1" == "test" ]; then
     ./dostuff.sh reset
     BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
     python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/sij/
-
-    echo "About to 'reset' and run test w_fusion... Hit enter to continue..."
-    read
-    clear && reset
-    mkdir -p /tmp/code/fuse
-    rm /tmp/code/fuse/*.c
-    ./dostuff.sh reset
-    BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
-    python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "fusion" ]; then

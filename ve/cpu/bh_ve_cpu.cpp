@@ -211,7 +211,6 @@ bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
     DEBUG(TAG,"++ bh_ve_cpu_extmethod(...,...)");
 
     bh_error register_res = engine->register_extension(myself, name, opcode);
-
     
     return register_res;
 }

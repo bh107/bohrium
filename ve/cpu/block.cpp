@@ -131,8 +131,8 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         tacs << utils::operation_text(tac.op);
         tacs << "-" << utils::operator_text(tac.oper);
         tacs << "-";
-        DEBUG(TAG, "symbolize(...) : tac.out.ndim(" << scope[tac.out]->ndim << ")");
-        size_t ndim = (tac.op == REDUCE) ? scope[tac.in1]->ndim : scope[tac.out]->ndim;
+        DEBUG(TAG, "symbolize(...) : tac.out.ndim(" << symbol_table.table[tac.out].ndim << ")");
+        size_t ndim = (tac.op == REDUCE) ? symbol_table.table[tac.in1].ndim : symbol_table.table[tac.out].ndim;
         if (ndim <= 3) {
             tacs << ndim;
         } else {
@@ -142,18 +142,18 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         
         switch(utils::tac_noperands(tac)) {
             case 3:
-                tacs << "~" << tac.out;
-                tacs << "~" << tac.in1;
-                tacs << "~" << tac.in2;
+                tacs << "_" << operand_map.find(tac.out)->second;
+                tacs << "_" << operand_map.find(tac.in1)->second;
+                tacs << "_" << operand_map.find(tac.in2)->second;
                 break;
 
             case 2:
-                tacs << "~" << tac.out;
-                tacs << "~" << tac.in1;
+                tacs << "_" << operand_map.find(tac.out)->second;
+                tacs << "_" << operand_map.find(tac.in1)->second;
                 break;
 
             case 1:
-                tacs << "~" << tac.out;
+                tacs << "_" << operand_map.find(tac.out)->second;
                 break;
 
             case 0:
@@ -182,17 +182,13 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
     size_t arg_idx = ++(noperands);
 
     //
-    // TODO: Replace this with references instead of copies
-    scope[arg_idx] = &symbol_table.table[arg_symbol];
-
-    //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
     // This is done by comparing the currently investigated operand (arg_idx)
     // with all other operands in the current scope [1,arg_idx[
     // Do remember that 0 is is not a valid operand and we therefore index from 1.
     // Also we do not want to compare with selv, that is when i == arg_idx.
     for(size_t i=1; i<arg_idx; ++i) {
-        if (!utils::equivalent(*scope[i], *scope[arg_idx])) {
+        if (!utils::equivalent(*scope[i], symbol_table.table[arg_symbol])) {
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.
@@ -200,7 +196,17 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
         arg_idx = i;
         break;
     }
-    return arg_idx;
+
+    //
+    // Point to the operand in the symbol_table
+    scope[arg_idx] = &symbol_table.table[arg_symbol];
+
+    //
+    // Insert entry such that tac operands can be resolved in block-scope.
+    DEBUG(TAG, "Inserting " << arg_symbol << " -> " << arg_idx);
+    operand_map.insert(pair<size_t,size_t>(arg_symbol, arg_idx));
+
+    return arg_symbol;
 }
 
 }}}

@@ -12,10 +12,11 @@ namespace cpu {
 // NOTE: This function relies on the posix entension for positional arguments
 // to print format string.
 //
-string Specializer::cexpression(Block& block, size_t tac_idx)
+string Specializer::cexpression(const Block& block, size_t tac_idx)
 {
     tac_t& tac  = block.program[tac_idx];
-    ETYPE etype = block.scope[tac.out]->etype;
+    ETYPE etype = block.symbol_table.table[tac.out].etype;
+
     string expr_text;
 
     switch(tac.oper) {
@@ -417,11 +418,23 @@ string Specializer::cexpression(Block& block, size_t tac_idx)
 
     switch(utils::tac_noperands(tac)) {
         case 3:
-            return utils::string_format(expr_text, tac.out, tac.in1, tac.in2);
+            return utils::string_format(
+                expr_text, 
+                block.operand_map.find(tac.out)->second, 
+                block.operand_map.find(tac.in1)->second,
+                block.operand_map.find(tac.in2)->second
+            );
         case 2:
-            return utils::string_format(expr_text, tac.out, tac.in1);
+            return utils::string_format(
+                expr_text, 
+                block.operand_map.find(tac.out)->second,
+                block.operand_map.find(tac.in1)->second
+            );
         case 1:
-            return utils::string_format(expr_text, tac.out);
+            return utils::string_format(
+                expr_text,
+                block.operand_map.find(tac.out)->second
+            );
         default:
             return expr_text;
     }

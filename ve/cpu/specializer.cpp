@@ -49,20 +49,21 @@ string Specializer::text()
  *
  *  Contract: Do not call this for system or extension operations.
  */
-string Specializer::template_filename(Block& block, size_t pc)
+string Specializer::template_filename(const Block& block, size_t pc)
 {
     string tpl_ndim   = "nd.",
            tpl_opcode,
            tpl_layout = "strided.";
 
+    operand_t* symbol_table = block.symbol_table.table;
     tac_t& tac = block.program[pc];
     int ndim = (tac.op == REDUCE)         ? \
-               block.scope[tac.in1]->ndim : \
-               block.scope[tac.out]->ndim;
+               symbol_table[tac.in1].ndim : \
+               symbol_table[tac.out].ndim;
 
-    LAYOUT layout_out = block.scope[tac.out]->layout, 
-           layout_in1 = block.scope[tac.in1]->layout,
-           layout_in2 = block.scope[tac.in2]->layout;
+    LAYOUT layout_out = symbol_table[tac.out].layout, 
+           layout_in1 = symbol_table[tac.in1].layout,
+           layout_in2 = symbol_table[tac.in2].layout;
 
     switch (tac.op) {                    // OPCODE_SWITCH
         case MAP:
@@ -157,7 +158,7 @@ string Specializer::template_filename(Block& block, size_t pc)
  *  @return The generated sourcecode.
  *
  */
-string Specializer::specialize(Block& block, bool apply_fusion)
+string Specializer::specialize(const Block& block, bool apply_fusion)
 {
     return specialize(block, 0, block.length-1, apply_fusion);
 }
@@ -171,10 +172,12 @@ string Specializer::specialize(Block& block, bool apply_fusion)
  *  @return The generated sourcecode.
  *
  */
-string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, bool apply_fusion)
+string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_end, bool apply_fusion)
 {
     DEBUG(TAG,"specialize(..., " << tac_start << ", " << tac_end << ")");
     string sourcecode  = "";
+
+    operand_t* symbol_table = block.symbol_table.table;
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
     kernel_d.SetValue("SYMBOL", block.symbol);
@@ -241,10 +244,10 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
                 
                 switch(utils::tac_noperands(next)) {
                     case 3:
-                        compat_operands = compat_operands && (utils::compatible(*block.scope[first.out], *block.scope[next.in2]));
+                        compat_operands = compat_operands && (utils::compatible(symbol_table[first.out], symbol_table[next.in2]));
                     case 2:
-                        compat_operands = compat_operands && (utils::compatible(*block.scope[first.out], *block.scope[next.in1]));
-                        compat_operands = compat_operands && (utils::compatible(*block.scope[first.out], *block.scope[next.out]));
+                        compat_operands = compat_operands && (utils::compatible(symbol_table[first.out], symbol_table[next.in1]));
+                        compat_operands = compat_operands && (utils::compatible(symbol_table[first.out], symbol_table[next.out]));
                     break;
 
                     default:
@@ -279,8 +282,8 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
             //
             // Reduction and scan specific expansions
             if ((tac.op == REDUCE) || (tac.op == SCAN)) {
-                operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(block.scope[tac.out]->etype));
-                operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(block.scope[tac.in1]->etype));
+                operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(symbol_table[tac.out].etype));
+                operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(symbol_table[tac.in1].etype));
                 operation_d->SetValue("TYPE_AXIS",  "int64_t");
                 if (tac.oper == ADD) {
                     operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
@@ -296,25 +299,25 @@ string Specializer::specialize(Block& block, size_t tac_start, size_t tac_end, b
             operator_d->SetValue("OPERATOR", cexpression(block, tac_idx));
 
             //
-            //  The arguments / operands
+            // Map the tac operands into block-scope
             switch(utils::tac_noperands(tac)) {
                 case 3:
-                    operation_d->SetIntValue("NR_SINPUT", tac.in2);  // Not all have
-                    operator_d->SetIntValue("NR_SINPUT", tac.in2);
+                    operation_d->SetIntValue("NR_SINPUT", block.operand_map.find(tac.in2)->second);  // Not all have
+                    operator_d->SetIntValue("NR_SINPUT",  block.operand_map.find(tac.in2)->second);
 
-                    operands.insert(tac.in2);
+                    operands.insert(block.operand_map.find(tac.in2)->second);
 
                 case 2:
-                    operation_d->SetIntValue("NR_FINPUT", tac.in1);  // Not all have
-                    operator_d->SetIntValue("NR_FINPUT", tac.in1);
+                    operation_d->SetIntValue("NR_FINPUT", block.operand_map.find(tac.in1)->second);  // Not all have
+                    operator_d->SetIntValue("NR_FINPUT",  block.operand_map.find(tac.in1)->second);
 
-                    operands.insert(tac.in1);
+                    operands.insert(block.operand_map.find(tac.in1)->second);
 
                 case 1:
-                    operation_d->SetIntValue("NR_OUTPUT", tac.out);
-                    operator_d->SetIntValue("NR_OUTPUT", tac.out);
+                    operation_d->SetIntValue("NR_OUTPUT", block.operand_map.find(tac.out)->second);
+                    operator_d->SetIntValue("NR_OUTPUT",  block.operand_map.find(tac.out)->second);
 
-                    operands.insert(tac.out);
+                    operands.insert(block.operand_map.find(tac.out)->second);
             }
         }
 

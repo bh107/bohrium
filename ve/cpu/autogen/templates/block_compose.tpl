@@ -39,12 +39,13 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
     }
     
     // Reset metadata
-    length      = 0; // The length of the block
-    noperands   = 0; // The number of operands
-    omask       = 0; // And the operation mask
+    length      = 0;        // The length of the block
+    noperands   = 0;        // The number of operands
+    omask       = 0;        // And the operation mask
     symbol      = "";
-    symbol_text = "";
-
+    symbol_text = "";       // Symbol of the block
+    operand_map.clear();    // tac-operand to block scope mapping
+    
     size_t pc = 0;
     for (int node_idx=node_start; node_idx<=node_end; ++node_idx, ++pc, ++length) {
         

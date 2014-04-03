@@ -21,9 +21,10 @@ void SymbolTable::init(void)
     table = (operand_t*)malloc(reserved*sizeof(operand_t)); // Storage for symbol_table / operands
 
     reads   = (size_t*)malloc(reserved*sizeof(size_t));     // Storage for counting reads
-    memset(reads, 0, reserved);
+    memset(reads, 0, reserved*sizeof(size_t));
+
     writes  = (size_t*)malloc(reserved*sizeof(size_t));     // Storage for counting writes
-    memset(writes, 0, reserved);
+    memset(writes, 0, reserved*sizeof(size_t));
 }
 
 size_t SymbolTable::capacity(void)
@@ -196,7 +197,6 @@ void SymbolTable::ref_count(const tac_t& tac)
             }
             break;
     }
-    utils::tac_text(tac);
 }
 
 }}}

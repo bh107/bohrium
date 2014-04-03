@@ -1,6 +1,7 @@
 #ifndef __BH_VE_CPU_BLOCK
 #define __BH_VE_CPU_BLOCK
 #include <string>
+#include <map>
 
 #include "bh.h"
 #include "tac.h"
@@ -57,6 +58,10 @@ public:
 
     const bh_dag& get_dag(void);
 
+    std::map<size_t, size_t> operand_map; // Mapping of tac-operands to block-scope
+
+    SymbolTable& symbol_table;
+
 private:
 
     /**
@@ -67,10 +72,11 @@ private:
      *  @param instr        The instruction whos operand should be converted.
      *  @param operand_idx  Index of the operand to represent as arg_t
      *  @param block        The block in which scope the argument will exist.
+     *
+     *  @returns The symbol for the operand
      */
     size_t add_operand(bh_instruction& instr, size_t operand_idx);
     
-    SymbolTable& symbol_table;
     const bh_ir& ir;
     const bh_dag& dag;
 

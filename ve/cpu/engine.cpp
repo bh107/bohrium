@@ -192,6 +192,7 @@ bh_error Engine::sij_mode(Block& block)
                 DEBUG(TAG,"sij_mode(...) == Call kernel function!");
                 DEBUG(TAG,utils::tac_text(tac)); 
                 DEBUG(TAG,block.scope_text());
+
                 storage.funcs[block.symbol](block.scope);
 
                 break;
@@ -334,7 +335,6 @@ bh_error Engine::execute(bh_ir& bhir)
         }
     }
    
-    /* 
     //
     // Looking for temps
     //
@@ -345,12 +345,6 @@ bh_error Engine::execute(bh_ir& bhir)
         set<size_t>& potentials = symbol_table.potentials;
         set<size_t>& temps      = symbol_table.temps;
 
-        cout << "+++ BOOOOM +++" << endl;
-        cout << symbol_table.text_meta() << endl;
-        cout << symbol_table.text() << endl;
-        cout << "--- JAMMMM ---" << endl;
-
-        cout << "We found " << potentials.size() << " potentials." << endl;
         for(set<size_t>::iterator potentials_it=potentials.begin();
             potentials_it != potentials.end();
             potentials_it++) {
@@ -364,11 +358,8 @@ bh_error Engine::execute(bh_ir& bhir)
         for(set<size_t>::iterator temps_it=temps.begin();
             temps_it != temps.end();
             temps_it++) {
-            cout << "This one has potential for scalar-replacement: " << *temps_it << "." << endl;
         }
-        cout << "--- BOOOOM ---" << endl;
     }
-    */
 
     //
     // Execute the Blocks
