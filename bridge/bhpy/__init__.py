@@ -18,3 +18,5 @@ for t in numpy_types:
 #Note that the following modules needs ufuncs and dtypes
 import random
 
+#TODO: import all numpy functions
+from numpy import meshgrid
