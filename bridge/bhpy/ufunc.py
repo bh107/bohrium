@@ -28,7 +28,6 @@ import _info
 from _util import dtype_name
 from ndarray import get_bhc
 import ndarray
-from numbers import Number
 
 def assign(a, out):
     out_dtype = dtype_name(out)
@@ -85,7 +84,7 @@ class ufunc:
         #Check for Python scalars
         py_scalar = None
         for i, a in enumerate(args):
-            if isinstance(a, Number):
+            if np.isscalar(a):
                 if py_scalar is not None:
                     raise ValueError("Bohrium ufuncs do not support multiple scalar inputs")
                 py_scalar = i#The i'th input is a Python scalar
@@ -93,7 +92,7 @@ class ufunc:
         #Convert 'args' to Bohrium-C arrays
         bhcs = []
         for a in args:
-            if isinstance(a, Number):
+            if np.isscalar(a):
                 bhcs.append(a)
             elif ndarray.check(a):
                 bhcs.append(get_bhc(a))
