@@ -252,3 +252,24 @@ PyNumberMethods array_as_number = {
     (binaryfunc)array_inplace_true_divide,      /*nb_inplace_true_divide*/
     (unaryfunc)0,                     /* nb_index */
 };
+
+static PyObject *
+array_richcompare(PyArrayObject *self, PyObject *other, int cmp_op)
+{
+    switch (cmp_op) {
+    case Py_LT:
+        return PyObject_CallMethod(bohrium, "less", "OO", self, other);
+    case Py_LE:
+        return PyObject_CallMethod(bohrium, "less_equal", "OO", self, other);
+    case Py_EQ:
+        return PyObject_CallMethod(bohrium, "equal", "OO", self, other);
+    case Py_NE:
+        return PyObject_CallMethod(bohrium, "not_equal", "OO", self, other);
+    case Py_GT:
+        return PyObject_CallMethod(bohrium, "greater", "OO", self, other);
+    case Py_GE:
+        return PyObject_CallMethod(bohrium, "greater_equal", "OO", self, other);
+    default:
+        return NULL;
+    }
+}

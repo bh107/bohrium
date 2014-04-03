@@ -417,7 +417,7 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_doc */
     0,                       /* tp_traverse */
     0,                       /* tp_clear */
-    0,                       /* tp_richcompare */
+    (richcmpfunc)array_richcompare, /* tp_richcompare */
     0,                       /* tp_weaklistoffset */
     0,                       /* tp_iter */
     0,                       /* tp_iternext */
