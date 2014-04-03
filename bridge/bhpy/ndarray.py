@@ -112,16 +112,14 @@ def get_bhc(ary):
 def del_bhc_obj(bhc_obj):
     exec "bhc.bh_multi_array_%s_destroy(bhc_obj)"%dtype_from_bhc(bhc_obj)
 
-#Delete the Bohrium-C part of the bohrium.ndarray
+#Delete the Bohrium-C part of the bohrium.ndarray and its base
 def del_bhc(ary):
-    if not check(ary):
-        raise TypeError("must be a Bohrium array")
-
-    ary = get_base(ary)
-    if ary.bhc_ary is None:
-        return
-    del_bhc_obj(ary.bhc_ary)
-    ary.bhc_ary = None
+    if ary.bhc_ary is not None:
+        del_bhc_obj(ary.bhc_ary)
+        ary.bhc_ary = None
+        base = get_base(ary)
+        if base is not ary:
+            del_bhc(base)
 
 #Return the Bohrium-C data pointer (represented by a Python integer)
 #When allocate is True, it allocates memory instead of returning None
