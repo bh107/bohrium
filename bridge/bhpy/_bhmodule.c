@@ -149,9 +149,13 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     {
         memcpy(PyArray_DATA((PyArrayObject*)base), d, PyArray_NBYTES((PyArrayObject*)base));
     }
+    Py_DECREF(data);
 
     //Lets delete the current bhc_ary
-    return PyObject_CallMethod(ndarray, "del_bhc", "O", base);
+    if(PyObject_CallMethod(ndarray, "del_bhc", "O", base) == NULL)
+        return NULL;
+    Py_DECREF(base);
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -207,7 +211,7 @@ BhArray_copy(PyObject *self, PyObject *args)
     PyObject *err = PyObject_CallMethod(ufunc, "assign", "OO", self, ret);
     if(err == NULL)
     {
-        Py_DECREF(err);
+        Py_DECREF(ret);
         return NULL;
     }
     return ret;
@@ -417,6 +421,6 @@ init_bh(void)
         return;
 
     //Initialize the signal handler
-    init_signal();
+//    init_signal();
 
 }
