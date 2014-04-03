@@ -3,7 +3,7 @@ from numpytest import numpytest
 import bohrium.linalg as la
 from bohrium import examples as exp
 
-class test_jacobi(numpytest):
+class te1st_jacobi(numpytest):#disabled
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
