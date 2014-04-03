@@ -157,10 +157,13 @@ static PyObject *
 BhArray_data_bhc2np(PyObject *self, PyObject *args)
 {
     assert(args == NULL);
+    assert(BhArray_CheckExact(self));
+
     //We move the whole array (i.e. the base array) from Bohrium to NumPy
     PyObject *base = PyObject_CallMethod(ndarray, "get_base", "O", self);
     if(base == NULL)
         return NULL;
+    assert(BhArray_CheckExact(base));
 
     //Calling get_bhc_data_pointer(self, allocate=False)
     void *d = NULL;
