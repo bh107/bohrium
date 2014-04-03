@@ -23,9 +23,9 @@
         }
         int64_t work_end = work_offset+work;
 
-        {{#OPERAND}}
-        {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + work_offset{{/ARRAY}};
-        {{/OPERAND}}
+        {{#OPERAND}}{{#ARRAY}}
+        {{TYPE}} *a{{NR}}_current = a{{NR}}_first + work_offset;
+        {{/ARRAY}}{{/OPERAND}}
 
         for (int64_t i = work_offset; i<work_end; ++i) {
             {{#OPERATORS}}

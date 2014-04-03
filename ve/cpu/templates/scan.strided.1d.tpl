@@ -22,5 +22,6 @@
         {{/ARRAY}}{{/OPERAND}}
 
     }
+    // TODO: Write scalars out to main-memory
 }
 

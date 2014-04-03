@@ -60,6 +60,10 @@ typedef struct operand {
     int64_t* stride;    // Stride in each dimension of the array
 } operand_t;            // Meta-data for a block argument
 
+#define SCALAR_LAYOUT  (CONSTANT | SCALAR)
+#define ARRAY_LAYOUT   (CONTIGUOUS | STRIDED | SPARSE)
+#define CONT_COMPATIBLE (CONSTANT | SCALAR | CONTIGUOUS)
+
 #define BUILTIN_ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    %echo $len($ops)-1
 #define NBUILTIN_OPERS  %echo $len($opers)-1

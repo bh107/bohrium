@@ -97,5 +97,7 @@
             }                   // Loop then continues to increment the next dimension
         }
     }
+
+    // TODO: Write scalars out to main-memory
 }
 

@@ -19,17 +19,37 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
 
     string expr_text;
 
+    char out_c = ' ';
+    char in1_c = ' ';
+    char in2_c = ' ';
+
+    switch(utils::tac_noperands(tac)) {
+        case 3:
+            if ((block.symbol_table.table[tac.in2].layout & ARRAY_LAYOUT) >0) {
+                in2_c = '*';
+            }
+        case 2:
+            if ((block.symbol_table.table[tac.in1].layout & ARRAY_LAYOUT) >0) {
+                in1_c = '*';
+            }
+        case 1:
+            if ((block.symbol_table.table[tac.out].layout & ARRAY_LAYOUT) >0) {
+                out_c = '*';
+            }
+            break;
+    }
+
     switch(tac.oper) {
         case ABSOLUTE:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current < 0.0 ? -*a%2$d_current: *a%2$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current < 0.0 ? -%3$ca%4$d_current: %3$ca%4$d_current"; break;
             break;
         case ADD:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = *a%2$d_current + *a%3$d_current"; break;
+                    expr_text = "%1$ca%2$d_current = %3$ca%4$d_current + %5$ca%6$d_current"; break;
                 case SCAN:
-                    expr_text = "state += *a%2$d_current; *a%1$d_current = state"; break;
+                    expr_text = "state += %3$ca%4$d_current; %1$ca%2$d_current = state"; break;
                 case REDUCE:
                     expr_text = "state += *tmp_current"; break;
                 default:
@@ -39,59 +59,59 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
         case ARCCOS:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = cacos( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = cacosf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = acos( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = cacos( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = cacosf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = acos( %3$ca%4$d_current )"; break;
             }
             break;
         case ARCCOSH:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = cacosh( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = cacoshf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = acosh( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = cacosh( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = cacoshf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = acosh( %3$ca%4$d_current )"; break;
             }
             break;
         case ARCSIN:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = casin( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = casinf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = asin( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = casin( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = casinf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = asin( %3$ca%4$d_current )"; break;
             }
             break;
         case ARCSINH:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = casinh( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = casinhf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = asinh( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = casinh( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = casinhf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = asinh( %3$ca%4$d_current )"; break;
             }
             break;
         case ARCTAN:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = catan( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = catanf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = atan( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = catan( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = catanf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = atan( %3$ca%4$d_current )"; break;
             }
             break;
         case ARCTAN2:            
             
-            expr_text = "*a%1$d_current = atan2( *a%2$d_current, *a%3$d_current )"; break;
+            expr_text = "%1$ca%2$d_current = atan2( %3$ca%4$d_current, %5$ca%6$d_current )"; break;
             break;
         case ARCTANH:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = catanh( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = catanhf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = atanh( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = catanh( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = catanhf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = atanh( %3$ca%4$d_current )"; break;
             }
             break;
         case BITWISE_AND:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = *a%2$d_current & *a%3$d_current"; break;
+                    expr_text = "%1$ca%2$d_current = %3$ca%4$d_current & %5$ca%6$d_current"; break;
                 case REDUCE:
                     expr_text = "state &= *tmp_current"; break;
                 default:
@@ -101,7 +121,7 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
         case BITWISE_OR:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = *a%2$d_current | *a%3$d_current"; break;
+                    expr_text = "%1$ca%2$d_current = %3$ca%4$d_current | %5$ca%6$d_current"; break;
                 case REDUCE:
                     expr_text = "state = state | *tmp_current"; break;
                 default:
@@ -111,7 +131,7 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
         case BITWISE_XOR:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = *a%2$d_current ^ *a%3$d_current"; break;
+                    expr_text = "%1$ca%2$d_current = %3$ca%4$d_current ^ %5$ca%6$d_current"; break;
                 case REDUCE:
                     expr_text = "state = state ^ *tmp_current"; break;
                 default:
@@ -120,22 +140,22 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
             break;
         case CEIL:            
             
-            expr_text = "*a%1$d_current = ceil( *a%2$d_current )"; break;
+            expr_text = "%1$ca%2$d_current = ceil( %3$ca%4$d_current )"; break;
             break;
         case COS:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = ccos( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = ccosf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = cos( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = ccos( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = ccosf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = cos( %3$ca%4$d_current )"; break;
             }
             break;
         case COSH:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = ccosh( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = ccoshf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = cosh( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = ccosh( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = ccoshf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = cosh( %3$ca%4$d_current )"; break;
             }
             break;
         case DISCARD:            
@@ -144,31 +164,31 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
             break;
         case DIVIDE:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current / *a%3$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current / %5$ca%6$d_current"; break;
             break;
         case EQUAL:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current == *a%3$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current == %5$ca%6$d_current"; break;
             break;
         case EXP:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = cexp( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = cexpf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = exp( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = cexp( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = cexpf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = exp( %3$ca%4$d_current )"; break;
             }
             break;
         case EXP2:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = cpow( 2, *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = cpowf( 2, *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = pow( 2, *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = cpow( 2, %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = cpowf( 2, %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = pow( 2, %3$ca%4$d_current )"; break;
             }
             break;
         case EXPM1:            
             
-            expr_text = "*a%1$d_current = expm1( *a%2$d_current )"; break;
+            expr_text = "%1$ca%2$d_current = expm1( %3$ca%4$d_current )"; break;
             break;
         case EXTENSION_OPERATOR:            
             
@@ -180,7 +200,7 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
             break;
         case FLOOR:            
             
-            expr_text = "*a%1$d_current = floor( *a%2$d_current )"; break;
+            expr_text = "%1$ca%2$d_current = floor( %3$ca%4$d_current )"; break;
             break;
         case FREE:            
             
@@ -188,75 +208,75 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
             break;
         case GREATER:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current > *a%3$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current > %5$ca%6$d_current"; break;
             break;
         case GREATER_EQUAL:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current >= *a%3$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current >= %5$ca%6$d_current"; break;
             break;
         case IDENTITY:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current"; break;
             break;
         case IMAG:            
             
             switch(etype) {
-                case FLOAT32: expr_text = "*a%1$d_current = cimagf(*a%2$d_current)"; break;
-                default: expr_text = "*a%1$d_current = cimag(*a%2$d_current)"; break;
+                case FLOAT32: expr_text = "%1$ca%2$d_current = cimagf(%3$ca%4$d_current)"; break;
+                default: expr_text = "%1$ca%2$d_current = cimag(%3$ca%4$d_current)"; break;
             }
             break;
         case INVERT:            
             
-            expr_text = "*a%1$d_current = ~*a%2$d_current"; break;
+            expr_text = "%1$ca%2$d_current = ~%3$ca%4$d_current"; break;
             break;
         case ISINF:            
             
-            expr_text = "*a%1$d_current = isinf(*a%2$d_current)"; break;
+            expr_text = "%1$ca%2$d_current = isinf(%3$ca%4$d_current)"; break;
             break;
         case ISNAN:            
             
-            expr_text = "*a%1$d_current = isnan(*a%2$d_current)"; break;
+            expr_text = "%1$ca%2$d_current = isnan(%3$ca%4$d_current)"; break;
             break;
         case LEFT_SHIFT:            
             
-            expr_text = "*a%1$d_current = (*a%2$d_current) << (*a%3$d_current)"; break;
+            expr_text = "%1$ca%2$d_current = (%3$ca%4$d_current) << (%5$ca%6$d_current)"; break;
             break;
         case LESS:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current < *a%3$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current < %5$ca%6$d_current"; break;
             break;
         case LESS_EQUAL:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current <= *a%3$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current <= %5$ca%6$d_current"; break;
             break;
         case LOG:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = clog( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = clogf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = log( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = clog( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = clogf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = log( %3$ca%4$d_current )"; break;
             }
             break;
         case LOG10:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = clog( *a%2$d_current )/log(10)"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = clogf( *a%2$d_current )/log(10)"; break;
-                default: expr_text = "*a%1$d_current = log( *a%2$d_current )/log(10)"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = clog( %3$ca%4$d_current )/log(10)"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = clogf( %3$ca%4$d_current )/log(10)"; break;
+                default: expr_text = "%1$ca%2$d_current = log( %3$ca%4$d_current )/log(10)"; break;
             }
             break;
         case LOG1P:            
             
-            expr_text = "*a%1$d_current = log1p( *a%2$d_current )"; break;
+            expr_text = "%1$ca%2$d_current = log1p( %3$ca%4$d_current )"; break;
             break;
         case LOG2:            
             
-            expr_text = "*a%1$d_current = log2( *a%2$d_current )"; break;
+            expr_text = "%1$ca%2$d_current = log2( %3$ca%4$d_current )"; break;
             break;
         case LOGICAL_AND:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = *a%2$d_current && *a%3$d_current"; break;
+                    expr_text = "%1$ca%2$d_current = %3$ca%4$d_current && %5$ca%6$d_current"; break;
                 case REDUCE:
                     expr_text = "state = state && *tmp_current"; break;
                 default:
@@ -265,12 +285,12 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
             break;
         case LOGICAL_NOT:            
             
-            expr_text = "*a%1$d_current = !*a%2$d_current"; break;
+            expr_text = "%1$ca%2$d_current = !%3$ca%4$d_current"; break;
             break;
         case LOGICAL_OR:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = *a%2$d_current || *a%3$d_current"; break;
+                    expr_text = "%1$ca%2$d_current = %3$ca%4$d_current || %5$ca%6$d_current"; break;
                 case REDUCE:
                     expr_text = "state = state || *tmp_current"; break;
                 default:
@@ -280,7 +300,7 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
         case LOGICAL_XOR:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = (!*a%2$d_current != !*a%3$d_current)"; break;
+                    expr_text = "%1$ca%2$d_current = (!%3$ca%4$d_current != !%5$ca%6$d_current)"; break;
                 case REDUCE:
                     expr_text = "state = !state != !*tmp_current"; break;
                 default:
@@ -290,7 +310,7 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
         case MAXIMUM:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = *a%2$d_current < *a%3$d_current ? *a%3$d_current : *a%2$d_current"; break;
+                    expr_text = "%1$ca%2$d_current = %3$ca%4$d_current < %5$ca%6$d_current ? %5$ca%6$d_current : %3$ca%4$d_current"; break;
                 case REDUCE:
                     expr_text = "state = state < *tmp_current ? *tmp_current : state"; break;
                 default:
@@ -300,7 +320,7 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
         case MINIMUM:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = *a%2$d_current < *a%3$d_current ? *a%2$d_current : *a%3$d_current"; break;
+                    expr_text = "%1$ca%2$d_current = %3$ca%4$d_current < %5$ca%6$d_current ? %3$ca%4$d_current : %5$ca%6$d_current"; break;
                 case REDUCE:
                     expr_text = "state = state < *tmp_current ? state : *tmp_current"; break;
                 default:
@@ -309,14 +329,14 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
             break;
         case MOD:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current - floor(*a%2$d_current / *a%3$d_current) * *a%3$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current - floor(%3$ca%4$d_current / %5$ca%6$d_current) * %5$ca%6$d_current"; break;
             break;
         case MULTIPLY:            
             switch (tac.op) {
                 case ZIP:
-                    expr_text = "*a%1$d_current = *a%2$d_current * *a%3$d_current"; break;
+                    expr_text = "%1$ca%2$d_current = %3$ca%4$d_current * %5$ca%6$d_current"; break;
                 case SCAN:
-                    expr_text = "state *= *a%2$d_current; *a%1$d_current = state"; break;
+                    expr_text = "state *= %3$ca%4$d_current; %1$ca%2$d_current = state"; break;
                 case REDUCE:
                     expr_text = "state *= *tmp_current"; break;
                 default:
@@ -329,14 +349,14 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
             break;
         case NOT_EQUAL:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current != *a%3$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current != %5$ca%6$d_current"; break;
             break;
         case POWER:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = cpow( *a%2$d_current, *a%3$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = cpowf( *a%2$d_current, *a%3$d_current )"; break;
-                default: expr_text = "*a%1$d_current = pow( *a%2$d_current, *a%3$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = cpow( %3$ca%4$d_current, %5$ca%6$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = cpowf( %3$ca%4$d_current, %5$ca%6$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = pow( %3$ca%4$d_current, %5$ca%6$d_current )"; break;
             }
             break;
         case RANDOM:            
@@ -345,50 +365,50 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
             break;
         case RANGE:            
             
-            expr_text = "*a%1$d_current = state"; break;
+            expr_text = "%1$ca%2$d_current = state"; break;
             break;
         case REAL:            
             
             switch(etype) {
-                case FLOAT32: expr_text = "*a%1$d_current = crealf(*a%2$d_current)"; break;
-                default: expr_text = "*a%1$d_current = creal(*a%2$d_current)"; break;
+                case FLOAT32: expr_text = "%1$ca%2$d_current = crealf(%3$ca%4$d_current)"; break;
+                default: expr_text = "%1$ca%2$d_current = creal(%3$ca%4$d_current)"; break;
             }
             break;
         case RIGHT_SHIFT:            
             
-            expr_text = "*a%1$d_current = (*a%2$d_current) >> (*a%3$d_current)"; break;
+            expr_text = "%1$ca%2$d_current = (%3$ca%4$d_current) >> (%5$ca%6$d_current)"; break;
             break;
         case RINT:            
             
-            expr_text = "*a%1$d_current = (*a%2$d_current > 0.0) ? floor(*a%2$d_current + 0.5) : ceil(*a%2$d_current - 0.5)"; break;
+            expr_text = "%1$ca%2$d_current = (%3$ca%4$d_current > 0.0) ? floor(%3$ca%4$d_current + 0.5) : ceil(%3$ca%4$d_current - 0.5)"; break;
             break;
         case SIN:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = csin( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = csinf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = sin( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = csin( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = csinf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = sin( %3$ca%4$d_current )"; break;
             }
             break;
         case SINH:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = csinh( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = csinhf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = sinh( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = csinh( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = csinhf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = sinh( %3$ca%4$d_current )"; break;
             }
             break;
         case SQRT:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = csqrt( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = csqrtf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = sqrt( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = csqrt( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = csqrtf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = sqrt( %3$ca%4$d_current )"; break;
             }
             break;
         case SUBTRACT:            
             
-            expr_text = "*a%1$d_current = *a%2$d_current - *a%3$d_current"; break;
+            expr_text = "%1$ca%2$d_current = %3$ca%4$d_current - %5$ca%6$d_current"; break;
             break;
         case SYNC:            
             
@@ -397,43 +417,44 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
         case TAN:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = ctan( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = ctanf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = tan( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = ctan( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = ctanf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = tan( %3$ca%4$d_current )"; break;
             }
             break;
         case TANH:            
             
             switch(etype) {
-                case COMPLEX128: expr_text = "*a%1$d_current = ctanh( *a%2$d_current )"; break;
-                case COMPLEX64: expr_text = "*a%1$d_current = ctanhf( *a%2$d_current )"; break;
-                default: expr_text = "*a%1$d_current = tanh( *a%2$d_current )"; break;
+                case COMPLEX128: expr_text = "%1$ca%2$d_current = ctanh( %3$ca%4$d_current )"; break;
+                case COMPLEX64: expr_text = "%1$ca%2$d_current = ctanhf( %3$ca%4$d_current )"; break;
+                default: expr_text = "%1$ca%2$d_current = tanh( %3$ca%4$d_current )"; break;
             }
             break;
         case TRUNC:            
             
-            expr_text = "*a%1$d_current = trunc( *a%2$d_current )"; break;
+            expr_text = "%1$ca%2$d_current = trunc( %3$ca%4$d_current )"; break;
             break;
     }
+
 
     switch(utils::tac_noperands(tac)) {
         case 3:
             return utils::string_format(
-                expr_text, 
-                block.operand_map.find(tac.out)->second, 
-                block.operand_map.find(tac.in1)->second,
-                block.operand_map.find(tac.in2)->second
+                expr_text,
+                out_c, block.operand_map.find(tac.out)->second, 
+                in1_c, block.operand_map.find(tac.in1)->second,
+                in2_c, block.operand_map.find(tac.in2)->second
             );
         case 2:
             return utils::string_format(
                 expr_text, 
-                block.operand_map.find(tac.out)->second,
-                block.operand_map.find(tac.in1)->second
+                out_c, block.operand_map.find(tac.out)->second,
+                in1_c, block.operand_map.find(tac.in1)->second
             );
         case 1:
             return utils::string_format(
                 expr_text,
-                block.operand_map.find(tac.out)->second
+                out_c, block.operand_map.find(tac.out)->second
             );
         default:
             return expr_text;

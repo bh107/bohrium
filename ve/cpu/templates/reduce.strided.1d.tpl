@@ -1,9 +1,9 @@
 //
 // Reduction of on one-dimensional arrays using strided indexing
 {
-    {{#OPERAND}}
+    {{#OPERAND}}{{#ARRAY}}
     {{TYPE}} *a{{NR}}_current = a{{NR}}_first;
-    {{/OPERAND}}
+    {{/ARRAY}}{{/OPERAND}}
 
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
     {{TYPE_INPUT}} state = 0;
@@ -21,5 +21,7 @@
         {{/OPERATORS}}
     }
     *a{{NR_OUTPUT}}_current = state;
+
+    // TODO: Write scalars out to main-memory
 }
 

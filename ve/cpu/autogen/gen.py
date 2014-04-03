@@ -95,10 +95,16 @@ def block_compose(opcodes, ops, opers, types, layouts, cexprs):
 def specializer_cexpression(opcodes, ops, opers, types, layouts, cexprs):
     """Apply a naming convention to the pseud-variables, and make it string-formattable."""
 
-    def naming_convention(expression):        
-        return expression.replace('out', '*a%1$d_current').replace('in1',
-                                                                   '*a%2$d_current').replace('in2',
-                                                                                             '*a%3$d_current')
+    def naming_convention(expression):
+        """
+        expression  = expression.replace('out', '*a%1$d_current')
+        expression  = expression.replace('in1', '*a%2$d_current')
+        expression  = expression.replace('in2', '*a%3$d_current')
+        """
+        expression  = expression.replace('out', '%1$ca%2$d_current')
+        expression  = expression.replace('in1', '%3$ca%4$d_current')
+        expression  = expression.replace('in2', '%5$ca%6$d_current')
+        return expression
 
     expressions = {}
     for cexpr in cexprs:

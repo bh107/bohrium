@@ -18,9 +18,9 @@
         }
         int64_t work_end = work_offset+work;
 
-        {{#OPERAND}}
+        {{#OPERAND}}{{#ARRAY}}
         {{TYPE}} *a{{NR}}_current = a{{NR}}_first;
-        {{/OPERAND}}
+        {{/ARRAY}}{{/OPERAND}}
                                                 // Fill up the array
         for(int64_t i=work_offset; i<work_end; ++i) {
             {{#OPERAND}}
@@ -28,5 +28,6 @@
             {{/OPERAND}}
         }
     }
+    // TODO: Write scalars out to main-memory
 }
 

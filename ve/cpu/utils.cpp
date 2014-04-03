@@ -56,9 +56,15 @@ bool equivalent(const operand_t& one, const operand_t& other)
 
 bool compatible(const operand_t& one, const operand_t& other)
 {
-    if ((one.layout == CONSTANT) || (other.layout == CONSTANT)) {
+    //
+    // Scalar layouts are compatible with any other layout
+    if (((one.layout & SCALAR_LAYOUT)>0) || \
+        ((other.layout & SCALAR_LAYOUT)>0)) {
         return true;
-    } 
+    }
+
+    //
+    // Array layouts of different types are not compatible 
     if (one.layout != other.layout) {
         return false;
     }

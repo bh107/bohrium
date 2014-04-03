@@ -107,9 +107,10 @@ typedef enum ETYPE {
 
 typedef enum LAYOUT {
     CONSTANT   = 1,
-    CONTIGUOUS = 2,
-    STRIDED    = 4,
-    SPARSE     = 8
+    SCALAR     = 2,
+    CONTIGUOUS = 4,
+    STRIDED    = 8,
+    SPARSE     = 16
 } LAYOUT;   // Uses a single byte
 
 typedef struct tac {
@@ -132,6 +133,10 @@ typedef struct operand {
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
 } operand_t;            // Meta-data for a block argument
+
+#define SCALAR_LAYOUT  (CONSTANT | SCALAR)
+#define ARRAY_LAYOUT   (CONTIGUOUS | STRIDED | SPARSE)
+#define CONT_COMPATIBLE (CONSTANT | SCALAR | CONTIGUOUS)
 
 #define BUILTIN_ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    7

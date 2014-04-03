@@ -181,6 +181,8 @@ string layout_text(LAYOUT layout)
     switch(layout) {
         case CONSTANT:
             return "CONSTANT";
+        case SCALAR:
+            return "SCALAR";
         case CONTIGUOUS:
             return "CONTIGUOUS";
         case STRIDED:
@@ -196,6 +198,8 @@ string layout_text_shand(LAYOUT layout)
     switch(layout) {
         case CONSTANT:
             return "K";
+        case SCALAR:
+            return "X";
         case CONTIGUOUS:
             return "C";
         case STRIDED:

@@ -26,9 +26,9 @@
         }
         int64_t work_end = work_offset+work;
                                                 // Pointer fixes
-        {{#OPERAND}}
-        {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + (work_offset * a{{NR}}_stride_sld){{/ARRAY}};
-        {{/OPERAND}}
+        {{#OPERAND}}{{#ARRAY}}
+        {{TYPE}} *a{{NR}}_current = a{{NR}}_first + (work_offset * a{{NR}}_stride_sld);
+        {{/ARRAY}}{{/OPERAND}}
 
         for(int64_t j=work_offset; j<work_end; ++j) {
             for (int64_t i = 0; i < a{{NR_OUTPUT}}_shape_ld; ++i) {
@@ -46,5 +46,6 @@
             {{/ARRAY}}{{/OPERAND}}
         }
     }
+    // TODO: Write scalars out to main-memory
 }
 

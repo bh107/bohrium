@@ -23,6 +23,26 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
 
     string expr_text;
 
+    char out_c = ' ';
+    char in1_c = ' ';
+    char in2_c = ' ';
+
+    switch(utils::tac_noperands(tac)) {
+        case 3:
+            if ((block.symbol_table.table[tac.in2].layout & ARRAY_LAYOUT) >0) {
+                in2_c = '*';
+            }
+        case 2:
+            if ((block.symbol_table.table[tac.in1].layout & ARRAY_LAYOUT) >0) {
+                in1_c = '*';
+            }
+        case 1:
+            if ((block.symbol_table.table[tac.out].layout & ARRAY_LAYOUT) >0) {
+                out_c = '*';
+            }
+            break;
+    }
+
     switch(tac.oper) {
     %for $oper, $op_and_etype_expr in $expressions
         case $oper:            
@@ -70,24 +90,25 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
     %end for
     }
 
+
     switch(utils::tac_noperands(tac)) {
         case 3:
             return utils::string_format(
-                expr_text, 
-                block.operand_map.find(tac.out)->second, 
-                block.operand_map.find(tac.in1)->second,
-                block.operand_map.find(tac.in2)->second
+                expr_text,
+                out_c, block.operand_map.find(tac.out)->second, 
+                in1_c, block.operand_map.find(tac.in1)->second,
+                in2_c, block.operand_map.find(tac.in2)->second
             );
         case 2:
             return utils::string_format(
                 expr_text, 
-                block.operand_map.find(tac.out)->second,
-                block.operand_map.find(tac.in1)->second
+                out_c, block.operand_map.find(tac.out)->second,
+                in1_c, block.operand_map.find(tac.in1)->second
             );
         case 1:
             return utils::string_format(
                 expr_text,
-                block.operand_map.find(tac.out)->second
+                out_c, block.operand_map.find(tac.out)->second
             );
         default:
             return expr_text;

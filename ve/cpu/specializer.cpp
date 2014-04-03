@@ -69,9 +69,8 @@ string Specializer::template_filename(const Block& block, size_t pc)
         case MAP:
 
             tpl_opcode  = "ewise.";
-            if (
-                (layout_out == CONTIGUOUS) && \
-                ((layout_in1 == CONTIGUOUS) || (layout_out == CONSTANT))
+            if (((layout_out & CONT_COMPATIBLE)>0) && \
+                ((layout_in1 & CONT_COMPATIBLE)>0)
                ) {
                 tpl_layout  = "cont.";
             } else if (ndim == 1) {
@@ -85,12 +84,10 @@ string Specializer::template_filename(const Block& block, size_t pc)
 
         case ZIP:
             tpl_opcode  = "ewise.";
-            if ( (layout_out == CONTIGUOUS) && \
-                 (((layout_in1 == CONTIGUOUS) && (layout_in2 == CONTIGUOUS)) || \
-                  ((layout_in1 == CONTIGUOUS) && (layout_in2 == CONSTANT)) || \
-                  ((layout_in1 == CONSTANT) && (layout_in2 == CONTIGUOUS)) \
-                 )
-               ) {
+            if (((layout_out & CONT_COMPATIBLE)>0) && \
+                ((layout_in1 & CONT_COMPATIBLE)>0) && \
+                ((layout_in2 & CONT_COMPATIBLE)>0)
+            ) {
                 tpl_layout  = "cont.";
             } else if (ndim == 1) {
                 tpl_ndim = "1d.";
@@ -188,13 +185,23 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
     kernel_d.SetIntValue("NARGS", block.noperands);
 
     //
-    // Assign information needed for argument unpacking
+    //  Assign arguments for kernel operand unpacking
     for(size_t opr_idx=1; opr_idx<=block.noperands; ++opr_idx) {
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);
         argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[opr_idx]->etype));
-        if (CONSTANT != block.scope[opr_idx]->layout) {
-            argument_d->ShowSection("ARRAY");
+        switch(block.scope[opr_idx]->layout) {
+            case CONSTANT:
+                argument_d->ShowSection("CONSTANT");
+                break;
+            case SCALAR:
+                argument_d->ShowSection("SCALAR");
+                break;
+            case CONTIGUOUS:
+            case STRIDED:
+            case SPARSE:
+                argument_d->ShowSection("ARRAY");
+                break;
         }
     }
 
@@ -268,6 +275,7 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
 
             //
             // Replace temporary arrays with scalars. This is done by "converting" the array into a scalar.
+            /*
             if ((fuse_ops>1) && (block.symbol_table.temps.size()>0)) {
                 for(size_t j=fuse_start; j<=fuse_end; ++j) {
                     tac_t& cur = block.program[j];
@@ -287,7 +295,7 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
                             break;
                     }
                 }
-            }
+            }*/
         }
 
         //
@@ -355,7 +363,7 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
             operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[opr_idx]->etype));
             operand_d->SetIntValue("NR", opr_idx);
 
-            if (CONSTANT != block.scope[opr_idx]->layout) {
+            if ((block.scope[opr_idx]->layout & ARRAY_LAYOUT)>0) {
                 operand_d->ShowSection("ARRAY");
             }   
         }

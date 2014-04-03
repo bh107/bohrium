@@ -41,8 +41,20 @@ void KRN_{{SYMBOL}}(operand_t** args)
     // Argument unpacking
     //
     {{#ARGUMENT}}
-    // Argument {{NR}}
+    ///////////////////////////////////////////////////
+    // Argument {{NR}} - [{{#CONSTANT}}CONSTANT{{/CONSTANT}}{{#SCALAR}}SCALAR{{/SCALAR}}{{#ARRAY}}ARRAY{{/ARRAY}}]
+    //
     {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+
+    {{#CONSTANT}}
+    const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
+    {{/CONSTANT}}
+
+    {{#SCALAR}}
+    a{{NR}}_first += a{{NR}}_start;     
+    {{TYPE}} a{{NR}}_current = *{{NR}}_first;
+    {{/SCALAR}}
+
     {{#ARRAY}}
     int64_t  a{{NR}}_start  = args[{{NR}}]->start;
     int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
@@ -52,7 +64,6 @@ void KRN_{{SYMBOL}}(operand_t** args)
     a{{NR}}_first += a{{NR}}_start;
     {{/ARRAY}}
     assert(a{{NR}}_first != NULL);
-
     {{/ARGUMENT}}
     
     //

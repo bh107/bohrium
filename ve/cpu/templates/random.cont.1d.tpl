@@ -18,5 +18,6 @@
         a{{NR_OUTPUT}}_first[i] = c.v[0];
         ctr123.v[0]++;
     }
+    // TODO: Write scalars out to main-memory
 }
 

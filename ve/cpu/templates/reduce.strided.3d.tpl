@@ -4,9 +4,9 @@
 #define OUTER 1
 #define INNER 0
 
-    {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + a{{NR}}_start;{{/ARRAY}};
-    {{/OPERAND}}
+    {{#OPERAND}}{{#ARRAY}}
+    {{TYPE}} *a{{NR}}_current = a{{NR}}_first + a{{NR}}_start;
+    {{/ARRAY}}{{/OPERAND}}
 
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
 
@@ -45,5 +45,7 @@
             *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + i*a{{NR_OUTPUT}}_stride[OUTER] + j*a{{NR_OUTPUT}}_stride[INNER]) = state;
         }
     }
+
+    // TODO: Write scalars out to main-memory
 }
 

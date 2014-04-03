@@ -1,9 +1,9 @@
 //
 // Reduction on two-dimensional arrays using strided indexing
 {
-    {{#OPERAND}}
+    {{#OPERAND}}{{#ARRAY}}
     {{TYPE}} *a{{NR}}_current = a{{NR}}_first;
-    {{/OPERAND}}
+    {{/ARRAY}}{{/OPERAND}}
 
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
     {{TYPE_AXIS}} other_axis = (axis==0) ? 1 : 0;
@@ -29,5 +29,7 @@
         // Update array
         *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + a{{NR_OUTPUT}}_stride[0]*j) = state; 
     }
+
+    // TODO: Write scalars out to main-memory
 }
 
