@@ -167,7 +167,16 @@ class ufunc:
             out[:] = t#Copy the new array to the given output array
             return out
 
-ufuncs = []
+#We have to add ufuncs that doesn't map to Bohrium operations directly
+class negative(ufunc):
+    def __call__(self, a, out=None):
+        if out is None:
+            return -1 * a
+        else:
+            out[:] = -1 * a
+            return out
+
+ufuncs = [negative({'np_name':'negative'})]
 for op in _info.op.itervalues():
     ufuncs.append(ufunc(op))
 
