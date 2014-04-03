@@ -51,6 +51,12 @@ array_remainder(PyObject *m1, PyObject *m2)
 }
 
 static PyObject *
+array_power(PyObject *m1, PyObject *m2)
+{
+    return PyObject_CallMethod(bohrium, "power", "OO", m1, m2);
+}
+
+static PyObject *
 array_negative(PyObject *m1)
 {
     return PyObject_CallMethod(bohrium, "negative", "O", m1);
@@ -177,6 +183,12 @@ array_inplace_floor_divide(PyObject *m1, PyObject *m2)
 }
 
 static PyObject *
+array_inplace_power(PyObject *m1, PyObject *m2)
+{
+    return PyObject_CallMethod(bohrium, "power", "OOO", m1, m2, m1);
+}
+
+static PyObject *
 array_inplace_true_divide(PyObject *m1, PyObject *m2)
 {
     return NULL;
@@ -216,7 +228,7 @@ PyNumberMethods array_as_number = {
     (binaryfunc)array_divide,                   /*nb_divide*/
     (binaryfunc)array_remainder,                /*nb_remainder*/
     (binaryfunc)array_divmod,                   /*nb_divmod*/
-    (ternaryfunc)0,                   /*nb_power*/
+    (ternaryfunc)array_power,                   /*nb_power*/
     (unaryfunc)array_negative,                  /*nb_neg*/
     (unaryfunc)0,                /*nb_pos*/
     (unaryfunc)array_absolute,                  /*array_abs,*/
@@ -239,7 +251,7 @@ PyNumberMethods array_as_number = {
     (binaryfunc)array_inplace_multiply,         /*inplace_multiply*/
     (binaryfunc)array_inplace_divide,           /*inplace_divide*/
     (binaryfunc)array_inplace_remainder,        /*inplace_remainder*/
-    (ternaryfunc)0,           /*inplace_power*/
+    (ternaryfunc)array_inplace_power,           /*inplace_power*/
     (binaryfunc)array_inplace_left_shift,       /*inplace_lshift*/
     (binaryfunc)array_inplace_right_shift,      /*inplace_rshift*/
     (binaryfunc)array_inplace_bitwise_and,      /*inplace_and*/
