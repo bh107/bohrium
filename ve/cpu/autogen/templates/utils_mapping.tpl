@@ -28,7 +28,7 @@ string operation_text(OPERATION op)
         case $op['name']:   return "${op['name']}";
         %end for
     }
-    return "_ERR_";
+    return "_ERR-OP_";
 }
 
 string operator_text(OPERATOR oper)
@@ -38,7 +38,7 @@ string operator_text(OPERATOR oper)
         case $oper['name']: return "${oper['name']}";
     %end for
     }
-    return "_ERR_";
+    return "_ERR-OPER_";
 }
 
 string etype_text(ETYPE etype)
@@ -48,7 +48,7 @@ string etype_text(ETYPE etype)
         case $type['name']: return "${type['name']}";
         %end for
     }
-    return "_ERR_";
+    return "_ERR-ETYPE_";
 }
 
 string etype_text_shand(ETYPE etype)
@@ -58,7 +58,7 @@ string etype_text_shand(ETYPE etype)
         case $type['name']: return string("${type['shorthand']}");
         %end for
     }
-    return string("_ERR_");
+    return string("_ERR-ETYPE-SH_");
 }
 
 string etype_to_ctype_text(ETYPE etype)
@@ -68,7 +68,7 @@ string etype_to_ctype_text(ETYPE etype)
         case $type['name']: return "${type['c']}";
         %end for
     }
-    return "_ERR_";
+    return "_ERR-EtoC_";
 }
 
 string layout_text(LAYOUT layout)
@@ -79,7 +79,7 @@ string layout_text(LAYOUT layout)
             return "${layout['name']}";
         %end for
     }
-    return "_ERR_";
+    return "_ERR-LAYOUT_";
 }
 
 string layout_text_shand(LAYOUT layout)
@@ -90,7 +90,7 @@ string layout_text_shand(LAYOUT layout)
             return "${layout['shorthand']}";
         %end for
     }
-    return "_ERR_";
+    return "_ERR-LAYOUT-SH_";
 }
 
 

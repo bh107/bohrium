@@ -40,7 +40,7 @@ string operation_text(OPERATION op)
         case EXTENSION:   return "EXTENSION";
         case NOOP:   return "NOOP";
     }
-    return "_ERR_";
+    return "_ERR-OP_";
 }
 
 string operator_text(OPERATOR oper)
@@ -110,7 +110,7 @@ string operator_text(OPERATOR oper)
         case RANGE: return "RANGE";
         case EXTENSION_OPERATOR: return "EXTENSION_OPERATOR";
     }
-    return "_ERR_";
+    return "_ERR-OPER_";
 }
 
 string etype_text(ETYPE etype)
@@ -131,7 +131,7 @@ string etype_text(ETYPE etype)
         case COMPLEX128: return "COMPLEX128";
         case PAIRLL: return "PAIRLL";
     }
-    return "_ERR_";
+    return "_ERR-ETYPE_";
 }
 
 string etype_text_shand(ETYPE etype)
@@ -152,7 +152,7 @@ string etype_text_shand(ETYPE etype)
         case COMPLEX128: return string("C");
         case PAIRLL: return string("P");
     }
-    return string("_ERR_");
+    return string("_ERR-ETYPE-SH_");
 }
 
 string etype_to_ctype_text(ETYPE etype)
@@ -173,7 +173,7 @@ string etype_to_ctype_text(ETYPE etype)
         case COMPLEX128: return "double complex";
         case PAIRLL: return "pair_LL";
     }
-    return "_ERR_";
+    return "_ERR-EtoC_";
 }
 
 string layout_text(LAYOUT layout)
@@ -188,7 +188,7 @@ string layout_text(LAYOUT layout)
         case SPARSE:
             return "SPARSE";
     }
-    return "_ERR_";
+    return "_ERR-LAYOUT_";
 }
 
 string layout_text_shand(LAYOUT layout)
@@ -203,7 +203,7 @@ string layout_text_shand(LAYOUT layout)
         case SPARSE:
             return "P";
     }
-    return "_ERR_";
+    return "_ERR-LAYOUT-SH_";
 }
 
 
