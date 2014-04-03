@@ -3,8 +3,11 @@ Array Create Routines
 ~~~~
 
 """
+import math
 import ndarray
 import numpy
+import bhc
+from _util import dtype_name
 
 def array(object, dtype=None, ndmin=0, bohrium=True):
     """
@@ -336,6 +339,94 @@ def ones_like(a, dtype=None, bohrium=None):
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[:] = b.dtype.type(1)
     return b
+
+def arange(start, stop=None, step=1, dtype=None, bohrium=True):
+    """
+    arange([start,] stop[, step,], dtype=None)
+
+    Return evenly spaced values within a given interval.
+
+    Values are generated within the half-open interval ``[start, stop)``
+    (in other words, the interval including `start` but excluding `stop`).
+    For integer arguments the function is equivalent to the Python built-in
+    `range <http://docs.python.org/lib/built-in-funcs.html>`_ function,
+    but returns a ndarray rather than a list.
+
+    When using a non-integer step, such as 0.1, the results will often not
+    be consistent.  It is better to use ``linspace`` for these cases.
+
+    Parameters
+    ----------
+    start : number, optional
+        Start of interval.  The interval includes this value.  The default
+        start value is 0.
+    stop : number
+        End of interval.  The interval does not include this value, except
+        in some cases where `step` is not an integer and floating point
+        round-off affects the length of `out`.
+    step : number, optional
+        Spacing between values.  For any output `out`, this is the distance
+        between two adjacent values, ``out[i+1] - out[i]``.  The default
+        step size is 1.  If `step` is specified, `start` must also be given.
+    dtype : dtype
+        The type of the output array.  If `dtype` is not given, infer the data
+        type from the other input arguments.
+
+    Returns
+    -------
+    out : ndarray
+        Array of evenly spaced values.
+
+        For floating point arguments, the length of the result is
+        ``ceil((stop - start)/step)``.  Because of floating point overflow,
+        this rule may result in the last element of `out` being greater
+        than `stop`.
+
+    See Also
+    --------
+    linspace : Evenly spaced numbers with careful handling of endpoints.
+    ogrid: Arrays of evenly spaced numbers in N-dimensions
+    mgrid: Grid-shaped arrays of evenly spaced numbers in N-dimensions
+
+    Examples
+    --------
+    >>> np.arange(3)
+    array([0, 1, 2])
+    >>> np.arange(3.0)
+    array([ 0.,  1.,  2.])
+    >>> np.arange(3,7)
+    array([3, 4, 5, 6])
+    >>> np.arange(3,7,2)
+    array([3, 5])
+
+    """
+    if not bohrium:
+        return numpy.arange(start,stop,step,dtype)
+    if not stop:
+        stop = start
+        start = 0
+    if dtype is None:
+        dtype = numpy.int64
+    start = int(start)
+    stop  = int(stop)
+    step  = int(step)
+    size = int(math.ceil((float(stop) - float(start)) / float(step)))
+    if (dtype is numpy.int8 or
+        dtype is numpy.int16 or
+        dtype is numpy.int32 or
+        dtype is numpy.uint8 or
+        dtype is numpy.uint16 or
+        dtype is numpy.uint32 or
+        dtype is numpy.float16 or
+        dtype is numpy.float32 or
+        dtype is numpy.complex64):
+        dtype = numpy.uint32
+    else:
+        dtype = numpy.uint64
+
+    f = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(dtype))
+    ret = f(start, stop, step)
+    return ndarray.new((size,), dtype, ret)
 
 
 
