@@ -35,12 +35,14 @@ def dtype_from_bhc(bhc_ary):
 #Returns the Bohrium name of the data type of the object 'obj'
 #NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array
 def dtype_name(obj):
-    if hasattr(obj, "dtype"):
-        t = obj.dtype
-    elif isinstance(obj, np.dtype):
+    if isinstance(obj, np.dtype):
         t = obj
     elif isinstance(obj, basestring):
         t = np.dtype(obj)
+    elif isinstance(obj, type):
+        t = np.dtype(obj)
+    elif hasattr(obj, "dtype"):
+        t = obj.dtype
     else:
         t = np.dtype(type(obj))
     if t == np.bool_:
