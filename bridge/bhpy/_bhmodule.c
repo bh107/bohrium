@@ -38,6 +38,33 @@ typedef struct
     PyObject *bhc_ary;
 }BhArray;
 
+//Help function to retrieve the Bohrium-C data pointer
+//Return -1 on error
+static int get_bhc_data_pointer(PyObject *ary, int force_allocation, void **out_data)
+{
+    PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer",
+                                         "Oi", ary, force_allocation);
+    if(data == NULL)
+        return -1;
+    if(!PyInt_Check(data))
+    {
+        PyErr_SetString(PyExc_TypeError, "get_bhc_data_pointer(ary) should "
+                "return a Python integer that represents a memory address");
+        Py_DECREF(data);
+        return -1;
+    }
+    void *d = PyLong_AsVoidPtr(data);
+    Py_DECREF(data);
+    if(force_allocation && d == NULL)
+    {
+        PyErr_SetString(PyExc_TypeError, "get_bhc_data_pointer(ary, allocate=True) "
+                                         "shouldn't return a NULL pointer");
+        return -1;
+    }
+    *out_data = d;
+    return 0;
+}
+
 static PyObject *
 BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
@@ -132,24 +159,15 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     if(base == NULL)
         return NULL;
 
-    PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "O", base);
-    if(data == NULL)
+    //Calling get_bhc_data_pointer(self, allocate=False)
+    void *d = NULL;
+    if(get_bhc_data_pointer(base, 0, &d) == -1)
         return NULL;
 
-    if(!PyInt_Check(data))
-    {
-        PyErr_SetString(PyExc_TypeError, "get_bhc_data_pointer(ary) should "
-                "return a Python integer that represents a memory address");
-        return NULL;
-    }
-
-    //Lets copy data
-    void *d = PyLong_AsVoidPtr(data);
     if(d != NULL)
     {
         memcpy(PyArray_DATA((PyArrayObject*)base), d, PyArray_NBYTES((PyArrayObject*)base));
     }
-    Py_DECREF(data);
 
     //Lets delete the current bhc_ary
     if(PyObject_CallMethod(ndarray, "del_bhc", "O", base) == NULL)
@@ -178,26 +196,12 @@ BhArray_data_fill(PyObject *self, PyObject *args)
     }
 
     //Calling get_bhc_data_pointer(self, allocate=True)
-    PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer", "Oi", self,1);
-    if(data == NULL)
+    void *d = NULL;
+    if(get_bhc_data_pointer(self, 1, &d) == -1)
         return NULL;
-    if(!PyInt_Check(data))
-    {
-        PyErr_SetString(PyExc_TypeError, "get_bhc_data_pointer(ary) should "
-                "return a Python integer that represents a memory address");
-        return NULL;
-    }
-    void *d = PyLong_AsVoidPtr(data);
-    if(d == NULL)
-    {
-        PyErr_SetString(PyExc_TypeError, "get_bhc_data_pointer(ary, allocate=True) "
-                                         "shouldn't return a NULL pointer");
-        return NULL;
-    }
 
     memcpy(d, PyArray_DATA((PyArrayObject*)np_ary), PyArray_NBYTES((PyArrayObject*)np_ary));
 
-    Py_DECREF(data);
     Py_RETURN_NONE;
 }
 
