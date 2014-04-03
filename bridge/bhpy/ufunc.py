@@ -185,8 +185,8 @@ class Tests(unittest.TestCase):
         B = array_create.empty((4,4), dtype=int)
         assign(42, A)
         assign(A, B)
-        A._data_bhc2np()
-        B._data_bhc2np()
+        A = A.copy2numpy()
+        B = B.copy2numpy()
         #Compare result to NumPy
         N = np.empty((4,4), dtype=int)
         N[:] = 42
@@ -213,7 +213,7 @@ class Tests(unittest.TestCase):
                     else:
                         assign(3, B)
                     res = f(A,B)
-                res._data_bhc2np()
+                res = res.copy2numpy()
                 #Compare result to NumPy
                 A = np.empty((4,4), dtype=type_sig[1])
                 A[:] = 2

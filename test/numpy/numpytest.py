@@ -193,7 +193,7 @@ if __name__ == "__main__":
                         cmd += cmd1
                         try:
                             if not np.isscalar(res2):
-                                res2._data_bhc2np()
+                                res2 = res2.copy2numpy()
                         except RuntimeError as error_msg:
                             print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
                             print _C.FAIL + str(error_msg) + _C.ENDC

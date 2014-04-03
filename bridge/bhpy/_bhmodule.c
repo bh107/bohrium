@@ -241,12 +241,32 @@ BhArray_mprotect(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+BhArray_copy2numpy(PyObject *self, PyObject *args)
+{
+    assert(args == NULL);
+
+    PyObject *ret = PyArray_NewLikeArray((PyArrayObject*)self, NPY_ANYORDER, NULL, 0);
+    if(ret == NULL)
+        return NULL;
+    PyObject *err = PyObject_CallMethod(ufunc, "assign", "OO", self, ret);
+    if(err == NULL)
+    {
+        Py_DECREF(ret);
+        return NULL;
+    }
+    Py_DECREF(err);
+    return ret;
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
     {"_data_bhc2np", BhArray_data_bhc2np, METH_NOARGS, "Copy the Bohrium-C data to NumPy data"},
     {"_data_fill", BhArray_data_fill, METH_VARARGS, "Fill the Bohrium-C data from a numpy NumPy"},
     {"_mprotect", BhArray_mprotect, METH_NOARGS, "Memory protects the NumPy part of the array"},
     {"copy", BhArray_copy, METH_NOARGS, "Copy the array in C-style memory layout"},
+    {"copy2numpy", BhArray_copy2numpy, METH_NOARGS, "Copy the array in C-style memory "
+                                                    "layout to a regular NumPy array"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
