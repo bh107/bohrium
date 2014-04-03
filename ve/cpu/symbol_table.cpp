@@ -199,5 +199,29 @@ void SymbolTable::ref_count(const tac_t& tac)
     }
 }
 
+void SymbolTable::turn_scalar(size_t symbol_idx)
+{
+    operand_t& operand = table[symbol_idx];
+    // TODO: Introduce SCALAR as LAYOUT instead of abusing CONSTANT..
+    operand.layout = CONSTANT;
+
+    //
+    // TODO: Hmm in order for this to have effect the victim-cache allocation
+    //       needs to be changed... updating the bh_instruction might not be a good idea...
+    //       since this only works when the operations are fused... ahh just use malloc_op instead...
+    //
+
+    // If data is already allocated for operand then we do no lower nelem
+    // since the nelem is needed by victim-cache to store it... it is important that nelem
+    // correctly reflects the amount of elements for which storage is allocated.
+    if (NULL == *operand.data) {
+        operand.nelem = 1;
+    }
+
+    //
+    // Hmm consider: should be modify the strides? The code-generator ignores them for constants...
+    //
+}
+
 }}}
 

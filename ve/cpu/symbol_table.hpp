@@ -96,6 +96,11 @@ public:
      */
     void ref_count(const tac_t& tac);
 
+    /**
+     *  Turn an array operand into a scalar.
+     */
+    void turn_scalar(size_t symbol_idx);
+
     operand_t* table;   // The actual symbol-table
 
     //

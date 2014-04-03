@@ -265,6 +265,29 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
                 }
                 fuse_ops++;
             }
+
+            //
+            // Replace temporary arrays with scalars. This is done by "converting" the array into a scalar.
+            if ((fuse_ops>1) && (block.symbol_table.temps.size()>0)) {
+                for(size_t j=fuse_start; j<=fuse_end; ++j) {
+                    tac_t& cur = block.program[j];
+                    switch(utils::tac_noperands(cur)) {
+                        case 3:
+                            if (block.symbol_table.temps.find(cur.in2) != block.symbol_table.temps.end()) {
+                                block.symbol_table.turn_scalar(cur.in2);
+                            }
+                        case 2:
+                            if (block.symbol_table.temps.find(cur.in1) != block.symbol_table.temps.end()) {
+                                block.symbol_table.turn_scalar(cur.in1);
+                            }
+                        case 1:
+                            if (block.symbol_table.temps.find(cur.out) != block.symbol_table.temps.end()) {
+                                block.symbol_table.turn_scalar(cur.out);
+                            }
+                            break;
+                    }
+                }
+            }
         }
 
         //
