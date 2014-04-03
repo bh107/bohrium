@@ -30,6 +30,8 @@
         *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + a{{NR_OUTPUT}}_stride[0]*j) = state; 
     }
 
+    {{#OPERAND}}{{#SCALAR}}
     // TODO: Write scalars out to main-memory
+    {{/SCALAR}}{{/OPERAND}}
 }
 

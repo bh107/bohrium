@@ -70,7 +70,9 @@
             }                   // Loop then continues to increment the next dimension
         }
     }
-
+    
+    {{#OPERAND}}{{#SCALAR}}
     // TODO: Write scalars out to main-memory
+    {{/SCALAR}}{{/OPERAND}}
 }
 

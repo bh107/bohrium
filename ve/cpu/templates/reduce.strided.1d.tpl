@@ -22,6 +22,8 @@
     }
     *a{{NR_OUTPUT}}_current = state;
 
+    {{#OPERAND}}{{#SCALAR}}
     // TODO: Write scalars out to main-memory
+    {{/SCALAR}}{{/OPERAND}}
 }
 

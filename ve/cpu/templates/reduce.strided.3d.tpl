@@ -46,6 +46,8 @@
         }
     }
 
+    {{#OPERAND}}{{#SCALAR}}
     // TODO: Write scalars out to main-memory
+    {{/SCALAR}}{{/OPERAND}}
 }
 
