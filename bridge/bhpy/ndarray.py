@@ -116,9 +116,9 @@ def del_bhc(ary):
     if ary.bhc_ary is not None:
         del_bhc_obj(ary.bhc_ary)
         ary.bhc_ary = None
-        base = get_base(ary)
-        if base is not ary:
-            del_bhc(base)
+    base = get_base(ary)
+    if base is not ary:
+        del_bhc(base)
 
 #Return the Bohrium-C data pointer (represented by a Python integer)
 #When allocate is True, it allocates memory instead of returning None
