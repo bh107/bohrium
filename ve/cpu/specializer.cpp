@@ -313,22 +313,22 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
             // Map the tac operands into block-scope
             switch(utils::tac_noperands(tac)) {
                 case 3:
-                    operation_d->SetIntValue("NR_SINPUT", block.operand_map.find(tac.in2)->second);  // Not all have
-                    operator_d->SetIntValue("NR_SINPUT",  block.operand_map.find(tac.in2)->second);
+                    operation_d->SetIntValue("NR_SINPUT", block.resolve(tac.in2));  // Not all have
+                    operator_d->SetIntValue("NR_SINPUT",  block.resolve(tac.in2));
 
-                    operands.insert(block.operand_map.find(tac.in2)->second);
+                    operands.insert(block.resolve(tac.in2));
 
                 case 2:
-                    operation_d->SetIntValue("NR_FINPUT", block.operand_map.find(tac.in1)->second);  // Not all have
-                    operator_d->SetIntValue("NR_FINPUT",  block.operand_map.find(tac.in1)->second);
+                    operation_d->SetIntValue("NR_FINPUT", block.resolve(tac.in1));  // Not all have
+                    operator_d->SetIntValue("NR_FINPUT",  block.resolve(tac.in1));
 
-                    operands.insert(block.operand_map.find(tac.in1)->second);
+                    operands.insert(block.resolve(tac.in1));
 
                 case 1:
-                    operation_d->SetIntValue("NR_OUTPUT", block.operand_map.find(tac.out)->second);
-                    operator_d->SetIntValue("NR_OUTPUT",  block.operand_map.find(tac.out)->second);
+                    operation_d->SetIntValue("NR_OUTPUT", block.resolve(tac.out));
+                    operator_d->SetIntValue("NR_OUTPUT",  block.resolve(tac.out));
 
-                    operands.insert(block.operand_map.find(tac.out)->second);
+                    operands.insert(block.resolve(tac.out));
             }
         }
 

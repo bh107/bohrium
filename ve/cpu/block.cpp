@@ -142,18 +142,18 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         
         switch(utils::tac_noperands(tac)) {
             case 3:
-                tacs << "_" << operand_map.find(tac.out)->second;
-                tacs << "_" << operand_map.find(tac.in1)->second;
-                tacs << "_" << operand_map.find(tac.in2)->second;
+                tacs << "_" << resolve(tac.out);
+                tacs << "_" << resolve(tac.in1);
+                tacs << "_" << resolve(tac.in2);
                 break;
 
             case 2:
-                tacs << "_" << operand_map.find(tac.out)->second;
-                tacs << "_" << operand_map.find(tac.in1)->second;
+                tacs << "_" << resolve(tac.out);
+                tacs << "_" << resolve(tac.in1);
                 break;
 
             case 1:
-                tacs << "_" << operand_map.find(tac.out)->second;
+                tacs << "_" << resolve(tac.out);
                 break;
 
             case 0:
@@ -212,6 +212,11 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 const operand_t& Block::scope(size_t operand_idx) const
 {
     return *operands[operand_idx];
+}
+
+size_t Block::resolve(size_t symbol_idx) const
+{
+    return operand_map.find(symbol_idx)->second;
 }
 
 }}}

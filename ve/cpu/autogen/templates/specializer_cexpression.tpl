@@ -95,20 +95,20 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
         case 3:
             return utils::string_format(
                 expr_text,
-                out_c, block.operand_map.find(tac.out)->second, 
-                in1_c, block.operand_map.find(tac.in1)->second,
-                in2_c, block.operand_map.find(tac.in2)->second
+                out_c, block.resolve(tac.out), 
+                in1_c, block.resolve(tac.in1),
+                in2_c, block.resolve(tac.in2)
             );
         case 2:
             return utils::string_format(
                 expr_text, 
-                out_c, block.operand_map.find(tac.out)->second,
-                in1_c, block.operand_map.find(tac.in1)->second
+                out_c, block.resolve(tac.out),
+                in1_c, block.resolve(tac.in1)
             );
         case 1:
             return utils::string_format(
                 expr_text,
-                out_c, block.operand_map.find(tac.out)->second
+                out_c, block.resolve(tac.out)
             );
         default:
             return expr_text;

@@ -338,7 +338,7 @@ bh_error Engine::execute(bh_ir& bhir)
     //
     // Looking for temps
     //
-    if (symbol_table.size() > 5) {
+    if (symbol_table.size() > 5000) {
         size_t* reads           = symbol_table.reads;
         size_t* writes          = symbol_table.writes;
 

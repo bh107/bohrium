@@ -42,17 +42,17 @@ if [ ! -z "$1" ] && [ "$1" == "test" ]; then
     read
     ./dostuff.sh prep_fuse
     ./dostuff.sh reset
-    BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py --exclude=test_ndstencil.py
-    #BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
+    #BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py --file=test_ndstencil.py
+    #BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py --exclude=test_ndstencil.py --exclude=test_benchmarks.py
+    BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
     python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
 
-
-    ./dostuff.sh prep_sij
-    ./dostuff.sh reset
-    echo "About to 'reset' and run test wo_fusion... Hit enter to continue..."
-    read
-    BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
-    python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/sij/
+    #echo "About to 'reset' and run test wo_fusion... Hit enter to continue..."
+    #read
+    #./dostuff.sh prep_sij
+    #./dostuff.sh reset
+    #BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
+    #python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/sij/
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "black" ]; then
@@ -60,21 +60,21 @@ if [ ! -z "$1" ] && [ "$1" == "black" ]; then
 
     echo "** WITH Fusion ***"
     ./dostuff.sh prep_fuse
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
-    $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
+    $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
     ./dostuff.sh move_fuse
 
     echo "*** NUMPY ***"
-    $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
+    $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=False
     #$BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
     #$BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
 
     echo "*** WITHOUT Fusion **"
     ./dostuff.sh prep_sij
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
-    BH_VE_CPU_JIT_FUSION=0 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
+    BH_VE_CPU_JIT_FUSION=0 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
     ./dostuff.sh move_sij
 
 fi

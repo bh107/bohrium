@@ -50,10 +50,19 @@ public:
      *  @param opr_idx Index / name in the block-scope of the operand.
      *  @param A reference to the requested operand.
      */
-    const operand_t& scope(size_t opr_idx) const;
+    const operand_t& scope(size_t operand_idx) const;
+
+    /**
+     *  Return the operand_idx in block-scope correspnding to the given symbol index.
+     *
+     *  @param symbol_idx The symbol_idx to resolve
+     *  @return Operand index in block scope
+     */
+    size_t resolve(size_t symbol_idx) const;
 
     bh_instruction** instr;     // Pointers to instructions
 
+    // TODO: Make it private
     tac_t* program;             // Ordered list of TACs
     size_t length;              // Number of tacs in program
 
@@ -64,10 +73,13 @@ public:
     std::string symbol_text;    // Textual representation of the block
     std::string symbol;         // Hash of textual representation
 
+    /**
+     *  Return the dag on which the block is based.
+     */
     const bh_dag& get_dag(void);
 
-    SymbolTable& symbol_table;
-
+    SymbolTable& symbol_table;  // TODO: Make private
+                                // TODO: Make private
     std::map<size_t, size_t> operand_map; // Mapping of tac-operands to block-scope
 
 private:
