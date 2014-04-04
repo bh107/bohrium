@@ -1284,3 +1284,14 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
         return y, step
     else:
         return y
+    
+def load(file, bohrium=True):
+    A = numpy.load(file)
+    A.bohrium = bohrium
+    return A
+
+def save(file, arr):
+    arr.bohrium=False
+    numpy.save(file,arr)
+
+                        
