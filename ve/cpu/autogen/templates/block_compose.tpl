@@ -39,15 +39,15 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
     }
     
     // Reset metadata
-    length      = 0;        // The length of the block
+    ntacs       = 0;        // The number of tacs in block
     noperands   = 0;        // The number of operands
-    omask       = 0;        // And the operation mask
+    operation_mask       = 0;        // And the operation mask
     symbol      = "";
     symbol_text = "";       // Symbol of the block
     operand_map.clear();    // tac-operand to block scope mapping
     
     size_t pc = 0;
-    for (int node_idx=node_start; node_idx<=node_end; ++node_idx, ++pc, ++length) {
+    for (int node_idx=node_start; node_idx<=node_end; ++node_idx, ++pc, ++ntacs) {
         
         if (dag.node_map[node_idx] <0) {
             fprintf(stderr, "Code-generation for subgraphs is not supported yet.\n");
@@ -79,13 +79,13 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 in2 = this->add_operand(instr, 2);
                 %end if
 
-                this->program[pc].op    = $operation;  // TAC
-                this->program[pc].oper  = $operator;
-                this->program[pc].out   = out;
-                this->program[pc].in1   = in1;
-                this->program[pc].in2   = in2;
+                this->tacs[pc].op    = $operation;  // TAC
+                this->tacs[pc].oper  = $operator;
+                this->tacs[pc].out   = out;
+                this->tacs[pc].in1   = in1;
+                this->tacs[pc].in2   = in2;
             
-                this->omask |= $operation;    // Operationmask
+                this->operation_mask |= $operation;    // Operationmask
                 break;
             %end for
 
@@ -95,13 +95,13 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                     in1 = this->add_operand(instr, 1);
                     in2 = this->add_operand(instr, 2);
 
-                    this->program[pc].op   = EXTENSION;
-                    this->program[pc].oper = EXTENSION_OPERATOR;
-                    this->program[pc].out  = out;
-                    this->program[pc].in1  = in1;
-                    this->program[pc].in2  = in2;
+                    this->tacs[pc].op   = EXTENSION;
+                    this->tacs[pc].oper = EXTENSION_OPERATOR;
+                    this->tacs[pc].out  = out;
+                    this->tacs[pc].in1  = in1;
+                    this->tacs[pc].in2  = in2;
 
-                    this->omask |= EXTENSION;
+                    this->operation_mask |= EXTENSION;
                     break;
 
                 } else {
@@ -114,7 +114,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
 
         //
         // Update the ref count
-        symbol_table.ref_count(this->program[pc]);
+        symbol_table.ref_count(this->tacs[pc]);
     }
     DEBUG(TAG, "compose(SUCCESS)");
     return true;

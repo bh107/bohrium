@@ -47,12 +47,12 @@ if [ ! -z "$1" ] && [ "$1" == "test" ]; then
     BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
     python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
 
-    #echo "About to 'reset' and run test wo_fusion... Hit enter to continue..."
-    #read
-    #./dostuff.sh prep_sij
-    #./dostuff.sh reset
-    #BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
-    #python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/sij/
+    echo "About to 'reset' and run test wo_fusion... Hit enter to continue..."
+    read
+    ./dostuff.sh prep_sij
+    ./dostuff.sh reset
+    BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../test/numpy/numpytest.py
+    python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/sij/
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "black" ]; then

@@ -12,10 +12,10 @@ namespace cpu {
 // NOTE: This function relies on the posix entension for positional arguments
 // to print format string.
 //
-string Specializer::cexpression(const Block& block, size_t tac_idx)
+string Specializer::cexpression(SymbolTable& symbol_table, const Block& block, size_t tac_idx)
 {
-    tac_t& tac  = block.program[tac_idx];
-    ETYPE etype = block.symbol_table.table[tac.out].etype;
+    tac_t& tac  = block.program(tac_idx);
+    ETYPE etype = symbol_table.table[tac.out].etype;
 
     string expr_text;
 
@@ -25,15 +25,15 @@ string Specializer::cexpression(const Block& block, size_t tac_idx)
 
     switch(utils::tac_noperands(tac)) {
         case 3:
-            if ((block.symbol_table.table[tac.in2].layout & ARRAY_LAYOUT) >0) {
+            if ((symbol_table[tac.in2].layout & ARRAY_LAYOUT) >0) {
                 in2_c = '*';
             }
         case 2:
-            if ((block.symbol_table.table[tac.in1].layout & ARRAY_LAYOUT) >0) {
+            if ((symbol_table[tac.in1].layout & ARRAY_LAYOUT) >0) {
                 in1_c = '*';
             }
         case 1:
-            if ((block.symbol_table.table[tac.out].layout & ARRAY_LAYOUT) >0) {
+            if ((symbol_table[tac.out].layout & ARRAY_LAYOUT) >0) {
                 out_c = '*';
             }
             break;

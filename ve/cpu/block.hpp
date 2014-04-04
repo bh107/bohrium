@@ -60,15 +60,24 @@ public:
      */
     size_t resolve(size_t symbol_idx) const;
 
-    bh_instruction** instr;     // Pointers to instructions
+    /**
+     *  Return the operand correponding to the given symbol_idx.
+     *  The operand is fetched from the symbol_table.
+     */
+    operand_t& operand(size_t symbol_idx) const;
 
-    // TODO: Make it private
-    tac_t* program;             // Ordered list of TACs
-    size_t length;              // Number of tacs in program
+    tac_t& program(size_t pc) const;
+    size_t size(void) const;
+
+    /**
+     *  Return the operation mask of the tacs in the block.
+     */
+    uint32_t omask(void) const;
+
+    bh_instruction** instr;     // Pointers to instructions
 
     operand_t** operands;       // Array of pointers to block operands
     size_t noperands;           // Number of arguments to the block
-    uint32_t omask;             // Mask of the OPERATIONS in the block
 
     std::string symbol_text;    // Textual representation of the block
     std::string symbol;         // Hash of textual representation
@@ -77,10 +86,6 @@ public:
      *  Return the dag on which the block is based.
      */
     const bh_dag& get_dag(void);
-
-    SymbolTable& symbol_table;  // TODO: Make private
-                                // TODO: Make private
-    std::map<size_t, size_t> operand_map; // Mapping of tac-operands to block-scope
 
 private:
 
@@ -97,8 +102,15 @@ private:
      */
     size_t add_operand(bh_instruction& instr, size_t operand_idx);
 
+    uint32_t operation_mask;// Mask of the OPERATIONS in the block
+
+    tac_t* tacs;    // Ordered list of TACs
+    size_t ntacs;   // Number of tacs in program
+    std::map<size_t, size_t> operand_map; // Mapping of tac operands to block-scope
+
     const bh_ir& ir;
     const bh_dag& dag;
+    SymbolTable& symbol_table;
 
     static const char TAG[];
 };

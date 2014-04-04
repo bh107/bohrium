@@ -72,9 +72,9 @@ string Engine::text()
     return ss.str();    
 }
 
-bh_error Engine::sij_mode(Block& block)
+bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
 {
-    DEBUG(TAG, "sij_mode(...) : length(" << block.length << ")");
+    DEBUG(TAG, "sij_mode(...) : size(" << block.size() << ")");
 
     bh_error res = BH_SUCCESS;
 
@@ -88,7 +88,7 @@ bh_error Engine::sij_mode(Block& block)
         }
 
         bh_instruction* instr = block.instr[0];
-        tac_t& tac = block.program[0];
+        tac_t& tac = block.program(0);
 
         switch(tac.op) {
             case NOOP:
@@ -146,7 +146,7 @@ bh_error Engine::sij_mode(Block& block)
                 if (jit_enabled && \
                     (!storage.symbol_ready(block.symbol))) {   
                                                                 // Specialize sourcecode
-                    string sourcecode = specializer.specialize(block, 0, 0, false);
+                    string sourcecode = specializer.specialize(symbol_table, block, 0, 0, false);
                     if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
                         utils::write_file(
                             storage.src_abspath(block.symbol),
@@ -203,7 +203,7 @@ bh_error Engine::sij_mode(Block& block)
     return BH_SUCCESS;
 }
 
-bh_error Engine::fuse_mode(Block& block)
+bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
 {
     DEBUG(TAG, "fuse_mode(...)");
 
@@ -222,10 +222,10 @@ bh_error Engine::fuse_mode(Block& block)
     // JIT-compile the block if enabled
     //
     if (jit_enabled && \
-        ((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
+        ((block.omask() & (BUILTIN_ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol))) {   
                                                     // Specialize sourcecode
-        string sourcecode = specializer.specialize(block, true);
+        string sourcecode = specializer.specialize(symbol_table, block, true);
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
             utils::write_file(
                 storage.src_abspath(block.symbol),
@@ -251,7 +251,7 @@ bh_error Engine::fuse_mode(Block& block)
     //
     // Load the compiled code
     //
-    if (((block.omask & (BUILTIN_ARRAY_OPS)) >0) && \
+    if (((block.omask() & (BUILTIN_ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol)) && \
         (!storage.load(block.symbol))) {// Need but cannot load
 
@@ -264,7 +264,7 @@ bh_error Engine::fuse_mode(Block& block)
     //
     // Allocate memory for output
     //
-    for(size_t i=0; i<block.length; ++i) {
+    for(size_t i=0; i<block.size(); ++i) {
         bh_error res = bh_vcache_malloc(block.instr[i]);
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
@@ -283,7 +283,7 @@ bh_error Engine::fuse_mode(Block& block)
     DEBUG(TAG, "fuse_mode(...) == De-Allocate memory!");
     //
     // De-Allocate operand memory
-    for(size_t i=0; i<block.length; ++i) {
+    for(size_t i=0; i<block.size(); ++i) {
         if (block.instr[i]->opcode == BH_FREE) {
             res = bh_vcache_free(block.instr[i]);
             if (BH_SUCCESS != res) {
@@ -365,11 +365,11 @@ bh_error Engine::execute(bh_ir& bhir)
         Block* block = blocks[dag_idx];
         bh_error mode_res;
         if (jit_fusion && \
-            ((block->omask & (BUILTIN_ARRAY_OPS)) > 0) && \
-            ((block->omask & (EXTENSION)) == 0)) {
-            mode_res = fuse_mode(*block);
+            ((block->omask() & (BUILTIN_ARRAY_OPS)) > 0) && \
+            ((block->omask() & (EXTENSION)) == 0)) {
+            mode_res = fuse_mode(symbol_table, *block);
         } else {
-            mode_res = sij_mode(*block);
+            mode_res = sij_mode(symbol_table, *block);
         }
         if (BH_SUCCESS!=mode_res) {
             fprintf(stderr, "Engine:execute(...) == ERROR: Failed running *_mode(...).\n");

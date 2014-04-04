@@ -18,12 +18,22 @@ public:
 
     std::string text();
 
-    std::string cexpression(const Block& block, size_t tac_idx);
+    std::string cexpression(    SymbolTable& symbol_table,
+                                const Block& block,
+                                size_t tac_idx);
 
-    std::string template_filename(const Block& block, size_t pc);
+    std::string template_filename(  SymbolTable& symbol_table,
+                                    const Block& block,
+                                    size_t pc);
 
-    std::string specialize(const Block& block, bool apply_fusion);
-    std::string specialize(const Block& block, size_t tac_start, size_t tac_end, bool apply_fusion);
+    std::string specialize( SymbolTable& symbol_table,
+                            const Block& block,
+                            bool apply_fusion);
+
+    std::string specialize( SymbolTable& symbol_table,
+                            const Block& block,
+                            size_t tac_start, size_t tac_end,
+                            bool apply_fusion);
 
 private:
     ctemplate::Strip strip_mode;

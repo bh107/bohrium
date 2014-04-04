@@ -27,16 +27,6 @@ void SymbolTable::init(void)
     memset(writes, 0, reserved*sizeof(size_t));
 }
 
-size_t SymbolTable::capacity(void)
-{
-    return reserved;
-}
-
-size_t SymbolTable::size(void)
-{
-    return nsymbols;
-}
-
 SymbolTable::~SymbolTable(void)
 {
     //
@@ -104,6 +94,21 @@ string SymbolTable::text(string prefix)
     ss << prefix << "}" << endl;
 
     return ss.str();
+}
+
+size_t SymbolTable::capacity(void)
+{
+    return reserved;
+}
+
+size_t SymbolTable::size(void)
+{
+    return nsymbols;
+}
+
+operand_t& SymbolTable::operator[](size_t operand_idx)
+{
+    return table[operand_idx];
 }
 
 size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)

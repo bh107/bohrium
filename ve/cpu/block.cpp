@@ -8,7 +8,7 @@ namespace cpu{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx)
-: operands(NULL), noperands(0), omask(0), symbol_table(symbol_table), ir(ir), dag(ir.dag_list[dag_idx])
+: instr(NULL), operands(NULL), noperands(0), operation_mask(0), tacs(NULL), ntacs(0), ir(ir), dag(ir.dag_list[dag_idx]), symbol_table(symbol_table)
 {
     size_t ps = (size_t)dag.nnode;
     if (ps<1) {
@@ -18,16 +18,17 @@ Block::Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx)
     operands    = (operand_t**)malloc((1+3)*ps*sizeof(operand_t*));
     operands[0] = &symbol_table.table[0];  // Always point to the pseudo-operand.
 
-    program  = (tac_t*)malloc(ps*sizeof(tac_t));
-    instr    = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
-    length   = ps;
+    tacs    = (tac_t*)malloc(ps*sizeof(tac_t));
+    ntacs   = ps;
+
+    instr   = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
 }
 
 Block::~Block()
 {
     DEBUG(TAG, "~Block() ++");
     free(operands);
-    free(program);
+    free(tacs);
     free(instr);
     DEBUG(TAG, "~Block() --");
 }
@@ -64,16 +65,16 @@ string Block::text(std::string prefix)
     stringstream ss;
     ss << prefix;
     ss << "block(";
-    ss << "length="       << length;
+    ss << "length="       << ntacs;
     ss << ", noperands="  << noperands;
-    ss << ", omask="      << omask;
+    ss << ", omask="      << operation_mask;
     ss << ") {"           << endl;
     ss << prefix << "  symbol(" << symbol << ")" << endl;
     ss << prefix << "  symbol_text(" << symbol_text << ")" << endl;
 
-    ss << prefix << "  program {" << endl;
-    for(size_t i=0; i<length; ++i) {
-        ss << prefix << "    [" << i << "]" << utils::tac_text(program[i]) << endl;
+    ss << prefix << "  tacs {" << endl;
+    for(size_t i=0; i<ntacs; ++i) {
+        ss << prefix << "    [" << i << "]" << utils::tac_text(tacs[i]) << endl;
     }
     ss << prefix << "  }" << endl;
 
@@ -91,7 +92,7 @@ string Block::text()
 bool Block::symbolize()
 {   
     DEBUG(TAG,"symbolize(void) : length("<< length << ")");
-    bool symbolize_res = symbolize(0, length-1);
+    bool symbolize_res = symbolize(0, ntacs-1);
     DEBUG(TAG,"symbolize(void) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
     return symbolize_res;
 }
@@ -117,7 +118,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
     // Program
     bool first = true;
     for (size_t i=tac_start; i<=tac_end; ++i) {
-        tac_t& tac = this->program[i];
+        tac_t& tac = this->tacs[i];
        
         // Do not include system opcodes in the kernel symbol.
         if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
@@ -171,6 +172,11 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
     return true;
 }
 
+uint32_t Block::omask(void) const
+{
+    return operation_mask;
+}
+
 size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 {
     //
@@ -218,5 +224,16 @@ size_t Block::resolve(size_t symbol_idx) const
 {
     return operand_map.find(symbol_idx)->second;
 }
+
+tac_t& Block::program(size_t pc) const
+{
+    return tacs[pc];
+}
+
+size_t Block::size(void) const
+{
+    return ntacs;
+}
+
 
 }}}

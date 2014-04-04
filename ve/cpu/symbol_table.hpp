@@ -70,6 +70,8 @@ public:
      */
     std::string text(std::string prefix);
 
+    operand_t& operator[](size_t operand_idx);
+
     /**
      *  Add instruction operand as argument to block.
      *

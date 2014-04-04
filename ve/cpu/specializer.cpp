@@ -49,14 +49,13 @@ string Specializer::text()
  *
  *  Contract: Do not call this for system or extension operations.
  */
-string Specializer::template_filename(const Block& block, size_t pc)
+string Specializer::template_filename(SymbolTable& symbol_table, const Block& block, size_t pc)
 {
     string tpl_ndim   = "nd.",
            tpl_opcode,
            tpl_layout = "strided.";
 
-    operand_t* symbol_table = block.symbol_table.table;
-    tac_t& tac = block.program[pc];
+    const tac_t& tac = block.program(pc);
     int ndim = (tac.op == REDUCE)         ? \
                symbol_table[tac.in1].ndim : \
                symbol_table[tac.out].ndim;
@@ -155,9 +154,10 @@ string Specializer::template_filename(const Block& block, size_t pc)
  *  @return The generated sourcecode.
  *
  */
-string Specializer::specialize(const Block& block, bool apply_fusion)
+string Specializer::specialize( SymbolTable& symbol_table,
+                                const Block& block, bool apply_fusion)
 {
-    return specialize(block, 0, block.length-1, apply_fusion);
+    return specialize(symbol_table, block, 0, block.size()-1, apply_fusion);
 }
 
 /**
@@ -169,19 +169,19 @@ string Specializer::specialize(const Block& block, bool apply_fusion)
  *  @return The generated sourcecode.
  *
  */
-string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_end, bool apply_fusion)
+string Specializer::specialize( SymbolTable& symbol_table,
+                                const Block& block,
+                                size_t tac_start, size_t tac_end, bool apply_fusion)
 {
     DEBUG(TAG,"specialize(..., " << tac_start << ", " << tac_end << ")");
     string sourcecode  = "";
-
-    operand_t* symbol_table = block.symbol_table.table;
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
     kernel_d.SetValue("SYMBOL", block.symbol);
     kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text);
 
     kernel_d.SetValue("MODE", (apply_fusion ? "FUSED" : "SIJ"));
-    kernel_d.SetIntValue("NINSTR", block.length);
+    kernel_d.SetIntValue("NINSTR", block.size());
     kernel_d.SetIntValue("NARGS", block.noperands);
 
     //
@@ -190,7 +190,7 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
 
         //
         // Skip code generation for system and extensions
-        if ((block.program[tac_idx].op == SYSTEM) || (block.program[tac_idx].op == EXTENSION)) {
+        if ((block.program(tac_idx).op == SYSTEM) || (block.program(tac_idx).op == EXTENSION)) {
             continue;
         }
         
@@ -207,12 +207,12 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
         if (apply_fusion) {
             //
             // The first operation in a potential range of fusable operations
-            tac_t& first = block.program[tac_idx];
+            tac_t& first = block.program(tac_idx);
 
             //
             // Examine potential expansion of the range of fusable operations
             for(size_t j=tac_idx; (apply_fusion) && (j<=tac_end); ++j) {
-                tac_t& next = block.program[j];
+                tac_t& next = block.program(j);
                 if (next.op == SYSTEM) {   // Ignore
                     DEBUG(TAG, "Ignoring sstem operation.");
                     continue;
@@ -256,21 +256,21 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
             // Replace temporary arrays with scalars. This is done by "converting" the array into a scalar.
             //
             // TODO: Check that it is actually only used within the fuse-range...
-            if ((fuse_ops>1) && (block.symbol_table.temps.size()>0)) {
+            if ((fuse_ops>1) && (symbol_table.temps.size()>0)) {
                 for(size_t j=fuse_start; j<=fuse_end; ++j) {
-                    tac_t& cur = block.program[j];
+                    tac_t& cur = block.program(j);
                     switch(utils::tac_noperands(cur)) {
                         case 3:
-                            if (block.symbol_table.temps.find(cur.in2) != block.symbol_table.temps.end()) {
-                                block.symbol_table.turn_scalar(cur.in2);
+                            if (symbol_table.temps.find(cur.in2) != symbol_table.temps.end()) {
+                                symbol_table.turn_scalar(cur.in2);
                             }
                         case 2:
-                            if (block.symbol_table.temps.find(cur.in1) != block.symbol_table.temps.end()) {
-                                block.symbol_table.turn_scalar(cur.in1);
+                            if (symbol_table.temps.find(cur.in1) != symbol_table.temps.end()) {
+                                symbol_table.turn_scalar(cur.in1);
                             }
                         case 1:
-                            if (block.symbol_table.temps.find(cur.out) != block.symbol_table.temps.end()) {
-                                block.symbol_table.turn_scalar(cur.out);
+                            if (symbol_table.temps.find(cur.out) != symbol_table.temps.end()) {
+                                symbol_table.turn_scalar(cur.out);
                             }
                             break;
                     }
@@ -281,7 +281,7 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
         //
         // Assign information needed for generation of operation and operator code
         ctemplate::TemplateDictionary* operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
-        operation_d->SetFilename(template_filename(block, fuse_start));
+        operation_d->SetFilename(template_filename(symbol_table, block, fuse_start));
 
         set<size_t> operands;
         set<size_t>::iterator operands_it;
@@ -289,7 +289,7 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
         DEBUG(TAG, "FOPS " << fuse_ops << " START " << fuse_start << " END " << fuse_end);
         for(tac_idx=fuse_start; tac_idx<=fuse_end; ++tac_idx) {
 
-            tac_t& tac = block.program[tac_idx];
+            tac_t& tac = block.program(tac_idx);
             //
             // Reduction and scan specific expansions
             if ((tac.op == REDUCE) || (tac.op == SCAN)) {
@@ -307,7 +307,7 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
             // The operator +, -, /, min, max, sin, sqrt, etc...
             //        
             ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
-            operator_d->SetValue("OPERATOR", cexpression(block, tac_idx));
+            operator_d->SetValue("OPERATOR", cexpression(symbol_table, block, tac_idx));
 
             //
             // Map the tac operands into block-scope

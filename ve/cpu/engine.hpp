@@ -49,7 +49,7 @@ private:
      *  The block does contain array operations but also an extension
      *
      */
-    bh_error sij_mode(Block& block);
+    bh_error sij_mode(SymbolTable& symbol_table, Block& block);
 
     /**
      *  Compile and execute multiple tac/instructions at a time.
@@ -60,7 +60,7 @@ private:
      *      - The block contains at least one array operation (should be increased to more than 1)
      *      - The block contains does not contain any extensions
      */
-    bh_error fuse_mode(Block& block);
+    bh_error fuse_mode(SymbolTable& symbol_table, Block& block);
 
     std::string compiler_cmd,
                 template_directory,
