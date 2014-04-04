@@ -66,19 +66,32 @@ static int get_bhc_data_pointer(PyObject *ary, int force_allocation, void **out_
     return 0;
 }
 
-static PyObject *
-BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+//Help function for memory re-map
+//Return -1 on error
+static int _mremap_data(void *dst, void *src, bh_intp size)
 {
-    BhArray *ret = (BhArray *) PyArray_Type.tp_new(type, args, kwds);
-    if(!PyArray_CHKFLAGS((PyArrayObject*)ret, NPY_ARRAY_OWNDATA))
-        return (PyObject *) ret;//The array doesn't own the array data
+/*
+    if(mremap(src, size, size, MREMAP_FIXED|MREMAP_MAYMOVE, dst) == MAP_FAILED)
+    {
+        int errsv = errno;//mremap() sets the errno.
+        PyErr_Format(PyExc_RuntimeError,"Error - could not mremap a "
+                     "data region. Returned error code by mremap: %s.\n"
+                     ,strerror(errsv));
+        return -1;
+    }
+*/
+    memcpy(dst, src, size);
+    return 0;
+}
 
-    free(ret->base.data);
-
+//Help function for allocate and memory protect the NumPy part of 'ary'
+//Return -1 on error
+static int _protected_malloc(BhArray *ary)
+{
     //Allocate page-size aligned memory.
     //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
     //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-    void *addr = mmap(0, PyArray_NBYTES((PyArrayObject*)ret), PROT_READ|PROT_WRITE,
+    void *addr = mmap(0, PyArray_NBYTES((PyArrayObject*)ary), PROT_READ|PROT_WRITE,
                       MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     if(addr == MAP_FAILED)
     {
@@ -86,10 +99,37 @@ BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         PyErr_Format(PyExc_RuntimeError, "The Array Data Protection "
                      "could not mmap a data region. "
                      "Returned error code by mmap: %s.", strerror(errsv));
-        return NULL;
+        return -1;
     }
     //Update the ary data pointer.
-    ret->base.data = addr;
+    ary->base.data = addr;
+/*
+    //Finally we memory protect the NumPy data
+    if(mprotect(ary->base.data, PyArray_NBYTES((PyArrayObject*)ary), PROT_NONE) == -1)
+    {
+        int errsv = errno;//mprotect() sets the errno.
+        PyErr_Format(PyExc_RuntimeError,"Error - could not protect a data"
+                     "data region. Returned error code by mprotect: %s.\n",
+                     strerror(errsv));
+        return -1;
+    }
+*/
+    return 0;
+}
+
+static PyObject *
+BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    BhArray *ret = (BhArray *) PyArray_Type.tp_new(type, args, kwds);
+    if(!PyArray_CHKFLAGS((PyArrayObject*)ret, NPY_ARRAY_OWNDATA))
+        return (PyObject *) ret;//The array doesn't own the array data
+
+    //Lets free the NumPy allocated memory and allocate/mprotect instead
+    free(ret->base.data);
+
+    if(_protected_malloc(ret) != 0)
+        return NULL;
+
     return (PyObject *) ret;
 }
 
@@ -172,7 +212,8 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     Py_DECREF(base);
     if(d != NULL)
     {
-        memcpy(PyArray_DATA((PyArrayObject*)base), d, PyArray_NBYTES((PyArrayObject*)base));
+        if(_mremap_data(PyArray_DATA((PyArrayObject*)base), d, PyArray_NBYTES((PyArrayObject*)base)) != 0)
+            return NULL;
     }
 
     //Lets delete the current bhc_ary
