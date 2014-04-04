@@ -18,6 +18,13 @@
         a{{NR_OUTPUT}}_first[i] = c.v[0];
         ctr123.v[0]++;
     }
-    // TODO: Write scalars out to main-memory
+    {{#OPERAND}}{{#SCALAR}}
+    // Write scalar-operand to main-memory;
+    // Note this is only necessary for non-temporary scalar-operands.
+    // So this code should only be generated for non-temps.
+    if ({{NR_OUTPUT}} == {{NR}}) {
+        *a{{NR}}_first = a{{NR}}_current;
+    }
+    {{/SCALAR}}{{/OPERAND}}
 }
 

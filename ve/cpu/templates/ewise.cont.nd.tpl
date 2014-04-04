@@ -39,7 +39,10 @@
     }
 
     {{#OPERAND}}{{#SCALAR}}
-    if ({{NR_OUTPUT}} == {{NR}}) {  // Write scalar-operand to main-memory
+    // Write scalar-operand to main-memory;
+    // Note this is only necessary for non-temporary scalar-operands.
+    // So this code should only be generated for non-temps.
+    if ({{NR_OUTPUT}} == {{NR}}) {
         *a{{NR}}_first = a{{NR}}_current;
     }
     {{/SCALAR}}{{/OPERAND}}
