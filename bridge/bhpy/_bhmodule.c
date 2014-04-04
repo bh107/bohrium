@@ -205,7 +205,7 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
         return NULL;
     assert(BhArray_CheckExact(base));
 
-    //Calling get_bhc_data_pointer(self, allocate=False)
+    //Calling get_bhc_data_pointer(base, allocate=False)
     void *d = NULL;
     if(get_bhc_data_pointer(base, 0, &d) == -1)
         return NULL;
@@ -219,6 +219,40 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     //Lets delete the current bhc_ary
     if(PyObject_CallMethod(ndarray, "del_bhc", "O", self) == NULL)
         return NULL;
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+BhArray_data_np2bhc(PyObject *self, PyObject *args)
+{
+    assert(args == NULL);
+    assert(BhArray_CheckExact(self));
+
+    //We move the whole array (i.e. the base array) from Bohrium to NumPy
+    PyObject *base = PyObject_CallMethod(ndarray, "get_base", "O", self);
+    if(base == NULL)
+        return NULL;
+    assert(BhArray_CheckExact(base));
+
+    //Make sure that bhc_ary exist
+    if(((BhArray*)base)->bhc_ary == Py_None)
+    {
+        PyObject *err = PyObject_CallMethod(ndarray, "new_bhc_base", "O", base);
+        if(err == NULL)
+            return NULL;
+        Py_DECREF(err);
+    }
+
+    //Calling get_bhc_data_pointer(base, allocate=True)
+    void *d = NULL;
+    if(get_bhc_data_pointer(base, 1, &d) == -1)
+        return NULL;
+    Py_DECREF(base);
+    if(d != NULL)
+    {
+        if(_mremap_data(d, PyArray_DATA((PyArrayObject*)base), PyArray_NBYTES((PyArrayObject*)base)) != 0)
+            return NULL;
+    }
     Py_RETURN_NONE;
 }
 
@@ -306,6 +340,7 @@ BhArray_copy2numpy(PyObject *self, PyObject *args)
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
     {"_data_bhc2np", BhArray_data_bhc2np, METH_NOARGS, "Copy the Bohrium-C data to NumPy data"},
+    {"_data_np2bhc", BhArray_data_np2bhc, METH_NOARGS, "Copy the NumPy data to Bohrium-C data"},
     {"_data_fill", BhArray_data_fill, METH_VARARGS, "Fill the Bohrium-C data from a numpy NumPy"},
     {"_mprotect", BhArray_mprotect, METH_NOARGS, "Memory protects the NumPy part of the array"},
     {"copy", BhArray_copy, METH_NOARGS, "Copy the array in C-style memory layout"},

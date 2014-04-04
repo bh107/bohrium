@@ -87,8 +87,7 @@ def get_bhc(ary):
     #Find the base array and make sure it has a Bohrium-C base array
     base = get_base(ary)
     if base.bhc_ary is None:
-        new_bhc_base(base)
-        base._data_fill(base)
+        base._data_np2bhc()
 
     if ary is base:#We a returning a base array
         return base.bhc_ary
