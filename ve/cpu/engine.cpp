@@ -193,7 +193,7 @@ bh_error Engine::sij_mode(Block& block)
                 DEBUG(TAG,utils::tac_text(tac)); 
                 DEBUG(TAG,block.scope_text());
 
-                storage.funcs[block.symbol](block.scope);
+                storage.funcs[block.symbol](block.operands);
 
                 break;
         }
@@ -278,7 +278,7 @@ bh_error Engine::fuse_mode(Block& block)
     //
     // Execute block handling array operations.
     // 
-    storage.funcs[block.symbol](block.scope);
+    storage.funcs[block.symbol](block.operands);
 
     DEBUG(TAG, "fuse_mode(...) == De-Allocate memory!");
     //

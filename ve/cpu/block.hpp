@@ -41,16 +41,24 @@ public:
      *        If a block consists of nothing but system and/or extension
      *        opcodes then the symbol will be the empty string "".
      */
-    bool symbolize();    
+    bool symbolize(void);
     bool symbolize(size_t tac_start, size_t tac_end);
+
+    /**
+     *  Returns the operand with opr_idx in block-scope.
+     *
+     *  @param opr_idx Index / name in the block-scope of the operand.
+     *  @param A reference to the requested operand.
+     */
+    const operand_t& scope(size_t opr_idx) const;
 
     bh_instruction** instr;     // Pointers to instructions
 
     tac_t* program;             // Ordered list of TACs
-    operand_t** scope;          // Array of pointers to block operands
-
-    size_t noperands;           // Number of arguments to the block
     size_t length;              // Number of tacs in program
+
+    operand_t** operands;       // Array of pointers to block operands
+    size_t noperands;           // Number of arguments to the block
     uint32_t omask;             // Mask of the OPERATIONS in the block
 
     std::string symbol_text;    // Textual representation of the block
@@ -58,9 +66,9 @@ public:
 
     const bh_dag& get_dag(void);
 
-    std::map<size_t, size_t> operand_map; // Mapping of tac-operands to block-scope
-
     SymbolTable& symbol_table;
+
+    std::map<size_t, size_t> operand_map; // Mapping of tac-operands to block-scope
 
 private:
 
@@ -76,7 +84,7 @@ private:
      *  @returns The symbol for the operand
      */
     size_t add_operand(bh_instruction& instr, size_t operand_idx);
-    
+
     const bh_ir& ir;
     const bh_dag& dag;
 

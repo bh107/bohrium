@@ -339,11 +339,13 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
             if (0 == opr_idx) {
                 fprintf(stderr, "THIS SHOULD NEVER MAPPEN! OPERAND 0 is used!\n");
             }
+            const operand_t& operand = block.scope(opr_idx);
+
             ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
-            operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(block.scope[opr_idx]->etype));
+            operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(operand.etype));
             operand_d->SetIntValue("NR", opr_idx);
 
-            if ((block.scope[opr_idx]->layout & ARRAY_LAYOUT)>0) {
+            if ((operand.layout & ARRAY_LAYOUT)>0) {
                 operand_d->ShowSection("ARRAY");
             }   
         }
@@ -354,10 +356,11 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
     //
     //  Assign arguments for kernel operand unpacking
     for(size_t opr_idx=1; opr_idx<=block.noperands; ++opr_idx) {
+        const operand_t& operand = block.scope(opr_idx);
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);
-        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[opr_idx]->etype));
-        switch(block.scope[opr_idx]->layout) {
+        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(operand.etype));
+        switch(operand.layout) {
             case CONSTANT:
                 argument_d->ShowSection("CONSTANT");
                 break;
