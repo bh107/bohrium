@@ -41,10 +41,10 @@ typedef struct
 
 //Help function to retrieve the Bohrium-C data pointer
 //Return -1 on error
-static int get_bhc_data_pointer(PyObject *ary, int force_allocation, void **out_data)
+static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify, void **out_data)
 {
     PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer",
-                                         "Oi", ary, force_allocation);
+                                         "Oii", ary, force_allocation, nullify);
     if(data == NULL)
         return -1;
     if(!PyInt_Check(data))
@@ -70,7 +70,6 @@ static int get_bhc_data_pointer(PyObject *ary, int force_allocation, void **out_
 //Return -1 on error
 static int _mremap_data(void *dst, void *src, bh_intp size)
 {
-/*
     if(mremap(src, size, size, MREMAP_FIXED|MREMAP_MAYMOVE, dst) == MAP_FAILED)
     {
         int errsv = errno;//mremap() sets the errno.
@@ -79,8 +78,6 @@ static int _mremap_data(void *dst, void *src, bh_intp size)
                      ,strerror(errsv));
         return -1;
     }
-*/
-    memcpy(dst, src, size);
     return 0;
 }
 
@@ -103,7 +100,7 @@ static int _protected_malloc(BhArray *ary)
     }
     //Update the ary data pointer.
     ary->base.data = addr;
-/*
+
     //Finally we memory protect the NumPy data
     if(mprotect(ary->base.data, PyArray_NBYTES((PyArrayObject*)ary), PROT_NONE) == -1)
     {
@@ -113,7 +110,6 @@ static int _protected_malloc(BhArray *ary)
                      strerror(errsv));
         return -1;
     }
-*/
     return 0;
 }
 
@@ -205,17 +201,25 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
         return NULL;
     assert(BhArray_CheckExact(base));
 
+/* TODO: handle the case where bhc_ary is None by unprotecting the memory.
+    //Check if we need to do anything
+    if(((BhArray*)base)->bhc_ary == Py_None)
+    {
+        Py_DECREF(base);
+        Py_RETURN_NONE;
+    }
+*/
     //Calling get_bhc_data_pointer(base, allocate=False)
     void *d = NULL;
-    if(get_bhc_data_pointer(base, 0, &d) == -1)
+    if(get_bhc_data_pointer(base, 0, 1, &d) == -1)
         return NULL;
     Py_DECREF(base);
     if(d != NULL)
     {
-        if(_mremap_data(PyArray_DATA((PyArrayObject*)base), d, PyArray_NBYTES((PyArrayObject*)base)) != 0)
+        if(_mremap_data(PyArray_DATA((PyArrayObject*)base), d,
+                        PyArray_NBYTES((PyArrayObject*)base)) != 0)
             return NULL;
     }
-
     //Lets delete the current bhc_ary
     if(PyObject_CallMethod(ndarray, "del_bhc", "O", self) == NULL)
         return NULL;
@@ -245,12 +249,14 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
 
     //Calling get_bhc_data_pointer(base, allocate=True)
     void *d = NULL;
-    if(get_bhc_data_pointer(base, 1, &d) == -1)
+    if(get_bhc_data_pointer(base, 1, 0, &d) == -1)
         return NULL;
     Py_DECREF(base);
     if(d != NULL)
     {
         if(_mremap_data(d, PyArray_DATA((PyArrayObject*)base), PyArray_NBYTES((PyArrayObject*)base)) != 0)
+            return NULL;
+        if(_protected_malloc((BhArray*)base) != 0)
             return NULL;
     }
     Py_RETURN_NONE;
@@ -277,7 +283,7 @@ BhArray_data_fill(PyObject *self, PyObject *args)
 
     //Calling get_bhc_data_pointer(self, allocate=True)
     void *d = NULL;
-    if(get_bhc_data_pointer(self, 1, &d) == -1)
+    if(get_bhc_data_pointer(self, 1, 0, &d) == -1)
         return NULL;
 
     memcpy(d, PyArray_DATA((PyArrayObject*)np_ary), PyArray_NBYTES((PyArrayObject*)np_ary));

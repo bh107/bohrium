@@ -122,7 +122,7 @@ def del_bhc(ary):
 
 #Return the Bohrium-C data pointer (represented by a Python integer)
 #When allocate is True, it allocates memory instead of returning None
-def get_bhc_data_pointer(ary, allocate=False):
+def get_bhc_data_pointer(ary, allocate=False, nullify=False):
     if not check(ary):
         raise TypeError("must be a Bohrium array")
     ary = get_base(ary)
@@ -137,5 +137,7 @@ def get_bhc_data_pointer(ary, allocate=False):
         exec "data = bhc.bh_multi_array_%s_get_base_data_and_force_alloc(base)"%dtype
         if data is None:
             raise MemoryError()
+    if nullify:
+        exec "bhc.bh_multi_array_%s_nullify_base_data(base)"%dtype
     return int(data)
 
