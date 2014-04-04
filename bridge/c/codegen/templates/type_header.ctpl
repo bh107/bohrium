@@ -79,6 +79,9 @@ DLLEXPORT int64_t bh_multi_array_${bh_ctype}_get_base_nelem(bh_base_p base);
 // Sets the data pointer for a base
 DLLEXPORT void bh_multi_array_${bh_ctype}_set_base_data(bh_base_p base, ${bh_atype}* data);
 
+// Nullify the data pointer for a base
+DLLEXPORT void bh_multi_array_${bh_ctype}_nullify_base_data(bh_base_p base);
+
 // Get the base from an existing array
 DLLEXPORT bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self);
 

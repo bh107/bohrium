@@ -69,6 +69,12 @@ void bh_multi_array_${bh_ctype}_set_base_data(bh_base_p base, ${bh_atype}* data)
     base->data = data;
 }
 
+// Nullify the data pointer for a base
+void bh_multi_array_${bh_ctype}_nullify_base_data(bh_base_p base)
+{
+    base->data = NULL;
+}
+
 // Get the base from an existing array
 bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
 {
