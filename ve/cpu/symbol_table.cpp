@@ -178,6 +178,10 @@ void SymbolTable::ref_count(const tac_t& tac)
             reads[tac.in2]++;
             reads[tac.in1]++;
             writes[tac.out]++;
+
+            disqualified.insert(tac.in2);
+            disqualified.insert(tac.in1);
+            disqualified.insert(tac.out);
             break;
 
         case GENERATE:
@@ -185,15 +189,17 @@ void SymbolTable::ref_count(const tac_t& tac)
                 case RANDOM:
                 case FLOOD:
                     reads[tac.in1]++;
+                    disqualified.insert(tac.in1);
                 default:
                     writes[tac.out]++;
+                    disqualified.insert(tac.out);
             }
             break;
 
         case NOOP:
         case SYSTEM:    // ... or annotate operands with temp potential.
             if (FREE == tac.oper) {
-                potentials.insert(tac.out);
+                freed.insert(tac.out);
             }
             break;
     }
@@ -203,7 +209,7 @@ void SymbolTable::turn_scalar(size_t symbol_idx)
 {
     operand_t& operand = table[symbol_idx];
     // TODO: Introduce SCALAR as LAYOUT instead of abusing CONSTANT..
-    operand.layout = CONSTANT;
+    operand.layout = SCALAR;
 
     //
     // TODO: Hmm in order for this to have effect the victim-cache allocation
@@ -219,7 +225,7 @@ void SymbolTable::turn_scalar(size_t symbol_idx)
     }
 
     //
-    // Hmm consider: should be modify the strides? The code-generator ignores them for constants...
+    // Hmm consider: should be modify the strides?
     //
 }
 

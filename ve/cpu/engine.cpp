@@ -342,22 +342,20 @@ bh_error Engine::execute(bh_ir& bhir)
         size_t* reads           = symbol_table.reads;
         size_t* writes          = symbol_table.writes;
 
-        set<size_t>& potentials = symbol_table.potentials;
-        set<size_t>& temps      = symbol_table.temps;
+        set<size_t>& disqualified = symbol_table.disqualified;
+        set<size_t>& freed        = symbol_table.freed;
+        set<size_t>& temps        = symbol_table.temps;
 
-        for(set<size_t>::iterator potentials_it=potentials.begin();
-            potentials_it != potentials.end();
-            potentials_it++) {
-
-            size_t potential = *potentials_it;
-
+        for(set<size_t>::iterator it=freed.begin();
+            it != freed.end();
+            it++) {
+            if (disqualified.find(*it) != disqualified.end()) {
+                continue;
+            }
+            size_t potential = *it;
             if ((1 == reads[potential]) && (1 == writes[potential])) {
                 temps.insert(potential);
             }
-        }
-        for(set<size_t>::iterator temps_it=temps.begin();
-            temps_it != temps.end();
-            temps_it++) {
         }
     }
 

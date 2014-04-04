@@ -51,8 +51,13 @@ void KRN_{{SYMBOL}}(operand_t** args)
     {{/CONSTANT}}
 
     {{#SCALAR}}
-    a{{NR}}_first += a{{NR}}_start;     
-    {{TYPE}} a{{NR}}_current = *{{NR}}_first;
+    int64_t  a{{NR}}_start  = args[{{NR}}]->start;
+    int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
+    int64_t  a{{NR}}_ndim   = args[{{NR}}]->ndim;    
+    int64_t *a{{NR}}_shape  = args[{{NR}}]->shape;
+    int64_t *a{{NR}}_stride = args[{{NR}}]->stride;
+    a{{NR}}_first += a{{NR}}_start;
+    {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
     {{/SCALAR}}
 
     {{#ARRAY}}
@@ -63,6 +68,7 @@ void KRN_{{SYMBOL}}(operand_t** args)
     int64_t *a{{NR}}_stride = args[{{NR}}]->stride;
     a{{NR}}_first += a{{NR}}_start;
     {{/ARRAY}}
+
     assert(a{{NR}}_first != NULL);
     {{/ARGUMENT}}
     

@@ -39,7 +39,9 @@
     }
 
     {{#OPERAND}}{{#SCALAR}}
-    // TODO: Write scalars out to main-memory
+    if ({{NR_OUTPUT}} == {{NR}}) {  // Write scalar-operand to main-memory
+        *a{{NR}}_first = a{{NR}}_current;
+    }
     {{/SCALAR}}{{/OPERAND}}
 }
 

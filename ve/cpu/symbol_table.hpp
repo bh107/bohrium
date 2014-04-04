@@ -106,8 +106,9 @@ public:
     //
     // The following are used to detect temporary arrays
     //
-    std::set<size_t> potentials;// Operands which could be temps
-    std::set<size_t> temps;     // Operands which are temps
+    std::set<size_t> disqualified;   // Operands which could be temps
+    std::set<size_t> freed;         // Operands which are freed
+    std::set<size_t> temps;         // Operands which are temps
 
     size_t* reads;              // Read-count of operands
     size_t* writes;             // Write-cout of operands

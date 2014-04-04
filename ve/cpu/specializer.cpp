@@ -185,27 +185,6 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
     kernel_d.SetIntValue("NARGS", block.noperands);
 
     //
-    //  Assign arguments for kernel operand unpacking
-    for(size_t opr_idx=1; opr_idx<=block.noperands; ++opr_idx) {
-        ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-        argument_d->SetIntValue("NR", opr_idx);
-        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[opr_idx]->etype));
-        switch(block.scope[opr_idx]->layout) {
-            case CONSTANT:
-                argument_d->ShowSection("CONSTANT");
-                break;
-            case SCALAR:
-                argument_d->ShowSection("SCALAR");
-                break;
-            case CONTIGUOUS:
-            case STRIDED:
-            case SPARSE:
-                argument_d->ShowSection("ARRAY");
-                break;
-        }
-    }
-
-    //
     // Now process the array operations
     for(size_t tac_idx=tac_start; tac_idx<=tac_end; ++tac_idx) {
 
@@ -275,7 +254,8 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
 
             //
             // Replace temporary arrays with scalars. This is done by "converting" the array into a scalar.
-            /*
+            //
+            // TODO: Check that it is actually only used within the fuse-range...
             if ((fuse_ops>1) && (block.symbol_table.temps.size()>0)) {
                 for(size_t j=fuse_start; j<=fuse_end; ++j) {
                     tac_t& cur = block.program[j];
@@ -295,7 +275,7 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
                             break;
                     }
                 }
-            }*/
+            }
         }
 
         //
@@ -369,6 +349,27 @@ string Specializer::specialize(const Block& block, size_t tac_start, size_t tac_
         }
         operands.clear();
         tac_idx = fuse_end;
+    }
+
+    //
+    //  Assign arguments for kernel operand unpacking
+    for(size_t opr_idx=1; opr_idx<=block.noperands; ++opr_idx) {
+        ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
+        argument_d->SetIntValue("NR", opr_idx);
+        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(block.scope[opr_idx]->etype));
+        switch(block.scope[opr_idx]->layout) {
+            case CONSTANT:
+                argument_d->ShowSection("CONSTANT");
+                break;
+            case SCALAR:
+                argument_d->ShowSection("SCALAR");
+                break;
+            case CONTIGUOUS:
+            case STRIDED:
+            case SPARSE:
+                argument_d->ShowSection("ARRAY");
+                break;
+        }
     }
 
     //
