@@ -74,10 +74,10 @@ public:
      */
     uint32_t omask(void) const;
 
-    bh_instruction** instr;     // Pointers to instructions
+    bh_instruction& instr(size_t instr_idx) const;
 
-    operand_t** operands;       // Array of pointers to block operands
-    size_t noperands;           // Number of arguments to the block
+    size_t noperands(void) const;
+    operand_t** operands(void) const;
 
     std::string symbol(void) const;
     std::string symbol_text(void) const;
@@ -102,10 +102,14 @@ private:
      */
     size_t add_operand(bh_instruction& instr, size_t operand_idx);
 
-    std::string symbol_repr;   // Textual representation of the block
-    std::string symbol_hash;    // Hash of textual representation
+    bh_instruction** instr_;     // Pointers to instructions
+    operand_t** operands_;       // Array of pointers to block operands
+    size_t noperands_;           // Number of arguments to the block
 
-    uint32_t operation_mask;// Mask of the OPERATIONS in the block
+    std::string symbol_text_;   // Textual representation of the block
+    std::string symbol_;        // Hash of textual representation
+
+    uint32_t omask_;            // Mask of the OPERATIONS in the block
 
     tac_t* tacs;    // Ordered list of TACs
     size_t ntacs;   // Number of tacs in program

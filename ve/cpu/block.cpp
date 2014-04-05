@@ -8,28 +8,28 @@ namespace cpu{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx)
-: instr(NULL), operands(NULL), noperands(0), operation_mask(0), tacs(NULL), ntacs(0), ir(ir), dag(ir.dag_list[dag_idx]), symbol_table(symbol_table)
+: instr_(NULL), operands_(NULL), noperands_(0), omask_(0), tacs(NULL), ntacs(0), ir(ir), dag(ir.dag_list[dag_idx]), symbol_table(symbol_table)
 {
     size_t ps = (size_t)dag.nnode;
     if (ps<1) {
         fprintf(stderr, "This block is the empty program! You should not have called this!");
     }
 
-    operands    = (operand_t**)malloc((1+3)*ps*sizeof(operand_t*));
-    operands[0] = &symbol_table.table[0];  // Always point to the pseudo-operand.
+    operands_    = (operand_t**)malloc((1+3)*ps*sizeof(operand_t*));
+    operands_[0] = &symbol_table.table[0];  // Always point to the pseudo-operand.
 
     tacs    = (tac_t*)malloc(ps*sizeof(tac_t));
     ntacs   = ps;
 
-    instr   = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
+    instr_   = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
 }
 
 Block::~Block()
 {
     DEBUG(TAG, "~Block() ++");
-    free(operands);
+    free(operands_);
     free(tacs);
-    free(instr);
+    free(instr_);
     DEBUG(TAG, "~Block() --");
 }
 
@@ -42,7 +42,7 @@ string Block::scope_text(string prefix)
 {
     stringstream ss;
     ss << prefix << "scope {" << endl;
-    for(size_t i=1; i<=noperands; ++i) {
+    for(size_t i=1; i<=noperands(); ++i) {
         ss << prefix;
         ss << "[" << i << "] {";
         ss << utils::operand_text(scope(i));
@@ -66,8 +66,8 @@ string Block::text(std::string prefix)
     ss << prefix;
     ss << "block(";
     ss << "length="       << ntacs;
-    ss << ", noperands="  << noperands;
-    ss << ", omask="      << operation_mask;
+    ss << ", noperands="  << noperands();
+    ss << ", omask="      << omask_;
     ss << ") {"           << endl;
     ss << prefix << "  symbol(" << symbol() << ")" << endl;
     ss << prefix << "  symbol_text(" << symbol_text() << ")" << endl;
@@ -106,7 +106,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
 
     //
     // Scope
-    for(size_t i=1; i<=noperands; ++i) {
+    for(size_t i=1; i<=noperands(); ++i) {
         const operand_t& operand = scope(i);
 
         operands << "~" << i;
@@ -165,16 +165,21 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         }
     }
 
-    symbol_repr = tacs.str() +"_"+ operands.str();
-    symbol_hash = utils::hash_text(symbol_repr);
+    symbol_text_    += tacs.str() +"_"+ operands.str();
+    symbol_         = utils::hash_text(symbol_text_);
 
-    DEBUG(TAG,"symbolize(...) : symbol("<< symbol_hash << "), symbol_text("<< symbol_repr << ");");
+    DEBUG(TAG,"symbolize(...) : symbol("<< symbol_ << "), symbol_text("<< symbol_text_ << ");");
     return true;
 }
 
 uint32_t Block::omask(void) const
 {
-    return operation_mask;
+    return omask_;
+}
+
+size_t Block::noperands(void) const
+{
+    return noperands_;
 }
 
 size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
@@ -185,7 +190,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 
     //
     // Map operands into block-scope.
-    size_t arg_idx = ++(noperands);
+    size_t arg_idx = ++(noperands_);
 
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
@@ -198,14 +203,14 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.
-        --noperands;
+        --noperands_;
         arg_idx = i;
         break;
     }
 
     //
     // Point to the operand in the symbol_table
-    operands[arg_idx] = &symbol_table.table[arg_symbol];
+    operands_[arg_idx] = &symbol_table.table[arg_symbol];
 
     //
     // Insert entry such that tac operands can be resolved in block-scope.
@@ -217,7 +222,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 
 const operand_t& Block::scope(size_t operand_idx) const
 {
-    return *operands[operand_idx];
+    return *operands_[operand_idx];
 }
 
 size_t Block::resolve(size_t symbol_idx) const
@@ -237,12 +242,22 @@ size_t Block::size(void) const
 
 string Block::symbol(void) const
 {
-    return symbol_hash;
+    return symbol_;
 }
 
 string Block::symbol_text(void) const
 {
-    return symbol_repr;
+    return symbol_text_;
+}
+
+operand_t** Block::operands(void) const
+{
+    return operands_;
+}
+
+bh_instruction& Block::instr(size_t instr_idx) const
+{
+    return *instr_[instr_idx];
 }
 
 }}}

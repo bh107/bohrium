@@ -87,7 +87,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
             return BH_ERROR;
         }
 
-        bh_instruction* instr = block.instr[0];
+        bh_instruction& instr = block.instr(0);
         tac_t& tac = block.program(0);
 
         switch(tac.op) {
@@ -103,7 +103,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                     case FREE:
                         DEBUG(TAG,"sij_mode(...) == De-Allocate memory!");
                     
-                        res = bh_vcache_free(instr);
+                        res = bh_vcache_free(&instr);
                         if (BH_SUCCESS != res) {
                             fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
                                             "called from bh_ve_cpu_execute)\n");
@@ -120,10 +120,10 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
             case EXTENSION:
                 {
                     map<bh_opcode,bh_extmethod_impl>::iterator ext;
-                    ext = extensions.find(instr->opcode);
+                    ext = extensions.find(instr.opcode);
                     if (ext != extensions.end()) {
                         bh_extmethod_impl extmethod = ext->second;
-                        res = extmethod(instr, NULL);
+                        res = extmethod(&instr, NULL);
                         if (BH_SUCCESS != res) {
                             fprintf(stderr, "Unhandled error returned by extmethod(...) \n");
                             return res;
@@ -180,7 +180,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                 //
                 // Allocate memory for operands
                 DEBUG(TAG,"sij_mode(...) == Allocating memory.");
-                res = bh_vcache_malloc(instr);
+                res = bh_vcache_malloc(&instr);
                 if (BH_SUCCESS != res) {
                     fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                                     "called from bh_ve_cpu_execute()\n");
@@ -193,7 +193,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                 DEBUG(TAG,utils::tac_text(tac)); 
                 DEBUG(TAG,block.scope_text());
 
-                storage.funcs[block.symbol()](block.operands);
+                storage.funcs[block.symbol()](block.operands());
 
                 break;
         }
@@ -265,7 +265,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     // Allocate memory for output
     //
     for(size_t i=0; i<block.size(); ++i) {
-        bh_error res = bh_vcache_malloc(block.instr[i]);
+        bh_error res = bh_vcache_malloc(&block.instr(i));
         if (BH_SUCCESS != res) {
             fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                             "called from bh_ve_cpu_execute()\n");
@@ -278,14 +278,14 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     //
     // Execute block handling array operations.
     // 
-    storage.funcs[block.symbol()](block.operands);
+    storage.funcs[block.symbol()](block.operands());
 
     DEBUG(TAG, "fuse_mode(...) == De-Allocate memory!");
     //
     // De-Allocate operand memory
     for(size_t i=0; i<block.size(); ++i) {
-        if (block.instr[i]->opcode == BH_FREE) {
-            res = bh_vcache_free(block.instr[i]);
+        if (block.instr(i).opcode == BH_FREE) {
+            res = bh_vcache_free(&block.instr(i));
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
                                 "called from bh_ve_cpu_execute)\n");

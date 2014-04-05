@@ -182,7 +182,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
     kernel_d.SetValue("MODE", (apply_fusion ? "FUSED" : "SIJ"));
     kernel_d.SetIntValue("NINSTR", block.size());
-    kernel_d.SetIntValue("NARGS", block.noperands);
+    kernel_d.SetIntValue("NARGS", block.noperands());
 
     //
     // Now process the array operations
@@ -355,7 +355,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
     //
     //  Assign arguments for kernel operand unpacking
-    for(size_t opr_idx=1; opr_idx<=block.noperands; ++opr_idx) {
+    for(size_t opr_idx=1; opr_idx<=block.noperands(); ++opr_idx) {
         const operand_t& operand = block.scope(opr_idx);
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);

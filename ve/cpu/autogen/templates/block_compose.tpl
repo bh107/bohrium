@@ -40,10 +40,10 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
     
     // Reset metadata
     ntacs       = 0;        // The number of tacs in block
-    noperands   = 0;        // The number of operands
-    operation_mask       = 0;        // And the operation mask
-    symbol_hash = "";
-    symbol_repr = "";       // Symbol of the block
+    noperands_  = 0;        // The number of operands
+    omask_      = 0;        // And the operation mask
+    symbol_         = "";
+    symbol_text_    = "";       // Symbol of the block
     operand_map.clear();    // tac-operand to block scope mapping
     
     size_t pc = 0;
@@ -54,8 +54,8 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
             return false;
         }
 
-        this->instr[pc] = &this->ir.instr_list[dag.node_map[node_idx]];
-        bh_instruction& instr = *this->instr[pc];
+        this->instr_[pc] = &this->ir.instr_list[dag.node_map[node_idx]];
+        bh_instruction& instr = *this->instr_[pc];
 
         uint32_t out=0, in1=0, in2=0;
 
@@ -85,7 +85,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= $operation;    // Operationmask
+                this->omask_ |= $operation;    // Operationmask
                 break;
             %end for
 
@@ -101,7 +101,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                     this->tacs[pc].in1  = in1;
                     this->tacs[pc].in2  = in2;
 
-                    this->operation_mask |= EXTENSION;
+                    this->omask_ |= EXTENSION;
                     break;
 
                 } else {

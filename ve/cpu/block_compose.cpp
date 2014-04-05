@@ -36,10 +36,10 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
     
     // Reset metadata
     ntacs       = 0;        // The number of tacs in block
-    noperands   = 0;        // The number of operands
-    operation_mask       = 0;        // And the operation mask
-    symbol_hash = "";
-    symbol_repr = "";       // Symbol of the block
+    noperands_  = 0;        // The number of operands
+    omask_      = 0;        // And the operation mask
+    symbol_         = "";
+    symbol_text_    = "";       // Symbol of the block
     operand_map.clear();    // tac-operand to block scope mapping
     
     size_t pc = 0;
@@ -50,8 +50,8 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
             return false;
         }
 
-        this->instr[pc] = &this->ir.instr_list[dag.node_map[node_idx]];
-        bh_instruction& instr = *this->instr[pc];
+        this->instr_[pc] = &this->ir.instr_list[dag.node_map[node_idx]];
+        bh_instruction& instr = *this->instr_[pc];
 
         uint32_t out=0, in1=0, in2=0;
 
@@ -75,7 +75,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_ARCCOS:
                 in1 = this->add_operand(instr, 1);
@@ -86,7 +86,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_ARCCOSH:
                 in1 = this->add_operand(instr, 1);
@@ -97,7 +97,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_ARCSIN:
                 in1 = this->add_operand(instr, 1);
@@ -108,7 +108,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_ARCSINH:
                 in1 = this->add_operand(instr, 1);
@@ -119,7 +119,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_ARCTAN:
                 in1 = this->add_operand(instr, 1);
@@ -130,7 +130,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_ARCTANH:
                 in1 = this->add_operand(instr, 1);
@@ -141,7 +141,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_CEIL:
                 in1 = this->add_operand(instr, 1);
@@ -152,7 +152,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_COS:
                 in1 = this->add_operand(instr, 1);
@@ -163,7 +163,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_COSH:
                 in1 = this->add_operand(instr, 1);
@@ -174,7 +174,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_EXP:
                 in1 = this->add_operand(instr, 1);
@@ -185,7 +185,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_EXP2:
                 in1 = this->add_operand(instr, 1);
@@ -196,7 +196,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_EXPM1:
                 in1 = this->add_operand(instr, 1);
@@ -207,7 +207,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_FLOOR:
                 in1 = this->add_operand(instr, 1);
@@ -218,7 +218,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_IDENTITY:
                 in1 = this->add_operand(instr, 1);
@@ -229,7 +229,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_IMAG:
                 in1 = this->add_operand(instr, 1);
@@ -240,7 +240,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_INVERT:
                 in1 = this->add_operand(instr, 1);
@@ -251,7 +251,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_ISINF:
                 in1 = this->add_operand(instr, 1);
@@ -262,7 +262,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_ISNAN:
                 in1 = this->add_operand(instr, 1);
@@ -273,7 +273,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_LOG:
                 in1 = this->add_operand(instr, 1);
@@ -284,7 +284,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_LOG10:
                 in1 = this->add_operand(instr, 1);
@@ -295,7 +295,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_LOG1P:
                 in1 = this->add_operand(instr, 1);
@@ -306,7 +306,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_LOG2:
                 in1 = this->add_operand(instr, 1);
@@ -317,7 +317,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_LOGICAL_NOT:
                 in1 = this->add_operand(instr, 1);
@@ -328,7 +328,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_REAL:
                 in1 = this->add_operand(instr, 1);
@@ -339,7 +339,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_RINT:
                 in1 = this->add_operand(instr, 1);
@@ -350,7 +350,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_SIN:
                 in1 = this->add_operand(instr, 1);
@@ -361,7 +361,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_SINH:
                 in1 = this->add_operand(instr, 1);
@@ -372,7 +372,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_SQRT:
                 in1 = this->add_operand(instr, 1);
@@ -383,7 +383,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_TAN:
                 in1 = this->add_operand(instr, 1);
@@ -394,7 +394,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_TANH:
                 in1 = this->add_operand(instr, 1);
@@ -405,7 +405,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_TRUNC:
                 in1 = this->add_operand(instr, 1);
@@ -416,7 +416,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= MAP;    // Operationmask
+                this->omask_ |= MAP;    // Operationmask
                 break;
             case BH_ADD:
                 in1 = this->add_operand(instr, 1);
@@ -428,7 +428,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_ARCTAN2:
                 in1 = this->add_operand(instr, 1);
@@ -440,7 +440,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_BITWISE_AND:
                 in1 = this->add_operand(instr, 1);
@@ -452,7 +452,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_BITWISE_OR:
                 in1 = this->add_operand(instr, 1);
@@ -464,7 +464,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_BITWISE_XOR:
                 in1 = this->add_operand(instr, 1);
@@ -476,7 +476,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_DIVIDE:
                 in1 = this->add_operand(instr, 1);
@@ -488,7 +488,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_EQUAL:
                 in1 = this->add_operand(instr, 1);
@@ -500,7 +500,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_GREATER:
                 in1 = this->add_operand(instr, 1);
@@ -512,7 +512,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_GREATER_EQUAL:
                 in1 = this->add_operand(instr, 1);
@@ -524,7 +524,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_LEFT_SHIFT:
                 in1 = this->add_operand(instr, 1);
@@ -536,7 +536,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_LESS:
                 in1 = this->add_operand(instr, 1);
@@ -548,7 +548,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_LESS_EQUAL:
                 in1 = this->add_operand(instr, 1);
@@ -560,7 +560,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_LOGICAL_AND:
                 in1 = this->add_operand(instr, 1);
@@ -572,7 +572,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_LOGICAL_OR:
                 in1 = this->add_operand(instr, 1);
@@ -584,7 +584,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_LOGICAL_XOR:
                 in1 = this->add_operand(instr, 1);
@@ -596,7 +596,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_MAXIMUM:
                 in1 = this->add_operand(instr, 1);
@@ -608,7 +608,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_MINIMUM:
                 in1 = this->add_operand(instr, 1);
@@ -620,7 +620,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_MOD:
                 in1 = this->add_operand(instr, 1);
@@ -632,7 +632,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_MULTIPLY:
                 in1 = this->add_operand(instr, 1);
@@ -644,7 +644,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_NOT_EQUAL:
                 in1 = this->add_operand(instr, 1);
@@ -656,7 +656,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_POWER:
                 in1 = this->add_operand(instr, 1);
@@ -668,7 +668,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_RIGHT_SHIFT:
                 in1 = this->add_operand(instr, 1);
@@ -680,7 +680,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_SUBTRACT:
                 in1 = this->add_operand(instr, 1);
@@ -692,7 +692,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= ZIP;    // Operationmask
+                this->omask_ |= ZIP;    // Operationmask
                 break;
             case BH_ADD_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -704,7 +704,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_AND_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -716,7 +716,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_OR_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -728,7 +728,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_BITWISE_XOR_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -740,7 +740,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_AND_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -752,7 +752,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_OR_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -764,7 +764,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_LOGICAL_XOR_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -776,7 +776,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_MAXIMUM_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -788,7 +788,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_MINIMUM_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -800,7 +800,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_MULTIPLY_REDUCE:
                 in1 = this->add_operand(instr, 1);
@@ -812,7 +812,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= REDUCE;    // Operationmask
+                this->omask_ |= REDUCE;    // Operationmask
                 break;
             case BH_ADD_ACCUMULATE:
                 in1 = this->add_operand(instr, 1);
@@ -824,7 +824,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= SCAN;    // Operationmask
+                this->omask_ |= SCAN;    // Operationmask
                 break;
             case BH_MULTIPLY_ACCUMULATE:
                 in1 = this->add_operand(instr, 1);
@@ -836,7 +836,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= SCAN;    // Operationmask
+                this->omask_ |= SCAN;    // Operationmask
                 break;
             case BH_RANDOM:
                 in1 = this->add_operand(instr, 1);
@@ -847,7 +847,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= GENERATE;    // Operationmask
+                this->omask_ |= GENERATE;    // Operationmask
                 break;
             case BH_RANGE:
 
@@ -857,7 +857,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= GENERATE;    // Operationmask
+                this->omask_ |= GENERATE;    // Operationmask
                 break;
             case BH_DISCARD:
 
@@ -867,7 +867,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= SYSTEM;    // Operationmask
+                this->omask_ |= SYSTEM;    // Operationmask
                 break;
             case BH_FREE:
 
@@ -877,7 +877,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= SYSTEM;    // Operationmask
+                this->omask_ |= SYSTEM;    // Operationmask
                 break;
             case BH_NONE:
 
@@ -887,7 +887,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= SYSTEM;    // Operationmask
+                this->omask_ |= SYSTEM;    // Operationmask
                 break;
             case BH_SYNC:
 
@@ -897,7 +897,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                 this->tacs[pc].in1   = in1;
                 this->tacs[pc].in2   = in2;
             
-                this->operation_mask |= SYSTEM;    // Operationmask
+                this->omask_ |= SYSTEM;    // Operationmask
                 break;
 
             default:
@@ -912,7 +912,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
                     this->tacs[pc].in1  = in1;
                     this->tacs[pc].in2  = in2;
 
-                    this->operation_mask |= EXTENSION;
+                    this->omask_ |= EXTENSION;
                     break;
 
                 } else {
