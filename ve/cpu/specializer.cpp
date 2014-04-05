@@ -177,8 +177,8 @@ string Specializer::specialize( SymbolTable& symbol_table,
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
-    kernel_d.SetValue("SYMBOL", block.symbol);
-    kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text);
+    kernel_d.SetValue("SYMBOL", block.symbol());
+    kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text());
 
     kernel_d.SetValue("MODE", (apply_fusion ? "FUSED" : "SIJ"));
     kernel_d.SetIntValue("NINSTR", block.size());
@@ -313,13 +313,13 @@ string Specializer::specialize( SymbolTable& symbol_table,
             // Map the tac operands into block-scope
             switch(utils::tac_noperands(tac)) {
                 case 3:
-                    operation_d->SetIntValue("NR_SINPUT", block.resolve(tac.in2));  // Not all have
+                    operation_d->SetIntValue("NR_SINPUT", block.resolve(tac.in2));
                     operator_d->SetIntValue("NR_SINPUT",  block.resolve(tac.in2));
 
                     operands.insert(block.resolve(tac.in2));
 
                 case 2:
-                    operation_d->SetIntValue("NR_FINPUT", block.resolve(tac.in1));  // Not all have
+                    operation_d->SetIntValue("NR_FINPUT", block.resolve(tac.in1));
                     operator_d->SetIntValue("NR_FINPUT",  block.resolve(tac.in1));
 
                     operands.insert(block.resolve(tac.in1));

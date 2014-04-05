@@ -79,8 +79,8 @@ public:
     operand_t** operands;       // Array of pointers to block operands
     size_t noperands;           // Number of arguments to the block
 
-    std::string symbol_text;    // Textual representation of the block
-    std::string symbol;         // Hash of textual representation
+    std::string symbol(void) const;
+    std::string symbol_text(void) const;
 
     /**
      *  Return the dag on which the block is based.
@@ -101,6 +101,9 @@ private:
      *  @returns The symbol for the operand
      */
     size_t add_operand(bh_instruction& instr, size_t operand_idx);
+
+    std::string symbol_repr;   // Textual representation of the block
+    std::string symbol_hash;    // Hash of textual representation
 
     uint32_t operation_mask;// Mask of the OPERATIONS in the block
 

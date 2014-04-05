@@ -69,8 +69,8 @@ string Block::text(std::string prefix)
     ss << ", noperands="  << noperands;
     ss << ", omask="      << operation_mask;
     ss << ") {"           << endl;
-    ss << prefix << "  symbol(" << symbol << ")" << endl;
-    ss << prefix << "  symbol_text(" << symbol_text << ")" << endl;
+    ss << prefix << "  symbol(" << symbol() << ")" << endl;
+    ss << prefix << "  symbol_text(" << symbol_text() << ")" << endl;
 
     ss << prefix << "  tacs {" << endl;
     for(size_t i=0; i<ntacs; ++i) {
@@ -165,10 +165,10 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         }
     }
 
-    symbol_text = tacs.str() +"_"+ operands.str();
-    symbol      = utils::hash_text(symbol_text);
+    symbol_repr = tacs.str() +"_"+ operands.str();
+    symbol_hash = utils::hash_text(symbol_repr);
 
-    DEBUG(TAG,"symbolize(...) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
+    DEBUG(TAG,"symbolize(...) : symbol("<< symbol_hash << "), symbol_text("<< symbol_repr << ");");
     return true;
 }
 
@@ -235,5 +235,14 @@ size_t Block::size(void) const
     return ntacs;
 }
 
+string Block::symbol(void) const
+{
+    return symbol_hash;
+}
+
+string Block::symbol_text(void) const
+{
+    return symbol_repr;
+}
 
 }}}

@@ -38,8 +38,8 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
     ntacs       = 0;        // The number of tacs in block
     noperands   = 0;        // The number of operands
     operation_mask       = 0;        // And the operation mask
-    symbol      = "";
-    symbol_text = "";       // Symbol of the block
+    symbol_hash = "";
+    symbol_repr = "";       // Symbol of the block
     operand_map.clear();    // tac-operand to block scope mapping
     
     size_t pc = 0;

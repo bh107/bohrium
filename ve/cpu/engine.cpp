@@ -144,18 +144,18 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                 //
                 // JIT-compile the block if enabled
                 if (jit_enabled && \
-                    (!storage.symbol_ready(block.symbol))) {   
+                    (!storage.symbol_ready(block.symbol()))) {   
                                                                 // Specialize sourcecode
                     string sourcecode = specializer.specialize(symbol_table, block, 0, 0, false);
                     if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
                         utils::write_file(
-                            storage.src_abspath(block.symbol),
+                            storage.src_abspath(block.symbol()),
                             sourcecode.c_str(), 
                             sourcecode.size()
                         );
                     }                                           // Send to compiler
                     bool compile_res = compiler.compile(
-                        storage.obj_abspath(block.symbol), 
+                        storage.obj_abspath(block.symbol()), 
                         sourcecode.c_str(), 
                         sourcecode.size()
                     );                 
@@ -164,14 +164,14 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                         return BH_ERROR;
                     }
                                                                 // Inform storage
-                    storage.add_symbol(block.symbol, storage.obj_filename(block.symbol));
+                    storage.add_symbol(block.symbol(), storage.obj_filename(block.symbol()));
                 }
 
                 //
                 // Load the compiled code
                 //
-                if ((!storage.symbol_ready(block.symbol)) && \
-                    (!storage.load(block.symbol))) {                // Need but cannot load
+                if ((!storage.symbol_ready(block.symbol())) && \
+                    (!storage.load(block.symbol()))) {                // Need but cannot load
 
                     fprintf(stderr, "Engine::sij_mode(...) == Failed loading object.\n");
                     return BH_ERROR;
@@ -193,7 +193,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                 DEBUG(TAG,utils::tac_text(tac)); 
                 DEBUG(TAG,block.scope_text());
 
-                storage.funcs[block.symbol](block.operands);
+                storage.funcs[block.symbol()](block.operands);
 
                 break;
         }
@@ -223,18 +223,18 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     //
     if (jit_enabled && \
         ((block.omask() & (BUILTIN_ARRAY_OPS)) >0) && \
-        (!storage.symbol_ready(block.symbol))) {   
+        (!storage.symbol_ready(block.symbol()))) {   
                                                     // Specialize sourcecode
         string sourcecode = specializer.specialize(symbol_table, block, true);
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
             utils::write_file(
-                storage.src_abspath(block.symbol),
+                storage.src_abspath(block.symbol()),
                 sourcecode.c_str(), 
                 sourcecode.size()
             );
         }                                           // Send to compiler
         bool compile_res = compiler.compile(
-            storage.obj_abspath(block.symbol),
+            storage.obj_abspath(block.symbol()),
             sourcecode.c_str(), 
             sourcecode.size()
         );                 
@@ -245,15 +245,15 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
             return BH_ERROR;
         }
                                                     // Inform storage
-        storage.add_symbol(block.symbol, storage.obj_filename(block.symbol));
+        storage.add_symbol(block.symbol(), storage.obj_filename(block.symbol()));
     }
 
     //
     // Load the compiled code
     //
     if (((block.omask() & (BUILTIN_ARRAY_OPS)) >0) && \
-        (!storage.symbol_ready(block.symbol)) && \
-        (!storage.load(block.symbol))) {// Need but cannot load
+        (!storage.symbol_ready(block.symbol())) && \
+        (!storage.load(block.symbol()))) {// Need but cannot load
 
         fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
         DEBUG(TAG, "fuse_mode(...);");
@@ -278,7 +278,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     //
     // Execute block handling array operations.
     // 
-    storage.funcs[block.symbol](block.operands);
+    storage.funcs[block.symbol()](block.operands);
 
     DEBUG(TAG, "fuse_mode(...) == De-Allocate memory!");
     //
