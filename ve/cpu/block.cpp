@@ -8,7 +8,7 @@ namespace cpu{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx)
-: instr_(NULL), operands_(NULL), noperands_(0), omask_(0), tacs(NULL), ntacs(0), ir(ir), dag(ir.dag_list[dag_idx]), symbol_table(symbol_table)
+: instr_(NULL), operands_(NULL), noperands_(0), omask_(0), tacs(NULL), ntacs_(0), ir(ir), dag(ir.dag_list[dag_idx]), symbol_table(symbol_table)
 {
     size_t ps = (size_t)dag.nnode;
     if (ps<1) {
@@ -19,9 +19,9 @@ Block::Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx)
     operands_[0] = &symbol_table.table[0];  // Always point to the pseudo-operand.
 
     tacs    = (tac_t*)malloc(ps*sizeof(tac_t));
-    ntacs   = ps;
+    ntacs_  = ps;
 
-    instr_   = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
+    instr_  = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
 }
 
 Block::~Block()
@@ -38,7 +38,7 @@ const bh_dag& Block::get_dag()
     return this->dag;
 }
 
-string Block::scope_text(string prefix)
+string Block::scope_text(string prefix) const
 {
     stringstream ss;
     ss << prefix << "scope {" << endl;
@@ -55,17 +55,17 @@ string Block::scope_text(string prefix)
     return ss.str();
 }
 
-string Block::scope_text()
+string Block::scope_text() const
 {
     return scope_text("");
 }
 
-string Block::text(std::string prefix)
+string Block::text(std::string prefix) const
 {
     stringstream ss;
     ss << prefix;
     ss << "block(";
-    ss << "length="       << ntacs;
+    ss << "length="       << ntacs_;
     ss << ", noperands="  << noperands();
     ss << ", omask="      << omask_;
     ss << ") {"           << endl;
@@ -73,7 +73,7 @@ string Block::text(std::string prefix)
     ss << prefix << "  symbol_text(" << symbol_text() << ")" << endl;
 
     ss << prefix << "  tacs {" << endl;
-    for(size_t i=0; i<ntacs; ++i) {
+    for(size_t i=0; i<ntacs_; ++i) {
         ss << prefix << "    [" << i << "]" << utils::tac_text(tacs[i]) << endl;
     }
     ss << prefix << "  }" << endl;
@@ -84,7 +84,7 @@ string Block::text(std::string prefix)
     return ss.str();
 }
 
-string Block::text()
+string Block::text() const
 {
     return text("");
 }
@@ -92,7 +92,7 @@ string Block::text()
 bool Block::symbolize()
 {   
     DEBUG(TAG,"symbolize(void) : length("<< length << ")");
-    bool symbolize_res = symbolize(0, ntacs-1);
+    bool symbolize_res = symbolize(0, ntacs_-1);
     DEBUG(TAG,"symbolize(void) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
     return symbolize_res;
 }
@@ -237,7 +237,7 @@ tac_t& Block::program(size_t pc) const
 
 size_t Block::size(void) const
 {
-    return ntacs;
+    return ntacs_;
 }
 
 string Block::symbol(void) const

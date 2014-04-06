@@ -64,7 +64,7 @@ typedef struct operand {
 #define ARRAY_LAYOUT   (CONTIGUOUS | STRIDED | SPARSE)
 #define CONT_COMPATIBLE (CONSTANT | SCALAR | CONTIGUOUS)
 
-#define BUILTIN_ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
+#define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    %echo $len($ops)-1
 #define NBUILTIN_OPERS  %echo $len($opers)-1
 

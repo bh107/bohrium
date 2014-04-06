@@ -203,6 +203,9 @@ string Specializer::specialize( SymbolTable& symbol_table,
         size_t  fuse_ops    = 0,
                 fuse_start  = tac_idx,
                 fuse_end    = tac_idx;
+        
+        LAYOUT fusion_layout = CONSTANT;
+        LAYOUT next_layout   = CONSTANT;
 
         if (apply_fusion) {
             //
@@ -230,11 +233,23 @@ string Specializer::specialize( SymbolTable& symbol_table,
                 
                 switch(utils::tac_noperands(next)) {
                     case 3:
+                        next_layout = symbol_table[next.in2].layout;
+                        if (next_layout>fusion_layout) {
+                            fusion_layout = next_layout;
+                        }
                         compat_operands = compat_operands && (utils::compatible(symbol_table[first.out], symbol_table[next.in2]));
                     case 2:
+                        next_layout = symbol_table[next.in1].layout;
+                        if (next_layout>fusion_layout) {
+                            fusion_layout = next_layout;
+                        }
                         compat_operands = compat_operands && (utils::compatible(symbol_table[first.out], symbol_table[next.in1]));
+                        next_layout = symbol_table[next.out].layout;
+                        if (next_layout>fusion_layout) {
+                            fusion_layout = next_layout;
+                        }
                         compat_operands = compat_operands && (utils::compatible(symbol_table[first.out], symbol_table[next.out]));
-                    break;
+                        break;
 
                     default:
                         fprintf(stderr, "ARGGG!!!!\n");
@@ -281,7 +296,41 @@ string Specializer::specialize( SymbolTable& symbol_table,
         //
         // Assign information needed for generation of operation and operator code
         ctemplate::TemplateDictionary* operation_d  = kernel_d.AddIncludeDictionary("OPERATIONS");
-        operation_d->SetFilename(template_filename(symbol_table, block, fuse_start));
+
+        if (fuse_ops>1) {
+            stringstream tpl_filename;
+            tpl_filename << "ewise.";
+            switch(fusion_layout) {
+                case CONSTANT:
+                case SCALAR:
+                case CONTIGUOUS:
+                    tpl_filename << "cont.";
+                    tpl_filename << "nd.";
+                    break;
+                case STRIDED:
+                case SPARSE:
+                    tpl_filename << "strided.";
+                    switch(symbol_table[block.program(fuse_start).out].ndim) {
+                        case 3:
+                            tpl_filename << "3d.";
+                            break;
+                        case 2:
+                            tpl_filename << "2d.";
+                            break;
+                        case 1:
+                            tpl_filename << "1d.";
+                            break;
+                        default:
+                            tpl_filename << "nd.";
+                    }
+                    break;
+            }
+            tpl_filename << "tpl";
+            operation_d->SetFilename(tpl_filename.str());
+            cout << "Using this " << fusion_layout << endl;
+        } else {
+            operation_d->SetFilename(template_filename(symbol_table, block, fuse_start));
+        }
 
         set<size_t> operands;
         set<size_t>::iterator operands_it;

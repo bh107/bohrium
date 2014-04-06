@@ -222,7 +222,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     // JIT-compile the block if enabled
     //
     if (jit_enabled && \
-        ((block.omask() & (BUILTIN_ARRAY_OPS)) >0) && \
+        ((block.omask() & (ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol()))) {   
                                                     // Specialize sourcecode
         string sourcecode = specializer.specialize(symbol_table, block, true);
@@ -251,7 +251,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     //
     // Load the compiled code
     //
-    if (((block.omask() & (BUILTIN_ARRAY_OPS)) >0) && \
+    if (((block.omask() & (ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol())) && \
         (!storage.load(block.symbol()))) {// Need but cannot load
 
@@ -265,12 +265,18 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     // Allocate memory for output
     //
     for(size_t i=0; i<block.size(); ++i) {
-        bh_error res = bh_vcache_malloc(&block.instr(i));
-        if (BH_SUCCESS != res) {
-            fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                            "called from bh_ve_cpu_execute()\n");
-            DEBUG(TAG, "fuse_mode(...);");
-            return res;
+        if ((block.program(i).op & ARRAY_OPS)>0) {
+            bh_view* operand_view = &block.instr(i).operand[0];
+            if ((symbol_table[block.program(i).out].layout == SCALAR) && (operand_view->base->data == NULL)) {
+                operand_view->base->nelem = 1;
+            }
+            bh_error res = bh_vcache_malloc_op(operand_view);
+            if (BH_SUCCESS != res) {
+                fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                                "called from bh_ve_cpu_execute()\n");
+                DEBUG(TAG, "fuse_mode(...);");
+                return res;
+            }
         }
     }
 
@@ -338,7 +344,7 @@ bh_error Engine::execute(bh_ir& bhir)
     //
     // Looking for temps
     //
-    if (symbol_table.size() > 5000) {
+    if (symbol_table.size() > 3) {
         size_t* reads           = symbol_table.reads;
         size_t* writes          = symbol_table.writes;
 
@@ -365,7 +371,7 @@ bh_error Engine::execute(bh_ir& bhir)
         Block* block = blocks[dag_idx];
         bh_error mode_res;
         if (jit_fusion && \
-            ((block->omask() & (BUILTIN_ARRAY_OPS)) > 0) && \
+            ((block->omask() & (ARRAY_OPS)) > 0) && \
             ((block->omask() & (EXTENSION)) == 0)) {
             mode_res = fuse_mode(symbol_table, *block);
         } else {

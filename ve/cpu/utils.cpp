@@ -63,11 +63,12 @@ bool compatible(const operand_t& one, const operand_t& other)
         return true;
     }
 
+    /*
     //
     // Array layouts of different types are not compatible 
     if (one.layout != other.layout) {
         return false;
-    }
+    }*/
     if (one.ndim != other.ndim) {
         return false;
     }

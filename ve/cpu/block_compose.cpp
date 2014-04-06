@@ -35,7 +35,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
     }
     
     // Reset metadata
-    ntacs       = 0;        // The number of tacs in block
+    ntacs_      = 0;        // The number of tacs in block
     noperands_  = 0;        // The number of operands
     omask_      = 0;        // And the operation mask
     symbol_         = "";
@@ -43,7 +43,7 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
     operand_map.clear();    // tac-operand to block scope mapping
     
     size_t pc = 0;
-    for (int node_idx=node_start; node_idx<=node_end; ++node_idx, ++pc, ++ntacs) {
+    for (int node_idx=node_start; node_idx<=node_end; ++node_idx, ++pc, ++ntacs_) {
         
         if (dag.node_map[node_idx] <0) {
             fprintf(stderr, "Code-generation for subgraphs is not supported yet.\n");
