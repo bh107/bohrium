@@ -26,12 +26,13 @@ def point27(data, iterations):
 
 if __name__ == "__main__":
     """
-    Example parameter: --size=400x10.
+    Example parameter: --size=400*10.
     This will execute on a 400x400x400 dataset for 10 iterations.
     """
     B = util.Benchmark()
     (N, I) = B.size
     data = point27_init(N, use_bohrium=B.bohrium)
+    data.bohrium = B.bohrium
     B.start()
     result = point27(data, I)
     B.stop()

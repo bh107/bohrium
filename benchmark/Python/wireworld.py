@@ -28,7 +28,7 @@ def wireworld_init(size, use_bohrium):
 def wireworld(world, iterations):
     """TODO: Describe the benchmark."""
 
-    sim = no_border(world ,1)   # Active Machine
+    sim = no_border(world, 1)   # Active Machine
     stencil = D2P8(world)       # Stencil for counting heads
     for _ in xrange(iterations):
         NC = sum([v==2 for v in stencil]) # Count number of head neighbors
@@ -45,7 +45,7 @@ def wireworld(world, iterations):
 
 if __name__ == "__main__":
     """
-    Example parameter: --size=1000x10.
+    Example parameter: --size=1000*10.
     This will execute on a 1000x1000 dataset for 10 iterations.
     """
     B = util.Benchmark()
