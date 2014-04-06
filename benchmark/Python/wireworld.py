@@ -2,10 +2,11 @@ import util
 import bohrium as np
 from bohrium.stdviews import D2P8, no_boarder
 
-def wireworld_init(fname='wireworld.npy', use_bohrium=True):
+def wireworld_init(fname='/tmp/wireworld.npy', use_bohrium=True):
     return np.load(fname, bohrium=use_bohrium)
 
 def wireworld(world, iterations):
+    """TODO: Describe the benchmark."""
 
     sim = no_boarder(world ,1)  #Active Machine
     stencil = D2P8(world)       #Stencil for counting heads
@@ -19,7 +20,7 @@ def wireworld(world, iterations):
         sim *= ~MASK    #conductors->0
         sim += MASK * 4 #conductors->4   
         sim *= 2        #Upgrade all to new state
-    
+
     return sim
 
 if __name__ == "__main__":
@@ -27,6 +28,6 @@ if __name__ == "__main__":
     (I,) = B.size
     world = wireworld_init(use_bohrium=B.bohrium)
     B.start()
-    result = wireworld(world, I, use_bohrium=B.bohrium)
+    result = wireworld(world, I)
     B.stop()
     B.pprint()

@@ -2,7 +2,7 @@ import util
 import bohrium as np
 from bohrium.stdviews import no_boarder, D3P27
 
-def point27_init(fname='heat.npy', use_bohrium=True):
+def point27_init(fname='/tmp/heat.npy', use_bohrium=True):
     return np.load(fname, bohrium=use_bohrium)
 
 def point27(data, iterations):
