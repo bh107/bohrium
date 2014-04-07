@@ -81,14 +81,30 @@ static int _mremap_data(void *dst, void *src, bh_intp size)
     return 0;
 }
 
-//Help function for allocate and memory protect the NumPy part of 'ary'
+//Help function for protecting the memory of the NumPy part of 'ary'
+//Return -1 on error
+static int _mprotect_np_part(BhArray *ary)
+{
+    //Finally we memory protect the NumPy data
+    if(mprotect(ary->base.data, PyArray_NBYTES((PyArrayObject*)ary), PROT_NONE) == -1)
+    {
+        int errsv = errno;//mprotect() sets the errno.
+        PyErr_Format(PyExc_RuntimeError,"Error - could not protect a data"
+                     "data region. Returned error code by mprotect: %s.\n",
+                     strerror(errsv));
+        return -1;
+    }
+    return 0;
+}
+
+//Help function for allocate protected memory for the NumPy part of 'ary'
 //Return -1 on error
 static int _protected_malloc(BhArray *ary)
 {
     //Allocate page-size aligned memory.
     //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
     //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-    void *addr = mmap(0, PyArray_NBYTES((PyArrayObject*)ary), PROT_READ|PROT_WRITE,
+    void *addr = mmap(0, PyArray_NBYTES((PyArrayObject*)ary), PROT_NONE,
                       MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     if(addr == MAP_FAILED)
     {
@@ -100,16 +116,6 @@ static int _protected_malloc(BhArray *ary)
     }
     //Update the ary data pointer.
     ary->base.data = addr;
-
-    //Finally we memory protect the NumPy data
-    if(mprotect(ary->base.data, PyArray_NBYTES((PyArrayObject*)ary), PROT_NONE) == -1)
-    {
-        int errsv = errno;//mprotect() sets the errno.
-        PyErr_Format(PyExc_RuntimeError,"Error - could not protect a data"
-                     "data region. Returned error code by mprotect: %s.\n",
-                     strerror(errsv));
-        return -1;
-    }
     return 0;
 }
 
@@ -254,9 +260,8 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
     Py_DECREF(base);
     if(d != NULL)
     {
-        if(_mremap_data(d, PyArray_DATA((PyArrayObject*)base), PyArray_NBYTES((PyArrayObject*)base)) != 0)
-            return NULL;
-        if(_protected_malloc((BhArray*)base) != 0)
+        memcpy(d, PyArray_DATA((PyArrayObject*)base), PyArray_NBYTES((PyArrayObject*)base));
+        if(_mprotect_np_part((BhArray*)base) != 0)
             return NULL;
     }
     Py_RETURN_NONE;
