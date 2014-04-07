@@ -91,12 +91,16 @@ def get_bhc(ary):
 
     if ary is base:#We a returning a base array
         return base.bhc_ary
-    else:
+    elif ary.bhc_ary is None:
+        if not ary.flags['BEHAVED']:
+            raise ValueError("Bohrium arrays must be aligned, writeable, and in machine byte-order")
         dtype = dtype_name(ary)
         exec "bh_base = bhc.bh_multi_array_%s_get_base(base.bhc_ary)"%dtype
         offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
         if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
             raise TypeError("The view offset must be element aligned")
+        if not (0 <= offset < base.size):
+            raise TypeError("The view offset is greater than the total number of elements in the base!")
         strides = []
         for s in ary.strides:
             strides.append(s / base.itemsize)
@@ -105,7 +109,7 @@ def get_bhc(ary):
 
         exec "ary.bhc_ary = bhc.bh_multi_array_%s_new_from_view(bh_base, ary.ndim, "\
                             "offset, ary.shape, strides)"%dtype
-        return ary.bhc_ary
+    return ary.bhc_ary
 
 #Delete the Bohrium-C object
 def del_bhc_obj(bhc_obj):
