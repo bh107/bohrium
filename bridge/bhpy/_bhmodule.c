@@ -25,6 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+//Forward declaration
+static PyObject *BhArray_data_bhc2np(PyObject *self, PyObject *args);
+
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
 static PyTypeObject BhArrayType;
 PyObject *ndarray = NULL; //The ndarray Python module
@@ -81,6 +84,21 @@ static int _mremap_data(void *dst, void *src, bh_intp size)
     return 0;
 }
 
+//Callback function called by the signal library
+void mem_access_callback(unsigned long id, uintptr_t addr)
+{
+    PyObject *ary = (PyObject *) id;
+    printf("mem_access_callback() - ary: %p, addr: %p\n", ary, (void*) addr);
+
+    PyGILState_STATE GIL = PyGILState_Ensure();
+    PyErr_WarnEx(NULL,"Encountering an operation not supported by Bohrium. "
+                      "It will be handled by the original NumPy.",1);
+
+    if(BhArray_data_bhc2np(ary, NULL) == NULL)
+        PyErr_Print();
+    PyGILState_Release(GIL);
+}
+
 //Help function for protecting the memory of the NumPy part of 'ary'
 //Return -1 on error
 static int _mprotect_np_part(BhArray *ary)
@@ -94,6 +112,8 @@ static int _mprotect_np_part(BhArray *ary)
                      strerror(errsv));
         return -1;
     }
+    attach_signal((signed long)ary, (uintptr_t) ary->base.data,
+                  PyArray_NBYTES((PyArrayObject*)ary), mem_access_callback);
     return 0;
 }
 
@@ -116,6 +136,9 @@ static int _protected_malloc(BhArray *ary)
     }
     //Update the ary data pointer.
     ary->base.data = addr;
+
+    attach_signal((signed long)ary, (uintptr_t) ary->base.data,
+                  PyArray_NBYTES((PyArrayObject*)ary), mem_access_callback);
     return 0;
 }
 
@@ -172,6 +195,7 @@ finish:
                      "Returned error code by mmap: %s.", strerror(errsv));
         PyErr_Print();
     }
+    detach_signal((signed long)self, mem_access_callback);
     self->base.data = NULL;
     BhArrayType.tp_base->tp_dealloc((PyObject*)self);
 }
@@ -226,6 +250,8 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
                         PyArray_NBYTES((PyArrayObject*)base)) != 0)
             return NULL;
     }
+    detach_signal((signed long)base, mem_access_callback);
+
     //Lets delete the current bhc_ary
     if(PyObject_CallMethod(ndarray, "del_bhc", "O", self) == NULL)
         return NULL;
@@ -556,6 +582,5 @@ init_bh(void)
         return;
 
     //Initialize the signal handler
-//    init_signal();
-
+    init_signal();
 }
