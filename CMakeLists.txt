@@ -39,6 +39,7 @@ add_subdirectory(extmethods/fftw)
 if(NOT USE_CXX98)
     add_subdirectory(bridge/cpp)
     add_subdirectory(bridge/c)
+    add_subdirectory(bridge/bhpy)
 endif()
 
 install(DIRECTORY thirdparty/Random123/include/Random123 DESTINATION include)
@@ -68,9 +69,14 @@ else()
     set(SYS_VERSION 1.0)
 endif()
 
-#Install the config file
-configure_file(config.ini.in bohrium.ini)
-install(FILES ${CMAKE_BINARY_DIR}/bohrium.ini DESTINATION etc)
+#Install the config file, which depends on global or local installation
+configure_file(config.ini.in config.ini)
+string(REGEX MATCH "^/home/" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})
+if(${ROOT_INSTALL})
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc)
+elseif(NOT EXISTS "$ENV{HOME}/.bohrium/config.ini")
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION "$ENV{HOME}/.bohrium")
+endif()
 
 #Package setup
 set(CPACK_GENERATOR "DEB")
