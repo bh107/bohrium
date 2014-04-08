@@ -24,10 +24,25 @@ If not, see <http://www.gnu.org/licenses/>.
 from distutils.core import setup, Extension
 from distutils.command.build import build
 import os
+import sys
 import stat
 import pprint
 import json
 import numpy as np
+
+#We overload the setup.py with a 'libpath=' argument that
+#points to the library root
+lib_path = None
+for i,arg in enumerate(sys.argv):
+    if arg.startswith("libpath="):
+        lib_path = arg[len("libpath="):]
+        sys.argv.pop(i)
+
+def libpath(*args):
+    if lib_path is None:
+        return os.path.join(*args)
+    else:
+        return os.path.join(lib_path, *args)
 
 def path(*args):
     prefix = os.path.abspath(os.path.dirname(__file__))
@@ -147,15 +162,15 @@ setup(name='Bohrium',
                              include_dirs=[path('..','c','codegen','output'),
                                            path('..','..','include')],
                              libraries=['dl','bhc', 'bh'],
-                             library_dirs=[path('..','c'),
-                                           path('..','..','core')],
+                             library_dirs=[libpath('..','c'),
+                                           libpath('..','..','core')],
                              ),
                    Extension(name='_bhc',
                              sources=[path('bhc.i')],
                              include_dirs=[path('..','c','codegen','output'),
                                            path('..','..','include')],
                              libraries=['dl','bhc', 'bh'],
-                             library_dirs=[path('..','c'),
-                                           path('..','..','core')],
+                             library_dirs=[libpath('..','c'),
+                                           libpath('..','..','core')],
                              )],
      )
