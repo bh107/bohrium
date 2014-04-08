@@ -301,9 +301,7 @@ namespace NumCIL.Generic
 		/// <typeparam name="T">The type of the data in the returned enumerable.</typeparam>
 		public static IEnumerable<T> ConvertList<T>(System.Collections.IEnumerable input)
 		{
-			var en = input.GetEnumerator();
-			while(en.MoveNext())
-				yield return (T)en.Current;
+            return input.Cast<T>();
 		}
 		
 	}
@@ -460,26 +458,27 @@ namespace NumCIL.Generic
 		/// </summary>
 		/// <param name="work">The list of operations to perform</param>
 		public virtual void DoExecute(IList<IPendingOperation> work)
-		{
-			var tmp = new List<IPendingOperation>();
-			while (work.Count > 0)
-			{
-				var pendingOpType = typeof(PendingOperation<>).MakeGenericType(new Type[] { work[0].DataType });
-				var enumType = typeof(IEnumerable<>).MakeGenericType(new Type[] { pendingOpType } );
+        {
+            var tmp = new List<IPendingOperation>();
+            while (work.Count > 0)
+            {
+                var pendingOpType = typeof(PendingOperation<>).MakeGenericType(new Type[] { work[0].DataType });
+                var enumType = typeof(IEnumerable<>).MakeGenericType(new Type[] { pendingOpType });
 
-				while (work.Count > 0 && (tmp.Count == 0 || work[0].TargetOperandType == tmp[0].TargetOperandType))
-				{
-					tmp.Add(work[0]);
-					work.RemoveAt(0);
-				}
+                while (work.Count > 0 && (tmp.Count == 0 || work[0].TargetOperandType == tmp[0].TargetOperandType))
+                {
+                    tmp.Add(work[0]);
+                    work.RemoveAt(0);
+                }
 				
-				var typedEnum = typeof(LazyAccessorCollector).GetMethod("ConvertList", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, new Type[] { typeof(System.Collections.IEnumerable) }, null).MakeGenericMethod(new Type[] { pendingOpType }).Invoke(null, new object[] { tmp });
-				tmp[0].TargetOperandType.GetMethod("DoExecute", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, new Type[] { enumType }, null ).Invoke(tmp[0].TargetAccessor, new object[] { typedEnum });
-				
+                var cnvmethod = typeof(LazyAccessorCollector).GetMethod("ConvertList", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, new Type[] { typeof(System.Collections.IEnumerable) }, null).MakeGenericMethod(new Type[] { pendingOpType });
+                var typedEnum = cnvmethod.Invoke(null, new object[] { tmp });
+                var method = tmp[0].TargetOperandType.GetMethod("DoExecute", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, new Type[] { enumType }, null);
+                method.Invoke(tmp[0].TargetAccessor, System.Reflection.BindingFlags.InvokeMethod, null, new object[] { typedEnum }, null);				
 				tmp.Clear();
 			}
 		}
-				
+        
         /// <summary>
         /// Basic execution function, simply calls the UFunc*Flush functions with the pending operation
         /// </summary>
@@ -546,8 +545,11 @@ namespace NumCIL.Generic
                         genericVersion = aggregateBaseMethodType.MakeGenericMethod(typeof(T), lzop.Operation.GetType());
                         specializedAggregateMethods[lzop.Operation.GetType()] = genericVersion;
                     }
-
-                    n.Operands[0].Value[0] = (T)genericVersion.Invoke(null, new object[] { lzop.Operation, n.Operands[1] });
+                    
+                    // Store the parameters so we can access the return value by-ref
+                    var paramlist = new object[] { lzop.Operation, n.Operands[1], default(T) };
+                    genericVersion.Invoke(null, paramlist);
+                    n.Operands[0].Value[0] = (T)paramlist[2];
                 }
                 else if (n.Operation is IBinaryOp<T>)
                 {
