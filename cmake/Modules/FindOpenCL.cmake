@@ -13,7 +13,7 @@
 #
 # WIN32 should work, but is untested
 
-FIND_PACKAGE(PackageHandleStandardArgs)
+include(FindPackageHandleStandardArgs)
 
 SET (OPENCL_VERSION_STRING "0.1.0")
 SET (OPENCL_VERSION_MAJOR 0)

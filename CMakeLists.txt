@@ -11,6 +11,7 @@ endif()
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 project(BOHRIUM)
+include(FeatureSummary)
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "3")
@@ -28,11 +29,14 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 endif()
 
+#The core modules
 add_subdirectory(core)
 add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
-add_subdirectory(vem/cluster)
 add_subdirectory(ve/cpu)
+
+#The other modules
+add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(extmethods/matmul)
 add_subdirectory(extmethods/fftw)
@@ -79,6 +83,8 @@ elseif(NOT EXISTS "$ENV{HOME}/.bohrium/config.ini")
     install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION "$ENV{HOME}/.bohrium")
 endif()
 
+
+
 #Package setup
 set(CPACK_GENERATOR "DEB")
 
@@ -103,3 +109,5 @@ MESSAGE(STATUS "Compiler cxx debug flags:" ${CMAKE_CXX_FLAGS_DEBUG})
 MESSAGE(STATUS "Compiler cxx release flags:" ${CMAKE_CXX_FLAGS_RELEASE})
 MESSAGE(STATUS "Compiler cxx min size flags:" ${CMAKE_CXX_FLAGS_MINSIZEREL})
 MESSAGE(STATUS "Compiler cxx flags:" ${CMAKE_CXX_FLAGS})
+
+feature_summary(WHAT ALL)
