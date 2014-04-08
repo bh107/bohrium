@@ -6,7 +6,7 @@ find_package(CTemplate)
 set_package_properties(CTemplate PROPERTIES DESCRIPTION "Template language for C++" URL "code.google.com/p/ctemplate/")
 set_package_properties(CTemplate PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the CPU-VE.")
 
-if(CTemplate)
+if(CTEMPLATE_FOUND)
     file(GLOB SRC bh_ve_cpu.cpp)
 
     add_library(bh_ve_cpu SHARED ${SRC})

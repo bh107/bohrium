@@ -49,6 +49,24 @@ endif()
 
 install(DIRECTORY thirdparty/Random123/include/Random123 DESTINATION include)
 
+#Install the config file, which depends on global or local installation
+configure_file(config.ini.in config.ini)
+string(REGEX MATCH "^/home/" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})
+if(${ROOT_INSTALL})
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc)
+elseif(NOT EXISTS "$ENV{HOME}/.bohrium/config.ini")
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION "$ENV{HOME}/.bohrium")
+endif()
+
+MESSAGE(STATUS "Compiler flags:" ${CMAKE_CXX_COMPILE_FLAGS})
+MESSAGE(STATUS "Compiler cxx debug flags:" ${CMAKE_CXX_FLAGS_DEBUG})
+MESSAGE(STATUS "Compiler cxx release flags:" ${CMAKE_CXX_FLAGS_RELEASE})
+MESSAGE(STATUS "Compiler cxx min size flags:" ${CMAKE_CXX_FLAGS_MINSIZEREL})
+MESSAGE(STATUS "Compiler cxx flags:" ${CMAKE_CXX_FLAGS})
+
+feature_summary(WHAT ALL)
+
+
 #Lets try to find SYS_NAME and SYS_VERSION automatically
 find_program(LSB_RELEASE_EXECUTABLE lsb_release)
 if(LSB_RELEASE_EXECUTABLE)
@@ -74,17 +92,6 @@ else()
     set(SYS_VERSION 1.0)
 endif()
 
-#Install the config file, which depends on global or local installation
-configure_file(config.ini.in config.ini)
-string(REGEX MATCH "^/home/" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})
-if(${ROOT_INSTALL})
-    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc)
-elseif(NOT EXISTS "$ENV{HOME}/.bohrium/config.ini")
-    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION "$ENV{HOME}/.bohrium")
-endif()
-
-
-
 #Package setup
 set(CPACK_GENERATOR "DEB")
 
@@ -104,10 +111,3 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "libctemplate-dev, libfftw3-dev")
 include(CPack)
 
 
-MESSAGE(STATUS "Compiler flags:" ${CMAKE_CXX_COMPILE_FLAGS})
-MESSAGE(STATUS "Compiler cxx debug flags:" ${CMAKE_CXX_FLAGS_DEBUG})
-MESSAGE(STATUS "Compiler cxx release flags:" ${CMAKE_CXX_FLAGS_RELEASE})
-MESSAGE(STATUS "Compiler cxx min size flags:" ${CMAKE_CXX_FLAGS_MINSIZEREL})
-MESSAGE(STATUS "Compiler cxx flags:" ${CMAKE_CXX_FLAGS})
-
-feature_summary(WHAT ALL)
