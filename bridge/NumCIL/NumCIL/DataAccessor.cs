@@ -545,8 +545,11 @@ namespace NumCIL.Generic
                         genericVersion = aggregateBaseMethodType.MakeGenericMethod(typeof(T), lzop.Operation.GetType());
                         specializedAggregateMethods[lzop.Operation.GetType()] = genericVersion;
                     }
-
-                    n.Operands[0].Value[0] = (T)genericVersion.Invoke(null, new object[] { lzop.Operation, n.Operands[1] });
+                    
+                    // Store the parameters so we can access the return value by-ref
+                    var paramlist = new object[] { lzop.Operation, n.Operands[1], default(T) };
+                    genericVersion.Invoke(null, paramlist);
+                    n.Operands[0].Value[0] = (T)paramlist[2];
                 }
                 else if (n.Operation is IBinaryOp<T>)
                 {
