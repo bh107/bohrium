@@ -301,9 +301,7 @@ namespace NumCIL.Generic
 		/// <typeparam name="T">The type of the data in the returned enumerable.</typeparam>
 		public static IEnumerable<T> ConvertList<T>(System.Collections.IEnumerable input)
 		{
-			var en = input.GetEnumerator();
-			while(en.MoveNext())
-				yield return (T)en.Current;
+            return input.Cast<T>();
 		}
 		
 	}
