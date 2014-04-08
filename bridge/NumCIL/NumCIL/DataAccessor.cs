@@ -458,26 +458,27 @@ namespace NumCIL.Generic
 		/// </summary>
 		/// <param name="work">The list of operations to perform</param>
 		public virtual void DoExecute(IList<IPendingOperation> work)
-		{
-			var tmp = new List<IPendingOperation>();
-			while (work.Count > 0)
-			{
-				var pendingOpType = typeof(PendingOperation<>).MakeGenericType(new Type[] { work[0].DataType });
-				var enumType = typeof(IEnumerable<>).MakeGenericType(new Type[] { pendingOpType } );
+        {
+            var tmp = new List<IPendingOperation>();
+            while (work.Count > 0)
+            {
+                var pendingOpType = typeof(PendingOperation<>).MakeGenericType(new Type[] { work[0].DataType });
+                var enumType = typeof(IEnumerable<>).MakeGenericType(new Type[] { pendingOpType });
 
-				while (work.Count > 0 && (tmp.Count == 0 || work[0].TargetOperandType == tmp[0].TargetOperandType))
-				{
-					tmp.Add(work[0]);
-					work.RemoveAt(0);
-				}
+                while (work.Count > 0 && (tmp.Count == 0 || work[0].TargetOperandType == tmp[0].TargetOperandType))
+                {
+                    tmp.Add(work[0]);
+                    work.RemoveAt(0);
+                }
 				
-				var typedEnum = typeof(LazyAccessorCollector).GetMethod("ConvertList", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, new Type[] { typeof(System.Collections.IEnumerable) }, null).MakeGenericMethod(new Type[] { pendingOpType }).Invoke(null, new object[] { tmp });
-				tmp[0].TargetOperandType.GetMethod("DoExecute", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, new Type[] { enumType }, null ).Invoke(tmp[0].TargetAccessor, new object[] { typedEnum });
-				
+                var cnvmethod = typeof(LazyAccessorCollector).GetMethod("ConvertList", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, new Type[] { typeof(System.Collections.IEnumerable) }, null).MakeGenericMethod(new Type[] { pendingOpType });
+                var typedEnum = cnvmethod.Invoke(null, new object[] { tmp });
+                var method = tmp[0].TargetOperandType.GetMethod("DoExecute", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, new Type[] { enumType }, null);
+                method.Invoke(tmp[0].TargetAccessor, System.Reflection.BindingFlags.InvokeMethod, null, new object[] { typedEnum }, null);				
 				tmp.Clear();
 			}
 		}
-				
+        
         /// <summary>
         /// Basic execution function, simply calls the UFunc*Flush functions with the pending operation
         /// </summary>
