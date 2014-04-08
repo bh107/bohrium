@@ -27,9 +27,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 //Forward declaration
 static PyObject *BhArray_data_bhc2np(PyObject *self, PyObject *args);
+static PyTypeObject BhArrayType;
 
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
-static PyTypeObject BhArrayType;
 PyObject *ndarray = NULL; //The ndarray Python module
 PyObject *ufunc = NULL; //The ufunc Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
@@ -156,6 +156,15 @@ BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         return NULL;
 
     return (PyObject *) ret;
+}
+
+static PyObject *
+BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems)
+{
+    PyObject *obj;
+    obj = (PyObject *)malloc(type->tp_basicsize);
+    PyObject_Init(obj, type);
+    return obj;
 }
 
 static void
@@ -546,7 +555,7 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_descr_set */
     0,                       /* tp_dictoffset */
     0,                       /* tp_init */
-    0,                       /* tp_alloc */
+    BhArray_alloc,           /* tp_alloc */
     BhArray_new,             /* tp_new */
 };
 
