@@ -158,22 +158,26 @@ namespace NumCIL
         /// </summary>
         /// <param name="disposing">Set to <c>true</c> if disposing, false otherwise.</param>
         protected void Dispose(bool disposing)
-		{
-			if (!m_disposed)
-			{
-				m_disposed = true;
-				m_startBarrier.RemoveParticipant();
-				m_finishBarrier.RemoveParticipant();
+        {
+            if (!m_disposed)
+            {
+                m_disposed = true;
+                m_startBarrier.RemoveParticipant();
+                m_finishBarrier.RemoveParticipant();
 				
-				if (disposing)
-					GC.SuppressFinalize(this);
+                if (disposing)
+                    GC.SuppressFinalize(this);
 				
-				var ok = true;
-				foreach (var t in m_thread)
-					ok &= t.Join(TimeSpan.FromSeconds(10));
+                var failed = 0;
+                foreach (var t in m_thread)
+                {
+                    t.Join(TimeSpan.FromSeconds(10));
+                    if (t.IsAlive)
+                        failed++;
+                }
 				
-				if (!ok)
-					throw new Exception("Failed to shut down threads?");
+                if (failed != 0)
+					throw new Exception(string.Format("Failed to shut down {0} threads", failed));
 			}
 		}
         
