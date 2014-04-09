@@ -35,6 +35,7 @@ def array(object, dtype=None, ndmin=0, bohrium=True):
     a = numpy.array(object, dtype=dtype, ndmin=ndmin)
     if not bohrium:
         return a.copy()
+    a = numpy.require(a, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
     ret = empty(a.shape, dtype=a.dtype)
     ret._data_fill(a)
     return ret
