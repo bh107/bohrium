@@ -21,7 +21,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_SIGNAL_H
 #define __BH_SIGNAL_H
 
-#define _XOPEN_SOURCE
+#ifndef _XOPEN_SOURCE
+    #define _XOPEN_SOURCE
+#endif
 
 #include <unistd.h>
 #include <errno.h>
