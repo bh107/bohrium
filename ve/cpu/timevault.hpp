@@ -64,6 +64,11 @@ class Timevault {
         static std::string format_row(std::string identifier, time_t elapsed, int samples);
 
         /**
+         *  Return a string representing a row seperator.
+         */
+        static std::string format_line(char fill, char sep);
+
+        /**
          *  Returns a textual representation of the elapsed time
          *  stored within the timevault, without details.
          *

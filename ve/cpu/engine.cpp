@@ -46,7 +46,8 @@ Engine::Engine(
 
 Engine::~Engine()
 {   
-    TIMER_DUMP
+    //TIMER_DUMP
+    TIMER_DUMP_DETAILED
     DEBUG(TAG, "~Engine(...)");
     if (vcache_size>0) {    // De-allocate the malloc-cache
         bh_vcache_clear();

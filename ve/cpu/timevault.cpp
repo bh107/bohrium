@@ -86,6 +86,18 @@ string Timevault::format_row(string identifier, time_t elapsed, int samples)
     return ss.str();
 }
 
+string Timevault::format_line(char fill, char sep)
+{
+    stringstream line;
+
+    line << sep << setw(47) << setfill(fill) << sep;
+    line << setw(21) << setfill(fill) << sep;
+    line << setw(11) << setfill(fill) << sep;
+    line << endl;
+
+    return line.str();
+}
+
 string Timevault::text(void)
 {
     return text(false);
@@ -102,7 +114,8 @@ string Timevault::text(bool detailed)
     header << "  Identifier" << setw(36) << "|";
     header << " Elapsed Wall-clock |";
     header << " Samples"    << endl;
-    header << "+" << setw(79) << setfill('=') << "+" << endl;
+
+    header << format_line('=', '+');
 
     //
     // Iterate over identifiers
@@ -122,21 +135,23 @@ string Timevault::text(bool detailed)
             ++inner) {
             samples++;
             acc += (*inner).second;
-            details << format_row((*inner).first, (*inner).second, 0) << endl;
+            details << format_row((*inner).first, (*inner).second, 1) << endl;
         }
         elapsed_total += acc;
         samples_total += samples;
 
         //
         // Create textual representation
-        details << format_row((*it).first, acc, 1) << endl;
+
+        details << format_line('-', '+');
+        details << format_row("Subtotal", acc, samples) << endl << endl;
         summary << format_row((*it).first, acc, samples) << endl;
     }
-    summary << "+" << setw(79) << setfill('=') << "+" << endl;
+    summary << format_line('=', '+');
     summary << format_row("Total", elapsed_total, samples_total) << endl;
 
     if (detailed) {
-        return header.str() + details.str() + summary.str();
+        return header.str() + details.str() + header.str() + summary.str();
     } else {
         return header.str() + summary.str();
     }
