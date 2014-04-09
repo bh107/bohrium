@@ -45,8 +45,8 @@ Engine::Engine(
 }
 
 Engine::~Engine()
-{
-    cout << Timevault::instance().text() << endl;
+{   
+    TIMER_DUMP
     DEBUG(TAG, "~Engine(...)");
     if (vcache_size>0) {    // De-allocate the malloc-cache
         bh_vcache_clear();
@@ -195,10 +195,9 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                 DEBUG(TAG,"sij_mode(...) == Call kernel function!");
                 DEBUG(TAG,utils::tac_text(tac)); 
                 DEBUG(TAG,block.scope_text());
-                time_t start = Timevault::sample_time();
+                TIMER_START;
                 storage.funcs[block.symbol()](block.operands());
-                time_t end = Timevault::sample_time();
-                Timevault::instance().store(block.symbol(), end-start);
+                TIMER_STOP(block.symbol());
 
                 break;
         }

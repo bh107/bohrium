@@ -24,9 +24,14 @@ class Timevault {
         static time_t sample_time(void);
 
         /**
-         *  Returns a string format for the given elapsed time.
+         *  Start timer.
          */
-        static std::string format(time_t elapsed);
+        void start(void);
+
+        /**
+         *  Stop timer and return elapsed time.
+         */
+        time_t stop(void);
 
         /**
          *  Store elapsed time and associate it with the 'default' identifier.
@@ -49,8 +54,15 @@ class Timevault {
         void clear(std::string identifier);
 
         /**
+         *  Returns a string format for the given elapsed time.
+         */
+        static std::string format(time_t elapsed);
+
+        /**
          *  Returns a textual representation of the elapsed time
          *  stored within the timevault, without details.
+         *
+         *  TODO: Add average and deviation.
          */
         std::string text(void);
 
@@ -83,10 +95,25 @@ class Timevault {
         Timevault& operator=(Timevault const& copy);
 
         std::multimap<std::string, time_t> _elapsed; // Storage of elapsed time.
+
+        time_t timer_start; // Storage for timer
 };
 
 }};
 
-// TODO: Add some convenient macros for profiling function-calls etc.
+//
+// Profiling macros for non-intrusive profiling.
+//
+#ifdef PROFILING
+#define TIMER_START               do{ Timevault::instance().start(); } while(0);
+#define TIMER_STOP(identifier)    do{ Timevault::instance().store(identifier, Timevault::instance().stop()); } while(0);
+#define TIMER_DUMP                do{ cout << Timevault::instance().text() << endl; } while(0);
+#define TIMER_DUMP_DETAILED       do{ cout << Timevault::instance().text(true) << endl; } while(0);
+#else
+#define TIMER_START
+#define TIMER_STOP(identifier)
+#define TIMER_DUMP
+#define TIMER_DUMP_DETAILED
+#endif
 
 #endif

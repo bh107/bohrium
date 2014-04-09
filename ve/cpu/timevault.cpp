@@ -33,6 +33,16 @@ time_t Timevault::sample_time(void)
 #endif
 }
 
+void Timevault::start(void)
+{
+    timer_start = sample_time();
+}
+
+time_t Timevault::stop(void)
+{
+    return sample_time() - timer_start;
+}
+
 void Timevault::store(time_t elapsed)
 {
     store("default", elapsed);
@@ -97,7 +107,6 @@ string Timevault::text(bool detailed)
 
         //
         // Create textual representation
-        float avg = (float)acc / (float)samples;
         details << (*it).first << " = " << format(acc) <<  endl;
         summary << (*it).first << " = " << format(acc) << " over " << samples << " samples." << endl;
     }

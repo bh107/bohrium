@@ -327,7 +327,6 @@ string Specializer::specialize( SymbolTable& symbol_table,
             }
             tpl_filename << "tpl";
             operation_d->SetFilename(tpl_filename.str());
-            cout << "Using this " << fusion_layout << endl;
         } else {
             operation_d->SetFilename(template_filename(symbol_table, block, fuse_start));
         }
