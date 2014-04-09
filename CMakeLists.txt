@@ -34,11 +34,12 @@ add_subdirectory(core)
 add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
 add_subdirectory(ve/cpu)
+add_subdirectory(filter/pprint)
+add_subdirectory(extmethods/matmul)
 
 #The other modules
 add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
-add_subdirectory(extmethods/matmul)
 add_subdirectory(extmethods/fftw)
 
 if(NOT USE_CXX98)
