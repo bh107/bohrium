@@ -484,9 +484,23 @@ BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
 static PyObject *
 BhArray_GetItem(PyObject *o, PyObject *k)
 {
+    Py_ssize_t i;
     //If the result is a scalar we let NumPy handle it
-    if((PyArray_IsIntegerScalar(k) || (PyIndex_Check(k) && !PySequence_Check(k))) ||
-       (PyTuple_Check(k) && (PyTuple_GET_SIZE(k) == PyArray_NDIM((PyArrayObject*)o))))
+
+    //If the tuple access all dimensions we must check for Python slice objects
+    if(PyTuple_Check(k) && (PyTuple_GET_SIZE(k) == PyArray_NDIM((PyArrayObject*)o)))
+    {
+        for(i=0; i<PyTuple_GET_SIZE(k); ++i)
+        {
+            PyObject *a = PyTuple_GET_ITEM(k, i);
+            if(PySlice_Check(a))
+            {
+                //A slice never results in a scalar output
+                return PyArray_Type.tp_as_mapping->mp_subscript(o, k);
+            }
+        }
+    }
+    if(PyArray_IsIntegerScalar(k) || (PyIndex_Check(k) && !PySequence_Check(k)))
     {
         if(BhArray_data_bhc2np(o, NULL) == NULL)
             return NULL;
