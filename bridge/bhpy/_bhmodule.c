@@ -25,6 +25,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+//The NumPy API changed in version 1.7
+#if(NPY_API_VERSION >= 0x00000007)
+    #define BH_PyArrayObject PyArrayObject_fields
+#else
+    #define BH_PyArrayObject PyArrayObject
+    #define NPY_ARRAY_OWNDATA NPY_OWNDATA
+#endif
+
 //Forward declaration
 static PyObject *BhArray_data_bhc2np(PyObject *self, PyObject *args);
 static PyTypeObject BhArrayType;
@@ -37,7 +45,7 @@ PyObject *array_create = NULL; //The array_create Python module
 
 typedef struct
 {
-    PyArrayObject_fields base;
+    BH_PyArrayObject base;
     PyObject *bhc_ary;
     PyObject *array_priority;
 }BhArray;
@@ -444,8 +452,11 @@ BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
         PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
         return -1;
     }
-    if(PyArray_FailUnlessWriteable((PyArrayObject *)o, "assignment destination") < 0)
+    if(!PyArray_ISWRITEABLE((PyArrayObject *)o))
+    {
+        PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
         return -1;
+    }
 
     PyObject *view = PyArray_Type.tp_as_mapping->mp_subscript(o, key);
     if(view == NULL)
@@ -467,8 +478,11 @@ BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
         PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
         return -1;
     }
-    if(PyArray_FailUnlessWriteable((PyArrayObject *)o, "assignment destination") < 0)
+    if(!PyArray_ISWRITEABLE((PyArrayObject *)o))
+    {
+        PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
         return -1;
+    }
 
     PyObject *view = PyArray_Type.tp_as_sequence->sq_slice(o, ilow, ihigh);
     if(view == NULL)
