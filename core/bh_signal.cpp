@@ -169,7 +169,7 @@ int attach_signal(signed long idx, // id to execute call back function with
         expandarrays();
     }
     // Add area to mspaces
-    mSpace m = {idx, start, end, callback};
+    mSpace m = {static_cast<unsigned long>(idx), start, end, callback};
     //printf("Attaching Signal (%p, %p)\n", (void*)start, (void*)end);
     int ret = addspace(m);
     pthread_mutex_unlock(&mspace_mutex);
