@@ -56,7 +56,8 @@ class Timevault {
         /**
          *  Returns a string format for the given elapsed time.
          */
-        static std::string format(time_t elapsed);
+        template <typename T>
+        static std::string format(T microseconds);
 
         /**
          *  Returns a string formatted with arguments as columns in a row.

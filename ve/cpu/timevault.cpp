@@ -64,12 +64,13 @@ void Timevault::clear(string identifier)
     _elapsed.erase(identifier);
 }
 
-string Timevault::format(time_t elapsed)
+template <typename T>
+string Timevault::format(T microseconds)
 {
     stringstream ss;
 
-    ss.precision(5);
-    ss << fixed << (elapsed/(1000.0*1000.0)) << " sec";
+    ss.precision(4);
+    ss << fixed << (microseconds/(1000.0*1000.0));
 
     return ss.str();
 }
@@ -79,9 +80,10 @@ string Timevault::format_row(string identifier, time_t elapsed, int samples)
     stringstream ss;
     string sep = " | ";
 
-    ss << setw(46) << identifier << sep;
-    ss << setw(18) << format(elapsed) << sep;
-    ss << setw(8) << samples;
+    ss << setw(42)  << identifier << sep;
+    ss << setw(7)   << samples << sep;
+    ss << setw(10)  << format(elapsed) << sep;
+    ss << setw(10)  << format(elapsed/(float)samples);
 
     return ss.str();
 }
@@ -90,9 +92,10 @@ string Timevault::format_line(char fill, char sep)
 {
     stringstream line;
 
-    line << sep << setw(47) << setfill(fill) << sep;
-    line << setw(21) << setfill(fill) << sep;
-    line << setw(11) << setfill(fill) << sep;
+    line << sep << setw(43) << setfill(fill) << sep;
+    line << setw(10) << setfill(fill) << sep;
+    line << setw(13) << setfill(fill) << sep;
+    line << setw(13) << setfill(fill) << sep;
     line << endl;
 
     return line.str();
@@ -111,9 +114,10 @@ string Timevault::text(bool detailed)
     size_t samples_total = 0;
 
     header << endl;
-    header << "  Identifier" << setw(36) << "|";
-    header << " Elapsed Wall-clock |";
-    header << " Samples"    << endl;
+    header << "  Identifier" << setw(32) << "|";
+    header << " Samples " << "|";
+    header << "  Elapsed   " << "|";
+    header << "  Average " << endl;
 
     header << format_line('=', '+');
 

@@ -46,8 +46,8 @@ Engine::Engine(
 
 Engine::~Engine()
 {   
-    //TIMER_DUMP
-    TIMER_DUMP_DETAILED
+    TIMER_DUMP
+    //TIMER_DUMP_DETAILED
     DEBUG(TAG, "~Engine(...)");
     if (vcache_size>0) {    // De-allocate the malloc-cache
         bh_vcache_clear();
@@ -157,12 +157,15 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                             sourcecode.c_str(), 
                             sourcecode.size()
                         );
-                    }                                           // Send to compiler
+                    }
+                    TIMER_START
+                    // Send to compiler
                     bool compile_res = compiler.compile(
                         storage.obj_abspath(block.symbol()), 
                         sourcecode.c_str(), 
                         sourcecode.size()
-                    );                 
+                    );
+                    TIMER_STOP("Compiling (fused kernels)")
                     if (!compile_res) {
                         fprintf(stderr, "Engine::sij_mode(...) == Compilation failed.\n");
                         return BH_ERROR;
@@ -237,12 +240,15 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                 sourcecode.c_str(), 
                 sourcecode.size()
             );
-        }                                           // Send to compiler
+        }
+        TIMER_START
+        // Send to compiler
         bool compile_res = compiler.compile(
             storage.obj_abspath(block.symbol()),
             sourcecode.c_str(), 
             sourcecode.size()
-        );                 
+        );
+        TIMER_STOP("Compiling (SIJ Kernels)")
         if (!compile_res) {
             fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
 
