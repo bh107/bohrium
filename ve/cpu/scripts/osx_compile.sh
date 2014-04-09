@@ -9,8 +9,8 @@ if [ -f "${TMPFILE}" ]; then
     rm "${TMPFILE}"
 fi
 
-TMPFILE=${TMPFILE}.c
+TMPFILE="${TMPFILE}".c
 
-cat > ${TMPFILE}
+cat > "${TMPFILE}"
 clang -arch x86_64 -arch i386 -lm -O3 -fPIC -std=c99 -x c "${TMPFILE}" -shared $@
-rm ${TMPFILE}
+rm "${TMPFILE}"
