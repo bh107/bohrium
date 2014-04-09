@@ -3,7 +3,7 @@ if [ ! -z "$1" ] && [ "$1" == "reset" ]; then
     clear && reset
     WHERE=`pwd`
     rm -r ~/.local/cpu/
-    INSTALLDIR="~/.local" make clean gen install
+    EXTRAS="-DPROFILING" INSTALLDIR="~/.local" make clean gen install
     cd $WHERE
 fi
 

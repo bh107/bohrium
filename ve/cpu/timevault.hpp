@@ -59,6 +59,11 @@ class Timevault {
         static std::string format(time_t elapsed);
 
         /**
+         *  Returns a string formatted with arguments as columns in a row.
+         */
+        static std::string format_row(std::string identifier, time_t elapsed, int samples);
+
+        /**
          *  Returns a textual representation of the elapsed time
          *  stored within the timevault, without details.
          *

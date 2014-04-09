@@ -1,6 +1,7 @@
 #include "timevault.hpp"
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 namespace bohrium{
@@ -66,7 +67,22 @@ void Timevault::clear(string identifier)
 string Timevault::format(time_t elapsed)
 {
     stringstream ss;
-    ss << (elapsed/(1000.0*1000.0)) << " sec";
+
+    ss.precision(5);
+    ss << fixed << (elapsed/(1000.0*1000.0)) << " sec";
+
+    return ss.str();
+}
+
+string Timevault::format_row(string identifier, time_t elapsed, int samples)
+{
+    stringstream ss;
+    string sep = " | ";
+
+    ss << setw(46) << identifier << sep;
+    ss << setw(18) << format(elapsed) << sep;
+    ss << setw(8) << samples;
+
     return ss.str();
 }
 
@@ -77,10 +93,16 @@ string Timevault::text(void)
 
 string Timevault::text(bool detailed)
 {
-    stringstream details, summary;
+    stringstream header, details, summary;
 
     time_t elapsed_total = 0;
     size_t samples_total = 0;
+
+    header << endl;
+    header << "  Identifier" << setw(36) << "|";
+    header << " Elapsed Wall-clock |";
+    header << " Samples"    << endl;
+    header << "+" << setw(79) << setfill('=') << "+" << endl;
 
     //
     // Iterate over identifiers
@@ -100,22 +122,23 @@ string Timevault::text(bool detailed)
             ++inner) {
             samples++;
             acc += (*inner).second;
-            details << (*inner).first << "=" << (*inner).second << endl;
+            details << format_row((*inner).first, (*inner).second, 0) << endl;
         }
         elapsed_total += acc;
         samples_total += samples;
 
         //
         // Create textual representation
-        details << (*it).first << " = " << format(acc) <<  endl;
-        summary << (*it).first << " = " << format(acc) << " over " << samples << " samples." << endl;
+        details << format_row((*it).first, acc, 1) << endl;
+        summary << format_row((*it).first, acc, samples) << endl;
     }
-    summary << "Total elapsed wall-clock: " << format(elapsed_total) << " over " << samples_total << " samples." << endl;
+    summary << "+" << setw(79) << setfill('=') << "+" << endl;
+    summary << format_row("Total", elapsed_total, samples_total) << endl;
 
     if (detailed) {
-        return details.str() + summary.str();
+        return header.str() + details.str() + summary.str();
     } else {
-        return summary.str();
+        return header.str() + summary.str();
     }
 }
 
