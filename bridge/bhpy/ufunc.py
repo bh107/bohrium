@@ -101,13 +101,16 @@ class ufunc:
 
         #Convert 'args' to Bohrium-C arrays
         bhcs = []
+        tmps = []
         for a in args:
             if np.isscalar(a):
                 bhcs.append(a)
             elif ndarray.check(a):
                 bhcs.append(get_bhc(a))
             else:
-                bhcs.append(get_bhc(array_create.array(a)))
+                a = array_create.array(a)
+                bhcs.append(get_bhc(a))
+                tmps.append(a)#We use this to keep a reference to 'a'
 
         #Convert dtype of all inputs
         inputs = []
@@ -129,6 +132,8 @@ class ufunc:
 
         f = eval(cmd)
         ret = f(*inputs)
+
+        del tmps#Now we can safely de-allocate the tmp input arrays
 
         if out is None: #Create a new output with the returned Bohrium-C array
             out = ndarray.new(out_shape, out_dtype, ret)
