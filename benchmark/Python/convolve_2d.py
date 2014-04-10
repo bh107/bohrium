@@ -52,6 +52,6 @@ if __name__ == "__main__":
     image + 1, image_filter + 1 # Ensure arrays are in the correct space.
 
     B.start()                   # Benchmark run / timing
-    result = convolve(image, image_filter)
+    result = convolve_2d(image, image_filter)
     B.stop()
     B.pprint()
