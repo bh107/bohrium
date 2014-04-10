@@ -5,7 +5,7 @@ else:
     import numpy as np
 from bohrium.stdviews import D2P8, no_border
 
-def jacobi_init(size):
+def jacobi_fixed_init(size):
 
     v    = np.arange(size)
     data = (v*(v[np.newaxis,:].T+2)+2)/size
@@ -29,9 +29,9 @@ if __name__ == "__main__":
     """
     B = util.Benchmark()
     (N, I) = B.size
-    data = jacobi_init(N)
+    data = jacobi_fixed_init(N)
     data + 1   # Ensure that data is in the correct space.
     B.start()
-    result = jacobi(data, I)
+    result = jacobi_fixed(data, I)
     B.stop()
     B.pprint()

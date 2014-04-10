@@ -35,6 +35,6 @@ if __name__ == "__main__":
     data = jacobi_init(N)
     data + 1   # Ensure that data is in the correct space.
     B.start()
-    result = jacobi(world)
+    result = jacobi(data)
     B.stop()
     B.pprint()
