@@ -165,7 +165,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                         sourcecode.c_str(), 
                         sourcecode.size()
                     );
-                    TIMER_STOP("Compiling (fused kernels)")
+                    TIMER_STOP("Compiling (SIJ Kernels)")
                     if (!compile_res) {
                         fprintf(stderr, "Engine::sij_mode(...) == Compilation failed.\n");
                         return BH_ERROR;
@@ -248,7 +248,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
             sourcecode.c_str(), 
             sourcecode.size()
         );
-        TIMER_STOP("Compiling (SIJ Kernels)")
+        TIMER_STOP("Compiling (Fused Kernels)")
         if (!compile_res) {
             fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
 

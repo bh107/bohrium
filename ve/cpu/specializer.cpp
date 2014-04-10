@@ -1,5 +1,6 @@
 #include "specializer.hpp"
 #include <set>
+#include <algorithm>
 
 using namespace std;
 namespace bohrium {
@@ -207,10 +208,18 @@ string Specializer::specialize( SymbolTable& symbol_table,
         LAYOUT fusion_layout = CONSTANT;
         LAYOUT next_layout   = CONSTANT;
 
+        set<size_t> inputs,
+                    outputs,
+                    replacable;
+        size_t last_output;
+
         if (apply_fusion) {
             //
             // The first operation in a potential range of fusable operations
             tac_t& first = block.program(tac_idx);
+            
+            // Scalar replacement
+            outputs.insert(first.out);
 
             //
             // Examine potential expansion of the range of fusable operations
@@ -238,17 +247,22 @@ string Specializer::specialize( SymbolTable& symbol_table,
                             fusion_layout = next_layout;
                         }
                         compat_operands = compat_operands && (utils::compatible(symbol_table[first.out], symbol_table[next.in2]));
+                        inputs.insert(next.in2);
                     case 2:
                         next_layout = symbol_table[next.in1].layout;
                         if (next_layout>fusion_layout) {
                             fusion_layout = next_layout;
                         }
                         compat_operands = compat_operands && (utils::compatible(symbol_table[first.out], symbol_table[next.in1]));
+                        inputs.insert(next.in1);
+
                         next_layout = symbol_table[next.out].layout;
                         if (next_layout>fusion_layout) {
                             fusion_layout = next_layout;
                         }
                         compat_operands = compat_operands && (utils::compatible(symbol_table[first.out], symbol_table[next.out]));
+                        outputs.insert(next.out);
+                        last_output = next.out;
                         break;
 
                     default:
@@ -272,19 +286,27 @@ string Specializer::specialize( SymbolTable& symbol_table,
             //
             // TODO: Check that it is actually only used within the fuse-range...
             if ((fuse_ops>1) && (symbol_table.temps.size()>0)) {
+                // We do not want to consider the last output for scalar replacement
+                outputs.erase(last_output);
+                // Do the intersection
+                set_intersection(inputs.begin(), inputs.end(), outputs.begin(), outputs.end(), inserter(replacable, replacable.begin()));
+
                 for(size_t j=fuse_start; j<=fuse_end; ++j) {
                     tac_t& cur = block.program(j);
                     switch(utils::tac_noperands(cur)) {
                         case 3:
-                            if (symbol_table.temps.find(cur.in2) != symbol_table.temps.end()) {
+                            if ((symbol_table.temps.find(cur.in2) != symbol_table.temps.end()) && \
+                                (replacable.find(cur.in2) != replacable.end())) {
                                 symbol_table.turn_scalar(cur.in2);
                             }
                         case 2:
-                            if (symbol_table.temps.find(cur.in1) != symbol_table.temps.end()) {
+                            if ((symbol_table.temps.find(cur.in1) != symbol_table.temps.end()) && \
+                                (replacable.find(cur.in1) != replacable.end())) {
                                 symbol_table.turn_scalar(cur.in1);
                             }
                         case 1:
-                            if (symbol_table.temps.find(cur.out) != symbol_table.temps.end()) {
+                            if ((symbol_table.temps.find(cur.out) != symbol_table.temps.end()) && \
+                                (replacable.find(cur.out) != replacable.end())) {
                                 symbol_table.turn_scalar(cur.out);
                             }
                             break;
