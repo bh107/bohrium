@@ -3,7 +3,7 @@ if util.Benchmark().bohrium:
     import bohrium as np
 else:
     import numpy as np
-from bohrium.stdviews import D2P8, no_border
+from bohrium.stdviews import no_border, grid, diagonals
 
 def jacobi_init(size):
 
