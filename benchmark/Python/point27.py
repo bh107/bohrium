@@ -1,5 +1,5 @@
 import util
-if util.Benchmark.bohrium:
+if util.Benchmark().bohrium:
     import bohrium as np
 else:
     import numpy as np

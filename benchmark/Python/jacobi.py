@@ -32,7 +32,7 @@ if __name__ == "__main__":
     """
     B = util.Benchmark()
     N, = B.size
-    data = jacobi_init(N, use_bohrium=B.bohrium)
+    data = jacobi_init(N)
     data + 1   # Ensure that data is in the correct space.
     B.start()
     result = jacobi(world)
