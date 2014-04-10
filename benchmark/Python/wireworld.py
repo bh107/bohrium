@@ -1,5 +1,8 @@
 import util
-import bohrium as np
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 from bohrium.stdviews import D2P8, no_border
 
 def wireworld_init(size, use_bohrium):
@@ -28,8 +31,8 @@ def wireworld_init(size, use_bohrium):
 def wireworld(world, iterations):
     """TODO: Describe the benchmark."""
 
-    sim = no_border(world, 1)   # Active Machine
-    stencil = D2P8(world)       # Stencil for counting heads
+    sim     = no_border(world, 1)   # Active Machine
+    stencil = D2P8(world)           # Stencil for counting heads
     for _ in xrange(iterations):
         NC = sum([v==2 for v in stencil]) # Count number of head neighbors
         # Mask conductor->head
@@ -51,6 +54,7 @@ if __name__ == "__main__":
     B = util.Benchmark()
     (N, I) = B.size
     world = wireworld_init(N, use_bohrium=B.bohrium)
+    world + 1   # Ensure that data is in the correct space.
     B.start()
     result = wireworld(world, I)
     B.stop()
