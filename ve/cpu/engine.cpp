@@ -227,6 +227,101 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     DEBUG(TAG, "fuse_mode(...) block: " << endl << block.text("   "));
 
     //
+    // Determine ranges of operations which can be fused together
+    vector<pair<size_t, size_t> > ranges;
+
+    size_t range_begin  = 0,    // Current range
+           range_end    = 0;
+
+    LAYOUT fusion_layout = CONSTANT;
+    LAYOUT next_layout   = CONSTANT;
+
+    tac_t* first = &block.program(0);
+    for(size_t tac_idx=0; tac_idx<block.size(); ++tac_idx) {
+        range_end = tac_idx;
+        tac_t& next = block.program(tac_idx);
+
+        //
+        // Ignore these
+        if ((next.op == SYSTEM) && (next.op == NOOP)) {
+            continue;
+        }
+
+        //
+        // Check for compatible operations
+        if (!((next.op == MAP) || (next.op == ZIP))) {
+            //
+            // Got an instruction that we currently do not fuse,
+            // store the current range and start a new.
+            ranges.push_back(pair<size_t, size_t>(range_begin, range_end));
+            range_begin = tac_idx+1;
+            if (range_begin < block.size()) {
+                first = &block.program(range_begin);
+            }
+            continue;
+        }
+
+        //
+        // Check for compatible operands and note layout.
+        bool compat_operands = true;
+        switch(utils::tac_noperands(next)) {
+            case 3:
+                // Second input
+                next_layout = symbol_table[next.in2].layout;
+                if (next_layout>fusion_layout) {
+                    fusion_layout = next_layout;
+                }
+                compat_operands = compat_operands && (utils::compatible(
+                    symbol_table[first->out],
+                    symbol_table[next.in2]
+                ));
+            case 2:
+                // First input
+                next_layout = symbol_table[next.in1].layout;
+                if (next_layout>fusion_layout) {
+                    fusion_layout = next_layout;
+                }
+                compat_operands = compat_operands && (utils::compatible(
+                    symbol_table[first->out],
+                    symbol_table[next.in1]
+                ));
+
+                // Output operand
+                next_layout = symbol_table[next.out].layout;
+                if (next_layout>fusion_layout) {
+                    fusion_layout = next_layout;
+                }
+                compat_operands = compat_operands && (utils::compatible(
+                    symbol_table[first->out],
+                    symbol_table[next.out]
+                ));
+                break;
+
+            default:
+                fprintf(stderr, "ARGGG!!!!\n");
+        }
+        if (!compat_operands) {
+            //
+            // Incompatible operands.
+            // Store the current range and start a new.
+            ranges.push_back(pair<size_t, size_t>(range_begin, range_end));
+            range_begin = tac_idx+1;
+            if (range_begin < block.size()) {
+                first = &block.program(range_begin);
+            }
+            continue;
+        }
+    }
+    //
+    // Store the last range
+    if (range_begin<block.size()) {
+        ranges.push_back(pair<size_t, size_t>(range_begin, block.size()-1));
+    }
+
+    //
+    // Determine arrays suitable for scalar-replacement in the fuse-ranges.
+
+    //
     // JIT-compile the block if enabled
     //
     if (jit_enabled && \
