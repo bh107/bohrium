@@ -2,7 +2,7 @@ import bohrium as np
 from numpytest import numpytest,gen_views,TYPES
 
 
-class te1st_doubletranspose(numpytest):
+class test_doubletranspose(numpytest):
 
     def init(self):
         for v in gen_views(3,64,2):
