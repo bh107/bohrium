@@ -165,7 +165,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         }
     }
 
-    symbol_text_    += tacs.str() +"_"+ operands.str();
+    symbol_text_    = tacs.str() +"_"+ operands.str();
     symbol_         = utils::hash_text(symbol_text_);
 
     DEBUG(TAG,"symbolize(...) : symbol("<< symbol_ << "), symbol_text("<< symbol_text_ << ");");

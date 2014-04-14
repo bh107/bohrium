@@ -15,6 +15,8 @@ directiveStartToken= %
 // rid of it... at some point...
 typedef struct { uint64_t first, second; } pair_LL; 
 
+
+
 typedef enum OPERATION {
     %for $op in $ops
     $addw($op['name']) = ${op['id']}$addsep($op, $ops)
@@ -67,5 +69,13 @@ typedef struct operand {
 #define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    %echo $len($ops)-1
 #define NBUILTIN_OPERS  %echo $len($opers)-1
+
+//
+// For fuse-ranges...
+typedef struct triplet {
+    size_t begin;
+    size_t end;
+    LAYOUT layout;
+} triplet_t;
 
 #endif

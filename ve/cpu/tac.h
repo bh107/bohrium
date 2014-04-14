@@ -11,6 +11,8 @@
 // rid of it... at some point...
 typedef struct { uint64_t first, second; } pair_LL; 
 
+
+
 typedef enum OPERATION {
     MAP        = 1,
     ZIP        = 2,
@@ -141,5 +143,13 @@ typedef struct operand {
 #define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    7
 #define NBUILTIN_OPERS  62
+
+//
+// For fuse-ranges...
+typedef struct triplet {
+    size_t begin;
+    size_t end;
+    LAYOUT layout;
+} triplet_t;
 
 #endif

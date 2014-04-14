@@ -5,6 +5,7 @@
 
 #include <ctemplate/template.h>
 #include <string>
+#include <vector>
 
 namespace bohrium {
 namespace engine {
@@ -28,12 +29,14 @@ public:
 
     std::string specialize( SymbolTable& symbol_table,
                             const Block& block,
-                            bool apply_fusion);
+                            std::vector<triplet_t>& ranges);
+
+    std::string specialize( SymbolTable& symbol_table,
+                            const Block& block);
 
     std::string specialize( SymbolTable& symbol_table,
                             const Block& block,
-                            size_t tac_start, size_t tac_end,
-                            bool apply_fusion);
+                            size_t tac_start, size_t tac_end);
 
 private:
     ctemplate::Strip strip_mode;
