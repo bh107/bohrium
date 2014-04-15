@@ -522,6 +522,29 @@ static PySequenceMethods array_as_sequence = {
     (ssizeargfunc)NULL,                      /*sg_inplace_repeat */
 };
 
+static PyObject *
+BhArray_Repr(PyObject *self)
+{
+    assert(BhArray_CheckExact(self));
+    PyObject *t = BhArray_copy2numpy(self, NULL);
+    if(t == NULL)
+        return NULL;
+    PyObject *str = PyArray_Type.tp_repr(self);
+    Py_DECREF(t);
+    return str;
+}
+static PyObject *
+BhArray_Str(PyObject *self)
+{
+    assert(BhArray_CheckExact(self));
+    PyObject *t = BhArray_copy2numpy(self, NULL);
+    if(t == NULL)
+        return NULL;
+    PyObject *str = PyArray_Type.tp_str(self);
+    Py_DECREF(t);
+    return str;
+}
+
 //Importing the array_as_number struct
 #include "operator_overload.c"
 
@@ -536,13 +559,13 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_getattr */
     0,                       /* tp_setattr */
     0,                       /* tp_compare */
-    0,                       /* tp_repr */
+    &BhArray_Repr,           /* tp_repr */
     &array_as_number,        /* tp_as_number */
     &array_as_sequence,      /* tp_as_sequence */
     &array_as_mapping,       /* tp_as_mapping */
     0,                       /* tp_hash */
     0,                       /* tp_call */
-    0,                       /* tp_str */
+    &BhArray_Str,            /* tp_str */
     0,                       /* tp_getattro */
     0,                       /* tp_setattro */
     0,                       /* tp_as_buffer */
