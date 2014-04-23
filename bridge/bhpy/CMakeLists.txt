@@ -16,6 +16,6 @@ if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND)
     )
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib DESTINATION .)
 else()
-    message(STATUS "The Python/NumPy bridge cannot be build!")
+    message(STATUS "The Python/NumPy bridge cannot be build")
 endif()
 
