@@ -81,15 +81,30 @@ static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify
 //Return -1 on error
 static int _mremap_data(void *dst, void *src, bh_intp size)
 {
+#if MREMAP_FIXED
     if(mremap(src, size, size, MREMAP_FIXED|MREMAP_MAYMOVE, dst) == MAP_FAILED)
     {
         int errsv = errno;//mremap() sets the errno.
         PyErr_Format(PyExc_RuntimeError,"Error - could not mremap a "
-                     "data region. Returned error code by mremap: %s.\n"
+                     "data region. Returned error code by mremap(): %s.\n"
                      ,strerror(errsv));
         return -1;
     }
     return 0;
+#else
+    //Systems that doesn't support mremap will use memcpy, which introduces a
+    //race-condition if another thread access the 'dst' memory before memcpy finishes.
+    if(mprotect(dst, size, PROT_WRITE) != 0)
+    {
+        int errsv = errno;//mprotect() sets the errno.
+        PyErr_Format(PyExc_RuntimeError,"Error - could not (un-)mprotect a "
+                     "data region. Returned error code by mprotect(): %s.\n"
+                     ,strerror(errsv));
+        return -1;
+    }
+    memcpy(dst, src, size);
+    return munmap(src, size);
+#endif
 }
 
 //Callback function called by the signal library
