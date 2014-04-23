@@ -330,4 +330,15 @@ bh_multi_array_float64_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_cty
 
 %end if
 
+    %for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+        %for $ctype3, $bh_atype3, $bh_ctype3, $bh_enum3 in $ops
+            %if $bh_ctype2 == $bh_ctype3
+
+void bh_multi_array_extmethod_${bh_ctype}_${bh_ctype2}_${bh_ctype3}(const char *name, bh_multi_array_${bh_ctype}_p out, bh_multi_array_${bh_ctype2}_p in1, bh_multi_array_${bh_ctype3}_p in2) {
+    Runtime::instance().enqueue_extension(name, *((multi_array<${ctype}>*) out), *((multi_array<${ctype2}>*) in1), *((multi_array<${ctype3}>*) in2));
+}
+            %end if
+        %end for
+    %end for
+
 %end for

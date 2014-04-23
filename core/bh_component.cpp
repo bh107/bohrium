@@ -336,7 +336,10 @@ bh_error bh_component_extmethod(const bh_component *self,
                 dlerror();//Clear old errors.
                 *extmethod = (bh_extmethod_impl)dlsym(lib_handle, tname);
                 if(dlerror() == NULL)//No errors, we found the function
+                {
+                    free(lib_paths);
                     return BH_SUCCESS;
+                }
             }
             path = strtok(NULL,",");
         }

@@ -194,6 +194,18 @@ DLLEXPORT bh_multi_array_float64_p bh_multi_array_${bh_ctype}_imag(bh_multi_arra
 
 %end for
 
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
+    %for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+        %for $ctype3, $bh_atype3, $bh_ctype3, $bh_enum3 in $ops
+            %if $bh_ctype2 == $bh_ctype3
+
+DLLEXPORT void bh_multi_array_extmethod_${bh_ctype}_${bh_ctype2}_${bh_ctype3}(const char *name, bh_multi_array_${bh_ctype}_p out, bh_multi_array_${bh_ctype2}_p in1, bh_multi_array_${bh_ctype3}_p in2);
+
+            %end if
+        %end for
+    %end for
+%end for
+
 #ifdef __cplusplus
 }
 #endif

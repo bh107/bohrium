@@ -7,6 +7,9 @@ Common linear algebra functions
 """
 import bohrium as np
 import numpy.linalg as la
+import ndarray
+import ufunc
+import numpy
 
 def gauss(a, b):
     """
@@ -93,3 +96,46 @@ def jacobi(a, b, tol=0.0005):
         x = np.add.reduce(T*x,-1) + C
         error = norm(x-xo)/norm(x)
     return x
+
+def matmul(a,b):
+    """
+    Matrix multiplication of two 2-D arrays.
+
+    Parameters
+    ----------
+    a : array_like
+        First argument.
+    b : array_like
+        Second argument.
+
+    Returns
+    -------
+    output : ndarray
+        Returns the matrix multiplication of `a` and `b`.
+
+    Raises
+    ------
+    ValueError
+        If the last dimension of `a` is not the same size as
+        the second-to-last dimension of `b`.
+
+    See Also
+    --------
+    dot : Dot product of two arrays.
+
+    Examples
+    --------
+    >>> np.matmul(np.array([[1,2],[3,4]]),np.array([[5,6],[7,8]]))
+    array([[19, 22],
+           [43, 50]])
+    """
+    if a.dtype != b.dtype:
+        raise ValueError("Input must be of same type")
+    if a.ndim != 2 and b.ndim != 2:
+        raise ValueError("Input must be 2-D.")
+    if ndarray.check(a) or ndarray.check(b):
+        c = np.empty((a.shape[0],b.shape[1]),dtype=a.dtype)
+        ufunc.extmethod("matmul",c,a,b)
+        return c
+    else:
+    	return numpy.dot(a,b)

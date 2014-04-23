@@ -430,6 +430,8 @@ void Runtime::enqueue_extension(const std::string& name,
     } else {                        // Add it
         opcode = extension_count++;
         extensions.insert(std::pair<std::string, bh_opcode>(name, opcode));
+        if(runtime->extmethod(name.c_str(), opcode) != BH_SUCCESS)
+            throw std::runtime_error("Unknown extmethod");
     }
 
     guard();
