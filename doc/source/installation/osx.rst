@@ -4,13 +4,10 @@ Mac OSX
 The following explains how to get going on Mac OSX. Bohrium and NumPy is not compatible with the Python interpreter included with OSX. We recommend that you use Python version 2.7 from the `MacPorts <http://www.macports.org>`_ project. Furthermore, MacPorts have all packages that are needed to compile and install Bohrium.
 
 You need to install the `Xcode Developer Tools <https://developer.apple.com/xcode/>`_, which is found in the App Store.
-After installation of Xcode, you need to install the commandline tools::
-
-  xcode-select --install
 
 You also need the following packages from MacPorts::
 
-  sudo port install python27
+  sudo port install python27 cmakei py27-cheetah
 
 If you also want to build the Mono libraries (only required for the C# NumCIL package), you also need the Mono package::
 
@@ -27,31 +24,9 @@ As Bohrium is still under active development you want to build the current devel
 
   git clone https://bitbucket.org/bohrium/bohrium.git
   cd bohrium
-  git submodule init
-  git submodule update
-
-If you see an error about a ``missing pubkey``, you need to edit the ``.git/config`` file, find the line::
-
-  [submodule "bridge/numpy"]
-    url = git@bitbucket.org:bohrium/numpy.git
-
-and change it to::
-
-  [submodule "bridge/numpy"]
-    url = https://bitbucket.org/bohrium/numpy.git
-
-Then run the submodule command again::
-
-  git submodule update
-
-If at some point you wish to update to get the latest fixes for Bohrium, simply run::
-
-  cd bohrium
-  git pull
-
 
 Make sure your system compiler is the one provided by Xcode, you can run the following command to verify that your compiler is the Apple version of clang::
-  
+
   > gcc --version
   Configured with: --prefix=/Applications/Xcode.app/Contents/Developer/usr --with-gxx-include-dir=/usr/include/c++/4.2.1
   Apple LLVM version 5.0 (clang-500.2.79) (based on LLVM 3.3svn)
@@ -60,8 +35,7 @@ Make sure your system compiler is the one provided by Xcode, you can run the fol
 
 When building and installing Bohrium we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
 
-  make BH_PYTHON=python2.7
-  make install BH_PYTHON=python2.7
+  cmake .. -DPYTHON=python2.7
 
 .. note:: If you want to make a system-wide installation, run the make install command with sudo.
           If you run the install command as a normal user, it will install all files to ``~/.local``.
