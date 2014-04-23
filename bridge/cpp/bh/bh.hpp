@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <complex>
 #include <list>
+#include <map>
 
 #include "bh.h"
 #include "iterator.hpp"
@@ -286,6 +287,9 @@ public:
     template <typename Ret, typename In>    // pow(...,2), reduce(..., 2)
     void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2);
 
+    template <typename Ret, typename In1, typename In2>
+    void enqueue_extension(const std::string& name, multi_array<Ret>& op0, multi_array<In1>& op2, multi_array<In2>& op3);
+
     size_t flush();
     size_t get_queue_size();
 
@@ -310,6 +314,9 @@ private:
                                                 // Bohrium
     bh_component        bridge;
     bh_component_iface  *runtime;
+
+    std::map<std::string, bh_opcode> extensions;// Register of extensions
+    size_t extension_count;
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     size_t          ext_in_queue;
