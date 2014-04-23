@@ -81,6 +81,7 @@ private:
     std::map<bh_opcode, bh_extmethod_impl> extensions;
 
     static const char TAG[];
+    size_t exec_count;
 };
 
 }}}

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <set>
+#include <iomanip>
 
 using namespace std;
 using namespace bohrium::core;
@@ -34,7 +35,8 @@ Engine::Engine(
     jit_dumpsrc(jit_dumpsrc),
     storage(object_directory, kernel_directory),
     specializer(template_directory),
-    compiler(compiler_cmd)
+    compiler(compiler_cmd),
+    exec_count(0)
 {
     DEBUG(TAG, "Engine(...)");
     bh_vcache_init(vcache_size);    // Victim cache
@@ -107,6 +109,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
 
                     case FREE:
                         DEBUG(TAG,"sij_mode(...) == De-Allocate memory!");
+                        TIMER_START
                     
                         res = bh_vcache_free(&instr);
                         if (BH_SUCCESS != res) {
@@ -114,6 +117,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                                             "called from bh_ve_cpu_execute)\n");
                             return res;
                         }
+                        TIMER_STOP("Deallocating memory.")
                         break;
 
                     default:
@@ -188,12 +192,14 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                 //
                 // Allocate memory for operands
                 DEBUG(TAG,"sij_mode(...) == Allocating memory.");
+                TIMER_START
                 res = bh_vcache_malloc(&instr);
                 if (BH_SUCCESS != res) {
                     fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                                     "called from bh_ve_cpu_execute()\n");
                     return res;
                 }
+                TIMER_STOP("Allocating memory.")
                 //
                 // Execute block handling array operations.
                 // 
@@ -227,6 +233,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
 
     DEBUG(TAG, "fuse_mode(...) block: " << endl << block.text("   "));
 
+    TIMER_START
     //
     // Determine ranges of operations which can be fused together
     vector<triplet_t> ranges;
@@ -333,7 +340,9 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     if (range_begin<block.size()) {
         ranges.push_back((triplet_t){range_begin, block.size()-1, fusion_layout});
     }
+    TIMER_STOP("Determine fuse-ranges.")
    
+    TIMER_START
     //
     // Determine arrays suitable for scalar-replacement in the fuse-ranges.
     for(vector<triplet_t>::iterator it=ranges.begin();
@@ -382,6 +391,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
             }
         }
     }
+    TIMER_STOP("Scalar replacement in fuse-ranges.")
     
     //
     // The operands might have been modified at this point, so we need to create a new symbol.
@@ -441,6 +451,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     // Allocate memory for output
     //
     for(size_t i=0; i<block.size(); ++i) {
+        TIMER_START
         if ((block.program(i).op & ARRAY_OPS)>0) {
             bh_view* operand_view = &block.instr(i).operand[0];
             if ((symbol_table[block.program(i).out].layout == SCALAR) && (operand_view->base->data == NULL)) {
@@ -454,18 +465,19 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                 return res;
             }
         }
+        TIMER_STOP("Allocating memory.")
     }
 
     DEBUG(TAG, "fuse_mode(...) == Call kernel function!");
     //
     // Execute block handling array operations.
     // 
-    time_t start = Timevault::sample_time();
+    TIMER_START
     storage.funcs[block.symbol()](block.operands());
-    time_t end = Timevault::sample_time();
-    Timevault::instance().store(block.symbol(), end-start);
+    TIMER_STOP(block.symbol())
 
     DEBUG(TAG, "fuse_mode(...) == De-Allocate memory!");
+    TIMER_START
     //
     // De-Allocate operand memory
     for(size_t i=0; i<block.size(); ++i) {
@@ -479,6 +491,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
             }
         }
     }
+    TIMER_STOP("Deallocating memory.")
     DEBUG(TAG,"Engine::fuse_mode(...);");
     return BH_SUCCESS;
 }
@@ -486,6 +499,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
 bh_error Engine::execute(bh_ir& bhir)
 {
     DEBUG(TAG,"execute(...) ++");
+    exec_count++;
 
     bh_error res = BH_SUCCESS;
     bh_dag& root = bhir.dag_list[0];  // Start at the root DAG
@@ -549,6 +563,12 @@ bh_error Engine::execute(bh_ir& bhir)
     for(bh_intp dag_idx=1; dag_idx<=root.nnode; ++dag_idx) {
         Block* block = blocks[dag_idx];
         bh_error mode_res;
+    
+        stringstream ss;
+        ss << " Exec(" << setw(3) << setfill('0') << exec_count << ")";
+        ss << " Dag(" << setw(3) << setfill('0') << dag_idx <<")";
+        size_t begin = Timevault::instance().sample_time();
+
         if (jit_fusion && \
             ((block->omask() & (ARRAY_OPS)) > 0) && \
             ((block->omask() & (EXTENSION)) == 0)) {
@@ -560,6 +580,8 @@ bh_error Engine::execute(bh_ir& bhir)
             fprintf(stderr, "Engine:execute(...) == ERROR: Failed running *_mode(...).\n");
             return BH_ERROR;
         }
+        size_t end = Timevault::instance().sample_time();
+        Timevault::instance().store(ss.str(), end-begin);
     }
 
     //
