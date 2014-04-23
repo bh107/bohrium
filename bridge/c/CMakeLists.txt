@@ -9,22 +9,26 @@ set(SRC ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c.h
         ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c_implementation.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c_implementation_basics.cpp)
 
-file(GLOB DEPS codegen/templates/*.ctpl codegen/*.json codegen/*.py)
-add_custom_command(
-  OUTPUT ${SRC}
-  COMMAND ./codegen/gen.py
-  DEPENDS ${DEPS}  #TODO: gen.py writes a old timestamp thus this will always run
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
+if(PYTHONINTERP_FOUND)
 
-add_library(bhc SHARED ${SRC})
+    file(GLOB DEPS codegen/templates/*.ctpl codegen/*.json codegen/*.py)
+    add_custom_command(
+      OUTPUT ${SRC}
+      COMMAND ${PYTHON_EXECUTABLE} codegen/gen.py
+      DEPENDS ${DEPS}  #TODO: gen.py writes a old timestamp thus this will always run
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
 
-#We depend on bh.so
-target_link_libraries(bhc bh)
+    add_library(bhc SHARED ${SRC})
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c.h DESTINATION include/bh)
-install(TARGETS bhc DESTINATION lib)
+    #We depend on bh.so
+    target_link_libraries(bhc bh)
 
-#Compile hellow world as a test
-add_subdirectory(examples)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c.h DESTINATION include/bh)
+    install(TARGETS bhc DESTINATION lib)
 
+    #Compile hellow world as a test
+    add_subdirectory(examples)
+else()
+    message(STATUS "The C-Bridge cannot be build!")
+endif()

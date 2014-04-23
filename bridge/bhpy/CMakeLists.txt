@@ -1,17 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
 
-set(PYTHON "auto" CACHE STRING "The Python interpreter to use. 'auto' is default")
-
-if(NOT (${PYTHON} STREQUAL "auto"))
-    set(PYTHON_EXECUTABLE ${PYTHON})
-    message(STATUS "User-defined Python Interpreter: ${PYTHON}")
-endif()
-
-#External dependencies
-find_package(PythonInterp)
-set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming Language" URL "www.python.org")
-set_package_properties(PythonInterp PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with NumPy and SWIG).")
-
 find_package(NumPy)
 set_package_properties(NumPy PROPERTIES DESCRIPTION "Numerical Python" URL "www.numpy.org")
 set_package_properties(NumPy PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python and SWIG).")
