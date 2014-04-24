@@ -10,6 +10,7 @@ import numpy.linalg as la
 import ndarray
 import ufunc
 import numpy
+import array_create
 
 def gauss(a, b):
     """
@@ -134,6 +135,8 @@ def matmul(a,b):
     if a.ndim != 2 and b.ndim != 2:
         raise ValueError("Input must be 2-D.")
     if ndarray.check(a) or ndarray.check(b):
+        a = array_create.array(a)
+        b = array_create.array(b)
         c = np.empty((a.shape[0],b.shape[1]),dtype=a.dtype)
         ufunc.extmethod("matmul",c,a,b)
         return c
