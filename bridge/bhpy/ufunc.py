@@ -33,8 +33,6 @@ def extmethod(name, out, in1, in2):
     assert in1.dtype == in2.dtype
     f = eval("bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
               dtype_name(in1), dtype_name(in2)))
-    print "bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
-                          dtype_name(in1), dtype_name(in2))
     f(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
 
 def assign(a, out):
