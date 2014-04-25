@@ -215,7 +215,7 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
         }
         if (complex)
         {
-            source << "#include <complex.h>\n";
+            source << "#include <ocl_complex.h>\n";
         }
         source << "__kernel void " << kname.str() << code;
         Kernel kernel(resourceManager, MIN(shape.size(),3), source.str(), kname.str());
