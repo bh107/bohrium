@@ -9,36 +9,129 @@ import numpy
 import bhc
 from _util import dtype_name
 
-def array(object, dtype=None, ndmin=0, bohrium=True):
+def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohrium=True):
     """
-    Create an Bohrium array. Will copy and use C-contiguous order always
+    Create an array -- Bohrium or NumPy ndarray.
 
     Parameters
     ----------
     object : array_like
-        An array, any object exposing the array interface, an object
-        whose __array__ method returns an array, or any (nested) sequence.
+        An array, any object exposing the array interface, an
+        object whose __array__ method returns an array, or any
+        (nested) sequence.
     dtype : data-type, optional
-        The desired data-type for the array. If not given, then the type
-        will be determined as the minimum type required to hold the objects
-        in the sequence. This argument can only be used to 'upcast' the array.
-        For downcasting, use the .astype(t) method.s
+        The desired data-type for the array.  If not given, then
+        the type will be determined as the minimum type required
+        to hold the objects in the sequence.  This argument can only
+        be used to 'upcast' the array.  For downcasting, use the
+        .astype(t) method.
+    copy : bool, optional
+        If true (default), then the object is copied.  Otherwise, a copy
+        will only be made if __array__ returns a copy, if obj is a
+        nested sequence, or if a copy is needed to satisfy any of the other
+        requirements (`dtype`, `order`, etc.).
+    order : {'C', 'F', 'A'}, optional
+        Specify the order of the array.  If order is 'C' (default), then the
+        array will be in C-contiguous order (last-index varies the
+        fastest).  If order is 'F', then the returned array
+        will be in Fortran-contiguous order (first-index varies the
+        fastest).  If order is 'A', then the returned array may
+        be in any order (either C-, Fortran-contiguous, or even
+        discontiguous).
+    subok : bool, optional
+        If True, then sub-classes will be passed-through, otherwise
+        the returned array will be forced to be a base-class array (default).
     ndmin : int, optional
-        Specifies the minimum number of dimensions that the resulting array should have.
-        Ones will be pre-pended to the shape as needed to meet this requirement.
+        Specifies the minimum number of dimensions that the resulting
+        array should have.  Ones will be pre-pended to the shape as
+        needed to meet this requirement.
+    bohrium : boolean, optional
+        Determines whether it is a Bohrium array (bohrium.ndarray) or a
+        regular NumPy array (numpy.ndarray)
 
     Returns
     -------
     out : ndarray
         An array object satisfying the specified requirements.
+
+    See Also
+    --------
+    empty, empty_like, zeros, zeros_like, ones, ones_like, fill
+
+    Examples
+    --------
+    >>> np.array([1, 2, 3])
+    array([1, 2, 3])
+
+    Upcasting:
+
+    >>> np.array([1, 2, 3.0])
+    array([ 1.,  2.,  3.])
+
+    More than one dimension:
+
+    >>> np.array([[1, 2], [3, 4]])
+    array([[1, 2],
+           [3, 4]])
+
+    Minimum dimensions 2:
+
+    >>> np.array([1, 2, 3], ndmin=2)
+    array([[1, 2, 3]])
+
+    Type provided:
+
+    >>> np.array([1, 2, 3], dtype=complex)
+    array([ 1.+0.j,  2.+0.j,  3.+0.j])
+
+    Data-type consisting of more than one element:
+
+    >>> x = np.array([(1,2),(3,4)],dtype=[('a','<i4'),('b','<i4')])
+    >>> x['a']
+    array([1, 3])
+
+    Creating an array from sub-classes:
+
+    >>> np.array(np.mat('1 2; 3 4'))
+    array([[1, 2],
+           [3, 4]])
+
+    >>> np.array(np.mat('1 2; 3 4'), subok=True)
+    matrix([[1, 2],
+            [3, 4]])
+
     """
-    a = numpy.array(object, dtype=dtype, ndmin=ndmin)
-    if not bohrium:
-        return a.copy()
-    a = numpy.require(a, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
-    ret = empty(a.shape, dtype=a.dtype)
-    ret._data_fill(a)
-    return ret
+    a = object
+    if bohrium:
+        if ndarray.check(a):
+            if not None and order == 'F':
+                raise ValueError("Cannot convert a Bohrium array to "\
+                            "column-major (‘F’) memory representation")
+            if copy:
+                a = a.copy()
+            if dtype != a.dtype:
+                t = empty_like(a,dtype=dtype)
+                t[:] = a
+                a = t
+            for i in xrange(a.ndim, ndmin):
+                a = numpy.expand_dims(a,i)
+            return a
+        else:
+            a = numpy.array(a, dtype=dtype, copy=copy, order=order,\
+                            subok=subok, ndmin=ndmin)
+            a = numpy.require(a, requirements=['C_CONTIGUOUS', 'ALIGNED', \
+                                                'OWNDATA'])
+            ret = empty(a.shape, dtype=a.dtype)
+            ret._data_fill(a)
+            return ret
+    else:
+        if ndarray.check(a):
+            ret = a.copy2numpy()
+            return numpy.array(ret, dtype=dtype, copy=copy, order=order, \
+                               subok=subok, ndmin=ndmin)
+        else:
+            return numpy.array(a, dtype=dtype, copy=copy, order=order, \
+                               subok=subok, ndmin=ndmin)
 
 def empty(shape, dtype=float, bohrium=True):
     """

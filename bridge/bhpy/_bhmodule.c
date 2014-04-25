@@ -77,6 +77,20 @@ static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify
     return 0;
 }
 
+//Help function for unprotect memory
+//Return -1 on error
+static int _munprotect(void *data, bh_intp size)
+{
+    if(mprotect(data, size, PROT_WRITE) != 0)
+    {
+        int errsv = errno;//mprotect() sets the errno.
+        PyErr_Format(PyExc_RuntimeError,"Error - could not (un-)mprotect a "
+                     "data region. Returned error code by mprotect(): %s.\n"
+                     ,strerror(errsv));
+        return -1;
+    }
+}
+
 //Help function for memory re-map
 //Return -1 on error
 static int _mremap_data(void *dst, void *src, bh_intp size)
@@ -94,14 +108,8 @@ static int _mremap_data(void *dst, void *src, bh_intp size)
 #else
     //Systems that doesn't support mremap will use memcpy, which introduces a
     //race-condition if another thread access the 'dst' memory before memcpy finishes.
-    if(mprotect(dst, size, PROT_WRITE) != 0)
-    {
-        int errsv = errno;//mprotect() sets the errno.
-        PyErr_Format(PyExc_RuntimeError,"Error - could not (un-)mprotect a "
-                     "data region. Returned error code by mprotect(): %s.\n"
-                     ,strerror(errsv));
-        return -1;
-    }
+    if(_munprotect(dst, size) != 0)
+        return NULL
     memcpy(dst, src, size);
     return munmap(src, size);
 #endif
@@ -271,7 +279,7 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
         Py_RETURN_NONE;
     }
 */
-    //Calling get_bhc_data_pointer(base, allocate=False)
+    //Calling get_bhc_data_pointer(base, allocate=False, nullify=True)
     void *d = NULL;
     if(get_bhc_data_pointer(base, 0, 1, &d) == -1)
         return NULL;
@@ -280,6 +288,12 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     {
         if(_mremap_data(PyArray_DATA((PyArrayObject*)base), d,
                         PyArray_NBYTES((PyArrayObject*)base)) != 0)
+            return NULL;
+    }
+    else
+    {
+        if(_munprotect(PyArray_DATA((PyArrayObject*)base),
+                       PyArray_NBYTES((PyArrayObject*)base)) != 0)
             return NULL;
     }
     detach_signal((signed long)base, mem_access_callback);
@@ -311,7 +325,7 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
         Py_DECREF(err);
     }
 
-    //Calling get_bhc_data_pointer(base, allocate=True)
+    //Calling get_bhc_data_pointer(base, allocate=True, nullify=False)
     void *d = NULL;
     if(get_bhc_data_pointer(base, 1, 0, &d) == -1)
         return NULL;
@@ -344,7 +358,7 @@ BhArray_data_fill(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    //Calling get_bhc_data_pointer(self, allocate=True)
+    //Calling get_bhc_data_pointer(self, allocate=True, nullify=False)
     void *d = NULL;
     if(get_bhc_data_pointer(self, 1, 0, &d) == -1)
         return NULL;

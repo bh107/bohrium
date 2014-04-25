@@ -356,9 +356,6 @@ multi_array<T>& random(const Dimensions&... shape);
 template <typename T>
 multi_array<T>& randu(size_t n, ...);
 
-template <typename T>
-multi_array<T>& arange();
-
                             // REDUCTIONS
 template <typename T>       // Partial
 multi_array<T>& reduce(multi_array<T>& op, reducible opc, size_t axis);
