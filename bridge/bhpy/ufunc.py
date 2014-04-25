@@ -187,9 +187,13 @@ class negative(ufunc):
             out[:] = -1 * a
             return out
 
+#Expose all ufuncs
 ufuncs = [negative({'np_name':'negative'})]
 for op in _info.op.itervalues():
     ufuncs.append(ufunc(op))
+
+for f in ufuncs:
+    exec "%s = f"%f.info['np_name']
 
 
 ###############################################################################
