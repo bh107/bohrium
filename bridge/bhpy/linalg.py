@@ -142,3 +142,77 @@ def matmul(a,b):
         return c
     else:
     	return numpy.dot(a,b)
+
+def dot(a,b):
+    raise NotImplementedError("dot() requires support of NumPy-views "\
+                              "that points to Bohrium-base arrays")
+    """
+    Dot product of two arrays.
+
+    For 2-D arrays it is equivalent to matrix multiplication, and for 1-D
+    arrays to inner product of vectors (without complex conjugation). For
+    N dimensions it is a sum product over the last axis of `a` and
+    the second-to-last of `b`::
+
+        dot(a, b)[i,j,k,m] = sum(a[i,j,:] * b[k,:,m])
+
+    Parameters
+    ----------
+    a : array_like
+        First argument.
+    b : array_like
+        Second argument.
+
+    Returns
+    -------
+    output : ndarray
+        Returns the dot product of `a` and `b`.  If `a` and `b` are both
+        scalars or both 1-D arrays then a scalar is returned; otherwise
+        an array is returned.
+
+    Raises
+    ------
+    ValueError
+        If the last dimension of `a` is not the same size as
+        the second-to-last dimension of `b`.
+
+    See Also
+    --------
+    vdot : Complex-conjugating dot product.
+    tensordot : Sum products over arbitrary axes.
+    einsum : Einstein summation convention.
+
+    Examples
+    --------
+    >>> np.dot(3, 4)
+    12
+
+    Neither argument is complex-conjugated:
+
+    >>> np.dot([2j, 3j], [2j, 3j])
+    (-13+0j)
+
+    For 2-D arrays it's the matrix product:
+
+    >>> a = [[1, 0], [0, 1]]
+    >>> b = [[4, 1], [2, 2]]
+    >>> np.dot(a, b)
+    array([[4, 1],
+           [2, 2]])
+
+    >>> a = np.arange(3*4*5*6).reshape((3,4,5,6))
+    >>> b = np.arange(3*4*5*6)[::-1].reshape((5,4,6,3))
+    >>> np.dot(a, b)[2,3,2,1,2,2]
+    499128
+    >>> sum(a[2,3,2,:] * b[1,2,:,2])
+    499128
+
+    """
+    if ndarray.check(a) or ndarray.check(b):
+        a = array_create.array(a)
+        b = array_create.array(b)
+    if b.ndim == 1:
+        return numpy.add.reduce(a*b,-1)
+    if a.ndim == 1:
+        return ufunc.add.reduce(a*numpy.transpose(b),-1)
+    return ufunc.add.reduce(a[:,numpy.newaxis]*numpy.transpose(b),-1)
