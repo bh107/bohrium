@@ -11,17 +11,17 @@ bench: all
 clean:
 	rm -f jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost *~
 
-jacobi-naive: jacobi-naive.c
-	$(CC) jacobi-naive.c -o jacobi-naive $(FLAGS)
+jacobi-naive: src/jacobi-naive.c
+	$(CC) src/jacobi-naive.c -o bin/jacobi-naive $(FLAGS)
 
-jacobi-simple: jacobi-simple.c
-	$(CC) jacobi-simple.c -o jacobi-simple $(FLAGS)
+jacobi-simple: src/jacobi-simple.c
+	$(CC) src/jacobi-simple.c -o bin/jacobi-simple $(FLAGS)
 
-jacobi-tuned: jacobi-tuned.c
-	$(CC) jacobi-tuned.c -o jacobi-tuned $(FLAGS)
+jacobi-tuned: src/jacobi-tuned.c
+	$(CC) src/jacobi-tuned.c -o bin/jacobi-tuned $(FLAGS)
 
-jacobi-vtuned: jacobi-vtuned.c
-	$(CC) jacobi-vtuned.c -o jacobi-vtuned $(FLAGS)
+jacobi-vtuned: src/jacobi-vtuned.c
+	$(CC) src/jacobi-vtuned.c -o bin/jacobi-vtuned $(FLAGS)
 
-jacobi-boost: jacobi-boost.cc
-	$(CPP) -I$(BOOST) jacobi-boost.cc -o jacobi-boost $(FLAGS)
+jacobi-boost: src/jacobi-boost.cc
+	$(CPP) -I$(BOOST) src/jacobi-boost.cc -o bin/jacobi-boost $(FLAGS)

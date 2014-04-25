@@ -53,50 +53,45 @@ if [ ! -z "$1" ] && [ "$1" == "test" ]; then
     python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
 fi
 
-if [ ! -z "$1" ] && [ "$1" == "black" ]; then
+if [ ! -z "$1" ] && [ "$1" == "black_fused" ]; then
     ./dostuff.sh reset
 
     echo "** WITH Fusion ***"
     ./dostuff.sh prep_fuse
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
-    $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
     ./dostuff.sh move_fuse
 
-    echo "*** NUMPY ***"
-    $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=False
-    #$BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
-    #$BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
+fi
+
+if [ ! -z "$1" ] && [ "$1" == "black_sij" ]; then
+    ./dostuff.sh reset
 
     echo "*** WITHOUT Fusion **"
     ./dostuff.sh prep_sij
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
-    BH_VE_CPU_JIT_FUSION=0 $BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
     ./dostuff.sh move_sij
 
 fi
 
-if [ ! -z "$1" ] && [ "$1" == "jacobi" ]; then
+
+if [ ! -z "$1" ] && [ "$1" == "heat_fused" ]; then
     ./dostuff.sh reset
 
     echo "** WITH Fusion ***"
     ./dostuff.sh prep_fuse
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/jacobi_stencil.py --size=10000*10000*5 --bohrium=True
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/jacobi_stencil.py --size=10000*10000*5 --bohrium=True
-    $BH_PYTHON ../../benchmark/Python/jacobi_stencil.py --size=10000*10000*5 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/heat_equation.py --size=5000*5000*10 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/heat_equation.py --size=5000*5000*10 --bohrium=True
     ./dostuff.sh move_fuse
 
-    echo "*** NUMPY ***"
-    $BH_PYTHON ../../benchmark/Python/jacobi_stencil.py --size=10000*10000*5 --bohrium=False
-    #$BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
-    #$BH_PYTHON ../../benchmark/Python/black_scholes.py --size=5000000*2 --bohrium=False
+fi
 
+if [ ! -z "$1" ] && [ "$1" == "heat_sij" ]; then
     echo "*** WITHOUT Fusion **"
     ./dostuff.sh prep_sij
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/jacobi_stencil.py --size=10000*10000*5 --bohrium=True
-    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/jacobi_stencil.py --size=10000*10000*5 --bohrium=True
-    BH_VE_CPU_JIT_FUSION=0 $BH_PYTHON ../../benchmark/Python/jacobi_stencil.py --size=10000*10000*5 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/heat_equation.py --size=5000*5000*10 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/heat_equation.py --size=5000*5000*10 --bohrium=True
     ./dostuff.sh move_sij
 
 fi
