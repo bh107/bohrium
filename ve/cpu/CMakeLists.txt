@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 include_directories(../../include)
 
+# Compile-flags
+#add_definitions( -DPROFILING )
+
 #External dependencies
 find_package(CTemplate)
 set_package_properties(CTemplate PROPERTIES DESCRIPTION "Template language for C++" URL "code.google.com/p/ctemplate/")
