@@ -99,6 +99,25 @@ multi_array<T>& randu(const Dimensions&... shape)
     return *result;
 }
 
+/**
+ *  Create a range of values defined as [0, nelem[
+ */
+template <typename T>
+multi_array<T>& range(size_t nelem)
+{
+    multi_array<T>* result = new multi_array<T>(nelem);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RANGE, *result);
+
+    result->setTemp(true);
+    return *result;
+}
+
+/**
+ *  Create a range of values defined as the [start, end[
+ *  Each element in the range is seperated by 'skip'.
+ */
 template <typename T>
 multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip)
 {

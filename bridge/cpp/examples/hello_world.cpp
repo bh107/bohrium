@@ -63,6 +63,7 @@ void compute()
     complex_constant<float>();
     */
 
+    /*
     float* diller = (float*)malloc(100*sizeof(float));
     for(int i=0; i<100;++i) {
         diller[i] = i;
@@ -73,6 +74,9 @@ void compute()
     hullet(diller);
 
     std::cout << "Hvad er der i hullet? " << hullet << "." << std::endl;
+    */
+    std::cout << "Range(10)" << range<int64_t>(10) << std::endl;
+    std::cout << "Range(0, 10, 2)" << range<int64_t>(0, 10, 1) << std::endl;
 
     /*1
     // Scan
