@@ -1,7 +1,6 @@
 #Test and demonstration of the NumPy Bridge.
 import numpy as np
-import bohrium as cnp
-import bohriumbridge
+import bohrium as bh
 import sys
 import time
 import subprocess
@@ -12,6 +11,7 @@ import warnings
 import copy
 from operator import mul
 from itertools import izip as zip
+from numbers import Number
 
 class TYPES:
     NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
@@ -37,30 +37,6 @@ class _C:
         self.FAIL = ''
         self.ENDC = ''
 
-def _array_equal(A,B,maxerror=0.0):
-    if type(A) != type(B):
-        return False 
-    if np.isscalar(A):
-        if A == B:
-            return True
-        else:
-            return (abs(A - B)/(np.abs(A) + np.abs(B))/2) < maxerror
-
-    bohriumbridge.unhandle_array(A)
-    bohriumbridge.unhandle_array(B)
-    A = A.flatten()
-    B = B.flatten()
-    if len(A) != len(B):
-        return False
-    D = (np.abs(A) + np.abs(B))/2
-    D += np.equal(D,np.zeros_like(D))
-    C = np.abs(A - B) / D
-    R = C > maxerror
-    if R.any():
-        return False
-
-    return True
-
 def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
     for ndim in xrange(min_ndim,max_ndim+1):
         shape = [1]*ndim
@@ -71,7 +47,7 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
                 for d in xrange(len(shape)):
                     shape[d] = np.random.randint(1,max_dim)
                 yield shape
-        else:       
+        else:
             finished = False
             while not finished:
                 yield shape
@@ -138,24 +114,24 @@ class numpytest:
     def init(self):
         pass
     def array(self,dims,dtype,high=False):
-        try: 
+        try:
             total = reduce(mul,dims)
         except TypeError:
             total = dims
             dims = (dims,)
         if dtype is np.bool:
             res = np.random.random_integers(0,1,dims)
-        elif dtype in [np.int8, np.uint8]: 
+        elif dtype in [np.int8, np.uint8]:
             res = np.random.random_integers(1,3,dims)
-        elif dtype is np.int16: 
+        elif dtype is np.int16:
             res = np.random.random_integers(1,5,dims)
-        elif dtype is np.uint16: 
+        elif dtype is np.uint16:
             res = np.random.random_integers(1,6,dims)
-        elif dtype in [np.float32, np.float64]: 
+        elif dtype in [np.float32, np.float64]:
             res = np.random.random(size=dims)
             if high:
                 res = (res+1)*10
-        elif dtype in [np.complex64, np.complex128]: 
+        elif dtype in [np.complex64, np.complex128]:
             res = np.random.random(size=dims)+np.random.random(size=dims)*1j
         else:
             res = np.random.random_integers(1,8,size=dims)
@@ -203,31 +179,31 @@ if __name__ == "__main__":
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     name = "%s/%s/%s"%(f,cls[5:],mth[5:])
                     print "Testing %s"%(name)
-                    for (arrays,cmd) in getattr(cls_inst,"init")():
-                        arys = copy.deepcopy(arrays)
-                        for a in arys.values():
-                            a.bohrium = False
-                        (res1,cmd1) = getattr(cls_inst,mth)(arys)
+                    for (np_arys,cmd) in getattr(cls_inst,"init")():
+                        #Get Bohrium arrays
+                        bh_arys = []
+                        for a in np_arys.values():
+                            bh_arys.append(bh.array(a))
+                        #Execute using NumPy
+                        (res1,cmd1) = getattr(cls_inst,mth)(np_arys)
                         res1 = res1.copy()
-                        bohriumbridge.flush()
-                        arys = copy.deepcopy(arrays)
-                        for a in arys.values():
-                            a.bohrium = True
-                        (res2,cmd2) = getattr(cls_inst,mth)(arys)
-                        assert cmd1 == cmd2
+
+                        #Execute using Bohrium
+                        (res2,cmd2) = getattr(cls_inst,mth)(bh_arys)
                         cmd += cmd1
                         try:
-                            bohriumbridge.flush() 
+                            if not np.isscalar(res2):
+                                res2 = res2.copy2numpy()
                         except RuntimeError as error_msg:
                             print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
                             print _C.FAIL + str(error_msg) + _C.ENDC
                         else:
-                            if not _array_equal(res1, res2, cls_inst.config['maxerror']):
-                                print _C.FAIL + "[Error] %s"%(name) + _C.ENDC 
-                                print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC 
-                                print _C.OKGREEN + str(res1) + _C.ENDC 
+                            if not np.allclose(res1, res2):
+                                print _C.FAIL + "[Error] %s"%(name) + _C.ENDC
+                                print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
+                                print _C.OKGREEN + str(res1) + _C.ENDC
                                 print _C.FAIL + str(res2) + _C.ENDC
                                 sys.exit (1)
-                                
+
     print "*"*24, "Finish", "*"*24
 

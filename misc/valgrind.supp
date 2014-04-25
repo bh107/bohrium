@@ -567,7 +567,7 @@
 }
 
 {
-   From NumPy 
+   From NumPy
    Memcheck:Leak
    fun:malloc
    fun:PyCObject_FromVoidPtr
@@ -597,4 +597,14 @@
    fun:vgetargskeywords
    fun:_PyArg_ParseTupleAndKeywords_SizeT
    fun:array_empty
+}
+
+{
+   From NumPy
+   Memcheck:Leak
+   fun:malloc
+   fun:PyCObject_FromVoidPtr
+   fun:NpyCapsule_FromVoidPtr
+   fun:set_typeinfo
+   fun:initmultiarray
 }

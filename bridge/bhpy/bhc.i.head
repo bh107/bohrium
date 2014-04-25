@@ -1,0 +1,114 @@
+%module bhc
+%{
+#include<bh_c.h>
+%}
+
+%typemap(in) uint64_t {
+    $1 = PyInt_AsUnsignedLongMask($input);
+}
+%typemap(in) bh_bool const {
+    $1 = PyBool_Check($input);
+}
+%typemap(in) bh_int8 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int16 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int32 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int64 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint8 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint16 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint32 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint64 const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_float64 const {
+    $1 = PyFloat_AsDouble($input);
+}
+%typemap(in) bh_float32 const {
+    $1 = PyFloat_AsDouble($input);
+}
+%typemap(in) bh_complex64 const {
+    $1.real = PyComplex_RealAsDouble($input);
+    $1.imag = PyComplex_ImagAsDouble($input);
+}
+%typemap(in) bh_complex128 const {
+    $1.real = PyComplex_RealAsDouble($input);
+    $1.imag = PyComplex_ImagAsDouble($input);
+}
+%typemap(in) bh_bool {
+    $1 = PyBool_Check($input);
+}
+%typemap(in) bh_int8 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int16 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int32 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_int64 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint8 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint16 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint32 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_uint64 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) bh_float64 {
+    $1 = PyFloat_AsDouble($input);
+}
+%typemap(in) bh_float32 {
+    $1 = PyFloat_AsDouble($input);
+}
+%typemap(in) bh_complex64 {
+    $1.real = PyComplex_RealAsDouble($input);
+    $1.imag = PyComplex_ImagAsDouble($input);
+}
+%typemap(in) bh_complex128 {
+    $1.real = PyComplex_RealAsDouble($input);
+    $1.imag = PyComplex_ImagAsDouble($input);
+}
+%typemap(in) int64_t const {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(in) int64_t const * (int64_t temp[32]) {
+  int i;
+  if (!PySequence_Check($input)) {
+    PyErr_SetString(PyExc_ValueError,"Expected a sequence");
+    return NULL;
+  }
+  if (PySequence_Length($input) > 32) {
+    PyErr_SetString(PyExc_ValueError,"Max list length is 32");
+    return NULL;
+  }
+  for (i = 0; i < PySequence_Length($input); i++) {
+    PyObject *o = PySequence_GetItem($input,i);
+    if(PyInt_Check(o)) {
+      temp[i] = PyInt_AsLong(o);
+    } else {
+      PyErr_SetString(PyExc_ValueError,"Sequence elements must be Python integers");
+      return NULL;
+    }
+  }
+  $1 = temp;
+}

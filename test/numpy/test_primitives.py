@@ -1,5 +1,5 @@
 import numpy as np
-import numpy
+import bohrium as bh
 from numpytest import numpytest,gen_views,TYPES
 import random
 import os
@@ -46,7 +46,11 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
                 yield (a,cmd)
 
     def test_ufunc(self,a):
-        cmd = "%s("%("np.%s"%self.name[3:].lower())
+
+        if bh.check(a[0]):
+            cmd = "bh.%s("%self.name[3:].lower()
+        else:
+            cmd = "np.%s("%self.name[3:].lower()
 
         if self.name in ["BH_REAL","BH_IMAG"]:
             cmd = "a[0] = %sa[1])"%cmd
@@ -92,8 +96,8 @@ class test_numpy_ufunc(numpytest):#Ufuncs not directly mappable to Bohrium
                     {'opcode':'true_divide'},\
                     {'opcode':'conjugate'},\
                     {'opcode':'fmod'},\
-                    {'opcode':'reciprocal', 'nop':2, 'types':type_int(2)+type_float(2)},\
-                    {'opcode':'negative', 'nop':2, 'types':type_all(2)},\
+                    #{'opcode':'reciprocal', 'nop':2, 'types':type_int(2)+type_float(2)},\
+                    #{'opcode':'negative', 'nop':2, 'types':type_all(2)},\
                     {'opcode':'ones_like'},\
                     {'opcode':'_args'},\
                     {'opcode':'fmax'},\

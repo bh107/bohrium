@@ -55,7 +55,11 @@ DLLEXPORT void bh_multi_array_${op1_type[2]}_${opname}_in_place_scalar_rhs(bh_mu
 %for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
 %if $opcode != "BH_IDENTITY" and opcount == 2 and $inplace == False
 %for $op1_type, $op2_type in $typesigs
-DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs);
+%if $opcode == "BH_ISNAN" or $opcode == "BH_ISINF"
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs);
+%else
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs);
+%end if
 %slurp
 %end for
 

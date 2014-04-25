@@ -2108,7 +2108,7 @@
     "opcode": "BH_MULTIPLY_ACCUMULATE",
     "doc":  "Computes the prefix product.",
     "code": "cumprod(a, axis)",
-    "id":   "75",
+    "id":   "74",
     "nop":   3,
     "types": [
             [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],

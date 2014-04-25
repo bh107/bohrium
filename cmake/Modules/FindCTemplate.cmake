@@ -7,25 +7,24 @@
 #
 # Source <https://github.com/UCL/hemelb/blob/master/dependencies/Modules/Find.cmake>
 
-option(CTEMPLATE_USE_STATIC "Prefer Static CTemplate library" OFF)
-IF( CTEMPLATE_INCLUDE_DIR )
-    # Already in cache, be silent
-    SET( CTEMPLATE_FIND_QUIETLY TRUE )
-ENDIF( CTEMPLATE_INCLUDE_DIR )
+#We use our included library on MacOS
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-FIND_PATH( CTEMPLATE_INCLUDE_DIR "ctemplate/template.h")
-if(CTEMPLATE_USE_STATIC)
-set(__old_cmake_find_lib_suffixes ${CMAKE_FIND_LIBRARY_SUFFIXES})
-	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
-endif()
+    set(CTEMPLATE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/ctemplate/include/)
+    set(CTEMPLATE_LIBRARIES ${PROJECT_SOURCE_DIR}/thirdparty/ctemplate/osx-lib/libctemplate.2.dylib)
 
-FIND_LIBRARY( CTEMPLATE_LIBRARIES
-              NAMES "ctemplate"
-              PATH_SUFFIXES "ctemplate" )
+ELSE()
+    IF( CTEMPLATE_INCLUDE_DIR )
+        # Already in cache, be silent
+        SET( CTEMPLATE_FIND_QUIETLY TRUE )
+    ENDIF( CTEMPLATE_INCLUDE_DIR )
 
-if(CTEMPLATE_USE_STATIC)
-	set(CMAKE_FIND_LIBRARY_SUFFIXES ${__old_cmake_find_lib_suffixes})
-endif()
+    FIND_PATH( CTEMPLATE_INCLUDE_DIR "ctemplate/template.h")
+
+    FIND_LIBRARY( CTEMPLATE_LIBRARIES
+                  NAMES "ctemplate"
+                  PATH_SUFFIXES "ctemplate" )
+ENDIF()
 
 # handle the QUIETLY and REQUIRED arguments and set CTEMPLATE_FOUND to TRUE if
 # all listed variables are TRUE

@@ -11,6 +11,7 @@ directiveStartToken = %
 #include <bh_c_data_types.h>
 #include <bh_c_interface.h>
 #include "bh_c_type_definitions.hpp"
+#include <bh.h>
 
 using namespace bh;
 
@@ -46,6 +47,16 @@ ${bh_atype}* bh_multi_array_${bh_ctype}_get_base_data(bh_base_p base)
     return (${bh_atype}*)base->data;
 }
 
+// Gets the data pointer from a base and force memory allocation
+// Return NULL when out of memory
+${bh_atype}* bh_multi_array_${bh_ctype}_get_base_data_and_force_alloc(bh_base_p base)
+{
+    if(bh_data_malloc(base) != 0)
+        return NULL;
+
+    return (${bh_atype}*)base->data;
+}
+
 // Gets the number of elements in a base
 int64_t bh_multi_array_${bh_ctype}_get_base_nelem(bh_base_p base)
 {
@@ -58,6 +69,11 @@ void bh_multi_array_${bh_ctype}_set_base_data(bh_base_p base, ${bh_atype}* data)
     base->data = data;
 }
 
+// Nullify the data pointer for a base
+void bh_multi_array_${bh_ctype}_nullify_base_data(bh_base_p base)
+{
+    base->data = NULL;
+}
 
 // Get the base from an existing array
 bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
@@ -105,7 +121,10 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_b
 
 // Construct a new sized array
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_empty(uint64_t rank, const int64_t* shape) {
-    return (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(rank, shape);
+    multi_array<${ctype}>* result = new multi_array<${ctype}>(rank, shape);
+    result->setTemp(false);
+    result->link();
+    return (bh_multi_array_${bh_ctype}_p)result;
 }
 
 %if $bh_ctype != "bool8"
@@ -211,11 +230,15 @@ void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, 
     (*((multi_array<${ctype}>*)self))(*((multi_array<${ctype}>*)other));
 }
 
+// Update with an data
+void bh_multi_array_${bh_ctype}_assign_data(bh_multi_array_${bh_ctype}_p self, const void* data) {
+    (*((multi_array<${ctype}>*)self))((${ctype}*)data);
+}
+
 // Flatten view
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_flatten(bh_multi_array_${bh_ctype}_p self) {
     return (bh_multi_array_${bh_ctype}_p)&flatten((*((multi_array<${ctype}>*)self)));
 }
-
 
 // Transpose view
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_transpose(bh_multi_array_${bh_ctype}_p self) {
@@ -235,7 +258,7 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}
 ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self) {
     ${bh_atype} t1;
     ${ctype} t0 = scalar(sum(*((multi_array<${ctype}>*)self)));
-    t1.real = t0.real();     
+    t1.real = t0.real();
     t1.imag = t0.imag();
     return t1;
 }
@@ -243,7 +266,7 @@ ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self) {
 ${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self) {
     ${bh_atype} t1;
     ${ctype} t0 = scalar(product(*((multi_array<${ctype}>*)self)));
-    t1.real = t0.real();     
+    t1.real = t0.real();
     t1.imag = t0.imag();
     return t1;
 }
@@ -306,5 +329,16 @@ bh_multi_array_float64_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_cty
 }
 
 %end if
+
+    %for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+        %for $ctype3, $bh_atype3, $bh_ctype3, $bh_enum3 in $ops
+            %if $bh_ctype2 == $bh_ctype3
+
+void bh_multi_array_extmethod_${bh_ctype}_${bh_ctype2}_${bh_ctype3}(const char *name, bh_multi_array_${bh_ctype}_p out, bh_multi_array_${bh_ctype2}_p in1, bh_multi_array_${bh_ctype3}_p in2) {
+    Runtime::instance().enqueue_extension(name, *((multi_array<${ctype}>*) out), *((multi_array<${ctype2}>*) in1), *((multi_array<${ctype3}>*) in2));
+}
+            %end if
+        %end for
+    %end for
 
 %end for

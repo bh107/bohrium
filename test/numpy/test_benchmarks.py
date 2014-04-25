@@ -3,12 +3,14 @@ from numpytest import numpytest
 import bohrium.linalg as la
 from bohrium import examples as exp
 
-class test_jacobi(numpytest):
+class test_jacobi(numpytest):#disabled
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
         self.size = 20
     def init(self):
+        print "We need to implement numpy.norm() for test_jacobi() to work"
+        raise StopIteration()
         for t in ['np.float32','np.float64']:
             a = {}
             cmd  = "a[0] = self.array(({0},{0}),dtype={1});".format(self.size,t)

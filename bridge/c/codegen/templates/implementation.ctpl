@@ -51,7 +51,7 @@ bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_r
     t.real(rhs.real);
     t.imag(rhs.imag);
 
-    return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} (t));    
+    return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} (t));
 %else
     return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} ((${op3_type[0]})rhs));
 %end if
@@ -66,7 +66,7 @@ bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}_scalar_r
     t.real(rhs.real);
     t.imag(rhs.imag);
 
-    return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)lhs)), (t)));    
+    return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)lhs)), (t)));
 %else
     return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)lhs)), ((${op3_type[0]})rhs)));
 %end if
@@ -77,7 +77,7 @@ bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}_scalar_l
     t.real(lhs.real);
     t.imag(lhs.imag);
 
-    return (bh_multi_array_${op1_type[2]}_p)&(${op}((t), (*((multi_array<${op3_type[0]}>*)rhs))));    
+    return (bh_multi_array_${op1_type[2]}_p)&(${op}((t), (*((multi_array<${op3_type[0]}>*)rhs))));
 %else
     return (bh_multi_array_${op1_type[2]}_p)&(${op}(((${op2_type[0]})lhs), (*((multi_array<${op3_type[0]}>*)rhs))));
 %end if
@@ -110,8 +110,18 @@ void bh_multi_array_${op1_type[2]}_${opname}_in_place_scalar_rhs(bh_multi_array_
 %for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
 %if $opcode != "BH_IDENTITY" and opcount == 2 and $inplace == False
 %for $op1_type, $op2_type in $typesigs
+%if $opcode == "BH_ISNAN" or $opcode == "BH_ISINF"
+bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p rhs) {
+%else
 bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p rhs) {
+%end if
+%if $opcode == "BH_INVERT" and op1_type[2] == "bool8"
+    return (bh_multi_array_${op1_type[2]}_p)&(!((*((multi_array<${op2_type[0]}>*)rhs))));
+%else if $opcode == "BH_REAL" or $opcode == "BH_IMAG"
+    return (bh_multi_array_${op1_type[2]}_p)&(${op}<${op2_type[0]},${op1_type[0]}>((*((multi_array<${op2_type[0]}>*)rhs))));
+%else
     return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)rhs))));
+%end if
 }
 %slurp
 %end for
