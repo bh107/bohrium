@@ -1,15 +1,19 @@
-CC = gcc
+CC = mpicc
+#CC = gcc
 CPP = g++
 FLAGS = -O2 -lm
 BOOST = /opt/local/include/ 
 
-all: jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost
+all: heat-eq-jacobi jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost
 
 bench: all
 	./jacobi.sh
 
 clean:
 	rm -f jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost *~
+
+heat-eq-jacobi: src/heat-eq-jacobi.c
+	$(CC) src/heat-eq-jacobi.c -o bin/heat-eq-jacobi -O2 -lm -fopenmp -std=gnu99
 
 jacobi-naive: src/jacobi-naive.c
 	$(CC) src/jacobi-naive.c -o bin/jacobi-naive $(FLAGS)

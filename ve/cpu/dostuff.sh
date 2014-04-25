@@ -126,3 +126,25 @@ if [ ! -z "$1" ] && [ "$1" == "swater" ]; then
     read
 
 fi
+
+if [ ! -z "$1" ] && [ "$1" == "synth_fused" ]; then
+    ./dostuff.sh reset
+
+    echo "** WITH Fusion ***"
+    ./dostuff.sh prep_fuse
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/synth.py --size=20000000*20 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/synth.py --size=20000000*20 --bohrium=True
+    ./dostuff.sh move_fuse
+
+fi
+
+if [ ! -z "$1" ] && [ "$1" == "synth_sij" ]; then
+    ./dostuff.sh reset
+
+    echo "*** WITHOUT Fusion **"
+    ./dostuff.sh prep_sij
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/synth.py --size=20000000*20 --bohrium=True
+    BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/synth.py --size=20000000*20 --bohrium=True
+    ./dostuff.sh move_sij
+
+fi

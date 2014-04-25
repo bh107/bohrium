@@ -450,9 +450,10 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     //
     // Allocate memory for output
     //
-    TIMER_START
     for(size_t i=0; i<block.size(); ++i) {
         if ((block.program(i).op & ARRAY_OPS)>0) {
+
+            TIMER_START
             bh_view* operand_view = &block.instr(i).operand[0];
             if ((symbol_table[block.program(i).out].layout == SCALAR) && (operand_view->base->data == NULL)) {
                 operand_view->base->nelem = 1;
@@ -464,9 +465,9 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                 DEBUG(TAG, "fuse_mode(...);");
                 return res;
             }
+            TIMER_STOP("Allocating memory.")
         }
     }
-    TIMER_STOP("Allocating memory.")
 
     DEBUG(TAG, "fuse_mode(...) == Call kernel function!");
     //
@@ -477,11 +478,11 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     TIMER_STOP(block.symbol())
 
     DEBUG(TAG, "fuse_mode(...) == De-Allocate memory!");
-    TIMER_START
     //
     // De-Allocate operand memory
     for(size_t i=0; i<block.size(); ++i) {
         if (block.instr(i).opcode == BH_FREE) {
+            TIMER_START
             res = bh_vcache_free(&block.instr(i));
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
@@ -489,9 +490,9 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                 DEBUG(TAG,"Engine::fuse_mode(...);");
                 return res;
             }
+            TIMER_STOP("Deallocating memory.")
         }
     }
-    TIMER_STOP("Deallocating memory.")
     DEBUG(TAG,"Engine::fuse_mode(...);");
     return BH_SUCCESS;
 }
@@ -564,11 +565,6 @@ bh_error Engine::execute(bh_ir& bhir)
         Block* block = blocks[dag_idx];
         bh_error mode_res;
     
-        stringstream ss;
-        ss << " Exec(" << setw(3) << setfill('0') << exec_count << ")";
-        ss << " Dag(" << setw(3) << setfill('0') << dag_idx <<")";
-        size_t begin = Timevault::instance().sample_time();
-
         if (jit_fusion && \
             ((block->omask() & (ARRAY_OPS)) > 0) && \
             ((block->omask() & (EXTENSION)) == 0)) {
@@ -580,8 +576,6 @@ bh_error Engine::execute(bh_ir& bhir)
             fprintf(stderr, "Engine:execute(...) == ERROR: Failed running *_mode(...).\n");
             return BH_ERROR;
         }
-        size_t end = Timevault::instance().sample_time();
-        Timevault::instance().store(ss.str(), end-begin);
     }
 
     //
