@@ -450,8 +450,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     //
     // Allocate memory for output
     //
+    TIMER_START
     for(size_t i=0; i<block.size(); ++i) {
-        TIMER_START
         if ((block.program(i).op & ARRAY_OPS)>0) {
             bh_view* operand_view = &block.instr(i).operand[0];
             if ((symbol_table[block.program(i).out].layout == SCALAR) && (operand_view->base->data == NULL)) {
@@ -465,8 +465,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                 return res;
             }
         }
-        TIMER_STOP("Allocating memory.")
     }
+    TIMER_STOP("Allocating memory.")
 
     DEBUG(TAG, "fuse_mode(...) == Call kernel function!");
     //

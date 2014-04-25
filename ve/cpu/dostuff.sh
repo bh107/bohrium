@@ -102,24 +102,32 @@ if [ ! -z "$1" ] && [ "$1" == "jacobi" ]; then
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "swater" ]; then
-    ./dostuff.sh reset
 
     echo "** WITH Fusion ***"
+    ./dostuff.sh reset
     ./dostuff.sh prep_fuse
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/shallow_water.py --size=4000*4000*2 --bohrium=True
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/shallow_water.py --size=4000*4000*2 --bohrium=True
-    $BH_PYTHON ../../benchmark/Python/shallow_water.py --size=4000*4000*2 --bohrium=True
     ./dostuff.sh move_fuse
+
+    echo "That was fusion..."
+    read
 
     echo "*** NUMPY ***"
     $BH_PYTHON ../../benchmark/Python/shallow_water.py --size=4000*4000*2 --bohrium=False
     $BH_PYTHON ../../benchmark/Python/shallow_water.py --size=4000*4000*2 --bohrium=False
 
+    echo "That was NumPy..."
+    read
+
     echo "*** WITHOUT Fusion **"
+    ./dostuff.sh reset
     ./dostuff.sh prep_sij
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/shallow_water.py --size=4000*4000*2 --bohrium=True
     BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $BH_PYTHON ../../benchmark/Python/shallow_water.py --size=4000*4000*2 --bohrium=True
-    BH_VE_CPU_JIT_FUSION=0 $BH_PYTHON ../../benchmark/Python/shallow_water.py --size=4000*4000*2 --bohrium=True
     ./dostuff.sh move_sij
+
+    echo "That was without fusion..."
+    read
 
 fi
