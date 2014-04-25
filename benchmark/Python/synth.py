@@ -10,7 +10,7 @@ c = np.ones(N)
 
 B.start()
 for i in xrange(I):
-    t = (((a / (b + c) - c)+a)
+    t = a+b+c+a+b+c+a+b+c+a+b+c+a+b+c+a+b+c 
 
 B.stop()
 B.pprint()

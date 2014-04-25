@@ -21,7 +21,7 @@ if [ ! -z "$1" ] && [ "$1" == "prep_sij" ]; then
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "move_sij" ]; then
-    python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/sij/
+    python tools/move_code.py ~/.local/var/bh/kernels/ /tmp/code/sij/
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "prep_fuse" ]; then
@@ -30,7 +30,7 @@ if [ ! -z "$1" ] && [ "$1" == "prep_fuse" ]; then
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "move_fuse" ]; then
-    python tools/move_code.py ~/.local/cpu/kernels/ /tmp/code/fuse/
+    python tools/move_code.py ~/.local/var/bh/kernels/ /tmp/code/fuse/
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "sample" ]; then
@@ -128,7 +128,7 @@ if [ ! -z "$1" ] && [ "$1" == "swater" ]; then
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "synth_fused" ]; then
-    ./dostuff.sh reset
+    #./dostuff.sh reset
 
     echo "** WITH Fusion ***"
     ./dostuff.sh prep_fuse
@@ -139,7 +139,7 @@ if [ ! -z "$1" ] && [ "$1" == "synth_fused" ]; then
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "synth_sij" ]; then
-    ./dostuff.sh reset
+    #./dostuff.sh reset
 
     echo "*** WITHOUT Fusion **"
     ./dostuff.sh prep_sij
