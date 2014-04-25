@@ -31,7 +31,7 @@ inline Runtime& Runtime::instance()
     return instance;
 }
 
-inline Runtime::Runtime() : queue_size(0)
+inline Runtime::Runtime() : extension_count(BH_MAX_OPCODE_ID), queue_size(0)
 {
     bh_error err;
     char err_msg[1000];
@@ -410,6 +410,38 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, mu
     instr->operand[2] = op2.meta;
     assign_const_type( &instr->constant, op1 );
 
+    if (op2.getTemp()) { delete &op2; }
+}
+
+template <typename Ret, typename In1, typename In2>
+inline
+void Runtime::enqueue_extension(const std::string& name,
+                                multi_array<Ret>& op0,
+                                multi_array<In1>& op1,
+                                multi_array<In2>& op2)
+{
+    bh_instruction* instr;
+    bh_opcode opcode;
+
+    // Look for the extension opcode
+    std::map<std::string, bh_opcode>::iterator it = extensions.find(name);
+    if (it != extensions.end()) {   // Got it
+        opcode = it->second;
+    } else {                        // Add it
+        opcode = extension_count++;
+        extensions.insert(std::pair<std::string, bh_opcode>(name, opcode));
+    }
+
+    guard();
+
+    // Construct and enqueue the instructions
+    instr = &queue[queue_size++];
+    instr->opcode = extensions[name];
+    instr->operand[0] = op0.meta;
+    instr->operand[1] = op1.meta;
+    instr->operand[2] = op2.meta;
+
+    if (op1.getTemp()) { delete &op1; }
     if (op2.getTemp()) { delete &op2; }
 }
 
