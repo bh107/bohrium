@@ -70,5 +70,8 @@ install: all
 	mkdir -p $(INSTALLDIR)/cpu/kernels
 	mkdir -p $(INSTALLDIR)/cpu/objects
 	mkdir -p $(INSTALLDIR)/cpu/templates
-	cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
+	mkdir -p $(INSTALLDIR)/cpu/scripts
 	cp tac.h $(INSTALLDIR)/include/
+	cp templates/*.tpl $(INSTALLDIR)/cpu/templates/
+	cp scripts/*.sh $(INSTALLDIR)/cpu/scripts/
+	chmod 755 $(INSTALLDIR)/cpu/scripts/*
