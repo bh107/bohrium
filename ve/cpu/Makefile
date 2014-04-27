@@ -29,4 +29,10 @@ move_sij:
 	python tools/move_code.py ~/.local/var/bh/kernels/ /tmp/code/sij
 
 prep_fuse:
+	mkdir -p /tmp/code/fuse
+	rm /tmp/code/fuse/*.c
+
+prep_sij:
+	mkdir -p /tmp/code/sij
+	rm /tmp/code/sij/*.c
 

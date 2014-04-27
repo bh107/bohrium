@@ -115,7 +115,7 @@ class Timevault {
 //
 // Profiling macros for non-intrusive profiling.
 //
-#ifdef PROFILING
+#ifdef CPU_PROFILING
 #define TIMER_START               do{ Timevault::instance().start(); } while(0);
 #define TIMER_STOP(identifier)    do{ Timevault::instance().store(identifier, Timevault::instance().stop()); } while(0);
 #define TIMER_DUMP                do{ cout << Timevault::instance().text() << endl; } while(0);
