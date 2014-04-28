@@ -17,13 +17,13 @@
 ["-",           "BH_SUBTRACT",  "operator.ext", true],
 ["subtract",    "BH_SUBTRACT",  "operator.fun", true],
 
-["*=",  "BH_MULTIPLY",  "operator.int", true],
-["*",   "BH_MULTIPLY",  "operator.ext", true],
-["mul", "BH_MULTIPLY",  "operator.fun", true],
+["*=",          "BH_MULTIPLY",  "operator.int", true],
+["*",           "BH_MULTIPLY",  "operator.ext", true],
+["multiply",    "BH_MULTIPLY",  "operator.fun", true],
 
-["/=",  "BH_DIVIDE",    "operator.int", true],
-["/",   "BH_DIVIDE",    "operator.ext", true],
-["div", "BH_DIVIDE",    "operator.fun", true],
+["/=",      "BH_DIVIDE",    "operator.int", true],
+["/",       "BH_DIVIDE",    "operator.ext", true],
+["divide",  "BH_DIVIDE",    "operator.fun", true],
 
 ["%=",  "BH_MOD",   "operator.int", true],
 ["%",   "BH_MOD",   "operator.ext", true],
@@ -41,11 +41,11 @@
 ["^",           "BH_BITWISE_XOR",   "operator.ext", true],
 ["bitwise_xor", "BH_BITWISE_XOR",   "operator.fun", true],
 
-["<<=", "BH_LEFT_SHIFT",    "operator.int", false],
-["left_shift",  "BH_LEFT_SHIFT",  "operator.fun", true],
+["<<=",         "BH_LEFT_SHIFT",    "operator.int", false],
+["left_shift",  "BH_LEFT_SHIFT",    "operator.fun", true],
 
-[">>=", "BH_RIGHT_SHIFT",   "operator.int", false],
-["right_shift", "BH_RIGHT_SHIFT", "operator.fun", true],
+[">>=",         "BH_RIGHT_SHIFT",   "operator.int", false],
+["right_shift", "BH_RIGHT_SHIFT",   "operator.fun", true],
 
 ["==",      "BH_EQUAL", "operator.ext", true],
 ["equal",   "BH_EQUAL", "operator.fun", true],
@@ -56,17 +56,17 @@
 [">",       "BH_GREATER",   "operator.ext", true],
 ["greater", "BH_GREATER",   "operator.fun", true],
 
-[">=",                  "BH_GREATER_EQUAL",  "operator.ext", true],
-["greater_or_equal",    "BH_GREATER_EQUAL",  "operator.fun", true],
+[">=",              "BH_GREATER_EQUAL",  "operator.ext", true],
+["greater_equal",   "BH_GREATER_EQUAL",  "operator.fun", true],
 
 ["<",       "BH_LESS",  "operator.ext", true],
 ["less",    "BH_LESS",  "operator.fun", true],
 
-["<=",              "BH_LESS_EQUAL",    "operator.ext", true],
-["less_or_equal",   "BH_LESS_EQUAL",    "operator.fun", true],
+["<=",          "BH_LESS_EQUAL",    "operator.ext", true],
+["less_equal",  "BH_LESS_EQUAL",    "operator.fun", true],
 
-["&&",          "BH_LOGICAL_AND", "operator.ext", true],
-["logical_and", "BH_LOGICAL_AND", "operator.fun", true],
+["&&",          "BH_LOGICAL_AND",   "operator.ext", true],
+["logical_and", "BH_LOGICAL_AND",   "operator.fun", true],
 
 ["||",          "BH_LOGICAL_OR",  "operator.ext", true],
 ["logical_or",  "BH_LOGICAL_OR",  "operator.fun", true],
@@ -82,10 +82,14 @@
 ["real",    "BH_IMAG", "operator.fun", false],
 ["imag",    "BH_REAL", "operator.fun", false],
 
-["pow",     "BH_POWER", "operator.fun", true],
-["abs",     "BH_ABSOLUTE", "operator.fun", true],
-["max",     "BH_MAXIMUM", "operator.fun", true],
+["pow",     "BH_POWER",     "operator.fun", true],
+["power",   "BH_POWER",     "operator.fun", true],
+["abs",     "BH_ABSOLUTE",  "operator.fun", true],
+["absolute","BH_ABSOLUTE",  "operator.fun", true],
+["max",     "BH_MAXIMUM",   "operator.fun", true],
+["maximum", "BH_MAXIMUM",   "operator.fun", true],
 ["min",     "BH_MINIMUM", "operator.fun", true],
+["minimum", "BH_MINIMUM", "operator.fun", true],
 ["sin",     "BH_SIN", "operator.fun", true],
 ["cos",     "BH_COS", "operator.fun", true],
 ["tan",     "BH_TAN", "operator.fun", true],
