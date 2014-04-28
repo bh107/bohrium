@@ -64,6 +64,12 @@ inline bh_opcode reducible_to_opcode(reducible opcode)
 template <typename T>
 multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
 {
+    if (axis<0) {
+        axis = op.getRank()+axis;
+    }
+    if (axis>=op.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
     multi_array<T>* result = &Runtime::instance().temp<T>();
 
     result->meta.start = 0;                 // Update meta-data
