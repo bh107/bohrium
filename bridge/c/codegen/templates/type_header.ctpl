@@ -102,13 +102,15 @@ DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(uin
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint64_t rank, const int64_t* shape);
 %end if
 
-%if $bh_ctype == "uint64" or $bh_ctype == "uint32" 
+%if $bh_ctype == "uint64" or $bh_ctype == "uint32"
 // Construct a new array with sequential numbers
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(uint64_t size);
 %end if
 
-// Construct a new random-filled array
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length);
+%if $bh_ctype == "uint64"
+// Construct a new random-filled array using Random123
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random123(uint64_t length, uint64_t start, uint64_t key);
+%end if
 
 // Construct a new array, filled with the specified value
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${bh_atype} value, uint64_t rank, const int64_t* shape);

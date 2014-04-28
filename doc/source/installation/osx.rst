@@ -7,7 +7,7 @@ You need to install the `Xcode Developer Tools <https://developer.apple.com/xcod
 
 You also need the following packages from MacPorts::
 
-  sudo port install python27 cmakei py27-cheetah
+  sudo port install python27 cmake py27-cheetah
 
 If you also want to build the Mono libraries (only required for the C# NumCIL package), you also need the Mono package::
 
@@ -32,6 +32,15 @@ Make sure your system compiler is the one provided by Xcode, you can run the fol
   Apple LLVM version 5.0 (clang-500.2.79) (based on LLVM 3.3svn)
   Target: x86_64-apple-darwin13.0.0
   Thread model: posix
+
+When building the Python/NumPy bridge make sure that NumPy development files are available::
+
+  export PYTHONPATH=<numpy install dir>/lib/python<python version>/site-packages:$PYTHONPATH
+  #Example
+  export PYTHONPATH=~/numpy-1.8.1/install/lib/python2.7/site-packages:$PYTHONPATH
+
+
+
 
 When building and installing Bohrium we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
 
@@ -64,9 +73,9 @@ The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python
 
 The ``DYLD_LIBRARY_PATH`` should include the path to the installation directory::
 
-  export DYLD_LIBRARY_PATH=<install dir>:$DYLD_LIBRARY_PATH
+  export DYLD_LIBRARY_PATH=<install dir>/lib:$DYLD_LIBRARY_PATH
   #Example
-  export DYLD_LIBRARY_PATH=~/.local:$DYLD_LIBRARY_PATH
+  export DYLD_LIBRARY_PATH=~/.local/lib:$DYLD_LIBRARY_PATH
 
 Now the basic installation should work. Try running the NumPy test suite::
 

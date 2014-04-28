@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
 http://bohrium.bitbucket.org
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -75,7 +75,7 @@ multi_array<T>& zeros(const Dimensions&... shape)
 //
 // Directly mapped to bytecode
 template <typename T>
-multi_array<T>& randomr(uint64_t nelem, uint64_t start, uint64_t key)
+multi_array<T>& random123(uint64_t nelem, uint64_t start, uint64_t key)
 {
     multi_array<T>* result = new multi_array<T>(nelem);
     result->link();
@@ -151,7 +151,7 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
     } else if (start==adj_end) {
         throw std::runtime_error("Error: Invalid range [start=end].");
     }
-    
+
     uint64_t nelem;
     if (skip>0) {
         nelem = (adj_end-start+1)/skip;

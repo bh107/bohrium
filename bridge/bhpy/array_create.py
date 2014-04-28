@@ -310,9 +310,9 @@ def empty_like(a, dtype=None, bohrium=None):
     array([[ -2.00000715e+000,   1.48219694e-323,  -2.00000572e+000],#random
            [  4.38791518e-305,  -2.00000715e+000,   4.17269252e-309]])
     """
-    if dtype == None:
+    if dtype is None:
         dtype = a.dtype
-    if bohrium == None:
+    if bohrium is None:
         bohrium = ndarray.check(a)
     return empty(a.shape, dtype, bohrium)
 
@@ -367,9 +367,9 @@ def zeros_like(a, dtype=None, bohrium=None):
     array([ 0.,  0.,  0.])
 
     """
-    if dtype == None:
+    if dtype is None:
         dtype = a.dtype
-    if bohrium == None:
+    if bohrium is None:
         bohrium = ndarray.check(a)
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[:] = b.dtype.type(0)
@@ -426,9 +426,9 @@ def ones_like(a, dtype=None, bohrium=None):
     array([ 1.,  1.,  1.])
 
     """
-    if dtype == None:
+    if dtype is None:
         dtype = a.dtype
-    if bohrium == None:
+    if bohrium is None:
         bohrium = ndarray.check(a)
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[:] = b.dtype.type(1)

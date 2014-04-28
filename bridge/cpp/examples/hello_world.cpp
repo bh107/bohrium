@@ -97,12 +97,29 @@ void compute()
     //b = sin(a);
     //b = a;
     std::cout << (b+a) << std::endl;
-    */
 
     //
     // Random
-    cout << randomr<float>(10, 1, 0) << endl;
-    cout << randomr<float>(10, 2, 0) << endl;
+    cout << random123<float>(10, 1, 0) << endl;
+    cout << random123<float>(10, 2, 0) << endl;
+    */
+
+    //
+    // Explicit return...
+    multi_array<float> a,b,c;
+    a = ones<float>(10);
+    b = ones<float>(10);
+    c = ones<float>(10);
+
+    cout << add(a, b) << endl;
+    cout << add(c, a, b) << endl;
+
+    c = add(a, b);
+    cout << c << endl;
+
+    add(c, a, b);
+    cout << c << endl;
+
 }
 
 int main()

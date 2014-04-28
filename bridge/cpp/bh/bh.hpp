@@ -358,7 +358,7 @@ multi_array<T>& randu(size_t n, ...);
 
                             // REDUCTIONS
 template <typename T>       // Partial
-multi_array<T>& reduce(multi_array<T>& op, reducible opc, size_t axis);
+multi_array<T>& reduce(multi_array<T>& op, reducible opc, int64_t axis);
                             // FULL
 template <typename T>       // Numeric
 multi_array<T>& sum(multi_array<T>& op);

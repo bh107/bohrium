@@ -1,7 +1,7 @@
 from array_create import *
 from array_manipulation import *
 from ufunc import ufuncs
-from ndarray import check
+from ndarray import check, check_biclass, fix_biclass
 from _info import numpy_types
 from _util import flush
 import linalg

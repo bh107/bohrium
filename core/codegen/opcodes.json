@@ -2007,7 +2007,6 @@
     "id":   "69",
     "nop":   2,
     "types": [
-            [ "BH_UINT32", "BH_R123" ],
             [ "BH_UINT64", "BH_R123" ]
     ],
     "layout": [
