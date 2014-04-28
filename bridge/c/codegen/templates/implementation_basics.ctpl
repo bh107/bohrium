@@ -158,10 +158,12 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(uint64_t size)
 }
 %end if
 
-// Construct a new random-filled array
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random(const int64_t length) {
-    return (bh_multi_array_${bh_ctype}_p)&(random<${ctype}>(length));
+%if $bh_ctype == "uint64"
+// Construct a new random-filled array using Random123
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random123(uint64_t length, uint64_t start, uint64_t key) {
+    return (bh_multi_array_${bh_ctype}_p)&(random123<${ctype}>(length, start, key));
 }
+%end if
 
 // Construct a new array, filled with the specified value
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_value(const ${bh_atype} value, uint64_t rank, const int64_t* shape) {
