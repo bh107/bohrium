@@ -29,6 +29,13 @@ purge:
 	rm -f ~/.local/lib/libbh_ve_cpu.so
 	rm -f ~/.local/include/tac.h
 
+purge_all:
+	rm -rf ~/.local/bin
+	rm -rf ~/.local/include
+	rm -rf ~/.local/var
+	rm -rf ~/.local/lib
+	rm -rf ~/.local/share/bh
+
 #
 # "Reinstall" the cpu-engine
 reset: purge install
@@ -73,4 +80,9 @@ synth_sij:
 
 synth_fused:
 	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/benchmark/Python/synth.py --size=20000000*20 --bohrium=True
+
+#
+# Tests
+test:
+	$(BH_PYTHON) $(ROOT)/test/numpy/numpytest.py
 
