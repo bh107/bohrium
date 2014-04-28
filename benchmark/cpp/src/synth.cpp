@@ -27,55 +27,17 @@ using namespace bh;
 using namespace argparse;
 
 template <typename T>
-multi_array<T>& cnd(multi_array<T>& x)
+multi_array<T> compute(size_t n, size_t iterations)
 {
-    multi_array<T> l, k, w;
-    multi_array<bool> mask;
-    T a1 = 0.31938153,
-      a2 =-0.356563782,
-      a3 = 1.781477937,
-      a4 =-1.821255978,
-      a5 = 1.330274429,
-      pp = 2.5066282746310002; // sqrt(2.0*PI)
-
-    l = abs(x);
-    k = 1.0 / (1.0 + 0.2316419 * l);
-    w = 1.0 - 1.0 / pp * exp(-1.0*l*l/2.0) * \
-        (a1*k + \
-         a2*(pow(k,(T)2)) + \
-         a3*(pow(k,(T)3)) + \
-         a4*(pow(k,(T)4)) + \
-         a5*(pow(k,(T)5)));
-
-    mask = x < 0.0;
-    return w * as<T>(!mask) + (1.0-w)* as<T>(mask);
-}
-
-//FLOP count: 2*s+i*(s*8+2*s*26) where s is samples and i is iterations
-template <typename T>
-T* pricing(size_t samples, size_t iterations, char flag, T x, T d_t, T r, T v)
-{
-    multi_array<T> d1, d2, res, s;
-    T* p    = (T*)malloc(sizeof(T)*iterations);    // Intermediate results
-    T t     = d_t;                              // Initial delta
-
-    s = random<T>((int64_t)samples)*4.0 +58.0;           // Model between 58-62
-
+    multi_array<T> a, b, c, r;
+    a = ones<T>(n, n);
+    b = ones<T>(n, n);
+    c = ones<T>(n, n);
     for(size_t i=0; i<iterations; i++) {
-        d1 = (log(s/x) + (r+v*v/2.0)*t) / (v*sqrt(t));
-        d2 = d1-v*sqrt(t);
-
-        if (flag == 'c') {
-            res = s * cnd(d1) - x * exp(-r * t) * cnd(d2);
-        } else {
-            res = x * exp(-r*t) * cnd(-1.0*d2) - s*cnd(-1.0*d1);
-        }
-
-        t += d_t;                               // Increment delta
-        p[i] = scalar(sum(res)) / (T)samples;   // Result from timestep
+        r = a+b+c+a+b+c+a+b+c;
     }
 
-    return p;
+    return r;
 }
 
 int main(int argc, char* argv[])
@@ -104,26 +66,15 @@ int main(int argc, char* argv[])
     }
 
     bh_intp start = sample_time();
-    double* prices = pricing<double>(   // Do the computations...
-        args.size[0], args.size[1],
-        'c', 65.0, 1.0 / 365.0,
-        0.08, 0.3
-    );
+    multi_array<double> res = compute<double>(args.size[0], args.size[1]);
                                         // Output timing
     cout << "{elapsed-time: "<< (sample_time()-start)/1000000.0 <<"";
     if (args.verbose) {                 // and values.
         cout << ", \"output\": [";
-        for(size_t i=0; i<args.size[1]; i++) {
-            cout << prices[i];
-            if (args.size[1]-1!=i) {
-                cout << ", ";
-            }
-        }
+        cout << res << endl;;
         cout << "]" << endl;
     }
     cout << "}" << endl;
 
-    free(prices);                       // Cleanup
     return 0;
 }
-
