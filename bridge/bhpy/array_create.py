@@ -508,7 +508,6 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
         step  = numpy.dtype(dtype).type(step)
     return range(size,dtype=dtype) * step + start
 
-
 def range(size, dtype=numpy.uint64):
     if (not isinstance(size, (int,long))):
         raise ValueError("size must be an integer")
@@ -529,8 +528,7 @@ def range(size, dtype=numpy.uint64):
         A = empty(size,dtype=numpy.uint64,bohrium=True)
     f = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(A.dtype))
     ret = f(size)
-    print ret
-    return ndarray.new((size,), A.dtype, ret)
+    A = ndarray.new((size,), A.dtype, ret)
     if (dtype != A.dtype.type):
         B = empty_like(A,dtype=dtype)
         B[:] = A[:]
