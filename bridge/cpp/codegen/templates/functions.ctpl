@@ -18,7 +18,6 @@ namespace bh {
 %if $optype == "operator.fun"
 %slurp
 %if $opcount == 2
-// Implicit creation of temporary array for result
 template <typename T>
 multi_array<T>& $op (multi_array<T> &rhs)
 {
@@ -28,16 +27,8 @@ multi_array<T>& $op (multi_array<T> &rhs)
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
     return *result;
 }
-// Explicit use of existing array for result
-template <typename T>
-multi_array<T>& $op (multi_array<T> res, multi_array<T> &rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
-    return res;
-}
 %end if
 %if $opcount == 3
-// Implicit creation and use of temporary array for result
 template <typename T>
 multi_array<T>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
 {
@@ -66,28 +57,6 @@ multi_array<T>& $op (const T &lhs, multi_array<T> &rhs)
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
     return *result;
-}
-
-// Explicit use of existing array for result
-template <typename T>
-multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-    return res;
-}
-
-template <typename T>
-multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-    return res;
-}
-
-template <typename T>
-multi_array<T>& $op (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-    return res;
 }
 
 %end if

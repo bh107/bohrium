@@ -102,6 +102,7 @@ def main():
     gens = [
         ('traits.ctpl',     'traits.hpp',    types),
         ('functions.ctpl',  'functions.hpp', op_map),
+        ('bytecode.ctpl',   'functions.bytecode.hpp', op_map),
         ('operators.ctpl',  'operators.hpp', op_map),
     ]
 
