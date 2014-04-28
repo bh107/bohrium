@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from _util import dtype_from_bhc, dtype_name
 import bhc
+import numpy
 
 # This module consist of bohrium.ndarray methods
 
@@ -31,6 +32,8 @@ def check(ary):
 
 #Returns True if 'ary' is a NumPy view with a Bohrium base array
 def check_biclass(ary):
+    if not isinstance(ary, numpy.ndarray) or numpy.isscalar(ary):
+        return False
     if check(ary):
         return False
     else:
