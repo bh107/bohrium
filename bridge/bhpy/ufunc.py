@@ -175,6 +175,11 @@ class ufunc:
             f = eval("np.%s.reduce"%self.info['np_name'])
             return f(a, axis=axis, out=None)
 
+        if axis >= a.ndim:
+            raise ValueError("'axis' is out of bound")
+        if axis < 0:
+            axis = a.ndim+axis
+
         if a.ndim == 1:
             shape = (1,)
         else:
