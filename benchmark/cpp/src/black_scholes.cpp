@@ -30,7 +30,7 @@ template <typename T>
 multi_array<T>& cnd(multi_array<T>& x)
 {
     multi_array<T> l, k, w;
-    multi_array<bh_bool> mask;
+    multi_array<bool> mask;
     T a1 = 0.31938153,
       a2 =-0.356563782,
       a3 = 1.781477937,
@@ -103,14 +103,14 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    bh_intp start = _bh_timing();
+    bh_intp start = sample_time();
     double* prices = pricing<double>(   // Do the computations...
         args.size[0], args.size[1],
         'c', 65.0, 1.0 / 365.0,
         0.08, 0.3
     );
                                         // Output timing
-    cout << "{elapsed-time: "<< (_bh_timing()-start)/1000000.0 <<"";
+    cout << "{elapsed-time: "<< (sample_time()-start)/1000000.0 <<"";
     if (args.verbose) {                 // and values.
         cout << ", \"output\": [";
         for(size_t i=0; i<args.size[1]; i++) {
