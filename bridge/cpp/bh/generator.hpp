@@ -103,7 +103,7 @@ multi_array<T>& randu(const Dimensions&... shape)
  *  Create a range of values defined as [0, nelem[
  */
 template <typename T>
-multi_array<T>& range(size_t nelem)
+multi_array<T>& range(uint64_t nelem)
 {
     multi_array<T>* result = new multi_array<T>(nelem);
     result->link();
