@@ -17,6 +17,10 @@ class test_reduce(numpytest):
                 exec v
                 self.axis = axis
                 yield (a,v)
+            for axis in xrange(1,a[0].ndim):
+                exec v
+                self.axis = -axis
+                yield (a,v)
 
     def test_reduce(self,a):
         cmd = "res = np.add.reduce(a[0],axis=%d)"%self.axis
