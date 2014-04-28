@@ -68,17 +68,33 @@ multi_array<T>& zeros(const Dimensions&... shape)
     return *result;
 }
 
-/** Random number generators. **/
+//
+// Random number generators
+//
+
+//
+// Directly mapped to bytecode
+template <typename T>
+multi_array<T>& randomr(uint64_t nelem, uint64_t start, uint64_t key)
+{
+    multi_array<T>* result = new multi_array<T>(nelem);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM, *result, start, key);
+    result->setTemp(true);
+
+    return *result;
+}
+
+//
+// Sugar
 template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
 {
-    multi_array<uint64_t>* rand_input = new multi_array<uint64_t>(shape...);
-    rand_input->link();
-
     multi_array<T>* result = new multi_array<T>(shape...);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_RANDOM, *result, (uint64_t)time(NULL), (uint64_t)0);
+    Runtime::instance().enqueue((bh_opcode)BH_RANDOM, *result, (uint64_t)0, (uint64_t)time(NULL));
     result->setTemp(true);
 
     return *result;
@@ -99,11 +115,15 @@ multi_array<T>& randu(const Dimensions&... shape)
     return *result;
 }
 
+//
+// End of random number generators.
+//
+
 /**
  *  Create a range of values defined as [0, nelem[
  */
 template <typename T>
-multi_array<T>& range(size_t nelem)
+multi_array<T>& range(uint64_t nelem)
 {
     multi_array<T>* result = new multi_array<T>(nelem);
     result->link();

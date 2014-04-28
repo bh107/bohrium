@@ -494,33 +494,49 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     array([3, 5])
 
     """
-    if not bohrium:
+    if (not bohrium):
         return numpy.arange(start,stop,step,dtype)
-    if not stop:
+    if (not stop):
         stop = start
-        start = 0
-    if dtype is None:
-        dtype = numpy.int64
-    start = int(start)
-    stop  = int(stop)
-    step  = int(step)
+        start = type(stop)(0)
     size = int(math.ceil((float(stop) - float(start)) / float(step)))
-    if (dtype is numpy.int8 or
-        dtype is numpy.int16 or
-        dtype is numpy.int32 or
-        dtype is numpy.uint8 or
-        dtype is numpy.uint16 or
-        dtype is numpy.uint32 or
-        dtype is numpy.float16 or
-        dtype is numpy.float32 or
-        dtype is numpy.complex64):
-        dtype = numpy.uint32
+    if (dtype is None):
+        dtype = numpy.int64
     else:
-        dtype = numpy.uint64
+        start = numpy.dtype(dtype).type(start)
+        stop  = numpy.dtype(dtype).type(stop)
+        step  = numpy.dtype(dtype).type(step)
+    return range(size,dtype=dtype) * step + start
 
-    f = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(dtype))
-    ret = f(start, stop, step)
-    return ndarray.new((size,), dtype, ret)
+
+def range(size, dtype=numpy.uint64):
+    if (not isinstance(size, (int,long))):
+        raise ValueError("size must be an integer")
+    if (size < 1):
+        raise ValueError("size must be greater than 0")
+    dtype = numpy.dtype(dtype).type
+    if (dtype in [numpy.int8,
+                  numpy.int16,
+                  numpy.int32,
+                  numpy.uint8,
+                  numpy.uint16,
+                  numpy.uint32,
+                  numpy.float16,
+                  numpy.float32,
+                  numpy.complex64]):
+        A = empty(size,dtype=numpy.uint32,bohrium=True)
+    else:
+        A = empty(size,dtype=numpy.uint64,bohrium=True)
+    f = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(A.dtype))
+    ret = f(size)
+    print ret
+    return ndarray.new((size,), A.dtype, ret)
+    if (dtype != A.dtype.type):
+        B = empty_like(A,dtype=dtype)
+        B[:] = A[:]
+        return B
+    else:
+        return A
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False,\
              dtype=float, bohrium=True):

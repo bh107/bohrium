@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh/bh.hpp>
 
 using namespace bh;
+using namespace std;
 
 template <typename T>
 void complex_ones()
@@ -74,11 +75,10 @@ void compute()
     hullet(diller);
 
     std::cout << "Hvad er der i hullet? " << hullet << "." << std::endl;
-    */
     std::cout << "Range(10)" << range<int64_t>(10) << std::endl;
     std::cout << "Range(0, 10, 2)" << range<int64_t>(0, 10, 1) << std::endl;
 
-    /*1
+    1
     // Scan
     multi_array<float> a;
     a = ones<float>(20);
@@ -98,6 +98,11 @@ void compute()
     //b = a;
     std::cout << (b+a) << std::endl;
     */
+
+    //
+    // Random
+    cout << randomr<float>(10, 1, 0) << endl;
+    cout << randomr<float>(10, 2, 0) << endl;
 }
 
 int main()
