@@ -29,6 +29,21 @@ import bhc
 def check(ary):
     return hasattr(ary, "bhc_ary")
 
+#Returns True if 'ary' is a NumPy view with a Bohrium base array
+def check_biclass(ary):
+    if check(ary):
+        return False
+    else:
+        return check(get_base(ary))
+
+#Returns a Bohrium version of 'ary' if 'ary' is a NumPy view with a
+#Bohrium base array else 'ary' is returned unmodified
+def fix_biclass(ary):
+    if check_biclass(ary):
+        return ary.view(type(get_base(ary)))
+    else:
+        return ary
+
 #Creates a new bohrium.ndarray with 'bhc_ary' as the Bohrium-C part.
 #Use a new Bohrium-C array when 'bhc_ary' is None.
 def new(shape, dtype, bhc_ary=None):
