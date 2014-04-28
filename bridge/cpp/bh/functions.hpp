@@ -138,7 +138,7 @@ multi_array<T>& subtract (multi_array<T>& res, const T &lhs, multi_array<T> &rhs
 
 // Implicit creation and use of temporary array for result
 template <typename T>
-multi_array<T>& mul (multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& multiply (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
@@ -148,7 +148,7 @@ multi_array<T>& mul (multi_array<T> &lhs, multi_array<T> &rhs)
 }
 
 template <typename T>
-multi_array<T>& mul (multi_array<T> &lhs, const T &rhs)
+multi_array<T>& multiply (multi_array<T> &lhs, const T &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
@@ -158,7 +158,7 @@ multi_array<T>& mul (multi_array<T> &lhs, const T &rhs)
 }
 
 template <typename T>
-multi_array<T>& mul (const T &lhs, multi_array<T> &rhs)
+multi_array<T>& multiply (const T &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
     result->link();
@@ -169,21 +169,21 @@ multi_array<T>& mul (const T &lhs, multi_array<T> &rhs)
 
 // Explicit use of existing array for result
 template <typename T>
-multi_array<T>& mul (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& multiply (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, res, lhs, rhs);
     return res;
 }
 
 template <typename T>
-multi_array<T>& mul (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
+multi_array<T>& multiply (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, res, lhs, rhs);
     return res;
 }
 
 template <typename T>
-multi_array<T>& mul (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
+multi_array<T>& multiply (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, res, lhs, rhs);
     return res;
@@ -191,7 +191,7 @@ multi_array<T>& mul (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 
 // Implicit creation and use of temporary array for result
 template <typename T>
-multi_array<T>& div (multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& divide (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
@@ -201,7 +201,7 @@ multi_array<T>& div (multi_array<T> &lhs, multi_array<T> &rhs)
 }
 
 template <typename T>
-multi_array<T>& div (multi_array<T> &lhs, const T &rhs)
+multi_array<T>& divide (multi_array<T> &lhs, const T &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
@@ -211,7 +211,7 @@ multi_array<T>& div (multi_array<T> &lhs, const T &rhs)
 }
 
 template <typename T>
-multi_array<T>& div (const T &lhs, multi_array<T> &rhs)
+multi_array<T>& divide (const T &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
     result->link();
@@ -222,21 +222,21 @@ multi_array<T>& div (const T &lhs, multi_array<T> &rhs)
 
 // Explicit use of existing array for result
 template <typename T>
-multi_array<T>& div (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& divide (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, res, lhs, rhs);
     return res;
 }
 
 template <typename T>
-multi_array<T>& div (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
+multi_array<T>& divide (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, res, lhs, rhs);
     return res;
 }
 
 template <typename T>
-multi_array<T>& div (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
+multi_array<T>& divide (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, res, lhs, rhs);
     return res;
@@ -721,7 +721,7 @@ multi_array<T>& greater (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 
 // Implicit creation and use of temporary array for result
 template <typename T>
-multi_array<T>& greater_or_equal (multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
@@ -731,7 +731,7 @@ multi_array<T>& greater_or_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 }
 
 template <typename T>
-multi_array<T>& greater_or_equal (multi_array<T> &lhs, const T &rhs)
+multi_array<T>& greater_equal (multi_array<T> &lhs, const T &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
@@ -741,7 +741,7 @@ multi_array<T>& greater_or_equal (multi_array<T> &lhs, const T &rhs)
 }
 
 template <typename T>
-multi_array<T>& greater_or_equal (const T &lhs, multi_array<T> &rhs)
+multi_array<T>& greater_equal (const T &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
     result->link();
@@ -752,21 +752,21 @@ multi_array<T>& greater_or_equal (const T &lhs, multi_array<T> &rhs)
 
 // Explicit use of existing array for result
 template <typename T>
-multi_array<T>& greater_or_equal (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& greater_equal (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, res, lhs, rhs);
     return res;
 }
 
 template <typename T>
-multi_array<T>& greater_or_equal (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
+multi_array<T>& greater_equal (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, res, lhs, rhs);
     return res;
 }
 
 template <typename T>
-multi_array<T>& greater_or_equal (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
+multi_array<T>& greater_equal (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, res, lhs, rhs);
     return res;
@@ -827,7 +827,7 @@ multi_array<T>& less (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 
 // Implicit creation and use of temporary array for result
 template <typename T>
-multi_array<T>& less_or_equal (multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
@@ -837,7 +837,7 @@ multi_array<T>& less_or_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 }
 
 template <typename T>
-multi_array<T>& less_or_equal (multi_array<T> &lhs, const T &rhs)
+multi_array<T>& less_equal (multi_array<T> &lhs, const T &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
     result->link();
@@ -847,7 +847,7 @@ multi_array<T>& less_or_equal (multi_array<T> &lhs, const T &rhs)
 }
 
 template <typename T>
-multi_array<T>& less_or_equal (const T &lhs, multi_array<T> &rhs)
+multi_array<T>& less_equal (const T &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
     result->link();
@@ -858,21 +858,21 @@ multi_array<T>& less_or_equal (const T &lhs, multi_array<T> &rhs)
 
 // Explicit use of existing array for result
 template <typename T>
-multi_array<T>& less_or_equal (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& less_equal (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, res, lhs, rhs);
     return res;
 }
 
 template <typename T>
-multi_array<T>& less_or_equal (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
+multi_array<T>& less_equal (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, res, lhs, rhs);
     return res;
 }
 
 template <typename T>
-multi_array<T>& less_or_equal (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
+multi_array<T>& less_equal (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, res, lhs, rhs);
     return res;
@@ -1124,6 +1124,59 @@ multi_array<T>& pow (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
     return res;
 }
 
+// Implicit creation and use of temporary array for result
+template <typename T>
+multi_array<T>& power (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& power (multi_array<T> &lhs, const T &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& power (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
+    return *result;
+}
+
+// Explicit use of existing array for result
+template <typename T>
+multi_array<T>& power (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, res, lhs, rhs);
+    return res;
+}
+
+template <typename T>
+multi_array<T>& power (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, res, lhs, rhs);
+    return res;
+}
+
+template <typename T>
+multi_array<T>& power (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, res, lhs, rhs);
+    return res;
+}
+
 // Implicit creation of temporary array for result
 template <typename T>
 multi_array<T>& abs (multi_array<T> &rhs)
@@ -1137,6 +1190,23 @@ multi_array<T>& abs (multi_array<T> &rhs)
 // Explicit use of existing array for result
 template <typename T>
 multi_array<T>& abs (multi_array<T> res, multi_array<T> &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, res, rhs);
+    return res;
+}
+// Implicit creation of temporary array for result
+template <typename T>
+multi_array<T>& absolute (multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, *result, rhs);
+    return *result;
+}
+// Explicit use of existing array for result
+template <typename T>
+multi_array<T>& absolute (multi_array<T> res, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, res, rhs);
     return res;
@@ -1196,6 +1266,59 @@ multi_array<T>& max (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 
 // Implicit creation and use of temporary array for result
 template <typename T>
+multi_array<T>& maximum (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& maximum (multi_array<T> &lhs, const T &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& maximum (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
+    return *result;
+}
+
+// Explicit use of existing array for result
+template <typename T>
+multi_array<T>& maximum (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, res, lhs, rhs);
+    return res;
+}
+
+template <typename T>
+multi_array<T>& maximum (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, res, lhs, rhs);
+    return res;
+}
+
+template <typename T>
+multi_array<T>& maximum (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, res, lhs, rhs);
+    return res;
+}
+
+// Implicit creation and use of temporary array for result
+template <typename T>
 multi_array<T>& min (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
@@ -1242,6 +1365,59 @@ multi_array<T>& min (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
 
 template <typename T>
 multi_array<T>& min (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, res, lhs, rhs);
+    return res;
+}
+
+// Implicit creation and use of temporary array for result
+template <typename T>
+multi_array<T>& minimum (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& minimum (multi_array<T> &lhs, const T &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& minimum (const T &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
+    return *result;
+}
+
+// Explicit use of existing array for result
+template <typename T>
+multi_array<T>& minimum (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, res, lhs, rhs);
+    return res;
+}
+
+template <typename T>
+multi_array<T>& minimum (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, res, lhs, rhs);
+    return res;
+}
+
+template <typename T>
+multi_array<T>& minimum (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, res, lhs, rhs);
     return res;
