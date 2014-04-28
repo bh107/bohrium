@@ -19,7 +19,7 @@ void compute()
     a = bh_multi_array_float32_new_ones(2, shape);
     
     // Range from [0 - 9[
-    r_flat = bh_multi_array_uint32_new_range(0, 9, 1);
+    r_flat = bh_multi_array_uint32_new_range(10);
 
     // Reshaped to 3x3
     r_shaped = bh_multi_array_uint32_new_from_view(bh_multi_array_uint32_get_base(r_flat), 2, 0, shape, stride);
