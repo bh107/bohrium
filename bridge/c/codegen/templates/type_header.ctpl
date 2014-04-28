@@ -100,9 +100,11 @@ DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_zeroes(uin
 
 // Construct a new one-filled array
 DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint64_t rank, const int64_t* shape);
+%end if
 
+%if $bh_ctype == "uint64" or $bh_ctype == "uint32" 
 // Construct a new array with sequential numbers
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(const int64_t start, const int64_t end, const int64_t skip);
+DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(uint64_t size);
 %end if
 
 // Construct a new random-filled array
