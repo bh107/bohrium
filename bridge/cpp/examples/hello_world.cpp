@@ -100,8 +100,8 @@ void compute()
 
     //
     // Random
-    cout << randomr<float>(10, 1, 0) << endl;
-    cout << randomr<float>(10, 2, 0) << endl;
+    cout << random123<float>(10, 1, 0) << endl;
+    cout << random123<float>(10, 2, 0) << endl;
     */
 
     //

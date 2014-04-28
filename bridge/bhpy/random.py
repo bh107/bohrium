@@ -6,6 +6,7 @@ Random functions
 
 """
 import bohrium as np
+import ndarray
 import numpy
 import operator
 import datetime
@@ -14,9 +15,10 @@ import bhc
 import _util
 
 
-def random123(shape, key, start_index=0, dtype=np.uint64, bohrium=True):
+def random123(shape, key, start_index=0, bohrium=True):
     """
     New array of uniform pseudo numbers based on the random123 algorithm.
+    NB: dtype is np.uint64 always
 
     Parameters
     ----------
@@ -24,7 +26,6 @@ def random123(shape, key, start_index=0, dtype=np.uint64, bohrium=True):
                   Defines the shape of the returned array of random floats.
     key         : The key or seed for the random123 algorithm
     start_index : The start index (must be positive)
-    dtype       : The data type of the output array (uint32 or uint64)
 
     Returns
     -------
@@ -32,15 +33,15 @@ def random123(shape, key, start_index=0, dtype=np.uint64, bohrium=True):
     """
     assert bohrium is True
     assert start_index >= 0
-    assert dtype is np.uint32 or dtype is np.uint64
 
     #TODO: We do not implement random123
 
     totalsize = reduce(operator.mul, shape, 1)
-    out = _bh.ndarray((totalsize,), dtype=dtype)
-    exec "out.bhc_ary = bhc.bh_multi_array_%s_new_random(totalsize)"%_util.dtype_name(dtype)
-    exec "bhc.bh_multi_array_%s_set_temp(out.bhc_ary, 0)"%_util.dtype_name(dtype)
-    return out.reshape(shape)
+    f = eval("bhc.bh_multi_array_uint64_new_random123")
+    print totalsize
+    t = f(totalsize, start_index, key)
+    ret = ndarray.new((totalsize,), np.uint64, t)
+    return ret.reshape(shape)
 
 class Random:
     def __init__(self, seed=None):
@@ -103,12 +104,10 @@ class Random:
                [-2.99091858, -0.79479508],
                [-1.23204345, -1.75224494]])
         """
-        if dtype is np.float32:
-            dtype_uint = np.uint32
-        elif dtype is np.float64:
+        if dtype is np.float64:
             dtype_uint = np.uint64
         else:
-            raise ValueError("dtype must be float32 or float64")
+            raise ValueError("dtype must be float64")
         if not bohrium:
             return numpy.random.random(size=shape)
 
@@ -121,7 +120,7 @@ class Random:
                 s = shape #It might be a tuble already
 
         #Generate random numbers as uint
-        r_int = random123(s, self.seed, start_index=self.index, dtype=dtype_uint, bohrium=bohrium)
+        r_int = random123(s, self.seed, start_index=self.index, bohrium=bohrium)
         #Convert random numbers to float in the interval [0.0, 1.0).
         r = np.empty_like(r_int, dtype=dtype)
         r[:] = r_int

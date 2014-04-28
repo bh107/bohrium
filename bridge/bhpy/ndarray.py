@@ -22,12 +22,30 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from _util import dtype_from_bhc, dtype_name
 import bhc
+import numpy
 
 # This module consist of bohrium.ndarray methods
 
 #Returns True if 'ary' is a Bohrium array
 def check(ary):
     return hasattr(ary, "bhc_ary")
+
+#Returns True if 'ary' is a NumPy view with a Bohrium base array
+def check_biclass(ary):
+    if not isinstance(ary, numpy.ndarray) or numpy.isscalar(ary):
+        return False
+    if check(ary):
+        return False
+    else:
+        return check(get_base(ary))
+
+#Returns a Bohrium version of 'ary' if 'ary' is a NumPy view with a
+#Bohrium base array else 'ary' is returned unmodified
+def fix_biclass(ary):
+    if check_biclass(ary):
+        return ary.view(type(get_base(ary)))
+    else:
+        return ary
 
 #Creates a new bohrium.ndarray with 'bhc_ary' as the Bohrium-C part.
 #Use a new Bohrium-C array when 'bhc_ary' is None.

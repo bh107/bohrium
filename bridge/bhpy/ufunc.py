@@ -26,16 +26,23 @@ import bhc
 import numpy as np
 import _info
 from _util import dtype_name
-from ndarray import get_bhc
+from ndarray import get_bhc, check_biclass
 import ndarray
 
 def extmethod(name, out, in1, in2):
     assert in1.dtype == in2.dtype
+    if check_biclass(out) or check_biclass(in1) or check_biclass(in2):
+        raise NotImplementedError("NumPy views that points to Bohrium base "\
+                                  "arrays isn't supported")
+
     f = eval("bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
               dtype_name(in1), dtype_name(in2)))
     f(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
 
 def assign(a, out):
+    if check_biclass(a) or check_biclass(out):
+        raise NotImplementedError("NumPy views that points to Bohrium base "\
+                                  "arrays isn't supported")
     if ndarray.check(out):
         np.broadcast(a,out)#We only do this for the dimension mismatch check
         out_dtype = dtype_name(out)
@@ -69,6 +76,11 @@ class ufunc:
         #Check number of arguments
         if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
             raise ValueError("invalid number of arguments")
+
+        for a in args:
+            if check_biclass(a):
+                raise NotImplementedError("NumPy views that points to Bohrium base "\
+                                          "arrays isn't supported")
 
         #Check for shape mismatch and get the final output shape
         out_shape = np.broadcast(*args).shape if len(args) > 1 else args[0].shape
@@ -154,6 +166,10 @@ class ufunc:
 
     def reduce(self, a, axis=0, out=None):
         """ A Bohrium Reduction """
+
+        if check_biclass(a):
+            raise NotImplementedError("NumPy views that points to Bohrium base "\
+                                      "arrays isn't supported")
 
         if not ndarray.check(a):#Let NumPy handle NumPy array reductions
             f = eval("np.%s.reduce"%self.info['np_name'])
