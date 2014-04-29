@@ -1,0 +1,28 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+
+%for $op, $opcode, $optype, $opcount, $typesigs in $data
+
+template <typename T>
+multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
+
+    return res;
+}
+
+%end for
+

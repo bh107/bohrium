@@ -1,0 +1,49 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+
+%for $op, $opcode, $optype, $opcount, $typesigs in $data
+
+template <typename OutT, typename InT>
+multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &rhs)
+{
+    multi_array<OutT>* right = &rhs;
+    
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "$op: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    //
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(rhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes, even after broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, *right);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& $op (multi_array<OutT>& res, const InT rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
+    return res;
+}
+
+%end for
+

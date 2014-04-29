@@ -73,7 +73,9 @@ def main():
         if t[1] > mtime:
             mtime = t[1]
 
-    op_map  = []
+    op_map      = []
+    
+    datasets = {}
     for name, opcode, t, mapped in (x for x in operators if x[3]):
         code = [x for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
 
@@ -96,14 +98,29 @@ def main():
         else:
             print "The Bohrium opcodes no longer include [ %s ]." % opcode
             continue
-
-        op_map.append((name, opcode, t, nop, typesigs))
+        
+        foo = (name, opcode, t, nop, typesigs)
+        op_map.append(foo)
+        if t in datasets:
+            datasets[t].append(foo)
+        else:
+            datasets[t] = [foo]
 
     gens = [
         ('traits.ctpl',     'traits.hpp',    types),
         ('functions.ctpl',  'functions.hpp', op_map),
         ('bytecode.ctpl',   'functions.bytecode.hpp', op_map),
         ('operators.ctpl',  'operators.hpp', op_map),
+
+        ('runtime.header.ctpl',     'runtime.operations.hpp', datasets['runtime.binary']),
+        ('runtime.binary.ctpl',     'runtime.operations.hpp', datasets['runtime.binary']),
+        ('runtime.unary.ctpl',      'runtime.operations.hpp', datasets['runtime.unary']),
+        ('runtime.zero.ctpl',       'runtime.operations.hpp', datasets['runtime.zero']),
+        ('runtime.random.ctpl',     'runtime.operations.hpp', datasets['runtime.random']),
+        ('runtime.accumulate.ctpl', 'runtime.operations.hpp', datasets['runtime.accumulate']),
+        ('runtime.reduce.ctpl',     'runtime.operations.hpp', datasets['runtime.reduce']),
+        ('runtime.footer.ctpl',     'runtime.operations.hpp', datasets['runtime.reduce']),
+
     ]
 
     render( gens, tmpl_dir, output_dir, mtime )

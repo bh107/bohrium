@@ -1,0 +1,18 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+%include raw "codegen/templates/license.txt"
+
+%include raw "codegen/templates/warn.txt"
+
+#ifndef __BOHRIUM_BRIDGE_CPP_RUNTIME_OPERATIONS
+#define __BOHRIUM_BRIDGE_CPP_RUNTIME_OPERATIONS
+#include "bh.h"
+
+namespace bxx {
+%include "codegen/templates/runtime.accumulate.ctpl"
+%include "codegen/templates/runtime..ctpl"
+}
+#endif
