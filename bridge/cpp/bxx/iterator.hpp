@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh.h"
 #include <iterator>
 
-namespace bh {
+namespace bxx {
 
 template <typename T>
 class multi_array_iter : public std::iterator<std::input_iterator_tag, T> {

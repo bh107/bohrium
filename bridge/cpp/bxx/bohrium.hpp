@@ -36,7 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DEBUG_PRINT(...) do{ } while ( false )
 #endif
 
-namespace bh {
+namespace bxx {
 
 const double PI_D = 3.141592653589793238462;
 const float  PI_F = 3.14159265358979f;
@@ -109,7 +109,7 @@ public:
     multi_array<T>& operator=(T rhs);
 
     // Create a actual view of the slice
-    bh::multi_array<T>& view();
+    bxx::multi_array<T>& view();
 
 private:
     multi_array<T>* op;                 // The op getting sliced

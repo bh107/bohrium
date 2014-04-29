@@ -9,7 +9,7 @@ directiveStartToken = %
 #include <bh_c_interface.h>
 #include "bh_c_type_definitions.hpp"
 
-using namespace bh;
+using namespace bxx;
 
 // Copy methods
 

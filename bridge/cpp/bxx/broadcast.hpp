@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP_BROADCAST
 #include "bh.h"
 
-namespace bh {
+namespace bxx {
 
 inline void bh_pprint_shape(int64_t shape[], int64_t len)
 {

@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_SCAN
 #define __BOHRIUM_BRIDGE_CPP_SCAN
 
-namespace bh {
+namespace bxx {
 
 inline bh_opcode scannable_to_opcode(scannable opcode)
 {

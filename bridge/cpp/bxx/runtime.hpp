@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 
-namespace bh {
+namespace bxx {
 
 // Runtime : Definition
 inline Runtime& Runtime::instance()

@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_SUGAR
 #define __BOHRIUM_BRIDGE_CPP_SUGAR
 
-namespace bh {
+namespace bxx {
 
 template <typename T>
 void pprint(multi_array<T>& op)

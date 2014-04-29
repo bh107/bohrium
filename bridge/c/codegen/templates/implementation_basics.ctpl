@@ -13,7 +13,7 @@ directiveStartToken = %
 #include "bh_c_type_definitions.hpp"
 #include <bh.h>
 
-using namespace bh;
+using namespace bxx;
 
 // Common runtime methods
 void bh_runtime_flush() {

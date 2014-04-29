@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_GENERATOR
 #define __BOHRIUM_BRIDGE_CPP_GENERATOR
 
-namespace bh {
+namespace bxx {
 
 template <typename T, typename ...Dimensions>
 multi_array<T>& value(T val, const Dimensions&... shape)

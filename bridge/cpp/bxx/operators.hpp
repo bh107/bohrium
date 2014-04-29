@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP_OPERATORS
 #include "bh.h"
 
-namespace bh {
+namespace bxx {
 
 #include <sstream>
 

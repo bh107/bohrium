@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #include "bh.h"
 
-namespace bh {
+namespace bxx {
 
 template <typename T>
 multi_array<T>& add (multi_array<T> &lhs, multi_array<T> &rhs)

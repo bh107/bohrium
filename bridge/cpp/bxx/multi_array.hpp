@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "runtime.hpp"
 #include <sstream>
 
-namespace bh {
+namespace bxx {
 
 //
 //

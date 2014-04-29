@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_REDUCTION
 #define __BOHRIUM_BRIDGE_CPP_REDUCTION
 
-namespace bh {
+namespace bxx {
 
 inline bh_opcode reducible_to_opcode(reducible opcode)
 {

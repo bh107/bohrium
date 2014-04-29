@@ -11,7 +11,7 @@ directiveStartToken = %
 #define __BOHRIUM_BRIDGE_CPP_TRAITS
 #include "bh.h"
 
-namespace bh {
+namespace bxx {
 
 %include "codegen/templates/traits.const.ctpl"
 %include "codegen/templates/traits.array.ctpl"
