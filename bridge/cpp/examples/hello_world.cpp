@@ -102,7 +102,6 @@ void compute()
     // Random
     cout << random123<float>(10, 1, 0) << endl;
     cout << random123<float>(10, 2, 0) << endl;
-    */
 
     //
     // Explicit return...
@@ -120,6 +119,12 @@ void compute()
     add(c, a, b);
     cout << c << endl;
 
+    */
+    multi_array<float> a, b, c;
+    a = ones<float>(2,2);
+    b = ones<float>(1,2);
+    a += b;
+    cout << a << endl;
 }
 
 int main()

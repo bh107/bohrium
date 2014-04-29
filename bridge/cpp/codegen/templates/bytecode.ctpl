@@ -21,7 +21,12 @@ namespace bh {
 template <typename T>
 multi_array<T>& $op (multi_array<T> res, multi_array<T> &rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
+    multi_array<T>* right = &rhs;
+
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes.");
+    }
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, *right);
     return res;
 }
 %end if
@@ -29,21 +34,56 @@ multi_array<T>& $op (multi_array<T> res, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(lhs, rhs)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Check that broadcast is usefull
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes.");
+    }
+
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, *left, *right);
+
     return res;
 }
 
 template <typename T>
 multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
+    multi_array<T>* left = &lhs;
+
+    if (!same_shape(res, *left)) {
+        throw std::runtime_error("Incompatible shapes.");
+    }
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, *left, rhs);
     return res;
 }
 
 template <typename T>
 multi_array<T>& $op (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
+    multi_array<T>* right = &rhs;
+
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes.");
+    }
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, *right);
     return res;
 }
 
@@ -55,13 +95,23 @@ multi_array<T>& $op (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
 template <typename InT, typename OutT>
 multi_array<OutT>& bh_real (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_REAL, res, rhs);
+    multi_array<InT>* right = &rhs;
+
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes.");
+    }
+    Runtime::instance().enqueue((bh_opcode)BH_REAL, res, *right);
     return res;
 }
 template <typename InT, typename OutT>
 multi_array<OutT>& bh_imag (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_IMAG, res, rhs);
+    multi_array<InT>* right = &rhs;
+
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes.");
+    }
+    Runtime::instance().enqueue((bh_opcode)BH_IMAG, res, *right);
     return res;
 }
 
