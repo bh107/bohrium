@@ -15,33 +15,29 @@ directiveStartToken = %
 
 inline multi_array<$ret_type>& operator$op (multi_array<$op1_type>& lhs, multi_array<$op2_type>& rhs)
 {
-    multi_array<$ret_type>* result;  
     multi_array<$op1_type>* left    = &lhs;
     multi_array<$op2_type>* right   = &rhs;
-
-    if (same_shape(lhs, rhs)) {
-        result = &Runtime::instance().temp<$ret_type, $op1_type>(lhs);
-    } else {                                    // Broadcasting
+    
+    // Broadcast
+    if (!same_shape(lhs, rhs)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            left    = &Runtime::instance().temp_view(lhs);
-            right   = &rhs;
-            if (!broadcast(lhs, rhs, *left)) {
+            if (!broadcast(*left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            result = &Runtime::instance().temp<$ret_type, $op1_type>(*left);
-
         } else {                                // Right-handside has lowest rank
-            left    = &lhs;
-            right   = &Runtime::instance().temp_view(rhs);
-            if (!broadcast(rhs, lhs, *right)) {
+            if (!broadcast(*right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
-            result = &Runtime::instance().temp<$ret_type, $op2_type>(*right);
         }
     }
 
+    // Construct output / result array
+    multi_array<$ret_type>* result = &Runtime::instance().temp<$ret_type, $op1_type>(*left);
     result->link();
+
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, *left, *right);
 
     return *result;

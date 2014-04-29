@@ -18,7 +18,7 @@ GNU Lesser General Public License along with bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
-#include "bh/bh.hpp"
+#include "bxx/bohrium.hpp"
 #include "util/timing.hpp"
 #include "util/argparse.hpp"
 

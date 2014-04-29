@@ -412,12 +412,13 @@ void pprint(multi_array<T>& op);
 #include "broadcast.hpp"    // Operand manipulations.
 #include "slicing.hpp"      // Operand slicing / explicit views / aliases
 #include "runtime.hpp"      // Communication with Bohrium runtime
-#include "reduction.hpp"    // Communication with Bohrium runtime
-#include "scan.hpp"         // Communication with Bohrium runtime
-#include "generator.hpp"    // Communication with Bohrium runtime
+#include "reduction.hpp"            // DSEL Reduction
+#include "scan.hpp"                 // DSEL Scan operation
+#include "generator.hpp"            // DSEL Generators 
 
-#include "operators.hpp"    // DSEL Operations via operator-overloads.
-#include "functions.hpp"    // DSEL Operations via functions.
+#include "operators.hpp"            // DSEL Operations via operator-overloads.
+#include "functions.hpp"            // DSEL Operations via functions.
+#include "functions.bytecode.hpp"   // Functions directly mapping to bytecode.
 #include "sugar.hpp"        // DSEL Additional sugar...
 
 #endif

@@ -10,9 +10,9 @@ SURVIVE_LOW= 2
 SURVIVE_HIGH = 3
 SPAWN = 3
 
-def randomstate(height, width, prob=0.2, dtype=np.int32, bohrium=True):
+def randomstate(height, width, prob=0.2, dtype=np.int64, bohrium=True):
     state = np.zeros((height+2,width+2), dtype=dtype, bohrium=bohrium)
-    state[1:-1,1:-1] = np.random.random((width,height), dtype=np.float32, bohrium=bohrium) < prob
+    state[1:-1,1:-1] = np.random.random((width,height), dtype=np.float64, bohrium=bohrium) < prob
     return state
 
 def play(state, iterations):
@@ -28,7 +28,7 @@ def play(state, iterations):
     lr = state[2:  , 2:  ]
 
     for i in xrange(iterations):
-        
+
         neighbors = ul + um + ur + ml + mr + ll + lm + lr       # count neighbors
         live = neighbors * cells                                # extract live cells neighbors
         stay = (live >= SURVIVE_LOW) & (live <= SURVIVE_HIGH)   # find cells the stay alive
@@ -61,9 +61,9 @@ if __name__ == "__main__":
 #       [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
 #       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 #       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.int32, bohrium=False)
+#       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.int64, bohrium=False)
 
-        #s = np.zeros((w,h), dtype=np.int32, bohrium=False)
+        #s = np.zeros((w,h), dtype=np.int64, bohrium=False)
         s = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -75,7 +75,7 @@ if __name__ == "__main__":
        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
        [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
        [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.int32, bohrium=False)
+       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.int64, bohrium=False)
         n = s.copy()
         n.bohrium = True
 

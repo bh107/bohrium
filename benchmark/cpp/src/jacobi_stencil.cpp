@@ -1,5 +1,5 @@
 #include <iostream>
-#include "bh/bh.hpp"
+#include "bxx/bohrium.hpp"
 #include "util/timing.hpp"
 #include "util/argparse.hpp"
 

@@ -7,7 +7,7 @@ directiveStartToken = %
 %set $reduce_ops = $data[1]
 
 
-#include <bh.hpp>
+#include <bohrium.hpp>
 #include <bh_c_data_types.h>
 #include <bh_c_interface.h>
 #include "bh_c_type_definitions.hpp"

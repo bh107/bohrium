@@ -18,7 +18,6 @@ namespace bh {
 %if $optype == "operator.fun"
 %slurp
 %if $opcount == 2
-// Implicit creation of temporary array for result
 template <typename T>
 multi_array<T>& $op (multi_array<T> &rhs)
 {
@@ -28,23 +27,37 @@ multi_array<T>& $op (multi_array<T> &rhs)
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
     return *result;
 }
-// Explicit use of existing array for result
-template <typename T>
-multi_array<T>& $op (multi_array<T> res, multi_array<T> &rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
-    return res;
-}
 %end if
 %if $opcount == 3
-// Implicit creation and use of temporary array for result
 template <typename T>
 multi_array<T>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T,T>(lhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+
+    // Broadcast input
+    if (!same_shape(lhs, rhs)) {    
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+    // Enqueue operation
+    Runtime::instance().enqueue((bh_opcode)$opcode, *result, *left, *right);
+
     return *result;
 }
 
@@ -66,28 +79,6 @@ multi_array<T>& $op (const T &lhs, multi_array<T> &rhs)
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
     return *result;
-}
-
-// Explicit use of existing array for result
-template <typename T>
-multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-    return res;
-}
-
-template <typename T>
-multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, const T &rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-    return res;
-}
-
-template <typename T>
-multi_array<T>& $op (multi_array<T>& res, const T &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-    return res;
 }
 
 %end if
