@@ -1,5 +1,5 @@
 #include <iostream>
-#include "bh/bh.hpp"
+#include "bxx/bohrium.hpp"
 
 using namespace std;
 using namespace bh;

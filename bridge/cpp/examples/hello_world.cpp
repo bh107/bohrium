@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
 #include <complex>
-#include <bh/bh.hpp>
+#include <bxx/bohrium.hpp>
 
 using namespace bh;
 using namespace std;

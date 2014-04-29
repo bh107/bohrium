@@ -4,7 +4,7 @@ directiveStartToken = %
 #end compiler-settings
 %slurp
 
-#include <bh.hpp>
+#include <bohrium.hpp>
 #include <bh_c_data_types.h>
 #include <bh_c_interface.h>
 

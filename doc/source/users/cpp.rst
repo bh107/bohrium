@@ -100,7 +100,7 @@ Simplest example of compiling an application using the Bohrium C++ library.
 .. code-block:: cpp
 
   #include <iostream>
-  #include "bh/bh.hpp"
+  #include "bxx/bohrium.hpp"
 
   using namespace std;
   using namespace bh;
