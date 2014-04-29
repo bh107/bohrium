@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories(../../include)
-include_directories(../cpp/bh)
+include_directories(../cpp/bxx)
 include_directories(codegen/output/)
 
 set(SRC ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c.h
