@@ -2883,156 +2883,6 @@ multi_array<OutT>& bh_logical_xor (const InT lhs, multi_array<InT>& rhs)
 
 // Explicit result array
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
-{
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
-    if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes of output and input.");
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, res, *left, *right);
-
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
-{
-    multi_array<InT>* left = &lhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < left->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_logical_not: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *left)) {
-        left = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *left)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *left)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, res, *left, rhs);
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
-{
-    multi_array<InT>* right = &rhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_logical_not: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *right)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *right)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, res, lhs, *right);
-    return res;
-}
-
-//
-// Implicit temporary result array
-//
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (multi_array<InT> &lhs, multi_array<InT> &rhs)
-{
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, *left, *right);
-    return result;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (multi_array<InT>& lhs, const InT rhs)
-{
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, lhs, rhs);
-    return result;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (const InT lhs, multi_array<InT>& rhs)
-{
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, lhs, rhs);
-    return result;
-}
-
-// Explicit result array
-template <typename OutT, typename InT>
 multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
@@ -3554,6 +3404,72 @@ multi_array<OutT>& bh_identity (const InT rhs)
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &rhs)
+{
+    multi_array<OutT>* right = &rhs;
+    
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_logical_not: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    //
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(rhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes, even after broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, res, *right);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, res, rhs);
+    return res;
+}
+
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_not (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_not (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
+template <typename OutT, typename InT>
 multi_array<OutT>& bh_invert (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
     multi_array<OutT>* right = &rhs;
@@ -3612,6 +3528,138 @@ multi_array<OutT>& bh_invert (const InT rhs)
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_INVERT, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_imag (multi_array<OutT>& res, multi_array<InT> &rhs)
+{
+    multi_array<OutT>* right = &rhs;
+    
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_imag: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    //
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(rhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes, even after broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_IMAG, res, *right);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_imag (multi_array<OutT>& res, const InT rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_IMAG, res, rhs);
+    return res;
+}
+
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_imag (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_IMAG, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_imag (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_IMAG, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_real (multi_array<OutT>& res, multi_array<InT> &rhs)
+{
+    multi_array<OutT>* right = &rhs;
+    
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_real: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    //
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(rhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes, even after broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_REAL, res, *right);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_real (multi_array<OutT>& res, const InT rhs)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_REAL, res, rhs);
+    return res;
+}
+
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_real (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_REAL, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_real (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_REAL, *result, rhs);
     return result;
 }
 
@@ -5489,24 +5537,80 @@ multi_array<T>& bh_random (multi_array<T>& res, uint64_t in1, uint64_t in2)
 template <typename T>
 multi_array<T>& bh_add_accumulate (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    // TODO:    axis-check
-    //          shape-check
-    //          type-check
+    // Check axis
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+    // TODO:
+    //  * shape-check
+    //  * type-check
     Runtime::instance().enqueue((bh_opcode)BH_ADD_ACCUMULATE, res, lhs, rhs);
 
     return res;
+}
+
+// Todo: typecheck
+template <typename T>
+multi_array<T>& bh_add_accumulate (multi_array<T> &lhs, int64_t rhs)
+{
+    // Check axis
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ADD_ACCUMULATE, *result, lhs, rhs);
+
+    return *result;
 }
 
 
 template <typename T>
 multi_array<T>& bh_multiply_accumulate (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    // TODO:    axis-check
-    //          shape-check
-    //          type-check
+    // Check axis
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+    // TODO:
+    //  * shape-check
+    //  * type-check
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY_ACCUMULATE, res, lhs, rhs);
 
     return res;
+}
+
+// Todo: typecheck
+template <typename T>
+multi_array<T>& bh_multiply_accumulate (multi_array<T> &lhs, int64_t rhs)
+{
+    // Check axis
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY_ACCUMULATE, *result, lhs, rhs);
+
+    return *result;
 }
 
 
@@ -5530,6 +5634,46 @@ multi_array<T>& bh_add_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t
     return res;
 }
 
+template <typename T>
+multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_ADD_REDUCE, *result, lhs, rhs);
+
+    return *result;
+}
+
 
 template <typename T>
 multi_array<T>& bh_multiply_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
@@ -5547,6 +5691,46 @@ multi_array<T>& bh_multiply_reduce (multi_array<T>& res, multi_array<T> &lhs, in
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY_REDUCE, res, lhs, rhs);
 
     return res;
+}
+
+template <typename T>
+multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY_REDUCE, *result, lhs, rhs);
+
+    return *result;
 }
 
 
@@ -5568,6 +5752,46 @@ multi_array<T>& bh_minimum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
     return res;
 }
 
+template <typename T>
+multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM_REDUCE, *result, lhs, rhs);
+
+    return *result;
+}
+
 
 template <typename T>
 multi_array<T>& bh_maximum_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
@@ -5585,6 +5809,46 @@ multi_array<T>& bh_maximum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM_REDUCE, res, lhs, rhs);
 
     return res;
+}
+
+template <typename T>
+multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM_REDUCE, *result, lhs, rhs);
+
+    return *result;
 }
 
 
@@ -5606,6 +5870,46 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
     return res;
 }
 
+template <typename T>
+multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND_REDUCE, *result, lhs, rhs);
+
+    return *result;
+}
+
 
 template <typename T>
 multi_array<T>& bh_logical_or_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
@@ -5623,6 +5927,46 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR_REDUCE, res, lhs, rhs);
 
     return res;
+}
+
+template <typename T>
+multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR_REDUCE, *result, lhs, rhs);
+
+    return *result;
 }
 
 
@@ -5644,6 +5988,46 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
     return res;
 }
 
+template <typename T>
+multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR_REDUCE, *result, lhs, rhs);
+
+    return *result;
+}
+
 
 template <typename T>
 multi_array<T>& bh_bitwise_and_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
@@ -5661,6 +6045,46 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND_REDUCE, res, lhs, rhs);
 
     return res;
+}
+
+template <typename T>
+multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND_REDUCE, *result, lhs, rhs);
+
+    return *result;
 }
 
 
@@ -5682,6 +6106,46 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
     return res;
 }
 
+template <typename T>
+multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR_REDUCE, *result, lhs, rhs);
+
+    return *result;
+}
+
 
 template <typename T>
 multi_array<T>& bh_bitwise_xor_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
@@ -5699,6 +6163,46 @@ multi_array<T>& bh_bitwise_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR_REDUCE, res, lhs, rhs);
 
     return res;
+}
+
+template <typename T>
+multi_array<T>& bh_bitwise_xor_reduce (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR_REDUCE, *result, lhs, rhs);
+
+    return *result;
 }
 
 

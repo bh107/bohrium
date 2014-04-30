@@ -30,8030 +30,1282 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bxx {
 
-#include <sstream>
 
 //
 //  Internally defined operator overloads
 //
 
-
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator+= (const T& rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *this, *this, rhs);
-    return *this;
+    return bh_add (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator+= (multi_array<T>& rhs)
 {
-    multi_array<T>* right   = &rhs;
-    
-    //
-    // We cannot perform the operation since we cannot broadcast *this                                        
-    if (this->getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "BINARY-BUNKERS " << "+=: " << this->getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    //
-    // Broadcast
-    if (!same_shape(*this, *right)) {
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(*this, *right)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-    }
-    //
-    // Re-check compatibility
-    if (!same_shape(*this, *right)) {
-        throw std::runtime_error("Incompatable shapes, even after broadcast.");
-    }
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *this, *this, *right);
-    return *this;
+    return bh_add (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator-= (const T& rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *this, *this, rhs);
-    return *this;
+    return bh_subtract (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator-= (multi_array<T>& rhs)
 {
-    multi_array<T>* right   = &rhs;
-    
-    //
-    // We cannot perform the operation since we cannot broadcast *this                                        
-    if (this->getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "BINARY-BUNKERS " << "-=: " << this->getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    //
-    // Broadcast
-    if (!same_shape(*this, *right)) {
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(*this, *right)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-    }
-    //
-    // Re-check compatibility
-    if (!same_shape(*this, *right)) {
-        throw std::runtime_error("Incompatable shapes, even after broadcast.");
-    }
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *this, *this, *right);
-    return *this;
+    return bh_subtract (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator*= (const T& rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *this, *this, rhs);
-    return *this;
+    return bh_multiply (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator*= (multi_array<T>& rhs)
 {
-    multi_array<T>* right   = &rhs;
-    
-    //
-    // We cannot perform the operation since we cannot broadcast *this                                        
-    if (this->getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "BINARY-BUNKERS " << "*=: " << this->getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    //
-    // Broadcast
-    if (!same_shape(*this, *right)) {
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(*this, *right)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-    }
-    //
-    // Re-check compatibility
-    if (!same_shape(*this, *right)) {
-        throw std::runtime_error("Incompatable shapes, even after broadcast.");
-    }
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *this, *this, *right);
-    return *this;
+    return bh_multiply (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator/= (const T& rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *this, *this, rhs);
-    return *this;
+    return bh_divide (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator/= (multi_array<T>& rhs)
 {
-    multi_array<T>* right   = &rhs;
-    
-    //
-    // We cannot perform the operation since we cannot broadcast *this                                        
-    if (this->getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "BINARY-BUNKERS " << "/=: " << this->getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    //
-    // Broadcast
-    if (!same_shape(*this, *right)) {
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(*this, *right)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-    }
-    //
-    // Re-check compatibility
-    if (!same_shape(*this, *right)) {
-        throw std::runtime_error("Incompatable shapes, even after broadcast.");
-    }
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *this, *this, *right);
-    return *this;
+    return bh_divide (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator%= (const T& rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *this, *this, rhs);
-    return *this;
+    return bh_mod (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
 {
-    multi_array<T>* right   = &rhs;
-    
-    //
-    // We cannot perform the operation since we cannot broadcast *this                                        
-    if (this->getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "BINARY-BUNKERS " << "%=: " << this->getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    //
-    // Broadcast
-    if (!same_shape(*this, *right)) {
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(*this, *right)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-    }
-    //
-    // Re-check compatibility
-    if (!same_shape(*this, *right)) {
-        throw std::runtime_error("Incompatable shapes, even after broadcast.");
-    }
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *this, *this, *right);
-    return *this;
+    return bh_mod (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator&= (const T& rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *this, *this, rhs);
-    return *this;
+    return bh_bitwise_and (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator&= (multi_array<T>& rhs)
 {
-    multi_array<T>* right   = &rhs;
-    
-    //
-    // We cannot perform the operation since we cannot broadcast *this                                        
-    if (this->getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "BINARY-BUNKERS " << "&=: " << this->getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    //
-    // Broadcast
-    if (!same_shape(*this, *right)) {
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(*this, *right)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-    }
-    //
-    // Re-check compatibility
-    if (!same_shape(*this, *right)) {
-        throw std::runtime_error("Incompatable shapes, even after broadcast.");
-    }
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *this, *this, *right);
-    return *this;
+    return bh_bitwise_and (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator|= (const T& rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *this, *this, rhs);
-    return *this;
+    return bh_bitwise_or (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator|= (multi_array<T>& rhs)
 {
-    multi_array<T>* right   = &rhs;
-    
-    //
-    // We cannot perform the operation since we cannot broadcast *this                                        
-    if (this->getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "BINARY-BUNKERS " << "|=: " << this->getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    //
-    // Broadcast
-    if (!same_shape(*this, *right)) {
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(*this, *right)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-    }
-    //
-    // Re-check compatibility
-    if (!same_shape(*this, *right)) {
-        throw std::runtime_error("Incompatable shapes, even after broadcast.");
-    }
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *this, *this, *right);
-    return *this;
+    return bh_bitwise_or (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator^= (const T& rhs)
 {
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *this, *this, rhs);
-    return *this;
+    return bh_bitwise_xor (*this, *this, rhs);
 }
 
 template <typename T>
 inline multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
 {
-    multi_array<T>* right   = &rhs;
-    
-    //
-    // We cannot perform the operation since we cannot broadcast *this                                        
-    if (this->getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "BINARY-BUNKERS " << "^=: " << this->getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    //
-    // Broadcast
-    if (!same_shape(*this, *right)) {
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(*this, *right)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-    }
-    //
-    // Re-check compatibility
-    if (!same_shape(*this, *right)) {
-        throw std::runtime_error("Incompatable shapes, even after broadcast.");
-    }
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *this, *this, *right);
-    return *this;
-}
-
-//
-//  Binary operators such as:
-//  Mapping "a + b" to BH_ADD(t, a, b)
-//  Mapping "a + 1.0" to BH_ADD(t, a, 1.0)
-//  Mapping "1.0 + a" to BH_ADD(t, 1.0, a)
-//
-
-inline multi_array<bool>& operator+ (multi_array<bool>& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator+ (multi_array<bool>& lhs, const bool& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator+ (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> >& operator+ (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* left    = &lhs;
-    multi_array<std::complex<double> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> > & operator+ (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
-{
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> > & operator+ (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> >& operator+ (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* left    = &lhs;
-    multi_array<std::complex<float> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> > & operator+ (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
-{
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> > & operator+ (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float>& operator+ (multi_array<float>& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<float> & operator+ (multi_array<float>& lhs, const float& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float> & operator+ (const float& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double>& operator+ (multi_array<double>& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<double> & operator+ (multi_array<double>& lhs, const double& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double> & operator+ (const double& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t>& operator+ (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator+ (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator+ (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t>& operator+ (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator+ (multi_array<int32_t>& lhs, const int32_t& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator+ (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t>& operator+ (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator+ (multi_array<int64_t>& lhs, const int64_t& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator+ (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t>& operator+ (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator+ (multi_array<int8_t>& lhs, const int8_t& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator+ (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t>& operator+ (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator+ (multi_array<uint16_t>& lhs, const uint16_t& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator+ (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t>& operator+ (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator+ (multi_array<uint32_t>& lhs, const uint32_t& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator+ (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t>& operator+ (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator+ (multi_array<uint64_t>& lhs, const uint64_t& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator+ (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t>& operator+ (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator+ (multi_array<uint8_t>& lhs, const uint8_t& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator+ (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator- (multi_array<bool>& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator- (multi_array<bool>& lhs, const bool& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator- (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> >& operator- (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* left    = &lhs;
-    multi_array<std::complex<double> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> > & operator- (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
-{
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> > & operator- (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> >& operator- (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* left    = &lhs;
-    multi_array<std::complex<float> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> > & operator- (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
-{
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> > & operator- (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float>& operator- (multi_array<float>& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<float> & operator- (multi_array<float>& lhs, const float& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float> & operator- (const float& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double>& operator- (multi_array<double>& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<double> & operator- (multi_array<double>& lhs, const double& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double> & operator- (const double& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t>& operator- (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator- (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator- (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t>& operator- (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator- (multi_array<int32_t>& lhs, const int32_t& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator- (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t>& operator- (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator- (multi_array<int64_t>& lhs, const int64_t& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator- (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t>& operator- (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator- (multi_array<int8_t>& lhs, const int8_t& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator- (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t>& operator- (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator- (multi_array<uint16_t>& lhs, const uint16_t& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator- (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t>& operator- (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator- (multi_array<uint32_t>& lhs, const uint32_t& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator- (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t>& operator- (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator- (multi_array<uint64_t>& lhs, const uint64_t& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator- (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t>& operator- (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator- (multi_array<uint8_t>& lhs, const uint8_t& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator- (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator* (multi_array<bool>& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator* (multi_array<bool>& lhs, const bool& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator* (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> >& operator* (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* left    = &lhs;
-    multi_array<std::complex<double> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> > & operator* (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
-{
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> > & operator* (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> >& operator* (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* left    = &lhs;
-    multi_array<std::complex<float> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> > & operator* (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
-{
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> > & operator* (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float>& operator* (multi_array<float>& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<float> & operator* (multi_array<float>& lhs, const float& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float> & operator* (const float& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double>& operator* (multi_array<double>& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<double> & operator* (multi_array<double>& lhs, const double& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double> & operator* (const double& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t>& operator* (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator* (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator* (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t>& operator* (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator* (multi_array<int32_t>& lhs, const int32_t& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator* (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t>& operator* (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator* (multi_array<int64_t>& lhs, const int64_t& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator* (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t>& operator* (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator* (multi_array<int8_t>& lhs, const int8_t& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator* (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t>& operator* (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator* (multi_array<uint16_t>& lhs, const uint16_t& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator* (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t>& operator* (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator* (multi_array<uint32_t>& lhs, const uint32_t& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator* (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t>& operator* (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator* (multi_array<uint64_t>& lhs, const uint64_t& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator* (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t>& operator* (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator* (multi_array<uint8_t>& lhs, const uint8_t& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator* (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> >& operator/ (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* left    = &lhs;
-    multi_array<std::complex<double> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> > & operator/ (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
-{
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<double> > & operator/ (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* result = &Runtime::instance().temp<std::complex<double> , std::complex<double> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> >& operator/ (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* left    = &lhs;
-    multi_array<std::complex<float> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> > & operator/ (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
-{
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<std::complex<float> > & operator/ (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* result = &Runtime::instance().temp<std::complex<float> , std::complex<float> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float>& operator/ (multi_array<float>& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<float> & operator/ (multi_array<float>& lhs, const float& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float> & operator/ (const float& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double>& operator/ (multi_array<double>& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<double> & operator/ (multi_array<double>& lhs, const double& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double> & operator/ (const double& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t>& operator/ (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator/ (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator/ (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t>& operator/ (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator/ (multi_array<int32_t>& lhs, const int32_t& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator/ (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t>& operator/ (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator/ (multi_array<int64_t>& lhs, const int64_t& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator/ (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t>& operator/ (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator/ (multi_array<int8_t>& lhs, const int8_t& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator/ (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t>& operator/ (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator/ (multi_array<uint16_t>& lhs, const uint16_t& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator/ (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t>& operator/ (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator/ (multi_array<uint32_t>& lhs, const uint32_t& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator/ (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t>& operator/ (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator/ (multi_array<uint64_t>& lhs, const uint64_t& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator/ (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t>& operator/ (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator/ (multi_array<uint8_t>& lhs, const uint8_t& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator/ (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float>& operator% (multi_array<float>& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<float> & operator% (multi_array<float>& lhs, const float& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<float> & operator% (const float& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* result = &Runtime::instance().temp<float, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double>& operator% (multi_array<double>& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<double> & operator% (multi_array<double>& lhs, const double& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<double> & operator% (const double& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* result = &Runtime::instance().temp<double, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t>& operator% (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator% (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator% (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t>& operator% (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator% (multi_array<int32_t>& lhs, const int32_t& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator% (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t>& operator% (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator% (multi_array<int64_t>& lhs, const int64_t& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator% (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t>& operator% (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator% (multi_array<int8_t>& lhs, const int8_t& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator% (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t>& operator% (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator% (multi_array<uint16_t>& lhs, const uint16_t& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator% (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t>& operator% (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator% (multi_array<uint32_t>& lhs, const uint32_t& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator% (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t>& operator% (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator% (multi_array<uint64_t>& lhs, const uint64_t& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator% (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t>& operator% (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator% (multi_array<uint8_t>& lhs, const uint8_t& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator% (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator& (multi_array<bool>& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator& (multi_array<bool>& lhs, const bool& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator& (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t>& operator& (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator& (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator& (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t>& operator& (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator& (multi_array<int32_t>& lhs, const int32_t& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator& (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t>& operator& (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator& (multi_array<int64_t>& lhs, const int64_t& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator& (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t>& operator& (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator& (multi_array<int8_t>& lhs, const int8_t& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator& (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t>& operator& (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator& (multi_array<uint16_t>& lhs, const uint16_t& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator& (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t>& operator& (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator& (multi_array<uint32_t>& lhs, const uint32_t& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator& (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t>& operator& (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator& (multi_array<uint64_t>& lhs, const uint64_t& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator& (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t>& operator& (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator& (multi_array<uint8_t>& lhs, const uint8_t& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator& (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator| (multi_array<bool>& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator| (multi_array<bool>& lhs, const bool& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator| (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t>& operator| (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator| (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator| (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t>& operator| (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator| (multi_array<int32_t>& lhs, const int32_t& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator| (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t>& operator| (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator| (multi_array<int64_t>& lhs, const int64_t& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator| (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t>& operator| (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator| (multi_array<int8_t>& lhs, const int8_t& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator| (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t>& operator| (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator| (multi_array<uint16_t>& lhs, const uint16_t& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator| (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t>& operator| (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator| (multi_array<uint32_t>& lhs, const uint32_t& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator| (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t>& operator| (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator| (multi_array<uint64_t>& lhs, const uint64_t& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator| (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t>& operator| (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator| (multi_array<uint8_t>& lhs, const uint8_t& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator| (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator^ (multi_array<bool>& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator^ (multi_array<bool>& lhs, const bool& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator^ (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t>& operator^ (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator^ (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int16_t> & operator^ (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* result = &Runtime::instance().temp<int16_t, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t>& operator^ (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator^ (multi_array<int32_t>& lhs, const int32_t& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int32_t> & operator^ (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* result = &Runtime::instance().temp<int32_t, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t>& operator^ (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator^ (multi_array<int64_t>& lhs, const int64_t& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int64_t> & operator^ (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* result = &Runtime::instance().temp<int64_t, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t>& operator^ (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator^ (multi_array<int8_t>& lhs, const int8_t& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<int8_t> & operator^ (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* result = &Runtime::instance().temp<int8_t, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t>& operator^ (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator^ (multi_array<uint16_t>& lhs, const uint16_t& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint16_t> & operator^ (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* result = &Runtime::instance().temp<uint16_t, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t>& operator^ (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator^ (multi_array<uint32_t>& lhs, const uint32_t& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint32_t> & operator^ (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* result = &Runtime::instance().temp<uint32_t, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t>& operator^ (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator^ (multi_array<uint64_t>& lhs, const uint64_t& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint64_t> & operator^ (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* result = &Runtime::instance().temp<uint64_t, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t>& operator^ (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator^ (multi_array<uint8_t>& lhs, const uint8_t& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<uint8_t> & operator^ (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* result = &Runtime::instance().temp<uint8_t, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<bool>& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<bool>& lhs, const bool& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* left    = &lhs;
-    multi_array<std::complex<double> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<double> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<double> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<double> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* left    = &lhs;
-    multi_array<std::complex<float> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<float> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<float> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<float> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<float>& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<float>& lhs, const float& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const float& lhs, multi_array<float>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<double>& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<double>& lhs, const double& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const double& lhs, multi_array<double>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<int32_t>& lhs, const int32_t& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<int64_t>& lhs, const int64_t& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<int8_t>& lhs, const int8_t& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<uint16_t>& lhs, const uint16_t& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<uint32_t>& lhs, const uint32_t& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<uint64_t>& lhs, const uint64_t& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator== (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (multi_array<uint8_t>& lhs, const uint8_t& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator== (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator!= (multi_array<bool>& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (multi_array<bool>& lhs, const bool& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator!= (multi_array<std::complex<double> >& lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<std::complex<double> >* left    = &lhs;
-    multi_array<std::complex<double> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<double> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (multi_array<std::complex<double> >& lhs, const std::complex<double> & rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<double> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (const std::complex<double> & lhs, multi_array<std::complex<double> >& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<double> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator!= (multi_array<std::complex<float> >& lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<std::complex<float> >* left    = &lhs;
-    multi_array<std::complex<float> >* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<float> >(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (multi_array<std::complex<float> >& lhs, const std::complex<float> & rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<float> >(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (const std::complex<float> & lhs, multi_array<std::complex<float> >& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, std::complex<float> >(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator!= (multi_array<float>& lhs, multi_array<float>& rhs)
-{
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (multi_array<float>& lhs, const float& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (const float& lhs, multi_array<float>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator!= (multi_array<double>& lhs, multi_array<double>& rhs)
-{
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (multi_array<double>& lhs, const double& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (const double& lhs, multi_array<double>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator!= (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (multi_array<int16_t>& lhs, const int16_t& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_xor (*this, *this, rhs);
 }
-
-inline multi_array<bool> & operator!= (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
-}
-
-inline multi_array<bool>& operator!= (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(*left);
-    result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
 
-    return *result;
-}
-
-inline multi_array<bool> & operator!= (multi_array<int32_t>& lhs, const int32_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& add (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_add (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (const int32_t& lhs, multi_array<int32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& add (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_add (lhs, rhs);
 }
 
-inline multi_array<bool>& operator!= (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& add (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_add (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (multi_array<int64_t>& lhs, const int64_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator+ (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_add (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (const int64_t& lhs, multi_array<int64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator+ (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_add (lhs, rhs);
 }
 
-inline multi_array<bool>& operator!= (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator+ (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_add (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (multi_array<int8_t>& lhs, const int8_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& subtract (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_subtract (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (const int8_t& lhs, multi_array<int8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& subtract (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_subtract (lhs, rhs);
 }
 
-inline multi_array<bool>& operator!= (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& subtract (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_subtract (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator- (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_subtract (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator- (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_subtract (lhs, rhs);
 }
 
-inline multi_array<bool>& operator!= (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator- (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_subtract (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& mul (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_multiply (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& mul (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_multiply (lhs, rhs);
 }
 
-inline multi_array<bool>& operator!= (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& mul (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_multiply (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator* (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_multiply (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator* (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_multiply (lhs, rhs);
 }
 
-inline multi_array<bool>& operator!= (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator* (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_multiply (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (multi_array<uint8_t>& lhs, const uint8_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& div (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_divide (lhs, rhs);
 }
 
-inline multi_array<bool> & operator!= (const uint8_t& lhs, multi_array<uint8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& div (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_divide (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<bool>& lhs, multi_array<bool>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& div (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_divide (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<bool>& lhs, const bool& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator/ (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_divide (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const bool& lhs, multi_array<bool>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator/ (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_divide (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<float>& lhs, multi_array<float>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator/ (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_divide (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<float>& lhs, const float& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& mod (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_mod (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const float& lhs, multi_array<float>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& mod (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_mod (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<double>& lhs, multi_array<double>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& mod (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_mod (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<double>& lhs, const double& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator% (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_mod (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const double& lhs, multi_array<double>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator% (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_mod (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator% (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_mod (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<int16_t>& lhs, const int16_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& bitwise_and (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_and (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const int16_t& lhs, multi_array<int16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& bitwise_and (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_and (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& bitwise_and (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_bitwise_and (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<int32_t>& lhs, const int32_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator& (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_and (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const int32_t& lhs, multi_array<int32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator& (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_and (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator& (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_bitwise_and (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<int64_t>& lhs, const int64_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& bitwise_or (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_or (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const int64_t& lhs, multi_array<int64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& bitwise_or (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_or (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& bitwise_or (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_bitwise_or (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<int8_t>& lhs, const int8_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator| (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_or (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const int8_t& lhs, multi_array<int8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator| (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_or (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator| (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_bitwise_or (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& bitwise_xor (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_xor (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& bitwise_xor (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_xor (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& bitwise_xor (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_bitwise_xor (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator^ (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_xor (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator^ (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_bitwise_xor (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator^ (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_bitwise_xor (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& left_shift (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_left_shift (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& left_shift (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_left_shift (lhs, rhs);
 }
 
-inline multi_array<bool>& operator> (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& left_shift (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-
-    return *result;
+    return bh_left_shift (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (multi_array<uint8_t>& lhs, const uint8_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& right_shift (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_right_shift (lhs, rhs);
 }
 
-inline multi_array<bool> & operator> (const uint8_t& lhs, multi_array<uint8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& right_shift (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-
-    return *result;
+    return bh_right_shift (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<bool>& lhs, multi_array<bool>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& right_shift (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_right_shift (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<bool>& lhs, const bool& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& eq (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const bool& lhs, multi_array<bool>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& eq (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_equal (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<float>& lhs, multi_array<float>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& eq (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<float>& lhs, const float& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator== (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const float& lhs, multi_array<float>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator== (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_equal (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<double>& lhs, multi_array<double>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator== (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<double>& lhs, const double& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& neq (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_not_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const double& lhs, multi_array<double>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& neq (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_not_equal (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& neq (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_not_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<int16_t>& lhs, const int16_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator!= (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_not_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const int16_t& lhs, multi_array<int16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator!= (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_not_equal (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator!= (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_not_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<int32_t>& lhs, const int32_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& gt (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_greater (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const int32_t& lhs, multi_array<int32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& gt (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_greater (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& gt (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_greater (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<int64_t>& lhs, const int64_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator> (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_greater (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const int64_t& lhs, multi_array<int64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator> (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_greater (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator> (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_greater (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<int8_t>& lhs, const int8_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& gteq (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_greater_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const int8_t& lhs, multi_array<int8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& gteq (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_greater_equal (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& gteq (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_greater_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator>= (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_greater_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const uint16_t& lhs, multi_array<uint16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator>= (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_greater_equal (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator>= (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_greater_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& lt (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_less (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const uint32_t& lhs, multi_array<uint32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& lt (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_less (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& lt (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_less (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator< (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_less (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const uint64_t& lhs, multi_array<uint64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator< (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_less (lhs, rhs);
 }
 
-inline multi_array<bool>& operator>= (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator< (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-
-    return *result;
+    return bh_less (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (multi_array<uint8_t>& lhs, const uint8_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& lteq (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_less_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator>= (const uint8_t& lhs, multi_array<uint8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& lteq (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_less_equal (lhs, rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<bool>& lhs, multi_array<bool>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& lteq (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-
-    return *result;
+    return bh_less_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<bool>& lhs, const bool& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator<= (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_less_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (const bool& lhs, multi_array<bool>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator<= (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_less_equal (lhs, rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<float>& lhs, multi_array<float>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator<= (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-
-    return *result;
+    return bh_less_equal (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<float>& lhs, const float& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& logical_and (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_and (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (const float& lhs, multi_array<float>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& logical_and (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_and (lhs, rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<double>& lhs, multi_array<double>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& logical_and (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-
-    return *result;
+    return bh_logical_and (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<double>& lhs, const double& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator&& (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_and (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (const double& lhs, multi_array<double>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator&& (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_and (lhs, rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator&& (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-
-    return *result;
+    return bh_logical_and (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<int16_t>& lhs, const int16_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& logical_or (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_or (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (const int16_t& lhs, multi_array<int16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& logical_or (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_or (lhs, rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& logical_or (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-
-    return *result;
+    return bh_logical_or (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<int32_t>& lhs, const int32_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator|| (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_or (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (const int32_t& lhs, multi_array<int32_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator|| (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_or (lhs, rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& operator|| (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-
-    return *result;
+    return bh_logical_or (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<int64_t>& lhs, const int64_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& logical_xor (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_xor (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (const int64_t& lhs, multi_array<int64_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& logical_xor (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_xor (lhs, rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& logical_xor (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-
-    return *result;
+    return bh_logical_xor (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<int8_t>& lhs, const int8_t& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& pow (multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_power (lhs, rhs);
 }
 
-inline multi_array<bool> & operator< (const int8_t& lhs, multi_array<int8_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& pow (multi_array<InT>& lhs, const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_power (lhs, rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+template <typename OutT, typename InT>
+inline multi_array<OutT>& pow (const InT lhs, multi_array<InT> rhs)
 {
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
+    return bh_power (lhs, rhs);
+}
 
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(*left);
-    result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& logical_not (multi_array<InT>& rhs)
+{
+    return bh_logical_not (rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& logical_not (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_logical_not (rhs);
 }
 
-inline multi_array<bool> & operator< (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& operator! (multi_array<InT>& rhs)
+{
+    return bh_logical_not (rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& operator! (const InT rhs)
 {
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(*left);
-    result->link();
+    return bh_logical_not (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& invert (multi_array<InT>& rhs)
+{
+    return bh_invert (rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& invert (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_invert (rhs);
 }
 
-inline multi_array<bool> & operator< (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& imag (multi_array<InT>& rhs)
+{
+    return bh_imag (rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& imag (const InT rhs)
 {
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(*left);
-    result->link();
+    return bh_imag (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& real (multi_array<InT>& rhs)
+{
+    return bh_real (rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& real (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_real (rhs);
 }
 
-inline multi_array<bool> & operator< (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& abs (multi_array<InT>& rhs)
+{
+    return bh_absolute (rhs);
 }
 
-inline multi_array<bool>& operator< (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& abs (const InT rhs)
 {
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(*left);
-    result->link();
+    return bh_absolute (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& max (multi_array<InT>& rhs)
+{
+    return bh_maximum (rhs);
 }
 
-inline multi_array<bool> & operator< (multi_array<uint8_t>& lhs, const uint8_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& max (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-
-    return *result;
+    return bh_maximum (rhs);
 }
 
-inline multi_array<bool> & operator< (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& min (multi_array<InT>& rhs)
+{
+    return bh_minimum (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<bool>& lhs, multi_array<bool>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& min (const InT rhs)
 {
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
+    return bh_minimum (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& sin (multi_array<InT>& rhs)
+{
+    return bh_sin (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<bool>& lhs, const bool& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& sin (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_sin (rhs);
 }
 
-inline multi_array<bool> & operator<= (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& cos (multi_array<InT>& rhs)
+{
+    return bh_cos (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<float>& lhs, multi_array<float>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& cos (const InT rhs)
 {
-    multi_array<float>* left    = &lhs;
-    multi_array<float>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(*left);
-    result->link();
+    return bh_cos (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& tan (multi_array<InT>& rhs)
+{
+    return bh_tan (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<float>& lhs, const float& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& tan (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_tan (rhs);
 }
 
-inline multi_array<bool> & operator<= (const float& lhs, multi_array<float>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, float>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& sinh (multi_array<InT>& rhs)
+{
+    return bh_sinh (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<double>& lhs, multi_array<double>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& sinh (const InT rhs)
 {
-    multi_array<double>* left    = &lhs;
-    multi_array<double>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(*left);
-    result->link();
+    return bh_sinh (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& cosh (multi_array<InT>& rhs)
+{
+    return bh_cosh (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<double>& lhs, const double& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& cosh (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_cosh (rhs);
 }
 
-inline multi_array<bool> & operator<= (const double& lhs, multi_array<double>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, double>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& tanh (multi_array<InT>& rhs)
+{
+    return bh_tanh (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<int16_t>& lhs, multi_array<int16_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& tanh (const InT rhs)
 {
-    multi_array<int16_t>* left    = &lhs;
-    multi_array<int16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(*left);
-    result->link();
+    return bh_tanh (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& asin (multi_array<InT>& rhs)
+{
+    return bh_arcsin (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<int16_t>& lhs, const int16_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& asin (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_arcsin (rhs);
 }
 
-inline multi_array<bool> & operator<= (const int16_t& lhs, multi_array<int16_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& acos (multi_array<InT>& rhs)
+{
+    return bh_arccos (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<int32_t>& lhs, multi_array<int32_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& acos (const InT rhs)
 {
-    multi_array<int32_t>* left    = &lhs;
-    multi_array<int32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(*left);
-    result->link();
+    return bh_arccos (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& atan (multi_array<InT>& rhs)
+{
+    return bh_arctan (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<int32_t>& lhs, const int32_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& atan (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_arctan (rhs);
 }
 
-inline multi_array<bool> & operator<= (const int32_t& lhs, multi_array<int32_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& atan2 (multi_array<InT>& rhs)
+{
+    return bh_arctan2 (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<int64_t>& lhs, multi_array<int64_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& atan2 (const InT rhs)
 {
-    multi_array<int64_t>* left    = &lhs;
-    multi_array<int64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(*left);
-    result->link();
+    return bh_arctan2 (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& asinh (multi_array<InT>& rhs)
+{
+    return bh_arcsinh (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<int64_t>& lhs, const int64_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& asinh (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_arcsinh (rhs);
 }
 
-inline multi_array<bool> & operator<= (const int64_t& lhs, multi_array<int64_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& acosh (multi_array<InT>& rhs)
+{
+    return bh_arccosh (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<int8_t>& lhs, multi_array<int8_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& acosh (const InT rhs)
 {
-    multi_array<int8_t>* left    = &lhs;
-    multi_array<int8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(*left);
-    result->link();
+    return bh_arccosh (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& atanh (multi_array<InT>& rhs)
+{
+    return bh_arctanh (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<int8_t>& lhs, const int8_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& atanh (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_arctanh (rhs);
 }
 
-inline multi_array<bool> & operator<= (const int8_t& lhs, multi_array<int8_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, int8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& exp (multi_array<InT>& rhs)
+{
+    return bh_exp (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<uint16_t>& lhs, multi_array<uint16_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& exp (const InT rhs)
 {
-    multi_array<uint16_t>* left    = &lhs;
-    multi_array<uint16_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(*left);
-    result->link();
+    return bh_exp (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& exp2 (multi_array<InT>& rhs)
+{
+    return bh_exp2 (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<uint16_t>& lhs, const uint16_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& exp2 (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_exp2 (rhs);
 }
 
-inline multi_array<bool> & operator<= (const uint16_t& lhs, multi_array<uint16_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint16_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& expm1 (multi_array<InT>& rhs)
+{
+    return bh_expm1 (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<uint32_t>& lhs, multi_array<uint32_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& expm1 (const InT rhs)
 {
-    multi_array<uint32_t>* left    = &lhs;
-    multi_array<uint32_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(*left);
-    result->link();
+    return bh_expm1 (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& isnan (multi_array<InT>& rhs)
+{
+    return bh_isnan (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<uint32_t>& lhs, const uint32_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& isnan (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_isnan (rhs);
 }
 
-inline multi_array<bool> & operator<= (const uint32_t& lhs, multi_array<uint32_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint32_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& isinf (multi_array<InT>& rhs)
+{
+    return bh_isinf (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<uint64_t>& lhs, multi_array<uint64_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& isinf (const InT rhs)
 {
-    multi_array<uint64_t>* left    = &lhs;
-    multi_array<uint64_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(*left);
-    result->link();
+    return bh_isinf (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& log (multi_array<InT>& rhs)
+{
+    return bh_log (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<uint64_t>& lhs, const uint64_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& log (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_log (rhs);
 }
 
-inline multi_array<bool> & operator<= (const uint64_t& lhs, multi_array<uint64_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint64_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& log2 (multi_array<InT>& rhs)
+{
+    return bh_log2 (rhs);
 }
 
-inline multi_array<bool>& operator<= (multi_array<uint8_t>& lhs, multi_array<uint8_t>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& log2 (const InT rhs)
 {
-    multi_array<uint8_t>* left    = &lhs;
-    multi_array<uint8_t>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(*left);
-    result->link();
+    return bh_log2 (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& log10 (multi_array<InT>& rhs)
+{
+    return bh_log10 (rhs);
 }
 
-inline multi_array<bool> & operator<= (multi_array<uint8_t>& lhs, const uint8_t& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& log10 (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-
-    return *result;
+    return bh_log10 (rhs);
 }
 
-inline multi_array<bool> & operator<= (const uint8_t& lhs, multi_array<uint8_t>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, uint8_t>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& log1p (multi_array<InT>& rhs)
+{
+    return bh_log1p (rhs);
 }
 
-inline multi_array<bool>& operator&& (multi_array<bool>& lhs, multi_array<bool>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& log1p (const InT rhs)
 {
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
+    return bh_log1p (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& sqrt (multi_array<InT>& rhs)
+{
+    return bh_sqrt (rhs);
 }
 
-inline multi_array<bool> & operator&& (multi_array<bool>& lhs, const bool& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& sqrt (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
-
-    return *result;
+    return bh_sqrt (rhs);
 }
 
-inline multi_array<bool> & operator&& (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& ceil (multi_array<InT>& rhs)
+{
+    return bh_ceil (rhs);
 }
 
-inline multi_array<bool>& operator|| (multi_array<bool>& lhs, multi_array<bool>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& ceil (const InT rhs)
 {
-    multi_array<bool>* left    = &lhs;
-    multi_array<bool>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(lhs, rhs)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(*left);
-    result->link();
+    return bh_ceil (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, *left, *right);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& trunc (multi_array<InT>& rhs)
+{
+    return bh_trunc (rhs);
 }
 
-inline multi_array<bool> & operator|| (multi_array<bool>& lhs, const bool& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& trunc (const InT rhs)
 {
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(lhs); 
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
-
-    return *result;
+    return bh_trunc (rhs);
 }
 
-inline multi_array<bool> & operator|| (const bool& lhs, multi_array<bool>& rhs)
-{
-    multi_array<bool>* result = &Runtime::instance().temp<bool, bool>(rhs);
-    result->link();
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& floor (multi_array<InT>& rhs)
+{
+    return bh_floor (rhs);
 }
-
-//
-//  Unary operators such as:
-//  Mapping "!a" to BH_NEGATE(t, a)
-//
 
-template <typename T>
-inline multi_array<T> & operator! (multi_array<T>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& floor (const InT rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
-    result->link();
+    return bh_floor (rhs);
+}
 
-    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, rhs);
 
-    return *result;
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& rint (multi_array<InT>& rhs)
+{
+    return bh_rint (rhs);
 }
 
-template <typename T>
-inline multi_array<T> & operator~ (multi_array<T>& rhs)
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& rint (const InT rhs)
 {
-    multi_array<T>* result = &Runtime::instance().temp<T,T>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_INVERT, *result, rhs);
-
-    return *result;
+    return bh_rint (rhs);
 }
+
 
 }
 #endif

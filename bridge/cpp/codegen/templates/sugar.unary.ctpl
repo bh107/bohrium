@@ -1,0 +1,24 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+
+%for $op, $opcode, $optype, $opcount, $typesigs in $data
+
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& $op (multi_array<InT>& rhs)
+{
+    return $opcode.lower() (rhs);
+}
+
+template <typename OutT, typename InT>
+inline
+multi_array<OutT>& $op (const InT rhs)
+{
+    return $opcode.lower() (rhs);
+}
+
+%end for
+

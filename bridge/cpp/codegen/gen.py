@@ -108,9 +108,15 @@ def main():
 
     gens = [
         ('traits.ctpl',     'traits.hpp',    types),
-        ('functions.ctpl',  'functions.hpp', op_map),
-        ('bytecode.ctpl',   'functions.bytecode.hpp', op_map),
-        ('operators.ctpl',  'operators.hpp', op_map),
+        #('functions.ctpl',  'functions.hpp', op_map),
+        #('operators.ctpl',  'operators.hpp', op_map),
+
+        ('operators.header.ctpl',   'operators.hpp', datasets['sugar.binary']),
+        #('sugar.int.unary.ctpl',    'operators.hpp', datasets['sugar.int.unary']),
+        ('sugar.int.binary.ctpl',   'operators.hpp', datasets['sugar.int.binary']),
+        ('sugar.binary.ctpl',       'operators.hpp', datasets['sugar.binary']),
+        ('sugar.unary.ctpl',        'operators.hpp', datasets['sugar.unary']),
+        ('operators.footer.ctpl',   'operators.hpp', datasets['sugar.unary']),
 
         ('runtime.header.ctpl',     'runtime.operations.hpp', datasets['runtime.binary']),
         ('runtime.binary.ctpl',     'runtime.operations.hpp', datasets['runtime.binary']),
@@ -120,7 +126,6 @@ def main():
         ('runtime.accumulate.ctpl', 'runtime.operations.hpp', datasets['runtime.accumulate']),
         ('runtime.reduce.ctpl',     'runtime.operations.hpp', datasets['runtime.reduce']),
         ('runtime.footer.ctpl',     'runtime.operations.hpp', datasets['runtime.reduce']),
-
     ]
 
     render( gens, tmpl_dir, output_dir, mtime )

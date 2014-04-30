@@ -24,5 +24,45 @@ multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
     return res;
 }
 
+template <typename T>
+multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
+{
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {                // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    // TODO
+    //  * Type-check
+    //  * Shape-check
+    Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+
+    return *result;
+}
+
 %end for
 
