@@ -119,10 +119,16 @@ void compute()
     cout << c << endl;
 
     */
-    multi_array<float> a, b, c;
-    a = ones<float>(2,2);
-    b = ones<float>(1,2);
-    a+b;
+    multi_array<float> x, y;
+    y = ones<float>(10);
+    x = (float)2.5 + y;
+
+    std::cout << x << std::endl;
+
+    x = y + (float)2.5;
+
+    std::cout << x << std::endl;
+
 }
 
 int main()

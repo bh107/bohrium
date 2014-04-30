@@ -145,7 +145,7 @@ inline multi_array<T>& add (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& add (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& add (const T lhs, multi_array<T>& rhs)
 {
     return bh_add (lhs, rhs);
 }
@@ -163,7 +163,7 @@ inline multi_array<T>& operator+ (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator+ (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator+ (const T lhs, multi_array<T>& rhs)
 {
     return bh_add (lhs, rhs);
 }
@@ -181,7 +181,7 @@ inline multi_array<T>& subtract (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& subtract (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& subtract (const T lhs, multi_array<T>& rhs)
 {
     return bh_subtract (lhs, rhs);
 }
@@ -199,7 +199,7 @@ inline multi_array<T>& operator- (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator- (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator- (const T lhs, multi_array<T>& rhs)
 {
     return bh_subtract (lhs, rhs);
 }
@@ -217,7 +217,7 @@ inline multi_array<T>& mul (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& mul (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& mul (const T lhs, multi_array<T>& rhs)
 {
     return bh_multiply (lhs, rhs);
 }
@@ -235,7 +235,7 @@ inline multi_array<T>& operator* (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator* (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator* (const T lhs, multi_array<T>& rhs)
 {
     return bh_multiply (lhs, rhs);
 }
@@ -253,7 +253,7 @@ inline multi_array<T>& div (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& div (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& div (const T lhs, multi_array<T>& rhs)
 {
     return bh_divide (lhs, rhs);
 }
@@ -271,7 +271,7 @@ inline multi_array<T>& operator/ (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator/ (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator/ (const T lhs, multi_array<T>& rhs)
 {
     return bh_divide (lhs, rhs);
 }
@@ -289,7 +289,7 @@ inline multi_array<T>& mod (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& mod (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& mod (const T lhs, multi_array<T>& rhs)
 {
     return bh_mod (lhs, rhs);
 }
@@ -307,7 +307,7 @@ inline multi_array<T>& operator% (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator% (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator% (const T lhs, multi_array<T>& rhs)
 {
     return bh_mod (lhs, rhs);
 }
@@ -325,7 +325,7 @@ inline multi_array<T>& bitwise_and (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& bitwise_and (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& bitwise_and (const T lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_and (lhs, rhs);
 }
@@ -343,7 +343,7 @@ inline multi_array<T>& operator& (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator& (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator& (const T lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_and (lhs, rhs);
 }
@@ -361,7 +361,7 @@ inline multi_array<T>& bitwise_or (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& bitwise_or (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& bitwise_or (const T lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_or (lhs, rhs);
 }
@@ -379,7 +379,7 @@ inline multi_array<T>& operator| (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator| (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator| (const T lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_or (lhs, rhs);
 }
@@ -397,7 +397,7 @@ inline multi_array<T>& bitwise_xor (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& bitwise_xor (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& bitwise_xor (const T lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_xor (lhs, rhs);
 }
@@ -415,7 +415,7 @@ inline multi_array<T>& operator^ (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator^ (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator^ (const T lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_xor (lhs, rhs);
 }
@@ -433,7 +433,7 @@ inline multi_array<T>& left_shift (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& left_shift (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& left_shift (const T lhs, multi_array<T>& rhs)
 {
     return bh_left_shift (lhs, rhs);
 }
@@ -451,7 +451,7 @@ inline multi_array<T>& right_shift (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& right_shift (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& right_shift (const T lhs, multi_array<T>& rhs)
 {
     return bh_right_shift (lhs, rhs);
 }
@@ -469,7 +469,7 @@ inline multi_array<T>& eq (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& eq (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& eq (const T lhs, multi_array<T>& rhs)
 {
     return bh_equal (lhs, rhs);
 }
@@ -487,7 +487,7 @@ inline multi_array<T>& operator== (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator== (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator== (const T lhs, multi_array<T>& rhs)
 {
     return bh_equal (lhs, rhs);
 }
@@ -505,7 +505,7 @@ inline multi_array<T>& neq (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& neq (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& neq (const T lhs, multi_array<T>& rhs)
 {
     return bh_not_equal (lhs, rhs);
 }
@@ -523,7 +523,7 @@ inline multi_array<T>& operator!= (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator!= (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator!= (const T lhs, multi_array<T>& rhs)
 {
     return bh_not_equal (lhs, rhs);
 }
@@ -541,7 +541,7 @@ inline multi_array<T>& gt (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& gt (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& gt (const T lhs, multi_array<T>& rhs)
 {
     return bh_greater (lhs, rhs);
 }
@@ -559,7 +559,7 @@ inline multi_array<T>& operator> (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator> (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator> (const T lhs, multi_array<T>& rhs)
 {
     return bh_greater (lhs, rhs);
 }
@@ -577,7 +577,7 @@ inline multi_array<T>& gteq (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& gteq (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& gteq (const T lhs, multi_array<T>& rhs)
 {
     return bh_greater_equal (lhs, rhs);
 }
@@ -595,7 +595,7 @@ inline multi_array<T>& operator>= (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator>= (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator>= (const T lhs, multi_array<T>& rhs)
 {
     return bh_greater_equal (lhs, rhs);
 }
@@ -613,7 +613,7 @@ inline multi_array<T>& lt (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& lt (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& lt (const T lhs, multi_array<T>& rhs)
 {
     return bh_less (lhs, rhs);
 }
@@ -631,7 +631,7 @@ inline multi_array<T>& operator< (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator< (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator< (const T lhs, multi_array<T>& rhs)
 {
     return bh_less (lhs, rhs);
 }
@@ -649,7 +649,7 @@ inline multi_array<T>& lteq (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& lteq (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& lteq (const T lhs, multi_array<T>& rhs)
 {
     return bh_less_equal (lhs, rhs);
 }
@@ -667,7 +667,7 @@ inline multi_array<T>& operator<= (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator<= (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator<= (const T lhs, multi_array<T>& rhs)
 {
     return bh_less_equal (lhs, rhs);
 }
@@ -685,7 +685,7 @@ inline multi_array<T>& logical_and (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& logical_and (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& logical_and (const T lhs, multi_array<T>& rhs)
 {
     return bh_logical_and (lhs, rhs);
 }
@@ -703,7 +703,7 @@ inline multi_array<T>& operator&& (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator&& (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator&& (const T lhs, multi_array<T>& rhs)
 {
     return bh_logical_and (lhs, rhs);
 }
@@ -721,7 +721,7 @@ inline multi_array<T>& logical_or (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& logical_or (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& logical_or (const T lhs, multi_array<T>& rhs)
 {
     return bh_logical_or (lhs, rhs);
 }
@@ -739,7 +739,7 @@ inline multi_array<T>& operator|| (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& operator|| (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& operator|| (const T lhs, multi_array<T>& rhs)
 {
     return bh_logical_or (lhs, rhs);
 }
@@ -757,7 +757,7 @@ inline multi_array<T>& logical_xor (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& logical_xor (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& logical_xor (const T lhs, multi_array<T>& rhs)
 {
     return bh_logical_xor (lhs, rhs);
 }
@@ -775,7 +775,7 @@ inline multi_array<T>& pow (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& pow (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& pow (const T lhs, multi_array<T>& rhs)
 {
     return bh_power (lhs, rhs);
 }

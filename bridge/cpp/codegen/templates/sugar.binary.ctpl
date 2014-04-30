@@ -19,7 +19,7 @@ inline multi_array<T>& $op (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-inline multi_array<T>& $op (const T lhs, multi_array<T> rhs)
+inline multi_array<T>& $op (const T lhs, multi_array<T>& rhs)
 {
     return $opcode.lower() (lhs, rhs);
 }
