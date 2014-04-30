@@ -131,11 +131,11 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, const InT lhs, multi_array<In
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_add (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_add (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -154,31 +154,31 @@ multi_array<OutT>& bh_add (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_add (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_add (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_add (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_add (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -281,11 +281,11 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, const InT lhs, multi_arr
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_subtract (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_subtract (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -304,31 +304,31 @@ multi_array<OutT>& bh_subtract (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_subtract (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_subtract (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_subtract (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_subtract (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -431,11 +431,11 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, const InT lhs, multi_arr
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_multiply (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_multiply (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -454,31 +454,31 @@ multi_array<OutT>& bh_multiply (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_multiply (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_multiply (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_multiply (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_multiply (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -581,11 +581,11 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, const InT lhs, multi_array
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_divide (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_divide (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -604,31 +604,31 @@ multi_array<OutT>& bh_divide (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_divide (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_divide (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_divide (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_divide (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -731,11 +731,11 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, const InT lhs, multi_array<In
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_mod (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_mod (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -754,31 +754,31 @@ multi_array<OutT>& bh_mod (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_mod (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_mod (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_mod (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_mod (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -881,11 +881,11 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, const InT lhs, multi_
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_and (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_bitwise_and (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -904,31 +904,31 @@ multi_array<OutT>& bh_bitwise_and (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_and (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_bitwise_and (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_and (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_bitwise_and (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -1031,11 +1031,11 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, const InT lhs, multi_a
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_or (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_bitwise_or (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -1054,31 +1054,31 @@ multi_array<OutT>& bh_bitwise_or (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_or (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_bitwise_or (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_or (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_bitwise_or (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -1181,11 +1181,11 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, const InT lhs, multi_
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_xor (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_bitwise_xor (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -1204,31 +1204,31 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_xor (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_bitwise_xor (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_xor (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_bitwise_xor (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -1331,11 +1331,11 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, const InT lhs, multi_a
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_left_shift (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_left_shift (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -1354,31 +1354,31 @@ multi_array<OutT>& bh_left_shift (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_left_shift (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_left_shift (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_left_shift (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_left_shift (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -1481,11 +1481,11 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, const InT lhs, multi_
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_right_shift (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_right_shift (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -1504,31 +1504,31 @@ multi_array<OutT>& bh_right_shift (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_right_shift (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_right_shift (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_right_shift (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_right_shift (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -1631,11 +1631,11 @@ multi_array<OutT>& bh_equal (multi_array<OutT>& res, const InT lhs, multi_array<
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -1654,31 +1654,31 @@ multi_array<OutT>& bh_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_equal (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_equal (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_equal (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_equal (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -1781,11 +1781,11 @@ multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, const InT lhs, multi_ar
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_not_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_not_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -1804,31 +1804,31 @@ multi_array<OutT>& bh_not_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_not_equal (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_not_equal (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_not_equal (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_not_equal (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -1931,11 +1931,11 @@ multi_array<OutT>& bh_greater (multi_array<OutT>& res, const InT lhs, multi_arra
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_greater (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -1954,31 +1954,31 @@ multi_array<OutT>& bh_greater (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_greater (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_greater (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -2081,11 +2081,11 @@ multi_array<OutT>& greater_equal (multi_array<OutT>& res, const InT lhs, multi_a
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& greater_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -2104,31 +2104,31 @@ multi_array<OutT>& greater_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& greater_equal (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& greater_equal (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& greater_equal (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& greater_equal (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -2231,11 +2231,11 @@ multi_array<OutT>& bh_less (multi_array<OutT>& res, const InT lhs, multi_array<I
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_less (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_less (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -2254,31 +2254,31 @@ multi_array<OutT>& bh_less (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_less (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_less (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_less (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_less (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -2381,11 +2381,11 @@ multi_array<OutT>& less_equal (multi_array<OutT>& res, const InT lhs, multi_arra
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& less_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -2404,31 +2404,31 @@ multi_array<OutT>& less_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& less_equal (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& less_equal (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& less_equal (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& less_equal (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -2531,11 +2531,11 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, const InT lhs, multi_
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_and (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_logical_and (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -2554,31 +2554,31 @@ multi_array<OutT>& bh_logical_and (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_and (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_logical_and (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_and (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_logical_and (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -2681,11 +2681,11 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, const InT lhs, multi_a
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_or (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_logical_or (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -2704,31 +2704,31 @@ multi_array<OutT>& bh_logical_or (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_or (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_logical_or (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_or (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_logical_or (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -2831,11 +2831,11 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, const InT lhs, multi_
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_xor (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_logical_xor (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -2854,31 +2854,31 @@ multi_array<OutT>& bh_logical_xor (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_xor (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_logical_xor (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_xor (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_logical_xor (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -2981,11 +2981,11 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, const InT lhs, multi_array<
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_power (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_power (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -3004,31 +3004,31 @@ multi_array<OutT>& bh_power (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_power (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_power (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_power (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_power (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -3131,11 +3131,11 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, const InT lhs, multi_arra
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_maximum (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_maximum (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -3154,31 +3154,31 @@ multi_array<OutT>& bh_maximum (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_maximum (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_maximum (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_maximum (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_maximum (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 // Explicit result array
@@ -3281,11 +3281,11 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, const InT lhs, multi_arra
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_minimum (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& bh_minimum (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -3304,31 +3304,31 @@ multi_array<OutT>& bh_minimum (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_minimum (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& bh_minimum (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_minimum (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& bh_minimum (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 

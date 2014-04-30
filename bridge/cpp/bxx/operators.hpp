@@ -132,650 +132,650 @@ inline multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
 }
 
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& add (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& add (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_add (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& add (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& add (multi_array<T>& lhs, const T rhs)
 {
     return bh_add (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& add (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& add (const T lhs, multi_array<T> rhs)
 {
     return bh_add (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator+ (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator+ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_add (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator+ (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator+ (multi_array<T>& lhs, const T rhs)
 {
     return bh_add (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator+ (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator+ (const T lhs, multi_array<T> rhs)
 {
     return bh_add (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& subtract (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& subtract (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_subtract (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& subtract (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& subtract (multi_array<T>& lhs, const T rhs)
 {
     return bh_subtract (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& subtract (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& subtract (const T lhs, multi_array<T> rhs)
 {
     return bh_subtract (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator- (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator- (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_subtract (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator- (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator- (multi_array<T>& lhs, const T rhs)
 {
     return bh_subtract (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator- (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator- (const T lhs, multi_array<T> rhs)
 {
     return bh_subtract (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& mul (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& mul (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_multiply (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& mul (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& mul (multi_array<T>& lhs, const T rhs)
 {
     return bh_multiply (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& mul (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& mul (const T lhs, multi_array<T> rhs)
 {
     return bh_multiply (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator* (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator* (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_multiply (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator* (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator* (multi_array<T>& lhs, const T rhs)
 {
     return bh_multiply (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator* (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator* (const T lhs, multi_array<T> rhs)
 {
     return bh_multiply (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& div (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& div (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_divide (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& div (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& div (multi_array<T>& lhs, const T rhs)
 {
     return bh_divide (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& div (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& div (const T lhs, multi_array<T> rhs)
 {
     return bh_divide (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator/ (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator/ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_divide (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator/ (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator/ (multi_array<T>& lhs, const T rhs)
 {
     return bh_divide (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator/ (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator/ (const T lhs, multi_array<T> rhs)
 {
     return bh_divide (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& mod (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& mod (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_mod (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& mod (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& mod (multi_array<T>& lhs, const T rhs)
 {
     return bh_mod (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& mod (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& mod (const T lhs, multi_array<T> rhs)
 {
     return bh_mod (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator% (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator% (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_mod (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator% (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator% (multi_array<T>& lhs, const T rhs)
 {
     return bh_mod (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator% (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator% (const T lhs, multi_array<T> rhs)
 {
     return bh_mod (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& bitwise_and (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& bitwise_and (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& bitwise_and (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& bitwise_and (multi_array<T>& lhs, const T rhs)
 {
     return bh_bitwise_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& bitwise_and (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& bitwise_and (const T lhs, multi_array<T> rhs)
 {
     return bh_bitwise_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator& (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator& (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator& (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator& (multi_array<T>& lhs, const T rhs)
 {
     return bh_bitwise_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator& (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator& (const T lhs, multi_array<T> rhs)
 {
     return bh_bitwise_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& bitwise_or (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& bitwise_or (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& bitwise_or (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& bitwise_or (multi_array<T>& lhs, const T rhs)
 {
     return bh_bitwise_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& bitwise_or (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& bitwise_or (const T lhs, multi_array<T> rhs)
 {
     return bh_bitwise_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator| (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator| (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator| (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator| (multi_array<T>& lhs, const T rhs)
 {
     return bh_bitwise_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator| (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator| (const T lhs, multi_array<T> rhs)
 {
     return bh_bitwise_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& bitwise_xor (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& bitwise_xor (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_xor (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& bitwise_xor (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& bitwise_xor (multi_array<T>& lhs, const T rhs)
 {
     return bh_bitwise_xor (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& bitwise_xor (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& bitwise_xor (const T lhs, multi_array<T> rhs)
 {
     return bh_bitwise_xor (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator^ (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator^ (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_bitwise_xor (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator^ (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator^ (multi_array<T>& lhs, const T rhs)
 {
     return bh_bitwise_xor (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator^ (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator^ (const T lhs, multi_array<T> rhs)
 {
     return bh_bitwise_xor (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& left_shift (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& left_shift (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_left_shift (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& left_shift (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& left_shift (multi_array<T>& lhs, const T rhs)
 {
     return bh_left_shift (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& left_shift (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& left_shift (const T lhs, multi_array<T> rhs)
 {
     return bh_left_shift (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& right_shift (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& right_shift (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_right_shift (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& right_shift (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& right_shift (multi_array<T>& lhs, const T rhs)
 {
     return bh_right_shift (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& right_shift (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& right_shift (const T lhs, multi_array<T> rhs)
 {
     return bh_right_shift (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& eq (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& eq (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& eq (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& eq (multi_array<T>& lhs, const T rhs)
 {
     return bh_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& eq (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& eq (const T lhs, multi_array<T> rhs)
 {
     return bh_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator== (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator== (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator== (multi_array<T>& lhs, const T rhs)
 {
     return bh_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator== (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator== (const T lhs, multi_array<T> rhs)
 {
     return bh_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& neq (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& neq (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_not_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& neq (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& neq (multi_array<T>& lhs, const T rhs)
 {
     return bh_not_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& neq (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& neq (const T lhs, multi_array<T> rhs)
 {
     return bh_not_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator!= (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_not_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator!= (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator!= (multi_array<T>& lhs, const T rhs)
 {
     return bh_not_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator!= (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator!= (const T lhs, multi_array<T> rhs)
 {
     return bh_not_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& gt (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& gt (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_greater (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& gt (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& gt (multi_array<T>& lhs, const T rhs)
 {
     return bh_greater (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& gt (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& gt (const T lhs, multi_array<T> rhs)
 {
     return bh_greater (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator> (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_greater (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator> (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator> (multi_array<T>& lhs, const T rhs)
 {
     return bh_greater (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator> (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator> (const T lhs, multi_array<T> rhs)
 {
     return bh_greater (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& gteq (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& gteq (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_greater_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& gteq (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& gteq (multi_array<T>& lhs, const T rhs)
 {
     return bh_greater_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& gteq (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& gteq (const T lhs, multi_array<T> rhs)
 {
     return bh_greater_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator>= (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_greater_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator>= (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator>= (multi_array<T>& lhs, const T rhs)
 {
     return bh_greater_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator>= (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator>= (const T lhs, multi_array<T> rhs)
 {
     return bh_greater_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& lt (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& lt (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_less (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& lt (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& lt (multi_array<T>& lhs, const T rhs)
 {
     return bh_less (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& lt (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& lt (const T lhs, multi_array<T> rhs)
 {
     return bh_less (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator< (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_less (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator< (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator< (multi_array<T>& lhs, const T rhs)
 {
     return bh_less (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator< (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator< (const T lhs, multi_array<T> rhs)
 {
     return bh_less (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& lteq (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& lteq (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_less_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& lteq (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& lteq (multi_array<T>& lhs, const T rhs)
 {
     return bh_less_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& lteq (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& lteq (const T lhs, multi_array<T> rhs)
 {
     return bh_less_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator<= (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_less_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator<= (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator<= (multi_array<T>& lhs, const T rhs)
 {
     return bh_less_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator<= (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator<= (const T lhs, multi_array<T> rhs)
 {
     return bh_less_equal (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& logical_and (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& logical_and (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_logical_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& logical_and (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& logical_and (multi_array<T>& lhs, const T rhs)
 {
     return bh_logical_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& logical_and (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& logical_and (const T lhs, multi_array<T> rhs)
 {
     return bh_logical_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator&& (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator&& (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_logical_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator&& (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator&& (multi_array<T>& lhs, const T rhs)
 {
     return bh_logical_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator&& (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator&& (const T lhs, multi_array<T> rhs)
 {
     return bh_logical_and (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& logical_or (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& logical_or (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_logical_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& logical_or (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& logical_or (multi_array<T>& lhs, const T rhs)
 {
     return bh_logical_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& logical_or (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& logical_or (const T lhs, multi_array<T> rhs)
 {
     return bh_logical_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator|| (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& operator|| (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_logical_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator|| (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& operator|| (multi_array<T>& lhs, const T rhs)
 {
     return bh_logical_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& operator|| (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& operator|| (const T lhs, multi_array<T> rhs)
 {
     return bh_logical_or (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& logical_xor (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& logical_xor (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_logical_xor (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& logical_xor (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& logical_xor (multi_array<T>& lhs, const T rhs)
 {
     return bh_logical_xor (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& logical_xor (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& logical_xor (const T lhs, multi_array<T> rhs)
 {
     return bh_logical_xor (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& pow (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& pow (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_power (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& pow (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& pow (multi_array<T>& lhs, const T rhs)
 {
     return bh_power (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& pow (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& pow (const T lhs, multi_array<T> rhs)
 {
     return bh_power (lhs, rhs);
 }

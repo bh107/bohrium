@@ -4,7 +4,8 @@ HEADER=$(ROOT)/include/*
 EXAMPLE_SRC	= $(wildcard *.cpp)
 EXAMPLES	= $(subst .cpp,, $(EXAMPLE_SRC))
 
-CXX=g++
+#CXX=g++
+CXX=clang
 CXXFLAGS=-Wall -Wextra -pedantic -O2 -std=c++0x -Wno-variadic-macros $(EXTRAS)
 
 all: $(EXAMPLES)

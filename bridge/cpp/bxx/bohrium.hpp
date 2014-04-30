@@ -420,7 +420,6 @@ void pprint(multi_array<T>& op);
 #include "generator.hpp"    // DSEL Generators 
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
-#include "functions.hpp"    // DSEL Operations via functions.
 #include "sugar.hpp"        // DSEL Additional sugar...
 
 #endif

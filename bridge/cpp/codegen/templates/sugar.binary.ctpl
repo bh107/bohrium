@@ -6,20 +6,20 @@ directiveStartToken = %
 
 %for $op, $opcode, $optype, $opcount, $typesigs in $data
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& $op (multi_array<InT>& lhs, multi_array<InT>& rhs)
+template <typename T>
+inline multi_array<T>& $op (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return $opcode.lower() (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& $op (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+inline multi_array<T>& $op (multi_array<T>& lhs, const T rhs)
 {
     return $opcode.lower() (lhs, rhs);
 }
 
-template <typename OutT, typename InT>
-inline multi_array<OutT>& $op (const InT lhs, multi_array<InT> rhs)
+template <typename T>
+inline multi_array<T>& $op (const T lhs, multi_array<T> rhs)
 {
     return $opcode.lower() (lhs, rhs);
 }

@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bxx/bohrium.hpp>
 
 using namespace bxx;
-using namespace std;
 
 template <typename T>
 void complex_ones()
@@ -123,8 +122,7 @@ void compute()
     multi_array<float> a, b, c;
     a = ones<float>(2,2);
     b = ones<float>(1,2);
-    a += b;
-    cout << a << endl;
+    a+b;
 }
 
 int main()

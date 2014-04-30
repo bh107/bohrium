@@ -105,11 +105,11 @@ multi_array<OutT>& $op (multi_array<OutT>& res, const InT lhs, multi_array<InT>&
 //
 // Implicit temporary result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& $op (multi_array<InT> &lhs, multi_array<InT> &rhs)
+template <typename T>
+multi_array<T>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
     
     // Broadcast
     if (!same_shape(*left, *right)) {
@@ -128,31 +128,31 @@ multi_array<OutT>& $op (multi_array<InT> &lhs, multi_array<InT> &rhs)
     }
 
     // Construct output / result array
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, *left, *right);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& $op (multi_array<InT>& lhs, const InT rhs)
+template <typename T>
+multi_array<T>& $op (multi_array<T>& lhs, const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
-template <typename OutT, typename InT>
-multi_array<OutT>& $op (const InT lhs, multi_array<InT>& rhs)
+template <typename T>
+multi_array<T>& $op (const T lhs, multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
-    return result;
+    return *result;
 }
 
 %end for
