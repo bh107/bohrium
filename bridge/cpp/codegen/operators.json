@@ -73,7 +73,7 @@
 
 ["gteq",            "BH_GREATER_EQUAL",  "sugar.binary",    true],
 ["operator>=",      "BH_GREATER_EQUAL",  "sugar.binary",    true],
-["greater_equal",   "BH_GREATER_EQUAL",  "runtime.binary",  true],
+["bh_greater_equal",   "BH_GREATER_EQUAL",  "runtime.binary",  true],
 
 ["lt",          "BH_LESS",  "sugar.binary",     true],
 ["operator<",   "BH_LESS",  "sugar.binary",     true],
@@ -81,7 +81,7 @@
 
 ["lteq",        "BH_LESS_EQUAL",    "sugar.binary",     true],
 ["operator<=",  "BH_LESS_EQUAL",    "sugar.binary",     true],
-["less_equal",  "BH_LESS_EQUAL",    "runtime.binary",   true],
+["bh_less_equal",  "BH_LESS_EQUAL",    "runtime.binary",   true],
 
 ["logical_and",     "BH_LOGICAL_AND",   "sugar.binary",     true],
 ["operator&&",      "BH_LOGICAL_AND",   "sugar.binary",     true],

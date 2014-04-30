@@ -1983,7 +1983,7 @@ multi_array<T>& bh_greater (const T lhs, multi_array<T>& rhs)
 
 // Explicit result array
 template <typename OutT, typename InT>
-multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
+multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2017,14 +2017,14 @@ multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
+multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
     // Check for unbroadcastable situation
     if (res.getRank() < left->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "greater_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_greater_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -2048,14 +2048,14 @@ multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& greater_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
+multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "greater_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_greater_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -2082,7 +2082,7 @@ multi_array<OutT>& greater_equal (multi_array<OutT>& res, const InT lhs, multi_a
 // Implicit temporary result array
 //
 template <typename T>
-multi_array<T>& greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& bh_greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -2112,7 +2112,7 @@ multi_array<T>& greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 }
 
 template <typename T>
-multi_array<T>& greater_equal (multi_array<T>& lhs, const T rhs)
+multi_array<T>& bh_greater_equal (multi_array<T>& lhs, const T rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -2122,7 +2122,7 @@ multi_array<T>& greater_equal (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-multi_array<T>& greater_equal (const T lhs, multi_array<T>& rhs)
+multi_array<T>& bh_greater_equal (const T lhs, multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -2283,7 +2283,7 @@ multi_array<T>& bh_less (const T lhs, multi_array<T>& rhs)
 
 // Explicit result array
 template <typename OutT, typename InT>
-multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
+multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2317,14 +2317,14 @@ multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, mu
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
+multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
     // Check for unbroadcastable situation
     if (res.getRank() < left->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "less_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_less_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -2348,14 +2348,14 @@ multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, co
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& less_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
+multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "less_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_less_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -2382,7 +2382,7 @@ multi_array<OutT>& less_equal (multi_array<OutT>& res, const InT lhs, multi_arra
 // Implicit temporary result array
 //
 template <typename T>
-multi_array<T>& less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<T>& bh_less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -2412,7 +2412,7 @@ multi_array<T>& less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 }
 
 template <typename T>
-multi_array<T>& less_equal (multi_array<T>& lhs, const T rhs)
+multi_array<T>& bh_less_equal (multi_array<T>& lhs, const T rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -2422,7 +2422,7 @@ multi_array<T>& less_equal (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-multi_array<T>& less_equal (const T lhs, multi_array<T>& rhs)
+multi_array<T>& bh_less_equal (const T lhs, multi_array<T>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
