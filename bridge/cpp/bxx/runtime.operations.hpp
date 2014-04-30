@@ -31,9 +31,9 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bxx {
 
 
-
+// Explicit result array
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -67,7 +67,7 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT> &lhs, multi_
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -98,7 +98,7 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT> &lhs, const 
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_add (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_add (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -128,9 +128,62 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, const InT &lhs, multi_array<I
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_add (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_add (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_add (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -164,7 +217,7 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT> &lhs, m
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -195,7 +248,7 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT> &lhs, c
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_subtract (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_subtract (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -225,9 +278,62 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, const InT &lhs, multi_ar
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_subtract (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_subtract (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_subtract (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -261,7 +367,7 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT> &lhs, m
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -292,7 +398,7 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT> &lhs, c
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_multiply (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_multiply (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -322,9 +428,62 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, const InT &lhs, multi_ar
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_multiply (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_multiply (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_multiply (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -358,7 +517,7 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT> &lhs, mul
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -389,7 +548,7 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT> &lhs, con
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_divide (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_divide (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -419,9 +578,62 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, const InT &lhs, multi_arra
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_divide (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_divide (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_divide (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -455,7 +667,7 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT> &lhs, multi_
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -486,7 +698,7 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT> &lhs, const 
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_mod (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_mod (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -516,9 +728,62 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, const InT &lhs, multi_array<I
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_mod (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_mod (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_mod (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -552,7 +817,7 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -583,7 +848,7 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -613,9 +878,62 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, const InT &lhs, multi
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_bitwise_and (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_bitwise_and (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_bitwise_and (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -649,7 +967,7 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT> &lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -680,7 +998,7 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT> &lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -710,9 +1028,62 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, const InT &lhs, multi_
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_bitwise_or (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_bitwise_or (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_bitwise_or (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -746,7 +1117,7 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -777,7 +1148,7 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -807,9 +1178,62 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, const InT &lhs, multi
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_bitwise_xor (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_bitwise_xor (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_bitwise_xor (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -843,7 +1267,7 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT> &lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -874,7 +1298,7 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT> &lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -904,9 +1328,62 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, const InT &lhs, multi_
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_left_shift (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_left_shift (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_left_shift (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -940,7 +1417,7 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -971,7 +1448,7 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1001,9 +1478,62 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, const InT &lhs, multi
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_right_shift (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_right_shift (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_right_shift (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1037,7 +1567,7 @@ multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT> &lhs, mult
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1068,7 +1598,7 @@ multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT> &lhs, cons
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_equal (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1098,9 +1628,62 @@ multi_array<OutT>& bh_equal (multi_array<OutT>& res, const InT &lhs, multi_array
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_equal (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_equal (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1134,7 +1717,7 @@ multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT> &lhs, 
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1165,7 +1748,7 @@ multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT> &lhs, 
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1195,9 +1778,62 @@ multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, const InT &lhs, multi_a
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_not_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_not_equal (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_not_equal (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1231,7 +1867,7 @@ multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT> &lhs, mu
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1262,7 +1898,7 @@ multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT> &lhs, co
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_greater (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1292,9 +1928,62 @@ multi_array<OutT>& bh_greater (multi_array<OutT>& res, const InT &lhs, multi_arr
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_greater (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_greater (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_greater (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1328,7 +2017,7 @@ multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT> &lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1359,7 +2048,7 @@ multi_array<OutT>& greater_equal (multi_array<OutT>& res, multi_array<InT> &lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& greater_equal (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& greater_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1389,9 +2078,62 @@ multi_array<OutT>& greater_equal (multi_array<OutT>& res, const InT &lhs, multi_
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& greater_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& greater_equal (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& greater_equal (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1425,7 +2167,7 @@ multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT> &lhs, multi
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1456,7 +2198,7 @@ multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT> &lhs, const
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_less (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_less (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1486,9 +2228,62 @@ multi_array<OutT>& bh_less (multi_array<OutT>& res, const InT &lhs, multi_array<
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_less (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_less (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_less (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1522,7 +2317,7 @@ multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT> &lhs, mu
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1553,7 +2348,7 @@ multi_array<OutT>& less_equal (multi_array<OutT>& res, multi_array<InT> &lhs, co
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& less_equal (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& less_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1583,9 +2378,62 @@ multi_array<OutT>& less_equal (multi_array<OutT>& res, const InT &lhs, multi_arr
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& less_equal (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& less_equal (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& less_equal (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1619,7 +2467,7 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1650,7 +2498,7 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1680,9 +2528,62 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, const InT &lhs, multi
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_and (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_logical_and (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_and (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1716,7 +2617,7 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT> &lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1747,7 +2648,7 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT> &lhs,
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1777,9 +2678,62 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, const InT &lhs, multi_
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_or (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_logical_or (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_or (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1813,7 +2767,7 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1844,7 +2798,7 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1874,9 +2828,62 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, const InT &lhs, multi
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_xor (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_logical_xor (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_xor (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1910,7 +2917,7 @@ multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -1941,7 +2948,7 @@ multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &lhs
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -1971,9 +2978,62 @@ multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT &lhs, multi
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_not (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_logical_not (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_logical_not (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2007,7 +3067,7 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT> &lhs, mult
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -2038,7 +3098,7 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT> &lhs, cons
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_power (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_power (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -2068,9 +3128,62 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, const InT &lhs, multi_array
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_power (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_power (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_power (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2104,7 +3217,7 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT> &lhs, mu
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -2135,7 +3248,7 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT> &lhs, co
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_maximum (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_maximum (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -2165,9 +3278,62 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, const InT &lhs, multi_arr
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_maximum (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, *left, *right);
+    return result;
+}
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_maximum (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_maximum (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
+    return result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2201,7 +3367,7 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT> &lhs, mu
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -2232,7 +3398,7 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT> &lhs, co
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_minimum (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& bh_minimum (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -2262,9 +3428,65 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, const InT &lhs, multi_arr
     return res;
 }
 
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_minimum (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, *left, *right);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_minimum (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_minimum (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
+    return result;
+}
 
 
 
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_identity (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2304,7 +3526,33 @@ multi_array<OutT>& bh_identity (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_identity (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_identity (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_invert (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2344,7 +3592,33 @@ multi_array<OutT>& bh_invert (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_invert (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_INVERT, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_invert (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_INVERT, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_absolute (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2384,7 +3658,33 @@ multi_array<OutT>& bh_absolute (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_absolute (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_absolute (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_sin (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2424,7 +3724,33 @@ multi_array<OutT>& bh_sin (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_sin (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_SIN, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_sin (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_SIN, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_cos (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2464,7 +3790,33 @@ multi_array<OutT>& bh_cos (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_cos (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_COS, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_cos (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_COS, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_tan (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2504,7 +3856,33 @@ multi_array<OutT>& bh_tan (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_tan (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_TAN, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_tan (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_TAN, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_sinh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2544,7 +3922,33 @@ multi_array<OutT>& bh_sinh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_sinh (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_SINH, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_sinh (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_SINH, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_cosh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2584,7 +3988,33 @@ multi_array<OutT>& bh_cosh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_cosh (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_COSH, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_cosh (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_COSH, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_tanh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2624,7 +4054,33 @@ multi_array<OutT>& bh_tanh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_tanh (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_TANH, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_tanh (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_TANH, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_asin (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2664,7 +4120,33 @@ multi_array<OutT>& bh_asin (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_asin (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ARCSIN, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_asin (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCSIN, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_acos (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2704,7 +4186,33 @@ multi_array<OutT>& bh_acos (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_acos (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ARCCOS, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_acos (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCCOS, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_atan (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2744,7 +4252,33 @@ multi_array<OutT>& bh_atan (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_atan (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_atan (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_atan2 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2784,7 +4318,33 @@ multi_array<OutT>& bh_atan2 (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_atan2 (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_atan2 (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_asinh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2824,7 +4384,33 @@ multi_array<OutT>& bh_asinh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_asinh (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ARCSINH, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_asinh (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCSINH, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_acosh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2864,7 +4450,33 @@ multi_array<OutT>& bh_acosh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_acosh (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ARCCOSH, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_acosh (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCCOSH, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_atanh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2904,7 +4516,33 @@ multi_array<OutT>& bh_atanh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_atanh (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTANH, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_atanh (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTANH, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_exp (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2944,7 +4582,33 @@ multi_array<OutT>& bh_exp (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_exp (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_EXP, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_exp (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_EXP, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -2984,7 +4648,33 @@ multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_exp2 (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_EXP2, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_exp2 (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_EXP2, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3024,7 +4714,33 @@ multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_expm1 (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_EXPM1, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_expm1 (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_EXPM1, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_isnan (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3064,7 +4780,33 @@ multi_array<OutT>& bh_isnan (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_isnan (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ISNAN, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_isnan (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ISNAN, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_isinf (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3104,7 +4846,33 @@ multi_array<OutT>& bh_isinf (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_isinf (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_ISINF, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_isinf (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ISINF, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_log (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3144,7 +4912,33 @@ multi_array<OutT>& bh_log (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_log (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_LOG, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_log (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOG, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_log2 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3184,7 +4978,33 @@ multi_array<OutT>& bh_log2 (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_log2 (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_LOG2, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_log2 (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOG2, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_log10 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3224,7 +5044,33 @@ multi_array<OutT>& bh_log10 (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_log10 (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_LOG10, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_log10 (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOG10, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_log1p (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3264,7 +5110,33 @@ multi_array<OutT>& bh_log1p (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_log1p (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_LOG1P, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_log1p (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LOG1P, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3304,7 +5176,33 @@ multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_sqrt (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_SQRT, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_sqrt (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_SQRT, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_ceil (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3344,7 +5242,33 @@ multi_array<OutT>& bh_ceil (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_ceil (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_CEIL, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_ceil (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_CEIL, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_trunc (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3384,7 +5308,33 @@ multi_array<OutT>& bh_trunc (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_trunc (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_TRUNC, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_trunc (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_TRUNC, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_floor (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3424,7 +5374,33 @@ multi_array<OutT>& bh_floor (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_floor (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
 
+    Runtime::instance().enqueue((bh_opcode)BH_FLOOR, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_floor (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_FLOOR, *result, rhs);
+    return result;
+}
+
+
+//
+//  Explicit result array
+//
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_rint (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
@@ -3462,6 +5438,29 @@ multi_array<OutT>& bh_rint (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_RINT, res, rhs);
     return res;
+}
+
+//
+//  Implicit result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_rint (multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RINT, *result, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_rint (const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_RINT, *result, rhs);
+    return result;
 }
 
 

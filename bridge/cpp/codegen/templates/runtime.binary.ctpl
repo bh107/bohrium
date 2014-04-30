@@ -5,9 +5,9 @@ directiveStartToken = %
 %slurp
 
 %for $op, $opcode, $optype, $opcount, $typesigs in $data
-
+// Explicit result array
 template <typename OutT, typename InT>
-multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -41,7 +41,7 @@ multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &lhs, multi_arr
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &lhs, const InT &rhs)
+multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
     multi_array<InT>* left = &lhs;
 
@@ -72,7 +72,7 @@ multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &lhs, const InT
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& $op (multi_array<OutT>& res, const InT &lhs, multi_array<InT> &rhs)
+multi_array<OutT>& $op (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
     multi_array<InT>* right = &rhs;
 
@@ -100,6 +100,59 @@ multi_array<OutT>& $op (multi_array<OutT>& res, const InT &lhs, multi_array<InT>
 
     Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, *right);
     return res;
+}
+
+//
+// Implicit temporary result array
+//
+template <typename OutT, typename InT>
+multi_array<OutT>& $op (multi_array<InT> &lhs, multi_array<InT> &rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)$opcode, *result, *left, *right);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& $op (multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+    return result;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& $op (const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+    return result;
 }
 
 %end for
