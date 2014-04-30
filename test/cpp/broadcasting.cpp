@@ -18,7 +18,7 @@ GNU Lesser General Public License along with bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include "bxx/bohrium.hpp"
-using namespace bh;
+using namespace bxx;
 
 
 #include <stdexcept>
