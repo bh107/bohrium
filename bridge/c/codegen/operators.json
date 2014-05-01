@@ -41,8 +41,8 @@
 
 ["pow",     "BH_POWER", "power", false],
 ["abs",     "BH_ABSOLUTE", "absolute", false],
-["max",     "BH_MAXIMUM", "maximum", false],
-["min",     "BH_MINIMUM", "minimin", false],
+["maximum", "BH_MAXIMUM", "maximum", false],
+["minimum", "BH_MINIMUM", "minimum", false],
 ["sin",     "BH_SIN", "sin", false],
 ["cos",     "BH_COS", "cos", false],
 ["tan",     "BH_TAN", "tan", false],

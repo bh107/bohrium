@@ -99,13 +99,13 @@
 ["bh_logical_not",  "BH_LOGICAL_NOT",  "runtime.unary", true],
 
 ["invert",      "BH_INVERT",    "sugar.unary",      true],
-["operator~",   "BH_INVERT",    "operator.ext",     true],
+["operator~",   "BH_INVERT",    "sugar.unary",      true],
 ["bh_invert",   "BH_INVERT",    "runtime.unary",    true],
 
-["imag",    "BH_IMAG", "sugar.unary",   true],
+["imag",    "BH_IMAG", "sugar.unary",   false],
 ["bh_imag", "BH_IMAG", "runtime.unary", true],
 
-["real",    "BH_REAL", "sugar.unary",   true],
+["real",    "BH_REAL", "sugar.unary",   false],
 ["bh_real", "BH_REAL", "runtime.unary", true],
 
 ["pow",     "BH_POWER",     "sugar.binary",     true],
@@ -114,10 +114,10 @@
 ["abs",         "BH_ABSOLUTE",  "sugar.unary",      true],
 ["bh_absolute", "BH_ABSOLUTE",  "runtime.unary",    true],
 
-["max",         "BH_MAXIMUM",   "sugar.unary",      true],
+["maximum",     "BH_MAXIMUM",   "sugar.binary",     true],
 ["bh_maximum",  "BH_MAXIMUM",   "runtime.binary",   true],
 
-["min",         "BH_MINIMUM",   "sugar.unary",      true],
+["minimum",     "BH_MINIMUM",   "sugar.binary",     true],
 ["bh_minimum",  "BH_MINIMUM",   "runtime.binary",   true],
 
 ["sin",     "BH_SIN",       "sugar.unary",      true],
@@ -138,26 +138,26 @@
 ["tanh",    "BH_TANH",      "sugar.unary",      true],
 ["bh_tanh", "BH_TANH",      "runtime.unary",    true],
 
-["asin",    "BH_ARCSIN",    "sugar.unary",      true],
-["bh_asin", "BH_ARCSIN",    "runtime.unary",    true],
+["asin",        "BH_ARCSIN",    "sugar.unary",      true],
+["bh_arcsin",   "BH_ARCSIN",    "runtime.unary",    true],
 
-["acos",    "BH_ARCCOS",    "sugar.unary",      true],
-["bh_acos", "BH_ARCCOS",    "runtime.unary",    true],
+["acos",        "BH_ARCCOS",    "sugar.unary",      true],
+["bh_arccos",   "BH_ARCCOS",    "runtime.unary",    true],
 
-["atan",    "BH_ARCTAN",    "sugar.unary",      true],
-["bh_atan", "BH_ARCTAN",    "runtime.unary",    true],
+["atan",        "BH_ARCTAN",    "sugar.unary",      true],
+["bh_arctan",   "BH_ARCTAN",    "runtime.unary",    true],
 
-["atan2",   "BH_ARCTAN2",   "sugar.unary",      true],
-["bh_atan2","BH_ARCTAN2",   "runtime.unary",    true],
+["atan2",       "BH_ARCTAN2",   "sugar.binary",      true],
+["bh_arctan2",  "BH_ARCTAN2",   "runtime.binary",    true],
 
-["asinh",   "BH_ARCSINH",   "sugar.unary",      true],
-["bh_asinh","BH_ARCSINH",   "runtime.unary",    true],
+["asinh",       "BH_ARCSINH",   "sugar.unary",      true],
+["bh_arcsinh",  "BH_ARCSINH",   "runtime.unary",    true],
 
-["acosh",   "BH_ARCCOSH",   "sugar.unary",      true],
-["bh_acosh","BH_ARCCOSH",   "runtime.unary",    true],
+["acosh",       "BH_ARCCOSH",   "sugar.unary",      true],
+["bh_arccosh",  "BH_ARCCOSH",   "runtime.unary",    true],
 
-["atanh",   "BH_ARCTANH",   "sugar.unary",      true],
-["bh_atanh","BH_ARCTANH",   "runtime.unary",    true],
+["atanh",       "BH_ARCTANH",   "sugar.unary",      true],
+["bh_arctanh",  "BH_ARCTANH",   "runtime.unary",    true],
 
 ["exp",     "BH_EXP",       "sugar.unary",      true],
 ["bh_exp",  "BH_EXP",       "runtime.unary",    true],

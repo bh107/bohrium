@@ -28,5 +28,24 @@ void pprint(multi_array<T>& op)
     bh_pprint_array(op.getBase());
 }
 
+
+template <typename T>
+multi_array<T>& real (multi_array< std::complex<T> >& rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T, std::complex<T> >(rhs);
+    result->link();
+
+    return bh_real (*result, rhs);
+}
+
+template <typename T>
+multi_array<T>& imag (multi_array< std::complex<T> >& rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T, std::complex<T> >(rhs);
+    result->link();
+
+    return bh_imag (*result, rhs);
+}
+
 }
 #endif

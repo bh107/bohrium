@@ -38,9 +38,9 @@ inline void bh_pprint_shape(int64_t shape[], int64_t len)
 /**
  * Determine whether or not the shapes of the provides operands are the same.
  */
-template <typename T>
+template <typename LT, typename RT>
 inline
-bool same_shape(multi_array<T> & left, multi_array<T> & right)
+bool same_shape(multi_array<LT> & left, multi_array<RT> & right)
 {
     bool compatible = left.meta.ndim == right.meta.ndim;
 
@@ -96,9 +96,9 @@ bool broadcast(multi_array<T>& lower, multi_array<T>& higher)
     return broadcastable;
 }
 
-template <typename T>
+template <typename LT, typename RT>
 inline
-bool broadcast_right(const multi_array<T>& left, multi_array<T>& right)
+bool broadcast_right(const multi_array<LT>& left, multi_array<RT>& right)
 {
     int64_t highest_dim  = left.meta.ndim - 1;
     int64_t stretch_dims = left.meta.ndim - right.meta.ndim;

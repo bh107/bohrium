@@ -3331,6 +3331,156 @@ multi_array<T>& bh_minimum (const T lhs, multi_array<T>& rhs)
     return *result;
 }
 
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
+{
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Check that operands are compatible with the output
+    // TODO: Broadcasting should also be done in relation to output
+    //       for now we simply fail...
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes of output and input.");
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, res, *left, *right);
+
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
+{
+    multi_array<InT>* left = &lhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < left->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_arctan2: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *left)) {
+        left = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *left)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *left)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, res, *left, rhs);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
+{
+    multi_array<InT>* right = &rhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_arctan2: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, res, lhs, *right);
+    return res;
+}
+
+//
+// Implicit temporary result array
+//
+template <typename T>
+multi_array<T>& bh_arctan2 (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, *left, *right);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& bh_arctan2 (multi_array<T>& lhs, const T rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& bh_arctan2 (const T lhs, multi_array<T>& rhs)
+{
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, lhs, rhs);
+    return *result;
+}
+
 
 
 
@@ -3338,9 +3488,10 @@ multi_array<T>& bh_minimum (const T lhs, multi_array<T>& rhs)
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_identity (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3370,6 +3521,7 @@ multi_array<OutT>& bh_identity (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_identity (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, res, rhs);
@@ -3379,34 +3531,36 @@ multi_array<OutT>& bh_identity (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_identity (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_identity (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_identity (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_identity (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3436,6 +3590,7 @@ multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &rhs
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, res, rhs);
@@ -3445,34 +3600,36 @@ multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_logical_not (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_logical_not (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_logical_not (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_invert (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3502,6 +3659,7 @@ multi_array<OutT>& bh_invert (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_invert (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_INVERT, res, rhs);
@@ -3511,34 +3669,36 @@ multi_array<OutT>& bh_invert (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_invert (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_invert (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_INVERT, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_invert (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_invert (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_INVERT, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_imag (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3568,6 +3728,7 @@ multi_array<OutT>& bh_imag (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_imag (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_IMAG, res, rhs);
@@ -3577,34 +3738,36 @@ multi_array<OutT>& bh_imag (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_imag (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_imag (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IMAG, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_imag (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_imag (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_IMAG, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_real (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3634,6 +3797,7 @@ multi_array<OutT>& bh_real (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_real (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_REAL, res, rhs);
@@ -3643,34 +3807,36 @@ multi_array<OutT>& bh_real (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_real (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_real (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_REAL, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_real (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_real (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_REAL, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_absolute (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3700,6 +3866,7 @@ multi_array<OutT>& bh_absolute (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_absolute (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, res, rhs);
@@ -3709,34 +3876,36 @@ multi_array<OutT>& bh_absolute (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_absolute (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_absolute (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_absolute (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_absolute (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_sin (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3766,6 +3935,7 @@ multi_array<OutT>& bh_sin (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_sin (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_SIN, res, rhs);
@@ -3775,34 +3945,36 @@ multi_array<OutT>& bh_sin (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_sin (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_sin (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SIN, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_sin (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_sin (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SIN, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_cos (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3832,6 +4004,7 @@ multi_array<OutT>& bh_cos (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_cos (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_COS, res, rhs);
@@ -3841,34 +4014,36 @@ multi_array<OutT>& bh_cos (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_cos (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_cos (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_COS, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_cos (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_cos (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_COS, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_tan (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3898,6 +4073,7 @@ multi_array<OutT>& bh_tan (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_tan (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_TAN, res, rhs);
@@ -3907,34 +4083,36 @@ multi_array<OutT>& bh_tan (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_tan (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_tan (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_TAN, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_tan (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_tan (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_TAN, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_sinh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -3964,6 +4142,7 @@ multi_array<OutT>& bh_sinh (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_sinh (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_SINH, res, rhs);
@@ -3973,34 +4152,36 @@ multi_array<OutT>& bh_sinh (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_sinh (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_sinh (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SINH, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_sinh (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_sinh (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SINH, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_cosh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -4030,6 +4211,7 @@ multi_array<OutT>& bh_cosh (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_cosh (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_COSH, res, rhs);
@@ -4039,34 +4221,36 @@ multi_array<OutT>& bh_cosh (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_cosh (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_cosh (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_COSH, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_cosh (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_cosh (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_COSH, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_tanh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -4096,6 +4280,7 @@ multi_array<OutT>& bh_tanh (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_tanh (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_TANH, res, rhs);
@@ -4105,39 +4290,41 @@ multi_array<OutT>& bh_tanh (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_tanh (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_tanh (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_TANH, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_tanh (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_tanh (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_TANH, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_asin (multi_array<OutT>& res, multi_array<InT> &rhs)
+inline
+multi_array<OutT>& bh_arcsin (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "bh_asin: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_arcsin: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -4162,7 +4349,8 @@ multi_array<OutT>& bh_asin (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_asin (multi_array<OutT>& res, const InT rhs)
+inline
+multi_array<OutT>& bh_arcsin (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ARCSIN, res, rhs);
     return res;
@@ -4171,39 +4359,41 @@ multi_array<OutT>& bh_asin (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_asin (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_arcsin (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCSIN, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_asin (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_arcsin (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCSIN, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_acos (multi_array<OutT>& res, multi_array<InT> &rhs)
+inline
+multi_array<OutT>& bh_arccos (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "bh_acos: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_arccos: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -4228,7 +4418,8 @@ multi_array<OutT>& bh_acos (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_acos (multi_array<OutT>& res, const InT rhs)
+inline
+multi_array<OutT>& bh_arccos (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOS, res, rhs);
     return res;
@@ -4237,39 +4428,41 @@ multi_array<OutT>& bh_acos (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_acos (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_arccos (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOS, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_acos (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_arccos (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOS, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_atan (multi_array<OutT>& res, multi_array<InT> &rhs)
+inline
+multi_array<OutT>& bh_arctan (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "bh_atan: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_arctan: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -4294,7 +4487,8 @@ multi_array<OutT>& bh_atan (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_atan (multi_array<OutT>& res, const InT rhs)
+inline
+multi_array<OutT>& bh_arctan (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ARCTAN, res, rhs);
     return res;
@@ -4303,105 +4497,41 @@ multi_array<OutT>& bh_atan (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_atan (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_arctan (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTAN, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_atan (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_arctan (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTAN, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_atan2 (multi_array<OutT>& res, multi_array<InT> &rhs)
+inline
+multi_array<OutT>& bh_arcsinh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "bh_atan2: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    //
-    // Broadcast
-    if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(res, *right)) {
-            throw std::runtime_error("Right-handside is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *right)) {
-            throw std::runtime_error("Incompatable shapes, even after broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, res, *right);
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_atan2 (multi_array<OutT>& res, const InT rhs)
-{
-    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, res, rhs);
-    return res;
-}
-
-//
-//  Implicit result array
-//
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_atan2 (multi_array<InT>& rhs)
-{
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, rhs);
-    return result;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_atan2 (const InT rhs)
-{
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, rhs);
-    return result;
-}
-
-
-//
-//  Explicit result array
-//
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_asinh (multi_array<OutT>& res, multi_array<InT> &rhs)
-{
-    multi_array<OutT>* right = &rhs;
-    
-    // Check for unbroadcastable situation
-    if (res.getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_asinh: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_arcsinh: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -4426,7 +4556,8 @@ multi_array<OutT>& bh_asinh (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_asinh (multi_array<OutT>& res, const InT rhs)
+inline
+multi_array<OutT>& bh_arcsinh (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ARCSINH, res, rhs);
     return res;
@@ -4435,39 +4566,41 @@ multi_array<OutT>& bh_asinh (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_asinh (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_arcsinh (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCSINH, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_asinh (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_arcsinh (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCSINH, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_acosh (multi_array<OutT>& res, multi_array<InT> &rhs)
+inline
+multi_array<OutT>& bh_arccosh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "bh_acosh: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_arccosh: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -4492,7 +4625,8 @@ multi_array<OutT>& bh_acosh (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_acosh (multi_array<OutT>& res, const InT rhs)
+inline
+multi_array<OutT>& bh_arccosh (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOSH, res, rhs);
     return res;
@@ -4501,39 +4635,41 @@ multi_array<OutT>& bh_acosh (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_acosh (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_arccosh (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOSH, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_acosh (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_arccosh (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOSH, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_atanh (multi_array<OutT>& res, multi_array<InT> &rhs)
+inline
+multi_array<OutT>& bh_arctanh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
         std::stringstream s;
-        s << "Incompatible shapes " << "bh_atanh: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        s << "Incompatible shapes " << "bh_arctanh: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
         throw std::runtime_error(s.str());
     }
 
@@ -4558,7 +4694,8 @@ multi_array<OutT>& bh_atanh (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_atanh (multi_array<OutT>& res, const InT rhs)
+inline
+multi_array<OutT>& bh_arctanh (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ARCTANH, res, rhs);
     return res;
@@ -4567,34 +4704,36 @@ multi_array<OutT>& bh_atanh (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_atanh (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_arctanh (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTANH, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_atanh (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_arctanh (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTANH, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_exp (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -4624,6 +4763,7 @@ multi_array<OutT>& bh_exp (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_exp (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_EXP, res, rhs);
@@ -4633,34 +4773,36 @@ multi_array<OutT>& bh_exp (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_exp (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_exp (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_exp (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_exp (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -4690,6 +4832,7 @@ multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_EXP2, res, rhs);
@@ -4699,34 +4842,36 @@ multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_exp2 (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_exp2 (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP2, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_exp2 (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_exp2 (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP2, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -4756,6 +4901,7 @@ multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_EXPM1, res, rhs);
@@ -4765,34 +4911,36 @@ multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_expm1 (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_expm1 (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXPM1, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_expm1 (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_expm1 (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXPM1, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_isnan (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -4822,6 +4970,7 @@ multi_array<OutT>& bh_isnan (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_isnan (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ISNAN, res, rhs);
@@ -4831,34 +4980,36 @@ multi_array<OutT>& bh_isnan (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_isnan (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_isnan (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ISNAN, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_isnan (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_isnan (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ISNAN, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_isinf (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -4888,6 +5039,7 @@ multi_array<OutT>& bh_isinf (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_isinf (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_ISINF, res, rhs);
@@ -4897,34 +5049,36 @@ multi_array<OutT>& bh_isinf (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_isinf (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_isinf (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ISINF, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_isinf (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_isinf (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ISINF, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_log (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -4954,6 +5108,7 @@ multi_array<OutT>& bh_log (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_log (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_LOG, res, rhs);
@@ -4963,34 +5118,36 @@ multi_array<OutT>& bh_log (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_log (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_log (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_log (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_log (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_log2 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -5020,6 +5177,7 @@ multi_array<OutT>& bh_log2 (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_log2 (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_LOG2, res, rhs);
@@ -5029,34 +5187,36 @@ multi_array<OutT>& bh_log2 (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_log2 (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_log2 (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG2, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_log2 (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_log2 (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG2, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_log10 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -5086,6 +5246,7 @@ multi_array<OutT>& bh_log10 (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_log10 (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_LOG10, res, rhs);
@@ -5095,34 +5256,36 @@ multi_array<OutT>& bh_log10 (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_log10 (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_log10 (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG10, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_log10 (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_log10 (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG10, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_log1p (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -5152,6 +5315,7 @@ multi_array<OutT>& bh_log1p (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_log1p (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_LOG1P, res, rhs);
@@ -5161,34 +5325,36 @@ multi_array<OutT>& bh_log1p (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_log1p (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_log1p (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG1P, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_log1p (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_log1p (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG1P, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -5218,6 +5384,7 @@ multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_SQRT, res, rhs);
@@ -5227,34 +5394,36 @@ multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_sqrt (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_sqrt (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SQRT, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_sqrt (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_sqrt (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_SQRT, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_ceil (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -5284,6 +5453,7 @@ multi_array<OutT>& bh_ceil (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_ceil (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_CEIL, res, rhs);
@@ -5293,34 +5463,36 @@ multi_array<OutT>& bh_ceil (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_ceil (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_ceil (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_CEIL, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_ceil (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_ceil (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_CEIL, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_trunc (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -5350,6 +5522,7 @@ multi_array<OutT>& bh_trunc (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_trunc (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_TRUNC, res, rhs);
@@ -5359,34 +5532,36 @@ multi_array<OutT>& bh_trunc (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_trunc (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_trunc (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_TRUNC, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_trunc (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_trunc (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_TRUNC, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_floor (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -5416,6 +5591,7 @@ multi_array<OutT>& bh_floor (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_floor (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_FLOOR, res, rhs);
@@ -5425,34 +5601,36 @@ multi_array<OutT>& bh_floor (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_floor (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_floor (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_FLOOR, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_floor (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_floor (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_FLOOR, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 //
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_rint (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -5482,6 +5660,7 @@ multi_array<OutT>& bh_rint (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& bh_rint (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)BH_RINT, res, rhs);
@@ -5491,25 +5670,26 @@ multi_array<OutT>& bh_rint (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_rint (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& bh_rint (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RINT, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_rint (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& bh_rint (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_RINT, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 
 

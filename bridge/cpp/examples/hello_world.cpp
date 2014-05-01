@@ -119,15 +119,13 @@ void compute()
     cout << c << endl;
 
     */
-    multi_array<float> x, y;
-    y = ones<float>(10);
-    x = (float)2.5 + y;
+    multi_array<std::complex<double> > x, y;
+    y = ones<std::complex<double> >(10);
+    x = ones<std::complex<double> >(10);
 
-    std::cout << x << std::endl;
 
-    x = y + (float)2.5;
-
-    std::cout << x << std::endl;
+    std::cout << real(y) << std::endl;
+    std::cout << imag(y) << std::endl;
 
 }
 

@@ -10,9 +10,10 @@ directiveStartToken = %
 //  Explicit result array
 //
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    multi_array<OutT>* right = &rhs;
+    multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
     if (res.getRank() < right->getRank()) {
@@ -42,6 +43,7 @@ multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 
 template <typename OutT, typename InT>
+inline
 multi_array<OutT>& $op (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
@@ -51,25 +53,26 @@ multi_array<OutT>& $op (multi_array<OutT>& res, const InT rhs)
 //
 //  Implicit result array
 //
-template <typename OutT, typename InT>
-multi_array<OutT>& $op (multi_array<InT>& rhs)
+template <typename T>
+inline
+multi_array<T>& $op (multi_array<T>& rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(rhs);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
-    return result;
+    return *result;
 }
-
-template <typename OutT, typename InT>
-multi_array<OutT>& $op (const InT rhs)
+/*
+template <typename T>
+multi_array<T>& $op (const T rhs)
 {
-    multi_array<OutT>* result = &Runtime::instance().temp<OutT, InT>(1);
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
-    return result;
-}
+    return *result;
+}*/
 
 %end for
 
