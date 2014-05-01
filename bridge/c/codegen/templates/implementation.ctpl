@@ -117,8 +117,6 @@ bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi
 %end if
 %if $opcode == "BH_INVERT" and op1_type[2] == "bool8"
     return (bh_multi_array_${op1_type[2]}_p)&(!((*((multi_array<${op2_type[0]}>*)rhs))));
-%else if $opcode == "BH_REAL" or $opcode == "BH_IMAG"
-    return (bh_multi_array_${op1_type[2]}_p)&(${op}<${op2_type[0]},${op1_type[0]}>((*((multi_array<${op2_type[0]}>*)rhs))));
 %else
     return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)rhs))));
 %end if
