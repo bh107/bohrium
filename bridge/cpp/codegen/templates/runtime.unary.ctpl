@@ -13,6 +13,8 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
+    Runtime::instance().typechecker.check<$opcode, OutT, InT>();
+
     multi_array<InT>* right = &rhs;
     
     // Check for unbroadcastable situation
@@ -46,6 +48,8 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& $op (multi_array<OutT>& res, const InT rhs)
 {
+    Runtime::instance().typechecker.check<$opcode, OutT, InT>();
+
     Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
     return res;
 }
@@ -57,22 +61,14 @@ template <typename T>
 inline
 multi_array<T>& $op (multi_array<T>& rhs)
 {
+    Runtime::instance().typechecker.check<$opcode, T, T>();
+
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
     return *result;
 }
-/*
-template <typename T>
-multi_array<T>& $op (const T rhs)
-{
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(1);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
-    return *result;
-}*/
 
 %end for
 

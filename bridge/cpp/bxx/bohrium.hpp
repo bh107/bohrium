@@ -45,6 +45,19 @@ const float  PI   = 3.14159265358979f;
 template <typename T>   // Forward declaration
 class multi_array;
 
+class Typechecker
+{
+public:
+    template <size_t Opcode, typename Out, typename In1, typename In2>
+    bool check(void);
+
+    template <size_t Opcode, typename Out, typename In1>
+    bool check(void);
+
+    template <size_t Opcode, typename Out>
+    bool check(void);
+};
+
 inline int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
 {
     shape[index] = arg;
@@ -245,10 +258,34 @@ private:
 class Runtime {
 public:
     static Runtime& instance(); // Singleton method
+
+    Typechecker typechecker;
     ~Runtime();                 // Deconstructor
 
                             // Input and output are of the same type
 
+    template <typename Out, typename In1, typename In2>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, multi_array<In2>& op2);
+    
+    template <typename Out, typename In1, typename In2>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, const In2 op2);
+    
+    template <typename Out, typename In1, typename In2>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const In1 op1, multi_array<In2>& op2);
+
+    template <typename Out, typename In>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In>& op1);
+
+    template <typename Out, typename In>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const In op1);
+
+    template <typename Out>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0);
+
+    template <typename Out>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const uint64_t op1, const uint64_t op2);
+
+    /*
     template <typename T>   // SYS: FREE, SYNC, DISCARD;
     void enqueue(bh_opcode opcode, multi_array<T>& op0);
 
@@ -287,6 +324,8 @@ public:
     template <typename Ret, typename In>    // pow(...,2), reduce(..., 2)
     void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2);
 
+    */
+
     template <typename Ret, typename In1, typename In2>
     void enqueue_extension(const std::string& name, multi_array<Ret>& op0, multi_array<In1>& op2, multi_array<In2>& op3);
 
@@ -317,6 +356,7 @@ private:
 
     std::map<std::string, bh_opcode> extensions;// Register of extensions
     size_t extension_count;
+
 
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     size_t          ext_in_queue;
@@ -414,6 +454,7 @@ void pprint(multi_array<T>& op);
 
 #include "runtime.hpp"      // Communication with Bohrium runtime
 #include "runtime.operations.hpp"
+#include "runtime.typechecker.hpp"
 
 #include "reduction.hpp"    // DSEL Reduction
 #include "scan.hpp"         // DSEL Scan operation
