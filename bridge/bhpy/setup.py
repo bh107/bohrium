@@ -87,7 +87,7 @@ with open(path("_info.py"), 'w') as o:
     bhc_name = {}
     with open(path('..','c','codegen','operators.json'), 'r') as f:
         opcodes = json.loads(f.read())
-        for _, opcode, name, _ in opcodes:
+        for _, opcode, name in opcodes:
             bhc_name[opcode] = name
 
     #Find number of operands and type signature for each Bohrium opcode

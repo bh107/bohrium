@@ -22,7 +22,7 @@ extern "C" {
 
 // Copy methods
 
-%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%for $op, $opcode, $opname, $opcount, $typesigs in $data
 %if $opcode == "BH_IDENTITY"
 %for $op1_type, $op2_type in $typesigs
 DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(bh_multi_array_${op2_type[2]}_p other);
@@ -33,18 +33,13 @@ DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_
 
 // Binary functions
 
-%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%for $op, $opcode, $opname, $opcount, $typesigs in $data
 %if $opcode != "BH_IDENTITY" and opcount == 3
+
 %for $op1_type, $op2_type, $op3_type in $typesigs
-%if $inplace == False
 DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs);
 DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_lhs(${op2_type[1]} lhs, bh_multi_array_${op3_type[2]}_p rhs);
 DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op2_type[2]}_p lhs, ${op3_type[1]} rhs);
-%else
-DLLEXPORT void bh_multi_array_${op1_type[2]}_${opname}_in_place(bh_multi_array_${op2_type[2]}_p self, bh_multi_array_${op3_type[2]}_p rhs);
-DLLEXPORT void bh_multi_array_${op1_type[2]}_${opname}_in_place_scalar_rhs(bh_multi_array_${op2_type[2]}_p self, ${op3_type[1]} rhs);
-%end if
-%slurp
 %end for
 
 %end if
@@ -52,8 +47,8 @@ DLLEXPORT void bh_multi_array_${op1_type[2]}_${opname}_in_place_scalar_rhs(bh_mu
 
 // Unary functions
 
-%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
-%if $opcode != "BH_IDENTITY" and opcount == 2 and $inplace == False
+%for $op, $opcode, $opname, $opcount, $typesigs in $data
+%if $opcode != "BH_IDENTITY" and opcount == 2
 %for $op1_type, $op2_type in $typesigs
 %if $opcode == "BH_ISNAN" or $opcode == "BH_ISINF"
 DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs);

@@ -1,8 +1,6 @@
-#slurp
 #compiler-settings
 directiveStartToken = %
 #end compiler-settings
-%slurp
 
 #include <bohrium.hpp>
 #include <bh_c_data_types.h>
@@ -13,23 +11,21 @@ using namespace bxx;
 
 // Copy methods
 
-%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%for $op, $opcode, $opname, $opcount, $typesigs in $data
 %if $opcode == "BH_IDENTITY"
 %for $op1_type, $op2_type in $typesigs
 bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(bh_multi_array_${op2_type[2]}_p other) {
     return (bh_multi_array_${op1_type[2]}_p)&as<${op1_type[0]}>(*(multi_array<${op2_type[0]}>*)other);
 }
-
 %end for
 %end if
 %end for
 
 // Binary functions
 
-%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
+%for $op, $opcode, $opname, $opcount, $typesigs in $data
 %if $opcode != "BH_IDENTITY" and opcount == 3
 %for $op1_type, $op2_type, $op3_type in $typesigs
-%if $inplace == False
 %if len($op) <= 2
 bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs) {
     return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} (*((multi_array<${op3_type[0]}>*)rhs)));
@@ -83,23 +79,6 @@ bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}_scalar_l
 %end if
 }
 %end if
-%else
-void bh_multi_array_${op1_type[2]}_${opname}_in_place(bh_multi_array_${op2_type[2]}_p self, bh_multi_array_${op3_type[2]}_p rhs) {
-    (*((multi_array<${op1_type[0]}>*)self)) ${op} (*((multi_array<${op3_type[0]}>*)rhs));
-}
-void bh_multi_array_${op1_type[2]}_${opname}_in_place_scalar_rhs(bh_multi_array_${op2_type[2]}_p self, ${op3_type[1]} rhs) {
-%if $op2_type[2] == "complex64" or $op2_type[2] == "complex128"
-    ${op3_type[0]} t;
-    t.real(rhs.real);
-    t.imag(rhs.imag);
-
-    (*((multi_array<${op1_type[0]}>*)self)) ${op} (t);
-%else
-    (*((multi_array<${op1_type[0]}>*)self)) ${op} ((${op3_type[0]})rhs);
-%end if
-}
-%end if
-%slurp
 %end for
 
 %end if
@@ -107,8 +86,8 @@ void bh_multi_array_${op1_type[2]}_${opname}_in_place_scalar_rhs(bh_multi_array_
 
 // Unary functions
 
-%for $op, $opcode, $opname, $opcount, $inplace, $typesigs in $data
-%if $opcode != "BH_IDENTITY" and opcount == 2 and $inplace == False
+%for $op, $opcode, $opname, $opcount, $typesigs in $data
+%if $opcode != "BH_IDENTITY" and opcount == 2
 %for $op1_type, $op2_type in $typesigs
 %if $opcode == "BH_ISNAN" or $opcode == "BH_ISINF"
 bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p rhs) {
