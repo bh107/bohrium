@@ -126,7 +126,7 @@ void compute()
     y = ones<float>(10);
     z = ones<float>(10);
 
-    bh_add(x, x, y);
+    std::cout << x+y+z << std::endl;
 
 }
 

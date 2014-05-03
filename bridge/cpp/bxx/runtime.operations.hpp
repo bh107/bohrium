@@ -35,7 +35,7 @@ namespace bxx {
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_ADD, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -71,7 +71,7 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT>& lhs, multi_
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_ADD, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -104,7 +104,7 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT>& lhs, const 
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_add (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_ADD, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -140,7 +140,7 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, const InT lhs, multi_array<In
 template <typename T>
 multi_array<T>& bh_add (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -172,7 +172,7 @@ multi_array<T>& bh_add (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_add (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -184,7 +184,7 @@ multi_array<T>& bh_add (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_add (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -197,7 +197,7 @@ multi_array<T>& bh_add (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_SUBTRACT, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_SUBTRACT, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -233,7 +233,7 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT>& lhs, m
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_SUBTRACT, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_SUBTRACT, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -266,7 +266,7 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT>& lhs, c
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_subtract (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_SUBTRACT, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_SUBTRACT, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -302,7 +302,7 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, const InT lhs, multi_arr
 template <typename T>
 multi_array<T>& bh_subtract (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_SUBTRACT, T, T, T>();
+    Runtime::instance().typecheck<BH_SUBTRACT, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -334,7 +334,7 @@ multi_array<T>& bh_subtract (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_subtract (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_SUBTRACT, T, T, T>();
+    Runtime::instance().typecheck<BH_SUBTRACT, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -346,7 +346,7 @@ multi_array<T>& bh_subtract (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_subtract (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_SUBTRACT, T, T, T>();
+    Runtime::instance().typecheck<BH_SUBTRACT, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -359,7 +359,7 @@ multi_array<T>& bh_subtract (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MULTIPLY, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -395,7 +395,7 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT>& lhs, m
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MULTIPLY, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -428,7 +428,7 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT>& lhs, c
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_multiply (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MULTIPLY, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -464,7 +464,7 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, const InT lhs, multi_arr
 template <typename T>
 multi_array<T>& bh_multiply (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -496,7 +496,7 @@ multi_array<T>& bh_multiply (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_multiply (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -508,7 +508,7 @@ multi_array<T>& bh_multiply (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_multiply (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -521,7 +521,7 @@ multi_array<T>& bh_multiply (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_DIVIDE, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_DIVIDE, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -557,7 +557,7 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT>& lhs, mul
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_DIVIDE, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_DIVIDE, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -590,7 +590,7 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT>& lhs, con
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_divide (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_DIVIDE, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_DIVIDE, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -626,7 +626,7 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, const InT lhs, multi_array
 template <typename T>
 multi_array<T>& bh_divide (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_DIVIDE, T, T, T>();
+    Runtime::instance().typecheck<BH_DIVIDE, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -658,7 +658,7 @@ multi_array<T>& bh_divide (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_divide (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_DIVIDE, T, T, T>();
+    Runtime::instance().typecheck<BH_DIVIDE, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -670,7 +670,7 @@ multi_array<T>& bh_divide (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_divide (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_DIVIDE, T, T, T>();
+    Runtime::instance().typecheck<BH_DIVIDE, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -683,7 +683,7 @@ multi_array<T>& bh_divide (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MOD, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MOD, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -719,7 +719,7 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT>& lhs, multi_
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_MOD, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MOD, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -752,7 +752,7 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT>& lhs, const 
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_mod (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MOD, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MOD, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -788,7 +788,7 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, const InT lhs, multi_array<In
 template <typename T>
 multi_array<T>& bh_mod (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_MOD, T, T, T>();
+    Runtime::instance().typecheck<BH_MOD, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -820,7 +820,7 @@ multi_array<T>& bh_mod (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_mod (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_MOD, T, T, T>();
+    Runtime::instance().typecheck<BH_MOD, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -832,7 +832,7 @@ multi_array<T>& bh_mod (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_mod (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MOD, T, T, T>();
+    Runtime::instance().typecheck<BH_MOD, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -845,7 +845,7 @@ multi_array<T>& bh_mod (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_AND, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_BITWISE_AND, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -881,7 +881,7 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_AND, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_BITWISE_AND, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -914,7 +914,7 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_AND, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_BITWISE_AND, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -950,7 +950,7 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, const InT lhs, multi_
 template <typename T>
 multi_array<T>& bh_bitwise_and (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_AND, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_AND, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -982,7 +982,7 @@ multi_array<T>& bh_bitwise_and (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_and (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_AND, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_AND, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -994,7 +994,7 @@ multi_array<T>& bh_bitwise_and (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_and (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_AND, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_AND, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -1007,7 +1007,7 @@ multi_array<T>& bh_bitwise_and (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_OR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_BITWISE_OR, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1043,7 +1043,7 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT>& lhs,
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_OR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_BITWISE_OR, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -1076,7 +1076,7 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT>& lhs,
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_OR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_BITWISE_OR, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -1112,7 +1112,7 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, const InT lhs, multi_a
 template <typename T>
 multi_array<T>& bh_bitwise_or (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_OR, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_OR, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -1144,7 +1144,7 @@ multi_array<T>& bh_bitwise_or (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_or (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_OR, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_OR, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -1156,7 +1156,7 @@ multi_array<T>& bh_bitwise_or (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_or (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_OR, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_OR, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -1169,7 +1169,7 @@ multi_array<T>& bh_bitwise_or (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_XOR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_BITWISE_XOR, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1205,7 +1205,7 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_XOR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_BITWISE_XOR, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -1238,7 +1238,7 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_XOR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_BITWISE_XOR, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -1274,7 +1274,7 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, const InT lhs, multi_
 template <typename T>
 multi_array<T>& bh_bitwise_xor (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_XOR, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_XOR, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -1306,7 +1306,7 @@ multi_array<T>& bh_bitwise_xor (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_xor (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_XOR, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_XOR, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -1318,7 +1318,7 @@ multi_array<T>& bh_bitwise_xor (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_xor (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_XOR, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_XOR, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -1331,7 +1331,7 @@ multi_array<T>& bh_bitwise_xor (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LEFT_SHIFT, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LEFT_SHIFT, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1367,7 +1367,7 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT>& lhs,
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LEFT_SHIFT, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LEFT_SHIFT, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -1400,7 +1400,7 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT>& lhs,
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LEFT_SHIFT, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LEFT_SHIFT, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -1436,7 +1436,7 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, const InT lhs, multi_a
 template <typename T>
 multi_array<T>& bh_left_shift (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LEFT_SHIFT, T, T, T>();
+    Runtime::instance().typecheck<BH_LEFT_SHIFT, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -1468,7 +1468,7 @@ multi_array<T>& bh_left_shift (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_left_shift (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_LEFT_SHIFT, T, T, T>();
+    Runtime::instance().typecheck<BH_LEFT_SHIFT, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -1480,7 +1480,7 @@ multi_array<T>& bh_left_shift (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_left_shift (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LEFT_SHIFT, T, T, T>();
+    Runtime::instance().typecheck<BH_LEFT_SHIFT, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -1493,7 +1493,7 @@ multi_array<T>& bh_left_shift (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_RIGHT_SHIFT, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_RIGHT_SHIFT, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1529,7 +1529,7 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_RIGHT_SHIFT, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_RIGHT_SHIFT, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -1562,7 +1562,7 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_RIGHT_SHIFT, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_RIGHT_SHIFT, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -1598,7 +1598,7 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, const InT lhs, multi_
 template <typename T>
 multi_array<T>& bh_right_shift (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_RIGHT_SHIFT, T, T, T>();
+    Runtime::instance().typecheck<BH_RIGHT_SHIFT, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -1630,7 +1630,7 @@ multi_array<T>& bh_right_shift (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_right_shift (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_RIGHT_SHIFT, T, T, T>();
+    Runtime::instance().typecheck<BH_RIGHT_SHIFT, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -1642,7 +1642,7 @@ multi_array<T>& bh_right_shift (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_right_shift (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_RIGHT_SHIFT, T, T, T>();
+    Runtime::instance().typecheck<BH_RIGHT_SHIFT, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -1655,7 +1655,7 @@ multi_array<T>& bh_right_shift (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1691,7 +1691,7 @@ multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, mult
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -1724,7 +1724,7 @@ multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, cons
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -1760,7 +1760,7 @@ multi_array<OutT>& bh_equal (multi_array<OutT>& res, const InT lhs, multi_array<
 template <typename T>
 multi_array<T>& bh_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_EQUAL, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -1792,7 +1792,7 @@ multi_array<T>& bh_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_equal (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_EQUAL, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -1804,7 +1804,7 @@ multi_array<T>& bh_equal (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_equal (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_EQUAL, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -1817,7 +1817,7 @@ multi_array<T>& bh_equal (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_NOT_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_NOT_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -1853,7 +1853,7 @@ multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, 
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_NOT_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_NOT_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -1886,7 +1886,7 @@ multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, 
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_NOT_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_NOT_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -1922,7 +1922,7 @@ multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, const InT lhs, multi_ar
 template <typename T>
 multi_array<T>& bh_not_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_NOT_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_NOT_EQUAL, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -1954,7 +1954,7 @@ multi_array<T>& bh_not_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_not_equal (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_NOT_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_NOT_EQUAL, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -1966,7 +1966,7 @@ multi_array<T>& bh_not_equal (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_not_equal (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_NOT_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_NOT_EQUAL, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -1979,7 +1979,7 @@ multi_array<T>& bh_not_equal (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_GREATER, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2015,7 +2015,7 @@ multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, mu
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_GREATER, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -2048,7 +2048,7 @@ multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, co
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_greater (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_GREATER, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -2084,7 +2084,7 @@ multi_array<OutT>& bh_greater (multi_array<OutT>& res, const InT lhs, multi_arra
 template <typename T>
 multi_array<T>& bh_greater (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER, T, T, T>();
+    Runtime::instance().typecheck<BH_GREATER, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -2116,7 +2116,7 @@ multi_array<T>& bh_greater (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_greater (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER, T, T, T>();
+    Runtime::instance().typecheck<BH_GREATER, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -2128,7 +2128,7 @@ multi_array<T>& bh_greater (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_greater (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER, T, T, T>();
+    Runtime::instance().typecheck<BH_GREATER, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -2141,7 +2141,7 @@ multi_array<T>& bh_greater (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2177,7 +2177,7 @@ multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& l
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -2210,7 +2210,7 @@ multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& l
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -2246,7 +2246,7 @@ multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, const InT lhs, mult
 template <typename T>
 multi_array<T>& bh_greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -2278,7 +2278,7 @@ multi_array<T>& bh_greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_greater_equal (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -2290,7 +2290,7 @@ multi_array<T>& bh_greater_equal (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_greater_equal (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_GREATER_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -2303,7 +2303,7 @@ multi_array<T>& bh_greater_equal (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LESS, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2339,7 +2339,7 @@ multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, multi
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LESS, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -2372,7 +2372,7 @@ multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, const
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_less (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LESS, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -2408,7 +2408,7 @@ multi_array<OutT>& bh_less (multi_array<OutT>& res, const InT lhs, multi_array<I
 template <typename T>
 multi_array<T>& bh_less (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS, T, T, T>();
+    Runtime::instance().typecheck<BH_LESS, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -2440,7 +2440,7 @@ multi_array<T>& bh_less (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_less (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS, T, T, T>();
+    Runtime::instance().typecheck<BH_LESS, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -2452,7 +2452,7 @@ multi_array<T>& bh_less (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_less (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS, T, T, T>();
+    Runtime::instance().typecheck<BH_LESS, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -2465,7 +2465,7 @@ multi_array<T>& bh_less (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LESS_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2501,7 +2501,7 @@ multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs,
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LESS_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -2534,7 +2534,7 @@ multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs,
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS_EQUAL, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LESS_EQUAL, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -2570,7 +2570,7 @@ multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, const InT lhs, multi_a
 template <typename T>
 multi_array<T>& bh_less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_LESS_EQUAL, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -2602,7 +2602,7 @@ multi_array<T>& bh_less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_less_equal (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_LESS_EQUAL, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -2614,7 +2614,7 @@ multi_array<T>& bh_less_equal (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_less_equal (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LESS_EQUAL, T, T, T>();
+    Runtime::instance().typecheck<BH_LESS_EQUAL, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -2627,7 +2627,7 @@ multi_array<T>& bh_less_equal (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_AND, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_AND, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2663,7 +2663,7 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_AND, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_AND, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -2696,7 +2696,7 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_AND, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_AND, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -2732,7 +2732,7 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, const InT lhs, multi_
 template <typename T>
 multi_array<T>& bh_logical_and (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_AND, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_AND, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -2764,7 +2764,7 @@ multi_array<T>& bh_logical_and (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_logical_and (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_AND, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_AND, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -2776,7 +2776,7 @@ multi_array<T>& bh_logical_and (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_logical_and (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_AND, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_AND, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -2789,7 +2789,7 @@ multi_array<T>& bh_logical_and (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_OR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_OR, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2825,7 +2825,7 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT>& lhs,
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_OR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_OR, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -2858,7 +2858,7 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT>& lhs,
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_OR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_OR, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -2894,7 +2894,7 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, const InT lhs, multi_a
 template <typename T>
 multi_array<T>& bh_logical_or (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_OR, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_OR, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -2926,7 +2926,7 @@ multi_array<T>& bh_logical_or (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_logical_or (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_OR, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_OR, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -2938,7 +2938,7 @@ multi_array<T>& bh_logical_or (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_logical_or (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_OR, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_OR, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -2951,7 +2951,7 @@ multi_array<T>& bh_logical_or (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_XOR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_XOR, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -2987,7 +2987,7 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_XOR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_XOR, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -3020,7 +3020,7 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT>& lhs
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_XOR, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_XOR, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -3056,7 +3056,7 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, const InT lhs, multi_
 template <typename T>
 multi_array<T>& bh_logical_xor (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_XOR, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_XOR, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -3088,7 +3088,7 @@ multi_array<T>& bh_logical_xor (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_logical_xor (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_XOR, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_XOR, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -3100,7 +3100,7 @@ multi_array<T>& bh_logical_xor (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_logical_xor (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_XOR, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_XOR, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -3113,7 +3113,7 @@ multi_array<T>& bh_logical_xor (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_POWER, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_POWER, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -3149,7 +3149,7 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT>& lhs, mult
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_POWER, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_POWER, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -3182,7 +3182,7 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT>& lhs, cons
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_power (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_POWER, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_POWER, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -3218,7 +3218,7 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, const InT lhs, multi_array<
 template <typename T>
 multi_array<T>& bh_power (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_POWER, T, T, T>();
+    Runtime::instance().typecheck<BH_POWER, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -3250,7 +3250,7 @@ multi_array<T>& bh_power (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_power (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_POWER, T, T, T>();
+    Runtime::instance().typecheck<BH_POWER, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -3262,7 +3262,7 @@ multi_array<T>& bh_power (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_power (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_POWER, T, T, T>();
+    Runtime::instance().typecheck<BH_POWER, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -3275,7 +3275,7 @@ multi_array<T>& bh_power (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MAXIMUM, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MAXIMUM, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -3311,7 +3311,7 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT>& lhs, mu
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_MAXIMUM, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MAXIMUM, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -3344,7 +3344,7 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT>& lhs, co
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_maximum (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MAXIMUM, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MAXIMUM, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -3380,7 +3380,7 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, const InT lhs, multi_arra
 template <typename T>
 multi_array<T>& bh_maximum (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_MAXIMUM, T, T, T>();
+    Runtime::instance().typecheck<BH_MAXIMUM, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -3412,7 +3412,7 @@ multi_array<T>& bh_maximum (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_maximum (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_MAXIMUM, T, T, T>();
+    Runtime::instance().typecheck<BH_MAXIMUM, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -3424,7 +3424,7 @@ multi_array<T>& bh_maximum (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_maximum (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MAXIMUM, T, T, T>();
+    Runtime::instance().typecheck<BH_MAXIMUM, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -3437,7 +3437,7 @@ multi_array<T>& bh_maximum (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MINIMUM, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MINIMUM, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -3473,7 +3473,7 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT>& lhs, mu
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_MINIMUM, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MINIMUM, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -3506,7 +3506,7 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT>& lhs, co
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_minimum (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MINIMUM, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_MINIMUM, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -3542,7 +3542,7 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, const InT lhs, multi_arra
 template <typename T>
 multi_array<T>& bh_minimum (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_MINIMUM, T, T, T>();
+    Runtime::instance().typecheck<BH_MINIMUM, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -3574,7 +3574,7 @@ multi_array<T>& bh_minimum (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_minimum (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_MINIMUM, T, T, T>();
+    Runtime::instance().typecheck<BH_MINIMUM, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -3586,7 +3586,7 @@ multi_array<T>& bh_minimum (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_minimum (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_MINIMUM, T, T, T>();
+    Runtime::instance().typecheck<BH_MINIMUM, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -3599,7 +3599,7 @@ multi_array<T>& bh_minimum (const T lhs, multi_array<T>& rhs)
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTAN2, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_ARCTAN2, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -3635,7 +3635,7 @@ multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, multi_array<InT>& lhs, mu
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTAN2, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_ARCTAN2, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -3668,7 +3668,7 @@ multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, multi_array<InT>& lhs, co
 template <typename OutT, typename InT>
 multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTAN2, OutT, InT, InT>();
+    Runtime::instance().typecheck<BH_ARCTAN2, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -3704,7 +3704,7 @@ multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, const InT lhs, multi_arra
 template <typename T>
 multi_array<T>& bh_arctan2 (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTAN2, T, T, T>();
+    Runtime::instance().typecheck<BH_ARCTAN2, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -3736,7 +3736,7 @@ multi_array<T>& bh_arctan2 (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& bh_arctan2 (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTAN2, T, T, T>();
+    Runtime::instance().typecheck<BH_ARCTAN2, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -3748,7 +3748,7 @@ multi_array<T>& bh_arctan2 (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& bh_arctan2 (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTAN2, T, T, T>();
+    Runtime::instance().typecheck<BH_ARCTAN2, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -3767,7 +3767,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_identity (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_IDENTITY, OutT, InT>();
+    Runtime::instance().typecheck<BH_IDENTITY, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -3802,7 +3802,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_identity (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_IDENTITY, OutT, InT>();
+    Runtime::instance().typecheck<BH_IDENTITY, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, res, rhs);
     return res;
@@ -3815,7 +3815,7 @@ template <typename T>
 inline
 multi_array<T>& bh_identity (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_IDENTITY, T, T>();
+    Runtime::instance().typecheck<BH_IDENTITY, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -3832,7 +3832,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_NOT, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_NOT, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -3867,7 +3867,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_NOT, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOGICAL_NOT, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, res, rhs);
     return res;
@@ -3880,7 +3880,7 @@ template <typename T>
 inline
 multi_array<T>& bh_logical_not (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_NOT, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_NOT, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -3897,7 +3897,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_invert (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_INVERT, OutT, InT>();
+    Runtime::instance().typecheck<BH_INVERT, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -3932,7 +3932,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_invert (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_INVERT, OutT, InT>();
+    Runtime::instance().typecheck<BH_INVERT, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_INVERT, res, rhs);
     return res;
@@ -3945,7 +3945,7 @@ template <typename T>
 inline
 multi_array<T>& bh_invert (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_INVERT, T, T>();
+    Runtime::instance().typecheck<BH_INVERT, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -3962,7 +3962,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_imag (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_IMAG, OutT, InT>();
+    Runtime::instance().typecheck<BH_IMAG, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -3997,7 +3997,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_imag (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_IMAG, OutT, InT>();
+    Runtime::instance().typecheck<BH_IMAG, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_IMAG, res, rhs);
     return res;
@@ -4010,7 +4010,7 @@ template <typename T>
 inline
 multi_array<T>& bh_imag (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_IMAG, T, T>();
+    Runtime::instance().typecheck<BH_IMAG, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4027,7 +4027,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_real (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_REAL, OutT, InT>();
+    Runtime::instance().typecheck<BH_REAL, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4062,7 +4062,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_real (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_REAL, OutT, InT>();
+    Runtime::instance().typecheck<BH_REAL, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_REAL, res, rhs);
     return res;
@@ -4075,7 +4075,7 @@ template <typename T>
 inline
 multi_array<T>& bh_real (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_REAL, T, T>();
+    Runtime::instance().typecheck<BH_REAL, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4092,7 +4092,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_absolute (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ABSOLUTE, OutT, InT>();
+    Runtime::instance().typecheck<BH_ABSOLUTE, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4127,7 +4127,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_absolute (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ABSOLUTE, OutT, InT>();
+    Runtime::instance().typecheck<BH_ABSOLUTE, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, res, rhs);
     return res;
@@ -4140,7 +4140,7 @@ template <typename T>
 inline
 multi_array<T>& bh_absolute (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ABSOLUTE, T, T>();
+    Runtime::instance().typecheck<BH_ABSOLUTE, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4157,7 +4157,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sin (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_SIN, OutT, InT>();
+    Runtime::instance().typecheck<BH_SIN, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4192,7 +4192,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sin (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_SIN, OutT, InT>();
+    Runtime::instance().typecheck<BH_SIN, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_SIN, res, rhs);
     return res;
@@ -4205,7 +4205,7 @@ template <typename T>
 inline
 multi_array<T>& bh_sin (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_SIN, T, T>();
+    Runtime::instance().typecheck<BH_SIN, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4222,7 +4222,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_cos (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_COS, OutT, InT>();
+    Runtime::instance().typecheck<BH_COS, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4257,7 +4257,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_cos (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_COS, OutT, InT>();
+    Runtime::instance().typecheck<BH_COS, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_COS, res, rhs);
     return res;
@@ -4270,7 +4270,7 @@ template <typename T>
 inline
 multi_array<T>& bh_cos (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_COS, T, T>();
+    Runtime::instance().typecheck<BH_COS, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4287,7 +4287,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_tan (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_TAN, OutT, InT>();
+    Runtime::instance().typecheck<BH_TAN, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4322,7 +4322,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_tan (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_TAN, OutT, InT>();
+    Runtime::instance().typecheck<BH_TAN, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_TAN, res, rhs);
     return res;
@@ -4335,7 +4335,7 @@ template <typename T>
 inline
 multi_array<T>& bh_tan (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_TAN, T, T>();
+    Runtime::instance().typecheck<BH_TAN, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4352,7 +4352,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sinh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_SINH, OutT, InT>();
+    Runtime::instance().typecheck<BH_SINH, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4387,7 +4387,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sinh (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_SINH, OutT, InT>();
+    Runtime::instance().typecheck<BH_SINH, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_SINH, res, rhs);
     return res;
@@ -4400,7 +4400,7 @@ template <typename T>
 inline
 multi_array<T>& bh_sinh (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_SINH, T, T>();
+    Runtime::instance().typecheck<BH_SINH, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4417,7 +4417,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_cosh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_COSH, OutT, InT>();
+    Runtime::instance().typecheck<BH_COSH, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4452,7 +4452,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_cosh (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_COSH, OutT, InT>();
+    Runtime::instance().typecheck<BH_COSH, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_COSH, res, rhs);
     return res;
@@ -4465,7 +4465,7 @@ template <typename T>
 inline
 multi_array<T>& bh_cosh (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_COSH, T, T>();
+    Runtime::instance().typecheck<BH_COSH, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4482,7 +4482,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_tanh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_TANH, OutT, InT>();
+    Runtime::instance().typecheck<BH_TANH, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4517,7 +4517,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_tanh (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_TANH, OutT, InT>();
+    Runtime::instance().typecheck<BH_TANH, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_TANH, res, rhs);
     return res;
@@ -4530,7 +4530,7 @@ template <typename T>
 inline
 multi_array<T>& bh_tanh (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_TANH, T, T>();
+    Runtime::instance().typecheck<BH_TANH, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4547,7 +4547,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arcsin (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCSIN, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCSIN, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4582,7 +4582,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arcsin (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCSIN, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCSIN, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCSIN, res, rhs);
     return res;
@@ -4595,7 +4595,7 @@ template <typename T>
 inline
 multi_array<T>& bh_arcsin (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCSIN, T, T>();
+    Runtime::instance().typecheck<BH_ARCSIN, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4612,7 +4612,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arccos (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCCOS, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCCOS, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4647,7 +4647,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arccos (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCCOS, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCCOS, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOS, res, rhs);
     return res;
@@ -4660,7 +4660,7 @@ template <typename T>
 inline
 multi_array<T>& bh_arccos (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCCOS, T, T>();
+    Runtime::instance().typecheck<BH_ARCCOS, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4677,7 +4677,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arctan (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTAN, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCTAN, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4712,7 +4712,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arctan (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTAN, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCTAN, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTAN, res, rhs);
     return res;
@@ -4725,7 +4725,7 @@ template <typename T>
 inline
 multi_array<T>& bh_arctan (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTAN, T, T>();
+    Runtime::instance().typecheck<BH_ARCTAN, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4742,7 +4742,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arcsinh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCSINH, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCSINH, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4777,7 +4777,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arcsinh (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCSINH, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCSINH, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCSINH, res, rhs);
     return res;
@@ -4790,7 +4790,7 @@ template <typename T>
 inline
 multi_array<T>& bh_arcsinh (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCSINH, T, T>();
+    Runtime::instance().typecheck<BH_ARCSINH, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4807,7 +4807,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arccosh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCCOSH, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCCOSH, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4842,7 +4842,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arccosh (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCCOSH, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCCOSH, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOSH, res, rhs);
     return res;
@@ -4855,7 +4855,7 @@ template <typename T>
 inline
 multi_array<T>& bh_arccosh (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCCOSH, T, T>();
+    Runtime::instance().typecheck<BH_ARCCOSH, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4872,7 +4872,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arctanh (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTANH, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCTANH, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4907,7 +4907,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arctanh (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTANH, OutT, InT>();
+    Runtime::instance().typecheck<BH_ARCTANH, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTANH, res, rhs);
     return res;
@@ -4920,7 +4920,7 @@ template <typename T>
 inline
 multi_array<T>& bh_arctanh (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ARCTANH, T, T>();
+    Runtime::instance().typecheck<BH_ARCTANH, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -4937,7 +4937,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_exp (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_EXP, OutT, InT>();
+    Runtime::instance().typecheck<BH_EXP, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -4972,7 +4972,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_exp (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_EXP, OutT, InT>();
+    Runtime::instance().typecheck<BH_EXP, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP, res, rhs);
     return res;
@@ -4985,7 +4985,7 @@ template <typename T>
 inline
 multi_array<T>& bh_exp (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_EXP, T, T>();
+    Runtime::instance().typecheck<BH_EXP, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5002,7 +5002,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_EXP2, OutT, InT>();
+    Runtime::instance().typecheck<BH_EXP2, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5037,7 +5037,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_EXP2, OutT, InT>();
+    Runtime::instance().typecheck<BH_EXP2, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP2, res, rhs);
     return res;
@@ -5050,7 +5050,7 @@ template <typename T>
 inline
 multi_array<T>& bh_exp2 (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_EXP2, T, T>();
+    Runtime::instance().typecheck<BH_EXP2, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5067,7 +5067,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_EXPM1, OutT, InT>();
+    Runtime::instance().typecheck<BH_EXPM1, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5102,7 +5102,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_EXPM1, OutT, InT>();
+    Runtime::instance().typecheck<BH_EXPM1, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_EXPM1, res, rhs);
     return res;
@@ -5115,7 +5115,7 @@ template <typename T>
 inline
 multi_array<T>& bh_expm1 (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_EXPM1, T, T>();
+    Runtime::instance().typecheck<BH_EXPM1, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5132,7 +5132,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_isnan (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ISNAN, OutT, InT>();
+    Runtime::instance().typecheck<BH_ISNAN, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5167,7 +5167,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_isnan (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ISNAN, OutT, InT>();
+    Runtime::instance().typecheck<BH_ISNAN, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_ISNAN, res, rhs);
     return res;
@@ -5180,7 +5180,7 @@ template <typename T>
 inline
 multi_array<T>& bh_isnan (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ISNAN, T, T>();
+    Runtime::instance().typecheck<BH_ISNAN, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5197,7 +5197,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_isinf (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_ISINF, OutT, InT>();
+    Runtime::instance().typecheck<BH_ISINF, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5232,7 +5232,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_isinf (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_ISINF, OutT, InT>();
+    Runtime::instance().typecheck<BH_ISINF, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_ISINF, res, rhs);
     return res;
@@ -5245,7 +5245,7 @@ template <typename T>
 inline
 multi_array<T>& bh_isinf (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_ISINF, T, T>();
+    Runtime::instance().typecheck<BH_ISINF, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5262,7 +5262,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOG, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5297,7 +5297,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOG, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG, res, rhs);
     return res;
@@ -5310,7 +5310,7 @@ template <typename T>
 inline
 multi_array<T>& bh_log (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG, T, T>();
+    Runtime::instance().typecheck<BH_LOG, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5327,7 +5327,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log2 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG2, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOG2, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5362,7 +5362,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log2 (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG2, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOG2, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG2, res, rhs);
     return res;
@@ -5375,7 +5375,7 @@ template <typename T>
 inline
 multi_array<T>& bh_log2 (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG2, T, T>();
+    Runtime::instance().typecheck<BH_LOG2, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5392,7 +5392,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log10 (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG10, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOG10, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5427,7 +5427,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log10 (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG10, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOG10, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG10, res, rhs);
     return res;
@@ -5440,7 +5440,7 @@ template <typename T>
 inline
 multi_array<T>& bh_log10 (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG10, T, T>();
+    Runtime::instance().typecheck<BH_LOG10, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5457,7 +5457,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log1p (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG1P, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOG1P, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5492,7 +5492,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log1p (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG1P, OutT, InT>();
+    Runtime::instance().typecheck<BH_LOG1P, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG1P, res, rhs);
     return res;
@@ -5505,7 +5505,7 @@ template <typename T>
 inline
 multi_array<T>& bh_log1p (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOG1P, T, T>();
+    Runtime::instance().typecheck<BH_LOG1P, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5522,7 +5522,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_SQRT, OutT, InT>();
+    Runtime::instance().typecheck<BH_SQRT, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5557,7 +5557,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_SQRT, OutT, InT>();
+    Runtime::instance().typecheck<BH_SQRT, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_SQRT, res, rhs);
     return res;
@@ -5570,7 +5570,7 @@ template <typename T>
 inline
 multi_array<T>& bh_sqrt (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_SQRT, T, T>();
+    Runtime::instance().typecheck<BH_SQRT, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5587,7 +5587,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_ceil (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_CEIL, OutT, InT>();
+    Runtime::instance().typecheck<BH_CEIL, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5622,7 +5622,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_ceil (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_CEIL, OutT, InT>();
+    Runtime::instance().typecheck<BH_CEIL, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_CEIL, res, rhs);
     return res;
@@ -5635,7 +5635,7 @@ template <typename T>
 inline
 multi_array<T>& bh_ceil (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_CEIL, T, T>();
+    Runtime::instance().typecheck<BH_CEIL, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5652,7 +5652,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_trunc (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_TRUNC, OutT, InT>();
+    Runtime::instance().typecheck<BH_TRUNC, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5687,7 +5687,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_trunc (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_TRUNC, OutT, InT>();
+    Runtime::instance().typecheck<BH_TRUNC, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_TRUNC, res, rhs);
     return res;
@@ -5700,7 +5700,7 @@ template <typename T>
 inline
 multi_array<T>& bh_trunc (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_TRUNC, T, T>();
+    Runtime::instance().typecheck<BH_TRUNC, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5717,7 +5717,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_floor (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_FLOOR, OutT, InT>();
+    Runtime::instance().typecheck<BH_FLOOR, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5752,7 +5752,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_floor (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_FLOOR, OutT, InT>();
+    Runtime::instance().typecheck<BH_FLOOR, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_FLOOR, res, rhs);
     return res;
@@ -5765,7 +5765,7 @@ template <typename T>
 inline
 multi_array<T>& bh_floor (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_FLOOR, T, T>();
+    Runtime::instance().typecheck<BH_FLOOR, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5782,7 +5782,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_rint (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
-    Runtime::instance().typechecker.check<BH_RINT, OutT, InT>();
+    Runtime::instance().typecheck<BH_RINT, OutT, InT>();
 
     multi_array<InT>* right = &rhs;
     
@@ -5817,7 +5817,7 @@ template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_rint (multi_array<OutT>& res, const InT rhs)
 {
-    Runtime::instance().typechecker.check<BH_RINT, OutT, InT>();
+    Runtime::instance().typecheck<BH_RINT, OutT, InT>();
 
     Runtime::instance().enqueue((bh_opcode)BH_RINT, res, rhs);
     return res;
@@ -5830,7 +5830,7 @@ template <typename T>
 inline
 multi_array<T>& bh_rint (multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<BH_RINT, T, T>();
+    Runtime::instance().typecheck<BH_RINT, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
@@ -5855,7 +5855,7 @@ multi_array<T>& bh_range (multi_array<T>& res)
 template <typename T>
 multi_array<T>& bh_random (multi_array<T>& res, uint64_t in1, uint64_t in2)
 {
-    Runtime::instance().typechecker.check<BH_RANDOM, T, uint64_t, uint64_t>();
+    Runtime::instance().typecheck<BH_RANDOM, T, uint64_t, uint64_t>();
 
     Runtime::instance().enqueue((bh_opcode)BH_RANDOM, res, in1, in2);
 
@@ -5867,7 +5867,7 @@ multi_array<T>& bh_random (multi_array<T>& res, uint64_t in1, uint64_t in2)
 template <typename T>
 multi_array<T>& bh_add_accumulate (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD_ACCUMULATE, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD_ACCUMULATE, T, T, T>();
 
     // Check axis
     if (rhs<0) {
@@ -5887,7 +5887,7 @@ multi_array<T>& bh_add_accumulate (multi_array<T>& res, multi_array<T> &lhs, int
 template <typename T>
 multi_array<T>& bh_add_accumulate (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD_ACCUMULATE, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD_ACCUMULATE, T, T, T>();
 
     // Check axis
     if (rhs<0) {
@@ -5910,7 +5910,7 @@ multi_array<T>& bh_add_accumulate (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_multiply_accumulate (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY_ACCUMULATE, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY_ACCUMULATE, T, T, T>();
 
     // Check axis
     if (rhs<0) {
@@ -5930,7 +5930,7 @@ multi_array<T>& bh_multiply_accumulate (multi_array<T>& res, multi_array<T> &lhs
 template <typename T>
 multi_array<T>& bh_multiply_accumulate (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY_ACCUMULATE, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY_ACCUMULATE, T, T, T>();
 
     // Check axis
     if (rhs<0) {
@@ -5955,7 +5955,7 @@ multi_array<T>& bh_multiply_accumulate (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_add_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -5975,7 +5975,7 @@ multi_array<T>& bh_add_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t
 template <typename T>
 multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_ADD_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6018,7 +6018,7 @@ multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_multiply_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6038,7 +6038,7 @@ multi_array<T>& bh_multiply_reduce (multi_array<T>& res, multi_array<T> &lhs, in
 template <typename T>
 multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_MULTIPLY_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6081,7 +6081,7 @@ multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_minimum_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_MINIMUM_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_MINIMUM_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6101,7 +6101,7 @@ multi_array<T>& bh_minimum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
 template <typename T>
 multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_MINIMUM_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_MINIMUM_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6144,7 +6144,7 @@ multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_maximum_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_MAXIMUM_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_MAXIMUM_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6164,7 +6164,7 @@ multi_array<T>& bh_maximum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
 template <typename T>
 multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_MAXIMUM_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_MAXIMUM_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6207,7 +6207,7 @@ multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_logical_and_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_AND_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_AND_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6227,7 +6227,7 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
 template <typename T>
 multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_AND_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_AND_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6270,7 +6270,7 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_logical_or_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_OR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_OR_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6290,7 +6290,7 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
 template <typename T>
 multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_OR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_OR_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6333,7 +6333,7 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_logical_xor_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_XOR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_XOR_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6353,7 +6353,7 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
 template <typename T>
 multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_LOGICAL_XOR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_XOR_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6396,7 +6396,7 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_and_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_AND_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_AND_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6416,7 +6416,7 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
 template <typename T>
 multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_AND_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_AND_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6459,7 +6459,7 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_or_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_OR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_OR_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6479,7 +6479,7 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
 template <typename T>
 multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_OR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_OR_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6522,7 +6522,7 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_xor_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_XOR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_XOR_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6542,7 +6542,7 @@ multi_array<T>& bh_bitwise_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
 template <typename T>
 multi_array<T>& bh_bitwise_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typechecker.check<BH_BITWISE_XOR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_XOR_REDUCE, T, T, T>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;

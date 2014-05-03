@@ -45,19 +45,6 @@ const float  PI   = 3.14159265358979f;
 template <typename T>   // Forward declaration
 class multi_array;
 
-class Typechecker
-{
-public:
-    template <size_t Opcode, typename Out, typename In1, typename In2>
-    bool check(void);
-
-    template <size_t Opcode, typename Out, typename In1>
-    bool check(void);
-
-    template <size_t Opcode, typename Out>
-    bool check(void);
-};
-
 inline int64_t unpack_shape(int64_t *shape, size_t index, size_t arg)
 {
     shape[index] = arg;
@@ -259,11 +246,11 @@ class Runtime {
 public:
     static Runtime& instance(); // Singleton method
 
-    Typechecker typechecker;
-    ~Runtime();                 // Deconstructor
+    ~Runtime();         // Deconstructor
 
-                            // Input and output are of the same type
-
+    //
+    //  Lazy evaluation through instruction queue
+    //
     template <typename Out, typename In1, typename In2>
     void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, multi_array<In2>& op2);
     
@@ -285,53 +272,27 @@ public:
     template <typename Out>
     void enqueue(bh_opcode opcode, multi_array<Out>& op0, const uint64_t op1, const uint64_t op2);
 
-    /*
-    template <typename T>   // SYS: FREE, SYNC, DISCARD;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0);
-
-    template <typename T>   // x = y + z
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, multi_array<T> & op2);
-
-    template <typename T>   // x = y + 1;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, const T& op2);
-
-    template <typename T>   // x = 1 + y;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi_array<T> & op2);
-
-    template <typename T>   // x = 1 + y;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, const uint64_t op1, const uint64_t op2);
-
-    template <typename T>   // x = y;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1);
-
-    template <typename T>   // x = 1.0;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1);
-
-                                            // Same input but different output type
-    template <typename Ret, typename In>    // x = y;
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1);
-
-    template <typename Ret, typename In>    // x = y < z
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, multi_array<In>& op2);
-
-    template <typename Ret, typename In>    // x = y < 1;
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, const In& op2);
-
-    template <typename Ret, typename In>    // x = 1 < y;
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, multi_array<In>& op2);
-
-                                            // Mixed input, ret is same as first operand
-    template <typename Ret, typename In>    // pow(...,2), reduce(..., 2)
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2);
-
-    */
-
     template <typename Ret, typename In1, typename In2>
     void enqueue_extension(const std::string& name, multi_array<Ret>& op0, multi_array<In1>& op2, multi_array<In2>& op3);
 
     size_t flush();
     size_t get_queue_size();
 
+    //
+    //  Typechecker
+    //
+    template <size_t Opcode, typename Out, typename In1, typename In2>
+    bool typecheck(void);
+
+    template <size_t Opcode, typename Out, typename In1>
+    bool typecheck(void);
+
+    template <size_t Opcode, typename Out>
+    bool typecheck(void);   
+
+    //
+    //  Operand construction
+    //
     template <typename T>
     multi_array<T>& op();
 

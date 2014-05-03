@@ -9,7 +9,7 @@ directiveStartToken = %
 template <typename OutT, typename InT>
 multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<$opcode, OutT, InT, InT>();
+    Runtime::instance().typecheck<$opcode, OutT, InT, InT>();
 
     multi_array<InT>* left    = &lhs;
     multi_array<InT>* right   = &rhs;
@@ -45,7 +45,7 @@ multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT>& lhs, multi_arr
 template <typename OutT, typename InT>
 multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
 {
-    Runtime::instance().typechecker.check<$opcode, OutT, InT, InT>();
+    Runtime::instance().typecheck<$opcode, OutT, InT, InT>();
 
     multi_array<InT>* left = &lhs;
 
@@ -78,7 +78,7 @@ multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT>& lhs, const InT
 template <typename OutT, typename InT>
 multi_array<OutT>& $op (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
 {
-    Runtime::instance().typechecker.check<$opcode, OutT, InT, InT>();
+    Runtime::instance().typecheck<$opcode, OutT, InT, InT>();
 
     multi_array<InT>* right = &rhs;
 
@@ -114,7 +114,7 @@ multi_array<OutT>& $op (multi_array<OutT>& res, const InT lhs, multi_array<InT>&
 template <typename T>
 multi_array<T>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typechecker.check<$opcode, T, T, T>();
+    Runtime::instance().typecheck<$opcode, T, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -146,7 +146,7 @@ multi_array<T>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
 template <typename T>
 multi_array<T>& $op (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typechecker.check<$opcode, T, T, T>();
+    Runtime::instance().typecheck<$opcode, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
@@ -158,7 +158,7 @@ multi_array<T>& $op (multi_array<T>& lhs, const T rhs)
 template <typename T>
 multi_array<T>& $op (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typechecker.check<$opcode, T, T, T>();
+    Runtime::instance().typecheck<$opcode, T, T, T>();
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
