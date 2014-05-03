@@ -35,7 +35,7 @@ namespace bxx {
 //
 template <size_t Opcode, typename Out, typename In1, typename In2>
 inline
-bool Runtime::typecheck(void)
+void Runtime::typecheck(void)
 {
     std::stringstream ss;
     ss << "Bytecode(" << Opcode << ") instruction";
@@ -48,12 +48,11 @@ bool Runtime::typecheck(void)
     ss << ".";
 
     throw std::runtime_error(ss.str());
-    return false;
 }
 
 template <size_t Opcode, typename Out, typename In1>
 inline
-bool Runtime::typecheck(void)
+void Runtime::typecheck(void)
 {
     std::stringstream ss;
     ss << "Bytecode(" << Opcode << ") instruction";
@@ -61,30 +60,22 @@ bool Runtime::typecheck(void)
     ss << typeid(Out).name();
     ss << ",";
     ss << typeid(In1).name();
-    ss << ",";
-    ss << typeid(In2).name();
     ss << ".";
 
     throw std::runtime_error(ss.str());
-    return false;
 }
 
 template <size_t Opcode, typename Out>
 inline
-bool Runtime::typecheck(void)
+void Runtime::typecheck(void)
 {
     std::stringstream ss;
     ss << "Bytecode(" << Opcode << ") instruction";
     ss << " has invalid type signature: ";
     ss << typeid(Out).name();
-    ss << ",";
-    ss << typeid(In1).name();
-    ss << ",";
-    ss << typeid(In2).name();
     ss << ".";
 
     throw std::runtime_error(ss.str());
-    return false;
 }
 
 //
@@ -97,17 +88,17 @@ bool Runtime::typecheck(void)
 
 template <>
 inline
-bool Runtime::typecheck<$opcode, $typesig[0], $typesig[1], $typesig[2]>(void) { return true; }
+void Runtime::typecheck<$opcode, $typesig[0], $typesig[1], $typesig[2]>(void) { }
 %else if $opcount == 2
 
 template <>
 inline
-bool Runtime::typecheck<$opcode, $typesig[0], $typesig[1]>(void) { return true; }
+void Runtime::typecheck<$opcode, $typesig[0], $typesig[1]>(void) { }
 %else if $opcount == 1
 
 template <>
 inline
-bool Runtime::typecheck<$opcode, $typesig[0]>(void) { return true; }
+void Runtime::typecheck<$opcode, $typesig[0]>(void) { }
 %end if
 %end for
 %end for

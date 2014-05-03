@@ -282,13 +282,13 @@ public:
     //  Typechecker
     //
     template <size_t Opcode, typename Out, typename In1, typename In2>
-    bool typecheck(void);
+    void typecheck(void);
 
     template <size_t Opcode, typename Out, typename In1>
-    bool typecheck(void);
+    void typecheck(void);
 
     template <size_t Opcode, typename Out>
-    bool typecheck(void);   
+    void typecheck(void);   
 
     //
     //  Operand construction

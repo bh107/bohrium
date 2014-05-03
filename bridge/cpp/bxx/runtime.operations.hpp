@@ -1653,978 +1653,6 @@ multi_array<T>& bh_right_shift (const T lhs, multi_array<T>& rhs)
 
 // Explicit result array
 template <typename OutT, typename InT>
-multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
-    if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes of output and input.");
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, res, *left, *right);
-
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
-{
-    Runtime::instance().typecheck<BH_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* left = &lhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < left->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *left)) {
-        left = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *left)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *left)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, res, *left, rhs);
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* right = &rhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *right)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *right)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, res, lhs, *right);
-    return res;
-}
-
-//
-// Implicit temporary result array
-//
-template <typename T>
-multi_array<T>& bh_equal (multi_array<T> &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().typecheck<BH_EQUAL, T, T, T>();
-
-    multi_array<T>* left    = &lhs;
-    multi_array<T>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_equal (multi_array<T>& lhs, const T rhs)
-{
-    Runtime::instance().typecheck<BH_EQUAL, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_equal (const T lhs, multi_array<T>& rhs)
-{
-    Runtime::instance().typecheck<BH_EQUAL, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
-    return *result;
-}
-
-// Explicit result array
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_NOT_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
-    if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes of output and input.");
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, res, *left, *right);
-
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
-{
-    Runtime::instance().typecheck<BH_NOT_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* left = &lhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < left->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_not_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *left)) {
-        left = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *left)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *left)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, res, *left, rhs);
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_NOT_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* right = &rhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_not_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *right)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *right)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, res, lhs, *right);
-    return res;
-}
-
-//
-// Implicit temporary result array
-//
-template <typename T>
-multi_array<T>& bh_not_equal (multi_array<T> &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().typecheck<BH_NOT_EQUAL, T, T, T>();
-
-    multi_array<T>* left    = &lhs;
-    multi_array<T>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_not_equal (multi_array<T>& lhs, const T rhs)
-{
-    Runtime::instance().typecheck<BH_NOT_EQUAL, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_not_equal (const T lhs, multi_array<T>& rhs)
-{
-    Runtime::instance().typecheck<BH_NOT_EQUAL, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
-    return *result;
-}
-
-// Explicit result array
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER, OutT, InT, InT>();
-
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
-    if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes of output and input.");
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, res, *left, *right);
-
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER, OutT, InT, InT>();
-
-    multi_array<InT>* left = &lhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < left->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_greater: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *left)) {
-        left = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *left)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *left)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, res, *left, rhs);
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER, OutT, InT, InT>();
-
-    multi_array<InT>* right = &rhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_greater: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *right)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *right)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, res, lhs, *right);
-    return res;
-}
-
-//
-// Implicit temporary result array
-//
-template <typename T>
-multi_array<T>& bh_greater (multi_array<T> &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER, T, T, T>();
-
-    multi_array<T>* left    = &lhs;
-    multi_array<T>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_greater (multi_array<T>& lhs, const T rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_greater (const T lhs, multi_array<T>& rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
-    return *result;
-}
-
-// Explicit result array
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
-    if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes of output and input.");
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, res, *left, *right);
-
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* left = &lhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < left->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_greater_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *left)) {
-        left = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *left)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *left)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, res, *left, rhs);
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* right = &rhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_greater_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *right)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *right)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, res, lhs, *right);
-    return res;
-}
-
-//
-// Implicit temporary result array
-//
-template <typename T>
-multi_array<T>& bh_greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER_EQUAL, T, T, T>();
-
-    multi_array<T>* left    = &lhs;
-    multi_array<T>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_greater_equal (multi_array<T>& lhs, const T rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER_EQUAL, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_greater_equal (const T lhs, multi_array<T>& rhs)
-{
-    Runtime::instance().typecheck<BH_GREATER_EQUAL, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
-    return *result;
-}
-
-// Explicit result array
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_LESS, OutT, InT, InT>();
-
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
-    if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes of output and input.");
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, res, *left, *right);
-
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
-{
-    Runtime::instance().typecheck<BH_LESS, OutT, InT, InT>();
-
-    multi_array<InT>* left = &lhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < left->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_less: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *left)) {
-        left = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *left)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *left)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, res, *left, rhs);
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_less (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_LESS, OutT, InT, InT>();
-
-    multi_array<InT>* right = &rhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_less: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *right)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *right)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, res, lhs, *right);
-    return res;
-}
-
-//
-// Implicit temporary result array
-//
-template <typename T>
-multi_array<T>& bh_less (multi_array<T> &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().typecheck<BH_LESS, T, T, T>();
-
-    multi_array<T>* left    = &lhs;
-    multi_array<T>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_less (multi_array<T>& lhs, const T rhs)
-{
-    Runtime::instance().typecheck<BH_LESS, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_less (const T lhs, multi_array<T>& rhs)
-{
-    Runtime::instance().typecheck<BH_LESS, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
-    return *result;
-}
-
-// Explicit result array
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_LESS_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* left    = &lhs;
-    multi_array<InT>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
-    if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes of output and input.");
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, res, *left, *right);
-
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
-{
-    Runtime::instance().typecheck<BH_LESS_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* left = &lhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < left->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_less_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *left)) {
-        left = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *left)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *left)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, res, *left, rhs);
-    return res;
-}
-
-template <typename OutT, typename InT>
-multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
-{
-    Runtime::instance().typecheck<BH_LESS_EQUAL, OutT, InT, InT>();
-
-    multi_array<InT>* right = &rhs;
-
-    // Check for unbroadcastable situation
-    if (res.getRank() < right->getRank()) {
-        std::stringstream s;
-        s << "Incompatible shapes " << "bh_less_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    // Broadcast
-    if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *right)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        //
-        // Re-check compatibility
-        if (!same_shape(res, *right)) {
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, res, lhs, *right);
-    return res;
-}
-
-//
-// Implicit temporary result array
-//
-template <typename T>
-multi_array<T>& bh_less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
-{
-    Runtime::instance().typecheck<BH_LESS_EQUAL, T, T, T>();
-
-    multi_array<T>* left    = &lhs;
-    multi_array<T>* right   = &rhs;
-    
-    // Broadcast
-    if (!same_shape(*left, *right)) {
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Construct output / result array
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_less_equal (multi_array<T>& lhs, const T rhs)
-{
-    Runtime::instance().typecheck<BH_LESS_EQUAL, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-    return *result;
-}
-
-template <typename T>
-multi_array<T>& bh_less_equal (const T lhs, multi_array<T>& rhs)
-{
-    Runtime::instance().typecheck<BH_LESS_EQUAL, T, T, T>();
-
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
-    return *result;
-}
-
-// Explicit result array
-template <typename OutT, typename InT>
 multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
 {
     Runtime::instance().typecheck<BH_LOGICAL_AND, OutT, InT, InT>();
@@ -3754,6 +2782,980 @@ multi_array<T>& bh_arctan2 (const T lhs, multi_array<T>& rhs)
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, lhs, rhs);
+    return *result;
+}
+
+
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Check that operands are compatible with the output
+    // TODO: Broadcasting should also be done in relation to output
+    //       for now we simply fail...
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes of output and input.");
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, res, *left, *right);
+
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
+{
+    Runtime::instance().typecheck<BH_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* left = &lhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < left->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *left)) {
+        left = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *left)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *left)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, res, *left, rhs);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* right = &rhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, res, lhs, *right);
+    return res;
+}
+
+//
+// Implicit temporary result array
+//
+template <typename T>
+multi_array<bool>& bh_equal (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().typecheck<BH_EQUAL, bool, T, T>();
+
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_equal (multi_array<T>& lhs, const T rhs)
+{
+    Runtime::instance().typecheck<BH_EQUAL, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_equal (const T lhs, multi_array<T>& rhs)
+{
+    Runtime::instance().typecheck<BH_EQUAL, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
+    return *result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_NOT_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Check that operands are compatible with the output
+    // TODO: Broadcasting should also be done in relation to output
+    //       for now we simply fail...
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes of output and input.");
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, res, *left, *right);
+
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
+{
+    Runtime::instance().typecheck<BH_NOT_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* left = &lhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < left->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_not_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *left)) {
+        left = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *left)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *left)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, res, *left, rhs);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_not_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_NOT_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* right = &rhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_not_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, res, lhs, *right);
+    return res;
+}
+
+//
+// Implicit temporary result array
+//
+template <typename T>
+multi_array<bool>& bh_not_equal (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().typecheck<BH_NOT_EQUAL, bool, T, T>();
+
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_not_equal (multi_array<T>& lhs, const T rhs)
+{
+    Runtime::instance().typecheck<BH_NOT_EQUAL, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_not_equal (const T lhs, multi_array<T>& rhs)
+{
+    Runtime::instance().typecheck<BH_NOT_EQUAL, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
+    return *result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER, OutT, InT, InT>();
+
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Check that operands are compatible with the output
+    // TODO: Broadcasting should also be done in relation to output
+    //       for now we simply fail...
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes of output and input.");
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER, res, *left, *right);
+
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_greater (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER, OutT, InT, InT>();
+
+    multi_array<InT>* left = &lhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < left->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_greater: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *left)) {
+        left = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *left)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *left)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER, res, *left, rhs);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_greater (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER, OutT, InT, InT>();
+
+    multi_array<InT>* right = &rhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_greater: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER, res, lhs, *right);
+    return res;
+}
+
+//
+// Implicit temporary result array
+//
+template <typename T>
+multi_array<bool>& bh_greater (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER, bool, T, T>();
+
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_greater (multi_array<T>& lhs, const T rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_greater (const T lhs, multi_array<T>& rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
+    return *result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Check that operands are compatible with the output
+    // TODO: Broadcasting should also be done in relation to output
+    //       for now we simply fail...
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes of output and input.");
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, res, *left, *right);
+
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* left = &lhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < left->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_greater_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *left)) {
+        left = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *left)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *left)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, res, *left, rhs);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_greater_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* right = &rhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_greater_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, res, lhs, *right);
+    return res;
+}
+
+//
+// Implicit temporary result array
+//
+template <typename T>
+multi_array<bool>& bh_greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, bool, T, T>();
+
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_greater_equal (multi_array<T>& lhs, const T rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_greater_equal (const T lhs, multi_array<T>& rhs)
+{
+    Runtime::instance().typecheck<BH_GREATER_EQUAL, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
+    return *result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_LESS, OutT, InT, InT>();
+
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Check that operands are compatible with the output
+    // TODO: Broadcasting should also be done in relation to output
+    //       for now we simply fail...
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes of output and input.");
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS, res, *left, *right);
+
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_less (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
+{
+    Runtime::instance().typecheck<BH_LESS, OutT, InT, InT>();
+
+    multi_array<InT>* left = &lhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < left->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_less: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *left)) {
+        left = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *left)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *left)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS, res, *left, rhs);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_less (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_LESS, OutT, InT, InT>();
+
+    multi_array<InT>* right = &rhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_less: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS, res, lhs, *right);
+    return res;
+}
+
+//
+// Implicit temporary result array
+//
+template <typename T>
+multi_array<bool>& bh_less (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().typecheck<BH_LESS, bool, T, T>();
+
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_less (multi_array<T>& lhs, const T rhs)
+{
+    Runtime::instance().typecheck<BH_LESS, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_less (const T lhs, multi_array<T>& rhs)
+{
+    Runtime::instance().typecheck<BH_LESS, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
+    return *result;
+}
+
+// Explicit result array
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_LESS_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* left    = &lhs;
+    multi_array<InT>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Check that operands are compatible with the output
+    // TODO: Broadcasting should also be done in relation to output
+    //       for now we simply fail...
+    if (!same_shape(res, *right)) {
+        throw std::runtime_error("Incompatible shapes of output and input.");
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, res, *left, *right);
+
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, multi_array<InT>& lhs, const InT rhs)
+{
+    Runtime::instance().typecheck<BH_LESS_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* left = &lhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < left->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_less_equal: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *left)) {
+        left = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *left)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *left)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, res, *left, rhs);
+    return res;
+}
+
+template <typename OutT, typename InT>
+multi_array<OutT>& bh_less_equal (multi_array<OutT>& res, const InT lhs, multi_array<InT>& rhs)
+{
+    Runtime::instance().typecheck<BH_LESS_EQUAL, OutT, InT, InT>();
+
+    multi_array<InT>* right = &rhs;
+
+    // Check for unbroadcastable situation
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "bh_less_equal: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
+    }
+
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(lhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("LHS is not broadcastable.");
+        }
+        
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
+        }
+    }
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, res, lhs, *right);
+    return res;
+}
+
+//
+// Implicit temporary result array
+//
+template <typename T>
+multi_array<bool>& bh_less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
+{
+    Runtime::instance().typecheck<BH_LESS_EQUAL, bool, T, T>();
+
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    // Broadcast
+    if (!same_shape(*left, *right)) {
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+
+    // Construct output / result array
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_less_equal (multi_array<T>& lhs, const T rhs)
+{
+    Runtime::instance().typecheck<BH_LESS_EQUAL, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
+    return *result;
+}
+
+template <typename T>
+multi_array<bool>& bh_less_equal (const T lhs, multi_array<T>& rhs)
+{
+    Runtime::instance().typecheck<BH_LESS_EQUAL, bool, T, T>();
+
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
     return *result;
 }
 

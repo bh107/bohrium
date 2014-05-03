@@ -457,222 +457,6 @@ inline multi_array<T>& right_shift (const T lhs, multi_array<T>& rhs)
 }
 
 template <typename T>
-inline multi_array<T>& eq (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& eq (multi_array<T>& lhs, const T rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& eq (const T lhs, multi_array<T>& rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator== (multi_array<T>& lhs, const T rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator== (const T lhs, multi_array<T>& rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& neq (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& neq (multi_array<T>& lhs, const T rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& neq (const T lhs, multi_array<T>& rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator!= (multi_array<T>& lhs, const T rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator!= (const T lhs, multi_array<T>& rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gt (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gt (multi_array<T>& lhs, const T rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gt (const T lhs, multi_array<T>& rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator> (multi_array<T>& lhs, const T rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator> (const T lhs, multi_array<T>& rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gteq (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gteq (multi_array<T>& lhs, const T rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gteq (const T lhs, multi_array<T>& rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator>= (multi_array<T>& lhs, const T rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator>= (const T lhs, multi_array<T>& rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lt (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lt (multi_array<T>& lhs, const T rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lt (const T lhs, multi_array<T>& rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator< (multi_array<T>& lhs, const T rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator< (const T lhs, multi_array<T>& rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lteq (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lteq (multi_array<T>& lhs, const T rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lteq (const T lhs, multi_array<T>& rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator<= (multi_array<T>& lhs, const T rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator<= (const T lhs, multi_array<T>& rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
 inline multi_array<T>& logical_and (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_logical_and (lhs, rhs);
@@ -832,6 +616,224 @@ template <typename T>
 inline multi_array<T>& atan2 (const T lhs, multi_array<T>& rhs)
 {
     return bh_arctan2 (lhs, rhs);
+}
+
+
+
+template <typename T>
+inline multi_array<bool>& eq (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& eq (multi_array<T>& lhs, const T rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& eq (const T lhs, multi_array<T>& rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator== (multi_array<T>& lhs, const T rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator== (const T lhs, multi_array<T>& rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& neq (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& neq (multi_array<T>& lhs, const T rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& neq (const T lhs, multi_array<T>& rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator!= (multi_array<T>& lhs, const T rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator!= (const T lhs, multi_array<T>& rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gt (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gt (multi_array<T>& lhs, const T rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gt (const T lhs, multi_array<T>& rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator> (multi_array<T>& lhs, const T rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator> (const T lhs, multi_array<T>& rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gteq (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gteq (multi_array<T>& lhs, const T rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gteq (const T lhs, multi_array<T>& rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator>= (multi_array<T>& lhs, const T rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator>= (const T lhs, multi_array<T>& rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lt (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lt (multi_array<T>& lhs, const T rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lt (const T lhs, multi_array<T>& rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator< (multi_array<T>& lhs, const T rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator< (const T lhs, multi_array<T>& rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lteq (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lteq (multi_array<T>& lhs, const T rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lteq (const T lhs, multi_array<T>& rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator<= (multi_array<T>& lhs, const T rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator<= (const T lhs, multi_array<T>& rhs)
+{
+    return bh_less_equal (lhs, rhs);
 }
 
 
