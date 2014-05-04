@@ -168,11 +168,11 @@
 ["expm1",   "BH_EXPM1",     "sugar.unary",      true],
 ["bh_expm1","BH_EXPM1",     "runtime.unary",    true],
 
-["isnan",   "BH_ISNAN", "sugar.unary",      true],
-["bh_isnan","BH_ISNAN", "runtime.unary",    true],
+["isnan",   "BH_ISNAN", "sugar.unary.bool",     true],
+["bh_isnan","BH_ISNAN", "runtime.unary.bool",   true],
 
-["isinf",   "BH_ISINF", "sugar.unary",      true],
-["bh_isinf","BH_ISINF", "runtime.unary",    true],
+["isinf",   "BH_ISINF", "sugar.unary.bool",     true],
+["bh_isinf","BH_ISINF", "runtime.unary.bool",   true],
 
 ["log",     "BH_LOG",   "sugar.unary",      true],
 ["bh_log",  "BH_LOG",   "runtime.unary",    true],

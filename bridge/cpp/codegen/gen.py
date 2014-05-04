@@ -130,6 +130,7 @@ def main():
         ('sugar.binary.ctpl',       'operators.hpp', datasets['sugar.binary']),
         ('sugar.binary.bool.ctpl',  'operators.hpp', datasets['sugar.binary.bool']),
         ('sugar.unary.ctpl',        'operators.hpp', datasets['sugar.unary']),
+        ('sugar.unary.bool.ctpl',   'operators.hpp', datasets['sugar.unary.bool']),
         ('operators.footer.ctpl',   'operators.hpp', datasets['sugar.unary']),
 
         ('runtime.typechecker.ctpl', 'runtime.typechecker.hpp', checker),
@@ -138,6 +139,7 @@ def main():
         ('runtime.binary.ctpl',     'runtime.operations.hpp', datasets['runtime.binary']),
         ('runtime.binary.bool.ctpl','runtime.operations.hpp', datasets['runtime.binary.bool']),
         ('runtime.unary.ctpl',      'runtime.operations.hpp', datasets['runtime.unary']),
+        ('runtime.unary.bool.ctpl', 'runtime.operations.hpp', datasets['runtime.unary.bool']),
         ('runtime.zero.ctpl',       'runtime.operations.hpp', datasets['runtime.zero']),
         ('runtime.random.ctpl',     'runtime.operations.hpp', datasets['runtime.random']),
         ('runtime.accumulate.ctpl', 'runtime.operations.hpp', datasets['runtime.accumulate']),
