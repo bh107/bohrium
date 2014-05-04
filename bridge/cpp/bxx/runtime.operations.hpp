@@ -5895,7 +5895,7 @@ multi_array<T>& bh_random (multi_array<T>& res, uint64_t in1, uint64_t in2)
 template <typename T>
 multi_array<T>& bh_add_accumulate (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_ADD_ACCUMULATE, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD_ACCUMULATE, T, T, int64_t>();
 
     // Check axis
     if (rhs<0) {
@@ -5915,7 +5915,7 @@ multi_array<T>& bh_add_accumulate (multi_array<T>& res, multi_array<T> &lhs, int
 template <typename T>
 multi_array<T>& bh_add_accumulate (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_ADD_ACCUMULATE, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD_ACCUMULATE, T, T, int64_t>();
 
     // Check axis
     if (rhs<0) {
@@ -5938,7 +5938,7 @@ multi_array<T>& bh_add_accumulate (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_multiply_accumulate (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_MULTIPLY_ACCUMULATE, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY_ACCUMULATE, T, T, int64_t>();
 
     // Check axis
     if (rhs<0) {
@@ -5958,7 +5958,7 @@ multi_array<T>& bh_multiply_accumulate (multi_array<T>& res, multi_array<T> &lhs
 template <typename T>
 multi_array<T>& bh_multiply_accumulate (multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_MULTIPLY_ACCUMULATE, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY_ACCUMULATE, T, T, int64_t>();
 
     // Check axis
     if (rhs<0) {
@@ -5983,7 +5983,8 @@ multi_array<T>& bh_multiply_accumulate (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_add_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_ADD_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_ADD_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -5992,9 +5993,6 @@ multi_array<T>& bh_add_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_ADD_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6004,7 +6002,7 @@ template <typename T>
 multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_ADD_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_ADD_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6044,7 +6042,8 @@ multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_multiply_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_MULTIPLY_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_MULTIPLY_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6053,9 +6052,6 @@ multi_array<T>& bh_multiply_reduce (multi_array<T>& res, multi_array<T> &lhs, in
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6065,7 +6061,7 @@ template <typename T>
 multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_MULTIPLY_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_MULTIPLY_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6105,7 +6101,8 @@ multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_minimum_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_MINIMUM_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_MINIMUM_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6114,9 +6111,6 @@ multi_array<T>& bh_minimum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6126,7 +6120,7 @@ template <typename T>
 multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_MINIMUM_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_MINIMUM_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6166,7 +6160,8 @@ multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_maximum_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_MAXIMUM_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_MAXIMUM_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6175,9 +6170,6 @@ multi_array<T>& bh_maximum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6187,7 +6179,7 @@ template <typename T>
 multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_MAXIMUM_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_MAXIMUM_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6227,7 +6219,8 @@ multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_logical_and_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_LOGICAL_AND_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_LOGICAL_AND_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6236,9 +6229,6 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6248,7 +6238,7 @@ template <typename T>
 multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_LOGICAL_AND_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_AND_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6288,7 +6278,8 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_logical_or_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_LOGICAL_OR_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_LOGICAL_OR_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6297,9 +6288,6 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6309,7 +6297,7 @@ template <typename T>
 multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_LOGICAL_OR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_OR_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6349,7 +6337,8 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_logical_xor_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_LOGICAL_XOR_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_LOGICAL_XOR_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6358,9 +6347,6 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6370,7 +6356,7 @@ template <typename T>
 multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_LOGICAL_XOR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_LOGICAL_XOR_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6410,7 +6396,8 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_and_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_BITWISE_AND_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_BITWISE_AND_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6419,9 +6406,6 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6431,7 +6415,7 @@ template <typename T>
 multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_BITWISE_AND_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_AND_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6471,7 +6455,8 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_or_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_BITWISE_OR_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_BITWISE_OR_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6480,9 +6465,6 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6492,7 +6474,7 @@ template <typename T>
 multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_BITWISE_OR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_OR_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6532,7 +6514,8 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& bh_bitwise_xor_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<BH_BITWISE_XOR_REDUCE, T, T, T>();
+    // TODO: Shape-check
+    Runtime::instance().typecheck<BH_BITWISE_XOR_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -6541,9 +6524,6 @@ multi_array<T>& bh_bitwise_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR_REDUCE, res, lhs, rhs);
 
     return res;
@@ -6553,7 +6533,7 @@ template <typename T>
 multi_array<T>& bh_bitwise_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 {
     // TODO: Shape-check
-    Runtime::instance().typecheck<BH_BITWISE_XOR_REDUCE, T, T, T>();
+    Runtime::instance().typecheck<BH_BITWISE_XOR_REDUCE, T, T, int64_t>();
 
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
