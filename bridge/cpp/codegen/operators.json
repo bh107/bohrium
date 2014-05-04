@@ -217,6 +217,10 @@
 
 ["bh_range",    "BH_RANGE",     "runtime.zero", true],
 
-["bh_random",   "BH_RANDOM",    "runtime.random", true]
+["bh_random",   "BH_RANDOM",    "runtime.random", true],
+
+["bh_free",     "BH_FREE",      "runtime.zero", true],
+["bh_sync",     "BH_SYNC",      "runtime.zero", true],
+["bh_discard",  "BH_DISCARD",   "runtime.zero", true]
 
 ]

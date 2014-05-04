@@ -91,7 +91,42 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, int64_t axis)
     }
     result->link();                         // Bind the base
 
-    Runtime::instance().enqueue(reducible_to_opcode(opcode), *result, op, (bh_int64)axis);
+    switch(opcode) {
+        case ADD:
+            bh_add_reduce(*result, op, (bh_int64)axis);
+            break;
+
+        case MULTIPLY:
+            bh_multiply_reduce(*result, op, (bh_int64)axis);
+            break;
+        case MIN:
+            bh_minimum_reduce(*result, op, (bh_int64)axis);
+            break;
+        case MAX:
+            bh_maximum_reduce(*result, op, (bh_int64)axis);
+            break;
+        case LOGICAL_AND:
+            bh_logical_and_reduce(*result, op, (bh_int64)axis);
+            break;
+        case LOGICAL_OR:
+            bh_logical_or_reduce(*result, op, (bh_int64)axis);
+            break;
+        case LOGICAL_XOR:
+            bh_logical_xor_reduce(*result, op, (bh_int64)axis);
+            break;
+        case BITWISE_AND:
+            bh_bitwise_and_reduce(*result, op, (bh_int64)axis);
+            break;
+        case BITWISE_OR:
+            bh_bitwise_or_reduce(*result, op, (bh_int64)axis);
+            break;
+        case BITWISE_XOR:
+            bh_bitwise_xor_reduce(*result, op, (bh_int64)axis);
+            break;
+
+        default:
+            throw std::runtime_error("Error: Unsupported opcode for reduction.\n");
+    }
 
     return *result;
 }

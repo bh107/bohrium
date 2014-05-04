@@ -29,6 +29,7 @@ multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<$opcode, T, T, T>();
 
     if (rhs<0) {
@@ -60,9 +61,6 @@ multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
 
     return *result;

@@ -77,9 +77,9 @@ def main():
     
     datasets = {}
     for name, opcode, t, mapped in (x for x in operators if x[3]):
-        code = [x for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
+        code = [x for x in opcodes if x['opcode'] == opcode ]
 
-        typesigs = [x["types"] for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
+        typesigs = [x["types"] for x in opcodes if x['opcode'] == opcode]
         typesigs = typesigs[0] if typesigs else []
         
         new_typesigs = []

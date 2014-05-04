@@ -5854,6 +5854,30 @@ multi_array<T>& bh_range (multi_array<T>& res)
 }
 
 
+template <typename T>
+multi_array<T>& bh_free (multi_array<T>& res)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_FREE, res);
+    return res;
+}
+
+
+template <typename T>
+multi_array<T>& bh_sync (multi_array<T>& res)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_SYNC, res);
+    return res;
+}
+
+
+template <typename T>
+multi_array<T>& bh_discard (multi_array<T>& res)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_DISCARD, res);
+    return res;
+}
+
+
 
 
 template <typename T>
@@ -5979,6 +6003,7 @@ multi_array<T>& bh_add_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t
 template <typename T>
 multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_ADD_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6010,9 +6035,6 @@ multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_ADD_REDUCE, *result, lhs, rhs);
 
     return *result;
@@ -6042,6 +6064,7 @@ multi_array<T>& bh_multiply_reduce (multi_array<T>& res, multi_array<T> &lhs, in
 template <typename T>
 multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_MULTIPLY_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6073,9 +6096,6 @@ multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY_REDUCE, *result, lhs, rhs);
 
     return *result;
@@ -6105,6 +6125,7 @@ multi_array<T>& bh_minimum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
 template <typename T>
 multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_MINIMUM_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6136,9 +6157,6 @@ multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM_REDUCE, *result, lhs, rhs);
 
     return *result;
@@ -6168,6 +6186,7 @@ multi_array<T>& bh_maximum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
 template <typename T>
 multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_MAXIMUM_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6199,9 +6218,6 @@ multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM_REDUCE, *result, lhs, rhs);
 
     return *result;
@@ -6231,6 +6247,7 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
 template <typename T>
 multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_LOGICAL_AND_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6262,9 +6279,6 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND_REDUCE, *result, lhs, rhs);
 
     return *result;
@@ -6294,6 +6308,7 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
 template <typename T>
 multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_LOGICAL_OR_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6325,9 +6340,6 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR_REDUCE, *result, lhs, rhs);
 
     return *result;
@@ -6357,6 +6369,7 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
 template <typename T>
 multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_LOGICAL_XOR_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6388,9 +6401,6 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR_REDUCE, *result, lhs, rhs);
 
     return *result;
@@ -6420,6 +6430,7 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
 template <typename T>
 multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_BITWISE_AND_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6451,9 +6462,6 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND_REDUCE, *result, lhs, rhs);
 
     return *result;
@@ -6483,6 +6491,7 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
 template <typename T>
 multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_BITWISE_OR_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6514,9 +6523,6 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR_REDUCE, *result, lhs, rhs);
 
     return *result;
@@ -6546,6 +6552,7 @@ multi_array<T>& bh_bitwise_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
 template <typename T>
 multi_array<T>& bh_bitwise_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
     Runtime::instance().typecheck<BH_BITWISE_XOR_REDUCE, T, T, T>();
 
     if (rhs<0) {
@@ -6577,9 +6584,6 @@ multi_array<T>& bh_bitwise_xor_reduce (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR_REDUCE, *result, lhs, rhs);
 
     return *result;
