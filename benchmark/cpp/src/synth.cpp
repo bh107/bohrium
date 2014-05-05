@@ -160,7 +160,8 @@ int main(int argc, char* argv[])
     bh_intp start = sample_time();
     //multi_array<double> res = compute_K72_1a<double>(args.size[0], args.size[1]);
     //multi_array<float>  res = compute_K72_1a<float>(args.size[0], args.size[1]);
-    multi_array<float>  res = compute_12_1a<float>(args.size[0], args.size[1]);
+    //multi_array<float>  res = compute_12_1a<float>(args.size[0], args.size[1]);
+    multi_array<double>  res = compute_12_1a<double>(args.size[0], args.size[1]);
     Runtime::instance().flush();
                                         // Output timing
     cout << "{elapsed-time: "<< (sample_time()-start)/1000000.0 <<"";
