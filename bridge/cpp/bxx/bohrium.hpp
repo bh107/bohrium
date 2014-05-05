@@ -36,7 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DEBUG_PRINT(...) do{ } while ( false )
 #endif
 
-namespace bh {
+namespace bxx {
 
 const double PI_D = 3.141592653589793238462;
 const float  PI_F = 3.14159265358979f;
@@ -109,7 +109,7 @@ public:
     multi_array<T>& operator=(T rhs);
 
     // Create a actual view of the slice
-    bh::multi_array<T>& view();
+    bxx::multi_array<T>& view();
 
 private:
     multi_array<T>* op;                 // The op getting sliced
@@ -245,47 +245,32 @@ private:
 class Runtime {
 public:
     static Runtime& instance(); // Singleton method
-    ~Runtime();                 // Deconstructor
 
-                            // Input and output are of the same type
+    ~Runtime();         // Deconstructor
 
-    template <typename T>   // SYS: FREE, SYNC, DISCARD;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0);
+    //
+    //  Lazy evaluation through instruction queue
+    //
+    template <typename Out, typename In1, typename In2>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, multi_array<In2>& op2);
+    
+    template <typename Out, typename In1, typename In2>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, const In2 op2);
+    
+    template <typename Out, typename In1, typename In2>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const In1 op1, multi_array<In2>& op2);
 
-    template <typename T>   // x = y + z
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, multi_array<T> & op2);
+    template <typename Out, typename In>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In>& op1);
 
-    template <typename T>   // x = y + 1;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1, const T& op2);
+    template <typename Out, typename In>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const In op1);
 
-    template <typename T>   // x = 1 + y;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1, multi_array<T> & op2);
+    template <typename Out>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0);
 
-    template <typename T>   // x = 1 + y;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, const uint64_t op1, const uint64_t op2);
-
-    template <typename T>   // x = y;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, multi_array<T> & op1);
-
-    template <typename T>   // x = 1.0;
-    void enqueue(bh_opcode opcode, multi_array<T>& op0, const T& op1);
-
-                                            // Same input but different output type
-    template <typename Ret, typename In>    // x = y;
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1);
-
-    template <typename Ret, typename In>    // x = y < z
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, multi_array<In>& op2);
-
-    template <typename Ret, typename In>    // x = y < 1;
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<In>& op1, const In& op2);
-
-    template <typename Ret, typename In>    // x = 1 < y;
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, const In& op1, multi_array<In>& op2);
-
-                                            // Mixed input, ret is same as first operand
-    template <typename Ret, typename In>    // pow(...,2), reduce(..., 2)
-    void enqueue(bh_opcode opcode, multi_array<Ret>& op0, multi_array<Ret>& op1, const In& op2);
+    template <typename Out>
+    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const uint64_t op1, const uint64_t op2);
 
     template <typename Ret, typename In1, typename In2>
     void enqueue_extension(const std::string& name, multi_array<Ret>& op0, multi_array<In1>& op2, multi_array<In2>& op3);
@@ -293,6 +278,21 @@ public:
     size_t flush();
     size_t get_queue_size();
 
+    //
+    //  Typechecker
+    //
+    template <size_t Opcode, typename Out, typename In1, typename In2>
+    void typecheck(void);
+
+    template <size_t Opcode, typename Out, typename In1>
+    void typecheck(void);
+
+    template <size_t Opcode, typename Out>
+    void typecheck(void);   
+
+    //
+    //  Operand construction
+    //
     template <typename T>
     multi_array<T>& op();
 
@@ -318,6 +318,7 @@ private:
     std::map<std::string, bh_opcode> extensions;// Register of extensions
     size_t extension_count;
 
+
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     size_t          ext_in_queue;
     size_t          queue_size;
@@ -338,87 +339,21 @@ private:
 
 };
 
-template <typename T>       // Generators / Initializers
-multi_array<T>& value(T val, size_t n, ...);
-
-template <typename T>
-multi_array<T>& empty(size_t n, ...);
-
-template <typename T>
-multi_array<T>& zeros(size_t n, ...);
-
-template <typename T>
-multi_array<T>& ones(size_t n, ...);
-
-template <typename T, typename ...Dimensions>
-multi_array<T>& random(const Dimensions&... shape);
-
-template <typename T>
-multi_array<T>& randu(size_t n, ...);
-
-                            // REDUCTIONS
-template <typename T>       // Partial
-multi_array<T>& reduce(multi_array<T>& op, reducible opc, int64_t axis);
-                            // FULL
-template <typename T>       // Numeric
-multi_array<T>& sum(multi_array<T>& op);
-
-template <typename T>
-multi_array<T>& product(multi_array<T>& op);
-
-template <typename T>
-multi_array<T>& min(multi_array<T>& op);
-
-template <typename T>       // Boolean
-multi_array<T>& max(multi_array<T>& op);
-
-template <typename T>
-multi_array<bool>& any(multi_array<T>& op);
-
-template <typename T>
-multi_array<bool>& all(multi_array<T>& op);
-
-template <typename T>       // Mixed...
-multi_array<size_t>& count(multi_array<T>& op);
-
-template <typename T>       // Scan (prefix sum and product)
-multi_array<T>& scan(multi_array<T>& op, scannable opc, size_t axis);
-
-template <typename T>       // Turn the result of full reduction into a scalar
-T scalar(multi_array<T>& op);
-
-template <typename T, typename FromT>     // Typecast; implicit copy
-multi_array<T>& as(multi_array<FromT>& rhs);
-
-template <typename T, typename ...Dimensions>   //
-multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape);
-                            //
-                            // What are these called? Transformers??? :)
-                            //
-template <typename T>
-multi_array<T>& copy(multi_array<T>& rhs);     // Explicity create a copy of array
-
-template <typename T>
-multi_array<T>& flatten(multi_array<T>& rhs);  // Create a flat copy of the array
-
-template <typename T>
-multi_array<T>& transpose(multi_array<T>& rhs);
-
-template <typename T>
-void pprint(multi_array<T>& op);
 }
 
 #include "multi_array.hpp"  // Operand definition.
-#include "broadcast.hpp"    // Operand manipulations.
 #include "slicing.hpp"      // Operand slicing / explicit views / aliases
-#include "runtime.hpp"      // Communication with Bohrium runtime
-#include "reduction.hpp"            // DSEL Reduction
-#include "scan.hpp"                 // DSEL Scan operation
-#include "generator.hpp"            // DSEL Generators 
 
-#include "operators.hpp"            // DSEL Operations via operator-overloads.
-#include "functions.hpp"            // DSEL Operations via functions.
-#include "functions.bytecode.hpp"   // Functions directly mapping to bytecode.
+#include "runtime.hpp"              // Communication with Bohrium runtime
+#include "runtime.broadcast.hpp"    // Operand broadcasting
+#include "runtime.typechecker.hpp"  // Array operations - typechecker
+#include "runtime.operations.hpp"   // Array operations
+
+#include "reduction.hpp"    // DSEL Reduction
+#include "scan.hpp"         // DSEL Scan operation
+#include "generator.hpp"    // DSEL Generators 
+
+#include "operators.hpp"    // DSEL Operations via operator-overloads.
 #include "sugar.hpp"        // DSEL Additional sugar...
 
 #endif

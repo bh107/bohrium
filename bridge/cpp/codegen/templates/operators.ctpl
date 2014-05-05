@@ -11,7 +11,7 @@ directiveStartToken = %
 #define __BOHRIUM_BRIDGE_CPP_OPERATORS
 #include "bh.h"
 
-namespace bh {
+namespace bxx {
 %include "codegen/templates/operators_int.ctpl"
 %include "codegen/templates/operators_ext.ctpl"
 }

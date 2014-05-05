@@ -2,7 +2,7 @@ INSTALLDIR?=/opt/bohrium/
 
 gen:
 	./codegen/gen.py
-	cp -p codegen/output/*.hpp bh/.
+	cp -p codegen/output/*.hpp bxx/.
 	rm -f codegen/output/*.hpp
 	@-(echo 'Bytecode based autogeneration is done.')
 

@@ -13,7 +13,7 @@ directiveStartToken = %
 #include "bh_c_type_definitions.hpp"
 #include <bh.h>
 
-using namespace bh;
+using namespace bxx;
 
 // Common runtime methods
 void bh_runtime_flush() {
@@ -161,7 +161,11 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(uint64_t size)
 %if $bh_ctype == "uint64"
 // Construct a new random-filled array using Random123
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random123(uint64_t length, uint64_t start, uint64_t key) {
-    return (bh_multi_array_${bh_ctype}_p)&(random123<${ctype}>(length, start, key));
+    multi_array<${ctype}> *result = new multi_array<${ctype}>(length);
+    result->setTemp(true);
+    result->link();
+
+    return (bh_multi_array_${bh_ctype}_p)&(bh_random<${ctype}>(*result, start, key));
 }
 %end if
 
@@ -306,11 +310,11 @@ ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self) {
 %if $bh_atype == "bh_complex64"
 
 bh_multi_array_float32_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self) {
-    return (bh_multi_array_float32_p)&(real<${ctype}, float>(*((multi_array<${ctype}>*)self)));
+    return (bh_multi_array_float32_p)&(real(*((multi_array<${ctype}>*)self)));
 }
 
 bh_multi_array_float32_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self) {
-    return (bh_multi_array_float32_p)&(imag<${ctype}, float>(*((multi_array<${ctype}>*)self)));
+    return (bh_multi_array_float32_p)&(imag(*((multi_array<${ctype}>*)self)));
 }
 
 %end if
@@ -318,11 +322,11 @@ bh_multi_array_float32_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_cty
 %if $bh_atype == "bh_complex128"
 
 bh_multi_array_float64_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self) {
-    return (bh_multi_array_float64_p)&(real<${ctype}, double>(*((multi_array<${ctype}>*)self)));
+    return (bh_multi_array_float64_p)&(real(*((multi_array<${ctype}>*)self)));
 }
 
 bh_multi_array_float64_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self) {
-    return (bh_multi_array_float64_p)&(imag<${ctype}, double>(*((multi_array<${ctype}>*)self)));
+    return (bh_multi_array_float64_p)&(imag(*((multi_array<${ctype}>*)self)));
 }
 
 %end if

@@ -20,46 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_REDUCTION
 #define __BOHRIUM_BRIDGE_CPP_REDUCTION
 
-namespace bh {
-
-inline bh_opcode reducible_to_opcode(reducible opcode)
-{
-    switch(opcode) {
-        case ADD:
-            return BH_ADD_REDUCE;
-            break;
-        case MULTIPLY:
-            return BH_MULTIPLY_REDUCE;
-            break;
-        case MIN:
-            return BH_MINIMUM_REDUCE;
-            break;
-        case MAX:
-            return BH_MAXIMUM_REDUCE;
-            break;
-        case LOGICAL_AND:
-            return BH_LOGICAL_AND_REDUCE;
-            break;
-        case LOGICAL_OR:
-            return BH_LOGICAL_OR_REDUCE;
-            break;
-        case LOGICAL_XOR:
-            return BH_LOGICAL_XOR_REDUCE;
-            break;
-        case BITWISE_AND:
-            return BH_BITWISE_AND_REDUCE;
-            break;
-        case BITWISE_OR:
-            return BH_BITWISE_OR_REDUCE;
-            break;
-        case BITWISE_XOR:
-            return BH_BITWISE_XOR_REDUCE;
-            break;
-
-        default:
-            throw std::runtime_error("Error: Unsupported opcode for reduction.\n");
-    }
-}
+namespace bxx {
 
 template <typename T>
 multi_array<T>& reduce(multi_array<T>& op, reducible opcode, int64_t axis)
@@ -91,7 +52,42 @@ multi_array<T>& reduce(multi_array<T>& op, reducible opcode, int64_t axis)
     }
     result->link();                         // Bind the base
 
-    Runtime::instance().enqueue(reducible_to_opcode(opcode), *result, op, (bh_int64)axis);
+    switch(opcode) {
+        case ADD:
+            bh_add_reduce(*result, op, (bh_int64)axis);
+            break;
+
+        case MULTIPLY:
+            bh_multiply_reduce(*result, op, (bh_int64)axis);
+            break;
+        case MIN:
+            bh_minimum_reduce(*result, op, (bh_int64)axis);
+            break;
+        case MAX:
+            bh_maximum_reduce(*result, op, (bh_int64)axis);
+            break;
+        case LOGICAL_AND:
+            bh_logical_and_reduce(*result, op, (bh_int64)axis);
+            break;
+        case LOGICAL_OR:
+            bh_logical_or_reduce(*result, op, (bh_int64)axis);
+            break;
+        case LOGICAL_XOR:
+            bh_logical_xor_reduce(*result, op, (bh_int64)axis);
+            break;
+        case BITWISE_AND:
+            bh_bitwise_and_reduce(*result, op, (bh_int64)axis);
+            break;
+        case BITWISE_OR:
+            bh_bitwise_or_reduce(*result, op, (bh_int64)axis);
+            break;
+        case BITWISE_XOR:
+            bh_bitwise_xor_reduce(*result, op, (bh_int64)axis);
+            break;
+
+        default:
+            throw std::runtime_error("Error: Unsupported opcode for reduction.\n");
+    }
 
     return *result;
 }

@@ -7,16 +7,9 @@ directiveStartToken = %
 
 %include raw "codegen/templates/warn.txt"
 
-#ifndef __BOHRIUM_BRIDGE_CPP_TRAITS
-#define __BOHRIUM_BRIDGE_CPP_TRAITS
+#ifndef __BOHRIUM_BRIDGE_CPP_OPERATORS
+#define __BOHRIUM_BRIDGE_CPP_OPERATORS
 #include "bh.h"
 
 namespace bxx {
-
-%include "codegen/templates/traits.const.ctpl"
-%include "codegen/templates/traits.array.ctpl"
-
-}
-
-#endif
 

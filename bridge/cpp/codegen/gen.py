@@ -73,17 +73,19 @@ def main():
         if t[1] > mtime:
             mtime = t[1]
 
-    op_map  = []
+    op_map = []
+    
+    datasets = {}
     for name, opcode, t, mapped in (x for x in operators if x[3]):
-        code = [x for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
+        code = [x for x in opcodes if x['opcode'] == opcode ]
 
-        typesigs = [x["types"] for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
+        typesigs = [x["types"] for x in opcodes if x['opcode'] == opcode]
         typesigs = typesigs[0] if typesigs else []
         
         new_typesigs = []
         for ttt in typesigs:
-            sig = [map_type(typesig,types)  for typesig in ttt]
-            new_typesigs.append(sig)
+            sig = [map_type(typesig, types) for typesig in ttt]
+            new_typesigs.append(tuple(sig))
 
         typesigs = new_typesigs
 
@@ -96,14 +98,53 @@ def main():
         else:
             print "The Bohrium opcodes no longer include [ %s ]." % opcode
             continue
+        
+        foo = (name, opcode, t, nop, typesigs)
+        op_map.append(foo)
+        if t in datasets:
+            datasets[t].append(foo)
+        else:
+            datasets[t] = [foo]
+    op_map.sort()
 
-        op_map.append((name, opcode, t, nop, typesigs))
+    # Generate data for generation of type-checker.
+    enums = set()
+    checker = []
+    for op in op_map:
+        fun, enum, template, nop, typesigs = op        
+
+        if enum == "BH_RANDOM":
+            nop = 3
+            typesigs = [(u'uint64_t', u'uint64_t', u'uint64_t')]
+            op = (fun, enum, template, nop, typesigs)
+
+        if enum not in enums:
+            checker.append(op)
+            enums.add(enum)
 
     gens = [
         ('traits.ctpl',     'traits.hpp',    types),
-        ('functions.ctpl',  'functions.hpp', op_map),
-        ('bytecode.ctpl',   'functions.bytecode.hpp', op_map),
-        ('operators.ctpl',  'operators.hpp', op_map),
+
+        ('operators.header.ctpl',   'operators.hpp', datasets['sugar.binary']),
+        ('sugar.int.binary.ctpl',   'operators.hpp', datasets['sugar.int.binary']),
+        ('sugar.binary.ctpl',       'operators.hpp', datasets['sugar.binary']),
+        ('sugar.binary.bool.ctpl',  'operators.hpp', datasets['sugar.binary.bool']),
+        ('sugar.unary.ctpl',        'operators.hpp', datasets['sugar.unary']),
+        ('sugar.unary.bool.ctpl',   'operators.hpp', datasets['sugar.unary.bool']),
+        ('operators.footer.ctpl',   'operators.hpp', datasets['sugar.unary']),
+
+        ('runtime.typechecker.ctpl', 'runtime.typechecker.hpp', checker),
+
+        ('runtime.header.ctpl',     'runtime.operations.hpp', datasets['runtime.binary']),
+        ('runtime.binary.ctpl',     'runtime.operations.hpp', datasets['runtime.binary']),
+        ('runtime.binary.bool.ctpl','runtime.operations.hpp', datasets['runtime.binary.bool']),
+        ('runtime.unary.ctpl',      'runtime.operations.hpp', datasets['runtime.unary']),
+        ('runtime.unary.bool.ctpl', 'runtime.operations.hpp', datasets['runtime.unary.bool']),
+        ('runtime.zero.ctpl',       'runtime.operations.hpp', datasets['runtime.zero']),
+        ('runtime.random.ctpl',     'runtime.operations.hpp', datasets['runtime.random']),
+        ('runtime.accumulate.ctpl', 'runtime.operations.hpp', datasets['runtime.accumulate']),
+        ('runtime.reduce.ctpl',     'runtime.operations.hpp', datasets['runtime.reduce']),
+        ('runtime.footer.ctpl',     'runtime.operations.hpp', datasets['runtime.reduce']),
     ]
 
     render( gens, tmpl_dir, output_dir, mtime )

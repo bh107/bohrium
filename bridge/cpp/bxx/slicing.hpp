@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_SLICING
 #define __BOHRIUM_BRIDGE_CPP_SLICING
 
-namespace bh {
+namespace bxx {
 
 inline slice_range::slice_range() : begin(0), end(-1), stride(1) {}
 inline slice_range::slice_range(int begin, int end, size_t stride) : begin(begin), end(end), stride(stride), inclusive_end(false) {}
@@ -92,7 +92,7 @@ multi_array<T>& slice<T>::operator=(T rhs)
  *  Materialize the view based on the list of slice_ranges.
  */
 template <typename T>
-bh::multi_array<T>& slice<T>::view()
+bxx::multi_array<T>& slice<T>::view()
 {
     multi_array<T>* lhs = &Runtime::instance().temp_view(*op);
 

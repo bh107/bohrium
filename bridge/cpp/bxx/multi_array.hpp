@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "runtime.hpp"
 #include <sstream>
 
-namespace bh {
+namespace bxx {
 
 //
 //
@@ -120,8 +120,8 @@ template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
     if (base) {
-        Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
-        Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
+        bh_free(*this);
+        bh_discard(*this);
         Runtime::instance().trash(base);
     }
 }
@@ -169,7 +169,7 @@ int64_t multi_array<T>::shape(int64_t dim)
 template <typename T>
 void multi_array<T>::sync()
 {
-    Runtime::instance().enqueue((bh_opcode)BH_SYNC, *this);
+    bh_sync(*this);
     Runtime::instance().flush();
 }
 
@@ -195,8 +195,7 @@ multi_array<T>& multi_array<T>::operator++()
     if (!this->initialized()) {
         throw std::runtime_error("Err: Increment of a unintialized operand.");
     }
-
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *this, *this, (T)1);
+    bh_add(*this, *this, (T)1);
     return *this;
 }
 
@@ -207,7 +206,7 @@ multi_array<T>& multi_array<T>::operator++(int)
         throw std::runtime_error("Err: Increment of a unintialized operand.");
     }
 
-    Runtime::instance().enqueue((bh_opcode)BH_ADD, *this, *this, (T)1);
+    bh_add(*this, *this, (T)1);
     return *this;
 }
 
@@ -218,7 +217,7 @@ multi_array<T>& multi_array<T>::operator--()
         throw std::runtime_error("Err: Decrement of a unintialized operand.");
     }
 
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *this, *this, (T)1);
+    bh_subtract(*this, *this, (T)1);
     return *this;
 }
 
@@ -229,7 +228,7 @@ multi_array<T>& multi_array<T>::operator--(int)
         throw std::runtime_error("Err: Decrement of a unintialized operand.");
     }
 
-    Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *this, *this, (T)1);
+    bh_subtract(*this, *this, (T)1);
     return *this;
 }
 
@@ -300,8 +299,8 @@ multi_array<T>& multi_array<T>::operator=(const T& rhs)
             throw std::runtime_error("Err: cannot assign to an uninitialized operand.");
         }
     }
-
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
+    
+    bh_identity(*this, rhs);
     return *this;
 }
 
@@ -391,8 +390,8 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     }
 
     if (base) {
-        Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
-        Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
+        bh_free(*this);
+        bh_discard(*this);
         Runtime::instance().trash(base);
         unlink();
     }
@@ -421,8 +420,8 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
 {
     if (base) {
-        Runtime::instance().enqueue((bh_opcode)BH_FREE, *this);
-        Runtime::instance().enqueue((bh_opcode)BH_DISCARD, *this);
+        bh_free(*this);
+        bh_discard(*this);
         Runtime::instance().trash(base);
         unlink();
     }
@@ -474,7 +473,7 @@ multi_array<T>& multi_array<T>::operator()(multi_array& rhs)
         throw std::runtime_error("Err: You are trying to update "
                                  "something that does not exist!");
     }
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, rhs);
+    bh_identity(*this, rhs);
 
     return *this;
 }
@@ -486,7 +485,7 @@ multi_array<T>& multi_array<T>::operator()(const T& value) {
         throw std::runtime_error("Err: You are trying to update "
                                  "something that does not exist!");
     }
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *this, value);
+    bh_identity(*this, value);
 
     return *this;
 }
@@ -521,8 +520,8 @@ multi_array<T>& as(multi_array<FromT>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>(rhs);
     result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+    
+    bh_identity(*result, rhs);
 
     return *result;
 }
@@ -539,7 +538,7 @@ multi_array<T>& copy(multi_array<T>& rhs)
     multi_array<T>* result = &Runtime::instance().temp<T>(rhs);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+    bh_identity(*result, rhs);
 
     return *result;
 }

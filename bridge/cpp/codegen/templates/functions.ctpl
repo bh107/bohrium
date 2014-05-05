@@ -11,7 +11,7 @@ directiveStartToken = %
 #define __BOHRIUM_BRIDGE_CPP_FUNCTIONS
 #include "bh.h"
 
-namespace bh {
+namespace bxx {
 %slurp
 
 %for $op, $opcode, $optype, $opcount, $typesigs in $data

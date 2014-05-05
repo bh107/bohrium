@@ -17,12 +17,12 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <iostream>
-#include <complex>
 #include <bxx/bohrium.hpp>
 
-using namespace bh;
-using namespace std;
+#include <iostream>
+#include <complex>
+
+using namespace bxx;
 
 template <typename T>
 void complex_ones()
@@ -120,11 +120,14 @@ void compute()
     cout << c << endl;
 
     */
-    multi_array<float> a, b, c;
-    a = ones<float>(2,2);
-    b = ones<float>(1,2);
-    a += b;
-    cout << a << endl;
+    multi_array<float> x, y;
+    multi_array<float> z;
+    x = ones<float>(10);
+    y = ones<float>(10);
+    z = ones<float>(10);
+
+    std::cout << x+y+z << std::endl;
+
 }
 
 int main()

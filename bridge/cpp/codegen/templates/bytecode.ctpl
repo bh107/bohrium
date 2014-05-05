@@ -11,7 +11,7 @@ directiveStartToken = %
 #define __BOHRIUM_BRIDGE_CPP_BYTECODE_FUNCTIONS
 #include "bh.h"
 
-namespace bh {
+namespace bxx {
 %slurp
 
 %for $op, $opcode, $optype, $opcount, $typesigs in $data
@@ -22,10 +22,30 @@ template <typename T>
 multi_array<T>& $op (multi_array<T> res, multi_array<T> &rhs)
 {
     multi_array<T>* right = &rhs;
-
-    if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes.");
+    
+    //
+    // We cannot perform the operation since we cannot broadcast *this                                        
+    if (res.getRank() < right->getRank()) {
+        std::stringstream s;
+        s << "Incompatible shapes " << "$op: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
+        throw std::runtime_error(s.str());
     }
+
+    //
+    // Broadcast
+    if (!same_shape(res, *right)) {
+        right = &Runtime::instance().temp_view(rhs);
+        
+        if (!broadcast_right(res, *right)) {
+            throw std::runtime_error("Right-handside is not broadcastable.");
+        }
+        //
+        // Re-check compatibility
+        if (!same_shape(res, *right)) {
+            throw std::runtime_error("Incompatable shapes, even after broadcast.");
+        }
+    }
+
     Runtime::instance().enqueue((bh_opcode)$opcode, res, *right);
     return res;
 }
@@ -53,9 +73,9 @@ multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, multi_array<T> &r
         }
     }
 
-    // Check that broadcast is usefull
+    // Check that operand is compatible with the output
     if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes.");
+        throw std::runtime_error("Incompatible shapes of output and input.");
     }
 
     Runtime::instance().enqueue((bh_opcode)$opcode, res, *left, *right);

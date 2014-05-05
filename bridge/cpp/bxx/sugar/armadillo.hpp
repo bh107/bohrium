@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __BOHRIUM_BRIDGE_CPP_ARMADILLO
 #define __BOHRIUM_BRIDGE_CPP_ARMADILLO
-namespace bh {
+namespace bxx {
 
 typedef multi_array<double> vec;
 typedef multi_array<float> fvec;

@@ -8,7 +8,7 @@ directiveStartToken = %
 #include <bh_c_data_types.h>
 #include <bh_c_interface.h>
 
-using namespace bh;
+using namespace bxx;
 
 // Common slice range
 struct bh_slice_range {

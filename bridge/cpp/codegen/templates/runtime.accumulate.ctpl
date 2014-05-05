@@ -1,0 +1,52 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+
+%for $op, $opcode, $optype, $opcount, $typesigs in $data
+
+template <typename T>
+multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
+{
+    Runtime::instance().typecheck<$opcode, T, T, int64_t>();
+
+    // Check axis
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+    // TODO:
+    //  * shape-check
+    //  * type-check
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
+
+    return res;
+}
+
+template <typename T>
+multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
+{
+    Runtime::instance().typecheck<$opcode, T, T, int64_t>();
+
+    // Check axis
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+
+    // Construct result array
+    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
+    result->link();
+
+    Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+
+    return *result;
+}
+
+%end for
+

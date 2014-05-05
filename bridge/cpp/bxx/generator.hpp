@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BOHRIUM_BRIDGE_CPP_GENERATOR
 #define __BOHRIUM_BRIDGE_CPP_GENERATOR
 
-namespace bh {
+namespace bxx {
 
 template <typename T, typename ...Dimensions>
 multi_array<T>& value(T val, const Dimensions&... shape)
@@ -73,20 +73,6 @@ multi_array<T>& zeros(const Dimensions&... shape)
 //
 
 //
-// Directly mapped to bytecode
-template <typename T>
-multi_array<T>& random123(uint64_t nelem, uint64_t start, uint64_t key)
-{
-    multi_array<T>* result = new multi_array<T>(nelem);
-    result->link();
-
-    Runtime::instance().enqueue((bh_opcode)BH_RANDOM, *result, start, key);
-    result->setTemp(true);
-
-    return *result;
-}
-
-//
 // Sugar
 template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
@@ -94,7 +80,7 @@ multi_array<T>& random(const Dimensions&... shape)
     multi_array<T>* result = new multi_array<T>(shape...);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_RANDOM, *result, (uint64_t)0, (uint64_t)time(NULL));
+    bh_random(*result, (uint64_t)0, (uint64_t)time(NULL));
     result->setTemp(true);
 
     return *result;
@@ -108,8 +94,9 @@ multi_array<T>& randu(const Dimensions&... shape)
     multi_array<T>* result = new multi_array<T>(shape...);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, *rand_result);
-    Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *result, (T)sizeof(T));
+    bh_identity(*result, *rand_result);
+    bh_divide(*result, *result, (T)sizeof(T));
+
     result->setTemp(true);
 
     return *result;
@@ -128,7 +115,7 @@ multi_array<T>& range(uint64_t nelem)
     multi_array<T>* result = new multi_array<T>(nelem);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_RANGE, *result);
+    bh_range(*result);
 
     result->setTemp(true);
     return *result;
@@ -162,9 +149,9 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
     multi_array<T>* result = new multi_array<T>(nelem);
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_RANGE,    *result);
-    Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *result, (T)skip);
-    Runtime::instance().enqueue((bh_opcode)BH_ADD,      *result, *result, (T)start);
+    bh_range(*result);
+    bh_multiply(*result, *result, (T)skip);
+    bh_add(*result, *result, (T)start);
 
     result->setTemp(true);
     return *result;

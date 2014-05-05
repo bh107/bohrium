@@ -21,26 +21,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP_BROADCAST
 #include "bh.h"
 
-namespace bh {
-
-inline void bh_pprint_shape(int64_t shape[], int64_t len)
-{
-    std::cout << "Shape: ";
-    for(int64_t k=0; k<len; k++) {
-        std::cout << shape[k];
-        if (k<len-1) {
-            std::cout << ", ";
-        }
-    }
-    std::cout << "." << std::endl;
-}
+namespace bxx {
 
 /**
  * Determine whether or not the shapes of the provides operands are the same.
  */
-template <typename T>
+template <typename LT, typename RT>
 inline
-bool same_shape(multi_array<T> & left, multi_array<T> & right)
+bool same_shape(const multi_array<LT> & left, const multi_array<RT> & right)
 {
     bool compatible = left.meta.ndim == right.meta.ndim;
 
@@ -49,6 +37,38 @@ bool same_shape(multi_array<T> & left, multi_array<T> & right)
     }
 
     return compatible;
+}
+
+template <typename LT, typename RT>
+inline
+bool broadcast_right(const multi_array<LT>& left, multi_array<RT>& right)
+{
+    int64_t highest_dim  = left.meta.ndim - 1;
+    int64_t stretch_dims = left.meta.ndim - right.meta.ndim;
+    bool broadcastable   = true;
+
+    if (stretch_dims>0) {       // Stretch the dimensions
+        for(int64_t i=0; i<stretch_dims; i++) {
+            right.meta.shape[highest_dim-i]  = left.meta.shape[highest_dim-i];
+            right.meta.stride[highest_dim-i] = 0;
+        }
+        right.meta.ndim = left.meta.ndim;                 // Set ndim
+    }
+
+    //
+    // Fix the shapes
+    for(int64_t dim_idx=0; (dim_idx <= highest_dim) && (broadcastable); dim_idx++) {
+        broadcastable = ((right.meta.shape[dim_idx] == left.meta.shape[dim_idx]) || \
+                         (right.meta.shape[dim_idx] == 1)
+                        );
+
+        if (right.meta.shape[dim_idx] < left.meta.shape[dim_idx]) {
+            right.meta.shape[dim_idx]   = left.meta.shape[dim_idx];
+            right.meta.stride[dim_idx]  = 0;
+        }
+    }
+
+    return broadcastable;
 }
 
 /**
@@ -60,9 +80,9 @@ bool same_shape(multi_array<T> & left, multi_array<T> & right)
  * @return Whether or not the operand is broadcastable.
  *
  */
-template <typename T>
+template <typename LT, typename HT>
 inline
-bool broadcast(multi_array<T>& lower, multi_array<T>& higher)
+bool broadcast(multi_array<LT>& lower, multi_array<HT>& higher)
 {
     int64_t highest_dim  = higher.meta.ndim - 1;
     int64_t stretch_dims = higher.meta.ndim - lower.meta.ndim;
@@ -96,34 +116,23 @@ bool broadcast(multi_array<T>& lower, multi_array<T>& higher)
     return broadcastable;
 }
 
-template <typename T>
+/**
+ * Broadcast operands.
+ *
+ * @param lower,higher 'lower' much have a rank <= to the rank of 'higher'.
+ *
+ * @return Whether or not the operand is broadcastable.
+ *
+ */
+template <typename OT, typename LT, typename HT>
 inline
-bool broadcast_right(const multi_array<T>& left, multi_array<T>& right)
+bool broadcast(const multi_array<OT>& output, multi_array<LT>& lower, multi_array<HT>& higher)
 {
-    int64_t highest_dim  = left.meta.ndim - 1;
-    int64_t stretch_dims = left.meta.ndim - right.meta.ndim;
-    bool broadcastable   = true;
+    bool broadcastable = true;
 
-    if (stretch_dims>0) {       // Stretch the dimensions
-        for(int64_t i=0; i<stretch_dims; i++) {
-            right.meta.shape[highest_dim-i]  = left.meta.shape[highest_dim-i];
-            right.meta.stride[highest_dim-i] = 0;
-        }
-        right.meta.ndim = left.meta.ndim;                 // Set ndim
-    }
-
-    //
-    // Fix the shapes
-    for(int64_t dim_idx=0; (dim_idx <= highest_dim) && (broadcastable); dim_idx++) {
-        broadcastable = ((right.meta.shape[dim_idx] == left.meta.shape[dim_idx]) || \
-                         (right.meta.shape[dim_idx] == 1)
-                        );
-
-        if (right.meta.shape[dim_idx] < left.meta.shape[dim_idx]) {
-            right.meta.shape[dim_idx]   = left.meta.shape[dim_idx];
-            right.meta.stride[dim_idx]  = 0;
-        }
-    }
+    broadcastable = broadcastable && broadcast_right(output, lower);
+    broadcastable = broadcastable && broadcast(lower, higher);
+    broadcastable = broadcastable && same_shape(output, lower);
 
     return broadcastable;
 }
