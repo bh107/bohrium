@@ -46,19 +46,16 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, multi_array<InT>& lhs, multi_
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -117,7 +114,7 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, const InT lhs, multi_array<In
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -208,19 +205,16 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, multi_array<InT>& lhs, m
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -279,7 +273,7 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, const InT lhs, multi_arr
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -370,19 +364,16 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, multi_array<InT>& lhs, m
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -441,7 +432,7 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, const InT lhs, multi_arr
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -532,19 +523,16 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, multi_array<InT>& lhs, mul
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -603,7 +591,7 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, const InT lhs, multi_array
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -694,19 +682,16 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, multi_array<InT>& lhs, multi_
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -765,7 +750,7 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, const InT lhs, multi_array<In
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -856,19 +841,16 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, multi_array<InT>& lhs
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -927,7 +909,7 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1018,19 +1000,16 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, multi_array<InT>& lhs,
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -1089,7 +1068,7 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, const InT lhs, multi_a
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1180,19 +1159,16 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, multi_array<InT>& lhs
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -1251,7 +1227,7 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1342,19 +1318,16 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, multi_array<InT>& lhs,
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -1413,7 +1386,7 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, const InT lhs, multi_a
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1504,19 +1477,16 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, multi_array<InT>& lhs
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -1575,7 +1545,7 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1666,19 +1636,16 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, multi_array<InT>& lhs
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -1737,7 +1704,7 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1828,19 +1795,16 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, multi_array<InT>& lhs,
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -1899,7 +1863,7 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, const InT lhs, multi_a
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1990,19 +1954,16 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, multi_array<InT>& lhs
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -2061,7 +2022,7 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -2152,19 +2113,16 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, multi_array<InT>& lhs, mult
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -2223,7 +2181,7 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, const InT lhs, multi_array<
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -2314,19 +2272,16 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, multi_array<InT>& lhs, mu
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -2385,7 +2340,7 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, const InT lhs, multi_arra
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -2476,19 +2431,16 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, multi_array<InT>& lhs, mu
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -2547,7 +2499,7 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, const InT lhs, multi_arra
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -2638,19 +2590,16 @@ multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, multi_array<InT>& lhs, mu
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
@@ -2709,7 +2658,7 @@ multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, const InT lhs, multi_arra
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
