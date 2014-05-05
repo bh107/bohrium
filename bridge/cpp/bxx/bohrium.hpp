@@ -342,12 +342,12 @@ private:
 }
 
 #include "multi_array.hpp"  // Operand definition.
-#include "broadcast.hpp"    // Operand manipulations.
 #include "slicing.hpp"      // Operand slicing / explicit views / aliases
 
-#include "runtime.hpp"      // Communication with Bohrium runtime
-#include "runtime.operations.hpp"
-#include "runtime.typechecker.hpp"
+#include "runtime.hpp"              // Communication with Bohrium runtime
+#include "runtime.broadcast.hpp"    // Operand broadcasting
+#include "runtime.typechecker.hpp"  // Array operations - typechecker
+#include "runtime.operations.hpp"   // Array operations
 
 #include "reduction.hpp"    // DSEL Reduction
 #include "scan.hpp"         // DSEL Scan operation
