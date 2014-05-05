@@ -88,7 +88,7 @@ multi_array<OutT>& $op (multi_array<OutT>& res, const InT lhs, multi_array<InT>&
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
