@@ -17,7 +17,7 @@ void compute()
 
     // Sequence of ones
     a = bh_multi_array_float32_new_ones(2, shape);
-    
+
     // Range from [0 - 9[
     r_flat = bh_multi_array_uint32_new_range(10);
 
@@ -28,7 +28,8 @@ void compute()
     b = bh_multi_array_float32_convert_uint32(r_shaped);
 
     // Do actual computation
-    output = bh_multi_array_float32_add(a, b);
+    output = bh_multi_array_float32_new_empty(2, shape);
+    bh_multi_array_float32_add(a, b, output);
 
     // Sync and grab data pointer
     bh_multi_array_float32_sync(output);

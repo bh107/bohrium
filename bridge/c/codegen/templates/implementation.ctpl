@@ -14,7 +14,7 @@ using namespace bxx;
 %for $op, $opcode, $opname, $opcount, $typesigs in $data
 %if $opcode == "BH_IDENTITY"
 %for $op1_type, $op2_type in $typesigs
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(bh_multi_array_${op2_type[2]}_p other) {
+bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(const bh_multi_array_${op2_type[2]}_p other) {
     return (bh_multi_array_${op1_type[2]}_p)&as<${op1_type[0]}>(*(multi_array<${op2_type[0]}>*)other);
 }
 %end for
@@ -26,59 +26,43 @@ bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type
 %for $op, $opcode, $opname, $opcount, $typesigs in $data
 %if $opcode != "BH_IDENTITY" and opcount == 3
 %for $op1_type, $op2_type, $op3_type in $typesigs
-%if len($op) <= 2
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs) {
-    return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} (*((multi_array<${op3_type[0]}>*)rhs)));
+void bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op1_type[2]}_p out,
+                                    const bh_multi_array_${op2_type[2]}_p lhs,
+                                    const bh_multi_array_${op3_type[2]}_p rhs) {
+    multi_array<${op1_type[0]}> *o = (multi_array<${op1_type[0]}> *) out;
+    multi_array<${op2_type[0]}> *l = (multi_array<${op2_type[0]}> *) lhs;
+    multi_array<${op3_type[0]}> *r = (multi_array<${op3_type[0]}> *) rhs;
+    ${op}(*o, *l, *r);
 }
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_lhs(${op2_type[1]} lhs, bh_multi_array_${op3_type[2]}_p rhs) {
+void bh_multi_array_${op2_type[2]}_${opname}_scalar_lhs(bh_multi_array_${op1_type[2]}_p out,
+                                                ${op2_type[1]} lhs,
+                                                const bh_multi_array_${op3_type[2]}_p rhs) {
+    multi_array<${op1_type[0]}> *o = (multi_array<${op1_type[0]}> *) out;
+    multi_array<${op3_type[0]}> *r = (multi_array<${op3_type[0]}> *) rhs;
+    ${op2_type[0]} l;
 %if $op2_type[2] == "complex64" or $op2_type[2] == "complex128"
-    ${op2_type[0]} t;
-    t.real(lhs.real);
-    t.imag(lhs.imag);
-
-    return (bh_multi_array_${op1_type[2]}_p)&(((t) ${op} (*((multi_array<${op3_type[0]}>*)rhs))));
+    l.real(lhs.real);
+    l.imag(lhs.imag);
 %else
-    return (bh_multi_array_${op1_type[2]}_p)&(((${op2_type[0]})lhs) ${op} (*((multi_array<${op3_type[0]}>*)rhs)));
+    l = lhs;
 %end if
+    ${op}(*o, l, *r);
 }
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op2_type[2]}_p lhs, ${op3_type[1]} rhs) {
+void bh_multi_array_${op2_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op1_type[2]}_p out,
+                                                const bh_multi_array_${op2_type[2]}_p lhs,
+                                                ${op3_type[1]} rhs) {
+    multi_array<${op1_type[0]}> *o = (multi_array<${op1_type[0]}> *) out;
+    multi_array<${op2_type[0]}> *l = (multi_array<${op2_type[0]}> *) lhs;
+    ${op3_type[0]} r;
 %if $op3_type[2] == "complex64" or $op3_type[2] == "complex128"
-    ${op3_type[0]} t;
-    t.real(rhs.real);
-    t.imag(rhs.imag);
+    r.real(rhs.real);
+    r.imag(rhs.imag);
+%else
+    r = rhs;
+%end if
+    ${op}(*o, *l, r);
+}
 
-    return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} (t));
-%else
-    return (bh_multi_array_${op1_type[2]}_p)&((*((multi_array<${op2_type[0]}>*)lhs)) ${op} ((${op3_type[0]})rhs));
-%end if
-}
-%else
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs) {
-    return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)lhs)), (*((multi_array<${op3_type[0]}>*)rhs))));
-}
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op2_type[2]}_p lhs, ${op3_type[1]} rhs) {
-%if $op3_type[2] == "complex64" or $op3_type[2] == "complex128"
-    ${op3_type[0]} t;
-    t.real(rhs.real);
-    t.imag(rhs.imag);
-
-    return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)lhs)), (t)));
-%else
-    return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)lhs)), ((${op3_type[0]})rhs)));
-%end if
-}
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}_scalar_lhs(${op2_type[1]} lhs, bh_multi_array_${op3_type[2]}_p rhs) {
-%if $op2_type[2] == "complex64" or $op2_type[2] == "complex128"
-    ${op2_type[0]} t;
-    t.real(lhs.real);
-    t.imag(lhs.imag);
-
-    return (bh_multi_array_${op1_type[2]}_p)&(${op}((t), (*((multi_array<${op3_type[0]}>*)rhs))));
-%else
-    return (bh_multi_array_${op1_type[2]}_p)&(${op}(((${op2_type[0]})lhs), (*((multi_array<${op3_type[0]}>*)rhs))));
-%end if
-}
-%end if
 %end for
 
 %end if
@@ -90,17 +74,16 @@ bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}_scalar_l
 %if $opcode != "BH_IDENTITY" and opcount == 2
 %for $op1_type, $op2_type in $typesigs
 %if $opcode == "BH_ISNAN" or $opcode == "BH_ISINF"
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p rhs) {
+void bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op1_type[2]}_p out,
+                             const bh_multi_array_${op2_type[2]}_p rhs) {
 %else
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p rhs) {
+void bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op1_type[2]}_p out,
+                             const bh_multi_array_${op2_type[2]}_p rhs) {
 %end if
-%if $opcode == "BH_INVERT" and op1_type[2] == "bool8"
-    return (bh_multi_array_${op1_type[2]}_p)&(!((*((multi_array<${op2_type[0]}>*)rhs))));
-%else
-    return (bh_multi_array_${op1_type[2]}_p)&(${op}((*((multi_array<${op2_type[0]}>*)rhs))));
-%end if
+    multi_array<${op1_type[0]}> *o = (multi_array<${op1_type[0]}> *) out;
+    multi_array<${op2_type[0]}> *r = (multi_array<${op2_type[0]}> *) rhs;
+    ${op}(*o, *r);
 }
-%slurp
 %end for
 
 %end if

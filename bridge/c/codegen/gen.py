@@ -102,7 +102,7 @@ def main():
             print "The Bohrium opcodes no longer include [ %s ]." % opcode
             continue
 
-        op_map.append((name, opcode, t, nop, typesigs))
+        op_map.append((opcode.lower(), opcode, opcode.lower()[3:], nop, typesigs))
 
     gens = [
         ('type_header.ctpl',                'bh_c_data_types.h',                    (types, reductions)),

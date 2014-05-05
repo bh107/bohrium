@@ -25,7 +25,7 @@ extern "C" {
 %for $op, $opcode, $opname, $opcount, $typesigs in $data
 %if $opcode == "BH_IDENTITY"
 %for $op1_type, $op2_type in $typesigs
-DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(bh_multi_array_${op2_type[2]}_p other);
+DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(const bh_multi_array_${op2_type[2]}_p other);
 %end for
 %end if
 %end for
@@ -35,13 +35,18 @@ DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_
 
 %for $op, $opcode, $opname, $opcount, $typesigs in $data
 %if $opcode != "BH_IDENTITY" and opcount == 3
-
 %for $op1_type, $op2_type, $op3_type in $typesigs
-DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs, bh_multi_array_${op3_type[2]}_p rhs);
-DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_lhs(${op2_type[1]} lhs, bh_multi_array_${op3_type[2]}_p rhs);
-DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op2_type[2]}_p lhs, ${op3_type[1]} rhs);
-%end for
 
+DLLEXPORT void bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op1_type[2]}_p out,
+                                    const bh_multi_array_${op2_type[2]}_p lhs,
+                                    const bh_multi_array_${op3_type[2]}_p rhs);
+DLLEXPORT void bh_multi_array_${op2_type[2]}_${opname}_scalar_lhs(bh_multi_array_${op1_type[2]}_p out,
+                                                ${op2_type[1]} lhs,
+                                                const bh_multi_array_${op3_type[2]}_p rhs);
+DLLEXPORT void bh_multi_array_${op2_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op1_type[2]}_p out,
+                                                const bh_multi_array_${op2_type[2]}_p lhs,
+                                                ${op3_type[1]} rhs);
+%end for
 %end if
 %end for
 
@@ -51,9 +56,12 @@ DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname
 %if $opcode != "BH_IDENTITY" and opcount == 2
 %for $op1_type, $op2_type in $typesigs
 %if $opcode == "BH_ISNAN" or $opcode == "BH_ISINF"
-DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs);
+
+DLLEXPORT void bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op1_type[2]}_p out,
+                             const bh_multi_array_${op2_type[2]}_p rhs);
 %else
-DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op2_type[2]}_p lhs);
+DLLEXPORT void bh_multi_array_${op1_type[2]}_${opname}(bh_multi_array_${op1_type[2]}_p out,
+                             const bh_multi_array_${op2_type[2]}_p rhs);
 %end if
 %slurp
 %end for
