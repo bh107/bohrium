@@ -28,7 +28,6 @@ namespace bxx {
 //
 //  Default to deny
 //
-/*
 template <size_t Opcode, typename Out, typename In1, typename In2>
 inline
 void Runtime::typecheck(void)
@@ -72,8 +71,9 @@ void Runtime::typecheck(void)
     ss << ".";
 
     throw std::runtime_error(ss.str());
-}*/
+}
 
+/*
 template <size_t Opcode>
 struct dependent_false { enum { value = false }; };
 
@@ -94,6 +94,7 @@ void Runtime::typecheck(void)
 {
     static_assert(dependent_false<Opcode>::value, "ArrayOperation has unsupported type-signature.");
 }
+*/
 
 //
 //  Allowed types.
