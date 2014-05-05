@@ -42,7 +42,6 @@ def map_type(typename, types):
     for t in types:
         if typename in t:
             return t
-
     return "ERR"
 
 def get_timestamp(f):
@@ -63,13 +62,11 @@ def main():
     paths = {'reductions': join(script_dir,'reductions.json'),
              'opcodes'   : join(script_dir,'..','..','..','core','codegen','opcodes.json'),
              'types'     : join(script_dir,'..','..','cpp','codegen','element_types.json'),
-             'operators' : join(script_dir,'operators.json'),
              'self'      : join(script_dir,'gen.py')}
 
     reductions  = json.loads(open(paths['reductions']).read())
     opcodes     = json.loads(open(paths['opcodes']).read())
     types       = json.loads(open(paths['types']).read())
-    operators   = json.loads(open(paths['operators']).read())
 
     #Find the latest modification time
     mtime = 0
@@ -79,30 +76,21 @@ def main():
             mtime = t[1]
 
     op_map  = []
-    for name, opcode, t in operators:
-        code = [x for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
-
-        typesigs = [x["types"] for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
-        typesigs = typesigs[0] if typesigs else []
-
-        new_typesigs = []
-        for ttt in typesigs:
-            sig = [map_type(typesig,types)  for typesig in ttt]
-            new_typesigs.append(sig)
-
-        typesigs = new_typesigs
-
-        opcode_base, nop = opcode.split("_", 1)
-        if opcode_base == "CUSTOM":
-            opcode  = opcode_base
-            nop     = int(nop)
-        elif code:
-            nop = code[0]["nop"]
-        else:
-            print "The Bohrium opcodes no longer include [ %s ]." % opcode
+    for op in opcodes:
+        if op['system_opcode'] or not op['elementwise']:
             continue
 
-        op_map.append((opcode.lower(), opcode, opcode.lower()[3:], nop, typesigs))
+        nop = op['nop']
+        cpp_name = op['opcode'].lower()
+        bh_name = op['opcode']
+        c_name = op['opcode'].lower()[3:] #Removing the BH_
+
+        typesigs = []
+        for ttt in op['types']:
+            sig = [map_type(typesig,types) for typesig in ttt]
+            typesigs.append(sig)
+
+        op_map.append((cpp_name, bh_name, c_name, nop, typesigs))
 
     gens = [
         ('type_header.ctpl',                'bh_c_data_types.h',                    (types, reductions)),
