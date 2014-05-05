@@ -18,23 +18,115 @@ GNU Lesser General Public License along with bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
-#include "bh/bh.hpp"
+#include "bxx/bohrium.hpp"
 #include "util/timing.hpp"
 #include "util/argparse.hpp"
 
 using namespace std;
-using namespace bh;
+using namespace bxx;
 using namespace argparse;
 
 template <typename T>
-multi_array<T> compute(size_t n, size_t iterations)
+multi_array<T> compute12_3a(size_t n, size_t iterations)
 {
     multi_array<T> a, b, c, r;
     a = ones<T>(n, n);
     b = ones<T>(n, n);
     c = ones<T>(n, n);
+
+    Runtime::instance().flush();
     for(size_t i=0; i<iterations; i++) {
-        r = a+b+c+a+b+c+a+b+c;
+        r = a+b+c+a+b+c+a+b+c+a+b+c;
+        Runtime::instance().flush();
+    }
+
+    return r;
+}
+
+template <typename T>
+multi_array<T> compute3_1a(size_t n, size_t iterations)
+{
+    multi_array<T> a, r;
+    a = ones<T>(n, n);
+
+    Runtime::instance().flush();
+    for(size_t i=0; i<iterations; i++) {
+        r = a+a+a;
+        Runtime::instance().flush();
+    }
+
+    return r;
+}
+
+template <typename T>
+multi_array<T> compute_12_1a(size_t n, size_t iterations)
+{
+    multi_array<T> a, r;
+    a = ones<T>(n, n);
+
+    Runtime::instance().flush();
+    for(size_t i=0; i<iterations; i++) {
+        r = a+a+a+a+a+a+a+a+a+a+a+a;
+        Runtime::instance().flush();
+    }
+
+    return r;
+}
+
+template <typename T>
+multi_array<T> compute_36_1a(size_t n, size_t iterations)
+{
+    multi_array<T> a, r;
+    a = ones<T>(n, n);
+
+    Runtime::instance().flush();
+    for(size_t i=0; i<iterations; i++) {
+        r = a+a+a+a+a+a+a+a+a+a+a+a +\
+            a+a+a+a+a+a+a+a+a+a+a+a +\
+            a+a+a+a+a+a+a+a+a+a+a+a;
+        Runtime::instance().flush();
+    }
+
+    return r;
+}
+
+template <typename T>
+multi_array<T> compute_72_1a(size_t n, size_t iterations)
+{
+    multi_array<T> a, r;
+    a = ones<T>(n, n);
+
+    Runtime::instance().flush();
+    for(size_t i=0; i<iterations; i++) {
+        r = a+a+a+a+a+a+a+a+a+a+a+a +\
+            a+a+a+a+a+a+a+a+a+a+a+a +\
+            a+a+a+a+a+a+a+a+a+a+a+a +\
+            a+a+a+a+a+a+a+a+a+a+a+a +\
+            a+a+a+a+a+a+a+a+a+a+a+a +\
+            a+a+a+a+a+a+a+a+a+a+a+a;
+        Runtime::instance().flush();
+    }
+
+    return r;
+}
+
+template <typename T>
+multi_array<T> compute_K72_1a(size_t n, size_t iterations)
+{
+    multi_array<T> a, r;
+    a = ones<T>(n, n);
+
+    T k = (T)2;
+
+    Runtime::instance().flush();
+    for(size_t i=0; i<iterations; i++) {
+        r = a+k+a+k+a+k+a+k+a+k+a+k +\
+            a+k+a+k+a+k+a+k+a+k+a+k +\
+            a+k+a+k+a+k+a+k+a+k+a+k +\
+            a+k+a+k+a+k+a+k+a+k+a+k +\
+            a+k+a+k+a+k+a+k+a+k+a+k +\
+            a+k+a+k+a+k+a+k+a+k+a+k;
+        Runtime::instance().flush();
     }
 
     return r;
@@ -42,7 +134,7 @@ multi_array<T> compute(size_t n, size_t iterations)
 
 int main(int argc, char* argv[])
 {
-    const char usage[] = "usage: ./black_scholes --size=1000*10 [--verbose]";
+    const char usage[] = "usage: ./synth --size=1000*10 [--verbose]";
     if (2>argc) {
         cout << usage << endl;
         return 1;
@@ -66,7 +158,10 @@ int main(int argc, char* argv[])
     }
 
     bh_intp start = sample_time();
-    multi_array<double> res = compute<double>(args.size[0], args.size[1]);
+    //multi_array<double> res = compute_K72_1a<double>(args.size[0], args.size[1]);
+    //multi_array<float>  res = compute_K72_1a<float>(args.size[0], args.size[1]);
+    multi_array<float>  res = compute_12_1a<float>(args.size[0], args.size[1]);
+    Runtime::instance().flush();
                                         // Output timing
     cout << "{elapsed-time: "<< (sample_time()-start)/1000000.0 <<"";
     if (args.verbose) {                 // and values.
