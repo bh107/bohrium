@@ -25,7 +25,7 @@ import array_create
 import bhc
 import numpy as np
 import _info
-from _util import dtype_name
+from _util import dtype_name, dtype_identical
 from ndarray import get_bhc, check_biclass
 import ndarray
 
@@ -70,7 +70,7 @@ class ufunc:
         """A Bohrium Universal Function"""
         self.info = info
     def __str__(self):
-        return "<bohrium ufunc '%s'>"%self.info['bhc_name']
+        return "<bohrium ufunc '%s'>"%self.info['name']
     def __call__(self, *args):
 
         #Check number of arguments
@@ -98,7 +98,7 @@ class ufunc:
                 raise NotImplementedError("For now, the output must be a Bohrium "\
                                           "array when the input arrays are")
         elif not ndarray.check(out):#All operands are regular NumPy arrays
-            f = eval("np.%s"%self.info['np_name'])
+            f = eval("np.%s"%self.info['name'])
             if out is not None:
                 args.append(out)
             return f(*args)
@@ -107,15 +107,20 @@ class ufunc:
             raise ValueError("Bohrium do not support ufunc with more than two inputs")
 
         #Find the type signature
-        (out_dtype,in_dtype) = _util.type_sig(self.info['np_name'], args)
+        (out_dtype,in_dtype) = _util.type_sig(self.info['name'], args)
 
-        #Check for Python scalars
-        py_scalar = None
-        for i, a in enumerate(args):
-            if np.isscalar(a):
-                if py_scalar is not None:
-                    raise ValueError("Bohrium ufuncs do not support multiple scalar inputs")
-                py_scalar = i#The i'th input is a Python scalar
+        #Convert dtype of all inputs
+        for i in xrange(len(args)):
+            if not np.isscalar(args[i]) and not dtype_identical(args[i], in_dtype):
+                t = array_create.empty_like(args[i], dtype=in_dtype)
+                t[:] = args[i]
+                args[i] = t;
+
+        #Insert the output array
+        if out is None or out_dtype != out.dtype:
+            args.insert(0,array_create.empty(out_shape, out_dtype))
+        else:
+            args.insert(0,out)
 
         #Convert 'args' to Bohrium-C arrays
         bhcs = []
@@ -130,38 +135,26 @@ class ufunc:
                 bhcs.append(get_bhc(a))
                 tmps.append(a)#We use this to keep a reference to 'a'
 
-        #Convert dtype of all inputs
-        inputs = []
-        for i, a in enumerate(bhcs):
-            a_dtype = _util.dtype_from_bhc(a)
-            t_dtype = dtype_name(in_dtype)
-            if i != py_scalar and a_dtype != t_dtype:
-                exec "t = bhc.bh_multi_array_%s_convert_%s(a)"%(t_dtype, a_dtype)
-                inputs.append(t)
-            else:
-                inputs.append(a)
-
-        cmd = "bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), self.info['bhc_name'])
-        if py_scalar is not None:
-            if py_scalar == 0:
-                cmd += "_scalar_lhs"
-            else:
-                cmd += "_scalar_rhs"
-
+        #Create and execute the ufunc command
+        cmd = "bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), self.info['name'])
+        for i,a in enumerate(args):
+            if np.isscalar(a):
+                if i == 1:
+                    cmd += "_scalar_lhs"
+                if i == 2:
+                    cmd += "_scalar_rhs"
         f = eval(cmd)
-        ret = f(*inputs)
+        f(*bhcs)
 
         del tmps#Now we can safely de-allocate the tmp input arrays
 
-        if out is None: #Create a new output with the returned Bohrium-C array
-            out = ndarray.new(out_shape, out_dtype, ret)
-        else: #We have to use the output given
-            if out.dtype == out_dtype:
-                t = ret
-            else:
-                exec "t = bhc.bh_multi_array_%s_convert_%s(ret)"%(dtype_name(out.dtype), dtype_name(out_dtype))
-            #Copy result into the output array
+        if out is None or out_dtype == out.dtype:
+            return args[0]
+        else:#We need to convert the output type before returning
+            f = eval("bhc.bh_multi_array_%s_convert_%s"%(dtype_name(args[0].dtype), dtype_name(out_dtype)))
+            t = f(args[0])
             exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),t)"%(dtype_name(out_dtype))
+            return out
         return out
 
     def reduce(self, a, axis=0, out=None):
@@ -172,7 +165,7 @@ class ufunc:
                                       "arrays isn't supported")
 
         if not ndarray.check(a):#Let NumPy handle NumPy array reductions
-            f = eval("np.%s.reduce"%self.info['np_name'])
+            f = eval("np.%s.reduce"%self.info['name'])
             return f(a, axis=axis, out=None)
 
         if axis >= a.ndim:
@@ -187,7 +180,7 @@ class ufunc:
             if out is not None and out.shape != shape:
                 raise ValueError("output dimension mismatch expect shape '%s' got '%s'"%(shape, out.shape))
 
-        f = eval("bhc.bh_multi_array_%s_partial_reduce_%s"%(dtype_name(a), self.info['bhc_name']))
+        f = eval("bhc.bh_multi_array_%s_partial_reduce_%s"%(dtype_name(a), self.info['name']))
         ret = f(get_bhc(a),axis)
         t = ndarray.new(shape, a.dtype, ret)
 
@@ -209,12 +202,12 @@ class negative(ufunc):
             return out
 
 #Expose all ufuncs
-ufuncs = [negative({'np_name':'negative'})]
+ufuncs = [negative({'name':'negative'})]
 for op in _info.op.itervalues():
     ufuncs.append(ufunc(op))
 
 for f in ufuncs:
-    exec "%s = f"%f.info['np_name']
+    exec "%s = f"%f.info['name']
 
 
 ###############################################################################
@@ -241,7 +234,7 @@ class Tests(unittest.TestCase):
     def test_ufunc(self):
         for f in ufuncs:
             for type_sig in f.info['type_sig']:
-                if f.info['bhc_name'] == "assign":
+                if f.info['name'] == "identity":
                     continue
                 print f, type_sig
                 A = array_create.empty((4,4), dtype=type_sig[1])
@@ -265,9 +258,9 @@ class Tests(unittest.TestCase):
                 B = np.empty((4,4), dtype=type_sig[1])
                 B[:] = 3
                 if f.info['nop'] == 2:
-                    exec "np_res = np.%s(A)"%f.info['np_name']
+                    exec "np_res = np.%s(A)"%f.info['name']
                 elif f.info['nop'] == 3:
-                    exec "np_res = np.%s(A,B)"%f.info['np_name']
+                    exec "np_res = np.%s(A,B)"%f.info['name']
                 self.assertTrue(np.allclose(res,np_res))
 
 if __name__ == '__main__':

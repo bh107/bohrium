@@ -10,7 +10,7 @@ from numpy import newaxis
 
 #Expose all ufuncs
 for f in ufuncs:
-    exec "%s = f"%f.info['np_name']
+    exec "%s = f"%f.info['name']
 
 #Expose all data types
 for t in numpy_types:

@@ -50,6 +50,14 @@ def dtype_name(obj):
     else:
         return t.name
 
+#Check if the objects represents the same dtype.
+def dtype_identical(*obj):
+    dtype = dtype_name(obj[0])
+    for o in obj[1:]:
+        if dtype_name(o) != dtype:
+            return False
+    return True
+
 #Returns the type signature (output, input) to use with the given operation.
 #NB: we only returns the type of the first input thus all input types must be identical
 def type_sig(op_name, inputs):
