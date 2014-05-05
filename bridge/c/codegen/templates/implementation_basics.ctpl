@@ -161,7 +161,11 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(uint64_t size)
 %if $bh_ctype == "uint64"
 // Construct a new random-filled array using Random123
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random123(uint64_t length, uint64_t start, uint64_t key) {
-    return (bh_multi_array_${bh_ctype}_p)&(random123<${ctype}>(length, start, key));
+    multi_array<${ctype}> *result = new multi_array<${ctype}>(length);
+    result->setTemp(true);
+    result->link();
+
+    return (bh_multi_array_${bh_ctype}_p)&(bh_random<${ctype}>(*result, start, key));
 }
 %end if
 

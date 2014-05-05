@@ -112,9 +112,9 @@ multi_array<OutT>& $op (multi_array<OutT>& res, const InT lhs, multi_array<InT>&
 // Implicit temporary result array
 //
 template <typename T>
-multi_array<T>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
+multi_array<bool>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
 {
-    Runtime::instance().typecheck<$opcode, T, T, T>();
+    Runtime::instance().typecheck<$opcode, bool, T, T>();
 
     multi_array<T>* left    = &lhs;
     multi_array<T>* right   = &rhs;
@@ -136,7 +136,7 @@ multi_array<T>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
     }
 
     // Construct output / result array
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(*left);
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, *left, *right);
@@ -144,11 +144,11 @@ multi_array<T>& $op (multi_array<T> &lhs, multi_array<T> &rhs)
 }
 
 template <typename T>
-multi_array<T>& $op (multi_array<T>& lhs, const T rhs)
+multi_array<bool>& $op (multi_array<T>& lhs, const T rhs)
 {
-    Runtime::instance().typecheck<$opcode, T, T, T>();
+    Runtime::instance().typecheck<$opcode, bool, T, T>();
 
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
@@ -156,11 +156,11 @@ multi_array<T>& $op (multi_array<T>& lhs, const T rhs)
 }
 
 template <typename T>
-multi_array<T>& $op (const T lhs, multi_array<T>& rhs)
+multi_array<bool>& $op (const T lhs, multi_array<T>& rhs)
 {
-    Runtime::instance().typecheck<$opcode, T, T, T>();
+    Runtime::instance().typecheck<$opcode, bool, T, T>();
 
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);

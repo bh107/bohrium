@@ -9,6 +9,9 @@ directiveStartToken = %
 template <typename T>
 multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
+    Runtime::instance().typecheck<$opcode, T, T, int64_t>();
+
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
     }
@@ -16,9 +19,6 @@ multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
 
     return res;
@@ -27,6 +27,9 @@ multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 template <typename T>
 multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
 {
+    // TODO: Shape-check
+    Runtime::instance().typecheck<$opcode, T, T, int64_t>();
+
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
     }
@@ -56,9 +59,6 @@ multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
     }
     result->link();                         // Bind the base
 
-    // TODO
-    //  * Type-check
-    //  * Shape-check
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
 
     return *result;

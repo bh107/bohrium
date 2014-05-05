@@ -17,9 +17,10 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include <bxx/bohrium.hpp>
+
 #include <iostream>
 #include <complex>
-#include <bxx/bohrium.hpp>
 
 using namespace bxx;
 
@@ -119,13 +120,13 @@ void compute()
     cout << c << endl;
 
     */
-    multi_array<std::complex<double> > x, y;
-    y = ones<std::complex<double> >(10);
-    x = ones<std::complex<double> >(10);
+    multi_array<float> x, y;
+    multi_array<float> z;
+    x = ones<float>(10);
+    y = ones<float>(10);
+    z = ones<float>(10);
 
-
-    std::cout << real(y) << std::endl;
-    std::cout << imag(y) << std::endl;
+    std::cout << x+y+z << std::endl;
 
 }
 

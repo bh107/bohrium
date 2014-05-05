@@ -9,6 +9,8 @@ directiveStartToken = %
 template <typename T>
 multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
+    Runtime::instance().typecheck<$opcode, T, T, int64_t>();
+
     // Check axis
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
@@ -24,10 +26,11 @@ multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
     return res;
 }
 
-// Todo: typecheck
 template <typename T>
 multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
 {
+    Runtime::instance().typecheck<$opcode, T, T, int64_t>();
+
     // Check axis
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;

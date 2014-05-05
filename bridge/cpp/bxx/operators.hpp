@@ -457,222 +457,6 @@ inline multi_array<T>& right_shift (const T lhs, multi_array<T>& rhs)
 }
 
 template <typename T>
-inline multi_array<T>& eq (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& eq (multi_array<T>& lhs, const T rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& eq (const T lhs, multi_array<T>& rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator== (multi_array<T>& lhs, const T rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator== (const T lhs, multi_array<T>& rhs)
-{
-    return bh_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& neq (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& neq (multi_array<T>& lhs, const T rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& neq (const T lhs, multi_array<T>& rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator!= (multi_array<T>& lhs, const T rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator!= (const T lhs, multi_array<T>& rhs)
-{
-    return bh_not_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gt (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gt (multi_array<T>& lhs, const T rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gt (const T lhs, multi_array<T>& rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator> (multi_array<T>& lhs, const T rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator> (const T lhs, multi_array<T>& rhs)
-{
-    return bh_greater (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gteq (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gteq (multi_array<T>& lhs, const T rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& gteq (const T lhs, multi_array<T>& rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator>= (multi_array<T>& lhs, const T rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator>= (const T lhs, multi_array<T>& rhs)
-{
-    return bh_greater_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lt (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lt (multi_array<T>& lhs, const T rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lt (const T lhs, multi_array<T>& rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator< (multi_array<T>& lhs, const T rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator< (const T lhs, multi_array<T>& rhs)
-{
-    return bh_less (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lteq (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lteq (multi_array<T>& lhs, const T rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& lteq (const T lhs, multi_array<T>& rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator<= (multi_array<T>& lhs, const T rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
-inline multi_array<T>& operator<= (const T lhs, multi_array<T>& rhs)
-{
-    return bh_less_equal (lhs, rhs);
-}
-
-template <typename T>
 inline multi_array<T>& logical_and (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_logical_and (lhs, rhs);
@@ -837,18 +621,229 @@ inline multi_array<T>& atan2 (const T lhs, multi_array<T>& rhs)
 
 
 template <typename T>
+inline multi_array<bool>& eq (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& eq (multi_array<T>& lhs, const T rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& eq (const T lhs, multi_array<T>& rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator== (multi_array<T>& lhs, const T rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator== (const T lhs, multi_array<T>& rhs)
+{
+    return bh_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& neq (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& neq (multi_array<T>& lhs, const T rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& neq (const T lhs, multi_array<T>& rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator!= (multi_array<T>& lhs, const T rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator!= (const T lhs, multi_array<T>& rhs)
+{
+    return bh_not_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gt (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gt (multi_array<T>& lhs, const T rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gt (const T lhs, multi_array<T>& rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator> (multi_array<T>& lhs, const T rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator> (const T lhs, multi_array<T>& rhs)
+{
+    return bh_greater (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gteq (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gteq (multi_array<T>& lhs, const T rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& gteq (const T lhs, multi_array<T>& rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator>= (multi_array<T>& lhs, const T rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator>= (const T lhs, multi_array<T>& rhs)
+{
+    return bh_greater_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lt (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lt (multi_array<T>& lhs, const T rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lt (const T lhs, multi_array<T>& rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator< (multi_array<T>& lhs, const T rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator< (const T lhs, multi_array<T>& rhs)
+{
+    return bh_less (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lteq (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lteq (multi_array<T>& lhs, const T rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& lteq (const T lhs, multi_array<T>& rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator<= (multi_array<T>& lhs, const T rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<bool>& operator<= (const T lhs, multi_array<T>& rhs)
+{
+    return bh_less_equal (lhs, rhs);
+}
+
+
+
+template <typename T>
 inline
 multi_array<T>& logical_not (multi_array<T>& rhs)
 {
     return bh_logical_not (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& logical_not (const T rhs)
-{
-    return bh_logical_not (rhs);
-}*/
 
 
 template <typename T>
@@ -857,13 +852,6 @@ multi_array<T>& operator! (multi_array<T>& rhs)
 {
     return bh_logical_not (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& operator! (const T rhs)
-{
-    return bh_logical_not (rhs);
-}*/
 
 
 template <typename T>
@@ -872,13 +860,6 @@ multi_array<T>& invert (multi_array<T>& rhs)
 {
     return bh_invert (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& invert (const T rhs)
-{
-    return bh_invert (rhs);
-}*/
 
 
 template <typename T>
@@ -887,13 +868,6 @@ multi_array<T>& operator~ (multi_array<T>& rhs)
 {
     return bh_invert (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& operator~ (const T rhs)
-{
-    return bh_invert (rhs);
-}*/
 
 
 template <typename T>
@@ -902,13 +876,6 @@ multi_array<T>& abs (multi_array<T>& rhs)
 {
     return bh_absolute (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& abs (const T rhs)
-{
-    return bh_absolute (rhs);
-}*/
 
 
 template <typename T>
@@ -917,13 +884,6 @@ multi_array<T>& sin (multi_array<T>& rhs)
 {
     return bh_sin (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& sin (const T rhs)
-{
-    return bh_sin (rhs);
-}*/
 
 
 template <typename T>
@@ -932,13 +892,6 @@ multi_array<T>& cos (multi_array<T>& rhs)
 {
     return bh_cos (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& cos (const T rhs)
-{
-    return bh_cos (rhs);
-}*/
 
 
 template <typename T>
@@ -947,13 +900,6 @@ multi_array<T>& tan (multi_array<T>& rhs)
 {
     return bh_tan (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& tan (const T rhs)
-{
-    return bh_tan (rhs);
-}*/
 
 
 template <typename T>
@@ -962,13 +908,6 @@ multi_array<T>& sinh (multi_array<T>& rhs)
 {
     return bh_sinh (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& sinh (const T rhs)
-{
-    return bh_sinh (rhs);
-}*/
 
 
 template <typename T>
@@ -977,13 +916,6 @@ multi_array<T>& cosh (multi_array<T>& rhs)
 {
     return bh_cosh (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& cosh (const T rhs)
-{
-    return bh_cosh (rhs);
-}*/
 
 
 template <typename T>
@@ -992,13 +924,6 @@ multi_array<T>& tanh (multi_array<T>& rhs)
 {
     return bh_tanh (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& tanh (const T rhs)
-{
-    return bh_tanh (rhs);
-}*/
 
 
 template <typename T>
@@ -1007,13 +932,6 @@ multi_array<T>& asin (multi_array<T>& rhs)
 {
     return bh_arcsin (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& asin (const T rhs)
-{
-    return bh_arcsin (rhs);
-}*/
 
 
 template <typename T>
@@ -1022,13 +940,6 @@ multi_array<T>& acos (multi_array<T>& rhs)
 {
     return bh_arccos (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& acos (const T rhs)
-{
-    return bh_arccos (rhs);
-}*/
 
 
 template <typename T>
@@ -1037,13 +948,6 @@ multi_array<T>& atan (multi_array<T>& rhs)
 {
     return bh_arctan (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& atan (const T rhs)
-{
-    return bh_arctan (rhs);
-}*/
 
 
 template <typename T>
@@ -1052,13 +956,6 @@ multi_array<T>& asinh (multi_array<T>& rhs)
 {
     return bh_arcsinh (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& asinh (const T rhs)
-{
-    return bh_arcsinh (rhs);
-}*/
 
 
 template <typename T>
@@ -1067,13 +964,6 @@ multi_array<T>& acosh (multi_array<T>& rhs)
 {
     return bh_arccosh (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& acosh (const T rhs)
-{
-    return bh_arccosh (rhs);
-}*/
 
 
 template <typename T>
@@ -1082,13 +972,6 @@ multi_array<T>& atanh (multi_array<T>& rhs)
 {
     return bh_arctanh (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& atanh (const T rhs)
-{
-    return bh_arctanh (rhs);
-}*/
 
 
 template <typename T>
@@ -1097,13 +980,6 @@ multi_array<T>& exp (multi_array<T>& rhs)
 {
     return bh_exp (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& exp (const T rhs)
-{
-    return bh_exp (rhs);
-}*/
 
 
 template <typename T>
@@ -1112,13 +988,6 @@ multi_array<T>& exp2 (multi_array<T>& rhs)
 {
     return bh_exp2 (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& exp2 (const T rhs)
-{
-    return bh_exp2 (rhs);
-}*/
 
 
 template <typename T>
@@ -1127,43 +996,6 @@ multi_array<T>& expm1 (multi_array<T>& rhs)
 {
     return bh_expm1 (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& expm1 (const T rhs)
-{
-    return bh_expm1 (rhs);
-}*/
-
-
-template <typename T>
-inline
-multi_array<T>& isnan (multi_array<T>& rhs)
-{
-    return bh_isnan (rhs);
-}
-/*
-template <typename T>
-inline
-multi_array<T>& isnan (const T rhs)
-{
-    return bh_isnan (rhs);
-}*/
-
-
-template <typename T>
-inline
-multi_array<T>& isinf (multi_array<T>& rhs)
-{
-    return bh_isinf (rhs);
-}
-/*
-template <typename T>
-inline
-multi_array<T>& isinf (const T rhs)
-{
-    return bh_isinf (rhs);
-}*/
 
 
 template <typename T>
@@ -1172,13 +1004,6 @@ multi_array<T>& log (multi_array<T>& rhs)
 {
     return bh_log (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& log (const T rhs)
-{
-    return bh_log (rhs);
-}*/
 
 
 template <typename T>
@@ -1187,13 +1012,6 @@ multi_array<T>& log2 (multi_array<T>& rhs)
 {
     return bh_log2 (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& log2 (const T rhs)
-{
-    return bh_log2 (rhs);
-}*/
 
 
 template <typename T>
@@ -1202,13 +1020,6 @@ multi_array<T>& log10 (multi_array<T>& rhs)
 {
     return bh_log10 (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& log10 (const T rhs)
-{
-    return bh_log10 (rhs);
-}*/
 
 
 template <typename T>
@@ -1217,13 +1028,6 @@ multi_array<T>& log1p (multi_array<T>& rhs)
 {
     return bh_log1p (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& log1p (const T rhs)
-{
-    return bh_log1p (rhs);
-}*/
 
 
 template <typename T>
@@ -1232,13 +1036,6 @@ multi_array<T>& sqrt (multi_array<T>& rhs)
 {
     return bh_sqrt (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& sqrt (const T rhs)
-{
-    return bh_sqrt (rhs);
-}*/
 
 
 template <typename T>
@@ -1247,13 +1044,6 @@ multi_array<T>& ceil (multi_array<T>& rhs)
 {
     return bh_ceil (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& ceil (const T rhs)
-{
-    return bh_ceil (rhs);
-}*/
 
 
 template <typename T>
@@ -1262,13 +1052,6 @@ multi_array<T>& trunc (multi_array<T>& rhs)
 {
     return bh_trunc (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& trunc (const T rhs)
-{
-    return bh_trunc (rhs);
-}*/
 
 
 template <typename T>
@@ -1277,13 +1060,6 @@ multi_array<T>& floor (multi_array<T>& rhs)
 {
     return bh_floor (rhs);
 }
-/*
-template <typename T>
-inline
-multi_array<T>& floor (const T rhs)
-{
-    return bh_floor (rhs);
-}*/
 
 
 template <typename T>
@@ -1292,13 +1068,24 @@ multi_array<T>& rint (multi_array<T>& rhs)
 {
     return bh_rint (rhs);
 }
-/*
+
+
+
+
 template <typename T>
 inline
-multi_array<T>& rint (const T rhs)
+multi_array<bool>& isnan (multi_array<T>& rhs)
 {
-    return bh_rint (rhs);
-}*/
+    return bh_isnan (rhs);
+}
+
+
+template <typename T>
+inline
+multi_array<bool>& isinf (multi_array<T>& rhs)
+{
+    return bh_isinf (rhs);
+}
 
 
 }

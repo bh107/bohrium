@@ -8,7 +8,7 @@ directiveStartToken = %
 
 template <typename T>
 inline
-multi_array<T>& $op (multi_array<T>& rhs)
+multi_array<bool>& $op (multi_array<T>& rhs)
 {
     return $opcode.lower() (rhs);
 }

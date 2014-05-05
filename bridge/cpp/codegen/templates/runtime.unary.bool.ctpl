@@ -59,11 +59,11 @@ multi_array<OutT>& $op (multi_array<OutT>& res, const InT rhs)
 //
 template <typename T>
 inline
-multi_array<T>& $op (multi_array<T>& rhs)
+multi_array<bool>& $op (multi_array<T>& rhs)
 {
-    Runtime::instance().typecheck<$opcode, T, T>();
+    Runtime::instance().typecheck<$opcode, bool, T>();
 
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
+    multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
