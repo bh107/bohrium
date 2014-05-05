@@ -227,7 +227,10 @@ string Specializer::cexpression(SymbolTable& symbol_table, const Block& block, s
             break;
         case INVERT:            
             
-            expr_text = "%1$ca%2$d_current = ~%3$ca%4$d_current"; break;
+            switch(etype) {
+                case BOOL: expr_text = "%1$ca%2$d_current = !%3$ca%4$d_current"; break;
+                default: expr_text = "%1$ca%2$d_current = ~%3$ca%4$d_current"; break;
+            }
             break;
         case ISINF:            
             

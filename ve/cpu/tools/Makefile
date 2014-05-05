@@ -76,13 +76,19 @@ black_fused:
 	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
 
 synth_sij:
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/benchmark/Python/synth.py --size=20000000*20 --bohrium=True
+	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*200
+	BH_CORE_VCACHE_SIZE=10 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*200
+	BH_CORE_VCACHE_SIZE=10 OMP_NUM_THREADS=4 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*200
 
 synth_fused:
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/benchmark/Python/synth.py --size=20000000*20 --bohrium=True
+	BH_CORE_VCACHE_SIZE=1 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*200
+	BH_CORE_VCACHE_SIZE=10 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*200
+	BH_CORE_VCACHE_SIZE=10 OMP_NUM_THREADS=4 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*200
 
 #
 # Tests
 test:
 	$(BH_PYTHON) $(ROOT)/test/numpy/numpytest.py
 
+graphs:
+	python ./create_svg.py ./ /tmp/

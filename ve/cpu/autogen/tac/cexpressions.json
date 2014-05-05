@@ -391,7 +391,8 @@
         "op":   "MAP", 
         "oper": "INVERT",
         "scalar": {
-            "default":    "out = ~in1",
+            "default":  "out = ~in1",
+            "BOOL":     "out = !in1",
             "COMPLEX64": "",
             "COMPLEX128": ""
         },
