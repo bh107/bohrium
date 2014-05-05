@@ -114,7 +114,7 @@ multi_array<OutT>& bh_add (multi_array<OutT>& res, const InT lhs, multi_array<In
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -273,7 +273,7 @@ multi_array<OutT>& bh_subtract (multi_array<OutT>& res, const InT lhs, multi_arr
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -432,7 +432,7 @@ multi_array<OutT>& bh_multiply (multi_array<OutT>& res, const InT lhs, multi_arr
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -591,7 +591,7 @@ multi_array<OutT>& bh_divide (multi_array<OutT>& res, const InT lhs, multi_array
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -750,7 +750,7 @@ multi_array<OutT>& bh_mod (multi_array<OutT>& res, const InT lhs, multi_array<In
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -909,7 +909,7 @@ multi_array<OutT>& bh_bitwise_and (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1068,7 +1068,7 @@ multi_array<OutT>& bh_bitwise_or (multi_array<OutT>& res, const InT lhs, multi_a
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1227,7 +1227,7 @@ multi_array<OutT>& bh_bitwise_xor (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1386,7 +1386,7 @@ multi_array<OutT>& bh_left_shift (multi_array<OutT>& res, const InT lhs, multi_a
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1545,7 +1545,7 @@ multi_array<OutT>& bh_right_shift (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1704,7 +1704,7 @@ multi_array<OutT>& bh_logical_and (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -1863,7 +1863,7 @@ multi_array<OutT>& bh_logical_or (multi_array<OutT>& res, const InT lhs, multi_a
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -2022,7 +2022,7 @@ multi_array<OutT>& bh_logical_xor (multi_array<OutT>& res, const InT lhs, multi_
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -2181,7 +2181,7 @@ multi_array<OutT>& bh_power (multi_array<OutT>& res, const InT lhs, multi_array<
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -2340,7 +2340,7 @@ multi_array<OutT>& bh_maximum (multi_array<OutT>& res, const InT lhs, multi_arra
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -2499,7 +2499,7 @@ multi_array<OutT>& bh_minimum (multi_array<OutT>& res, const InT lhs, multi_arra
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
@@ -2658,7 +2658,7 @@ multi_array<OutT>& bh_arctan2 (multi_array<OutT>& res, const InT lhs, multi_arra
 
     // Broadcast
     if (!same_shape(res, *right)) {
-        right = &Runtime::instance().temp_view(lhs);
+        right = &Runtime::instance().temp_view(rhs);
         
         if (!broadcast_right(res, *right)) {
             throw std::runtime_error("LHS is not broadcastable.");
