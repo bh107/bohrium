@@ -88,7 +88,7 @@ bh_error bh_ve_cpu_init(const char *name)
     bh_intp jit_enabled  = 1;
     bh_intp jit_preload  = 1;
     bh_intp jit_fusion   = 0;
-    bh_intp jit_dumpsrc  = 1;
+    bh_intp jit_dumpsrc  = 0;
 
     char* compiler_cmd;   // cpu Arguments
     char* kernel_path;
