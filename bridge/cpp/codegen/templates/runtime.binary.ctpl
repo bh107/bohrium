@@ -20,19 +20,16 @@ multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT>& lhs, multi_arr
         right   = &Runtime::instance().temp_view(rhs);
 
         if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
+            if (!broadcast(res, *left, *right)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
+            if (!broadcast(res, *right, *left)) {
                 throw std::runtime_error("Failed broadcasting.");
             }
         }
     }
 
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
     if (!same_shape(res, *right)) {
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
