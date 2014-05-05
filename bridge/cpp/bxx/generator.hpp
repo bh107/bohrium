@@ -77,12 +77,21 @@ multi_array<T>& zeros(const Dimensions&... shape)
 template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
 {
+    // Generate some random numbers
+    multi_array<uint64_t>*  rand_result = new multi_array<uint64_t>(shape...);
+    rand_result->setTemp(true);
+    rand_result->link();
+
+    bh_random(*rand_result, (uint64_t)0, (uint64_t)time(NULL));
+
+    // Convert them to the requested type
     multi_array<T>* result = new multi_array<T>(shape...);
+    result->setTemp(true);
     result->link();
 
-    bh_random(*result, (uint64_t)0, (uint64_t)time(NULL));
-    result->setTemp(true);
+    bh_identity(*result, *rand_result);
 
+    // Return them to the user
     return *result;
 }
 

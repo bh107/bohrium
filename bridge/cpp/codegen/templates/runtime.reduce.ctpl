@@ -6,6 +6,8 @@ directiveStartToken = %
 
 %for $op, $opcode, $optype, $opcount, $typesigs in $data
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -24,6 +26,8 @@ multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
 {

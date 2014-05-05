@@ -23,84 +23,15 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bxx {
 
 template <typename T>
-multi_array<T>& reduce(multi_array<T>& op, reducible opcode, int64_t axis)
-{
-    if (axis<0) {
-        axis = op.getRank()+axis;
-    }
-    if (axis >= (int64_t)op.getRank()) {
-        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
-    }
-    multi_array<T>* result = &Runtime::instance().temp<T>();
-
-    result->meta.start = 0;                 // Update meta-data
-    if (op.meta.ndim == 1) {                // Pseudo-scalar; one element
-        result->meta.ndim      = 1;
-        result->meta.shape[0]  = 1;
-        result->meta.stride[0] = op.meta.stride[0];
-    } else {                                // Remove axis
-        result->meta.ndim  = op.meta.ndim -1;
-        int64_t stride = 1; 
-        for(int64_t i=op.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
-            if (i!=(int64_t)axis) {
-                result->meta.shape[j]  = op.meta.shape[i];
-                result->meta.stride[j] = stride;
-                stride *= result->meta.shape[j];
-                --j;
-            }
-        }
-    }
-    result->link();                         // Bind the base
-
-    switch(opcode) {
-        case ADD:
-            bh_add_reduce(*result, op, (bh_int64)axis);
-            break;
-
-        case MULTIPLY:
-            bh_multiply_reduce(*result, op, (bh_int64)axis);
-            break;
-        case MIN:
-            bh_minimum_reduce(*result, op, (bh_int64)axis);
-            break;
-        case MAX:
-            bh_maximum_reduce(*result, op, (bh_int64)axis);
-            break;
-        case LOGICAL_AND:
-            bh_logical_and_reduce(*result, op, (bh_int64)axis);
-            break;
-        case LOGICAL_OR:
-            bh_logical_or_reduce(*result, op, (bh_int64)axis);
-            break;
-        case LOGICAL_XOR:
-            bh_logical_xor_reduce(*result, op, (bh_int64)axis);
-            break;
-        case BITWISE_AND:
-            bh_bitwise_and_reduce(*result, op, (bh_int64)axis);
-            break;
-        case BITWISE_OR:
-            bh_bitwise_or_reduce(*result, op, (bh_int64)axis);
-            break;
-        case BITWISE_XOR:
-            bh_bitwise_xor_reduce(*result, op, (bh_int64)axis);
-            break;
-
-        default:
-            throw std::runtime_error("Error: Unsupported opcode for reduction.\n");
-    }
-
-    return *result;
-}
-
-template <typename T>
 multi_array<T>& sum(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &reduce(op, ADD, 0);
+    multi_array<T>* result = &bh_add_reduce(op, (int64_t)0);
     for(size_t i=1; i<dims; i++) {
-        result = &reduce(*result, ADD, 0);
+        result = &bh_add_reduce(*result, (int64_t)0);
     }
+
     return *result;
 }
 
@@ -109,9 +40,9 @@ multi_array<T>& product(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &reduce(op, MULTIPLY, 0);
+    multi_array<T>* result = &bh_multiply_reduce(op, (int64_t)0);
     for(size_t i=1; i<dims; i++) {
-        result = &reduce(*result, MULTIPLY, 0);
+        result = &bh_multiply_reduce(*result, (int64_t)0);
     }
 
     return *result;
@@ -122,10 +53,11 @@ multi_array<T>& min(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &reduce(op, MIN, 0);
+    multi_array<T>* result = &bh_minimum_reduce(op, (int64_t)0);
     for(size_t i=1; i<dims; i++) {
-        result = &reduce(*result, MIN, 0);
+        result = &bh_minimum_reduce(*result, (int64_t)0);
     }
+
     return *result;
 }
 
@@ -134,10 +66,11 @@ multi_array<T>& max(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &reduce(op, MAX, 0);
+    multi_array<T>* result = &bh_maximum_reduce(op, (int64_t)0);
     for(size_t i=1; i<dims; i++) {
-        result = &reduce(*result, MAX, 0);
+        result = &bh_maximum_reduce(*result, (int64_t)0);
     }
+
     return *result;
 }
 
@@ -146,10 +79,11 @@ multi_array<bool>& any(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &reduce(op, LOGICAL_OR, 0);
+    multi_array<T>* result = &bh_logical_or_reduce(op, (int64_t)0);
     for(size_t i=1; i<dims; i++) {
-        result = &reduce(*result, LOGICAL_OR, 0);
+        result = &bh_logical_or_reduce(*result, (int64_t)0);
     }
+
     return *result;
 }
 
@@ -158,9 +92,9 @@ multi_array<bool>& all(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &reduce(op, LOGICAL_AND, 0);
+    multi_array<T>* result = &bh_logical_and_reduce(op, (int64_t)0);
     for(size_t i=1; i<dims; i++) {
-        result = &reduce(*result, LOGICAL_AND, 0);
+        result = &bh_logical_and_reduce(*result, (int64_t)0);
     }
     return *result;
 }
