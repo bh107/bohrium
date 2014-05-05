@@ -4,7 +4,7 @@
 #include "util/argparse.hpp"
 
 using namespace std;
-using namespace bh;
+using namespace bxx;
 using namespace argparse;
 
 double monte_carlo_pi(int samples, int iterations)

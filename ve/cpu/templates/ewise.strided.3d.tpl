@@ -1,3 +1,5 @@
+//
+// Elementwise operation on three-dimensional arrays using strided indexing
 {
     {{#OPERAND}}{{#ARRAY}}
     int64_t a{{NR}}_shape_ld    = a{{NR}}_shape[2];
@@ -27,9 +29,9 @@
         }
         int64_t work_end = work_offset+work;
                                                 // Pointer fixes
-        {{#OPERAND}}
-        {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + (work_offset * a{{NR}}_stride_tld){{/ARRAY}};
-        {{/OPERAND}}
+        {{#OPERAND}}{{#ARRAY}}
+        {{TYPE}} *a{{NR}}_current = a{{NR}}_first + (work_offset * a{{NR}}_stride_tld);
+        {{/ARRAY}}{{/OPERAND}}
 
         for (int64_t k=work_offset; k<work_end; ++k) {
             for (int64_t j = 0; j<a{{NR_OUTPUT}}_shape_sld; ++j) {
@@ -54,5 +56,14 @@
             {{/ARRAY}}{{/OPERAND}}
         }
     }
+    
+    {{#OPERAND}}{{#SCALAR}}
+    // Write scalar-operand to main-memory;
+    // Note this is only necessary for non-temporary scalar-operands.
+    // So this code should only be generated for non-temps.
+    if ({{NR_OUTPUT}} == {{NR}}) {
+        *a{{NR}}_first = a{{NR}}_current;
+    }
+    {{/SCALAR}}{{/OPERAND}}
 }
 

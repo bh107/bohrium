@@ -4,7 +4,7 @@
 #include "util/argparse.hpp"
 
 using namespace std;
-using namespace bh;
+using namespace bxx;
 using namespace argparse;
 
 template <typename T>

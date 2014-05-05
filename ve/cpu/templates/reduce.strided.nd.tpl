@@ -67,7 +67,7 @@
             //
             // Do the reduction over the axis dimension
             //
-            {{TYPE_OUTPUT}} rvar = *a{{NR_FINPUT}}_current;
+            {{TYPE_OUTPUT}} state = *a{{NR_FINPUT}}_current;
             for(int64_t k=1; k<a{{NR_FINPUT}}_shape[axis]; ++k) {
                 //
                 // Walk to the next element input-element along the axis dimension
@@ -76,10 +76,10 @@
                 //
                 // Apply the operator
                 //
-                rvar += *a{{NR_FINPUT}}_current;
+                state += *a{{NR_FINPUT}}_current;
             }
             // Write the accumulation output
-            *a{{NR_OUTPUT}}_current = rvar;
+            *a{{NR_OUTPUT}}_current = state;
 
             // Now increment the output
             a{{NR_OUTPUT}}_current += a{{NR_OUTPUT}}_stride_ld;
@@ -97,5 +97,14 @@
             }                   // Loop then continues to increment the next dimension
         }
     }
+
+    {{#OPERAND}}{{#SCALAR}}
+    // Write scalar-operand to main-memory;
+    // Note this is only necessary for non-temporary scalar-operands.
+    // So this code should only be generated for non-temps.
+    if ({{NR_OUTPUT}} == {{NR}}) {
+        *a{{NR}}_first = a{{NR}}_current;
+    }
+    {{/SCALAR}}{{/OPERAND}}
 }
 

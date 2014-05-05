@@ -1,423 +1,272 @@
-#include <fstream>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <sstream>
-#include "bh.h"
-#include "bh_ve_cpu.h"
+#include "utils.hpp"
+#include "thirdparty/MurmurHash3.h"
 
-#include "utils.auto.cpp"
+using namespace std;
+namespace bohrium{
+namespace utils{
 
-void bh_string_option(char *&option, const char *env_name, const char *conf_name)
-{
-    option = getenv(env_name);           // For the compiler
-    if (NULL==option) {
-        option = bh_component_config_lookup(&myself, conf_name);
-    }
-    char err_msg[100];
+const char TAG[] = "Utils";
 
-    if (!option) {
-        sprintf(err_msg, "cpu-ve: String is not set; option (%s).\n", conf_name);
-        throw runtime_error(err_msg);
-    }
-}
-
-void bh_path_option(char *&option, const char *env_name, const char *conf_name)
-{
-    option = getenv(env_name);           // For the compiler
-    if (NULL==option) {
-        option = bh_component_config_lookup(&myself, conf_name);
-    }
-    char err_msg[100];
-
-    if (!option) {
-        sprintf(err_msg, "cpu-ve: Path is not set; option (%s).\n", conf_name);
-        throw runtime_error(err_msg);
-    }
-    if (0 != access(option, F_OK)) {
-        if (ENOENT == errno) {
-            sprintf(err_msg, "cpu-ve: Path does not exist; path (%s).\n", option);
-        } else if (ENOTDIR == errno) {
-            sprintf(err_msg, "cpu-ve: Path is not a directory; path (%s).\n", option);
-        } else {
-            sprintf(err_msg, "cpu-ve: Path is broken somehow; path (%s).\n", option);
+std::string string_format(const std::string fmt_str, ...) {
+    int size = 100;
+    std::string str;
+    va_list ap;
+    while (1) {
+        str.resize(size);
+        va_start(ap, fmt_str);
+        int n = vsnprintf((char *)str.c_str(), size, fmt_str.c_str(), ap);
+        va_end(ap);
+        if (n > -1 && n < size) {
+            str.resize(n);
+            return str;
         }
-        throw runtime_error(err_msg);
+        if (n > -1) {
+            size = n + 1;
+        } else {
+            size *= 2;
+        }
     }
+    return str;
 }
 
-/**
- * Read the entire file provided via filename into memory.
- *
- * It is the resposibility of the caller to de-allocate the buffer.
- *
- * @return size_t bytes read.
- */
-size_t read_file(const char* filename, char** contents)
+bool equivalent(const operand_t& one, const operand_t& other)
 {
-    int size = 0;
-
-    std::ifstream file(filename, std::ios::in|std::ios::binary|std::ios::ate);
-
-    if (file.is_open()) {
-        size = file.tellg();
-        *contents = (char*)malloc(size);
-        file.seekg(0, std::ios::beg);
-        file.read(*contents, size);
-        file.close();
+    if (one.layout != other.layout) {
+        return false;
     }
-
-    return size;
+    if (one.data != other.data) {
+        return false;
+    }
+    if (one.ndim != other.ndim) {
+        return false;
+    }
+    if (one.start != other.start) {
+        return false;
+    }
+    for(bh_intp j=0; j<one.ndim; ++j) {
+        if (one.stride[j] != other.stride[j]) {
+            return false;
+        }
+        if (one.shape[j] != other.shape[j]) {
+            return false;
+        }
+    }
+    return true;
 }
 
-void assign_string(char*& output, const char* input)
+bool compatible(const operand_t& one, const operand_t& other)
 {
-    size_t length = strlen(input);
-
-    output = (char*)malloc(sizeof(char) * length+1);
-    if (!output) {
-        std::cout << "Something went terribly wrong!" << std::endl;
+    //
+    // Scalar layouts are compatible with any other layout
+    if (((one.layout & SCALAR_LAYOUT)>0) || \
+        ((other.layout & SCALAR_LAYOUT)>0)) {
+        return true;
     }
-    strncpy(output, input, length);
-    output[length] = '\0';
+
+    /*
+    //
+    // Array layouts of different types are not compatible 
+    if (one.layout != other.layout) {
+        return false;
+    }*/
+    if (one.ndim != other.ndim) {
+        return false;
+    }
+    for(bh_intp j=0; j<one.ndim; ++j) {
+        if (one.shape[j] != other.shape[j]) {
+            return false;
+        }
+    }
+    return true;
 }
 
-inline
-bool is_contiguous(bh_view *operand)
+bool contiguous(const operand_t& arg)
 {
-    if ((operand->ndim == 3) && \
-        (operand->stride[2] == 1) && \
-        (operand->stride[1] == operand->shape[2]) && \
-        (operand->stride[0] == operand->shape[2]*operand->shape[1])
+    if ((arg.ndim == 3) && \
+        (arg.stride[2] == 1) && \
+        (arg.stride[1] == arg.shape[2]) && \
+        (arg.stride[0] == arg.shape[2]*arg.shape[1])
     ) {
         return true;
-    } else if ((operand->ndim == 2) && \
-               (operand->stride[1] == 1) && \
-               (operand->stride[0] == operand->shape[1])) {
+    } else if ((arg.ndim == 2) && \
+               (arg.stride[1] == 1) && \
+               (arg.stride[0] == arg.shape[1])) {
         return true;
-    } else if ((operand->ndim == 1) && (operand->stride[0] == 1)) {
+    } else if ((arg.ndim == 1) && (arg.stride[0] == 1)) {
         return true;
     }
 
     return false;
 }
 
-/**
- * Compute the layoutmask of the instruction.
- *
- */
-int bh_layoutmask(bh_instruction *instr)
+std::string operand_text(const operand_t& operand)
 {
-    int mask = 0;
-    const int nops = bh_operands(instr->opcode);
-
-    switch(nops) {
-        case 3:
-            mask |= (is_contiguous(&instr->operand[0])) ? A0_CONTIGUOUS : A0_STRIDED;
-            if (bh_is_constant(&instr->operand[2])) {
-                mask |= (is_contiguous(&instr->operand[1])) ? A1_CONTIGUOUS : A1_STRIDED;
-                mask |= A2_CONSTANT;
-            } else if (bh_is_constant(&instr->operand[1])) {
-                mask |= A1_CONSTANT;
-                mask |= (is_contiguous(&instr->operand[2])) ? A2_CONTIGUOUS : A2_STRIDED;
-            } else {
-                mask |= (is_contiguous(&instr->operand[1])) ? A1_CONTIGUOUS : A1_STRIDED;
-                mask |= (is_contiguous(&instr->operand[2])) ? A2_CONTIGUOUS : A2_STRIDED;
-            }
-            break;
-
-        case 2:
-            mask |= (is_contiguous(&instr->operand[0])) ? A0_CONTIGUOUS : A0_STRIDED;
-            if (bh_is_constant(&instr->operand[1])) {
-                mask |= A1_CONSTANT;
-            } else {
-                mask |= (is_contiguous(&instr->operand[1])) ? A1_CONTIGUOUS : A1_STRIDED;
-            }
-            break;
-
-        case 1:
-            mask |= (is_contiguous(&instr->operand[0])) ? A0_CONTIGUOUS : A0_STRIDED;
-            break;
-
-        case 0:
-        default:
-            break;
+    stringstream ss;
+    ss << "{";
+    ss << " layout("    << utils::layout_text(operand.layout) << "),";
+    ss << " nelem("     << operand.nelem << "),";
+    ss << " data("      << *(operand.data) << "),";
+    ss << " const_data("<< operand.const_data << "),";
+    ss << " etype("     << utils::etype_text(operand.etype) << "),";
+    ss << " ndim("      << operand.ndim << "),";
+    ss << " start("     << operand.start << "),";        
+    ss << " shape(";
+    for(int64_t dim=0; dim < operand.ndim; ++dim) {
+        ss << operand.shape[dim];
+        if (dim != (operand.ndim-1)) {
+            ss << ", ";
+        }
     }
-    return mask;
+    ss << "),";
+    ss << " stride(";
+    for(int64_t dim=0; dim < operand.ndim; ++dim) {
+        ss << operand.stride[dim];
+        if (dim != (operand.ndim-1)) {
+            ss << ", ";
+        }
+    }
+    ss << ") ";
+    ss << "}" << endl;
+
+    return ss.str();
 }
 
-const char* bhopcode_to_cexpr(bh_opcode const opcode, const bh_type type)
+std::string tac_text(const tac_t& tac)
 {
-    switch(opcode) {
-        case BH_ADD_ACCUMULATE:
-            return "cvar += *a1_current; *a0_current = cvar;";
-        case BH_MULTIPLY_ACCUMULATE:
-            return "cvar *= *a1_current; *a0_current = cvar;";
-
-        case BH_ADD_REDUCE:
-            return "rvar += *tmp_current";
-        case BH_MULTIPLY_REDUCE:
-            return "rvar *= *tmp_current";
-        case BH_MINIMUM_REDUCE:
-            return "rvar = rvar < *tmp_current ? rvar : *tmp_current";
-        case BH_MAXIMUM_REDUCE:
-            return "rvar = rvar < *tmp_current ? *tmp_current : rvar";
-        case BH_LOGICAL_AND_REDUCE:
-            return "rvar = rvar && *tmp_current";
-        case BH_BITWISE_AND_REDUCE:
-            return "rvar &= *tmp_current";
-        case BH_LOGICAL_OR_REDUCE:
-            return "rvar = rvar || *tmp_current";
-        case BH_BITWISE_OR_REDUCE:
-            return "rvar |= *tmp_current";
-
-        case BH_LOGICAL_XOR_REDUCE:
-            return "rvar = !rvar != !*tmp_current";
-        case BH_BITWISE_XOR_REDUCE:
-            return "rvar = rvar ^ *tmp_current";
-
-        // Binary elementwise: ADD, MULTIPLY...
-        case BH_ADD:
-            return "*a0_current = *a1_current + *a2_current";
-        case BH_SUBTRACT:
-            return "*a0_current = *a1_current - *a2_current";
-        case BH_MULTIPLY:
-            return "*a0_current = *a1_current * *a2_current";
-        case BH_DIVIDE:
-            return "*a0_current = *a1_current / *a2_current";
-        case BH_POWER:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = cpowf( *a1_current, *a2_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = cpow( *a1_current, *a2_current )";
-                default:
-                    return "*a0_current = pow( *a1_current, *a2_current )";
-            }
-        case BH_GREATER:
-            return "*a0_current = *a1_current > *a2_current";
-        case BH_GREATER_EQUAL:
-            return "*a0_current = *a1_current >= *a2_current";
-        case BH_LESS:
-            return "*a0_current = *a1_current < *a2_current";
-        case BH_LESS_EQUAL:
-            return "*a0_current = *a1_current <= *a2_current";
-        case BH_EQUAL:
-            return "*a0_current = *a1_current == *a2_current";
-        case BH_NOT_EQUAL:
-            return "*a0_current = *a1_current != *a2_current";
-        case BH_LOGICAL_AND:
-            return "*a0_current = *a1_current && *a2_current";
-        case BH_LOGICAL_OR:
-            return "*a0_current = *a1_current || *a2_current";
-        case BH_LOGICAL_XOR:
-            return "*a0_current = (!*a1_current != !*a2_current)";
-        case BH_MAXIMUM:
-            return "*a0_current = *a1_current < *a2_current ? *a2_current : *a1_current";
-        case BH_MINIMUM:
-            return "*a0_current = *a1_current < *a2_current ? *a1_current : *a2_current";
-        case BH_BITWISE_AND:
-            return "*a0_current = *a1_current & *a2_current";
-        case BH_BITWISE_OR:
-            return "*a0_current = *a1_current | *a2_current";
-        case BH_BITWISE_XOR:
-            return "*a0_current = *a1_current ^ *a2_current";
-        case BH_LEFT_SHIFT:
-            return "*a0_current = (*a1_current) << (*a2_current)";
-        case BH_RIGHT_SHIFT:
-            return "*a0_current = (*a1_current) >> (*a2_current)";
-        case BH_ARCTAN2:
-            return "*a0_current = atan2( *a1_current, *a2_current )";
-        case BH_MOD:
-            return "*a0_current = *a1_current - floor(*a1_current / *a2_current) * *a2_current";
-
-        // Unary elementwise: SQRT, SIN...
-        case BH_ABSOLUTE:
-            return "*a0_current = *a1_current < 0.0 ? -*a1_current: *a1_current";
-        case BH_LOGICAL_NOT:
-            return "*a0_current = !*a1_current";
-        case BH_INVERT:
-            return "*a0_current = ~*a1_current";
-        case BH_COS:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = ccosf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = ccos( *a1_current )";
-                default:
-                    return "*a0_current = cos( *a1_current )";
-            }
-        case BH_SIN:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = csinf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = csin( *a1_current )";
-                default:
-                    return "*a0_current = sin( *a1_current )";
-            }
-        case BH_TAN:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = ctanf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = ctan( *a1_current )";
-                default:
-                    return "*a0_current = tan( *a1_current )";
-            }
-        case BH_COSH:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = ccoshf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = ccosh( *a1_current )";
-                default:
-                    return "*a0_current = cosh( *a1_current )";
-            }
-        case BH_SINH:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = csinhf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = csinh( *a1_current )";
-                default:
-                    return "*a0_current = sinh( *a1_current )";
-            }
-        case BH_TANH:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = ctanhf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = ctanh( *a1_current )";
-                default:
-                    return "*a0_current = tanh( *a1_current )";
-            }
-        case BH_ARCSIN:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = casinf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = casin( *a1_current )";
-                default:
-                    return "*a0_current = asin( *a1_current )";
-            }
-        case BH_ARCCOS:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = cacosf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = cacos( *a1_current )";
-                default:
-                    return "*a0_current = acos( *a1_current )";
-            }
-        case BH_ARCTAN:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = catanf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = catan( *a1_current )";
-                default:
-                    return "*a0_current = atan( *a1_current )";
-            }
-        case BH_ARCSINH:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = casinhf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = casinh( *a1_current )";
-                default:
-                    return "*a0_current = asinh( *a1_current )";
-            }
-        case BH_ARCCOSH:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = cacoshf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = cacosh( *a1_current )";
-                default:
-                    return "*a0_current = acosh( *a1_current )";
-            }
-        case BH_ARCTANH:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = catanhf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = catanh( *a1_current )";
-                default:
-                    return "*a0_current = atanh( *a1_current )";
-            }
-        case BH_EXP:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = cexpf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = cexp( *a1_current )";
-                default:
-                    return "*a0_current = exp( *a1_current )";
-            }
-        case BH_EXP2:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = cpowf( 2, *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = cpow( 2, *a1_current )";
-                default:
-                    return "*a0_current = pow( 2, *a1_current )";
-            }
-        case BH_EXPM1:
-            return "*a0_current = expm1( *a1_current )";
-        case BH_LOG:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = clogf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = clog( *a1_current )";
-                default:
-                    return "*a0_current = log( *a1_current )";
-            }
-        case BH_LOG2:
-            return "*a0_current = log2( *a1_current )";
-        case BH_LOG10:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = clogf( *a1_current )/log(10)";
-                case BH_COMPLEX128:
-                    return "*a0_current = clog( *a1_current )/log(10)";
-                default:
-                    return "*a0_current = log( *a1_current )/log(10)";
-            }
-        case BH_LOG1P:
-            return "*a0_current = log1p( *a1_current )";
-        case BH_SQRT:
-            switch(type) {
-                case BH_COMPLEX64:
-                    return "*a0_current = csqrtf( *a1_current )";
-                case BH_COMPLEX128:
-                    return "*a0_current = csqrt( *a1_current )";
-                default:
-                    return "*a0_current = sqrt( *a1_current )";
-            }
-        case BH_CEIL:
-            return "*a0_current = ceil( *a1_current )";
-        case BH_TRUNC:
-            return "*a0_current = trunc( *a1_current )";
-        case BH_FLOOR:
-            return "*a0_current = floor( *a1_current )";
-        case BH_RINT:
-            return "*a0_current = (*a1_current > 0.0) ? floor(*a1_current + 0.5) : ceil(*a1_current - 0.5)";
-        case BH_ISNAN:
-            return "*a0_current = isnan(*a1_current)";
-        case BH_ISINF:
-            return "*a0_current = isinf(*a1_current)";
-        case BH_IDENTITY:
-            return "*a0_current = *a1_current";
-        case BH_REAL:
-            return (type==BH_FLOAT32) ? "*a0_current = crealf(*a1_current)": "*a0_current = creal(*a1_current)";
-        case BH_IMAG:
-            return (type==BH_FLOAT32) ? "*a0_current = cimagf(*a1_current)": "*a0_current = cimagf(*a1_current)";
-
-        default:
-            return "__UNKNOWN__";
-    }
+    std::stringstream ss;
+    ss << "{ op("<< operation_text(tac.op) << "(" << tac.op << ")),";
+    ss << " oper(" << operator_text(tac.oper) << "(" << tac.oper << ")),";
+    ss << " out("  << tac.out << "),";
+    ss << " in1("  << tac.in1 << "),";
+    ss << " in2("  << tac.in2 << ")";
+    ss << " }";
+    return ss.str();
 }
 
+uint32_t hash(std::string text)
+{
+    uint32_t seed = 4200;
+    uint32_t hash[4];
+    
+    MurmurHash3_x86_128(text.c_str(), text.length(), seed, &hash);
+    
+    return hash[0];
+}
+
+string hash_text(std::string text)
+{
+    uint32_t hash[4];
+    stringstream ss;
+
+    uint32_t seed = 4200;
+
+    MurmurHash3_x86_128(text.c_str(), text.length(), seed, &hash);
+    ss << hash[0];
+    ss << hash[1];
+    ss << hash[2];
+    ss << hash[3];
+    
+    return ss.str();
+}
+
+int tac_noperands(const tac_t& tac)
+{
+    switch(tac.op) {
+        case MAP:
+            return 2;
+        case ZIP:
+            return 3;
+        case SCAN:
+            return 3;
+        case REDUCE:
+            return 3;
+        case GENERATE:
+            switch(tac.oper) {
+                case FLOOD:
+                    return 2;
+                case RANDOM:
+                    return 2;
+                case RANGE:
+                    return 1;
+                default:
+                    throw runtime_error("noperands does not know how many operands are used.");
+                    return 0;
+            }
+        case SYSTEM:
+            switch(tac.oper) {
+                case DISCARD:
+                case FREE:
+                case SYNC:
+                    return 1;
+                case NONE:
+                    return 0;
+                default:
+                    throw runtime_error("noperands does not know how many operands are used.");
+                    return 0;
+            }
+            break;
+        case EXTENSION:
+            return 3;
+        case NOOP:
+            return 0;
+    }
+    return 0;
+}
+
+bool write_file(string file_path, const char* sourcecode, size_t source_len)
+{
+    DEBUG(TAG, "write_file("<< file_path << ", ..., " << source_len << ");");
+
+    int fd;              // Kernel file-descriptor
+    FILE *fp = NULL;     // Handle for kernel-file
+    const char *mode = "w";
+    int err;
+
+    fd = open(file_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
+    if ((!fd) || (fd<1)) {
+        err = errno;
+        utils::error(err, "Engine::write_file [%s] in write_file(...).\n", file_path.c_str());
+        return false;
+    }
+    fp = fdopen(fd, mode);
+    if (!fp) {
+        err = errno;
+        utils::error(err, "fdopen(fildes= %d, flags= %s).", fd, mode);
+        return false;
+    }
+    fwrite(sourcecode, 1, source_len, fp);
+    fflush(fp);
+    fclose(fp);
+    close(fd);
+
+    DEBUG(TAG, "write_file(...);");
+    return true;
+}
+
+int error(int errnum, const char *fmt, ...)
+{
+    va_list va;
+    int ret;
+
+    char err_msg[500];
+    sprintf(err_msg, "Error[%d, %s] from: %s", errnum, strerror(errnum), fmt);
+    va_start(va, fmt);
+    ret = vfprintf(stderr, err_msg, va);
+    va_end(va);
+    return ret;
+}
+
+int error(const char *err_msg, const char *fmt, ...)
+{
+    va_list va;
+    int ret;
+
+    char err_txt[500];
+    sprintf(err_txt, "Error[%s] from: %s", err_msg, fmt);
+    va_start(va, fmt);
+    ret = vfprintf(stderr, err_txt, va);
+    va_end(va);
+    return ret;
+}
+
+}}

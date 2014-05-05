@@ -1,0 +1,7 @@
+[
+    {"id": 1,   "name": "CONSTANT",     "shorthand": "K"},
+    {"id": 2,   "name": "SCALAR",       "shorthand": "X"},
+    {"id": 4,   "name": "CONTIGUOUS",   "shorthand": "C"},
+    {"id": 8,   "name": "STRIDED",      "shorthand": "S"},
+    {"id": 16,  "name": "SPARSE",       "shorthand": "P"}
+]

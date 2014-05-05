@@ -1,0 +1,21 @@
+[
+{"id": 1,       "name": "BOOL",         "shorthand": "z",   "size": "1",    "enum": "BH_BOOL",       "bhtype": "bh_bool",        "numpy": "bool_",         "union": "bool8",       "c": "unsigned char",   "cpp": "bool"  },
+    
+{"id": 2,       "name": "INT8",         "shorthand": "b",   "size": "1",    "enum": "BH_INT8",       "bhtype": "bh_int8",        "numpy": "int8",          "union": "int8",        "c": "int8_t",          "cpp": "int8_t"         },
+{"id": 4,       "name": "INT16",        "shorthand": "s",   "size": "2",    "enum": "BH_INT16",      "bhtype": "bh_int16",       "numpy": "int16",         "union": "int16",       "c": "int16_t",         "cpp": "int16_t"        },
+{"id": 8,       "name": "INT32",        "shorthand": "i",   "size": "4",    "enum": "BH_INT32",      "bhtype": "bh_int32",       "numpy": "int32",         "union": "int32",       "c": "int32_t",         "cpp": "int32_t"        },
+{"id": 16,      "name": "INT64",        "shorthand": "l",   "size": "8",    "enum": "BH_INT64",      "bhtype": "bh_int64",       "numpy": "int64",         "union": "int64",       "c": "int64_t",         "cpp": "int64_t"        },
+    
+{"id": 32,      "name": "UINT8",        "shorthand": "B",   "size": "1",    "enum": "BH_UINT8",      "bhtype": "bh_uint8",       "numpy": "uint8",         "union": "uint8",       "c": "uint8_t",         "cpp": "uint8_t"        },
+{"id": 64,      "name": "UINT16",       "shorthand": "S",   "size": "2",    "enum": "BH_UINT16",     "bhtype": "bh_uint16",      "numpy": "uint16",        "union": "uint16",      "c": "uint16_t",        "cpp": "uint16_t"       },
+{"id": 128,     "name": "UINT32",       "shorthand": "I",   "size": "4",    "enum": "BH_UINT32",     "bhtype": "bh_uint32",      "numpy": "uint32",        "union": "uint32",      "c": "uint32_t",        "cpp": "uint32_t"       },
+{"id": 256,     "name": "UINT64",       "shorthand": "L",   "size": "8",    "enum": "BH_UINT64",     "bhtype": "bh_uint64",      "numpy": "uint64",        "union": "uint64",      "c": "uint64_t",        "cpp": "uint64_t"       },
+
+{"id": 512,     "name": "FLOAT32",      "shorthand": "f",   "size": "4",    "enum": "BH_FLOAT32",    "bhtype": "bh_float32",     "numpy": "float32",       "union": "float32",     "c": "float",           "cpp": "float"          },
+{"id": 1024,    "name": "FLOAT64",      "shorthand": "d",   "size": "8",    "enum": "BH_FLOAT64",    "bhtype": "bh_float64",     "numpy": "float64",       "union": "float64",     "c": "double",          "cpp": "double"         },
+
+{"id": 2048,    "name": "COMPLEX64",    "shorthand": "c",   "size": "8",    "enum": "BH_COMPLEX64",  "bhtype": "bh_complex64",   "numpy": "complex64",     "union": "complex64",   "c": "float complex",   "cpp": "complex<float>" },
+{"id": 4096,    "name": "COMPLEX128",   "shorthand": "C",   "size": "16",    "enum": "BH_COMPLEX128", "bhtype": "bh_complex128",  "numpy": "complex128",    "union": "complex128",  "c": "double complex",  "cpp": "complex<double>"},
+
+{"id": 8192,    "name": "PAIRLL",   "shorthand": "P",   "size": "16",    "enum": "BH_R123", "bhtype": "bh_r123",  "numpy": "unknown",    "union": "r123",  "c": "pair_LL",  "cpp": "pair_LL"}
+]

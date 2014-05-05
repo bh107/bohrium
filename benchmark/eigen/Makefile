@@ -4,7 +4,8 @@ CPPB_INCLUDE=$(ROOT)/bridge/cpp
 
 BENCH_SRC  = $(wildcard src/*.cpp)
 BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
-BENCHMARKS = black_scholes
+#BENCHMARKS = black_scholes
+BENCHMARKS = synth
 
 #CXX=clang
 CXX=g++
@@ -22,5 +23,8 @@ clean:
 #
 # Benchmarks
 #
-black_scholes: src/black_scholes.cpp $(HEADER)
+#black_scholes: src/black_scholes.cpp $(HEADER)
+#	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -I/usr/include/eigen3 $(LCFLAGS) $(CXXFLAGS) -lstdc++
+
+synth: src/synth.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -I/usr/include/eigen3 $(LCFLAGS) $(CXXFLAGS) -lstdc++

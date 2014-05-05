@@ -1,10 +1,12 @@
+//
+// Reduction on three-dimensional arrays using strided indexing
 {
 #define OUTER 1
 #define INNER 0
 
-    {{#OPERAND}}
-    {{TYPE}} *a{{NR}}_current = a{{NR}}_first{{#ARRAY}} + a{{NR}}_start;{{/ARRAY}};
-    {{/OPERAND}}
+    {{#OPERAND}}{{#ARRAY}}
+    {{TYPE}} *a{{NR}}_current = a{{NR}}_first + a{{NR}}_start;
+    {{/ARRAY}}{{/OPERAND}}
 
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
 
@@ -32,7 +34,7 @@
                                         i*a{{NR_FINPUT}}_stride[outer_axis] + \
                                         j*a{{NR_FINPUT}}_stride[inner_axis];
 
-            {{TYPE_INPUT}} rvar = *tmp_current;
+            {{TYPE_INPUT}} state = *tmp_current;
             for(int64_t k=1; k<a{{NR_FINPUT}}_shape[axis]; ++k) {
                 tmp_current += a{{NR_FINPUT}}_stride[axis];
 
@@ -40,8 +42,17 @@
                 {{OPERATOR}};
                 {{/OPERATORS}}
             }
-            *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + i*a{{NR_OUTPUT}}_stride[OUTER] + j*a{{NR_OUTPUT}}_stride[INNER]) = rvar;
+            *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + i*a{{NR_OUTPUT}}_stride[OUTER] + j*a{{NR_OUTPUT}}_stride[INNER]) = state;
         }
     }
+
+    {{#OPERAND}}{{#SCALAR}}
+    // Write scalar-operand to main-memory;
+    // Note this is only necessary for non-temporary scalar-operands.
+    // So this code should only be generated for non-temps.
+    if ({{NR_OUTPUT}} == {{NR}}) {
+        *a{{NR}}_first = a{{NR}}_current;
+    }
+    {{/SCALAR}}{{/OPERAND}}
 }
 

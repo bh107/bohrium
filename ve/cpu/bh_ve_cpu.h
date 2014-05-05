@@ -22,22 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh.h>
 
-// Single-Expression-Jit hash: OPCODE_NDIM_LAYOUT_TYPESIG
-#define A0_CONSTANT     (1 << 0)
-#define A0_CONTIGUOUS   (1 << 1)
-#define A0_STRIDED      (1 << 2)
-#define A0_SPARSE       (1 << 3)
-
-#define A1_CONSTANT     (1 << 4)
-#define A1_CONTIGUOUS   (1 << 5)
-#define A1_STRIDED      (1 << 6)
-#define A1_SPARSE       (1 << 7)
-
-#define A2_CONSTANT     (1 << 8)
-#define A2_CONTIGUOUS   (1 << 9)
-#define A2_STRIDED      (1 << 10)
-#define A2_SPARSE       (1 << 11)
-
 #ifdef __cplusplus
 extern "C" {
 #endif

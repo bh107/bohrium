@@ -1,4 +1,4 @@
-// Reduction operation of a strided n-dimensional array where n>1
+// Scan operation of a strided n-dimensional array where n>1
 // TODO: openmp
 //       dimension-based optimizations
 //       loop collapsing...
@@ -43,14 +43,14 @@
         //
         // Iterate over axis dimension
         //
-        {{TYPE_INPUT}} cvar = ({{TYPE_INPUT}}){{NEUTRAL_ELEMENT}};
+        {{TYPE_INPUT}} state = ({{TYPE_INPUT}}){{NEUTRAL_ELEMENT}};
         for (int64_t j = 0; j<shape_axis; ++j) {
             {{#OPERATORS}}
-            {{OPERATOR}}
+            {{OPERATOR}};
             {{/OPERATORS}}
 
             // Update the output
-            *a{{NR_OUTPUT}}_current = cvar;
+            *a{{NR_OUTPUT}}_current = state;
             
             a{{NR_OUTPUT}}_current += a{{NR_OUTPUT}}_stride_axis;
             a{{NR_FINPUT}}_current += a{{NR_FINPUT}}_stride_axis;
@@ -70,5 +70,14 @@
             }                   // Loop then continues to increment the next dimension
         }
     }
+    
+    {{#OPERAND}}{{#SCALAR}}
+    // Write scalar-operand to main-memory;
+    // Note this is only necessary for non-temporary scalar-operands.
+    // So this code should only be generated for non-temps.
+    if ({{NR_OUTPUT}} == {{NR}}) {
+        *a{{NR}}_first = a{{NR}}_current;
+    }
+    {{/SCALAR}}{{/OPERAND}}
 }
 

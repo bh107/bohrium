@@ -23,3 +23,7 @@ clean:
 black_scholes: src/black_scholes.cpp
 	$(CXX) $< -o bin/$@ $(LCFLAGS) $(CXXFLAGS) -lstdc++ -I$(BH_CPPB)
 
+synth: src/synth.cpp
+	$(CXX) $< -o bin/$@ $(LCFLAGS) $(CXXFLAGS) -lstdc++ -I$(BH_CPPB)
+
+

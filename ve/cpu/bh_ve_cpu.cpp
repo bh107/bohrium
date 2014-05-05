@@ -17,438 +17,84 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <string>
-#include <sstream>
-#include <vector>
-#include <set>
 #include <stdexcept>
 #include <map>
+
 #include <errno.h>
 #include <unistd.h>
 #include <inttypes.h>
-#include <ctemplate/template.h>
-#include <bh.h>
-#include <bh_vcache.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "bh_ve_cpu.h"
 
-// Execution Profile
-#ifdef PROFILE
-static bh_uint64 times[BH_NO_OPCODES+2]; // opcodes and: +1=malloc, +2=kernel
-static bh_uint64 calls[BH_NO_OPCODES+2];
-#endif
+#include <bh.h>
+#include "bh_ve_cpu.h"
+#include "engine.hpp"
 
 using namespace std;
+const char TAG[] = "Component";
 
 static bh_component myself;
-static map<bh_opcode, bh_extmethod_impl> extmethod_op2impl;
 
-static bh_intp vcache_size  = 10;
-static bh_intp jit_enabled  = 1;
-static bh_intp jit_preload  = 1;
-static bh_intp jit_fusion   = 0;
-static bh_intp jit_optimize = 1;
-static bh_intp jit_dumpsrc  = 0;
-
-static char* compiler_cmd;   // cpu Arguments
-static char* kernel_path;
-static char* object_path;
-static char* template_path;
-
-/*
-typedef enum BH_OPERATION {
-    EWISE,
-    REDUCTION,
-    SCAN,
-    RANGE,
-    RANDOM,
-    SYSTEM
-} BH_OPERATION;
-
-typedef enum BH_OPERATOR {
-    ADD,
-    SUBTRACT,
-    MULTIPLY,
-} BH_OPERATOR;
-
-typedef struct bh_bytecode {
-    BH_OPERATION op;    // Operation
-    BH_OPERATOR oper;   // Operator
-    uint16_t out;       // Output operand
-    uint16_t in1;       // First input operand
-    uint16_t in2;       // Second input operand
-} bh_bytecode_t;
-*/
+static size_t exec_count = 0;
 
 //
-// NOTE: Changes to bk_kernel_args_t must be
-//       replicated to "templates/kernel.tpl".
-//
-typedef struct bh_kernel_arg {
-    void*   data;       // Pointer to memory allocated for the array
-    int64_t start;      // Offset from memory allocation to start of array
-    int64_t nelem;      // Number of elements available in the allocation
+// This is where the actual engine implementation is
+static bohrium::engine::cpu::Engine* engine = NULL;
 
-    int64_t ndim;       // Number of dimensions of the array
-    int64_t* shape;     // Shape of the array
-    int64_t* stride;    // Stride in each dimension of the array
-} bh_kernel_arg_t;      // Meta-data for a kernel argument
-
-typedef struct bh_kernel {
-    int ninstr;                 // Number of instructions in kernel
-    int ninstr_nonsys;          // Number of instructions without a system opcode
-
-    bh_instruction* instr[10];  // Pointers to instructions
-    int tsig[10];               // Typesignature of the instructions
-    int lmask[10];              // Layoutmask of the instructions
-
-    int nargs;                  // Number of arguments to the kernel
-    bh_kernel_arg_t* args;      // Array of kernel arguments
-
-    string symbol;              // Textual representation of the kernel
-} bh_kernel_t;                  // Meta-data to construct and execute a kernel-function
-
-#include "compiler.cpp"
-#include "specializer.cpp"
-
-Compiler* target;
-
-/**
- *  Pack kernel arguments and execute kernel-function.
- *
- *  Contract: Do not call this function when kernel.ninstr_nonsys == 0.
- */
-static bh_error pack_arguments(bh_kernel_t* kernel)
+void bh_string_option(char *&option, const char *env_name, const char *conf_name)
 {
-    //
-    // Setup arguments
-    //
-    int nargs=0;
-    for (int i=0; i<kernel->ninstr; ++i) {
-        bh_instruction* instr = kernel->instr[i];
-
-        //
-        // Do not pack operands of system opcodes.
-        //
-        if ((instr->opcode >= BH_DISCARD) && (instr->opcode <= BH_SYNC)) {
-            continue;
-        }
-
-        //
-        // The layoutmask is used to determine how to pack arguments.
-        //
-        int lmask = kernel->lmask[i];
-
-        // The output is always an array
-        kernel->args[nargs].data     = bh_base_array(&instr->operand[0])->data;
-        kernel->args[nargs].nelem    = bh_base_array(&instr->operand[0])->nelem;
-        kernel->args[nargs].ndim     = instr->operand[0].ndim;
-        kernel->args[nargs].start    = instr->operand[0].start;
-        kernel->args[nargs].shape    = instr->operand[0].shape;
-        kernel->args[nargs++].stride = instr->operand[0].stride;
-
-        //
-        // The input, however, might be a constant
-        //
-        switch (instr->opcode) {    // [OPCODE_SWITCH]
-
-            case BH_RANDOM:
-                kernel->args[nargs++].data = &(instr->constant.value.r123.start);
-                kernel->args[nargs++].data = &(instr->constant.value.r123.key);
-                break;
-
-            case BH_RANGE:
-                break;
-
-            case BH_ADD_ACCUMULATE:                 // Scan
-            case BH_MULTIPLY_ACCUMULATE:
-
-            case BH_ADD_REDUCE:                     // Partial Reductions
-            case BH_MULTIPLY_REDUCE:
-            case BH_MINIMUM_REDUCE:
-            case BH_MAXIMUM_REDUCE:
-            case BH_LOGICAL_AND_REDUCE:
-            case BH_BITWISE_AND_REDUCE:
-            case BH_LOGICAL_OR_REDUCE:
-            case BH_LOGICAL_XOR_REDUCE:
-            case BH_BITWISE_OR_REDUCE:
-            case BH_BITWISE_XOR_REDUCE:
-
-                kernel->args[nargs].data     = bh_base_array(&instr->operand[1])->data;
-                kernel->args[nargs].nelem    = bh_base_array(&instr->operand[1])->nelem;
-                kernel->args[nargs].ndim     = instr->operand[1].ndim;
-                kernel->args[nargs].start    = instr->operand[1].start;
-                kernel->args[nargs].shape    = instr->operand[1].shape;
-                kernel->args[nargs++].stride = instr->operand[1].stride;
-
-                kernel->args[nargs++].data = &(instr->constant.value);
-                break;
-
-            case BH_ADD:
-            case BH_SUBTRACT:
-            case BH_MULTIPLY:
-            case BH_DIVIDE:
-            case BH_POWER:
-            case BH_GREATER:
-            case BH_GREATER_EQUAL:
-            case BH_LESS:
-            case BH_LESS_EQUAL:
-            case BH_EQUAL:
-            case BH_NOT_EQUAL:
-            case BH_LOGICAL_AND:
-            case BH_LOGICAL_OR:
-            case BH_LOGICAL_XOR:
-            case BH_MAXIMUM:
-            case BH_MINIMUM:
-            case BH_BITWISE_AND:
-            case BH_BITWISE_OR:
-            case BH_BITWISE_XOR:
-            case BH_LEFT_SHIFT:
-            case BH_RIGHT_SHIFT:
-            case BH_ARCTAN2:
-            case BH_MOD:
-
-                if ((lmask & A2_CONSTANT) == A2_CONSTANT) {         // AAK
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[1])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[1].ndim;
-                    kernel->args[nargs].start  = instr->operand[1].start;
-                    kernel->args[nargs].shape  = instr->operand[1].shape;
-                    kernel->args[nargs++].stride = instr->operand[1].stride;
-
-                    kernel->args[nargs++].data = &(instr->constant.value);
-                } else if ((lmask & A1_CONSTANT) == A1_CONSTANT) {  // AKA
-                    kernel->args[nargs++].data = &(instr->constant.value);
-
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[2])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[2])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[2].ndim;
-                    kernel->args[nargs].start  = instr->operand[2].start;
-                    kernel->args[nargs].shape  = instr->operand[2].shape;
-                    kernel->args[nargs++].stride = instr->operand[2].stride;
-                } else {                                            // AAA
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[1])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[1].ndim;
-                    kernel->args[nargs].start  = instr->operand[1].start;
-                    kernel->args[nargs].shape  = instr->operand[1].shape;
-                    kernel->args[nargs++].stride = instr->operand[1].stride;
-
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[2])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[2])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[2].ndim;
-                    kernel->args[nargs].start  = instr->operand[2].start;
-                    kernel->args[nargs].shape  = instr->operand[2].shape;
-                    kernel->args[nargs++].stride = instr->operand[2].stride;
-                }
-
-                break;
-
-            case BH_REAL:
-            case BH_IMAG:
-            case BH_ABSOLUTE:
-            case BH_LOGICAL_NOT:
-            case BH_INVERT:
-            case BH_COS:
-            case BH_SIN:
-            case BH_TAN:
-            case BH_COSH:
-            case BH_SINH:
-            case BH_TANH:
-            case BH_ARCSIN:
-            case BH_ARCCOS:
-            case BH_ARCTAN:
-            case BH_ARCSINH:
-            case BH_ARCCOSH:
-            case BH_ARCTANH:
-            case BH_EXP:
-            case BH_EXP2:
-            case BH_EXPM1:
-            case BH_LOG:
-            case BH_LOG2:
-            case BH_LOG10:
-            case BH_LOG1P:
-            case BH_SQRT:
-            case BH_CEIL:
-            case BH_TRUNC:
-            case BH_FLOOR:
-            case BH_RINT:
-            case BH_ISNAN:
-            case BH_ISINF:
-            case BH_IDENTITY:
-
-                // Input might be a constant
-                if ((lmask & A1_CONSTANT) == A1_CONSTANT) {
-                    kernel->args[nargs++].data = &(instr->constant.value);
-                } else {
-                    kernel->args[nargs].data   = bh_base_array(&instr->operand[1])->data;
-                    kernel->args[nargs].nelem  = bh_base_array(&instr->operand[1])->nelem;
-                    kernel->args[nargs].ndim   = instr->operand[1].ndim;
-                    kernel->args[nargs].start  = instr->operand[1].start;
-                    kernel->args[nargs].shape  = instr->operand[1].shape;
-                    kernel->args[nargs++].stride = instr->operand[1].stride;
-                }
-
-                break;
-
-            default:
-                printf("cpu_pack_arguments: Err=[Unsupported instruction] {\n");
-                bh_pprint_instr(instr);
-                printf("}\n");
-                return BH_ERROR;
-        }
+    option = getenv(env_name);           // For the compiler
+    if (NULL==option) {
+        option = bh_component_config_lookup(&myself, conf_name);
     }
+    char err_msg[100];
 
-    //
-    // Update the argument count for the kernel
-    //
-    kernel->nargs = nargs;
-
-    return BH_SUCCESS;
+    if (!option) {
+        sprintf(err_msg, "cpu-ve: String is not set; option (%s).\n", conf_name);
+        throw runtime_error(err_msg);
+    }
 }
 
-// Execute a kernel
-static bh_error execute(bh_instruction *instr)
+void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 {
-    bh_error res = BH_SUCCESS;
-
-    // Lets check if it is a known extension method
-    {
-        map<bh_opcode,bh_extmethod_impl>::iterator ext;
-        ext = extmethod_op2impl.find(instr->opcode);
-        if (ext != extmethod_op2impl.end()) {
-            bh_extmethod_impl extmethod = ext->second;
-            return extmethod(instr, NULL);
-        }
+    option = getenv(env_name);           // For the compiler
+    if (NULL==option) {
+        option = bh_component_config_lookup(&myself, conf_name);
     }
+    char err_msg[100];
 
-    bh_kernel_t kernel;
-
-    //
-    // Do this as the subgraph is iterated over...
-    //
-    kernel.ninstr = 1;
-    kernel.ninstr_nonsys = 0;
-    for(int i=0; i<kernel.ninstr; ++i) {
-        kernel.instr[i] = instr;
-        kernel.ninstr   = i+1;
-        switch(instr->opcode) {
-            case BH_DISCARD:
-            case BH_FREE:
-            case BH_SYNC:
-            case BH_NONE:
-               break;
-            default:
-                kernel.ninstr_nonsys++;
-        }
+    if (!option) {
+        sprintf(err_msg, "cpu-ve: Path is not set; option (%s).\n", conf_name);
+        throw runtime_error(err_msg);
     }
-
-    //
-    // We start by creating a symbol
-    if (!symbolize(kernel, jit_optimize)) {
-        return BH_ERROR;
-    }
-
-    //
-    // Allocate space for args, we allocate much more than needed since we do not
-    // yet know how many arguments the kernel will contain, the upper-bound
-    // bound of number of instructions * 3 is therefore used instead.
-    if (kernel.ninstr_nonsys>0) {
-        kernel.args = (bh_kernel_arg_t*)malloc(3*kernel.ninstr_nonsys*sizeof(bh_kernel_arg_t));
-    }
-
-    //
-    // JIT-compile the kernel if enabled
-    //
-    if (jit_enabled && \
-        (kernel.symbol!="") && \
-        (!target->symbol_ready(kernel.symbol))) {
-                                                    // Specialize sourcecode
-        string sourcecode = specialize(kernel, jit_optimize);
-        if (jit_dumpsrc==1) {                       // Dump sourcecode to file
-            target->src_to_file(
-                kernel.symbol,
-                sourcecode.c_str(),
-                sourcecode.size()
-            );
-        }                                           // Send to compiler
-        target->compile(kernel.symbol, sourcecode.c_str(), sourcecode.size());
-    }
-
-    //
-    // Load the compiled code
-    //
-    if ((kernel.symbol!="") && \
-        (!target->symbol_ready(kernel.symbol)) && \
-        (!target->load(kernel.symbol))) {// Need but cannot load
-
-        if (jit_optimize) {                             // Unoptimized fallback
-            symbolize(kernel, false);
-            if ((kernel.symbol!="") && \
-                (!target->symbol_ready(kernel.symbol)) && \
-                (!target->load(kernel.symbol))) {        // Fail
-                return BH_ERROR;
-            }
+    if (0 != access(option, F_OK)) {
+        if (ENOENT == errno) {
+            sprintf(err_msg, "cpu-ve: Path does not exist; path (%s).\n", option);
+        } else if (ENOTDIR == errno) {
+            sprintf(err_msg, "cpu-ve: Path is not a directory; path (%s).\n", option);
         } else {
-            return BH_ERROR;
+            sprintf(err_msg, "cpu-ve: Path is broken somehow; path (%s).\n", option);
         }
+        throw runtime_error(err_msg);
     }
-
-    //
-    // Allocate memory for output
-    //
-    for(int i=0; i<kernel.ninstr; ++i) {
-        res = bh_vcache_malloc(kernel.instr[i]);
-        if (BH_SUCCESS != res) {
-            fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                            "called from bh_ve_cpu_execute()\n");
-            return res;
-        }
-    }
-
-    //
-    // Execute kernel handling array operations.
-    //
-    if (kernel.ninstr_nonsys>0) {
-        res = pack_arguments(&kernel);
-        if (BH_SUCCESS != res) {
-            fprintf(stderr, "Unhandled error returned by dispatch_kernel "
-                            "called from bh_ve_cpu_execute(...)\n");
-            return res;
-        }
-        target->funcs[kernel.symbol](kernel.args);
-    }
-
-    //
-    // De-Allocate operand memory
-    for(int i=0; i<kernel.ninstr; ++i) {
-        if (kernel.instr[i]->opcode == BH_FREE) {
-            res = bh_vcache_free(kernel.instr[i]);
-            if (BH_SUCCESS != res) {
-                fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
-                                "called from bh_ve_cpu_execute)\n");
-                return res;
-            }
-        }
-    }
-
-    //
-    // De-allocate metadata for kernel arguments
-    if (kernel.ninstr_nonsys>0) {
-        free(kernel.args);
-    }
-
-    return res;
 }
-
-//
-//  Methods below implement the component interface
-//
 
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {
+    DEBUG(TAG,"++ bh_ve_cpu_init(...);");
+
+    bh_intp vcache_size  = 10;  // Default...
+    bh_intp jit_enabled  = 1;
+    bh_intp jit_preload  = 1;
+    bh_intp jit_fusion   = 0;
+    bh_intp jit_dumpsrc  = 0;
+
+    char* compiler_cmd;   // cpu Arguments
+    char* kernel_path;
+    char* object_path;
+    char* template_path;
+
     char *env;
     bh_error err;
 
@@ -496,15 +142,6 @@ bh_error bh_ve_cpu_init(const char *name)
         return BH_ERROR;
     }
 
-    env = getenv("BH_VE_CPU_JIT_OPTIMIZE");
-    if (NULL != env) {
-        jit_optimize = atoi(env);
-    }
-    if (!((0==jit_optimize) || (1==jit_optimize))) {
-        fprintf(stderr, "BH_VE_CPU_JIT_OPTIMIZE (%ld) should 0 or 1.\n", (long int)jit_optimize);
-        return BH_ERROR;
-    }
-
     env = getenv("BH_VE_CPU_JIT_DUMPSRC");
     if (NULL != env) {
         jit_dumpsrc = atoi(env);
@@ -513,114 +150,71 @@ bh_error bh_ve_cpu_init(const char *name)
          fprintf(stderr, "BH_VE_CPU_JIT_DUMPSRC (%ld) should 0 or 1.\n", (long int)jit_dumpsrc);
         return BH_ERROR;
     }
-
-    // Victim cache
-    bh_vcache_init(vcache_size);
-
+        
     // Configuration
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
     bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");
     bh_path_option(     template_path,  "BH_VE_CPU_TEMPLATE_PATH", "template_path");
     bh_string_option(   compiler_cmd,   "BH_VE_CPU_COMPILER",      "compiler_cmd");
 
-    //Make sure that kernel and object path exists
-    mkdir(kernel_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    mkdir(object_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
     if (!jit_enabled) {
         jit_preload     = 1;
         jit_fusion      = 0;
-        jit_optimize    = 0;
         jit_dumpsrc     = 0;
     }
 
-    if (false) {
-        std::cout << "ENVIRONMENT {" << std::endl;
-        std::cout << "  BH_CORE_VCACHE_SIZE="     << vcache_size  << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_ENABLED="   << jit_enabled  << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_PRELOAD="   << jit_preload  << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_FUSION="    << jit_fusion   << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_OPTIMIZE="  << jit_optimize << std::endl;
-        std::cout << "  BH_VE_CPU_JIT_DUMPSRC="   << jit_dumpsrc  << std::endl;
-        std::cout << "}" << std::endl;
-    }
+	//
+    // Make sure that kernel and object path exists
+	// TODO: This is anti-portable and should be fixed.
+    mkdir(kernel_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    mkdir(object_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-    // JIT machinery
-    target = new Compiler(compiler_cmd, object_path, kernel_path, jit_preload);
-    specializer_init();     // Code templates and opcode-specialization.
+    //
+    // VROOM VROOM VROOOOOOMMMM!!! VROOOOM!!
+    engine = new bohrium::engine::cpu::Engine(
+        string(compiler_cmd),
+        string(template_path),
+        string(kernel_path),
+        string(object_path),
+        (size_t)vcache_size,
+        (bool)jit_enabled,
+        (bool)jit_preload,
+        (bool)jit_fusion,
+        (bool)jit_dumpsrc
+    );
 
-    #ifdef PROFILE
-    memset(&times, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
-    memset(&calls, 0, sizeof(bh_uint64)*(BH_NO_OPCODES+2));
-    #endif
-
+    DEBUG(TAG,"-- bh_ve_cpu_init(...);");
     return BH_SUCCESS;
 }
 
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    // Execute one instruction at a time starting at the root DAG.
-    return bh_ir_map_instr(bhir, &bhir->dag_list[0], &execute);
+    exec_count++;
+    return engine->execute(*bhir);
 }
 
 /* Component interface: shutdown (see bh_component.h) */
 bh_error bh_ve_cpu_shutdown(void)
 {
-    if (vcache_size>0) {
-        bh_vcache_clear();  // De-allocate the malloc-cache
-        bh_vcache_delete();
-    }
-
-    delete target;          // De-allocate code-generator
-
-    #ifdef PROFILE
-    bh_uint64 sum = 0;
-    for(size_t i=0; i<BH_NO_OPCODES; ++i) {
-        if (times[i]>0) {
-            sum += times[i];
-            printf(
-                "%s, %ld, %f\n",
-                bh_opcode_text(i), calls[i], (times[i]/1000000.0)
-            );
-        }
-    }
-    if (calls[BH_NO_OPCODES]>0) {
-        sum += times[BH_NO_OPCODES];
-        printf(
-            "%s, %ld, %f\n",
-            "Memory", calls[BH_NO_OPCODES], (times[BH_NO_OPCODES]/1000000.0)
-        );
-    }
-    if (calls[BH_NO_OPCODES+1]>0) {
-        sum += times[BH_NO_OPCODES+1];
-        printf(
-            "%s, %ld, %f\n",
-            "Kernels", calls[BH_NO_OPCODES+1], (times[BH_NO_OPCODES+1]/1000000.0)
-        );
-    }
-    printf("TOTAL, %f\n", sum/1000000.0);
-    #endif
+    DEBUG(TAG,"++ bh_ve_cpu_shutdown(void)");
 
     bh_component_destroy(&myself);
+    
+    delete engine;
+    engine = NULL;
 
+    DEBUG(TAG,"-- bh_ve_cpu_shutdown(...);");
     return BH_SUCCESS;
 }
 
 /* Component interface: extmethod (see bh_component.h) */
 bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
-    bh_extmethod_impl extmethod;
-    bh_error err = bh_component_extmethod(&myself, name, &extmethod);
-    if(err != BH_SUCCESS)
-        return err;
+    DEBUG(TAG,"++ bh_ve_cpu_extmethod(...,...)");
 
-    if(extmethod_op2impl.find(opcode) != extmethod_op2impl.end())
-    {
-        printf("[CPU-VE] Warning, multiple registrations of the same"
-               "extension method '%s' (opcode: %d)\n", name, (int)opcode);
-    }
-    extmethod_op2impl[opcode] = extmethod;
-    return BH_SUCCESS;
+    bh_error register_res = engine->register_extension(myself, name, opcode);
+    
+    return register_res;
 }
 

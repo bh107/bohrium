@@ -39,8 +39,8 @@ def merge_kernels(config):
 
     krn_path = config.get('cpu', 'kernel_path')
     obj_path = config.get('cpu', 'object_path')
-    idx_path = "%s%s%s" % (obj_path, os.sep, "bh_libsij_aaaaaa.idx")
-    lib_path = "%s%s%s" % (obj_path, os.sep, "bh_libsij_aaaaaa.so")
+    idx_path = "%s%s%s" % (obj_path, os.sep, "LIB_libsij_aaaaaa.idx")
+    lib_path = "%s%s%s" % (obj_path, os.sep, "LIB_libsij_aaaaaa.so")
 
     if not os.path.exists(krn_path):
         return (None, "kernel_path(%s) does not exist." % krn_path)
@@ -55,8 +55,8 @@ def merge_kernels(config):
     symbols = []                                # Find the source-files
     sources = []
     files   = []
-    for fn in glob.glob("%s%sBH_*.c" % (krn_path, os.sep)):
-        m = re.match('.*(BH_.*)_([a-z]{6}).c', fn)
+    for fn in glob.glob("%s%sKRN_*.c" % (krn_path, os.sep)):
+        m = re.match('.*KRN_(\d+)_([a-zA-Z0-9]{6}).c', fn)
         if m:
             symbol, instance = m.groups()
             if symbol not in symbols:           # Ignore duplicates

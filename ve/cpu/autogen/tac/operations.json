@@ -1,0 +1,99 @@
+[{
+    "id": 1, "name": "MAP",
+    "layouts": [
+        "CC",  "CK",  "CS",  "SC",  "SK",  "SS"
+    ],
+    "operators": [
+        "IDENTITY", "ABSOLUTE", "INVERT", "LOGICAL_NOT", "SQRT", 
+        "REAL", "IMAG", "RINT", "ISINF", "ISNAN",
+        "CEIL", "FLOOR", "TRUNC",                
+        "COS", "COSH", "SIN", "SINH", "TAN", "TANH",
+        "ARCCOS", "ARCCOSH", "ARCSIN", "ARCSINH", "ARCTAN", "ARCTANH",         
+        "LOG", "LOG10", "LOG1P", "LOG2", 
+        "EXP", "EXP2", "EXPM1"
+    ]
+},
+
+{
+    "id": 2,
+    "name": "ZIP",
+    "layouts": [
+        "CCC", "CCK", "CCS", "CKC", "CKS", "CSC", "CSK", "CSS",
+        "SCC", "SCK", "SCS", "SKC", "SKS", "SSC", "SSK", "SSS"
+    ],
+    "operators": [
+        "ADD", "SUBTRACT", "MULTIPLY", "POWER", "DIVIDE", "MOD",
+        "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR",
+        "LOGICAL_AND", "LOGICAL_OR",  "LOGICAL_XOR",
+        "EQUAL", "NOT_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL",
+        "RIGHT_SHIFT", "LEFT_SHIFT",
+        "MAXIMUM", "MINIMUM",
+        "ARCTAN2"
+    ]
+},
+
+{
+    "id": 4,
+    "name": "REDUCE",
+    "layouts": [
+        "CCK", "CSK", "SCK", "SSK"
+    ],
+    "operators": [
+        "ADD", "MULTIPLY",
+        "MINIMUM", "MAXIMUM", 
+        "LOGICAL_AND", "LOGICAL_OR", "LOGICAL_XOR",
+        "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR"
+    ]
+},
+
+{
+    "id": 8,
+    "name": "SCAN",
+    "layouts": [
+        "CCK", "CSK", "SCK", "SSK"
+    ],
+    "operators": [
+        "ADD", "MULTIPLY"
+    ]
+},
+
+{
+    "id": 16,
+    "name": "GENERATE",
+    "layouts": [
+        "K", "CKK", ""
+    ],
+    "operators": [
+        "FLOOD", "RANDOM", "RANGE"
+    ]
+},
+
+{
+    "id": 32,
+    "name": "SYSTEM",
+    "layouts": ["C", "S"],
+    "operators": [
+        "FREE", "DISCARD", "SYNC"
+    ]
+},
+
+{
+    "id": 64,
+    "name": "EXTENSION",
+    "layouts": [
+        "CCK", "CSK", "SCK", "SSK",
+        "CCC", "CCK", "CCS", "CKC", "CKS", "CSC", "CSK", "CSS",
+        "SCC", "SCK", "SCS", "SKC", "SKS", "SSC", "SSK", "SSS"
+    ],
+    "operators": [""]
+},
+
+{
+    "id": 128,
+    "name": "NOOP",
+    "layouts": [""],
+    "operators": [""]
+}
+
+]
+

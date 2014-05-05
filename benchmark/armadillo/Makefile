@@ -23,3 +23,6 @@ clean:
 #
 black_scholes: src/black_scholes.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++ -larmadillo
+
+synth: src/synth.cpp $(HEADER)
+	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++ -larmadillo

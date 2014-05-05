@@ -1,3 +1,4 @@
+//
 // Elementwise operation on strided arrays of any dimension/rank.
 {
     int64_t nelements = 1;
@@ -23,9 +24,9 @@
 
     while (cur_e <= last_e) {
         // Reset offsets
-        {{#OPERAND}}
+        {{#OPERAND}}{{#ARRAY}}
         {{TYPE}}* a{{NR}}_current = a{{NR}}_first;
-        {{/OPERAND}}
+        {{/ARRAY}}{{/OPERAND}}
 
         for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
             {{#OPERAND}}{{#ARRAY}}
@@ -54,5 +55,14 @@
             }                               // Loop then continues to increment the next dimension
         }
     }
+    
+    {{#OPERAND}}{{#SCALAR}}
+    // Write scalar-operand to main-memory;
+    // Note this is only necessary for non-temporary scalar-operands.
+    // So this code should only be generated for non-temps.
+    if ({{NR_OUTPUT}} == {{NR}}) {
+        *a{{NR}}_first = a{{NR}}_current;
+    }
+    {{/SCALAR}}{{/OPERAND}}
 }
 
