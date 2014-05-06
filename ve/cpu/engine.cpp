@@ -583,6 +583,7 @@ bh_error Engine::execute(bh_ir& bhir)
     for(bh_intp dag_idx=1; dag_idx<=root.nnode; ++dag_idx) {
         delete blocks[dag_idx];
     }
+    free(blocks);
     
     DEBUG(TAG,"execute(...);");
     return res;
