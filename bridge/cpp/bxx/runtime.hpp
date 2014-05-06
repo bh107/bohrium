@@ -31,7 +31,7 @@ inline Runtime& Runtime::instance()
     return instance;
 }
 
-inline Runtime::Runtime() : extension_count(BH_MAX_OPCODE_ID), queue_size(0)
+inline Runtime::Runtime() : extension_count(BH_MAX_OPCODE_ID+1), queue_size(0)
 {
     bh_error err;
     char err_msg[1000];
