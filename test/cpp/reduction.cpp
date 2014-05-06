@@ -49,7 +49,7 @@ TEST(reduction, partial_3D_to_2D)
     multi_array<double> x(3,3,3), y;
 
     x = 3.5;
-    y = reduce(x, ADD, 0.0);
+    y = bh_add_reduce(x, 0.0);
 
     EXPECT_TRUE(CheckEqualCollections(y.begin(), y.end(), res2D));
 }
@@ -59,8 +59,8 @@ TEST(reduction, partial_3D_to_1D)
     multi_array<double> x(3,3,3), y;
 
     x = 3.5;
-    y = reduce(x, ADD, 0.0);
-    y = reduce(y, ADD, 0.0);
+    y = bh_add_reduce(x, 0.0);
+    y = bh_add_reduce(y, 0.0);
 
     EXPECT_TRUE(CheckEqualCollections(y.begin(), y.end(), res1D));
 }
@@ -70,9 +70,9 @@ TEST(reduction, partial_3D_to_0D)
     multi_array<double> x(3,3,3), y;
 
     x = 3.5;
-    y = reduce(x, ADD, 0.0);
-    y = reduce(y, ADD, 0.0);
-    y = reduce(y, ADD, 0.0);
+    y = bh_add_reduce(x, 0.0);
+    y = bh_add_reduce(y, 0.0);
+    y = bh_add_reduce(y, 0.0);
 
     EXPECT_TRUE(CheckEqualCollections(y.begin(), y.end(), resS1));
 }

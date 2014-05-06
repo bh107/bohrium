@@ -9,15 +9,15 @@ using namespace argparse;
 
 double monte_carlo_pi(int samples, int iterations)
 {
-    multi_array<double> x, y, m, c, accu(1);        // Operands
-    accu = (double)0.0;                             // Acculumate across iterations
+    multi_array<double> x, y, m, c, accu(1);    // Operands
+    accu = (double)0.0;                         // Acculumate across iterations
     for(int i=0; i<iterations; ++i) {
-        x = random<double>(samples);                // Sample random numbers
+        x = random<double>(samples);            // Sample random numbers
         y = random<double>(samples);
-        m = as<double>(sqrt(x*x + y*y)<=1.0);    // Model
-        c = reduce(m, ADD, 0);                      // Count
+        m = as<double>(sqrt(x*x + y*y)<=1.0);   // Model
+        c = sum(m);                             // Count
 
-        accu += (c*4.0) / (double)samples;          // Approximate
+        accu += (c*4.0) / (double)samples;      // Approximate
     }
     accu /= (double)iterations;
     

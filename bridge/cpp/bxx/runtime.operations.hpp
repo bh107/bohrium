@@ -5929,6 +5929,8 @@ multi_array<T>& bh_multiply_accumulate (multi_array<T> &lhs, int64_t rhs)
 
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_add_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -5947,6 +5949,8 @@ multi_array<T>& bh_add_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
 {
@@ -5988,6 +5992,8 @@ multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
 }
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_multiply_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -6006,6 +6012,8 @@ multi_array<T>& bh_multiply_reduce (multi_array<T>& res, multi_array<T> &lhs, in
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
 {
@@ -6047,6 +6055,8 @@ multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
 }
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_minimum_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -6065,6 +6075,8 @@ multi_array<T>& bh_minimum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
 {
@@ -6106,6 +6118,8 @@ multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
 }
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_maximum_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -6124,6 +6138,8 @@ multi_array<T>& bh_maximum_reduce (multi_array<T>& res, multi_array<T> &lhs, int
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
 {
@@ -6165,6 +6181,8 @@ multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
 }
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_logical_and_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -6183,6 +6201,8 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
 {
@@ -6224,6 +6244,8 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
 }
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_logical_or_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -6242,6 +6264,8 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
 {
@@ -6283,6 +6307,8 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
 }
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_logical_xor_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -6301,6 +6327,8 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 {
@@ -6342,6 +6370,8 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 }
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_bitwise_and_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -6360,6 +6390,8 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T>& res, multi_array<T> &lhs,
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
 {
@@ -6401,6 +6433,8 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
 }
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_bitwise_or_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -6419,6 +6453,8 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T>& res, multi_array<T> &lhs, 
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
 {
@@ -6460,6 +6496,8 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
 }
 
 
+//
+// Reduction with explicitly provided result array
 template <typename T>
 multi_array<T>& bh_bitwise_xor_reduce (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
 {
@@ -6478,6 +6516,8 @@ multi_array<T>& bh_bitwise_xor_reduce (multi_array<T>& res, multi_array<T> &lhs,
     return res;
 }
 
+//
+// Reduction with implicit construction of result array
 template <typename T>
 multi_array<T>& bh_bitwise_xor_reduce (multi_array<T> &lhs, int64_t rhs)
 {

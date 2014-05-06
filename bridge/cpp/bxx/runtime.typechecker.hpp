@@ -73,6 +73,29 @@ void Runtime::typecheck(void)
     throw std::runtime_error(ss.str());
 }
 
+/*
+template <size_t Opcode>
+struct dependent_false { enum { value = false }; };
+
+template <size_t Opcode, typename Out, typename In1, typename In2>
+void Runtime::typecheck(void)
+{
+    static_assert(dependent_false<Opcode>::value, "ArrayOperation has unsupported type-signature.");
+}
+
+template <size_t Opcode, typename Out, typename In1>
+void Runtime::typecheck(void)
+{
+    static_assert(dependent_false<Opcode>::value, "ArrayOperation has unsupported type-signature.");
+}
+
+template <size_t Opcode, typename Out>
+void Runtime::typecheck(void)
+{
+    static_assert(dependent_false<Opcode>::value, "ArrayOperation has unsupported type-signature.");
+}
+*/
+
 //
 //  Allowed types.
 //

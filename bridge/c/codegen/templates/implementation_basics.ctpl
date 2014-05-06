@@ -249,7 +249,7 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_transpose(bh_multi_array
 %for $opname, $enum in $reduce_ops
 // Partial ${opname} reduction
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis) {
-    return (bh_multi_array_${bh_ctype}_p)&reduce(*((multi_array<${ctype}>*)self), ${enum}, axis);
+    return (bh_multi_array_${bh_ctype}_p)&bh_${opname}_reduce(*((multi_array<${ctype}>*)self), axis);
 }
 
 %end for
