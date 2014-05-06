@@ -180,16 +180,22 @@ class ufunc:
             if out is not None and out.shape != shape:
                 raise ValueError("output dimension mismatch expect shape '%s' got '%s'"%(shape, out.shape))
 
-        f = eval("bhc.bh_multi_array_%s_partial_reduce_%s"%(dtype_name(a), self.info['name']))
-        ret = f(get_bhc(a),axis)
-        t = ndarray.new(shape, a.dtype, ret)
+        if out is None or not dtype_identical(out, a):
+            tmp = array_create.empty(shape, dtype=a.dtype)
+        else:
+            tmp = out
+
+        f = eval("bhc.bh_multi_array_%s_%s_reduce"%(dtype_name(a), self.info['name']))
+        f(get_bhc(tmp), get_bhc(a), axis)
+
+        if out is not None and not dtype_identical(out, a):
+            out[:] = tmp
+        else:
+            out = tmp
 
         if a.ndim == 1:#return a Python Scalar
-            return t[0]
-        elif out is None:#return the new array output
-            return t
+            return out[0]
         else:
-            out[:] = t#Copy the new array to the given output array
             return out
 
 #We have to add ufuncs that doesn't map to Bohrium operations directly
