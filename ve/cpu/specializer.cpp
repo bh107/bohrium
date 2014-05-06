@@ -34,6 +34,7 @@ Specializer::Specializer(const string template_directory)
 Specializer::~Specializer()
 {
     DEBUG(TAG, "~Specializer()");
+    ctemplate::mutable_default_template_cache()->ClearCache();
 }
 
 string Specializer::text()
