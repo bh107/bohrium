@@ -13,15 +13,15 @@ Specializer::Specializer(const string template_directory)
 : strip_mode(ctemplate::STRIP_BLANK_LINES), template_directory(template_directory)
 {
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_directory);
-    ctemplate::LoadTemplate("ewise.cont.nd.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.cont.nd.tpl",    strip_mode);
     ctemplate::LoadTemplate("ewise.strided.1d.tpl", strip_mode);
     ctemplate::LoadTemplate("ewise.strided.2d.tpl", strip_mode);
     ctemplate::LoadTemplate("ewise.strided.3d.tpl", strip_mode);
     ctemplate::LoadTemplate("ewise.strided.nd.tpl", strip_mode);
-    ctemplate::LoadTemplate("kernel.tpl", strip_mode);
-    ctemplate::LoadTemplate("license.tpl", strip_mode);
-    ctemplate::LoadTemplate("random.cont.1d.tpl", strip_mode);
-    ctemplate::LoadTemplate("range.cont.1d.tpl", strip_mode);
+    ctemplate::LoadTemplate("kernel.tpl",   strip_mode);
+    ctemplate::LoadTemplate("license.tpl",  strip_mode);
+    ctemplate::LoadTemplate("random.cont.1d.tpl",   strip_mode);
+    ctemplate::LoadTemplate("range.cont.1d.tpl",    strip_mode);
     ctemplate::LoadTemplate("reduce.strided.1d.tpl", strip_mode);
     ctemplate::LoadTemplate("reduce.strided.2d.tpl", strip_mode);
     ctemplate::LoadTemplate("reduce.strided.3d.tpl", strip_mode);
