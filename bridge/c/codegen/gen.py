@@ -59,12 +59,10 @@ def main():
     output_dir  = script_dir + "output" + os.sep
     tmpl_dir    = script_dir + "templates" + os.sep
 
-    paths = {'reductions': join(script_dir,'reductions.json'),
-             'opcodes'   : join(script_dir,'..','..','..','core','codegen','opcodes.json'),
+    paths = {'opcodes'   : join(script_dir,'..','..','..','core','codegen','opcodes.json'),
              'types'     : join(script_dir,'..','..','cpp','codegen','element_types.json'),
              'self'      : join(script_dir,'gen.py')}
 
-    reductions  = json.loads(open(paths['reductions']).read())
     opcodes     = json.loads(open(paths['opcodes']).read())
     types       = json.loads(open(paths['types']).read())
 
@@ -75,11 +73,10 @@ def main():
         if t[1] > mtime:
             mtime = t[1]
 
-    op_map  = []
+    op_elementwise  = []
+    op_reduction  = []
+    op_accumulate  = []
     for op in opcodes:
-        if op['system_opcode'] or not op['elementwise']:
-            continue
-
         nop = op['nop']
         cpp_name = op['opcode'].lower()
         bh_name = op['opcode']
@@ -89,15 +86,21 @@ def main():
         for ttt in op['types']:
             sig = [map_type(typesig,types) for typesig in ttt]
             typesigs.append(sig)
-
-        op_map.append((cpp_name, bh_name, c_name, nop, typesigs))
+        if op['elementwise']:
+            op_elementwise.append((cpp_name, bh_name, c_name, nop, typesigs))
+        elif op['reduction']:
+            op_reduction.append((cpp_name, bh_name, c_name, nop, typesigs))
+        elif op['accumulate']:
+            op_accumulate.append((cpp_name, bh_name, c_name, nop, typesigs))
+        else:
+            continue
 
     gens = [
-        ('type_header.ctpl',                'bh_c_data_types.h',                    (types, reductions)),
-        ('type_definitions.ctpl',           'bh_c_type_definitions.hpp',            types),
-        ('implementation_basics.ctpl',      'bh_c_implementation_basics.cpp',       (types, reductions)),
-        ('method_header.ctpl',              'bh_c_interface.h',                     op_map),
-        ('implementation.ctpl',             'bh_c_implementation.cpp',              op_map),
+        ('type_header.ctpl',           'bh_c_data_types.h',                    types),
+        ('type_definitions.ctpl',      'bh_c_type_definitions.hpp',            types),
+        ('implementation_basics.ctpl', 'bh_c_implementation_basics.cpp',       types),
+        ('method_header.ctpl',         'bh_c_interface.h',       (op_elementwise, op_reduction, op_accumulate)),
+        ('implementation.ctpl',        'bh_c_implementation.cpp',(op_elementwise, op_reduction, op_accumulate))
     ]
 
     render( gens, tmpl_dir, output_dir, mtime)

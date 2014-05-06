@@ -3,8 +3,7 @@
 directiveStartToken = %
 #end compiler-settings
 %slurp
-%set $ops = $data[0]
-%set $reduce_ops = $data[1]
+%set $ops = $data
 
 
 #include <bohrium.hpp>
@@ -245,14 +244,6 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_flatten(bh_multi_array_$
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_transpose(bh_multi_array_${bh_ctype}_p self) {
     return (bh_multi_array_${bh_ctype}_p)&transpose((*((multi_array<${ctype}>*)self)));
 }
-
-%for $opname, $enum in $reduce_ops
-// Partial ${opname} reduction
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis) {
-    return (bh_multi_array_${bh_ctype}_p)&bh_${opname}_reduce(*((multi_array<${ctype}>*)self), axis);
-}
-
-%end for
 
 %if $bh_atype == "bh_complex64" or $bh_atype == "bh_complex128"
 // Sum

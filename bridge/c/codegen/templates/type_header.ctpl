@@ -38,8 +38,7 @@ typedef bh_base* bh_base_p;
 typedef bh_view* bh_view_p;
 #endif
 
-%set $ops = $data[0]
-%set $reduce_ops = $data[1]
+%set $ops = $data
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
 
@@ -153,11 +152,6 @@ DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_all(bh_multi_array_${bh_ctype}_
 // Any
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_any(bh_multi_array_${bh_ctype}_p self);
 %else
-%for $opname, $enum in $reduce_ops
-// Partial ${opname} reduction
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, const int64_t axis);
-
-%end for
 
 // Sum
 DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self);
