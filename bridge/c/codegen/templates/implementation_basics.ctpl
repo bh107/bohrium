@@ -149,12 +149,12 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint64_t rank, 
 }
 %end if
 
-%if $bh_ctype == "uint64" or $bh_ctype == "uint32" 
+%if $bh_ctype == "uint64" or $bh_ctype == "uint32"
 // Construct a new array with sequential numbers
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(uint64_t size) {
     multi_array<${ctype}> *result = &range<${ctype}>(size);
     result->setTemp(false);
-    return (bh_multi_array_${bh_ctype}_p)result; 
+    return (bh_multi_array_${bh_ctype}_p)result;
 }
 %end if
 
@@ -304,29 +304,6 @@ ${bh_atype} bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_p self) {
 // Min
 ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self) {
     return scalar(min(*((multi_array<${ctype}>*)self)));
-}
-
-%end if
-%if $bh_atype == "bh_complex64"
-
-bh_multi_array_float32_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self) {
-    return (bh_multi_array_float32_p)&(real(*((multi_array<${ctype}>*)self)));
-}
-
-bh_multi_array_float32_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self) {
-    return (bh_multi_array_float32_p)&(imag(*((multi_array<${ctype}>*)self)));
-}
-
-%end if
-
-%if $bh_atype == "bh_complex128"
-
-bh_multi_array_float64_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self) {
-    return (bh_multi_array_float64_p)&(real(*((multi_array<${ctype}>*)self)));
-}
-
-bh_multi_array_float64_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self) {
-    return (bh_multi_array_float64_p)&(imag(*((multi_array<${ctype}>*)self)));
 }
 
 %end if

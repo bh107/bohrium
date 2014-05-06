@@ -176,26 +176,6 @@ DLLEXPORT ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_
 
 %end if
 
-%if $bh_atype == "bh_complex64"
-
-// Get the real component of a complex number
-DLLEXPORT bh_multi_array_float32_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self);
-
-// Get the imaginary component of a complex number
-DLLEXPORT bh_multi_array_float32_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self);
-
-%end if
-
-%if $bh_atype == "bh_complex128"
-
-// Get the real component of a complex number
-DLLEXPORT bh_multi_array_float64_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self);
-
-// Get the imaginary component of a complex number
-DLLEXPORT bh_multi_array_float64_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self);
-
-%end if
-
 %end for
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops

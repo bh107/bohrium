@@ -73,7 +73,7 @@ void bh_multi_array_${op2_type[2]}_${opname}_scalar_rhs(bh_multi_array_${op1_typ
 %for $op, $opcode, $opname, $opcount, $typesigs in $data
 %if $opcode != "BH_IDENTITY" and opcount == 2
 %for $op1_type, $op2_type in $typesigs
-%if $opcode == "BH_ISNAN" or $opcode == "BH_ISINF"
+%if $opcode == "BH_ISNAN" or $opcode == "BH_ISINF" or $opcode == "BH_REAL" or $opcode == "BH_IMAG"
 void bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op1_type[2]}_p out,
                              const bh_multi_array_${op2_type[2]}_p rhs) {
 %else
