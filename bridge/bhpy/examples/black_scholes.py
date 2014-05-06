@@ -34,7 +34,8 @@ def price(S,I,flag='c',X=65.0,dT=(1.0/365.0),r=0.08,v=0.3, visualize=False):
     p = []
     N = len(S)
     for i in xrange (I):
-        P = np.sum(BS(flag,S,X,T,r,v)) / N
+        #P = np.sum(BS(flag,S,X,T,r,v)) / N
+        P = np.add.reduce(BS(flag,S,X,T,r,v)) / N
         p.append(P)
         T += dT
         if visualize:#NB: this is only for experiments
