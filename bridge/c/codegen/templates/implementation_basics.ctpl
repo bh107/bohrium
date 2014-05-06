@@ -77,7 +77,7 @@ void bh_multi_array_${bh_ctype}_nullify_base_data(bh_base_p base)
 // Get the base from an existing array
 bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
 {
-    return ((multi_array<${ctype}>*)self)->getBase();
+    return ((multi_array<${ctype}>*)self)->meta.base;
 }
 
 // Sync the current base
