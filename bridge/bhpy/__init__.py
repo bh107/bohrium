@@ -14,7 +14,7 @@ for f in ufuncs:
 
 #Expose all data types
 for t in numpy_types:
-    exec "%s = t"%t.__str__()
+    exec "%s = numpy.%s"%(t.__str__(),t.__str__())
 
 #Note that the following modules needs ufuncs and dtypes
 import random
