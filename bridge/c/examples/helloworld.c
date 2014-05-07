@@ -25,11 +25,12 @@ void compute()
     r_shaped = bh_multi_array_uint32_new_from_view(bh_multi_array_uint32_get_base(r_flat), 2, 0, shape, stride);
 
     // Make into floats
-    b = bh_multi_array_float32_convert_uint32(r_shaped);
+    b = bh_multi_array_float32_new_empty(2, shape);
+    bh_multi_array_float32_identity_uint32(b, r_shaped);
 
     // Do actual computation
     output = bh_multi_array_float32_new_empty(2, shape);
-    bh_multi_array_float32_add(a, b, output);
+    bh_multi_array_float32_add(output, a, b);
 
     // Sync and grab data pointer
     bh_multi_array_float32_sync(output);
@@ -46,6 +47,7 @@ void compute()
 
     // And clean up what has not been auto-cleaned
     bh_multi_array_float32_destroy(output);
+    bh_multi_array_float32_destroy(b);
     bh_multi_array_uint32_destroy(r_flat);
 }
 

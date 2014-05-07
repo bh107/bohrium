@@ -129,12 +129,6 @@ DLLEXPORT uint64_t bh_multi_array_${bh_ctype}_get_rank(bh_multi_array_${bh_ctype
 // Gets the number of elements in the dimension
 DLLEXPORT uint64_t bh_multi_array_${bh_ctype}_get_dimension_size(bh_multi_array_${bh_ctype}_p self, const int64_t dimension);
 
-// Update with a scalar
-DLLEXPORT void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctype}_p self, const ${bh_atype} value);
-
-// Update with an array
-DLLEXPORT void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, bh_multi_array_${bh_ctype}_p other);
-
 // Update with an data
 DLLEXPORT void bh_multi_array_${bh_ctype}_assign_data(bh_multi_array_${bh_ctype}_p self, const void* data);
 

@@ -29,7 +29,11 @@ extern "C" {
 %for $op, $opcode, $opname, $opcount, $typesigs in $elementwise
 %if $opcode == "BH_IDENTITY"
 %for $op1_type, $op2_type in $typesigs
-DLLEXPORT bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(const bh_multi_array_${op2_type[2]}_p other);
+DLLEXPORT void bh_multi_array_${op1_type[2]}_identity_${op2_type[2]}(bh_multi_array_${op1_type[2]}_p out,
+                                                const bh_multi_array_${op2_type[2]}_p rhs);
+
+DLLEXPORT void bh_multi_array_${op1_type[2]}_identity_${op2_type[2]}_scalar(bh_multi_array_${op1_type[2]}_p out,
+                                                     ${op2_type[1]} rhs);
 %end for
 %end if
 %end for

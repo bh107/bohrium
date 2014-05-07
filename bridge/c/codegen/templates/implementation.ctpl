@@ -19,8 +19,25 @@ using namespace bxx;
 %for $op, $opcode, $opname, $opcount, $typesigs in $elementwise
 %if $opcode == "BH_IDENTITY"
 %for $op1_type, $op2_type in $typesigs
-bh_multi_array_${op1_type[2]}_p bh_multi_array_${op1_type[2]}_convert_${op2_type[2]}(const bh_multi_array_${op2_type[2]}_p other) {
-    return (bh_multi_array_${op1_type[2]}_p)&as<${op1_type[0]}>(*(multi_array<${op2_type[0]}>*)other);
+void bh_multi_array_${op1_type[2]}_identity_${op2_type[2]}(bh_multi_array_${op1_type[2]}_p out,
+                                                const bh_multi_array_${op2_type[2]}_p rhs) {
+
+    multi_array<${op1_type[0]}> *o = (multi_array<${op1_type[0]}> *) out;
+    multi_array<${op2_type[0]}> *r = (multi_array<${op2_type[0]}> *) rhs;
+    ${op}(*o, *r);
+}
+void bh_multi_array_${op1_type[2]}_identity_${op2_type[2]}_scalar(bh_multi_array_${op1_type[2]}_p out,
+                                                     ${op2_type[1]} rhs) {
+
+    multi_array<${op1_type[0]}> *o = (multi_array<${op1_type[0]}> *) out;
+    ${op2_type[0]} r;
+%if $op2_type[2] == "complex64" or $op2_type[2] == "complex128"
+    r.real(rhs.real);
+    r.imag(rhs.imag);
+%else
+    r = rhs;
+%end if
+    ${op}(*o, r);
 }
 %end for
 %end if
