@@ -27,6 +27,23 @@ class test_reduce(numpytest):
         exec cmd
         return (res,cmd)
 
+class test_reduce_sum(numpytest):
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+
+    def init(self):
+        for v in gen_views(5,10,6):
+            a = {}
+            self.axis = 0
+            exec v
+            yield (a,v)
+
+    def test_reduce_sum(self,a):
+        cmd = "res = np.add.reduce(a[0],axis=None)"
+        exec cmd
+        return (res,cmd)
+
 
 class test_reduce1D(numpytest):
     def __init__(self):

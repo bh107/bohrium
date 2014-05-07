@@ -247,45 +247,71 @@ class ufunc:
         if check_biclass(a):
             raise NotImplementedError("NumPy views that points to Bohrium base "\
                                       "arrays isn't supported")
-
-        if out is not None and not ndarray.check(out):#Let NumPy handle NumPy array reductions
-            if ndarray.check(a):
-                a = a.copy2numpy()
+        if out is not None:
+            if ndarray.check(out):
+                if not ndarray.check(a):
+                    a = array_create.array(a)
+            else:
+                if ndarray.check(a):
+                    a = a.copy2numpy()
+        #Let NumPy handle NumPy array reductions
+        if not ndarray.check(a):
             f = eval("np.%s.reduce"%self.info['name'])
             return f(a, axis=axis, out=None)
 
-        if axis >= a.ndim:
-            raise ValueError("'axis' is out of bound")
-        if axis < 0:
-            axis = a.ndim+axis
-
-        if a.ndim == 1:
-            shape = (1,)
+        #Make sure that 'axis' is a list of dimensions to reduce
+        if axis is None:
+            axis = range(a.ndim)#We reduce all dimensions
+        elif np.isscalar(axis):
+            axis = [axis]#We reduce one dimension
         else:
-            shape = tuple(s for i, s in enumerate(a.shape) if i != axis)
-            if out is not None and out.shape != shape:
-                raise ValueError("output dimension mismatch expect shape '%s' got '%s'"%(shape, out.shape))
+            axis = list(axis)#We reduce multiple dimensions
 
-        if out is None or not dtype_identical(out, a):
+        #Check for out of bounds and convert negative axis values
+        if len(axis) > a.ndim:
+            raise ValueError("number of 'axises' to reduce is out of bounds")
+        for i in xrange(len(axis)):
+            if axis[i] < 0:
+                axis[i] = a.ndim+axis[i]
+            if axis[i] >= a.ndim:
+                raise ValueError("'axis' is out of bounds")
+
+        if len(axis) == 1:#One axis reduction we can handle directly
+            axis = axis[0]
+
+            #Find the output shape
+            if a.ndim == 1:
+                shape = (1,)
+            else:
+                shape = tuple(s for i, s in enumerate(a.shape) if i != axis)
+                if out is not None and out.shape != shape:
+                    raise ValueError("output dimension mismatch expect "\
+                                     "shape '%s' got '%s'"%(shape, out.shape))
+
+            f = eval("bhc.bh_multi_array_%s_%s_reduce"%(dtype_name(a), self.info['name']))
             tmp = array_create.empty(shape, dtype=a.dtype)
-        else:
-            tmp = out
+            tmp_bhc = get_bhc(tmp)
+            a_bhc = get_bhc(a)
+            f(tmp_bhc, a_bhc, axis)
+            del_bhc_obj(tmp_bhc)
+            del_bhc_obj(a_bhc)
 
-        f = eval("bhc.bh_multi_array_%s_%s_reduce"%(dtype_name(a), self.info['name']))
-        tmp_bhc = get_bhc(tmp)
-        a_bhc = get_bhc(a)
-        f(tmp_bhc, a_bhc, axis)
-        del_bhc_obj(tmp_bhc)
-        del_bhc_obj(a_bhc)
-
-        if out is not None and not dtype_identical(out, a):
-            out[:] = tmp
+            if out is not None:
+                out[:] = tmp
+            else:
+                out = tmp
+            if a.ndim == 1:#return a Python Scalar
+                return out[0]
+            else:
+                return out
         else:
-            out = tmp
-
-        if a.ndim == 1:#return a Python Scalar
-            return out[0]
-        else:
+            t1 = self.reduce(a, axis[0])
+            axis = [i-1 for i in axis[1:]]
+            t2 = self.reduce(t1, axis)
+            if out is not None:
+                out[:] = t2
+            else:
+                out = t2
             return out
 
 #We have to add ufuncs that doesn't map to Bohrium operations directly
