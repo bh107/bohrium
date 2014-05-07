@@ -26,7 +26,7 @@ import bhc
 import numpy as np
 import _info
 from _util import dtype_name, dtype_identical
-from ndarray import get_bhc, check_biclass
+from ndarray import get_bhc, check_biclass, del_bhc_obj
 import ndarray
 
 def extmethod(name, out, in1, in2):
@@ -37,7 +37,13 @@ def extmethod(name, out, in1, in2):
 
     f = eval("bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
               dtype_name(in1), dtype_name(in2)))
-    f(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
+    bhc_out = get_bhc(out)
+    bhc_in1 = get_bhc(in1)
+    bhc_in2 = get_bhc(in2)
+    f(name, bhc_out, bhc_in1, bhc_in2)
+    del_bhc_obj(bhc_out)
+    del_bhc_obj(bhc_in1)
+    del_bhc_obj(bhc_in2)
 
 def assign(a, out):
     if check_biclass(a) or check_biclass(out):
@@ -47,16 +53,17 @@ def assign(a, out):
         np.broadcast(a,out)#We only do this for the dimension mismatch check
         out_dtype = dtype_name(out)
         out_bhc = get_bhc(out)
+        a_dtype = dtype_name(a)
+        cmd = "bhc.bh_multi_array_%s_identity_%s"%(out_dtype, a_dtype)
         if np.isscalar(a):
-            exec "bhc.bh_multi_array_%s_assign_scalar(out_bhc,a)"%(out_dtype)
+            exec "%s_scalar(out_bhc, a)"%cmd
         else:
             if not ndarray.check(a):
                 a = array_create.array(a)#Convert the NumPy array to bohrium
             a_bhc = get_bhc(a)
-            a_dtype = dtype_name(a)
-            if out_dtype != a_dtype:
-                exec "a_bhc = bhc.bh_multi_array_%s_convert_%s(a_bhc)"%(out_dtype, a_dtype)
-            exec "bhc.bh_multi_array_%s_assign_array(out_bhc,a_bhc)"%(out_dtype)
+            exec "%s(out_bhc, a_bhc)"%cmd
+            del_bhc_obj(a_bhc)
+        del_bhc_obj(out_bhc)
     elif ndarray.check(a):
         a._data_bhc2np()
         a.__array_priority__ = -1.0#Force NumPy to handle the assignment
@@ -146,6 +153,10 @@ class ufunc:
         f = eval(cmd)
         f(*bhcs)
 
+        #Cleanup
+        for a in bhcs:
+            if not np.isscalar(a):
+                del_bhc_obj(a)
         del tmps#Now we can safely de-allocate the tmp input arrays
 
         if out is None or out_dtype == out.dtype:
@@ -153,7 +164,9 @@ class ufunc:
         else:#We need to convert the output type before returning
             f = eval("bhc.bh_multi_array_%s_convert_%s"%(dtype_name(args[0].dtype), dtype_name(out_dtype)))
             t = f(args[0])
-            exec "bhc.bh_multi_array_%s_assign_array(get_bhc(out),t)"%(dtype_name(out_dtype))
+            bhc_out = get_bhc(out)
+            exec "bhc.bh_multi_array_%s_assign_array(bhc_out,t)"%(dtype_name(out_dtype))
+            del_bhc_obj(bhc_out)
             return out
         return out
 
@@ -186,7 +199,11 @@ class ufunc:
             tmp = out
 
         f = eval("bhc.bh_multi_array_%s_%s_reduce"%(dtype_name(a), self.info['name']))
-        f(get_bhc(tmp), get_bhc(a), axis)
+        tmp_bhc = get_bhc(tmp)
+        a_bhc = get_bhc(a)
+        f(tmp_bhc, a_bhc, axis)
+        del_bhc_obj(tmp_bhc)
+        del_bhc_obj(a_bhc)
 
         if out is not None and not dtype_identical(out, a):
             out[:] = tmp
