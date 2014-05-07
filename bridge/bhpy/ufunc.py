@@ -171,13 +171,86 @@ class ufunc:
         return out
 
     def reduce(self, a, axis=0, out=None):
-        """ A Bohrium Reduction """
+        """ A Bohrium Reduction
+    Reduces `a`'s dimension by one, by applying ufunc along one axis.
+
+    Let :math:`a.shape = (N_0, ..., N_i, ..., N_{M-1})`.  Then
+    :math:`ufunc.reduce(a, axis=i)[k_0, ..,k_{i-1}, k_{i+1}, .., k_{M-1}]` =
+    the result of iterating `j` over :math:`range(N_i)`, cumulatively applying
+    ufunc to each :math:`a[k_0, ..,k_{i-1}, j, k_{i+1}, .., k_{M-1}]`.
+    For a one-dimensional array, reduce produces results equivalent to:
+    ::
+
+     r = op.identity # op = ufunc
+     for i in range(len(A)):
+       r = op(r, A[i])
+     return r
+
+    For example, add.reduce() is equivalent to sum().
+
+    Parameters
+    ----------
+    a : array_like
+        The array to act on.
+    axis : None or int or tuple of ints, optional
+        Axis or axes along which a reduction is performed.
+        The default (`axis` = 0) is perform a reduction over the first
+        dimension of the input array. `axis` may be negative, in
+        which case it counts from the last to the first axis.
+
+        .. versionadded:: 1.7.0
+
+        If this is `None`, a reduction is performed over all the axes.
+        If this is a tuple of ints, a reduction is performed on multiple
+        axes, instead of a single axis or all the axes as before.
+
+        For operations which are either not commutative or not associative,
+        doing a reduction over multiple axes is not well-defined. The
+        ufuncs do not currently raise an exception in this case, but will
+        likely do so in the future.
+    out : ndarray, optional
+        A location into which the result is stored. If not provided, a
+        freshly-allocated array is returned.
+
+    Returns
+    -------
+    r : ndarray
+        The reduced array. If `out` was supplied, `r` is a reference to it.
+
+    Examples
+    --------
+    >>> np.multiply.reduce([2,3,5])
+    30
+
+    A multi-dimensional array example:
+
+    >>> X = np.arange(8).reshape((2,2,2))
+    >>> X
+    array([[[0, 1],
+            [2, 3]],
+           [[4, 5],
+            [6, 7]]])
+    >>> np.add.reduce(X, 0)
+    array([[ 4,  6],
+           [ 8, 10]])
+    >>> np.add.reduce(X) # confirm: default axis value is 0
+    array([[ 4,  6],
+           [ 8, 10]])
+    >>> np.add.reduce(X, 1)
+    array([[ 2,  4],
+           [10, 12]])
+    >>> np.add.reduce(X, 2)
+    array([[ 1,  5],
+           [ 9, 13]])
+        """
 
         if check_biclass(a):
             raise NotImplementedError("NumPy views that points to Bohrium base "\
                                       "arrays isn't supported")
 
-        if not ndarray.check(a):#Let NumPy handle NumPy array reductions
+        if out is not None and not ndarray.check(out):#Let NumPy handle NumPy array reductions
+            if ndarray.check(a):
+                a = a.copy2numpy()
             f = eval("np.%s.reduce"%self.info['name'])
             return f(a, axis=axis, out=None)
 
