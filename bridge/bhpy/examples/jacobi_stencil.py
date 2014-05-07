@@ -8,10 +8,10 @@ import bohrium as np
 
 def freezetrap(height, width, dtype=np.float32, bohrium=True):
     grid = np.zeros((height+2,width+2), dtype=dtype, bohrium=bohrium)
-    grid[:,0]  = dtype.type(-273.15)
-    grid[:,-1] = dtype.type(-273.15)
-    grid[-1,:] = dtype.type(-273.15)
-    grid[0,:]  = dtype.type(40.0)
+    grid[:,0]  = dtype(-273.15)
+    grid[:,-1] = dtype(-273.15)
+    grid[-1,:] = dtype(-273.15)
+    grid[0,:]  = dtype(40.0)
     return grid
 
 def solve(grid, epsilon=0.005, max_iterations=None, visualize=False):
