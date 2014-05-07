@@ -7,6 +7,7 @@ from _util import flush
 import linalg
 from linalg import matmul
 from numpy import newaxis
+from summations import sum
 
 #Expose all ufuncs
 for f in ufuncs:

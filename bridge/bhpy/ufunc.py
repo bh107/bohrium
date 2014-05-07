@@ -26,7 +26,7 @@ import bhc
 import numpy as np
 import _info
 from _util import dtype_name, dtype_identical
-from ndarray import get_bhc, check_biclass, del_bhc_obj
+from ndarray import get_bhc, check_biclass, del_bhc_obj, fix_biclass
 import ndarray
 
 def extmethod(name, out, in1, in2):
@@ -243,7 +243,7 @@ class ufunc:
     array([[ 1,  5],
            [ 9, 13]])
         """
-
+        a = fix_biclass(a)
         if check_biclass(a):
             raise NotImplementedError("NumPy views that points to Bohrium base "\
                                       "arrays isn't supported")
