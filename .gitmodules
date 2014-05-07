@@ -1,3 +1,0 @@
-[submodule "bridge/numpy"]
-	path = bridge/numpy
-	url = git@bitbucket.org:bohrium/numpy.git
