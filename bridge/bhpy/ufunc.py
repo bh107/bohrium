@@ -214,8 +214,7 @@ class ufunc:
 
     Returns
     -------
-    r : ndarray
-        The reduced array. If `out` was supplied, `r` is a reference to it.
+    r : ndarraout      The reduced array. If `out` was supplied, `r` is a reference to it.
 
     Examples
     --------
@@ -257,7 +256,7 @@ class ufunc:
         #Let NumPy handle NumPy array reductions
         if not ndarray.check(a):
             f = eval("np.%s.reduce"%self.info['name'])
-            return f(a, axis=axis, out=None)
+            return f(a, axis=axis, out=out)
 
         #Make sure that 'axis' is a list of dimensions to reduce
         if axis is None:
