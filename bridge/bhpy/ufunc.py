@@ -89,16 +89,11 @@ class ufunc:
                 raise NotImplementedError("NumPy views that points to Bohrium base "\
                                           "arrays isn't supported")
 
-        #Check for shape mismatch and get the final output shape
-        out_shape = np.broadcast(*args).shape if len(args) > 1 else args[0].shape
-
         #Pop the output from the 'args' list
         out = None
         args = list(args)
         if len(args) == self.info['nop']:#output given
             out = args.pop()
-            if out.shape != out_shape:
-                raise ValueError("Could not broadcast to the shape of the output array")
 
         if any([ndarray.check(a) for a in args]):
             if out is not None and not ndarray.check(out):
@@ -112,6 +107,13 @@ class ufunc:
 
         if len(args) > 2:
             raise ValueError("Bohrium do not support ufunc with more than two inputs")
+
+        #Check for shape mismatch and get the final output shape
+        out_shape = np.broadcast(*args).shape if len(args) > 1 else args[0].shape
+
+        #Check output shape
+        if out is not None and out.shape != out_shape:
+            raise ValueError("Could not broadcast to the shape of the output array")
 
         #Find the type signature
         (out_dtype,in_dtype) = _util.type_sig(self.info['name'], args)
