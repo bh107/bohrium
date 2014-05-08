@@ -120,7 +120,7 @@ static int _mremap_data(void *dst, void *src, bh_intp size)
 void mem_access_callback(unsigned long id, uintptr_t addr)
 {
     PyObject *ary = (PyObject *) id;
-    printf("mem_access_callback() - ary: %p, addr: %p\n", ary, (void*) addr);
+//    printf("mem_access_callback() - ary: %p, addr: %p\n", ary, (void*) addr);
 
     PyGILState_STATE GIL = PyGILState_Ensure();
     PyErr_WarnEx(NULL,"Encountering an operation not supported by Bohrium. "
@@ -559,7 +559,7 @@ BhArray_Repr(PyObject *self)
     PyObject *t = BhArray_copy2numpy(self, NULL);
     if(t == NULL)
         return NULL;
-    PyObject *str = PyArray_Type.tp_repr(self);
+    PyObject *str = PyArray_Type.tp_repr(t);
     Py_DECREF(t);
     return str;
 }
@@ -570,7 +570,7 @@ BhArray_Str(PyObject *self)
     PyObject *t = BhArray_copy2numpy(self, NULL);
     if(t == NULL)
         return NULL;
-    PyObject *str = PyArray_Type.tp_str(self);
+    PyObject *str = PyArray_Type.tp_str(t);
     Py_DECREF(t);
     return str;
 }
