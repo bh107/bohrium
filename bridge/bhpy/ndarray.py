@@ -90,6 +90,8 @@ def get_base(ary):
         base = ary.base
         while base.base is not None:
             base = base.base
+        if check(ary) and not check(base):
+            raise RuntimeError("A Bohrium view points to a NumPy base")
         return base
 
 #Return True when 'ary' is a base array
