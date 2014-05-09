@@ -15,8 +15,13 @@ directiveStartToken = %
 using namespace bxx;
 
 // Common runtime methods
-void bh_runtime_flush() {
+void bh_runtime_flush(void) {
     Runtime::instance().flush();
+}
+
+// Shutdown Bohrium
+void bh_runtime_shutdown(void){
+   //delete &Runtime::instance();
 }
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops

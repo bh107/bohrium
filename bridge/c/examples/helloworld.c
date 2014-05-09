@@ -54,5 +54,6 @@ void compute()
 int main()
 {
     compute();
+    bh_runtime_shutdown();
     return 0;
 }

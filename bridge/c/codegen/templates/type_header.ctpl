@@ -21,7 +21,10 @@ extern "C" {
 #endif
 
 // Common runtime methods
-DLLEXPORT void bh_runtime_flush();
+DLLEXPORT void bh_runtime_flush(void);
+
+// Shutdown Bohrium
+DLLEXPORT void bh_runtime_shutdown(void);
 
 // Common slice range
 struct bh_slice_range;
