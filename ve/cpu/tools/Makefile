@@ -44,7 +44,7 @@ reset: purge install
 # "Install the cpu-engine
 install: gen
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) -DCMAKE_INSTALL_PREFIX=~/.local && make && make install
+	cd $(BDIR) && cmake $(ROOT) -DCPU_PROFILING=true && make && make install
 
 #
 # Clean up the build-files

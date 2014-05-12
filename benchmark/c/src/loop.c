@@ -92,14 +92,13 @@ int main(int argc, char *argv[])
 {
     operand_t array = setup(200000000);
 
-    
     TIMER_START
     for(uint64_t i=0; i<10; i++) {
         //with_fusion_add(&array);
         //without_fusion_add(&array);
 
-        //without_fusion_id(&array);
-        with_fusion_id(&array);
+        without_fusion_id(&array);
+        //with_fusion_id(&array);
     }
     TIMER_STOP("LOOP")
     return 0;

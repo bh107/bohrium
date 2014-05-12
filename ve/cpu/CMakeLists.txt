@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 2.6)
 include_directories(../../include)
 
-# Compile-flags
-add_definitions( -DCPU_PROFILING )
+# CPU Profiling
+set(CPU_PROFILING false CACHE BOOL "VE-CPU: Enabling CPU profiling.")
+if (CPU_PROFILING)
+    message(STATUS "VE-CPU: Enabling CPU profiling.")
+    add_definitions( -DCPU_PROFILING )
+endif()
 
 #External dependencies
 find_package(CTemplate)
