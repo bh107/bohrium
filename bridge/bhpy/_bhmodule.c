@@ -291,6 +291,13 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
         Py_RETURN_NONE;
     }
 */
+    if(!PyArray_CHKFLAGS((PyArrayObject*)base, NPY_ARRAY_OWNDATA))
+    {
+        PyErr_Format(PyExc_RuntimeError, "BhArray_data_bhc2np() base does "
+                                         "not own its data!");
+        return NULL;
+    }
+
     //Calling get_bhc_data_pointer(base, allocate=False, nullify=True)
     void *d = NULL;
     if(get_bhc_data_pointer(base, 0, 1, &d) == -1)
