@@ -4,7 +4,7 @@ CPP = g++
 FLAGS = -O2 -lm
 BOOST = /opt/local/include/ 
 
-all: heat-eq-jacobi jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost
+all: loop heat-eq-jacobi jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost
 
 bench: all
 	./jacobi.sh
@@ -29,3 +29,6 @@ jacobi-vtuned: src/jacobi-vtuned.c
 
 jacobi-boost: src/jacobi-boost.cc
 	$(CPP) -I$(BOOST) src/jacobi-boost.cc -o bin/jacobi-boost $(FLAGS)
+
+loop: src/loop.c
+	$(CPP) -I$(BOOST) src/loop.c -o bin/loop $(FLAGS)

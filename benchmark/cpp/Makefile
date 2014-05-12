@@ -9,7 +9,7 @@ BENCHMARKS = synth_inplace
 #CXX=clang
 CXX=g++
 EXTRAS+=
-CXXFLAGS=-Wall -Wextra -pedantic -g -O2 -std=c++0x -Wno-variadic-macros $(EXTRAS)
+CXXFLAGS=-Wall -Wextra -pedantic -g -O0 -std=c++0x -Wno-variadic-macros $(EXTRAS)
 
 all: benchmarks
 

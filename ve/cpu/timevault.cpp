@@ -15,6 +15,11 @@ Timevault& Timevault::instance()
     return _instance;
 }
 
+Timevault::~Timevault()
+{
+    cout << text() << endl;
+}
+
 time_t Timevault::sample_time(void)
 {
 #ifndef _WIN32
@@ -51,7 +56,7 @@ void Timevault::store(time_t elapsed)
 
 void Timevault::store(string identifier, time_t elapsed)
 {
-    _elapsed.insert(std::pair<string, time_t>(identifier, elapsed));
+    _elapsed.insert(pair<string, time_t>(identifier, elapsed));
 }
 
 void Timevault::clear(void)

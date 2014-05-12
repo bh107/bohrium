@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 include_directories(../../include)
 
 # Compile-flags
-#add_definitions( -DCPU_PROFILING )
+add_definitions( -DCPU_PROFILING )
 
 #External dependencies
 find_package(CTemplate)

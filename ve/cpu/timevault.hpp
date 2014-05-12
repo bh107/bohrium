@@ -89,6 +89,11 @@ class Timevault {
          */
         void to_file(std::string absolute_path);
 
+        /**
+         *  The de-constructor will dump-timings.
+         */
+        ~Timevault();
+
     private:
         /**
          * Non-Implemented: instantiation is controlled by instance().
