@@ -50,7 +50,6 @@ add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
 add_subdirectory(ve/cpu)
 add_subdirectory(filter/pprint)
-add_subdirectory(filter/graph)
 add_subdirectory(extmethods/matmul)
 
 #The other modules
