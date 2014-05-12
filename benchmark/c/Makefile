@@ -31,4 +31,4 @@ jacobi-boost: src/jacobi-boost.cc
 	$(CPP) -I$(BOOST) src/jacobi-boost.cc -o bin/jacobi-boost $(FLAGS)
 
 loop: src/loop.c
-	$(CPP) -I$(BOOST) src/loop.c -o bin/loop $(FLAGS)
+	$(CPP) -DCPU_PROFILING-I$(BOOST) src/loop.c -o bin/loop $(FLAGS)

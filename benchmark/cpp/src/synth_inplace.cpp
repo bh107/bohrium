@@ -26,6 +26,8 @@ using namespace std;
 using namespace bxx;
 using namespace argparse;
 
+/*
+
 template <typename T>
 multi_array<T> compute_inplace(size_t n, size_t iterations)
 {
@@ -44,10 +46,8 @@ multi_array<T> compute_inplace(size_t n, size_t iterations)
 }
 
 template <typename T>
-multi_array<T> compute_inplace_add(size_t n, size_t iterations)
+multi_array<T> compute_inplace_add(multi_array<T>& r, size_t n, size_t iterations)
 {
-    multi_array<T> r;
-    r = value<T>(1, n);
     T k1 = 1;
     T k2 = 2;
 
@@ -57,6 +57,25 @@ multi_array<T> compute_inplace_add(size_t n, size_t iterations)
     }
 
     return r;
+}
+*/
+
+template <typename T>
+void compute(uint64_t nelements, uint64_t iterations)
+{
+    multi_array<T> res;
+    res = value<T>((T)1, nelements);
+
+    Runtime::instance().flush();
+    bh_intp start = sample_time();
+
+    for(uint64_t i=0; i<iterations; ++i) {
+        bh_identity(res, (T)1);
+        bh_identity(res, (T)2);
+        Runtime::instance().flush();
+    }
+                                        // Output timing
+    cout << "{elapsed-time: "<< (sample_time()-start)/1000000.0 <<"";
 }
 
 int main(int argc, char* argv[])
@@ -84,18 +103,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    bh_intp start = sample_time();
-    //multi_array<float> res = compute_inplace<float>(args.size[0], args.size[1]);
-    multi_array<float> res = compute_inplace_add<float>(args.size[0], args.size[1]);
-    Runtime::instance().flush();
-                                        // Output timing
-    cout << "{elapsed-time: "<< (sample_time()-start)/1000000.0 <<"";
-    if (args.verbose) {                 // and values.
-        cout << ", \"output\": [";
-        cout << res << endl;;
-        cout << "]" << endl;
-    }
-    cout << "}" << endl;
+    compute<float>(args.size[0], args.size[1]);
 
     return 0;
 }
