@@ -27,7 +27,7 @@ using namespace bxx;
 using namespace argparse;
 
 template <typename T>
-void compute_identity(uint64_t nelements, uint64_t iterations)
+void compute_branch(uint64_t nelements, uint64_t iterations)
 {
     multi_array<T> res;
     res = value<T>((T)1, nelements);
@@ -36,28 +36,14 @@ void compute_identity(uint64_t nelements, uint64_t iterations)
     bh_intp start = sample_time();
 
     for(uint64_t i=0; i<iterations; ++i) {
-        bh_identity(res, (T)1);
-        bh_identity(res, (T)2);
+        multi_array<T> tmp_l;
+        multi_array<T> tmp_r;
+        tmp_l   = (((res+(T)1)+(T)2)+(T)3);
+        tmp_r   = (((res+(T)1)+(T)2)+(T)3);
+        res = tmp_l * tmp_r;
+        res += tmp_l;
+        //Runtime::instance().flush();
     }
-    Runtime::instance().flush();
-                                        // Output timing
-    cout << "{elapsed-time: "<< (sample_time()-start)/1000000.0 <<"";
-}
-
-template <typename T>
-void compute_add(uint64_t nelements, uint64_t iterations)
-{
-    multi_array<T> res;
-    res = value<T>((T)1, nelements);
-
-    Runtime::instance().flush();
-    bh_intp start = sample_time();
-
-    for(uint64_t i=0; i<iterations; ++i) {
-        bh_add(res, res, (T)1);
-        bh_add(res, res, (T)2);
-    }
-    Runtime::instance().flush();
                                         // Output timing
     cout << "{elapsed-time: "<< (sample_time()-start)/1000000.0 <<"";
 }
@@ -87,7 +73,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    compute_add<float>(args.size[0], args.size[1]);
+    compute_branch<float>(args.size[0], args.size[1]);
     //compute_identity<float>(args.size[0], args.size[1]);
 
     return 0;

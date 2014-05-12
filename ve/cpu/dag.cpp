@@ -55,7 +55,7 @@ void Dag::init(void)
 
             // Search operands of other instruction
             int64_t noperands = bh_operands(other_instr->opcode);
-            for(int64_t op_idx=0; op_idx<noperands; ++op_idx) {
+            for(int64_t op_idx=0; (op_idx<noperands) && (!found); ++op_idx) {
                 bh_view* other_op   = &other_instr->operand[op_idx];
                 bh_base* other_base = other_op->base;
 
@@ -64,6 +64,7 @@ void Dag::init(void)
                     case BH_FREE:
                     case BH_SYNC:
                     case BH_DISCARD:
+                    case BH_NONE:
                         break;
 
                     default:
@@ -146,6 +147,10 @@ string Dag::dot(void)
 {
     stringstream ss;
     ss << "digraph {" << endl;
+    ss << "graph [";
+    ss << "rankdir=LR, ";
+    ss << "overlap=false, ";
+    ss << "splines=false];" << endl;
     
     // Vertices
     std::pair<vertex_iter, vertex_iter> vp = vertices(_dag);

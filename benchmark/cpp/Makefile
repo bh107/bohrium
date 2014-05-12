@@ -4,7 +4,7 @@ CPPB_INCLUDE=$(ROOT)/bridge/cpp
 
 BENCH_SRC  = $(wildcard src/*.cpp)
 #BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
-BENCHMARKS = synth_inplace 
+BENCHMARKS = synth_inplace synth_branch
 
 #CXX=clang
 CXX=g++
@@ -29,6 +29,9 @@ synth: src/synth.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
 
 synth_inplace: src/synth_inplace.cpp $(HEADER)
+	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
+
+synth_branch: src/synth_branch.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++
 
 jacobi_stencil: src/jacobi_stencil.cpp $(HEADER)
