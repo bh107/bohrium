@@ -9,7 +9,7 @@ def create_svg(src_dir, dst_dir):
     print src_dir
 
     formats = ['svg', 'png', 'html']
-    for s in glob.glob(src_dir+os.sep+"graph*.dot"):
+    for s in glob.glob(src_dir+os.sep+"*.dot"):
         path, filename = os.path.split(s)        
         dst_path = dst_dir +os.sep+ filename
         for fmt in formats:

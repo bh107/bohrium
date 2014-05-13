@@ -137,6 +137,60 @@ string Dag::text(void)
     return "Dag::text(void);";
 }
 
+string dot_instr(bh_instruction* instr, int64_t nr)
+{
+    int64_t opcode = instr->opcode;
+
+    stringstream operands;
+    for(int64_t op_idx=0; op_idx<bh_operands(instr->opcode); ++op_idx) {
+        if (bh_is_constant(&(instr->operand[op_idx]))) {
+            operands << "K";
+        } else {
+            operands << instr->operand[op_idx].base;
+        }
+        if ((op_idx+1) != bh_operands(instr->opcode)) {
+            operands << ", ";
+        }
+    }
+
+    stringstream style, label;
+    switch(opcode) {
+        case BH_FREE:
+            style << "shape=parallelogram, ";
+            style << "fillcolor=\"#FDAE61\", ";
+            break;
+
+        case BH_DISCARD:
+            style << "shape=trapezium, ";
+            style << "fillcolor=\"#FFFFBF\", ";
+            break;
+
+        case BH_SYNC:
+            style << "shape=circle, ";
+            style << "fillcolor=\"#D7191C\", ";
+            break;
+
+        case BH_NONE:
+            style << "shape=square, ";
+            style << "fillcolor=\"#A6D96A\", ";
+            break;
+
+        default:
+            label << "label=\"" << nr << " - ";
+            label << bh_opcode_text(opcode);
+            label << "(";
+            label << operands.str();
+            label << ")";
+            label << "\"";
+            break;
+    }
+
+    stringstream rep;
+    rep << nr << " [" << style.str() << label.str() << "];";
+    
+    return rep.str();
+}
+
 /**
  *  Return a textual representation in dot-format of the given Graph.
  *
@@ -147,37 +201,28 @@ string Dag::dot(void)
 {
     stringstream ss;
     ss << "digraph {" << endl;
+
     ss << "graph [";
-    ss << "rankdir=LR, ";
-    ss << "overlap=false, ";
+    //ss << "rankdir=LR, ";
+    //ss << "overlap=false, ";
+    ss << "layout=dot, ";
+    ss << "nodesep=0.8, ";
+    ss << "sep=\"+25,25\", ";
+    ss << "overlap=scalexy, ";
     ss << "splines=false];" << endl;
+
+    ss << "node [";
+    ss << "shape=box, ";
+    ss << "fontname=\"Courier\",";
+    ss << "fillcolor=\"#CBD5E9\" ";
+    ss << "style=filled,";
+    //ss << "margin=0, pad=0";
+    ss << "];" << endl;
     
     // Vertices
     std::pair<vertex_iter, vertex_iter> vp = vertices(_dag);
     for(vertex_iter it = vp.first; it != vp.second; ++it) {
-        bh_intp opcode = _bhir->instr_list[*it].opcode;
-        
-        stringstream operands;
-        for(int64_t op_idx=0; op_idx<bh_operands(opcode); ++op_idx) {
-            if (bh_is_constant(&(_bhir->instr_list[*it].operand[op_idx]))) {
-                operands << " K";
-            } else {
-                operands << " " << _bhir->instr_list[*it].operand[op_idx].base;
-            }
-        }
-
-        ss << *it << " [";
-        ss << "shape=box ";
-        ss << "style=filled,rounded ";
-        ss << "fillcolor=\"#CBD5E9\" ";
-        ss << "label=\"" << *it << " - ";
-        ss << bh_opcode_text(opcode);
-        ss << "(";
-        ss << operands.str();
-        ss << ")";
-        ss << "\"";
-        ss << "]";
-        ss << endl;
+        ss << dot_instr(&_bhir->instr_list[*it], *it) << endl;
     }
     
     // Edges
