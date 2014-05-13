@@ -221,6 +221,47 @@ array_divmod(PyObject *op1, PyObject *op2)
     return result;
 }
 
+static PyObject *
+array_float(PyArrayObject *v)
+{
+    PyErr_SetString(PyExc_TypeError, "to float is not implemented");
+    return NULL;
+}
+
+static PyObject *
+array_int(PyArrayObject *v)
+{
+    PyErr_SetString(PyExc_TypeError, "to int is not implemented");
+    return NULL;
+}
+
+static PyObject *
+array_long(PyArrayObject *v)
+{
+    PyErr_SetString(PyExc_TypeError, "to long is not implemented");
+    return NULL;
+}
+static PyObject *
+array_oct(PyArrayObject *v)
+{
+    PyErr_SetString(PyExc_TypeError, "to oct is not implemented");
+    return NULL;
+}
+
+static PyObject *
+array_hex(PyArrayObject *v)
+{
+    PyErr_SetString(PyExc_TypeError, "to hex is not implemented");
+    return NULL;
+}
+
+static PyObject *
+array_positive(PyArrayObject *v)
+{
+    PyErr_SetString(PyExc_TypeError, "to positive is not implemented");
+    return NULL;
+}
+
 PyNumberMethods array_as_number = {
     (binaryfunc)array_add,                      /*nb_add*/
     (binaryfunc)array_subtract,                 /*nb_subtract*/
@@ -230,7 +271,7 @@ PyNumberMethods array_as_number = {
     (binaryfunc)array_divmod,                   /*nb_divmod*/
     (ternaryfunc)array_power,                   /*nb_power*/
     (unaryfunc)array_negative,                  /*nb_neg*/
-    (unaryfunc)0,                /*nb_pos*/
+    (unaryfunc)array_positive,                  /*nb_pos*/
     (unaryfunc)array_absolute,                  /*array_abs,*/
     (inquiry)0,                    /*nb_nonzero*/
     (unaryfunc)array_invert,                    /*nb_invert*/
@@ -240,11 +281,11 @@ PyNumberMethods array_as_number = {
     (binaryfunc)array_bitwise_xor,              /*nb_xor*/
     (binaryfunc)array_bitwise_or,               /*nb_or*/
     0,                                          /*nb_coerce*/
-    (unaryfunc)0,                       /*nb_int*/
-    (unaryfunc)0,                      /*nb_long*/
-    (unaryfunc)0,                     /*nb_float*/
-    (unaryfunc)0,                       /*nb_oct*/
-    (unaryfunc)0,                       /*nb_hex*/
+    (unaryfunc)array_int,                       /*nb_int*/
+    (unaryfunc)array_long,                      /*nb_long*/
+    (unaryfunc)array_float,                     /*nb_float*/
+    (unaryfunc)array_oct,                       /*nb_oct*/
+    (unaryfunc)array_hex,                       /*nb_hex*/
 
     (binaryfunc)array_inplace_add,              /*inplace_add*/
     (binaryfunc)array_inplace_subtract,         /*inplace_subtract*/
