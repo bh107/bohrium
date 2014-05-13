@@ -9,6 +9,8 @@
 
 using namespace std;
 using namespace bohrium::core;
+using namespace bohrium::core::dag;
+
 namespace bohrium{
 namespace engine {
 namespace cpu {

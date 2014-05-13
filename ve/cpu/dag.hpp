@@ -41,15 +41,49 @@ typedef boost::graph_traits<Graph>::edge_iterator edge_iter;
 class Dag
 {
 public:
+    /**
+     *  Construct a graph with instructions as vertices and edges as data-dependencies.
+     *  @param bhir The bhir containing list of instructions.
+     */
     Dag(bh_ir* bhir);
-    void init(void);
 
+    ~Dag(void);
+
+    /**
+     *  Returns a reference to the subgraphs within the graph.
+     */
+    std::vector<Graph*>& subgraphs(void);
+
+    /**
+     *  Returns a textual representation of graph meta-data
+     *  such as the number of nodes, edges etc.
+     */
     std::string text(void);
+
+    /**
+     *  Returns a textual representation in dot-format
+     */
     std::string dot(void);
 
+    std::string dot(bh_instruction* instr, int64_t nr);
+
 private:
+    /**
+     *  Construct dependencies in the adjacency_list.
+     */
+    void array_deps(void);
+    void system_deps(void);
+
+    /**
+     *  Partition the graph into subgraphs with certain properties...
+     */
+    void partition(void);
+
     bh_ir* _bhir;
     Graph _dag;
+    std::vector<Graph*> _subgraphs;
+
+    static const char TAG[];
 };
 
 }}}

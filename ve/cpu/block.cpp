@@ -26,11 +26,9 @@ Block::Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx)
 
 Block::~Block()
 {
-    DEBUG(TAG, "~Block() ++");
     free(operands_);
     free(tacs);
     free(instr_);
-    DEBUG(TAG, "~Block() --");
 }
 
 const bh_dag& Block::get_dag()
@@ -91,9 +89,7 @@ string Block::text() const
 
 bool Block::symbolize()
 {   
-    DEBUG(TAG,"symbolize(void) : length("<< length << ")");
     bool symbolize_res = symbolize(0, ntacs_-1);
-    DEBUG(TAG,"symbolize(void) : symbol("<< symbol << "), symbol_text("<< symbol_text << ");");
     return symbolize_res;
 }
 
@@ -101,8 +97,6 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
 {
     stringstream tacs,
                  operands;
-
-    DEBUG(TAG,"symbolize("<< tac_start << ", " << tac_end << ")");
 
     //
     // Scope
@@ -132,7 +126,6 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         tacs << utils::operation_text(tac.op);
         tacs << "-" << utils::operator_text(tac.oper);
         tacs << "-";
-        DEBUG(TAG, "symbolize(...) : tac.out.ndim(" << symbol_table.table[tac.out].ndim << ")");
         size_t ndim = (tac.op == REDUCE) ? symbol_table.table[tac.in1].ndim : symbol_table.table[tac.out].ndim;
         if (ndim <= 3) {
             tacs << ndim;
@@ -168,7 +161,6 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
     symbol_text_    = tacs.str() +"_"+ operands.str();
     symbol_         = utils::hash_text(symbol_text_);
 
-    DEBUG(TAG,"symbolize(...) : symbol("<< symbol_ << "), symbol_text("<< symbol_text_ << ");");
     return true;
 }
 
@@ -214,7 +206,6 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
 
     //
     // Insert entry such that tac operands can be resolved in block-scope.
-    DEBUG(TAG, "Inserting " << arg_symbol << " -> " << arg_idx);
     operand_map.insert(pair<size_t,size_t>(arg_symbol, arg_idx));
 
     return arg_symbol;

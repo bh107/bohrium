@@ -2,6 +2,7 @@
 #include <sstream>
 #include <set>
 #include "dag.hpp"
+#include "utils.hpp"
 
 using namespace std;
 using namespace boost;
@@ -9,25 +10,50 @@ namespace bohrium{
 namespace core {
 namespace dag {
 
-/**
- *  Create a graph with instructions as vertices and edges as data-dependencies.
- *
- *  @param bhir The bhir containing list of instructions.
- *  @return The graph.
- */
-Dag::Dag(bh_ir* bhir) : _bhir(bhir), _dag(bhir->ninstr)
+const char Dag::TAG[] = "Dag";
+
+Dag::Dag(bh_ir* bhir) : _bhir(bhir), _dag(bhir->ninstr), _subgraphs()
 {
-    init();
+    DEBUG(TAG,"Dag(...)");
+    array_deps();
+    system_deps();
+    partition();
+    DEBUG(TAG,"Dag(...);");
 }
 
-void Dag::init(void)
+Dag::~Dag(void)
 {
+}
+
+void Dag::partition(void)
+{
+    DEBUG(TAG,"partition(...)");
+    _subgraphs.push_back(&(_dag.create_subgraph()));
+
+    if (num_vertices(_dag)>10) {
+        add_vertex(0, *(_subgraphs[0]));
+        add_vertex(1, *(_subgraphs[0]));
+        add_vertex(2, *(_subgraphs[0]));
+        add_vertex(3, *(_subgraphs[0]));
+        add_vertex(4, *(_subgraphs[0]));
+        add_vertex(5, *(_subgraphs[0]));
+        add_vertex(6, *(_subgraphs[0]));
+        add_vertex(7, *(_subgraphs[0]));
+    }
+    DEBUG(TAG,"partition(...);");
+}
+
+void Dag::array_deps(void)
+{
+    DEBUG(TAG,"array_deps(...)");
     //
     // Find dependencies on array operations
     for(int64_t idx=0; idx < _bhir->ninstr; ++idx) {
 
         // The instruction to find data-dependencies for
         bh_instruction* instr = &_bhir->instr_list[idx];
+
+        // Ignore these
         if (((instr->opcode == BH_FREE)     ||  \
              (instr->opcode == BH_DISCARD)  ||  \
              (instr->opcode == BH_SYNC)     ||  \
@@ -80,7 +106,12 @@ void Dag::init(void)
             }
         }
     }
+    DEBUG(TAG,"array_deps(...);");
+}
 
+void Dag::system_deps(void)
+{
+    DEBUG(TAG,"system_deps(...)");
     //
     // Find dependencies on system operations
     for(int64_t idx=_bhir->ninstr-1; idx>=0; --idx) {
@@ -109,8 +140,6 @@ void Dag::init(void)
             }
         }
 
-        //
-        // Create edges for system
         bool found = false;
         for(int64_t other=idx-1; (other>=0) && (!found); --other) {
             bh_instruction* other_instr = &_bhir->instr_list[other];
@@ -130,15 +159,18 @@ void Dag::init(void)
             }
         }
     }
+    DEBUG(TAG,"system_deps(...);");
 }
 
 string Dag::text(void)
 {
-    return "Dag::text(void);";
+    return "text(void);";
 }
 
-string dot_instr(bh_instruction* instr, int64_t nr)
+string Dag::dot(bh_instruction* instr, int64_t nr)
 {
+    DEBUG(TAG,"dot(instr*(" << instr->opcode << "), " << nr << ")");
+
     int64_t opcode = instr->opcode;
 
     stringstream operands;
@@ -188,6 +220,7 @@ string dot_instr(bh_instruction* instr, int64_t nr)
     stringstream rep;
     rep << nr << " [" << style.str() << label.str() << "];";
     
+    DEBUG(TAG,"dot(...);");
     return rep.str();
 }
 
@@ -199,16 +232,13 @@ string dot_instr(bh_instruction* instr, int64_t nr)
  */
 string Dag::dot(void)
 {
+    DEBUG(TAG,"dot(void)");
     stringstream ss;
     ss << "digraph {" << endl;
 
     ss << "graph [";
-    //ss << "rankdir=LR, ";
-    //ss << "overlap=false, ";
-    ss << "layout=dot, ";
     ss << "nodesep=0.8, ";
     ss << "sep=\"+25,25\", ";
-    ss << "overlap=scalexy, ";
     ss << "splines=false];" << endl;
 
     ss << "node [";
@@ -216,13 +246,12 @@ string Dag::dot(void)
     ss << "fontname=\"Courier\",";
     ss << "fillcolor=\"#CBD5E9\" ";
     ss << "style=filled,";
-    //ss << "margin=0, pad=0";
     ss << "];" << endl;
     
     // Vertices
     std::pair<vertex_iter, vertex_iter> vp = vertices(_dag);
     for(vertex_iter it = vp.first; it != vp.second; ++it) {
-        ss << dot_instr(&_bhir->instr_list[*it], *it) << endl;
+        ss << dot(&_bhir->instr_list[*it], *it) << endl;
     }
     
     // Edges
@@ -230,8 +259,29 @@ string Dag::dot(void)
     for(edge_iter it = ep.first; it != ep.second; ++it) {
         ss << source(*it, _dag) << "->" << target(*it, _dag) << ";" <<  endl;
     }
+
+    // Subgraphs
+    uint64_t subgraph_count = 0;
+    for(vector<Graph*>::iterator it=_subgraphs.begin(); it!=_subgraphs.end(); it++) {
+        // Dot-text for subgraph begin
+        ss << "subgraph cluster_" << subgraph_count << " { " << endl;
+        ss << "style=filled;";
+        ss << "color=lightgrey;";
+        
+        // Vertices in the given subgraph
+        vp = vertices(**it);
+        for(vertex_iter it = vp.first; it != vp.second; ++it) {
+            ss << *it << ";" << endl;
+        }
+        
+        // Dot-text for subgraph end
+        ss << "}" << endl;
+        
+        subgraph_count++;
+    }
     
     ss << "}" << endl;
+    DEBUG(TAG,"dot(void);");
     return ss.str();
 }
 

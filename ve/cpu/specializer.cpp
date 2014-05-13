@@ -33,7 +33,6 @@ Specializer::Specializer(const string template_directory)
 
 Specializer::~Specializer()
 {
-    DEBUG(TAG, "~Specializer()");
     ctemplate::mutable_default_template_cache()->ClearCache();
 }
 
@@ -175,7 +174,6 @@ string Specializer::specialize( SymbolTable& symbol_table,
                                 const Block& block,
                                 size_t tac_start, size_t tac_end)
 {
-    DEBUG(TAG,"specialize(..., " << tac_start << ", " << tac_end << ")");
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
@@ -298,7 +296,6 @@ string Specializer::specialize( SymbolTable& symbol_table,
         &sourcecode
     );
 
-    DEBUG(TAG,"specialize(...);");
     return sourcecode;
 }
 
@@ -315,7 +312,6 @@ string Specializer::specialize( SymbolTable& symbol_table,
                                 const Block& block,
                                 vector<triplet_t>& ranges)
 {
-    DEBUG(TAG,"specialize(..., ranges)");
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
@@ -493,7 +489,6 @@ string Specializer::specialize( SymbolTable& symbol_table,
         &sourcecode
     );
 
-    DEBUG(TAG,"specialize(...);");
     return sourcecode;
 }
 

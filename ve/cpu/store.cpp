@@ -31,7 +31,6 @@ Store::Store(const string object_directory, const string kernel_directory)
 
 Store::~Store()
 {
-    DEBUG(TAG,"~Store()");
 }
 
 string Store::text(void)
@@ -46,7 +45,6 @@ string Store::text(void)
  */
 string Store::get_uid(void)
 {
-    DEBUG(TAG,"get_uid(void) : uid(" << this->uid << ");");
     return this->uid;
 }
 
@@ -87,7 +85,6 @@ string Store::src_abspath(string symbol)
  */
 bool Store::symbol_ready(string symbol)
 {
-    DEBUG(TAG,"symbol_ready("<< symbol << ") : return(" << (funcs.count(symbol) > 0) << ");");
     return funcs.count(symbol) > 0;
 }
 
@@ -97,7 +94,6 @@ bool Store::symbol_ready(string symbol)
  */
 size_t Store::preload(void)
 {
-    DEBUG(TAG,"preload(void)");
     DIR *dir;
     struct dirent *ent;
     bool res = true;
@@ -118,14 +114,12 @@ size_t Store::preload(void)
     //  LIB_[a-z0-9]+_xxxxxx.so
     //
     if ((dir = opendir(object_directory.c_str())) != NULL) {
-        DEBUG(TAG,"preload(...) -- GOING MULTI!");
         while ((ent = readdir (dir)) != NULL) {     // Go over dir-entries
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
                 continue;
             }
             string filename(ent->d_name);
-            DEBUG(TAG," We have a potential: " << filename);
             string symbol;                     // KRN_\d+
             string library;                    // LIB_whatever_xxxxxx.so
 
@@ -143,7 +137,6 @@ size_t Store::preload(void)
                 string index_fn = object_directory  +\
                                   "/"               +\
                                   filename;
-                DEBUG(TAG," MULTI: " << library << " ||| " << index_fn);
                 ifstream symbol_file(index_fn.c_str(), ifstream::in);
                 for(string symbol; getline(symbol_file, symbol) && res;) {
                     if (0==libraries.count(symbol)) {
@@ -165,7 +158,6 @@ size_t Store::preload(void)
     //  KRN_[\d+]_XXXXXX.so
     //
     if ((dir = opendir (object_directory.c_str())) != NULL) {
-        DEBUG(TAG," GOING SINGLE!");
         while((ent = readdir(dir)) != NULL) {
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
@@ -205,30 +197,24 @@ size_t Store::preload(void)
         nloaded += res;
     }
 
-    DEBUG(TAG," preload(void) : nloaded("<< nloaded << ");");
-
     return nloaded;
 }
 
 void Store::add_symbol(string symbol, string library)
 {
-    DEBUG(TAG,"add_symbol("<< symbol <<", "<< library <<");");
     libraries.insert(pair<string, string>(symbol, library));
 }
 
 /**
  *  Load a single symbol from library symbol into func-storage.
  */
-bool Store::load(string symbol) {
-    DEBUG(TAG,"load("<< symbol << ");");
-
+bool Store::load(string symbol)
+{
     return load(symbol, libraries[symbol]);
 }
 
 bool Store::load(string symbol, string library)
 {
-    DEBUG(TAG,"load("<< symbol << ", " << library << ");");
-    
     char *error_msg = NULL;             // Buffer for dlopen errors
     int errnum = 0;
     
