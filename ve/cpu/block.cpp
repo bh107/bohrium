@@ -2,8 +2,7 @@
 
 using namespace std;
 namespace bohrium{
-namespace engine{
-namespace cpu{
+namespace core{
 
 const char Block::TAG[] = "Block";
 
@@ -43,7 +42,7 @@ string Block::scope_text(string prefix) const
     for(size_t i=1; i<=noperands(); ++i) {
         ss << prefix;
         ss << "[" << i << "] {";
-        ss << utils::operand_text(scope(i));
+        ss << core::operand_text(scope(i));
         ss << "}";
 
         ss << endl;
@@ -72,7 +71,7 @@ string Block::text(std::string prefix) const
 
     ss << prefix << "  tacs {" << endl;
     for(size_t i=0; i<ntacs_; ++i) {
-        ss << prefix << "    [" << i << "]" << utils::tac_text(tacs[i]) << endl;
+        ss << prefix << "    [" << i << "]" << core::tac_text(tacs[i]) << endl;
     }
     ss << prefix << "  }" << endl;
 
@@ -104,8 +103,8 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         const operand_t& operand = scope(i);
 
         operands << "~" << i;
-        operands << utils::layout_text_shand(operand.layout);
-        operands << utils::etype_text_shand(operand.etype);
+        operands << core::layout_text_shand(operand.layout);
+        operands << core::etype_text_shand(operand.etype);
     }
 
     //
@@ -123,8 +122,8 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         }
         first = false;
 
-        tacs << utils::operation_text(tac.op);
-        tacs << "-" << utils::operator_text(tac.oper);
+        tacs << core::operation_text(tac.op);
+        tacs << "-" << core::operator_text(tac.oper);
         tacs << "-";
         size_t ndim = (tac.op == REDUCE) ? symbol_table.table[tac.in1].ndim : symbol_table.table[tac.out].ndim;
         if (ndim <= 3) {
@@ -134,7 +133,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         }
         tacs << "D";
         
-        switch(utils::tac_noperands(tac)) {
+        switch(core::tac_noperands(tac)) {
             case 3:
                 tacs << "_" << resolve(tac.out);
                 tacs << "_" << resolve(tac.in1);
@@ -159,7 +158,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
     }
 
     symbol_text_    = tacs.str() +"_"+ operands.str();
-    symbol_         = utils::hash_text(symbol_text_);
+    symbol_         = core::hash_text(symbol_text_);
 
     return true;
 }
@@ -191,7 +190,7 @@ size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
     // Do remember that 0 is is not a valid operand and we therefore index from 1.
     // Also we do not want to compare with selv, that is when i == arg_idx.
     for(size_t i=1; i<arg_idx; ++i) {
-        if (!utils::equivalent(scope(i), symbol_table.table[arg_symbol])) {
+        if (!core::equivalent(scope(i), symbol_table.table[arg_symbol])) {
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.
@@ -251,4 +250,4 @@ bh_instruction& Block::instr(size_t instr_idx) const
     return *instr_[instr_idx];
 }
 
-}}}
+}}

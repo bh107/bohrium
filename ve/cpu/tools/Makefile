@@ -16,6 +16,7 @@ gen:
 	cp $(CPU)/autogen/output/block_compose.cpp $(CPU)/
 	cp $(CPU)/autogen/output/utils_mapping.cpp $(CPU)/
 	cp $(CPU)/autogen/output/specializer_cexpression.cpp $(CPU)/
+	cp $(CPU)/autogen/output/instrs_to_tacs.cpp $(CPU)/utils_mapping_tacs.cpp
 	cp $(CPU)/autogen/output/tac.cpp $(CPU)/tac.h
 	rm $(CPU)/autogen/output/*.cpp
 

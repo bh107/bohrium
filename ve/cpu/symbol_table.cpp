@@ -3,8 +3,7 @@
 
 using namespace std;
 namespace bohrium{
-namespace engine{
-namespace cpu{
+namespace core{
 
 SymbolTable::SymbolTable(void) : table(NULL), reads(NULL), writes(NULL), reserved(100), nsymbols(0)
 {
@@ -62,11 +61,11 @@ string SymbolTable::text(string prefix)
     ss << prefix << "symbol_table {" << endl;
     for(size_t sbl_idx=1; sbl_idx<=nsymbols; ++sbl_idx) {
         ss << prefix << "  [" << sbl_idx << "]{";
-        ss << " layout("    << utils::layout_text(table[sbl_idx].layout) << "),";
+        ss << " layout("    << layout_text(table[sbl_idx].layout) << "),";
         ss << " nelem("     << table[sbl_idx].nelem << "),";
         ss << " data("      << *(table[sbl_idx].data) << "),";
         ss << " const_data("<< table[sbl_idx].const_data << "),";
-        ss << " etype(" << utils::etype_text(table[sbl_idx].etype) << "),";
+        ss << " etype(" << etype_text(table[sbl_idx].etype) << "),";
         ss << endl << prefix << "  ";
         ss << " ndim("  << table[sbl_idx].ndim << "),";
         ss << " start(" << table[sbl_idx].start << "),";        
@@ -117,7 +116,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
     if (bh_is_constant(&instr.operand[operand_idx])) {
         table[arg_idx].const_data   = &(instr.constant.value);
         table[arg_idx].data         = &table[arg_idx].const_data;
-        table[arg_idx].etype        = utils::bhtype_to_etype(instr.constant.type);
+        table[arg_idx].etype        = bhtype_to_etype(instr.constant.type);
         table[arg_idx].nelem        = 1;
         table[arg_idx].ndim         = 1;
         table[arg_idx].start        = 0;
@@ -126,21 +125,23 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         table[arg_idx].stride       = instr.operand[operand_idx].shape;
         table[arg_idx].stride[0]    = 0;
         table[arg_idx].layout       = CONSTANT;
+        table[arg_idx].base         = NULL;
     } else {
         table[arg_idx].const_data= NULL;
         table[arg_idx].data     = &(bh_base_array(&instr.operand[operand_idx])->data);
-        table[arg_idx].etype    = utils::bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
+        table[arg_idx].etype    = bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
         table[arg_idx].nelem    = bh_base_array(&instr.operand[operand_idx])->nelem;
         table[arg_idx].ndim     = instr.operand[operand_idx].ndim;
         table[arg_idx].start    = instr.operand[operand_idx].start;
         table[arg_idx].shape    = instr.operand[operand_idx].shape;
         table[arg_idx].stride   = instr.operand[operand_idx].stride;
 
-        if (utils::contiguous(table[arg_idx])) {
+        if (contiguous(table[arg_idx])) {
             table[arg_idx].layout = CONTIGUOUS;
         } else {
             table[arg_idx].layout = STRIDED;
         }
+        table[arg_idx].base     = instr.operand[operand_idx].base;
     }
 
     //
@@ -150,7 +151,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
     // Do remember that 0 is is not a valid operand and we therefore index from 1.
     // Also we do not want to compare with selv, that is when i == arg_idx.
     for(size_t i=1; i<arg_idx; ++i) {
-        if (!utils::equivalent(table[i], table[arg_idx])) {
+        if (!equivalent(table[i], table[arg_idx])) {
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.
@@ -234,5 +235,5 @@ void SymbolTable::turn_scalar(size_t symbol_idx)
     //
 }
 
-}}}
+}}
 

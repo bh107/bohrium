@@ -1,13 +1,12 @@
-#ifndef __BH_VE_CPU_SYMBOLTABLE
-#define __BH_VE_CPU_SYMBOLTABLE
+#ifndef __BH_CORE_SYMBOLTABLE
+#define __BH_CORE_SYMBOLTABLE
 #include "bh.h"
 #include "tac.h"
 #include <string>
 #include <set>
 
 namespace bohrium {
-namespace engine {
-namespace cpu {
+namespace core {
 
 /**
  *  Maintains a symbol table for tac_t operands (operand_t).
@@ -70,6 +69,9 @@ public:
      */
     std::string text(std::string prefix);
 
+    /**
+     *  Return a reference to the operand with operand_idx.
+     */
     operand_t& operator[](size_t operand_idx);
 
     /**
@@ -108,7 +110,7 @@ public:
     //
     // The following are used to detect temporary arrays
     //
-    std::set<size_t> disqualified;   // Operands which could be temps
+    std::set<size_t> disqualified;  // Operands which could be temps
     std::set<size_t> freed;         // Operands which are freed
     std::set<size_t> temps;         // Operands which are temps
 
@@ -126,6 +128,6 @@ private:
 
 };
 
-}}}
+}}
 
 #endif

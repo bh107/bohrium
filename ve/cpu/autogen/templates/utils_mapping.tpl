@@ -9,7 +9,7 @@ directiveStartToken= %
 //
 using namespace std; 
 namespace bohrium{ 
-namespace utils{
+namespace core{
 
 ETYPE bhtype_to_etype(bh_type bhtype)
 {

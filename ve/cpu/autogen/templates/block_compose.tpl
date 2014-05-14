@@ -9,8 +9,7 @@ directiveStartToken= %
 //
 using namespace std;
 namespace bohrium{
-namespace engine{
-namespace cpu{
+namespace core{
 
 /**
  *  Compose a block based on the instruction-nodes within a dag.
@@ -118,4 +117,4 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
     return true;
 }
 
-}}}
+}}

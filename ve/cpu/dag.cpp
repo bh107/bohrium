@@ -8,22 +8,8 @@ using namespace std;
 using namespace boost;
 namespace bohrium{
 namespace core {
-namespace dag {
 
 const char Dag::TAG[] = "Dag";
-
-Dag::Dag(bh_ir* bhir) : _bhir(bhir), _dag(bhir->ninstr), _subgraphs()
-{
-    DEBUG(TAG,"Dag(...)");
-    array_deps();
-    system_deps();
-    partition();
-    DEBUG(TAG,"Dag(...);");
-}
-
-Dag::~Dag(void)
-{
-}
 
 bool Dag::fusable(bh_instruction* prev, bh_instruction* cur)
 {
@@ -64,18 +50,18 @@ void Dag::partition(void)
 
     int64_t graph_idx=0;
 
-    _subgraphs.push_back(&(_dag.create_subgraph()));    // Create the first subgraph
-    bh_instruction* prev = &(_bhir->instr_list[0]);
-    add_vertex(0, *(_subgraphs[graph_idx]));            // Add the first instruction
+    subgraphs_.push_back(&(graph_.create_subgraph()));    // Create the first subgraph
+    bh_instruction* prev = &(instr_[0]);
+    add_vertex(0, *(subgraphs_[graph_idx]));            // Add the first instruction
 
-    for(int64_t idx=1; idx < _bhir->ninstr; ++idx) {    // Then look at the remaining
-        bh_instruction* cur = &(_bhir->instr_list[idx]);
+    for(int64_t idx=1; idx < ninstr_; ++idx) {    // Then look at the remaining
+        bh_instruction* cur = &(instr_[idx]);
 
         if (!fusable(prev, cur)) {
-            _subgraphs.push_back(&(_dag.create_subgraph()));
+            subgraphs_.push_back(&(graph_.create_subgraph()));
             ++graph_idx;
         }
-        add_vertex(idx, *(_subgraphs[graph_idx]));
+        add_vertex(idx, *(subgraphs_[graph_idx]));
 
         prev = cur;
     }
@@ -88,63 +74,61 @@ void Dag::array_deps(void)
     DEBUG(TAG,"array_deps(...)");
     //
     // Find dependencies on array operations
-    for(int64_t idx=0; idx < _bhir->ninstr; ++idx) {
-
+    for(int64_t idx=0; idx < ninstr_; ++idx) {
         // The instruction to find data-dependencies for
-        bh_instruction* instr = &_bhir->instr_list[idx];
+        tac_t& tac = tacs_[idx];
 
-        // Ignore these
-        if (((instr->opcode == BH_FREE)     ||  \
-             (instr->opcode == BH_DISCARD)  ||  \
-             (instr->opcode == BH_SYNC)     ||  \
-             (instr->opcode == BH_NONE))) {
+        // Ignore sys-ops
+        if ((tac.op == SYSTEM) || (NOOP == tac.op)) {
+            DEBUG(TAG, "Ignoring system...");
             continue;
         }
 
         // Bases associated with the instruction
-        set<bh_base*> inputs;
-        bh_base* output = NULL;
-        for(int64_t op_idx=0; op_idx<bh_operands(instr->opcode); ++op_idx) {
-
-            if (0 == op_idx) {
-                output = instr->operand[op_idx].base;
-            } else {
-                if (!bh_is_constant(&instr->operand[op_idx])) {
-                    inputs.insert(instr->operand[op_idx].base);
-                }
-            }
-        }
+        bh_base* output = symbol_table_[tac.out].base;
 
         bool found = false;
-        for(int64_t other=idx+1; (other<_bhir->ninstr) && (!found); ++other) {
-            bh_instruction* other_instr = &_bhir->instr_list[other];
+        for(int64_t other=idx+1; (other<ninstr_) && (!found); ++other) {
+            tac_t& other_tac = tacs_[other];
+
+            // Ignore sys and noops
+            if ((other_tac.op == SYSTEM) || (NOOP == other_tac.op)) {
+                DEBUG(TAG, "Ignoring system...inside...");
+                continue;
+            }
 
             // Search operands of other instruction
-            int64_t noperands = bh_operands(other_instr->opcode);
-            for(int64_t op_idx=0; (op_idx<noperands) && (!found); ++op_idx) {
-                bh_view* other_op   = &other_instr->operand[op_idx];
-                bh_base* other_base = other_op->base;
-
-                // System operations
-                switch(other_instr->opcode) {
-                    case BH_FREE:
-                    case BH_SYNC:
-                    case BH_DISCARD:
-                    case BH_NONE:
-                        break;
-
-                    default:
-                        if (!bh_is_constant(other_op)) {
-                            if (other_base == output) {
-                                found = true;
-                                add_edge(idx, other, _dag);
-                                break;
-                            }
+            switch(tac_noperands(other_tac)) {
+                case 3:
+                    DEBUG(TAG, "Comparing" << symbol_table_[other_tac.in2].base << " == " << output);
+                    if (symbol_table_[other_tac.in2].layout != CONSTANT) {
+                        if (symbol_table_[other_tac.in2].base == output) {
+                            found = true;
+                            add_edge(idx, other, graph_);
+                            break;
                         }
+                    }
+                case 2:
+                    DEBUG(TAG, "Comparing" << symbol_table_[other_tac.in1].base << " == " << output);
+                    if (symbol_table_[other_tac.in1].layout != CONSTANT) {
+                        if (symbol_table_[other_tac.in1].base == output) {
+                            found = true;
+                            add_edge(idx, other, graph_);
+                            break;
+                        }
+                    }
+                case 1:
+                    DEBUG(TAG, "Comparing" << symbol_table_[other_tac.out].base << " == " << output);
+                    if (symbol_table_[other_tac.out].base == output) {
+                        found = true;
+                        add_edge(idx, other, graph_);
                         break;
-                }
+                    }
+                default:
+                    break;
             }
         }
+        DEBUG(TAG, "Found=" << found << ".");
     }
     DEBUG(TAG,"array_deps(...);");
 }
@@ -154,10 +138,10 @@ void Dag::system_deps(void)
     DEBUG(TAG,"system_deps(...)");
     //
     // Find dependencies on system operations
-    for(int64_t idx=_bhir->ninstr-1; idx>=0; --idx) {
+    for(int64_t idx=ninstr_-1; idx>=0; --idx) {
 
         // The instruction to find data-dependencies for
-        bh_instruction* instr = &_bhir->instr_list[idx];
+        bh_instruction* instr = &instr_[idx];
 
         if (!((instr->opcode == BH_FREE)     ||  \
               (instr->opcode == BH_DISCARD)  ||  \
@@ -182,7 +166,7 @@ void Dag::system_deps(void)
 
         bool found = false;
         for(int64_t other=idx-1; (other>=0) && (!found); --other) {
-            bh_instruction* other_instr = &_bhir->instr_list[other];
+            bh_instruction* other_instr = &instr_[other];
 
             // Search operands of other instruction
             int64_t noperands = bh_operands(other_instr->opcode);
@@ -193,7 +177,7 @@ void Dag::system_deps(void)
 
                 if (other_base == output) {
                     found = true;
-                    add_edge(other, idx, _dag);
+                    add_edge(other, idx, graph_);
                     break;
                 }
             }
@@ -202,129 +186,5 @@ void Dag::system_deps(void)
     DEBUG(TAG,"system_deps(...);");
 }
 
-string Dag::text(void)
-{
-    return "text(void);";
-}
-
-string Dag::dot(bh_instruction* instr, int64_t nr)
-{
-    DEBUG(TAG,"dot(instr*(" << instr->opcode << "), " << nr << ")");
-
-    int64_t opcode = instr->opcode;
-
-    stringstream operands;
-    for(int64_t op_idx=0; op_idx<bh_operands(instr->opcode); ++op_idx) {
-        if (bh_is_constant(&(instr->operand[op_idx]))) {
-            operands << "K";
-        } else {
-            operands << instr->operand[op_idx].base;
-        }
-        if ((op_idx+1) != bh_operands(instr->opcode)) {
-            operands << ", ";
-        }
-    }
-
-    stringstream style, label;
-    switch(opcode) {
-        case BH_FREE:
-            style << "shape=parallelogram, ";
-            style << "fillcolor=\"#FDAE61\", ";
-            break;
-
-        case BH_DISCARD:
-            style << "shape=trapezium, ";
-            style << "fillcolor=\"#FFFFBF\", ";
-            break;
-
-        case BH_SYNC:
-            style << "shape=circle, ";
-            style << "fillcolor=\"#D7191C\", ";
-            break;
-
-        case BH_NONE:
-            style << "shape=square, ";
-            style << "fillcolor=\"#A6D96A\", ";
-            break;
-
-        default:
-            label << "label=\"" << nr << " - ";
-            label << bh_opcode_text(opcode);
-            label << "(";
-            label << operands.str();
-            label << ")";
-            label << "\"";
-            break;
-    }
-
-    stringstream rep;
-    rep << nr << " [" << style.str() << label.str() << "];";
-    
-    DEBUG(TAG,"dot(...);");
-    return rep.str();
-}
-
-/**
- *  Return a textual representation in dot-format of the given Graph.
- *
- *  @param graph The graph to create textual dot-representation for.
- *  @return String with dot-representation of graph.
- */
-string Dag::dot(void)
-{
-    DEBUG(TAG,"dot(void)");
-    stringstream ss;
-    ss << "digraph {" << endl;
-
-    ss << "graph [";
-    ss << "nodesep=0.8, ";
-    ss << "sep=\"+25,25\", ";
-    ss << "splines=false];" << endl;
-
-    ss << "node [";
-    ss << "shape=box, ";
-    ss << "fontname=\"Courier\",";
-    ss << "fillcolor=\"#CBD5E9\" ";
-    ss << "style=filled,";
-    ss << "];" << endl;
-    
-    // Vertices
-    std::pair<vertex_iter, vertex_iter> vip = vertices(_dag);
-    for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
-        ss << dot(&_bhir->instr_list[*vi], *vi) << endl;
-    }
-    
-    // Edges
-    std::pair<edge_iter, edge_iter> eip = edges(_dag);
-    for(edge_iter ei = eip.first; ei != eip.second; ++ei) {
-        ss << source(*ei, _dag) << "->" << target(*ei, _dag) << ";" <<  endl;
-    }
-
-    // Subgraphs
-    uint64_t subgraph_count = 0;
-    for(vector<Graph*>::iterator gi=_subgraphs.begin(); gi!=_subgraphs.end(); gi++) {
-        // Dot-text for subgraph begin
-        ss << "subgraph cluster_" << subgraph_count << " { " << endl;
-        ss << "style=filled;";
-        ss << "color=lightgrey;";
-        ss << endl;
-        
-        // Vertices in the given subgraph
-        std::pair<vertex_iter, vertex_iter> svp = vertices(**gi);
-        for(vertex_iter vi = svp.first; vi != svp.second; ++vi) {
-            ss << (**gi).local_to_global(*vi) << ";";
-        }
-        
-        // Dot-text for subgraph end
-        ss << endl << "}" << endl;
-        
-        subgraph_count++;
-    }
-    
-    ss << "}" << endl;
-    DEBUG(TAG,"dot(void);");
-    return ss.str();
-}
-
-}}}
+}}
 

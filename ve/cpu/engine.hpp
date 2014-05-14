@@ -34,7 +34,8 @@ public:
     std::string text();
 
     bh_error register_extension(bh_component& instance, const char* name, bh_opcode opcode);
-    bh_error execute(bh_ir& ir);
+    //bh_error execute(bh_ir& ir);
+    bh_error execute(bh_instruction* instrs, bh_intp ninstrs);
 
 private:
     /**

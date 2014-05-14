@@ -9,7 +9,6 @@
 
 using namespace std;
 using namespace bohrium::core;
-using namespace bohrium::core::dag;
 
 namespace bohrium{
 namespace engine {
@@ -67,7 +66,7 @@ string Engine::text()
     ss << "}" << endl;
     
     ss << "Attributes {" << endl;
-    ss << "  " << storage.text();
+    //ss << "  " << storage.text();
     ss << "  " << specializer.text();    
     ss << "  " << compiler.text();
     ss << "}" << endl;
@@ -75,6 +74,7 @@ string Engine::text()
     return ss.str();    
 }
 
+/*
 bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
 {
     bh_error res = BH_SUCCESS;
@@ -150,7 +150,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                                                                 // Specialize sourcecode
                     string sourcecode = specializer.specialize(symbol_table, block, 0, 0);
                     if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
-                        utils::write_file(
+                        core::write_file(
                             storage.src_abspath(block.symbol()),
                             sourcecode.c_str(), 
                             sourcecode.size()
@@ -205,7 +205,9 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
 
     return BH_SUCCESS;
 }
+*/
 
+/*
 bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
 {
     bh_error res = BH_SUCCESS;
@@ -263,14 +265,14 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
         //
         // Check for compatible operands and note layout.
         bool compat_operands = true;
-        switch(utils::tac_noperands(next)) {
+        switch(core::tac_noperands(next)) {
             case 3:
                 // Second input
                 next_layout = symbol_table[next.in2].layout;
                 if (next_layout>fusion_layout) {
                     fusion_layout = next_layout;
                 }
-                compat_operands = compat_operands && (utils::compatible(
+                compat_operands = compat_operands && (core::compatible(
                     symbol_table[first->out],
                     symbol_table[next.in2]
                 ));
@@ -280,7 +282,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                 if (next_layout>fusion_layout) {
                     fusion_layout = next_layout;
                 }
-                compat_operands = compat_operands && (utils::compatible(
+                compat_operands = compat_operands && (core::compatible(
                     symbol_table[first->out],
                     symbol_table[next.in1]
                 ));
@@ -290,7 +292,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                 if (next_layout>fusion_layout) {
                     fusion_layout = next_layout;
                 }
-                compat_operands = compat_operands && (utils::compatible(
+                compat_operands = compat_operands && (core::compatible(
                     symbol_table[first->out],
                     symbol_table[next.out]
                 ));
@@ -341,7 +343,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
         // Ref-count within the range
         for(size_t tac_idx=range_begin; tac_idx<=range_end; ++tac_idx) {
             tac_t& tac = block.program(tac_idx);
-            switch(utils::tac_noperands(tac)) {
+            switch(core::tac_noperands(tac)) {
                 case 3:
                     if (tac.in2 != tac.in1) {
                         inputs.push_back(tac.in2);
@@ -355,7 +357,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                     all_operands.insert(tac.in1);
                     break;
                 default:
-                    cout << "ARGGG in scope-ref-count on: " << utils::tac_text(tac) << endl;
+                    cout << "ARGGG in scope-ref-count on: " << core::tac_text(tac) << endl;
             }
         }
 
@@ -392,7 +394,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                                                     // Specialize sourcecode
         string sourcecode = specializer.specialize(symbol_table, block, ranges);
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
-            utils::write_file(
+            core::write_file(
                 storage.src_abspath(block.symbol()),
                 sourcecode.c_str(), 
                 sourcecode.size()
@@ -470,61 +472,34 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     }
     return BH_SUCCESS;
 }
-
-bh_error Engine::execute(bh_ir& bhir)
+*/
+bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 {
     exec_count++;
 
     bh_error res = BH_SUCCESS;
-    bh_dag& root = bhir.dag_list[0];  // Start at the root DAG
 
-    //
-    // Note: The first block-pointer is unused.
-    Block** blocks = (Block**)malloc((1+root.nnode)*sizeof(operand_t*));
-
+    /*
     //
     // Instantiate the symbol-table
-    SymbolTable symbol_table(bhir.ninstr*6+2);
+    SymbolTable symbol_table(ninstrs*6+2);
+    vector<tac_t> program(ninstrs);
+    //
+    // Map bh_instruction to tac_t and perform operand identification
+    core::instrs_to_tacs(instrs, ninstrs, program, symbol_table);
 
     //
-    // Construct dependency graph
-    dag::Dag graph(&bhir);
-
-    // Dump it to file
-    stringstream filename;
-    filename << "graph" << exec_count << ".dot";
-
-    std::ofstream fout(filename.str());
-    fout << graph.dot() << std::endl;
-
+    //  Annotate operands:
     //
-    // Map DAGs to Blocks.
-    for(bh_intp i=0; i<root.nnode; ++i) {
-
-        bh_intp node = root.node_map[i];
-        if (node>0) {
-            fprintf(stderr, "Engine::execute(...) == ERROR: Instruction in the root-dag."
-                            "It should only contain sub-dags.\n");
-            return BH_ERROR;
-        }
-        bh_intp dag_idx = -1*node-1; // Compute the node-index
-
-        //
-        // Compose a block based on nodes within the given DAG
-        blocks[dag_idx] = new Block(symbol_table, bhir, dag_idx);
-        bool compose_res = blocks[dag_idx]->compose();
-        if (!compose_res) {
-            fprintf(stderr, "Engine:execute(...) == ERROR: Failed composing block.\n");
-            return BH_ERROR;
-        }
-    }
-   
-    //
-    // Looking for temps
+    //  * freed
+    //  * temporary
+    //  * read-count
+    //  * write-count
+    //  * disqualified for scalar replacement
     //
     if (symbol_table.size() > 3) {
-        size_t* reads           = symbol_table.reads;
-        size_t* writes          = symbol_table.writes;
+        size_t* reads   = symbol_table.reads;
+        size_t* writes  = symbol_table.writes;
 
         set<size_t>& disqualified = symbol_table.disqualified;
         set<size_t>& freed        = symbol_table.freed;
@@ -542,32 +517,34 @@ bh_error Engine::execute(bh_ir& bhir)
             }
         }
     }
+    */
+
+    //
+    // Construct graph with instructions as nodes.
+    Dag graph(instrs, ninstrs);
+
+    // Dump it to file
+    stringstream filename;
+    filename << "graph" << exec_count << ".dot";
+
+    std::ofstream fout(filename.str());
+    fout << graph.dot() << std::endl;
+
+    //
+    // Construct blocks based on subgraphs
+    vector<Block*> blocks(graph.subgraphs().size());
+    for(bh_intp blk_idx=0; blk_idx<graph.subgraphs().size(); ++blk_idx) {
+    }
 
     //
     // Execute the Blocks
-    for(bh_intp dag_idx=1; dag_idx<=root.nnode; ++dag_idx) {
-        Block* block = blocks[dag_idx];
-        bh_error mode_res;
-    
-        if (jit_fusion && \
-            ((block->omask() & (ARRAY_OPS)) > 0) && \
-            ((block->omask() & (EXTENSION)) == 0)) {
-            mode_res = fuse_mode(symbol_table, *block);
-        } else {
-            mode_res = sij_mode(symbol_table, *block);
-        }
-        if (BH_SUCCESS!=mode_res) {
-            fprintf(stderr, "Engine:execute(...) == ERROR: Failed running *_mode(...).\n");
-            return BH_ERROR;
-        }
-    }
+
 
     //
     // De-allocate the blocks
-    for(bh_intp dag_idx=1; dag_idx<=root.nnode; ++dag_idx) {
-        delete blocks[dag_idx];
+    for(bh_intp blk_idx=0; blk_idx<graph.subgraphs().size(); ++blk_idx) {
+        delete blocks[blk_idx];
     }
-    free(blocks);
     
     return res;
 }

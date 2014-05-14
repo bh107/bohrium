@@ -188,7 +188,7 @@ bh_error bh_ve_cpu_init(const char *name)
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     exec_count++;
-    return engine->execute(*bhir);
+    return engine->execute(bhir->instr_list, bhir->ninstr);
 }
 
 /* Component interface: shutdown (see bh_component.h) */

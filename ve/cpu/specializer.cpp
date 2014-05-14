@@ -131,8 +131,8 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
                     fprintf(
                         stderr,
                         "Operator %s is not supported with operation %s\n",
-                        utils::operation_text(tac.op).c_str(),
-                        utils::operator_text(tac.oper).c_str()
+                        core::operation_text(tac.op).c_str(),
+                        core::operator_text(tac.oper).c_str()
                     );
             }
             tpl_layout = "cont.";
@@ -206,8 +206,8 @@ string Specializer::specialize( SymbolTable& symbol_table,
         //
         // Reduction and scan specific expansions
         if ((tac.op == REDUCE) || (tac.op == SCAN)) {
-            operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(symbol_table[tac.out].etype));
-            operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(symbol_table[tac.in1].etype));
+            operation_d->SetValue("TYPE_OUTPUT", core::etype_to_ctype_text(symbol_table[tac.out].etype));
+            operation_d->SetValue("TYPE_INPUT",  core::etype_to_ctype_text(symbol_table[tac.in1].etype));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
             if (tac.oper == ADD) {
                 operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
@@ -224,7 +224,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
         //
         // Map the tac operands into block-scope
-        switch(utils::tac_noperands(tac)) {
+        switch(core::tac_noperands(tac)) {
             case 3:
                 operation_d->SetIntValue("NR_SINPUT", block.resolve(tac.in2));
                 operator_d->SetIntValue("NR_SINPUT",  block.resolve(tac.in2));
@@ -254,7 +254,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
             const operand_t& operand = block.scope(opr_idx);
 
             ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
-            operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(operand.etype));
+            operand_d->SetValue("TYPE",  core::etype_to_ctype_text(operand.etype));
             operand_d->SetIntValue("NR", opr_idx);
 
             if ((operand.layout & ARRAY_LAYOUT)>0) {
@@ -270,7 +270,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
         const operand_t& operand = block.scope(opr_idx);
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);
-        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(operand.etype));
+        argument_d->SetValue("TYPE", core::etype_to_ctype_text(operand.etype));
         switch(operand.layout) {
             case CONSTANT:
                 argument_d->ShowSection("CONSTANT");
@@ -401,7 +401,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
             //
             // Map the tac operands into block-scope
-            switch(utils::tac_noperands(tac)) {
+            switch(core::tac_noperands(tac)) {
                 case 3:
                     operation_d->SetIntValue("NR_SINPUT", block.resolve(tac.in2));
                     operator_d->SetIntValue("NR_SINPUT",  block.resolve(tac.in2));
@@ -427,8 +427,8 @@ string Specializer::specialize( SymbolTable& symbol_table,
         //
         // Reduction and scan specific expansions
         if ((first_tac.op == REDUCE) || (first_tac.op == SCAN)) {
-            operation_d->SetValue("TYPE_OUTPUT", utils::etype_to_ctype_text(symbol_table[first_tac.out].etype));
-            operation_d->SetValue("TYPE_INPUT",  utils::etype_to_ctype_text(symbol_table[first_tac.in1].etype));
+            operation_d->SetValue("TYPE_OUTPUT", core::etype_to_ctype_text(symbol_table[first_tac.out].etype));
+            operation_d->SetValue("TYPE_INPUT",  core::etype_to_ctype_text(symbol_table[first_tac.in1].etype));
             operation_d->SetValue("TYPE_AXIS",  "int64_t");
             if (first_tac.oper == ADD) {
                 operation_d->SetIntValue("NEUTRAL_ELEMENT", 0);
@@ -447,7 +447,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
             const operand_t& operand = block.scope(opr_idx);
 
             ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
-            operand_d->SetValue("TYPE",  utils::etype_to_ctype_text(operand.etype));
+            operand_d->SetValue("TYPE",  core::etype_to_ctype_text(operand.etype));
             operand_d->SetIntValue("NR", opr_idx);
 
             if ((operand.layout & ARRAY_LAYOUT)>0) {
@@ -463,7 +463,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
         const operand_t& operand = block.scope(opr_idx);
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);
-        argument_d->SetValue("TYPE", utils::etype_to_ctype_text(operand.etype));
+        argument_d->SetValue("TYPE", core::etype_to_ctype_text(operand.etype));
         switch(operand.layout) {
             case CONSTANT:
                 argument_d->ShowSection("CONSTANT");

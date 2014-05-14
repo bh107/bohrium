@@ -9,8 +9,7 @@
 #include "utils.hpp"
 
 namespace bohrium{
-namespace engine{
-namespace cpu{
+namespace core{
 
 class Block {
 public:
@@ -103,7 +102,7 @@ public:
 
 private:
 
-
+    Block();
 
     bh_instruction** instr_;     // Pointers to instructions
     operand_t** operands_;       // Array of pointers to block operands
@@ -125,5 +124,5 @@ private:
     static const char TAG[];
 };
 
-}}}
+}}
 #endif

@@ -228,7 +228,7 @@ bool Store::load(string symbol, string library)
         errnum = errno;
     }
     if (!handles[library]) {            // Check that it opened
-        utils::error(
+        core::error(
             errnum,
             "Store::load(...,...) : dlopen(filename='%s', RTLF_NOW).",
             library_abspath.c_str()
@@ -243,7 +243,7 @@ bool Store::load(string symbol, string library)
     );
     error_msg = dlerror();
     if (error_msg) {
-        utils::error(
+        core::error(
             error_msg,
             "dlsym( handle='%s', symbol='%s' )\n",
             library.c_str(),

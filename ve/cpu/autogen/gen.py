@@ -39,6 +39,7 @@ def utils_mapping(opcodes, ops, opers, types, layouts, cexprs):
 def tac(opcodes, ops, opers, types, layouts, cexprs):
     return forward_everything(opcodes, ops, opers, types, layouts, cexprs)
 
+
 def block_compose(opcodes, ops, opers, types, layouts, cexprs):
     """Construct the data need to create a map from bh_instruction to tac_t."""
 
@@ -91,6 +92,8 @@ def block_compose(opcodes, ops, opers, types, layouts, cexprs):
 
     return operations
 
+def instrs_to_tacs(opcodes, ops, opers, types, layouts, cexprs):
+    return block_compose(opcodes, ops, opers, types, layouts, cexprs)
 
 def specializer_cexpression(opcodes, ops, opers, types, layouts, cexprs):
     """Apply a naming convention to the pseud-variables, and make it string-formattable."""

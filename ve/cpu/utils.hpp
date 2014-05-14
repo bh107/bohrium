@@ -3,6 +3,7 @@
 #include "bh.h"
 #include "tac.h"
 #include "block.hpp"
+#include "symbol_table.hpp"
 
 #include <fstream>
 #include <cstdlib>
@@ -11,6 +12,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <cstdarg>
+#include <vector>
 #include <memory>
 #include <cerrno>
 #include <fcntl.h>
@@ -22,7 +24,7 @@
 #endif
 
 namespace bohrium {
-namespace utils {
+namespace core {
 
 //
 // Self-explanatory function returning the textual representation of 
@@ -53,6 +55,13 @@ ETYPE bhtype_to_etype(bh_type bhtype);
 std::string tac_text(const tac_t& tac);
 
 int tac_noperands(const tac_t& tac);
+
+/**
+ *  Map bh_instruction* to tac_t with entries in symbol_table.
+ *
+ */
+void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs,
+                    std::vector<tac_t>& tacs, SymbolTable& symbol_table);
 
 /**
  *  Determine whether an operand has a contiguous layout.
@@ -111,9 +120,10 @@ uint32_t hash(std::string text);
  */ 
 std::string hash_text(std::string text);
 
-/* these should be part of core */
+/* these should be part of core 
 void bh_string_option(char *&option, const char *env_name, const char *conf_name);
 void bh_path_option(char *&option, const char *env_name, const char *conf_name);
+*/
 
 int error(int errnum, const char *fmt, ...);
 int error(const char *err_msg, const char *fmt, ...);

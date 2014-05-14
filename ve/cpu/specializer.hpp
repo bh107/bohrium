@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+using namespace bohrium::core;
 namespace bohrium {
 namespace engine {
 namespace cpu {
