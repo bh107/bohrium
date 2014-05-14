@@ -18,10 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
-#include "boost/graph/adjacency_list.hpp"
-#include "boost/graph/transitive_reduction.hpp"
-#include "boost/graph/topological_sort.hpp"
-#include <boost/graph/graphviz.hpp>
+#include <boost/graph/subgraph.hpp>
+#include <boost/graph/adjacency_list.hpp>
 
 namespace bohrium {
 namespace core {
@@ -78,6 +76,8 @@ private:
      *  Partition the graph into subgraphs with certain properties...
      */
     void partition(void);
+
+    bool fusable(bh_instruction* first, bh_instruction* second);
 
     bh_ir* _bhir;
     Graph _dag;

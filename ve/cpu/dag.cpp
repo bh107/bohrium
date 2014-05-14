@@ -25,21 +25,61 @@ Dag::~Dag(void)
 {
 }
 
+bool Dag::fusable(bh_instruction* prev, bh_instruction* cur)
+{
+    bool compatible = false;
+
+    switch(prev->opcode) {               // Verify the opcode
+        case BH_RANDOM:
+        case BH_RANGE:
+        case BH_ADD_ACCUMULATE:
+        case BH_MULTIPLY_ACCUMULATE:
+        case BH_ADD_REDUCE:
+        case BH_MULTIPLY_REDUCE:
+        case BH_MINIMUM_REDUCE:
+        case BH_MAXIMUM_REDUCE:
+        case BH_LOGICAL_AND_REDUCE:
+        case BH_BITWISE_AND_REDUCE:
+        case BH_LOGICAL_OR_REDUCE:
+        case BH_BITWISE_OR_REDUCE:
+        case BH_LOGICAL_XOR_REDUCE:
+        case BH_BITWISE_XOR_REDUCE:
+            return compatible;
+        default:
+            break;
+    }
+
+    // Check shapes and dependencies
+
+    compatible = true;
+    return compatible;
+}
+
+/**
+ *  Construct a list of subgraphs...
+ */
 void Dag::partition(void)
 {
     DEBUG(TAG,"partition(...)");
-    _subgraphs.push_back(&(_dag.create_subgraph()));
 
-    if (num_vertices(_dag)>10) {
-        add_vertex(0, *(_subgraphs[0]));
-        add_vertex(1, *(_subgraphs[0]));
-        add_vertex(2, *(_subgraphs[0]));
-        add_vertex(3, *(_subgraphs[0]));
-        add_vertex(4, *(_subgraphs[0]));
-        add_vertex(5, *(_subgraphs[0]));
-        add_vertex(6, *(_subgraphs[0]));
-        add_vertex(7, *(_subgraphs[0]));
+    int64_t graph_idx=0;
+
+    _subgraphs.push_back(&(_dag.create_subgraph()));    // Create the first subgraph
+    bh_instruction* prev = &(_bhir->instr_list[0]);
+    add_vertex(0, *(_subgraphs[graph_idx]));            // Add the first instruction
+
+    for(int64_t idx=1; idx < _bhir->ninstr; ++idx) {    // Then look at the remaining
+        bh_instruction* cur = &(_bhir->instr_list[idx]);
+
+        if (!fusable(prev, cur)) {
+            _subgraphs.push_back(&(_dag.create_subgraph()));
+            ++graph_idx;
+        }
+        add_vertex(idx, *(_subgraphs[graph_idx]));
+
+        prev = cur;
     }
+
     DEBUG(TAG,"partition(...);");
 }
 
@@ -249,33 +289,34 @@ string Dag::dot(void)
     ss << "];" << endl;
     
     // Vertices
-    std::pair<vertex_iter, vertex_iter> vp = vertices(_dag);
-    for(vertex_iter it = vp.first; it != vp.second; ++it) {
-        ss << dot(&_bhir->instr_list[*it], *it) << endl;
+    std::pair<vertex_iter, vertex_iter> vip = vertices(_dag);
+    for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
+        ss << dot(&_bhir->instr_list[*vi], *vi) << endl;
     }
     
     // Edges
-    std::pair<edge_iter, edge_iter> ep = edges(_dag);
-    for(edge_iter it = ep.first; it != ep.second; ++it) {
-        ss << source(*it, _dag) << "->" << target(*it, _dag) << ";" <<  endl;
+    std::pair<edge_iter, edge_iter> eip = edges(_dag);
+    for(edge_iter ei = eip.first; ei != eip.second; ++ei) {
+        ss << source(*ei, _dag) << "->" << target(*ei, _dag) << ";" <<  endl;
     }
 
     // Subgraphs
     uint64_t subgraph_count = 0;
-    for(vector<Graph*>::iterator it=_subgraphs.begin(); it!=_subgraphs.end(); it++) {
+    for(vector<Graph*>::iterator gi=_subgraphs.begin(); gi!=_subgraphs.end(); gi++) {
         // Dot-text for subgraph begin
         ss << "subgraph cluster_" << subgraph_count << " { " << endl;
         ss << "style=filled;";
         ss << "color=lightgrey;";
+        ss << endl;
         
         // Vertices in the given subgraph
-        vp = vertices(**it);
-        for(vertex_iter it = vp.first; it != vp.second; ++it) {
-            ss << *it << ";" << endl;
+        std::pair<vertex_iter, vertex_iter> svp = vertices(**gi);
+        for(vertex_iter vi = svp.first; vi != svp.second; ++vi) {
+            ss << (**gi).local_to_global(*vi) << ";";
         }
         
         // Dot-text for subgraph end
-        ss << "}" << endl;
+        ss << endl << "}" << endl;
         
         subgraph_count++;
     }
