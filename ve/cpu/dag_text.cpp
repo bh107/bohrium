@@ -12,52 +12,79 @@ string Dag::text(void)
     return "text(void);";
 }
 
-string Dag::dot(bh_instruction* instr, int64_t nr)
+string Dag::dot_operand(int64_t idx)
 {
-    DEBUG(TAG,"dot(instr*(" << instr->opcode << "), " << nr << ")");
-
-    int64_t opcode = instr->opcode;
-
-    stringstream operands;
-    for(int64_t op_idx=0; op_idx<bh_operands(instr->opcode); ++op_idx) {
-        if (bh_is_constant(&(instr->operand[op_idx]))) {
-            operands << "K";
+    operand_t& opr = symbol_table_[idx];
+    stringstream txt;
+    if (opr.layout == CONSTANT) {
+        txt << "K";
+    } else {
+        if (NULL == opr.base) {
+            txt << "V:" << idx;
         } else {
-            operands << instr->operand[op_idx].base;
-        }
-        if ((op_idx+1) != bh_operands(instr->opcode)) {
-            operands << ", ";
+            txt << "B:" << idx;
         }
     }
 
+    return txt.str();
+}
+
+string Dag::dot(const tac_t& tac, int64_t nr)
+{
+    stringstream operands;
+    switch(tac_noperands(tac)) {
+        case 3:
+            operands << "(";
+            operands << dot_operand(tac.out) << ", ";
+            operands << dot_operand(tac.in1) << ", ";
+            operands << dot_operand(tac.in2) << ")";
+            break;
+        case 2:
+            operands << "(";
+            operands << dot_operand(tac.out) << ", ";
+            operands << dot_operand(tac.in1) << ")";
+            break;
+        case 1:
+            operands << "(" << dot_operand(tac.out) << ")";
+            break;
+        default:
+            break;
+    }
+
     stringstream style, label;
-    switch(opcode) {
-        case BH_FREE:
+    switch(tac.oper) {
+        case FREE:
             style << "shape=parallelogram, ";
             style << "fillcolor=\"#FDAE61\", ";
             break;
 
-        case BH_DISCARD:
+        case DISCARD:
             style << "shape=trapezium, ";
             style << "fillcolor=\"#FFFFBF\", ";
             break;
 
-        case BH_SYNC:
+        case SYNC:
             style << "shape=circle, ";
             style << "fillcolor=\"#D7191C\", ";
             break;
 
-        case BH_NONE:
+        case NONE:
             style << "shape=square, ";
             style << "fillcolor=\"#A6D96A\", ";
             break;
-
-        default:
-            label << "label=\"" << nr << " - ";
-            label << bh_opcode_text(opcode);
-            label << "(";
+    }
+    switch(tac.op) {
+        case SYSTEM:
+            label << "label=\"" << nr << ": ";
             label << operands.str();
-            label << ")";
+            label << "\"";
+            break;
+        default:
+            label << "label=\"" << nr << ": ";
+            label << operation_text(tac.op);
+            label << "_";
+            label << operator_text(tac.oper);
+            label << operands.str();
             label << "\"";
             break;
     }
@@ -96,7 +123,8 @@ string Dag::dot(void)
     // Vertices
     std::pair<vertex_iter, vertex_iter> vip = vertices(graph_);
     for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
-        ss << dot(&instr_[*vi], *vi) << endl;
+        //ss << dot(&instr_[*vi], *vi) << endl;
+        ss << dot(tacs_[*vi], *vi) << endl;
     }
     
     // Edges
@@ -112,6 +140,8 @@ string Dag::dot(void)
         ss << "subgraph cluster_" << subgraph_count << " { " << endl;
         ss << "style=filled;";
         ss << "color=lightgrey;";
+        ss << "label=\"Subgraph #" << subgraph_count << "\";";
+        ss << "fontname=\"Courier\";";
         ss << endl;
         
         // Vertices in the given subgraph

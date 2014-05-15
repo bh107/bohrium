@@ -88,7 +88,10 @@ public:
     /**
      *  Return a textual representation in dot-format of a tac_t.
      */
-    std::string dot(tac_t& tac, int64_t nr);
+    std::string dot(const tac_t& tac, int64_t nr);
+
+    
+    std::string dot_operand(int64_t idx);
 
     /**
      *  Return a textual representation in dot-format of a bh_instruction.

@@ -18,11 +18,14 @@ Dag::Dag(bh_instruction* instr, bh_intp ninstr) : instr_(instr), ninstr_(ninstr)
 
     //
     // Map instructions to tac and construct symbol-table.
-
     instrs_to_tacs(instr, ninstr, tacs_, symbol_table_);
 
+    // Construct dependencies based on array operations
     array_deps();
+    // Construction dependencies based on system operations
     system_deps();
+
+    // Construct subgraphs
     partition();
 
     DEBUG(TAG,"Dag(...);");
