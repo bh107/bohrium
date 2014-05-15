@@ -52,27 +52,51 @@ string Dag::dot(const tac_t& tac, int64_t nr)
     }
 
     stringstream style, label;
-    switch(tac.oper) {
-        case FREE:
-            style << "shape=parallelogram, ";
-            style << "fillcolor=\"#FDAE61\", ";
-            break;
 
-        case DISCARD:
-            style << "shape=trapezium, ";
-            style << "fillcolor=\"#FFFFBF\", ";
+    switch(tac.op) {
+        case MAP:
+            style << "fillcolor=\"#b2df8a\", ";
             break;
-
-        case SYNC:
-            style << "shape=circle, ";
-            style << "fillcolor=\"#D7191C\", ";
+        case ZIP:
+            style << "fillcolor=\"#a5c966\", ";
             break;
+        case REDUCE:
+            style << "fillcolor=\"#a6cee3\", ";
+            break;
+        case SCAN:
+            style << "fillcolor=\"#6baccd\", ";
+            break;
+        case GENERATE:
+            style << "fillcolor=\"#33a02c\", ";
+            break;
+        case SYSTEM:
+            switch(tac.oper) {
+                case FREE:
+                    style << "shape=parallelogram, ";
+                    style << "fillcolor=\"#FDAE61\", ";
+                    break;
 
-        case NONE:
-            style << "shape=square, ";
-            style << "fillcolor=\"#A6D96A\", ";
+                case DISCARD:
+                    style << "shape=trapezium, ";
+                    style << "fillcolor=\"#FFFFBF\", ";
+                    break;
+
+                case SYNC:
+                    style << "shape=circle, ";
+                    style << "fillcolor=\"#D7191C\", ";
+                    break;
+
+                case NONE:
+                    style << "shape=square, ";
+                    style << "fillcolor=\"#A6D96A\", ";
+                    break;
+            }
+            break;
+        case EXTENSION:
+            style << "fillcolor=\"d0c2e5\", ";
             break;
     }
+
     switch(tac.op) {
         case SYSTEM:
             label << "label=\"" << nr << ": ";
