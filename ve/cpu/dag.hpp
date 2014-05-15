@@ -114,7 +114,7 @@ private:
     /**
      *  Determine whether two instructions are fusable.
      */
-    bool fusable(bh_instruction* first, bh_instruction* second);
+    bool fusable(tac_t& prev, tac_t& cur);
 
     bh_instruction* instr_;         // Array of instructions
     bh_intp ninstr_;                // The number of instructions
