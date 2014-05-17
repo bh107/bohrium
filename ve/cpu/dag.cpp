@@ -13,15 +13,52 @@ const char Dag::TAG[] = "Dag";
 
 bool Dag::fusable(tac_t& prev, tac_t& cur)
 {
-    bool compatible = false;
-
-    if ((prev.op == MAP) || (prev.op == ZIP) || (prev.op == SYSTEM)) {
-        compatible = true;
+    // System operations are always included
+    if (cur.op == SYSTEM) {
+        return true;
     }
 
-    // Check shapes and dependencies
+    // But only map and zip array operations
+    if (!((cur.op == MAP) || (cur.op == ZIP) || (cur.op == SYSTEM))) {
+        return false;
+    }
 
-    return compatible;
+    // But only map and zip array operations
+    if (!((prev.op == MAP) || (prev.op == ZIP) || (prev.op == SYSTEM))) {
+        return false;
+    }
+
+    //
+    // Check for compatible operands
+    bool compat_operands = true;
+    switch(core::tac_noperands(cur)) {
+        case 3:
+            // Second input
+            compat_operands = compat_operands && (core::compatible(
+                symbol_table_[prev.out],
+                symbol_table_[cur.in2]
+            ));
+        case 2:
+            // First input
+            compat_operands = compat_operands && (core::compatible(
+                symbol_table_[prev.out],
+                symbol_table_[cur.in1]
+            ));
+
+            // Output operand
+            compat_operands = compat_operands && (core::compatible(
+                symbol_table_[prev.out],
+                symbol_table_[cur.out]
+            ));
+            break;
+
+        default:
+            fprintf(stderr, "ARGGG in checking operands!!!!\n");
+    }
+
+    // Check for temp
+
+    return compat_operands;
 }
 
 /**
@@ -33,16 +70,16 @@ void Dag::partition(void)
 
     int64_t graph_idx=0;
 
-    subgraphs_.push_back(&(graph_.create_subgraph()));    // Create the first subgraph
+    subgraphs_.push_back(&(graph_.create_subgraph()));
+    add_vertex(0, *(subgraphs_[graph_idx]));
     tac_t* prev = &(tacs_[0]);
-    add_vertex(0, *(subgraphs_[graph_idx]));            // Add the first instruction
 
     for(int64_t idx=1; idx < ninstr_; ++idx) {    // Then look at the remaining
         tac_t* cur = &(tacs_[idx]);
 
         if (!fusable(*prev, *cur)) {
             subgraphs_.push_back(&(graph_.create_subgraph()));
-            ++graph_idx;
+            graph_idx++;
         }
         add_vertex(idx, *(subgraphs_[graph_idx]));
 
