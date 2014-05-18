@@ -215,8 +215,6 @@ int tac_noperands(const tac_t& tac)
 
 bool write_file(string file_path, const char* sourcecode, size_t source_len)
 {
-    DEBUG(TAG, "write_file("<< file_path << ", ..., " << source_len << ");");
-
     int fd;              // Kernel file-descriptor
     FILE *fp = NULL;     // Handle for kernel-file
     const char *mode = "w";
@@ -239,7 +237,6 @@ bool write_file(string file_path, const char* sourcecode, size_t source_len)
     fclose(fp);
     close(fd);
 
-    DEBUG(TAG, "write_file(...);");
     return true;
 }
 

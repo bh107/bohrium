@@ -27,8 +27,6 @@ Compiler::Compiler(string process_str) : process_str(process_str) {}
 
 Compiler::~Compiler()
 {
-    DEBUG(TAG, "~Compiler()");
-    DEBUG(TAG, "~Compiler()");
 }
 
 string Compiler::text()
@@ -47,7 +45,6 @@ string Compiler::text()
  */
 bool Compiler::compile(string object_abspath, const char* sourcecode, size_t source_len)
 {
-    DEBUG(TAG, "compile(" << object_abspath<< ", ..., ..." << ");");
     //
     // Constuct the compiler command
     string cmd = process_str +" "+ object_abspath;
@@ -62,7 +59,6 @@ bool Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
     fwrite(sourcecode, 1, source_len, cmd_stdin);   // Write sourcecode to stdin
     fflush(cmd_stdin);
     int exit_code = (pclose(cmd_stdin)/256);
-    DEBUG(TAG, "compile(...) : exit_code("<< exit_code << ");");
     return (exit_code==0);
 }
 

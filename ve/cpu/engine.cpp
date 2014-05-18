@@ -1,5 +1,6 @@
 #include "engine.hpp"
 #include "symbol_table.hpp"
+#include "dag.hpp"
 #include "timevault.hpp"
 
 #include <algorithm>
@@ -8,6 +9,8 @@
 
 using namespace std;
 using namespace bohrium::core;
+using namespace bohrium::core::dag;
+
 namespace bohrium{
 namespace engine {
 namespace cpu {
@@ -38,23 +41,18 @@ Engine::Engine(
     compiler(compiler_cmd),
     exec_count(0)
 {
-    DEBUG(TAG, "Engine(...)");
     bh_vcache_init(vcache_size);    // Victim cache
     if (preload) {
         storage.preload();
     }
-    DEBUG(TAG,this->text());
-    DEBUG(TAG, "Engine(...)");
 }
 
 Engine::~Engine()
 {   
-    DEBUG(TAG, "~Engine(...)");
     if (vcache_size>0) {    // De-allocate the malloc-cache
         bh_vcache_clear();
         bh_vcache_delete();
     }
-    DEBUG(TAG, "~Engine(...)");
 }
 
 string Engine::text()
@@ -79,8 +77,6 @@ string Engine::text()
 
 bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
 {
-    DEBUG(TAG, "sij_mode(...) : size(" << block.size() << ")");
-
     bh_error res = BH_SUCCESS;
 
     bh_intp nnode = block.get_dag().nnode;
@@ -106,7 +102,6 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                         break;
 
                     case FREE:
-                        DEBUG(TAG,"sij_mode(...) == De-Allocate memory!");
                         TIMER_START
                     
                         res = bh_vcache_free(&instr);
@@ -189,7 +184,6 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
 
                 //
                 // Allocate memory for operands
-                DEBUG(TAG,"sij_mode(...) == Allocating memory.");
                 TIMER_START
                 res = bh_vcache_malloc(&instr);
                 if (BH_SUCCESS != res) {
@@ -201,9 +195,6 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
                 //
                 // Execute block handling array operations.
                 // 
-                DEBUG(TAG,"sij_mode(...) == Call kernel function!");
-                DEBUG(TAG,utils::tac_text(tac)); 
-                DEBUG(TAG,block.scope_text());
                 TIMER_START;
                 storage.funcs[block.symbol()](block.operands());
                 TIMER_STOP(block.symbol());
@@ -212,24 +203,18 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
         }
     }
 
-    DEBUG(TAG,"sij_mode(...);")
     return BH_SUCCESS;
 }
 
 bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
 {
-    DEBUG(TAG, "fuse_mode(...)");
-
     bh_error res = BH_SUCCESS;
     //
     // We start by creating a symbol
     if (!block.symbolize()) {
         fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
-        DEBUG(TAG, "fuse_mode(...);");
         return BH_ERROR;
     }
-
-    DEBUG(TAG, "fuse_mode(...) block: " << endl << block.text("   "));
 
     TIMER_START
     //
@@ -395,7 +380,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     // The operands might have been modified at this point, so we need to create a new symbol.
     if (!block.symbolize()) {
         fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
-        DEBUG(TAG, "fuse_mode(...);");
         return BH_ERROR;
     }
 
@@ -425,7 +409,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
         if (!compile_res) {
             fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
 
-            DEBUG(TAG, "fuse_mode(...);");
             return BH_ERROR;
         }
                                                     // Inform storage
@@ -440,11 +423,9 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
         (!storage.load(block.symbol()))) {// Need but cannot load
 
         fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
-        DEBUG(TAG, "fuse_mode(...);");
         return BH_ERROR;
     }
 
-    DEBUG(TAG, "fuse_mode(...) == Allocating memory.");
     //
     // Allocate memory for output
     //
@@ -460,14 +441,12 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                                 "called from bh_ve_cpu_execute()\n");
-                DEBUG(TAG, "fuse_mode(...);");
                 return res;
             }
             TIMER_STOP("Allocating memory.")
         }
     }
 
-    DEBUG(TAG, "fuse_mode(...) == Call kernel function!");
     //
     // Execute block handling array operations.
     // 
@@ -475,7 +454,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     storage.funcs[block.symbol()](block.operands());
     TIMER_STOP(block.symbol())
 
-    DEBUG(TAG, "fuse_mode(...) == De-Allocate memory!");
     //
     // De-Allocate operand memory
     for(size_t i=0; i<block.size(); ++i) {
@@ -485,19 +463,16 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
                                 "called from bh_ve_cpu_execute)\n");
-                DEBUG(TAG,"Engine::fuse_mode(...);");
                 return res;
             }
             TIMER_STOP("Deallocating memory.")
         }
     }
-    DEBUG(TAG,"Engine::fuse_mode(...);");
     return BH_SUCCESS;
 }
 
 bh_error Engine::execute(bh_ir& bhir)
 {
-    DEBUG(TAG,"execute(...) ++");
     exec_count++;
 
     bh_error res = BH_SUCCESS;
@@ -510,6 +485,17 @@ bh_error Engine::execute(bh_ir& bhir)
     //
     // Instantiate the symbol-table
     SymbolTable symbol_table(bhir.ninstr*6+2);
+
+    //
+    // Construct dependency graph
+    dag::Dag graph(&bhir);
+
+    // Dump it to file
+    stringstream filename;
+    filename << "graph" << exec_count << ".dot";
+
+    std::ofstream fout(filename.str());
+    fout << graph.dot() << std::endl;
 
     //
     // Map DAGs to Blocks.
@@ -583,7 +569,6 @@ bh_error Engine::execute(bh_ir& bhir)
     }
     free(blocks);
     
-    DEBUG(TAG,"execute(...);");
     return res;
 }
 
@@ -601,7 +586,6 @@ bh_error Engine::register_extension(bh_component& instance, const char* name, bh
     }
     extensions[opcode] = extmethod;
 
-    DEBUG(TAG, "bh_ve_cpu_extmethod(...);");
     return BH_SUCCESS;
 }
 

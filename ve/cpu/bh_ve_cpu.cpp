@@ -82,8 +82,6 @@ void bh_path_option(char *&option, const char *env_name, const char *conf_name)
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {
-    DEBUG(TAG,"++ bh_ve_cpu_init(...);");
-
     bh_intp vcache_size  = 10;  // Default...
     bh_intp jit_enabled  = 1;
     bh_intp jit_preload  = 1;
@@ -183,7 +181,6 @@ bh_error bh_ve_cpu_init(const char *name)
         (bool)jit_dumpsrc
     );
 
-    DEBUG(TAG,"-- bh_ve_cpu_init(...);");
     return BH_SUCCESS;
 }
 
@@ -197,22 +194,17 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 /* Component interface: shutdown (see bh_component.h) */
 bh_error bh_ve_cpu_shutdown(void)
 {
-    DEBUG(TAG,"++ bh_ve_cpu_shutdown(void)");
-
     bh_component_destroy(&myself);
     
     delete engine;
     engine = NULL;
 
-    DEBUG(TAG,"-- bh_ve_cpu_shutdown(...);");
     return BH_SUCCESS;
 }
 
 /* Component interface: extmethod (see bh_component.h) */
 bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
-    DEBUG(TAG,"++ bh_ve_cpu_extmethod(...,...)");
-
     bh_error register_res = engine->register_extension(myself, name, opcode);
     
     return register_res;

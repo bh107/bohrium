@@ -28,7 +28,6 @@ bool Block::compose()
  */
 bool Block::compose(bh_intp node_start, bh_intp node_end)
 {
-    DEBUG(TAG, "compose("<< node_start <<", "<< node_end << ") : node_span(" << ((node_end-node_start)+1) << ")");
     if (this->dag.nnode<1) {
         fprintf(stderr, "Got an empty dag. This cannot be right...\n");
         return false;
@@ -927,7 +926,6 @@ bool Block::compose(bh_intp node_start, bh_intp node_end)
         // Update the ref count
         symbol_table.ref_count(this->tacs[pc]);
     }
-    DEBUG(TAG, "compose(SUCCESS)");
     return true;
 }
 
