@@ -128,6 +128,13 @@ class ufunc:
         else:
             args.insert(0,out)
 
+        #For now, we will prepend dimensions in order to get correct broadcasting by
+        #the C++ bridge. TODO: remove when the C++ Bridge supports broadcasting fully.
+        for i in xrange(1,len(args)):
+            if not np.isscalar(args[i]):
+                while args[i].ndim < args[0].ndim:
+                    args[i] = args[i][np.newaxis,:]
+
         #Convert 'args' to Bohrium-C arrays
         bhcs = []
         tmps = []
