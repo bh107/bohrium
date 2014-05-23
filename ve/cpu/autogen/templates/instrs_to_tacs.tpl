@@ -76,7 +76,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
         //
         // Update the ref count
-        symbol_table.ref_count(tacs[idx]);
+        symbol_table.count_rw(tacs[idx]);
     }
 }
 

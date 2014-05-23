@@ -56,7 +56,7 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
            tpl_opcode,
            tpl_layout = "strided.";
 
-    const tac_t& tac = block.program(pc);
+    const tac_t& tac = block.tac(pc);
     int ndim = (tac.op == REDUCE)         ? \
                symbol_table[tac.in1].ndim : \
                symbol_table[tac.out].ndim;
@@ -156,7 +156,7 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
  *
  */
 string Specializer::specialize( SymbolTable& symbol_table,
-                                const Block& block)
+                                Block& block)
 {
     return specialize(symbol_table, block, 0, block.size()-1);
 }
@@ -171,7 +171,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
  *
  */
 string Specializer::specialize( SymbolTable& symbol_table,
-                                const Block& block,
+                                Block& block,
                                 size_t tac_start, size_t tac_end)
 {
     string sourcecode  = "";
@@ -190,7 +190,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
         //
         // Skip code generation for system and extensions
-        if ((block.program(tac_idx).op == SYSTEM) || (block.program(tac_idx).op == EXTENSION)) {
+        if ((block.tac(tac_idx).op == SYSTEM) || (block.tac(tac_idx).op == EXTENSION)) {
             continue;
         }
 
@@ -202,7 +202,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
         set<size_t> operands;
         set<size_t>::iterator operands_it;
 
-        tac_t& tac = block.program(tac_idx);
+        tac_t& tac = block.tac(tac_idx);
         //
         // Reduction and scan specific expansions
         if ((tac.op == REDUCE) || (tac.op == SCAN)) {
@@ -226,22 +226,22 @@ string Specializer::specialize( SymbolTable& symbol_table,
         // Map the tac operands into block-scope
         switch(core::tac_noperands(tac)) {
             case 3:
-                operation_d->SetIntValue("NR_SINPUT", block.resolve(tac.in2));
-                operator_d->SetIntValue("NR_SINPUT",  block.resolve(tac.in2));
+                operation_d->SetIntValue("NR_SINPUT", block.global_to_local(tac.in2));
+                operator_d->SetIntValue("NR_SINPUT",  block.global_to_local(tac.in2));
 
-                operands.insert(block.resolve(tac.in2));
+                operands.insert(block.global_to_local(tac.in2));
 
             case 2:
-                operation_d->SetIntValue("NR_FINPUT", block.resolve(tac.in1));
-                operator_d->SetIntValue("NR_FINPUT",  block.resolve(tac.in1));
+                operation_d->SetIntValue("NR_FINPUT", block.global_to_local(tac.in1));
+                operator_d->SetIntValue("NR_FINPUT",  block.global_to_local(tac.in1));
 
-                operands.insert(block.resolve(tac.in1));
+                operands.insert(block.global_to_local(tac.in1));
 
             case 1:
-                operation_d->SetIntValue("NR_OUTPUT", block.resolve(tac.out));
-                operator_d->SetIntValue("NR_OUTPUT",  block.resolve(tac.out));
+                operation_d->SetIntValue("NR_OUTPUT", block.global_to_local(tac.out));
+                operator_d->SetIntValue("NR_OUTPUT",  block.global_to_local(tac.out));
 
-                operands.insert(block.resolve(tac.out));
+                operands.insert(block.global_to_local(tac.out));
         }
 
         //
@@ -251,7 +251,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
             if (0 == opr_idx) {
                 fprintf(stderr, "THIS SHOULD NEVER MAPPEN! OPERAND 0 is used!\n");
             }
-            const operand_t& operand = block.scope(opr_idx);
+            const operand_t& operand = block.operand(opr_idx);
 
             ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
             operand_d->SetValue("TYPE",  core::etype_to_ctype_text(operand.etype));
@@ -267,7 +267,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
     //
     //  Assign arguments for kernel operand unpacking
     for(size_t opr_idx=1; opr_idx<=block.noperands(); ++opr_idx) {
-        const operand_t& operand = block.scope(opr_idx);
+        const operand_t& operand = block.operand(opr_idx);
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);
         argument_d->SetValue("TYPE", core::etype_to_ctype_text(operand.etype));
@@ -309,7 +309,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
  *
  */
 string Specializer::specialize( SymbolTable& symbol_table,
-                                const Block& block,
+                                Block& block,
                                 vector<triplet_t>& ranges)
 {
     string sourcecode  = "";
@@ -336,7 +336,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
         // Find the first operation which is an array-op.
         size_t first_arrayop = 0;
         for(size_t tac_idx = range_begin; tac_idx<=range_end; tac_idx++) {
-            if ((block.program(tac_idx).op & ARRAY_OPS)>0) {
+            if ((block.tac(tac_idx).op & ARRAY_OPS)>0) {
                 first_arrayop = tac_idx;
                 break;
             }
@@ -364,7 +364,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
                 case STRIDED:
                 case SPARSE:
                     tpl_filename << "strided.";
-                    switch(symbol_table[block.program(first_arrayop).out].ndim) {
+                    switch(symbol_table[block.tac(first_arrayop).out].ndim) {
                         case 3:
                             tpl_filename << "3d.";
                             break;
@@ -389,7 +389,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
         set<size_t>::iterator operands_it;
 
         for(size_t tac_idx=range_begin; tac_idx<=range_end; tac_idx++) {
-            tac_t& tac = block.program(tac_idx);
+            tac_t& tac = block.tac(tac_idx);
             if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
                 continue;
             }
@@ -403,27 +403,27 @@ string Specializer::specialize( SymbolTable& symbol_table,
             // Map the tac operands into block-scope
             switch(core::tac_noperands(tac)) {
                 case 3:
-                    operation_d->SetIntValue("NR_SINPUT", block.resolve(tac.in2));
-                    operator_d->SetIntValue("NR_SINPUT",  block.resolve(tac.in2));
+                    operation_d->SetIntValue("NR_SINPUT", block.global_to_local(tac.in2));
+                    operator_d->SetIntValue("NR_SINPUT",  block.global_to_local(tac.in2));
 
-                    operands.insert(block.resolve(tac.in2));
+                    operands.insert(block.global_to_local(tac.in2));
 
                 case 2:
-                    operation_d->SetIntValue("NR_FINPUT", block.resolve(tac.in1));
-                    operator_d->SetIntValue("NR_FINPUT",  block.resolve(tac.in1));
+                    operation_d->SetIntValue("NR_FINPUT", block.global_to_local(tac.in1));
+                    operator_d->SetIntValue("NR_FINPUT",  block.global_to_local(tac.in1));
 
-                    operands.insert(block.resolve(tac.in1));
+                    operands.insert(block.global_to_local(tac.in1));
 
                 case 1:
-                    operation_d->SetIntValue("NR_OUTPUT", block.resolve(tac.out));
-                    operator_d->SetIntValue("NR_OUTPUT",  block.resolve(tac.out));
+                    operation_d->SetIntValue("NR_OUTPUT", block.global_to_local(tac.out));
+                    operator_d->SetIntValue("NR_OUTPUT",  block.global_to_local(tac.out));
 
-                    operands.insert(block.resolve(tac.out));
+                    operands.insert(block.global_to_local(tac.out));
             }
 
         }
 
-        tac_t& first_tac = block.program(first_arrayop);
+        tac_t& first_tac = block.tac(first_arrayop);
         //
         // Reduction and scan specific expansions
         if ((first_tac.op == REDUCE) || (first_tac.op == SCAN)) {
@@ -444,7 +444,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
             if (0 == opr_idx) {
                 fprintf(stderr, "THIS SHOULD NEVER MAPPEN! OPERAND 0 is used!\n");
             }
-            const operand_t& operand = block.scope(opr_idx);
+            const operand_t& operand = block.operand(opr_idx);
 
             ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
             operand_d->SetValue("TYPE",  core::etype_to_ctype_text(operand.etype));
@@ -460,7 +460,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
     //
     //  Assign arguments for kernel operand unpacking
     for(size_t opr_idx=1; opr_idx<=block.noperands(); ++opr_idx) {
-        const operand_t& operand = block.scope(opr_idx);
+        const operand_t& operand = block.operand(opr_idx);
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);
         argument_d->SetValue("TYPE", core::etype_to_ctype_text(operand.etype));

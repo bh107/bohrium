@@ -47,7 +47,8 @@ public:
      *  Construct a graph with instructions as vertices and edges as data-dependencies.
      *  @param bhir The bhir containing list of instructions.
      */
-    Dag(bh_instruction* instrs, bh_intp ninstrs);
+    //Dag(bh_instruction* instrs, bh_intp ninstrs);
+    Dag(SymbolTable& symbol_table, std::vector<tac_t>& program);
 
     /**
      * Deconstructor... not much to say here...
@@ -117,12 +118,10 @@ private:
     /**
      *  Determine whether two instructions are fusable.
      */
-    bool fusable(tac_t& prev, tac_t& cur);
+    bool fusable(tac_t& cur, tac_t& prev);
 
-    bh_instruction* instr_;         // Array of instructions
-    bh_intp ninstr_;                // The number of instructions
-    SymbolTable symbol_table_;      // Symbols of operands
-    std::vector<tac_t> tacs_;       // Three-address-code format of instructions
+    SymbolTable& symbol_table_;     // Symbols of operands
+    std::vector<tac_t>& program_;   // Three-address-code format of instructions
     Graph graph_;                   // Graph form of instructions
     std::vector<Graph*> subgraphs_; // Partitioning of the graph in subgraphs
 

@@ -75,12 +75,14 @@ string Engine::text()
 }
 
 /*
+
+*/
+
 bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
 {
     bh_error res = BH_SUCCESS;
 
-    bh_intp nnode = block.get_dag().nnode;
-    for(bh_intp i=0; i<nnode; ++i) {
+    for(vector<tac_t*>::iterator ti=pro
 
         bool compose_res = block.compose(i, i); // Recompose the block
         if (!compose_res) {
@@ -205,7 +207,6 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
 
     return BH_SUCCESS;
 }
-*/
 
 /*
 bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
@@ -479,49 +480,18 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 
     bh_error res = BH_SUCCESS;
 
-    /*
     //
-    // Instantiate the symbol-table
+    // Instantiate the symbol-table and tac-program
     SymbolTable symbol_table(ninstrs*6+2);
     vector<tac_t> program(ninstrs);
-    //
-    // Map bh_instruction to tac_t and perform operand identification
-    core::instrs_to_tacs(instrs, ninstrs, program, symbol_table);
 
-    //
-    //  Annotate operands:
-    //
-    //  * freed
-    //  * temporary
-    //  * read-count
-    //  * write-count
-    //  * disqualified for scalar replacement
-    //
-    if (symbol_table.size() > 3) {
-        size_t* reads   = symbol_table.reads;
-        size_t* writes  = symbol_table.writes;
-
-        set<size_t>& disqualified = symbol_table.disqualified;
-        set<size_t>& freed        = symbol_table.freed;
-        set<size_t>& temps        = symbol_table.temps;
-
-        for(set<size_t>::iterator it=freed.begin();
-            it != freed.end();
-            it++) {
-            if (disqualified.find(*it) != disqualified.end()) {
-                continue;
-            }
-            size_t potential = *it;
-            if ((1 == reads[potential]) && (1 == writes[potential])) {
-                temps.insert(potential);
-            }
-        }
-    }
-    */
+    // Map instructions to tac and symbol_table
+    instrs_to_tacs(instrs, ninstrs, program, symbol_table);
+    symbol_table.count_tmp();
 
     //
     // Construct graph with instructions as nodes.
-    Dag graph(instrs, ninstrs);
+    Dag graph(symbol_table, program);
 
     // Dump it to file
     stringstream filename;
@@ -531,20 +501,19 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
     fout << graph.dot() << std::endl;
 
     //
-    // Construct blocks based on subgraphs
-    vector<Block*> blocks(graph.subgraphs().size());
-    for(bh_intp blk_idx=0; blk_idx<graph.subgraphs().size(); ++blk_idx) {
+    //  Map subgraphs to blocks one at a time and execute them.
+    Block block(symbol_table, program);
+    for(size_t idx=0; idx<graph.subgraphs().size(); ++idx) {
+        block.compose(*(graph.subgraphs()[idx]));
+
+        if ((block.omask() & (NON_FUSABLE))>0) {    // SIJ-Mode
+            // Implement this first
+        } else {                                    // FUSE-Mode
+            // Then this
+        }
+
     }
-
-    //
-    // Execute the Blocks
-
-
-    //
-    // De-allocate the blocks
-    for(bh_intp blk_idx=0; blk_idx<graph.subgraphs().size(); ++blk_idx) {
-        delete blocks[blk_idx];
-    }
+    DEBUG(TAG, "Execute(...);");
     
     return res;
 }

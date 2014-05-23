@@ -83,6 +83,7 @@ typedef struct operand {
 #define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    %echo $len($ops)-1
 #define NBUILTIN_OPERS  %echo $len($opers)-1
+#define NON_FUSABLE ( GENERATE | REDUCE | SCAN | EXTENSION )
 
 //
 // For fuse-ranges...

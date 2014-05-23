@@ -1,117 +1,104 @@
 #include "block.hpp"
 
 using namespace std;
+using namespace boost;
+
 namespace bohrium{
 namespace core{
 
 const char Block::TAG[] = "Block";
 
-Block::Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx)
-: instr_(NULL), operands_(NULL), noperands_(0), omask_(0), tacs(NULL), ntacs_(0), ir(ir), dag(ir.dag_list[dag_idx]), symbol_table(symbol_table)
-{
-    size_t ps = (size_t)dag.nnode;
-    if (ps<1) {
-        fprintf(stderr, "This block is the empty program! You should not have called this!");
-    }
-
-    operands_    = (operand_t**)malloc((1+3)*ps*sizeof(operand_t*));
-    operands_[0] = &symbol_table.table[0];  // Always point to the pseudo-operand.
-
-    tacs    = (tac_t*)malloc(ps*sizeof(tac_t));
-    ntacs_  = ps;
-
-    instr_  = (bh_instruction**)malloc(ps*sizeof(bh_instruction*));
-}
+Block::Block(SymbolTable& globals, vector<tac_t>& program)
+: globals_(globals), program_(program), locals_(program.size()*3), symbol_text_(""), symbol_(""), omask_(0)
+{}
 
 Block::~Block()
-{
-    free(operands_);
-    free(tacs);
-    free(instr_);
-}
+{}
 
-const bh_dag& Block::get_dag()
+bool Block::compose(Graph& subgraph)
 {
-    return this->dag;
-}
+    tacs_.clear();      // Reset the current state of the block
+    locals_.clear();
+    global_to_local_.clear();
 
-string Block::scope_text(string prefix) const
-{
-    stringstream ss;
-    ss << prefix << "scope {" << endl;
-    for(size_t i=1; i<=noperands(); ++i) {
-        ss << prefix;
-        ss << "[" << i << "] {";
-        ss << core::operand_text(scope(i));
-        ss << "}";
+    symbol_text_    = "";
+    symbol_         = "";
+    omask_          = 0;
 
-        ss << endl;
+    // Fill tacs_ based on the subgraph
+    std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
+    for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
+        tac_t& tac = program_[subgraph.local_to_global(*vi)];
+        tacs_.push_back(&tac);
+
+        // Map operands to local-scope
+        switch(tac_noperands(tac)) {
+            case 3:
+                localize(tac.in2);
+            case 2:
+                localize(tac.in1);
+            case 1:
+                localize(tac.out);
+            default:
+                break;
+        }
+
+        // Do ref-count
+        locals_.count_rw(tac);
+
+        // Update operation-mask
+        omask_ |= tac.op;
     }
-    ss << prefix << "}" << endl;
+    locals_.count_tmp();
 
-    return ss.str();
+    return true;
 }
 
-string Block::scope_text() const
+size_t Block::localize(size_t global_idx)
 {
-    return scope_text("");
-}
-
-string Block::text(std::string prefix) const
-{
-    stringstream ss;
-    ss << prefix;
-    ss << "block(";
-    ss << "length="       << ntacs_;
-    ss << ", noperands="  << noperands();
-    ss << ", omask="      << omask_;
-    ss << ") {"           << endl;
-    ss << prefix << "  symbol(" << symbol() << ")" << endl;
-    ss << prefix << "  symbol_text(" << symbol_text() << ")" << endl;
-
-    ss << prefix << "  tacs {" << endl;
-    for(size_t i=0; i<ntacs_; ++i) {
-        ss << prefix << "    [" << i << "]" << core::tac_text(tacs[i]) << endl;
+    //
+    // Reuse operand identifiers: Detect if we have seen it before and reuse the index.
+    size_t local_idx = 0;
+    bool found = false;
+    for(size_t i=0; i<locals_.size(); ++i) {
+        if (!core::equivalent(locals_[i], globals_[global_idx])) {
+            continue; // Not equivalent, continue search.
+        }
+        // Found one! Use it instead of the incremented identifier.
+        local_idx = i;
+        found = true;
+        break;
     }
-    ss << prefix << "  }" << endl;
 
-    ss << scope_text(prefix+"  ");
-    ss << prefix << "}";
-    
-    return ss.str();
+    // Create the operand in block-scope
+    if (!found) {
+        local_idx = locals_.import(globals_[global_idx]);
+    }
+
+    //
+    // Insert entry such that tac operands can be resolved in block-scope.
+    global_to_local_.insert(pair<size_t,size_t>(global_idx, local_idx));
+
+    return local_idx;
 }
 
-string Block::text() const
+bool Block::symbolize(void)
 {
-    return text("");
-}
-
-bool Block::symbolize()
-{   
-    bool symbolize_res = symbolize(0, ntacs_-1);
-    return symbolize_res;
-}
-
-bool Block::symbolize(size_t tac_start, size_t tac_end)
-{
-    stringstream tacs,
-                 operands;
+    stringstream tacs, operands;
 
     //
     // Scope
     for(size_t i=1; i<=noperands(); ++i) {
-        const operand_t& operand = scope(i);
-
         operands << "~" << i;
-        operands << core::layout_text_shand(operand.layout);
-        operands << core::etype_text_shand(operand.etype);
+        operands << core::layout_text_shand(locals_[i].layout);
+        operands << core::etype_text_shand(locals_[i].etype);
     }
 
     //
     // Program
     bool first = true;
-    for (size_t i=tac_start; i<=tac_end; ++i) {
-        tac_t& tac = this->tacs[i];
+    for(vector<tac_t*>::iterator tac_iter=tacs_.begin(); tac_iter!=tacs_.end(); ++tac_iter) {
+        tac_t& tac = **tac_iter;
        
         // Do not include system opcodes in the kernel symbol.
         if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
@@ -125,7 +112,7 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         tacs << core::operation_text(tac.op);
         tacs << "-" << core::operator_text(tac.oper);
         tacs << "-";
-        size_t ndim = (tac.op == REDUCE) ? symbol_table.table[tac.in1].ndim : symbol_table.table[tac.out].ndim;
+        size_t ndim = (tac.op == REDUCE) ? globals_[tac.in1].ndim : globals_[tac.out].ndim;
         if (ndim <= 3) {
             tacs << ndim;
         } else {
@@ -135,18 +122,18 @@ bool Block::symbolize(size_t tac_start, size_t tac_end)
         
         switch(core::tac_noperands(tac)) {
             case 3:
-                tacs << "_" << resolve(tac.out);
-                tacs << "_" << resolve(tac.in1);
-                tacs << "_" << resolve(tac.in2);
+                tacs << "_" << global_to_local(tac.out);
+                tacs << "_" << global_to_local(tac.in1);
+                tacs << "_" << global_to_local(tac.in2);
                 break;
 
             case 2:
-                tacs << "_" << resolve(tac.out);
-                tacs << "_" << resolve(tac.in1);
+                tacs << "_" << global_to_local(tac.out);
+                tacs << "_" << global_to_local(tac.in1);
                 break;
 
             case 1:
-                tacs << "_" << resolve(tac.out);
+                tacs << "_" << global_to_local(tac.out);
                 break;
 
             case 0:
@@ -168,66 +155,34 @@ uint32_t Block::omask(void) const
     return omask_;
 }
 
-size_t Block::noperands(void) const
+operand_t& Block::operand(size_t local_idx)
 {
-    return noperands_;
+    return locals_[local_idx];
 }
 
-size_t Block::add_operand(bh_instruction& instr, size_t operand_idx)
+operand_t* Block::operands(void)
 {
-    //
-    // Map operands through the SymbolTable
-    size_t arg_symbol = symbol_table.map_operand(instr, operand_idx);
-
-    //
-    // Map operands into block-scope.
-    size_t arg_idx = ++(noperands_);
-
-    //
-    // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
-    // This is done by comparing the currently investigated operand (arg_idx)
-    // with all other operands in the current scope [1,arg_idx[
-    // Do remember that 0 is is not a valid operand and we therefore index from 1.
-    // Also we do not want to compare with selv, that is when i == arg_idx.
-    for(size_t i=1; i<arg_idx; ++i) {
-        if (!core::equivalent(scope(i), symbol_table.table[arg_symbol])) {
-            continue; // Not equivalent, continue search.
-        }
-        // Found one! Use it instead of the incremented identifier.
-        --noperands_;
-        arg_idx = i;
-        break;
-    }
-
-    //
-    // Point to the operand in the symbol_table
-    operands_[arg_idx] = &symbol_table.table[arg_symbol];
-
-    //
-    // Insert entry such that tac operands can be resolved in block-scope.
-    operand_map.insert(pair<size_t,size_t>(arg_symbol, arg_idx));
-
-    return arg_symbol;
+    return locals_.operands();
 }
 
-const operand_t& Block::scope(size_t operand_idx) const
+size_t Block::noperands(void)
 {
-    return *operands_[operand_idx];
+    return locals_.size();
 }
 
-size_t Block::resolve(size_t symbol_idx) const
+size_t Block::global_to_local(size_t global_idx) const
 {
-    return operand_map.find(symbol_idx)->second;
+    return global_to_local_.find(global_idx)->second;
 }
 
-tac_t& Block::program(size_t pc) const
+tac_t& Block::tac(size_t idx) const
 {
-    return tacs[pc];
+    return *tacs_[idx];
 }
 
 size_t Block::size(void) const
 {
-    return ntacs_;
+    return program_.size();
 }
 
 string Block::symbol(void) const
@@ -238,16 +193,6 @@ string Block::symbol(void) const
 string Block::symbol_text(void) const
 {
     return symbol_text_;
-}
-
-operand_t** Block::operands(void) const
-{
-    return operands_;
-}
-
-bh_instruction& Block::instr(size_t instr_idx) const
-{
-    return *instr_[instr_idx];
 }
 
 }}

@@ -11,13 +11,8 @@ namespace core {
 
 const char Dag::TAG[] = "Dag";
 
-bool Dag::fusable(tac_t& prev, tac_t& cur)
+bool Dag::fusable(tac_t& cur, tac_t& prev)
 {
-    // System operations are always included
-    if (cur.op == SYSTEM) {
-        return true;
-    }
-
     // But only map and zip array operations
     if (!((cur.op == MAP) || (cur.op == ZIP) || (cur.op == SYSTEM))) {
         return false;
@@ -50,13 +45,46 @@ bool Dag::fusable(tac_t& prev, tac_t& cur)
                 symbol_table_[prev.out],
                 symbol_table_[cur.out]
             ));
-            break;
-
         default:
-            fprintf(stderr, "ARGGG in checking operands!!!!\n");
+            break;
     }
 
-    // Check for temp
+    // Check if instructions share an operand and that shared operands are temp.
+    bool uses = false;
+    switch(tac_noperands(cur)) {
+        case 3: // Binary
+            if ((prev.out == cur.in2) && \
+                (symbol_table_.temp().find(prev.out) != symbol_table_.temp().end())) {
+                uses = true;
+                break;
+            }
+        case 2: // Unary
+            if ((prev.out == cur.in1) && \
+                (symbol_table_.temp().find(prev.out) != symbol_table_.temp().end())) {
+                uses = true;
+                break;
+            }
+        case 1: // System
+            switch(tac_noperands(prev)) {
+                case 3:
+                    if (cur.out == prev.in2) {
+                        uses = true;
+                        break;
+                    }
+                case 2:
+                    if (cur.out == prev.in1) {
+                        uses = true;
+                        break;
+                    }
+                case 1:
+                    if (cur.out == prev.out) {
+                        uses = true;
+                        break;
+                    }
+            }
+            break;
+    }
+    compat_operands = compat_operands && uses;
 
     return compat_operands;
 }
@@ -70,20 +98,29 @@ void Dag::partition(void)
 
     int64_t graph_idx=0;
 
-    subgraphs_.push_back(&(graph_.create_subgraph()));
-    add_vertex(0, *(subgraphs_[graph_idx]));
-    tac_t* prev = &(tacs_[0]);
+    for(int64_t idx=0; idx < program_.size();) {    // Then look at the remaining
 
-    for(int64_t idx=1; idx < ninstr_; ++idx) {    // Then look at the remaining
-        tac_t* cur = &(tacs_[idx]);
+        // Look only at sequences of element-wise and system operations
+        int64_t sub_begin   = idx,
+                sub_end     = idx;
+        tac_t* prev = &program_[idx];
+        for(int64_t inner=idx; inner <program_.size(); ++inner) {
+            tac_t* cur = &program_[inner];
 
-        if (!fusable(*prev, *cur)) {
-            subgraphs_.push_back(&(graph_.create_subgraph()));
-            graph_idx++;
+            if (!fusable(*cur, *prev)) {
+                break;
+            }
+            
+            sub_end = inner;
         }
-        add_vertex(idx, *(subgraphs_[graph_idx]));
 
-        prev = cur;
+        // Stuff them into a subgraph
+        subgraphs_.push_back(&(graph_.create_subgraph()));
+        for(int64_t sub_idx=sub_begin; sub_idx<=sub_end; ++sub_idx) {
+            add_vertex(sub_idx, *subgraphs_[graph_idx]);
+        }
+        graph_idx++;
+        idx = sub_end+1;
     }
 
     DEBUG(TAG,"partition(...);");
@@ -94,9 +131,9 @@ void Dag::array_deps(void)
     DEBUG(TAG,"array_deps(...)");
     //
     // Find dependencies on array operations
-    for(int64_t idx=0; idx < ninstr_; ++idx) {
+    for(int64_t idx=0; idx < program_.size(); ++idx) {
         // The instruction to find data-dependencies for
-        tac_t& tac = tacs_[idx];
+        tac_t& tac = program_[idx];
 
         // Ignore sys-ops
         if ((tac.op == SYSTEM) || (NOOP == tac.op)) {
@@ -108,8 +145,8 @@ void Dag::array_deps(void)
         bh_base* output = symbol_table_[tac.out].base;
 
         bool found = false;
-        for(int64_t other=idx+1; (other<ninstr_) && (!found); ++other) {
-            tac_t& other_tac = tacs_[other];
+        for(int64_t other=idx+1; (other<program_.size()) && (!found); ++other) {
+            tac_t& other_tac = program_[other];
 
             // Ignore sys and noops
             if ((other_tac.op == SYSTEM) || (NOOP == other_tac.op)) {
@@ -158,10 +195,10 @@ void Dag::system_deps(void)
     DEBUG(TAG,"system_deps(...)");
     //
     // Find dependencies on system operations
-    for(int64_t idx=ninstr_-1; idx>=0; --idx) {
+    for(int64_t idx=program_.size()-1; idx>=0; --idx) {
 
         // The tac to find data-dependencies for
-        tac_t& tac = tacs_[idx];
+        tac_t& tac = program_[idx];
 
         if (tac.op != SYSTEM) {
             continue;
@@ -171,7 +208,7 @@ void Dag::system_deps(void)
 
         bool found = false;
         for(int64_t other=idx-1; (other>=0) && (!found); --other) {
-            tac_t& other_tac = tacs_[other];
+            tac_t& other_tac = program_[other];
 
             switch(tac_noperands(other_tac)) {
                 case 3:

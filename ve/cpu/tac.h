@@ -157,6 +157,7 @@ typedef struct operand {
 #define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    7
 #define NBUILTIN_OPERS  62
+#define NON_FUSABLE ( GENERATE | REDUCE | SCAN | EXTENSION )
 
 //
 // For fuse-ranges...

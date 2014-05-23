@@ -7,80 +7,43 @@
 #include "tac.h"
 #include "symbol_table.hpp"
 #include "utils.hpp"
+#include "dag.hpp"
 
 namespace bohrium{
 namespace core{
 
 class Block {
 public:
-    Block(SymbolTable& symbol_table, const bh_ir& ir, size_t dag_idx);
+    Block(SymbolTable& globals, std::vector<tac_t>& program);
     ~Block();
 
-    std::string text(std::string prefix) const;
-    std::string text(void) const;
-
-    std::string scope_text(std::string prefix) const;
-    std::string scope_text() const;
-
     /**
-     *  Returns the operand with opr_idx in block-scope.
+     *  Compose a block of tacs in a legal execution order, with a
+     *  block-scoped symbol table and construct a symbol representing the block.
      *
-     *  @param opr_idx Index / name in the block-scope of the operand.
-     *  @param A reference to the requested operand.
+     *  NOTE: This will reset the current state of the block.
      */
-    const operand_t& scope(size_t operand_idx) const;
+    bool compose(Graph& subgraph);
 
     /**
-     *  Return the operand_idx in block-scope correspnding to the given symbol index.
+     *  Return the block-local operand-index corresponding 
+     *  to the given global operand-index.
      *
-     *  @param symbol_idx The symbol_idx to resolve
-     *  @return Operand index in block scope
+     *  @param global_idx The global operand-index to resolve
+     *  @return The block-local operand-index
      */
-    size_t resolve(size_t symbol_idx) const;
+    size_t global_to_local(size_t global_idx) const;
 
     /**
-     *  Return the operand correponding to the given symbol_idx.
-     *  The operand is fetched from the symbol_table.
-     */
-    operand_t& operand(size_t symbol_idx) const;
-
-    tac_t& program(size_t pc) const;
-
-    size_t size(void) const;
-
-    /**
-     *  Return the operation mask of the tacs in the block.
-     */
-    uint32_t omask(void) const;
-
-    bh_instruction& instr(size_t instr_idx) const;
-
-    operand_t** operands(void) const;
-    size_t noperands(void) const;
-
-    std::string symbol(void) const;
-    std::string symbol_text(void) const;
-
-    /**
-     *  Return the dag on which the block is based.
-     */
-    const bh_dag& get_dag(void);
-
-    /**
-     *  Add instruction operand as argument to block.
+     *  Create an operand with block scope based on the operand in global scope.
      *
      *  Reuses operands of equivalent meta-data.
      *
-     *  @param instr        The instruction whos operand should be converted.
-     *  @param operand_idx  Index of the operand to represent as arg_t
-     *  @param block        The block in which scope the argument will exist.
+     *  @param global_idx Global index of the operand to add to block scope.
      *
-     *  @returns The symbol for the operand
+     *  @returns The block-scoped index.
      */
-    size_t add_operand(bh_instruction& instr, size_t operand_idx);
-
-    bool compose();
-    bool compose(bh_intp node_start, bh_intp node_end);
+    size_t localize(size_t global_idx);
 
     /**
      *  Create a symbol for the block.
@@ -98,28 +61,53 @@ public:
      *        opcodes then the symbol will be the empty string "".
      */
     bool symbolize(void);
-    bool symbolize(size_t tac_start, size_t tac_end);
+
+    //
+    // Various getters
+    //
+
+    /**
+     *  Returns the operand with local in block-scope.
+     *
+     *  @param local_idx Index / name in the block-scope of the operand.
+     *  @param A reference to the requested operand.
+     */
+    operand_t& operand(size_t local_idx);
+
+    operand_t* operands(void);
+    size_t noperands(void);
+
+    /**
+     *  Return the operation mask of the tacs in the block.
+     */
+    uint32_t omask(void) const;
+
+    /**
+     * Return the tac-instance with the given index.
+     */
+    tac_t& tac(size_t idx) const;
+
+    size_t size(void) const;
+
+    std::string symbol(void) const;
+    std::string symbol_text(void) const;
 
 private:
 
     Block();
 
-    bh_instruction** instr_;     // Pointers to instructions
-    operand_t** operands_;       // Array of pointers to block operands
-    size_t noperands_;           // Number of arguments to the block
+    SymbolTable& globals_;          // A reference to the global symbol table
+    std::vector<tac_t>& program_;   // A reference to the entire bytecode program
 
-    std::string symbol_text_;               // Textual representation of the block
-    std::string symbol_;                    // Hash of textual representation
+    std::vector<tac_t*> tacs_;      // A subset of the tac-program reprensting the block.
 
-    uint32_t omask_;                        // Mask of the OPERATIONS in the block
+    SymbolTable locals_;             // A symbol table with block-scope
+    std::map<size_t, size_t> global_to_local_;  // Mapping from global to block-local scope.
 
-    tac_t* tacs;                            // Ordered list of TACs
-    size_t ntacs_;                          // Number of tacs in program
-    std::map<size_t, size_t> operand_map;   // Mapping of tac operands to block-scope
+    std::string symbol_text_;       // Textual representation of the block
+    std::string symbol_;            // Hash of textual representation
 
-    const bh_ir& ir;
-    const bh_dag& dag;
-    SymbolTable& symbol_table;
+    uint32_t omask_;                // Mask of the OPERATIONS in the block
 
     static const char TAG[];
 };
