@@ -9,21 +9,65 @@ namespace core{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& globals, vector<tac_t>& program)
-: globals_(globals), program_(program), locals_(program.size()*3), symbol_text_(""), symbol_(""), omask_(0)
+: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_("")
 {}
 
 Block::~Block()
-{}
-
-bool Block::compose(Graph& subgraph)
 {
-    tacs_.clear();      // Reset the current state of the block
-    locals_.clear();
+    DEBUG(TAG, "~Block()");
+    if (operands_) {
+        delete[] operands_;
+        operands_   = NULL;
+        noperands_  = 0;
+    }
+    DEBUG(TAG, "~Block();");
+}
+
+void Block::clear(void)
+{
+    DEBUG(TAG, "clear()");
+    tacs_.clear();      // Reset the current state of the blocks
+    
+    if (operands_) {
+        delete[] operands_;
+        operands_   = NULL;
+        noperands_  = 0;
+    }
     global_to_local_.clear();
 
     symbol_text_    = "";
     symbol_         = "";
-    omask_          = 0;
+    DEBUG(TAG, "clear();");
+}
+
+void Block::compose(size_t prg_begin, size_t prg_end)
+{
+    DEBUG(TAG, "compose("<<prg_begin << "," << prg_end << ")");
+    operands_ = new operand_t*[(prg_end-prg_begin+1)*3];
+
+    for(size_t prg_idx=prg_begin; prg_idx<=prg_end; ++prg_idx) {
+        tac_t& tac = program_[prg_idx];
+        tacs_.push_back(&tac);
+
+        // Map operands to local-scope
+        switch(tac_noperands(tac)) {
+            case 3:
+                localize(tac.in2);
+            case 2:
+                localize(tac.in1);
+            case 1:
+                localize(tac.out);
+            default:
+                break;
+        }
+    }
+
+    DEBUG(TAG, "compose("<<prg_begin << "," << prg_end << ");");
+}
+
+void Block::compose(Graph& subgraph)
+{
+    operands_ = new operand_t*[(num_vertices(subgraph)+1)*3];
 
     // Fill tacs_ based on the subgraph
     std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
@@ -42,16 +86,7 @@ bool Block::compose(Graph& subgraph)
             default:
                 break;
         }
-
-        // Do ref-count
-        locals_.count_rw(tac);
-
-        // Update operation-mask
-        omask_ |= tac.op;
     }
-    locals_.count_tmp();
-
-    return true;
 }
 
 size_t Block::localize(size_t global_idx)
@@ -60,8 +95,8 @@ size_t Block::localize(size_t global_idx)
     // Reuse operand identifiers: Detect if we have seen it before and reuse the index.
     size_t local_idx = 0;
     bool found = false;
-    for(size_t i=0; i<locals_.size(); ++i) {
-        if (!core::equivalent(locals_[i], globals_[global_idx])) {
+    for(size_t i=0; i<noperands_; ++i) {
+        if (!core::equivalent(*operands_[i], globals_[global_idx])) {
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.
@@ -72,7 +107,9 @@ size_t Block::localize(size_t global_idx)
 
     // Create the operand in block-scope
     if (!found) {
-        local_idx = locals_.import(globals_[global_idx]);
+        local_idx = noperands_;
+        operands_[local_idx] = &globals_[global_idx];
+        ++noperands_;
     }
 
     //
@@ -84,15 +121,18 @@ size_t Block::localize(size_t global_idx)
 
 bool Block::symbolize(void)
 {
-    stringstream tacs, operands;
+    DEBUG(TAG, "symbolize(void)");
+    stringstream tacs, operands_ss;
 
     //
     // Scope
-    for(size_t i=1; i<=noperands(); ++i) {
-        operands << "~" << i;
-        operands << core::layout_text_shand(locals_[i].layout);
-        operands << core::etype_text_shand(locals_[i].etype);
+    for(size_t i=0; i<noperands_; ++i) {
+        operands_ss << "~" << i;
+        operands_ss << core::layout_text_shand(operands_[i]->layout);
+        operands_ss << core::etype_text_shand(operands_[i]->etype);
     }
+
+    DEBUG(TAG, "symbolize(void) 1");
 
     //
     // Program
@@ -144,30 +184,26 @@ bool Block::symbolize(void)
         }
     }
 
-    symbol_text_    = tacs.str() +"_"+ operands.str();
+    symbol_text_    = tacs.str() +"_"+ operands_ss.str();
     symbol_         = core::hash_text(symbol_text_);
 
+    DEBUG(TAG, "symbolize(void);");
     return true;
-}
-
-uint32_t Block::omask(void) const
-{
-    return omask_;
 }
 
 operand_t& Block::operand(size_t local_idx)
 {
-    return locals_[local_idx];
+    return *operands_[local_idx];
 }
 
-operand_t* Block::operands(void)
+operand_t** Block::operands(void)
 {
-    return locals_.operands();
+    return operands_;
 }
 
 size_t Block::noperands(void)
 {
-    return locals_.size();
+    return noperands_;
 }
 
 size_t Block::global_to_local(size_t global_idx) const
@@ -180,9 +216,9 @@ tac_t& Block::tac(size_t idx) const
     return *tacs_[idx];
 }
 
-size_t Block::size(void) const
+size_t Block::ntacs(void) const
 {
-    return program_.size();
+    return tacs_.size();
 }
 
 string Block::symbol(void) const

@@ -158,7 +158,7 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
 string Specializer::specialize( SymbolTable& symbol_table,
                                 Block& block)
 {
-    return specialize(symbol_table, block, 0, block.size()-1);
+    return specialize(symbol_table, block, 0, block.ntacs()-1);
 }
 
 /**
@@ -181,7 +181,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
     kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text());
 
     kernel_d.SetValue("MODE", "SIJ");
-    kernel_d.SetIntValue("NINSTR", block.size());
+    kernel_d.SetIntValue("NINSTR", block.ntacs());
     kernel_d.SetIntValue("NARGS", block.noperands());
 
     //
@@ -248,9 +248,6 @@ string Specializer::specialize( SymbolTable& symbol_table,
         // Assign operands to the operation, we use a set to avoid redeclaration.
         for(operands_it=operands.begin(); operands_it != operands.end(); operands_it++) {
             size_t opr_idx = *operands_it;
-            if (0 == opr_idx) {
-                fprintf(stderr, "THIS SHOULD NEVER MAPPEN! OPERAND 0 is used!\n");
-            }
             const operand_t& operand = block.operand(opr_idx);
 
             ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
@@ -266,7 +263,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
     //
     //  Assign arguments for kernel operand unpacking
-    for(size_t opr_idx=1; opr_idx<=block.noperands(); ++opr_idx) {
+    for(size_t opr_idx=0; opr_idx<block.noperands(); ++opr_idx) {
         const operand_t& operand = block.operand(opr_idx);
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);
@@ -319,7 +316,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
     kernel_d.SetValue("SYMBOL_TEXT", block.symbol_text());
 
     kernel_d.SetValue("MODE", "FUSED");
-    kernel_d.SetIntValue("NINSTR", block.size());
+    kernel_d.SetIntValue("NINSTR", block.ntacs());
     kernel_d.SetIntValue("NARGS", block.noperands());
 
     //

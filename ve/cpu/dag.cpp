@@ -89,8 +89,14 @@ bool Dag::fusable(tac_t& cur, tac_t& prev)
     return compat_operands;
 }
 
+uint32_t Dag::omask(size_t subgraph_idx)
+{
+    DEBUG(TAG, "Quering omask #" << subgraph_idx << " out of #"<< omask_.size() << " val="<< omask_[subgraph_idx] << ".");
+    return omask_[subgraph_idx];
+}
+
 /**
- *  Construct a list of subgraphs...
+ *  Construct a list of subgraphs... annotate the operation-mask of the subgraph.
  */
 void Dag::partition(void)
 {
@@ -116,8 +122,11 @@ void Dag::partition(void)
 
         // Stuff them into a subgraph
         subgraphs_.push_back(&(graph_.create_subgraph()));
+        // Annotate operation mask for the subgraph
+        omask_.push_back(0);
         for(int64_t sub_idx=sub_begin; sub_idx<=sub_end; ++sub_idx) {
             add_vertex(sub_idx, *subgraphs_[graph_idx]);
+            omask_[graph_idx] |= program_[sub_idx].op;
         }
         graph_idx++;
         idx = sub_end+1;

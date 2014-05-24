@@ -23,7 +23,6 @@ namespace bohrium {
 namespace engine {
 namespace cpu {
 
-
 typedef void (*func)(operand_t** args);
 
 //

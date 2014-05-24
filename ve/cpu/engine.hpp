@@ -10,6 +10,7 @@
 #include "specializer.hpp"
 
 #include <string>
+#include <vector>
 #include <map>
 
 namespace bohrium{
@@ -50,7 +51,7 @@ private:
      *  The block does contain array operations but also an extension
      *
      */
-    bh_error sij_mode(SymbolTable& symbol_table, Block& block);
+    bh_error sij_mode(SymbolTable& symbol_table, std::vector<tac_t>& program, Block& block);
 
     /**
      *  Compile and execute multiple tac/instructions at a time.

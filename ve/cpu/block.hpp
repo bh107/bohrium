@@ -18,12 +18,28 @@ public:
     ~Block();
 
     /**
+     *  Clear the composed block, does not de-allocate or remove
+     *  the associated globals, program and memory allocated for the
+     *  block.
+     *  It simply clears it for reuse.
+     */
+    void clear(void);
+
+    /**
      *  Compose a block of tacs in a legal execution order, with a
      *  block-scoped symbol table and construct a symbol representing the block.
      *
      *  NOTE: This will reset the current state of the block.
      */
-    bool compose(Graph& subgraph);
+    void compose(Graph& subgraph);
+
+    /**
+     *  Compose the block based based on a subset of program instructions.
+     *
+     *  @param prg_begin Start of the subset.
+     *  @param prg_end End of the subset, to and including prg_end.
+     */
+    void compose(size_t prg_begin, size_t prg_end);
 
     /**
      *  Return the block-local operand-index corresponding 
@@ -63,7 +79,7 @@ public:
     bool symbolize(void);
 
     //
-    // Various getters
+    // Getters
     //
 
     /**
@@ -74,20 +90,25 @@ public:
      */
     operand_t& operand(size_t local_idx);
 
-    operand_t* operands(void);
-    size_t noperands(void);
+    /**
+     *  Return the array of pointer-operands.
+     */
+    operand_t** operands(void);
 
     /**
-     *  Return the operation mask of the tacs in the block.
+     * Count of operands in the block.
      */
-    uint32_t omask(void) const;
+    size_t noperands(void);
 
     /**
      * Return the tac-instance with the given index.
      */
     tac_t& tac(size_t idx) const;
 
-    size_t size(void) const;
+    /**
+     *  Count of tacs in the block.
+     */
+    size_t ntacs(void) const;
 
     std::string symbol(void) const;
     std::string symbol_text(void) const;
@@ -101,13 +122,13 @@ private:
 
     std::vector<tac_t*> tacs_;      // A subset of the tac-program reprensting the block.
 
-    SymbolTable locals_;             // A symbol table with block-scope
+    //SymbolTable locals_;             // A symbol table with block-scope
+    operand_t** operands_;
+    size_t noperands_;
     std::map<size_t, size_t> global_to_local_;  // Mapping from global to block-local scope.
 
     std::string symbol_text_;       // Textual representation of the block
     std::string symbol_;            // Hash of textual representation
-
-    uint32_t omask_;                // Mask of the OPERATIONS in the block
 
     static const char TAG[];
 };

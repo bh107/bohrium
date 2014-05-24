@@ -1,4 +1,5 @@
 #include <sstream>
+#include <algorithm>
 #include "dag.hpp"
 #include "symbol_table.hpp"
 #include "utils.hpp"
@@ -14,7 +15,7 @@ namespace core {
 
 Dag::Dag(SymbolTable& symbol_table, std::vector<tac_t>& program)
     : symbol_table_(symbol_table), program_(program),
-      graph_(program.size()), subgraphs_()
+      graph_(program.size()), subgraphs_(), omask_(program.size())
 {
     DEBUG(TAG,"Dag(...)");
 

@@ -66,7 +66,6 @@ string Engine::text()
     ss << "}" << endl;
     
     ss << "Attributes {" << endl;
-    //ss << "  " << storage.text();
     ss << "  " << specializer.text();    
     ss << "  " << compiler.text();
     ss << "}" << endl;
@@ -74,135 +73,126 @@ string Engine::text()
     return ss.str();    
 }
 
-/*
-
-*/
-
-bh_error Engine::sij_mode(SymbolTable& symbol_table, Block& block)
+bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Block& block)
 {
+    DEBUG(TAG, "SIJ-MODE");
     bh_error res = BH_SUCCESS;
 
-    for(vector<tac_t*>::iterator ti=pro
+    tac_t& tac = block.tac(0);
+    DEBUG(TAG, tac_text(tac));
 
-        bool compose_res = block.compose(i, i); // Recompose the block
-        if (!compose_res) {
-            fprintf(stderr, "Engine::sij_mode(...) == ERROR: Failed composing block.\n");
-            return BH_ERROR;
-        }
+    switch(tac.op) {
+        case NOOP:
+            break;
 
-        bh_instruction& instr = block.instr(0);
-        tac_t& tac = block.program(0);
+        case SYSTEM:
+            switch(tac.oper) {
+                case DISCARD:
+                case SYNC:
+                    break;
 
-        switch(tac.op) {
-            case NOOP:
-                break;
-
-            case SYSTEM:
-                switch(tac.oper) {
-                    case DISCARD:
-                    case SYNC:
-                        break;
-
-                    case FREE:
-                        TIMER_START
-                    
-                        res = bh_vcache_free(&instr);
-                        if (BH_SUCCESS != res) {
-                            fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
-                                            "called from bh_ve_cpu_execute)\n");
-                            return res;
-                        }
-                        TIMER_STOP("Deallocating memory.")
-                        break;
-
-                    default:
-                        fprintf(stderr, "Yeah that does not fly...\n");
-                        return BH_ERROR;
-                }
-                break;
-
-            case EXTENSION:
-                {
-                    map<bh_opcode,bh_extmethod_impl>::iterator ext;
-                    ext = extensions.find(instr.opcode);
-                    if (ext != extensions.end()) {
-                        bh_extmethod_impl extmethod = ext->second;
-                        res = extmethod(&instr, NULL);
-                        if (BH_SUCCESS != res) {
-                            fprintf(stderr, "Unhandled error returned by extmethod(...) \n");
-                            return res;
-                        }
+                case FREE:
+                    res = bh_vcache_free_base(symbol_table[tac.out].base);
+                    if (BH_SUCCESS != res) {
+                        fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
+                                        "called from bh_ve_cpu_execute)\n");
+                        return res;
                     }
-                }
-                break;
+                    break;
 
-            default:   // Array operations
-
-                //
-                // We start by creating a symbol
-                if (!block.symbolize(0, 0)) {
-                    fprintf(stderr, "Engine::sij_mode(...) == Failed creating symbol.\n");
+                default:
+                    fprintf(stderr, "Yeah that does not fly...\n");
                     return BH_ERROR;
-                }
+            }
+            break;
 
-                //
-                // JIT-compile the block if enabled
-                if (jit_enabled && \
-                    (!storage.symbol_ready(block.symbol()))) {   
-                                                                // Specialize sourcecode
-                    string sourcecode = specializer.specialize(symbol_table, block, 0, 0);
-                    if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
-                        core::write_file(
-                            storage.src_abspath(block.symbol()),
-                            sourcecode.c_str(), 
-                            sourcecode.size()
-                        );
+        case EXTENSION:
+            {
+                map<bh_opcode,bh_extmethod_impl>::iterator ext;
+                // TODO: Fix this
+                //ext = extensions.find(instr.opcode);
+                ext = extensions.find(tac.oper);
+                if (ext != extensions.end()) {
+                    bh_extmethod_impl extmethod = ext->second;
+                    // TODO: FIx this
+                    //res = extmethod(&instr, NULL);
+                    res = BH_ERROR;
+                    if (BH_SUCCESS != res) {
+                        fprintf(stderr, "Unhandled error returned by extmethod(...) \n");
+                        return res;
                     }
-                    TIMER_START
-                    // Send to compiler
-                    bool compile_res = compiler.compile(
-                        storage.obj_abspath(block.symbol()), 
+                }
+            }
+            break;
+
+        // Array operations (MAP | ZIP | REDUCE | SCAN)
+        case MAP:
+        case ZIP:
+        case REDUCE:
+        case SCAN:
+
+            //
+            // We start by creating a symbol
+            if (!block.symbolize()) {
+                fprintf(stderr, "Engine::sij_mode(...) == Failed creating symbol.\n");
+                return BH_ERROR;
+            }
+
+            //
+            // JIT-compile the block if enabled
+            if (jit_enabled && \
+                (!storage.symbol_ready(block.symbol()))) {   
+                                                            // Specialize sourcecode
+                string sourcecode = specializer.specialize(symbol_table, block, 0, 0);
+                if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
+                    core::write_file(
+                        storage.src_abspath(block.symbol()),
                         sourcecode.c_str(), 
                         sourcecode.size()
                     );
-                    TIMER_STOP("Compiling (SIJ Kernels)")
-                    if (!compile_res) {
-                        fprintf(stderr, "Engine::sij_mode(...) == Compilation failed.\n");
-                        return BH_ERROR;
-                    }
-                                                                // Inform storage
-                    storage.add_symbol(block.symbol(), storage.obj_filename(block.symbol()));
                 }
-
-                //
-                // Load the compiled code
-                //
-                if ((!storage.symbol_ready(block.symbol())) && \
-                    (!storage.load(block.symbol()))) {                // Need but cannot load
-
-                    fprintf(stderr, "Engine::sij_mode(...) == Failed loading object.\n");
+                TIMER_START
+                // Send to compiler
+                bool compile_res = compiler.compile(
+                    storage.obj_abspath(block.symbol()), 
+                    sourcecode.c_str(), 
+                    sourcecode.size()
+                );
+                TIMER_STOP("Compiling (SIJ Kernels)")
+                if (!compile_res) {
+                    fprintf(stderr, "Engine::sij_mode(...) == Compilation failed.\n");
                     return BH_ERROR;
                 }
+                                                            // Inform storage
+                storage.add_symbol(block.symbol(), storage.obj_filename(block.symbol()));
+            }
 
-                //
-                // Allocate memory for operands
-                TIMER_START
-                res = bh_vcache_malloc(&instr);
-                if (BH_SUCCESS != res) {
-                    fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                                    "called from bh_ve_cpu_execute()\n");
-                    return res;
-                }
-                TIMER_STOP("Allocating memory.")
-                //
-                // Execute block handling array operations.
-                // 
-                TIMER_START;
-                storage.funcs[block.symbol()](block.operands());
-                TIMER_STOP(block.symbol());
+            //
+            // Load the compiled code
+            //
+            if ((!storage.symbol_ready(block.symbol())) && \
+                (!storage.load(block.symbol()))) {                // Need but cannot load
 
-                break;
-        }
+                fprintf(stderr, "Engine::sij_mode(...) == Failed loading object.\n");
+                return BH_ERROR;
+            }
+
+            //
+            // Allocate memory for operands
+            bh_vcache_malloc_base(symbol_table[tac.out].base);
+            res = BH_ERROR;
+            if (BH_SUCCESS != res) {
+                fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                                "called from bh_ve_cpu_execute()\n");
+                return res;
+            }
+            //
+            // Execute block handling array operations.
+            // 
+
+            storage.funcs[block.symbol()](block.operands());
+
+            break;
     }
 
     return BH_SUCCESS;
@@ -504,14 +494,25 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
     //  Map subgraphs to blocks one at a time and execute them.
     Block block(symbol_table, program);
     for(size_t idx=0; idx<graph.subgraphs().size(); ++idx) {
-        block.compose(*(graph.subgraphs()[idx]));
+        Graph& subgraph = *(graph.subgraphs()[idx]);
+        /*
+        if ((graph.omask(idx) & (NON_FUSABLE))>0) {     // SIJ-Mode
+        } else {                                        // FUSE-Mode
+            block.compose(subgraph);
+        }*/
 
-        if ((block.omask() & (NON_FUSABLE))>0) {    // SIJ-Mode
-            // Implement this first
-        } else {                                    // FUSE-Mode
-            // Then this
+        std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
+        for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
+            // Compose the block
+            block.clear();
+            block.compose(  
+                subgraph.local_to_global(*vi), subgraph.local_to_global(*vi)
+            );
+            block.symbolize();
+            
+            // Generate/Load code and execute it
+            sij_mode(symbol_table, program, block);
         }
-
     }
     DEBUG(TAG, "Execute(...);");
     

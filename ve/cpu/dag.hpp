@@ -66,6 +66,12 @@ public:
     std::vector<Graph*>& subgraphs(void);
 
     /**
+     *  Returns the omask associated with the given subgraph-idx.
+     *
+     */
+    uint32_t omask(size_t subgraph_idx);
+
+    /**
      *  Return the requested bh_instruction.
      */
     bh_instruction& instr(size_t instr_idx);
@@ -124,6 +130,7 @@ private:
     std::vector<tac_t>& program_;   // Three-address-code format of instructions
     Graph graph_;                   // Graph form of instructions
     std::vector<Graph*> subgraphs_; // Partitioning of the graph in subgraphs
+    std::vector<uint32_t> omask_;   // Operation-mask for subgraphs
 
     static const char TAG[];
 };

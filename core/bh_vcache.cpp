@@ -150,10 +150,14 @@ void bh_vcache_insert(bh_data_ptr data, bh_intp size)
  */
 bh_error bh_vcache_free(bh_instruction* inst)
 {
-    bh_base* base;
-    bh_intp nelements, bytes;
+    bh_vcache_free_base(inst->operand[0].base);
 
-    base = inst->operand[0].base;
+    return BH_SUCCESS;
+}
+
+bh_error bh_vcache_free_base(bh_base* base)
+{
+    bh_intp nelements, bytes;
 
     if (NULL != base->data) {
         nelements   = base->nelem;
@@ -190,6 +194,34 @@ bh_error bh_vcache_malloc_op(bh_view* array)
     }
 
     bytes = bh_base_size(base);
+    if (bytes <= 0) {
+        fprintf(stderr, "bh_vcache_malloc() Cannot allocate %lld bytes!\n", (long long)bytes);
+        return BH_ERROR;
+    }
+
+    if (bh_vcache_size > 0) {
+        base->data = bh_vcache_find(bytes);
+    }
+    if (base->data == NULL) {
+        base->data = bh_memory_malloc(bytes);
+        if (base->data == NULL) {
+            int errsv = errno;
+            printf("bh_data_malloc() could not allocate a data region. "
+                   "Returned error code: %s.\n", strerror(errsv));
+            return BH_OUT_OF_MEMORY;
+        }
+    }
+
+    return BH_SUCCESS;
+}
+
+bh_error bh_vcache_malloc_base(bh_base* base)
+{
+    if (base->data != NULL) {       // For convenience BH_SUCCESS is returned
+        return BH_SUCCESS;          // when data is already allocated.
+    }
+
+    bh_intp bytes = bh_base_size(base);
     if (bytes <= 0) {
         fprintf(stderr, "bh_vcache_malloc() Cannot allocate %lld bytes!\n", (long long)bytes);
         return BH_ERROR;
