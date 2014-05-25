@@ -529,6 +529,7 @@ static PyObject *
 BhArray_GetItem(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
+    assert(k != NULL);
     //If the result is a scalar we let NumPy handle it
 
     //If the tuple access all dimensions we must check for Python slice objects
