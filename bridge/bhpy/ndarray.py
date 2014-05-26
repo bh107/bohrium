@@ -110,13 +110,14 @@ def get_bhc(ary):
         raise ValueError("Bohrium arrays must be aligned, writeable, and in machine byte-order")
     if ary.dtype != base.dtype:
         raise ValueError("Bohrium base and view must have same data type")
+    if not (base.ctypes.data <= ary.ctypes.data < base.ctypes.data + base.nbytes):
+        raise ValueError("The view must point to data within the base array")
 
     #Lets make sure that 'ary' has a Bohrium-C base array
     if base.bhc_ary is None:
         base._data_np2bhc()
 
     dtype = dtype_name(base)
-    exec "bh_base = bhc.bh_multi_array_%s_get_base(base.bhc_ary)"%dtype
     offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
     if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
         raise TypeError("The view offset must be element aligned")
@@ -128,6 +129,7 @@ def get_bhc(ary):
         if s % base.itemsize != 0:
             raise TypeError("The strides must be element aligned")
 
+    exec "bh_base = bhc.bh_multi_array_%s_get_base(base.bhc_ary)"%dtype
     f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype)
     return f(bh_base, ary.ndim, offset, ary.shape, strides)
 
