@@ -91,7 +91,6 @@ bool Dag::fusable(tac_t& cur, tac_t& prev)
 
 uint32_t Dag::omask(size_t subgraph_idx)
 {
-    DEBUG(TAG, "Quering omask #" << subgraph_idx << " out of #"<< omask_.size() << " val="<< omask_[subgraph_idx] << ".");
     return omask_[subgraph_idx];
 }
 
@@ -100,8 +99,6 @@ uint32_t Dag::omask(size_t subgraph_idx)
  */
 void Dag::partition(void)
 {
-    DEBUG(TAG,"partition(...)");
-
     int64_t graph_idx=0;
 
     for(int64_t idx=0; idx < program_.size();) {    // Then look at the remaining
@@ -131,13 +128,10 @@ void Dag::partition(void)
         graph_idx++;
         idx = sub_end+1;
     }
-
-    DEBUG(TAG,"partition(...);");
 }
 
 void Dag::array_deps(void)
 {
-    DEBUG(TAG,"array_deps(...)");
     //
     // Find dependencies on array operations
     for(int64_t idx=0; idx < program_.size(); ++idx) {
@@ -146,7 +140,6 @@ void Dag::array_deps(void)
 
         // Ignore sys-ops
         if ((tac.op == SYSTEM) || (NOOP == tac.op)) {
-            DEBUG(TAG, "Ignoring system...");
             continue;
         }
 
@@ -159,14 +152,12 @@ void Dag::array_deps(void)
 
             // Ignore sys and noops
             if ((other_tac.op == SYSTEM) || (NOOP == other_tac.op)) {
-                DEBUG(TAG, "Ignoring system...inside...");
                 continue;
             }
 
             // Search operands of other instruction
             switch(tac_noperands(other_tac)) {
                 case 3:
-                    DEBUG(TAG, "Comparing" << symbol_table_[other_tac.in2].base << " == " << output);
                     if (symbol_table_[other_tac.in2].layout != CONSTANT) {
                         if (symbol_table_[other_tac.in2].base == output) {
                             found = true;
@@ -175,7 +166,6 @@ void Dag::array_deps(void)
                         }
                     }
                 case 2:
-                    DEBUG(TAG, "Comparing" << symbol_table_[other_tac.in1].base << " == " << output);
                     if (symbol_table_[other_tac.in1].layout != CONSTANT) {
                         if (symbol_table_[other_tac.in1].base == output) {
                             found = true;
@@ -184,7 +174,6 @@ void Dag::array_deps(void)
                         }
                     }
                 case 1:
-                    DEBUG(TAG, "Comparing" << symbol_table_[other_tac.out].base << " == " << output);
                     if (symbol_table_[other_tac.out].base == output) {
                         found = true;
                         add_edge(idx, other, graph_);
@@ -194,14 +183,11 @@ void Dag::array_deps(void)
                     break;
             }
         }
-        DEBUG(TAG, "Found=" << found << ".");
     }
-    DEBUG(TAG,"array_deps(...);");
 }
 
 void Dag::system_deps(void)
 {
-    DEBUG(TAG,"system_deps(...)");
     //
     // Find dependencies on system operations
     for(int64_t idx=program_.size()-1; idx>=0; --idx) {
@@ -243,7 +229,6 @@ void Dag::system_deps(void)
             }
         }
     }
-    DEBUG(TAG,"system_deps(...);");
 }
 
 }}

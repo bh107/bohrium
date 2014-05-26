@@ -75,7 +75,7 @@ string Engine::text()
 
 bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Block& block)
 {
-    DEBUG(TAG, "SIJ-MODE");
+    DEBUG(TAG, "sij_mode(...)");
     bh_error res = BH_SUCCESS;
 
     tac_t& tac = block.tac(0);
@@ -186,7 +186,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
 
             break;
     }
-
+    DEBUG(TAG, "sij_mode();");
     return BH_SUCCESS;
 }
 
@@ -194,6 +194,11 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
                     Dag& graph, size_t subgraph_idx, Block& block)
 {
     DEBUG(TAG, "fuse_mode(...)");
+    DEBUG(TAG, "fuse_mode(...) : instructions...");
+    for(size_t tac_idx=0; tac_idx < block.ntacs(); ++tac_idx) {
+        DEBUG(TAG, tac_text(block.tac(tac_idx)));
+    }
+
     bh_error res = BH_SUCCESS;
 
     TIMER_START
@@ -206,7 +211,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
 
     LAYOUT fusion_layout = CONSTANT;
     LAYOUT next_layout   = CONSTANT;
-    DEBUG(TAG, "fuse_mode(...) : ranges...");
+
     tac_t* first = &block.tac(0);
     for(size_t tac_idx=0; tac_idx<block.ntacs(); ++tac_idx) {
         range_end = tac_idx;
@@ -227,11 +232,11 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
 
             // Add the range up until this tac
             if (range_begin < range_end) {
-                ranges.push_back((triplet_t){range_begin, range_end-1, fusion_layout});
-                // Add a range for the single tac
-                ranges.push_back((triplet_t){range_end, range_end, fusion_layout});
+                ranges.push_back((triplet_t){range_begin,   range_end-1,    fusion_layout});
+                // Add a range for the single tac   
+                ranges.push_back((triplet_t){range_end,     range_end,      fusion_layout});
             } else {
-                ranges.push_back((triplet_t){range_begin, range_begin, fusion_layout});
+                ranges.push_back((triplet_t){range_begin,   range_begin,    fusion_layout});
             }
             range_begin = tac_idx+1;
             if (range_begin < block.ntacs()) {
@@ -334,7 +339,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
                     all_operands.insert(tac.in1);
                 case 1:
                     outputs.push_back(tac.out);
-                    all_operands.insert(tac.in1);
+                    all_operands.insert(tac.out);
                     break;
                 default:
                     cout << "ARGGG in scope-ref-count on: " << core::tac_text(tac) << endl;
@@ -350,7 +355,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
             if ((count(inputs.begin(), inputs.end(), operand) == 1) && \
                 (count(outputs.begin(), outputs.end(), operand) == 1) && \
                 (symbol_table.temp().find(operand) != symbol_table.temp().end())) {
-                symbol_table.turn_scalar(operand);
+                //symbol_table.turn_scalar(operand);
+                DEBUG(TAG, "Turning " << operand << " scalar.");
                 //
                 // TODO: Remove from inputs and/or outputs.
             }
@@ -437,6 +443,11 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
         }
     }
 
+    DEBUG(TAG, "Operands");
+    for(size_t i=0; i<block.noperands(); i++) {
+        DEBUG(TAG, operand_text(block.operand(i)));
+    }
+
     //
     // Execute block handling array operations.
     // 
@@ -468,6 +479,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
 
 bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 {
+    DEBUG(TAG, "execute(...)");
     exec_count++;
 
     bh_error res = BH_SUCCESS;
@@ -498,8 +510,16 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
     for(size_t subgraph_idx=0; subgraph_idx<graph.subgraphs().size(); ++subgraph_idx) {
         Graph& subgraph = *(graph.subgraphs()[subgraph_idx]);
 
-        if (((graph.omask(subgraph_idx) & (NON_FUSABLE))>0) || \
-            ((graph.omask(subgraph_idx) & ARRAY_OPS)==0)) {     // SIJ-Mode
+        // FUSE_MODE
+        if (jit_fusion && \
+            ((graph.omask(subgraph_idx) & (NON_FUSABLE))==0) && \
+            ((graph.omask(subgraph_idx) & (ARRAY_OPS)) > 0)) {
+            block.clear();
+            block.compose(subgraph);
+
+            fuse_mode(symbol_table, program, graph, subgraph_idx, block);
+        } else {
+        // SIJ_MODE
             std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
             for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
                 // Compose the block
@@ -511,11 +531,6 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
                 // Generate/Load code and execute it
                 sij_mode(symbol_table, program, block);
             }
-        } else {                                        // FUSE-Mode
-            block.clear();
-            block.compose(subgraph);
-
-            fuse_mode(symbol_table, program, graph, subgraph_idx, block);
         }
     }
     DEBUG(TAG, "Execute(...);");

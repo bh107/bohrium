@@ -93,7 +93,7 @@ string Dag::dot(const tac_t& tac, int64_t nr)
             }
             break;
         case EXTENSION:
-            style << "fillcolor=\"d0c2e5\", ";
+            style << "fillcolor=\"#d0c2e5\", ";
             break;
     }
 
@@ -116,7 +116,6 @@ string Dag::dot(const tac_t& tac, int64_t nr)
     stringstream rep;
     rep << nr << " [" << style.str() << label.str() << "];";
     
-    DEBUG(TAG,"dot(...);");
     return rep.str();
 }
 
@@ -128,7 +127,6 @@ string Dag::dot(const tac_t& tac, int64_t nr)
  */
 string Dag::dot(void)
 {
-    DEBUG(TAG,"dot(void)");
     stringstream ss;
     ss << "digraph {" << endl;
 
@@ -181,7 +179,6 @@ string Dag::dot(void)
     }
     
     ss << "}" << endl;
-    DEBUG(TAG,"dot(void);");
     return ss.str();
 }
 

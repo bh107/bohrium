@@ -14,18 +14,15 @@ Block::Block(SymbolTable& globals, vector<tac_t>& program)
 
 Block::~Block()
 {
-    DEBUG(TAG, "~Block()");
     if (operands_) {
         delete[] operands_;
         operands_   = NULL;
         noperands_  = 0;
     }
-    DEBUG(TAG, "~Block();");
 }
 
 void Block::clear(void)
 {
-    DEBUG(TAG, "clear()");
     tacs_.clear();      // Reset the current state of the blocks
     
     if (operands_) {
@@ -37,12 +34,10 @@ void Block::clear(void)
 
     symbol_text_    = "";
     symbol_         = "";
-    DEBUG(TAG, "clear();");
 }
 
 void Block::compose(size_t prg_begin, size_t prg_end)
 {
-    DEBUG(TAG, "compose("<<prg_begin << "," << prg_end << ")");
     operands_ = new operand_t*[(prg_end-prg_begin+1)*3];
 
     for(size_t prg_idx=prg_begin; prg_idx<=prg_end; ++prg_idx) {
@@ -61,8 +56,6 @@ void Block::compose(size_t prg_begin, size_t prg_end)
                 break;
         }
     }
-
-    DEBUG(TAG, "compose("<<prg_begin << "," << prg_end << ");");
 }
 
 void Block::compose(Graph& subgraph)
@@ -121,7 +114,6 @@ size_t Block::localize(size_t global_idx)
 
 bool Block::symbolize(void)
 {
-    DEBUG(TAG, "symbolize(void)");
     stringstream tacs, operands_ss;
 
     //
@@ -131,8 +123,6 @@ bool Block::symbolize(void)
         operands_ss << core::layout_text_shand(operands_[i]->layout);
         operands_ss << core::etype_text_shand(operands_[i]->etype);
     }
-
-    DEBUG(TAG, "symbolize(void) 1");
 
     //
     // Program
@@ -187,7 +177,6 @@ bool Block::symbolize(void)
     symbol_text_    = tacs.str() +"_"+ operands_ss.str();
     symbol_         = core::hash_text(symbol_text_);
 
-    DEBUG(TAG, "symbolize(void);");
     return true;
 }
 
