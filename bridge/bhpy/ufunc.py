@@ -26,14 +26,14 @@ import bhc
 import numpy as np
 import _info
 from _util import dtype_name, dtype_identical
-from ndarray import get_bhc, check_biclass, del_bhc_obj, fix_biclass
+from ndarray import get_bhc, del_bhc_obj, fix_biclass
 import ndarray
 
 def extmethod(name, out, in1, in2):
     assert in1.dtype == in2.dtype
-    if check_biclass(out) or check_biclass(in1) or check_biclass(in2):
-        raise NotImplementedError("NumPy views that points to Bohrium base "\
-                                  "arrays isn't supported")
+    out = fix_biclass(out)
+    in1 = fix_biclass(in1)
+    in2 = fix_biclass(in2)
 
     f = eval("bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
               dtype_name(in1), dtype_name(in2)))
@@ -46,9 +46,9 @@ def extmethod(name, out, in1, in2):
     del_bhc_obj(bhc_in2)
 
 def assign(a, out):
-    if check_biclass(a) or check_biclass(out):
-        raise NotImplementedError("NumPy views that points to Bohrium base "\
-                                  "arrays isn't supported")
+    out = fix_biclass(out)
+    a = fix_biclass(a)
+
     if ndarray.check(out):
         np.broadcast(a,out)#We only do this for the dimension mismatch check
         out_dtype = dtype_name(out)
@@ -83,15 +83,12 @@ class ufunc:
         #Check number of arguments
         if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
             raise ValueError("invalid number of arguments")
-
-        for a in args:
-            if check_biclass(a):
-                raise NotImplementedError("NumPy views that points to Bohrium base "\
-                                          "arrays isn't supported")
+        args = list(args)
+        for i in xrange(len(args)):
+            args[i] = fix_biclass(args[i])
 
         #Pop the output from the 'args' list
         out = None
-        args = list(args)
         if len(args) == self.info['nop']:#output given
             out = args.pop()
 
@@ -130,6 +127,13 @@ class ufunc:
             args.insert(0,array_create.empty(out_shape, out_dtype))
         else:
             args.insert(0,out)
+
+        #For now, we will prepend dimensions in order to get correct broadcasting by
+        #the C++ bridge. TODO: remove when the C++ Bridge supports broadcasting fully.
+        for i in xrange(1,len(args)):
+            if not np.isscalar(args[i]):
+                while args[i].ndim < args[0].ndim:
+                    args[i] = args[i][np.newaxis,:]
 
         #Convert 'args' to Bohrium-C arrays
         bhcs = []
@@ -245,9 +249,7 @@ class ufunc:
            [ 9, 13]])
         """
         a = fix_biclass(a)
-        if check_biclass(a):
-            raise NotImplementedError("NumPy views that points to Bohrium base "\
-                                      "arrays isn't supported")
+
         if out is not None:
             if ndarray.check(out):
                 if not ndarray.check(a):

@@ -92,6 +92,22 @@ static int _munprotect(void *data, bh_intp size)
     return 0;
 }
 
+//Help function for memory un-map
+//Return -1 on error
+static int _munmap(void *addr, bh_intp size)
+{
+    if(munmap(addr, size) == -1)
+    {
+        int errsv = errno;//munmmap() sets the errno.
+        PyErr_Format(PyExc_RuntimeError, "The Array Data Protection "
+                     "could not mummap the data region: %p (size: %ld). "
+                     "Returned error code by mmap: %s.", addr, size,
+                     strerror(errsv));
+        return -1;
+    }
+    return 0;
+}
+
 //Help function for memory re-map
 //Return -1 on error
 static int _mremap_data(void *dst, void *src, bh_intp size)
@@ -112,7 +128,7 @@ static int _mremap_data(void *dst, void *src, bh_intp size)
     if(_munprotect(dst, size) != 0)
         return NULL;
     memcpy(dst, src, size);
-    return munmap(src, size);
+    return _munmap(src, size);
 #endif
 }
 
@@ -227,15 +243,10 @@ finish:
 
     assert(!PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*)self), NPY_ITEM_REFCOUNT));
 
-    void *addr = PyArray_DATA((PyArrayObject*)self);
-    if(munmap(addr, PyArray_NBYTES((PyArrayObject*)self)) == -1)
-    {
-        int errsv = errno;//munmmap() sets the errno.
-        PyErr_Format(PyExc_RuntimeError, "The Array Data Protection "
-                     "could not mummap a data region. "
-                     "Returned error code by mmap: %s.", strerror(errsv));
+    if(_munmap(PyArray_DATA((PyArrayObject*)self),
+               PyArray_NBYTES((PyArrayObject*)self)) == -1)
         PyErr_Print();
-    }
+
     detach_signal((signed long)self, mem_access_callback);
     self->base.data = NULL;
     BhArrayType.tp_base->tp_dealloc((PyObject*)self);
@@ -280,6 +291,13 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
         Py_RETURN_NONE;
     }
 */
+    if(!PyArray_CHKFLAGS((PyArrayObject*)base, NPY_ARRAY_OWNDATA))
+    {
+        PyErr_Format(PyExc_RuntimeError, "BhArray_data_bhc2np() base does "
+                                         "not own its data!");
+        return NULL;
+    }
+
     //Calling get_bhc_data_pointer(base, allocate=False, nullify=True)
     void *d = NULL;
     if(get_bhc_data_pointer(base, 0, 1, &d) == -1)
@@ -511,6 +529,7 @@ static PyObject *
 BhArray_GetItem(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
+    assert(k != NULL);
     //If the result is a scalar we let NumPy handle it
 
     //If the tuple access all dimensions we must check for Python slice objects

@@ -62,6 +62,8 @@ def dtype_identical(*obj):
 #NB: we only returns the type of the first input thus all input types must be identical
 def type_sig(op_name, inputs):
     f = _info.op[op_name]
+    #Note that we first use the dtype before the array as inputs to result_type()
+    inputs = [getattr(t, 'dtype', t) for t in inputs]
     dtype = np.result_type(*inputs).name
     for sig in f['type_sig']:
         if dtype == sig[1]:
