@@ -25,7 +25,8 @@ Engine::Engine(
     const bool preload,
     const bool jit_enabled,
     const bool jit_fusion,
-    const bool jit_dumpsrc)
+    const bool jit_dumpsrc,
+    const bool dump_rep)
 : compiler_cmd(compiler_cmd),
     template_directory(template_directory),
     kernel_directory(kernel_directory),
@@ -38,7 +39,8 @@ Engine::Engine(
     storage(object_directory, kernel_directory),
     specializer(template_directory),
     compiler(compiler_cmd),
-    exec_count(0)
+    exec_count(0),
+    dump_rep(dump_rep)
 {
     bh_vcache_init(vcache_size);    // Victim cache
     if (preload) {
@@ -497,12 +499,13 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
     // Construct graph with instructions as nodes.
     Dag graph(symbol_table, program);                   // Graph
 
-    // Dump it to file
-    stringstream filename;
-    filename << "graph" << exec_count << ".dot";
+    if (dump_rep) {                                     // Dump it to file
+        stringstream filename;
+        filename << "graph" << exec_count << ".dot";
 
-    std::ofstream fout(filename.str());
-    fout << graph.dot() << std::endl;
+        std::ofstream fout(filename.str());
+        fout << graph.dot() << std::endl;
+    }
 
     //
     //  Map subgraphs to blocks one at a time and execute them.

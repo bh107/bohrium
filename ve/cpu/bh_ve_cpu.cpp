@@ -87,6 +87,7 @@ bh_error bh_ve_cpu_init(const char *name)
     bh_intp jit_preload  = 1;
     bh_intp jit_fusion   = 0;
     bh_intp jit_dumpsrc  = 0;
+    bh_intp dump_rep = 0;
 
     char* compiler_cmd;   // cpu Arguments
     char* kernel_path;
@@ -110,6 +111,15 @@ bh_error bh_ve_cpu_init(const char *name)
     }
     if (0 > vcache_size) {                          // Verify it
         fprintf(stderr, "BH_CORE_VCACHE_SIZE (%ld) should be greater than zero!\n", (long int)vcache_size);
+        return BH_ERROR;
+    }
+
+    env = getenv("BH_VE_CPU_DUMPREP");
+    if (NULL != env) {
+        dump_rep = atoi(env);
+    }
+    if (!((0==dump_rep) || (1==dump_rep))) {
+        fprintf(stderr, "BH_VE_CPU_DUMPREP (%ld) should 0 or 1.\n", (long int)dump_rep);
         return BH_ERROR;
     }
 
@@ -178,7 +188,8 @@ bh_error bh_ve_cpu_init(const char *name)
         (bool)jit_enabled,
         (bool)jit_preload,
         (bool)jit_fusion,
-        (bool)jit_dumpsrc
+        (bool)jit_dumpsrc,
+        (bool)dump_rep
     );
 
     return BH_SUCCESS;

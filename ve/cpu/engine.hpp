@@ -28,7 +28,8 @@ public:
         const bool preload,
         const bool jit_enabled,
         const bool jit_fusion,
-        const bool jit_dumpsrc);
+        const bool jit_dumpsrc,
+        const bool dump_rep);
 
     ~Engine();
 
@@ -81,7 +82,8 @@ private:
     bool preload,
          jit_enabled,
          jit_fusion,
-         jit_dumpsrc;
+         jit_dumpsrc,
+         dump_rep;
     
     Store          storage;
     Specializer    specializer;
