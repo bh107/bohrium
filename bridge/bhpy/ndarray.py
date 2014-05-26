@@ -28,7 +28,12 @@ import numpy
 
 #Returns True if 'ary' is a Bohrium array
 def check(ary):
-    return hasattr(ary, "bhc_ary")
+    try:
+        #This will fail if the base is a NumPy array
+        base = get_base(ary)
+    except AttributeError:
+        base = ary
+    return hasattr(base, "bhc_ary")
 
 #Returns True if 'ary' is a NumPy view with a Bohrium base array
 def check_biclass(ary):
@@ -90,8 +95,6 @@ def get_base(ary):
         base = ary.base
         while base.base is not None:
             base = base.base
-        if check(ary) and not check(base):
-            raise RuntimeError("A Bohrium view points to a NumPy base")
         return base
 
 #Return True when 'ary' is a base array
