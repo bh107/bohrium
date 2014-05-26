@@ -279,6 +279,10 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
 
     //We move the whole array (i.e. the base array) from Bohrium to NumPy
     PyObject *base = PyObject_CallMethod(ndarray, "get_base", "O", self);
+
+    //Note that we always detach the signal before returning
+    detach_signal((signed long)base, mem_access_callback);
+
     if(base == NULL)
         return NULL;
     assert(BhArray_CheckExact(base));
@@ -315,7 +319,6 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
                        PyArray_NBYTES((PyArrayObject*)base)) != 0)
             return NULL;
     }
-    detach_signal((signed long)base, mem_access_callback);
 
     //Lets delete the current bhc_ary
     if(PyObject_CallMethod(ndarray, "del_bhc", "O", self) == NULL)
