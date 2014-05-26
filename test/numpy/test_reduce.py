@@ -56,13 +56,14 @@ class test_reduce1D(numpytest):
             v += "a[0] = a[0][:, np.newaxis];"
             exec v
             for l in xrange(len(a[0])-1):
+                self.l = l
                 v2 = v + "a[1] = self.array([100], np.%s);"%(a[0].dtype)
-                v2 += "a[2] = a[1][%d:%d];"%(l, l+1)
                 exec v2
                 yield (a,v2)
 
     def test_reduce(self,a):
-        cmd = "np.add.reduce(a[0], out=a[2])"
+        cmd = "t2 = a[1][%d:%d];"%(self.l, self.l+1)
+        cmd += "np.add.reduce(a[0], out=t2)"
         exec cmd
         return (a[1],cmd)
 
