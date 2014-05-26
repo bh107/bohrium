@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+using namespace bohrium::core;
 namespace bohrium {
 namespace engine {
 namespace cpu {
@@ -28,14 +29,14 @@ public:
                                     size_t pc);
 
     std::string specialize( SymbolTable& symbol_table,
-                            const Block& block,
+                            Block& block,
                             std::vector<triplet_t>& ranges);
 
     std::string specialize( SymbolTable& symbol_table,
-                            const Block& block);
+                            Block& block);
 
     std::string specialize( SymbolTable& symbol_table,
-                            const Block& block,
+                            Block& block,
                             size_t tac_start, size_t tac_end);
 
 private:

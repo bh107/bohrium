@@ -31,6 +31,8 @@ extern "C" {
 
 #define BH_MAXDIM (16)
 
+#ifndef __BH_BASE
+#define __BH_BASE
 typedef struct
 {
     /// The type of data in the array
@@ -42,6 +44,7 @@ typedef struct
     /// Pointer to the actual data.
     bh_data_ptr   data;
 }bh_base;
+#endif
 
 typedef struct
 {

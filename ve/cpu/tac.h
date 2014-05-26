@@ -11,7 +11,20 @@
 // rid of it... at some point...
 typedef struct { uint64_t first, second; } pair_LL; 
 
+#ifndef __BH_BASE
+#define __BH_BASE
+typedef struct
+{
+    /// The type of data in the array
+    uint64_t       type;
 
+    /// The number of elements in the array
+    uint64_t      nelem;
+
+    /// Pointer to the actual data.
+    void*   data;
+}bh_base;
+#endif
 
 typedef enum OPERATION {
     MAP        = 1,
@@ -121,6 +134,7 @@ typedef struct tac {
     uint32_t  out;      // Output operand
     uint32_t  in1;      // First input operand
     uint32_t  in2;      // Second input operand
+    void* ext;
 } tac_t;
 
 typedef struct operand {
@@ -134,6 +148,7 @@ typedef struct operand {
     int64_t ndim;       // Number of dimensions of the array
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
+    bh_base* base;      // Pointer to operand base or NULL when layout == CONSTANT.
 } operand_t;            // Meta-data for a block argument
 
 #define SCALAR_LAYOUT  (CONSTANT | SCALAR)
@@ -143,6 +158,7 @@ typedef struct operand {
 #define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    7
 #define NBUILTIN_OPERS  62
+#define NON_FUSABLE ( GENERATE | REDUCE | SCAN | EXTENSION )
 
 //
 // For fuse-ranges...

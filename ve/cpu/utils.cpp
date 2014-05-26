@@ -3,7 +3,7 @@
 
 using namespace std;
 namespace bohrium{
-namespace utils{
+namespace core{
 
 const char TAG[] = "Utils";
 
@@ -103,11 +103,11 @@ std::string operand_text(const operand_t& operand)
 {
     stringstream ss;
     ss << "{";
-    ss << " layout("    << utils::layout_text(operand.layout) << "),";
+    ss << " layout("    << core::layout_text(operand.layout) << "),";
     ss << " nelem("     << operand.nelem << "),";
     ss << " data("      << *(operand.data) << "),";
     ss << " const_data("<< operand.const_data << "),";
-    ss << " etype("     << utils::etype_text(operand.etype) << "),";
+    ss << " etype("     << core::etype_text(operand.etype) << "),";
     ss << " ndim("      << operand.ndim << "),";
     ss << " start("     << operand.start << "),";        
     ss << " shape(";
@@ -223,13 +223,13 @@ bool write_file(string file_path, const char* sourcecode, size_t source_len)
     fd = open(file_path.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
     if ((!fd) || (fd<1)) {
         err = errno;
-        utils::error(err, "Engine::write_file [%s] in write_file(...).\n", file_path.c_str());
+        core::error(err, "Engine::write_file [%s] in write_file(...).\n", file_path.c_str());
         return false;
     }
     fp = fdopen(fd, mode);
     if (!fp) {
         err = errno;
-        utils::error(err, "fdopen(fildes= %d, flags= %s).", fd, mode);
+        core::error(err, "fdopen(fildes= %d, flags= %s).", fd, mode);
         return false;
     }
     fwrite(sourcecode, 1, source_len, fp);

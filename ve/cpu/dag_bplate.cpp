@@ -1,0 +1,39 @@
+#include <sstream>
+#include <algorithm>
+#include "dag.hpp"
+#include "symbol_table.hpp"
+#include "utils.hpp"
+
+//
+// Mostly boiler-plate code, (de)constructor, getters, etc.
+//
+
+using namespace std;
+using namespace boost;
+namespace bohrium{
+namespace core {
+
+Dag::Dag(SymbolTable& symbol_table, std::vector<tac_t>& program)
+    : symbol_table_(symbol_table), program_(program),
+      graph_(program.size()), subgraphs_(), omask_(program.size())
+{
+    array_deps();   // Construct dependencies based on array operations
+    system_deps();  // Construct dependencies based on system operations
+    partition();    // Construct subgraphs
+}
+
+Dag::~Dag(void)
+{
+}
+
+tac_t& Dag::tac(size_t tac_idx)
+{
+    return program_[tac_idx];
+}
+
+vector<Graph*>& Dag::subgraphs(void)
+{
+    return subgraphs_;
+}
+
+}}

@@ -17,13 +17,17 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef __BH_CORE_DAG
+#define __BH_CORE_DAG
+
 #include <bh.h>
 #include <boost/graph/subgraph.hpp>
 #include <boost/graph/adjacency_list.hpp>
+#include "tac.h"
+#include "symbol_table.hpp"
 
 namespace bohrium {
 namespace core {
-namespace dag {
 
 // Underlying graph representation and implementation
 typedef boost::adjacency_list_traits<boost::vecS, boost::vecS, boost::directedS> Traits;
@@ -43,14 +47,39 @@ public:
      *  Construct a graph with instructions as vertices and edges as data-dependencies.
      *  @param bhir The bhir containing list of instructions.
      */
-    Dag(bh_ir* bhir);
+    //Dag(bh_instruction* instrs, bh_intp ninstrs);
+    Dag(SymbolTable& symbol_table, std::vector<tac_t>& program);
 
+    /**
+     * Deconstructor... not much to say here...
+     */
     ~Dag(void);
+
+    /**
+     *  Return a reference to the graph.
+     */
+    Graph& graph(void);
 
     /**
      *  Returns a reference to the subgraphs within the graph.
      */
     std::vector<Graph*>& subgraphs(void);
+
+    /**
+     *  Returns the omask associated with the given subgraph-idx.
+     *
+     */
+    uint32_t omask(size_t subgraph_idx);
+
+    /**
+     *  Return the requested bh_instruction.
+     */
+    bh_instruction& instr(size_t instr_idx);
+
+    /**
+     *  Returns the requested three-address-code.
+     */
+    tac_t& tac(size_t tac_idx);
 
     /**
      *  Returns a textual representation of graph meta-data
@@ -59,17 +88,32 @@ public:
     std::string text(void);
 
     /**
-     *  Returns a textual representation in dot-format
+     *  Returns a textual representation in dot-format of the program.
      */
     std::string dot(void);
 
+    /**
+     *  Return a textual representation in dot-format of a tac_t.
+     */
+    std::string dot(const tac_t& tac, int64_t nr);
+
+    
+    std::string dot_operand(int64_t idx);
+
+    /**
+     *  Return a textual representation in dot-format of a bh_instruction.
+     */
     std::string dot(bh_instruction* instr, int64_t nr);
 
 private:
     /**
-     *  Construct dependencies in the adjacency_list.
+     *  Construct dependencies in the adjacency_list based on array operations.
      */
     void array_deps(void);
+
+    /**
+     * Construct dependencies in the graph based on system operations.
+     */
     void system_deps(void);
 
     /**
@@ -77,14 +121,20 @@ private:
      */
     void partition(void);
 
-    bool fusable(bh_instruction* first, bh_instruction* second);
+    /**
+     *  Determine whether two instructions are fusable.
+     */
+    bool fusable(tac_t& cur, tac_t& prev);
 
-    bh_ir* _bhir;
-    Graph _dag;
-    std::vector<Graph*> _subgraphs;
+    SymbolTable& symbol_table_;     // Symbols of operands
+    std::vector<tac_t>& program_;   // Three-address-code format of instructions
+    Graph graph_;                   // Graph form of instructions
+    std::vector<Graph*> subgraphs_; // Partitioning of the graph in subgraphs
+    std::vector<uint32_t> omask_;   // Operation-mask for subgraphs
 
     static const char TAG[];
 };
 
-}}}
+}}
 
+#endif

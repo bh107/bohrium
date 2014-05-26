@@ -10,6 +10,7 @@
 #include "specializer.hpp"
 
 #include <string>
+#include <vector>
 #include <map>
 
 namespace bohrium{
@@ -27,14 +28,16 @@ public:
         const bool preload,
         const bool jit_enabled,
         const bool jit_fusion,
-        const bool jit_dumpsrc);
+        const bool jit_dumpsrc,
+        const bool dump_rep);
 
     ~Engine();
 
     std::string text();
 
     bh_error register_extension(bh_component& instance, const char* name, bh_opcode opcode);
-    bh_error execute(bh_ir& ir);
+    //bh_error execute(bh_ir& ir);
+    bh_error execute(bh_instruction* instrs, bh_intp ninstrs);
 
 private:
     /**
@@ -49,7 +52,7 @@ private:
      *  The block does contain array operations but also an extension
      *
      */
-    bh_error sij_mode(SymbolTable& symbol_table, Block& block);
+    bh_error sij_mode(SymbolTable& symbol_table, std::vector<tac_t>& program, Block& block);
 
     /**
      *  Compile and execute multiple tac/instructions at a time.
@@ -60,7 +63,14 @@ private:
      *      - The block contains at least one array operation (should be increased to more than 1)
      *      - The block contains does not contain any extensions
      */
-    bh_error fuse_mode(SymbolTable& symbol_table, Block& block);
+    //bh_error fuse_mode(SymbolTable& symbol_table, Block& block);
+    bh_error fuse_mode(
+        SymbolTable& symbol_table,
+        std::vector<tac_t>& program,
+        Dag& graph,
+        size_t subgraph_idx,
+        Block& block
+    );
 
     std::string compiler_cmd,
                 template_directory,
@@ -72,7 +82,8 @@ private:
     bool preload,
          jit_enabled,
          jit_fusion,
-         jit_dumpsrc;
+         jit_dumpsrc,
+         dump_rep;
     
     Store          storage;
     Specializer    specializer;

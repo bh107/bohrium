@@ -14,8 +14,8 @@ namespace cpu {
 //
 string Specializer::cexpression(SymbolTable& symbol_table, const Block& block, size_t tac_idx)
 {
-    tac_t& tac  = block.program(tac_idx);
-    ETYPE etype = symbol_table.table[tac.out].etype;
+    tac_t& tac  = block.tac(tac_idx);
+    ETYPE etype = symbol_table[tac.out].etype;
 
     string expr_text;
 
@@ -23,7 +23,7 @@ string Specializer::cexpression(SymbolTable& symbol_table, const Block& block, s
     char in1_c = ' ';
     char in2_c = ' ';
 
-    switch(utils::tac_noperands(tac)) {
+    switch(core::tac_noperands(tac)) {
         case 3:
             if ((symbol_table[tac.in2].layout & ARRAY_LAYOUT) >0) {
                 in2_c = '*';
@@ -440,24 +440,24 @@ string Specializer::cexpression(SymbolTable& symbol_table, const Block& block, s
     }
 
 
-    switch(utils::tac_noperands(tac)) {
+    switch(core::tac_noperands(tac)) {
         case 3:
-            return utils::string_format(
+            return core::string_format(
                 expr_text,
-                out_c, block.resolve(tac.out), 
-                in1_c, block.resolve(tac.in1),
-                in2_c, block.resolve(tac.in2)
+                out_c, block.global_to_local(tac.out), 
+                in1_c, block.global_to_local(tac.in1),
+                in2_c, block.global_to_local(tac.in2)
             );
         case 2:
-            return utils::string_format(
+            return core::string_format(
                 expr_text, 
-                out_c, block.resolve(tac.out),
-                in1_c, block.resolve(tac.in1)
+                out_c, block.global_to_local(tac.out),
+                in1_c, block.global_to_local(tac.in1)
             );
         case 1:
-            return utils::string_format(
+            return core::string_format(
                 expr_text,
-                out_c, block.resolve(tac.out)
+                out_c, block.global_to_local(tac.out)
             );
         default:
             return expr_text;

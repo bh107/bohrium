@@ -71,8 +71,10 @@ DLLEXPORT bh_data_ptr bh_vcache_find( bh_intp bytes );
  */
 DLLEXPORT void bh_vcache_insert(bh_data_ptr data, bh_intp size);
 DLLEXPORT bh_error bh_vcache_free(bh_instruction* inst);
+DLLEXPORT bh_error bh_vcache_free_base(bh_base* base);
 DLLEXPORT bh_error bh_vcache_malloc(bh_instruction* inst);
 DLLEXPORT bh_error bh_vcache_malloc_op(bh_view* view);
+DLLEXPORT bh_error bh_vcache_malloc_base(bh_base* base);
 
 #ifdef __cplusplus
 }
