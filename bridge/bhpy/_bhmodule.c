@@ -475,32 +475,6 @@ static PyGetSetDef BhArray_getseters[] = {
 };
 
 static int
-BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
-{
-    if(v == NULL)
-    {
-        PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
-        return -1;
-    }
-    if(!PyArray_ISWRITEABLE((PyArrayObject *)o))
-    {
-        PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
-        return -1;
-    }
-
-    PyObject *view = PyArray_Type.tp_as_mapping->mp_subscript(o, key);
-    if(view == NULL)
-        return -1;
-
-    PyObject *ret = PyObject_CallMethod(ufunc, "assign", "OO", v, view);
-    Py_DECREF(view);
-    if(ret == NULL)
-        return -1;
-
-    return 0;
-}
-
-static int
 BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
 {
     if(v == NULL)
@@ -515,6 +489,43 @@ BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
     }
 
     PyObject *view = PyArray_Type.tp_as_sequence->sq_slice(o, ilow, ihigh);
+    if(view == NULL)
+        return -1;
+
+    PyObject *ret = PyObject_CallMethod(ufunc, "assign", "OO", v, view);
+    Py_DECREF(view);
+    if(ret == NULL)
+        return -1;
+    return 0;
+}
+
+static int
+BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
+{
+    if(v == NULL)
+    {
+        PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
+        return -1;
+    }
+    if(!PyArray_ISWRITEABLE((PyArrayObject *)o))
+    {
+        PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
+        return -1;
+    }
+
+    //Integer index uses BhArray_SetSlice() in order to avoid direct memory access by NumPy
+    if(PyArray_IsIntegerScalar(key) || (PyIndex_Check(key) && !PySequence_Check(key)))
+    {
+        npy_intp value = PyArray_PyIntAsIntp(key);
+        if(value == -1 && PyErr_Occurred())
+        {
+            PyErr_SetString(PyExc_IndexError, "cannot convert index to integer");
+            return -1;
+        }
+        return BhArray_SetSlice(o, value, value+1, v);
+    }
+
+    PyObject *view = PyArray_Type.tp_as_mapping->mp_subscript(o, key);
     if(view == NULL)
         return -1;
 
