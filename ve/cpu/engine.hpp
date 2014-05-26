@@ -62,7 +62,14 @@ private:
      *      - The block contains at least one array operation (should be increased to more than 1)
      *      - The block contains does not contain any extensions
      */
-    bh_error fuse_mode(SymbolTable& symbol_table, Block& block);
+    //bh_error fuse_mode(SymbolTable& symbol_table, Block& block);
+    bh_error fuse_mode(
+        SymbolTable& symbol_table,
+        std::vector<tac_t>& program,
+        Dag& graph,
+        size_t subgraph_idx,
+        Block& block
+    );
 
     std::string compiler_cmd,
                 template_directory,

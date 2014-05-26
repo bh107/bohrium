@@ -44,6 +44,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = $operation;  // TAC
                 tacs[idx].oper  = $operator;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -60,6 +61,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                     tacs[idx].op   = EXTENSION;
                     tacs[idx].oper = EXTENSION_OPERATOR;
+                    tacs[idx].ext  = &instr;
                     tacs[idx].out  = out;
                     tacs[idx].in1  = in1;
                     tacs[idx].in2  = in2;

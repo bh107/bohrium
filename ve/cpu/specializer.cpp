@@ -438,9 +438,6 @@ string Specializer::specialize( SymbolTable& symbol_table,
         // Assign operands to the operation, we use a set to avoid redeclaration within the operation.
         for(operands_it=operands.begin(); operands_it != operands.end(); operands_it++) {
             size_t opr_idx = *operands_it;
-            if (0 == opr_idx) {
-                fprintf(stderr, "THIS SHOULD NEVER MAPPEN! OPERAND 0 is used!\n");
-            }
             const operand_t& operand = block.operand(opr_idx);
 
             ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
@@ -456,7 +453,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
     //
     //  Assign arguments for kernel operand unpacking
-    for(size_t opr_idx=1; opr_idx<=block.noperands(); ++opr_idx) {
+    for(size_t opr_idx=0; opr_idx<block.noperands(); ++opr_idx) {
         const operand_t& operand = block.operand(opr_idx);
         ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
         argument_d->SetIntValue("NR", opr_idx);

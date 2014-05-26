@@ -134,6 +134,7 @@ typedef struct tac {
     uint32_t  out;      // Output operand
     uint32_t  in1;      // First input operand
     uint32_t  in2;      // Second input operand
+    void* ext;
 } tac_t;
 
 typedef struct operand {

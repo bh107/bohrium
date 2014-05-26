@@ -94,8 +94,8 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
                 case FREE:
                     res = bh_vcache_free_base(symbol_table[tac.out].base);
                     if (BH_SUCCESS != res) {
-                        fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
-                                        "called from bh_ve_cpu_execute)\n");
+                        fprintf(stderr, "Unhandled error returned by bh_vcache_free_base(...) "
+                                        "called from Engine::sij_mode)\n");
                         return res;
                     }
                     break;
@@ -109,14 +109,10 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
         case EXTENSION:
             {
                 map<bh_opcode,bh_extmethod_impl>::iterator ext;
-                // TODO: Fix this
-                //ext = extensions.find(instr.opcode);
-                ext = extensions.find(tac.oper);
+                ext = extensions.find(static_cast<bh_instruction*>(tac.ext)->opcode);
                 if (ext != extensions.end()) {
                     bh_extmethod_impl extmethod = ext->second;
-                    // TODO: FIx this
-                    //res = extmethod(&instr, NULL);
-                    res = BH_ERROR;
+                    res = extmethod(static_cast<bh_instruction*>(tac.ext), NULL);
                     if (BH_SUCCESS != res) {
                         fprintf(stderr, "Unhandled error returned by extmethod(...) \n");
                         return res;
@@ -128,16 +124,13 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
         // Array operations (MAP | ZIP | REDUCE | SCAN)
         case MAP:
         case ZIP:
+        case GENERATE:
         case REDUCE:
         case SCAN:
 
             //
-            // We start by creating a symbol
-            if (!block.symbolize()) {
-                fprintf(stderr, "Engine::sij_mode(...) == Failed creating symbol.\n");
-                return BH_ERROR;
-            }
-
+            // We start by creating a symbol for the block
+            block.symbolize();
             //
             // JIT-compile the block if enabled
             if (jit_enabled && \
@@ -179,17 +172,16 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
 
             //
             // Allocate memory for operands
-            bh_vcache_malloc_base(symbol_table[tac.out].base);
-            res = BH_ERROR;
+            res = bh_vcache_malloc_base(symbol_table[tac.out].base);
             if (BH_SUCCESS != res) {
-                fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                                "called from bh_ve_cpu_execute()\n");
+                fprintf(stderr, "Unhandled error returned by bh_vcache_malloc_base() "
+                                "called from Engine::sij_mode\n");
                 return res;
             }
+
             //
             // Execute block handling array operations.
             // 
-
             storage.funcs[block.symbol()](block.operands());
 
             break;
@@ -198,16 +190,11 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
     return BH_SUCCESS;
 }
 
-/*
-bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
+bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& program,
+                    Dag& graph, size_t subgraph_idx, Block& block)
 {
+    DEBUG(TAG, "fuse_mode(...)");
     bh_error res = BH_SUCCESS;
-    //
-    // We start by creating a symbol
-    if (!block.symbolize()) {
-        fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
-        return BH_ERROR;
-    }
 
     TIMER_START
     //
@@ -219,11 +206,11 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
 
     LAYOUT fusion_layout = CONSTANT;
     LAYOUT next_layout   = CONSTANT;
-
-    tac_t* first = &block.program(0);
-    for(size_t tac_idx=0; tac_idx<block.size(); ++tac_idx) {
+    DEBUG(TAG, "fuse_mode(...) : ranges...");
+    tac_t* first = &block.tac(0);
+    for(size_t tac_idx=0; tac_idx<block.ntacs(); ++tac_idx) {
         range_end = tac_idx;
-        tac_t& next = block.program(tac_idx);
+        tac_t& next = block.tac(tac_idx);
 
         //
         // Ignore these
@@ -247,8 +234,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
                 ranges.push_back((triplet_t){range_begin, range_begin, fusion_layout});
             }
             range_begin = tac_idx+1;
-            if (range_begin < block.size()) {
-                first = &block.program(range_begin);
+            if (range_begin < block.ntacs()) {
+                first = &block.tac(range_begin);
             }
             continue;
         }
@@ -305,20 +292,22 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
             }
 
             range_begin = tac_idx;
-            if (range_begin < block.size()) {
-                first = &block.program(range_begin);
+            if (range_begin < block.ntacs()) {
+                first = &block.tac(range_begin);
             }
             continue;
         }
     }
     //
     // Store the last range
-    if (range_begin<block.size()) {
-        ranges.push_back((triplet_t){range_begin, block.size()-1, fusion_layout});
+    if (range_begin<block.ntacs()) {
+        ranges.push_back((triplet_t){range_begin, block.ntacs()-1, fusion_layout});
     }
     TIMER_STOP("Determine fuse-ranges.")
    
     TIMER_START
+
+    DEBUG(TAG, "fuse_mode(...) : scalar replacement...");
     //
     // Determine arrays suitable for scalar-replacement in the fuse-ranges.
     for(vector<triplet_t>::iterator it=ranges.begin();
@@ -333,7 +322,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
         //
         // Ref-count within the range
         for(size_t tac_idx=range_begin; tac_idx<=range_end; ++tac_idx) {
-            tac_t& tac = block.program(tac_idx);
+            tac_t& tac = block.tac(tac_idx);
             switch(core::tac_noperands(tac)) {
                 case 3:
                     if (tac.in2 != tac.in1) {
@@ -360,7 +349,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
             size_t operand = *opr_it;
             if ((count(inputs.begin(), inputs.end(), operand) == 1) && \
                 (count(outputs.begin(), outputs.end(), operand) == 1) && \
-                (symbol_table.temps.find(operand) != symbol_table.temps.end())) {
+                (symbol_table.temp().find(operand) != symbol_table.temp().end())) {
                 symbol_table.turn_scalar(operand);
                 //
                 // TODO: Remove from inputs and/or outputs.
@@ -376,15 +365,19 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
         return BH_ERROR;
     }
 
+    DEBUG(TAG, "fuse_mode(...) : symbol(" << block.symbol() << ")");
     //
     // JIT-compile the block if enabled
     //
+    DEBUG(TAG, "fuse_mode(...) : compilation...");
     if (jit_enabled && \
-        ((block.omask() & (ARRAY_OPS)) >0) && \
+        ((graph.omask(subgraph_idx) & (ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol()))) {   
                                                     // Specialize sourcecode
+        DEBUG(TAG, "fuse_mode(...) : specializing...");
         string sourcecode = specializer.specialize(symbol_table, block, ranges);
         if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
+            DEBUG(TAG, "fuse_mode(...) : writing source...");
             core::write_file(
                 storage.src_abspath(block.symbol()),
                 sourcecode.c_str(), 
@@ -393,6 +386,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
         }
         TIMER_START
         // Send to compiler
+        DEBUG(TAG, "fuse_mode(...) : compiling...");
         bool compile_res = compiler.compile(
             storage.obj_abspath(block.symbol()),
             sourcecode.c_str(), 
@@ -411,7 +405,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     //
     // Load the compiled code
     //
-    if (((block.omask() & (ARRAY_OPS)) >0) && \
+    DEBUG(TAG, "fuse_mode(...) : load compiled code...");
+    if (((graph.omask(subgraph_idx) & (ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol())) && \
         (!storage.load(block.symbol()))) {// Need but cannot load
 
@@ -422,15 +417,17 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     //
     // Allocate memory for output
     //
-    for(size_t i=0; i<block.size(); ++i) {
-        if ((block.program(i).op & ARRAY_OPS)>0) {
+    DEBUG(TAG, "fuse_mode(...) : allocate memory...");
+    for(size_t i=0; i<block.ntacs(); ++i) {
+        if ((block.tac(i).op & ARRAY_OPS)>0) {
 
             TIMER_START
-            bh_view* operand_view = &block.instr(i).operand[0];
-            if ((symbol_table[block.program(i).out].layout == SCALAR) && (operand_view->base->data == NULL)) {
-                operand_view->base->nelem = 1;
+            operand_t& operand = symbol_table[block.tac(i).out];
+            if ((operand.layout == SCALAR) && \
+                (operand.base->data == NULL)) {
+                operand.base->nelem = 1;
             }
-            bh_error res = bh_vcache_malloc_op(operand_view);
+            bh_error res = bh_vcache_malloc_base(operand.base);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                                 "called from bh_ve_cpu_execute()\n");
@@ -444,15 +441,18 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
     // Execute block handling array operations.
     // 
     TIMER_START
+    DEBUG(TAG, "fuse_mode(...) : execute(" << block.symbol() << ")");
     storage.funcs[block.symbol()](block.operands());
     TIMER_STOP(block.symbol())
 
     //
     // De-Allocate operand memory
-    for(size_t i=0; i<block.size(); ++i) {
-        if (block.instr(i).opcode == BH_FREE) {
+    DEBUG(TAG, "fuse_mode(...) : de-allocate...");
+    for(size_t i=0; i<block.ntacs(); ++i) {
+        tac_t& tac = block.tac(i);
+        if (tac.oper == FREE) {
             TIMER_START
-            res = bh_vcache_free(&block.instr(i));
+            res = bh_vcache_free_base(symbol_table[tac.out].base);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
                                 "called from bh_ve_cpu_execute)\n");
@@ -461,9 +461,11 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, Block& block)
             TIMER_STOP("Deallocating memory.")
         }
     }
+
+    DEBUG(TAG, "fuse_mode(...);");
     return BH_SUCCESS;
 }
-*/
+
 bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 {
     exec_count++;
@@ -472,8 +474,8 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 
     //
     // Instantiate the symbol-table and tac-program
-    SymbolTable symbol_table(ninstrs*6+2);
-    vector<tac_t> program(ninstrs);
+    SymbolTable symbol_table(ninstrs*6+2);              // SymbolTable
+    vector<tac_t> program(ninstrs);                     // Program
 
     // Map instructions to tac and symbol_table
     instrs_to_tacs(instrs, ninstrs, program, symbol_table);
@@ -481,7 +483,7 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 
     //
     // Construct graph with instructions as nodes.
-    Dag graph(symbol_table, program);
+    Dag graph(symbol_table, program);                   // Graph
 
     // Dump it to file
     stringstream filename;
@@ -492,26 +494,28 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 
     //
     //  Map subgraphs to blocks one at a time and execute them.
-    Block block(symbol_table, program);
-    for(size_t idx=0; idx<graph.subgraphs().size(); ++idx) {
-        Graph& subgraph = *(graph.subgraphs()[idx]);
-        /*
-        if ((graph.omask(idx) & (NON_FUSABLE))>0) {     // SIJ-Mode
-        } else {                                        // FUSE-Mode
-            block.compose(subgraph);
-        }*/
+    Block block(symbol_table, program);                 // Block
+    for(size_t subgraph_idx=0; subgraph_idx<graph.subgraphs().size(); ++subgraph_idx) {
+        Graph& subgraph = *(graph.subgraphs()[subgraph_idx]);
 
-        std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
-        for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
-            // Compose the block
+        if (((graph.omask(subgraph_idx) & (NON_FUSABLE))>0) || \
+            ((graph.omask(subgraph_idx) & ARRAY_OPS)==0)) {     // SIJ-Mode
+            std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
+            for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
+                // Compose the block
+                block.clear();
+                block.compose(  
+                    subgraph.local_to_global(*vi), subgraph.local_to_global(*vi)
+                );
+                
+                // Generate/Load code and execute it
+                sij_mode(symbol_table, program, block);
+            }
+        } else {                                        // FUSE-Mode
             block.clear();
-            block.compose(  
-                subgraph.local_to_global(*vi), subgraph.local_to_global(*vi)
-            );
-            block.symbolize();
-            
-            // Generate/Load code and execute it
-            sij_mode(symbol_table, program, block);
+            block.compose(subgraph);
+
+            fuse_mode(symbol_table, program, graph, subgraph_idx, block);
         }
     }
     DEBUG(TAG, "Execute(...);");

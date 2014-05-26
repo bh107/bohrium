@@ -34,6 +34,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = ABSOLUTE;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -45,6 +46,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = ARCCOS;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -56,6 +58,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = ARCCOSH;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -67,6 +70,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = ARCSIN;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -78,6 +82,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = ARCSINH;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -89,6 +94,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = ARCTAN;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -100,6 +106,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = ARCTANH;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -111,6 +118,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = CEIL;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -122,6 +130,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = COS;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -133,6 +142,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = COSH;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -144,6 +154,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = EXP;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -155,6 +166,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = EXP2;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -166,6 +178,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = EXPM1;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -177,6 +190,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = FLOOR;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -188,6 +202,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = IDENTITY;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -199,6 +214,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = IMAG;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -210,6 +226,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = INVERT;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -221,6 +238,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = ISINF;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -232,6 +250,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = ISNAN;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -243,6 +262,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = LOG;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -254,6 +274,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = LOG10;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -265,6 +286,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = LOG1P;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -276,6 +298,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = LOG2;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -287,6 +310,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = LOGICAL_NOT;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -298,6 +322,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = REAL;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -309,6 +334,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = RINT;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -320,6 +346,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = SIN;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -331,6 +358,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = SINH;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -342,6 +370,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = SQRT;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -353,6 +382,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = TAN;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -364,6 +394,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = TANH;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -375,6 +406,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = MAP;  // TAC
                 tacs[idx].oper  = TRUNC;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -387,6 +419,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = ADD;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -399,6 +432,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = ARCTAN2;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -411,6 +445,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = BITWISE_AND;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -423,6 +458,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = BITWISE_OR;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -435,6 +471,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = BITWISE_XOR;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -447,6 +484,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = DIVIDE;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -459,6 +497,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = EQUAL;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -471,6 +510,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = GREATER;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -483,6 +523,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = GREATER_EQUAL;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -495,6 +536,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = LEFT_SHIFT;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -507,6 +549,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = LESS;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -519,6 +562,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = LESS_EQUAL;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -531,6 +575,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = LOGICAL_AND;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -543,6 +588,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = LOGICAL_OR;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -555,6 +601,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = LOGICAL_XOR;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -567,6 +614,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = MAXIMUM;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -579,6 +627,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = MINIMUM;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -591,6 +640,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = MOD;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -603,6 +653,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = MULTIPLY;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -615,6 +666,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = NOT_EQUAL;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -627,6 +679,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = POWER;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -639,6 +692,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = RIGHT_SHIFT;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -651,6 +705,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = ZIP;  // TAC
                 tacs[idx].oper  = SUBTRACT;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -663,6 +718,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = ADD;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -675,6 +731,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = BITWISE_AND;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -687,6 +744,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = BITWISE_OR;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -699,6 +757,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = BITWISE_XOR;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -711,6 +770,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = LOGICAL_AND;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -723,6 +783,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = LOGICAL_OR;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -735,6 +796,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = LOGICAL_XOR;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -747,6 +809,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = MAXIMUM;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -759,6 +822,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = MINIMUM;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -771,6 +835,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = REDUCE;  // TAC
                 tacs[idx].oper  = MULTIPLY;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -783,6 +848,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = SCAN;  // TAC
                 tacs[idx].oper  = ADD;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -795,6 +861,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = SCAN;  // TAC
                 tacs[idx].oper  = MULTIPLY;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -806,6 +873,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = GENERATE;  // TAC
                 tacs[idx].oper  = RANDOM;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -816,6 +884,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = GENERATE;  // TAC
                 tacs[idx].oper  = RANGE;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -826,6 +895,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = SYSTEM;  // TAC
                 tacs[idx].oper  = DISCARD;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -836,6 +906,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = SYSTEM;  // TAC
                 tacs[idx].oper  = FREE;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -846,6 +917,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = SYSTEM;  // TAC
                 tacs[idx].oper  = NONE;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -856,6 +928,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                 tacs[idx].op    = SYSTEM;  // TAC
                 tacs[idx].oper  = SYNC;
+                tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
@@ -871,6 +944,7 @@ void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs, vector<tac_t>& tacs
 
                     tacs[idx].op   = EXTENSION;
                     tacs[idx].oper = EXTENSION_OPERATOR;
+                    tacs[idx].ext  = &instr;
                     tacs[idx].out  = out;
                     tacs[idx].in1  = in1;
                     tacs[idx].in2  = in2;
