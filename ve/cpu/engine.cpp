@@ -77,11 +77,9 @@ string Engine::text()
 
 bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Block& block)
 {
-    DEBUG(TAG, "sij_mode(...)");
     bh_error res = BH_SUCCESS;
 
     tac_t& tac = block.tac(0);
-    DEBUG(TAG, tac_text(tac));
 
     switch(tac.op) {
         case NOOP:
@@ -184,188 +182,120 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             //
             // Execute block handling array operations.
             // 
+            TIMER_START
             storage.funcs[block.symbol()](block.operands());
+            TIMER_STOP(block.symbol())
 
             break;
     }
-    DEBUG(TAG, "sij_mode();");
     return BH_SUCCESS;
+}
+
+/**
+ *  Count temporaries in the 
+ *
+ */
+void count_temp( set<size_t>& disqualified,  set<size_t>& freed,
+                 vector<size_t>& reads,  vector<size_t>& writes,
+                 set<size_t>& temps) {
+
+    for(set<size_t>::iterator fi=freed.begin(); fi!=freed.end(); ++fi) {
+        size_t operand_idx = *fi;
+        if ((reads[operand_idx] == 1) && (writes[operand_idx] == 1)) {
+            temps.insert(operand_idx);
+        }
+    }
+}
+
+void count_rw(  tac_t& tac, set<size_t>& freed,
+                vector<size_t>& reads, vector<size_t>& writes,
+                set<size_t>& temps)
+{
+
+    switch(tac.op) {    // Do read/write counting ...
+        case MAP:
+            reads[tac.in1]++;
+            writes[tac.out]++;
+            break;
+
+        case EXTENSION:
+        case ZIP:
+            if (tac.in2!=tac.in1) {
+                reads[tac.in2]++;
+            }
+            reads[tac.in1]++;
+            writes[tac.out]++;
+            break;
+        case REDUCE:
+        case SCAN:
+            reads[tac.in2]++;
+            reads[tac.in1]++;
+            writes[tac.out]++;
+            break;
+
+        case GENERATE:
+            switch(tac.oper) {
+                case RANDOM:
+                case FLOOD:
+                    reads[tac.in1]++;
+                default:
+                    writes[tac.out]++;
+            }
+            break;
+
+        case NOOP:
+        case SYSTEM:    // ... or annotate operands with temp potential.
+            if (FREE == tac.oper) {
+                freed.insert(tac.out);
+            }
+            break;
+    }
 }
 
 bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& program,
                     Dag& graph, size_t subgraph_idx, Block& block)
 {
-    DEBUG(TAG, "fuse_mode(...)");
-    DEBUG(TAG, "fuse_mode(...) : instructions...");
-    for(size_t tac_idx=0; tac_idx < block.ntacs(); ++tac_idx) {
-        DEBUG(TAG, tac_text(block.tac(tac_idx)));
-    }
-
     bh_error res = BH_SUCCESS;
 
-    TIMER_START
     //
-    // Determine ranges of operations which can be fused together
-    vector<triplet_t> ranges;
-
-    size_t range_begin  = 0,    // Current range
-           range_end    = 0;
+    // Determine temps and fusion_layout
+    set<size_t> freed;
+    vector<size_t> reads(symbol_table.size()+1);
+    fill(reads.begin(), reads.end(), 0);
+    vector<size_t> writes(symbol_table.size()+1);
+    fill(writes.begin(), writes.end(), 0);
+    set<size_t> temps;
 
     LAYOUT fusion_layout = CONSTANT;
-    LAYOUT next_layout   = CONSTANT;
-
-    tac_t* first = &block.tac(0);
     for(size_t tac_idx=0; tac_idx<block.ntacs(); ++tac_idx) {
-        range_end = tac_idx;
-        tac_t& next = block.tac(tac_idx);
+        tac_t& tac = block.tac(tac_idx);
+        count_rw(tac, freed, reads, writes, temps);
 
-        //
-        // Ignore these
-        if ((next.op == SYSTEM) && (next.op == NOOP)) {
-            continue;
-        }
-
-        //
-        // Check for compatible operations
-        if (!((next.op == MAP) || (next.op == ZIP))) {
-            //
-            // Got an instruction that we currently do not fuse,
-            // store the current range and start a new.
-
-            // Add the range up until this tac
-            if (range_begin < range_end) {
-                ranges.push_back((triplet_t){range_begin,   range_end-1,    fusion_layout});
-                // Add a range for the single tac   
-                ranges.push_back((triplet_t){range_end,     range_end,      fusion_layout});
-            } else {
-                ranges.push_back((triplet_t){range_begin,   range_begin,    fusion_layout});
-            }
-            range_begin = tac_idx+1;
-            if (range_begin < block.ntacs()) {
-                first = &block.tac(range_begin);
-            }
-            continue;
-        }
-
-        //
-        // Check for compatible operands and note layout.
-        bool compat_operands = true;
-        switch(core::tac_noperands(next)) {
+        switch(tac_noperands(tac)) {
             case 3:
-                // Second input
-                next_layout = symbol_table[next.in2].layout;
-                if (next_layout>fusion_layout) {
-                    fusion_layout = next_layout;
+                if (symbol_table[tac.in2].layout > fusion_layout) {
+                    fusion_layout = symbol_table[tac.in2].layout;
                 }
-                compat_operands = compat_operands && (core::compatible(
-                    symbol_table[first->out],
-                    symbol_table[next.in2]
-                ));
             case 2:
-                // First input
-                next_layout = symbol_table[next.in1].layout;
-                if (next_layout>fusion_layout) {
-                    fusion_layout = next_layout;
+                if (symbol_table[tac.in1].layout > fusion_layout) {
+                    fusion_layout = symbol_table[tac.in1].layout;
                 }
-                compat_operands = compat_operands && (core::compatible(
-                    symbol_table[first->out],
-                    symbol_table[next.in1]
-                ));
-
-                // Output operand
-                next_layout = symbol_table[next.out].layout;
-                if (next_layout>fusion_layout) {
-                    fusion_layout = next_layout;
+            case 1:
+                if (symbol_table[tac.out].layout > fusion_layout) {
+                    fusion_layout = symbol_table[tac.out].layout;
                 }
-                compat_operands = compat_operands && (core::compatible(
-                    symbol_table[first->out],
-                    symbol_table[next.out]
-                ));
-                break;
-
             default:
-                fprintf(stderr, "ARGGG in checking operands!!!!\n");
-        }
-        if (!compat_operands) {
-            //
-            // Incompatible operands.
-            // Store the current range and start a new.
-
-            // Add the range up until this tac
-            if (range_begin < range_end) {
-                ranges.push_back((triplet_t){range_begin, range_end-1, fusion_layout});
-            } else {
-                ranges.push_back((triplet_t){range_begin, range_begin, fusion_layout});
-            }
-
-            range_begin = tac_idx;
-            if (range_begin < block.ntacs()) {
-                first = &block.tac(range_begin);
-            }
-            continue;
+                break;
         }
     }
+    count_temp(symbol_table.disqualified(), freed, reads, writes, temps);
+
     //
-    // Store the last range
-    if (range_begin<block.ntacs()) {
-        ranges.push_back((triplet_t){range_begin, block.ntacs()-1, fusion_layout});
+    // Turn temps into scalars
+    for(set<size_t>::iterator ti=temps.begin(); ti!=temps.end(); ++ti) {
+        symbol_table.turn_scalar(*ti);
     }
-    TIMER_STOP("Determine fuse-ranges.")
-   
-    TIMER_START
 
-    DEBUG(TAG, "fuse_mode(...) : scalar replacement...");
-    //
-    // Determine arrays suitable for scalar-replacement in the fuse-ranges.
-    for(vector<triplet_t>::iterator it=ranges.begin();
-        it!=ranges.end();
-        it++) {
-        vector<size_t> inputs, outputs;
-        set<size_t> all_operands;
-        
-        range_begin = (*it).begin;
-        range_end   = (*it).end;
-
-        //
-        // Ref-count within the range
-        for(size_t tac_idx=range_begin; tac_idx<=range_end; ++tac_idx) {
-            tac_t& tac = block.tac(tac_idx);
-            switch(core::tac_noperands(tac)) {
-                case 3:
-                    if (tac.in2 != tac.in1) {
-                        inputs.push_back(tac.in2);
-                        all_operands.insert(tac.in2);
-                    }
-                case 2:
-                    inputs.push_back(tac.in1);
-                    all_operands.insert(tac.in1);
-                case 1:
-                    outputs.push_back(tac.out);
-                    all_operands.insert(tac.out);
-                    break;
-                default:
-                    cout << "ARGGG in scope-ref-count on: " << core::tac_text(tac) << endl;
-            }
-        }
-
-        //
-        // Turn the operand into a scalar
-        for(set<size_t>::iterator opr_it=all_operands.begin();
-            opr_it!=all_operands.end();
-            opr_it++) {
-            size_t operand = *opr_it;
-            if ((count(inputs.begin(), inputs.end(), operand) == 1) && \
-                (count(outputs.begin(), outputs.end(), operand) == 1) && \
-                (symbol_table.temp().find(operand) != symbol_table.temp().end())) {
-                //symbol_table.turn_scalar(operand);
-                DEBUG(TAG, "Turning " << operand << " scalar.");
-                //
-                // TODO: Remove from inputs and/or outputs.
-            }
-        }
-    }
-    TIMER_STOP("Scalar replacement in fuse-ranges.")
-    
     //
     // The operands might have been modified at this point, so we need to create a new symbol.
     if (!block.symbolize()) {
@@ -373,47 +303,38 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
         return BH_ERROR;
     }
 
-    DEBUG(TAG, "fuse_mode(...) : symbol(" << block.symbol() << ")");
     //
     // JIT-compile the block if enabled
     //
-    DEBUG(TAG, "fuse_mode(...) : compilation...");
     if (jit_enabled && \
-        ((graph.omask(subgraph_idx) & (ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol()))) {   
-                                                    // Specialize sourcecode
-        DEBUG(TAG, "fuse_mode(...) : specializing...");
-        string sourcecode = specializer.specialize(symbol_table, block, ranges);
-        if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
-            DEBUG(TAG, "fuse_mode(...) : writing source...");
+        // Specialize and dump sourcecode to file
+        string sourcecode = specializer.specialize(symbol_table, block, fusion_layout);
+        if (jit_dumpsrc==1) {
             core::write_file(
                 storage.src_abspath(block.symbol()),
                 sourcecode.c_str(), 
                 sourcecode.size()
             );
         }
-        TIMER_START
         // Send to compiler
-        DEBUG(TAG, "fuse_mode(...) : compiling...");
         bool compile_res = compiler.compile(
             storage.obj_abspath(block.symbol()),
             sourcecode.c_str(), 
             sourcecode.size()
         );
-        TIMER_STOP("Compiling (Fused Kernels)")
         if (!compile_res) {
             fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
 
             return BH_ERROR;
         }
-                                                    // Inform storage
+        // Inform storage
         storage.add_symbol(block.symbol(), storage.obj_filename(block.symbol()));
     }
 
     //
     // Load the compiled code
     //
-    DEBUG(TAG, "fuse_mode(...) : load compiled code...");
     if (((graph.omask(subgraph_idx) & (ARRAY_OPS)) >0) && \
         (!storage.symbol_ready(block.symbol())) && \
         (!storage.load(block.symbol()))) {// Need but cannot load
@@ -425,7 +346,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     //
     // Allocate memory for output
     //
-    DEBUG(TAG, "fuse_mode(...) : allocate memory...");
     for(size_t i=0; i<block.ntacs(); ++i) {
         if ((block.tac(i).op & ARRAY_OPS)>0) {
 
@@ -445,22 +365,15 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
         }
     }
 
-    DEBUG(TAG, "Operands");
-    for(size_t i=0; i<block.noperands(); i++) {
-        DEBUG(TAG, operand_text(block.operand(i)));
-    }
-
     //
     // Execute block handling array operations.
     // 
     TIMER_START
-    DEBUG(TAG, "fuse_mode(...) : execute(" << block.symbol() << ")");
     storage.funcs[block.symbol()](block.operands());
     TIMER_STOP(block.symbol())
 
     //
     // De-Allocate operand memory
-    DEBUG(TAG, "fuse_mode(...) : de-allocate...");
     for(size_t i=0; i<block.ntacs(); ++i) {
         tac_t& tac = block.tac(i);
         if (tac.oper == FREE) {
@@ -475,13 +388,11 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
         }
     }
 
-    DEBUG(TAG, "fuse_mode(...);");
     return BH_SUCCESS;
 }
 
 bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 {
-    DEBUG(TAG, "execute(...)");
     exec_count++;
 
     bh_error res = BH_SUCCESS;
@@ -536,7 +447,6 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
             }
         }
     }
-    DEBUG(TAG, "Execute(...);");
     
     return res;
 }

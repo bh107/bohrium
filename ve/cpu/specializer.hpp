@@ -33,7 +33,8 @@ public:
                             std::vector<triplet_t>& ranges);
 
     std::string specialize( SymbolTable& symbol_table,
-                            Block& block);
+                            Block& block,
+                            LAYOUT fusion_layout);
 
     std::string specialize( SymbolTable& symbol_table,
                             Block& block,

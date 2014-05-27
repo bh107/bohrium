@@ -43,6 +43,9 @@ void Block::compose(size_t prg_begin, size_t prg_end)
     for(size_t prg_idx=prg_begin; prg_idx<=prg_end; ++prg_idx) {
         tac_t& tac = program_[prg_idx];
         tacs_.push_back(&tac);
+        if ((tac.op & (ARRAY_OPS))>0) {
+            array_tacs_.push_back(&tac);
+        }
 
         // Map operands to local-scope
         switch(tac_noperands(tac)) {
@@ -67,6 +70,9 @@ void Block::compose(Graph& subgraph)
     for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
         tac_t& tac = program_[subgraph.local_to_global(*vi)];
         tacs_.push_back(&tac);
+        if ((tac.op & (ARRAY_OPS))>0) {
+            array_tacs_.push_back(&tac);
+        }
 
         // Map operands to local-scope
         switch(tac_noperands(tac)) {
@@ -205,9 +211,19 @@ tac_t& Block::tac(size_t idx) const
     return *tacs_[idx];
 }
 
+tac_t& Block::array_tac(size_t idx) const
+{
+    return *array_tacs_[idx];
+}
+
 size_t Block::ntacs(void) const
 {
     return tacs_.size();
+}
+
+size_t Block::narray_tacs(void) const
+{
+    return array_tacs_.size();
 }
 
 string Block::symbol(void) const

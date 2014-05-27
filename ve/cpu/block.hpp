@@ -104,11 +104,13 @@ public:
      * Return the tac-instance with the given index.
      */
     tac_t& tac(size_t idx) const;
+    tac_t& array_tac(size_t idx) const;
 
     /**
      *  Count of tacs in the block.
      */
     size_t ntacs(void) const;
+    size_t narray_tacs(void) const;
 
     std::string symbol(void) const;
     std::string symbol_text(void) const;
@@ -121,6 +123,7 @@ private:
     std::vector<tac_t>& program_;   // A reference to the entire bytecode program
 
     std::vector<tac_t*> tacs_;      // A subset of the tac-program reprensting the block.
+    std::vector<tac_t*> array_tacs_;// A subset of the tac-program containing only array ops.
 
     //SymbolTable locals_;             // A symbol table with block-scope
     operand_t** operands_;

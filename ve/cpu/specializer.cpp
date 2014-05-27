@@ -146,19 +146,138 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
     return tpl_opcode + tpl_layout + tpl_ndim  + "tpl";
 }
 
-/**
- *  Construct the c-sourcecode for the given block.
- *
- *  NOTE: System opcodes are ignored.
- *
- *  @param block The block to generate sourcecode for.
- *  @return The generated sourcecode.
- *
- */
-string Specializer::specialize( SymbolTable& symbol_table,
-                                Block& block)
+string Specializer::specialize( SymbolTable& symbol_table, Block& block, LAYOUT fusion_layout)
 {
-    return specialize(symbol_table, block, 0, block.ntacs()-1);
+    string sourcecode = "";
+
+    ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
+    kernel_d.SetValue("SYMBOL",         block.symbol());
+    kernel_d.SetValue("SYMBOL_TEXT",    block.symbol_text());
+
+    kernel_d.SetValue("MODE", "FUSED");
+    kernel_d.SetIntValue("NINSTR",  block.narray_tacs());
+    kernel_d.SetIntValue("NARGS",   block.noperands());
+
+    //
+    //  Assign arguments for kernel operand unpacking
+    for(size_t opr_idx=0; opr_idx<block.noperands(); ++opr_idx) {
+        const operand_t& operand = block.operand(opr_idx);
+        ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
+        argument_d->SetIntValue("NR", opr_idx);
+        argument_d->SetValue("TYPE", core::etype_to_ctype_text(operand.etype));
+        switch(operand.layout) {
+            case CONSTANT:
+                argument_d->ShowSection("CONSTANT");
+                break;
+            case SCALAR:
+                argument_d->ShowSection("SCALAR");
+                break;
+            case CONTIGUOUS:
+            case STRIDED:
+            case SPARSE:
+                argument_d->ShowSection("ARRAY");
+                break;
+        }
+    }
+
+    //
+    // Assign information needed for generation of operation and operator code
+    ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
+
+    stringstream tpl_filename;
+    tpl_filename << "ewise.";
+    switch(fusion_layout) {
+        case CONSTANT:
+        case SCALAR:
+        case CONTIGUOUS:
+            tpl_filename << "cont.";
+            tpl_filename << "nd.";
+            break;
+        case STRIDED:
+        case SPARSE:
+            tpl_filename << "strided.";
+            switch(symbol_table[block.array_tac(0).out].ndim) {
+                case 3:
+                    tpl_filename << "3d.";
+                    break;
+                case 2:
+                    tpl_filename << "2d.";
+                    break;
+                case 1:
+                    tpl_filename << "1d.";
+                    break;
+                default:
+                    tpl_filename << "nd.";
+            }
+            break;
+    }
+    tpl_filename << "tpl";
+    operation_d->SetFilename(tpl_filename.str());
+
+    set<size_t> operands;
+    set<size_t>::iterator operands_it;
+
+    for(size_t tac_idx=0; tac_idx<block.narray_tacs(); ++tac_idx) {
+        tac_t& tac = block.array_tac(tac_idx);
+
+        //
+        // The operator +, -, /, min, max, sin, sqrt, etc...
+        //        
+        ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
+        operator_d->SetValue("OPERATOR", cexpression(symbol_table, block, tac_idx));
+
+        //
+        // Map the tac operands into block-scope
+        switch(core::tac_noperands(tac)) {
+            case 3:
+                operation_d->SetIntValue("NR_SINPUT", block.global_to_local(tac.in2));
+                operator_d->SetIntValue("NR_SINPUT",  block.global_to_local(tac.in2));
+
+                operands.insert(block.global_to_local(tac.in2));
+
+            case 2:
+                operation_d->SetIntValue("NR_FINPUT", block.global_to_local(tac.in1));
+                operator_d->SetIntValue("NR_FINPUT",  block.global_to_local(tac.in1));
+
+                operands.insert(block.global_to_local(tac.in1));
+
+            case 1:
+                operation_d->SetIntValue("NR_OUTPUT", block.global_to_local(tac.out));
+                operator_d->SetIntValue("NR_OUTPUT",  block.global_to_local(tac.out));
+
+                operands.insert(block.global_to_local(tac.out));
+        }
+
+    }
+
+    //
+    // Assign operands to the operation, we use a set to avoid redeclaration within the operation.
+    for(operands_it=operands.begin(); operands_it != operands.end(); operands_it++) {
+        size_t opr_idx = *operands_it;
+        const operand_t& operand = block.operand(opr_idx);
+
+        ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");
+        operand_d->SetValue("TYPE",  core::etype_to_ctype_text(operand.etype));
+        operand_d->SetIntValue("NR", opr_idx);
+
+        if ((operand.layout & ARRAY_LAYOUT)>0) {
+            operand_d->ShowSection("ARRAY");
+        }   
+    }
+    operands.clear();
+
+    //
+    // Fill out the template and return the generated sourcecode
+    //
+    ctemplate::ExpandTemplate(
+        "kernel.tpl", 
+        strip_mode,
+        &kernel_d,
+        &sourcecode
+    );
+
+
+    return sourcecode;
 }
 
 /**
