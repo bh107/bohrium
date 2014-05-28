@@ -67,10 +67,10 @@ def assign(a, out):
     elif ndarray.check(a):
         a._data_bhc2np()
         a.__array_priority__ = -1.0#Force NumPy to handle the assignment
-        out[:] = a
+        out[...] = a
         a.__array_priority__ = 2.0
     else:
-        out[:] = a#Regular NumPy assignment
+        out[...] = a#Regular NumPy assignment
 
 class ufunc:
     def __init__(self, info):
@@ -115,11 +115,18 @@ class ufunc:
         #Find the type signature
         (out_dtype,in_dtype) = _util.type_sig(self.info['name'], args)
 
+        #Convert 'args' to Bohrium ndarrays
+        """
+        for i in xrange(len(args)):
+            print type(args[i])
+            if not np.isscalar(args[i]) and not ndarray.check(args[i]):
+                args[i] = array_create.array(args[i])
+        """
         #Convert dtype of all inputs
         for i in xrange(len(args)):
             if not np.isscalar(args[i]) and not dtype_identical(args[i], in_dtype):
                 t = array_create.empty_like(args[i], dtype=in_dtype)
-                t[:] = args[i]
+                t[...] = args[i]
                 args[i] = t;
 
         #Insert the output array
@@ -133,7 +140,7 @@ class ufunc:
         for i in xrange(1,len(args)):
             if not np.isscalar(args[i]):
                 while args[i].ndim < args[0].ndim:
-                    args[i] = args[i][np.newaxis,:]
+                    args[i] = args[i][np.newaxis,...]
 
         #Convert 'args' to Bohrium-C arrays
         bhcs = []
@@ -300,7 +307,7 @@ class ufunc:
             del_bhc_obj(a_bhc)
 
             if out is not None:
-                out[:] = tmp
+                out[...] = tmp
             else:
                 out = tmp
             if a.ndim == 1:#return a Python Scalar
@@ -312,7 +319,7 @@ class ufunc:
             axis = [i-1 for i in axis[1:]]
             t2 = self.reduce(t1, axis)
             if out is not None:
-                out[:] = t2
+                out[...] = t2
             else:
                 out = t2
             return out
@@ -323,7 +330,7 @@ class negative(ufunc):
         if out is None:
             return -1 * a
         else:
-            out[:] = -1 * a
+            out[...] = -1 * a
             return out
 
 #Expose all ufuncs
@@ -352,7 +359,7 @@ class Tests(unittest.TestCase):
         B = B.copy2numpy()
         #Compare result to NumPy
         N = np.empty((4,4), dtype=int)
-        N[:] = 42
+        N[...] = 42
         self.assertTrue(np.array_equal(B,N))
         self.assertTrue(np.array_equal(A,N))
 
@@ -379,9 +386,9 @@ class Tests(unittest.TestCase):
                 res = res.copy2numpy()
                 #Compare result to NumPy
                 A = np.empty((4,4), dtype=type_sig[1])
-                A[:] = 2
+                A[...] = 2
                 B = np.empty((4,4), dtype=type_sig[1])
-                B[:] = 3
+                B[...] = 3
                 if f.info['nop'] == 2:
                     exec "np_res = np.%s(A)"%f.info['name']
                 elif f.info['nop'] == 3:
