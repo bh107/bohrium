@@ -83,9 +83,10 @@ def new_bhc_base(ary):
 
     if not ary.flags['C_CONTIGUOUS']:
         raise ValueError("For now Bohrium only supports C-style arrays")
-
+    ndim = ary.ndim if ary.ndim > 0 else 1
+    shape = ary.shape if len(ary.shape) > 0 else (1,)
     dtype = dtype_name(ary)
-    exec "ary.bhc_ary = bhc.bh_multi_array_%s_new_empty(ary.ndim, ary.shape)"%dtype
+    exec "ary.bhc_ary = bhc.bh_multi_array_%s_new_empty(ndim, shape)"%dtype
 
 #Get the final base array of 'ary'
 def get_base(ary):
@@ -134,7 +135,11 @@ def get_bhc(ary):
 
     exec "bh_base = bhc.bh_multi_array_%s_get_base(base.bhc_ary)"%dtype
     f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype)
-    return f(bh_base, ary.ndim, offset, ary.shape, strides)
+
+    ndim = ary.ndim if ary.ndim > 0 else 1
+    shape = ary.shape if len(ary.shape) > 0 else (1,)
+    strides = strides if len(strides) > 0 else (1,)
+    return f(bh_base, ndim, offset, shape, strides)
 
 #Delete the Bohrium-C object
 def del_bhc_obj(bhc_obj):
