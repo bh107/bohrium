@@ -215,8 +215,6 @@ string Specializer::specialize( SymbolTable& symbol_table, Block& block, LAYOUT 
     operation_d->SetFilename(tpl_filename.str());
 
     set<size_t> operands;
-    set<size_t>::iterator operands_it;
-
     for(size_t tac_idx=0; tac_idx<block.narray_tacs(); ++tac_idx) {
         tac_t& tac = block.array_tac(tac_idx);
 
@@ -225,7 +223,7 @@ string Specializer::specialize( SymbolTable& symbol_table, Block& block, LAYOUT 
         //        
         ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
         operator_d->SetValue("OPERATOR", cexpression(symbol_table, block, tac_idx));
-
+        DEBUG(TAG, tac_text(tac));
         //
         // Map the tac operands into block-scope
         switch(core::tac_noperands(tac)) {
@@ -252,8 +250,9 @@ string Specializer::specialize( SymbolTable& symbol_table, Block& block, LAYOUT 
 
     //
     // Assign operands to the operation, we use a set to avoid redeclaration within the operation.
-    for(operands_it=operands.begin(); operands_it != operands.end(); operands_it++) {
+    for(set<size_t>::iterator operands_it=operands.begin(); operands_it != operands.end(); operands_it++) {
         size_t opr_idx = *operands_it;
+        DEBUG(TAG, "opr_idx="<<opr_idx);
         const operand_t& operand = block.operand(opr_idx);
 
         ctemplate::TemplateDictionary* operand_d = operation_d->AddSectionDictionary("OPERAND");

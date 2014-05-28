@@ -115,6 +115,12 @@ public:
     std::string symbol(void) const;
     std::string symbol_text(void) const;
 
+
+    /**
+     * Returns a textual representation of the block in dot-format.
+     */
+    std::string dot(void) const;
+
 private:
 
     Block();

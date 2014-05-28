@@ -52,7 +52,6 @@ void without_fusion_add(operand_t* array)
         *(array->current) = *(array->current) + (float)1;
         (array->current)++;
     }
-
     array->current = array->data;
     for(uint64_t idx=0; idx<array->nelements; ++idx) {
         *(array->current) = *(array->current) + (float)2;
@@ -94,10 +93,10 @@ int main(int argc, char *argv[])
 
     TIMER_START
     for(uint64_t i=0; i<10; i++) {
-        //with_fusion_add(&array);
+        with_fusion_add(&array);
         //without_fusion_add(&array);
 
-        without_fusion_id(&array);
+        //without_fusion_add(&array);
         //with_fusion_id(&array);
     }
     TIMER_STOP("LOOP")
