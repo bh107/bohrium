@@ -48,12 +48,20 @@ typedef struct
     BH_PyArrayObject base;
     PyObject *bhc_ary;
     PyObject *array_priority;
+    int mmap_allocated;
 }BhArray;
 
 //Help function to retrieve the Bohrium-C data pointer
 //Return -1 on error
 static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify, void **out_data)
 {
+    if(((BhArray*)ary)->mmap_allocated == 0)
+    {
+        PyErr_SetString(PyExc_TypeError, "The array data wasn't allocated through mmap(). "
+                  "Typically, this is because the base array was created from a template, "
+                  "which is not support by Bohrium");
+        return -1;
+    }
     PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer",
                                          "Oii", ary, force_allocation, nullify);
     if(data == NULL)
@@ -166,9 +174,15 @@ static int _mprotect_np_part(BhArray *ary)
 }
 
 //Help function for allocate protected memory for the NumPy part of 'ary'
+//This function only allocates if the 'ary' is a new base array and avoids multiple
+//allocations by checking and setting the ary->mmap_allocated
 //Return -1 on error
 static int _protected_malloc(BhArray *ary)
 {
+    if(ary->mmap_allocated || !PyArray_CHKFLAGS((PyArrayObject*)ary, NPY_ARRAY_OWNDATA))
+        return 0;
+    ary->mmap_allocated = 1;
+
     //Allocate page-size aligned memory.
     //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
     //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
@@ -182,7 +196,9 @@ static int _protected_malloc(BhArray *ary)
                      "Returned error code by mmap: %s.", strerror(errsv));
         return -1;
     }
-    //Update the ary data pointer.
+
+    //Lets free the NumPy allocated memory and use the mprotect'ed memory instead
+    free(ary->base.data);
     ary->base.data = addr;
 
     attach_signal((signed long)ary, (uintptr_t) ary->base.data,
@@ -193,17 +209,30 @@ static int _protected_malloc(BhArray *ary)
 static PyObject *
 BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    BhArray *ret = (BhArray *) PyArray_Type.tp_new(type, args, kwds);
-    if(!PyArray_CHKFLAGS((PyArrayObject*)ret, NPY_ARRAY_OWNDATA))
-        return (PyObject *) ret;//The array doesn't own the array data
-
-    //Lets free the NumPy allocated memory and allocate/mprotect instead
-    free(ret->base.data);
-
-    if(_protected_malloc(ret) != 0)
+    PyObject *ret = PyArray_Type.tp_new(type, args, kwds);
+    if(_protected_malloc((BhArray *) ret) != 0)
         return NULL;
+    return ret;
+}
 
-    return (PyObject *) ret;
+static PyObject *
+BhArray_finalize(PyObject *self, PyObject *args)
+{
+    int e = PyObject_IsInstance(self, (PyObject*) &BhArrayType);
+    if(e == -1)
+    {
+        return NULL;
+    }
+    else if (e == 0)
+    {
+        Py_RETURN_NONE;
+    }
+    ((BhArray*)self)->bhc_ary = Py_None;
+    Py_INCREF(Py_None);
+    //The __array_priority__ should be greater than 0.0 to give Bohrium precedence
+    ((BhArray*)self)->array_priority = PyFloat_FromDouble(2.0);
+
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -212,6 +241,7 @@ BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems)
     PyObject *obj;
     obj = (PyObject *)malloc(type->tp_basicsize);
     PyObject_Init(obj, type);
+    ((BhArray*)obj)->mmap_allocated = 0;
     return obj;
 }
 
@@ -243,32 +273,16 @@ finish:
 
     assert(!PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*)self), NPY_ITEM_REFCOUNT));
 
-    if(_munmap(PyArray_DATA((PyArrayObject*)self),
-               PyArray_NBYTES((PyArrayObject*)self)) == -1)
-        PyErr_Print();
+    if(self->mmap_allocated)
+    {
+        if(_munmap(PyArray_DATA((PyArrayObject*)self),
+                   PyArray_NBYTES((PyArrayObject*)self)) == -1)
+            PyErr_Print();
 
-    detach_signal((signed long)self, mem_access_callback);
-    self->base.data = NULL;
+        detach_signal((signed long)self, mem_access_callback);
+        self->base.data = NULL;
+    }
     BhArrayType.tp_base->tp_dealloc((PyObject*)self);
-}
-
-static PyObject *
-BhArray_finalize(PyObject *self, PyObject *args)
-{
-    int e = PyObject_IsInstance(self, (PyObject*) &BhArrayType);
-    if(e == -1)
-    {
-        return NULL;
-    }
-    else if (e == 0)
-    {
-        Py_RETURN_NONE;
-    }
-    ((BhArray*)self)->bhc_ary = Py_None;
-    //The __array_priority__ should be greater than 0.0 to give Bohrium precedence
-    ((BhArray*)self)->array_priority = PyFloat_FromDouble(2.0);
-    Py_INCREF(Py_None);
-    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -306,18 +320,19 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     void *d = NULL;
     if(get_bhc_data_pointer(base, 0, 1, &d) == -1)
         return NULL;
-    Py_DECREF(base);
     if(d != NULL)
     {
         if(_mremap_data(PyArray_DATA((PyArrayObject*)base), d,
                         PyArray_NBYTES((PyArrayObject*)base)) != 0)
             return NULL;
+            Py_DECREF(base);
     }
     else
     {
         if(_munprotect(PyArray_DATA((PyArrayObject*)base),
                        PyArray_NBYTES((PyArrayObject*)base)) != 0)
             return NULL;
+            Py_DECREF(base);
     }
 
     //Lets delete the current bhc_ary
