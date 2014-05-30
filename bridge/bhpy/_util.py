@@ -23,14 +23,17 @@ If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import _info
 import bhc
+import re
 
 #Flush the delayed operations for Bohrium execution
 def flush():
     bhc.bh_runtime_flush()
 
+p = re.compile("bh_multi_array_([a-z0-9]*)_p")
 #Returns the Bohrium name of the data type of the Bohrium-C array
 def dtype_from_bhc(bhc_ary):
-    return  bhc_ary.__str__().rsplit("_",1)[-1]
+    m = re.search(p, bhc_ary.__str__()).group(1)
+    return m
 
 #Returns the Bohrium name of the data type of the object 'obj'
 #NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array
