@@ -674,6 +674,7 @@ PyMODINIT_FUNC
 init_bh(void)
 {
     PyObject *m;
+    Py_ssize_t i;
 
     m = Py_InitModule("_bh", NULL);
     if (m == NULL)
@@ -685,6 +686,29 @@ init_bh(void)
     BhArrayType.tp_base = &PyArray_Type;
     if (PyType_Ready(&BhArrayType) < 0)
         return;
+
+    PyObject *_info = PyImport_ImportModule("bohrium._info");
+    if(_info == NULL)
+        return;
+
+    //HACK: In order to force NumPy scalars on the left hand side of an operand to use Bohrium
+    //we add all scalar types to the Method Resolution Order tuple.
+    PyObject *dtypes = PyObject_GetAttrString(_info, "numpy_types");
+    if(dtypes == NULL)
+        return;
+    Py_ssize_t ndtypes = PyList_GET_SIZE(dtypes);
+    Py_ssize_t old_size = PyTuple_GET_SIZE(BhArrayType.tp_mro);
+    Py_ssize_t new_size = old_size + ndtypes;
+    if(_PyTuple_Resize(&BhArrayType.tp_mro, new_size) != 0)
+        return;
+    for(i=0; i<ndtypes; ++i)
+    {
+        PyObject *t = PyObject_GetAttrString(PyList_GET_ITEM(dtypes, i), "type");
+        if(t == NULL)
+            return;
+        PyTuple_SET_ITEM(BhArrayType.tp_mro, i+old_size, t);
+    }
+    Py_DECREF(_info);
 
     PyModule_AddObject(m, "ndarray", (PyObject *)&BhArrayType);
 
