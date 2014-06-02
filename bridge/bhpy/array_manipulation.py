@@ -145,7 +145,7 @@ def diagflat(d,k=0):
     size = d.size+abs(k)
     A = array_create.zeros((size,size), dtype=d.dtype, bohrium=ndarray.check(d))
     Ad = diagonal(A, offset=k)
-    Ad[:] = d
+    Ad[...] = d
     return A
 
 def diag(v, k=0):

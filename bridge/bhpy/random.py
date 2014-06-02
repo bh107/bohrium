@@ -123,7 +123,7 @@ class Random:
         r_int = random123(s, self.seed, start_index=self.index, bohrium=bohrium)
         #Convert random numbers to float in the interval [0.0, 1.0).
         r = np.empty_like(r_int, dtype=dtype)
-        r[:] = r_int
+        r[...] = r_int
         r /= float(numpy.iinfo(dtype_uint).max)
 
         #Update the index offset for the next random call

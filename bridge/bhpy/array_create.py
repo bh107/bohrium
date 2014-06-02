@@ -111,7 +111,7 @@ def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohri
                 a = a.copy()
             if dtype != a.dtype:
                 t = empty_like(a,dtype=dtype)
-                t[:] = a
+                t[...] = a
                 a = t
             for i in xrange(a.ndim, ndmin):
                 a = numpy.expand_dims(a,i)
@@ -215,7 +215,7 @@ def ones(shape, dtype=float, bohrium=True):
 
     """
     A = empty(shape, dtype=dtype, bohrium=bohrium)
-    A[:] = A.dtype.type(1)
+    A[...] = A.dtype.type(1)
     return A
 
 def zeros(shape, dtype=float, bohrium=True):
@@ -260,7 +260,7 @@ def zeros(shape, dtype=float, bohrium=True):
 
     """
     A = empty(shape, dtype=dtype, bohrium=bohrium)
-    A[:] = A.dtype.type(0)
+    A[...] = A.dtype.type(0)
     return A
 
 def empty_like(a, dtype=None, bohrium=None):
@@ -372,7 +372,7 @@ def zeros_like(a, dtype=None, bohrium=None):
     if bohrium is None:
         bohrium = ndarray.check(a)
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
-    b[:] = b.dtype.type(0)
+    b[...] = b.dtype.type(0)
     return b
 
 def ones_like(a, dtype=None, bohrium=None):
@@ -431,7 +431,7 @@ def ones_like(a, dtype=None, bohrium=None):
     if bohrium is None:
         bohrium = ndarray.check(a)
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
-    b[:] = b.dtype.type(1)
+    b[...] = b.dtype.type(1)
     return b
 
 def arange(start, stop=None, step=1, dtype=None, bohrium=True):
@@ -531,7 +531,7 @@ def range(size, dtype=numpy.uint64):
     A = ndarray.new((size,), A.dtype, ret)
     if (dtype != A.dtype.type):
         B = empty_like(A,dtype=dtype)
-        B[:] = A[:]
+        B[...] = A[...]
         return B
     else:
         return A
