@@ -303,6 +303,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
         return BH_ERROR;
     }
 
+    DEBUG(TAG, "FUSING Subgraph #" << subgraph_idx << " block-symbol=" << block.symbol() << ".");
+
     //
     // JIT-compile the block if enabled
     //
@@ -430,7 +432,6 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
             ((graph.omask(subgraph_idx) & (ARRAY_OPS)) > 0)) {
             block.clear();
             block.compose(subgraph);
-
             fuse_mode(symbol_table, program, graph, subgraph_idx, block);
         } else {
         // SIJ_MODE

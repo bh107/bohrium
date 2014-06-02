@@ -30,15 +30,17 @@ namespace bohrium {
 namespace core {
 
 // Underlying graph representation and implementation
-typedef boost::adjacency_list_traits<boost::vecS, boost::vecS, boost::directedS> Traits;
+typedef boost::adjacency_list_traits<boost::vecS, boost::vecS, boost::bidirectionalS> Traits;
 
 // Graph representation
-typedef boost::subgraph< boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
+typedef boost::subgraph< boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS,
     boost::property<boost::vertex_color_t, int>, boost::property<boost::edge_index_t, int> > > Graph;
 
 // Iterating over vertices and edges
 typedef boost::graph_traits<Graph>::vertex_iterator vertex_iter;
 typedef boost::graph_traits<Graph>::edge_iterator edge_iter;
+typedef boost::graph_traits<Graph>::out_edge_iterator out_edge_iter;
+typedef boost::graph_traits<Graph>::in_edge_iterator in_edge_iter;
 
 class Dag
 {

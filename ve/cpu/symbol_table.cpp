@@ -27,12 +27,6 @@ SymbolTable::~SymbolTable(void)
     delete[] table_;
     delete[] reads_;
     delete[] writes_;
-    //free(reads_);
-    //free(table_);
-    //free(writes_);
-    //table_   = NULL;
-    //reads_   = NULL;
-    //writes_  = NULL;
 }
 
 string SymbolTable::text(void)

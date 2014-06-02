@@ -56,7 +56,7 @@ void compute_add(uint64_t nelements, uint64_t iterations)
     for(uint64_t i=0; i<iterations; ++i) {
         bh_add(res, res, (T)1);
         bh_add(res, res, (T)2);
-        Runtime::instance().flush();
+        //Runtime::instance().flush();
     }
     Runtime::instance().flush();
                                         // Output timing

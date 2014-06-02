@@ -29,7 +29,7 @@ import re
 def flush():
     bhc.bh_runtime_flush()
 
-p = re.compile("bh_multi_array_([a-z0-9]*)_p")
+p = re.compile("bh_multi_array_([a-z0-9]*)")
 #Returns the Bohrium name of the data type of the Bohrium-C array
 def dtype_from_bhc(bhc_ary):
     m = re.search(p, bhc_ary.__str__()).group(1)
