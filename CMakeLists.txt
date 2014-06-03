@@ -13,10 +13,6 @@ message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 project(BOHRIUM)
 include(FeatureSummary)
 
-set(VERSION_MAJOR "0")
-set(VERSION_MINOR "3")
-set(VERSION_PATCH "1")
-
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set (CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "The install prefix (default path is ~/.local)" FORCE)
 endif()
@@ -85,49 +81,3 @@ MESSAGE(STATUS "Compiler cxx min size flags:" ${CMAKE_CXX_FLAGS_MINSIZEREL})
 MESSAGE(STATUS "Compiler cxx flags:" ${CMAKE_CXX_FLAGS})
 
 feature_summary(WHAT ALL)
-
-
-#Lets try to find SYS_NAME and SYS_VERSION automatically
-find_program(LSB_RELEASE_EXECUTABLE lsb_release)
-if(LSB_RELEASE_EXECUTABLE)
-    # ---- Get the distribution codename ----
-    execute_process(COMMAND ${LSB_RELEASE_EXECUTABLE} -s -c
-      OUTPUT_VARIABLE TMP_LSB_CODENAME
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-    string(TOLOWER ${TMP_LSB_CODENAME} LSB_CODENAME)
-    # ---- Get the release name ----
-    execute_process(COMMAND ${LSB_RELEASE_EXECUTABLE} -s -r
-      OUTPUT_VARIABLE TMP_LSB_RELEASE
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-    string(TOLOWER ${TMP_LSB_RELEASE} LSB_RELEASE)
-    # ---- Get the distributor id ----
-    execute_process(COMMAND ${LSB_RELEASE_EXECUTABLE} -s -i
-      OUTPUT_VARIABLE TMP_LSB_DISTRIBUTOR_ID
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-    string(TOLOWER ${TMP_LSB_DISTRIBUTOR_ID} LSB_DISTRIBUTOR_ID)
-    set(SYS_NAME ${LSB_DISTRIBUTOR_ID})
-    set(SYS_VERSION ${LSB_RELEASED})
-else()
-    set(SYS_NAME Unknown)
-    set(SYS_VERSION 1.0)
-endif()
-
-#Package setup
-set(CPACK_GENERATOR "DEB")
-
-set(CPACK_PACKAGE_CONTACT "Bohrium <contact@bh107.org>")
-set(CPACK_PACKAGE_DESCRIPTION "Bohrium Runtime System")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python")
-set(CPACK_PACKAGE_NAME "Bohrium")
-set(CPACK_PACKAGE_VENDOR "Niels Bohr Institut")
-set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH})
-set(CPACK_PACKAGE_FILE_NAME "bohrium_${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}_${SYS_NAME}${SYS_VERSION}_${CMAKE_SYSTEM_PROCESSOR}")
-
-#Debian specific
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libctemplate-dev, libfftw3-dev")
-
-include(CPack)
-
-

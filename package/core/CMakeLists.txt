@@ -41,7 +41,7 @@ set(CPACK_PACKAGE_CONTACT "Bohrium (Bohrium Runtime System) <contact@bh107.org>"
 set(CPACK_PACKAGE_DESCRIPTION "Bohrium Runtime System")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python")
 set(CPACK_PACKAGE_NAME "Bohrium")
-set(CPACK_PACKAGE_VENDOR "Niels Bohr Institut")
+set(CPACK_PACKAGE_VENDOR "http://www.bh107.org")
 set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH})
