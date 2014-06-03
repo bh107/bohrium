@@ -3,6 +3,8 @@
 #include <set>
 #include "dag.hpp"
 #include "utils.hpp"
+#include "boost/graph/depth_first_search.hpp"
+#include "boost/graph/visitors.hpp"
 
 using namespace std;
 using namespace boost;
@@ -10,6 +12,56 @@ namespace bohrium{
 namespace core {
 
 const char Dag::TAG[] = "Dag";
+
+struct partitioner : public base_visitor<partitioner> {
+    partitioner(vector<tac_t>& program, vector<Graph*>& subgraphs) : program_(program), subgraphs_(subgraphs) {}
+    typedef on_discover_vertex event_filter;
+
+    template <class T, class Graph>
+    void operator()(T t, Graph& g) {
+        cout << t << endl;
+    }
+
+    vector<tac_t>& program_;
+    vector<Graph*>& subgraphs_;
+};
+
+/**
+ *  Construct a list of subgraphs... annotate the operation-mask of the subgraph.
+ */
+void Dag::partition(void)
+{
+    int64_t graph_idx=0;
+
+
+    for(int64_t idx=0; idx < program_.size();) {    // Then look at the remaining
+
+        // Look only at sequences of element-wise and system operations
+        int64_t sub_begin   = idx,
+                sub_end     = idx;
+        tac_t* prev = &program_[idx];
+        for(int64_t inner=idx; inner <program_.size(); ++inner) {
+            tac_t* cur = &program_[inner];
+
+            if (!fusable(*cur, *prev)) {
+                break;
+            }
+            
+            sub_end = inner;
+        }
+
+        // Stuff them into a subgraph
+        subgraphs_.push_back(&(graph_.create_subgraph()));
+        // Annotate operation mask for the subgraph
+        omask_.push_back(0);
+        for(int64_t sub_idx=sub_begin; sub_idx<=sub_end; ++sub_idx) {
+            add_vertex(sub_idx, *subgraphs_[graph_idx]);
+            omask_[graph_idx] |= program_[sub_idx].op;
+        }
+        graph_idx++;
+        idx = sub_end+1;
+    }
+}
 
 bool Dag::fusable(tac_t& cur, tac_t& prev)
 {
@@ -94,41 +146,6 @@ uint32_t Dag::omask(size_t subgraph_idx)
     return omask_[subgraph_idx];
 }
 
-/**
- *  Construct a list of subgraphs... annotate the operation-mask of the subgraph.
- */
-void Dag::partition(void)
-{
-    int64_t graph_idx=0;
-
-    for(int64_t idx=0; idx < program_.size();) {    // Then look at the remaining
-
-        // Look only at sequences of element-wise and system operations
-        int64_t sub_begin   = idx,
-                sub_end     = idx;
-        tac_t* prev = &program_[idx];
-        for(int64_t inner=idx; inner <program_.size(); ++inner) {
-            tac_t* cur = &program_[inner];
-
-            if (!fusable(*cur, *prev)) {
-                break;
-            }
-            
-            sub_end = inner;
-        }
-
-        // Stuff them into a subgraph
-        subgraphs_.push_back(&(graph_.create_subgraph()));
-        // Annotate operation mask for the subgraph
-        omask_.push_back(0);
-        for(int64_t sub_idx=sub_begin; sub_idx<=sub_end; ++sub_idx) {
-            add_vertex(sub_idx, *subgraphs_[graph_idx]);
-            omask_[graph_idx] |= program_[sub_idx].op;
-        }
-        graph_idx++;
-        idx = sub_end+1;
-    }
-}
 
 void Dag::array_deps(void)
 {
@@ -184,6 +201,43 @@ void Dag::array_deps(void)
             }
         }
     }
+    /*
+    for(int64_t idx=program_.size()-1; idx>=0; --idx) {
+        
+        tac_t& tac = program_[idx];
+
+        if ((tac.op & ARRAY_OPS)==0) {
+            continue;
+        }
+        if (in_degree(idx, graph_) == 0) {
+            cout << "ROOT" << idx << endl;
+            bool found = false;
+            for(int64_t other=idx-1; (other>=0) && (!found); --other) {
+                tac_t& other_tac = program_[other];
+                if ((other_tac.op & ARRAY_OPS)==0) {
+                    continue;
+                }
+                bh_base* output = symbol_table_[other_tac.out].base;
+                switch(tac_noperands(tac)) {
+                    case 3:
+                        if (symbol_table_[tac.in2].base == output) {
+                            found = true;
+                            add_edge(other, idx, graph_);
+                            break;
+                        }
+                    case 2:
+                        if (symbol_table_[tac.in1].base == output) {
+                            found = true;
+                            add_edge(other, idx, graph_);
+                            break;
+                        }
+                    case 1:
+                    default:
+                        break;
+                }
+            }
+        }
+    }*/
 }
 
 void Dag::system_deps(void)

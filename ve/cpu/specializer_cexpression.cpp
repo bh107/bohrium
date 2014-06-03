@@ -14,7 +14,7 @@ namespace cpu {
 //
 string Specializer::cexpression(SymbolTable& symbol_table, const Block& block, size_t tac_idx)
 {
-    tac_t& tac  = block.tac(tac_idx);
+    tac_t& tac  = block.array_tac(tac_idx);
     ETYPE etype = symbol_table[tac.out].etype;
 
     string expr_text;

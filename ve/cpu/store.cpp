@@ -31,6 +31,9 @@ Store::Store(const string object_directory, const string kernel_directory)
 
 Store::~Store()
 {
+    for(handle_storage::iterator it=handles.begin(); it!=handles.end(); ++it) {
+        dlclose(it->second);
+    }
 }
 
 string Store::text(void)
@@ -230,7 +233,7 @@ bool Store::load(string symbol, string library)
     if (!handles[library]) {            // Check that it opened
         core::error(
             errnum,
-            "Store::load(...,...) : dlopen(filename='%s', RTLF_NOW).",
+            "Store::load(...,...) : dlopen(filename='%s', RTLF_NOW).\n",
             library_abspath.c_str()
         );
         return false;

@@ -145,7 +145,6 @@ string Dag::dot(void)
     // Vertices
     std::pair<vertex_iter, vertex_iter> vip = vertices(graph_);
     for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
-        //ss << dot(&instr_[*vi], *vi) << endl;
         ss << dot(program_[*vi], *vi) << endl;
     }
     

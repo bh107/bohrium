@@ -1,7 +1,7 @@
 CC = mpicc
 #CC = gcc
 CPP = g++
-FLAGS = -O2 -lm
+FLAGS = -O2 -lm -ftree-vectorize
 BOOST = /opt/local/include/ 
 
 all: loop heat-eq-jacobi jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost

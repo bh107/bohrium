@@ -34,6 +34,48 @@ bool equivalent(const operand_t& one, const operand_t& other)
     if (one.layout != other.layout) {
         return false;
     }
+    if ((one.layout == CONSTANT)    && \
+        (one.etype == other.etype)) {
+        switch(one.etype) {
+            case BOOL:
+                return (*(unsigned char*)(*(one.data))  == \
+                        *(unsigned char*)(*(other.data)));
+            case INT8:
+                return (*(int8_t*)(*(one.data)) == \
+                        *(int8_t*)(*(other.data)));
+            case INT16:
+                return (*(int16_t*)(*(one.data)) == \
+                        *(int16_t*)(*(other.data)));
+            case INT32:
+                return (*(int32_t*)(*(one.data)) == \
+                        *(int32_t*)(*(other.data)));
+            case INT64:
+                return (*(int64_t*)(*(one.data)) == \
+                        *(int64_t*)(*(other.data)));
+            case UINT8:
+                return (*(uint8_t*)(*(one.data)) == \
+                        *(uint8_t*)(*(other.data)));
+            case UINT16:
+                return (*(uint16_t*)(*(one.data)) == \
+                        *(uint16_t*)(*(other.data)));
+            case UINT32:
+                return (*(uint32_t*)(*(one.data)) == \
+                        *(uint32_t*)(*(other.data)));
+            case UINT64:
+                return (*(uint64_t*)(*(one.data)) == \
+                        *(uint64_t*)(*(other.data)));
+            case FLOAT32:
+                return (*(float*)(*(one.data)) == \
+                        *(float*)(*(other.data)));
+            case FLOAT64:
+                return (*(double*)(*(one.data)) == \
+                        *(double*)(*(other.data)));
+            case COMPLEX64:
+            case COMPLEX128:
+            case PAIRLL:
+                return false;
+        }
+    }
     if (one.data != other.data) {
         return false;
     }
