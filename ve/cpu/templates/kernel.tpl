@@ -47,14 +47,6 @@ void KRN_{{SYMBOL}}(operand_t** args)
     {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
     assert(a{{NR}}_first != NULL);
 
-    {{#CONSTANT}}
-    const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
-    {{/CONSTANT}}
-
-    {{#SCALAR}}
-    {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
-    {{/SCALAR}}
-
     {{#ARRAY}}
     int64_t  a{{NR}}_start  = args[{{NR}}]->start;
     int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
@@ -64,6 +56,21 @@ void KRN_{{SYMBOL}}(operand_t** args)
     a{{NR}}_first += a{{NR}}_start;
     {{/ARRAY}}
 
+    // TODO: These should be locally scoped to avoid false-sharing
+    //          and to enable write-out of non-temp and non-const scalars
+    //          to main-memory.
+    {{#SCALAR}}
+    {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
+    {{/SCALAR}}
+
+    {{#SCALAR_CONST}}
+    const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
+    {{/SCALAR_CONST}}
+
+    {{#SCALAR_TEMP}}
+    {{TYPE}} a{{NR}}_current;
+    {{/SCALAR_TEMP}}
+
     {{/ARGUMENT}}
     
     //
@@ -71,12 +78,9 @@ void KRN_{{SYMBOL}}(operand_t** args)
     //
     {{>OPERATIONS}}
 
-    // Write scalar to main-memory.
+    // Write scalars to main-memory.
     // TODO: This is incorrect when using threading! AHHH THAT IS WHY
     //       it fails! Multiple threads are writing to the same register!
     //       that is why! When fusing this should be handled as scalar-expansion!
     //       The unpacking should be handled within the operation!
-    {{#SCALAR}}
-    *a{{NR}}_first = a{{NR}}_current;
-    {{/SCALAR}}
 }
