@@ -111,6 +111,8 @@ public:
      */
     std::set<size_t>& freed(void);
 
+    bool is_temp(size_t operand_idx);
+
     /**
      * Returns the set of operand_indexes which are temporary operands.
      */
@@ -142,9 +144,9 @@ private:
     //
     // The following are used to detect temporary arrays
     //
-    std::set<size_t> disqualified_;  // Operands which could be temps
-    std::set<size_t> freed_;         // Operands which are freed
-    std::set<size_t> temp_;         // Operands which are temps
+    std::set<size_t> disqualified_;     // Operands which could be temps
+    std::set<size_t> freed_;            // Operands which are freed
+    std::set<size_t> temp_;             // Operands which are temps
 
     size_t capacity_;    // Capacity reserved
     size_t nsymbols_;    // The current number of symbols in the table

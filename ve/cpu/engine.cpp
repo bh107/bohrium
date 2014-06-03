@@ -80,6 +80,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
     bh_error res = BH_SUCCESS;
 
     tac_t& tac = block.tac(0);
+    DEBUG(TAG, tac_text(tac));
 
     switch(tac.op) {
         case NOOP:
@@ -371,6 +372,9 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     // Execute block handling array operations.
     // 
     TIMER_START
+    DEBUG(TAG, "Executing...");
+    DEBUG(TAG, block.symbol());
+    DEBUG(TAG, symbol_table.text("H"));
     storage.funcs[block.symbol()](block.operands());
     TIMER_STOP(block.symbol())
 
@@ -399,18 +403,21 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 
     bh_error res = BH_SUCCESS;
 
+    DEBUG(TAG, "0");
     //
     // Instantiate the symbol-table and tac-program
     SymbolTable symbol_table(ninstrs*6+2);              // SymbolTable
     vector<tac_t> program(ninstrs);                     // Program
-
+    DEBUG(TAG, "1");
     // Map instructions to tac and symbol_table
     instrs_to_tacs(instrs, ninstrs, program, symbol_table);
     symbol_table.count_tmp();
 
+    DEBUG(TAG, "2");
     //
     // Construct graph with instructions as nodes.
     Dag graph(symbol_table, program);                   // Graph
+    DEBUG(TAG, "3");
 
     if (dump_rep) {                                     // Dump it to file
         stringstream filename;
@@ -420,35 +427,44 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
         fout << graph.dot() << std::endl;
     }
 
+    DEBUG(TAG, "4(" << graph.subgraphs().size() << ")");
     //
     //  Map subgraphs to blocks one at a time and execute them.
     Block block(symbol_table, program);                 // Block
     for(size_t subgraph_idx=0; subgraph_idx<graph.subgraphs().size(); ++subgraph_idx) {
         Graph& subgraph = *(graph.subgraphs()[subgraph_idx]);
 
+        DEBUG(TAG, "4." << subgraph_idx);
         // FUSE_MODE
         if (jit_fusion && \
             ((graph.omask(subgraph_idx) & (NON_FUSABLE))==0) && \
             ((graph.omask(subgraph_idx) & (ARRAY_OPS)) > 0)) {
+            DEBUG(TAG, "4F");
             block.clear();
             block.compose(subgraph);
             fuse_mode(symbol_table, program, graph, subgraph_idx, block);
         } else {
         // SIJ_MODE
             std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
+            DEBUG(TAG, "4S(" << num_vertices(subgraph) << ")");
             for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
                 // Compose the block
+                DEBUG(TAG, "4." << *vi);
+                DEBUG(TAG, "4.clear");
                 block.clear();
+                DEBUG(TAG, "4.compose");
                 block.compose(  
                     subgraph.local_to_global(*vi), subgraph.local_to_global(*vi)
                 );
                 
+                DEBUG(TAG, "4.sij");
                 // Generate/Load code and execute it
                 sij_mode(symbol_table, program, block);
             }
         }
     }
     
+    DEBUG(TAG, "5");
     return res;
 }
 

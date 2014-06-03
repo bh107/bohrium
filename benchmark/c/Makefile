@@ -1,10 +1,10 @@
 CC = mpicc
 #CC = gcc
 CPP = g++
-FLAGS = -O2 -lm -ftree-vectorize
+FLAGS = -O2 -lm -fopenmp -ftree-vectorize
 BOOST = /opt/local/include/ 
 
-all: loop heat-eq-jacobi jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost
+all: fusion.unary heat-eq-jacobi jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost
 
 bench: all
 	./jacobi.sh
@@ -13,7 +13,7 @@ clean:
 	rm -f jacobi-naive jacobi-simple jacobi-tuned jacobi-vtuned jacobi-boost *~
 
 heat-eq-jacobi: src/heat-eq-jacobi.c
-	$(CC) src/heat-eq-jacobi.c -o bin/heat-eq-jacobi -O2 -lm -fopenmp -std=gnu99
+	$(CC) src/heat-eq-jacobi.c -o bin/heat-eq-jacobi -std=gnu99
 
 jacobi-naive: src/jacobi-naive.c
 	$(CC) src/jacobi-naive.c -o bin/jacobi-naive $(FLAGS)
@@ -30,5 +30,5 @@ jacobi-vtuned: src/jacobi-vtuned.c
 jacobi-boost: src/jacobi-boost.cc
 	$(CPP) -I$(BOOST) src/jacobi-boost.cc -o bin/jacobi-boost $(FLAGS)
 
-loop: src/loop.c
-	$(CPP) -DCPU_PROFILING-I$(BOOST) src/loop.c -o bin/loop $(FLAGS)
+fusion.unary: src/fusion.unary.c
+	$(CPP) -DCPU_PROFILING-I$(BOOST) src/fusion.unary.c -o bin/fusion.unary $(FLAGS)

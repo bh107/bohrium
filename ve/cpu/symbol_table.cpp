@@ -9,8 +9,6 @@ const char SymbolTable::TAG[] = "SymbolTable";
 
 SymbolTable::SymbolTable(size_t n) : table_(NULL), reads_(NULL), writes_(NULL), capacity_(n), nsymbols_(0)
 {
-    DEBUG(TAG, "SymbolTable("<<n<<");");
-
     table_ = new operand_t[capacity_];
 
     reads_ = new size_t[capacity_];
@@ -122,6 +120,11 @@ set<size_t>& SymbolTable::freed(void)
 set<size_t>& SymbolTable::temp(void)
 {
     return temp_;
+}
+
+bool SymbolTable::is_temp(size_t operand_idx)
+{
+    return temp_.find(operand_idx) != temp_.end();
 }
 
 size_t SymbolTable::import(operand_t& operand)

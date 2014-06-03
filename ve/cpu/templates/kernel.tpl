@@ -45,18 +45,13 @@ void KRN_{{SYMBOL}}(operand_t** args)
     // Argument {{NR}} - [{{#CONSTANT}}CONSTANT{{/CONSTANT}}{{#SCALAR}}SCALAR{{/SCALAR}}{{#ARRAY}}ARRAY{{/ARRAY}}]
     //
     {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+    assert(a{{NR}}_first != NULL);
 
     {{#CONSTANT}}
     const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
     {{/CONSTANT}}
 
     {{#SCALAR}}
-    int64_t  a{{NR}}_start  = args[{{NR}}]->start;
-    int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
-    int64_t  a{{NR}}_ndim   = args[{{NR}}]->ndim;    
-    int64_t *a{{NR}}_shape  = args[{{NR}}]->shape;
-    int64_t *a{{NR}}_stride = args[{{NR}}]->stride;
-    a{{NR}}_first += a{{NR}}_start;
     {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
     {{/SCALAR}}
 
@@ -69,11 +64,19 @@ void KRN_{{SYMBOL}}(operand_t** args)
     a{{NR}}_first += a{{NR}}_start;
     {{/ARRAY}}
 
-    assert(a{{NR}}_first != NULL);
     {{/ARGUMENT}}
     
     //
     // Operation(s)
     //
     {{>OPERATIONS}}
+
+    // Write scalar to main-memory.
+    // TODO: This is incorrect when using threading! AHHH THAT IS WHY
+    //       it fails! Multiple threads are writing to the same register!
+    //       that is why! When fusing this should be handled as scalar-expansion!
+    //       The unpacking should be handled within the operation!
+    {{#SCALAR}}
+    *a{{NR}}_first = a{{NR}}_current;
+    {{/SCALAR}}
 }

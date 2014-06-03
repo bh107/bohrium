@@ -38,8 +38,8 @@ void compute_identity(uint64_t nelements, uint64_t iterations)
     for(uint64_t i=0; i<iterations; ++i) {
         bh_identity(res, (T)1);
         bh_identity(res, (T)2);
+        Runtime::instance().flush();
     }
-    Runtime::instance().flush();
                                         // Output timing
     cout << "{elapsed-time: "<< (sample_time()-start)/1000000.0 <<"";
 }
@@ -56,7 +56,7 @@ void compute_add(uint64_t nelements, uint64_t iterations)
     for(uint64_t i=0; i<iterations; ++i) {
         bh_add(res, res, (T)1);
         bh_add(res, res, (T)2);
-        //Runtime::instance().flush();
+        Runtime::instance().flush();
     }
     Runtime::instance().flush();
                                         // Output timing
@@ -88,8 +88,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    compute_add<float>(args.size[0], args.size[1]);
-    //compute_identity<float>(args.size[0], args.size[1]);
+    //compute_add<float>(args.size[0], args.size[1]);
+    compute_identity<float>(args.size[0], args.size[1]);
 
     return 0;
 }

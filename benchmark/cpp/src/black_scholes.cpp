@@ -42,10 +42,10 @@ multi_array<T>& cnd(multi_array<T>& x)
     k = 1.0 / (1.0 + 0.2316419 * l);
     w = 1.0 - 1.0 / pp * exp(-1.0*l*l/2.0) * \
         (a1*k + \
-         a2*(pow(k,(T)2)) + \
-         a3*(pow(k,(T)3)) + \
-         a4*(pow(k,(T)4)) + \
-         a5*(pow(k,(T)5)));
+         a2*(add(k,(T)2)) + \
+         a3*(add(k,(T)3)) + \
+         a4*(add(k,(T)4)) + \
+         a5*(add(k,(T)5)));
 
     mask = x < 0.0;
     return w * as<T>(!mask) + (1.0-w)* as<T>(mask);
