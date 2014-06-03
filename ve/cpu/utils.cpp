@@ -34,7 +34,7 @@ bool equivalent(const operand_t& one, const operand_t& other)
     if (one.layout != other.layout) {
         return false;
     }
-    if ((one.layout == CONSTANT)    && \
+    if ((one.layout == SCALAR_CONST)    && \
         (one.etype == other.etype)) {
         switch(one.etype) {
             case BOOL:

@@ -267,7 +267,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     fill(writes.begin(), writes.end(), 0);
     set<size_t> temps;
 
-    LAYOUT fusion_layout = CONSTANT;
+    LAYOUT fusion_layout = SCALAR;
     for(size_t tac_idx=0; tac_idx<block.ntacs(); ++tac_idx) {
         tac_t& tac = block.tac(tac_idx);
         count_rw(tac, freed, reads, writes, temps);

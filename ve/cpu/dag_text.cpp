@@ -16,7 +16,7 @@ string Dag::dot_operand(int64_t idx)
 {
     operand_t& opr = symbol_table_[idx];
     stringstream txt;
-    if (opr.layout == CONSTANT) {
+    if (opr.layout == SCALAR_CONST) {
         txt << "K";
     } else {
         if (NULL == opr.base) {

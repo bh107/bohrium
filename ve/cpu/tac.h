@@ -121,11 +121,12 @@ typedef enum ETYPE {
 } ETYPE;
 
 typedef enum LAYOUT {
-    CONSTANT   = 1,
-    SCALAR     = 2,
-    CONTIGUOUS = 4,
-    STRIDED    = 8,
-    SPARSE     = 16
+    SCALAR     = 1,
+    SCALAR_CONST = 2,
+    SCALAR_TEMP = 4,
+    CONTIGUOUS = 8,
+    STRIDED    = 16,
+    SPARSE     = 32
 } LAYOUT;   // Uses a single byte
 
 typedef struct tac {
@@ -148,24 +149,16 @@ typedef struct operand {
     int64_t ndim;       // Number of dimensions of the array
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
-    bh_base* base;      // Pointer to operand base or NULL when layout == CONSTANT.
+    bh_base* base;      // Pointer to operand base or NULL when layout == SCALAR_CONST.
 } operand_t;            // Meta-data for a block argument
 
-#define SCALAR_LAYOUT  (CONSTANT | SCALAR)
-#define ARRAY_LAYOUT   (CONTIGUOUS | STRIDED | SPARSE)
-#define CONT_COMPATIBLE (CONSTANT | SCALAR | CONTIGUOUS)
+#define SCALAR_LAYOUT   (SCALAR | SCALAR_CONST | SCALAR_TEMP)
+#define ARRAY_LAYOUT    (CONTIGUOUS | STRIDED | SPARSE)
+#define CONT_COMPATIBLE (SCALAR | SCALAR_CONST | SCALAR_TEMP | CONTIGUOUS)
 
 #define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    7
 #define NBUILTIN_OPERS  62
 #define NON_FUSABLE ( GENERATE | REDUCE | SCAN | EXTENSION )
-
-//
-// For fuse-ranges...
-typedef struct triplet {
-    size_t begin;
-    size_t end;
-    LAYOUT layout;
-} triplet_t;
 
 #endif

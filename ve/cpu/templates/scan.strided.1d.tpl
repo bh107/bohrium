@@ -1,11 +1,12 @@
 //
 // Scan operation on one-dimensional arrays with strided access.
 {
-    // TODO: Unpacking and expansion of scalars
-
-    {{#OPERAND}}{{#ARRAY}}
-    {{TYPE}} *a{{NR}}_current = a{{NR}}_first;
-    {{/ARRAY}}{{/OPERAND}}
+    {{#OPERAND}}
+    {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
+    {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
+    {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
+    {{#ARRAY}}{{TYPE}} *a{{NR}}_current = a{{NR}}_first;{{/ARRAY}}
+    {{/OPERAND}}
 
     {{TYPE_AXIS}} axis  = *a{{NR_SINPUT}}_first;
 

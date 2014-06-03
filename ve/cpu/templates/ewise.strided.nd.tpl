@@ -12,11 +12,12 @@
     int64_t cur_e     = 0;
     int64_t j;
 
-    // TODO: Unpacking and expansion of scalars
-
-    {{#OPERAND}}{{#ARRAY}}
-    int64_t  a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];
-    {{/ARRAY}}{{/OPERAND}}
+    {{#OPERAND}}
+    {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
+    {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
+    {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
+    {{#ARRAY}}int64_t  a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];{{/ARRAY}}
+    {{/OPERAND}}
 
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;

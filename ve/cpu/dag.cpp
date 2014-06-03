@@ -175,7 +175,7 @@ void Dag::array_deps(void)
             // Search operands of other instruction
             switch(tac_noperands(other_tac)) {
                 case 3:
-                    if (symbol_table_[other_tac.in2].layout != CONSTANT) {
+                    if (symbol_table_[other_tac.in2].layout != SCALAR_CONST) {
                         if (symbol_table_[other_tac.in2].base == output) {
                             found = true;
                             add_edge(idx, other, graph_);
@@ -183,7 +183,7 @@ void Dag::array_deps(void)
                         }
                     }
                 case 2:
-                    if (symbol_table_[other_tac.in1].layout != CONSTANT) {
+                    if (symbol_table_[other_tac.in1].layout != SCALAR_CONST) {
                         if (symbol_table_[other_tac.in1].base == output) {
                             found = true;
                             add_edge(idx, other, graph_);

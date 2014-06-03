@@ -14,11 +14,13 @@
             work += a{{NR_OUTPUT}}_shape[0] % nthreads;
         }
         int64_t work_end = work_offset+work;
-        // TODO: Unpacking and expansion of scalars
-                                                // Pointer fixes
-        {{#OPERAND}}{{#ARRAY}}
-        {{TYPE}} *a{{NR}}_current = a{{NR}}_first + (work_offset *a{{NR}}_stride[0]);
-        {{/ARRAY}}{{/OPERAND}}
+        
+        {{#OPERAND}}
+        {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
+        {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
+        {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
+        {{#ARRAY}}{{TYPE}} *a{{NR}}_current = a{{NR}}_first + (work_offset *a{{NR}}_stride[0]);{{/ARRAY}}
+        {{/OPERAND}}
 
         for (int64_t i = work_offset; i < work_end; ++i) {
             {{#OPERATORS}}

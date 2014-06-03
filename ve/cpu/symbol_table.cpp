@@ -147,7 +147,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         table_[arg_idx].shape[0]     = 1;
         table_[arg_idx].stride       = instr.operand[operand_idx].shape;
         table_[arg_idx].stride[0]    = 0;
-        table_[arg_idx].layout       = CONSTANT;
+        table_[arg_idx].layout       = SCALAR_CONST;
         table_[arg_idx].base         = NULL;
     } else {
         table_[arg_idx].const_data= NULL;
@@ -246,7 +246,6 @@ void SymbolTable::count_tmp(void)
 void SymbolTable::turn_scalar(size_t symbol_idx)
 {
     operand_t& operand = table_[symbol_idx];
-    // TODO: Introduce SCALAR as LAYOUT instead of abusing CONSTANT..
     operand.layout = SCALAR;
 
     //

@@ -13,10 +13,12 @@
     int64_t shape_axis  = a{{NR_OUTPUT}}_shape[axis];
     int64_t ndim        = a{{NR_OUTPUT}}_ndim;
 
-    // TODO: Unpacking and expansion of scalars
-    {{#OPERAND}}{{#ARRAY}}
-    int64_t  a{{NR}}_stride_axis = a{{NR_OUTPUT}}_stride[axis];
-    {{/ARRAY}}{{/OPERAND}}
+    {{#OPERAND}}
+    {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
+    {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
+    {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
+    {{#ARRAY}}int64_t  a{{NR}}_stride_axis = a{{NR_OUTPUT}}_stride[axis];{{/ARRAY}}
+    {{/OPERAND}}
 
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
