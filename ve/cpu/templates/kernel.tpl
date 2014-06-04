@@ -56,29 +56,6 @@ void KRN_{{SYMBOL}}(operand_t** args)
     a{{NR}}_first += a{{NR}}_start;
     {{/ARRAY}}
 
-    /*
-    // TODO: These should be locally scoped to avoid false-sharing
-    //          and to enable write-out of non-temp and non-const scalars
-    //          to main-memory.
-    {{#SCALAR}}
-    {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
-    {{/SCALAR}}
-
-    {{#SCALAR_CONST}}
-    const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
-    {{/SCALAR_CONST}}
-
-    {{#SCALAR_TEMP}}
-    {{TYPE}} a{{NR}}_current;
-    {{/SCALAR_TEMP}}
-
-    // Write scalars to main-memory.
-    // TODO: This is incorrect when using threading! AHHH THAT IS WHY
-    //       it fails! Multiple threads are writing to the same register!
-    //       that is why! When fusing this should be handled as scalar-expansion!
-    //       The unpacking should be handled within the operation!
-    */
-
     {{/ARGUMENT}}
     
     //
