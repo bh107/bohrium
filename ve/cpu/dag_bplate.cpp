@@ -13,7 +13,7 @@ using namespace boost;
 namespace bohrium{
 namespace core {
 
-void partitioned_visit(Graph& graph, Graph& subgraph,
+void topdown_visit(Graph& graph, Graph& subgraph,
                         vector<tac_t>& program, SymbolTable& symbol_table,
                         uint32_t& omask,
                         vector<bool>& visited,
@@ -27,19 +27,19 @@ void partitioned_visit(Graph& graph, Graph& subgraph,
         bool last       = (n_out == 0);
         bool inbetween  = !(first || last);
 
+        tac_t& tac = program[v_idx];
+
         if ((n_in > 1) && inbetween) {  // Cannot fuse something with multiple deps
             return;
         }
                                         // Check the operations
-        if ((!first) && ((program[v_idx].op & NON_FUSABLE)>0)) {
-            return;
-        }
-        if ((!first) && ((program[p_idx].op & NON_FUSABLE)>0)) {
-            return;
-        }
-
-        // Check for contractable
-        if (first) {
+        if (!first) {
+            if ((program[v_idx].op & NON_FUSABLE)>0) {
+                return;
+            }
+            if ((program[p_idx].op & NON_FUSABLE)>0) {
+                return;
+            }
         }
 
         visited[v_idx] = true;
@@ -49,7 +49,7 @@ void partitioned_visit(Graph& graph, Graph& subgraph,
         // Visit children
         pair<out_edge_iter, out_edge_iter> oeip = out_edges(v_idx, graph);
         for(out_edge_iter oei = oeip.first; oei != oeip.second; ++oei) {
-            partitioned_visit(
+            topdown_visit(
                 graph, subgraph,
                 program, symbol_table,
                 omask,
@@ -57,6 +57,81 @@ void partitioned_visit(Graph& graph, Graph& subgraph,
             );
         }
     }
+}
+
+
+
+void bottomup(Graph& graph, Graph& subgraph,
+                        vector<tac_t>& program, SymbolTable& symbol_table,
+                        uint32_t& omask,
+                        vector<bool>& visited,
+                        size_t r_idx, size_t p_idx, size_t v_idx)
+{
+    if (!visited[v_idx]) {
+        size_t n_in  = in_degree(v_idx, graph);
+        size_t n_out = out_degree(v_idx, graph);
+
+        bool first      = (r_idx == v_idx);
+        bool last       = (n_out == 0);
+        bool inbetween  = !(first || last);
+
+        tac_t& tac = program[v_idx];
+
+        if ((n_in > 1) && inbetween) {  // Cannot fuse something with multiple deps
+            return;
+        }
+                                        // Check the operations
+        if (!first) {
+            if ((program[v_idx].op & NON_FUSABLE)>0) {
+                return;
+            }
+            if ((program[p_idx].op & NON_FUSABLE)>0) {
+                return;
+            }
+            /*            
+            // Check for contractable
+            if ((program[p_idx].op & ARRAY_OPS>0) && (!symbol_table.is_temp(program[p_idx].out))) {
+                return;
+            }
+            if ((program[v_idx].op & ARRAY_OPS>0) && (!symbol_table.is_temp(program[v_idx].out))) {
+                return;
+            }*/
+        }
+
+        visited[v_idx] = true;
+        add_vertex(v_idx, subgraph);
+        omask |= program[v_idx].op;
+        
+        // Visit children
+        pair<out_edge_iter, out_edge_iter> oeip = out_edges(v_idx, graph);
+        for(out_edge_iter oei = oeip.first; oei != oeip.second; ++oei) {
+            bottomup(
+                graph, subgraph,
+                program, symbol_table,
+                omask,
+                visited, r_idx, v_idx, target(*oei, graph)
+            );
+        }
+    }
+}
+
+void up(Graph& graph, Graph& subgraph,
+                        vector<tac_t>& program, SymbolTable& symbol_table,
+                        uint32_t& omask,
+                        vector<bool>& visited,
+                        size_t r_idx, size_t p_idx, size_t v_idx)
+{
+    tac_t& tac = program[v_idx];
+    in_edges(v_idx, graph);
+
+}
+
+void down(Graph& graph, Graph& subgraph,
+                        vector<tac_t>& program, SymbolTable& symbol_table,
+                        uint32_t& omask,
+                        vector<bool>& visited,
+                        size_t r_idx, size_t p_idx, size_t v_idx)
+{
 }
 
 void partitioned(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omasks, vector<tac_t>& program, SymbolTable& symbol_table)
@@ -69,9 +144,8 @@ void partitioned(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omas
             Graph* subgraph = &(graph.create_subgraph());
             subgraphs.push_back(subgraph);
             uint32_t omask = 0;
-            partitioned_visit(graph, *subgraph, program, symbol_table,
-                                omask,
-                                visited, *vi, *vi, *vi);
+            bottomup(graph, *subgraph, program, symbol_table,
+                        omask,visited, *vi, *vi, *vi);
             omasks[nsubs] = omask;
             nsubs++;
         }
@@ -84,7 +158,6 @@ Dag::Dag(SymbolTable& symbol_table, std::vector<tac_t>& program)
 {
     array_deps();   // Construct dependencies based on array operations
     system_deps();  // Construct dependencies based on system operations
-    //partition();    // Construct subgraphs
 
     partitioned(graph_, subgraphs_, omask_, program, symbol_table);
 }

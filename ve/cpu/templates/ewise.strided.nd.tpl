@@ -12,9 +12,12 @@
     int64_t cur_e     = 0;
     int64_t j;
 
-    {{#OPERAND}}{{#ARRAY}}
-    int64_t  a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];
-    {{/ARRAY}}{{/OPERAND}}
+    {{#OPERAND}}
+    {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
+    {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
+    {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
+    {{#ARRAY}}int64_t  a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];{{/ARRAY}}
+    {{/OPERAND}}
 
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
@@ -55,14 +58,6 @@
             }                               // Loop then continues to increment the next dimension
         }
     }
-    
-    {{#OPERAND}}{{#SCALAR}}
-    // Write scalar-operand to main-memory;
-    // Note this is only necessary for non-temporary scalar-operands.
-    // So this code should only be generated for non-temps.
-    if ({{NR_OUTPUT}} == {{NR}}) {
-        *a{{NR}}_first = a{{NR}}_current;
-    }
-    {{/SCALAR}}{{/OPERAND}}
+    // TODO: Handle write-out of non-temp and non-const scalars.
 }
 

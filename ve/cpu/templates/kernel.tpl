@@ -42,25 +42,21 @@ void KRN_{{SYMBOL}}(operand_t** args)
     //
     {{#ARGUMENT}}
     ///////////////////////////////////////////////////
-    // Argument {{NR}} - [{{#CONSTANT}}CONSTANT{{/CONSTANT}}{{#SCALAR}}SCALAR{{/SCALAR}}{{#ARRAY}}ARRAY{{/ARRAY}}]
+    // Argument {{NR}} - [{{#SCALAR}}SCALAR{{/SCALAR}}{{#SCALAR_CONST}}SCALAR_CONST{{/SCALAR_CONST}}{{#SCALAR_TEMP}}SCALAR_TEMP{{/SCALAR_TEMP}}{{#ARRAY}}ARRAY{{/ARRAY}}]
     //
-    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
-
-    {{#CONSTANT}}
-    const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
-    {{/CONSTANT}}
-
     {{#SCALAR}}
-    int64_t  a{{NR}}_start  = args[{{NR}}]->start;
-    int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
-    int64_t  a{{NR}}_ndim   = args[{{NR}}]->ndim;    
-    int64_t *a{{NR}}_shape  = args[{{NR}}]->shape;
-    int64_t *a{{NR}}_stride = args[{{NR}}]->stride;
-    a{{NR}}_first += a{{NR}}_start;
-    {{TYPE}} a{{NR}}_current = *a{{NR}}_first;
+    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+    assert(a{{NR}}_first != NULL);
     {{/SCALAR}}
 
+    {{#SCALAR_CONST}}
+    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+    assert(a{{NR}}_first != NULL);
+    {{/SCALAR_CONST}}
+
     {{#ARRAY}}
+    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+    assert(a{{NR}}_first != NULL);
     int64_t  a{{NR}}_start  = args[{{NR}}]->start;
     int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
     int64_t  a{{NR}}_ndim   = args[{{NR}}]->ndim;    
@@ -69,7 +65,6 @@ void KRN_{{SYMBOL}}(operand_t** args)
     a{{NR}}_first += a{{NR}}_start;
     {{/ARRAY}}
 
-    assert(a{{NR}}_first != NULL);
     {{/ARGUMENT}}
     
     //

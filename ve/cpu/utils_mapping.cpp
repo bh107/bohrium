@@ -179,10 +179,12 @@ string etype_to_ctype_text(ETYPE etype)
 string layout_text(LAYOUT layout)
 {
     switch(layout) {
-        case CONSTANT:
-            return "CONSTANT";
         case SCALAR:
             return "SCALAR";
+        case SCALAR_CONST:
+            return "SCALAR_CONST";
+        case SCALAR_TEMP:
+            return "SCALAR_TEMP";
         case CONTIGUOUS:
             return "CONTIGUOUS";
         case STRIDED:
@@ -196,10 +198,12 @@ string layout_text(LAYOUT layout)
 string layout_text_shand(LAYOUT layout)
 {
     switch(layout) {
-        case CONSTANT:
-            return "K";
         case SCALAR:
-            return "X";
+            return "I";
+        case SCALAR_CONST:
+            return "K";
+        case SCALAR_TEMP:
+            return "T";
         case CONTIGUOUS:
             return "C";
         case STRIDED:
