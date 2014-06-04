@@ -103,7 +103,7 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
 
 
   file(APPEND ${DEBIAN_CONTROL} "\n"
-    "Standards-Version: 3.8.4\n"
+    "Standards-Version: 3.9.5\n"
     "Homepage: ${CPACK_PACKAGE_VENDOR}\n"
     "\n"
     "Package: ${CPACK_DEBIAN_PACKAGE_NAME}\n"
@@ -260,6 +260,7 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
     "\n"
     "binary-arch: build\n"
     "	cd $(BUILDDIR); cmake -DDEB_SRC_PPA_ONCE=1 -DCMAKE_INSTALL_PREFIX=../debian/tmp/usr -P cmake_install.cmake\n"
+    "	mv debian/tmp/usr/lib/python2.7/site-packages debian/tmp/usr/lib/python2.7/dist-packages\n"
     "	mkdir -p debian/tmp/DEBIAN\n"
     "	dpkg-gensymbols -p${CPACK_DEBIAN_PACKAGE_NAME}\n"
     )
