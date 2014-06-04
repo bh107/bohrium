@@ -266,6 +266,19 @@ void SymbolTable::turn_scalar(size_t symbol_idx)
     //
 }
 
+void SymbolTable::turn_scalar_temp(size_t symbol_idx)
+{
+    operand_t& operand = table_[symbol_idx];
+    operand.layout = SCALAR_TEMP;
+
+    // If data is already allocated for operand then we do no lower nelem
+    // since the nelem is needed by victim-cache to store it... it is important that nelem
+    // correctly reflects the amount of elements for which storage is allocated.
+    if (NULL == *operand.data) {
+        operand.nelem = 1;
+    }
+}
+
 operand_t* SymbolTable::operands(void)
 {
     return table_;

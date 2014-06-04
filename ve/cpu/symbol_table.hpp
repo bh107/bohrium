@@ -71,6 +71,11 @@ public:
     void turn_scalar(size_t operand_idx);
 
     /**
+     *  Turn an array operand into a temporary scalar.
+     */
+    void turn_scalar_temp(size_t operand_idx);
+
+    /**
      * Maintain records of how many times an operand has been read, written,
      * and whether it is potentially a temporary operand.
      *

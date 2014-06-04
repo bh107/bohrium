@@ -44,10 +44,19 @@ void KRN_{{SYMBOL}}(operand_t** args)
     ///////////////////////////////////////////////////
     // Argument {{NR}} - [{{#SCALAR}}SCALAR{{/SCALAR}}{{#SCALAR_CONST}}SCALAR_CONST{{/SCALAR_CONST}}{{#SCALAR_TEMP}}SCALAR_TEMP{{/SCALAR_TEMP}}{{#ARRAY}}ARRAY{{/ARRAY}}]
     //
+    {{#SCALAR}}
     {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
     assert(a{{NR}}_first != NULL);
+    {{/SCALAR}}
+
+    {{#SCALAR_CONST}}
+    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+    assert(a{{NR}}_first != NULL);
+    {{/SCALAR_CONST}}
 
     {{#ARRAY}}
+    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+    assert(a{{NR}}_first != NULL);
     int64_t  a{{NR}}_start  = args[{{NR}}]->start;
     int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
     int64_t  a{{NR}}_ndim   = args[{{NR}}]->ndim;    

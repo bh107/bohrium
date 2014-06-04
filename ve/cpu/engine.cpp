@@ -294,7 +294,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     //
     // Turn temps into scalars
     for(set<size_t>::iterator ti=temps.begin(); ti!=temps.end(); ++ti) {
-        symbol_table.turn_scalar(*ti);
+        //symbol_table.turn_scalar(*ti);
+        symbol_table.turn_scalar_temp(*ti);
     }
 
     //
@@ -349,24 +350,22 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     //
     // Allocate memory for output
     //
-    for(size_t i=0; i<block.ntacs(); ++i) {
-        if ((block.tac(i).op & ARRAY_OPS)>0) {
 
-            TIMER_START
-            operand_t& operand = symbol_table[block.tac(i).out];
-            if ((operand.layout == SCALAR) && \
-                (operand.base->data == NULL)) {
-                operand.base->nelem = 1;
-            }
-            bh_error res = bh_vcache_malloc_base(operand.base);
+    TIMER_START
+    for(size_t i=0; i<block.ntacs(); ++i) {
+        tac_t& tac = block.tac(i);
+        operand_t& operand = symbol_table[tac.out];
+
+        if (((tac.op & ARRAY_OPS)>0) && (operand.layout!= SCALAR_TEMP)) {
+            res = bh_vcache_malloc_base(operand.base);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                                 "called from bh_ve_cpu_execute()\n");
                 return res;
             }
-            TIMER_STOP("Allocating memory.")
         }
     }
+    TIMER_STOP("Allocating memory.")
 
     //
     // Execute block handling array operations.
@@ -380,19 +379,22 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
 
     //
     // De-Allocate operand memory
+
+    TIMER_START
     for(size_t i=0; i<block.ntacs(); ++i) {
         tac_t& tac = block.tac(i);
+        operand_t& operand = symbol_table[tac.out];
+
         if (tac.oper == FREE) {
-            TIMER_START
-            res = bh_vcache_free_base(symbol_table[tac.out].base);
+            res = bh_vcache_free_base(operand.base);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
                                 "called from bh_ve_cpu_execute)\n");
                 return res;
             }
-            TIMER_STOP("Deallocating memory.")
         }
     }
+    TIMER_STOP("Deallocating memory.")
 
     return BH_SUCCESS;
 }
