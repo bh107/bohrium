@@ -9,6 +9,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../../cm
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
 
+#External dependencies
+find_package(PythonInterp)
+set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming Language" URL "www.python.org")
+set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Some Bohrium needs Python when building.")
+
 #core modules
 add_subdirectory(../../core ${CMAKE_CURRENT_BINARY_DIR}/core)
 add_subdirectory(../../vem/node ${CMAKE_CURRENT_BINARY_DIR}/vem/node)
@@ -18,7 +23,7 @@ add_subdirectory(../../extmethods/matmul ${CMAKE_CURRENT_BINARY_DIR}/extmethods/
 
 #optional modules
 add_subdirectory(../../ve/cpu ${CMAKE_CURRENT_BINARY_DIR}/ve/cpu)
-add_subdirectory(bridge/c ${CMAKE_CURRENT_BINARY_DIR}/bridge/c)
+add_subdirectory(../../bridge/c ${CMAKE_CURRENT_BINARY_DIR}/bridge/c)
 
 install(DIRECTORY ../../thirdparty/Random123/include/Random123 DESTINATION include)
 
@@ -55,13 +60,13 @@ set(CPACK_PACKAGE_NAME "Bohrium")
 set(CPACK_PACKAGE_VENDOR "http://www.bh107.org")
 
 #Debian specific
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libctemplate-dev, build-essential, libboost-dev")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libctemplate-dev, build-essential, libboost-dev, python2.7")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_DISTRIBUTION_NAME "ubuntu")
 set(CPACK_DEBIAN_DISTRIBUTION_RELEASES "trusty")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../../COPYING")
 
-set(CPACK_DEBIAN_BUILD_DEPENDS debhelper cmake python swig libctemplate-dev libboost-dev)
+set(CPACK_DEBIAN_BUILD_DEPENDS debhelper cmake python swig libctemplate-dev libboost-dev python2.7 python-cheetah)
 include(CPack)
 message("CPACK_PACKAGE_VERSION: ${CPACK_PACKAGE_VERSION}")
 include(DebSourcePPA)
