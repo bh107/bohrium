@@ -32,7 +32,7 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node.so
 #
 [cpu]
 type = ve
-compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include -lm -O3 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
+compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include/bohrium -lm -O3 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
 object_path=${CMAKE_INSTALL_PREFIX}/var/bh/objects
 kernel_path=${CMAKE_INSTALL_PREFIX}/var/bh/kernels
 template_path=${CMAKE_INSTALL_PREFIX}/share/bh/templates

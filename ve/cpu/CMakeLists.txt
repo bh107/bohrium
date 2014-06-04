@@ -41,7 +41,7 @@ if(CTEMPLATE_FOUND)
     #Install all kernal templates
     install(DIRECTORY templates DESTINATION share/bh FILES_MATCHING PATTERN "*.tpl")
 
-    install(FILES tac.h DESTINATION include)
+    install(FILES tac.h DESTINATION include/bohrium/)
 
     #We need some empty dirs writable by all
     file(MAKE_DIRECTORY kernels)
