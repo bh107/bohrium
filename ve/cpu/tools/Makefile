@@ -22,10 +22,10 @@ gen:
 #
 # Remove installed stuff related to the cpu-engine
 purge:
-	rm -rf ~/.local/share/bh/templates
-	rm -rf ~/.local/var/bh/kernels
-	rm -rf ~/.local/var/bh/objects
-	rm -rf ~/.local/var/bh/scripts
+	rm -rf ~/.local/share/bohrium/templates
+	rm -rf ~/.local/var/bohrium/kernels
+	rm -rf ~/.local/var/bohrium/objects
+	rm -rf ~/.local/var/bohrium/scripts
 	rm -f ~/.local/lib/libbh_ve_cpu.so
 	rm -f ~/.local/include/tac.h
 
@@ -34,7 +34,7 @@ purge_all:
 	rm -rf ~/.local/include
 	rm -rf ~/.local/var
 	rm -rf ~/.local/lib
-	rm -rf ~/.local/share/bh
+	rm -rf ~/.local/share/bohrium
 
 #
 # "Reinstall" the cpu-engine
@@ -55,10 +55,10 @@ clean:
 #
 # Utilities
 move_fused:
-	python $(CPU)/tools/move_code.py ~/.local/var/bh/kernels/ /tmp/code/fused
+	python $(CPU)/tools/move_code.py ~/.local/var/bohrium/kernels/ /tmp/code/fused
 
 move_sij:
-	python $(CPU)/tools/move_code.py ~/.local/var/bh/kernels/ /tmp/code/sij
+	python $(CPU)/tools/move_code.py ~/.local/var/bohrium/kernels/ /tmp/code/sij
 
 prep_fused:
 	mkdir -p /tmp/code/fused

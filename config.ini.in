@@ -33,16 +33,16 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node.so
 [cpu]
 type = ve
 compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include/bohrium -lm -O3 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
-object_path=${CMAKE_INSTALL_PREFIX}/var/bh/objects
-kernel_path=${CMAKE_INSTALL_PREFIX}/var/bh/kernels
-template_path=${CMAKE_INSTALL_PREFIX}/share/bh/templates
+object_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/objects
+kernel_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/kernels
+template_path=${CMAKE_INSTALL_PREFIX}/share/bohrium/templates
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu.so
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul.so,${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer.so,${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw.so
 
 [gpu]
 type = ve
-ocldir = ${CMAKE_INSTALL_PREFIX}/share/bh/ocl_source
-include = ${CMAKE_INSTALL_PREFIX}/share/bh/include
+ocldir = ${CMAKE_INSTALL_PREFIX}/share/bohrium/ocl_source
+include = ${CMAKE_INSTALL_PREFIX}/share/bohrium/include
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu.so
 children = cpu
 
