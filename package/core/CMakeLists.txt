@@ -31,6 +31,7 @@ add_subdirectory(../../bridge/bhpy ${CMAKE_CURRENT_BINARY_DIR}/bridge/bhpy)
 
 install(DIRECTORY ../../thirdparty/Random123/include/Random123 DESTINATION include)
 install(DIRECTORY ../../test DESTINATION share/bohrium)
+install(DIRECTORY ../../benchmark DESTINATION share/bohrium)
 
 #Install the config file, which depends on global or local installation
 configure_file(../../config.ini.in config.ini)
