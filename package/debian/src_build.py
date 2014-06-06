@@ -54,7 +54,7 @@ if __name__ == "__main__":
     #Lets uploade the files
     for changefile in m:
         print "Uploading %s"%changefile
-        check_call(['dput', 'ppa:madsbk/test', 'Debian/%s'%changefile])
+        check_call(['dput', 'bohrium-nightly', 'Debian/%s'%changefile])
 
     #Lets cleanup
     check_call(['rm','-Rf',tmpdir])
