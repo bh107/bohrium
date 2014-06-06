@@ -35,8 +35,6 @@ const char TAG[] = "Component";
 
 static bh_component myself;
 
-static size_t exec_count = 0;
-
 //
 // This is where the actual engine implementation is
 static bohrium::engine::cpu::Engine* engine = NULL;
@@ -198,7 +196,6 @@ bh_error bh_ve_cpu_init(const char *name)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    exec_count++;
     return engine->execute(bhir->instr_list, bhir->ninstr);
 }
 
