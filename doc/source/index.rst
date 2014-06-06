@@ -25,8 +25,6 @@ Features
 Get Started!
 ------------
 
-* `Downloads <https://bitbucket.org/bohrium/bohrium/downloads/>`_
-
 .. toctree::
    :maxdepth: 2
 
