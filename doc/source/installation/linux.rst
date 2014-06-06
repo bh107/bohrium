@@ -1,18 +1,51 @@
 Linux
------
+=====
 
 The following instruct you on how to get going on the Ubuntu Linux distribution. There should however only be slight differences to other distributions such as which command to execute to install software packages.
 
-Get it!
-~~~~~~~
+Install From Debian Package
+---------------------------
 
-Download and extract the current version (v0.2)::
+To install Bohrium on Ubuntu simply add the nightly build repository to your system::
 
-  wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.2.tgz
-  tar -xzf bohrium-v0.2.tgz
+  sudo add-apt-repository ppa:bohrium/nightly
 
+And then install the package::
 
-.. _numpy_installation:
+  sudo apt-get install bohrium
+
+Now the basic installation should work. Try running the NumPy test suite::
+
+  python /usr/share/bohrium/test/numpy/numpytest.py
+
+And you should see a result similar to this::
+
+    *** Testing the equivalency of Bohrium-NumPy and NumPy ***
+    Testing test_primitives.py/bh_opcodes/ufunc
+    Testing test_primitives.py/numpy_ufunc/ufunc
+    Testing test_specials.py/doubletranspose/doubletranspose
+    Testing test_specials.py/largedim/largedim
+    Testing test_array_create.py/array_create/zeros
+    Testing test_benchmarks.py/gameoflife/gameoflife
+    Testing test_benchmarks.py/jacobi/jacobi
+    Testing test_benchmarks.py/jacobi_stencil/jacobi_stencil
+    Testing test_benchmarks.py/shallow_water/shallow_water
+    Testing test_matmul.py/matmul/dot
+    Testing test_matmul.py/matmul/matmul
+    Testing test_types.py/different_inputs/typecast
+    Testing test_reduce.py/reduce/reduce
+    Testing test_reduce.py/reduce1D/reduce
+    Testing test_views.py/diagonal/diagonal
+    Testing test_views.py/flatten/flatten
+    Testing test_sor.py/sor/sor
+    ************************ Finish ************************
+
+Install From Source Package
+---------------------------
+
+Visit https://bitbucket.org/bohrium/bohrium/downloads and download a specific tarball release or the whole repository. Then build and install Bohrium as described in the following subsections.
+
+.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download.
 
 Python / NumPy
 ~~~~~~~~~~~~~~
@@ -27,13 +60,16 @@ And some additional packages::
 
 Build and install::
 
-  cd bohrium-v0.2
+  cd <path to unpacked source directory>
+  mkdir build
+  cd build
+  cmake .. -DCMAKE_INSTALL_PREFIX=<path to install directory>
   make
   make install
 
-.. note:: The installation will prompt you for the installation path.
+.. note:: The default install directory is ~/.local
 
-.. note:: To compile to a custom Python (with valgrind debug support for example), set the make variable, BH_PYTHON, naming the binary of your custom compiled Python.
+.. note:: To compile to a custom Python (with valgrind debug support for example), set the -DPYTHON=<custom python binary> -DPY_SCRIPT=python.
 
 Finally, you need to set the ``LD_LIBRARY_PATH`` environment variables and if you didn't install Bohrium in ``$HOME/.local`` your need to set ``PYTHONPATH`` as well.
 
@@ -93,10 +129,14 @@ In addition to the installation process for :ref:`Python / NumPy <numpy_installa
 
 Build and install::
 
+  cd <path to unpacked source directory>
+  mkdir build
+  cd build
+  cmake .. -DCMAKE_INSTALL_PREFIX=<path to install directory>
   make
   make install
 
-.. note:: The installation will prompt you for the installation path.
+.. note:: The default install directory is ~/.local
 
 The NumCIL libraries are installed in your install dir, together with the documentation. You can reference the libraries from here, or register them in the GAC::
 
@@ -130,31 +170,9 @@ OpenCL / GPU Engine
 The GPU vector engine requires OpenCL compatible hardware as well as functioning drivers.
 Configuring your GPU with you operating system is out of scope of this documentation.
 
-Assuming that your GPU-hardware is functioning correctly you need to install an OpenCL SDK and some additional packages.
+Assuming that your GPU-hardware is functioning correctly you need to install an OpenCL SDK and some additional packages::
 
-**Packages**::
-
-  sudo apt-get install -y rpm alien libnuma1
-
-**SDK for OpenCL**
-
-Go to http://software.intel.com/en-us/articles/vcsource-tools-opencl-sdk/ and download *Intel SDK for OpenCL 2012 -- Linux*.
-
-The download-button is in the upper right corner next to select-box with the text *Select version...*.
-
-The download area is hard to spot, so take a look at the red arrow on the picture below:
-
-.. image:: opencl_download.png
-   :scale: 50 %
-   :alt: Download location.
-
-Once downloaded, install the SDK with the following commands::
-
-  tar zxf intel_sdk_for_ocl_applications_2012_x64.tgz
-  fakeroot alien --to-deb intel_ocl_sdk_2012_x64.rpm
-  sudo dpkg -i intel-ocl-sdk_2.0-31361_amd64.deb
-  sudo ln -s /usr/lib64/libOpenCL.so /usr/lib/libOpenCL.so
-  sudo ldconfig
+  sudo apt-get install ocl-icd-opencl-dev libgl-dev
 
 You should now have everything you need to utilize the GPU engine.
 

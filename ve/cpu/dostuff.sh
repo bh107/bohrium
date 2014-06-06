@@ -21,7 +21,7 @@ if [ ! -z "$1" ] && [ "$1" == "prep_sij" ]; then
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "move_sij" ]; then
-    python tools/move_code.py ~/.local/var/bh/kernels/ /tmp/code/sij/
+    python tools/move_code.py ~/.local/var/bohrium/kernels/ /tmp/code/sij/
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "prep_fuse" ]; then
@@ -30,7 +30,7 @@ if [ ! -z "$1" ] && [ "$1" == "prep_fuse" ]; then
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "move_fuse" ]; then
-    python tools/move_code.py ~/.local/var/bh/kernels/ /tmp/code/fuse/
+    python tools/move_code.py ~/.local/var/bohrium/kernels/ /tmp/code/fuse/
 fi
 
 if [ ! -z "$1" ] && [ "$1" == "sample" ]; then

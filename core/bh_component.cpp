@@ -45,7 +45,7 @@ char _expand_buffer2[MAX_PATH];
 #include <limits.h>
 
 #define HOME_INI_PATH "~/.bohrium/config.ini"
-#define SYSTEM_INI_PATH "/etc/bohrium/config.ini"
+#define SYSTEM_INI_PATH "/usr/etc/bohrium/config.ini"
 
 //We need a buffer for path expansion
 char _expand_buffer[PATH_MAX];

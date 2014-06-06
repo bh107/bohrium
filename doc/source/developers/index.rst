@@ -9,8 +9,6 @@ If you just want read-access then simply clone the repos::
 
   git clone git@bitbucket.org:bohrium/bohrium.git
   cd bohrium
-  git submodule init
-  git submodule update
 
 Continue by taking a look at :ref:`installation` on how to build / install Bohrium.
 
