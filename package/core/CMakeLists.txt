@@ -72,6 +72,7 @@ set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_DISTRIBUTION_NAME "ubuntu")
 set(CPACK_DEBIAN_DISTRIBUTION_RELEASES trusty saucy)
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../../COPYING")
+set(CPACK_DEBIAN_PACKAGE_SUGGESTS "ipython")
 
 set(CPACK_DEBIAN_BUILD_DEPENDS python-numpy debhelper cmake swig libctemplate-dev libboost-dev python-cheetah python-dev fftw3-dev mpich2 libmpich2-dev ocl-icd-opencl-dev libgl-dev)
 

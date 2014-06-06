@@ -223,7 +223,7 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
 
       file(APPEND ${DEBIAN_CONTROL} "\n"
         "Package: ${COMPONENT}\n"
-        "Architecture: any\n"
+        "Architecture: amd64\n"
         "Depends: ${DEPENDS}\n"
         "Recommends: ${RECOMMENDS}\n"
         "Suggests: ${SUGGESTS}\n"
