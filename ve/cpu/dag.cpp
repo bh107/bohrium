@@ -201,43 +201,6 @@ void Dag::array_deps(void)
             }
         }
     }
-    /*
-    for(int64_t idx=program_.size()-1; idx>=0; --idx) {
-        
-        tac_t& tac = program_[idx];
-
-        if ((tac.op & ARRAY_OPS)==0) {
-            continue;
-        }
-        if (in_degree(idx, graph_) == 0) {
-            cout << "ROOT" << idx << endl;
-            bool found = false;
-            for(int64_t other=idx-1; (other>=0) && (!found); --other) {
-                tac_t& other_tac = program_[other];
-                if ((other_tac.op & ARRAY_OPS)==0) {
-                    continue;
-                }
-                bh_base* output = symbol_table_[other_tac.out].base;
-                switch(tac_noperands(tac)) {
-                    case 3:
-                        if (symbol_table_[tac.in2].base == output) {
-                            found = true;
-                            add_edge(other, idx, graph_);
-                            break;
-                        }
-                    case 2:
-                        if (symbol_table_[tac.in1].base == output) {
-                            found = true;
-                            add_edge(other, idx, graph_);
-                            break;
-                        }
-                    case 1:
-                    default:
-                        break;
-                }
-            }
-        }
-    }*/
 }
 
 void Dag::system_deps(void)

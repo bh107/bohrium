@@ -16,14 +16,10 @@ string Dag::dot_operand(int64_t idx)
 {
     operand_t& opr = symbol_table_[idx];
     stringstream txt;
-    if (opr.layout == SCALAR_CONST) {
-        txt << "K";
-    } else {
-        if (NULL == opr.base) {
-            txt << "V:" << idx;
-        } else {
-            txt << "B:" << idx;
-        }
+    txt << layout_text_shand(opr.layout);
+
+    if (NULL != opr.base) {
+        txt << ":" << idx;
     }
 
     return txt.str();

@@ -52,6 +52,9 @@ install: gen
 clean:
 	rm -rf $(BDIR) core trace-*.txt flow*.dot flow*.html graph-*.dot $(CPU)/doc/output $(CPU)/autogen/output/*
 
+crap:
+	rm -f graph*.dot flow*.dot trace*.txt flow*.html vgcore.* core
+
 #
 # Utilities
 move_fused:

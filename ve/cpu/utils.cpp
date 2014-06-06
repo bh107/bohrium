@@ -85,6 +85,9 @@ bool equivalent(const operand_t& one, const operand_t& other)
     if (one.start != other.start) {
         return false;
     }
+    if (one.base != other.base) {
+        return false;
+    }
     for(bh_intp j=0; j<one.ndim; ++j) {
         if (one.stride[j] != other.stride[j]) {
             return false;
