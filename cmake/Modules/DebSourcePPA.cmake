@@ -107,7 +107,7 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
     "Homepage: ${CPACK_PACKAGE_VENDOR}\n"
     "\n"
     "Package: ${CPACK_DEBIAN_PACKAGE_NAME}\n"
-    "Architecture: any\n"
+    "Architecture: amd64\n"
     "Depends: "
     )
 
