@@ -14,18 +14,6 @@ using namespace boost;
 namespace bohrium{
 namespace core {
 
-void trivial_partition(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omasks, vector<tac_t>& program, SymbolTable& symbol_table) {
-    size_t nsubs =0;
-    std::pair<vertex_iter, vertex_iter> svp = vertices(graph);
-    for(vertex_iter vi = svp.first; vi != svp.second; ++vi) {
-        Graph* subgraph = &(graph.create_subgraph());
-        add_vertex(*vi, *subgraph);
-        subgraphs.push_back(subgraph);
-        omasks[nsubs] = program[*vi].op;
-        nsubs++;
-    }
-}
-
 /*
 void bottomup(Graph& graph, Graph& subgraph,
                         vector<tac_t>& program, SymbolTable& symbol_table,
@@ -278,6 +266,27 @@ void part_first(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omask
 
 */
 
+void sequential_dependencies(vector<Graph*>& subgraphs)
+{
+    for(vector<Graph*>::iterator gi=subgraphs.begin(); gi!=subgraphs.end(); ++gi) {
+        for(size_t idx=1; idx < num_vertices(**gi); ++idx) {
+            add_edge(idx-1, idx, **gi);
+        }
+    }
+}
+
+void trivial_partition(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omasks, vector<tac_t>& program, SymbolTable& symbol_table) {
+    size_t nsubs =0;
+    std::pair<vertex_iter, vertex_iter> svp = vertices(graph);
+    for(vertex_iter vi = svp.first; vi != svp.second; ++vi) {
+        Graph* subgraph = &(graph.create_subgraph());
+        add_vertex(*vi, *subgraph);
+        subgraphs.push_back(subgraph);
+        omasks[nsubs] = program[*vi].op;
+        nsubs++;
+    }
+}
+
 void greedy_partition(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omasks, vector<tac_t>& program, SymbolTable& symbol_table)
 {
     vector<multimap<bh_base*, size_t>* > operands;
@@ -351,7 +360,9 @@ Dag::Dag(SymbolTable& symbol_table, std::vector<tac_t>& program)
 {
     //array_deps();   // Construct dependencies based on array operations
     //system_deps();  // Construct dependencies based on system operations
-    //partitioned(graph_, subgraphs_, omask_, program, symbol_table);
+    
+    // These dependencies are for visualization purpososes only...
+    sequential_dependencies(subgraphs_);
     //trivial_partition(graph_, subgraphs_, omask_, program, symbol_table);
     greedy_partition(graph_, subgraphs_, omask_, program, symbol_table);
 }

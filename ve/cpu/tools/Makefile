@@ -22,6 +22,7 @@ gen:
 #
 # Remove installed stuff related to the cpu-engine
 purge:
+	rm -r $(BDIR)
 	rm -rf ~/.local/share/bohrium/templates
 	rm -rf ~/.local/var/bohrium/kernels
 	rm -rf ~/.local/var/bohrium/objects
@@ -45,7 +46,6 @@ reset: purge install
 install: gen
 	mkdir -p $(BDIR)
 	cd $(BDIR) && cmake $(ROOT) && make && make install
-#	cd $(BDIR) && cmake $(ROOT) -DCPU_PROFILING=true && make && make install
 
 #
 # Clean up the build-files
@@ -53,7 +53,7 @@ clean:
 	rm -rf $(BDIR) core trace-*.txt flow*.dot flow*.html graph-*.dot $(CPU)/doc/output $(CPU)/autogen/output/*
 
 crap:
-	rm -f graph*.dot flow*.dot trace*.txt flow*.html vgcore.* core
+	rm -f graph*.dot flow*.dot trace*.txt flow*.html vgcore.* core /tmp/graph*.html /tmp/graph*.png /tmp/graph*.png
 
 #
 # Utilities
