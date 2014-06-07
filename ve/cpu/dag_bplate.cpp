@@ -14,10 +14,19 @@ using namespace boost;
 namespace bohrium{
 namespace core {
 
+void trivial_partition(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omasks, vector<tac_t>& program, SymbolTable& symbol_table) {
+    size_t nsubs =0;
+    std::pair<vertex_iter, vertex_iter> svp = vertices(graph);
+    for(vertex_iter vi = svp.first; vi != svp.second; ++vi) {
+        Graph* subgraph = &(graph.create_subgraph());
+        add_vertex(*vi, *subgraph);
+        subgraphs.push_back(subgraph);
+        omasks[nsubs] = program[*vi].op;
+        nsubs++;
+    }
+}
 
-
-
-
+/*
 void bottomup(Graph& graph, Graph& subgraph,
                         vector<tac_t>& program, SymbolTable& symbol_table,
                         uint32_t& omask,
@@ -45,15 +54,7 @@ void bottomup(Graph& graph, Graph& subgraph,
             if ((program[p_idx].op & NON_FUSABLE)>0) {
                 return;
             }
-            /*            
-            // Check for contractable
-            if ((program[p_idx].op & ARRAY_OPS>0) && (!symbol_table.is_temp(program[p_idx].out))) {
-                return;
-            }
-            if ((program[v_idx].op & ARRAY_OPS>0) && (!symbol_table.is_temp(program[v_idx].out))) {
-                return;
-            }*/
-        }
+         }
 
         visited[v_idx] = true;
         add_vertex(v_idx, subgraph);
@@ -184,17 +185,7 @@ void partitioned(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omas
     }
 }
 
-void trivial_partition(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omasks, vector<tac_t>& program, SymbolTable& symbol_table) {
-    size_t nsubs =0;
-    std::pair<vertex_iter, vertex_iter> svp = vertices(graph);
-    for(vertex_iter vi = svp.first; vi != svp.second; ++vi) {
-        Graph* subgraph = &(graph.create_subgraph());
-        add_vertex(*vi, *subgraph);
-        subgraphs.push_back(subgraph);
-        omasks[nsubs] = program[*vi].op;
-        nsubs++;
-    }
-}
+
 
 bool fusable_first(SymbolTable& symbol_table, tac_t& cur, tac_t& prev)
 {
@@ -251,9 +242,6 @@ bool fusable_first(SymbolTable& symbol_table, tac_t& cur, tac_t& prev)
     return compat_operands && (!conflicting);
 }
 
-/**
- *  Construct a list of subgraphs... annotate the operation-mask of the subgraph.
- */
 void part_first(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omasks, vector<tac_t>& program, SymbolTable& symbol_table)
 {
     int64_t graph_idx=0;
@@ -287,6 +275,76 @@ void part_first(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omask
     }
 }
 
+
+*/
+
+void greedy_partition(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omasks, vector<tac_t>& program, SymbolTable& symbol_table)
+{
+    vector<multimap<bh_base*, size_t>* > operands;
+    subgraphs.push_back(&(graph.create_subgraph()));
+    operands.push_back(new multimap<bh_base*, size_t>());
+    omasks.push_back(0);
+    size_t graph_idx = 0;
+
+
+    const char TAG[] = "greedy_patition";
+
+    for(size_t idx=0; idx < program.size(); ++idx) {
+        tac_t& tac = program[idx];
+
+        if (((tac.op & NON_FUSABLE)>0) || ((omasks[graph_idx] & NON_FUSABLE) > 0)) {
+            goto new_subgraph;
+        } else {
+            // Check for compatibility and conflicts
+            if ((tac.op & ARRAY_OPS)>0) {
+                bh_base* base = symbol_table[tac.out].base;
+                //for(multimap<bh_base*, size_t>::iterator it=operands[graph_idx]->find(base); it!=operands[graph_idx]->end(); ++it) {
+                for(multimap<bh_base*, size_t>::iterator it=operands[graph_idx]->begin(); it!=operands[graph_idx]->end(); ++it) {
+                    if (!compatible(symbol_table[(*it).second], symbol_table[tac.out])) {
+                        DEBUG(TAG, "Incompatible: " << tac.out << " and " <<  (*it).second << ".");
+                        goto new_subgraph;
+                    }
+                }
+            }
+
+            DEBUG(TAG, "Adding to existing...");
+            DEBUG(TAG, tac_text(tac));
+            goto add_instruction;
+        }
+        
+        //  Fallout
+        //
+        //  1. Create a new subgraph and add the vertex to it.
+        //  2. Add the vertex to the current subgraph
+        //
+
+        new_subgraph:   // Create a new subgraph unless the current is empty
+            if (0 != num_vertices(*subgraphs[graph_idx])) {
+                subgraphs.push_back(&(graph.create_subgraph()));
+                operands.push_back(new multimap<bh_base*, size_t>());
+                omasks.push_back(0);
+                graph_idx = subgraphs.size()-1;
+            }
+
+        add_instruction:
+            add_vertex(idx, *subgraphs[graph_idx]);     // Add the tac / vertex
+            omasks[graph_idx] |= tac.op;                // Notate the operation-mask
+            switch(tac_noperands(tac)) {                // Add the operands
+                case 3:
+                    if ((symbol_table[tac.in2].layout & SCALAR_CONST) == 0) {
+                        operands[graph_idx]->insert(pair<bh_base*, size_t>(symbol_table[tac.in2].base, tac.in2));
+                    }
+                case 2:
+                    if ((symbol_table[tac.in1].layout & SCALAR_CONST) == 0) {
+                        operands[graph_idx]->insert(pair<bh_base*, size_t>(symbol_table[tac.in1].base, tac.in1));
+                    }
+                case 1:
+                    operands[graph_idx]->insert(pair<bh_base*, size_t>(symbol_table[tac.out].base, tac.out));
+                    break;
+            }
+    }
+}
+
 Dag::Dag(SymbolTable& symbol_table, std::vector<tac_t>& program)
     : symbol_table_(symbol_table), program_(program),
       graph_(program.size()), subgraphs_(), omask_(program.size())
@@ -294,9 +352,8 @@ Dag::Dag(SymbolTable& symbol_table, std::vector<tac_t>& program)
     //array_deps();   // Construct dependencies based on array operations
     //system_deps();  // Construct dependencies based on system operations
     //partitioned(graph_, subgraphs_, omask_, program, symbol_table);
-
-    trivial_partition(graph_, subgraphs_, omask_, program, symbol_table);
-    //part_first(graph_, subgraphs_, omask_, program, symbol_table);
+    //trivial_partition(graph_, subgraphs_, omask_, program, symbol_table);
+    greedy_partition(graph_, subgraphs_, omask_, program, symbol_table);
 }
 
 Dag::~Dag(void)

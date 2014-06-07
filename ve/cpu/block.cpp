@@ -71,8 +71,6 @@ void Block::compose(Graph& subgraph)
     for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
         tac_t& tac = program_[subgraph.local_to_global(*vi)];
 
-        DEBUG(TAG, tac_text(tac));
-        DEBUG(TAG, "local="<<*vi<<",global="<<subgraph.local_to_global(*vi));
         tacs_.push_back(&tac);
         if ((tac.op & (ARRAY_OPS))>0) {
             array_tacs_.push_back(&tac);

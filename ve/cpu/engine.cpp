@@ -80,7 +80,6 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
     bh_error res = BH_SUCCESS;
 
     tac_t& tac = block.tac(0);
-    DEBUG(TAG, tac_text(tac));
     switch(tac.op) {
         case NOOP:
             break;
@@ -289,11 +288,9 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
         }
     }
     count_temp(symbol_table.disqualified(), freed, reads, writes, temps);
-
     //
     // Turn temps into scalars
     for(set<size_t>::iterator ti=temps.begin(); ti!=temps.end(); ++ti) {
-        //symbol_table.turn_scalar(*ti);
         symbol_table.turn_scalar_temp(*ti);
     }
 
@@ -368,6 +365,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     // Execute block handling array operations.
     // 
     TIMER_START
+    DEBUG(TAG, "SYMBOL="<< block.symbol());
     storage.funcs[block.symbol()](block.operands());
     TIMER_STOP(block.symbol())
 
@@ -396,7 +394,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
 bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 {
     exec_count++;
-
+    DEBUG(TAG, "EXEC #" << exec_count);
     bh_error res = BH_SUCCESS;
 
     //
@@ -412,23 +410,13 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
     // Construct graph with instructions as nodes.
     Dag graph(symbol_table, program);                   // Graph
 
-    if (dump_rep) {                                     // Dump it to file
-        stringstream filename;
-        filename << "graph" << exec_count << ".dot";
-
-        std::ofstream fout(filename.str());
-        fout << graph.dot() << std::endl;
-    }
-
-    DEBUG(TAG, symbol_table.text());
-
     //
     //  Map subgraphs to blocks one at a time and execute them.
     Block block(symbol_table, program);                 // Block
     for(size_t subgraph_idx=0; subgraph_idx<graph.subgraphs().size(); ++subgraph_idx) {
         Graph& subgraph = *(graph.subgraphs()[subgraph_idx]);
 
-        DEBUG(TAG, "\nSubgraph #" << subgraph_idx);
+        DEBUG(TAG, "Subgraph #" << subgraph_idx);
         DEBUG(TAG, "omask=" << graph.omask(subgraph_idx));
 
         block.clear();
@@ -437,19 +425,19 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
         // FUSE_MODE
         if (jit_fusion && \
             ((graph.omask(subgraph_idx) & (NON_FUSABLE))==0) && \
-            ((graph.omask(subgraph_idx) & (ARRAY_OPS)) > 0) && \
             (block.narray_tacs() > 1)) {
 
-            DEBUG(TAG, "FUSING");
+            DEBUG(TAG, "FUSE START");
             res = fuse_mode(symbol_table, program, graph, subgraph_idx, block);
             if (BH_SUCCESS != res) {
                 return res;
             }
+            DEBUG(TAG, "FUSE END");
         
         // SIJ_MODE
         } else {
 
-            DEBUG(TAG, "SIJING");
+            DEBUG(TAG, "SIJ START");
             std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
             for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
                 // Compose the block
@@ -458,16 +446,24 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
                     subgraph.local_to_global(*vi), subgraph.local_to_global(*vi)
                 );
 
-                DEBUG(TAG, "Instruction # " << subgraph.local_to_global(*vi) << " Exec#" << exec_count);
                 // Generate/Load code and execute it
                 res = sij_mode(symbol_table, program, block);
                 if (BH_SUCCESS != res) {
                     return res;
                 }
             }
+            DEBUG(TAG, "SIJ END");
         }
     }
-    
+
+    if (dump_rep) {                                     // Dump it to file
+        stringstream filename;
+        filename << "graph" << exec_count << ".dot";
+
+        std::ofstream fout(filename.str());
+        fout << graph.dot() << std::endl;
+    }
+
     return res;
 }
 

@@ -107,7 +107,9 @@ bool compatible(const operand_t& one, const operand_t& other)
         ((other.layout & SCALAR_LAYOUT)>0)) {
         return true;
     }
-
+    if (one.start != other.start) {
+        return false;
+    }
     if (one.ndim != other.ndim) {
         return false;
     }
