@@ -55,12 +55,11 @@ endif()
 
 #Package setup
 set(CPACK_GENERATOR "DEB")
-execute_process(COMMAND git describe --tags --long OUTPUT_VARIABLE CPACK_PACKAGE_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND git describe --tags --long WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_VARIABLE CPACK_PACKAGE_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 #Lets remove the 'v' char in the version tag (e.g. v0.2-0-g6a2352d => 0.2-0-g6a2352d)
 string(SUBSTRING ${CPACK_PACKAGE_VERSION} 1 -1 CPACK_PACKAGE_VERSION)
 
-#set(CPACK_PACKAGE_CONTACT "Bohrium (Bohrium Runtime System) <contact@bh107.org>")
-set(CPACK_PACKAGE_CONTACT "Mads R. B. Kristensen <madsbk@gmail.com>")
+set(CPACK_PACKAGE_CONTACT "Bohrium Builder <builder@bh107.org>" CACHE STRING "The package contact info which is also used for signing the package")
 set(CPACK_PACKAGE_DESCRIPTION "Bohrium Runtime System")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python")
 set(CPACK_PACKAGE_NAME "Bohrium")
