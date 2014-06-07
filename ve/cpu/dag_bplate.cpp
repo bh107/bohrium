@@ -196,15 +196,107 @@ void trivial_partition(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>
     }
 }
 
+bool fusable_first(SymbolTable& symbol_table, tac_t& cur, tac_t& prev)
+{
+    // But only map and zip array operations
+    if (!((cur.op == MAP) || (cur.op == ZIP) || (cur.op == SYSTEM))) {
+        return false;
+    }
+
+    // But only map and zip array operations
+    if (!((prev.op == MAP) || (prev.op == ZIP) || (prev.op == SYSTEM))) {
+        return false;
+    }
+
+    //
+    // Check for compatible operands
+    bool compat_operands = true;
+    bool conflicting = false;
+
+    // Do conflict checks with all operands!
+
+    operand_t cur_op = symbol_table[cur.out];
+    switch(core::tac_noperands(prev)) {
+        case 3:
+            // Second input
+            compat_operands = compat_operands && (core::compatible(
+                symbol_table[prev.in2],
+                cur_op
+            ));
+            conflicting = conflicting || \
+                            ((cur_op.base    == symbol_table[prev.in2].base) && \
+                            (cur_op.start   != symbol_table[prev.in2].start));
+        case 2:
+            // First input
+            compat_operands = compat_operands && (core::compatible(
+                symbol_table[prev.in1],
+                cur_op
+            ));
+            conflicting = conflicting || \
+                            ((cur_op.base    == symbol_table[prev.in1].base) && \
+                            (cur_op.start   != symbol_table[prev.in1].start));
+
+            // Output operand
+            compat_operands = compat_operands && (core::compatible(
+                symbol_table[prev.out],
+                cur_op
+            ));
+            conflicting = conflicting || \
+                            ((cur_op.base    == symbol_table[prev.out].base) && \
+                            (cur_op.start   != symbol_table[prev.out].start));
+        default:
+            break;
+    }
+
+    return compat_operands && (!conflicting);
+}
+
+/**
+ *  Construct a list of subgraphs... annotate the operation-mask of the subgraph.
+ */
+void part_first(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>& omasks, vector<tac_t>& program, SymbolTable& symbol_table)
+{
+    int64_t graph_idx=0;
+
+    for(int64_t idx=0; idx < program.size();) {    // Then look at the remaining
+
+        // Look only at sequences of element-wise and system operations
+        int64_t sub_begin   = idx,
+                sub_end     = idx;
+        tac_t* prev = &program[idx];
+        for(int64_t inner=idx; inner <program.size(); ++inner) {
+            tac_t* cur = &program[inner];
+
+            if (!fusable_first(symbol_table, *cur, *prev)) {
+                break;
+            }
+            
+            sub_end = inner;
+        }
+
+        // Stuff them into a subgraph
+        subgraphs.push_back(&(graph.create_subgraph()));
+        // Annotate operation mask for the subgraph
+        omasks.push_back(0);
+        for(int64_t sub_idx=sub_begin; sub_idx<=sub_end; ++sub_idx) {
+            add_vertex(sub_idx, *subgraphs[graph_idx]);
+            omasks[graph_idx] |= program[sub_idx].op;
+        }
+        graph_idx++;
+        idx = sub_end+1;
+    }
+}
+
 Dag::Dag(SymbolTable& symbol_table, std::vector<tac_t>& program)
     : symbol_table_(symbol_table), program_(program),
       graph_(program.size()), subgraphs_(), omask_(program.size())
 {
-    array_deps();   // Construct dependencies based on array operations
-    system_deps();  // Construct dependencies based on system operations
-
+    //array_deps();   // Construct dependencies based on array operations
+    //system_deps();  // Construct dependencies based on system operations
     //partitioned(graph_, subgraphs_, omask_, program, symbol_table);
+
     trivial_partition(graph_, subgraphs_, omask_, program, symbol_table);
+    //part_first(graph_, subgraphs_, omask_, program, symbol_table);
 }
 
 Dag::~Dag(void)

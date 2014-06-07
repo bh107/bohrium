@@ -429,6 +429,7 @@ bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
         Graph& subgraph = *(graph.subgraphs()[subgraph_idx]);
 
         DEBUG(TAG, "\nSubgraph #" << subgraph_idx);
+        DEBUG(TAG, "omask=" << graph.omask(subgraph_idx));
 
         block.clear();
         block.compose(subgraph);

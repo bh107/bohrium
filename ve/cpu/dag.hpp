@@ -118,16 +118,6 @@ private:
      */
     void system_deps(void);
 
-    /**
-     *  Partition the graph into subgraphs with certain properties...
-     */
-    void partition(void);
-
-    /**
-     *  Determine whether two instructions are fusable.
-     */
-    bool fusable(tac_t& cur, tac_t& prev);
-
     SymbolTable& symbol_table_;     // Symbols of operands
     std::vector<tac_t>& program_;   // Three-address-code format of instructions
     Graph graph_;                   // Graph form of instructions
