@@ -11,6 +11,6 @@ add_executable(bh_proxy_client bh_proxy_client.cpp)
 target_link_libraries(bh_vem_proxy bh)
 target_link_libraries(bh_proxy_client bh_vem_proxy)
 
-install(TARGETS bh_vem_proxy DESTINATION lib)
-install(TARGETS bh_proxy_client DESTINATION bin)
+install(TARGETS bh_vem_proxy DESTINATION lib COMPONENT bohrium)
+install(TARGETS bh_proxy_client DESTINATION bin COMPONENT bohrium)
 

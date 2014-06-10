@@ -43,6 +43,10 @@ if(NOT DEBUILD_EXECUTABLE OR NOT DPUT_EXECUTABLE)
   return()
 endif(NOT DEBUILD_EXECUTABLE OR NOT DPUT_EXECUTABLE)
 
+##The Unspecified component will be the core "bohrium" package
+LIST(REMOVE_ITEM CPACK_COMPONENTS_ALL "bohrium")
+#LIST(APPEND CPACK_COMPONENTS_ALL "bohrium")
+
 # DEBIAN/control
 # debian policy enforce lower case for package name
 # Package: (mandatory)
@@ -166,72 +170,18 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
     )
 
 #Note that we have de-activated the components -- we only generate ONE deb package
-  foreach(COMPONENT ${CPACK_COMPONENTS_ALL_DISABLED})
-    string(TOUPPER ${COMPONENT} UPPER_COMPONENT)
-    if(NOT ${UPPER_COMPONENT} STREQUAL "UNSPECIFIED")
-    message(STATUS "COMPONENT: ${UPPER_COMPONENT}")
-      set(DEPENDS "\${shlibs:Depends}")
-      if( CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER} )
-        foreach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER}})
-          set(DEPENDS "${DEPENDS}, ${DEP}")
-        endforeach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER}})
-      else( CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER} )
-        if( CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER} )
-          foreach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER}})
-            set(DEPENDS "${DEPENDS}, ${DEP}")
-          endforeach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER}})
-        else( CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER} )
-          foreach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS})
-            set(DEPENDS "${DEPENDS}, ${DEP}")
-          endforeach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS})
-        endif( CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER} )
-      endif( CPACK_COMPONENT_${UPPER_COMPONENT}_DEPENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER} )
-
-      set(RECOMMENDS)
-      if( CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER} )
-        foreach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER}})
-          set(RECOMMENDS "${RECOMMENDS} ${DEP}, ")
-        endforeach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER}})
-      else( CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER} )
-        if( CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER} )
-          foreach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER}})
-            set(RECOMMENDS "${RECOMMENDS} ${DEP}, ")
-          endforeach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER}})
-        else( CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER} )
-          foreach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS})
-            set(RECOMMENDS "${RECOMMENDS} ${DEP}, ")
-          endforeach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS})
-        endif( CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER} )
-      endif( CPACK_COMPONENT_${UPPER_COMPONENT}_RECOMMENDS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER} )
-
-      set(SUGGESTS)
-      if( CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER} )
-        foreach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER}})
-          set(SUGGESTS "${SUGGESTS} ${DEP}, ")
-        endforeach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER}})
-      else( CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER} )
-        if( CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER} )
-          foreach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER}})
-            set(SUGGESTS "${SUGGESTS} ${DEP}, ")
-          endforeach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER}})
-        else( CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER} )
-          foreach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS})
-            set(SUGGESTS "${SUGGESTS} ${DEP}, ")
-          endforeach(DEP ${CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS})
-        endif( CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER} )
-      endif( CPACK_COMPONENT_${UPPER_COMPONENT}_SUGGESTS_${DISTRIBUTION_NAME_UPPER}_${RELEASE_UPPER} )
-
+  foreach(COMPONENT ${CPACK_COMPONENTS_ALL})
+    if(NOT ${COMPONENT} STREQUAL "bohrium")
       file(APPEND ${DEBIAN_CONTROL} "\n"
-        "Package: ${COMPONENT}\n"
-        "Architecture: amd64\n"
-        "Depends: ${DEPENDS}\n"
-        "Recommends: ${RECOMMENDS}\n"
-        "Suggests: ${SUGGESTS}\n"
-        "Description: ${CPACK_PACKAGE_DISPLAY_NAME} ${CPACK_COMPONENT_${UPPER_COMPONENT}_DISPLAY_NAME}\n"
-        )
-
-    endif()
-  endforeach(COMPONENT ${CPACK_COMPONENTS_ALL_DISABLED})
+            "Package: ${COMPONENT}\n"
+            "Architecture: amd64\n"
+            "Depends: ${CPACK_COMPONENT_${COMPONENT}_DEPENDS}\n"
+            "Recommends: ${RECOMMENDS}\n"
+            "Suggests: ${SUGGESTS}\n"
+            "Description: ${CPACK_COMPONENT_${COMPONENT}_DESCRIPTION_SUMMARY}\n"
+            )
+    endif(NOT ${COMPONENT} STREQUAL "bohrium")
+  endforeach(COMPONENT ${CPACK_COMPONENTS_ALL})
 
   ##############################################################################
   # debian/copyright
@@ -259,20 +209,20 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
     "binary-indep: build\n"
     "\n"
     "binary-arch: build\n"
-    "	cd $(BUILDDIR); cmake -DDEB_SRC_PPA_ONCE=1 -DCMAKE_INSTALL_PREFIX=../debian/tmp/usr -P cmake_install.cmake\n"
+    "	cd $(BUILDDIR); cmake -DCOMPONENT=bohrium -DDEB_SRC_PPA_ONCE=1 -DCMAKE_INSTALL_PREFIX=../debian/tmp/usr -P cmake_install.cmake\n"
     "	mv debian/tmp/usr/lib/python2.7/site-packages debian/tmp/usr/lib/python2.7/dist-packages\n"
     "	mkdir -p debian/tmp/DEBIAN\n"
     "	dpkg-gensymbols -p${CPACK_DEBIAN_PACKAGE_NAME}\n"
     )
 
-  foreach(COMPONENT ${CPACK_COMPONENTS_ALL_DISABLED})
+  foreach(COMPONENT ${CPACK_COMPONENTS_ALL})
     set(PATH debian/${COMPONENT})
     file(APPEND ${DEBIAN_RULES}
-      "	cd $(BUILDDIR); cmake -DCOMPONENT=${COMPONENT} -DCMAKE_INSTALL_PREFIX=../${PATH}/usr -P cmake_install.cmake\n"
+        "	cd $(BUILDDIR); cmake -DCOMPONENT=${COMPONENT} -DDEB_SRC_PPA_ONCE=1 -DCMAKE_INSTALL_PREFIX=../${PATH}/usr -P cmake_install.cmake\n"
       "	mkdir -p ${PATH}/DEBIAN\n"
       "	dpkg-gensymbols -p${COMPONENT} -P${PATH}\n"
       )
-  endforeach(COMPONENT ${CPACK_COMPONENTS_ALL_DISABLED})
+  endforeach(COMPONENT ${CPACK_COMPONENTS_ALL})
 
   file(APPEND ${DEBIAN_RULES}
     "	dh_shlibdeps\n"
@@ -281,13 +231,13 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
     "	dpkg --build debian/tmp ..\n"
     )
 
-  foreach(COMPONENT ${CPACK_COMPONENTS_ALL_DISABLED})
+  foreach(COMPONENT ${CPACK_COMPONENTS_ALL})
     set(PATH debian/${COMPONENT})
     file(APPEND ${DEBIAN_RULES}
       "	dpkg-gencontrol -p${COMPONENT} -P${PATH} -Tdebian/${COMPONENT}.substvars\n"
       "	dpkg --build ${PATH} ..\n"
       )
-  endforeach(COMPONENT ${CPACK_COMPONENTS_ALL_DISABLED})
+  endforeach(COMPONENT ${CPACK_COMPONENTS_ALL})
 
   file(APPEND ${DEBIAN_RULES}
     "\n"

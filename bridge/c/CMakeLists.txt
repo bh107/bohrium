@@ -26,8 +26,8 @@ if(PYTHONINTERP_FOUND)
     #We depend on bh.so
     target_link_libraries(bhc bh)
 
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c.h DESTINATION include/bohrium)
-    install(TARGETS bhc DESTINATION lib)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c.h DESTINATION include/bohrium COMPONENT bohrium)
+    install(TARGETS bhc DESTINATION lib COMPONENT bohrium)
 
     #Compile hellow world as a test
     add_subdirectory(examples)

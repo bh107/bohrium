@@ -30,13 +30,13 @@ add_subdirectory(../../ve/gpu ${CMAKE_CURRENT_BINARY_DIR}/ve/gpu)
 add_subdirectory(../../vem/cluster ${CMAKE_CURRENT_BINARY_DIR}/vem/cluster)
 add_subdirectory(../../extmethods/fftw ${CMAKE_CURRENT_BINARY_DIR}/extmethods/fftw)
 
-install(DIRECTORY ../../thirdparty/Random123/include/Random123 DESTINATION include)
-install(DIRECTORY ../../test DESTINATION share/bohrium)
-install(DIRECTORY ../../benchmark DESTINATION share/bohrium)
+install(DIRECTORY ../../thirdparty/Random123/include/Random123 DESTINATION include COMPONENT bohrium)
+install(DIRECTORY ../../test DESTINATION share/bohrium COMPONENT bohrium)
+install(DIRECTORY ../../benchmark DESTINATION share/bohrium COMPONENT bohrium)
 
 #Install the config file, which depends on global or local installation
 configure_file(../../config.ini.in config.ini)
-install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc/bohrium)
+install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
 
 MESSAGE(STATUS "Compiler flags:" ${CMAKE_CXX_COMPILE_FLAGS})
 MESSAGE(STATUS "Compiler cxx debug flags:" ${CMAKE_CXX_FLAGS_DEBUG})
@@ -75,6 +75,10 @@ set(CPACK_DEBIAN_PACKAGE_SUGGESTS "ipython")
 
 set(CPACK_DEBIAN_BUILD_DEPENDS python-numpy debhelper cmake swig libctemplate-dev libboost-dev python-cheetah python-dev fftw3-dev mpich2 libmpich2-dev ocl-icd-opencl-dev libgl-dev)
 
+set(CPACK_COMPONENT_bohrium-gpu_DEPENDS "opencl-dev, libopencl1, libgl-dev")
+set(CPACK_COMPONENT_bohrium-gpu_DESCRIPTION_SUMMARY "The GPU component")
+
 include(CPack)
 message("CPACK_PACKAGE_VERSION: ${CPACK_PACKAGE_VERSION}")
+message(STATUS "CPACK_COMPONENTS_ALL: ${CPACK_COMPONENTS_ALL}")
 include(DebSourcePPA)

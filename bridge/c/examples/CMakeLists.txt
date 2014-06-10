@@ -12,5 +12,5 @@ target_link_libraries(bh_hello_world_c bhc)
 #We need to include the header file of the C Bridge
 include_directories(../codegen/output)
 
-install(TARGETS bh_hello_world_c DESTINATION bin)
+install(TARGETS bh_hello_world_c DESTINATION bin COMPONENT bohrium)
 

@@ -21,6 +21,6 @@ if(MPI_C_FOUND)
     target_link_libraries(bh_vem_cluster bh)
     target_link_libraries(bh_vem_cluster_slave bh_vem_cluster)
 
-    install(TARGETS bh_vem_cluster DESTINATION lib)
-    install(TARGETS bh_vem_cluster_slave DESTINATION bin)
+    install(TARGETS bh_vem_cluster DESTINATION lib COMPONENT bohrium)
+    install(TARGETS bh_vem_cluster_slave DESTINATION bin COMPONENT bohrium)
 endif()

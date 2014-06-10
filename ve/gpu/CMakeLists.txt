@@ -16,8 +16,7 @@ if(OPENCL_FOUND)
     add_library(bh_ve_gpu SHARED ${SRC})
 
     target_link_libraries(bh_ve_gpu bh ${OPENCL_LIBRARIES})
-    install(TARGETS bh_ve_gpu DESTINATION lib)
-    install(DIRECTORY include DESTINATION share/bohrium)
-    install(DIRECTORY ocl_source DESTINATION share/bohrium)
-
+    install(TARGETS bh_ve_gpu DESTINATION lib COMPONENT bohrium-gpu)
+    install(DIRECTORY include DESTINATION share/bohrium COMPONENT bohrium-gpu)
+    install(DIRECTORY ocl_source DESTINATION share/bohrium COMPONENT bohrium-gpu)
 endif()

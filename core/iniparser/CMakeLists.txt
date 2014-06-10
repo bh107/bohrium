@@ -4,4 +4,4 @@ file(GLOB SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c)
 
 add_library(iniparser SHARED ${SRC})
 
-install(TARGETS iniparser DESTINATION lib)
+install(TARGETS iniparser DESTINATION lib COMPONENT bohrium)

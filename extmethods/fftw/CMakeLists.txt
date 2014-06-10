@@ -19,5 +19,5 @@ if(FFTW_FOUND)
     set(LIBS ${LIBS} ${FFTW_LIBRARIES})
     target_link_libraries(bh_fftw ${LIBS})
 
-    install(TARGETS bh_fftw DESTINATION lib)
+    install(TARGETS bh_fftw DESTINATION lib COMPONENT bohrium)
 endif()

@@ -59,19 +59,19 @@ if(NOT USE_CXX98)
     add_subdirectory(bridge/bhpy)
 endif()
 
-install(DIRECTORY thirdparty/Random123/include/Random123 DESTINATION include)
+install(DIRECTORY thirdparty/Random123/include/Random123 DESTINATION include COMPONENT bohrium)
 
 #Install the config file, which depends on global or local installation
 configure_file(config.ini.in config.ini)
 string(REGEX MATCH "^/home/" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})
 if(${ROOT_INSTALL})
-    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc)
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc COMPONENT bohrium)
 else()
     install(CODE "
     IF(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
         CONFIGURE_FILE(${CMAKE_BINARY_DIR}/config.ini \"\$ENV{HOME}/.bohrium/config.ini\" COPY_ONLY)
     ENDIF(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
-    ")
+    " COMPONENT bohrium)
 endif()
 
 MESSAGE(STATUS "Compiler flags:" ${CMAKE_CXX_COMPILE_FLAGS})
