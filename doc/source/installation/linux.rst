@@ -12,6 +12,7 @@ To install Bohrium on Ubuntu simply add the nightly build repository to your sys
 
 And then install the package::
 
+  sudo apt-get update
   sudo apt-get install bohrium
 
 Now the basic installation should work. Try running the NumPy test suite::
@@ -56,7 +57,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install libctemplate-dev python-cheetah g++
+  sudo apt-get install python-numpy swig libctemplate-dev python-cheetah g++ cmake libboost-dev
 
 Build and install::
 
@@ -172,7 +173,7 @@ Configuring your GPU with you operating system is out of scope of this documenta
 
 Assuming that your GPU-hardware is functioning correctly you need to install an OpenCL SDK and some additional packages::
 
-  sudo apt-get install ocl-icd-opencl-dev libgl-dev
+  sudo apt-get install opencl-dev libopencl1 libgl-dev
 
 You should now have everything you need to utilize the GPU engine.
 
