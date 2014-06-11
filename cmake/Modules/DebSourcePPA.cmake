@@ -45,7 +45,6 @@ endif(NOT DEBUILD_EXECUTABLE OR NOT DPUT_EXECUTABLE)
 
 ##The Unspecified component will be the core "bohrium" package
 LIST(REMOVE_ITEM CPACK_COMPONENTS_ALL "bohrium")
-#LIST(APPEND CPACK_COMPONENTS_ALL "bohrium")
 
 # DEBIAN/control
 # debian policy enforce lower case for package name
@@ -84,7 +83,6 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
     "Source: ${CPACK_DEBIAN_PACKAGE_NAME}\n"
     "Section: ${CPACK_DEBIAN_PACKAGE_SECTION}\n"
     "Priority: ${CPACK_DEBIAN_PACKAGE_PRIORITY}\n"
-#    "DM-Upload-Allowed: yes\n"
     "Maintainer: ${CPACK_PACKAGE_CONTACT}\n"
     "Build-Depends: "
     )
@@ -169,15 +167,14 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
     "Description: ${CPACK_PACKAGE_DISPLAY_NAME} ${CPACK_PACKAGE_DESCRIPTION_SUMMARY}\n"
     )
 
-#Note that we have de-activated the components -- we only generate ONE deb package
   foreach(COMPONENT ${CPACK_COMPONENTS_ALL})
     if(NOT ${COMPONENT} STREQUAL "bohrium")
       file(APPEND ${DEBIAN_CONTROL} "\n"
             "Package: ${COMPONENT}\n"
             "Architecture: amd64\n"
             "Depends: ${CPACK_COMPONENT_${COMPONENT}_DEPENDS}\n"
-            "Recommends: ${RECOMMENDS}\n"
-            "Suggests: ${SUGGESTS}\n"
+            "Recommends: ${CPACK_COMPONENT_${COMPONENT}_RECOMMENDS}\n"
+            "Suggests: ${CPACK_COMPONENT_${COMPONENT}_SUGGESTS}\n"
             "Description: ${CPACK_COMPONENT_${COMPONENT}_DESCRIPTION_SUMMARY}\n"
             )
     endif(NOT ${COMPONENT} STREQUAL "bohrium")
