@@ -40,10 +40,12 @@ def extmethod(name, out, in1, in2):
     bhc_out = get_bhc(out)
     bhc_in1 = get_bhc(in1)
     bhc_in2 = get_bhc(in2)
-    f(name, bhc_out, bhc_in1, bhc_in2)
+    ret = f(name, bhc_out, bhc_in1, bhc_in2)
     del_bhc_obj(bhc_out)
     del_bhc_obj(bhc_in1)
     del_bhc_obj(bhc_in2)
+    if ret != 0:
+        raise RuntimeError("The current runtime system does not support the extension method '%s'"%name)
 
 def assign(a, out):
     out = fix_biclass(out)
