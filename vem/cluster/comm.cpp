@@ -77,6 +77,10 @@ static void comm_gather_scatter(int scatter, bh_base *global_ary)
     }
     else
     {
+        //Lets make sure that the 'local_ary' is updated
+        batch_schedule_inst_on_base(BH_SYNC, local_ary);
+        batch_flush();
+
         //The master-processes may need to allocate memory
         if(pgrid_myrank == 0 && global_ary->data == NULL)
         {
