@@ -164,6 +164,8 @@ def get_bhc_data_pointer(ary, allocate=False, nullify=False):
     dtype = dtype_name(ary)
     bhc_ary = get_bhc(ary)
     exec "bhc.bh_multi_array_%s_sync(bhc_ary)"%dtype
+    exec "bhc.bh_multi_array_%s_discard(bhc_ary)"%dtype
+    exec "bhc.bh_runtime_flush()"
     exec "base = bhc.bh_multi_array_%s_get_base(bhc_ary)"%dtype
     exec "data = bhc.bh_multi_array_%s_get_base_data(base)"%dtype
     if data is None:
