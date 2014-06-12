@@ -56,6 +56,9 @@ typedef struct bh_slice_range_${bh_ctype}* bh_slice_range_${bh_ctype}_p;
 // Sync the current base
 void bh_multi_array_${bh_ctype}_sync(const bh_multi_array_${bh_ctype}_p self);
 
+// Discard the current base
+void bh_multi_array_${bh_ctype}_discard(const bh_multi_array_${bh_ctype}_p self);
+
 // Sets the temp status of an array
 DLLEXPORT void bh_multi_array_${bh_ctype}_set_temp(const bh_multi_array_${bh_ctype}_p self, bh_bool temp);
 

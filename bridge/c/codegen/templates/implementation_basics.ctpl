@@ -88,7 +88,13 @@ bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p
 // Sync the current base
 void bh_multi_array_${bh_ctype}_sync(const bh_multi_array_${bh_ctype}_p self)
 {
-    ((multi_array<${ctype}>*)self)->sync();
+    bh_sync(*((multi_array<${ctype}>*)self));
+}
+
+// Discard the current base
+void bh_multi_array_${bh_ctype}_discard(const bh_multi_array_${bh_ctype}_p self)
+{
+    bh_discard(*((multi_array<${ctype}>*)self));
 }
 
 // Sets the temp status of an array
