@@ -52,6 +52,13 @@ def fix_biclass(ary):
     else:
         return ary
 
+#Function decorator that makes sure that the function doesn't return a biclass
+def fix_returned_biclass(func):
+    def inner(*args, **kwargs):
+        ret = func(*args, **kwargs)
+        return fix_biclass(ret)
+    return inner
+
 #Creates a new bohrium.ndarray with 'bhc_ary' as the Bohrium-C part.
 #Use a new Bohrium-C array when 'bhc_ary' is None.
 def new(shape, dtype, bhc_ary=None):

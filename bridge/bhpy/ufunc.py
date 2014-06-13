@@ -26,9 +26,10 @@ import bhc
 import numpy as np
 import _info
 from _util import dtype_name, dtype_identical
-from ndarray import get_bhc, del_bhc_obj, fix_biclass
+from ndarray import get_bhc, del_bhc_obj, fix_biclass, fix_returned_biclass
 import ndarray
 
+@fix_returned_biclass
 def extmethod(name, out, in1, in2):
     assert in1.dtype == in2.dtype
     out = fix_biclass(out)
@@ -47,6 +48,7 @@ def extmethod(name, out, in1, in2):
     if ret != 0:
         raise RuntimeError("The current runtime system does not support the extension method '%s'"%name)
 
+@fix_returned_biclass
 def assign(a, out):
     out = fix_biclass(out)
     a = fix_biclass(a)
@@ -80,6 +82,8 @@ class ufunc:
         self.info = info
     def __str__(self):
         return "<bohrium ufunc '%s'>"%self.info['name']
+
+    @fix_returned_biclass
     def __call__(self, *args):
 
         #Check number of arguments
@@ -185,6 +189,7 @@ class ufunc:
             return out
         return out
 
+    @fix_returned_biclass
     def reduce(self, a, axis=0, out=None):
         """ A Bohrium Reduction
     Reduces `a`'s dimension by one, by applying ufunc along one axis.
