@@ -47,8 +47,12 @@ def extmethod(name, out, in1, in2):
 
 @fix_returned_biclass
 def assign(a, out):
-    np.broadcast(a,out)#We only do this for the dimension mismatch check
+    """Copy data from array 'a' to 'out'"""
 
+    if not np.isscalar(a):
+        (a,out) = np.broadcast_arrays(a,out)
+
+    #print "assign: ", a.shape, out.shape
     if ndarray.check(out):
         out_dtype = dtype_name(out)
         out_bhc = get_bhc(out)
