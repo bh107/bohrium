@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import subprocess
-from subprocess import check_output, check_call, Popen, PIPE
+from subprocess import check_output, check_call, Popen, PIPE, STDOUT
 from datetime import datetime
 import os
 from os import path
@@ -10,20 +10,33 @@ import re
 import traceback
 
 out = ""#The output of this build and/or testing
+#Execute command and capture output
+def cmd(*args, **kwarg):
+    global out
+    if 'stderr' not in kwarg:
+        kwarg['stderr'] = STDOUT#Default value
+    ret = check_output(*args, **kwarg)
+    out += ret
+    return ret
 
 def main(args):
     global out
+    #Lets update the repos
+    ret = cmd(['git','pull'], cwd=args.cmake_file_dir)
+    if args.only_on_changes and 'Already up-to-date' in ret:
+        out += "No changes to the git repos, exiting."
+        return
+    cmd(['git','checkout', args.branch], cwd=args.cmake_file_dir)
 
     #Make and change to a tmp dir
     tmpdir = tempfile.mkdtemp(prefix="bh_deb_builder_")
     os.chdir(tmpdir)
 
-    check_call(['git','pull'], cwd=args.cmake_file_dir)
-    check_call(['git','checkout', args.branch], cwd=args.cmake_file_dir)
-    out += check_output(['cmake',args.cmake_file_dir, '-DCPACK_PACKAGE_CONTACT=%s'%args.contact])
+    cmd(['cmake', args.cmake_file_dir, '-DCPACK_PACKAGE_CONTACT=%s'%args.contact])
 
     #Lets find the change files generatored by cmake
-    m = re.findall("signfile (.*source\.changes) %s\s*Successfully signed dsc and changes files"%args.contact, out)
+    m = re.findall("signfile (.*source\.changes) %s\s*Successfully signed "\
+                   "dsc and changes files"%args.contact, out)
     if len(m) <= 0:
         raise RuntimeError("cmake didn't generate any deb-src change files!")
     out += "\ncmake generated the following deb-src change files: %s\n"%str(m)
@@ -31,10 +44,10 @@ def main(args):
     #Lets uploade the files
     for changefile in m:
         out += "Uploading %s\n"%changefile
-        check_call(['dput', 'bo2hrium-nightly', 'Debian/%s'%changefile])
+        cmd(['dput', 'bohrium-nightly', 'Debian/%s'%changefile])
 
     #Lets cleanup
-    check_call(['rm','-Rf',tmpdir])
+    cmd(['rm','-Rf',tmpdir])
 
 if __name__ == "__main__":
 
@@ -65,19 +78,29 @@ if __name__ == "__main__":
         type=str,
         help='The result of the build and/or test will be emailed to the specified address.'
     )
+    parser.add_argument(
+        '--only-on-changes',
+        action="store_true",
+        help='Only execute when the git repos has been changed.'
+    )
     args = parser.parse_args()
     status = "SUCCESS"
     try:
         main(args)
-    except Exception, e:
+    except StandardError, e:
         out += "*"*70
         out += "\nERROR: %s"%traceback.format_exc()
         out += "*"*70
         out += "\n"
         status = "FAILURE"
+        try:
+            out += e.output
+        except:
+            pass
     print out
     if args.email:
         print "send status email to '%s'"%args.email
-        p = Popen(['mail','-s','"[Bohrium PPA Build] The result of build was a %s"'%status, args.email], stdin=PIPE)
+        p = Popen(['mail','-s','"[Bohrium PPA Build] The result of build was a %s"'%status, args.email],
+                  stdin=PIPE)
         p.communicate(input=out)
 
