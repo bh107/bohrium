@@ -505,15 +505,16 @@ BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
         PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
         return -1;
     }
-
-    PyObject *view = PyArray_Type.tp_as_sequence->sq_slice(o, ilow, ihigh);
-    if(view == NULL)
-        return -1;
-
-    PyObject *ret = PyObject_CallMethod(ufunc, "assign", "OO", v, view);
-    Py_DECREF(view);
+    PyObject *low = PyInt_FromSsize_t(ilow);
+    PyObject *high = PyInt_FromSsize_t(ihigh);
+    PyObject *slice = PySlice_New(low, high, NULL);
+    PyObject *ret = PyObject_CallMethod(ufunc, "setitem", "OOO", o, slice, v);
+    Py_XDECREF(low);
+    Py_XDECREF(high);
+    Py_XDECREF(slice);
     if(ret == NULL)
         return -1;
+    Py_XDECREF(ret);
     return 0;
 }
 
@@ -530,27 +531,10 @@ BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
         PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
         return -1;
     }
-
-    //Integer index uses BhArray_SetSlice() in order to avoid direct memory access by NumPy
-    if(PyArray_IsIntegerScalar(key) || (PyIndex_Check(key) && !PySequence_Check(key)))
-    {
-        npy_intp value = PyArray_PyIntAsIntp(key);
-        if(value == -1 && PyErr_Occurred())
-        {
-            PyErr_SetString(PyExc_IndexError, "cannot convert index to integer");
-            return -1;
-        }
-        return BhArray_SetSlice(o, value, value+1, v);
-    }
-
-    PyObject *view = PyArray_Type.tp_as_mapping->mp_subscript(o, key);
-    if(view == NULL)
-        return -1;
-
-    PyObject *ret = PyObject_CallMethod(ufunc, "assign", "OO", v, view);
-    Py_DECREF(view);
+    PyObject *ret = PyObject_CallMethod(ufunc, "setitem", "OOO", o, key, v);
     if(ret == NULL)
         return -1;
+    Py_XDECREF(ret);
     return 0;
 }
 
@@ -559,7 +543,6 @@ BhArray_GetItem(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
     assert(k != NULL);
-    //If the result is a scalar we let NumPy handle it
 
     //If the tuple access all dimensions we must check for Python slice objects
     if(PyTuple_Check(k) && (PyTuple_GET_SIZE(k) == PyArray_NDIM((PyArrayObject*)o)))
@@ -574,6 +557,7 @@ BhArray_GetItem(PyObject *o, PyObject *k)
             }
         }
     }
+    //If the result is a scalar we let NumPy handle it
     if(PyArray_IsIntegerScalar(k) || (PyIndex_Check(k) && !PySequence_Check(k)))
     {
         if(BhArray_data_bhc2np(o, NULL) == NULL)

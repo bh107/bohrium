@@ -47,6 +47,24 @@ def extmethod(name, out, in1, in2):
     if ret != 0:
         raise RuntimeError("The current runtime system does not support the extension method '%s'"%name)
 
+def setitem(ary, loc, value):
+    """Set the 'value' into 'ary' at the location specified through 'loc'.
+    'loc' can be a scalar or a slice object, or a tuple thereof"""
+
+    if not isinstance(loc, tuple):
+        loc = (loc,)
+    #Lets convert scalar indexes to slices
+    loc = list(loc)
+    if len(loc) == ary.ndim:#We are setting a scalar
+        for i in xrange(len(loc)):
+            s = loc[i]
+            if np.isscalar(s):
+                if s < 0:#'slice' doesn't support negative indices
+                    s += ary.shape[i]
+                loc[i] = slice(s, s+1)
+    #Copy the 'value' to 'ary' using the 'loc' without scalar indexes
+    assign(value, ary[tuple(loc)])
+
 def assign(a, out):
     out = fix_biclass(out)
     a = fix_biclass(a)
@@ -117,13 +135,6 @@ class ufunc:
         #Find the type signature
         (out_dtype,in_dtype) = _util.type_sig(self.info['name'], args)
 
-        #Convert 'args' to Bohrium ndarrays
-        """
-        for i in xrange(len(args)):
-            print type(args[i])
-            if not np.isscalar(args[i]) and not ndarray.check(args[i]):
-                args[i] = array_create.array(args[i])
-        """
         #Convert dtype of all inputs
         for i in xrange(len(args)):
             if not np.isscalar(args[i]) and not dtype_identical(args[i], in_dtype):
