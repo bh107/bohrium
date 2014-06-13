@@ -26,15 +26,12 @@ import bhc
 import numpy as np
 import _info
 from _util import dtype_name, dtype_identical
-from ndarray import get_bhc, del_bhc_obj, fix_biclass, fix_returned_biclass
+from ndarray import get_bhc, del_bhc_obj, get_base, fix_returned_biclass
 import ndarray
 
 @fix_returned_biclass
 def extmethod(name, out, in1, in2):
     assert in1.dtype == in2.dtype
-    out = fix_biclass(out)
-    in1 = fix_biclass(in1)
-    in2 = fix_biclass(in2)
 
     f = eval("bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
               dtype_name(in1), dtype_name(in2)))
@@ -50,11 +47,9 @@ def extmethod(name, out, in1, in2):
 
 @fix_returned_biclass
 def assign(a, out):
-    out = fix_biclass(out)
-    a = fix_biclass(a)
+    np.broadcast(a,out)#We only do this for the dimension mismatch check
 
     if ndarray.check(out):
-        np.broadcast(a,out)#We only do this for the dimension mismatch check
         out_dtype = dtype_name(out)
         out_bhc = get_bhc(out)
         a_dtype = dtype_name(a)
@@ -68,13 +63,10 @@ def assign(a, out):
             exec "%s(out_bhc, a_bhc)"%cmd
             del_bhc_obj(a_bhc)
         del_bhc_obj(out_bhc)
-    elif ndarray.check(a):
-        a._data_bhc2np()
-        a.__array_priority__ = -1.0#Force NumPy to handle the assignment
-        out[...] = a
-        a.__array_priority__ = 2.0
     else:
-        out[...] = a#Regular NumPy assignment
+        if ndarray.check(a):
+            get_base(a)._data_bhc2np()
+        out[...] = a
 
 class ufunc:
     def __init__(self, info):
@@ -90,8 +82,6 @@ class ufunc:
         if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
             raise ValueError("invalid number of arguments")
         args = list(args)
-        for i in xrange(len(args)):
-            args[i] = fix_biclass(args[i])
 
         #Pop the output from the 'args' list
         out = None
@@ -121,13 +111,6 @@ class ufunc:
         #Find the type signature
         (out_dtype,in_dtype) = _util.type_sig(self.info['name'], args)
 
-        #Convert 'args' to Bohrium ndarrays
-        """
-        for i in xrange(len(args)):
-            print type(args[i])
-            if not np.isscalar(args[i]) and not ndarray.check(args[i]):
-                args[i] = array_create.array(args[i])
-        """
         #Convert dtype of all inputs
         for i in xrange(len(args)):
             if not np.isscalar(args[i]) and not dtype_identical(args[i], in_dtype):
@@ -262,7 +245,6 @@ class ufunc:
     array([[ 1,  5],
            [ 9, 13]])
         """
-        a = fix_biclass(a)
 
         if out is not None:
             if ndarray.check(out):
