@@ -183,7 +183,7 @@ MPI / Cluster Engine
 
 In order to utilize a computer clusters, you need to install mpich2::
 
-  sudo apt-get install mpich2
+  sudo apt-get install mpich2 libmpich2-dev
 
 And execute using mpi::
 
