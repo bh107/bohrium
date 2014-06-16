@@ -45,6 +45,22 @@ def extmethod(name, out, in1, in2):
     if ret != 0:
         raise RuntimeError("The current runtime system does not support the extension method '%s'"%name)
 
+def setitem(ary, loc, value):
+    """Set the 'value' into 'ary' at the location specified through 'loc'.
+    'loc' can be a scalar or a slice object, or a tuple thereof"""
+
+    if not isinstance(loc, tuple):
+        loc = (loc,)
+
+    #Lets make sure that not all dimensions are indexed by integers
+    loc = list(loc)
+    if len(loc) == ary.ndim and all((np.isscalar(s) for s in loc)):
+        if loc[0] < 0:#'slice' doesn't support negative start index
+            loc[0] += ary.shape[0]
+        loc[0] = slice(loc[0], loc[0]+1)
+    #Copy the 'value' to 'ary' using the 'loc'
+    assign(value, ary[tuple(loc)])
+
 @fix_returned_biclass
 def assign(a, out):
     """Copy data from array 'a' to 'out'"""
