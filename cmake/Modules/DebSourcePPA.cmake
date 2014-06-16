@@ -198,7 +198,7 @@ foreach(RELEASE ${CPACK_DEBIAN_DISTRIBUTION_RELEASES})
     "build:\n"
     "	mkdir $(BUILDDIR)\n"
     "	cd $(BUILDDIR); cmake -DDEB_SRC_PPA_ONCE=1 -DCMAKE_BUILD_TYPE=Release ${CPACK_DEBIAN_CMAKE_OPTIONS} -DCMAKE_INSTALL_PREFIX=/usr ../package/debian\n"
-    "	$(MAKE) -C $(BUILDDIR) preinstall\n"
+    "	$(MAKE) VERBOSE=1 -C $(BUILDDIR) preinstall\n"
     "	touch build\n"
     "\n"
     "binary: binary-indep binary-arch\n"
