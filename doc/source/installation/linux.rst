@@ -41,6 +41,27 @@ And you should see a result similar to this::
     Testing test_sor.py/sor/sor
     ************************ Finish ************************
 
+In order to utilize GPUs you need an OpenCL 1.2 compatible graphics card and the Bohrium GPU package::
+
+  sudo apt-get install bohrium-gpu
+
+.. note:: On Nvidia Optimus architectures, remember to install and use bumblebee (``optirun``) when calling Bohrium.
+
+In order to utilize a Cluster of machines you need MPI-2 and the Bohrium Cluster package::
+
+  sudo apt-get install bohrium-cluster
+
+Now execute using MPI::
+
+  mpiexec -np 1 <user application> : -np 3 /usr/bin/bh_vem_cluster_slave
+
+Where one process executes the user application and multiple processes executes the slave binary.
+
+For example, the following utilize eight cluster nodes::
+
+  mpiexec -np 1 python /usr/share/bohrium/test/numpy/numpytest.py : -np 7 .local/bh_vem_cluster_slave
+
+
 Install From Source Package
 ---------------------------
 
@@ -81,7 +102,7 @@ The ``LD_LIBRARY_PATH`` should include the path to the installation directory::
   export LD_LIBRARY_PATH="$HOME/.local:$LD_LIBRARY_PATH"
 
 
-The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module. This will also make sure that Python uses the NumPy module included in Bohrium. ::
+The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module.::
 
   export PYTHONPATH=<install dir>/lib/python<python version>/site-packages:$PYTHONPATH
   #Example
