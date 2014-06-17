@@ -101,12 +101,25 @@ class ufunc:
         #Check number of arguments
         if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
             raise ValueError("invalid number of arguments")
+
+        #Broadcast the args
+        bargs = np.broadcast_arrays(*args)
         args = list(args)
 
-        #Pop the output from the 'args' list
+        #Pop the output from the 'bargs' list
         out = None
         if len(args) == self.info['nop']:#output given
             out = args.pop()
+            if bargs[-1].shape != out.shape:
+                raise ValueError("non-broadcastable output operand with shape %s "
+                                 "doesn't match the broadcast shape %s"%
+                                 (str(args[-1].shape), str(out.shape)))
+        out_shape = bargs[-1].shape
+
+        #Copy broadcasted array back to 'args' excluding scalars
+        for i in xrange(len(args)):
+            if not np.isscalar(args[i]):
+                args[i] = bargs[i]
 
         if any([ndarray.check(a) for a in args]):
             if out is not None and not ndarray.check(out):
@@ -120,13 +133,6 @@ class ufunc:
 
         if len(args) > 2:
             raise ValueError("Bohrium do not support ufunc with more than two inputs")
-
-        #Check for shape mismatch and get the final output shape
-        out_shape = np.broadcast(*args).shape if len(args) > 1 else args[0].shape
-
-        #Check output shape
-        if out is not None and out.shape != out_shape:
-            raise ValueError("Could not broadcast to the shape of the output array")
 
         #Find the type signature
         (out_dtype,in_dtype) = _util.type_sig(self.info['name'], args)
@@ -143,13 +149,6 @@ class ufunc:
             args.insert(0,array_create.empty(out_shape, out_dtype))
         else:
             args.insert(0,out)
-
-        #For now, we will prepend dimensions in order to get correct broadcasting by
-        #the C++ bridge. TODO: remove when the C++ Bridge supports broadcasting fully.
-        for i in xrange(1,len(args)):
-            if not np.isscalar(args[i]):
-                while args[i].ndim < args[0].ndim:
-                    args[i] = args[i][np.newaxis,...]
 
         #Convert 'args' to Bohrium-C arrays
         bhcs = []
@@ -184,11 +183,7 @@ class ufunc:
         if out is None or out_dtype == out.dtype:
             return args[0]
         else:#We need to convert the output type before returning
-            f = eval("bhc.bh_multi_array_%s_convert_%s"%(dtype_name(args[0].dtype), dtype_name(out_dtype)))
-            t = f(args[0])
-            bhc_out = get_bhc(out)
-            exec "bhc.bh_multi_array_%s_assign_array(bhc_out,t)"%(dtype_name(out_dtype))
-            del_bhc_obj(bhc_out)
+            assign(args[0], out)
             return out
         return out
 
