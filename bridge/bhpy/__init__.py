@@ -5,7 +5,7 @@ from ndarray import check, check_biclass, fix_biclass
 from _info import numpy_types
 from _util import flush
 import linalg
-from linalg import matmul
+from linalg import matmul, dot
 from numpy import newaxis, pi
 from summations import sum
 

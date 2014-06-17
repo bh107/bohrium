@@ -143,9 +143,7 @@ def matmul(a,b):
     else:
     	return numpy.dot(a,b)
 
-def dot(a,b):
-    raise NotImplementedError("dot() requires support of NumPy-views "\
-                              "that points to Bohrium-base arrays")
+def dot(a,b, no_matmul=False):
     """
     Dot product of two arrays.
 
@@ -215,4 +213,6 @@ def dot(a,b):
         return numpy.add.reduce(a*b,-1)
     if a.ndim == 1:
         return ufunc.add.reduce(a*numpy.transpose(b),-1)
+    if not no_matmul and a.ndim == 2 and b.ndim == 2:
+        return matmul(a,b)
     return ufunc.add.reduce(a[:,numpy.newaxis]*numpy.transpose(b),-1)

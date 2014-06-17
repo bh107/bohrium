@@ -20,7 +20,7 @@ class test_matmul(numpytest):
         exec cmd
         return (res, cmd)
 
-    def tes1t_dot(self,a):
-        cmd = "res = np.dot(a[0],a[1])"
+    def test_dot(self,a):
+        cmd = "res = np.dot(a[0],a[1], no_matmul=True)"
         exec cmd
         return (res, cmd)
