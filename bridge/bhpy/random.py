@@ -38,7 +38,6 @@ def random123(shape, key, start_index=0, bohrium=True):
 
     totalsize = reduce(operator.mul, shape, 1)
     f = eval("bhc.bh_multi_array_uint64_new_random123")
-    print totalsize
     t = f(totalsize, start_index, key)
     ret = ndarray.new((totalsize,), np.uint64, t)
     return ret.reshape(shape)
