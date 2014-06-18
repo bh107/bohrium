@@ -574,6 +574,18 @@ BhArray_GetItem(PyObject *o, PyObject *k)
     return PyArray_Type.tp_as_mapping->mp_subscript(o, k);
 }
 
+static PyObject *
+BhArray_GetSeqItem(PyObject *o, Py_ssize_t i)
+{
+    //If we wrap the index 'i' into a Python Object we can simply use BhArray_GetItem
+    PyObject *index = PyInt_FromSsize_t(i);
+    if(index == NULL)
+        return NULL;
+    PyObject *ret = BhArray_GetItem(o, index);
+    Py_DECREF(index);
+    return ret;
+}
+
 static PyMappingMethods array_as_mapping = {
     (lenfunc)0,                     /*mp_length*/
     (binaryfunc)BhArray_GetItem,    /*mp_subscript*/
@@ -583,7 +595,7 @@ static PySequenceMethods array_as_sequence = {
     (lenfunc)0,                              /*sq_length*/
     (binaryfunc)NULL,                        /*sq_concat is handled by nb_add*/
     (ssizeargfunc)NULL,                      /*sq_repeat*/
-    (ssizeargfunc)BhArray_GetItem,           /*sq_item*/
+    (ssizeargfunc)BhArray_GetSeqItem,        /*sq_item*/
     (ssizessizeargfunc)0,                    /*sq_slice (Not in the Python doc)*/
     (ssizeobjargproc)BhArray_SetItem,        /*sq_ass_item*/
     (ssizessizeobjargproc)BhArray_SetSlice,  /*sq_ass_slice (Not in the Python doc)*/
