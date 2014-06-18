@@ -440,6 +440,13 @@ BhArray_copy2numpy(PyObject *self, PyObject *args)
     return ret;
 }
 
+static PyObject *
+BhArray_resize(PyObject *self, PyObject *args)
+{
+    PyErr_SetString(PyExc_NotImplementedError, "Bohrium arrays doesn't support resize");
+    return NULL;
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
     {"_data_bhc2np", BhArray_data_bhc2np, METH_NOARGS, "Copy the Bohrium-C data to NumPy data"},
@@ -448,6 +455,7 @@ static PyMethodDef BhArrayMethods[] = {
     {"copy", BhArray_copy, METH_NOARGS, "Copy the array in C-style memory layout"},
     {"copy2numpy", BhArray_copy2numpy, METH_NOARGS, "Copy the array in C-style memory "
                                                     "layout to a regular NumPy array"},
+    {"resize", BhArray_resize, METH_VARARGS, "Change shape and size of array in-place"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
