@@ -22,7 +22,11 @@ endif()
 #External dependencies
 find_package(CTemplate)
 set_package_properties(CTemplate PROPERTIES DESCRIPTION "Template language for C++" URL "code.google.com/p/ctemplate/")
-set_package_properties(CTemplate PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the CPU-VE.")
+set_package_properties(CTemplate PROPERTIES TYPE REQUIRED PURPOSE "Used by CPU-VE for code generation.")
+
+find_package(Boost)
+set_package_properties(Boost PROPERTIES DESCRIPTION "Graph Library" URL "http://www.boost.org/doc/libs/1_55_0/libs/graph/doc/index.html")
+set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Used by CPU-VE for intermediate program representation.")
 
 if(CTEMPLATE_FOUND)
     file(GLOB SRC *.cpp thirdparty/*.cpp)
@@ -35,6 +39,7 @@ if(CTEMPLATE_FOUND)
     install(TARGETS bh_ve_cpu DESTINATION lib COMPONENT bohrium)
 
     include_directories(${CTEMPLATE_INCLUDE_DIR})
+    include_directories(${Boost_INCLUDE_DIRS})
     set(LIBS ${LIBS} ${CTEMPLATE_LIBRARIES})
     target_link_libraries(bh_ve_cpu ${LIBS})
 
