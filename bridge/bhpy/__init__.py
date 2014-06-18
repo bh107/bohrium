@@ -6,7 +6,7 @@ from _info import numpy_types
 from _util import flush
 import linalg
 from linalg import matmul, dot
-from numpy import newaxis, pi
+from numpy import newaxis, pi, transpose
 from summations import sum
 
 #Expose all ufuncs
