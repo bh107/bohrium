@@ -96,15 +96,25 @@ class ufunc:
         return "<bohrium ufunc '%s'>"%self.info['name']
 
     @fix_returned_biclass
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
+        args = list(args)
 
-        #Check number of arguments
+        #Check number of array arguments
         if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
-            raise ValueError("invalid number of arguments")
+            raise ValueError("invalid number of array arguments")
+
+        #Lets make sure that 'out' is always a positional argument
+        try:
+            out = kwargs['out']
+            del kwargs['out']
+            if len(args) == self.info['nop']:
+                raise ValueError("cannot specify 'out' as both a positional and keyword argument")
+            args.append(out)
+        except KeyError:
+            pass
 
         #Broadcast the args
         bargs = np.broadcast_arrays(*args)
-        args = list(args)
 
         #Pop the output from the 'bargs' list
         out = None
