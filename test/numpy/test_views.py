@@ -34,7 +34,6 @@ class test_transpose(numpytest):
     def init(self):
         for v in gen_views(4,16,6,min_ndim=2):
             a = {}
-            print v
             exec v
             yield (a,v)
 
