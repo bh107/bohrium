@@ -113,6 +113,11 @@ class ufunc:
         except KeyError:
             pass
 
+        #We do not support NumPy's exotic arguments
+        for k,v in kwargs.iteritems():
+            if v is not None:
+                raise ValueError("Bohrium funcs doesn't support the '%s' argument"%str(k))
+
         #Broadcast the args
         bargs = np.broadcast_arrays(*args)
 
