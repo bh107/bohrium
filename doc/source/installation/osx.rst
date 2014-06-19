@@ -5,7 +5,7 @@ The following explains how to get going on Mac OSX. Bohrium and NumPy is not com
 
 You need to install the `Xcode Developer Tools <https://developer.apple.com/xcode/>`_, which is found in the App Store.
 
-You also need the following packages from MacPorts::
+If you are using Mac MacPorts::
 
   sudo port install python27 cmake py27-cheetah
 
@@ -14,6 +14,10 @@ If you also want to build the Mono libraries (only required for the C# NumCIL pa
   sudo port install mono
 
 .. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ does not support 64bit execution, and will not work with a normal build. You need to build a 32 bit version of Bohrium if you want to use the official Mono binaries.
+
+If you are using finkproject::
+
+  fink install cmake cheetah python27 cheetah-py27 numpy-py27 swig boost1.53.nopython
 
 Download and extract the current version (v0.2) (not recommended on OSX)::
 
