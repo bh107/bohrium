@@ -299,7 +299,7 @@ bool bh_view_disjoint(const bh_view *a, const bh_view *b)
         int bs = bstart / stride;
         int ae = as + a->shape[i] * (a->stride[i]/stride);
         int be = bs + b->shape[i] * (b->stride[i]/stride);
-        if (ae <= bs || be <= as)
+        if (ae < bs || be < as)
             return true;
         astart %= stride;
         bstart %= stride;
