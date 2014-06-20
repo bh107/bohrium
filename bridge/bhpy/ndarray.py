@@ -37,12 +37,13 @@ def check(ary):
 
 #Returns True if 'ary' is a NumPy view with a Bohrium base array
 def check_biclass(ary):
-    if not isinstance(ary, numpy.ndarray) or numpy.isscalar(ary):
+    try:
+        if not check(get_base(ary)):
+            return False
+    except AttributeError:
         return False
-    if check(ary):
-        return False
-    else:
-        return check(get_base(ary))
+    import _bh
+    return not isinstance(ary, _bh.ndarray)
 
 #Returns a Bohrium version of 'ary' if 'ary' is a NumPy view with a
 #Bohrium base array else 'ary' is returned unmodified
