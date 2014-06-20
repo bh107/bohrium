@@ -18,7 +18,7 @@ find_library (FFTW_LIBRARIES_PRE NAMES fftw3)
 # handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if
 # all listed variables are TRUE
 if (APPLE AND FFTW_INCLUDES_PRE)
-    message(WARNING "FFTW is found, but does not compile with Bohrium on OSX")
+    message(STATUS "FFTW is found, but does not compile with Bohrium on OSX")
 else ()
     set (FFTW_INCLUDES ${FFTW_INCLUDES_PRE})
     set (FFTW_LIBRARIES ${FFTW_LIBRARIES_PRE})
