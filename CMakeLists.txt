@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
+# Build multi-arch OSX binaries
+set(CMAKE_OSX_ARCHITECTURES "i386;x86_64")
+
 #We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
 if(DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are:
