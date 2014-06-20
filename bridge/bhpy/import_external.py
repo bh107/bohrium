@@ -2,10 +2,17 @@ import imp
 import sys
 import inspect
 from importlib import import_module
+import ndarray
+
+def bohriumify(obj):
+    """Returns a bohrium compatible version of 'obj'"""
+    if inspect.isroutine(obj):
+        return ndarray.fix_returned_biclass(obj)
+    return obj
 
 def api(objs):
     """Imports all objects in the list 'objs'.
-    Returns a list of import statements, e.g. ["import linalg"]
+    Returns a list of import statements, e.g. ["import bohrium.linalg"]
     """
     ret = []
     for name in objs:
@@ -37,11 +44,11 @@ def api(objs):
             m = import_module(fullname)
             for o in dir(head_obj):
                 if o not in m.__dict__:
-                    setattr(m, o, getattr(head_obj,o))
+                    setattr(m, o, bohriumify(getattr(head_obj,o)))
             ret.append("import %s"%fullname)
         else:
             m = import_module(prefix)
-            setattr(m, head_name, head_obj)
+            setattr(m, head_name, bohriumify(head_obj))
             ret.append("import %s"%prefix)
     return ret
 

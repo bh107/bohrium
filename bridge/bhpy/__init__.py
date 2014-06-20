@@ -23,12 +23,13 @@ import random
 #TODO: import all numpy functions
 from numpy import meshgrid
 
-#Finally, we import external libraries
+#Finally, we import and expose external libraries
 numpy_interface = [\
 "numpy.lib.stride_tricks.as_strided",
 "numpy.newaxis",
 "numpy.pi",
-"numpy.transpose"]
+"numpy.transpose",
+]
 
 for i in import_external.api(numpy_interface):
     exec i
