@@ -6,8 +6,8 @@ from _info import numpy_types
 from _util import flush
 import linalg
 from linalg import matmul, dot
-from numpy import newaxis, pi
 from summations import sum
+import import_external
 
 #Expose all ufuncs
 for f in ufuncs:
@@ -22,3 +22,14 @@ import random
 
 #TODO: import all numpy functions
 from numpy import meshgrid
+
+#Finally, we import and expose external libraries
+numpy_interface = [\
+"numpy.lib.stride_tricks.as_strided",
+"numpy.newaxis",
+"numpy.pi",
+"numpy.transpose",
+]
+
+for i in import_external.api(numpy_interface):
+    exec i

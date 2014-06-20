@@ -12,7 +12,32 @@ import ufunc
 import numpy
 import array_create
 
-def gauss(a, b):
+def gauss(a):
+    """
+    Performe Gausian elimination on matrix a without pivoting
+    """
+    for c in xrange(1,a.shape[0]):
+        a[c:,c-1:] = a[c:,c-1:] - (a[c:,c-1]/a[c-1,c-1:c])[:,None] * a[c-1,c-1:]
+        np.flush(a) 
+    a /= np.diagonal(a)[:,None]
+    return a
+
+
+def lu(a):
+    """
+    Performe LU decomposition on the matrix a so A = L*U
+    """    
+    u = a.copy() 
+    l = np.zeros_like(a)
+    np.diagonal(l)[:] = 1.0
+    for c in xrange(1,u.shape[0]):
+        l[c:,c-1] = (u[c:,c-1]/u[c-1,c-1:c])
+        u[c:,c-1:] = u[c:,c-1:] - l[c:,c-1][:,None] * u[c-1,c-1:]
+        np.flush(u)
+    return (l,u)
+
+
+def solve(a, b):
     """
     Solve a linear matrix equation, or system of linear scalar equations
     using Gausian elimination.
@@ -42,17 +67,15 @@ def gauss(a, b):
     >>> (np.dot(a, x) == b).all()
     True
     """
-
-    w = np.hstack((a,b[:,np.newaxis]))
-    # Transform w to row echelon form
-    for r in xrange(1,W.shape[0]):
-        w[r] = w[r] - w[r-1]*(w[r,r-1]/w[r-1,r-1])
-    x = np.empty_like(b)
-    c = x.size
-    for r in xrange(c-1,0,-1):
-        x[r] = w[r,c]/w[r,r]
-        w[0:r,c] = w[0:r,c] - w[0:r,r] * x[r]
-    x[0] = w[0,c]/w[0,0]
+    if not (len(a.shape) == 2 and a.shape[0] == a.shape[1]):
+        raise la.LinAlgError("a is not square")
+    
+    w = gauss(np.hstack((a,b[:,np.newaxis])))
+    lc = w.shape[1]-1
+    x = w[:,lc].copy()
+    for c in xrange(lc-1,0,-1):
+        x[:c] -= w[:c,c] * x[c:c+1]
+        np.flush(x) 
     return x
 
 def jacobi(a, b, tol=0.0005):

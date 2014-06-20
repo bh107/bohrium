@@ -8,14 +8,18 @@ find_package(SWIG)
 set_package_properties(SWIG PROPERTIES DESCRIPTION "Simplified Wrapper and Interface Generator" URL "www.swig.org")
 set_package_properties(SWIG PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python and NumPy).")
 
-if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND)
+if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND NUMPY_INCLUDE_DIRS)
     add_custom_target(
         bhpy ALL
-        COMMAND ${PYTHON_EXECUTABLE} setup.py install --prefix=${CMAKE_CURRENT_BINARY_DIR} libpath=${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${PYTHON_EXECUTABLE} setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS}  libpath=${CMAKE_CURRENT_BINARY_DIR} && ${PYTHON_EXECUTABLE} setup.py install --prefix=${CMAKE_CURRENT_BINARY_DIR} 
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib DESTINATION . COMPONENT bohrium)
 else()
-    message(STATUS "The Python/NumPy bridge cannot be build")
+    if (NOT NUMPY_INCLUDE_DIRS)
+        message(STATUS "The Python/NumPy bridge cannot be built, because the numpy headers are missing")
+    else()
+        message(STATUS "The Python/NumPy bridge cannot be built")
+    endif()
 endif()
 

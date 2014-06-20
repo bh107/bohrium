@@ -440,6 +440,13 @@ BhArray_copy2numpy(PyObject *self, PyObject *args)
     return ret;
 }
 
+static PyObject *
+BhArray_resize(PyObject *self, PyObject *args)
+{
+    PyErr_SetString(PyExc_NotImplementedError, "Bohrium arrays doesn't support resize");
+    return NULL;
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
     {"_data_bhc2np", BhArray_data_bhc2np, METH_NOARGS, "Copy the Bohrium-C data to NumPy data"},
@@ -448,6 +455,7 @@ static PyMethodDef BhArrayMethods[] = {
     {"copy", BhArray_copy, METH_NOARGS, "Copy the array in C-style memory layout"},
     {"copy2numpy", BhArray_copy2numpy, METH_NOARGS, "Copy the array in C-style memory "
                                                     "layout to a regular NumPy array"},
+    {"resize", BhArray_resize, METH_VARARGS, "Change shape and size of array in-place"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
@@ -566,6 +574,18 @@ BhArray_GetItem(PyObject *o, PyObject *k)
     return PyArray_Type.tp_as_mapping->mp_subscript(o, k);
 }
 
+static PyObject *
+BhArray_GetSeqItem(PyObject *o, Py_ssize_t i)
+{
+    //If we wrap the index 'i' into a Python Object we can simply use BhArray_GetItem
+    PyObject *index = PyInt_FromSsize_t(i);
+    if(index == NULL)
+        return NULL;
+    PyObject *ret = BhArray_GetItem(o, index);
+    Py_DECREF(index);
+    return ret;
+}
+
 static PyMappingMethods array_as_mapping = {
     (lenfunc)0,                     /*mp_length*/
     (binaryfunc)BhArray_GetItem,    /*mp_subscript*/
@@ -575,7 +595,7 @@ static PySequenceMethods array_as_sequence = {
     (lenfunc)0,                              /*sq_length*/
     (binaryfunc)NULL,                        /*sq_concat is handled by nb_add*/
     (ssizeargfunc)NULL,                      /*sq_repeat*/
-    (ssizeargfunc)BhArray_GetItem,           /*sq_item*/
+    (ssizeargfunc)BhArray_GetSeqItem,        /*sq_item*/
     (ssizessizeargfunc)0,                    /*sq_slice (Not in the Python doc)*/
     (ssizeobjargproc)BhArray_SetItem,        /*sq_ass_item*/
     (ssizessizeobjargproc)BhArray_SetSlice,  /*sq_ass_slice (Not in the Python doc)*/

@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
+# Build multi-arch OSX binaries
+set(CMAKE_OSX_ARCHITECTURES "i386;x86_64")
+
 #We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
 if(DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are:
@@ -40,6 +43,12 @@ find_package(PythonInterp)
 set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming Language" URL "www.python.org")
 set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Some Bohrium needs Python when building.")
 
+# The CPU VE (and possibly other modules) requires Boost
+find_package(Boost REQUIRED)
+set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries" URL "www.boost.org")
+set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
+
+
 #The core modules
 add_subdirectory(core)
 add_subdirectory(vem/node)
@@ -60,6 +69,13 @@ if(NOT USE_CXX98)
 endif()
 
 install(DIRECTORY thirdparty/Random123/include/Random123 DESTINATION include COMPONENT bohrium)
+
+# Select the approriate compiler string
+if (APPLE)
+    set(DISABLE_LINUX_COMPILER "#")
+else()
+    set(DISABLE_OSX_COMPILER "#")
+endif()
 
 #Install the config file, which depends on global or local installation
 configure_file(config.ini.in config.ini)

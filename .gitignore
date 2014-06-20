@@ -74,3 +74,5 @@ bridge/bhpy/bhc.i
 bridge/bhpy/bhc.py
 bridge/bhpy/bhc_wrap.c
 bridge/bhpy/build/
+build
+ve/cpu/precompiler.dSYM

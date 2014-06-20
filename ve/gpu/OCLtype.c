@@ -22,8 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <bh.h>
 #include "OCLtype.h"
-#ifdef __APPLE__
-#include <Headers/cl.h>
+#if defined(__APPLE__) || defined(__MACOSX)
+#include <OpenCL/opencl.h>
 #else
 #include <CL/cl.h>
 #endif

@@ -98,5 +98,9 @@ find_package_message(NUMPY
     "Found NumPy: version \"${NUMPY_VERSION}\" ${NUMPY_INCLUDE_DIRS}"
     "${NUMPY_INCLUDE_DIRS}${NUMPY_VERSION}")
 
-set(NUMPY_FOUND TRUE)
+if (NUMPY_INCLUDE_DIRS)
+    set(NUMPY_FOUND TRUE)
+else()
+    message(STATUS "NumPy ${NUMPY_VERSION} was found, but header files are missing")
+endif()
 
