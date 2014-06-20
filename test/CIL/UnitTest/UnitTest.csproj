@@ -25,7 +25,7 @@
     <Optimize>False</Optimize>
     <EnvironmentVariables>
       <EnvironmentVariables>
-        <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/.local/" />
+        <Variable name="DYLD_LIBRARY_PATH" value="/Users/kenneth/.local/lib/" />
       </EnvironmentVariables>
     </EnvironmentVariables>
     <Commandlineparameters>--bohrium-only</Commandlineparameters>
