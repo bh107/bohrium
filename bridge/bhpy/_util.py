@@ -26,8 +26,10 @@ import bhc
 import re
 
 #Flush the delayed operations for Bohrium execution
-def flush():
-    bhc.bh_runtime_flush()
+def flush(a=None):
+    from ndarray import check
+    if not (a is None) and check(a):
+        bhc.bh_runtime_flush()
 
 p = re.compile("bh_multi_array_([a-z0-9]*)")
 #Returns the Bohrium name of the data type of the Bohrium-C array
