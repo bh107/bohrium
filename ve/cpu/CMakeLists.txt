@@ -54,6 +54,6 @@ endif()
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS}) 
-    target_link_libraries(progname ${Boost_LIBRARIES})                      
+    target_link_libraries(bh_ve_cpu ${Boost_LIBRARIES})                      
 endif()
 
