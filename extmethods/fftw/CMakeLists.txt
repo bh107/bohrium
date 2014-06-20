@@ -15,7 +15,7 @@ if(FFTW_FOUND)
     #We depend on bh.so
     target_link_libraries(bh_fftw bh)
 
-    include_directories(${FFTW_INCLUDE_DIR})
+    include_directories(${FFTW_INCLUDES})
     set(LIBS ${LIBS} ${FFTW_LIBRARIES})
     target_link_libraries(bh_fftw ${LIBS})
 
