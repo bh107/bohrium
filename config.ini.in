@@ -9,23 +9,23 @@ children = node
 [visualizer]
 type = ve
 children = node
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_visualizer.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 [proxy]
 type = vem
 port = 4200
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_proxy_server.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_proxy_server${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
 
 [cluster]
 type = vem
 children = node
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_cluster.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_cluster${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 [node]
 type = vem
 children = cpu
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 #
 # Engines
@@ -36,14 +36,14 @@ compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/in
 object_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/objects
 kernel_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/kernels
 template_path=${CMAKE_INSTALL_PREFIX}/share/bohrium/templates
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu.so
-libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul.so,${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer.so,${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
+libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 [gpu]
 type = ve
 ocldir = ${CMAKE_INSTALL_PREFIX}/share/bohrium/ocl_source
 include = ${CMAKE_INSTALL_PREFIX}/share/bohrium/include
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 
 #
@@ -51,21 +51,21 @@ children = cpu
 #
 [transitive_reduction]
 type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_transitive_reduction.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_transitive_reduction${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 
 [pprint]
 type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pprint.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pprint${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 
 [validate]
 type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_validate.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_validate${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 
 [range]
 type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_range.so
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_range${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 
