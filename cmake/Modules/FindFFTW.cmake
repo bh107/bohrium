@@ -5,18 +5,25 @@
 #  FFTW_LIBRARIES   - List of libraries when using FFTW.
 #  FFTW_FOUND       - True if FFTW found.
 
+include (FindPackageHandleStandardArgs)
+
 if (FFTW_INCLUDES)
   # Already in cache, be silent
   set (FFTW_FIND_QUIETLY TRUE)
 endif (FFTW_INCLUDES)
 
-find_path (FFTW_INCLUDES fftw3.h)
-
-find_library (FFTW_LIBRARIES NAMES fftw3)
+find_path (FFTW_INCLUDES_PRE fftw3.h)
+find_library (FFTW_LIBRARIES_PRE NAMES fftw3)
 
 # handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if
 # all listed variables are TRUE
-include (FindPackageHandleStandardArgs)
+if (APPLE AND FFTW_INCLUDES_PRE)
+    message(WARNING "FFTW is found, but does not compile with Bohrium on OSX")
+else ()
+    set (FFTW_INCLUDES ${FFTW_INCLUDES_PRE})
+    set (FFTW_LIBRARIES ${FFTW_LIBRARIES_PRE})
+endif ()
+
 find_package_handle_standard_args (FFTW DEFAULT_MSG FFTW_LIBRARIES FFTW_INCLUDES)
 
-mark_as_advanced (FFTW_LIBRARIES FFTW_INCLUDES)
+mark_as_advanced (FFTW_LIBRARIES_PRE FFTW_INCLUDES_PRE)
