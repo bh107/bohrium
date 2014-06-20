@@ -8,10 +8,10 @@
 # Source <https://github.com/UCL/hemelb/blob/master/dependencies/Modules/Find.cmake>
 
 #We use our included library on MacOS
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+IF(APPLE)
 
     set(CTEMPLATE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/ctemplate/include/)
-    set(CTEMPLATE_LIBRARIES ${PROJECT_SOURCE_DIR}/thirdparty/ctemplate/osx-lib/libctemplate.2.dylib)
+    set(CTEMPLATE_LIBRARIES ${PROJECT_SOURCE_DIR}/thirdparty/ctemplate/osx-lib/libctemplate.a)
 
 ELSE()
     IF( CTEMPLATE_INCLUDE_DIR )
