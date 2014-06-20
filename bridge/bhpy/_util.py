@@ -24,6 +24,7 @@ import numpy as np
 import _info
 import bhc
 import re
+import atexit
 
 #Flush the delayed operations for Bohrium execution
 def flush(a=None):
@@ -75,3 +76,6 @@ def type_sig(op_name, inputs):
             return (np.dtype(sig[0]),np.dtype(sig[1]))
     raise TypeError("Cannot detement the correct signature (%s:%s)"%(op_name,dtype))
 
+@atexit.register
+def shutdown():
+   flush()

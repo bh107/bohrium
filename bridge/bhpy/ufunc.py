@@ -343,6 +343,102 @@ class ufunc:
                 out = t2
             return out
 
+    @fix_returned_biclass
+    def accumulate(self, a, axis=0, out=None):
+        """
+    accumulate(array, axis=0, out=None)
+
+    Accumulate the result of applying the operator to all elements.
+
+    For a one-dimensional array, accumulate produces results equivalent to::
+
+      r = np.empty(len(A))
+      t = op.identity        # op = the ufunc being applied to A's  elements
+      for i in range(len(A)):
+          t = op(t, A[i])
+          r[i] = t
+      return r
+
+    For example, add.accumulate() is equivalent to np.cumsum().
+
+    For a multi-dimensional array, accumulate is applied along only one
+    axis (axis zero by default; see Examples below) so repeated use is
+    necessary if one wants to accumulate over multiple axes.
+
+    Parameters
+    ----------
+    array : array_like
+        The array to act on.
+    axis : int, optional
+        The axis along which to apply the accumulation; default is zero.
+    out : ndarray, optional
+        A location into which the result is stored. If not provided a
+        freshly-allocated array is returned.
+
+    Returns
+    -------
+    r : ndarray
+        The accumulated values. If `out` was supplied, `r` is a reference to
+        `out`.
+
+    Examples
+    --------
+    1-D array examples:
+
+    >>> np.add.accumulate([2, 3, 5])
+    array([ 2,  5, 10])
+    >>> np.multiply.accumulate([2, 3, 5])
+    array([ 2,  6, 30])
+
+    2-D array examples:
+
+    >>> I = np.eye(2)
+    >>> I
+    array([[ 1.,  0.],
+           [ 0.,  1.]])
+
+    Accumulate along axis 0 (rows), down columns:
+
+    >>> np.add.accumulate(I, 0)
+    array([[ 1.,  0.],
+           [ 1.,  1.]])
+    >>> np.add.accumulate(I) # no axis specified = axis zero
+    array([[ 1.,  0.],
+           [ 1.,  1.]])
+
+    Accumulate along axis 1 (columns), through rows:
+
+    >>> np.add.accumulate(I, 1)
+    array([[ 1.,  1.],
+           [ 0.,  1.]])
+        """
+        if out is not None:
+            if ndarray.check(out):
+                if not ndarray.check(a):
+                    a = array_create.array(a)
+            else:
+                if ndarray.check(a):
+                    a = a.copy2numpy()
+            if out.shape != a.shape:
+                raise ValueError("output dimension mismatch expect "\
+                                 "shape '%s' got '%s'"%(a.shape, out.shape))
+
+        #Let NumPy handle NumPy array accumulate
+        if not ndarray.check(a):
+            f = eval("np.%s.accumulate"%self.info['name'])
+            return f(a, axis=axis, out=out)
+
+        if out is None:
+            out = array_create.empty(a.shape, dtype=a.dtype)
+
+        f = eval("bhc.bh_multi_array_%s_%s_accumulate"%(dtype_name(a), self.info['name']))
+        out_bhc = get_bhc(out)
+        a_bhc = get_bhc(a)
+        f(out_bhc, a_bhc, axis)
+        del_bhc_obj(out_bhc)
+        del_bhc_obj(a_bhc)
+        return out
+
 #We have to add ufuncs that doesn't map to Bohrium operations directly
 class negative(ufunc):
     def __call__(self, a, out=None):

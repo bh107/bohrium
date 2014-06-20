@@ -6,11 +6,19 @@ set_package_properties(OpenCL PROPERTIES DESCRIPTION "Open Computing Language" U
 set_package_properties(OpenCL PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the GPU-VE.")
 
 if(OPENCL_FOUND)
-    include_directories(${OPENCL_INCLUDE_DIRS})
-    include_directories(../../include)
 #    add_definitions("-DBH_TIMING_SUM")
 #    add_definitions("-DSTATIC_KERNEL")
 #    add_definitions("-DDEBUG")
+
+    include_directories(../../include)
+
+IF (APPLE)
+    include_directories(${OPENCL_INCLUDE_DIRS}/Headers)
+    add_definitions("-framework OpenCL")
+ELSE (APPLE)
+    include_directories(${OPENCL_INCLUDE_DIRS})
+ENDIF (APPLE)
+
     file(GLOB SRC *.cpp *.c)
 
     add_library(bh_ve_gpu SHARED ${SRC})

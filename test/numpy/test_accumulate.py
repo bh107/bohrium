@@ -1,4 +1,5 @@
 import numpy as np
+import bohrium as bh
 from numpytest import numpytest,gen_views,TYPES
 
 class test_accumulate(numpytest):
@@ -7,9 +8,7 @@ class test_accumulate(numpytest):
         self.config['maxerror'] = 0.00001
 
     def init(self):
-        print "test_accumulate isn't support by the new bridge"
-        raise StopIteration
-        for v in gen_views(4,10,6,min_ndim=1):
+        for v in gen_views(4,8,6,min_ndim=1):
             a = {}
             self.axis = 0
             exec v
@@ -20,12 +19,18 @@ class test_accumulate(numpytest):
                 yield (a,v)
 
     def test_cumsum(self,a):
-        cmd = "res = np.cumsum(a[0],axis=%d)"%self.axis
+        if bh.check(a[0]):
+            cmd = "res = bh.add.accumulate(a[0],axis=%d)"%self.axis
+        else:
+            cmd = "res = bh.add.accumulate(a[0],axis=%d)"%self.axis
         exec cmd
         return (res,cmd)
 
     def test_cumprod(self,a):
-        cmd = "res = np.cumprod(a[0],axis=%d)"%self.axis
+        if bh.check(a[0]):
+            cmd = "res = bh.multiply.accumulate(a[0],axis=%d)"%self.axis
+        else:
+            cmd = "res = np.multiply.accumulate(a[0],axis=%d)"%self.axis
         exec cmd
         return (res,cmd)
 
