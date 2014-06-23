@@ -369,7 +369,13 @@ std::string InstructionBatch::generateCode()
                                     iit->first->constant.type));
         } 
         // generate source code for the instruction
-        generateInstructionSource(iit->first->opcode, types, operands, indent, source);
+        // HACK to make BH_INVERT on BH_BOOL work correctly TODO Fix!
+        if (iit->first->opcode == BH_INVERT && (iit->first->operand[1].base ? 
+                                                iit->first->operand[1].base->type : 
+                                                iit->first->constant.type) == BH_BOOL)
+            generateInstructionSource(BH_LOGICAL_NOT, types, operands, indent, source);
+        else
+            generateInstructionSource(iit->first->opcode, types, operands, indent, source);
     }
 
     // Save output parameters

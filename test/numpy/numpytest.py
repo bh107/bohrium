@@ -119,6 +119,7 @@ class numpytest:
         except TypeError:
             total = dims
             dims = (dims,)
+        dtype = np.dtype(dtype).type
         if dtype is np.bool:
             res = np.random.random_integers(0,1,dims)
         elif dtype in [np.int8, np.uint8]:
