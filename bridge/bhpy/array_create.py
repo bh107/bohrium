@@ -5,10 +5,12 @@ Array Create Routines
 """
 import math
 import ndarray
+from ndarray import fix_returned_biclass
 import numpy
 import bhc
 from _util import dtype_name
 
+@fix_returned_biclass
 def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohrium=True):
     """
     Create an array -- Bohrium or NumPy ndarray.
@@ -133,6 +135,7 @@ def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohri
             return numpy.array(a, dtype=dtype, copy=copy, order=order, \
                                subok=subok, ndmin=ndmin)
 
+@fix_returned_biclass
 def empty(shape, dtype=float, bohrium=True):
     """
     Return a new matrix of given shape and type, without initializing entries.
@@ -172,6 +175,7 @@ def empty(shape, dtype=float, bohrium=True):
         return numpy.empty(shape, dtype=dtype)
     return ndarray.new(shape, dtype)
 
+@fix_returned_biclass
 def ones(shape, dtype=float, bohrium=True):
     """
     Matrix of ones.
@@ -218,6 +222,7 @@ def ones(shape, dtype=float, bohrium=True):
     A[...] = A.dtype.type(1)
     return A
 
+@fix_returned_biclass
 def zeros(shape, dtype=float, bohrium=True):
     """
     Return a matrix of given shape and type, filled with zeros.
@@ -263,6 +268,7 @@ def zeros(shape, dtype=float, bohrium=True):
     A[...] = A.dtype.type(0)
     return A
 
+@fix_returned_biclass
 def empty_like(a, dtype=None, bohrium=None):
     """
     Return a new array with the same shape and type as a given array.
@@ -316,6 +322,7 @@ def empty_like(a, dtype=None, bohrium=None):
         bohrium = ndarray.check(a)
     return empty(a.shape, dtype, bohrium)
 
+@fix_returned_biclass
 def zeros_like(a, dtype=None, bohrium=None):
     """
     Return an array of zeros with the same shape and type as a given array.
@@ -375,6 +382,7 @@ def zeros_like(a, dtype=None, bohrium=None):
     b[...] = b.dtype.type(0)
     return b
 
+@fix_returned_biclass
 def ones_like(a, dtype=None, bohrium=None):
     """
     Return an array of ones with the same shape and type as a given array.
@@ -434,6 +442,7 @@ def ones_like(a, dtype=None, bohrium=None):
     b[...] = b.dtype.type(1)
     return b
 
+@fix_returned_biclass
 def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     """
     arange([start,] stop[, step,], dtype=None)
@@ -508,6 +517,7 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
         step  = numpy.dtype(dtype).type(step)
     return range(size,dtype=dtype) * step + start
 
+@fix_returned_biclass
 def range(size, dtype=numpy.uint64):
     if (not isinstance(size, (int,long))):
         raise ValueError("size must be an integer")
@@ -536,6 +546,7 @@ def range(size, dtype=numpy.uint64):
     else:
         return A
 
+@fix_returned_biclass
 def linspace(start, stop, num=50, endpoint=True, retstep=False,\
              dtype=float, bohrium=True):
     """

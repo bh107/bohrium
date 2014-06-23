@@ -456,6 +456,15 @@ BhArray_resize(PyObject *self, PyObject *args)
     return NULL;
 }
 
+static PyObject *
+BhArray_reshape(PyObject *self, PyObject *args)
+{
+    PyObject *newshape = NULL;
+    if(PyArg_ParseTuple(args,"O",&newshape) == -1)
+        return NULL;
+    return PyObject_CallMethod(bohrium, "reshape", "OO", self, newshape);
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
     {"_data_bhc2np", BhArray_data_bhc2np, METH_NOARGS, "Copy the Bohrium-C data to NumPy data"},
@@ -465,6 +474,9 @@ static PyMethodDef BhArrayMethods[] = {
     {"copy2numpy", BhArray_copy2numpy, METH_NOARGS, "Copy the array in C-style memory "
                                                     "layout to a regular NumPy array"},
     {"resize", BhArray_resize, METH_VARARGS, "Change shape and size of array in-place"},
+    {"reshape", BhArray_reshape, METH_VARARGS, "a.reshape(shape)\n\nReturns an array"
+                                               "containing the same data with a new shape.\n"
+                                               "Refer to `bohrium.reshape` for full documentation."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 

@@ -6,7 +6,9 @@ Array manipulation routines
 import array_create
 import numpy
 import ndarray
+from ndarray import fix_returned_biclass
 
+@fix_returned_biclass
 def flatten(A):
     """
     Return a copy of the array collapsed into one dimension.
@@ -33,6 +35,7 @@ def flatten(A):
     """
     return A.reshape(numpy.multiply.reduce(numpy.asarray(A.shape)))
 
+@fix_returned_biclass
 def diagonal(A,offset=0):
     """
     Return specified diagonals.
@@ -102,6 +105,7 @@ def diagonal(A,offset=0):
     d.strides=(A.strides[0]+A.strides[1],)
     return d
 
+@fix_returned_biclass
 def diagflat(d,k=0):
     """
     Create a two-dimensional array with the flattened input as a diagonal.
@@ -148,6 +152,7 @@ def diagflat(d,k=0):
     Ad[...] = d
     return A
 
+@fix_returned_biclass
 def diag(v, k=0):
     """
     Extract a diagonal or construct a diagonal array.
@@ -203,6 +208,95 @@ def diag(v, k=0):
         return diagonal(v,k)
     else:
         raise ValueError("Input must be 1- or 2-d.")
+
+@fix_returned_biclass
+def reshape(a, newshape):
+    """
+    Gives a new shape to an array without changing its data.
+
+    Parameters
+    ----------
+    a : array_like
+        Array to be reshaped.
+    newshape : int or tuple of ints
+        The new shape should be compatible with the original shape. If
+        an integer, then the result will be a 1-D array of that length.
+        One shape dimension can be -1. In this case, the value is inferred
+        from the length of the array and remaining dimensions.
+
+    Returns
+    -------
+    reshaped_array : ndarray
+        This will be a new view object if possible; otherwise, it will
+        be a copy.  Note there is no guarantee of the *memory layout* (C- or
+        Fortran- contiguous) of the returned array.
+
+    See Also
+    --------
+    ndarray.reshape : Equivalent method.
+
+    Notes
+    -----
+    It is not always possible to change the shape of an array without
+    copying the data. If you want an error to be raise if the data is copied,
+    you should assign the new shape to the shape attribute of the array::
+
+     >>> a = np.zeros((10, 2))
+     # A transpose make the array non-contiguous
+     >>> b = a.T
+     # Taking a view makes it possible to modify the shape without modifying the
+     # initial object.
+     >>> c = b.view()
+     >>> c.shape = (20)
+     AttributeError: incompatible shape for a non-contiguous array
+
+    The `order` keyword gives the index ordering both for *fetching* the values
+    from `a`, and then *placing* the values into the output array.  For example,
+    let's say you have an array:
+
+    >>> a = np.arange(6).reshape((3, 2))
+    >>> a
+    array([[0, 1],
+           [2, 3],
+           [4, 5]])
+
+    You can think of reshaping as first raveling the array (using the given
+    index order), then inserting the elements from the raveled array into the
+    new array using the same kind of index ordering as was used for the
+    raveling.
+
+    >>> np.reshape(a, (2, 3)) # C-like index ordering
+    array([[0, 1, 2],
+           [3, 4, 5]])
+    >>> np.reshape(np.ravel(a), (2, 3)) # equivalent to C ravel then C reshape
+    array([[0, 1, 2],
+           [3, 4, 5]])
+    >>> np.reshape(a, (2, 3), order='F') # Fortran-like index ordering
+    array([[0, 4, 3],
+           [2, 1, 5]])
+    >>> np.reshape(np.ravel(a, order='F'), (2, 3), order='F')
+    array([[0, 4, 3],
+           [2, 1, 5]])
+
+    Examples
+    --------
+    >>> a = np.array([[1,2,3], [4,5,6]])
+    >>> np.reshape(a, 6)
+    array([1, 2, 3, 4, 5, 6])
+    >>> np.reshape(a, 6, order='F')
+    array([1, 4, 2, 5, 3, 6])
+
+    >>> np.reshape(a, (3,-1))       # the unspecified value is inferred to be 2
+    array([[1, 2],
+           [3, 4],
+           [5, 6]])
+    """
+    if not a.flags['C_CONTIGUOUS']:
+        t = array_create.empty_like(a)
+        t[...] = a
+        a = t
+    return numpy.ndarray.reshape(a, newshape)
+
 
 ###############################################################################
 ################################ UNIT TEST ####################################
