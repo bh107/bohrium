@@ -232,6 +232,9 @@ BhArray_finalize(PyObject *self, PyObject *args)
     //The __array_priority__ should be greater than 0.0 to give Bohrium precedence
     ((BhArray*)self)->array_priority = PyFloat_FromDouble(2.0);
 
+    if(_protected_malloc((BhArray *) self) != 0)
+        return NULL;
+
     Py_RETURN_NONE;
 }
 
@@ -374,10 +377,14 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
     Py_DECREF(base);
     if(d != NULL)
     {
-        memcpy(d, PyArray_DATA((PyArrayObject*)base), PyArray_NBYTES((PyArrayObject*)base));
-        if(_mprotect_np_part((BhArray*)base) != 0)
+        detach_signal((signed long)base, mem_access_callback);
+        if(_munprotect(PyArray_DATA((PyArrayObject*)base),
+                       PyArray_NBYTES((PyArrayObject*)base)) != 0)
             return NULL;
+        memcpy(d, PyArray_DATA((PyArrayObject*)base), PyArray_NBYTES((PyArrayObject*)base));
     }
+    if(_mprotect_np_part((BhArray*)base) != 0)
+        return NULL;
     Py_RETURN_NONE;
 }
 
