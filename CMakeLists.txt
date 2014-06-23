@@ -41,13 +41,12 @@ endif()
 #External dependencies
 find_package(PythonInterp)
 set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming Language" URL "www.python.org")
-set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Some Bohrium needs Python when building.")
+set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Python is required to build Bohrium")
 
 # The CPU VE (and possibly other modules) requires Boost
 find_package(Boost REQUIRED)
 set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries" URL "www.boost.org")
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
-
 
 #The core modules
 add_subdirectory(core)
