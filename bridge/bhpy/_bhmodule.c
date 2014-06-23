@@ -311,8 +311,7 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
 */
     if(!PyArray_CHKFLAGS((PyArrayObject*)base, NPY_ARRAY_OWNDATA))
     {
-        PyErr_Format(PyExc_RuntimeError, "BhArray_data_bhc2np() base does "
-                                         "not own its data!");
+        PyErr_Format(PyExc_ValueError,"The base array doesn't own its data");
         return NULL;
     }
 
@@ -352,6 +351,12 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
     if(base == NULL)
         return NULL;
     assert(BhArray_CheckExact(base));
+
+    if(!PyArray_CHKFLAGS((PyArrayObject*)base, NPY_ARRAY_OWNDATA))
+    {
+        PyErr_Format(PyExc_ValueError,"The base array doesn't own its data");
+        return NULL;
+    }
 
     //Make sure that bhc_ary exist
     if(((BhArray*)base)->bhc_ary == Py_None)
