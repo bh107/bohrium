@@ -68,11 +68,5 @@ benchmark/CIL/Csharp/jacobi/bin
 benchmark/CIL/Csharp/jacobi/obj
 bridge/c/codegen/output/
 vem/proxy/bh_proxy_client
-bridge/bhpy/bohrium/_info.py
-bridge/bhpy/_info.py
-bridge/bhpy/bhc.i
-bridge/bhpy/bhc.py
-bridge/bhpy/bhc_wrap.c
-bridge/bhpy/build/
 build
 ve/cpu/precompiler.dSYM
