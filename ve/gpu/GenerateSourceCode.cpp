@@ -199,8 +199,8 @@ void generateInstructionSource(const bh_opcode opcode,
             if (isFloat(type[1]))
                 source << indent << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
             else
-                source << indent << parameters[0] << " = round(pow((float)" << parameters[1] << ", (float)" << 
-                    parameters[2] << "));\n";   
+                source << indent << "IPOW(" << parameters[0] << ", " << parameters[1] << ", " << 
+                    parameters[2] << ")\n";   
             break;
         case BH_MOD:
             if (isFloat(type[1]))
