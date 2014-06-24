@@ -121,7 +121,7 @@ with open(path("_info.py"), 'w') as o:
     o.write(s)
 set_timestamp(path("_info.py"),time)
 
-#We need to make sure that the extensions is build before the python moudle because of SWIG
+#We need to make sure that the extensions is build before the python module because of SWIG
 class CustomBuild(build):
     sub_commands = [
         ('build_ext', build.has_ext_modules),
@@ -131,7 +131,7 @@ class CustomBuild(build):
     ]
 
 setup(name='Bohrium',
-      version='0.1',
+      version='0.2',
       description='Bohrium NumPy',
       long_description='Bohrium NumPy',
       author='The Bohrium Team',
@@ -144,8 +144,9 @@ setup(name='Bohrium',
       packages=['bohrium', 'bohrium.examples'],
       ext_package='bohrium',
       ext_modules=[Extension(name='_bhmodule',
-                             sources=[path('_bhmodule.c')],
-                             depends=[path('types.c'), path('types.h'), path('operator_overload.c')],
+                             sources=[path('src','_bhmodule.c')],
+                             depends=[path('src','types.c'), path('src','types.h'),
+                                      path('src','operator_overload.c')],
                              include_dirs=[path('..','c','codegen','output'),
                                            path('..','..','include')],
                              libraries=['dl','bhc', 'bh'],
