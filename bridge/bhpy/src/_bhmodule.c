@@ -459,10 +459,22 @@ BhArray_resize(PyObject *self, PyObject *args)
 static PyObject *
 BhArray_reshape(PyObject *self, PyObject *args)
 {
-    PyObject *newshape = NULL;
-    if(PyArg_ParseTuple(args,"O",&newshape) == -1)
+    //We parse the 'args' to bohrium.reshape() with 'self' as the first argument
+    Py_ssize_t i, size = PyTuple_Size(args);
+    PyObject *newshape = PyTuple_New(size+1);
+    if(newshape == NULL)
         return NULL;
-    return PyObject_CallMethod(bohrium, "reshape", "OO", self, newshape);
+    Py_INCREF(self);
+    PyTuple_SET_ITEM(newshape, 0, self);
+    for(i=0; i<size; ++i)
+    {
+        PyObject *t = PyTuple_GET_ITEM(args, i);
+        Py_INCREF(t);
+        PyTuple_SET_ITEM(newshape, i+1, t);
+    }
+    PyObject *ret = PyObject_CallMethod(bohrium, "reshape", "O", newshape);
+    Py_DECREF(newshape);
+    return ret;
 }
 
 static PyMethodDef BhArrayMethods[] = {

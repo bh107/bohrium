@@ -210,7 +210,7 @@ def diag(v, k=0):
         raise ValueError("Input must be 1- or 2-d.")
 
 @fix_returned_biclass
-def reshape(a, newshape):
+def reshape(a, *newshape):
     """
     Gives a new shape to an array without changing its data.
 
@@ -291,6 +291,11 @@ def reshape(a, newshape):
            [3, 4],
            [5, 6]])
     """
+    #Lets make sure that newshape is a flat sequence
+    if len(newshape) == 1:
+        if hasattr(newshape[0], "__getitem__"):#The item is a sequence
+            newshape = newshape[0]
+
     if not a.flags['C_CONTIGUOUS']:
         t = array_create.empty_like(a)
         t[...] = a
