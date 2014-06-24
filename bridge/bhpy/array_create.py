@@ -635,6 +635,135 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False,\
     else:
         return y
 
+def load(file, mmap_mode=None, bohrium=True):
+    """
+    Load an array(s) or pickled objects from .npy, .npz, or pickled files.
+
+    Parameters
+    ----------
+    file : file-like object or string
+        The file to read. Compressed files with the filename extension
+        ``.gz`` are acceptable. File-like objects must support the
+        ``seek()`` and ``read()`` methods. Pickled files require that the
+        file-like object support the ``readline()`` method as well.
+    mmap_mode : {None, 'r+', 'r', 'w+', 'c'}, optional
+        If not None, then memory-map the file, using the given mode (see
+        `numpy.memmap` for a detailed description of the modes).  A
+        memory-mapped array is kept on disk. However, it can be accessed
+        and sliced like any ndarray.  Memory mapping is especially useful
+        for accessing small fragments of large files without reading the
+        entire file into memory.
+
+    Returns
+    -------
+    result : array, tuple, dict, etc.
+        Data stored in the file. For ``.npz`` files, the returned instance
+        of NpzFile class must be closed to avoid leaking file descriptors.
+
+    Raises
+    ------
+    IOError
+        If the input file does not exist or cannot be read.
+
+    See Also
+    --------
+    save, savez, savez_compressed, loadtxt
+    memmap : Create a memory-map to an array stored in a file on disk.
+
+    Notes
+    -----
+    - If the file contains pickle data, then whatever object is stored
+      in the pickle is returned.
+    - If the file is a ``.npy`` file, then a single array is returned.
+    - If the file is a ``.npz`` file, then a dictionary-like object is
+      returned, containing ``{filename: array}`` key-value pairs, one for
+      each file in the archive.
+    - If the file is a ``.npz`` file, the returned value supports the
+      context manager protocol in a similar fashion to the open function::
+
+        with load('foo.npz') as data:
+            a = data['a']
+
+      The underlying file descriptor is closed when exiting the 'with'
+      block.
+
+    Examples
+    --------
+    Store data to disk, and load it again:
+
+    >>> np.save('/tmp/123', np.array([[1, 2, 3], [4, 5, 6]]))
+    >>> np.load('/tmp/123.npy')
+    array([[1, 2, 3],
+           [4, 5, 6]])
+
+    Store compressed data to disk, and load it again:
+
+    >>> a=np.array([[1, 2, 3], [4, 5, 6]])
+    >>> b=np.array([1, 2])
+    >>> np.savez('/tmp/123.npz', a=a, b=b)
+    >>> data = np.load('/tmp/123.npz')
+    >>> data['a']
+    array([[1, 2, 3],
+           [4, 5, 6]])
+    >>> data['b']
+    array([1, 2])
+    >>> data.close()
+
+    Mem-map the stored array, and then access the second row
+    directly from disk:
+
+    >>> X = np.load('/tmp/123.npy', mmap_mode='r')
+    >>> X[1, :]
+    memmap([4, 5, 6])
+
+    """
+    arr = numpy.load(file,mmap_mode)
+    if bohrium:
+        arr = array(arr, bohrium=True)
+    return arr
+
+def save(file, arr):
+    """
+    Save an array to a binary file in NumPy ``.npy`` format.
+
+    Parameters
+    ----------
+    file : file or str
+        File or filename to which the data is saved.  If file is a file-object,
+        then the filename is unchanged.  If file is a string, a ``.npy``
+        extension will be appended to the file name if it does not already
+        have one.
+    arr : array_like
+        Array data to be saved.
+
+    See Also
+    --------
+    savez : Save several arrays into a ``.npz`` archive
+    savetxt, load
+
+    Notes
+    -----
+    For a description of the ``.npy`` format, see `format`.
+
+    Examples
+    --------
+    >>> from tempfile import TemporaryFile
+    >>> outfile = TemporaryFile()
+
+    >>> x = np.arange(10)
+    >>> np.save(outfile, x)
+
+    >>> outfile.seek(0) # Only needed here to simulate closing & reopening file
+    >>> np.load(outfile)
+    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    """
+    bohrium = ndarray.check(arr)
+    if bohrium:
+        array(arr, bohrium=False)
+    numpy.save(file,arr)
+    if bohrium:
+        array(arr, bohrium=True)
 
 ###############################################################################
 ################################ UNIT TEST ####################################
