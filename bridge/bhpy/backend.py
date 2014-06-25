@@ -4,9 +4,10 @@ The Computation Backend
 """
 import bhc
 import numpy
-from _util import dtype_name
+from _util import dtype_name, dtype_from_bhc
 
 class view(object):
+    """array view handle"""
     def __init__(self, ndim, start, shape, stride, base, dtype):
         self.ndim = ndim
         self.start = start
@@ -16,8 +17,11 @@ class view(object):
         self.dtype = dtype
 
 def views2bhc(views):
-    """convert views to bhc objects but ignores scalars"""
-    singleton = not (hasattr(views, "__iter__") or hasattr(views, "__getitem__"))
+    """convert views to bhc objects but ignores scalars
+    #NB: the returned objects should be deleted after use through call to 'del_bhc_obj()'
+    """
+    singleton = not (hasattr(views, "__iter__") or
+                     hasattr(views, "__getitem__"))
     if singleton:
         views = (views,)
     ret = []
@@ -30,10 +34,33 @@ def views2bhc(views):
         ret = ret[0]
     return ret
 
+def del_bhc_obj(bhc_objects):
+    """delete the bhc objectsi but ignores scalars"""
+    singleton = not (hasattr(bhc_objects, "__iter__") or
+                     hasattr(bhc_objects, "__getitem__"))
+    if singleton:
+        bhc_objects = (bhc_objects,)
+    for o in bhc_objects:
+        if not numpy.isscalar(o):
+            exec "bhc.bh_multi_array_%s_destroy(o)"%dtype_from_bhc(o)
+
+def bhc_exec(func, *args):
+    """convert 'args' to bhc objects, execute the 'func', and cleanup the bhc objects"""
+    args = list(args)
+    tmp = []
+    for i in xrange(len(args)):
+        if isinstance(args[i], view):
+            args[i] = views2bhc(args[i])
+            tmp.append(args[i])
+    ret = func(*args)
+    for o in tmp:
+        del_bhc_obj(o)
+    return ret
+
 def new_empty(size, dtype):
     """Return a new empty base array"""
     f = eval("bhc.bh_multi_array_%s_new_empty"%dtype_name(dtype))
-    return f(1, (size,))
+    return bhc_exec(f, 1, (size,))
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     dtype = dtype_name(ary)
@@ -43,6 +70,7 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     exec "bhc.bh_runtime_flush()"
     exec "base = bhc.bh_multi_array_%s_get_base(ary)"%dtype
     exec "data = bhc.bh_multi_array_%s_get_base_data(base)"%dtype
+    del_bhc_obj(ary)
     if data is None:
         if not allocate:
             return 0
@@ -71,39 +99,40 @@ def ufunc(op, *args):
     else:
         cmd = "bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), op.info['name'])
     cmd += scalar_str
-    f = eval(cmd)
-    f(*views2bhc(args))
+    bhc_exec(eval(cmd), *args)
 
 def reduce(op, out, a, axis):
     """reduce 'axis' dimension of 'a' and write the result to out"""
 
     f = eval("bhc.bh_multi_array_%s_%s_reduce"%(dtype_name(a), op.info['name']))
-    f(views2bhc(out), views2bhc(a), axis)
+    bhc_exec(f, out, a, axis)
 
 def accumulate(op, out, a, axis):
     """accumulate 'axis' dimension of 'a' and write the result to out"""
 
     f = eval("bhc.bh_multi_array_%s_%s_accumulate"%(dtype_name(a), op.info['name']))
-    f(views2bhc(out), views2bhc(a), axis)
+    bhc_exec(f, out, a, axis)
 
 def extmethod(name, out, in1, in2):
     """Apply the extended method 'name' """
 
     f = eval("bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
               dtype_name(in1), dtype_name(in2)))
-    ret = f(name, views2bhc(out), views2bhc(in1), views2bhc(in2))
+    ret = bhc_exec(f, name, out, in1, in2)
     if ret != 0:
-        raise RuntimeError("The current runtime system does not support the extension method '%s'"%name)
+        raise RuntimeError("The current runtime system does not support "
+                           "the extension method '%s'"%name)
 
 def range(size, dtype):
     """create a new array containing the values [0:size["""
 
     f = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(dtype))
-    return f(size)
+    return bhc_exec(f, size)
 
 def random123(size, start_index, key):
-    """Create a new random array using the random123 algo. The dtype is uint64 always."""
+    """Create a new random array using the random123 algorithm.
+    The dtype is uint64 always."""
 
     f = eval("bhc.bh_multi_array_uint64_new_random123")
-    return f(totalsize, start_index, key)
+    return bhc_exec(f, totalsize, start_index, key)
 
