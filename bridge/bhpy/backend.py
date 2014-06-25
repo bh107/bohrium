@@ -1,0 +1,109 @@
+"""
+The Computation Backend
+
+"""
+import bhc
+import numpy
+from _util import dtype_name
+
+class view(object):
+    def __init__(self, ndim, start, shape, stride, base, dtype):
+        self.ndim = ndim
+        self.start = start
+        self.shape = shape
+        self.stride = stride
+        self.base = base
+        self.dtype = dtype
+
+def views2bhc(views):
+    """convert views to bhc objects but ignores scalars"""
+    singleton = not (hasattr(views, "__iter__") or hasattr(views, "__getitem__"))
+    if singleton:
+        views = (views,)
+    ret = []
+    for v in views:
+        if not numpy.isscalar(v):
+            f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype_name(v.dtype))
+            v = f(v.base, v.ndim, v.start, v.shape, v.stride)
+        ret.append(v)
+    if singleton:
+        ret = ret[0]
+    return ret
+
+def new_empty(size, dtype):
+    """Return a new empty base array"""
+    f = eval("bhc.bh_multi_array_%s_new_empty"%dtype_name(dtype))
+    return f(1, (size,))
+
+def get_data_pointer(ary, allocate=False, nullify=False):
+    dtype = dtype_name(ary)
+    ary = views2bhc(ary)
+    exec "bhc.bh_multi_array_%s_sync(ary)"%dtype
+    exec "bhc.bh_multi_array_%s_discard(ary)"%dtype
+    exec "bhc.bh_runtime_flush()"
+    exec "base = bhc.bh_multi_array_%s_get_base(ary)"%dtype
+    exec "data = bhc.bh_multi_array_%s_get_base_data(base)"%dtype
+    if data is None:
+        if not allocate:
+            return 0
+        exec "data = bhc.bh_multi_array_%s_get_base_data_and_force_alloc(base)"%dtype
+        if data is None:
+            raise MemoryError()
+    if nullify:
+        exec "bhc.bh_multi_array_%s_nullify_base_data(base)"%dtype
+    return int(data)
+
+def ufunc(op, *args):
+    """Apply the 'op' on args, which is the output followed by one or two inputs"""
+    scalar_str = ""
+    in_dtype = dtype_name(args[1])
+    for i,a in enumerate(args):
+        if numpy.isscalar(a):
+            if i == 1:
+                scalar_str = "_scalar" + ("_lhs" if len(args) > 2 else "")
+            if i == 2:
+                scalar_str = "_scalar" + ("_rhs" if len(args) > 2 else "")
+        elif i > 0:
+            in_dtype = a.dtype#overwrite with a non-scalar input
+
+    if op.info['name'] == "identity":#Identity is a special case
+        cmd = "bhc.bh_multi_array_%s_identity_%s"%(dtype_name(args[0].dtype), dtype_name(in_dtype))
+    else:
+        cmd = "bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), op.info['name'])
+    cmd += scalar_str
+    f = eval(cmd)
+    f(*views2bhc(args))
+
+def reduce(op, out, a, axis):
+    """reduce 'axis' dimension of 'a' and write the result to out"""
+
+    f = eval("bhc.bh_multi_array_%s_%s_reduce"%(dtype_name(a), op.info['name']))
+    f(views2bhc(out), views2bhc(a), axis)
+
+def accumulate(op, out, a, axis):
+    """accumulate 'axis' dimension of 'a' and write the result to out"""
+
+    f = eval("bhc.bh_multi_array_%s_%s_accumulate"%(dtype_name(a), op.info['name']))
+    f(views2bhc(out), views2bhc(a), axis)
+
+def extmethod(name, out, in1, in2):
+    """Apply the extended method 'name' """
+
+    f = eval("bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
+              dtype_name(in1), dtype_name(in2)))
+    ret = f(name, views2bhc(out), views2bhc(in1), views2bhc(in2))
+    if ret != 0:
+        raise RuntimeError("The current runtime system does not support the extension method '%s'"%name)
+
+def range(size, dtype):
+    """create a new array containing the values [0:size["""
+
+    f = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(dtype))
+    return f(size)
+
+def random123(size, start_index, key):
+    """Create a new random array using the random123 algo. The dtype is uint64 always."""
+
+    f = eval("bhc.bh_multi_array_uint64_new_random123")
+    return f(totalsize, start_index, key)
+

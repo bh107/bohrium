@@ -7,7 +7,6 @@ import math
 import ndarray
 from ndarray import fix_returned_biclass
 import numpy
-import bhc
 from _util import dtype_name
 
 @fix_returned_biclass
@@ -536,8 +535,7 @@ def range(size, dtype=numpy.uint64):
         A = empty(size,dtype=numpy.uint32,bohrium=True)
     else:
         A = empty(size,dtype=numpy.uint64,bohrium=True)
-    f = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(A.dtype))
-    ret = f(size)
+    ret = backend.range(size, A.dtype)
     A = ndarray.new((size,), A.dtype, ret)
     if (dtype != A.dtype.type):
         B = empty_like(A,dtype=dtype)
