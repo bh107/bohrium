@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 """
 from _util import dtype_from_bhc, dtype_name
-import bhc
 import numpy
 import backend
 import operator
@@ -71,7 +70,6 @@ def new(shape, dtype, bhc_ary=None):
         new_bhc_base(ret)
     else:
         ret.bhc_ary = bhc_ary
-    exec "bhc.bh_multi_array_%s_set_temp(ret.bhc_ary, 0)"%dtype_name(dtype)
     return ret
 
 #Creates a new Bohrium-C base array.
@@ -146,17 +144,11 @@ def get_bhc(ary):
     shape = ary.shape if len(ary.shape) > 0 else (1,)
     strides = strides if len(strides) > 0 else (1,)
 
-    exec "bh_base = bhc.bh_multi_array_%s_get_base(base.bhc_ary)"%dtype
-    return backend.view(ndim, offset, shape, strides, bh_base, base.dtype)
-
-#Delete the Bohrium-C object
-def del_bhc_obj(bhc_obj):
-    exec "bhc.bh_multi_array_%s_destroy(bhc_obj)"%dtype_from_bhc(bhc_obj)
+    return backend.new_view(ndim, offset, shape, strides, base.bhc_ary, base.dtype)
 
 #Delete the Bohrium-C part of the bohrium.ndarray and its base
 def del_bhc(ary):
     if ary.bhc_ary is not None:
-        del_bhc_obj(ary.bhc_ary)
         ary.bhc_ary = None
     base = get_base(ary)
     if base is not ary:

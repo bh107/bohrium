@@ -6,6 +6,16 @@ import bhc
 import numpy
 from _util import dtype_name, dtype_from_bhc
 
+class base(object):
+    """base array handle"""
+    def __init__(self, size, dtype, bhc_obj):
+        self.size = size
+        self.dtype = dtype
+        self.bhc_obj = bhc_obj
+
+    def __del__(self):
+        del_bhc_obj(self.bhc_obj)
+
 class view(object):
     """array view handle"""
     def __init__(self, ndim, start, shape, stride, base, dtype):
@@ -27,8 +37,10 @@ def views2bhc(views):
     ret = []
     for v in views:
         if not numpy.isscalar(v):
-            f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype_name(v.dtype))
-            v = f(v.base, v.ndim, v.start, v.shape, v.stride)
+            dtype = dtype_name(v.dtype)
+            exec "base = bhc.bh_multi_array_%s_get_base(v.base.bhc_obj)"%dtype
+            f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype)
+            v = f(base, v.ndim, v.start, v.shape, v.stride)
         ret.append(v)
     if singleton:
         ret = ret[0]
@@ -60,7 +72,12 @@ def bhc_exec(func, *args):
 def new_empty(size, dtype):
     """Return a new empty base array"""
     f = eval("bhc.bh_multi_array_%s_new_empty"%dtype_name(dtype))
-    return bhc_exec(f, 1, (size,))
+    obj = bhc_exec(f, 1, (size,))
+    return base(size, dtype, obj)
+
+def new_view(ndim, start, shape, stride, base, dtype):
+    """Return a new view that points to 'base'"""
+    return view(ndim, start, shape, stride, base, dtype)
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     dtype = dtype_name(ary)
