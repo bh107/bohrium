@@ -20,7 +20,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
-from _util import dtype_from_bhc, dtype_name
+from _util import dtype_name
 import numpy
 import backend
 import operator

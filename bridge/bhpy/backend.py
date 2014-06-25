@@ -4,7 +4,7 @@ The Computation Backend
 """
 import bhc
 import numpy
-from _util import dtype_name, dtype_from_bhc
+from _util import dtype_name
 
 class base(object):
     """base array handle"""
@@ -14,7 +14,7 @@ class base(object):
         self.bhc_obj = bhc_obj
 
     def __del__(self):
-        del_bhc_obj(self.bhc_obj)
+        exec "bhc.bh_multi_array_%s_destroy(self.bhc_obj)"%dtype_name(self.dtype)
 
 class view(object):
     """array view handle"""
@@ -25,11 +25,16 @@ class view(object):
         self.stride = stride
         self.base = base
         self.dtype = dtype
+        dtype = dtype_name(dtype)
+        exec "base = bhc.bh_multi_array_%s_get_base(base.bhc_obj)"%dtype
+        f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype)
+        self.bhc_obj = f(base, ndim, start, shape, stride)
+
+    def __del__(self):
+        exec "bhc.bh_multi_array_%s_destroy(self.bhc_obj)"%dtype_name(self.dtype)
 
 def views2bhc(views):
-    """convert views to bhc objects but ignores scalars
-    #NB: the returned objects should be deleted after use through call to 'del_bhc_obj()'
-    """
+    """returns the bhc objects in the 'views' but don't touch scalars"""
     singleton = not (hasattr(views, "__iter__") or
                      hasattr(views, "__getitem__"))
     if singleton:
@@ -37,37 +42,19 @@ def views2bhc(views):
     ret = []
     for v in views:
         if not numpy.isscalar(v):
-            dtype = dtype_name(v.dtype)
-            exec "base = bhc.bh_multi_array_%s_get_base(v.base.bhc_obj)"%dtype
-            f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype)
-            v = f(base, v.ndim, v.start, v.shape, v.stride)
+            v = v.bhc_obj
         ret.append(v)
     if singleton:
         ret = ret[0]
     return ret
 
-def del_bhc_obj(bhc_objects):
-    """delete the bhc objectsi but ignores scalars"""
-    singleton = not (hasattr(bhc_objects, "__iter__") or
-                     hasattr(bhc_objects, "__getitem__"))
-    if singleton:
-        bhc_objects = (bhc_objects,)
-    for o in bhc_objects:
-        if not numpy.isscalar(o):
-            exec "bhc.bh_multi_array_%s_destroy(o)"%dtype_from_bhc(o)
-
 def bhc_exec(func, *args):
-    """convert 'args' to bhc objects, execute the 'func', and cleanup the bhc objects"""
+    """execute the 'func' with the bhc objects in 'args'"""
     args = list(args)
-    tmp = []
     for i in xrange(len(args)):
         if isinstance(args[i], view):
             args[i] = views2bhc(args[i])
-            tmp.append(args[i])
-    ret = func(*args)
-    for o in tmp:
-        del_bhc_obj(o)
-    return ret
+    return func(*args)
 
 def new_empty(size, dtype):
     """Return a new empty base array"""
@@ -87,7 +74,6 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     exec "bhc.bh_runtime_flush()"
     exec "base = bhc.bh_multi_array_%s_get_base(ary)"%dtype
     exec "data = bhc.bh_multi_array_%s_get_base_data(base)"%dtype
-    del_bhc_obj(ary)
     if data is None:
         if not allocate:
             return 0
