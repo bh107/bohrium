@@ -38,6 +38,7 @@ InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<Kerne
     , float16(false)
     , float64(false)
     , complex(false)
+    , integer(false)
 {
 #ifdef BH_TIMING
     createTime = bh::Timer<>::stamp();
@@ -181,6 +182,17 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 float64 = true;
                 complex = true;
                 break;
+            case OCL_INT8:
+            case OCL_INT16:
+            case OCL_INT32:
+            case OCL_INT64:
+            case OCL_UINT8:
+            case OCL_UINT16:
+            case OCL_UINT32:
+            case OCL_UINT64:
+                if (inst->opcode == BH_POWER)
+                    integer = true;
+                break;
             default:
                 break;
             }
@@ -216,6 +228,10 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
         if (complex)
         {
             source << "#include <ocl_complex.h>\n";
+        }
+        if (integer)
+        {
+            source << "#include <ocl_integer.h>\n";
         }
         source << "__kernel void " << kname.str() << code;
         Kernel kernel(resourceManager, MIN(shape.size(),3), source.str(), kname.str());
