@@ -36,7 +36,7 @@ def random123(shape, key, start_index=0, bohrium=True):
 
     #TODO: We do not implement random123
 
-    totalsize = reduce(operator.mul, shape, 1)
+    totalsize = numpy.multiply.reduce(numpy.asarray(shape))
     f = eval("bhc.bh_multi_array_uint64_new_random123")
     t = f(totalsize, start_index, key)
     ret = ndarray.new((totalsize,), np.uint64, t)

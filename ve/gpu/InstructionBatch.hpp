@@ -57,6 +57,7 @@ private:
     bool float64;
     bool complex;
     bool integer;
+    bool random;
     static KernelMap kernelMap;
 #ifdef BH_TIMING
     bh_uint64 createTime;

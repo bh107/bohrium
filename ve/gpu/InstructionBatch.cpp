@@ -39,6 +39,7 @@ InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<Kerne
     , float64(false)
     , complex(false)
     , integer(false)
+    , random(false)
 {
 #ifdef BH_TIMING
     createTime = bh::Timer<>::stamp();
@@ -182,6 +183,9 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 float64 = true;
                 complex = true;
                 break;
+            case OCL_R123:
+                random = true;
+                break;
             case OCL_INT8:
             case OCL_INT16:
             case OCL_INT32:
@@ -218,21 +222,16 @@ Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
         std::stringstream source, kname;
         kname << "kernel" << std::hex << codeHash;
         if (float16)
-        {
             source << "#pragma OPENCL EXTENSION cl_khr_fp16 : enable\n";
-        }
         if (float64)
-        {
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-        }
         if (complex)
-        {
             source << "#include <ocl_complex.h>\n";
-        }
         if (integer)
-        {
             source << "#include <ocl_integer.h>\n";
-        }
+        if (random)
+            source << "#include <ocl_random.h>\n";
+
         source << "__kernel void " << kname.str() << code;
         Kernel kernel(resourceManager, MIN(shape.size(),3), source.str(), kname.str());
         kernelMap.insert(std::make_pair(codeHash, kernel));

@@ -26,7 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
 #include "Reduce.hpp"
-#include "HybridTaus.hpp"
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
     : resourceManager(resourceManager_)
@@ -72,9 +71,6 @@ bh_error InstructionScheduler::schedule(bh_ir* bhir)
             case BH_ADD_ACCUMULATE:
             case BH_MULTIPLY_ACCUMULATE:
                 res = reduce(inst);
-                break;
-            case BH_RANDOM:
-                res = random(inst);
                 break;
             default:
                 if (inst->opcode <= BH_MAX_OPCODE_ID)
@@ -234,26 +230,6 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
     {
         return e;
     }
-}
-
-bh_error InstructionScheduler::random(bh_instruction* inst)
-{
-    try {
-        UserFuncArg userFuncArg;
-        userFuncArg.resourceManager = resourceManager;
-        userFuncArg.operands = getKernelParameters(inst);
-
-        if (batch && (batch->access(static_cast<BaseArray*>(userFuncArg.operands[0]))))
-        {
-            executeBatch();
-        }
-        return HybridTaus::bh_random(inst, &userFuncArg);
-    }
-    catch (bh_error e)
-    {
-        return e;
-    }
-    return BH_ERROR;
 }
 
 void InstructionScheduler::registerFunction(bh_opcode opcode, bh_extmethod_impl extmethod_impl)

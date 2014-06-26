@@ -356,6 +356,9 @@ void generateInstructionSource(const bh_opcode opcode,
         case BH_RANGE:
             source << indent << parameters[0] << " = gidx;\n";
             break;
+        case BH_RANDOM:
+            source << indent << parameters[0] << " = random("  << parameters[1] << ", gidx);\n";
+            break;
         default:
 #ifdef DEBUG
             std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
