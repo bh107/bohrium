@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <complex.h>
 #include <math.h>
-#include <Random123/threefry.h>
+#include <Random123/philox.h>
 #include <tac.h>
 #if defined(_OPENMP)
 #include <omp.h>

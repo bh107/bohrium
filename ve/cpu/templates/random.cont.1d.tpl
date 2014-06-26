@@ -5,19 +5,13 @@
     uint64_t r_start    = a{{NR_FINPUT}}_first->first;
     uint64_t r_key      = a{{NR_FINPUT}}_first->second;
 
-    threefry2x64_ctr_t ctr123;
-    ctr123.v[0] = r_start;
-    ctr123.v[1] = 0;          // index
-
-    threefry2x64_key_t key123;
-    key123.v[0] = r_key;
-    key123.v[1] = 0xdeadbeef;   // seed
+    union {philox2x32_ctr_t c; uint64_t ul;} ctr, res;
+    ctr.ul = r_start;
 
     for(int64_t i=0; i<nelements; i++) {
-        threefry2x64_ctr_t c = threefry2x64(ctr123, key123);
-        a{{NR_OUTPUT}}_first[i] = c.v[0];
-        ctr123.v[0]++;
+        res.c = philox2x32(ctr.c, (philox2x32_key_t) { { (uint32_t)r_key } });
+        a{{NR_OUTPUT}}_first[i] = res.ul;
+        ctr.ul++;
     }
     // TODO: scalar-management..
 }
-
