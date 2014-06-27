@@ -133,7 +133,7 @@ static int _mremap_data(void *dst, void *src, bh_intp size)
     //Systems that doesn't support mremap will use memcpy, which introduces a
     //race-condition if another thread access the 'dst' memory before memcpy finishes.
     if(_munprotect(dst, size) != 0)
-        return NULL;
+        return -1;
     memcpy(dst, src, size);
     return _munmap(src, size);
 #endif
