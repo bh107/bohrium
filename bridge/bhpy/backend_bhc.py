@@ -130,12 +130,17 @@ def range(size, dtype):
     """create a new array containing the values [0:size["""
 
     f = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(dtype))
-    return bhc_exec(f, size)
+    bhc_obj = bhc_exec(f, size)
+    b = base(size, dtype, bhc_obj)
+    return new_view(1, 0, (size,), (dtype.itemsize,), b, dtype)
 
 def random123(size, start_index, key):
     """Create a new random array using the random123 algorithm.
     The dtype is uint64 always."""
 
+    dtype = numpy.dtype("uint64")
     f = eval("bhc.bh_multi_array_uint64_new_random123")
-    return bhc_exec(f, totalsize, start_index, key)
+    bhc_obj = bhc_exec(f, size, start_index, key)
+    b = base(size, dtype, bhc_obj)
+    return new_view(1, 0, (size,), (dtype.itemsize,), b, dtype)
 
