@@ -7,22 +7,17 @@ You need to install the `Xcode Developer Tools <https://developer.apple.com/xcod
 
 If you are using Mac MacPorts::
 
-  sudo port install python27 cmake py27-cheetah
+  sudo port install python27 cmake py27-numpy py27-cheetah swig boost
 
 If you also want to build the Mono libraries (only required for the C# NumCIL package), you also need the Mono package::
 
   sudo port install mono
 
-.. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ does not support 64bit execution, and will not work with a normal build. You need to build a 32 bit version of Bohrium if you want to use the official Mono binaries.
+.. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ is 32bit and thus only supports up to 2GB memory.
 
 If you are using finkproject::
 
   fink install cmake cheetah python27 cheetah-py27 numpy-py27 swig boost1.53.nopython
-
-Download and extract the current version (v0.2) (not recommended on OSX)::
-
-  wget https://bitbucket.org/bohrium/bohrium/downloads/bohrium-v0.2.tgz
-  tar -xzf bohrium-v0.2.tgz
 
 As Bohrium is still under active development you want to build the current development copy, instead of using the tar-ball::
 
@@ -37,34 +32,33 @@ Make sure your system compiler is the one provided by Xcode, you can run the fol
   Target: x86_64-apple-darwin13.0.0
   Thread model: posix
 
-When building the Python/NumPy bridge make sure that NumPy development files are available::
+..
+.. When building the Python/NumPy bridge make sure that NumPy development files are available:
+..
+..  export PYTHONPATH=<numpy install dir>/lib/python<python version>/site-packages:$PYTHONPATH
+..  #Example
+.. export PYTHONPATH=~/numpy-1.8.1/install/lib/python2.7/site-packages:$PYTHONPATH
 
-  export PYTHONPATH=<numpy install dir>/lib/python<python version>/site-packages:$PYTHONPATH
-  #Example
-  export PYTHONPATH=~/numpy-1.8.1/install/lib/python2.7/site-packages:$PYTHONPATH
 
-
-
-
-When building and installing Bohrium we need to specify the newly installed Python interpreter. In this case we use Python version 2.7::
-
+Bohrium uses CMake so everything is configured automatically, except that we need to specify that the non-Apple version of python should be used::
+  
+  mkdir build
+  cd build
   cmake .. -DPYTHON=python2.7
+  make install
 
 .. note:: If you want to make a system-wide installation, run the make install command with sudo.
           If you run the install command as a normal user, it will install all files to ``~/.local``.
           If you run the install command with sudo, it will install all files to ``/opt/bohrium``.
 
-Since version 0.2 of Bohrium uses JIT compilation, you also need to edit your Bohrium configuration file, which is normally found in ``~/.bohrium/config.ini``. Find the section named ``cpu`` and edit the compiler command::
+If you are upgrading from a previous version you should delete the config file and have a fresh one installed::
 
-  [cpu]
-  type = ve
-  compiler_cmd="clang -arch x86_64 -I~/.local/include -lm -O3 -fPIC -std=c99 -x c -shared - -o "
+  rm ~/.bohrium/config.ini
+  make install
 
-This change is required to ensure that the kernels are compiled as 64-bit kernels. If you need 32-bit kernels, you can change  ``-arch x86_64`` to ``-arch i386``. If you have strange errors, it may be because you have invalid kernels in the cache directory. Issue the following command to clean it after changing the ``compiler_cmd``:
+If you have previously used Bohrium, issue the following command to clean old JIT kernels::
 
   rm -rf ~/.local/cpu/objects/*
-
-.. note:: If you update your installation, you may want to delete your ``~/.bohrium/config.ini`` file and run the install command again. Remember to edit the compiler command again if you do this.
 
 Python / NumPy
 ~~~~~~~~~~~~~~
