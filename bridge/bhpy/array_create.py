@@ -8,6 +8,7 @@ import ndarray
 from ndarray import fix_returned_biclass
 import numpy
 from _util import dtype_name
+import backend
 
 @fix_returned_biclass
 def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohrium=True):
