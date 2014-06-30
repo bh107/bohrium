@@ -29,7 +29,7 @@ import stat
 import pprint
 import json
 import numpy as np
-from Cython.Build import cythonize
+from Cython.Distutils import build_ext
 
 #We overload the setup.py with a 'buildpath=' argument that
 #points to the root of the current build
@@ -146,7 +146,7 @@ setup(name='Bohrium',
       url='http://www.bh107.org',
       license='LGPLv3',
       platforms='Linux, OSX',
-      cmdclass={'build': CustomBuild},
+      cmdclass={'build': CustomBuild, 'build_ext':build_ext},
       package_dir={'bohrium': srcpath('')},
       packages=['bohrium', 'bohrium.examples'],
       ext_package='bohrium',
@@ -167,12 +167,13 @@ setup(name='Bohrium',
                              libraries=['dl','bhc', 'bh'],
                              library_dirs=[buildpath('..','c'),
                                            buildpath('..','..','core')],
-                             )] +
-                   cythonize([Extension(name='_random123',
+                             ),
+                   Extension(name='_random123',
                              sources=[srcpath('r123','_random123.pyx')],
                              include_dirs=[srcpath('.'),
                                            srcpath('..','..','thirdparty','Random123-1.08','include')],
                              libraries=[],
                              library_dirs=[],
-                             )])
+                             )
+               ]
      )
