@@ -13,11 +13,11 @@ import datetime
 import os
 import bhc
 import _util
-
+import _random123
 
 def random123(shape, key, start_index=0, bohrium=True):
     """
-    New array of uniform pseudo numbers based on the random123 algorithm.
+    New array of uniform pseudo numbers based on the random123 philox2x32 algorithm.
     NB: dtype is np.uint64 always
 
     Parameters
@@ -33,8 +33,6 @@ def random123(shape, key, start_index=0, bohrium=True):
     """
     assert bohrium is True
     assert start_index >= 0
-
-    #TODO: We do not implement random123
 
     totalsize = numpy.multiply.reduce(numpy.asarray(shape))
     f = eval("bhc.bh_multi_array_uint64_new_random123")
@@ -137,3 +135,4 @@ class Random:
 _inst = Random()
 seed = _inst.seed
 random = _inst.random
+

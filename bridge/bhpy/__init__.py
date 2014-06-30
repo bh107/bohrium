@@ -18,7 +18,7 @@ for t in numpy_types:
     exec "%s = numpy.%s"%(t.__str__(),t.__str__())
 
 #Note that the following modules needs ufuncs and dtypes
-import random
+from r123 import random
 
 #TODO: import all numpy functions
 from numpy import meshgrid
