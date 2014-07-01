@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import _info
 import bhc
-import re
 import atexit
 
 #Flush the delayed operations for Bohrium execution
@@ -31,12 +30,6 @@ def flush(a=None):
     from ndarray import check
     if not (a is None) and check(a):
         bhc.bh_runtime_flush()
-
-p = re.compile("bh_multi_array_([a-z0-9]*)")
-#Returns the Bohrium name of the data type of the Bohrium-C array
-def dtype_from_bhc(bhc_ary):
-    m = re.search(p, bhc_ary.__str__()).group(1)
-    return m
 
 #Returns the Bohrium name of the data type of the object 'obj'
 #NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array

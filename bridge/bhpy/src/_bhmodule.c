@@ -133,7 +133,7 @@ static int _mremap_data(void *dst, void *src, bh_intp size)
     //Systems that doesn't support mremap will use memcpy, which introduces a
     //race-condition if another thread access the 'dst' memory before memcpy finishes.
     if(_munprotect(dst, size) != 0)
-        return NULL;
+        return -1;
     memcpy(dst, src, size);
     return _munmap(src, size);
 #endif
@@ -258,12 +258,7 @@ BhArray_dealloc(BhArray* self)
         Py_DECREF(Py_None);
         goto finish;
     }
-    PyObject *r = PyObject_CallMethod(ndarray, "del_bhc_obj", "O", self->bhc_ary);
-    if(r == NULL)
-    {
-        PyErr_Print();
-        goto finish;
-    }
+    Py_DECREF(self->bhc_ary);
 finish:
     if(!PyArray_CHKFLAGS((PyArrayObject*)self, NPY_ARRAY_OWNDATA))
     {

@@ -22,28 +22,17 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 import _util
 import array_create
-import bhc
 import numpy as np
 import _info
 from _util import dtype_name, dtype_identical
-from ndarray import get_bhc, del_bhc_obj, get_base, fix_returned_biclass
+from ndarray import get_bhc, get_base, fix_returned_biclass
 import ndarray
+import backend
 
 @fix_returned_biclass
 def extmethod(name, out, in1, in2):
     assert in1.dtype == in2.dtype
-
-    f = eval("bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
-              dtype_name(in1), dtype_name(in2)))
-    bhc_out = get_bhc(out)
-    bhc_in1 = get_bhc(in1)
-    bhc_in2 = get_bhc(in2)
-    ret = f(name, bhc_out, bhc_in1, bhc_in2)
-    del_bhc_obj(bhc_out)
-    del_bhc_obj(bhc_in1)
-    del_bhc_obj(bhc_in2)
-    if ret != 0:
-        raise RuntimeError("The current runtime system does not support the extension method '%s'"%name)
+    backend.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
 
 def setitem(ary, loc, value):
     """Set the 'value' into 'ary' at the location specified through 'loc'.
@@ -68,21 +57,13 @@ def assign(a, out):
     if not np.isscalar(a):
         (a,out) = np.broadcast_arrays(a,out)
 
-    #print "assign: ", a.shape, out.shape
     if ndarray.check(out):
-        out_dtype = dtype_name(out)
-        out_bhc = get_bhc(out)
-        a_dtype = dtype_name(a)
-        cmd = "bhc.bh_multi_array_%s_identity_%s"%(out_dtype, a_dtype)
-        if np.isscalar(a):
-            exec "%s_scalar(out_bhc, a)"%cmd
-        else:
+        out = get_bhc(out)
+        if not np.isscalar(a):
             if not ndarray.check(a):
                 a = array_create.array(a)#Convert the NumPy array to bohrium
-            a_bhc = get_bhc(a)
-            exec "%s(out_bhc, a_bhc)"%cmd
-            del_bhc_obj(a_bhc)
-        del_bhc_obj(out_bhc)
+            a = get_bhc(a)
+        backend.ufunc(identity, out, a)
     else:
         if ndarray.check(a):
             get_base(a)._data_bhc2np()
@@ -167,7 +148,6 @@ class ufunc:
 
         #Convert 'args' to Bohrium-C arrays
         bhcs = []
-        tmps = []
         for a in args:
             if np.isscalar(a):
                 bhcs.append(a)
@@ -176,24 +156,8 @@ class ufunc:
             else:
                 a = array_create.array(a)
                 bhcs.append(get_bhc(a))
-                tmps.append(a)#We use this to keep a reference to 'a'
 
-        #Create and execute the ufunc command
-        cmd = "bhc.bh_multi_array_%s_%s"%(dtype_name(in_dtype), self.info['name'])
-        for i,a in enumerate(args):
-            if np.isscalar(a):
-                if i == 1:
-                    cmd += "_scalar_lhs"
-                if i == 2:
-                    cmd += "_scalar_rhs"
-        f = eval(cmd)
-        f(*bhcs)
-
-        #Cleanup
-        for a in bhcs:
-            if not np.isscalar(a):
-                del_bhc_obj(a)
-        del tmps#Now we can safely de-allocate the tmp input arrays
+        backend.ufunc(self,*bhcs)
 
         if out is None or out_dtype == out.dtype:
             return args[0]
@@ -317,13 +281,8 @@ class ufunc:
                     raise ValueError("output dimension mismatch expect "\
                                      "shape '%s' got '%s'"%(shape, out.shape))
 
-            f = eval("bhc.bh_multi_array_%s_%s_reduce"%(dtype_name(a), self.info['name']))
             tmp = array_create.empty(shape, dtype=a.dtype)
-            tmp_bhc = get_bhc(tmp)
-            a_bhc = get_bhc(a)
-            f(tmp_bhc, a_bhc, axis)
-            del_bhc_obj(tmp_bhc)
-            del_bhc_obj(a_bhc)
+            backend.reduce(self, get_bhc(tmp), get_bhc(a), axis)
 
             if out is not None:
                 out[...] = tmp
@@ -431,12 +390,7 @@ class ufunc:
         if out is None:
             out = array_create.empty(a.shape, dtype=a.dtype)
 
-        f = eval("bhc.bh_multi_array_%s_%s_accumulate"%(dtype_name(a), self.info['name']))
-        out_bhc = get_bhc(out)
-        a_bhc = get_bhc(a)
-        f(out_bhc, a_bhc, axis)
-        del_bhc_obj(out_bhc)
-        del_bhc_obj(a_bhc)
+        backend.accumulate(self, get_bhc(out), get_bhc(a), axis)
         return out
 
 #We have to add ufuncs that doesn't map to Bohrium operations directly

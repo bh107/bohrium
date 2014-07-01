@@ -121,4 +121,3 @@ class Random:
 _inst = Random()
 seed = _inst.seed
 random = _inst.random
-

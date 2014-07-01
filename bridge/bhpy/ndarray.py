@@ -20,9 +20,10 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
-from _util import dtype_from_bhc, dtype_name
-import bhc
+from _util import dtype_name
 import numpy
+import backend
+import operator
 
 # This module consist of bohrium.ndarray methods
 
@@ -69,7 +70,6 @@ def new(shape, dtype, bhc_ary=None):
         new_bhc_base(ret)
     else:
         ret.bhc_ary = bhc_ary
-    exec "bhc.bh_multi_array_%s_set_temp(ret.bhc_ary, 0)"%dtype_name(dtype)
     return ret
 
 #Creates a new Bohrium-C base array.
@@ -91,10 +91,9 @@ def new_bhc_base(ary):
 
     if not ary.flags['C_CONTIGUOUS']:
         raise ValueError("For now Bohrium only supports C-style arrays")
-    ndim = ary.ndim if ary.ndim > 0 else 1
     shape = ary.shape if len(ary.shape) > 0 else (1,)
-    dtype = dtype_name(ary)
-    exec "ary.bhc_ary = bhc.bh_multi_array_%s_new_empty(ndim, shape)"%dtype
+    totalsize = reduce(operator.mul, shape, 1)
+    ary.bhc_ary = backend.new_empty(totalsize, ary.dtype)
 
 #Get the final base array of 'ary'
 def get_base(ary):
@@ -141,22 +140,15 @@ def get_bhc(ary):
         if s % base.itemsize != 0:
             raise TypeError("The strides must be element aligned")
 
-    exec "bh_base = bhc.bh_multi_array_%s_get_base(base.bhc_ary)"%dtype
-    f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype)
-
     ndim = ary.ndim if ary.ndim > 0 else 1
     shape = ary.shape if len(ary.shape) > 0 else (1,)
     strides = strides if len(strides) > 0 else (1,)
-    return f(bh_base, ndim, offset, shape, strides)
 
-#Delete the Bohrium-C object
-def del_bhc_obj(bhc_obj):
-    exec "bhc.bh_multi_array_%s_destroy(bhc_obj)"%dtype_from_bhc(bhc_obj)
+    return backend.new_view(ndim, offset, shape, strides, base.bhc_ary, base.dtype)
 
 #Delete the Bohrium-C part of the bohrium.ndarray and its base
 def del_bhc(ary):
     if ary.bhc_ary is not None:
-        del_bhc_obj(ary.bhc_ary)
         ary.bhc_ary = None
     base = get_base(ary)
     if base is not ary:
@@ -169,20 +161,5 @@ def get_bhc_data_pointer(ary, allocate=False, nullify=False):
     if not check(ary):
         raise TypeError("must be a Bohrium array")
     ary = get_base(ary)
-    dtype = dtype_name(ary)
-    bhc_ary = get_bhc(ary)
-    exec "bhc.bh_multi_array_%s_sync(bhc_ary)"%dtype
-    exec "bhc.bh_multi_array_%s_discard(bhc_ary)"%dtype
-    exec "bhc.bh_runtime_flush()"
-    exec "base = bhc.bh_multi_array_%s_get_base(bhc_ary)"%dtype
-    exec "data = bhc.bh_multi_array_%s_get_base_data(base)"%dtype
-    if data is None:
-        if not allocate:
-            return 0
-        exec "data = bhc.bh_multi_array_%s_get_base_data_and_force_alloc(base)"%dtype
-        if data is None:
-            raise MemoryError()
-    if nullify:
-        exec "bhc.bh_multi_array_%s_nullify_base_data(base)"%dtype
-    return int(data)
+    return backend.get_data_pointer(get_bhc(ary), allocate, nullify)
 
