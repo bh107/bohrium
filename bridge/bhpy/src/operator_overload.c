@@ -51,7 +51,7 @@ array_remainder(PyObject *m1, PyObject *m2)
 }
 
 static PyObject *
-array_power(PyObject *m1, PyObject *m2)
+array_power(PyObject *m1, PyObject *m2, PyObject *modulo)
 {
     return PyObject_CallMethod(bohrium, "power", "OO", m1, m2);
 }
@@ -183,7 +183,7 @@ array_inplace_floor_divide(PyObject *m1, PyObject *m2)
 }
 
 static PyObject *
-array_inplace_power(PyObject *m1, PyObject *m2)
+array_inplace_power(PyObject *m1, PyObject *m2, PyObject *modulo)
 {
     return PyObject_CallMethod(bohrium, "power", "OOO", m1, m2, m1);
 }
