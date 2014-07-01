@@ -157,7 +157,12 @@ class ufunc:
                 a = array_create.array(a)
                 bhcs.append(get_bhc(a))
 
-        backend.ufunc(self,*bhcs)
+        #Some simple optimizations
+        if self.info['name'] == "power" and np.isscalar(bhcs[2]) and bhcs[2] == 2:
+            #Replace power of 2 with a multiplication
+            backend.ufunc(multiply, bhcs[0], bhcs[1], bhcs[1])
+        else:
+            backend.ufunc(self,*bhcs)
 
         if out is None or out_dtype == out.dtype:
             return args[0]

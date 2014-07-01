@@ -15,6 +15,7 @@ class base(object):
     """base array handle"""
     def __init__(self, size, dtype):
         self.size = size
+        size *= dtype.itemsize
         self.dtype = dtype
         for i, (s,m) in enumerate(vcache):
             if s == size:
@@ -22,18 +23,19 @@ class base(object):
                 vcache.pop(i)
 #                print "create (hit)", self
                 return
-        self.mmap = mmap.mmap(-1, size*dtype.itemsize)
+        self.mmap = mmap.mmap(-1, size)
 #        print "create (miss)", self
     def __str__(self):
         return "<base memory at %s>"%self.mmap
     def __del__(self):
 #        print "del", self
         if len(vcache) < VCACHE_SIZE:
-            vcache.append((self.size, self.mmap))
+            vcache.append((self.size*self.dtype.itemsize, self.mmap))
 
 class view(object):
     """array view handle"""
     def __init__(self, ndim, start, shape, stride, base, dtype):
+        assert(dtype == base.dtype)
         self.ndim = ndim
         self.start = start
         self.shape = shape
