@@ -6,16 +6,13 @@ Random functions
 
 """
 import bohrium as np
-import ndarray
 import numpy
 import operator
 import datetime
 import os
-import bhc
-import _util
 import _random123
 
-def random123(shape, key, start_index=0, bohrium=True):
+def random123(shape, start_index, key, bohrium=True):
     """
     New array of uniform pseudo numbers based on the random123 philox2x32 algorithm.
     NB: dtype is np.uint64 always
@@ -24,21 +21,25 @@ def random123(shape, key, start_index=0, bohrium=True):
     ----------
     shape       : tuple of ints
                   Defines the shape of the returned array of random floats.
-    key         : The key or seed for the random123 algorithm
     start_index : The start index (must be positive)
+    key         : The key or seed for the random123 algorithm
 
     Returns
     -------
     out : Array of uniform pseudo numbers
     """
-    assert bohrium is True
-    assert start_index >= 0
+    start_index = numpy.uint64(start_index)
 
-    totalsize = numpy.multiply.reduce(numpy.asarray(shape))
-    f = eval("bhc.bh_multi_array_uint64_new_random123")
-    t = f(totalsize, start_index, key)
-    ret = ndarray.new((totalsize,), np.uint64, t)
-    return ret.reshape(shape)
+    if shape is None:
+        return _random123.ph2x32(start_index,key,shape)
+    elif bohrium is False:
+        return _random123.ph2x32(start_index,key,numpy.asarray(shape))
+    else:
+        totalsize = numpy.multiply.reduce(numpy.asarray(shape))
+        f = eval("np.bhc.bh_multi_array_uint64_new_random123")
+        t = f(totalsize, start_index, key)
+        ret = np.ndarray.new((totalsize,), np.uint64, t)
+        return ret.reshape(shape)
 
 class Random:
     def __init__(self, seed=None):
@@ -56,11 +57,11 @@ class Random:
         """
         if x is None:
             try:
-                self.seed = hash(os.urandom(8))
+                self.key = numpy.uint32(hash(os.urandom(8)))
             except NotImplementedError:
-                self.seed = hash(datetime.datetime.now())
+                self.key = numpy.uint32(hash(datetime.datetime.now()))
         else:
-            self.seed = hash(x)
+            self.key = numpy.uint32(x)
         self.index = 0;
 
     def random(self, shape=None, dtype=np.float64, bohrium=True):
@@ -101,34 +102,19 @@ class Random:
                [-2.99091858, -0.79479508],
                [-1.23204345, -1.75224494]])
         """
-        if dtype is np.float64:
-            dtype_uint = np.uint64
-        else:
-            raise ValueError("dtype must be float64")
-        if not bohrium:
-            return numpy.random.random(size=shape)
-
-        if shape is None:
-            s = (1,) #default is a scalar
-        else:
-            try:
-                s = (int(shape),) #Convert integer to tuple
-            except TypeError:
-                s = shape #It might be a tuble already
 
         #Generate random numbers as uint
-        r_int = random123(s, self.seed, start_index=self.index, bohrium=bohrium)
+        r_int = random123(shape, self.index, self.key, bohrium=bohrium)
         #Convert random numbers to float in the interval [0.0, 1.0).
-        r = np.empty_like(r_int, dtype=dtype)
-        r[...] = r_int
-        r /= float(numpy.iinfo(dtype_uint).max)
-
-        #Update the index offset for the next random call
-        self.index += reduce(operator.mul, s, 1)
-
+        max_value = numpy.dtype(dtype).type(numpy.iinfo(numpy.uint64).max)
         if shape is None:
-            return r[0]
+            self.index += 1
+            return numpy.dtype(dtype).type(r_int) / max_value 
         else:
+            self.index += numpy.multiply.reduce(numpy.asarray(shape))
+            r = np.empty_like(r_int, dtype=dtype)
+            r[...] = r_int
+            r /= max_value
             return r
 
 #The default random object
