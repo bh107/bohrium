@@ -1,8 +1,8 @@
 [
     ["add", "ADD"],
     ["multiply", "MULTIPLY"],
-    ["min", "MIN"],
-    ["max", "MAX"],
+    ["minimum", "MIN"],
+    ["maximum", "MAX"],
     ["logical_and", "LOGICAL_AND"],
     ["logical_or",  "LOGICAL_OR"],
     ["logical_xor", "LOGICAL_XOR"],

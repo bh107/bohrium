@@ -388,13 +388,7 @@ namespace NumCIL.Bohrium2
         /// Update with a scalar
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static void bh_multi_array_${bh_ctype}_assign_scalar(bh_multi_array_${bh_ctype}_p self, [In] ${bh_atype} value);
-
-        /// <summary>
-        /// Update with an array
-        /// </summary>
-        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static void bh_multi_array_${bh_ctype}_assign_array(bh_multi_array_${bh_ctype}_p self, bh_multi_array_${bh_ctype}_p other);
+        public extern static void bh_multi_array_${bh_ctype}_identity_${bh_ctype}_scalar(bh_multi_array_${bh_ctype}_p self, [In] ${bh_atype} value);
 
         /// <summary>
         /// Flatten view
@@ -413,33 +407,9 @@ namespace NumCIL.Bohrium2
         /// Partial ${opname} reduction 
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_partial_reduce_${opname}(bh_multi_array_${bh_ctype}_p self, [In] int64_t axis);
+        public extern static void bh_multi_array_${bh_ctype}_${opname}_reduce(bh_multi_array_${bh_ctype}_p @out, bh_multi_array_${bh_ctype}_p self, [In] int64_t axis);
 
         %end for
-
-        /// <summary>
-        /// Sum
-        /// </summary>
-        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static ${bh_atype} bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self);
-
-        /// <summary>
-        /// Product
-        /// </summary>
-        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static ${bh_atype} bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self);
-
-        /// <summary>
-        /// Max
-        /// </summary>
-        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static ${bh_atype} bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_p self);
-
-        /// <summary>
-        /// Min
-        /// </summary>
-        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static ${bh_atype} bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self);
 
 %if $bh_atype == "bh_complex64"
 
@@ -447,13 +417,13 @@ namespace NumCIL.Bohrium2
         /// Get the real component of a complex number
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_float32_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self);
+        public extern static void bh_multi_array_${bh_ctype}_real(bh_multi_array_float32_p @out, bh_multi_array_${bh_ctype}_p self);
 
         /// <summary>
         /// Get the imaginary component of a complex number
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_float32_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self);
+        public extern static void bh_multi_array_${bh_ctype}_imag(bh_multi_array_float32_p @out, bh_multi_array_${bh_ctype}_p self);
 
         %end if
 
@@ -463,13 +433,13 @@ namespace NumCIL.Bohrium2
         /// Get the real component of a complex number
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_float64_p bh_multi_array_${bh_ctype}_real(bh_multi_array_${bh_ctype}_p self);
+        public extern static void bh_multi_array_${bh_ctype}_real(bh_multi_array_float64_p @out, bh_multi_array_${bh_ctype}_p self);
 
         /// <summary>
         /// Get the imaginary component of a complex number
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_float64_p bh_multi_array_${bh_ctype}_imag(bh_multi_array_${bh_ctype}_p self);
+        public extern static void bh_multi_array_${bh_ctype}_imag(bh_multi_array_float64_p @out, bh_multi_array_${bh_ctype}_p self);
 
 %end if
 
