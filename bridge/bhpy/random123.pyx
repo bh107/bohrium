@@ -10,6 +10,7 @@ import numpy
 import operator
 import datetime
 import os
+import backend
 
 from numpy cimport uint64_t as np_uint64_t, uint32_t as np_uint32_t, ndarray as np_ndarray, PyArray_SIZE as np_PyArray_SIZE
 from libc.stdint cimport uint64_t, uint32_t
@@ -23,11 +24,12 @@ ctypedef r123array2x32 philox2x32_ctr_t
 ctypedef r123array1x32 philox2x32_key_t
 cdef extern from "Random123/philox.h":
     philox2x32_ctr_t philox2x32(philox2x32_ctr_t, philox2x32_key_t) 
-
-
 cdef union ctr_t:
     philox2x32_ctr_t c
     uint64_t ul 
+cdef union key_t:
+    philox2x32_key_t k
+    uint32_t ui 
 
 def ph2x32(np_uint64_t start_index, np_uint32_t key, object size):
     cdef np_uint64_t *array_data
@@ -36,19 +38,19 @@ def ph2x32(np_uint64_t start_index, np_uint32_t key, object size):
     cdef long i
     cdef ctr_t ctr 
     cdef ctr_t res
-    cdef philox2x32_key_t k
+    cdef key_t k
     ctr.ul = start_index
-    k = { { key } }
+    k.ui = key
 
     if size is None:
-        res.c = philox2x32(ctr.c,k)
+        res.c = philox2x32(ctr.c,k.k)
         return res.ul
     else:
         array = <np_ndarray>np.empty(size, np.uint64)
         length = np_PyArray_SIZE(array)
         array_data = <np_uint64_t *>array.data
         for i from 0 <= i < length:
-            res.c = philox2x32(ctr.c,k)
+            res.c = philox2x32(ctr.c,k.k)
             array_data[i] = res.ul
             ctr.ul += 1
         return array
@@ -77,10 +79,9 @@ def random123(shape, start_index, key, bohrium=True):
         return ph2x32(start_index,key,numpy.asarray(shape))
     else:
         totalsize = numpy.multiply.reduce(numpy.asarray(shape))
-        f = eval("np.bhc.bh_multi_array_uint64_new_random123")
-        t = f(totalsize, start_index, key)
-        ret = np.ndarray.new((totalsize,), np.uint64, t)
-        return ret.reshape(shape)
+        bhc_obj = backend.random123(totalsize, start_index, key)
+        ret = np.ndarray.new((totalsize,), np.uint64, bhc_obj)
+        return ret
 
 class Random:
     def __init__(self, seed=None):
