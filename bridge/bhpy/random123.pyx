@@ -10,7 +10,48 @@ import numpy
 import operator
 import datetime
 import os
-import _random123
+
+from numpy cimport uint64_t as np_uint64_t, uint32_t as np_uint32_t, ndarray as np_ndarray, PyArray_SIZE as np_PyArray_SIZE
+from libc.stdint cimport uint64_t, uint32_t
+
+cdef extern from "Random123/philox.h":
+    struct r123array2x32:
+        pass
+    struct r123array1x32:
+        pass
+ctypedef r123array2x32 philox2x32_ctr_t
+ctypedef r123array1x32 philox2x32_key_t
+cdef extern from "Random123/philox.h":
+    philox2x32_ctr_t philox2x32(philox2x32_ctr_t, philox2x32_key_t) 
+
+
+cdef union ctr_t:
+    philox2x32_ctr_t c
+    uint64_t ul 
+
+def ph2x32(np_uint64_t start_index, np_uint32_t key, object size):
+    cdef np_uint64_t *array_data
+    cdef np_ndarray array "arrayObject"
+    cdef long length
+    cdef long i
+    cdef ctr_t ctr 
+    cdef ctr_t res
+    cdef philox2x32_key_t k
+    ctr.ul = start_index
+    k = { { key } }
+
+    if size is None:
+        res.c = philox2x32(ctr.c,k)
+        return res.ul
+    else:
+        array = <np_ndarray>np.empty(size, np.uint64)
+        length = np_PyArray_SIZE(array)
+        array_data = <np_uint64_t *>array.data
+        for i from 0 <= i < length:
+            res.c = philox2x32(ctr.c,k)
+            array_data[i] = res.ul
+            ctr.ul += 1
+        return array
 
 def random123(shape, start_index, key, bohrium=True):
     """
@@ -31,9 +72,9 @@ def random123(shape, start_index, key, bohrium=True):
     start_index = numpy.uint64(start_index)
 
     if shape is None:
-        return _random123.ph2x32(start_index,key,shape)
+        return ph2x32(start_index,key,shape)
     elif bohrium is False:
-        return _random123.ph2x32(start_index,key,numpy.asarray(shape))
+        return ph2x32(start_index,key,numpy.asarray(shape))
     else:
         totalsize = numpy.multiply.reduce(numpy.asarray(shape))
         f = eval("np.bhc.bh_multi_array_uint64_new_random123")

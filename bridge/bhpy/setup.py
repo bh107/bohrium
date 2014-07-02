@@ -137,6 +137,10 @@ class CustomBuild(build):
             self.copy_file(buildpath('bhc.py'),buildpath(self.build_lib,'bohrium','bhc.py'))
         build.run(self)
 
+import shutil
+shutil.copyfile(srcpath('random123.pyx'), buildpath('random123.pyx'))
+
+
 setup(name='Bohrium',
       version='0.2',
       description='Bohrium NumPy',
@@ -148,7 +152,7 @@ setup(name='Bohrium',
       platforms='Linux, OSX',
       cmdclass={'build': CustomBuild, 'build_ext':build_ext},
       package_dir={'bohrium': srcpath('')},
-      packages=['bohrium', 'bohrium.examples', 'bohrium.r123'],
+      packages=['bohrium', 'bohrium.examples'],
       ext_package='bohrium',
       ext_modules=[Extension(name='_bhmodule',
                              sources=[srcpath('src','_bhmodule.c')],
@@ -168,8 +172,8 @@ setup(name='Bohrium',
                              library_dirs=[buildpath('..','c'),
                                            buildpath('..','..','core')],
                              ),
-                   Extension(name='r123._random123',
-                             sources=[srcpath('r123','_random123.pyx')],
+                   Extension(name='random123',
+                             sources=[buildpath('random123.pyx')],
                              include_dirs=[srcpath('.'),
                                            srcpath('..','..','thirdparty','Random123-1.08','include')],
                              libraries=[],
