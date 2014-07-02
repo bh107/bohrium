@@ -495,8 +495,8 @@ namespace NumCIL.Generic
         /// </summary>
         public void Flush()
         {
-            if (m_data is ILazyAccessor<T>)
-                ((ILazyAccessor<T>)m_data).Flush();
+            if (m_data is IFlushableAccessor)
+                ((IFlushableAccessor)m_data).Flush();
         }
 
         /// <summary>

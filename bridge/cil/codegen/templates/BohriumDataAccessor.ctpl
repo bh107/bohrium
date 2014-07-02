@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 namespace NumCIL.Bohrium2
 {
     %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
-    internal partial class DataAccessor_${bh_ctype} : NumCIL.Generic.IDataAccessor<${bh_atype}>, IDisposable
+    internal partial class DataAccessor_${bh_ctype} : NumCIL.Generic.IDataAccessor<${bh_atype}>, IDisposable, NumCIL.Generic.IFlushableAccessor
     {
         protected PInvoke.bh_multi_array_${bh_ctype}_p m_array;
         protected ${bh_atype}[] m_data;
@@ -80,7 +80,7 @@ namespace NumCIL.Bohrium2
             {
                 if (m_data == null)
                 {
-                    Console.WriteLine("Creating data in C land");
+                    //Console.WriteLine("Creating data in C land");
 
                     // No CIL allocation, create a new multi-array
                     m_array = PInvoke.bh_multi_array_${bh_ctype}_new_from_base(
@@ -93,7 +93,7 @@ namespace NumCIL.Bohrium2
                 }
                 else
                 {
-                    Console.WriteLine("Wraping CIL data");
+                    //Console.WriteLine("Wraping CIL data");
 
                     // Existing CIL allocation, wrap it
                     m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
@@ -108,11 +108,16 @@ namespace NumCIL.Bohrium2
             return m_array;
         }
 
+        public void Flush()
+        {
+            Sync();
+        }
+
         private void Sync()
         {
             if (m_dirty)
             {
-                Console.WriteLine("Calling sync");
+                // Console.WriteLine("Calling sync");
                 if (!m_array.IsAllocated)
                     throw new InvalidOperationException("Array cannot be dirty and not allocated");
 
@@ -131,7 +136,7 @@ namespace NumCIL.Bohrium2
                 var bs = m_array.Base;
                 if (m_data == null)
                 {
-                    Console.WriteLine("Copy data from C land");
+                    //Console.WriteLine("Copy data from C land");
 
                     //In this case, data resides in C land, 
                     // so we copy it back to CIL and free it in C land

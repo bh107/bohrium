@@ -85,10 +85,21 @@ namespace NumCIL.Generic
     }
 
     /// <summary>
+    /// Interface for marking an accessor flush capable
+    /// </summary>
+    public interface IFlushableAccessor
+    {
+        /// <summary>
+        /// Flushes all pending operations on this element
+        /// </summary>
+        void Flush();
+    }
+
+    /// <summary>
     /// Interface that adds a lazy registration function to a data accessor
     /// </summary>
     /// <typeparam name="T">The type of data in the array</typeparam>
-    public interface ILazyAccessor<T> : IDataAccessor<T>
+    public interface ILazyAccessor<T> : IDataAccessor<T>, IFlushableAccessor
     {
         /// <summary>
         /// Register a pending operation on the underlying array

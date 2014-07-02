@@ -57,6 +57,15 @@ namespace NumCIL.Bohrium2
                         p
                     );
                 }
+                else if (typeof(T) == typeof(bh_uint8))
+                {
+                    var p = new PInvoke.bh_base_uint8_p(handle.AddrOfPinnedObject(), item.Length);
+                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
+                        p.ToPointer(),
+                        handle,
+                        p
+                    );
+                }
                 else if (typeof(T) == typeof(bh_int8))
                 {
                     var p = new PInvoke.bh_base_int8_p(handle.AddrOfPinnedObject(), item.Length);

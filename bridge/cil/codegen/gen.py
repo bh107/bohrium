@@ -47,7 +47,7 @@ def main():
     operators   = json.loads(open(script_dir +'operators.json').read())
 
     op_map  = []
-    for name, opcode, t, inplace, cilname in operators:
+    for name, opcode, t, cilname in operators:
         code = [x for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
 
         typesigs = [x["types"] for x in opcodes if x['opcode'] == opcode and not x['system_opcode']]
@@ -70,7 +70,7 @@ def main():
             print "The Bohrium opcodes no longer include [ %s ]." % opcode
             continue
 
-        op_map.append((name, opcode, t, nop, inplace, typesigs, cilname))
+        op_map.append((name, opcode, t, nop, typesigs, cilname))
 
     gens = [
         ('PInvoke.basics.ctpl',         'PInvoke.basics.cs',            (types, reductions)),
