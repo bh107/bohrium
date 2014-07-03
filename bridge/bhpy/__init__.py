@@ -8,6 +8,7 @@ import linalg
 from linalg import matmul, dot
 from summations import sum
 import import_external
+from numpy import dtype
 
 #Expose all ufuncs
 for f in ufuncs:

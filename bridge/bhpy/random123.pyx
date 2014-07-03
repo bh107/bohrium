@@ -138,7 +138,8 @@ class Random:
                [-2.99091858, -0.79479508],
                [-1.23204345, -1.75224494]])
         """
-
+        if not (np.dtype(dtype).type is np.float64 or np.dtype(dtype).type is np.float32):
+            raise ValueError("dtype not supported for random_sample")
         #Generate random numbers as uint
         r_int = random123(shape, self.index, self.key, bohrium=bohrium)
         #Convert random numbers to float in the interval [0.0, 1.0).
