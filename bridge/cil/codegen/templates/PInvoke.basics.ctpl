@@ -112,9 +112,8 @@ namespace NumCIL.Bohrium2
             /// </summary>
             public void Dispose()
             {
-                /*try { if (IsAllocated) bh_multi_array_${bh_ctype}_destroy_base(this); }
+                try { if (IsAllocated) new bh_multi_array_${bh_ctype}_p(this).Dispose(); }
                 finally { pointer = IntPtr.Zero; }
-                */
 
                 pointer = IntPtr.Zero;
             }
@@ -200,9 +199,18 @@ namespace NumCIL.Bohrium2
             /// </summary>
             public void Dispose()
             {
-                //Console.WriteLine("Destroying multi_array {0}", this.pointer.ToInt64());
-                try { if (IsAllocated) bh_multi_array_${bh_ctype}_destroy(this); }
-                finally { pointer = IntPtr.Zero; }
+                try 
+                { 
+                    if (IsAllocated)
+                    {
+                        //Console.WriteLine("Destroying multi_array {0}", this.pointer.ToInt64());
+                        bh_multi_array_${bh_ctype}_destroy(this); 
+                    }
+                }
+                finally 
+                { 
+                    pointer = IntPtr.Zero; 
+                }
             }
 
             /// <summary>
@@ -219,6 +227,7 @@ namespace NumCIL.Bohrium2
             public void Sync()
             {
                 bh_multi_array_${bh_ctype}_sync(this);
+                PinnedArrayTracker.Release();
             }
 
             public string AsString()

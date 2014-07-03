@@ -139,6 +139,7 @@ namespace NumCIL.Bohrium2
         /// </summary>
         public static void Deactivate()
         {
+            Flush();
             Deactivate<float>();
             Deactivate<double>();
             Deactivate<sbyte>();
@@ -153,7 +154,7 @@ namespace NumCIL.Bohrium2
 			Deactivate<NumCIL.Complex64.DataType>();
 			Deactivate<System.Numerics.Complex>();
         }
-        
+            
         /// <summary>
         /// Activates Bohrium for a specific datatype
         /// </summary>
@@ -178,6 +179,7 @@ namespace NumCIL.Bohrium2
         public static void Flush()
         {
             PInvoke.bh_runtime_flush();
+            PinnedArrayTracker.ReleaseInternal();
         }
 
         /// <summary>
