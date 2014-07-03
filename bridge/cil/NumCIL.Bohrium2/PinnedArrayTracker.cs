@@ -37,8 +37,9 @@ namespace NumCIL.Bohrium2
         /// <summary>
         /// Pins the array.
         /// </summary>
-        /// <param name="item">Item.</param>
+        /// <param name="item">The array to pin</param>
         /// <typeparam name="T">The 1st type parameter.</typeparam>
+        /// <returns>The base_p IntPtr for the pinned entry</returns>
         public static IntPtr PinArray<T>(T[] item)
         {
             lock (_lock)
@@ -181,17 +182,14 @@ namespace NumCIL.Bohrium2
         /// </summary>
         /// <value><c>true</c> there are pinned entries; otherwise, <c>false</c>.</value>
         public static bool HasEntries { get { return _allocations.Count != 0; } }
-        
+
         /// <summary>
         /// Releases all pinned items
         /// </summary>
-        public static void Release()
+        internal static void ReleaseInternal()
         {
             lock (_lock)
             {
-                // Ensure we have nothing that depends on this
-                Utility.Flush();
-                
                 foreach (var h in _allocations.Values)
                 {
                     h.Item3.Dispose();
@@ -200,6 +198,14 @@ namespace NumCIL.Bohrium2
                 
                 _allocations.Clear();
             }
+        }
+                
+        /// <summary>
+        /// Releases all pinned items
+        /// </summary>
+        public static void Release()
+        {
+            Utility.Flush();
         }
     }
 }

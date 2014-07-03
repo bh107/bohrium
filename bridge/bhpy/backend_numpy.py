@@ -7,6 +7,7 @@ import numpy as np
 from _util import dtype_name
 import mmap
 import time
+import ctypes
 
 VCACHE_SIZE = 10
 vcache = []
@@ -64,8 +65,11 @@ def views2numpy(views):
     return ret
 
 def get_data_pointer(ary, allocate=False, nullify=False):
-#    print "get_data_pointer", type(ary.ndarray.base),
     return ary.ndarray.ctypes.data
+
+def set_bhc_data_from_ary(self, ary):
+    d = get_data_pointer(self, allocate=True, nullify=False)
+    ctypes.memmove(d, ary.ctypes.data, ary.dtype.itemsize * ary.size)
 
 #t_ufunc = 0
 

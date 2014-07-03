@@ -163,3 +163,15 @@ def get_bhc_data_pointer(ary, allocate=False, nullify=False):
     ary = get_base(ary)
     return backend.get_data_pointer(get_bhc(ary), allocate, nullify)
 
+#Copies the NumPy part of 'ary' to the Bohrium-C part of 'self'
+#NB: the NumPy part of 'ary' must not be mprotect'ed and can be a regular numpy.ndarray array
+def set_bhc_data_from_ary(self, ary):
+    if not check(self):
+        raise TypeError("must be a Bohrium array")
+    ary = get_base(ary)
+    if not ary.flags['BEHAVED']:
+        raise ValueError("Input array must be aligned, writeable, and in machine byte-order")
+    if not ary.flags['C_CONTIGUOUS']:
+        raise ValueError("Input array must be C-style contiguous")
+    backend.set_bhc_data_from_ary(get_bhc(self), ary)
+
