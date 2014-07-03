@@ -210,56 +210,6 @@ cdef class RandomState:
         self.index += length
         return ret
 
-    def tomaxint(self, size=None, bohrium=True):
-        """
-        tomaxint(size=None, bohrium=True)
-
-        Random integers between 0 and ``sys.maxint``, inclusive.
-
-        Return a sample of uniformly distributed random integers in the interval
-        [0, ``sys.maxint``].
-
-        Parameters
-        ----------
-        size : tuple of ints, int, optional
-            Shape of output.  If this is, for example, (m,n,k), m*n*k samples
-            are generated.  If no shape is specified, a single sample is
-            returned.
-
-        Returns
-        -------
-        out : ndarray
-            Drawn samples, with shape `size`.
-
-        See Also
-        --------
-        randint : Uniform sampling over a given half-open interval of integers.
-        random_integers : Uniform sampling over a given closed interval of
-            integers.
-
-        Examples
-        --------
-        >>> RS = np.random.mtrand.RandomState() # need a RandomState object
-        >>> RS.tomaxint((2,2,2))
-        array([[[1170048599, 1600360186],
-                [ 739731006, 1947757578]],
-               [[1871712945,  752307660],
-                [1601631370, 1479324245]]])
-        >>> import sys
-        >>> sys.maxint
-        2147483647
-        >>> RS.tomaxint((2,2,2)) < sys.maxint
-        array([[[ True,  True],
-                [ True,  True]],
-               [[ True,  True],
-                [ True,  True]]], dtype=bool)
-
-        """
-        r_uint = self.random123(size,bohrium) >> (64 - sys.maxint.bit_length())
-        res = np.empty_like(r_uint, dtype=int)
-        res[...] = r_uint
-        return res 
-
     def random_sample(self, shape=None, dtype=np.float64, bohrium=True):
         """
         Return random floats in the half-open interval [0.0, 1.0).
@@ -312,6 +262,120 @@ cdef class RandomState:
             r /= max_value
             return r
 
+    def tomaxint(self, size=None, bohrium=True):
+        """
+        tomaxint(size=None, bohrium=True)
+
+        Random integers between 0 and ``sys.maxint``, inclusive.
+
+        Return a sample of uniformly distributed random integers in the interval
+        [0, ``sys.maxint``].
+
+        Parameters
+        ----------
+        size : tuple of ints, int, optional
+            Shape of output.  If this is, for example, (m,n,k), m*n*k samples
+            are generated.  If no shape is specified, a single sample is
+            returned.
+
+        Returns
+        -------
+        out : ndarray
+            Drawn samples, with shape `size`.
+
+        See Also
+        --------
+        randint : Uniform sampling over a given half-open interval of integers.
+        random_integers : Uniform sampling over a given closed interval of
+            integers.
+
+        Examples
+        --------
+        >>> RS = np.random.mtrand.RandomState() # need a RandomState object
+        >>> RS.tomaxint((2,2,2))
+        array([[[1170048599, 1600360186],
+                [ 739731006, 1947757578]],
+               [[1871712945,  752307660],
+                [1601631370, 1479324245]]])
+        >>> import sys
+        >>> sys.maxint
+        2147483647
+        >>> RS.tomaxint((2,2,2)) < sys.maxint
+        array([[[ True,  True],
+                [ True,  True]],
+               [[ True,  True],
+                [ True,  True]]], dtype=bool)
+
+        """
+        r_uint = self.random123(size,bohrium) >> (64 - sys.maxint.bit_length())
+        res = np.empty_like(r_uint, dtype=int)
+        res[...] = r_uint
+        return res 
+
+    def randint(self, low, high=None, size=None, dtype=int, bohrium=True):
+        """
+        randint(low, high=None, size=None, bohrium=True)
+
+        Return random integers from `low` (inclusive) to `high` (exclusive).
+
+        Return random integers from the "discrete uniform" distribution in the
+        "half-open" interval [`low`, `high`). If `high` is None (the default),
+        then results are from [0, `low`).
+
+        Parameters
+        ----------
+        low : int
+            Lowest (signed) integer to be drawn from the distribution (unless
+            ``high=None``, in which case this parameter is the *highest* such
+            integer).
+        high : int, optional
+            If provided, one above the largest (signed) integer to be drawn
+            from the distribution (see above for behavior if ``high=None``).
+        size : int or tuple of ints, optional
+            Output shape.  If the given shape is, e.g., ``(m, n, k)``, then
+            ``m * n * k`` samples are drawn.  Default is None, in which case a
+            single value is returned.
+
+        Returns
+        -------
+        out : int or ndarray of ints
+            `size`-shaped array of random integers from the appropriate
+            distribution, or a single such random int if `size` not provided.
+
+        See Also
+        --------
+        random.random_integers : similar to `randint`, only for the closed
+            interval [`low`, `high`], and 1 is the lowest value if `high` is
+            omitted. In particular, this other one is the one to use to generate
+            uniformly distributed discrete non-integers.
+
+        Examples
+        --------
+        >>> np.random.randint(2, size=10)
+        array([1, 0, 0, 0, 1, 1, 0, 0, 1, 0])
+        >>> np.random.randint(1, size=10)
+        array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        Generate a 2 x 4 array of ints between 0 and 4, inclusive:
+
+        >>> np.random.randint(5, size=(2, 4))
+        array([[4, 0, 2, 1],
+               [3, 2, 2, 0]])
+
+        """
+        dtype = np.dtype(dtype).type
+        if high is None:
+            high = low
+            low = 0
+        if low >= high :
+            raise ValueError("low >= high")
+        diff = high - low
+        if size is None:
+            return dtype(self.random123(size,bohrium=bohrium) % diff) + low
+        else:
+            return np.array(self.random123(size,bohrium=bohrium) % diff, dtype=dtype, bohrium=bohrium) + low
+
+
 #The default random object
 _inst = RandomState()
 seed = _inst.seed
@@ -319,4 +383,4 @@ get_state = _inst.get_state
 set_state = _inst.set_state
 random_sample = _inst.random_sample
 ranf = random = sample = random_sample
-
+randint = _inst.randint
