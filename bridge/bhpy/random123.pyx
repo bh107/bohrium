@@ -210,7 +210,7 @@ cdef class RandomState:
         self.index += length
         return ret
 
-    def random_sample(self, shape=None, dtype=np.float64, bohrium=True):
+    def random_sample(self, size=None, dtype=np.float64, bohrium=True):
         """
         Return random floats in the half-open interval [0.0, 1.0).
 
@@ -248,13 +248,14 @@ cdef class RandomState:
                [-2.99091858, -0.79479508],
                [-1.23204345, -1.75224494]])
         """
-        if not (np.dtype(dtype).type is np.float64 or np.dtype(dtype).type is np.float32):
+        dtype=np.dtype(dtype).type
+        if not (dtype is np.float64 or dtype is np.float32):
             raise ValueError("dtype not supported for random_sample")
         #Generate random numbers as uint
-        r_uint = self.random123(shape, bohrium=bohrium)
+        r_uint = self.random123(size, bohrium=bohrium)
         #Convert random numbers to float in the interval [0.0, 1.0).
-        max_value = numpy.dtype(dtype).type(numpy.iinfo(numpy.uint64).max)
-        if shape is None:
+        max_value = dtype(numpy.iinfo(numpy.uint64).max)
+        if size is None:
             return numpy.dtype(dtype).type(r_uint) / max_value 
         else:
             r = np.empty_like(r_uint, dtype=dtype)
@@ -314,7 +315,7 @@ cdef class RandomState:
 
     def randint(self, low, high=None, size=None, dtype=int, bohrium=True):
         """
-        randint(low, high=None, size=None, bohrium=True)
+        randint(low, high=None, size=None, dtype=int, bohrium=True)
 
         Return random integers from `low` (inclusive) to `high` (exclusive).
 
@@ -375,6 +376,81 @@ cdef class RandomState:
         else:
             return np.array(self.random123(size,bohrium=bohrium) % diff, dtype=dtype, bohrium=bohrium) + low
 
+    def uniform(self, low=0.0, high=1.0, size=None, dtype=np.float64, bohrium=True):
+        """
+        uniform(low=0.0, high=1.0, size=None, dtype=np.float64, bohrium=True)
+
+        Draw samples from a uniform distribution.
+
+        Samples are uniformly distributed over the half-open interval
+        ``[low, high)`` (includes low, but excludes high).  In other words,
+        any value within the given interval is equally likely to be drawn
+        by `uniform`.
+
+        Parameters
+        ----------
+        low : float, optional
+            Lower boundary of the output interval.  All values generated will be
+            greater than or equal to low.  The default value is 0.
+        high : float
+            Upper boundary of the output interval.  All values generated will be
+            less than high.  The default value is 1.0.
+        size : int or tuple of ints, optional
+            Output shape.  If the given shape is, e.g., ``(m, n, k)``, then
+            ``m * n * k`` samples are drawn.  Default is None, in which case a
+            single value is returned.
+
+        Returns
+        -------
+        out : ndarray
+            Drawn samples, with shape `size`.
+
+        See Also
+        --------
+        randint : Discrete uniform distribution, yielding integers.
+        random_integers : Discrete uniform distribution over the closed
+                          interval ``[low, high]``.
+        random_sample : Floats uniformly distributed over ``[0, 1)``.
+        random : Alias for `random_sample`.
+        rand : Convenience function that accepts dimensions as input, e.g.,
+               ``rand(2,2)`` would generate a 2-by-2 array of floats,
+               uniformly distributed over ``[0, 1)``.
+
+        Notes
+        -----
+        The probability density function of the uniform distribution is
+
+        .. math:: p(x) = \\frac{1}{b - a}
+
+        anywhere within the interval ``[a, b)``, and zero elsewhere.
+
+        same as:
+        random_sample(size) * (high - low) + low
+
+        Examples
+        --------
+        Draw samples from the distribution:
+
+        >>> s = np.random.uniform(-1,0,1000)
+
+        All values are within the given interval:
+
+        >>> np.all(s >= -1)
+        True
+        >>> np.all(s < 0)
+        True
+
+        Display the histogram of the samples, along with the
+        probability density function:
+
+        >>> import matplotlib.pyplot as plt
+        >>> count, bins, ignored = plt.hist(s, 15, normed=True)
+        >>> plt.plot(bins, np.ones_like(bins), linewidth=2, color='r')
+        >>> plt.show()
+
+        """
+        dtype = np.dtype(dtype).type
+        return self.random_sample(size=size, dtype=dtype, bohrium=bohrium) * dtype(high - low) + dtype(low)
 
 #The default random object
 _inst = RandomState()
@@ -384,3 +460,4 @@ set_state = _inst.set_state
 random_sample = _inst.random_sample
 ranf = random = sample = random_sample
 randint = _inst.randint
+uniform = _inst.uniform
