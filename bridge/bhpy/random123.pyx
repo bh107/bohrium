@@ -12,7 +12,6 @@ import datetime
 import os
 import backend
 
-from numpy cimport uint64_t as np_uint64_t, uint32_t as np_uint32_t, ndarray as np_ndarray, PyArray_SIZE as np_PyArray_SIZE
 from libc.stdint cimport uint64_t, uint32_t
 
 cdef extern from "Random123/philox.h":
@@ -31,31 +30,10 @@ cdef union key_t:
     philox2x32_key_t k
     uint32_t ui 
 
-def ph2x32(np_uint64_t start_index, np_uint32_t key, object size):
-    cdef np_uint64_t *array_data
-    cdef np_ndarray array "arrayObject"
-    cdef long length
-    cdef long i
-    cdef ctr_t ctr 
-    cdef ctr_t res
-    cdef key_t k
-    ctr.ul = start_index
-    k.ui = key
+cdef extern from "Python.h": 
+    void* PyLong_AsVoidPtr(object)
 
-    if size is None:
-        res.c = philox2x32(ctr.c,k.k)
-        return res.ul
-    else:
-        array = <np_ndarray>np.empty(size, np.uint64)
-        length = np_PyArray_SIZE(array)
-        array_data = <np_uint64_t *>array.data
-        for i from 0 <= i < length:
-            res.c = philox2x32(ctr.c,k.k)
-            array_data[i] = res.ul
-            ctr.ul += 1
-        return array
-
-def random123(shape, start_index, key, bohrium=True):
+def random123(shape, uint64_t start_index, uint32_t key, bohrium=True):
     """
     New array of uniform pseudo numbers based on the random123 philox2x32 algorithm.
     NB: dtype is np.uint64 always
@@ -71,12 +49,28 @@ def random123(shape, start_index, key, bohrium=True):
     -------
     out : Array of uniform pseudo numbers
     """
-    start_index = numpy.uint64(start_index)
+    cdef ctr_t ctr 
+    cdef ctr_t rnd
+    cdef key_t k
+    cdef uint64_t* array_data
+    cdef long length
+    cdef long i
+
+    ctr.ul = start_index
+    k.ui = key
 
     if shape is None:
-        return ph2x32(start_index,key,shape)
+        rnd.c = philox2x32(ctr.c,k.k)
+        return rnd.ul
     elif bohrium is False:
-        return ph2x32(start_index,key,numpy.asarray(shape))
+        array = np.empty(shape,dtype=np.uint64,bohrium=False)
+        length = array.size
+        array_data = <uint64_t *> PyLong_AsVoidPtr(array.ctypes.data)
+        for i from 0 <= i < length:
+            rnd.c = philox2x32(ctr.c,k.k)
+            array_data[i] = rnd.ul
+            ctr.ul += 1
+        return array
     else:
         totalsize = numpy.multiply.reduce(numpy.asarray(shape))
         bhc_obj = backend.random123(totalsize, start_index, key)
@@ -106,7 +100,7 @@ class Random:
             self.key = numpy.uint32(x)
         self.index = 0;
 
-    def random(self, shape=None, dtype=np.float64, bohrium=True):
+    def random_sample(self, shape=None, dtype=np.float64, bohrium=True):
         """
         Return random floats in the half-open interval [0.0, 1.0).
 
@@ -162,4 +156,5 @@ class Random:
 #The default random object
 _inst = Random()
 seed = _inst.seed
-random = _inst.random
+random_sample = _inst.random_sample
+ranf = random = sample = random_sample
