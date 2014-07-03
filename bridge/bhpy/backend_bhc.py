@@ -5,6 +5,7 @@ The Computation Backend
 import bhc
 import numpy
 from _util import dtype_name
+import ctypes
 
 class base(object):
     """base array handle"""
@@ -83,6 +84,12 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     if nullify:
         exec "bhc.bh_multi_array_%s_nullify_base_data(base)"%dtype
     return int(data)
+
+def set_bhc_data_from_ary(self, ary):
+    dtype = dtype_name(self)
+    assert dtype == dtype_name(ary)
+    d = get_data_pointer(self, allocate=True, nullify=False)
+    ctypes.memmove(d, ary.ctypes.data, ary.dtype.itemsize * ary.size)
 
 def ufunc(op, *args):
     """Apply the 'op' on args, which is the output followed by one or two inputs"""

@@ -84,6 +84,24 @@ static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify
     return 0;
 }
 
+//Help function to set the Bohrium-C data from a numpy array
+//Return -1 on error
+static int set_bhc_data_from_ary(PyObject *self, PyObject *ary)
+{
+    if(((BhArray*)self)->mmap_allocated == 0)
+    {
+        PyErr_SetString(PyExc_TypeError, "The array data wasn't allocated through mmap(). "
+                  "Typically, this is because the base array was created from a template, "
+                  "which is not support by Bohrium");
+        return -1;
+    }
+    PyObject *ret = PyObject_CallMethod(ndarray, "set_bhc_data_from_ary", "OO", self, ary);
+    Py_XDECREF(ret);
+    if(ret == NULL)
+        return -1;
+    return 0;
+}
+
 //Help function for unprotect memory
 //Return -1 on error
 static int _munprotect(void *data, bh_intp size)
@@ -361,22 +379,20 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
             return NULL;
         Py_DECREF(err);
     }
-
-    //Calling get_bhc_data_pointer(base, allocate=True, nullify=False)
-    void *d = NULL;
-    if(get_bhc_data_pointer(base, 1, 0, &d) == -1)
+    //Then we unprotect the NumPy memory part
+    detach_signal((signed long)base, mem_access_callback);
+    if(_munprotect(PyArray_DATA((PyArrayObject*)base),
+                   PyArray_NBYTES((PyArrayObject*)base)) != 0)
         return NULL;
-    Py_DECREF(base);
-    if(d != NULL)
-    {
-        detach_signal((signed long)base, mem_access_callback);
-        if(_munprotect(PyArray_DATA((PyArrayObject*)base),
-                       PyArray_NBYTES((PyArrayObject*)base)) != 0)
-            return NULL;
-        memcpy(d, PyArray_DATA((PyArrayObject*)base), PyArray_NBYTES((PyArrayObject*)base));
-    }
+
+    //And sets the bhc data from the NumPy part of 'base'
+    if(set_bhc_data_from_ary(base, base) == -1)
+        return NULL;
+
+    //Finally, we memory protect the NumPy part of 'base' again
     if(_mprotect_np_part((BhArray*)base) != 0)
         return NULL;
+    Py_DECREF(base);
     Py_RETURN_NONE;
 }
 
@@ -399,12 +415,9 @@ BhArray_data_fill(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    //Calling get_bhc_data_pointer(self, allocate=True, nullify=False)
-    void *d = NULL;
-    if(get_bhc_data_pointer(self, 1, 0, &d) == -1)
+    //Sets the bhc data from the NumPy part of 'base'
+    if(set_bhc_data_from_ary(self, np_ary) == -1)
         return NULL;
-
-    memcpy(d, PyArray_DATA((PyArrayObject*)np_ary), PyArray_NBYTES((PyArrayObject*)np_ary));
 
     Py_RETURN_NONE;
 }

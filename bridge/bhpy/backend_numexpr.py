@@ -9,6 +9,7 @@ import mmap
 import time
 import numexpr
 import os
+import ctypes
 
 VCACHE_SIZE = 10
 vcache = []
@@ -68,6 +69,10 @@ def views2numpy(views):
 def get_data_pointer(ary, allocate=False, nullify=False):
 #    print "get_data_pointer", type(ary.ndarray.base),
     return ary.ndarray.ctypes.data
+
+def set_bhc_data_from_ary(self, ary):
+    d = get_data_pointer(self, allocate=True, nullify=False)
+    ctypes.memmove(d, ary.ctypes.data, ary.dtype.itemsize * ary.size)
 
 numexpr.set_num_threads(int(os.getenv('OMP_NUM_THREADS',1)))
 print "using numexpr backend with %d threads"%int(os.getenv('OMP_NUM_THREADS',1))
