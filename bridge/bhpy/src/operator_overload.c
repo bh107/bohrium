@@ -47,7 +47,7 @@ array_divide(PyObject *m1, PyObject *m2)
 static PyObject *
 array_remainder(PyObject *m1, PyObject *m2)
 {
-    return PyObject_CallMethod(bohrium, "remainder", "OO", m1, m2);
+    return PyObject_CallMethod(bohrium, "mod", "OO", m1, m2);
 }
 
 static PyObject *
