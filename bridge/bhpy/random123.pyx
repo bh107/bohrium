@@ -452,6 +452,51 @@ cdef class RandomState:
         dtype = np.dtype(dtype).type
         return self.random_sample(size=size, dtype=dtype, bohrium=bohrium) * dtype(high - low) + dtype(low)
 
+    def rand(self, *args, dtype=np.float64, bohrium=True):
+        """
+        rand(d0, d1, ..., dn, dtype=np.float64, bohrium=bohrium)
+
+        Random values in a given shape.
+
+        Create an array of the given shape and propagate it with
+        random samples from a uniform distribution
+        over ``[0, 1)``.
+
+        Parameters
+        ----------
+        d0, d1, ..., dn : int, optional
+            The dimensions of the returned array, should all be positive.
+            If no argument is given a single Python float is returned.
+
+        Returns
+        -------
+        out : ndarray, shape ``(d0, d1, ..., dn)``
+            Random values.
+
+        See Also
+        --------
+        random
+
+        Notes
+        -----
+        This is a convenience function. If you want an interface that
+        takes a shape-tuple as the first argument, refer to
+        np.random.random_sample .
+
+        Examples
+        --------
+        >>> np.random.rand(3,2)
+        array([[ 0.14022471,  0.96360618],  #random
+               [ 0.37601032,  0.25528411],  #random
+               [ 0.49313049,  0.94909878]]) #random
+
+        """
+        if len(args) == 0:
+            return self.random_sample(dtype=dtype, bohrium=bohrium)
+        else:
+            return self.random_sample(size=args, dtype=dtype, bohrium=bohrium)
+
+
 #The default random object
 _inst = RandomState()
 seed = _inst.seed
@@ -461,3 +506,4 @@ random_sample = _inst.random_sample
 ranf = random = sample = random_sample
 randint = _inst.randint
 uniform = _inst.uniform
+rand = _inst.rand
