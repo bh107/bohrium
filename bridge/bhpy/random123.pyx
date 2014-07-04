@@ -12,6 +12,7 @@ import datetime
 import os
 import sys
 import backend
+import math
 
 from libc.stdint cimport uint64_t, uint32_t
 
@@ -60,6 +61,8 @@ cdef class RandomState:
     """
     cdef uint32_t key
     cdef uint64_t index
+    cdef bint has_gauss
+    cdef double gauss
 
     def __init__(self, seed=None):
         self.seed(seed)
@@ -91,6 +94,7 @@ cdef class RandomState:
         else:
             self.key = numpy.uint32(seed)
         self.index = 0;
+        self.has_gauss = False
 
     def get_state(self):
         """
@@ -210,7 +214,7 @@ cdef class RandomState:
         self.index += length
         return ret
 
-    def random_sample(self, size=None, dtype=np.float64, bohrium=True):
+    def random_sample(self, size=None, dtype=float, bohrium=True):
         """
         Return random floats in the half-open interval [0.0, 1.0).
 
@@ -376,9 +380,9 @@ cdef class RandomState:
         else:
             return np.array(self.random123(size,bohrium=bohrium) % diff, dtype=dtype, bohrium=bohrium) + low
 
-    def uniform(self, low=0.0, high=1.0, size=None, dtype=np.float64, bohrium=True):
+    def uniform(self, low=0.0, high=1.0, size=None, dtype=float, bohrium=True):
         """
-        uniform(low=0.0, high=1.0, size=None, dtype=np.float64, bohrium=True)
+        uniform(low=0.0, high=1.0, size=None, dtype=float, bohrium=True)
 
         Draw samples from a uniform distribution.
 
@@ -452,9 +456,9 @@ cdef class RandomState:
         dtype = np.dtype(dtype).type
         return self.random_sample(size=size, dtype=dtype, bohrium=bohrium) * dtype(high - low) + dtype(low)
 
-    def rand(self, *args, dtype=np.float64, bohrium=True):
+    def rand(self, *args, dtype=float, bohrium=True):
         """
-        rand(d0, d1, ..., dn, dtype=np.float64, bohrium=bohrium)
+        rand(d0, d1, ..., dn, dtype=float, bohrium=True)
 
         Random values in a given shape.
 
@@ -495,6 +499,63 @@ cdef class RandomState:
             return self.random_sample(dtype=dtype, bohrium=bohrium)
         else:
             return self.random_sample(size=args, dtype=dtype, bohrium=bohrium)
+
+    def randn(self, *args, dtype=float, bohrium=True):
+        """
+        randn(d0, d1, ..., dn, dtype=float, bohrium=True)
+
+        Return a sample (or samples) from the "standard normal" distribution.
+
+        If positive, int_like or int-convertible arguments are provided,
+        `randn` generates an array of shape ``(d0, d1, ..., dn)``, filled
+        with random floats sampled from a univariate "normal" (Gaussian)
+        distribution of mean 0 and variance 1 (if any of the :math:`d_i` are
+        floats, they are first converted to integers by truncation). A single
+        float randomly sampled from the distribution is returned if no
+        argument is provided.
+
+        This is a convenience function.  If you want an interface that takes a
+        tuple as the first argument, use `numpy.random.standard_normal` instead.
+
+        Parameters
+        ----------
+        d0, d1, ..., dn : int, optional
+            The dimensions of the returned array, should be all positive.
+            If no argument is given a single Python float is returned.
+
+        Returns
+        -------
+        Z : ndarray or float
+            A ``(d0, d1, ..., dn)``-shaped array of floating-point samples from
+            the standard normal distribution, or a single such float if
+            no parameters were supplied.
+
+        See Also
+        --------
+        random.standard_normal : Similar, but takes a tuple as its argument.
+
+        Notes
+        -----
+        For random samples from :math:`N(\\mu, \\sigma^2)`, use:
+
+        ``sigma * np.random.randn(...) + mu``
+
+        Examples
+        --------
+        >>> np.random.randn()
+        2.1923875335537315 #random
+
+        Two-by-four array of samples from N(3, 6.25):
+
+        >>> 2.5 * np.random.randn(2, 4) + 3
+        array([[-4.49401501,  4.00950034, -1.81814867,  7.29718677],  #random
+               [ 0.39924804,  4.68456316,  4.99394529,  4.84057254]]) #random
+
+        """
+        if len(args) == 0:
+            return self.standard_normal(dtype=dtype, bohrium=bohrium)
+        else:
+            return self.standard_normal(size=args, dtype=dtype, bohrium=bohrium)
 
     def random_integers(self, low, high=None, size=None, dtype=int, bohrium=True):
         """
@@ -575,6 +636,70 @@ cdef class RandomState:
             low = 1
         return self.randint(low, high+1, size)
 
+    # Complicated, continuous distributions:
+    def standard_normal(self, size=None, dtype=float, bohrium=True):
+        """
+        standard_normal(size=None, dtype=float, bohrium=True)
+
+        Returns samples from a Standard Normal distribution (mean=0, stdev=1).
+
+        Parameters
+        ----------
+        size : int or tuple of ints, optional
+            Output shape.  If the given shape is, e.g., ``(m, n, k)``, then
+            ``m * n * k`` samples are drawn.  Default is None, in which case a
+            single value is returned.
+
+        Returns
+        -------
+        out : float or ndarray
+            Drawn samples.
+
+        Examples
+        --------
+        >>> s = np.random.standard_normal(8000)
+        >>> s
+        array([ 0.6888893 ,  0.78096262, -0.89086505, ...,  0.49876311, #random
+               -0.38672696, -0.4685006 ])                               #random
+        >>> s.shape
+        (8000,)
+        >>> s = np.random.standard_normal(size=(3, 4, 2))
+        >>> s.shape
+        (3, 4, 2)
+
+        """
+        dtype = np.dtype(dtype).type
+        if not (dtype is np.float64 or dtype is np.float32):
+            raise ValueError("dtype not supported for standart_normal")
+        if size is None:
+            if self.has_gauss:
+                self.has_gauss = False
+                return dtype(self.gauss)
+            else:
+                u1 = self.random_sample()
+                u2 = self.random_sample()
+                r = math.sqrt(-2. * math.log(u1))
+                t = 2. * math.pi * u2
+                z0 = r * math.cos(t)
+                z1 = r * math.sin(t)
+                self.gauss = z1
+                self.has_gauss = True
+                return dtype(z0)
+        else:
+            length = numpy.multiply.reduce(numpy.asarray(size))
+            hlength = length / 2 + length % 2
+            u1 = self.random_sample(size=hlength, dtype=dtype, bohrium=bohrium)
+            u2 = self.random_sample(size=hlength, dtype=dtype, bohrium=bohrium)
+            r = np.sqrt(-2. * np.log(u1))
+            t = 2. * math.pi * u2
+            z0 = r * np.cos(t)
+            z1 = r * np.sin(t)
+            res = np.empty(hlength*2, dtype=dtype, bohrium=bohrium)
+            res[:hlength] = z0 # res[::2] = z0
+            res[hlength:] = z1 # res[1::2] = z1
+            return res[:length].reshape(size)
+
+
 
 #The default random object
 _inst = RandomState()
@@ -586,5 +711,6 @@ ranf = random = sample = random_sample
 randint = _inst.randint
 uniform = _inst.uniform
 rand = _inst.rand
+randn = _inst.randn
 random_integers = _inst.random_integers
-
+standard_normal = _inst.standard_normal
