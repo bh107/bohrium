@@ -93,7 +93,7 @@ def new_bhc_base(ary):
         raise ValueError("For now Bohrium only supports C-style arrays")
     shape = ary.shape if len(ary.shape) > 0 else (1,)
     totalsize = reduce(operator.mul, shape, 1)
-    ary.bhc_ary = backend.new_empty(totalsize, ary.dtype)
+    ary.bhc_ary = backend.base(totalsize, ary.dtype)
 
 #Get the final base array of 'ary'
 def get_base(ary):
@@ -144,7 +144,7 @@ def get_bhc(ary):
     shape = ary.shape if len(ary.shape) > 0 else (1,)
     strides = strides if len(strides) > 0 else (1,)
 
-    return backend.new_view(ndim, offset, shape, strides, base.bhc_ary, base.dtype)
+    return backend.view(ndim, offset, shape, strides, base.bhc_ary)
 
 #Delete the Bohrium-C part of the bohrium.ndarray and its base
 def del_bhc(ary):

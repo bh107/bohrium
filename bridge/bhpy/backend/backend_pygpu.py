@@ -2,68 +2,32 @@
 The Computation Backend
 
 """
-import bhc
 import numpy as np
-from _util import dtype_name
+from .. import bhc
+from .._util import dtype_name
 import mmap
 import time
 import os
 import pygpu
 from pygpu.array import gpuarray as elemary
+import backend_numpy
 
 cxt = pygpu.init("opencl0:0")
 #cxt = pygpu.init("cuda0")
 pygpu.set_default_context(cxt)
 
-VCACHE_SIZE = 0
-vcache = []
-
-class base(object):
+class base(backend_numpy.base):
     """base array handle"""
     def __init__(self, size, dtype):
-        self.size = size
-        size *= dtype.itemsize
-        self.dtype = dtype
-        for i, (s,m) in enumerate(vcache):
-            if s == size:
-                self.mmap = m
-                vcache.pop(i)
-#                print "create (hit)", self
-                return
         self.clary = pygpu.empty((size,), dtype=dtype, cls=elemary)
-        self.mmap = mmap.mmap(-1, size)
-#        print "create (miss)", self
-    def __str__(self):
-        return "<base memory at %s>"%self.mmap
-    def __del__(self):
-#        print "del", self, self.clary
-        if len(vcache) < VCACHE_SIZE:
-            vcache.append((self.size*self.dtype.itemsize, self.mmap))
+        super(base, self).__init__(size, dtype)
 
-class view(object):
+class view(backend_numpy.view):
     """array view handle"""
-    def __init__(self, ndim, start, shape, stride, base, dtype):
-        assert(dtype == base.dtype)
-        self.ndim = ndim
-        self.start = start
-        self.shape = shape
-        self.stride = stride
-        self.base = base
-        self.dtype = dtype
-        buf = np.frombuffer(self.base.mmap, dtype=dtype, offset=start*dtype.itemsize)
-        stride = [x * dtype.itemsize for x in stride]
-        self.ndarray = np.lib.stride_tricks.as_strided(buf, shape, stride)
-
-        self.clary = pygpu.gpuarray.from_gpudata(base.clary.gpudata, offset=start*dtype.itemsize, dtype=dtype, shape=shape, strides=stride, writable=True, base=base.clary, cls=elemary)
-#        print "view", type(self.clary), self.clary
-
-def new_empty(size, dtype):
-    """Return a new empty base array"""
-    return base(size, dtype)
-
-def new_view(ndim, start, shape, stride, base, dtype):
-    """Return a new view that points to 'base'"""
-    return view(ndim, start, shape, stride, base, dtype)
+    def __init__(self, ndim, start, shape, stride, base):
+        super(view, self).__init__(ndim, start, shape, stride, base)
+        self.clary = pygpu.gpuarray.from_gpudata(base.clary.gpudata, offset=self.start,\
+                dtype=base.dtype, shape=shape, strides=self.stride, writable=True, base=base.clary, cls=elemary)
 
 def views2clary(views):
     ret = []
@@ -75,12 +39,10 @@ def views2clary(views):
     return ret
 
 def get_data_pointer(ary, allocate=False, nullify=False):
-#    print "get_data_pointer", type(ary.ndarray.base)
     ary.ndarray[:] = np.asarray(ary.clary)
     return ary.ndarray.ctypes.data
 
 def set_bhc_data_from_ary(self, ary):
-#    print "set_bhc_data_from_ary", type(self), type(ary)
     self.clary[:] = pygpu.asarray(ary)
 
 
@@ -96,7 +58,6 @@ ufunc_cmds = {'identity' : "i1",
 
 def ufunc(op, *args):
     """Apply the 'op' on args, which is the output followed by one or two inputs"""
-    #print "ufunc: %s "%op.info['name'], [(x.base if isinstance(x, base) else x)  for x in args]
     args = views2clary(args)
 
     out=args[0]
