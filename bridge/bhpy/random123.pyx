@@ -668,6 +668,8 @@ cdef class RandomState:
         (3, 4, 2)
 
         """
+
+        # Using basic Box-Muller transform
         dtype = np.dtype(dtype).type
         if not (dtype is np.float64 or dtype is np.float32):
             raise ValueError("dtype not supported for standart_normal")
@@ -789,6 +791,82 @@ cdef class RandomState:
             raise ValueError("scale <= 0")
         return self.standard_normal(size=size, dtype=dtype, bohrium=bohrium) * scale + loc
 
+    def standard_exponential(self, size=None, dtype=float, bohrium=True):
+        """
+        standard_exponential(size=None, dtype=float, bohrium=True)
+
+        Draw samples from the standard exponential distribution.
+
+        `standard_exponential` is identical to the exponential distribution
+        with a scale parameter of 1.
+
+        Parameters
+        ----------
+        size : int or tuple of ints, optional
+            Output shape.  If the given shape is, e.g., ``(m, n, k)``, then
+            ``m * n * k`` samples are drawn.  Default is None, in which case a
+            single value is returned.
+
+        Returns
+        -------
+        out : float or ndarray
+            Drawn samples.
+
+        Examples
+        --------
+        Output a 3x8000 array:
+
+        >>> n = np.random.standard_exponential((3, 8000))
+
+        """
+        # We use -log(1-U) since U is [0, 1) */
+        dtype = np.dtype(dtype).type
+        return dtype(-1) * np.log(dtype(1) - self.random_sample(size=size,dtype=dtype,bohrium=bohrium))
+
+    def exponential(self, scale=1.0, size=None, dtype=float, bohrium=True):
+        """
+        exponential(scale=1.0, size=None, dtype=float, bohrium=True)
+
+        Exponential distribution.
+
+        Its probability density function is
+
+        .. math:: f(x; \\frac{1}{\\beta}) = \\frac{1}{\\beta} \\exp(-\\frac{x}{\\beta}),
+
+        for ``x > 0`` and 0 elsewhere. :math:`\\beta` is the scale parameter,
+        which is the inverse of the rate parameter :math:`\\lambda = 1/\\beta`.
+        The rate parameter is an alternative, widely used parameterization
+        of the exponential distribution [3]_.
+
+        The exponential distribution is a continuous analogue of the
+        geometric distribution.  It describes many common situations, such as
+        the size of raindrops measured over many rainstorms [1]_, or the time
+        between page requests to Wikipedia [2]_.
+
+        Parameters
+        ----------
+        scale : float
+            The scale parameter, :math:`\\beta = 1/\\lambda`.
+        size : int or tuple of ints, optional
+            Output shape.  If the given shape is, e.g., ``(m, n, k)``, then
+            ``m * n * k`` samples are drawn.  Default is None, in which case a
+            single value is returned.
+
+        References
+        ----------
+        .. [1] Peyton Z. Peebles Jr., "Probability, Random Variables and
+               Random Signal Principles", 4th ed, 2001, p. 57.
+        .. [2] "Poisson Process", Wikipedia,
+               http://en.wikipedia.org/wiki/Poisson_process
+        .. [3] "Exponential Distribution, Wikipedia,
+               http://en.wikipedia.org/wiki/Exponential_distribution
+
+        """
+        dtype= np.dtype(dtype).type
+        scale = dtype(scale)
+        if scale <= dtype(0):
+            raise ValueError("scale <= 0")
+        return self.standard_exponential(size=size, dtype=dtype, bohrium=bohrium) * scale
 
 
 #The default random object
@@ -805,3 +883,5 @@ randn = _inst.randn
 random_integers = _inst.random_integers
 standard_normal = _inst.standard_normal
 normal = _inst.normal
+standard_exponential = _inst.standard_exponential
+exponential = _inst.exponential
