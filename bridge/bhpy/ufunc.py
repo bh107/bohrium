@@ -50,12 +50,29 @@ def setitem(ary, loc, value):
     #Copy the 'value' to 'ary' using the 'loc'
     assign(value, ary[tuple(loc)])
 
+def overlap_conflict(out, *inputs):
+    """Return True when there is a possible memory conflict between
+    the output and the inputs"""
+
+    for i in inputs:
+        if np.may_share_memory(out, i) and not (out.ndim == i.ndim and \
+                out.strides == i.strides and out.shape == i.shape and \
+                out.ctypes.data == i.ctypes.data):
+            return True
+    return False
+
 @fix_returned_biclass
 def assign(a, out):
     """Copy data from array 'a' to 'out'"""
 
     if not np.isscalar(a):
         (a,out) = np.broadcast_arrays(a,out)
+
+    #We use a tmp array if the in-/out-put has memory conflicts
+    if overlap_conflict(out, a):
+        tmp = array_create.empty_like(out)
+        assign(a, tmp)
+        return assign(tmp, out)
 
     if ndarray.check(out):
         out = get_bhc(out)
@@ -111,6 +128,13 @@ class ufunc:
                                  "doesn't match the broadcast shape %s"%
                                  (str(args[-1].shape), str(out.shape)))
         out_shape = bargs[-1].shape
+
+        #We use a tmp array if the in-/out-put has memory conflicts
+        if out is not None:
+            if overlap_conflict(out, *args):
+                tmp = self.__call__(*args, **kwargs)
+                assign(tmp, out)
+                return out
 
         #Copy broadcasted array back to 'args' excluding scalars
         for i in xrange(len(args)):
