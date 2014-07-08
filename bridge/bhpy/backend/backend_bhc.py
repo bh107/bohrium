@@ -2,31 +2,29 @@
 The Computation Backend
 
 """
-import bhc
-import numpy
-from _util import dtype_name
 import ctypes
+import numpy
+from .. import bhc
+from .._util import dtype_name
+import backend
 
-class base(object):
+class base(backend.base):
     """base array handle"""
-    def __init__(self, size, dtype, bhc_obj):
-        self.size = size
-        self.dtype = dtype
+    def __init__(self, size, dtype, bhc_obj=None):
+        super(base, self).__init__(size, dtype)
+        if bhc_obj is None:
+            f = eval("bhc.bh_multi_array_%s_new_empty"%dtype_name(dtype))
+            bhc_obj = bhc_exec(f, 1, (size,))
         self.bhc_obj = bhc_obj
 
     def __del__(self):
         exec "bhc.bh_multi_array_%s_destroy(self.bhc_obj)"%dtype_name(self.dtype)
 
-class view(object):
+class view(backend.view):
     """array view handle"""
-    def __init__(self, ndim, start, shape, stride, base, dtype):
-        self.ndim = ndim
-        self.start = start
-        self.shape = shape
-        self.stride = stride
-        self.base = base
-        self.dtype = dtype
-        dtype = dtype_name(dtype)
+    def __init__(self, ndim, start, shape, stride, base):
+        super(view, self).__init__(ndim, start, shape, stride, base)
+        dtype = dtype_name(self.dtype)
         exec "base = bhc.bh_multi_array_%s_get_base(base.bhc_obj)"%dtype
         f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype)
         self.bhc_obj = f(base, ndim, start, shape, stride)
@@ -56,16 +54,6 @@ def bhc_exec(func, *args):
         if isinstance(args[i], view):
             args[i] = views2bhc(args[i])
     return func(*args)
-
-def new_empty(size, dtype):
-    """Return a new empty base array"""
-    f = eval("bhc.bh_multi_array_%s_new_empty"%dtype_name(dtype))
-    obj = bhc_exec(f, 1, (size,))
-    return base(size, dtype, obj)
-
-def new_view(ndim, start, shape, stride, base, dtype):
-    """Return a new view that points to 'base'"""
-    return view(ndim, start, shape, stride, base, dtype)
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     dtype = dtype_name(ary)
@@ -139,7 +127,7 @@ def range(size, dtype):
     f = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(dtype))
     bhc_obj = bhc_exec(f, size)
     b = base(size, dtype, bhc_obj)
-    return new_view(1, 0, (size,), (dtype.itemsize,), b, dtype)
+    return view(1, 0, (size,), (dtype.itemsize,), b)
 
 def random123(size, start_index, key):
     """Create a new random array using the random123 algorithm.
@@ -149,5 +137,5 @@ def random123(size, start_index, key):
     f = eval("bhc.bh_multi_array_uint64_new_random123")
     bhc_obj = bhc_exec(f, size, start_index, key)
     b = base(size, dtype, bhc_obj)
-    return new_view(1, 0, (size,), (dtype.itemsize,), b, dtype)
+    return view(1, 0, (size,), (dtype.itemsize,), b)
 

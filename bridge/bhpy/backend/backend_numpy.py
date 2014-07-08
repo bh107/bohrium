@@ -2,60 +2,40 @@
 The Computation Backend
 
 """
-import bhc
+from .. import bhc
+from .._util import dtype_name
 import numpy as np
-from _util import dtype_name
 import mmap
 import time
-import numexpr
-import os
 import ctypes
+import backend
 
 VCACHE_SIZE = 10
 vcache = []
 
-class base(object):
+class base(backend.base):
     """base array handle"""
     def __init__(self, size, dtype):
-        self.size = size
+        super(base, self).__init__(size, dtype)
         size *= dtype.itemsize
-        self.dtype = dtype
         for i, (s,m) in enumerate(vcache):
             if s == size:
                 self.mmap = m
                 vcache.pop(i)
-#                print "create (hit)", self
                 return
         self.mmap = mmap.mmap(-1, size)
-#        print "create (miss)", self
     def __str__(self):
         return "<base memory at %s>"%self.mmap
     def __del__(self):
-#        print "del", self
         if len(vcache) < VCACHE_SIZE:
             vcache.append((self.size*self.dtype.itemsize, self.mmap))
 
-class view(object):
+class view(backend.view):
     """array view handle"""
-    def __init__(self, ndim, start, shape, stride, base, dtype):
-        assert(dtype == base.dtype)
-        self.ndim = ndim
-        self.start = start
-        self.shape = shape
-        self.stride = stride
-        self.base = base
-        self.dtype = dtype
-        buf = np.frombuffer(self.base.mmap, dtype=dtype, offset=start*dtype.itemsize)
-        stride = [x * dtype.itemsize for x in stride]
-        self.ndarray = np.lib.stride_tricks.as_strided(buf, shape, stride)
-
-def new_empty(size, dtype):
-    """Return a new empty base array"""
-    return base(size, dtype)
-
-def new_view(ndim, start, shape, stride, base, dtype):
-    """Return a new view that points to 'base'"""
-    return view(ndim, start, shape, stride, base, dtype)
+    def __init__(self, ndim, start, shape, stride, base):
+        super(view, self).__init__(ndim, start, shape, stride, base)
+        buf = np.frombuffer(self.base.mmap, dtype=self.dtype, offset=self.start)
+        self.ndarray = np.lib.stride_tricks.as_strided(buf, shape, self.stride)
 
 def views2numpy(views):
     ret = []
@@ -67,64 +47,31 @@ def views2numpy(views):
     return ret
 
 def get_data_pointer(ary, allocate=False, nullify=False):
-#    print "get_data_pointer", type(ary.ndarray.base),
     return ary.ndarray.ctypes.data
 
 def set_bhc_data_from_ary(self, ary):
     d = get_data_pointer(self, allocate=True, nullify=False)
     ctypes.memmove(d, ary.ctypes.data, ary.dtype.itemsize * ary.size)
 
-numexpr.set_num_threads(int(os.getenv('OMP_NUM_THREADS',1)))
-print "using numexpr backend with %d threads"%int(os.getenv('OMP_NUM_THREADS',1))
-ufunc_cmds = {'identity' : "i1",
-              'add' : "i1+i2",
-              'subtract' : "i1-i2",
-              'multiply' : "i1*i2",
-              'divide' : "i1/i2",
-              'power' : "i1**i2",
-              'absolute' : "abs(i1)",
-              'sqrt' : "sqrt(i1)",
-              }
-
-#t_ufunc = 0
-
 def ufunc(op, *args):
     """Apply the 'op' on args, which is the output followed by one or two inputs"""
-#    global t_ufunc
-#    print "ufunc: %s "%op.info['name'], [(x.base if isinstance(x, base) else x)  for x in args]
     args = views2numpy(args)
-#    t1 = time.time()
-
-    i1=args[1];
-    if len(args) > 2:
-        i2=args[2]
-
-    if op.info['name'] in ufunc_cmds:
-        numexpr.evaluate(ufunc_cmds[op.info['name']], out=args[0], casting='unsafe')
+    if op.info['name'] == "identity":
+        exec "args[0][...] = args[1][...]"
     else:
-        print "WARNING: ufunc '%s' not compiled"%op.info['name']
         f = eval("np.%s"%op.info['name'])
         f(*args[1:], out=args[0])
-
-#    t2 = time.time()
-#    t_ufunc += t2-t1
 
 def reduce(op, out, a, axis):
     """reduce 'axis' dimension of 'a' and write the result to out"""
 
+    f = eval("np.%s.reduce"%op.info['name'])
     (a, out) = views2numpy((a, out))
-    if op.info['name'] == 'add':
-        numexpr.evaluate("sum(a, %d)"%axis, out=out, casting='unsafe')
-    elif op.info['name'] == 'multiply':
-        numexpr.evaluate("prod(a, %d)"%axis, out=out, casting='unsafe')
+    if a.ndim == 1:
+        keepdims = True
     else:
-        print "WARNING: reduce '%s' not compiled"%op.info['name']
-        f = eval("np.%s.reduce"%op.info['name'])
-        if a.ndim == 1:
-            keepdims = True
-        else:
-            keepdims = False
-        f(a, axis=axis, out=out, keepdims=keepdims)
+        keepdims = False
+    f(a, axis=axis, out=out, keepdims=keepdims)
 
 def accumulate(op, out, a, axis):
     """accumulate 'axis' dimension of 'a' and write the result to out"""
