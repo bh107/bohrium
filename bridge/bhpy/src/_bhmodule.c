@@ -157,11 +157,10 @@ static int _mremap_data(void *dst, void *src, bh_intp size)
 #endif
 }
 
-//Callback function called by the signal library
-void mem_access_callback(unsigned long id, uintptr_t addr)
+void mem_access_callbackk(void *id, void *addr)
 {
     PyObject *ary = (PyObject *) id;
-//    printf("mem_access_callback() - ary: %p, addr: %p\n", ary, (void*) addr);
+//    printf("mem_access_callback() - ary: %p, addr: %p\n", ary, addr);
 
     PyGILState_STATE GIL = PyGILState_Ensure();
     PyErr_WarnEx(NULL,"Encountering an operation not supported by Bohrium. "
@@ -185,8 +184,8 @@ static int _mprotect_np_part(BhArray *ary)
                      strerror(errsv));
         return -1;
     }
-    attach_signal((signed long)ary, (uintptr_t) ary->base.data,
-                  PyArray_NBYTES((PyArrayObject*)ary), mem_access_callback);
+    bh_mem_signal_attach(ary, ary->base.data,
+                  PyArray_NBYTES((PyArrayObject*)ary), mem_access_callbackk);
     return 0;
 }
 
@@ -218,8 +217,8 @@ static int _protected_malloc(BhArray *ary)
     free(ary->base.data);
     ary->base.data = addr;
 
-    attach_signal((signed long)ary, (uintptr_t) ary->base.data,
-                  PyArray_NBYTES((PyArrayObject*)ary), mem_access_callback);
+    bh_mem_signal_attach(ary, ary->base.data,
+                  PyArray_NBYTES((PyArrayObject*)ary), mem_access_callbackk);
     return 0;
 }
 
@@ -292,7 +291,7 @@ finish:
                    PyArray_NBYTES((PyArrayObject*)self)) == -1)
             PyErr_Print();
 
-        detach_signal((signed long)self, mem_access_callback);
+        bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)self));
         self->base.data = NULL;
     }
     BhArrayType.tp_base->tp_dealloc((PyObject*)self);
@@ -308,7 +307,7 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     PyObject *base = PyObject_CallMethod(ndarray, "get_base", "O", self);
 
     //Note that we always detach the signal before returning
-    detach_signal((signed long)base, mem_access_callback);
+    bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)base));
 
     if(base == NULL)
         return NULL;
@@ -380,7 +379,7 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
         Py_DECREF(err);
     }
     //Then we unprotect the NumPy memory part
-    detach_signal((signed long)base, mem_access_callback);
+    bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)base));
     if(_munprotect(PyArray_DATA((PyArrayObject*)base),
                    PyArray_NBYTES((PyArrayObject*)base)) != 0)
         return NULL;
@@ -753,5 +752,5 @@ init_bh(void)
         return;
 
     //Initialize the signal handler
-    init_signal();
+    bh_mem_signal_init();
 }
