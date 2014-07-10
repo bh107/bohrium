@@ -2,7 +2,7 @@ BENCH_SRC  = $(wildcard src/*.chpl)
 BENCHMARKS = $(subst .chpl,, $(subst src/,,$(BENCH_SRC)))
 
 CHPL=chpl
-CHPL_FLGS=--savec ccode/
+CHPL_FLGS=--savec ccode/ --fast
 
 all: $(BENCHMARKS)
 
