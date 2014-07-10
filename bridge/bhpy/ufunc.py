@@ -289,6 +289,10 @@ class ufunc:
         else:
             axis = list(axis)#We reduce multiple dimensions
 
+        #When reducting booleans we count the number of True values
+        if np.dtype(a.dtype) is np.dtype(bool):
+            a = array_create.array(a, dtype=np.uint64)
+
         #Check for out of bounds and convert negative axis values
         if len(axis) > a.ndim:
             raise ValueError("number of 'axises' to reduce is out of bounds")
