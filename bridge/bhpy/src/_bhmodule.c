@@ -463,25 +463,39 @@ BhArray_resize(PyObject *self, PyObject *args)
     return NULL;
 }
 
+
+//Help function to make methods calling a Python function
 static PyObject *
-BhArray_reshape(PyObject *self, PyObject *args)
+method2function(char *name, PyObject *self, PyObject *args)
 {
-    //We parse the 'args' to bohrium.reshape() with 'self' as the first argument
+    //We parse the 'args' to bohrium.'name' with 'self' as the first argument
     Py_ssize_t i, size = PyTuple_Size(args);
-    PyObject *newshape = PyTuple_New(size+1);
-    if(newshape == NULL)
+    PyObject *func_args = PyTuple_New(size+1);
+    if(func_args == NULL)
         return NULL;
     Py_INCREF(self);
-    PyTuple_SET_ITEM(newshape, 0, self);
+    PyTuple_SET_ITEM(func_args, 0, self);
     for(i=0; i<size; ++i)
     {
         PyObject *t = PyTuple_GET_ITEM(args, i);
         Py_INCREF(t);
-        PyTuple_SET_ITEM(newshape, i+1, t);
+        PyTuple_SET_ITEM(func_args, i+1, t);
     }
-    PyObject *ret = PyObject_CallMethod(bohrium, "reshape", "O", newshape);
-    Py_DECREF(newshape);
+    PyObject *ret = PyObject_CallMethod(bohrium, name, "O", func_args);
+    Py_DECREF(func_args);
     return ret;
+}
+
+static PyObject *
+BhArray_reshape(PyObject *self, PyObject *args)
+{
+    return method2function("reshape", self, args);
+}
+
+static PyObject *
+BhArray_sum(PyObject *self, PyObject *args)
+{
+    return method2function("sum", self, args);
 }
 
 static PyMethodDef BhArrayMethods[] = {
@@ -494,8 +508,11 @@ static PyMethodDef BhArrayMethods[] = {
                                                     "layout to a regular NumPy array"},
     {"resize", BhArray_resize, METH_VARARGS, "Change shape and size of array in-place"},
     {"reshape", BhArray_reshape, METH_VARARGS, "a.reshape(shape)\n\nReturns an array"
-                                               "containing the same data with a new shape.\n"
+                                               "containing the same data with a new shape.\n\n"
                                                "Refer to `bohrium.reshape` for full documentation."},
+    {"sum", BhArray_sum, METH_VARARGS, "a.sum(axis=None, dtype=None, out=None)\n\n"
+                                       "Return the sum of the array elements over the given axis.\n\n"
+                                       "Refer to `bohrium.sum` for full documentation."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
