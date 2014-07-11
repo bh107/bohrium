@@ -1,14 +1,13 @@
 import bohrium as np
 from numpytest import numpytest,gen_views,TYPES
 
-
 class test_reduce(numpytest):
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
 
     def init(self):
-        for v in gen_views(5,10,6):
+        for v in gen_views(4,10,6):
             a = {}
             self.axis = 0
             exec v
@@ -27,23 +26,53 @@ class test_reduce(numpytest):
         exec cmd
         return (res,cmd)
 
+class test_reduce_bool(numpytest):
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+
+    def init(self):
+        for v in gen_views(4,10,6):
+            a = {}
+            self.axis = 0
+            exec v
+            exec "a[0] = np.array(a[0], dtype=np.bool)"
+            yield (a,v)
+            for axis in xrange(1,a[0].ndim):
+                exec v
+                self.axis = axis
+                yield (a,v)
+            for axis in xrange(1,a[0].ndim):
+                exec v
+                self.axis = -axis
+                yield (a,v)
+
+    def test_boolean(self,a):
+        cmd = "res = np.add.reduce(a[0],axis=%d)"%self.axis
+        exec cmd
+        return (res,cmd)
+
 class test_reduce_sum(numpytest):
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
 
     def init(self):
-        for v in gen_views(5,10,6):
+        for v in gen_views(4,10,6):
             a = {}
             self.axis = 0
             exec v
             yield (a,v)
 
-    def test_reduce_sum(self,a):
+    def test_add_reduce(self,a):
         cmd = "res = np.add.reduce(a[0],axis=None)"
         exec cmd
         return (res,cmd)
 
+    def test_sum(self,a):
+        cmd = "res = a[0].sum()"
+        exec cmd
+        return (res,cmd)
 
 class test_reduce1D(numpytest):
     def __init__(self):

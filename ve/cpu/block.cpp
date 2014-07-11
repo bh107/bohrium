@@ -240,7 +240,7 @@ string Block::symbol_text(void) const
 
 string Block::dot(void) const
 {
-    
+    return "";    
 }
 
 }}

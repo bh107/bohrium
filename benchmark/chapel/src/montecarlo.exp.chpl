@@ -9,12 +9,12 @@ module Benchmark {
         var D: domain(1) = 1..N;
         var x,y: [D] real;
 
-        var rs = new RandomStream(SEED, parSafe=false);
+        var rs = new RandomStream(SEED, parSafe=true);
 
         var acc = 0.0;
         for i in 1..I {
             var count = 0;
-            for i in 1..N {
+            forall i in 1..N {
                 if ((rs.getNext()**2+rs.getNext()**2)<= 1.0) then {
                     count += 1;
                 }

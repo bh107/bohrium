@@ -282,7 +282,12 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     std::vector<cl::Kernel> kernels;
     for (std::vector<std::string>::const_iterator knit = kernelNames.begin(); knit != kernelNames.end(); ++knit)
     {
-        kernels.push_back(cl::Kernel(program, knit->c_str()));
+        try {
+            kernels.push_back(cl::Kernel(program, knit->c_str()));
+        } catch (cl::Error e) {
+            std::cerr << "Could not create cl::Kernel " <<  knit->c_str() << ": " << e.what() << " " << 
+                e.err() << std::endl;  
+        }
     }
 #ifdef BH_TIMING
     kernelGen->add({start, bh::Timer<>::stamp()});
