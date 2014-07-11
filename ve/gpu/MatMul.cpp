@@ -38,7 +38,11 @@ namespace MatMul
         {
             std::stringstream source, kname;
             source << "#include <ocl_matmul.h>\n";
-            source << "MATMUL_TMPL(" << oclTypeStr(dtype) << ")\n";
+            if (dtype == OCL_COMPLEX64 or dtype == OCL_COMPLEX128)
+                source << "MATMUL_TMPL(" << oclTypeStr(dtype) << ",(" << oclTypeStr(dtype) << 
+                    ")(a.x*b.x - a.y*b.y, a.x*b.y + a.y*b.x))\n";
+            else
+                source << "MATMUL_TMPL(" << oclTypeStr(dtype) << ",a*b)\n";
             kname << "matmul_" << oclTypeStr(dtype);
             Kernel kernel(userFuncArg->resourceManager, 2, source.str(), kname.str());
             kernelMap.insert(std::make_pair(dtype, kernel));

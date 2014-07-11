@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
   C(ds1xds0) = A(ds1xds2)*B(ds2xds0)
  */
 
-#define MATMUL_TMPL(dtype)                          \
+#define MATMUL_TMPL(dtype,mulexpr)                  \
 __kernel void matmul_##dtype(                       \
               const int ds0                         \
             , const int ds1                         \
@@ -56,7 +56,7 @@ __kernel void matmul_##dtype(                       \
     {                                               \
         dtype a = A[gidy*v1s2 + ids2*v1s1 + v1s0];  \
         dtype b = B[ids2*v2s2 + gidx*v2s1 + v2s0];  \
-        c += a*b;                                   \
+        c += mulexpr;                               \
     }                                               \
     C[gidy*v0s2 + gidx*v0s1 + v0s0] = c;            \
 }
