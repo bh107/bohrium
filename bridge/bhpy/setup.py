@@ -138,7 +138,7 @@ class CustomBuild(build):
         build.run(self)
 
 import shutil
-shutil.copyfile(srcpath('random123.pyx'), buildpath('random123.pyx'))
+shutil.copy2(srcpath('random123.pyx'), buildpath('random123.pyx'))
 
 
 setup(name='Bohrium',
