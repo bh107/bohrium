@@ -20,7 +20,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
-from _util import dtype_name
+from _util import dtype_equal
 import numpy
 import backend
 import operator
@@ -119,7 +119,7 @@ def get_bhc(ary):
         raise TypeError("the base must be a Bohrium array")
     if not ary.flags['BEHAVED']:
         raise ValueError("Bohrium arrays must be aligned, writeable, and in machine byte-order")
-    if ary.dtype != base.dtype:
+    if not dtype_equal(ary, base):
         raise ValueError("Bohrium base and view must have same data type")
     if not (base.ctypes.data <= ary.ctypes.data < base.ctypes.data + base.nbytes):
         raise ValueError("The view must point to data within the base array")
@@ -128,7 +128,6 @@ def get_bhc(ary):
     if base.bhc_ary is None:
         base._data_np2bhc()
 
-    dtype = dtype_name(base)
     offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
     if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
         raise TypeError("The view offset must be element aligned")

@@ -31,31 +31,44 @@ def flush(a=None):
     if not (a is None) and check(a):
         bhc.bh_runtime_flush()
 
-#Returns the Bohrium name of the data type of the object 'obj'
-#NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array
-def dtype_name(obj):
+#Returns the dtype of 'obj'
+def dtype_of(obj):
     if isinstance(obj, np.dtype):
         t = obj
     elif isinstance(obj, basestring):
-        t = np.dtype(obj)
+        t = obj
     elif isinstance(obj, type):
-        t = np.dtype(obj)
+        t = obj
     elif hasattr(obj, "dtype"):
         t = obj.dtype
     else:
-        t = np.dtype(type(obj))
-    if t == np.bool_:
+        t = type(obj)
+    return np.dtype(t)
+
+#Returns True when all 'args' is the same dtype
+def dtype_equal(*args):
+    if len(args) > 1:
+        t1 = dtype_of(args[0])
+        for t in args[1:]:
+            if t1 is not dtype_of(t):
+                return False
+    return True
+
+#Returns True when 'dtype' is in the list of 'dtypes'
+def dtype_in(dtype, dtypes):
+    for t in dtypes:
+        if dtype_equal(dtype, t):
+            return True
+    return False
+
+#Returns the Bohrium name of the data type of the object 'obj'
+#NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array
+def dtype_name(obj):
+    t = dtype_of(obj)
+    if dtype_in(t, [np.bool_, np.bool, bool]):
         return 'bool8'
     else:
         return t.name
-
-#Check if the objects represents the same dtype.
-def dtype_identical(*obj):
-    dtype = dtype_name(obj[0])
-    for o in obj[1:]:
-        if dtype_name(o) != dtype:
-            return False
-    return True
 
 #Returns the type signature (output, input) to use with the given operation.
 #NB: we only returns the type of the first input thus all input types must be identical
