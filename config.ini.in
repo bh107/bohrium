@@ -42,7 +42,6 @@ libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul${CMAKE_SHARED_LIBRARY_SUFFIX},${
 
 [gpu]
 type = ve
-ocldir = ${CMAKE_INSTALL_PREFIX}/share/bohrium/ocl_source
 include = ${CMAKE_INSTALL_PREFIX}/share/bohrium/include
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}

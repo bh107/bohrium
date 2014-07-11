@@ -353,14 +353,6 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl::Event event, cl_int eventSta
 }
 #endif
 
-std::string ResourceManager::getKernelPath()
-{
-    char* dir = bh_component_config_lookup(component, "ocldir");
-    if (dir == NULL)
-        return std::string("/opt/bohrium/gpu/ocl_source");
-    return std::string(dir);
-}
-
 std::string ResourceManager::getIncludeStr()
 {
     char* dir = bh_component_config_lookup(component, "include");

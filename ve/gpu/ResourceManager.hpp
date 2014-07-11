@@ -84,7 +84,6 @@ public:
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
-    std::string getKernelPath();
     std::string getIncludeStr();
     bool float16support();
     bool float64support();
