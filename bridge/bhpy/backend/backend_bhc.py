@@ -118,8 +118,8 @@ def extmethod(name, out, in1, in2):
               dtype_name(in1), dtype_name(in2)))
     ret = bhc_exec(f, name, out, in1, in2)
     if ret != 0:
-        raise RuntimeError("The current runtime system does not support "
-                           "the extension method '%s'"%name)
+        raise NotImplementedError("The current runtime system does not support "
+                                  "the extension method '%s'"%name)
 
 def range(size, dtype):
     """create a new array containing the values [0:size["""
