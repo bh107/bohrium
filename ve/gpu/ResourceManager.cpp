@@ -282,7 +282,12 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     std::vector<cl::Kernel> kernels;
     for (std::vector<std::string>::const_iterator knit = kernelNames.begin(); knit != kernelNames.end(); ++knit)
     {
-        kernels.push_back(cl::Kernel(program, knit->c_str()));
+        try {
+            kernels.push_back(cl::Kernel(program, knit->c_str()));
+        } catch (cl::Error e) {
+            std::cerr << "Could not create cl::Kernel " <<  knit->c_str() << ": " << e.what() << " " << 
+                e.err() << std::endl;  
+        }
     }
 #ifdef BH_TIMING
     kernelGen->add({start, bh::Timer<>::stamp()});
@@ -347,14 +352,6 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl::Event event, cl_int eventSta
                 event.getProfilingInfo<CL_PROFILING_COMMAND_END>()});
 }
 #endif
-
-std::string ResourceManager::getKernelPath()
-{
-    char* dir = bh_component_config_lookup(component, "ocldir");
-    if (dir == NULL)
-        return std::string("/opt/bohrium/gpu/ocl_source");
-    return std::string(dir);
-}
 
 std::string ResourceManager::getIncludeStr()
 {

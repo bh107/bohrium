@@ -67,7 +67,7 @@ if(NOT USE_CXX98)
     add_subdirectory(bridge/bhpy)
 endif()
 
-install(DIRECTORY thirdparty/Random123/include/Random123 DESTINATION include COMPONENT bohrium)
+install(DIRECTORY thirdparty/Random123-1.08/include/Random123 DESTINATION share/bohrium/include COMPONENT bohrium)
 
 # Select the approriate compiler string
 if (APPLE)

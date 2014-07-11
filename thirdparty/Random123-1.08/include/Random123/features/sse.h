@@ -64,21 +64,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if R123_USE_ASM_GNU
 
 /* bit25 of CX tells us whether AES is enabled. */
-R123_STATIC_INLINE int haveAESNI(){
+R123_STATIC_INLINE int haveAESNI(void){
     unsigned int eax, ebx, ecx, edx;
     __asm__ __volatile__ ("cpuid": "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx) :
                       "a" (1));
     return (ecx>>25) & 1;
 }
 #elif R123_USE_CPUID_MSVC
-R123_STATIC_INLINE int haveAESNI(){
+R123_STATIC_INLINE int haveAESNI(void){
     int CPUInfo[4];
     __cpuid(CPUInfo, 1);
     return (CPUInfo[2]>>25)&1;
 }
 #else /* R123_USE_CPUID_??? */
 #warning "No R123_USE_CPUID_XXX method chosen.  haveAESNI will always return false"
-R123_STATIC_INLINE int haveAESNI(){
+R123_STATIC_INLINE int haveAESNI(void){
     return 0;
 }
 #endif /* R123_USE_ASM_GNU || R123_USE_CPUID_MSVC */

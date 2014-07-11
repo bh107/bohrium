@@ -8,6 +8,7 @@ import linalg
 from linalg import matmul, dot
 from summations import sum
 import import_external
+from numpy import dtype
 
 #Expose all ufuncs
 for f in ufuncs:
@@ -18,7 +19,7 @@ for t in numpy_types:
     exec "%s = numpy.%s"%(t.__str__(),t.__str__())
 
 #Note that the following modules needs ufuncs and dtypes
-import random
+import random123 as random
 
 #TODO: import all numpy functions
 from numpy import meshgrid

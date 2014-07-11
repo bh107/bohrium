@@ -29,6 +29,7 @@ import stat
 import pprint
 import json
 import numpy as np
+from Cython.Distutils import build_ext
 
 #We overload the setup.py with a 'buildpath=' argument that
 #points to the root of the current build
@@ -136,6 +137,10 @@ class CustomBuild(build):
             self.copy_file(buildpath('bhc.py'),buildpath(self.build_lib,'bohrium','bhc.py'))
         build.run(self)
 
+import shutil
+shutil.copy2(srcpath('random123.pyx'), buildpath('random123.pyx'))
+
+
 setup(name='Bohrium',
       version='0.2',
       description='Bohrium NumPy',
@@ -145,7 +150,7 @@ setup(name='Bohrium',
       url='http://www.bh107.org',
       license='LGPLv3',
       platforms='Linux, OSX',
-      cmdclass={'build': CustomBuild},
+      cmdclass={'build': CustomBuild, 'build_ext':build_ext},
       package_dir={'bohrium': srcpath('')},
       packages=['bohrium', 'bohrium.examples', 'bohrium.backend'],
       ext_package='bohrium',
@@ -166,5 +171,13 @@ setup(name='Bohrium',
                              libraries=['dl','bhc', 'bh'],
                              library_dirs=[buildpath('..','c'),
                                            buildpath('..','..','core')],
-                             )],
+                             ),
+                   Extension(name='random123',
+                             sources=[buildpath('random123.pyx')],
+                             include_dirs=[srcpath('.'),
+                                           srcpath('..','..','thirdparty','Random123-1.08','include')],
+                             libraries=[],
+                             library_dirs=[],
+                             )
+               ]
      )
