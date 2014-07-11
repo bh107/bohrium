@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
   C(ds1xds0) = A(ds1xds2)*B(ds2xds0)
  */
 
-#define KERNEL(dtype)                               \
+#define MATMUL_TMPL(dtype)                          \
 __kernel void matmul_##dtype(                       \
               const int ds0                         \
             , const int ds1                         \

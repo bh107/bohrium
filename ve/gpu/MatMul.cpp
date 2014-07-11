@@ -38,7 +38,7 @@ namespace MatMul
         {
             std::stringstream source, kname;
             source << "#include <ocl_matmul.h>\n";
-            source << "KERNEL(" << oclTypeStr(dtype) << ")\n";
+            source << "MATMUL_TMPL(" << oclTypeStr(dtype) << ")\n";
             kname << "matmul_" << oclTypeStr(dtype);
             Kernel kernel(userFuncArg->resourceManager, 2, source.str(), kname.str());
             kernelMap.insert(std::make_pair(dtype, kernel));
