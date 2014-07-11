@@ -140,15 +140,20 @@ Kernel Reduce::getKernel(const bh_instruction* inst,
     {
         std::stringstream source, kname;
         kname << "reduce" << std::hex << codeHash;
-        if (userFuncArg->operands[0]->type() == OCL_FLOAT16 || 
-            userFuncArg->operands[1]->type() == OCL_FLOAT16)
+        
+        switch (userFuncArg->operands[0]->type())
         {
+        case OCL_FLOAT16:
             source << "#pragma OPENCL EXTENSION cl_khr_fp16 : enable\n";
-        }
-        else if (userFuncArg->operands[0]->type() == OCL_FLOAT64 ||
-                 userFuncArg->operands[0]->type() == OCL_FLOAT64)
-        {
+            break;
+        case OCL_FLOAT64:
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+            break;
+        case OCL_COMPLEX64:
+        case OCL_COMPLEX128:
+            source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+            source << "#include <ocl_complex.h>\n";
+            break;
         }
         source << "__kernel void " << kname.str() << code;
         Kernel kernel(userFuncArg->resourceManager, MIN(shape.size(),3), source.str(), kname.str());
