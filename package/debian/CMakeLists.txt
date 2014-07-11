@@ -42,7 +42,8 @@ add_subdirectory(../../ve/gpu ${CMAKE_CURRENT_BINARY_DIR}/ve/gpu)
 add_subdirectory(../../vem/cluster ${CMAKE_CURRENT_BINARY_DIR}/vem/cluster)
 add_subdirectory(../../extmethods/fftw ${CMAKE_CURRENT_BINARY_DIR}/extmethods/fftw)
 
-install(DIRECTORY ../../thirdparty/Random123/include/Random123 DESTINATION include COMPONENT bohrium)
+install(DIRECTORY ../../thirdparty/Random123-1.08/include/Random123 
+        DESTINATION share/bohrium/include COMPONENT bohrium)
 install(DIRECTORY ../../test DESTINATION share/bohrium COMPONENT bohrium)
 install(DIRECTORY ../../benchmark DESTINATION share/bohrium COMPONENT bohrium)
 
