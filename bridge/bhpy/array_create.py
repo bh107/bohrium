@@ -7,7 +7,7 @@ import math
 import ndarray
 from ndarray import fix_returned_biclass
 import numpy
-from _util import dtype_name
+from _util import dtype_equal, dtype_in
 import backend
 
 @fix_returned_biclass
@@ -111,7 +111,7 @@ def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohri
                             "column-major (‘F’) memory representation")
             if copy:
                 a = a.copy()
-            if dtype != a.dtype:
+            if dtype is not None and not dtype_equal(dtype, a.dtype):
                 t = empty_like(a,dtype=dtype)
                 t[...] = a
                 a = t
@@ -503,13 +503,13 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     array([3, 5])
 
     """
-    if (not bohrium):
+    if not bohrium:
         return numpy.arange(start,stop,step,dtype)
-    if (not stop):
+    if not stop:
         stop = start
         start = type(stop)(0)
     size = int(math.ceil((float(stop) - float(start)) / float(step)))
-    if (dtype is None):
+    if dtype is None:
         dtype = numpy.int64
     else:
         start = numpy.dtype(dtype).type(start)
@@ -523,22 +523,21 @@ def range(size, dtype=numpy.uint64):
         raise ValueError("size must be an integer")
     if (size < 1):
         raise ValueError("size must be greater than 0")
-    dtype = numpy.dtype(dtype).type
-    if (dtype in [numpy.int8,
-                  numpy.int16,
-                  numpy.int32,
-                  numpy.uint8,
-                  numpy.uint16,
-                  numpy.uint32,
-                  numpy.float16,
-                  numpy.float32,
-                  numpy.complex64]):
+    if dtype_in(dtype, [numpy.int8,
+                        numpy.int16,
+                        numpy.int32,
+                        numpy.uint8,
+                        numpy.uint16,
+                        numpy.uint32,
+                        numpy.float16,
+                        numpy.float32,
+                        numpy.complex64]):
         A = empty(size,dtype=numpy.uint32,bohrium=True)
     else:
         A = empty(size,dtype=numpy.uint64,bohrium=True)
     ret = backend.range(size, A.dtype)
     A = ndarray.new((size,), A.dtype, ret)
-    if (dtype != A.dtype.type):
+    if not dtype_equal(dtype, A.dtype):
         B = empty_like(A,dtype=dtype)
         B[...] = A[...]
         return B

@@ -24,7 +24,7 @@ import _util
 import array_create
 import numpy as np
 import _info
-from _util import dtype_name, dtype_identical
+from _util import dtype_equal
 from ndarray import get_bhc, get_base, fix_returned_biclass
 import ndarray
 import backend
@@ -159,13 +159,13 @@ class ufunc:
 
         #Convert dtype of all inputs
         for i in xrange(len(args)):
-            if not np.isscalar(args[i]) and not dtype_identical(args[i], in_dtype):
+            if not np.isscalar(args[i]) and not dtype_equal(args[i], in_dtype):
                 t = array_create.empty_like(args[i], dtype=in_dtype)
                 t[...] = args[i]
                 args[i] = t;
 
         #Insert the output array
-        if out is None or out_dtype != out.dtype:
+        if out is None or not dtype_equal(out_dtype, out.dtype):
             args.insert(0,array_create.empty(out_shape, out_dtype))
         else:
             args.insert(0,out)
@@ -188,7 +188,7 @@ class ufunc:
         else:
             backend.ufunc(self,*bhcs)
 
-        if out is None or out_dtype == out.dtype:
+        if out is None or dtype_equal(out_dtype, out.dtype):
             return args[0]
         else:#We need to convert the output type before returning
             assign(args[0], out)
@@ -290,7 +290,7 @@ class ufunc:
             axis = list(axis)#We reduce multiple dimensions
 
         #When reducting booleans we count the number of True values
-        if np.dtype(a.dtype) is np.dtype(bool):
+        if dtype_equal(a,  np.bool):
             a = array_create.array(a, dtype=np.uint64)
 
         #Check for out of bounds and convert negative axis values

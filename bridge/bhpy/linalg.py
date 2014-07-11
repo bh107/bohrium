@@ -11,6 +11,7 @@ import ndarray
 import ufunc
 import numpy
 import array_create
+from _util import dtype_equal
 
 def gauss(a):
     """
@@ -18,7 +19,7 @@ def gauss(a):
     """
     for c in xrange(1,a.shape[0]):
         a[c:,c-1:] = a[c:,c-1:] - (a[c:,c-1]/a[c-1,c-1:c])[:,None] * a[c-1,c-1:]
-        np.flush(a) 
+        np.flush(a)
     a /= np.diagonal(a)[:,None]
     return a
 
@@ -26,8 +27,8 @@ def gauss(a):
 def lu(a):
     """
     Performe LU decomposition on the matrix a so A = L*U
-    """    
-    u = a.copy() 
+    """
+    u = a.copy()
     l = np.zeros_like(a)
     np.diagonal(l)[:] = 1.0
     for c in xrange(1,u.shape[0]):
@@ -69,13 +70,13 @@ def solve(a, b):
     """
     if not (len(a.shape) == 2 and a.shape[0] == a.shape[1]):
         raise la.LinAlgError("a is not square")
-    
+
     w = gauss(np.hstack((a,b[:,np.newaxis])))
     lc = w.shape[1]-1
     x = w[:,lc].copy()
     for c in xrange(lc-1,0,-1):
         x[:c] -= w[:c,c] * x[c:c+1]
-        np.flush(x) 
+        np.flush(x)
     return x
 
 def jacobi(a, b, tol=0.0005):
@@ -153,7 +154,7 @@ def matmul(a,b):
     array([[19, 22],
            [43, 50]])
     """
-    if a.dtype != b.dtype:
+    if not dtype_equal(a,b):
         raise ValueError("Input must be of same type")
     if a.ndim != 2 and b.ndim != 2:
         raise ValueError("Input must be 2-D.")
@@ -236,6 +237,6 @@ def dot(a,b, no_matmul=False):
         return numpy.add.reduce(a*b,-1)
     if a.ndim == 1:
         return ufunc.add.reduce(a*numpy.transpose(b),-1)
-    if not no_matmul and a.ndim == 2 and b.ndim == 2:
+    if (not no_matmul) and a.ndim == 2 and b.ndim == 2:
         return matmul(a,b)
     return ufunc.add.reduce(a[:,numpy.newaxis]*numpy.transpose(b),-1)
