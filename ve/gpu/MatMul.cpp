@@ -54,7 +54,6 @@ namespace MatMul
 extern "C" {
 bh_error bh_matmul(bh_instruction *instr, void* ve_arg)
 {
-    
     bh_view *C = &instr->operand[0];
     bh_view *A = &instr->operand[1];
     bh_view *B = &instr->operand[2];
@@ -67,21 +66,21 @@ bh_error bh_matmul(bh_instruction *instr, void* ve_arg)
     UserFuncArg* userFuncArg = (UserFuncArg*)ve_arg;
     Kernel kernel = MatMul::getKernel(userFuncArg);
     Kernel::Parameters kernelParameters;
-    kernelParameters.push_back(std::make_pair(new Scalar(ds0), false));
-    kernelParameters.push_back(std::make_pair(new Scalar(ds1), false));
-    kernelParameters.push_back(std::make_pair(new Scalar(ds2), false));
-    kernelParameters.push_back(std::make_pair(new Scalar(C->stride[0]),false));
-    kernelParameters.push_back(std::make_pair(new Scalar(C->stride[1]),false));
-    kernelParameters.push_back(std::make_pair(new Scalar(C->start),false));
-    kernelParameters.push_back(std::make_pair(new Scalar(A->stride[0]),false));
-    kernelParameters.push_back(std::make_pair(new Scalar(A->stride[1]),false));
-    kernelParameters.push_back(std::make_pair(new Scalar(A->start),false));
-    kernelParameters.push_back(std::make_pair(new Scalar(B->stride[0]),false));
-    kernelParameters.push_back(std::make_pair(new Scalar(B->stride[1]),false));
-    kernelParameters.push_back(std::make_pair(new Scalar(B->start),false));
-    kernelParameters.push_back(std::make_pair(userFuncArg->operands[0],true));
-    kernelParameters.push_back(std::make_pair(userFuncArg->operands[1],false));
-    kernelParameters.push_back(std::make_pair(userFuncArg->operands[2],false));
+    kernelParameters.push_back(std::make_pair(new Scalar(ds0), false));         // ds0
+    kernelParameters.push_back(std::make_pair(new Scalar(ds1), false));         // ds1
+    kernelParameters.push_back(std::make_pair(new Scalar(ds2), false));         // ds2
+    kernelParameters.push_back(std::make_pair(new Scalar(C->stride[0]),false)); // v0s2
+    kernelParameters.push_back(std::make_pair(new Scalar(C->stride[1]),false)); // v0s1
+    kernelParameters.push_back(std::make_pair(new Scalar(C->start),false));     // v0s0
+    kernelParameters.push_back(std::make_pair(new Scalar(A->stride[0]),false)); // v1s2
+    kernelParameters.push_back(std::make_pair(new Scalar(A->stride[1]),false)); // v1s1
+    kernelParameters.push_back(std::make_pair(new Scalar(A->start),false));     // v1s0
+    kernelParameters.push_back(std::make_pair(new Scalar(B->stride[0]),false)); // v2s2
+    kernelParameters.push_back(std::make_pair(new Scalar(B->stride[1]),false)); // v2s1
+    kernelParameters.push_back(std::make_pair(new Scalar(B->start),false));     // v2s0
+    kernelParameters.push_back(std::make_pair(userFuncArg->operands[0],true));  // *C
+    kernelParameters.push_back(std::make_pair(userFuncArg->operands[1],false)); // *A
+    kernelParameters.push_back(std::make_pair(userFuncArg->operands[2],false)); // *B
     
     kernel.call(kernelParameters, {(size_t)C->shape[1],(size_t)C->shape[0]});
     return BH_SUCCESS;
