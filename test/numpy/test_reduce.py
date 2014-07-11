@@ -1,4 +1,5 @@
 import bohrium as np
+import numpy
 from numpytest import numpytest,gen_views,TYPES
 
 class test_reduce(numpytest):
@@ -36,7 +37,7 @@ class test_reduce_bool(numpytest):
             a = {}
             self.axis = 0
             exec v
-            exec "a[0] = np.array(a[0], dtype=np.bool)"
+            exec "a[0] = numpy.array(a[0], dtype=np.bool)"
             yield (a,v)
             for axis in xrange(1,a[0].ndim):
                 exec v
