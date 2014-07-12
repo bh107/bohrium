@@ -7,7 +7,7 @@
 
 #ifndef PROXY_CLIENT_H_
 #define PROXY_CLIENT_H_
-
+#include <sys/select.h>
 //#define PROXY_DEBUG
 
 #ifdef __cplusplus

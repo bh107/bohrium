@@ -5,9 +5,19 @@ The following explains how to get going on Mac OSX. Bohrium and NumPy is not com
 
 You need to install the `Xcode Developer Tools <https://developer.apple.com/xcode/>`_, which is found in the App Store.
 
+It seems that from version 10.9.4 you get Python 2.7 and can install most of the Python packages through pip::
+
+  sudo easy_install pip
+  sudo pip install cheetah cython
+
+You can do the above to avoid having multiple Python installations, if you are on 10.9.4 or newer you only need MacPorts/Homebrew/Fink for the non-Python packages: ``cmake, swig, and boost``.
+
 If you are using Mac MacPorts::
 
-  sudo port install python27 cmake py27-numpy py27-cheetah swig boost
+  # System Packages
+  sudo port install cmake swig boost
+  # Python and Python Packages
+  sudo port install python27 py27-numpy py27-cheetah
 
 If you also want to build the Mono libraries (only required for the C# NumCIL package), you also need the Mono package::
 
@@ -17,7 +27,10 @@ If you also want to build the Mono libraries (only required for the C# NumCIL pa
 
 If you are using finkproject::
 
-  fink install cmake cheetah python27 cheetah-py27 numpy-py27 swig boost1.53.nopython
+  # System Packages
+  cmake swig boost1.53.nopython
+  # Python and Python Packages
+  fink install python27 numpy-py27 cheetah-py27 
 
 As Bohrium is still under active development you want to build the current development copy, instead of using the tar-ball::
 
