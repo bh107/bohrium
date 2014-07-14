@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include "bh_matmul.h"
-
+#include <complex>
 
 template <typename Type> bh_error do_matmul(bh_view *A, bh_view *B, bh_view *C){
 
@@ -85,6 +85,10 @@ bh_error bh_matmul(bh_instruction *instr, void* arg)
 		    return do_matmul<bh_float32>(A, B, C);
     	case BH_FLOAT64:
 		    return do_matmul<bh_float64>(A, B, C);
+        case BH_COMPLEX64:
+            return do_matmul<std::complex<float> >(A, B, C);
+        case BH_COMPLEX128:
+            return do_matmul<std::complex<double> >(A, B, C);
         default:
             return BH_TYPE_NOT_SUPPORTED;
     }
