@@ -6,6 +6,8 @@ Common linear algebra functions
 
 """
 import ufunc
+import numpy
+import ndarray
 
 def sum(a, axis=None, out=None):
     """
@@ -74,5 +76,8 @@ def sum(a, axis=None, out=None):
     -128
 
     """
-    return ufunc.add.reduce(a, axis=axis, out=out)
 
+    if not ndarray.check(a) and not ndarray.check(out):
+        return numpy.sum(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
+    else:
+        return ufunc.add.reduce(a, axis=axis, out=out)
