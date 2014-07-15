@@ -55,10 +55,11 @@ def overlap_conflict(out, *inputs):
     the output and the inputs"""
 
     for i in inputs:
-        if np.may_share_memory(out, i) and not (out.ndim == i.ndim and \
-                out.strides == i.strides and out.shape == i.shape and \
-                out.ctypes.data == i.ctypes.data):
-            return True
+        if not np.isscalar(i):
+            if np.may_share_memory(out, i) and not (out.ndim == i.ndim and \
+                     out.strides == i.strides and out.shape == i.shape and \
+                     out.ctypes.data == i.ctypes.data):
+                return True
     return False
 
 @fix_returned_biclass
