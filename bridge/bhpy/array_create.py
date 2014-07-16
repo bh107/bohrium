@@ -11,7 +11,7 @@ from _util import dtype_equal, dtype_in
 import backend
 
 @fix_returned_biclass
-def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohrium=True):
+def array(object, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
     """
     Create an array -- Bohrium or NumPy ndarray.
 
@@ -28,7 +28,7 @@ def array(object, dtype=None, copy=True, order=None, subok=False, ndmin=0, bohri
         be used to 'upcast' the array.  For downcasting, use the
         .astype(t) method.
     copy : bool, optional
-        If true (default), then the object is copied.  Otherwise, a copy
+        If true, then the object is copied.  Otherwise, a copy
         will only be made if __array__ returns a copy, if obj is a
         nested sequence, or if a copy is needed to satisfy any of the other
         requirements (`dtype`, `order`, etc.).
