@@ -234,7 +234,7 @@ def dot(a,b, no_matmul=False):
         a = array_create.array(a)
         b = array_create.array(b)
     if b.ndim == 1:
-        return numpy.add.reduce(a*b,-1)
+        return ufunc.add.reduce(a*b,-1)
     if a.ndim == 1:
         return ufunc.add.reduce(a*numpy.transpose(b),-1)
     if (not no_matmul) and a.ndim == 2 and b.ndim == 2:
