@@ -1,28 +1,26 @@
 import bohrium as np
-import bohriumbridge as cb
 import util
 
 def data_range(B, N, F):
+    """Pseudo-data setup."""
 
     # Data is a list of N-dimensional coordinates / features in euclidean space.
     data_flat   = np.array(range(0,N+1)*F, dtype=B.dtype, bohrium=B.bohrium)
-    data        = data_flat.reshape(F, N+1)
-    data.bohrium  = B.bohrium
+    data        = np.array(data_flat.reshape(F, N+1), bohrium=B.bohrium)
 
     # Target is a single coordinate / feature in N-dimensional euclidian-space.
     x = np.array([[N/2]]*F, dtype=B.dtype, bohrium=B.bohrium)
-    x.bohrium     = B.bohrium
 
     return data, x
 
 def data_image(B, N, F):
+    """Data setup using a bitmap image."""
 
     try:
         import Image
         img     = Image.open("knn.input.bmp")
-        data    = np.array(img.getdata()).T.copy()
+        data    = np.array(np.array(img.getdata()).T.copy(), bohrium=B.bohrium)
         x       = np.array([[0],[250],[0]], bohrium=B.bohrium)
-        data.bohrium = B.bohrium
         return data, x
     except Exception as e:
         print "Failed using image data-set, reverting to range. Err=[%s]" % e
@@ -39,16 +37,15 @@ def main():
     #data, x = data_image(B, N, F)
     data, x = data_range(B, N, F)               # Grab a data-set
     F = len(x)
-    cb.flush()                                  # Flush & Measure
     B.start()
 
-    sqd = np.sqrt(((data - x)**2).sum(axis=0))  # The naive kNN-implementation
+    sqd = np.sum(np.sqrt(((data - x)**2)))      # The naive kNN-implementation
 
     B.stop()                                    # Print the timing results
     B.pprint()
 
-    idx = np.argsort(sqd)                       # Get the indexes
-    nn  = data[:,idx[:K]]                       # Get the corresponding elements
+    #idx = np.argsort(sqd)                       # Get the indexes
+    #nn  = data[:,idx[:K]]                       # Get the corresponding elements
 
 if __name__ == "__main__":
     main()

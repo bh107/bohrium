@@ -87,12 +87,12 @@ def accumulate(op, out, a, axis):
 def extmethod(name, out, in1, in2):
     """Apply the extended method 'name' """
 
-    f = eval("bhc.bh_multi_array_extmethod_%s_%s_%s"%(dtype_name(out),\
-              dtype_name(in1), dtype_name(in2)))
-    ret = bhc_exec(f, name, out, in1, in2)
-    if ret != 0:
-        raise RuntimeError("The current runtime system does not support "
-                           "the extension method '%s'"%name)
+    (out, in1, in2) = views2numpy((out, in1, in2))
+    if name == "matmul":
+        out[:] = np.dot(in1, in2)
+    else:
+        raise NotImplementedError("The current runtime system does not support "
+                                  "the extension method '%s'"%name)
 
 def range(size, dtype):
     """create a new array containing the values [0:size["""

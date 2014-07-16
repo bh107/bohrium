@@ -6,7 +6,7 @@ from _info import numpy_types
 from _util import flush
 import linalg
 from linalg import matmul, dot
-from summations import sum
+from summations import sum, prod, max, min
 import import_external
 from numpy import dtype
 

@@ -66,7 +66,7 @@ class test_reduce_sum(numpytest):
             yield (a,v)
 
     def test_add_reduce(self,a):
-        cmd = "res = np.add.reduce(a[0],axis=None)"
+        cmd = "res = np.sum(a[0])"
         exec cmd
         return (res,cmd)
 
