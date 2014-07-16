@@ -8,6 +8,7 @@ import bohrium as np
 import util
 
 B = util.Benchmark()
+
 nx      = B.size[0]
 ny      = B.size[1]
 nz      = B.size[2]
@@ -21,16 +22,16 @@ t1      = 1/3.0
 t2      = 1/18.0
 t3      = 1/36.0
 
-F       = np.empty((19,nx,ny,nz), dtype=float, bohrium=B.bohrium)
+F       = np.empty((19, nx, ny, nz), dtype=float, bohrium=B.bohrium)
 F[:]    = density/19.0
-FEQ     = np.empty((19,nx,ny,nz), dtype=float, bohrium=B.bohrium)
+FEQ     = np.empty((19, nx, ny, nz), dtype=float, bohrium=B.bohrium)
 FEQ[:]  = density/19.0
-T       = np.empty((19,nx,ny,nz), dtype=float, bohrium=B.bohrium)
+T       = np.empty((19, nx, ny, nz), dtype=float, bohrium=B.bohrium)
 T[:]    = 0.0
 
 #Create the scenery.
-BOUND   = np.empty((nx,ny,nz), dtype=float, bohrium=B.bohrium)
-BOUNDi  = np.empty((nx,ny,nz), dtype=float, bohrium=B.bohrium)
+BOUND   = np.empty((nx, ny, nz), dtype=float, bohrium=B.bohrium)
+BOUNDi  = np.empty((nx, ny, nz), dtype=float, bohrium=B.bohrium)
 BOUND[:] = 0
 BOUNDi[:] = 1
 if not NO_OBST:
@@ -147,9 +148,8 @@ for ts in xrange(0, ITER):
 
     # Relax calculate equilibrium state (FEQ) with equivalent speed and density to F
     DENSITY = np.add.reduce(F)
-    #Doing this instead:
+
     UX = F[5,:,:,:].copy()
-    UX.bohrium = B.bohrium
     UX += F[7,:,:,:]
     UX += F[8,:,:,:]
     UX += F[11,:,:,:]
@@ -160,6 +160,7 @@ for ts in xrange(0, ITER):
     UX -= F[13,:,:,:]
     UX -= F[14,:,:,:]
     UX /=DENSITY
+
     UY = F[3,:,:,:].copy()
     UY += F[7,:,:,:]
     UY += F[9,:,:,:]
@@ -171,6 +172,7 @@ for ts in xrange(0, ITER):
     UY -= F[17,:,:,:]
     UY -= F[18,:,:,:]
     UY /=DENSITY
+
     UZ = F[1,:,:,:].copy()
     UZ += F[11,:,:,:]
     UZ += F[13,:,:,:]
@@ -182,8 +184,9 @@ for ts in xrange(0, ITER):
     UZ -= F[16,:,:,:]
     UZ -= F[18,:,:,:]
     UZ /=DENSITY
+
     UX[0,:,:] += deltaU #Increase inlet pressure
-    #Set bourderies to zero.
+                        #Set bourderies to zero.
     UX[:,:,:] *= BOUNDi
     UY[:,:,:] *= BOUNDi
     UZ[:,:,:] *= BOUNDi
