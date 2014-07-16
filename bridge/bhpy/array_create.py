@@ -106,7 +106,7 @@ def array(object, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohr
     a = object
     if bohrium:
         if ndarray.check(a):
-            if not None and order == 'F':
+            if order == 'F':
                 raise ValueError("Cannot convert a Bohrium array to "\
                             "column-major (‘F’) memory representation")
             if copy:
