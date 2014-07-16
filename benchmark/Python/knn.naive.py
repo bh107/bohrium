@@ -1,15 +1,18 @@
-import bohrium as np
 import util
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 
 def data_range(B, N, F):
     """Pseudo-data setup."""
 
     # Data is a list of N-dimensional coordinates / features in euclidean space.
-    data_flat   = np.array(range(0,N+1)*F, dtype=B.dtype, bohrium=B.bohrium)
-    data        = np.array(data_flat.reshape(F, N+1), bohrium=B.bohrium)
+    data_flat   = np.array(range(0,N+1)*F, dtype=B.dtype)
+    data        = np.array(data_flat.reshape(F, N+1))
 
     # Target is a single coordinate / feature in N-dimensional euclidian-space.
-    x = np.array([[N/2]]*F, dtype=B.dtype, bohrium=B.bohrium)
+    x = np.array([[N/2]]*F, dtype=B.dtype)
 
     return data, x
 
@@ -19,8 +22,8 @@ def data_image(B, N, F):
     try:
         import Image
         img     = Image.open("knn.input.bmp")
-        data    = np.array(np.array(img.getdata()).T.copy(), bohrium=B.bohrium)
-        x       = np.array([[0],[250],[0]], bohrium=B.bohrium)
+        data    = np.array(np.array(img.getdata()).T.copy())
+        x       = np.array([[0],[250],[0]])
         return data, x
     except Exception as e:
         print "Failed using image data-set, reverting to range. Err=[%s]" % e

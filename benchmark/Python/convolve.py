@@ -1,6 +1,10 @@
 from PIL import Image
+
 import util
-import bohrium as np
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 from bohrium.stdviews import cartesian
 
 def apply_filter(size, weight):
@@ -48,8 +52,8 @@ if __name__ == "__main__":
     B = util.Benchmark()
     (N,) = B.size
     image, image_filter = convolve_init(N)
-    image.bohrium        = B.bohrium
-    image_filter.bohrium = B.bohrium
+    #image.bohrium        = B.bohrium
+    #image_filter.bohrium = B.bohrium
     B.start()
     result = convolve(image, image_filter)
     B.stop()
