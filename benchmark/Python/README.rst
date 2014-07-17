@@ -17,13 +17,7 @@ LMM_swaption_vec.py::
 
 black_scholes.py::
 
-  OSX
-  - Fails with NumPy
-    TypeError: random_sample() got an unexpected keyword argument 'dtype'
-  + Runs with Bohrium
-
-  Ubuntu
-  + Runs with NumPy
+  + No failures observed.
 
 convolve.py::
 
@@ -88,33 +82,15 @@ convolve_seperate_std.py::
 
 gauss.py::
 
-  OSX
-  - Fails with NumPy:
-    TypeError: random_sample() got an unexpected keyword argument 'dtype'
-  + Runs with Bohrium
-
-  Ubuntu
-  + Runs with NumPy on Ubuntu
+  + No failures observed.
 
 heat_equation.py::
   
-  OSX
-  + Runs with NumPy
-  + Runs with Bohrium
-
-  Ubuntu
-  + Runs with NumPy
+  + No failures observed.
 
 jacobi.py::
 
-  OSX
-  + Runs with NumPy
-  - Fails with Bohrium::
-    RuntimeError: The Array Data Protection could not mummap the data region:
-    0x7fc1226625f0 (size: 0).Returned error code by mmap: Invalid argument.
-
-  Ubuntu
-  + RUns with NumPy
+  - Does not seem to converge... ever...
 
 jacobi_fixed.py::
 
@@ -191,21 +167,11 @@ mc.py::
 
 mxmul.py::
 
-  OSX
-  - Fails with NumPy 1.6.2 + 1.8.1:
-    AttributeError: 'bohrium.ndarray' object has no attribute 'bohrium'
-  - Fails with Bohrium, fix use of .bohrium
-
-  Ubuntu
-  - Fails for the same reasons
+  + No failures observed.
 
 nbody.py::
 
-  OSX
-  + Runs with NumPy 1.6.2 + 1.8.1
-  + Runs with Bohrium
-
-  Ubuntu
+  + No failures observed.
 
 ndstencil.py::
 
