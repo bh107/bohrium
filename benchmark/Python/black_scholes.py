@@ -7,7 +7,7 @@ else:
 def model(N, dtype=np.float32):
     """Construct pseudo-data representing price samples?"""
 
-    S = np.random.random([N], dtype=dtype)
+    S = np.array(np.random.random([N]), dtype=dtype)
     S = S*4.0-2.0 + 60.0 # Price is between 58-62
 
     return S
