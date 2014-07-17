@@ -27,9 +27,7 @@ def jacobi(data):
 
     return data
 
-if __name__ == "__main__":
-    """
-    """
+def main():
     B = util.Benchmark()
     N, = B.size
     data = jacobi_init(N)
@@ -38,3 +36,6 @@ if __name__ == "__main__":
     result = jacobi(data)
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()

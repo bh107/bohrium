@@ -4,7 +4,11 @@ k-Nearest Neighbor
 
 So what does this code example illustrate?
 """
-import bohrium as np
+import util
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 
 def classify(sample, training, group=None, k=1):
     assert sample.ndim == 2
@@ -31,7 +35,6 @@ def classify(sample, training, group=None, k=1):
             np.flatten(distance)[neighbor_n] = np.inf
     return np.array(map(np.argmax,map(np.bincount,groups)))
 
-
 # basic version - not cluttered with assertions and optimizations
 def classify_basic(sample, training, group=None, k=1):
     if group == None:
@@ -44,3 +47,9 @@ def classify_basic(sample, training, group=None, k=1):
         neighbor_n += np.arange(distance.shape[0])*distance.shape[1] #convert to a flattened index
         np.flatten(distance)[neighbor_n] = np.inf
     return np.array(map(np.argmax,map(np.bincount,groups)))
+
+def main():
+    pass    # How would you run this thing!?!?!?!
+
+if __name__ == "__main__":
+    main()

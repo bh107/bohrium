@@ -8,18 +8,21 @@ else:
 def montecarlo_pi(N, I):
     acc=0.0
     for i in xrange(I):
-        x = np.random.random(N, dtype=B.dtype)
-        y = np.random.random(N, dtype=B.dtype)
+        x = np.array(np.random.random(N), dtype=B.dtype)
+        y = np.array(np.random.random(N), dtype=B.dtype)
 
-        z = np.sqrt(x*x+y*y)<=1.0
-        acc += np.sum(z)*4.0/N
+        z = np.sqrt(x**2 + y**2) <= 1.0
+        acc += np.sum(z) * 4.0 / N
 
     acc /= I
     return acc
 
-if __name__ == "__main__":
+def main():
     N, I = B.size
-    R = montecarlo_pi(N, I)
     B.start()
+    R = montecarlo_pi(N, I)
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()

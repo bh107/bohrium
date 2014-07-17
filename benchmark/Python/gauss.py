@@ -3,11 +3,9 @@ if util.Benchmark().bohrium:
     import bohrium as np
 else:
     import numpy as np
-
 import bohrium.linalg as la
 
-if __name__ == "__main__":
-
+def main():
     B = util.Benchmark()
     N = B.size[0]
 
@@ -17,3 +15,6 @@ if __name__ == "__main__":
     la.gauss(a)
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()

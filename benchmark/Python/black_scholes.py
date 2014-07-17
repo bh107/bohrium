@@ -54,14 +54,18 @@ def price(S, I, flag='c', X=65.0, dT=(1.0/365.0), r=0.08, v=0.3, visualize=False
 
     return Ps
 
-if __name__ == "__main__":
-    
+def main():
     B = util.Benchmark()
     (N, I) = B.size
 
     S = model(N, dtype=B.dtype)              # Construct pseudo-data
 
+    np.flush(S) if B.bohrium else None      # Why is this needed?
     B.start()
     R = price(S, I, visualize=B.visualize)   # Run the model
+    np.flush(R) if B.bohrium else None      # Why is this needed?
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()

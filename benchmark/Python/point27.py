@@ -24,7 +24,7 @@ def point27(data, iterations):
 
     return active
 
-if __name__ == "__main__":
+def main():
     """
     Example parameter: --size=400*10.
     This will execute on a 400x400x400 dataset for 10 iterations.
@@ -37,3 +37,6 @@ if __name__ == "__main__":
     result = point27(data, I)
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()

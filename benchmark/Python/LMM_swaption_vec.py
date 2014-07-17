@@ -20,21 +20,21 @@ Te_all      = [4,5,10,20]
 # Parameter values for a series of swaptions.
 lamb_all    = [0.2,0.2,0.15,0.1]
 
-# Container for the value and std for the series of swaptions.
-swaptions = np.zeros((2,1))
+def main(verbose=False):
+    """Set verbose=true to output the computed prices."""
 
-# Auxiliary function.
-def mu(F):
-	tmp = lamb*(delta*F[1:,:])/(1+delta*F[1:,:]) # Andreasen style
-	mu = np.zeros((tmp.shape))
-	mu[0,:] +=tmp[0,:]
-	for i in xrange(mu.shape[0]-1):
-		mu[i+1,:] = mu[i,:] + tmp[i+1,:]
-	return mu
+    # Container for the value and std for the series of swaptions.
+    swaptions = np.zeros((2,1))
 
-if __name__ == "__main__":
+    # Auxiliary function.
+    def mu(F):
+        tmp = lamb*(delta*F[1:,:])/(1+delta*F[1:,:]) # Andreasen style
+        mu = np.zeros((tmp.shape))
+        mu[0,:] +=tmp[0,:]
+        for i in xrange(mu.shape[0]-1):
+            mu[i+1,:] = mu[i,:] + tmp[i+1,:]
+        return mu
 
-    verbose = False         # Set to true to output the computed prices
 
     B = util.Benchmark()
     N = B.size[0]           # Number of paths.
@@ -105,3 +105,6 @@ if __name__ == "__main__":
                 print 	"Ts %i" %Ts[j] + " Te %i " %Te + " price %.2f" % swaptions[0,k]\
                                 + "(%.2f)" %swaptions[1,k]
                 k +=1
+
+if __name__ == "__main__":
+    main()

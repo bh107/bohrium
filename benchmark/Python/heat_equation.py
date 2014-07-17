@@ -57,8 +57,7 @@ def iterate(grid, iterations, visualize=False):
     
     return grid
 
-if __name__ == "__main__":
-    
+def main(): 
     B = util.Benchmark()
     H = B.size[0]
     W = B.size[1]
@@ -72,3 +71,6 @@ if __name__ == "__main__":
     if B.verbose:
         print ft
     B.pprint()
+
+if __name__ == "__main__":
+    main()

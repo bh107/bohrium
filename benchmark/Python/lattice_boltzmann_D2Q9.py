@@ -1,9 +1,3 @@
-import util
-if util.Benchmark().bohrium:
-    import bohrium as np
-else:
-    import numpy as np
-
 """
 The Lattice Boltzmann Methods D2Q9
 ------------
@@ -13,6 +7,11 @@ Copyright (C) 2006 Jonas Latt
 Address: Rue General Dufour 24,  1211 Geneva 4, Switzerland
 E-mail: Jonas.Latt@cui.unige.ch
 """
+import util
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 
 # D2Q9 Lattice constants
 t       = [4/9., 1/9.,1/9.,1/9.,1/9., 1/36.,1/36.,1/36.,1/36.]
@@ -22,16 +21,16 @@ opp     = [ 0,   3,  4,  1,  2,    7,   8,   5,   6]
 uMax    = 0.02 # maximum velocity of Poiseuille inflow
 Re      = 100  # Reynolds number
 
-def cylinder(height, width, obstacle=True, odtype=np.float32):
+def cylinder(height, width, obstacle=True, dtype=np.float32):
     assert(height > 2)
     assert(width > 2)
 
     lx = width
     ly = height
     state   = {"lx":lx, "ly":ly}
-    obst_x  = lx/5.+1                # position of the cylinder; (exact
-    obst_y  = ly/2.+0                # y-symmetry is avoided)
-    obst_r  = ly/10.+1               # radius of the cylinder
+    obst_x  = lx/5.+1               # position of the cylinder; (exact
+    obst_y  = ly/2.+0               # y-symmetry is avoided)
+    obst_r  = ly/10.+1              # radius of the cylinder
 
     nu     = uMax * 2.*obst_r / Re  # kinematic viscosity
     omega  = 1. / (3*nu+1./2.)      # relaxation parameter
@@ -187,17 +186,16 @@ def solve(state, iterations, visualization=0):
           axes3.imshow(uy.T.copy())
           canvas.show()
 
-if __name__ == "__main__":
-
+def main():
     B = util.Benchmark()
     H = B.size[0]
     W = B.size[1]
     I = B.size[2]
 
-    cylinder = cylinder(H, W, obstacle=False)
+    state = cylinder(H, W, obstacle=False)
 
     B.start()
-    solve(cylinder,I)
+    solve(state, I)
     B.stop()
     B.pprint()
 
@@ -226,3 +224,6 @@ if __name__ == "__main__":
     thread.start()
     tk.mainloop()
     """
+
+if __name__ == "__main__":
+    main()

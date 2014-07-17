@@ -24,9 +24,7 @@ def jacobi_fixed(data, iterations):
 
     return data
 
-if __name__ == "__main__":
-    """
-    """
+def main():
     B = util.Benchmark()
     (N, I) = B.size
     data = jacobi_fixed_init(N)
@@ -35,3 +33,6 @@ if __name__ == "__main__":
     result = jacobi_fixed(data, I)
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()

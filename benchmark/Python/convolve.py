@@ -1,5 +1,4 @@
 from PIL import Image
-
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -44,7 +43,7 @@ def convolve(image, image_filter):
 
     return result
 
-if __name__ == "__main__":
+def main():
     """
     Example parameter: --size=25.
     This will execute on a something related to 25....
@@ -52,9 +51,11 @@ if __name__ == "__main__":
     B = util.Benchmark()
     (N,) = B.size
     image, image_filter = convolve_init(N)
-    #image.bohrium        = B.bohrium
-    #image_filter.bohrium = B.bohrium
+    
     B.start()
     result = convolve(image, image_filter)
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()
