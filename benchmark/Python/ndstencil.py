@@ -53,13 +53,15 @@ def main():
     D       = B.size[2]
 
     world = np.array(np.random.random(shape(D, size)), dtype=B.dtype)
-    print "Solving",D, "dimensional",world.shape,"problem with", \
-        len([i for i in it.product([None,None,None], repeat=D)]), "point stencil."
-
+    
     B.start()
     solve(world,I)
     B.stop()
     B.pprint()
+    if B.verbose:
+        print "Solving",D, "dimensional",world.shape,"problem with",     \
+               len([i for i in it.product([None,None,None], repeat=D)]), \
+               "point stencil."
 
 if __name__ == "__main__":
     main()
