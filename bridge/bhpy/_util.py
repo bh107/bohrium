@@ -28,7 +28,7 @@ import atexit
 #Flush the delayed operations for Bohrium execution
 def flush(a=None):
     from ndarray import check
-    if not (a is None) and check(a):
+    if a is None or (not (a is None) and check(a)):
         bhc.bh_runtime_flush()
 
 #Returns the dtype of 'obj'
