@@ -60,10 +60,8 @@ def main():
 
     S = model(N, dtype=B.dtype)              # Construct pseudo-data
 
-    np.flush(S) if B.bohrium else None      # Why is this needed?
     B.start()
     R = price(S, I, visualize=B.visualize)   # Run the model
-    np.flush(R) if B.bohrium else None      # Why is this needed?
     B.stop()
     B.pprint()
 
