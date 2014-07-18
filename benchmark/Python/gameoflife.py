@@ -48,10 +48,8 @@ def main():
     (W, H, I) = B.size
     S = randomstate(W, H)
 
-    #np.flush(S) if B.bohrium else None      # Why is this needed?
     B.start()
     R = play(S, I)
-    #np.flush(R) if B.bohrium else None      # Why is this needed?
     B.stop()
     B.pprint()
 
