@@ -8,6 +8,7 @@ Ubuntu 12.04.4, NumPy 1.8.1
 LMM_swaption_vec.py::
 
   OSX
+
   - Fails with Bohrium:
 
     Traceback (most recent call last):
@@ -22,6 +23,7 @@ black_scholes.py::
 convolve.py::
 
   OSX
+
   - Fails with NumPy:
 
     Traceback (most recent call last):
@@ -92,8 +94,7 @@ jacobi.py::
 
   OSX
 
-  - Weird with NumPy
-    - Does not seem to converge... ever...
+  - Weird with NumPy, does not seem to converge except for very small values...
 
   - Fails with Bohrium:
    - RuntimeError: The Array Data Protection could not mummap the data region: 0x7fd9a8e0e4f0 (size: 0). Returned error code by mmap: Invalid argument.
@@ -105,6 +106,10 @@ jacobi_fixed.py::
 jacobi_stencil.py::
 
   + No failures observed.
+
+k_nearest_neightbor::
+
+  = Main needs implementation.
 
 knn.naive.py::
 
@@ -152,15 +157,49 @@ mxmul.py::
 
 nbody.py::
 
-  + No failures observed.
+  + Fails with NumPy errors::
+
+    benchmark/Python/nbody.py:54: FutureWarning: Numpy has detected that you (may be) writing to an array returned
+    by numpy.diagonal or by selecting multiple fields in a record
+    array. This code will likely break in a future numpy release --
+    see numpy.diagonal or arrays.indexing reference docs for details.
+    The quick fix is to make an explicit copy (e.g., do
+    arr.diagonal().copy() or arr[['f0','f1']].copy()).
+      np.diagonal(r)[:] = 1.0
+    benchmark/Python/nbody.py:67: FutureWarning: Numpy has detected that you (may be) writing to an array returned
+    by numpy.diagonal or by selecting multiple fields in a record
+    array. This code will likely break in a future numpy release --
+    see numpy.diagonal or arrays.indexing reference docs for details.
+    The quick fix is to make an explicit copy (e.g., do
+    arr.diagonal().copy() or arr[['f0','f1']].copy()).
+      np.diagonal(Fx)[:] = 0.0
+    benchmark/Python/nbody.py:68: FutureWarning: Numpy has detected that you (may be) writing to an array returned
+    by numpy.diagonal or by selecting multiple fields in a record
+    array. This code will likely break in a future numpy release --
+    see numpy.diagonal or arrays.indexing reference docs for details.
+    The quick fix is to make an explicit copy (e.g., do
+    arr.diagonal().copy() or arr[['f0','f1']].copy()).
+      np.diagonal(Fy)[:] = 0.0
+    benchmark/Python/nbody.py:69: FutureWarning: Numpy has detected that you (may be) writing to an array returned
+    by numpy.diagonal or by selecting multiple fields in a record
+    array. This code will likely break in a future numpy release --
+    see numpy.diagonal or arrays.indexing reference docs for details.
+    The quick fix is to make an explicit copy (e.g., do
+    arr.diagonal().copy() or arr[['f0','f1']].copy()).
+      np.diagonal(Fz)[:] = 0.0
 
 ndstencil.py::
 
   + No failures observed.
 
 point27.py::
-
+  
   + No failures observed.
+
+pricing.py::
+
+  = Main needs argument parsing and use.
+  - Fails with Bohrium, crashing.
 
 shallow_water.py::
 

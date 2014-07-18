@@ -54,6 +54,9 @@ def main():
     asc     = np.array( range(0, n+1) )
     desc    = np.array( range(n,-1,-1) )
 
+    B = util.Benchmark()
+    B.start()
+
     put         = np.zeros( (n+1, n+1) )
     put[:,n]    = np.maximum( strike - S0* (u**asc) * (d**desc), 0 )
 
@@ -61,8 +64,9 @@ def main():
         for j in xrange(0, i+1):
             S = S0*u*(j-1)* (d**(i-j))
             put[j,i] = max(max(strike-S, 0.0), (q*put[j+1,i+1]+(1-q) * put[j,i+1])/R)
-
-    print put[0,0], put[1,1]
+    B.stop()
+    B.pprint()
+    #print put[0,0], put[1,1]
 
 if __name__ == "__main__":
     main()
