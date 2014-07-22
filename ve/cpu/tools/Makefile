@@ -20,9 +20,10 @@ gen:
 	rm $(CPU)/autogen/output/*.cpp
 
 #
-# Remove installed stuff related to the cpu-engine
+# Remove installed stuff specific to the cpu-engine
 purge:
 	rm -r $(BDIR)
+	rm -rf ~/.local/bin
 	rm -rf ~/.local/share/bohrium/templates
 	rm -rf ~/.local/var/bohrium/kernels
 	rm -rf ~/.local/var/bohrium/objects
@@ -33,9 +34,10 @@ purge:
 purge_all:
 	rm -rf ~/.local/bin
 	rm -rf ~/.local/include
-	rm -rf ~/.local/var
 	rm -rf ~/.local/lib
 	rm -rf ~/.local/share/bohrium
+	rm -rf ~/.local/var
+	rm ~/.bohrium/config.ini
 
 #
 # "Reinstall" the cpu-engine
