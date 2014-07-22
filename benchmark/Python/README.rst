@@ -5,6 +5,10 @@ Status of this collection of Benchmarks
 MacOSX 10.9.4, NumPy 1.6.2 and 1.8.1
 Ubuntu 12.04.4, NumPy 1.8.1
 
+k_nearest_neightbor::
+
+  = Main needs implementation.
+
 LMM_swaption_vec.py::
 
   OSX
@@ -15,10 +19,6 @@ LMM_swaption_vec.py::
       File "benchmark/Python/LMM_swaption_vec.py", line 58, in <module>
         eps = np.concatenate((eps_tmp,-eps_tmp), axis = 1)
     AttributeError: 'module' object has no attribute 'concatenate'
-
-black_scholes.py::
-
-  + No failures observed.
 
 convolve.py::
 
@@ -36,6 +36,13 @@ convolve.py::
   - Fails with Bohrium
 
     Crash and burn.
+
+  Ubuntu
+
+  - Fails with Bohrium::
+
+    benchmark/Python/convolve.py:22: RuntimeWarning: Encountering an operation not supported by Bohrium. It will be handled by the original NumPy.
+    totalsum += kernel[filterY + kernelrad, filterX + kernelrad]  
 
 convolve_2d.py::
 
@@ -62,6 +69,12 @@ convolve_2d.py::
         subok=subok, ndmin=ndmin)
     SystemError: error return without exception set
 
+  Ubuntu
+  - Fails with Bohrium:
+
+    benchmark/Python/convolve_2d.py:22: RuntimeWarning: Encountering an operation not supported by Bohrium. It will be handled by the original NumPy.
+    totalsum += kernel[filterY + kernelrad, filterX + kernelrad] 
+
 convolve_3d.py::
 
   OSX
@@ -78,17 +91,12 @@ convolve_3d.py::
   - Fails with Bohrium:
     Crash and burn.
 
-convolve_seperate_std.py::
+  Ubuntu
 
-  + No failures observed.
+  - Fails with Bohrium:
 
-gauss.py::
-
-  + No failures observed.
-
-heat_equation.py::
-  
-  + No failures observed.
+    benchmark/Python/convolve_3d.py:23: RuntimeWarning: Encountering an operation not supported by Bohrium. It will be handled by the original NumPy.
+    totalsum += kernel[filterZ + kernelrad, filterY + kernelrad, filterX + kernelrad]  
 
 jacobi.py::
 
@@ -98,22 +106,6 @@ jacobi.py::
 
   - Fails with Bohrium:
    - RuntimeError: The Array Data Protection could not mummap the data region: 0x7fd9a8e0e4f0 (size: 0). Returned error code by mmap: Invalid argument.
-
-jacobi_fixed.py::
-
-  + No failures observed.
-
-jacobi_stencil.py::
-
-  + No failures observed.
-
-k_nearest_neightbor::
-
-  = Main needs implementation.
-
-knn.naive.py::
-
-  + No failures observed.
 
 knn.py::
 
@@ -127,33 +119,6 @@ knn.py::
       File "benchmark/Python/knn.py", line 12, in compute_targets
         tmp = np.max(tmp, 0)
     AttributeError: 'module' object has no attribute 'max'
-
-lattice_boltzmann_D2Q9.py::
-
-  - Fails with Bohrium:
-
-    Traceback (most recent call last):
-      File "benchmark/Python/lattice_boltzmann_D2Q9.py", line 197, in <module>
-        cylinder = cylinder(H, W, obstacle=False)
-      File "benchmark/Python/lattice_boltzmann_D2Q9.py", line 42, in cylinder
-        t_3d    = np.asarray(t)[:, np.newaxis, np.newaxis]
-    AttributeError: 'module' object has no attribute 'asarray'
-
-lbm.3d.py::
-  
-  + No failures observed.
-
-lu.py::
-  
-  + No failures observed.
-
-mc.py::
-
-  + No failures observed.
-
-mxmul.py::
-
-  + No failures observed.
 
 nbody.py::
 
@@ -188,6 +153,81 @@ nbody.py::
     arr.diagonal().copy() or arr[['f0','f1']].copy()).
       np.diagonal(Fz)[:] = 0.0
 
+lattice_boltzmann_D2Q9.py::
+
+  - Fails with Bohrium:
+
+    Traceback (most recent call last):
+      File "benchmark/Python/lattice_boltzmann_D2Q9.py", line 197, in <module>
+        cylinder = cylinder(H, W, obstacle=False)
+      File "benchmark/Python/lattice_boltzmann_D2Q9.py", line 42, in cylinder
+        t_3d    = np.asarray(t)[:, np.newaxis, np.newaxis]
+    AttributeError: 'module' object has no attribute 'asarray'
+
+pricing.py::
+
+  = Main needs argument parsing and use.
+  - Fails with Bohrium, crashing.
+
+wireworld.py::
+
+  - Fails with Bohrium:
+
+    Traceback (most recent call last):
+      File "benchmark/Python/wireworld.py", line 55, in <module>
+        world = wireworld_init(N)
+      File "benchmark/Python/wireworld.py", line 15, in wireworld_init
+        data[1:-1,1:-1] = np.tile(np.array([
+    AttributeError: 'module' object has no attribute 'tile'
+
+black_scholes.py::
+
+  + No failures observed.
+
+convolve_seperate_std.py::
+
+  + No failures observed.
+
+gameoflife.py::
+
+  + No failures observed.
+
+gauss.py::
+
+  + No failures observed.
+
+heat_equation.py::
+  
+  + No failures observed.
+
+jacobi_fixed.py::
+
+  + No failures observed.
+
+jacobi_stencil.py::
+
+  + No failures observed.
+
+knn.naive.py::
+
+  + No failures observed.
+
+lbm.3d.py::
+  
+  + No failures observed.
+
+lu.py::
+  
+  + No failures observed.
+
+mc.py::
+
+  + No failures observed.
+
+mxmul.py::
+
+  + No failures observed.
+
 ndstencil.py::
 
   + No failures observed.
@@ -195,11 +235,6 @@ ndstencil.py::
 point27.py::
   
   + No failures observed.
-
-pricing.py::
-
-  = Main needs argument parsing and use.
-  - Fails with Bohrium, crashing.
 
 shallow_water.py::
 
@@ -212,15 +247,4 @@ sor.py::
 synth.py::
 
   + No failures observed.
-
-wireworld.py::
-
-  - Fails with Bohrium:
-
-    Traceback (most recent call last):
-      File "benchmark/Python/wireworld.py", line 55, in <module>
-        world = wireworld_init(N)
-      File "benchmark/Python/wireworld.py", line 15, in wireworld_init
-        data[1:-1,1:-1] = np.tile(np.array([
-    AttributeError: 'module' object has no attribute 'tile'
 
