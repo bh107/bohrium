@@ -1,20 +1,3 @@
-import bohrium as np
-import bohrium.examples.shallow_water as sw
-import util
-
-B = util.Benchmark()
-H = B.size[0]
-W = B.size[1]
-I = B.size[2]
-
-m = sw.model(H,W,dtype=B.dtype,bohrium=B.bohrium)
-
-B.start()
-m = sw.simulate(m,I,visualize=B.visualize)
-r = np.add.reduce(np.add.reduce(m))
-B.stop()
-B.pprint()
-
 """
 Shallow Water
 -------------
@@ -23,15 +6,19 @@ So what does this code example illustrate?
 
 Adapted from: http://people.sc.fsu.edu/~jburkardt/m_src/shallow_water_2d/
 """
-import bohrium as np
+import util
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 
 g = 9.80665 # gravitational acceleration
 
 def droplet(height, width, data_type=np.float32):
     """Generate grid of droplets"""
 
-    x = np.linspace(-1, 1, num=width, endpoint=True, dtype=data_type, bohrium=False)
-    y = np.linspace(-1, 1, num=width, endpoint=True, dtype=data_type, bohrium=False)
+    x = np.array(np.linspace(-1, 1, num=width, endpoint=True), dtype=data_type)
+    y = np.array(np.linspace(-1, 1, num=width, endpoint=True), dtype=data_type)
 
     (xx, yy) = np.meshgrid(x, y)
 
@@ -39,11 +26,11 @@ def droplet(height, width, data_type=np.float32):
 
     return droplet
 
-def model(height, width, dtype=np.float32, bohrium=True):
+def model(height, width, dtype=np.float32):
     assert height >= 16
     assert width >= 16
 
-    m = np.ones((height, width),dtype=dtype,bohrium=bohrium)
+    m = np.ones((height, width), dtype=dtype)
     D = droplet(8, 8)  # simulate a water drop
     droploc = height / 4
     (dropx, dropy) = D.shape
@@ -115,3 +102,20 @@ def simulate(H, timesteps, visualize=False):
         if visualize:
             np.visualize(H, "3d", 0, 0.0, 5.5)
     return H
+
+def main():
+    B = util.Benchmark()
+    H = B.size[0]
+    W = B.size[1]
+    I = B.size[2]
+
+    m = model(H, W, dtype=B.dtype)
+
+    B.start()
+    m = simulate(m, I, visualize=B.visualize)
+    r = np.add.reduce(np.add.reduce(m))
+    B.stop()
+    B.pprint()
+
+if __name__ == "__main__":
+    main()

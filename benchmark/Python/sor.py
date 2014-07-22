@@ -1,22 +1,3 @@
-import bohrium as np
-import bohrium.examples.sor as sor
-import util
-
-B = util.Benchmark()
-H = B.size[0]
-W = B.size[1]
-I = B.size[2]
-
-ft = sor.freezetrap(H,W,dtype=B.dtype,bohrium=B.bohrium)
-
-B.start()
-ft = sor.solve(ft,max_iterations=I)
-r = np.add.reduce(np.add.reduce(ft[0] + ft[1] + ft[2] + ft[3]))
-B.stop()
-B.pprint()
-
-###
-###
 """
 SOR
 --------------
@@ -33,13 +14,18 @@ r0 b0 r0 b0 r0 b0
 b1 r1 b1 r1 b1 r1
 
 """
-import bohrium as np
+import util
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
+import util
 
-def freezetrap(height, width, dtype=np.float32, bohrium=True):
-    r0   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype, bohrium=bohrium)
-    r1   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype, bohrium=bohrium)
-    b0   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype, bohrium=bohrium)
-    b1   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype, bohrium=bohrium)
+def freezetrap(height, width, dtype=np.float32):
+    r0   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype)
+    r1   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype)
+    b0   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype)
+    b1   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype)
     r0[0,:]  =   40.0  # Top 
     b0[0,:]  =   40.0  # Top
     r1[-1,:] = -273.15 # Bottom
@@ -83,3 +69,19 @@ def iterate(grid, iterations):
         b0[1:,:-1]  = (b0[1:,:-1] + r1[:-1,:-1] + r1[1:,:-1] + r0[1:,:-1] + r0[1:,1:])*0.2
     return (r0,r1,b0,b1)
 
+def main():
+    B = util.Benchmark()
+    H = B.size[0]
+    W = B.size[1]
+    I = B.size[2]
+
+    ft = freezetrap(H, W, dtype=B.dtype)
+
+    B.start()
+    ft = solve(ft,max_iterations=I)
+    r = np.add.reduce(np.add.reduce(ft[0] + ft[1] + ft[2] + ft[3]))
+    B.stop()
+    B.pprint()
+
+if __name__ == "__main__":
+    main()

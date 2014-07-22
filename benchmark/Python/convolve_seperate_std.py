@@ -1,12 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys
-import numpy as np
-import bohrium as bh
 from numpy.linalg import svd
-import bohrium as bh
 import util
 
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 
 def generate_gauss_matrix(filter_shape, sigma, data_type=np.float32):
     """
@@ -54,7 +55,6 @@ def generate_gauss_matrix(filter_shape, sigma, data_type=np.float32):
 
     return result
 
-
 def separate2d(input, data_type=np.float32):
     """
     `Separate a 2d-matrix convolution filter into two decomposed vectors
@@ -97,25 +97,25 @@ def separate2d(input, data_type=np.float32):
     return (data_type(vertical_vector), data_type(horizontal_vector))
 
 
-def zero_pad(data, window_vectors, bohrium=False):
+def zero_pad(data, window_vectors):
 
     radius = (len(window_vectors[0]) / 2, len(window_vectors[1]) / 2)
 
-    padded_data = bh.zeros((data.shape[0] + 2 * radius[0], data.shape[1] + 2 * radius[1]), dtype=data.dtype, bohrium=bohrium)
+    padded_data = np.zeros((data.shape[0] + 2 * radius[0], data.shape[1] + 2 * radius[1]), dtype=data.dtype)
 
     padded_data[radius[0]:-radius[0], radius[1]:-radius[1]] = data
 
     return padded_data
 
-def convolve2d_seperate(input, window_vectors, bohrium=False):
+def convolve2d_seperate(input, window_vectors):
 
     window_radius = (len(window_vectors[0]) / 2, len(window_vectors[1])/ 2)
 
-    out = bh.zeros(input.shape, dtype=input.dtype)
+    out = np.zeros(input.shape, dtype=input.dtype)
 
-    padded_input = zero_pad(input, window_vectors, bohrium=bohrium)
+    padded_input = zero_pad(input, window_vectors)
 
-    col_result = bh.zeros((input.shape[0], input.shape[1] + 2 * window_radius[1]), dtype=input.dtype, bohrium=bohrium)
+    col_result = np.zeros((input.shape[0], input.shape[1] + 2 * window_radius[1]), dtype=input.dtype)
 
     start_y = window_radius[0] * 2
     end_y = padded_input.shape[0]
@@ -127,7 +127,7 @@ def convolve2d_seperate(input, window_vectors, bohrium=False):
     for y in xrange(window_radius[0], input.shape[0] + window_radius[0]):
         start_y = y - window_radius[0]
         end_y = y + window_radius[0] + 1
-        col_result[start_y] = bh.dot(padded_input[start_y:end_y].T, window_vectors[0][:,np.newaxis])[0]
+        col_result[start_y] = np.dot(padded_input[start_y:end_y].T, window_vectors[0][:,np.newaxis])[0]
 
     # Second calculate dot product of the dot products calculated above
     # and Gauss vector along rows (x direction)
@@ -136,22 +136,19 @@ def convolve2d_seperate(input, window_vectors, bohrium=False):
     for x in xrange(window_radius[1], input.shape[1] + window_radius[1]):
         start_x = x - window_radius[1]
         end_x = x + window_radius[1] + 1
-        out[:, start_x] = bh.dot(col_result[:, start_x:end_x], window_vectors[1][:,np.newaxis])[0]
+        out[:, start_x] = np.dot(col_result[:, start_x:end_x], window_vectors[1][:,np.newaxis])[0]
     return out
 
 def main():
     B = util.Benchmark()
 
-    data_type = np.float32
-    input_size = int(B.size[0])
-    input_shape = (input_size, input_size)
-    filter_size = int(B.size[1])
-    filter_shape = (filter_size, filter_size)
+    data_type       = np.float32
+    input_size      = int(B.size[0])
+    input_shape     = (input_size, input_size)
+    filter_size     = int(B.size[1])
+    filter_shape    = (filter_size, filter_size)
 
-    input = np.arange(input_shape[0] * input_shape[1], dtype=data_type)
-
-    # input[:] = random.random(input_shape[0]*input_shape[1])
-
+    input       = np.arange(input_shape[0] * input_shape[1], dtype=data_type)
     input.shape = input_shape
 
     sigma = 1
@@ -161,19 +158,16 @@ def main():
     (horizontal_vector, vectical_vector) = separate2d(filter, data_type)
 
     if B.bohrium:
-        horizontal_vector = bh.array(horizontal_vector)
-        vectical_vector = bh.array(vectical_vector)
-        input = bh.array(input)
+        horizontal_vector   = np.array(horizontal_vector)
+        vectical_vector     = np.array(vectical_vector)
+        input = np.array(input)
 
     print 'Convolve: %sx%s data with %sx%s filter'% (input_size, input_size, filter_size, filter_size)
 
     B.start()
-    result = convolve2d_seperate(input, (horizontal_vector, vectical_vector), bohrium=B.bohrium)
+    result = convolve2d_seperate(input, (horizontal_vector, vectical_vector))
     B.stop()
     B.pprint()
 
-
-
 if __name__ == '__main__':
     main()
-

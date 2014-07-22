@@ -1,22 +1,25 @@
-import bohrium as numpy
 import util
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 
 def main():
 
     B = util.Benchmark()
     N, = B.size
 
-    x = numpy.arange(N**2, dtype=numpy.float32)
+    # Create matrices
+    x = np.arange(N**2, dtype=np.float32)
     x.shape = (N, N)
-    x.bohrium = B.bohrium
 
-    y = numpy.arange(N**2, dtype=numpy.float32)
+    y = np.arange(N**2, dtype=np.float32)
     y.shape = (N, N)
-    x.bohrium = B.bohrium
 
     B.start()
 
-    numpy.add.reduce(x[:,numpy.newaxis]*numpy.transpose(y),-1)
+    # Do the matrix multiplication
+    np.add.reduce(x[:,np.newaxis] * np.transpose(y), -1)
 
     B.stop()
     B.pprint()

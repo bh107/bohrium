@@ -7,7 +7,7 @@ else:
 def model(N, dtype=np.float32):
     """Construct pseudo-data representing price samples?"""
 
-    S = np.random.random([N], dtype=dtype)
+    S = np.array(np.random.random([N]), dtype=dtype)
     S = S*4.0-2.0 + 60.0 # Price is between 58-62
 
     return S
@@ -54,8 +54,7 @@ def price(S, I, flag='c', X=65.0, dT=(1.0/365.0), r=0.08, v=0.3, visualize=False
 
     return Ps
 
-if __name__ == "__main__":
-    
+def main():
     B = util.Benchmark()
     (N, I) = B.size
 
@@ -65,3 +64,6 @@ if __name__ == "__main__":
     R = price(S, I, visualize=B.visualize)   # Run the model
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()

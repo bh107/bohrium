@@ -43,22 +43,25 @@ def solve(world, I):
     FAC = 1.0/len(stencil)
     for _ in xrange(I):
         stencil[len(stencil)/2][:] = sum(stencil)*FAC
-        np.flush()
 
     return world
 
-if __name__ == "__main__":
-
+def main():
     B = util.Benchmark()
     size    = B.size[0]
     I       = B.size[1]
     D       = B.size[2]
 
-    world = np.random.random(shape(D, size), dtype=B.dtype)
-    print "Solving",D, "dimensional",world.shape,"problem with", \
-        len([i for i in it.product([None,None,None], repeat=D)]), "point stencil."
-
+    world = np.array(np.random.random(shape(D, size)), dtype=B.dtype)
+    
     B.start()
     solve(world,I)
     B.stop()
     B.pprint()
+    if B.verbose:
+        print "Solving",D, "dimensional",world.shape,"problem with",     \
+               len([i for i in it.product([None,None,None], repeat=D)]), \
+               "point stencil."
+
+if __name__ == "__main__":
+    main()

@@ -1,12 +1,19 @@
-import bohrium as np
-import bohrium.linalg as la
 import util
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
+import bohrium.linalg as la
 
-B = util.Benchmark()
-N = B.size[0]
+def main():
+    B = util.Benchmark()
+    N = B.size[0]
 
-a = np.random.random((N,N),dtype=B.dtype,bohrium=B.bohrium)
-B.start()
-(l,u) = la.lu(a)
-B.stop()
-B.pprint()
+    a = np.array(np.random.random((N,N)), dtype=B.dtype)
+    B.start()
+    (l,u) = la.lu(a)
+    B.stop()
+    B.pprint()
+
+if __name__ == "__main__":
+    main()

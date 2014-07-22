@@ -45,7 +45,7 @@ def wireworld(world, iterations):
 
     return sim
 
-if __name__ == "__main__":
+def main():
     """
     Example parameter: --size=1000*10.
     This will execute on a 1000x1000 dataset for 10 iterations.
@@ -58,3 +58,6 @@ if __name__ == "__main__":
     result = wireworld(world, I)
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()
