@@ -20,6 +20,10 @@ gen:
 	cp $(CPU)/autogen/output/tac.cpp $(CPU)/tac.h
 	rm $(CPU)/autogen/output/*.cpp
 
+purge_ko:
+	rm -f ~/.local/var/bohrium/kernels/*
+	rm -f ~/.local/var/bohrium/objects/*
+
 #
 # Remove installed stuff specific to the cpu-engine
 purge:
