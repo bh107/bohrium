@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "bh_ve_cpu.h"
 #include "engine.hpp"
+#include "timevault.hpp"
 
 using namespace std;
 const char TAG[] = "Component";
@@ -196,7 +197,11 @@ bh_error bh_ve_cpu_init(const char *name)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
-    return engine->execute(bhir->instr_list, bhir->ninstr);
+    TIMER_START
+    bh_error res = engine->execute(bhir->instr_list, bhir->ninstr);
+    TIMER_STOP("CPU-EXECUTE")
+
+    return res; 
 }
 
 /* Component interface: shutdown (see bh_component.h) */

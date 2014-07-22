@@ -143,14 +143,12 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
                         sourcecode.size()
                     );
                 }
-                TIMER_START
                 // Send to compiler
                 bool compile_res = compiler.compile(
                     storage.obj_abspath(block.symbol()), 
                     sourcecode.c_str(), 
                     sourcecode.size()
                 );
-                TIMER_STOP("Compiling (SIJ Kernels)")
                 if (!compile_res) {
                     fprintf(stderr, "Engine::sij_mode(...) == Compilation failed.\n");
                     return BH_ERROR;
@@ -181,9 +179,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             //
             // Execute block handling array operations.
             // 
-            TIMER_START
             storage.funcs[block.symbol()](block.operands());
-            TIMER_STOP(block.symbol())
 
             break;
     }
@@ -345,7 +341,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     // Allocate memory for output
     //
 
-    TIMER_START
     for(size_t i=0; i<block.ntacs(); ++i) {
         tac_t& tac = block.tac(i);
         operand_t& operand = symbol_table[tac.out];
@@ -359,20 +354,16 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
             }
         }
     }
-    TIMER_STOP("Allocating memory.")
 
     //
     // Execute block handling array operations.
     // 
-    TIMER_START
     DEBUG(TAG, "SYMBOL="<< block.symbol());
     storage.funcs[block.symbol()](block.operands());
-    TIMER_STOP(block.symbol())
 
     //
     // De-Allocate operand memory
 
-    TIMER_START
     for(size_t i=0; i<block.ntacs(); ++i) {
         tac_t& tac = block.tac(i);
         operand_t& operand = symbol_table[tac.out];
@@ -386,7 +377,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
             }
         }
     }
-    TIMER_STOP("Deallocating memory.")
 
     return BH_SUCCESS;
 }
