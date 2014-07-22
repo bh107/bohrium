@@ -39,13 +39,17 @@ void Block::clear(void)
 
 void Block::compose(size_t prg_begin, size_t prg_end)
 {
+    // An array pointers to operands
+    // Will be handed to the kernel-function.
     operands_ = new operand_t*[(prg_end-prg_begin+1)*3];
 
     for(size_t prg_idx=prg_begin; prg_idx<=prg_end; ++prg_idx) {
         tac_t& tac = program_[prg_idx];
-        tacs_.push_back(&tac);
-        if ((tac.op & (ARRAY_OPS))>0) {
-            array_tacs_.push_back(&tac);
+
+        tacs_.push_back(&tac);              // <-- All tacs
+
+        if ((tac.op & (ARRAY_OPS))>0) { 
+            array_tacs_.push_back(&tac);    // <-- Only array operations
         }
 
         // Map operands to local-scope
