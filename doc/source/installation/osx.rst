@@ -8,7 +8,7 @@ You need to install the `Xcode Developer Tools <https://developer.apple.com/xcod
 It seems that from version 10.9.4 you get Python 2.7 and can install most of the Python packages through pip::
 
   sudo easy_install pip
-  sudo pip install cheetah cython
+  sudo pip install cheetah cython numpy
 
 You can do the above to avoid having multiple Python installations, if you are on 10.9.4 or newer you only need MacPorts/Homebrew/Fink for the non-Python packages: ``cmake, swig, and boost``.
 
@@ -25,10 +25,17 @@ If you also want to build the Mono libraries (only required for the C# NumCIL pa
 
 .. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ is 32bit and thus only supports up to 2GB memory.
 
+If you are using homebrew::
+
+  # System Packagaes
+  brew install cmake cwig boost
+  # Python Packages (if not on 10.9.4)
+  brew install ...
+
 If you are using finkproject::
 
   # System Packages
-  cmake swig boost1.53.nopython
+  fink install cmake swig boost1.53.nopython
   # Python and Python Packages
   fink install python27 numpy-py27 cheetah-py27 
 
