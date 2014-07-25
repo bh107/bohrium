@@ -12,7 +12,8 @@ import pygpu
 from pygpu.array import gpuarray as elemary
 import backend_numpy
 
-cxt = pygpu.init("opencl0:0")
+cxt_string = os.environ.get("GPUARRAY_DEVICE", "opencl0:0")
+cxt = pygpu.init(cxt_string)
 #cxt = pygpu.init("cuda0")
 pygpu.set_default_context(cxt)
 
