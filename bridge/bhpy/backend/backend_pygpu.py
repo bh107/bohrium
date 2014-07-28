@@ -99,7 +99,12 @@ def accumulate(op, out, a, axis):
 def extmethod(name, out, in1, in2):
     """Apply the extended method 'name' """
 
-    raise NotImplementedError()
+    (out, in1, in2) = views2clary((out, in1, in2))
+    if name == "matmul":
+        pygpu.blas.gemm(1, in1, in2, 1, out, overwrite_c=True)
+    else:
+        raise NotImplementedError("The current runtime system does not support "
+                                  "the extension method '%s'"%name)
 
 def range(size, dtype):
     """create a new array containing the values [0:size["""
