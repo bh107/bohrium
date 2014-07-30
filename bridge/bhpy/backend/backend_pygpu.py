@@ -12,9 +12,11 @@ import pygpu
 from pygpu.array import gpuarray as elemary
 import backend_numpy
 
-cxt = pygpu.init("opencl0:0")
+cxt_string = os.environ.get("GPUARRAY_DEVICE", "opencl0:0")
+cxt = pygpu.init(cxt_string)
 #cxt = pygpu.init("cuda0")
 pygpu.set_default_context(cxt)
+no_matmul = bool(int(os.environ.get("NO_MATMUL", 0)))
 
 class base(backend_numpy.base):
     """base array handle"""
@@ -98,7 +100,12 @@ def accumulate(op, out, a, axis):
 def extmethod(name, out, in1, in2):
     """Apply the extended method 'name' """
 
-    raise NotImplementedError()
+    (out, in1, in2) = views2clary((out, in1, in2))
+    if name == "matmul" and not no_matmul:
+        pygpu.blas.gemm(1, in1, in2, 1, out, overwrite_c=True)
+    else:
+        raise NotImplementedError("The current runtime system does not support "
+                                  "the extension method '%s'"%name)
 
 def range(size, dtype):
     """create a new array containing the values [0:size["""

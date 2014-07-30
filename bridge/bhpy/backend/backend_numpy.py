@@ -9,8 +9,9 @@ import mmap
 import time
 import ctypes
 import backend
+import os
 
-VCACHE_SIZE = 10
+VCACHE_SIZE = int(os.environ.get("VCACHE_SIZE", 10))
 vcache = []
 
 class base(backend.base):
