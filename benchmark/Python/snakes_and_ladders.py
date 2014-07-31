@@ -1,14 +1,15 @@
 # By  Natalino Busa <https://gist.github.com/natalinobusa/4633275>
-
 import util
-import bohrium as bh
-import numpy as np
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 from matplotlib import pyplot
 
-B = util.Benchmark()
-size=B.size[0]
-iterations = B.size[1]
-
+"""
+#
+# These functions are not used unused...
+#
 def special(p, pos_start, pos_end):
     p[pos_start]= np.zeros(size+1)
     p[pos_start][pos_start]=1
@@ -27,9 +28,10 @@ def snake(p, pos_start, pos_end=0):
 def ladder(p, pos_start, pos_end=size):
     if (pos_end>pos_start):
         special(p, pos_start, pos_end)
+"""
 
-def nullgame():
-    p=np.zeros((size+1,size+1), dtype=B.dtype)
+def nullgame(size, dtype):
+    p=np.zeros((size+1,size+1), dtype=dtype)
 
     for i in xrange(size+1):
         for j in xrange(6):
@@ -46,44 +48,53 @@ def nullgame():
 
     return p
 
-a=bh.array(np.zeros(size+1, dtype=B.dtype), bohrium=B.bohrium)
-p=bh.array(nullgame(), bohrium=B.bohrium)
+def main():
 
-#initial matrix is p
-m=p
+    B           = util.Benchmark()
+    size        = B.size[0]
+    iterations  = B.size[1]
 
-pr_end=bh.array(np.zeros(iterations,dtype=B.dtype), bohrium=B.bohrium)
+    a = np.array(np.zeros(size+1, dtype=B.dtype))
+    p = np.array(nullgame(size,   dtype=B.dtype))
 
-B.start()
-for k in xrange(iterations):
+    m = p   # Initial matrix is p
+
+    pr_end = np.array(np.zeros(iterations, dtype=B.dtype))
+
+    B.start()
+    for k in xrange(iterations):
+        if B.visualize:
+            # Plot the probability distribution at the k-th iteration
+            pyplot.figure(1)
+            pyplot.plot(m[0][0:size])
+
+        # Store the probability of ending after the k-th iteration
+        pr_end[k] = m[0][size]
+
+        # Store/plot the accumulated marginal probability at the k-th iteration
+        a = a + m[0]
+        if B.visualize:
+            pyplot.figure(2)
+            pyplot.plot(a[0:size])
+
+        #calculate the stocastic matrix for iteration k+1
+        try:
+            m = np.dot(m, p)
+        except NotImplementedError:
+            print "Shit..."
+            m = np.array(np.dot(m.copy2numpy(),p.copy2numpy()))
+
+    B.stop()
+    B.pprint()
+
+    #plot the probability of ending the game
+    # after k iterations
     if B.visualize:
-        #plot the probability distribution at the k-th iteration
-        pyplot.figure(1)
-        pyplot.plot(m[0][0:size])
+        pyplot.figure(3)
+        pyplot.plot(pr_end[0:iterations-1])
 
-    #store the probability of ending after the k-th iteration
-    pr_end[k] = m[0][size]
+        #show the three graphs
+        pyplot.show()
 
-    #store/plot the accumulated marginal probability at the k-th iteration
-    a=a+m[0]
-    if B.visualize:
-        pyplot.figure(2)
-        pyplot.plot(a[0:size])
-
-    #calculate the stocastic matrix for iteration k+1
-    try:
-        m=bh.dot(m,p)
-    except NotImplementedError:
-        m=bh.array(np.dot(m.copy2numpy(),p.copy2numpy()),bohrium=True)
-B.stop()
-B.pprint()
-
-#plot the probability of ending the game
-# after k iterations
-if B.visualize:
-    pyplot.figure(3)
-    pyplot.plot(pr_end[0:iterations-1])
-
-    #show the three graphs
-    pyplot.show()
-
+if __name__ == "__main__":
+    main()
