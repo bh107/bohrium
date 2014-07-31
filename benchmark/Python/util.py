@@ -1,166 +1,133 @@
 #!/usr/bin/python
-#Benchmarks for NumPy.
-#This is collection of help functions for the NumPy benchmarks.
+import argparse
+import pprint
+import time
+import sys
 
 import bohrium as np
-import getopt
-import sys
-import datetime
-import time
-from os import environ as env
-import os
-import multiprocessing
-import subprocess
-import pickle
+
+def t_or_f(arg):
+    """Helper function to parse "True/true/TrUe/False..." as bools."""
+
+    ua = str(arg).lower()
+    if ua == 'true'[:len(ua)]:
+       return True
+    elif ua == 'false'[:len(ua)]:
+       return False
+    else:
+        return arg
 
 class Benchmark:
-    """This class should handle the presentation of benchmark results.
-       A list of non-optional arguments is exposed through self.argv.
     """
+    Helper class to aid running Python/NumPy programs with and without npbackend.
+
+    Use it to sample elapsed time using: start()/stop()
+    Pretty-prints results using pprint().
+    start()/stop() will send flush signals to npbackend, ensuring that only
+    the statements in-between start() and stop() are measured.
+    """
+
     def __init__(self):
-        self.batch_mode = False
-        self.visualize = False
-        self.verbose = False
-        t = datetime.datetime.now()
-        date = "%d:%d:%d %d/%d/%d"%(t.hour,t.minute,t.second,t.day,t.month,t.year)
-        self.info = {'bohrium':False, 'date':date,'file':os.path.basename(sys.argv[0])}
-        self.info['dtype'] = "float64"
-        options, self.argv = getopt.gnu_getopt(sys.argv[1:], \
-                'p:n:c:s:',\
-                ['bohrium=','nnodes=','ncores=','size=','batch','dtype=',
-                 'visualize', 'verbose'])
 
-        for opt, arg in options:
-            if opt in ('-p', '--bohrium'):
-                self.info['bohrium'] = bool(eval(arg))
-            if opt in ('-n', '--nnodes'):
-                self.info['nnodes'] = int(arg)
-            if opt in ('-c', '--ncores'):
-                self.info['ncores'] = int(arg)
-            if opt in ('--batch'):
-                self.batch_mode = True
-            if opt in ('--visualize'):
-                self.visualize = True
-            if opt in ('--verbose'):
-                self.verbose = True
-            if opt in ('--size'):
-                #Jobsize use the syntax: dim_size*dim_size fx. 10*20
-                self.info['size'] = [int(i) for i in arg.split("*") if len(i)]
-            if opt in ('--dtype'):
-                self.info['dtype'] = arg
+        self.__elapsed  = 0.0           # The quantity measured
+        self.__script   = sys.argv[0]   # The script being run
 
-        self.info['nthd'] = multiprocessing.cpu_count()
-        self.info['nblocks'] = 16
-        try:
-            self.info['nthd'] = int(env['BH_NUM_THREADS'])
-        except KeyError:
-            pass
-        try:
-            self.info['nblocks'] = int(env['BH_SCORE_NBLOCKS'])
-        except KeyError:
-            pass
-        #Expose variables to the user.
-        self.size  = self.info['size']
-        self.bohrium = self.info['bohrium']
-        self.dtype = eval("np.%s"%self.info['dtype'])
+        # Just for reference... these are the options parsed from cmd-line.
+        options = [
+            'size',         'dtype',
+            'visualize',    'verbose',
+            'backend',      'bohrium'
+        ]
+
+        # Construct argument parser
+        p = argparse.ArgumentParser(description='Benchmark runner for npbackend.')
+        p.add_argument('--size',
+                       required = True,
+                       help     = "Tell the script the size of the data to work on."
+        )
+        p.add_argument('--dtype',
+                       choices  = ["float32, float64"],
+                       default  = "float64",
+                       help     = "Tell the the script which primitive type to use."
+                                  " (default: %(default)s)"
+        )
+        p.add_argument('--visualize',
+                       choices  = [True, False],
+                       default  = False,
+                       type     = t_or_f,
+                       help     = "Enable visualization in script."
+                                  "(default: %(default)s)"
+        )
+        p.add_argument('--verbose',
+                       choices  = [True, False],
+                       default  = False,
+                       type     = t_or_f,
+                       help     = "Print out misc information from script."
+                                  " (default: %(default)s)"
+        )
+        p.add_argument('--backend',
+                       choices  = ['None', 'NumPy', 'Bohrium'],
+                       default  = "None",
+                       help     = "Enable npbackend using the specified backend."
+                                  " Disable npbackend using None."
+                                  " (default: %(default)s)"
+        )
+        p.add_argument('--bohrium',
+                       choices  = [True, False],
+                       default  = False,
+                       type     = t_or_f,
+                       help     = "Same as --backend=bohrium which means:"
+                                  " enable npbackend using bohrium."
+                                  " (default: %(default)s)"
+        )
+        args = p.parse_args()   # Parse the arguments
+
+        #
+        # Conveniently expose options to the user
+        #
+        self.size       = [int(i) for i in args.size.split("*")]
+        self.dtype      = eval("np.%s" % args.dtype)
+
+        # Unify the options: 'backend' and 'bohrium'
+        if args.bohrium or args.backend == 'bohrium':
+            self.backend    = "bohrium"
+            self.bohrium    = True
+        else:
+            self.backend = args.backend
+            self.bohrium = args.bohrium
+
+        self.visualize  = args.visualize
+        self.verbose    = args.verbose
+
+        #
+        # Also make them available via the parser and arg objects
+        self.p      = p
+        self.args   = args
 
     def start(self):
         np.flush()
-        self.info['totaltime'] = time.time()
+        self.__elapsed = time.time()
 
     def stop(self):
         np.flush()
-        self.info['totaltime'] = time.time() - self.info['totaltime']
+        self.__elapsed = time.time() - self.__elapsed
 
     def pprint(self):
-        if self.batch_mode:
-            print "%s"%pickle.dumps(self.info)
-        else:
-            print "%s - bohrium: %s, nthd: %d, nblocks: %d size: %s, elapsed-time: %f"%(self.info['file'],self.info['bohrium'],self.info['nthd'],self.info['nblocks'],self.info['size'],self.info['totaltime'])
+        print "%s - backend: %s, bohrium: %s, size: %s, elapsed-time: %f" % (
+                self.__script,
+                self.backend,
+                self.bohrium,
+                '*'.join([str(s) for s in self.size]),
+                self.__elapsed
+        )
 
-
-def do(nthd, nblocks, jobsize, filename, bohrium, savedir, uid):
-    try:
-        env = os.environ
-        env['BH_NUM_THREADS'] = "%d"%nthd
-        env['BH_SCORE_NBLOCKS'] = "%d"%nblocks
-
-        """
-        taskmask = '0'
-        for i in xrange(2,nthd,2):
-            taskmask += ",%d"%i
-        for i in xrange(1,nthd,2):
-            taskmask += ",%d"%i
-        """
-        p = subprocess.Popen([sys.executable,filename,"--batch","--bohrium=%s"%bohrium, "--size",jobsize],env=env,stdout=subprocess.PIPE)
-        (stdoutdata, stderrdata) = p.communicate()
-        err = p.wait()
-        info = pickle.loads(stdoutdata)
-        if not bohrium:
-            print "#NumPy   ;     N/A;%10.4f; %s"%(info['totaltime'],info)
-        else:
-            print "%9.d;%8.d;%10.4f; %s"%(nthd,nblocks, info['totaltime'],info)
-        if err:
-            raise Exception(err)
-
-        if savedir:
-            savefile = os.path.join(savedir, "%s_%d.pkl"%(info['file'],uid))
-            while os.path.exists(savefile):
-                uid += 1;
-                print "file %s exist trying %s"%(savefile,uid)
-                savefile = os.path.join(savedir, "%s_%d.pkl"%(info['file'],uid))
-            f = open(savefile, 'w')
-            pickle.dump(info, f)
-        return uid+1
-    except KeyboardInterrupt:
-        p.terminate()
-        raise KeyboardInterrupt
-
+def main():
+    B = Benchmark()
+    B.start()
+    B.stop()
+    if B.visualize:
+        pprint.pprint(B.args)
+    B.pprint()
 
 if __name__ == "__main__":
-    min_nblocks = 16
-    max_nblocks = 16
-    savedir = ''
-    repeat = 1
-    options, remainders = getopt.gnu_getopt(sys.argv[1:], '', ['save=','file=','thd-min=', 'thd-max=', 'jobsize=','repeat=', 'nblocks=', 'nblocks-min=', 'nblocks-max='])
-    for opt, arg in options:
-        if opt in ('--file'):
-            filename = arg
-        if opt in ('--save'):
-            savedir = arg
-        if opt in ('--thd-min'):
-            minthd = int(arg)
-        if opt in ('--thd-max'):
-            maxthd = int(arg)
-        if opt in ('--jobsize'):
-            jobsize = arg
-        if opt in ('--repeat'):
-            repeat = int(arg)
-        if opt in ('--nblocks'):
-            min_nblocks = int(arg)
-            max_nblocks = int(arg)
-        if opt in ('--nblocks-min'):
-            min_nblocks = int(arg)
-        if opt in ('--nblocks-max'):
-            max_nblocks = int(arg)
-
-    try:
-        os.mkdir(savedir)
-    except:
-        print "Warning the directory '%s' already exist"%savedir
-
-    print "CPU-cores; nblocks; totaltime; info"
-    uid = 1#Id
-    if minthd == 1:#Lets do the NumPy run.
-        for r in xrange(repeat):
-            uid = do(1, 1, jobsize, filename, False, savedir,uid)
-
-    for r in xrange(repeat):
-        nthd = minthd
-        while nthd <= maxthd:
-            nblocks = min_nblocks
-            while nblocks <= max_nblocks:
-                uid = do(nthd, nblocks, jobsize, filename, True, savedir, uid)
-                nblocks *= 2
-            nthd *= 2
-
+    main()
