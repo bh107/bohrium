@@ -14,9 +14,9 @@ SURVIVE_LOW     = 2
 SURVIVE_HIGH    = 3
 SPAWN           = 3
 
-def randomstate(height, width, prob=0.2, dtype=np.int64):
+def randomstate(height, width, prob=0.2, dtype=np.float64):
     state               = np.zeros((height+2,width+2), dtype=dtype)
-    state[1:-1,1:-1]    = np.array(np.random.random((width,height)), dtype=np.float64) < prob
+    state[1:-1,1:-1]    = np.array(np.random.random((width,height)), dtype=dtype) < prob
     return state
 
 def play(state, iterations):
@@ -46,7 +46,7 @@ def main():
 
     B = util.Benchmark()
     (W, H, I) = B.size
-    S = randomstate(W, H)
+    S = randomstate(W, H, dtype=B.dtype)
 
     B.start()
     R = play(S, I)
