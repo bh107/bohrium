@@ -1,17 +1,19 @@
 #Test and demonstration of the NumPy Bridge.
-import numpy as np
-import bohrium as bh
-import sys
-import time
-import subprocess
-import os
-import getopt
-import random
-import warnings
-import copy
 from operator import mul
 from itertools import izip as zip
 from numbers import Number
+import subprocess
+import warnings
+import random
+import getopt
+import pprint
+import time
+import copy
+import sys
+import os
+
+import numpy as np
+import bohrium as bh
 
 class TYPES:
     NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
@@ -169,6 +171,7 @@ if __name__ == "__main__":
     print "*"*3, "Testing the equivalency of Bohrium-NumPy and NumPy", "*"*3
     for i in xrange(len(script_list)):
         f = script_list[i]
+
         if f.startswith("test_") and f.endswith("py") and f not in exclude_list:
             m = f[:-3]#Remove ".py"
             m = __import__(m)
