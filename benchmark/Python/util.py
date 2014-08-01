@@ -48,18 +48,20 @@ class Benchmark:
         # command-line. When either directly or indirectly imported
         # we cant.
         owns_main = __name__ == "__main__"
-        p.add_argument('--size',
-                       required = owns_main,
-                       help     = "Tell the script the size of the data to work on."
+        
+        g1 = p.add_mutually_exclusive_group(required = owns_main)
+        g1.add_argument('--size',
+                       help = "Tell the script the size of the data to work on."
         )
+        g1.add_argument('--inputfn',
+                       help = "Input file to use as data."
+        )
+
         p.add_argument('--dtype',
                        choices  = ["float32, float64"],
                        default  = "float64",
                        help     = "Tell the the script which primitive type to use."
                                   " (default: %(default)s)"
-        )
-        p.add_argument('--inputfn',
-                       help     = "Input file to use as data."
         )
         p.add_argument('--outputfn',
                        help     = "Output file to store results in."
@@ -78,14 +80,16 @@ class Benchmark:
                        help     = "Print out misc information from script."
                                   " (default: %(default)s)"
         )
-        p.add_argument('--backend',
+
+        g2 = p.add_mutually_exclusive_group()
+        g2.add_argument('--backend',
                        choices  = ['None', 'NumPy', 'Bohrium'],
                        default  = "None",
                        help     = "Enable npbackend using the specified backend."
                                   " Disable npbackend using None."
                                   " (default: %(default)s)"
         )
-        p.add_argument('--bohrium',
+        g2.add_argument('--bohrium',
                        choices  = [True, False],
                        default  = False,
                        type     = t_or_f,
@@ -93,6 +97,7 @@ class Benchmark:
                                   " enable npbackend using bohrium."
                                   " (default: %(default)s)"
         )
+
         args, unknown = p.parse_known_args()   # Parse the arguments
 
         #
