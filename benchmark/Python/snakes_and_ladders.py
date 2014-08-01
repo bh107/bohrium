@@ -71,7 +71,7 @@ for k in xrange(iterations):
         pyplot.plot(a[0:size])
 
     #calculate the stocastic matrix for iteration k+1
-    if B.no_extmethods:
+    if B.bohrium and B.no_extmethods:
         m=bh.array(np.dot(m.copy2numpy(),p.copy2numpy()),bohrium=True)
     else:
         m=bh.dot(m,p)
