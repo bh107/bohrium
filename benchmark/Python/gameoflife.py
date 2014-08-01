@@ -15,8 +15,10 @@ SURVIVE_HIGH    = 3
 SPAWN           = 3
 
 def randomstate(height, width, prob=0.2, dtype=np.float64):
-    state               = np.zeros((height+2,width+2), dtype=dtype)
-    state[1:-1,1:-1]    = np.array(np.random.random((width,height)), dtype=dtype) < prob
+    state = np.zeros((height+2,width+2), dtype=dtype)
+    state[1:-1,1:-1] = np.array(
+        np.random.random((width,height)), dtype=dtype
+    ) < prob
     return state
 
 def play(state, iterations):
