@@ -31,7 +31,6 @@ def main():
     B = util.Benchmark()
     N, = B.size
     data = jacobi_init(N)
-    data + 1   # Ensure that data is in the correct space.
     B.start()
     result = jacobi(data)
     B.stop()
