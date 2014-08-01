@@ -137,7 +137,7 @@ class Benchmark:
     def tofile(self, ary_dict):
 
         for k in ary_dict:  # We cant pickle bh-arrays so we copy them first
-            if 'bohrium' in str(type(ary_dict[k]))
+            if 'bohrium' in str(type(ary_dict[k])):
                 ary_dict[k] = ary_dict[k].copy2numpy()
             
         with open(self.outputfn, 'wb') as fd:

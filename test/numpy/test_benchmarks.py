@@ -63,10 +63,11 @@ class test_gameoflife(numpytest):
             backend = "Bohrium"
 
         res = benchrun('/home/safl/Desktop/bohrium/benchmark/Python/gameoflife.py',
-            "100*100*10",
+            "20*20*2",
             backend,
             '/tmp/bohrium'
         )
+        res['res'] = np.array(res['res'], bohrium=backend!="None")
         return (res['res'], "gameoflife")
 """
 class test_jacobi_stencil(numpytest):
