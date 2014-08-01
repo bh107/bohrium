@@ -1,3 +1,6 @@
+import subprocess
+import pickle
+
 import bohrium as np
 from numpytest import numpytest
 import bohrium.linalg as la
@@ -24,6 +27,39 @@ class test_jacobi(numpytest):#disabled
         exec cmd
         return (res,cmd)
 
+def benchrun(script, size, bohrium, outputfn):
+    """Run the benchmark script and return the result."""
+
+    cmd = [
+        'python',
+        script,
+        '--size='       +size,
+        '--bohrium='    +str(bohrium),
+        '--outputfn='   +outputfn
+    ]
+    p = subprocess.Popen(cmd)
+    out, err=p.communicate()
+
+    res = None
+    with open(outputfn) as fd:
+        res = pickle.load(fd)
+
+    return res
+
+class test_gameoflife(numpytest):
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 20
+
+    def test_gameoflife(self):
+        res = run('/home/bohrium/benchmark/Python',
+            "100*100*10",
+            True,
+            '/tmp/bohrium'
+        )
+        return (res['res'], "None")
+"""
 class test_jacobi_stencil(numpytest):
     def __init__(self):
         numpytest.__init__(self)
@@ -31,7 +67,7 @@ class test_jacobi_stencil(numpytest):
         self.size = 20
     def init(self):
         a = {}
-        cmd = "a[0] = exp.jacobi_stencil.freezetrap({0},{0},bohrium=False);".format(self.size)
+        cmd = "a[0] = exp.jacobi_stencil.freezetrap({0},{0});".format(self.size)
         exec cmd
         yield (a,cmd)
 
@@ -43,7 +79,7 @@ class test_jacobi_stencil(numpytest):
 class test_gameoflife(numpytest):
     def init(self):
         a = {}
-        cmd  = "a[0] = exp.gameoflife.randomstate({0},{0},bohrium=False);".format(10)
+        cmd  = "a[0] = exp.gameoflife.randomstate({0},{0});".format(10)
         exec cmd
         yield (a,cmd)
 
@@ -60,7 +96,7 @@ class test_shallow_water(numpytest):
     def init(self):
         for t in ['np.float32','np.float64']:
             a = {}
-            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1},bohrium=False);".format(self.size,t)
+            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1});".format(self.size,t)
             exec cmd
             yield (a,cmd)
 
@@ -68,3 +104,4 @@ class test_shallow_water(numpytest):
         cmd = "res = exp.shallow_water.simulate(a[0],10);"
         exec cmd
         return (res,cmd)
+"""
