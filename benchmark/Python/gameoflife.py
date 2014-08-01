@@ -52,6 +52,8 @@ def main():
     R = play(S, I)
     B.stop()
     B.pprint()
+    if B.outputf:
+        B.tofile({'res': R})
 
 if __name__ == "__main__":
     main()
