@@ -1,4 +1,5 @@
 import subprocess
+import pprint
 import pickle
 
 import bohrium as np
@@ -27,14 +28,14 @@ class test_jacobi(numpytest):#disabled
         exec cmd
         return (res,cmd)
 
-def benchrun(script, size, bohrium, outputfn):
+def benchrun(script, size, backend, outputfn):
     """Run the benchmark script and return the result."""
 
     cmd = [
         'python',
         script,
         '--size='       +size,
-        '--bohrium='    +str(bohrium),
+        '--backend='    +backend,
         '--outputfn='   +outputfn
     ]
     p = subprocess.Popen(cmd)
@@ -52,13 +53,21 @@ class test_gameoflife(numpytest):
         self.config['maxerror'] = 0.00001
         self.size = 20
 
-    def test_gameoflife(self):
-        res = run('/home/bohrium/benchmark/Python',
+    def init(self):
+        yield ({0:np.ones(self.size, bohrium=False)}, "gameoflife")
+
+    def test_gameoflife(self, a):
+
+        backend = "None"
+        if 'bohrium.ndarray' in str(type(a[0])):
+            backend = "Bohrium"
+
+        res = benchrun('/home/safl/Desktop/bohrium/benchmark/Python/gameoflife.py',
             "100*100*10",
-            True,
+            backend,
             '/tmp/bohrium'
         )
-        return (res['res'], "None")
+        return (res['res'], "gameoflife")
 """
 class test_jacobi_stencil(numpytest):
     def __init__(self):

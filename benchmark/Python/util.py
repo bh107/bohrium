@@ -37,7 +37,8 @@ class Benchmark:
         options = [
             'size',         'dtype',
             'visualize',    'verbose',
-            'backend',      'bohrium'
+            'backend',      'bohrium',
+            'inputfn',      'outputfn'
         ]
 
         # Construct argument parser
@@ -57,10 +58,10 @@ class Benchmark:
                        help     = "Tell the the script which primitive type to use."
                                   " (default: %(default)s)"
         )
-        p.add_argument('--inputf',
+        p.add_argument('--inputfn',
                        help     = "Input file to use as data."
         )
-        p.add_argument('--outputf',
+        p.add_argument('--outputfn',
                        help     = "Output file to store results in."
         )
         p.add_argument('--visualize',
@@ -101,7 +102,7 @@ class Benchmark:
         self.dtype      = eval("np.%s" % args.dtype)
 
         # Unify the options: 'backend' and 'bohrium'
-        if args.bohrium or args.backend == 'bohrium':
+        if args.bohrium or args.backend.lower() == 'bohrium':
             self.backend    = "bohrium"
             self.bohrium    = True
         else:
@@ -110,8 +111,8 @@ class Benchmark:
 
         self.visualize  = args.visualize
         self.verbose    = args.verbose
-        self.inputf     = args.inputf
-        self.outputf    = args.outputf
+        self.inputfn    = args.inputfn
+        self.outputfn   = args.outputfn
 
         #
         # Also make them available via the parser and arg objects
@@ -126,7 +127,7 @@ class Benchmark:
         np.flush()
         self.__elapsed = time.time() - self.__elapsed
 
-    def tofile(self, ary_dict):
+    def fromfile(self, ary_dict):
         content = None
         with open(self.inputf) as fd:
             content = pickle.load(fd)
@@ -134,7 +135,12 @@ class Benchmark:
         return content
 
     def tofile(self, ary_dict):
-        with open(self.outputf, 'wb') as fd:
+
+        for k in ary_dict:  # We cant pickle bh-arrays so we copy them first
+            if 'bohrium' in str(type(ary_dict[k]))
+                ary_dict[k] = ary_dict[k].copy2numpy()
+            
+        with open(self.outputfn, 'wb') as fd:
             pickle.dump(ary_dict, fd)
 
     def pprint(self):
