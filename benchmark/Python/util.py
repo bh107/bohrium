@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import argparse
 import pprint
+import pickle
 import time
 import sys
 
@@ -41,8 +42,13 @@ class Benchmark:
 
         # Construct argument parser
         p = argparse.ArgumentParser(description='Benchmark runner for npbackend.')
+
+        # We can only have required options when the module is run from
+        # command-line. When either directly or indirectly imported
+        # we cant.
+        owns_main = __name__ == "__main__"
         p.add_argument('--size',
-                       required = True,
+                       required = owns_main,
                        help     = "Tell the script the size of the data to work on."
         )
         p.add_argument('--dtype',
@@ -50,6 +56,12 @@ class Benchmark:
                        default  = "float64",
                        help     = "Tell the the script which primitive type to use."
                                   " (default: %(default)s)"
+        )
+        p.add_argument('--inputf',
+                       help     = "Input file to use as data."
+        )
+        p.add_argument('--outputf',
+                       help     = "Output file to store results in."
         )
         p.add_argument('--visualize',
                        choices  = [True, False],
@@ -80,12 +92,12 @@ class Benchmark:
                                   " enable npbackend using bohrium."
                                   " (default: %(default)s)"
         )
-        args = p.parse_args()   # Parse the arguments
+        args, unknown = p.parse_known_args()   # Parse the arguments
 
         #
         # Conveniently expose options to the user
         #
-        self.size       = [int(i) for i in args.size.split("*")]
+        self.size       = [int(i) for i in args.size.split("*")] if args.size else []
         self.dtype      = eval("np.%s" % args.dtype)
 
         # Unify the options: 'backend' and 'bohrium'
@@ -98,6 +110,8 @@ class Benchmark:
 
         self.visualize  = args.visualize
         self.verbose    = args.verbose
+        self.inputf     = args.inputf
+        self.outputf    = args.outputf
 
         #
         # Also make them available via the parser and arg objects
@@ -111,6 +125,17 @@ class Benchmark:
     def stop(self):
         np.flush()
         self.__elapsed = time.time() - self.__elapsed
+
+    def tofile(self, ary_dict):
+        content = None
+        with open(self.inputf) as fd:
+            content = pickle.load(fd)
+
+        return content
+
+    def tofile(self, ary_dict):
+        with open(self.outputf, 'wb') as fd:
+            pickle.dump(ary_dict, fd)
 
     def pprint(self):
         print "%s - backend: %s, bohrium: %s, size: %s, elapsed-time: %f" % (
