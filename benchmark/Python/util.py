@@ -134,7 +134,12 @@ class Benchmark:
         bh.flush()
         self.__elapsed = time.time() - self.__elapsed
 
-    def dump_arrays(self, arrays, prefix):
+    def tofile(self, filename, arrays):
+        for k in arrays:
+            arrays[k] = bh.array(arrays[k], bohrium=False)
+        np.savez(filename, **arrays)
+
+    def dump_arrays(self, prefix, arrays):
         """
         Dumps a dict of arrays organized such as:
             
@@ -152,21 +157,21 @@ class Benchmark:
                 arrays[k].dtype,
                 '*'.join([str(x) for x in (arrays[k].shape)]
             )))
-        filename = "%s_%s.pkl" % (prefix, '_'.join(names))
-        np.savez(filename, **arrays)
+        filename = "%s_%s" % (prefix, '_'.join(names))
+        self.tofile(filename, arrays)
 
     def load_arrays(self, filename=None):
 
         if not filename:        # Default to the cmd-line parameter
             filename = self.inputfn
 
-        npzs = np.load(filename)
+        npz = np.load(filename)
         
         arrays  = {}            # Make sure arrays are in the correct space
-        for k in npzs:
-            arrays[k] = bh.array(npzs[k], bohrium=self.bohrium)
+        for k in npz:
+            arrays[k] = bh.array(npz[k], bohrium=self.bohrium)
 
-        del npzs                # We no longer need these
+        del npz                # We no longer need these
 
         return arrays
 

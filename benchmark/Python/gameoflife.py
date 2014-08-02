@@ -49,12 +49,10 @@ def main():
     B = util.Benchmark()
     (W, H, I) = B.size
 
-    
     if B.inputfn:
         S = B.load_array()
     else:
         S = randomstate(W, H)
-        B.dump_arrays({'input': S}, "gameoflife")
 
     B.start()
     R = play(S, I)
@@ -62,7 +60,7 @@ def main():
 
     B.pprint()
     if B.outputfn:
-        B.tofile({'res': R})
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()

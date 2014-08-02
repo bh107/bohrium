@@ -150,7 +150,7 @@ def benchrun(script, size, dtype, backend, inputfn, fn_postfix):
     Benchmarks are assumed to be installed along with the Bohrium module.
     """
     # Setup output filename
-    outputfn = "/tmp/%s_%s_%s_output_%s" % (script, dtype, backend, fn_postfix)
+    outputfn = "/tmp/%s_%s_%s_output_%s.npz" % (script, dtype, backend, fn_postfix)
 
     # Setup command
     cmd = [
@@ -163,12 +163,19 @@ def benchrun(script, size, dtype, backend, inputfn, fn_postfix):
         '--inputfn='    +inputfn,
         '--outputfn='   +outputfn
     ]
-    p = subprocess.Popen(cmd)       # Execute the benchmark
+    
+    p = subprocess.Popen(           # Execute the benchmark
+        cmd,
+        stdout  = subprocess.PIPE,
+        stderr  = subprocess.PIPE
+    )
     out, err = p.communicate()
 
-    res = None                      # Load the result from disk
-    with open(outputfn) as fd:
-        res = pickle.load(fd)
+    npzs    = np.load(outputfn)     # Load the result from disk
+    res     = {}
+    for k in npzs:
+        res[k] = npzs[k]
+    del npzs                        # Delete npz
 
     if os.path.exists(outputfn):    # Delete the result from disk
         os.remove(outputfn)

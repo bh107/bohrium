@@ -36,7 +36,8 @@ class test_gameoflife(numpytest):
 
     def init(self):
         """We do not use the data from these arrays only the meta-data."""
-        for dtype in [np.float32, np.float64]:
+
+        for dtype in [np.float64]:
             yield ({0:np.empty(self.size, bohrium=False, dtype=dtype)},
                    "%s: " % str(dtype)
             )
@@ -44,13 +45,13 @@ class test_gameoflife(numpytest):
     def test_gameoflife(self, a):
         # Determine backend to use based on input meta-data
         backend = "Bohrium" if 'bohrium.ndarray' in str(type(a[0])) else "None"
-
+        
         # Run the benchmark and retrieve results
         (res, cmd) = benchrun('gameoflife',
             "10*10*50",
             str(a[0].dtype),
             backend,
-            "datasets/gameoflife_input-%s-12*12.pkl" % a[0].dtype,
+            "datasets/gameoflife_input-%s-12*12.npz" % a[0].dtype,
             self.uuid
         )
 
