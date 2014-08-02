@@ -1,11 +1,9 @@
-import subprocess
-import pprint
-import pickle
+import uuid
 
-import bohrium as np
-from numpytest import numpytest
+from numpytest import numpytest, benchrun
 import bohrium.linalg as la
-from bohrium import examples as exp
+import bohrium as np
+#from bohrium import examples as exp
 
 class test_jacobi(numpytest):#disabled
     def __init__(self):
@@ -28,48 +26,59 @@ class test_jacobi(numpytest):#disabled
         exec cmd
         return (res,cmd)
 
-def benchrun(script, size, backend, outputfn):
-    """Run the benchmark script and return the result."""
-
-    cmd = [
-        'python',
-        script,
-        '--size='       +size,
-        '--backend='    +backend,
-        '--outputfn='   +outputfn
-    ]
-    p = subprocess.Popen(cmd)
-    out, err=p.communicate()
-
-    res = None
-    with open(outputfn) as fd:
-        res = pickle.load(fd)
-
-    return res
-
 class test_gameoflife(numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size   = 10
+        self.uuid   = str(uuid.uuid4())
+
+    def init(self):
+        """We do not use the data from these arrays only the meta-data."""
+        for dtype in [np.float32, np.float64]:
+            yield ({0:np.empty(self.size, bohrium=False, dtype=dtype)},
+                   "%s: " % str(dtype)
+            )
+
+    def test_gameoflife(self, a):
+        # Determine backend to use based on input meta-data
+        backend = "Bohrium" if 'bohrium.ndarray' in str(type(a[0])) else "None"
+
+        # Run the benchmark and retrieve results
+        (res, cmd) = benchrun('gameoflife',
+            "10*10*50",
+            str(a[0].dtype),
+            backend,
+            "datasets/gameoflife_input-%s-12*12.pkl" % a[0].dtype,
+            self.uuid
+        )
+
+        # Convert to whatever namespace it ought to be in
+        res['res'] = np.array(res['res'], bohrium=backend!="None")
+
+        return (res['res'], ' '.join(cmd))
+
+"""
+class test_shallow_water(numpytest):
+
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
         self.size = 20
 
     def init(self):
-        yield ({0:np.ones(self.size, bohrium=False)}, "gameoflife")
+        for t in ['np.float32','np.float64']:
+            a = {}
+            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1});".format(self.size,t)
+            exec cmd
+            yield (a,cmd)
 
-    def test_gameoflife(self, a):
+    def test_shallow_water(self,a):
+        cmd = "res = exp.shallow_water.simulate(a[0],10);"
+        exec cmd
+        return (res,cmd)
 
-        backend = "None"
-        if 'bohrium.ndarray' in str(type(a[0])):
-            backend = "Bohrium"
-
-        res = benchrun('/home/safl/Desktop/bohrium/benchmark/Python/gameoflife.py',
-            "20*20*2",
-            backend,
-            '/tmp/bohrium'
-        )
-        res['res'] = np.array(res['res'], bohrium=backend!="None")
-        return (res['res'], "gameoflife")
-"""
 class test_jacobi_stencil(numpytest):
     def __init__(self):
         numpytest.__init__(self)
@@ -83,18 +92,6 @@ class test_jacobi_stencil(numpytest):
 
     def test_jacobi_stencil(self,a):
         cmd = "res = exp.jacobi_stencil.solve(a[0]);"
-        exec cmd
-        return (res,cmd)
-
-class test_gameoflife(numpytest):
-    def init(self):
-        a = {}
-        cmd  = "a[0] = exp.gameoflife.randomstate({0},{0});".format(10)
-        exec cmd
-        yield (a,cmd)
-
-    def test_gameoflife(self,a):
-        cmd = "res = exp.gameoflife.play(a[0].copy(), 50);"
         exec cmd
         return (res,cmd)
 

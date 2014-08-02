@@ -6,7 +6,7 @@ import subprocess
 import warnings
 import random
 import getopt
-import pprint
+import pickle
 import time
 import copy
 import sys
@@ -142,6 +142,38 @@ class numpytest:
             res = np.asarray(res)
             res.shape = dims
         return np.asarray(res, dtype=dtype)
+
+def benchrun(script, size, dtype, backend, inputfn, fn_postfix):
+    """
+    Run the Benchmark script and return the result.
+
+    Benchmarks are assumed to be installed along with the Bohrium module.
+    """
+    # Setup output filename
+    outputfn = "/tmp/%s_%s_%s_output_%s" % (script, dtype, backend, fn_postfix)
+
+    # Setup command
+    cmd = [
+        'python',
+        '-m',
+        'bohrium.examples.%s' % script,
+        '--size='       +size,
+        '--dtype='      +str(dtype),
+        '--backend='    +backend,
+        '--inputfn='    +inputfn,
+        '--outputfn='   +outputfn
+    ]
+    p = subprocess.Popen(cmd)       # Execute the benchmark
+    out, err = p.communicate()
+
+    res = None                      # Load the result from disk
+    with open(outputfn) as fd:
+        res = pickle.load(fd)
+
+    if os.path.exists(outputfn):    # Delete the result from disk
+        os.remove(outputfn)
+
+    return (res, cmd)
 
 if __name__ == "__main__":
     warnings.simplefilter('error')#Warnings will raise exceptions

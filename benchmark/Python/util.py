@@ -4,6 +4,7 @@ import pprint
 import pickle
 import time
 import sys
+import re
 
 import bohrium as np
 
@@ -49,11 +50,11 @@ class Benchmark:
         # we cant.
         owns_main = __name__ == "__main__"
         
-        g1 = p.add_mutually_exclusive_group(required = owns_main)
-        g1.add_argument('--size',
+        #g1 = p.add_mutually_exclusive_group(required = owns_main)
+        p.add_argument('--size',
                        help = "Tell the script the size of the data to work on."
         )
-        g1.add_argument('--inputfn',
+        p.add_argument('--inputfn',
                        help = "Input file to use as data."
         )
 
@@ -132,21 +133,65 @@ class Benchmark:
         np.flush()
         self.__elapsed = time.time() - self.__elapsed
 
-    def fromfile(self, ary_dict):
-        content = None
-        with open(self.inputf) as fd:
-            content = pickle.load(fd)
+    def tofile(self, arrays, filename=None):
+        """
+        Writes a dict of arrays such as:
 
+        arrays = {'lbl1': array1, 'lbl1': array2}
+
+        To file, if no filename is given, self.outputfn is used.
+        Arrays are stored using pickle.
+        """
+        outputfn = self.outputfn    # Determine filename
+        if filename:
+            outputfn = filename
+                                    # bh-arrays can't be pickled
+        for k in arrays:            # so we copy them first
+            if 'bohrium' in str(type(arrays[k])):
+                arrays[k] = arrays[k].copy2numpy()
+        
+        with open(outputfn, 'wb') as fd:
+            pickle.dump(arrays, fd)
+
+    def dump_arrays(self, arrays, prefix):
+        """
+        Dumps a dict of arrays organized such as:
+            
+        arrays = {'lbl1': array1, 'lbl2': array2}
+
+        Into a file using the following naming convention:
+        "prefix_lbl1-DTYPE-SHAPE_lbl2-DTYPE-SHAPE"
+
+        The arrays are stored using pickle.
+        """
+        names = []
+        for k in arrays:
+            names.append("%s-%s-%s" % (
+                k,
+                arrays[k].dtype,
+                '*'.join([str(x) for x in (arrays[k].shape)]
+            )))
+        filename = "%s_%s.pkl" % (prefix, '_'.join(names))
+        self.tofile(arrays, filename)
+
+    def load_arrays(self, filename=None):
+
+        if not filename:
+            filename = self.inputfn
+        
+        content = None
+        with open(self.inputfn) as fd:
+            content = pickle.load(fd)
         return content
 
-    def tofile(self, ary_dict):
+    def import_array(self, filename, label='input'):
 
-        for k in ary_dict:  # We cant pickle bh-arrays so we copy them first
-            if 'bohrium' in str(type(ary_dict[k])):
-                ary_dict[k] = ary_dict[k].copy2numpy()
-            
-        with open(self.outputfn, 'wb') as fd:
-            pickle.dump(ary_dict, fd)
+        array = np.array(
+            self.load_arrays(filename)[label],
+            bohrium = self.bohrium
+        )
+
+        return array
 
     def pprint(self):
         print "%s - backend: %s, bohrium: %s, size: %s, elapsed-time: %f" % (

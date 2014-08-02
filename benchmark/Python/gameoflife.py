@@ -14,10 +14,10 @@ SURVIVE_LOW     = 2
 SURVIVE_HIGH    = 3
 SPAWN           = 3
 
-def randomstate(height, width, prob=0.2, dtype=np.float64):
-    state = np.zeros((height+2,width+2), dtype=dtype)
+def randomstate(height, width, prob=0.2):
+    state = np.zeros((height+2,width+2))
     state[1:-1,1:-1] = np.array(
-        np.random.random((width,height)), dtype=dtype
+        np.random.random((width,height))
     ) < prob
     return state
 
@@ -34,7 +34,7 @@ def play(state, iterations):
     lr = state[2:  , 2:  ]
 
     for i in xrange(iterations):
-
+        
         neighbors = ul + um + ur + ml + mr + ll + lm + lr       # count neighbors
         live = neighbors * cells                                # extract live cells neighbors
         stay = (live >= SURVIVE_LOW) & (live <= SURVIVE_HIGH)   # find cells the stay alive
@@ -48,11 +48,21 @@ def main():
 
     B = util.Benchmark()
     (W, H, I) = B.size
-    S = randomstate(W, H, dtype=B.dtype)
+
+    
+    if B.inputfn:
+        #S = B.import_array(B.inputfn)
+        print "Using this thing."
+        S = np.load('test.npy')
+        help(S)
+    else:
+        S = randomstate(W, H)
+        np.save('test', S.copy2numpy())
 
     B.start()
     R = play(S, I)
     B.stop()
+
     B.pprint()
     if B.outputfn:
         B.tofile({'res': R})
