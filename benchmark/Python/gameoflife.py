@@ -51,13 +51,10 @@ def main():
 
     
     if B.inputfn:
-        #S = B.import_array(B.inputfn)
-        print "Using this thing."
-        S = np.load('test.npy')
-        help(S)
+        S = B.load_array()
     else:
         S = randomstate(W, H)
-        np.save('test', S.copy2numpy())
+        B.dump_arrays({'input': S}, "gameoflife")
 
     B.start()
     R = play(S, I)
