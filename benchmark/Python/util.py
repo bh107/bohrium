@@ -38,9 +38,11 @@ class Benchmark:
         # Just for reference... these are the options parsed from cmd-line.
         options = [
             'size',         'dtype',
-            'visualize',    'verbose',
+            'inputfn',      'dumpinput',
+            'outputfn'
             'backend',      'bohrium',
-            'inputfn',      'outputfn'
+            'no_extmethods',
+            'visualize',    'verbose',
         ]
 
         # Construct argument parser
@@ -51,47 +53,28 @@ class Benchmark:
         # we cant.
         owns_main = __name__ == "__main__"
         
-        #g1 = p.add_mutually_exclusive_group(required = owns_main)
         p.add_argument('--size',
                        help = "Tell the script the size of the data to work on."
         )
-        p.add_argument('--inputfn',
-                       help = "Input file to use as data."
-        )
-        p.add_argument('--dumpinput',
-                       help = "Dumps the benchmark input to file."
-        )
-
         p.add_argument('--dtype',
                        choices  = ["float32", "float64"],
                        default  = "float64",
                        help     = "Tell the the script which primitive type to use."
                                   " (default: %(default)s)"
         )
+
+        p.add_argument('--inputfn',
+                       help = "Input file to use as data."
+        )
+        p.add_argument('--dumpinput',
+                       default  = False,
+                       action   = 'store_true',
+                       help = "Dumps the benchmark input to file."
+        )
         p.add_argument('--outputfn',
                        help     = "Output file to store results in."
         )
-        p.add_argument('--visualize',
-                       choices  = [True, False],
-                       default  = False,
-                       type     = t_or_f,
-                       help     = "Enable visualization in script."
-                                  "(default: %(default)s)"
-        )
-        p.add_argument('--verbose',
-                       choices  = [True, False],
-                       default  = False,
-                       type     = t_or_f,
-                       help     = "Print out misc information from script."
-                                  " (default: %(default)s)"
-        )
-        p.add_argument('--no-extmethods',
-                       choices  = [True, False],
-                       default  = False,
-                       type     = t_or_f,
-                       help     = "Disable extension methods. (default: %(default)s)"
-        )
-
+        
         g2 = p.add_mutually_exclusive_group()
         g2.add_argument('--backend',
                        choices  = ['None', 'NumPy', 'Bohrium'],
@@ -108,6 +91,22 @@ class Benchmark:
                                   " enable npbackend using bohrium."
                                   " (default: %(default)s)"
         )
+        p.add_argument('--no-extmethods',
+                       default  = False,
+                       action   = 'store_true',
+                       help     = "Disable extension methods."
+        )
+
+        p.add_argument('--visualize',
+                       default  = False,
+                       action   = 'store_true',
+                       help     = "Enable visualization in script."
+        )
+        p.add_argument('--verbose',
+                       default  = False,
+                       action   = 'store_true',
+                       help     = "Print out misc. information from script."
+        )
 
         args, unknown = p.parse_known_args()   # Parse the arguments
 
@@ -117,7 +116,8 @@ class Benchmark:
         self.size       = [int(i) for i in args.size.split("*")] if args.size else []
         self.dtype      = eval("bh.%s" % args.dtype)
         self.dumpinput  = args.dumpinput
-        self.no_extmethods = args.no_extmethods
+        self.inputfn    = args.inputfn
+        self.outputfn   = args.outputfn
 
         # Unify the options: 'backend' and 'bohrium'
         if args.bohrium or args.backend.lower() == 'bohrium':
@@ -126,11 +126,10 @@ class Benchmark:
         else:
             self.backend = args.backend
             self.bohrium = args.bohrium
+        self.no_extmethods = args.no_extmethods
 
         self.visualize  = args.visualize
         self.verbose    = args.verbose
-        self.inputfn    = args.inputfn
-        self.outputfn   = args.outputfn
 
         #
         # Also make them available via the parser and arg objects
