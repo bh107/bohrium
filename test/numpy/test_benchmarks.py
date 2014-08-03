@@ -4,6 +4,9 @@ from numpytest import numpytest, BenchHelper
 import bohrium.linalg as la
 import bohrium as bh
 
+#
+#   Testing benchmarks via benchmark scripts
+#
 class test_gameoflife(BenchHelper, numpytest):
 
     def __init__(self):
@@ -36,41 +39,25 @@ class test_shallow_water(BenchHelper, numpytest):
     def test_shallow_water(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
-"""
-class test_shallow_water(numpytest):
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
-        self.size = 20
-    def init(self):
-        for t in ['bh.float32','bh.float64']:
-            a = {}
-            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1});".format(self.size,t)
-            exec cmd
-            yield (a,cmd)
+class test_jacobi_solve(BenchHelper, numpytest):
 
-    def test_shallow_water(self,a):
-        cmd = "res = exp.shallow_water.simulate(a[0],10);"
-        exec cmd
-        return (res,cmd)
-
-class test_jacobi_stencil(numpytest):
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.001
         self.size = 20
-    def init(self):
-        a = {}
-        cmd = "a[0] = exp.jacobi_stencil.freezetrap({0},{0});".format(self.size)
-        exec cmd
-        yield (a,cmd)
 
-    def test_jacobi_stencil(self,a):
-        cmd = "res = exp.jacobi_stencil.solve(a[0]);"
-        exec cmd
-        return (res,cmd)
-"""
+        # Benchmark parameters
+        self.script     = "jacobi_solve"
+        self.dtypes     = [bh.float64]
+        self.sizetxt    = "20*20*10"
+        self.inputfn    = "datasets/jacobi_solve_input-%s-22*22.npz"
 
+    def test_jacobi_solve(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+#
+#   Testing via import of modules
+#
 class test_jacobi(numpytest):#disabled
     def __init__(self):
         numpytest.__init__(self)
@@ -91,4 +78,3 @@ class test_jacobi(numpytest):#disabled
         cmd = "res = la.jacobi(a[0],a[1]);"
         exec cmd
         return (res,cmd)
-

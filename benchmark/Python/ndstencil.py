@@ -52,16 +52,24 @@ def main():
     I       = B.size[1]
     D       = B.size[2]
 
-    world = np.array(np.random.random(shape(D, size)), dtype=B.dtype)
+    if B.inputfn:
+        world = B.load_array()
+    else:
+        world = np.array(np.random.random(shape(D, size)), dtype=B.dtype)
     
+    if B.dumpinput:
+        B.dump_arrays("ndstencil", {'input': world})
+
     B.start()
-    solve(world,I)
+    R = solve(world, I)
     B.stop()
     B.pprint()
     if B.verbose:
         print "Solving",D, "dimensional",world.shape,"problem with",     \
                len([i for i in it.product([None,None,None], repeat=D)]), \
                "point stencil."
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()

@@ -37,7 +37,13 @@ def main():
     W = B.size[1]
     I = B.size[2]
 
-    ft = freezetrap(H, W, dtype=B.dtype)
+    if B.inputfn:
+        ft = B.load_array()
+    else:
+        ft = freezetrap(H, W, dtype=B.dtype)
+
+    if B.dumpinput:
+        B.dump_arrays("jacobi_solve", {'input': ft})
 
     B.start()
     ft = solve(ft, max_iterations=I, visualize=B.visualize)
@@ -45,6 +51,8 @@ def main():
     if B.verbose:
         print ft
     B.pprint()
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': ft})
 
 if __name__ == "__main__":
     main()
