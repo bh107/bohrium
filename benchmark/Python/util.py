@@ -85,6 +85,12 @@ class Benchmark:
                        help     = "Print out misc information from script."
                                   " (default: %(default)s)"
         )
+        p.add_argument('--no-extmethods',
+                       choices  = [True, False],
+                       default  = False,
+                       type     = t_or_f,
+                       help     = "Disable extension methods. (default: %(default)s)"
+        )
 
         g2 = p.add_mutually_exclusive_group()
         g2.add_argument('--backend',
@@ -111,6 +117,7 @@ class Benchmark:
         self.size       = [int(i) for i in args.size.split("*")] if args.size else []
         self.dtype      = eval("bh.%s" % args.dtype)
         self.dumpinput  = args.dumpinput
+        self.no_extmethods = args.no_extmethods
 
         # Unify the options: 'backend' and 'bohrium'
         if args.bohrium or args.backend.lower() == 'bohrium':

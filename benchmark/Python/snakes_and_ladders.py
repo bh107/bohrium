@@ -78,11 +78,10 @@ def main():
             pyplot.plot(a[0:size])
 
         #calculate the stocastic matrix for iteration k+1
-        try:
-            m = np.dot(m, p)
-        except NotImplementedError:
-            print "Shit..."
-            m = np.array(np.dot(m.copy2numpy(),p.copy2numpy()))
+        if B.bohrium and B.no_extmethods:
+            m = bh.array(np.dot(m.copy2numpy(),p.copy2numpy()))
+        else:
+            m = bh.dot(m,p)
 
     B.stop()
     B.pprint()
