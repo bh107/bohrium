@@ -58,6 +58,9 @@ class Benchmark:
         p.add_argument('--inputfn',
                        help = "Input file to use as data."
         )
+        p.add_argument('--dumpinput',
+                       help = "Dumps the benchmark input to file."
+        )
 
         p.add_argument('--dtype',
                        choices  = ["float32", "float64"],
@@ -107,6 +110,7 @@ class Benchmark:
         #
         self.size       = [int(i) for i in args.size.split("*")] if args.size else []
         self.dtype      = eval("bh.%s" % args.dtype)
+        self.dumpinput  = args.dumpinput
 
         # Unify the options: 'backend' and 'bohrium'
         if args.bohrium or args.backend.lower() == 'bohrium':
@@ -135,6 +139,7 @@ class Benchmark:
         self.__elapsed = time.time() - self.__elapsed
 
     def tofile(self, filename, arrays):
+        
         for k in arrays:
             arrays[k] = bh.array(arrays[k], bohrium=False)
         np.savez(filename, **arrays)

@@ -8,6 +8,7 @@ import random
 import getopt
 import pickle
 import time
+import uuid
 import copy
 import sys
 import os
@@ -113,6 +114,7 @@ class numpytest:
         self.runtime = {}
         self.random = random.Random()
         self.random.seed(42)
+
     def init(self):
         pass
     def array(self,dims,dtype,high=False):
@@ -143,44 +145,86 @@ class numpytest:
             res.shape = dims
         return np.asarray(res, dtype=dtype)
 
-def benchrun(script, size, dtype, backend, inputfn, fn_postfix):
-    """
-    Run the Benchmark script and return the result.
+class BenchHelper:
+    """Mixin for numpytest to aid the execution of Benchmarks."""
 
-    Benchmarks are assumed to be installed along with the Bohrium module.
-    """
-    # Setup output filename
-    outputfn = "/tmp/%s_%s_%s_output_%s.npz" % (script, dtype, backend, fn_postfix)
+    def init(self):
+        """
+        This function is used as a means to control til --dtype argument
+        passed to the benchmark script and provide a uuid for benchmark output.
+        """
+        self.uuid = str(uuid.uuid4())
+        for dtype in self.dtypes:
+            yield ({0:bh.empty(self.size, bohrium=False, dtype=dtype)},
+                   "%s: " % str(dtype)
+            )
 
-    # Setup command
-    cmd = [
-        'python',
-        '-m',
-        'bohrium.examples.%s' % script,
-        '--size='       +size,
-        '--dtype='      +str(dtype),
-        '--backend='    +backend,
-        '--inputfn='    +inputfn,
-        '--outputfn='   +outputfn
-    ]
-    
-    p = subprocess.Popen(           # Execute the benchmark
-        cmd,
-        stdout  = subprocess.PIPE,
-        stderr  = subprocess.PIPE
-    )
-    out, err = p.communicate()
+    def get_meta(self, arrays):
+        """Determine backend and dtype based on meta-data from pseudo_init."""
+        
+        backend = "None"
+        if 'bohrium.ndarray' in str(type(arrays[0])):
+            backend = "Bohrium"
+        
+        dtype = str(arrays[0].dtype)
+        
+        return (backend, dtype)
 
-    npzs    = np.load(outputfn)     # Load the result from disk
-    res     = {}
-    for k in npzs:
-        res[k] = npzs[k]
-    del npzs                        # Delete npz
+    def run(self, pseudo_input):
+        """
+        Run the Benchmark script and return the result.
 
-    if os.path.exists(outputfn):    # Delete the result from disk
-        os.remove(outputfn)
+        Benchmarks are assumed to be installed along with the Bohrium module.
+        """
+        
+        (backend, dtype) = self.get_meta(pseudo_input)
 
-    return (res, cmd)
+        # Setup the inputfn
+        inputfn = self.inputfn % dtype
+        if not os.path.exists(inputfn):
+            raise Exception('File does not exist: %s' % inputfn)
+
+        # Setup output filename
+        outputfn = "/tmp/%s_%s_%s_output_%s.npz" % (
+            self.script, dtype, backend, self.uuid
+        )
+
+        # Setup command
+        cmd = [
+            'python',
+            '-m',
+            'bohrium.examples.%s' % self.script,
+            '--size='       +self.sizetxt,
+            '--dtype='      +str(dtype),
+            '--backend='    +backend,
+            '--inputfn='    +inputfn,
+            '--outputfn='   +outputfn
+        ]
+        p = subprocess.Popen(           # Execute the benchmark
+            cmd,
+            stdout  = subprocess.PIPE,
+            stderr  = subprocess.PIPE
+        )
+        out, err = p.communicate()
+        if err:
+            raise Exception("Benchmark error[%s]" % err)
+
+        if not os.path.exists(outputfn):
+            raise Exception('Benchmark did not produce the output: %s' % outputfn)
+
+        npzs    = np.load(outputfn)     # Load the result from disk
+        res     = {}
+        for k in npzs:
+            res[k] = npzs[k]
+        del npzs                        # Delete npz
+
+        if os.path.exists(outputfn):    # Delete the result from disk
+            os.remove(outputfn)
+
+        # Convert to whatever namespace it ought to be in
+        res['res'] = bh.array(res['res'], bohrium=backend!="None")
+
+        return (res['res'], ' '.join(cmd))
 
 if __name__ == "__main__":
     warnings.simplefilter('error')#Warnings will raise exceptions
@@ -249,4 +293,3 @@ if __name__ == "__main__":
                                 sys.exit (1)
 
     print "*"*24, "Finish", "*"*24
-

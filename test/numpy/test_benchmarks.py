@@ -1,75 +1,49 @@
-import uuid
+import os
 
-from numpytest import numpytest, benchrun
+from numpytest import numpytest, BenchHelper
 import bohrium.linalg as la
-import bohrium as np
-#from bohrium import examples as exp
+import bohrium as bh
 
-class test_jacobi(numpytest):#disabled
+class test_gameoflife(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 10
+
+        # Benchmark parameters
+        self.script     = "gameoflife"
+        self.dtypes     = [bh.float64]
+        self.sizetxt    = "10*10*50"
+        self.inputfn    = "datasets/gameoflife_input-%s-12*12.npz"
+
+    def test_gameoflife(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_shallow_water(BenchHelper, numpytest):
+
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
         self.size = 20
-    def init(self):
-        print "We need to implement numpy.norm() for test_jacobi() to work"
-        raise StopIteration()
-        for t in ['np.float32','np.float64']:
-            a = {}
-            cmd  = "a[0] = self.array(({0},{0}),dtype={1});".format(self.size,t)
-            cmd += "a[1] = self.array(({0}),dtype={1}); ".format(self.size,t)
-            cmd += "a[0] += np.diag(np.add.reduce(a[0],-1));"
-            exec cmd
-            yield (a,cmd)
 
-    def test_jacobi(self,a):
-        cmd = "res = la.jacobi(a[0],a[1]);"
-        exec cmd
-        return (res,cmd)
+        # Benchmark parameters
+        self.script     = "shallow_water"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "20*20*10"
+        self.inputfn    = "datasets/shallow_water_input-%s-20*20.npz"
 
-class test_gameoflife(numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
-        self.size   = 10
-        self.uuid   = str(uuid.uuid4())
-
-    def init(self):
-        """We do not use the data from these arrays only the meta-data."""
-
-        for dtype in [np.float64]:
-            yield ({0:np.empty(self.size, bohrium=False, dtype=dtype)},
-                   "%s: " % str(dtype)
-            )
-
-    def test_gameoflife(self, a):
-        # Determine backend to use based on input meta-data
-        backend = "Bohrium" if 'bohrium.ndarray' in str(type(a[0])) else "None"
-        
-        # Run the benchmark and retrieve results
-        (res, cmd) = benchrun('gameoflife',
-            "10*10*50",
-            str(a[0].dtype),
-            backend,
-            "datasets/gameoflife_input-%s-12*12.npz" % a[0].dtype,
-            self.uuid
-        )
-
-        # Convert to whatever namespace it ought to be in
-        res['res'] = np.array(res['res'], bohrium=backend!="None")
-
-        return (res['res'], ' '.join(cmd))
+    def test_shallow_water(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
 
 """
 class test_shallow_water(numpytest):
-
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
         self.size = 20
-
     def init(self):
-        for t in ['np.float32','np.float64']:
+        for t in ['bh.float32','bh.float64']:
             a = {}
             cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1});".format(self.size,t)
             exec cmd
@@ -95,21 +69,26 @@ class test_jacobi_stencil(numpytest):
         cmd = "res = exp.jacobi_stencil.solve(a[0]);"
         exec cmd
         return (res,cmd)
+"""
 
-class test_shallow_water(numpytest):
+class test_jacobi(numpytest):#disabled
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
         self.size = 20
     def init(self):
-        for t in ['np.float32','np.float64']:
+        print "We need to implement numpy.norm() for test_jacobi() to work"
+        raise StopIteration()
+        for t in ['bh.float32','bh.float64']:
             a = {}
-            cmd  = "a[0] = exp.shallow_water.model({0},{0},dtype={1});".format(self.size,t)
+            cmd  = "a[0] = self.array(({0},{0}),dtype={1});".format(self.size,t)
+            cmd += "a[1] = self.array(({0}),dtype={1}); ".format(self.size,t)
+            cmd += "a[0] += bh.diag(bh.add.reduce(a[0],-1));"
             exec cmd
             yield (a,cmd)
 
-    def test_shallow_water(self,a):
-        cmd = "res = exp.shallow_water.simulate(a[0],10);"
+    def test_jacobi(self,a):
+        cmd = "res = la.jacobi(a[0],a[1]);"
         exec cmd
         return (res,cmd)
-"""
+
