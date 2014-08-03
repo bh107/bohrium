@@ -65,7 +65,7 @@ class test_snakes_and_ladders(BenchHelper, numpytest):
         # Benchmark parameters
         self.script     = "snakes_and_ladders"
         self.dtypes     = [bh.float64]
-        self.sizetxt    = "100*10"
+        self.sizetxt    = "100*100"
         self.inputfn    = "datasets/snakes_and_ladders_a-{0}-101_p-{0}-101*101.npz"
 
     def test_snakes_and_ladders(self, pseudo_arrays):

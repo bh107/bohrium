@@ -102,6 +102,9 @@ def main():
         #show the three graphs
         pyplot.show()
 
+    if B.verbose:
+        print pr_end
+
     if B.outputfn:
         B.tofile(B.outputfn, {'res': pr_end})
 
