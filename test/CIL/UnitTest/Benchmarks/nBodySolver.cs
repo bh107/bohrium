@@ -35,7 +35,7 @@ namespace UnitTest.Benchmarks
 	public static class nBodySolver
 	{
 		//Gravity
-		private static DATA G = 1.0;
+		private static DATA G = 1.0f;
 
 		private static void FillDiagonal(NdArray a, DATA val)
 		{
@@ -46,15 +46,15 @@ namespace UnitTest.Benchmarks
 		private static void CalcForce(Dictionary<string, NdArray> b)
 		{
 			var dx = b["x"] - b["x"][R.NewAxis, R.All].Transposed;
-			FillDiagonal(dx, 1.0);
+			FillDiagonal(dx, 1);
 			var dy = b["y"] - b["y"][R.NewAxis, R.All].Transposed;
-			FillDiagonal(dy, 1.0);
+			FillDiagonal(dy, 1);
 			var dz = b["z"] - b["z"][R.NewAxis, R.All].Transposed;
-			FillDiagonal(dz, 1.0);
+			FillDiagonal(dz, 1);
 			var pm = b["m"] - b["m"][R.NewAxis, R.All].Transposed;
-			FillDiagonal(pm, 0.0);
+			FillDiagonal(pm, 0);
 
-			var r = (dx.Pow(2) + dy.Pow(2) + dz.Pow(2)).Pow(0.5);
+			var r = (dx.Pow(2) + dy.Pow(2) + dz.Pow(2)).Pow((DATA)0.5f);
 
 			//In the below calc of the the forces the force of a body upon itself
 			//becomes nan and thus destroys the data
@@ -85,7 +85,7 @@ namespace UnitTest.Benchmarks
 		private static Dictionary<string, NdArray> RandomGalaxy(long n, DATA xMax, DATA yMax, DATA zMax)
 		{
 			var res = new Dictionary<string, NdArray>();
-			res["m"] = Generate.Random(n) * Math.Pow(10, 6) / (4 * Math.PI * Math.PI);
+            res["m"] = Generate.Random(n) * (DATA)Math.Pow(10, 6) / (DATA)(4 * Math.PI * Math.PI);
 			res["x"] = Generate.Random(n) * 2 * xMax - xMax;
 			res["y"] = Generate.Random(n) * 2 * yMax - yMax;
 			res["z"] = Generate.Random(n) * 2 * zMax - zMax;
