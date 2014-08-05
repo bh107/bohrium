@@ -190,11 +190,16 @@ namespace NumCIL.Bohrium2
         {
             lock (_lock)
             {
+                // Notify the bridge that these elements are no longer used
                 foreach (var h in _allocations.Values)
-                {
                     h.Item3.Dispose();
+                
+                // Execute all the discards
+                PInvoke.bh_runtime_flush();
+
+                // Unpin all pinned memory
+                foreach (var h in _allocations.Values)
                     h.Item2.Free();
-                }
                 
                 _allocations.Clear();
             }

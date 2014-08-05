@@ -178,7 +178,6 @@ namespace NumCIL.Bohrium2
         /// </summary>
         public static void Flush()
         {
-            PInvoke.bh_runtime_flush();
             PinnedArrayTracker.ReleaseInternal();
         }
 
