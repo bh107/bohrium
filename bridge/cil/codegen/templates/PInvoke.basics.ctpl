@@ -103,7 +103,7 @@ namespace NumCIL.Bohrium2
             public IntPtr ToPointer() { return pointer; }
             
             /// <summary>
-            /// Gets the data pointer from the base
+            /// Gets the number of elements from the base
             /// </summary>
             public long Size { get { return PInvoke.bh_multi_array_${bh_ctype}_get_base_nelem(this); } }
 
@@ -340,12 +340,6 @@ namespace NumCIL.Bohrium2
         public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range([In] int64_t start, [In] int64_t end, [In] int64_t skip);
 
         /// <summary>
-        /// Construct a new random-filled array
-        /// </summary>
-        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random([In] int64_t length);
-
-        /// <summary>
         /// Construct a new array, filled with the specified value
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
@@ -451,6 +445,15 @@ namespace NumCIL.Bohrium2
         public extern static void bh_multi_array_${bh_ctype}_imag(bh_multi_array_float64_p @out, bh_multi_array_${bh_ctype}_p self);
 
 %end if
+%if $bh_atype == "bh_uint64"
+        /// <summary>
+        /// Construct a new random-filled array using Random123
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random123(bh_uint64 length, bh_uint64 start, bh_uint64 key);
+
+%end if
+
 
         %end for
     }
