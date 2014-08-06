@@ -32,6 +32,21 @@ namespace NumCIL.Bohrium2
     /// </summary>
     public static class Utility
     {
+        private class UnloaderHelper
+        {
+            // Perform work so the compiler cannot optimize it away
+            public void SetTime()
+            {
+            }
+
+            ~UnloaderHelper()
+            {
+                Utility.Flush();
+            }
+        }
+
+        private static UnloaderHelper _unloaderHelper = null;
+
         /// <summary>
         /// Attempts to set up Bohrium by looking for the Bohrium checkout folder.
         /// This simplifies using Bohrium directly from the build folder,
@@ -132,6 +147,8 @@ namespace NumCIL.Bohrium2
 			Activate<System.Numerics.Complex>();
             
             NumCIL.UFunc.ApplyManager.RegisterHandler(new NumCIL.Bohrium2.ApplyImplementor());
+            _unloaderHelper = new UnloaderHelper();
+            _unloaderHelper.SetTime();
         }
 
         /// <summary>
