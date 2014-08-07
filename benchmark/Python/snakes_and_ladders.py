@@ -54,11 +54,18 @@ def main():
     size        = B.size[0]
     iterations  = B.size[1]
 
-    a = np.array(np.zeros(size+1, dtype=B.dtype))
-    p = np.array(nullgame(size,   dtype=B.dtype))
+    if B.inputfn:
+        arrays = B.load_arrays(B.inputfn)
+        a = arrays['a']
+        p = arrays['p']
+    else:
+        a = np.array(np.zeros(size+1, dtype=B.dtype))
+        p = np.array(nullgame(size,   dtype=B.dtype))
+
+    if B.dumpinput:
+        B.dump_arrays("snakes_and_ladders", {"a": a, "p": p})
 
     m = p   # Initial matrix is p
-
     pr_end = np.array(np.zeros(iterations, dtype=B.dtype))
 
     B.start()
@@ -79,9 +86,9 @@ def main():
 
         #calculate the stocastic matrix for iteration k+1
         if B.bohrium and B.no_extmethods:
-            m = bh.array(np.dot(m.copy2numpy(),p.copy2numpy()))
+            m = np.array(np.dot(m.copy2numpy(),p.copy2numpy()))
         else:
-            m = bh.dot(m,p)
+            m = np.dot(m, p)
 
     B.stop()
     B.pprint()
@@ -94,6 +101,12 @@ def main():
 
         #show the three graphs
         pyplot.show()
+
+    if B.verbose:
+        print pr_end
+
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': pr_end})
 
 if __name__ == "__main__":
     main()

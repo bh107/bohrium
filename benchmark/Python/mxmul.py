@@ -32,7 +32,7 @@ def main():
     # Print / dump
     B.pprint()
     if B.outputfn:
-        B.tofile(B.outputfn, R)
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()

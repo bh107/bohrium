@@ -248,3 +248,6 @@ synth.py::
 
   + No failures observed.
 
+snakes_and_ladders.py::
+
+  + No failures observed.
