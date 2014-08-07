@@ -63,7 +63,7 @@ class Benchmark:
         )
 
         p.add_argument('--dtype',
-                       choices  = ["float32", "float64"],
+                       choices  = ["uint8", "float32", "float64"],
                        default  = "float64",
                        help     = "Tell the the script which primitive type to use."
                                   " (default: %(default)s)"

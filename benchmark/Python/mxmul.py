@@ -9,20 +9,30 @@ def main():
     B = util.Benchmark()
     N, = B.size
 
-    # Create matrices
-    x = np.arange(N**2, dtype=np.float32)
-    x.shape = (N, N)
+    # Load or create matrices
+    if B.inputfn:
+        arrays = B.load_arrays()
+        x = arrays['x']
+        y = arrays['y']
+    else:
+        x = np.arange(N**2, dtype=B.dtype)
+        x.shape = (N, N)
 
-    y = np.arange(N**2, dtype=np.float32)
-    y.shape = (N, N)
+        y = np.arange(N**2, dtype=B.dtype)
+        y.shape = (N, N)
 
-    B.start()
+    if B.dumpinput:
+        B.dump_arrays("mxmul", {'x': x, 'y': y})
 
     # Do the matrix multiplication
-    np.add.reduce(x[:,np.newaxis] * np.transpose(y), -1)
-
+    B.start()
+    R = np.add.reduce(x[:,np.newaxis] * np.transpose(y), -1)
     B.stop()
+
+    # Print / dump
     B.pprint()
+    if B.outputfn:
+        B.tofile(B.outputfn, R)
 
 if __name__ == "__main__":
     main()

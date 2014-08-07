@@ -91,13 +91,22 @@ def main():
     N = B.size[0]
     I = B.size[1]
 
-    galaxy = random_galaxy(N, B.dtype)
+    if B.inputfn:
+        galaxy = B.load_arrays(B.inputfn)
+    else:
+        galaxy = random_galaxy(N, B.dtype)
+
+    if B.dumpinput:
+        B.dump_arrays("nbody", galaxy)
 
     B.start()
     simulate(galaxy, I, visualize=B.visualize)
-    r = np.sum(galaxy['x'] + galaxy['y'] + galaxy['z'])
+    R = np.sum(galaxy['x'] + galaxy['y'] + galaxy['z'])
     B.stop()
+
     B.pprint()
+    if B.outputfn:
+        B.tofile(B.outputfn, galaxy)
 
 if __name__ == "__main__":
     main()
