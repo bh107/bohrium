@@ -119,6 +119,22 @@ class test_mxmul(BenchHelper, numpytest):
     def test_mxmul(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
+class test_black_scholes(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size = 10000
+
+        # Benchmark parameters
+        self.script     = "black_scholes"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "10000*10"
+        self.inputfn    = "datasets/black_scholes_input-{0}-10000.npz"
+
+    def test_black_scholes(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
 """ Cannot run this since it breaks due to a futureWarning.
 class test_nbody(BenchHelper, numpytest):
 
