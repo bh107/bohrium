@@ -37,6 +37,20 @@ namespace NumCIL.Bohrium2
         }
 %end for
     }
+
+    internal static class RangeSuppliers
+    {
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
+        public static void Range(ma_${bh_ctype} target)
+        {
+            var len = target.Base.Size;
+            var tmp = PInvoke.bh_multi_array_uint64_new_range((ulong)len);
+            var view = PInvoke.bh_multi_array_${bh_ctype}_new_from_view(target.Base, 1, 0, new long[] { len }, new long[] { 1 });
+            PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+        }
+%end for
+    }
+
 }
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
@@ -55,7 +69,8 @@ namespace NumCIL.Bohrium2
 %end for
 %end if
 %end for
-            new Tuple<Type, Action<ma_${bh_ctype}>>(typeof(NumCIL.Generic.IRandomOp), RandomSuppliers.Random)
+            new Tuple<Type, Action<ma_${bh_ctype}>>(typeof(NumCIL.Generic.IRandomOp), RandomSuppliers.Random),
+            new Tuple<Type, Action<ma_${bh_ctype}>>(typeof(NumCIL.Generic.IRangeOp), RangeSuppliers.Range)
         };
         
         private Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>[] m_unOps = 
