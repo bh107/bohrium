@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 %set $ops = $data[0]
 %set $reduce_ops = $data[1]
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
 
     /// <summary>

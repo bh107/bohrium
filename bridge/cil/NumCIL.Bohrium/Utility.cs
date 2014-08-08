@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
     /// <summary>
     /// Utility class for Bohrium
@@ -46,7 +46,7 @@ namespace NumCIL.Bohrium2
 
             /// <summary>
             /// Releases unmanaged resources and performs other cleanup operations before the
-            /// <see cref="NumCIL.Bohrium2.Utility+UnloaderHelper"/> is reclaimed by garbage collection.
+            /// <see cref="NumCIL.Bohrium.Utility+UnloaderHelper"/> is reclaimed by garbage collection.
             /// </summary>
             ~UnloaderHelper()
             {
@@ -158,7 +158,7 @@ namespace NumCIL.Bohrium2
 			Activate<NumCIL.Complex64.DataType>();
 			Activate<System.Numerics.Complex>();
             
-            NumCIL.UFunc.ApplyManager.RegisterHandler(new NumCIL.Bohrium2.ApplyImplementor());
+            NumCIL.UFunc.ApplyManager.RegisterHandler(new NumCIL.Bohrium.ApplyImplementor());
             _unloaderHelper.SetTime();
         }
 

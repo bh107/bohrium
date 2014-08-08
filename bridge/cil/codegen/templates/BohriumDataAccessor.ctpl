@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 %set $ops = $data[0]
 %set $reduce_ops = $data[1]
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
     %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
     internal partial class DataAccessor_${bh_ctype} : NumCIL.Generic.IDataAccessor<${bh_atype}>, IDisposable, NumCIL.Generic.IFlushableAccessor

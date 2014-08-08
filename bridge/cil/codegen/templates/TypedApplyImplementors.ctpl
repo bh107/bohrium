@@ -20,10 +20,10 @@ using NumCIL.Generic;
 %set $methods = $data[2]
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
-using ma_${bh_ctype} = NumCIL.Bohrium2.PInvoke.bh_multi_array_${bh_ctype}_p;
+using ma_${bh_ctype} = NumCIL.Bohrium.PInvoke.bh_multi_array_${bh_ctype}_p;
 %end for
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
     internal static class RandomSuppliers
     {
@@ -54,7 +54,7 @@ namespace NumCIL.Bohrium2
 }
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
     public class ApplyImplementor_${bh_ctype} : ITypedApplyImplementor<${bh_atype}>
     {
