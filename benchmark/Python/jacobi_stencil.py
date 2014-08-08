@@ -33,11 +33,14 @@ def main():
     ft = freezetrap(H, W, dtype=B.dtype)
 
     B.start()
-    ft = iterate(ft, I, visualize=B.visualize)
+    R = iterate(ft, I, visualize=B.visualize)
     B.stop()
-    if B.verbose:
-        print ft
+
     B.pprint()
+    if B.verbose:
+        print R
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()

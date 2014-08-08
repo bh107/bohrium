@@ -39,6 +39,54 @@ class test_shallow_water(BenchHelper, numpytest):
     def test_shallow_water(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
+class test_heat_equation(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size = 1000
+
+        # Benchmark parameters
+        self.script     = "heat_equation"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "1000*1000*10"
+        self.inputfn    = None
+
+    def test_heat_equation(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_jacobi(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size = 2
+
+        # Benchmark parameters
+        self.script     = "jacobi"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "2"
+        self.inputfn    = None
+
+    def test_jacobi(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_jacobi_fixed(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size = 1000
+
+        # Benchmark parameters
+        self.script     = "jacobi_fixed"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "1000*10"
+        self.inputfn    = None
+
+    def test_jacobi_fixed(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
 class test_jacobi_solve(BenchHelper, numpytest):
 
     def __init__(self):
@@ -48,11 +96,27 @@ class test_jacobi_solve(BenchHelper, numpytest):
 
         # Benchmark parameters
         self.script     = "jacobi_solve"
-        self.dtypes     = [bh.float64]
-        self.sizetxt    = "20*20*10"
-        self.inputfn    = "jacobi_solve_input-{0}-22*22.npz"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "1000*1000*10"
+        self.inputfn    = None
 
     def test_jacobi_solve(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_jacobi_stencil(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.001
+        self.size = 20
+
+        # Benchmark parameters
+        self.script     = "jacobi_stencil"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "1000*1000*10"
+        self.inputfn    = None
+
+    def test_jacobi_stencil(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 class test_snakes_and_ladders(BenchHelper, numpytest):
@@ -134,6 +198,7 @@ class test_black_scholes(BenchHelper, numpytest):
 
     def test_black_scholes(self, pseudo_arrays):
         return self.run(pseudo_arrays)
+
 
 """ Cannot run this since it breaks due to a futureWarning.
 class test_nbody(BenchHelper, numpytest):

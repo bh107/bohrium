@@ -33,7 +33,7 @@ purge:
 #
 # Remove everything
 purge_all: purge
-	rm -r $(BDIR)
+	rm -rf $(BDIR)
 	rm -rf ~/.local/bin
 	rm -rf ~/.local/include
 	rm -rf ~/.local/lib

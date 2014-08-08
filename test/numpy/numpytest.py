@@ -194,7 +194,7 @@ class BenchHelper:
             '--backend='    +backend,
             '--outputfn='   +outputfn
         ]
-        # Setup the inputfn
+        # Setup the inputfn if one is needed/provided
         if self.inputfn:
             npt_path = os.path.dirname(sys.argv[0])
             if not npt_path:

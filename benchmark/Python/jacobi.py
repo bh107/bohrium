@@ -31,10 +31,16 @@ def main():
     B = util.Benchmark()
     N, = B.size
     data = jacobi_init(N)
+    
     B.start()
     result = jacobi(data)
     B.stop()
+
     B.pprint()
+    if B.verbose:
+        print R
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()
