@@ -180,7 +180,10 @@ class BenchHelper:
         (backend, dtype) = self.get_meta(pseudo_input)
 
         # Setup the inputfn
-        inputfn = self.inputfn.format(dtype)
+        inputfn = "%s/datasets/%s" % (
+            os.path.dirname(sys.argv[0]),
+            self.inputfn.format(dtype)
+        )
         if not os.path.exists(inputfn):
             raise Exception('File does not exist: %s' % inputfn)
 

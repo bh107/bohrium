@@ -12,7 +12,7 @@ class test_ndstencil_1D(BenchHelper, numpytest):
         self.script     = "ndstencil"
         self.dtypes     = [bh.float64]
         self.sizetxt    = "10*100*1"
-        self.inputfn    = "datasets/ndstencil_input-%s-1026.npz"
+        self.inputfn    = "ndstencil_input-{0}-1026.npz"
 
     def test_ndstencil_1D(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -28,7 +28,7 @@ class test_ndstencil_2D(BenchHelper, numpytest):
         self.script     = "ndstencil"
         self.dtypes     = [bh.float64]
         self.sizetxt    = "10*100*2"
-        self.inputfn    = "datasets/ndstencil_input-%s-34*34.npz"
+        self.inputfn    = "ndstencil_input-{0}-34*34.npz"
 
     def test_ndstencil_2D(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -44,7 +44,7 @@ class test_ndstencil_3D(BenchHelper, numpytest):
         self.script     = "ndstencil"
         self.dtypes     = [bh.float64]
         self.sizetxt    = "10*100*3"
-        self.inputfn    = "datasets/ndstencil_input-%s-10*10*18.npz"
+        self.inputfn    = "ndstencil_input-{0}-10*10*18.npz"
 
     def test_ndstencil_3D(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -60,7 +60,7 @@ class test_ndstencil_4D(BenchHelper, numpytest):
         self.script     = "ndstencil"
         self.dtypes     = [bh.float64]
         self.sizetxt    = "10*100*1"
-        self.inputfn    = "datasets/ndstencil_input-%s-6*6*10*10.npz"
+        self.inputfn    = "ndstencil_input-{0}-6*6*10*10.npz"
 
     def test_ndstencil_4D(self, pseudo_arrays):
         return self.run(pseudo_arrays)
