@@ -32,20 +32,32 @@ namespace NumCIL.Bohrium2
     /// </summary>
     public static class Utility
     {
+        /// <summary>
+        /// Helper class that provides a static destructor, which is not supported by CIL
+        /// </summary>
         private class UnloaderHelper
         {
-            // Perform work so the compiler cannot optimize it away
+            /// <summary>
+            /// Perform &quot;work&quot; so the compiler cannot optimize it away
+            /// </summary>
             public void SetTime()
             {
             }
 
+            /// <summary>
+            /// Releases unmanaged resources and performs other cleanup operations before the
+            /// <see cref="NumCIL.Bohrium2.Utility+UnloaderHelper"/> is reclaimed by garbage collection.
+            /// </summary>
             ~UnloaderHelper()
             {
                 Utility.Flush();
             }
         }
 
-        private static UnloaderHelper _unloaderHelper = null;
+        /// <summary>
+        /// Static destructor helper
+        /// </summary>
+        private static UnloaderHelper _unloaderHelper = new UnloaderHelper();
 
         /// <summary>
         /// Attempts to set up Bohrium by looking for the Bohrium checkout folder.
@@ -147,7 +159,6 @@ namespace NumCIL.Bohrium2
 			Activate<System.Numerics.Complex>();
             
             NumCIL.UFunc.ApplyManager.RegisterHandler(new NumCIL.Bohrium2.ApplyImplementor());
-            _unloaderHelper = new UnloaderHelper();
             _unloaderHelper.SetTime();
         }
 
