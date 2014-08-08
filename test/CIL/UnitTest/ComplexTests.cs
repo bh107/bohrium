@@ -31,8 +31,8 @@ namespace UnitTest
     {
         public static void RunTests()
         {
-            var a = NumCIL.Complex64.Generate.Arange(10);
-            var b = NumCIL.Float.Generate.Arange(10);
+            var a = NumCIL.Complex64.Generate.Range(10);
+            var b = NumCIL.Float.Generate.Range(10);
             var c = a * b; //Testing implicit type conversion
 			var cx = c.Sum().Real;
             var d = c.Real();
@@ -47,8 +47,8 @@ namespace UnitTest
             if (xy.Sum() != 570)
                 throw new Exception("Error in complex64");
 
-            var f = NumCIL.Complex128.Generate.Arange(10);
-            var g = NumCIL.Double.Generate.Arange(10);
+            var f = NumCIL.Complex128.Generate.Range(10);
+            var g = NumCIL.Double.Generate.Range(10);
             var h = f * g; //Testing implicit type conversion
 			var hx = h.Sum().Real;
             var i = h.Real();
