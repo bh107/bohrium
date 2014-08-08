@@ -44,9 +44,9 @@ namespace NumCIL.Bohrium
         public static void Range(ma_${bh_ctype} target)
         {
             var len = target.Base.Size;
-            var tmp = PInvoke.bh_multi_array_uint64_new_range((ulong)len);
             var view = PInvoke.bh_multi_array_${bh_ctype}_new_from_view(target.Base, 1, 0, new long[] { len }, new long[] { 1 });
-            PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+            using(var tmp = PInvoke.bh_multi_array_uint64_new_range((ulong)len))
+                PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
         }
 %end for
     }
