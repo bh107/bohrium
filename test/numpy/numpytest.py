@@ -179,14 +179,6 @@ class BenchHelper:
         
         (backend, dtype) = self.get_meta(pseudo_input)
 
-        # Setup the inputfn
-        inputfn = "%s/datasets/%s" % (
-            os.path.dirname(sys.argv[0]),
-            self.inputfn.format(dtype)
-        )
-        if not os.path.exists(inputfn):
-            raise Exception('File does not exist: %s' % inputfn)
-
         # Setup output filename
         outputfn = "/tmp/%s_%s_%s_output_%s.npz" % (
             self.script, dtype, backend, self.uuid
@@ -200,9 +192,24 @@ class BenchHelper:
             '--size='       +self.sizetxt,
             '--dtype='      +str(dtype),
             '--backend='    +backend,
-            '--inputfn='    +inputfn,
             '--outputfn='   +outputfn
         ]
+        # Setup the inputfn
+        if self.inputfn:
+            npt_path = os.path.dirname(sys.argv[0])
+            if not npt_path:
+                npt_path = "./"
+
+            inputfn = "%s/datasets/%s" % (
+                npt_path,
+                self.inputfn.format(dtype)
+            )
+            cmd.append('--inputfn')
+            cmd.append(inputfn)
+
+            if not os.path.exists(inputfn):
+                raise Exception('File does not exist: %s' % inputfn)
+
         p = subprocess.Popen(           # Execute the benchmark
             cmd,
             stdout  = subprocess.PIPE,
