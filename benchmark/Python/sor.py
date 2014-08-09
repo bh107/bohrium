@@ -79,9 +79,14 @@ def main():
 
     B.start()
     ft = solve(ft,max_iterations=I)
-    r = np.add.reduce(np.add.reduce(ft[0] + ft[1] + ft[2] + ft[3]))
+    R = np.add.reduce(np.add.reduce(ft[0] + ft[1] + ft[2] + ft[3]))
     B.stop()
+
     B.pprint()
+    if B.verbose:
+        print R
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()

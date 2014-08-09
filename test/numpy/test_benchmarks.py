@@ -7,6 +7,22 @@ import bohrium as bh
 #
 #   Testing benchmarks via benchmark scripts
 #
+class test_black_scholes(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size = 10000
+
+        # Benchmark parameters
+        self.script     = "black_scholes"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "10000*10"
+        self.inputfn    = "black_scholes_input-{0}-10000.npz"
+
+    def test_black_scholes(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
 class test_gameoflife(BenchHelper, numpytest):
 
     def __init__(self):
@@ -23,6 +39,22 @@ class test_gameoflife(BenchHelper, numpytest):
     def test_gameoflife(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
+class test_lu(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 100
+
+        # Benchmark parameters
+        self.script     = "lu"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "100*100"
+        self.inputfn    = "lu_input-{0}-100*100.npz"
+
+    def test_lu(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
 class test_shallow_water(BenchHelper, numpytest):
 
     def __init__(self):
@@ -37,6 +69,22 @@ class test_shallow_water(BenchHelper, numpytest):
         self.inputfn    = "shallow_water_input-{0}-20*20.npz"
 
     def test_shallow_water(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_sor(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 1000
+
+        # Benchmark parameters
+        self.script     = "sor"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "1000*1000*10"
+        self.inputfn    = None
+
+    def test_sor(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 class test_heat_equation(BenchHelper, numpytest):
@@ -196,22 +244,6 @@ class test_mxmul(BenchHelper, numpytest):
         self.inputfn    = "mxmul_y-{0}-500*500_x-{0}-500*500.npz"
 
     def test_mxmul(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
-
-class test_black_scholes(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
-        self.size = 10000
-
-        # Benchmark parameters
-        self.script     = "black_scholes"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "10000*10"
-        self.inputfn    = "black_scholes_input-{0}-10000.npz"
-
-    def test_black_scholes(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 """ Cannot run this since it breaks due to a futureWarning.

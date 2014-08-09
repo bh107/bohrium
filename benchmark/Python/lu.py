@@ -9,11 +9,21 @@ def main():
     B = util.Benchmark()
     N = B.size[0]
 
-    a = np.array(np.random.random((N,N)), dtype=B.dtype)
+    if B.inputfn:
+        a = B.load_array()
+    else:
+        a = np.array(np.random.random((N,N)), dtype=B.dtype)
+
+    if B.dumpinput:
+        B.dump_arrays("lu", {'input': a})
+
     B.start()
-    (l,u) = la.lu(a)
+    (l, u) = la.lu(a)
     B.stop()
+
     B.pprint()
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': u})
 
 if __name__ == "__main__":
     main()
