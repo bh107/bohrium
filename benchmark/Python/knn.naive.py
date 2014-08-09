@@ -37,7 +37,6 @@ def main():
     F   = B.size[1]                             # Number of features in the dataset
     K   = B.size[2] if B.size[2] < N else N     # The K number of neighbors to find
 
-    #data, x = data_image(B, N, F)
     data, x = data_range(B, N, F)               # Grab a data-set
     F = len(x)
     B.start()
@@ -45,7 +44,12 @@ def main():
     sqd = np.sum(np.sqrt(((data - x)**2)))      # The naive kNN-implementation
 
     B.stop()                                    # Print the timing results
+
     B.pprint()
+    if B.verbose:
+        print sqd
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
 
     #idx = np.argsort(sqd)                       # Get the indexes
     #nn  = data[:,idx[:K]]                       # Get the corresponding elements

@@ -33,7 +33,7 @@ def main():
     data = jacobi_init(N)
     
     B.start()
-    result = jacobi(data)
+    R = jacobi(data)
     B.stop()
 
     B.pprint()

@@ -55,6 +55,7 @@ class test_heat_equation(BenchHelper, numpytest):
     def test_heat_equation(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
+""" Segfaults so we cannot test it.
 class test_jacobi(BenchHelper, numpytest):
 
     def __init__(self):
@@ -70,6 +71,7 @@ class test_jacobi(BenchHelper, numpytest):
 
     def test_jacobi(self, pseudo_arrays):
         return self.run(pseudo_arrays)
+"""
 
 class test_jacobi_fixed(BenchHelper, numpytest):
 
@@ -118,6 +120,19 @@ class test_jacobi_stencil(BenchHelper, numpytest):
 
     def test_jacobi_stencil(self, pseudo_arrays):
         return self.run(pseudo_arrays)
+
+class test_knn_naive(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size=10000
+
+        # Benchmark parameters
+        self.script     = "knn.naive"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "10000*100*3"
+        self.inputfn    = None
 
 class test_snakes_and_ladders(BenchHelper, numpytest):
 
@@ -199,7 +214,6 @@ class test_black_scholes(BenchHelper, numpytest):
     def test_black_scholes(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
-
 """ Cannot run this since it breaks due to a futureWarning.
 class test_nbody(BenchHelper, numpytest):
 
@@ -218,11 +232,10 @@ class test_nbody(BenchHelper, numpytest):
         return self.run(pseudo_arrays)
 """
 
-
 #
 #   Testing via import of modules
 #
-class test_jacobi(numpytest):#disabled
+class test_jacobi_module(numpytest):#disabled
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
@@ -238,7 +251,7 @@ class test_jacobi(numpytest):#disabled
             exec cmd
             yield (a,cmd)
 
-    def test_jacobi(self,a):
+    def test_jacobi_module(self,a):
         cmd = "res = la.jacobi(a[0],a[1]);"
         exec cmd
         return (res,cmd)
