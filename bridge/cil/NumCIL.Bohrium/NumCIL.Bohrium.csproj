@@ -36,10 +36,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\codegen\output\PInvoke.basics.cs">
+    <Compile Include="..\codegen\output\PInvoke-basics.cs">
       <Link>PInvoke.basics.cs</Link>
     </Compile>
-    <Compile Include="..\codegen\output\PInvoke.operations.cs">
+    <Compile Include="..\codegen\output\PInvoke-operations.cs">
       <Link>PInvoke.operations.cs</Link>
     </Compile>
     <Compile Include="Utility.cs" />
