@@ -40,6 +40,9 @@ def main():
     output_dir  = script_dir + "output" + os.sep
     tmpl_dir    = script_dir + "templates" + os.sep
 
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     reductions  = json.loads(open(script_dir+'reductions.json').read())
     opcodes     = json.loads(open(script_dir+'..'+ os.sep+'..'+ os.sep +'..'+ os.sep +'core'+ os.sep +'codegen'+ os.sep +'opcodes.json').read())
     types       = json.loads(open(script_dir+'..'+ os.sep+'..'+ os.sep + 'cpp' + os.sep + 'codegen' + os.sep +'element_types.json').read())
@@ -73,11 +76,11 @@ def main():
         op_map.append((name, opcode, t, nop, typesigs, cilname))
 
     gens = [
-        ('PInvoke.basics.ctpl',         'PInvoke.basics.cs',            (types, reductions)),
+        ('PInvoke-basics.ctpl',         'PInvoke-basics.cs',            (types, reductions)),
         ('BohriumDataAccessor.ctpl',    'BohriumDataAccessor.cs',       (types, reductions)),
         ('TypedApplyImplementors.ctpl', 'TypedApplyImplementors.cs',    (types, reductions, op_map)),
         ('BohriumAccessorFactory.ctpl', 'BohriumAccessorFactory.cs',    types),
-        ('PInvoke.operations.ctpl',     'PInvoke.operations.cs',        op_map)
+        ('PInvoke-operations.ctpl',     'PInvoke-operations.cs',        op_map)
     ]
 
     render( gens, tmpl_dir, output_dir )

@@ -1452,14 +1452,14 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
         /// <summary>
         /// The factory class that produces the NdArray instances
         /// </summary>
-        public static NumCIL.Generic.IGenerator<T> Generator = new NumCIL.Generic.Generator<T, NumCIL.Generic.RandomGeneratorOp<#=typename#>, NumCIL.Generic.NumberConverter<#=typename#>>();
+        public static NumCIL.Generic.IGenerator<T> Generator = new NumCIL.Generic.Generator<T, NumCIL.Generic.RandomGeneratorOp<#=typename#>, NumCIL.Generic.RangeGeneratorOp<T, NumCIL.Generic.NumberConverter<#=typename#>>, NumCIL.Generic.NumberConverter<#=typename#>>();
 
         /// <summary>
         /// Creates a range sequential integers, starting with zero
         /// </summary>
         /// <param name="shape">The shape of the NdArray</param>
         /// <returns>A shaped array with sequential numbers</returns>
-        public static OutArray Arange(Shape shape) { return Generator.Arange(shape); }
+        public static OutArray Range(Shape shape) { return Generator.Range(shape); }
         /// <summary>
         /// Creates an array filled with the value 1
         /// </summary>
@@ -1497,7 +1497,7 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
         /// </summary>
         /// <param name="dimensions">The size of each dimension</param>
         /// <returns>A shaped array with sequential numbers</returns>
-        public static OutArray Arange(params long[] dimensions) { return Generator.Arange(dimensions); }
+        public static OutArray Range(params long[] dimensions) { return Generator.Range(dimensions); }
         /// <summary>
         /// Creates an array filled with the value 1
         /// </summary>

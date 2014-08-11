@@ -25,13 +25,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
     /// <summary>
     /// Utility class for Bohrium
     /// </summary>
     public static class Utility
     {
+        /// <summary>
+        /// Helper class that provides a static destructor, which is not supported by CIL
+        /// </summary>
+        private class UnloaderHelper
+        {
+            /// <summary>
+            /// Perform &quot;work&quot; so the compiler cannot optimize it away
+            /// </summary>
+            public void SetTime()
+            {
+            }
+
+            /// <summary>
+            /// Releases unmanaged resources and performs other cleanup operations before the
+            /// <see cref="NumCIL.Bohrium.Utility+UnloaderHelper"/> is reclaimed by garbage collection.
+            /// </summary>
+            ~UnloaderHelper()
+            {
+                Utility.Flush();
+            }
+        }
+
+        /// <summary>
+        /// Static destructor helper
+        /// </summary>
+        private static UnloaderHelper _unloaderHelper = new UnloaderHelper();
+
         /// <summary>
         /// Attempts to set up Bohrium by looking for the Bohrium checkout folder.
         /// This simplifies using Bohrium directly from the build folder,
@@ -131,7 +158,8 @@ namespace NumCIL.Bohrium2
 			Activate<NumCIL.Complex64.DataType>();
 			Activate<System.Numerics.Complex>();
             
-            NumCIL.UFunc.ApplyManager.RegisterHandler(new NumCIL.Bohrium2.ApplyImplementor());
+            NumCIL.UFunc.ApplyManager.RegisterHandler(new NumCIL.Bohrium.ApplyImplementor());
+            _unloaderHelper.SetTime();
         }
 
         /// <summary>
@@ -178,7 +206,6 @@ namespace NumCIL.Bohrium2
         /// </summary>
         public static void Flush()
         {
-            PInvoke.bh_runtime_flush();
             PinnedArrayTracker.ReleaseInternal();
         }
 

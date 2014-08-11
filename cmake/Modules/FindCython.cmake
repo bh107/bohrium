@@ -1,0 +1,16 @@
+# - Try to find cython
+#
+# defines
+#
+# CYTHON_FOUND - system has cython
+# CYTHON_EXECUTABLE - where to find 'cython'
+
+FIND_PROGRAM (CYTHON_EXECUTABLE cython)
+
+SET (CYTHON_FOUND FALSE CACHE INTERNAL "")
+
+if(CYTHON_EXECUTABLE)
+    SET (CYTHON_FOUND TRUE CACHE INTERNAL "")
+endif()
+
+MARK_AS_ADVANCED(CYTHON_EXECUTABLE)

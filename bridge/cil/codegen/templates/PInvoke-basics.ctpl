@@ -17,8 +17,24 @@ using System.Runtime.InteropServices;
 %set $ops = $data[0]
 %set $reduce_ops = $data[1]
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
+
+    /// <summary>
+    /// Interface for simple untyped handling of typed bh_multi_arrays
+    /// </summary>
+    internal interface IMultiArray : IDisposable
+    {
+        /// <summary>
+        /// Sets the data ptr for the base
+        /// </summary>
+        /// <param name="dataPtr">The new data ptr</param>
+        void SetBaseData(IntPtr dataPtr);
+    }
+
+    /// <summary>
+    /// Container class for all functions related to the Bohrium C API
+    /// </summary>
     internal static partial class PInvoke 
     {
         /// <summary>
@@ -103,7 +119,7 @@ namespace NumCIL.Bohrium2
             public IntPtr ToPointer() { return pointer; }
             
             /// <summary>
-            /// Gets the data pointer from the base
+            /// Gets the number of elements from the base
             /// </summary>
             public long Size { get { return PInvoke.bh_multi_array_${bh_ctype}_get_base_nelem(this); } }
 
@@ -118,6 +134,9 @@ namespace NumCIL.Bohrium2
                 pointer = IntPtr.Zero;
             }
 
+            /// <summary>
+            /// Returns the data as a string
+            /// </summary>
             public string AsString()
             {
                 return string.Format("self: {0}, data: {1}", pointer.ToInt64(), this.Data);
@@ -128,7 +147,7 @@ namespace NumCIL.Bohrium2
         /// <summary>
         /// The multi-array instance
         /// </summary>
-        public struct bh_multi_array_${bh_ctype}_p : IDisposable
+        public struct bh_multi_array_${bh_ctype}_p : IMultiArray
         {
             /// <summary>
             /// The internal pointer instance
@@ -230,11 +249,23 @@ namespace NumCIL.Bohrium2
                 PinnedArrayTracker.Release();
             }
 
+            /// <summary>
+            /// Returns the data as a string
+            /// </summary>
             public string AsString()
             {
                 var s = pointer.ToInt64();
                 var b = pointer == IntPtr.Zero ? "null" : this.Base.AsString();
                 return string.Format("self: {0} (d: {2}), base: {1}", s, b, this.Base.Data.ToInt64());
+            }
+
+            /// <summary>
+            /// Sets the data pointer
+            /// </summary>
+            void IMultiArray.SetBaseData(IntPtr dataPtr)
+            {
+                var vs = Base;
+                vs.Data = dataPtr;
             }
         }
 
@@ -337,13 +368,7 @@ namespace NumCIL.Bohrium2
         /// Construct a new array with sequential numbers
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range([In] int64_t start, [In] int64_t end, [In] int64_t skip);
-
-        /// <summary>
-        /// Construct a new random-filled array
-        /// </summary>
-        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random([In] int64_t length);
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range([In] uint64_t size);
 
         /// <summary>
         /// Construct a new array, filled with the specified value
@@ -451,6 +476,15 @@ namespace NumCIL.Bohrium2
         public extern static void bh_multi_array_${bh_ctype}_imag(bh_multi_array_float64_p @out, bh_multi_array_${bh_ctype}_p self);
 
 %end if
+%if $bh_atype == "bh_uint64"
+        /// <summary>
+        /// Construct a new random-filled array using Random123
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_random123(bh_uint64 length, bh_uint64 start, bh_uint64 key);
+
+%end if
+
 
         %end for
     }

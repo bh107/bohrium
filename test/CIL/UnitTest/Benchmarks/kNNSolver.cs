@@ -52,7 +52,7 @@ namespace UnitTest.Benchmarks
 
         public static NdArray Solve(long size, long dimensions, long k, bool randomdata = true)
         {
-            var src = randomdata ? Generate.Random(size, dimensions) : Generate.Arange(size, dimensions);
+            var src = randomdata ? Generate.Random(size, dimensions) : Generate.Range(size, dimensions);
             return kNN(src)[R.Slice(0, k)];
         }
     }

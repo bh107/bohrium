@@ -33,7 +33,7 @@ namespace UnitTest
     {
         public static void RunTests()
         {
-            var a = Generate.Arange(2, 3, 4);
+            var a = Generate.Range(2, 3, 4);
             var b = a.Transpose();
 
             if (b.Value[0, 0, 1] != 12)
@@ -46,7 +46,7 @@ namespace UnitTest
                 throw new Exception(string.Format("Something failed in stride tricks: {0}, {1}, {2}, {3}, {4}", c.Value[99], c.Value[22], c.Value[10], c.Value[12], Add.Reduce(c).Value[0]));
 
 
-            var d = Generate.Arange(8) + 1;
+            var d = Generate.Range(8) + 1;
             var e = d.Repeat(2);
             if (e.AsArray().LongLength != 16 || Add.Reduce(e).Value[0] != 72)
                 throw new Exception("Something failed in simple repeat");
@@ -109,8 +109,8 @@ namespace UnitTest
             if (v.Shape.Dimensions.LongLength != 1 || v.Reduce<Add>().Value[0] != 104 + 42)
                 throw new Exception("Something failed in broadcast extended Concatenate");
 
-            var w = Generate.Arange(4, 2);
-            var x = Generate.Arange(2, 3);
+            var w = Generate.Range(4, 2);
+            var x = Generate.Range(2, 3);
             var y = w.MatrixMultiply(x);
             if (y.Sum() != 228)
                 throw new Exception("Failure in matrix multiply");
@@ -120,14 +120,14 @@ namespace UnitTest
                 throw new Exception("Failure in matrix multiply");
 
 
-            var x0 = Generate.Arange(20).Repeat(new long[] { 10 }, 0);
-            var x1 = Generate.Arange(20).Repeat(10, 0);
+            var x0 = Generate.Range(20).Repeat(new long[] { 10 }, 0);
+            var x1 = Generate.Range(20).Repeat(10, 0);
             var s1 = x1.Sum();
             var s0 = x0.Sum();
             if (s0 != 1900 || s1 != 1900)
                 throw new Exception(string.Format("Failure in repeat: {0}, {1}", s0, s1));
 
-			var t0 = Generate.Arange(new long[] { 101, 100 });
+			var t0 = Generate.Range(new long[] { 101, 100 });
 			var t1 = t0.Reduce<Add>(0);
 			var t2 = t0.Reduce<Add>(1);
 			if (t1.Shape.Dimensions[0].Length != 100 || t2.Shape.Dimensions[0].Length != 101 || t1.Value[0] != 505000 || t2.Value[0] != 4950)

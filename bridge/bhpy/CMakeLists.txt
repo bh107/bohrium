@@ -8,7 +8,11 @@ find_package(SWIG)
 set_package_properties(SWIG PROPERTIES DESCRIPTION "Simplified Wrapper and Interface Generator" URL "www.swig.org")
 set_package_properties(SWIG PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python and NumPy).")
 
-if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND NUMPY_INCLUDE_DIRS)
+find_package(Cython)
+set_package_properties(Cython PROPERTIES DESCRIPTION "C-Extensions for Python" URL "cython.org")
+set_package_properties(Cython PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python and SWIG).")
+
+if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND CYTHON_FOUND AND NUMPY_INCLUDE_DIRS)
 
     # Generate distutils package and install it
     add_custom_target(
