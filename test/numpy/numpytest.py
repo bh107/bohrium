@@ -216,6 +216,8 @@ class BenchHelper:
             stderr  = subprocess.PIPE
         )
         out, err = p.communicate()
+        if 'elapsed-time' not in out:
+            raise Exception("Benchmark error [stdout:%s,stderr:%s]" % (out, err))
         if err:
             raise Exception("Benchmark error[%s]" % err)
 
