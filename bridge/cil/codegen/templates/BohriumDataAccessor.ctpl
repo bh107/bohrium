@@ -30,6 +30,11 @@ namespace NumCIL.Bohrium
         private static readonly int ELSIZE = System.Runtime.InteropServices.Marshal.SizeOf(typeof(${bh_atype}));
         private static long MAX_INDEX = int.MaxValue / ELSIZE;
 
+        public DataAccessor_${bh_ctype}(${bh_atype} value, long size)
+        {
+            m_size = size;
+            m_array = PInvoke.bh_multi_array_${bh_ctype}_new_value(value, 1, new long[] { size });            
+        }
     
         public DataAccessor_${bh_ctype}(long size)
         {
