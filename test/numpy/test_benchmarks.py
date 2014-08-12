@@ -223,7 +223,7 @@ class test_gauss_20x20(BenchHelper, numpytest):
 
         # Benchmark parameters
         self.script     = "gauss"
-        self.dtypes     = [bg.float32, bh.float64]
+        self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "20*20"
         self.inputfn    = "gauss_input-{0}-20*20.npz"
 
