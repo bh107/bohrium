@@ -29,7 +29,10 @@ using NumCIL.Generic;
 namespace NumCIL
 {
     public partial class UFunc
-    {        
+    {   
+        /// <summary>
+        /// The class that serves as an entry point for executing operations
+        /// </summary>
         public static class ApplyManager
         {
             /// <summary>

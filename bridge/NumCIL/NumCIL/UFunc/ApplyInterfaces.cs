@@ -30,6 +30,9 @@ namespace NumCIL
 {
     public partial class UFunc
     {
+        /// <summary>
+        /// The interface that describes an apply handler
+        /// </summary>
         public interface IApplyHandler
         {
             /// <summary>
