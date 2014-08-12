@@ -203,15 +203,31 @@ class test_gauss(BenchHelper, numpytest):
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.0001
+        self.size = 4
+
+        # Benchmark parameters
+        self.script     = "gauss"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "4*4"
+        self.inputfn    = "gauss_input-{0}-4*4.npz"
+
+    def test_gauss(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_gauss_20x20(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
         self.size = 20
 
         # Benchmark parameters
         self.script     = "gauss"
-        self.dtypes     = [bh.float64]
+        self.dtypes     = [bg.float32, bh.float64]
         self.sizetxt    = "20*20"
         self.inputfn    = "gauss_input-{0}-20*20.npz"
 
-    def test_gauss(self, pseudo_arrays):
+    def test_gauss_20x20(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 class test_wireworld(BenchHelper, numpytest):
