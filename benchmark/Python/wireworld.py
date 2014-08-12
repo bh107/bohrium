@@ -47,17 +47,26 @@ def wireworld(world, iterations):
 
 def main():
     """
-    Example parameter: --size=1000*10.
+    Example parameter: --size=100*10.
     This will execute on a 1000x1000 dataset for 10 iterations.
     """
     B = util.Benchmark()
     (N, I) = B.size
-    world = wireworld_init(N)
-    world + 1   # Ensure that data is in the correct space.
+    if B.inputfn:
+        world = B.load_array()
+    else:
+        world = wireworld_init(N)
+
+    if B.dumpinput:
+        B.dump_arrays("wireworld", {"input": world})
+
     B.start()
-    result = wireworld(world, I)
+    R = wireworld(world, I)
     B.stop()
     B.pprint()
+
+    if B.outputfn:
+        B.tofile(B.outputfn, {"res": R})
 
 if __name__ == "__main__":
     main()

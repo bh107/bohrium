@@ -313,6 +313,21 @@ void greedy_partition(Graph& graph, vector<Graph*>& subgraphs, vector<uint32_t>&
                         DEBUG(TAG, "Incompatible: " << tac.out << " and " <<  (*it).second << ".");
                         goto new_subgraph;
                     }
+                    switch(tac_noperands(tac)) {
+                        case 3:
+                            if (!compatible(symbol_table[tac.in1], symbol_table[tac.in2])) {
+                                goto new_subgraph;
+                            }
+                            if (!compatible(symbol_table[tac.in2], symbol_table[tac.out])) {
+                                goto new_subgraph;
+                            }
+                        case 2:
+                            if (!compatible(symbol_table[tac.in1], symbol_table[tac.out])) {
+                                goto new_subgraph;
+                            }
+                        case 1:
+                            break;
+                    }
                 }
             }
 

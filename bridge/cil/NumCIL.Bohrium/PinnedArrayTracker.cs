@@ -16,7 +16,7 @@ using bh_float64 = System.Double;
 using bh_complex64 = NumCIL.Complex64.DataType;
 using bh_complex128 = System.Numerics.Complex;
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
     /// <summary>
     /// Utility class that keeps track of all pinned memory allocations,
@@ -28,6 +28,8 @@ namespace NumCIL.Bohrium2
         /// The lookup table with all pinned items
         /// </summary>
         private static Dictionary<Array, Tuple<IntPtr, GCHandle, IDisposable>> _allocations = new Dictionary<Array, Tuple<IntPtr, GCHandle, IDisposable>>();
+
+        private static List<Tuple<IMultiArray, GCHandle>> _protectedReleases = new List<Tuple<IMultiArray, GCHandle>>();
 
         /// <summary>
         /// The lock object that protects access to the pinner
@@ -184,19 +186,53 @@ namespace NumCIL.Bohrium2
         public static bool HasEntries { get { return _allocations.Count != 0; } }
 
         /// <summary>
+        /// Registers a protected invoke
+        /// </summary>
+        /// <param name="m_array">M array.</param>
+        /// <param name="m_handle">M handle.</param>
+        internal static void RegisterProtectedDiscard(IMultiArray array, GCHandle handle)
+        {
+            lock(_lock)
+                _protectedReleases.Add(new Tuple<IMultiArray, GCHandle>(array, handle));
+        }
+
+        /// <summary>
         /// Releases all pinned items
         /// </summary>
         internal static void ReleaseInternal()
         {
             lock (_lock)
             {
+                // Notify the bridge that these elements are no longer used
                 foreach (var h in _allocations.Values)
-                {
                     h.Item3.Dispose();
-                    h.Item2.Free();
-                }
                 
+                // Execute all the discards
+                PInvoke.bh_runtime_flush();
+
                 _allocations.Clear();
+
+                // Unpin any pinned memory
+                foreach (var h in _allocations.Values)
+                    h.Item2.Free();
+                
+                // Handle all protected discards
+                if (_protectedReleases.Count > 0)
+                {
+                    // Make sure that all CIL managed pointers are set to null
+                    foreach (var h in _protectedReleases)
+                    {
+                        h.Item1.SetBaseData(IntPtr.Zero);
+                        h.Item1.Dispose();
+                        if (h.Item2.IsAllocated)
+                            h.Item2.Free();
+                    }
+
+                    // Then execute the discards for these entries
+                    PInvoke.bh_runtime_flush();
+
+                    _protectedReleases.Clear();
+                }
             }
         }
                 

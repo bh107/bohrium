@@ -25,6 +25,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(USE_CXX98 false CACHE BOOL "Choose to use the old C++98 standard instead of C++11 (some Bohrium components requires C++11 and will not be skipped.")
 message(STATUS "USE_CXX98: ${USE_CXX98}")
 
+# Benchmarks, used by numpy backend
+set(BENCHMARK_DIR "${CMAKE_SOURCE_DIR}/benchmark")
+message(STATUS "Benchmark-dir: ${BENCHMARKS_DIR}")
+
 #Set global compile flags TODO: support other compilers
 if(USE_CXX98)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
@@ -61,10 +65,15 @@ add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(extmethods/fftw)
 
+#The NumCIL library
+add_subdirectory(bridge/NumCIL)
+
+#Non CXX98 compatible libraries
 if(NOT USE_CXX98)
     add_subdirectory(bridge/cpp)
     add_subdirectory(bridge/c)
     add_subdirectory(bridge/bhpy)
+    add_subdirectory(bridge/cil)
 endif()
 
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123 DESTINATION share/bohrium/include COMPONENT bohrium)

@@ -10,7 +10,7 @@
 *.test
 *.orig
 *.swp
-bridge/numpy/build/*
+bridge/bhpy/examples/*.py
 *~
 *.obj
 .DS_Store

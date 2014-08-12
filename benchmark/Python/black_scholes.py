@@ -58,12 +58,23 @@ def main():
     B = util.Benchmark()
     (N, I) = B.size
 
-    S = model(N, dtype=B.dtype)              # Construct pseudo-data
+    if B.inputfn:
+        S = B.load_array()
+    else:
+        S = model(N, dtype=B.dtype)              # Construct pseudo-data
+
+    if B.dumpinput:
+        B.dump_arrays("black_scholes", {'input': S})
 
     B.start()
     R = price(S, I, visualize=B.visualize)   # Run the model
     B.stop()
     B.pprint()
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': np.array(R)})
+
+    if B.verbose:
+        print R
 
 if __name__ == "__main__":
     main()

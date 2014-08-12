@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 %set $ops = $data[0]
 %set $reduce_ops = $data[1]
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
     %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
     internal partial class DataAccessor_${bh_ctype} : NumCIL.Generic.IDataAccessor<${bh_atype}>, IDisposable, NumCIL.Generic.IFlushableAccessor
@@ -274,16 +274,18 @@ namespace NumCIL.Bohrium2
             if (m_array.IsAllocated)
             {
                 // If the data is in CIL, make sure C land does not free it
-                if (m_data != null) 
+                if (m_data != null)
                 {
-                    var bs = m_array.Base;
-                    bs.Data = IntPtr.Zero;
+                    PinnedArrayTracker.RegisterProtectedDiscard(m_array, m_handle);
                 }
-
-                m_array.Dispose();
+                else
+                {
+                    m_array.Dispose();
+                    if (m_handle.IsAllocated)
+                        m_handle.Free();
+                }
             }
-
-            if (m_handle.IsAllocated)
+            else if (m_handle.IsAllocated)
                 m_handle.Free();
         }
     }    

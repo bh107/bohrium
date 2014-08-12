@@ -109,13 +109,21 @@ def main():
     W = B.size[1]
     I = B.size[2]
 
-    m = model(H, W, dtype=B.dtype)
+    if B.inputfn:
+        M = B.load_array()
+    else:
+        M = model(H, W, dtype=B.dtype)
+
+    if B.dumpinput:
+        B.dump_arrays("shallow_water", {'input':M})
 
     B.start()
-    m = simulate(m, I, visualize=B.visualize)
-    r = np.add.reduce(np.add.reduce(m))
+    M = simulate(M, I, visualize=B.visualize)
+    R = np.add.reduce(np.add.reduce(M))
     B.stop()
     B.pprint()
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()

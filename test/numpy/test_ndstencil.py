@@ -1,5 +1,72 @@
-import bohrium as np
-from numpytest import numpytest
+import bohrium as bh
+from numpytest import numpytest, BenchHelper
+
+class test_ndstencil_1D(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 10
+
+        # Benchmark parameters
+        self.script     = "ndstencil"
+        self.dtypes     = [bh.float64]
+        self.sizetxt    = "10*100*1"
+        self.inputfn    = "ndstencil_input-{0}-1026.npz"
+
+    def test_ndstencil_1D(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_ndstencil_2D(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 10
+
+        # Benchmark parameters
+        self.script     = "ndstencil"
+        self.dtypes     = [bh.float64]
+        self.sizetxt    = "10*100*2"
+        self.inputfn    = "ndstencil_input-{0}-34*34.npz"
+
+    def test_ndstencil_2D(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_ndstencil_3D(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 10
+
+        # Benchmark parameters
+        self.script     = "ndstencil"
+        self.dtypes     = [bh.float64]
+        self.sizetxt    = "10*100*3"
+        self.inputfn    = "ndstencil_input-{0}-10*10*18.npz"
+
+    def test_ndstencil_3D(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_ndstencil_4D(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 10
+
+        # Benchmark parameters
+        self.script     = "ndstencil"
+        self.dtypes     = [bh.float64]
+        self.sizetxt    = "10*100*1"
+        self.inputfn    = "ndstencil_input-{0}-6*6*10*10.npz"
+
+    def test_ndstencil_4D(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+""":q
+
 import bohrium.examples.ndstencil as nds
 
 class test_ndstencil(numpytest):
@@ -18,3 +85,4 @@ class test_ndstencil(numpytest):
         cmd = "res = nds.solve(a[0],{2});".format(*self.size)
         exec cmd
         return (res,cmd)
+    """

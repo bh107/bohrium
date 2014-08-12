@@ -1,4 +1,4 @@
-﻿﻿#region Copyright
+﻿#region Copyright
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -31,7 +31,7 @@ namespace UnitTest
     {
         static void Main(string[] args)
 		{
-			NumCIL.Bohrium2.Utility.SetupDebugEnvironmentVariables();
+			NumCIL.Bohrium.Utility.SetupDebugEnvironmentVariables();
 
 			if (!args.Contains<string>("--bohrium-only", StringComparer.InvariantCultureIgnoreCase))
 			{
@@ -50,13 +50,13 @@ namespace UnitTest
 				RunSomeTests("Lazy");
 			}
 			
-            try { NumCIL.Bohrium2.Utility.Activate(); }
+            try { NumCIL.Bohrium.Utility.Activate(); }
             catch (Exception ex) 
             {
                 Console.WriteLine(ex.ToString());
             } 
 
-            if (NumCIL.Generic.NdArray<float>.AccessorFactory.GetType() == typeof(NumCIL.Bohrium2.BohriumAccessorFactory<float>))
+            if (NumCIL.Generic.NdArray<float>.AccessorFactory.GetType() == typeof(NumCIL.Bohrium.BohriumAccessorFactory<float>))
                 RunSomeTests("Bohrium");
             else
                 Console.WriteLine("Bohrium code is not supported, skipping tests for Bohrium code");

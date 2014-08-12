@@ -54,7 +54,7 @@ namespace UnitTest
             if (cn0 != 1 || dn0 != 2)
                 throw new Exception("Error in accessor");
 
-            var test = Generate.Arange(3) * 4;
+            var test = Generate.Range(3) * 4;
             test.Transpose();
 
             Shape s = new Shape(
@@ -63,7 +63,7 @@ namespace UnitTest
                 new long[] { 18, 18, 6, 1 } //Strides
             );
 
-            var a = Generate.Arange(s.Length);
+            var a = Generate.Range(s.Length);
             var b = a.Reshape(s);
             var c = b[1][0][1];
             var d = c[2];
@@ -84,7 +84,7 @@ namespace UnitTest
             if (c.Value[1] != 31) throw new Exception("Failure in basic test");
             if (b.Sum() != 228) throw new Exception("Failure in basic test");
 
-            var r1 = Generate.Arange(12).Reshape(new long[] { 2, 1, 2, 3 });
+            var r1 = Generate.Range(12).Reshape(new long[] { 2, 1, 2, 3 });
             if (!Equals(r1.AsArray(), new T[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 })) throw new Exception("Failure in basic test");
             var r2 = r1.Reduce<Add>(0);
             if (!Equals(r2.AsArray(), new T[] { 6, 8, 10, 12, 14, 16 })) throw new Exception("Failure in basic test");
@@ -98,8 +98,8 @@ namespace UnitTest
             var r3 = b.Reduce<Add>();
             if (!Equals(r3.AsArray(), new T[] { 30, 32, 34, 42, 44, 46 })) throw new Exception("Failure in basic test");
 
-            var x1 = Generate.Arange(12).Reshape(new long[] { 4, 3 });
-            var x2 = Generate.Arange(3);
+            var x1 = Generate.Range(12).Reshape(new long[] { 4, 3 });
+            var x2 = Generate.Range(3);
 
             var x3 = x1 + x2;
 
@@ -119,36 +119,36 @@ namespace UnitTest
             NumCIL.Double.NdArray x4 = (NumCIL.Double.NdArray)x3;
             if (!Equals(x4.AsArray(), new double[] { 0, 2, 4, 3, 5, 7, 6, 8, 10, 9, 11, 13 })) throw new Exception("Failure in basic test");
 
-            var x6 = Generate.Arange(6).Reshape(new long[] { 2, 3 });
+            var x6 = Generate.Range(6).Reshape(new long[] { 2, 3 });
 
             var x7 = x6.Reduce<Add>();
 
             var rx7 = x7.AsArray();
             if (!Equals(rx7, new T[] { 3, 5, 7 })) throw new Exception(string.Format("Failure in basic test: [{0}]", string.Join(", ", rx7.Select(x => x.ToString()).ToArray())));
 
-            var x8 = Generate.Arange(10) * 0.5f;
+            var x8 = Generate.Range(10) * 0.5f;
             var rx8 = x8.Reduce<Add>().Value[0];
             if (rx8 != 22.5)
                 throw new Exception(string.Format("Failure in broadcast multiply: {0}", rx8));
 
-            var x9 = Mul.Apply(Generate.Arange(10), 0.5f);
+            var x9 = Mul.Apply(Generate.Range(10), 0.5f);
             var rx9 = x9.Reduce<Add>().Value[0];
             if (rx9 != 22.5)
                 throw new Exception(string.Format("Failure in broadcast multiply: {0}", rx9));
 
-            var x10 = 5 - Generate.Arange(10);
-            var x11 = Generate.Arange(10) - 5;
+            var x10 = 5 - Generate.Range(10);
+            var x11 = Generate.Range(10) - 5;
             if (x10.Sum() != 5 || x11.Sum() != -5)
                 throw new Exception("Failure in scalar rhs/lhs");
 
-            var n0 = Generate.Arange(4);
+            var n0 = Generate.Range(4);
             var n1 = n0[new Range(1, 4)];
             var n2 = n0[new Range(0, 3)];
             var n3 = n1 - n2;
             if (n3.Reduce<Add>().Value[0] != 3)
                 throw new Exception("Failure in basic slicing");
 
-            var z0 = Generate.Arange(new long[] {2, 2, 3});
+            var z0 = Generate.Range(new long[] {2, 2, 3});
             var z1 = z0[Range.All, Range.All, Range.El(1)];
             var z2 = z0[Range.All, Range.El(1), Range.El(1)];
             var z3 = z0[Range.El(1), Range.El(1), Range.All];
@@ -167,20 +167,20 @@ namespace UnitTest
                 throw new Exception("Reduced range failed");
 
 
-            var y1 = Generate.Arange(9).Reshape(new long[] {3, 3});
+            var y1 = Generate.Range(9).Reshape(new long[] {3, 3});
             var y2 = y1.Transposed;
             y1 = y1.Transposed;
             var y3 = y1 + y2;
             if (y3.Value[0, 2] != 12)
                 throw new Exception("Failure with double transpose");
 
-            var y4 = Generate.Arange(2 * 2 * 2 * 2 * 2).Reshape(new long[] {2,2,2,2,2});
-            var y5 = y4 * (Generate.Arange(2) + 1);
+            var y4 = Generate.Range(2 * 2 * 2 * 2 * 2).Reshape(new long[] {2,2,2,2,2});
+            var y5 = y4 * (Generate.Range(2) + 1);
             if (y5.Sum() != 752)
                 throw new Exception("Failure with 5 dimensions");
 
-            var y6 = Generate.Arange(2 * 2 * 2 * 2 * 2 * 2).Reshape(new long[] { 2, 2, 2, 2, 2, 2 });
-            var y7 = y6 * (Generate.Arange(2) + 1);
+            var y6 = Generate.Range(2 * 2 * 2 * 2 * 2 * 2).Reshape(new long[] { 2, 2, 2, 2, 2, 2 });
+            var y7 = y6 * (Generate.Range(2) + 1);
             if (y7.Sum() != 3040)
                 throw new Exception("Failure with 6 dimensions");
         }

@@ -20,14 +20,59 @@ using NumCIL.Generic;
 %set $methods = $data[2]
 
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
-using ma_${bh_ctype} = NumCIL.Bohrium2.PInvoke.bh_multi_array_${bh_ctype}_p;
+using ma_${bh_ctype} = NumCIL.Bohrium.PInvoke.bh_multi_array_${bh_ctype}_p;
 %end for
 
+namespace NumCIL.Bohrium
+{
+    internal static class RandomSuppliers
+    {
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
-namespace NumCIL.Bohrium2
+        public static void Random(ma_${bh_ctype} target)
+        {
+            var len = target.Base.Size;
+            var tmp = PInvoke.bh_multi_array_uint64_new_random123((ulong)len, 0u, 0u);
+            var view = PInvoke.bh_multi_array_${bh_ctype}_new_from_view(target.Base, 1, 0, new long[] { len }, new long[] { 1 });
+            PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+        }
+%end for
+    }
+
+    internal static class RangeSuppliers
+    {
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
+        public static void Range(ma_${bh_ctype} target)
+        {
+            var len = target.Base.Size;
+            var view = PInvoke.bh_multi_array_${bh_ctype}_new_from_view(target.Base, 1, 0, new long[] { len }, new long[] { 1 });
+            using(var tmp = PInvoke.bh_multi_array_uint64_new_range((ulong)len))
+                PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+        }
+%end for
+    }
+
+}
+
+%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
+namespace NumCIL.Bohrium
 {
     public class ApplyImplementor_${bh_ctype} : ITypedApplyImplementor<${bh_atype}>
     {
+        private Tuple<Type, Action<ma_${bh_ctype}>>[] m_nullOps = 
+        {
+%for $op, $opcode, $opname, $opcount, $typesigs, $cilname in $methods
+%if $opcode != "BH_IDENTITY" and opcount == 1 and $cilname != ""
+%for $op1_type, $op2_type in $typesigs
+%if op1_type[2] == $bh_ctype and op2_type[2] == $bh_ctype
+            new Tuple<Type, Action<ma_${bh_ctype}>>(typeof(${cilname}), PInvoke.bh_multi_array_${bh_ctype}_${opname}),
+%end if
+%end for
+%end if
+%end for
+            new Tuple<Type, Action<ma_${bh_ctype}>>(typeof(NumCIL.Generic.IRandomOp), RandomSuppliers.Random),
+            new Tuple<Type, Action<ma_${bh_ctype}>>(typeof(NumCIL.Generic.IRangeOp), RangeSuppliers.Range)
+        };
+        
         private Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>[] m_unOps = 
         {
 %for $op, $opcode, $opname, $opcount, $typesigs, $cilname in $methods
@@ -40,7 +85,7 @@ namespace NumCIL.Bohrium2
 %end if
 %end for
         };
-        
+
         private Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>[] m_binOps = 
         {
 %for $op, $opcode, $opname, $opcount, $typesigs, $cilname in $methods
@@ -93,6 +138,7 @@ namespace NumCIL.Bohrium2
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, long>> m_reduceLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, long>>();
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>> m_binOpLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>();
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>> m_unOpLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>();
+        private Dictionary<Type, Action<ma_${bh_ctype}>> m_nullOpLookup = new Dictionary<Type, Action<ma_${bh_ctype}>>();
 
         #region ITypedApplyImplementor implementation
 
@@ -324,7 +370,38 @@ namespace NumCIL.Bohrium2
 
         public bool ApplyNullaryOp(Type c, NdArray<${bh_atype}> @out)
         {
-            return false;
+            Action<ma_${bh_ctype}> m;
+            // This lookup prevents a linear scan of the supported operands
+            if (!m_nullOpLookup.TryGetValue(c, out m))
+            {
+                m = (from n in m_nullOps
+                                    where n.Item1.IsAssignableFrom(c)
+                                    select n.Item2).FirstOrDefault();
+                m_nullOpLookup[c] = m;
+            }
+        
+            if (m == null)
+            {
+                Console.WriteLine("No registered match for: {0}", c.FullName);
+                return false;
+            }
+                
+            using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+            {
+                m(v0);
+                // If the output is CIL-managed, we must sync immediately
+                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                {
+                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                }
+                else
+                {
+                    v0.Sync();
+                    PinnedArrayTracker.Release();
+                }
+            }
+
+            return true;
         }
 
         public bool ApplyReduce(Type c, long axis, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> @out)
