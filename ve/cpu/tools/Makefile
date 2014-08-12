@@ -67,41 +67,25 @@ move_fused:
 move_sij:
 	python $(CPU)/tools/move_code.py ~/.local/var/bohrium/kernels/ /tmp/code/sij
 
-prep_fused:
+prep:
+	[ -d ~/.local/var/bohrium/kernels ] && rm -f ~/.local/var/bohrium/kernels/*.c
+	[ -d ~/.local/var/bohrium/objects ] && rm -f ~/.local/var/bohrium/kernels/*.so
+
+prep_fused: prep
 	mkdir -p /tmp/code/fused
 	rm -rf /tmp/code/fused/*.c
 
-prep_sij:
+prep_sij: prep
 	mkdir -p /tmp/code/sij
 	rm -rf /tmp/code/sij/*.c
 
 #
 # Benchmarks
-black_sij:
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
+gauss_sij: prep_sij
+	BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
-black_fused:
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/benchmark/Python/black_scholes.py --size=5000000*10 --bohrium=True
-
-synth_sij:
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*1
-#	BH_CORE_VCACHE_SIZE=10 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*1
-#	BH_CORE_VCACHE_SIZE=10 OMP_NUM_THREADS=4 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*1
-
-synth_fused:
-	BH_CORE_VCACHE_SIZE=1 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*200
-	BH_CORE_VCACHE_SIZE=10 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*200
-	BH_CORE_VCACHE_SIZE=10 OMP_NUM_THREADS=4 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth --size=2500*200
-
-inplace_sij:
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth_inplace --size=200000000*10
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth_inplace --size=200000000*10
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth_inplace --size=200000000*10
-
-inplace_fused:
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth_inplace --size=200000000*10
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth_inplace --size=200000000*10
-	BH_CORE_VCACHE_SIZE=0 OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(ROOT)/benchmark/cpp/bin/synth_inplace --size=200000000*10
+gauss_fus: prep_sij
+	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPRC=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
 #
 # Tests
