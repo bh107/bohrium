@@ -89,7 +89,7 @@ gauss_sij: prep_sij
 	BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
 gauss_fus: prep_sij
-	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPRC=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
+	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
 #
 # Tests
