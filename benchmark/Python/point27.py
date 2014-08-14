@@ -32,11 +32,14 @@ def main():
     B = util.Benchmark()        # Benchmark setup
     (N, I) = B.size
     data = point27_init(N)
-    data + 1                    # Ensure data is in the correct space
+    
     B.start()                   # Benchmark run, timing, pprint
-    result = point27(data, I)
+    R = point27(data, I)
     B.stop()
     B.pprint()
+
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()

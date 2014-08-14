@@ -14,13 +14,15 @@ def main():
     c = np.ones(N)
 
     for _ in xrange(I):
-        r = a+b+c
+        R = a+b+c
 
     B.stop()
     B.pprint()
 
     if B.verbose:
-        print r
+        print R
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()

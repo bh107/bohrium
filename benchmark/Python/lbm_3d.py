@@ -246,6 +246,9 @@ def main():
     B.stop()
     B.pprint()
 
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': UX})
+
     """
     import matplotlib.pyplot as plt
     UX *= -1

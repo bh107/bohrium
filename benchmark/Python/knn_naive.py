@@ -49,7 +49,7 @@ def main():
     if B.verbose:
         print sqd
     if B.outputfn:
-        B.tofile(B.outputfn, {'res': R})
+        B.tofile(B.outputfn, {'res': sqd})
 
     #idx = np.argsort(sqd)                       # Get the indexes
     #nn  = data[:,idx[:K]]                       # Get the corresponding elements
