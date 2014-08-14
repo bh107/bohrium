@@ -241,14 +241,16 @@ class BenchHelper:
 if __name__ == "__main__":
     warnings.simplefilter('error')#Warnings will raise exceptions
     pydebug = True
-    script_list = []
-    exclude_list = []
+    test_list       = []
+    script_list     = []
+    exclude_list    = []
     try:
         sys.gettotalrefcount()
     except AttributeError:
         pydebug = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"f:e:",["file=", "exclude="])
+        opts, args = getopt.getopt(sys.argv[1:],"f:e:t:",["file=", "exclude=",
+                                                          "test="])
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(2)
@@ -257,6 +259,8 @@ if __name__ == "__main__":
             script_list.append(a)
         elif o in ("-e", "--exclude"):
             exclude_list.append(a)
+        elif o in ["-t", "--test"]:
+            test_list.append(a)
         else:
             assert False, "unhandled option"
 
@@ -271,7 +275,8 @@ if __name__ == "__main__":
             m = f[:-3]#Remove ".py"
             m = __import__(m)
             #All test classes starts with "test_"
-            for cls in [o for o in dir(m) if o.startswith("test_")]:
+            for cls in [o for o in dir(m) if o.startswith("test_") and \
+                        (True if test_list and o in test_list or not test_list else False)]:
                 cls_obj  = getattr(m, cls)
                 cls_inst = cls_obj()
                 #All test methods starts with "test_"
