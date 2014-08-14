@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 
-SET(Mono_FIND_QUIETLY "1")
 find_package(Mono)
 set_package_properties(Mono PROPERTIES DESCRIPTION "An open source implementation the CLR" URL "www.mono-project.com")
 set_package_properties(Mono PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the NumCIL package")

@@ -40,7 +40,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
+    <ProjectReference Include="..\..\..\bridge\cil\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
       <Project>{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}</Project>
       <Name>NumCIL.Bohrium</Name>
     </ProjectReference>
