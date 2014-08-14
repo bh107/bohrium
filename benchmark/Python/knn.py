@@ -1,3 +1,6 @@
+"""
+This benchmark does not seem to make a lot of sense...
+"""
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -17,16 +20,29 @@ def main():
     B = util.Benchmark()
     ndims       = B.size[0]
     db_length   = B.size[1]
-    i           = B.size[2]
+    I           = B.size[2]
 
-    targets = np.random.random((ndims,db_length))
-    base    = np.random.random((ndims,db_length))
+    # Load input-data
+    if B.inputfn:
+        data    = B.load_arrays(B.inputfn)
+        targets = data['targets']
+        base    = data['base']
+    else:
+        targets = np.array(np.random.random((ndims, db_length)), dtype=B.dtype)
+        base    = np.array(np.random.random((ndims, db_length)), dtype=B.dtype)
 
+    if B.dumpinput:
+        B.dump_arrays("knn", {'targets': targets, 'base': base})
+    
+    # Run the Benchmark
     B.start()
-    for n in range(0, i):
-        compute_targets(base, targets)
+    for _ in xrange(I):
+        R = compute_targets(base, targets)
     B.stop()
     B.pprint()
+
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
 
 if __name__ == "__main__":
     main()
