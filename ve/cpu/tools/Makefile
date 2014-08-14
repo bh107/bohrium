@@ -75,7 +75,7 @@ prep:
 	[ -d ~/.local/var/bohrium/kernels ] && rm -f ~/.local/var/bohrium/kernels/*.c
 	[ -d ~/.local/var/bohrium/objects ] && rm -f ~/.local/var/bohrium/kernels/*.so
 
-prep_fused: prep
+prep_fsd: prep
 	mkdir -p /tmp/code/fused
 	rm -rf /tmp/code/fused/*.c
 
@@ -88,7 +88,7 @@ prep_sij: prep
 gauss_sij: prep_sij
 	BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
-gauss_fus: prep_sij
+gauss_fsd: prep_fsd
 	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
 #
