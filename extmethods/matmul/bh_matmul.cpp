@@ -34,6 +34,7 @@ template <typename Type> bh_error do_matmul(bh_view *A, bh_view *B, bh_view *C){
     bh_intp N = B->shape[1];
     bh_intp K = A->shape[1];
 
+    #pragma omp parallel for
     for(bh_intp i = 0; i < M; i++){
         for(bh_intp j = 0; j < N; j++){
             C_data[C->start + i*C->stride[0]+j*C->stride[1]] = 0;
