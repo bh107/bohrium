@@ -15,7 +15,7 @@ using NumCIL.Generic;
 
 %include "codegen/templates/typemap.cs"
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
     /// <summary>
     /// Basic factory for creating Bohrium accessors

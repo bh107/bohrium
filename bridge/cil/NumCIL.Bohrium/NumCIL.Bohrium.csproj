@@ -3,12 +3,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{94B0C811-511A-420C-9E3E-898B253E8D46}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>NumCIL.Bohrium2</RootNamespace>
-    <AssemblyName>NumCIL.Bohrium2</AssemblyName>
+    <RootNamespace>NumCIL.Bohrium</RootNamespace>
+    <AssemblyName>NumCIL.Bohrium</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,10 +36,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\codegen\output\PInvoke.basics.cs">
+    <Compile Include="..\codegen\output\PInvoke-basics.cs">
       <Link>PInvoke.basics.cs</Link>
     </Compile>
-    <Compile Include="..\codegen\output\PInvoke.operations.cs">
+    <Compile Include="..\codegen\output\PInvoke-operations.cs">
       <Link>PInvoke.operations.cs</Link>
     </Compile>
     <Compile Include="Utility.cs" />

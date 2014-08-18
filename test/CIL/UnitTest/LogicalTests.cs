@@ -31,7 +31,7 @@ namespace UnitTest
 	{
 		public static void RunTests()
 		{
-			var a = NumCIL.Float.Generate.Arange(10);
+			var a = NumCIL.Float.Generate.Range(10);
 			var b = NumCIL.Float.Generate.Ones(10);
 			var c = a > 5;
 			var d = 5 < a;

@@ -1,7 +1,7 @@
 using System;
 using NumCIL.Generic;
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {
     internal interface ITypedApplyImplementor<T>
     {

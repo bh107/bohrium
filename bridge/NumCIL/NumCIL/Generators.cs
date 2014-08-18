@@ -38,7 +38,7 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="size">The length of the generated array</param>
         /// <returns>An NdArray with sequential integers, starting with zero</returns>
-        NdArray<T> Arange(long size);
+        NdArray<T> Range(long size);
         /// <summary>
         /// Generates an NdArray with all elements set to the value 1
         /// </summary>
@@ -82,7 +82,7 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="shape">The shape of the generated array</param>
         /// <returns>A shaped NdArray with sequential integers, starting with zero</returns>
-        NdArray<T> Arange(Shape shape);
+        NdArray<T> Range(Shape shape);
         /// <summary>
         /// Generates an NdArray with all elements set to the value 1
         /// </summary>
@@ -315,8 +315,9 @@ namespace NumCIL.Generic
     /// <typeparam name="T">The type of data to generate</typeparam>
 	/// <typeparam name="TRand">The random number generator to use</typeparam>
     /// <typeparam name="TConv">The conversion operator to use</typeparam>
-    public class Generator<T, TRand, TConv> : IGenerator<T>
-		where TRand : struct, IRandomGeneratorOp<T>
+    public class Generator<T, TRand, TRange, TConv> : IGenerator<T>
+        where TRand : struct, IRandomGeneratorOp<T>
+        where TRange : struct, IRangeGeneratorOp<T>
         where TConv : struct, INumberConverter<T>
     {
         /// <summary>
@@ -324,7 +325,12 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="size">The length of the generated array</param>
         /// <returns>An NdArray with sequential integers, starting with zero</returns>
-        public NdArray<T> Arange(long size) { return RangeGenerator<T, TConv>.Generate(size); }
+        public NdArray<T> Range(long size) 
+        { 
+            var x = new NdArray<T>(new Shape(size));
+            UFunc.Apply<T, TRange>(new TRange(), x);
+            return x;
+        }
         /// <summary>
         /// Generates an NdArray with all elements set to the value 1
         /// </summary>
@@ -367,7 +373,12 @@ namespace NumCIL.Generic
         /// </summary>
         /// <param name="shape">The shape of the generated array</param>
         /// <returns>A shaped NdArray with sequential integers, starting with zero</returns>
-        public NdArray<T> Arange(Shape shape) { return RangeGenerator<T, TConv>.Generate(shape); }
+        public NdArray<T> Range(Shape shape) 
+        { 
+            var x = new NdArray<T>(shape);
+            UFunc.Apply<T, TRange>(new TRange(), x);
+            return x;
+        }
         /// <summary>
         /// Generates an NdArray with all elements set to the value 1
         /// </summary>
@@ -610,61 +621,34 @@ namespace NumCIL.Generic
     }
 
     /// <summary>
-    /// Basic implementation of the range generator
+    /// Marker interface for range ops
     /// </summary>
-    /// <typeparam name="T">The type of data to generate</typeparam>
-    /// <typeparam name="TConv">The conversion operator to use</typeparam>
-    public class RangeGenerator<T, TConv> : IGeneratorImplementation<T>
+    public interface IRangeGeneratorOp<T> : INullaryOp<T>, IRangeOp
+    { }
+
+    /// <summary>
+    /// Non-generic marker interface for range operators
+    /// </summary>
+    public interface IRangeOp { }
+
+    /// <summary>
+    /// Range generator.
+    /// </summary>
+    public struct RangeGeneratorOp<T, TConv> : IRangeGeneratorOp<T>
         where TConv : struct, INumberConverter<T>
     {
         /// <summary>
-        /// Generates an NdArray with sequential integers, starting with 0
+        /// The internal counter
         /// </summary>
-        /// <param name="shape">The shape of the NdArray to generate</param>
-        /// <returns>A shaped NdArray with sequential integers, starting with 0</returns>
-        public static NdArray<T> Generate(Shape shape)
-        {
-            return Generate(shape.Length).Reshape(shape);
-        }
+        private long m_no;
 
         /// <summary>
-        /// Generates an NdArray with sequential integers, starting with 0
+        /// Cached converter &quot;instance&quot;
         /// </summary>
-        /// <param name="size">The size of the NdArray to generate</param>
-        /// <returns>An NdArray with sequential integers, starting with 0</returns>
-        public static NdArray<T> Generate(long size)
-        {
-            T[] a = new T[size];
-            TConv c = new TConv();
+        private TConv m_conv;
 
-            for (long i = 0; i < a.LongLength; i++)
-                a[i] = c.Convert(i);
-
-            return new NdArray<T>(a);
-        }
-
-        #region IGenerator<T> Members
-
-        /// <summary>
-        /// Generates an NdArray with sequential integers, starting with 0
-        /// </summary>
-        /// <param name="size">The size of the NdArray to generate</param>
-        /// <returns>An NdArray with sequential integers, starting with 0</returns>
-        NdArray<T> NumCIL.Generic.IGeneratorImplementation<T>.Generate(long size)
-        {
-            return RangeGenerator<T, TConv>.Generate(size);
-        }
-
-        /// <summary>
-        /// Generates an NdArray with sequential integers, starting with 0
-        /// </summary>
-        /// <param name="shape">The shape of the NdArray to generate</param>
-        /// <returns>A shaped NdArray with sequential integers, starting with 0</returns>
-        NdArray<T> NumCIL.Generic.IGeneratorImplementation<T>.Generate(Shape shape)
-        {
-            return RangeGenerator<T, TConv>.Generate(shape);
-        }
-
-        #endregion
+        /// <summary>Returns a range number</summary>
+        /// <returns>A range number</returns>
+        public T Op() { return m_conv.Convert(m_no++); }
     }
 }

@@ -61,10 +61,15 @@ add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(extmethods/fftw)
 
+#The NumCIL library
+add_subdirectory(bridge/NumCIL)
+
+#Non CXX98 compatible libraries
 if(NOT USE_CXX98)
     add_subdirectory(bridge/cpp)
     add_subdirectory(bridge/c)
     add_subdirectory(bridge/bhpy)
+    add_subdirectory(bridge/cil)
 endif()
 
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123 DESTINATION share/bohrium/include COMPONENT bohrium)

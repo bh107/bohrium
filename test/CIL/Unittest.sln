@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Unsafe", "..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj", "{F3DA9742-5A09-4456-9531-548324D35CE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Bohrium2", "..\..\bridge\cil\NumCIL.Bohrium2\NumCIL.Bohrium2.csproj", "{94B0C811-511A-420C-9E3E-898B253E8D46}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Bohrium", "..\..\bridge\cil\NumCIL.Bohrium\NumCIL.Bohrium.csproj", "{94B0C811-511A-420C-9E3E-898B253E8D46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -17,7 +17,7 @@ using bh_float64 = System.Double;
 using bh_complex64 = NumCIL.Complex64.DataType;
 using bh_complex128 = System.Numerics.Complex;
 
-namespace NumCIL.Bohrium2
+namespace NumCIL.Bohrium
 {    
     public class ApplyImplementor : UFunc.IApplyHandler
     {

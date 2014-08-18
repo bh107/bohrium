@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shallow_water", "shallow_wa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL", "..\..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj", "{08C17283-4F2A-466C-AE28-1923837A2F58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Bohrium", "..\..\..\..\bridge\NumCIL\NumCIL.Bohrium\NumCIL.Bohrium.csproj", "{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Bohrium", "..\..\..\..\bridge\cil\NumCIL.Bohrium\NumCIL.Bohrium.csproj", "{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumCIL.Unsafe", "..\..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj", "{F3DA9742-5A09-4456-9531-548324D35CE3}"
 EndProject

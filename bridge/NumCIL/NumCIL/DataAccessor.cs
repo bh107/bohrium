@@ -126,11 +126,6 @@ namespace NumCIL.Generic
         /// <param name="in2">An input operand</param>
         /// <typeparam name="Tb">The source data type</typeparam>
         void AddConversionOperation<Tb>(IBinaryConvOp<Tb, T> operation, NdArray<T> output, NdArray<Tb> in1, NdArray<Tb> in2);
-
-        /// <summary>
-        /// Flushes all pending operations on this element
-        /// </summary>
-        void Flush();
     }
 
     /// <summary>
@@ -242,6 +237,9 @@ namespace NumCIL.Generic
         public virtual bool IsAllocated { get { return m_data != null; } }
     }
 
+    /// <summary>
+    /// The collection point for lazily evaluated expressions
+    /// </summary>
 	public static class LazyAccessorCollector
 	{
 		/// <summary>
@@ -258,12 +256,7 @@ namespace NumCIL.Generic
 		/// The lock guarding the pending operations
 		/// </summary>
 		private static readonly object _pendingOperationsLock = new object();
-		
-		/// <summary>
-		/// The clock of the maximum operation already executed
-		/// </summary>
-		private static long _pendingOperationOffset;
-		
+
 		/// <summary>
 		/// Adds an operation to the list of pending operations
 		/// </summary>
@@ -295,7 +288,6 @@ namespace NumCIL.Generic
 				var tmp = new List<IPendingOperation>();
 				while (_pendingOperations.Count > 0 && _pendingOperations[0].Clock <= maxclock)
 				{
-					_pendingOperationOffset = _pendingOperations[0].Clock;
 					tmp.Add(_pendingOperations[0]);
 					_pendingOperations.RemoveAt(0);
 				}
@@ -448,7 +440,7 @@ namespace NumCIL.Generic
         /// <summary>
         /// Function that builds a serialized list of operations to execute to obtain the target output
         /// </summary>
-        /// <param name="target">The target output</param>
+        /// <param name="maxclock">The maximum clock to extract</param>
         /// <returns>A list of operations to perform</returns>
         public virtual IList<IPendingOperation> UnrollWorkList(long maxclock)
 		{
@@ -606,9 +598,21 @@ namespace NumCIL.Generic
 	/// </summary>
 	public interface IPendingOperation
 	{
+        /// <summary>
+        /// Gets the clock.
+        /// </summary>
 		long Clock { get; }
+        /// <summary>
+        /// Gets the type of the target operand.
+        /// </summary>
 		Type TargetOperandType { get; }
+        /// <summary>
+        /// Gets the type of the data.
+        /// </summary>
 		Type DataType { get; }
+        /// <summary>
+        /// Gets the target accessor.
+        /// </summary>
 		object TargetAccessor { get; }
 	}
 
@@ -674,7 +678,11 @@ namespace NumCIL.Generic
         		return typeof(T);
         	}
         }
-        
+
+        /// <summary>
+        /// Gets the target accessor.
+        /// </summary>
+        /// <value>The target accessor.</value>
         public object TargetAccessor
         {
         	get
