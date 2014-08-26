@@ -24,7 +24,7 @@ class base(backend.base):
                 self.mmap = m
                 vcache.pop(i)
                 return
-        self.mmap = mmap.mmap(-1, size)
+        self.mmap = mmap.mmap(-1, size, mmap.MAP_PRIVATE)
     def __str__(self):
         return "<base memory at %s>"%self.mmap
     def __del__(self):

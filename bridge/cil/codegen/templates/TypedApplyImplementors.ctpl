@@ -72,7 +72,7 @@ namespace NumCIL.Bohrium
             new Tuple<Type, Action<ma_${bh_ctype}>>(typeof(NumCIL.Generic.IRandomOp), RandomSuppliers.Random),
             new Tuple<Type, Action<ma_${bh_ctype}>>(typeof(NumCIL.Generic.IRangeOp), RangeSuppliers.Range)
         };
-        
+
         private Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>[] m_unOps = 
         {
 %for $op, $opcode, $opname, $opcount, $typesigs, $cilname in $methods
@@ -98,6 +98,21 @@ namespace NumCIL.Bohrium
 %end if
 %end for
         };
+
+        private Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>[] m_aggregateOps = 
+        {
+%if $bh_atype == "bh_bool8"
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IAnd), PInvoke.bh_multi_array_${bh_ctype}_all),
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IOr), PInvoke.bh_multi_array_${bh_ctype}_any),
+%else        
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IAdd), PInvoke.bh_multi_array_${bh_ctype}_sum),
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IMul), PInvoke.bh_multi_array_${bh_ctype}_product),
+%if $bh_atype != "bh_complex128" and $bh_atype != "bh_complex64"
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IMax), PInvoke.bh_multi_array_${bh_ctype}_max),
+            new Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>(typeof(NumCIL.Generic.Operators.IMin), PInvoke.bh_multi_array_${bh_ctype}_min),
+%end if
+%end if
+        };     
 
 
         private Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, long>>[] m_reduceOps = 
@@ -136,6 +151,7 @@ namespace NumCIL.Bohrium
 %end if
         
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, long>> m_reduceLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, long>>();
+        private Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}>> m_aggregateLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}>>();
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>> m_binOpLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>();
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>> m_unOpLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>();
         private Dictionary<Type, Action<ma_${bh_ctype}>> m_nullOpLookup = new Dictionary<Type, Action<ma_${bh_ctype}>>();
@@ -446,16 +462,24 @@ namespace NumCIL.Bohrium
 
         public bool ApplyAggregate(Type c, NdArray<${bh_atype}> in1, out ${bh_atype} result)
         {
-            var flat = in1.Flatten();
-            var tmp = new NdArray<${bh_atype}>(new Shape(1));
-
-            if (!ApplyReduce(c, 0, flat, tmp))
+            Func<ma_${bh_ctype}, ${bh_atype}> m;
+            if (!m_aggregateLookup.TryGetValue(c, out m))
             {
+                m = (from n in m_aggregateOps
+                                 where n.Item1.IsAssignableFrom(c)
+                                 select n.Item2).FirstOrDefault();
+                m_aggregateLookup[c] = m;
+            }
+
+            if (m == null)
+            {
+                Console.WriteLine("No registered match for aggregate: {0}: {1}", c.FullName, in1.DataAccessor.GetType().FullName);
                 result = default(${bh_atype});
                 return false;
             }
 
-            result = tmp.Value[0];
+            using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
+                result = m(v1);
 
             return true;
         }
