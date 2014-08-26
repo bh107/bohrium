@@ -459,9 +459,9 @@ namespace NumCIL.Bohrium
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
         public extern static void bh_multi_array_${bh_ctype}_imag(bh_multi_array_float32_p @out, bh_multi_array_${bh_ctype}_p self);
 
-        %end if
+%end if
 
-        %if $bh_atype == "bh_complex128"
+%if $bh_atype == "bh_complex128"
 
         /// <summary>
         /// Get the real component of a complex number
@@ -486,6 +486,48 @@ namespace NumCIL.Bohrium
 %end if
 
 
-        %end for
+%if $bh_atype == "bh_bool8"
+        /// <summary>
+        /// Returns the combined logical AND for all values
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_bool bh_multi_array_bool8_all(bh_multi_array_bool8_p self);
+
+        /// <summary>
+        /// Returns the combined logical OR for all values
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_bool bh_multi_array_bool8_any(bh_multi_array_bool8_p self);
+%else
+        /// <summary>
+        /// Returns the sum of all values
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static $bh_atype bh_multi_array_${bh_ctype}_sum(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Returns the product of all values
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static $bh_atype bh_multi_array_${bh_ctype}_product(bh_multi_array_${bh_ctype}_p self);
+
+%if $bh_atype != "bh_complex128" and $bh_atype != "bh_complex64"
+
+        /// <summary>
+        /// Returns the largest of the values
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static $bh_atype bh_multi_array_${bh_ctype}_max(bh_multi_array_${bh_ctype}_p self);
+
+        /// <summary>
+        /// Returns the smallest of the values
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static $bh_atype bh_multi_array_${bh_ctype}_min(bh_multi_array_${bh_ctype}_p self);
+%end if
+
+%end if
+
+%end for
     }
 }

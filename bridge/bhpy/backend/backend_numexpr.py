@@ -5,7 +5,6 @@ The Computation Backend
 from .. import bhc
 from .._util import dtype_name
 import numpy as np
-import mmap
 import time
 import numexpr
 import os
