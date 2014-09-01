@@ -32,16 +32,11 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
 endif()
 
-#Some of the modules needs Python in order to build
-set(PYTHON "auto" CACHE STRING "The Python interpreter to use. 'auto' is default")
-if(NOT (${PYTHON} STREQUAL "auto"))
-    set(PYTHON_EXECUTABLE ${PYTHON})
-    message(STATUS "User-defined Python Interpreter: ${PYTHON}")
-endif()
 #External dependencies
 find_package(PythonInterp)
 set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming Language" URL "www.python.org")
 set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Python is required to build Bohrium")
+message(STATUS "Python found: ${PYTHON_EXECUTABLE}")
 
 # The CPU VE (and possibly other modules) requires Boost
 find_package(Boost REQUIRED)
