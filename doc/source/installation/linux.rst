@@ -59,7 +59,7 @@ Where one process executes the user application and multiple processes executes 
 
 For example, the following utilize eight cluster nodes::
 
-  mpiexec -np 1 python /usr/share/bohrium/test/numpy/numpytest.py : -np 7 .local/bh_vem_cluster_slave
+  mpiexec -np 1 python /usr/share/bohrium/test/numpy/numpytest.py : -np 7 /usr/bin/bh_vem_cluster_slave
 
 
 Install From Source Package
