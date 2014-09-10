@@ -12,6 +12,7 @@ import uuid
 import copy
 import sys
 import os
+import re
 
 import numpy as np
 import bohrium as bh
@@ -161,13 +162,13 @@ class BenchHelper:
 
     def get_meta(self, arrays):
         """Determine backend and dtype based on meta-data from pseudo_init."""
-        
+
         backend = "None"
         if 'bohrium.ndarray' in str(type(arrays[0])):
             backend = "Bohrium"
-        
+
         dtype = str(arrays[0].dtype)
-        
+
         return (backend, dtype)
 
     def run(self, pseudo_input):
@@ -176,7 +177,7 @@ class BenchHelper:
 
         Benchmarks are assumed to be installed along with the Bohrium module.
         """
-        
+
         (backend, dtype) = self.get_meta(pseudo_input)
 
         # Setup output filename
@@ -186,7 +187,7 @@ class BenchHelper:
 
         # Setup command
         cmd = [
-            'python',
+            sys.executable, #The current Python interpreter
             '-m',
             'bohrium.examples.%s' % self.script,
             '--size='       +self.sizetxt,
@@ -218,7 +219,7 @@ class BenchHelper:
         out, err = p.communicate()
         if 'elapsed-time' not in out:
             raise Exception("Benchmark error [stdout:%s,stderr:%s]" % (out, err))
-        if err:
+        if err and not re.match("\[[0-9]+ refs\]", err): #We accept the Python object count
             raise Exception("Benchmark error[%s]" % err)
 
         if not os.path.exists(outputfn):
