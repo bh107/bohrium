@@ -184,7 +184,8 @@ static void execute_regular(bh_instruction *inst)
     bh_view *operands = bh_inst_operands(inst);
 
     mapping_chunks(nop, operands, chunks);
-    assert(chunks.size() > 0);
+    if(chunks.size() == 0)
+        return;
 
     //Handle one chunk at a time.
     for(std::vector<ary_chunk>::size_type c=0; c < chunks.size();c += nop)
