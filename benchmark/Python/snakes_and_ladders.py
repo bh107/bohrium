@@ -4,7 +4,6 @@ if util.Benchmark().bohrium:
     import bohrium as np
 else:
     import numpy as np
-from matplotlib import pyplot
 
 """
 #
@@ -53,6 +52,9 @@ def main():
     B           = util.Benchmark()
     size        = B.size[0]
     iterations  = B.size[1]
+
+    if B.visualize:
+        from matplotlib import pyplot
 
     if B.inputfn:
         arrays = B.load_arrays(B.inputfn)
