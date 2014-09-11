@@ -78,7 +78,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy swig libctemplate-dev python-cheetah g++ cmake libboost-dev
+  sudo apt-get install python-numpy swig libctemplate-dev python-cheetah g++ cmake libboost-dev cython
 
 Build and install::
 
