@@ -214,6 +214,21 @@ static void execute_regular(bh_instruction *inst)
         //Schedule task
         batch_schedule_inst(local_inst);
 
+        //BH_RANGE is a special case where we have to add the chunk offset to
+        //the local arrays (excl. the rank 0 chunk)
+        if(inst->opcode == BH_RANGE && pgrid_myrank > 0)
+        {
+            bh_instruction i;
+            i.opcode = BH_ADD;
+            i.operand[0] = chunks[c].ary;
+            i.operand[1] = chunks[c].ary;
+            i.operand[2] = chunks[c].ary;
+            bh_flag_constant(&i.operand[2]);
+            i.constant.value.uint64 = chunks[c].coord[0];
+            i.constant.type = BH_UINT64;
+            batch_schedule_inst(i);
+        }
+
         //Free and discard all local chunk arrays
         for(bh_intp k=0; k < nop; ++k)
         {
