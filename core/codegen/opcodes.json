@@ -2152,8 +2152,8 @@
 },
 {
     "opcode": "BH_RANGE",
-    "doc":  "",
-    "code": "op1 = op2++",
+    "doc":  "Returns a 1-dim base-array filled with integer range starting a zero",
+    "code": "op1 = [0,1,2,...,n]",
     "id":   "70",
     "nop":   1,
     "types": [
