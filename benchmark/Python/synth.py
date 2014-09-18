@@ -1,19 +1,28 @@
-import bohrium as np
 import util
+if util.Benchmark().bohrium:
+    import bohrium as np
+else:
+    import numpy as np
 
-B = util.Benchmark()
-N, I = B.size
+def main():
+    B = util.Benchmark()
+    N, I = B.size
 
-B.start()
-a = np.ones(N)
-b = np.ones(N)
-c = np.ones(N)
+    B.start()
+    a = np.ones(N)
+    b = np.ones(N)
+    c = np.ones(N)
 
-for _ in xrange(I):
-    r = a+b+c
+    for _ in xrange(I):
+        R = a+b+c
 
-B.stop()
-B.pprint()
+    B.stop()
+    B.pprint()
 
-if B.verbose:
-    print r
+    if B.verbose:
+        print R
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
+
+if __name__ == "__main__":
+    main()

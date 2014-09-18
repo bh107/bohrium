@@ -41,7 +41,7 @@ def convolve_2d(image, image_filter):
     views = cartesian(image, len(image_filter))
     return sum(d[0]*d[1] for d in zip(views, image_filter.flatten()))
 
-if __name__ == "__main__":
+def main():
     """
     Example parameter: --size=25.
     This will execute on a something related to 25....
@@ -55,3 +55,6 @@ if __name__ == "__main__":
     result = convolve_2d(image, image_filter)
     B.stop()
     B.pprint()
+
+if __name__ == "__main__":
+    main()

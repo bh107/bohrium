@@ -24,7 +24,7 @@ def point27(data, iterations):
 
     return active
 
-if __name__ == "__main__":
+def main():
     """
     Example parameter: --size=400*10.
     This will execute on a 400x400x400 dataset for 10 iterations.
@@ -32,8 +32,14 @@ if __name__ == "__main__":
     B = util.Benchmark()        # Benchmark setup
     (N, I) = B.size
     data = point27_init(N)
-    data + 1                    # Ensure data is in the correct space
+    
     B.start()                   # Benchmark run, timing, pprint
-    result = point27(data, I)
+    R = point27(data, I)
     B.stop()
     B.pprint()
+
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
+
+if __name__ == "__main__":
+    main()

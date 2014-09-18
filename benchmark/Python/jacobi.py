@@ -27,14 +27,20 @@ def jacobi(data):
 
     return data
 
-if __name__ == "__main__":
-    """
-    """
+def main():
     B = util.Benchmark()
     N, = B.size
     data = jacobi_init(N)
-    data + 1   # Ensure that data is in the correct space.
+    
     B.start()
-    result = jacobi(data)
+    R = jacobi(data)
     B.stop()
+
     B.pprint()
+    if B.verbose:
+        print R
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
+
+if __name__ == "__main__":
+    main()

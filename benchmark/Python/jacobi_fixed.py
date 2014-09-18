@@ -24,14 +24,20 @@ def jacobi_fixed(data, iterations):
 
     return data
 
-if __name__ == "__main__":
-    """
-    """
+def main():
     B = util.Benchmark()
     (N, I) = B.size
     data = jacobi_fixed_init(N)
-    data + 1   # Ensure that data is in the correct space.
+
     B.start()
-    result = jacobi_fixed(data, I)
+    R = jacobi_fixed(data, I)
     B.stop()
+
     B.pprint()
+    if B.verbose:
+        print R
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': R})
+
+if __name__ == "__main__":
+    main()

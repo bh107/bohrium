@@ -1,17 +1,21 @@
 #Test and demonstration of the NumPy Bridge.
-import numpy as np
-import bohrium as bh
-import sys
-import time
-import subprocess
-import os
-import getopt
-import random
-import warnings
-import copy
 from operator import mul
 from itertools import izip as zip
 from numbers import Number
+import subprocess
+import warnings
+import random
+import getopt
+import pickle
+import time
+import uuid
+import copy
+import sys
+import os
+import re
+
+import numpy as np
+import bohrium as bh
 
 class TYPES:
     NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
@@ -111,6 +115,7 @@ class numpytest:
         self.runtime = {}
         self.random = random.Random()
         self.random.seed(42)
+
     def init(self):
         pass
     def array(self,dims,dtype,high=False):
@@ -141,17 +146,112 @@ class numpytest:
             res.shape = dims
         return np.asarray(res, dtype=dtype)
 
+class BenchHelper:
+    """Mixin for numpytest to aid the execution of Benchmarks."""
+
+    def init(self):
+        """
+        This function is used as a means to control til --dtype argument
+        passed to the benchmark script and provide a uuid for benchmark output.
+        """
+        self.uuid = str(uuid.uuid4())
+        for dtype in self.dtypes:
+            yield ({0:bh.empty(self.size, bohrium=False, dtype=dtype)},
+                   "%s: " % str(dtype)
+            )
+
+    def get_meta(self, arrays):
+        """Determine backend and dtype based on meta-data from pseudo_init."""
+
+        backend = "None"
+        if 'bohrium.ndarray' in str(type(arrays[0])):
+            backend = "Bohrium"
+
+        dtype = str(arrays[0].dtype)
+
+        return (backend, dtype)
+
+    def run(self, pseudo_input):
+        """
+        Run the Benchmark script and return the result.
+
+        Benchmarks are assumed to be installed along with the Bohrium module.
+        """
+
+        (backend, dtype) = self.get_meta(pseudo_input)
+
+        # Setup output filename
+        outputfn = "/tmp/%s_%s_%s_output_%s.npz" % (
+            self.script, dtype, backend, self.uuid
+        )
+
+        # Setup command
+        cmd = [
+            sys.executable, #The current Python interpreter
+            '-m',
+            'bohrium.examples.%s' % self.script,
+            '--size='       +self.sizetxt,
+            '--dtype='      +str(dtype),
+            '--backend='    +backend,
+            '--outputfn='   +outputfn
+        ]
+        # Setup the inputfn if one is needed/provided
+        if self.inputfn:
+            npt_path = os.path.dirname(sys.argv[0])
+            if not npt_path:
+                npt_path = "./"
+
+            inputfn = "%s/datasets/%s" % (
+                npt_path,
+                self.inputfn.format(dtype)
+            )
+            cmd.append('--inputfn')
+            cmd.append(inputfn)
+
+            if not os.path.exists(inputfn):
+                raise Exception('File does not exist: %s' % inputfn)
+
+        p = subprocess.Popen(           # Execute the benchmark
+            cmd,
+            stdout  = subprocess.PIPE,
+            stderr  = subprocess.PIPE
+        )
+        out, err = p.communicate()
+        if 'elapsed-time' not in out:
+            raise Exception("Benchmark error [stdout:%s,stderr:%s]" % (out, err))
+        if err and not re.match("\[[0-9]+ refs\]", err): #We accept the Python object count
+            raise Exception("Benchmark error[%s]" % err)
+
+        if not os.path.exists(outputfn):
+            raise Exception('Benchmark did not produce the output: %s' % outputfn)
+
+        npzs    = np.load(outputfn)     # Load the result from disk
+        res     = {}
+        for k in npzs:
+            res[k] = npzs[k]
+        del npzs                        # Delete npz
+
+        if os.path.exists(outputfn):    # Delete the result from disk
+            os.remove(outputfn)
+
+        # Convert to whatever namespace it ought to be in
+        res['res'] = bh.array(res['res'], bohrium=backend!="None")
+
+        return (res['res'], ' '.join(cmd))
+
 if __name__ == "__main__":
     warnings.simplefilter('error')#Warnings will raise exceptions
     pydebug = True
-    script_list = []
-    exclude_list = []
+    test_list       = []
+    script_list     = []
+    exclude_list    = []
     try:
         sys.gettotalrefcount()
     except AttributeError:
         pydebug = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"f:e:",["file=", "exclude="])
+        opts, args = getopt.getopt(sys.argv[1:],"f:e:t:",["file=", "exclude=",
+                                                          "test="])
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(2)
@@ -160,6 +260,8 @@ if __name__ == "__main__":
             script_list.append(a)
         elif o in ("-e", "--exclude"):
             exclude_list.append(a)
+        elif o in ["-t", "--test"]:
+            test_list.append(a)
         else:
             assert False, "unhandled option"
 
@@ -169,11 +271,13 @@ if __name__ == "__main__":
     print "*"*3, "Testing the equivalency of Bohrium-NumPy and NumPy", "*"*3
     for i in xrange(len(script_list)):
         f = script_list[i]
+
         if f.startswith("test_") and f.endswith("py") and f not in exclude_list:
             m = f[:-3]#Remove ".py"
             m = __import__(m)
             #All test classes starts with "test_"
-            for cls in [o for o in dir(m) if o.startswith("test_")]:
+            for cls in [o for o in dir(m) if o.startswith("test_") and \
+                        (True if test_list and o in test_list or not test_list else False)]:
                 cls_obj  = getattr(m, cls)
                 cls_inst = cls_obj()
                 #All test methods starts with "test_"
@@ -207,4 +311,3 @@ if __name__ == "__main__":
                                 sys.exit (1)
 
     print "*"*24, "Finish", "*"*24
-
