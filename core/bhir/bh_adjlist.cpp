@@ -163,7 +163,7 @@ void bh_adjlist_create_from_instr(bh_adjlist &adjlist, bh_intp ninstr,
 //    bh_adjlist_pprint(adjlist);
 }
 
-/* Fills the dag_list in the ‘bhir’ based on the adjacency list ‘adjlist’
+/* Fills the dag_list in the 'bhir' based on the adjacency list 'adjlist'
  * and the instruction list in the bhir.
  * NB: The dag_list within the bhir should be uninitialized (NULL).
  *
