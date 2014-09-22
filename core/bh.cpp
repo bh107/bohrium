@@ -271,8 +271,8 @@ inline int gcd(int a, int b)
 }
 
 /* Determines whether two views access some of the same data points
- * NB: This functions may return True on non-overlapping views.
- *     But will always return False on overlapping views.
+ * NB: This functions may return False on two non-overlapping views.
+ *     But will always return True on overlapping views.
  *
  * @a The first view
  * @b The second view
