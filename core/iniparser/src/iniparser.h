@@ -25,6 +25,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * The following #include is necessary on many Unixes but not Linux.
  * It is not needed for Windows platforms.
@@ -269,6 +273,10 @@ dictionary * iniparser_load(const char * ininame);
  */
 /*--------------------------------------------------------------------------*/
 void iniparser_freedict(dictionary * d);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
