@@ -21,37 +21,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_IR_H
 #define __BH_IR_H
 
-#include "bh_adjmat.h"
 #include "bh_type.h"
 #include "bh_error.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* The Directed Acyclic Graph (DAG) dictates the dependencies
- * between the nodes, such that a topological order obeys the
- * precedence constraints of the nodes. That is, all dependencies
- * of a DAG node must be executed before itself. */
-typedef struct
-{
-    //Number of nodes
-    bh_intp nnode;
-
-    //The Adjacency Matrix where each row or column index
-    //represents a node in the DAG.
-    bh_adjmat *adjmat;
-
-    //The Node Map that translate DAG nodes into a Bohrium instruction
-    //or a sub-DAG. Given a row or column index from the Adjacency Matrix,
-    //the Node Map maps to an index in the instruction list or an index
-    //in the DAG list. A positive index refers to the instruction list
-    //and a negative index refers to the DAG list (-1*index-1).
-    bh_intp *node_map;
-
-    //The tag that represents some additional information associated this DAG.
-    bh_intp tag;
-} bh_dag;
 
 /* The Bohrium Internal Representation (BhIR) represents an instruction
  * batch created by the Bridge component typically. */
@@ -61,10 +36,6 @@ typedef struct
     bh_instruction *instr_list;
     //Number of instruction in the instruction list
     bh_intp ninstr;
-    //The list of DAGs
-    bh_dag *dag_list;
-    //Number of DAGs in the DAG list
-    bh_intp ndag;
     //Whether the BhIR did the memory allocation itself or not
     bool self_allocated;
 } bh_ir;
@@ -106,32 +77,6 @@ DLLEXPORT bh_error bh_ir_serialize(void *dest, const bh_ir *bhir);
  * @bhir The BhIR in question
  */
 DLLEXPORT void bh_ir_deserialize(bh_ir *bhir);
-
-/* Splits the DAG into an updated version of itself and a new sub-DAG that
- * consist of the nodes in 'nodes_idx'. Instead of the nodes in sub-DAG,
- * the updated DAG will have a new node that represents the sub-DAG.
- *
- * @bhir        The BhIR node
- * @nnodes      Number of nodes in the new sub-DAG
- * @nodes_idx   The nodes in the original DAG that will constitute the new sub-DAG.
- *              NB: this list will be sorted inplace
- * @dag_idx     The original DAG to split and thus modified
- * @sub_dag_idx The new sub-DAG which will be overwritten. -1 indicates that the
- *              new sub-DAG should be appended the DAG list
- *
- * @return      Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
-*/
-DLLEXPORT bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
-                                bh_intp dag_idx, bh_intp sub_dag_idx);
-
-/* Write the BhIR in the DOT format.
- *
- * @bhir      The graph to print
- * @filename  Name of the written dot file
- */
-DLLEXPORT void bh_bhir2dot(const bh_ir* bhir, const char* filename);
-
-
 
 #ifdef __cplusplus
 }

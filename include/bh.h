@@ -34,7 +34,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_win.h"
 #include "bh_memory.h"
 #include "bh_ir.h"
-#include "bh_ir_map.h"
 #include "bh_mem_signal.h"
 
 #ifdef __cplusplus

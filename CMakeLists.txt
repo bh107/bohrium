@@ -50,7 +50,7 @@ set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required
 #The core modules
 add_subdirectory(core)
 add_subdirectory(vem/node)
-add_subdirectory(vem/proxy)
+#add_subdirectory(vem/proxy)
 add_subdirectory(ve/cpu)
 add_subdirectory(filter/pprint)
 add_subdirectory(extmethods/matmul)

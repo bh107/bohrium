@@ -81,23 +81,12 @@ DLLEXPORT void bh_pprint_base(const bh_base *base);
  */
 DLLEXPORT void bh_pprint_coord(const bh_index coord[], bh_index ndims);
 
-/* Pretty print an BhIR DAG.
- *
- * @bhir The BhIR in question
- * @dag  The DAG in question
- *
- */
-DLLEXPORT void bh_pprint_dag(const bh_ir *bhir, const bh_dag *dag);
-
-/* Pretty print an BhIR.
+/* Pretty print an instruction trace of the BhIR.
  *
  * @bhir The BhIR in question
  *
  */
-DLLEXPORT void bh_pprint_bhir(const bh_ir *bhir);
-
 DLLEXPORT void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[]);
-
 
 #ifdef __cplusplus
 }
