@@ -131,6 +131,7 @@ int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
     s.callback = callback;
 
     pthread_mutex_unlock(&mutex);
+    return 0;
 }
 
 /** Detach signal
@@ -143,4 +144,5 @@ int bh_mem_signal_detach(const void *addr)
     pthread_mutex_lock(&mutex);
     segments.erase(addr);
     pthread_mutex_unlock(&mutex);
+    return 0;
 }

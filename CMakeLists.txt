@@ -31,9 +31,9 @@ message(STATUS "Benchmark-dir: ${BENCHMARKS_DIR}")
 
 #Set global compile flags TODO: support other compilers
 if(USE_CXX98)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98 -Wall")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -Wall")
 endif()
 
 #External dependencies
