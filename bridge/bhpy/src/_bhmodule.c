@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <Python.h>
 #include <dlfcn.h>
-#include <bh.h>
+#include <bh_mem_signal.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
@@ -104,7 +104,7 @@ static int set_bhc_data_from_ary(PyObject *self, PyObject *ary)
 
 //Help function for unprotect memory
 //Return -1 on error
-static int _munprotect(void *data, bh_intp size)
+static int _munprotect(void *data, npy_intp size)
 {
     if(mprotect(data, size, PROT_WRITE) != 0)
     {
@@ -119,7 +119,7 @@ static int _munprotect(void *data, bh_intp size)
 
 //Help function for memory un-map
 //Return -1 on error
-static int _munmap(void *addr, bh_intp size)
+static int _munmap(void *addr, npy_intp size)
 {
     if(munmap(addr, size) == -1)
     {
@@ -135,7 +135,7 @@ static int _munmap(void *addr, bh_intp size)
 
 //Help function for memory re-map
 //Return -1 on error
-static int _mremap_data(void *dst, void *src, bh_intp size)
+static int _mremap_data(void *dst, void *src, npy_intp size)
 {
 #if MREMAP_FIXED
     if(mremap(src, size, size, MREMAP_FIXED|MREMAP_MAYMOVE, dst) == MAP_FAILED)
