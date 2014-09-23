@@ -21,9 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_INTERFACE_H
 #define __BH_INTERFACE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <bh_type.h>
 #include <bh_instruction.h>
@@ -32,6 +29,11 @@ extern "C" {
 #include <iniparser.h>
 #include <bh_win.h>
 #include <bh_ir.h>
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //Maximum number of characters in the name of a component, a attribute or
 //a function.

@@ -21,13 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_ARRAY_H
 #define __BH_ARRAY_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdbool.h>
 #include "bh_type.h"
 #include "bh_win.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define BH_MAXDIM (16)
 
