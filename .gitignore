@@ -23,6 +23,7 @@ bridge/bhpy/examples/*.py
 *.suo
 *.gen
 *.log
+*.idea
 doc/doxygen
 doc/build
 doc/source/users/pythonnumpygen
