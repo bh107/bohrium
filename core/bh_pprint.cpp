@@ -263,7 +263,7 @@ void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[])
     char instr[8000];
     FILE *file;
     file = fopen(trace_fn, "w");
-    for(bh_intp i=0; i<bhir->ninstr; ++i) {
+    for(bh_intp i=0; i<bhir->instr_list.size(); ++i) {
         char buf[50];
         sprintf(buf, "%ld: ", i);
         bh_sprint_instr(&bhir->instr_list[i], instr, "\n");

@@ -101,7 +101,7 @@ int main()
                 dispatch_array_data(base_darys);
 
                 //Update all instruction to reference local arrays
-                for(bh_intp i=0; i < bhir->ninstr; ++i)
+                for(bh_intp i=0; i < bhir->instr_list.size(); ++i)
                 {
                     bh_instruction *inst = &bhir->instr_list[i];
                     int nop = bh_operands_in_instruction(inst);

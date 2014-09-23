@@ -177,7 +177,7 @@ bh_server_error HandleCommand(bh_packet * packet, socketListPtr ptr)
 			// we now have all our bases on server memory space. we need to go through the bh_ir and change it
 			// from referencing client addresses to server addresses
 
-            for(bh_intp i=0; i < bhir->ninstr; ++i)
+            for(bh_intp i=0; i < bhir->instr_list.size(); ++i)
             {
                 bh_instruction *inst = &bhir->instr_list[i];
                 int nop = bh_operands_in_instruction(inst);

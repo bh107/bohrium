@@ -50,10 +50,10 @@ typedef graph_traits<Graph>::edge_iterator edge_iter;
  */
 Graph construct_graph(bh_ir *bhir)
 {
-    Graph graph(bhir->ninstr);
+    Graph graph(bhir->instr_list.size());
 
-    cout << bhir->ninstr << endl;
-    for(int64_t idx=0; idx<bhir->ninstr; ++idx) {
+    cout << bhir->instr_list.size() << endl;
+    for(int64_t idx=0; idx<bhir->instr_list.size(); ++idx) {
 
         // The instruction to find data-dependencies for
         bh_instruction* instr = &bhir->instr_list[idx];
@@ -75,7 +75,7 @@ Graph construct_graph(bh_ir *bhir)
         //
         // Look for dependencies
         bool found = false;
-        for(int64_t other=idx+1; (other<bhir->ninstr) && (!found); ++other) {
+        for(int64_t other=idx+1; (other<bhir->instr_list.size()) && (!found); ++other) {
             bh_instruction* other_instr = &bhir->instr_list[other];
 
             // Search operands of other instruction
@@ -104,7 +104,7 @@ Graph construct_graph(bh_ir *bhir)
         }
 
         found = false;
-        for(int64_t other=idx+1; (other<bhir->ninstr) && (!found); ++other) {
+        for(int64_t other=idx+1; (other<bhir->instr_list.size()) && (!found); ++other) {
             bh_instruction* other_instr = &bhir->instr_list[other];
 
             // Search operands of other instruction

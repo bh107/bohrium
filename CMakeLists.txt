@@ -56,7 +56,7 @@ add_subdirectory(filter/pprint)
 add_subdirectory(extmethods/matmul)
 
 #The other modules
-add_subdirectory(vem/cluster)
+#add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(extmethods/fftw)
 

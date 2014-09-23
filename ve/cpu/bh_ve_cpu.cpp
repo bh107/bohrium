@@ -157,7 +157,7 @@ bh_error bh_ve_cpu_init(const char *name)
          fprintf(stderr, "BH_VE_CPU_JIT_DUMPSRC (%ld) should 0 or 1.\n", (long int)jit_dumpsrc);
         return BH_ERROR;
     }
-        
+
     // Configuration
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
     bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");
@@ -198,17 +198,17 @@ bh_error bh_ve_cpu_init(const char *name)
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     TIMER_START
-    bh_error res = engine->execute(bhir->instr_list, bhir->ninstr);
+    bh_error res = engine->execute(&bhir->instr_list[0], bhir->instr_list.size());
     TIMER_STOP("CPU-EXECUTE")
 
-    return res; 
+    return res;
 }
 
 /* Component interface: shutdown (see bh_component.h) */
 bh_error bh_ve_cpu_shutdown(void)
 {
     bh_component_destroy(&myself);
-    
+
     delete engine;
     engine = NULL;
 
@@ -219,7 +219,7 @@ bh_error bh_ve_cpu_shutdown(void)
 bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
     bh_error register_res = engine->register_extension(myself, name, opcode);
-    
+
     return register_res;
 }
 

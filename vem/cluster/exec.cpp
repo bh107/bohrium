@@ -329,7 +329,7 @@ bh_error exec_execute(bh_ir *bhir)
     bh_uint64 stime = bh_timer_stamp();
 
     //Execute each instruction in the BhIR
-    for(bh_intp i=0; i < bhir->ninstr; ++i)
+    for(bh_intp i=0; i < bhir->instr_list.size(); ++i)
         execute_instr(&bhir->instr_list[i]);
 
     //Lets flush all scheduled tasks

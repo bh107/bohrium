@@ -94,7 +94,7 @@ bh_error bh_vem_cluster_extmethod(const char *name, bh_opcode opcode)
 
 bh_error bh_vem_cluster_execute(bh_ir* bhir)
 {
-//    bh_pprint_instr_list(bhir->instr_list, bhir->ninstr, "BRIDGE" );
+//    bh_pprint_instr_list(bhir->instr_list, bhir->instr_list.size(), "BRIDGE" );
 
     //Send the instruction list and operands to the slaves
     dispatch_bhir(bhir);

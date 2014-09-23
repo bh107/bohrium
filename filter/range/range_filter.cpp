@@ -49,7 +49,7 @@ bh_error void ref_count(bh_ir* bhir, dag)
 
 void range_filter(bh_ir* bhir)
 {
-    cout << "### range-filter on bhir->ninstr = " << bhir->ninstr << endl;
+    cout << "### range-filter on bhir->instr_list.size() = " << bhir->instr_list.size() << endl;
     for(bh_intp dag=0; dag<bhir->ndag; ++dag) {
 
         cout << "Looking at dag[" << dag << "] " << dag+1 << " of "<< bhir->ndag << \

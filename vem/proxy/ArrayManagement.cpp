@@ -211,7 +211,7 @@ bh_error ArrayMan_client_bh_ir_package(bh_ir * bhir, int filedes)
     //Stack of new base arrays
     std::stack<bh_base*> base_darys;
 
-    for(int i=0; i<bhir->ninstr; ++i)
+    for(int i=0; i<bhir->instr_list.size(); ++i)
     {
         const bh_instruction *inst = &bhir->instr_list[i];
         int nop = bh_operands_in_instruction(inst);
