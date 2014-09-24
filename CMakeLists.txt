@@ -43,20 +43,21 @@ set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Python is 
 message(STATUS "Python found: ${PYTHON_EXECUTABLE}")
 
 # The CPU VE (and possibly other modules) requires Boost
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS serialization )
 set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries" URL "www.boost.org")
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
+include_directories(${Boost_INCLUDE_DIRS})
 
 #The core modules
 add_subdirectory(core)
 add_subdirectory(vem/node)
-#add_subdirectory(vem/proxy)
+add_subdirectory(vem/proxy)
 add_subdirectory(ve/cpu)
 add_subdirectory(filter/pprint)
 add_subdirectory(extmethods/matmul)
 
 #The other modules
-#add_subdirectory(vem/cluster)
+add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(extmethods/fftw)
 

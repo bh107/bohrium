@@ -14,7 +14,7 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_visualizer${CMAKE_SHARED_LIBRARY_SUF
 [proxy]
 type = vem
 port = 4200
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_proxy_server${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_proxy${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
 
 [cluster]

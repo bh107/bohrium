@@ -46,4 +46,8 @@ typedef struct
 }
 #endif
 
+// Serialize the bh_instruction object
+#include <boost/serialization/is_bitwise_serializable.hpp>
+BOOST_IS_BITWISE_SERIALIZABLE(bh_instruction);
+
 #endif

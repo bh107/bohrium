@@ -258,6 +258,7 @@ void dispatch_recv(dispatch_msg **message)
             EXCEPT_MPI(e);
     }
     *message = msg;
+
     bh_timer_add(timing_dispatch, stime, bh_timer_stamp());
 }
 
@@ -289,22 +290,31 @@ void dispatch_array_data(std::stack<bh_base*> &arys)
 /* Dispatch the BhIR to the slaves, which includes new array-structs.
  * @bhir  The BhIR in question
  */
-void dispatch_bhir(const bh_ir *bhir)
+void dispatch_bhir(bh_ir *bhir)
 {
     dispatch_reset();
 
     bh_uint64 stime = bh_timer_stamp();
 
     /* The execution message has the form:
+     * 1   x bh_intp     //size of the serialized bhir
      * 1   x bh_ir bhir  //serialized BhIR
      * 1   x bh_intp NOA //number of new arrays
      * NOA x dispatch_array //list of new arrays unknown to the slaves
      */
 
+    //Serialize the BhIR
+    std::vector<char> buf;
+    bhir->serialize(buf);
+
+    //Pack the size of the serialized bhir
+    bh_intp bhir_size = buf.size();
+    dispatch_add2payload(sizeof(bh_intp), &bhir_size);
+
     //Pack the BhIR.
     void *msg_bhir;
-    dispatch_reserve_payload(bh_ir_totalsize(bhir), &msg_bhir);
-    bh_ir_serialize(msg_bhir, bhir);
+    dispatch_reserve_payload(bhir_size, &msg_bhir);
+    memcpy(msg_bhir, &buf[0], bhir_size);
 
     //Make reservation for the number of new arrays (NOA).
     bh_intp msg_noa_offset, noa=0;

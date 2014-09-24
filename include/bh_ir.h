@@ -21,9 +21,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_IR_H
 #define __BH_IR_H
 
+#include <vector>
+
 #include "bh_type.h"
 #include "bh_error.h"
-#include <vector>
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,22 +35,47 @@ extern "C" {
 class bh_ir
 {
 public:
-    /* Creates a Bohrium Internal Representation (BhIR)
-     * based on a instruction list.
+    /* Constructs a Bohrium Internal Representation (BhIR)
+     * from a instruction list.
      *
      * @ninstr      Number of instructions
      * @instr_list  The instruction list
      */
     bh_ir(bh_intp ninstr, const bh_instruction instr_list[]);
 
+    /* Constructs a BhIR from a serialized BhIR.
+    *
+    * @bhir The BhIR serialized as a char array
+    */
+    bh_ir(const char bhir[], bh_intp size);
+
+    /* Serialize the BhIR object into a char buffer
+    *  (use the bh_ir constructor above to deserialization)
+    *
+    *  @buffer   The char vector to serialize into
+    */
+    void serialize(std::vector<char> &buffer);
+
     //The list of Bohrium instructions
     std::vector<bh_instruction> instr_list;
 };
-
 
 #ifdef __cplusplus
 }
 #endif
 
+// The serialization code needs to be outside of extern "C".
+namespace boost {
+namespace serialization {
+    // Serialize the BhIR object
+    // Using the Boost serialization see:
+    // <http://www.boost.org/doc/libs/1_47_0/libs/serialization/doc/tutorial.html#nonintrusiveversion>
+    template<class Archive>
+    void serialize(Archive &ar, bh_ir &bhir, const unsigned int version)
+    {
+        ar & bhir.instr_list;
+    }
+} // namespace serialization
+} // namespace boost
 #endif
 

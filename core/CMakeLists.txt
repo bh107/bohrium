@@ -22,5 +22,8 @@ target_link_libraries(bh iniparser)
 #We depend on dlopen etc.
 target_link_libraries(bh ${CMAKE_DL_LIBS})
 
+#We depend on boost
+target_link_libraries(bh ${Boost_LIBRARIES})
+
 install(TARGETS bh DESTINATION lib COMPONENT bohrium)
 

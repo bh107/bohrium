@@ -189,13 +189,14 @@ bh_error ArrayMan_client_bh_ir_package(bh_ir * bhir, int filedes)
 
     //bh_pprint_bhir(bhir);
 
-
     // add bh_ir to payload
+    std::vector<char> buf;
+    bhir->serialize(buf);
     void *ptr;
-    res = ArrayMan_reserve_payload(bh_ir_totalsize(bhir), &ptr);
+    res = ArrayMan_reserve_payload(buf.size(), &ptr);
     if(res != BH_SUCCESS)
         return res;
-    bh_ir_serialize(ptr, bhir);
+    memcpy(ptr, &buf[0], buf.size());
 
     //Make reservation for the number of new arrays (NOA).
     bh_intp msg_noa_offset, noa=0;
@@ -260,10 +261,10 @@ bh_error ArrayMan_client_bh_ir_package(bh_ir * bhir, int filedes)
     // finally, inspect the bh_ir for sync's, discards and free's and handle them
 
     fd = filedes;
-    res = bh_ir_map_instr(bhir, &bhir->dag_list[0], &inspect);
-
-    if(res != BH_SUCCESS)
-        return res;
+    for(bh_intp i=0; i < bhir->instr_list.size(); ++i)
+        res = inspect(&bhir->instr_list[i]);
+        if(res != BH_SUCCESS)
+            return res;
 
     return BH_SUCCESS;
 }
