@@ -367,3 +367,58 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
     }
     return true;
 }
+
+/* Determines whether instruction 'a' depends on instruction 'b',
+ * which is true when:
+ *      'b' writes to an array that 'a' access
+ *                        or
+ *      'a' writes to an array that 'b' access
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
+{
+    const int a_nop = bh_operands(a->opcode);
+    for(int i=0; i<a_nop; ++i)
+    {
+        if(not bh_view_disjoint(&b->operand[0], &a->operand[i]))
+            return true;
+    }
+    const int b_nop = bh_operands(b->opcode);
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(not bh_view_disjoint(&a->operand[0], &b->operand[i]))
+            return true;
+    }
+    return false;
+}
+
+/* Determines whether it is legal to fuse two instructions into one
+ * using the broadest possible definition. I.e. a SIMD machine can
+ * theoretically execute the two instructions in a single operation,
+ * but accepts mismatch in array shapes, broadcast, reduction, etc.
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+bool bh_instr_fusible(const bh_instruction *a, const bh_instruction *b)
+{
+    const int a_nop = bh_operands(a->opcode);
+    for(int i=0; i<a_nop; ++i)
+    {
+        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
+           && not bh_view_aligned(&b->operand[0], &a->operand[i]))
+            return false;
+    }
+    const int b_nop = bh_operands(b->opcode);
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
+           && not bh_view_aligned(&a->operand[0], &b->operand[i]))
+            return false;
+    }
+    return true;
+}

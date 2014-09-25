@@ -279,6 +279,29 @@ DLLEXPORT bool bh_view_identical(const bh_view *a, const bh_view *b);
  */
 DLLEXPORT bool bh_view_aligned(const bh_view *a, const bh_view *b);
 
+/* Determines whether instruction 'a' depends on instruction 'b',
+ * which is true when:
+ *      'b' writes to an array that 'a' access
+ *                        or
+ *      'a' writes to an array that 'b' access
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
+
+/* Determines whether it is legal to fuse two instructions into one
+ * using the broadest possible definition. I.e. a SIMD machine can
+ * theoretically execute the two instructions in a single operation,
+ * but accepts mismatch in array shapes, broadcast, reduction, etc.
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_instr_fusible(const bh_instruction *a, const bh_instruction *b);
+
 #ifdef __cplusplus
 }
 #endif
