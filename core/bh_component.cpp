@@ -61,7 +61,7 @@ static bh_component_type get_type(dictionary *dict, const char *name)
     if(s == NULL)
     {
         fprintf(stderr,"In section \"%s\" type is not set. "\
-                       "Should be bridge, filter, vem or ve.\n",name);
+                       "Should be bridge, filter, fuser, vem or ve.\n",name);
         return BH_COMPONENT_ERROR;
     }
     else
@@ -74,6 +74,8 @@ static bh_component_type get_type(dictionary *dict, const char *name)
             return BH_VE;
         if(!strcasecmp(s, "filter"))
             return BH_FILTER;
+        if(!strcasecmp(s, "fuser"))
+            return BH_FUSER;
     }
     fprintf(stderr,"In section \"%s\" type is unknown: \"%s\" \n", name, s);
     return BH_COMPONENT_ERROR;
@@ -93,6 +95,8 @@ static void *get_dlsym(void *handle, const char *name,
         stype = "ve";
     else if(type == BH_FILTER)
         stype = "filter";
+    else if(type == BH_FUSER)
+        stype = "fuser";
     else
     {
         fprintf(stderr, "Internal error get_dlsym() got unknown type\n");
