@@ -22,13 +22,55 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_IR_H
 
 #include <vector>
+#include <boost/serialization/vector.hpp>
 
 #include "bh_type.h"
 #include "bh_error.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// Forward declaration of class boost::serialization::access
+namespace boost {namespace serialization {class access;}}
+
+/* A kernel is a list of instructions that are fusible. That is, a SIMD
+ * machine can theoretically execute all the instructions in a single
+ * operation.
+*/
+class bh_ir_kernel
+{
+protected:
+    // Serialization using Boost
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & instr_list;
+    }
+
+public:
+    /* Add an instruction to the kernel
+     *
+     * @instr   The instruction to add
+     * @return  The boolean answer
+     */
+    void add_instr(const bh_instruction &instr);
+
+    /* Determines whether it is legal to fuse with the kernel
+     *
+     * @other   The other kernel
+     * @return  The boolean answer
+     */
+    bool fusible(const bh_ir_kernel &other);
+
+    /* Determines whether it is legal to fuse with the instruction
+     *
+     * @instr  The instruction
+     * @return The boolean answer
+     */
+    bool fusible(const bh_instruction &instr);
+
+    //The list of Bohrium instructions in this kernel
+    std::vector<bh_instruction> instr_list;
+};
+
 
 /* The Bohrium Internal Representation (BhIR) represents an instruction
  * batch created by the Bridge component typically. */
@@ -56,26 +98,25 @@ public:
     */
     void serialize(std::vector<char> &buffer);
 
-    //The list of Bohrium instructions
+    /* Pretty print the kernel list */
+    void pprint_kernels();
+
+    //The list of Bohrium instructions in topological order
     std::vector<bh_instruction> instr_list;
+
+    //The list of kernels in topological order
+    std::vector<bh_ir_kernel> kernel_list;
+
+protected:
+    // Serialization using Boost
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & instr_list;
+        ar & kernel_list;
+    }
 };
 
-#ifdef __cplusplus
-}
-#endif
-
-// The serialization code needs to be outside of extern "C".
-namespace boost {
-namespace serialization {
-    // Serialize the BhIR object
-    // Using the Boost serialization see:
-    // <http://www.boost.org/doc/libs/1_47_0/libs/serialization/doc/tutorial.html#nonintrusiveversion>
-    template<class Archive>
-    void serialize(Archive &ar, bh_ir &bhir, const unsigned int version)
-    {
-        ar & bhir.instr_list;
-    }
-} // namespace serialization
-} // namespace boost
 #endif
 

@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/foreach.hpp>
 #include <bh.h>
 #include <vector>
 #include <iostream>
@@ -66,3 +67,58 @@ void bh_ir::serialize(vector<char> &buffer)
     oa << *this;
     output_stream.flush();
 }
+
+/* Pretty print the kernel list */
+void bh_ir::pprint_kernels()
+{
+    char msg[100]; int i=0;
+    BOOST_FOREACH(const bh_ir_kernel &k, kernel_list)
+    {
+        snprintf(msg, 100, "kernel-%d", i++);
+        bh_pprint_instr_list(&k.instr_list[0], k.instr_list.size(), msg);
+    }
+}
+
+/* Add an instruction to the kernel
+ *
+ * @instr   The instruction to add
+ * @return  The boolean answer
+ */
+void bh_ir_kernel::add_instr(const bh_instruction &instr)
+{
+    instr_list.push_back(instr);
+};
+
+/* Determines whether it is legal to fuse with the kernel
+ *
+ * @other The other kernel
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::fusible(const bh_ir_kernel &other)
+{
+    BOOST_FOREACH(const bh_instruction &a, instr_list)
+    {
+        BOOST_FOREACH(const bh_instruction &b, other.instr_list)
+        {
+            if(not bh_instr_fusible(&a, &b))
+                return false;
+        }
+    }
+    return true;
+}
+
+/* Determines whether it is legal to fuse with the instruction
+ *
+ * @instr  The instruction
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::fusible(const bh_instruction &instr)
+{
+    BOOST_FOREACH(const bh_instruction &i, instr_list)
+    {
+        if(not bh_instr_fusible(&i, &instr))
+            return false;
+    }
+    return true;
+}
+
