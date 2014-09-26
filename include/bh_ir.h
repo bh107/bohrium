@@ -58,14 +58,25 @@ public:
      * @other   The other kernel
      * @return  The boolean answer
      */
-    bool fusible(const bh_ir_kernel &other);
+    bool fusible(const bh_ir_kernel &other) const;
 
     /* Determines whether it is legal to fuse with the instruction
      *
      * @instr  The instruction
      * @return The boolean answer
      */
-    bool fusible(const bh_instruction &instr);
+    bool fusible(const bh_instruction &instr) const;
+
+    /* Determines whether this kernel depends on 'other',
+     * which is true when:
+     *      'other' writes to an array that 'this' access
+     *                        or
+     *      'this' writes to an array that 'other' access
+     *
+     * @other The other kernel
+     * @return The boolean answer
+     */
+    bool dependency(const bh_ir_kernel &other) const;
 
     //The list of Bohrium instructions in this kernel
     std::vector<bh_instruction> instr_list;
@@ -96,10 +107,10 @@ public:
     *
     *  @buffer   The char vector to serialize into
     */
-    void serialize(std::vector<char> &buffer);
+    void serialize(std::vector<char> &buffer) const;
 
     /* Pretty print the kernel list */
-    void pprint_kernels();
+    void pprint_kernels() const;
 
     //The list of Bohrium instructions in topological order
     std::vector<bh_instruction> instr_list;

@@ -60,7 +60,7 @@ bh_ir::bh_ir(const char bhir[], bh_intp size)
 *
 *  @buffer   The char vector to serialize into
 */
-void bh_ir::serialize(vector<char> &buffer)
+void bh_ir::serialize(vector<char> &buffer) const
 {
     io::stream<io::back_insert_device<vector<char> > > output_stream(buffer);
     boost::archive::binary_oarchive oa(output_stream);
@@ -69,7 +69,7 @@ void bh_ir::serialize(vector<char> &buffer)
 }
 
 /* Pretty print the kernel list */
-void bh_ir::pprint_kernels()
+void bh_ir::pprint_kernels() const
 {
     char msg[100]; int i=0;
     BOOST_FOREACH(const bh_ir_kernel &k, kernel_list)
@@ -94,7 +94,7 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
  * @other The other kernel
  * @return The boolean answer
  */
-bool bh_ir_kernel::fusible(const bh_ir_kernel &other)
+bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
 {
     BOOST_FOREACH(const bh_instruction &a, instr_list)
     {
@@ -107,12 +107,34 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other)
     return true;
 }
 
+/* Determines whether this kernel depends on 'other',
+ * which is true when:
+ *      'other' writes to an array that 'this' access
+ *                        or
+ *      'this' writes to an array that 'other' access
+ *
+ * @other The other kernel
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::dependency(const bh_ir_kernel &other) const
+{
+    BOOST_FOREACH(const bh_instruction &i, instr_list)
+    {
+        BOOST_FOREACH(const bh_instruction &o, other.instr_list)
+        {
+            if(bh_instr_dependency(&i, &o))
+                return true;
+        }
+    }
+    return false;
+}
+
 /* Determines whether it is legal to fuse with the instruction
  *
  * @instr  The instruction
  * @return The boolean answer
  */
-bool bh_ir_kernel::fusible(const bh_instruction &instr)
+bool bh_ir_kernel::fusible(const bh_instruction &instr) const
 {
     BOOST_FOREACH(const bh_instruction &i, instr_list)
     {
