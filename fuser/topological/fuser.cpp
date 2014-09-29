@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <boost/foreach.hpp>
 #include <vector>
+#include <map>
 #include <stdexcept>
 
 using namespace std;
@@ -33,24 +34,40 @@ void fuser(bh_ir &bhir)
     {
         throw logic_error("The kernel_list is not empty!");
     }
+    //map from an instruction in the kernel_list to an index into the
+    //original instruction list
+    map<pair<int,int>,int> index_map;
 
     vector<bh_instruction>::iterator it = bhir.instr_list.begin();
+    int instr_count=0;
     while(it != bhir.instr_list.end())
     {
+        const unsigned int ksize = bhir.kernel_list.size();
+
         //Start new kernel
         bh_ir_kernel kernel;
         kernel.add_instr(*it);
 
+        //Add the instruction to the map
+        index_map.insert(pair<pair<int,int>,int>(pair<int,int>(ksize, 0), instr_count++));
+
         //Add fusible instructions to the kernel
-        for(it=it+1; it != bhir.instr_list.end(); ++it)
+        int i=1;
+        for(it=it+1; it != bhir.instr_list.end(); ++it, ++i)
         {
             if(kernel.fusible(*it))
+            {
                 kernel.add_instr(*it);
+                index_map.insert(pair<pair<int,int>,int>(pair<int,int>(ksize, i), instr_count++));
+            }
             else
                 break;
         }
         bhir.kernel_list.push_back(kernel);
     }
-    bhir.pprint_kernels();
+//    bhir.pprint_kernels();
+
+    if(not bhir.check_kernel_cycles(index_map))
+        throw logic_error("Cyclic dependencies between the kernels in the BhIR!");
 }
 
