@@ -25,9 +25,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/foreach.hpp>
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/topological_sort.hpp>
 #include <bh.h>
 #include <vector>
+#include <map>
 #include <iostream>
+#include <stdexcept>
 #include "bh_ir.h"
 
 using namespace std;
@@ -76,6 +81,63 @@ void bh_ir::pprint_kernels() const
     {
         snprintf(msg, 100, "kernel-%d", i++);
         bh_pprint_instr_list(&k.instr_list[0], k.instr_list.size(), msg);
+    }
+}
+
+/* Determines whether there are cyclic dependencies between the kernels in the BhIR
+*
+*  @index_map  A map from an instruction in the kernel_list (a pair of a kernel and
+*              an instruction index) to an index into the original instruction list
+*  @return     True when no cycles was found
+*/
+bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
+{
+    //Create a DAG of the kernels and check for cycles
+    using namespace boost;
+    typedef adjacency_list<vecS, vecS, bidirectionalS, bh_ir_kernel> Graph;
+    typedef graph_traits<Graph>::vertex_descriptor Vertex;
+
+    Graph dag(kernel_list.size());
+
+    //First we build a map from a index in the original instruction list
+    //to a vertex in the 'dag'
+    map<int,Vertex> instr2vertex;
+    unsigned int k=0;
+    BOOST_FOREACH(Vertex v, vertices(dag))
+    {
+        const vector<bh_instruction> &kernel = kernel_list[k].instr_list;
+        for(unsigned int i=0; i<kernel.size(); ++i)
+        {
+            int instr_index = index_map.at(pair<int,int>(k,i));
+            instr2vertex.insert(pair<int,Vertex>(instr_index,v));
+        }
+        ++k;
+    }
+    //Then we add edges to the 'dag' for each dependency in the original
+    //instruction list
+    for(unsigned int i=0; i<instr_list.size(); ++i)
+    {
+        Vertex v = instr2vertex[i];
+        for(unsigned int j=0; j<i; ++j)//We may depend on any previous instruction
+        {
+            if(bh_instr_dependency(&instr_list[i], &instr_list[j]))
+            {
+                add_edge(instr2vertex[j], v, dag);
+            }
+        }
+    }
+    //Finally we check for cycles between the kernel dependencies
+    vector<Vertex> topological_order;
+    try
+    {
+        //TODO: topological sort is an efficient method for finding cycles,
+        //but we should avoid allocating a vector
+        topological_sort(dag, back_inserter(topological_order));
+        return true;
+    }
+    catch (const not_a_dag &e)
+    {
+        return false;
     }
 }
 
