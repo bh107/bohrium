@@ -94,7 +94,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
 {
     //Create a DAG of the kernels and check for cycles
     using namespace boost;
-    typedef adjacency_list<vecS, vecS, bidirectionalS, bh_ir_kernel> Graph;
+    typedef adjacency_list<setS, vecS, bidirectionalS, const bh_ir_kernel*> Graph;
     typedef graph_traits<Graph>::vertex_descriptor Vertex;
 
     Graph dag(kernel_list.size());
@@ -106,6 +106,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         const vector<bh_instruction> &kernel = kernel_list[k].instr_list;
+        dag[v] = &kernel_list[k];
         for(unsigned int i=0; i<kernel.size(); ++i)
         {
             int instr_index = index_map.at(pair<int,int>(k,i));
@@ -122,7 +123,8 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
         {
             if(bh_instr_dependency(&instr_list[i], &instr_list[j]))
             {
-                add_edge(instr2vertex[j], v, dag);
+                if(instr2vertex[j] != v)
+                    add_edge(instr2vertex[j], v, dag);
             }
         }
     }
@@ -137,6 +139,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
     }
     catch (const not_a_dag &e)
     {
+        bh_pprint_dag_file<Graph>(dag, "check_kernel_cycles-fail.dot");
         return false;
     }
 }
