@@ -74,7 +74,7 @@ void bh_ir::serialize(vector<char> &buffer) const
 }
 
 /* Pretty print the kernel list */
-void bh_ir::pprint_kernels() const
+void bh_ir::pprint_kernel_list() const
 {
     char msg[100]; int i=0;
     BOOST_FOREACH(const bh_ir_kernel &k, kernel_list)
@@ -82,6 +82,33 @@ void bh_ir::pprint_kernels() const
         snprintf(msg, 100, "kernel-%d", i++);
         bh_pprint_instr_list(&k.instr_list[0], k.instr_list.size(), msg);
     }
+}
+
+/* Pretty write the kernel DAG as a DOT file
+*
+*  @filename   Name of the DOT file
+*/
+void bh_ir::pprint_kernel_dag(const char filename[]) const
+{
+    using namespace boost;
+    typedef adjacency_list<setS, vecS, bidirectionalS, const bh_ir_kernel*> Graph;
+    typedef graph_traits<Graph>::vertex_descriptor Vertex;
+    Graph dag;
+    BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
+    {
+        Vertex new_v = add_vertex(&kernel, dag);
+
+        //Add dependencies
+        BOOST_FOREACH(Vertex v, vertices(dag))
+        {
+            if(new_v != v)//We do not depend on ourself
+            {
+                if(kernel.dependency(*dag[v]))
+                    add_edge(v, new_v, dag);
+            }
+        }
+    }
+    bh_pprint_dag_file<Graph>(dag, filename);
 }
 
 /* Determines whether there are cyclic dependencies between the kernels in the BhIR
@@ -109,7 +136,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
         dag[v] = &kernel_list[k];
         for(unsigned int i=0; i<kernel.size(); ++i)
         {
-            int instr_index = index_map.at(pair<int,int>(k,i));
+            int instr_index = index_map.at(make_pair(k,i));
             instr2vertex.insert(pair<int,Vertex>(instr_index,v));
         }
         ++k;

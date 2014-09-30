@@ -111,7 +111,13 @@ public:
     void serialize(std::vector<char> &buffer) const;
 
     /* Pretty print the kernel list */
-    void pprint_kernels() const;
+    void pprint_kernel_list() const;
+
+    /* Pretty write the kernel DAG as a DOT file
+    *
+    *  @filename   Name of the DOT file
+    */
+    void pprint_kernel_dag(const char filename[]) const;
 
     /* Determines whether there are cyclic dependencies between the kernels in the BhIR
     *
