@@ -100,7 +100,8 @@ DLLEXPORT void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[]);
 #include <iostream>
 #include <fstream>
 
-/* Writes the DOT file of a boost DAG of instruction kernels.
+/* Writes the DOT file of a boost DAG where
+ * each vertex is a pointer a bh_ir_kernel.
  *
  * @dag       The DAG to write (of type 'Graph')
  * @filename  The name of DOT file
@@ -137,7 +138,7 @@ void bh_pprint_dag_file(Graph &dag, const char filename[])
             out << "\"]";
         }
     };
-    cout << "Writing file " << filename << endl;
+    //cout << "Writing file " << filename << endl;
     ofstream file;
     file.open(filename);
     write_graphviz(file, dag, kernel_writer(dag), default_writer(), graph_writer());
