@@ -92,4 +92,56 @@ DLLEXPORT void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[]);
 }
 #endif
 
+#ifdef __cplusplus
+
+#include <boost/foreach.hpp>
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/graphviz.hpp>
+#include <iostream>
+#include <fstream>
+
+/* Writes the DOT file of a boost DAG of instruction kernels.
+ *
+ * @dag       The DAG to write (of type 'Graph')
+ * @filename  The name of DOT file
+ */
+template <typename Graph>
+void bh_pprint_dag_file(Graph &dag, const char filename[])
+{
+    using namespace std;
+    using namespace boost;
+
+    //We define a graph and a kernel writer for graphviz
+    struct graph_writer
+    {
+        void operator()(std::ostream& out) const
+        {
+            out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
+            out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
+        }
+    };
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+    struct kernel_writer
+    {
+        const Graph &graph;
+        kernel_writer(const Graph &g) : graph(g) {};
+        void operator()(std::ostream& out, const Vertex& v) const
+        {
+            out << "[label=\"Kernel " << v << ":\\l";
+            BOOST_FOREACH(const bh_instruction &i, graph[v]->instr_list)
+            {
+                char buf[1024*10];
+                bh_sprint_instr(&i, buf, "\\l");
+                out << buf << "\\l";
+            }
+            out << "\"]";
+        }
+    };
+    cout << "Writing file " << filename << endl;
+    ofstream file;
+    file.open(filename);
+    write_graphviz(file, dag, kernel_writer(dag), default_writer(), graph_writer());
+    file.close();
+}
+#endif
 #endif
