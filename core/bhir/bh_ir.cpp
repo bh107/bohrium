@@ -32,6 +32,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <map>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include "bh_ir.h"
 
@@ -73,6 +74,24 @@ void bh_ir::serialize(vector<char> &buffer) const
     output_stream.flush();
 }
 
+/* Returns the cost of the BhIR */
+int bh_ir::cost() const
+{
+    int cost = 0;
+    BOOST_FOREACH(const bh_ir_kernel &k, kernel_list)
+    {
+        BOOST_FOREACH(const bh_view &v, k.input_list())
+        {
+            cost += bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
+        }
+        BOOST_FOREACH(const bh_view &v, k.output_list())
+        {
+            cost += bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
+        }
+    }
+    return cost;
+}
+
 /* Pretty print the kernel list */
 void bh_ir::pprint_kernel_list() const
 {
@@ -108,7 +127,10 @@ void bh_ir::pprint_kernel_dag(const char filename[]) const
             }
         }
     }
-    bh_pprint_dag_file<Graph>(dag, filename);
+    stringstream header;
+    header << "labelloc=\"t\";" << endl;
+    header << "label=\"DAG with a total cost of " << (cost()/1024) << " kbytes\";" << endl;
+    bh_pprint_dag_file<Graph>(dag, filename, header.str().c_str());
 }
 
 /* Determines whether there are cyclic dependencies between the kernels in the BhIR
