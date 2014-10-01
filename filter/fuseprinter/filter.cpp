@@ -22,16 +22,14 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-static int pprint_filter_count=0;
-void pprint_filter(bh_ir *bhir)
+static int filter_count=0;
+void filter(const bh_ir bhir)
 {
-    char trace_fn[8000];
+    char dag_fn[8000];
 
-    ++pprint_filter_count;
-    snprintf(trace_fn, 8000, "trace-%d.txt", pprint_filter_count);
+    snprintf(dag_fn, 8000, "dag-%d.dot", ++filter_count);
+    printf("fuseprinter: writing dag('%s').\n", dag_fn);
 
-    printf("pprint-filter: writing trace('%s').\n", trace_fn);
-
-    bh_pprint_trace_file(bhir, trace_fn);   // Trace
+    bhir.pprint_kernel_dag(dag_fn);   // Trace
 }
 

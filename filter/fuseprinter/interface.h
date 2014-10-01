@@ -17,21 +17,23 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef __BH_FILTER_FUSEPRINTER_H
+#define __BH_FILTER_FUSEPRINTER_H
+
 #include <bh.h>
-#include <stdio.h>
+#include "filter.h"
 
-using namespace std;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-static int pprint_filter_count=0;
-void pprint_filter(bh_ir *bhir)
-{
-    char trace_fn[8000];
+DLLEXPORT bh_error bh_filter_fuseprinter_init(const char* name);
+DLLEXPORT bh_error bh_filter_fuseprinter_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_filter_fuseprinter_shutdown(void);
+DLLEXPORT bh_error bh_filter_fuseprinter_extmethod(const char *name, bh_opcode opcode);
 
-    ++pprint_filter_count;
-    snprintf(trace_fn, 8000, "trace-%d.txt", pprint_filter_count);
-
-    printf("pprint-filter: writing trace('%s').\n", trace_fn);
-
-    bh_pprint_trace_file(bhir, trace_fn);   // Trace
+#ifdef __cplusplus
 }
+#endif
 
+#endif

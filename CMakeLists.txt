@@ -54,6 +54,7 @@ add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
 add_subdirectory(ve/cpu)
 add_subdirectory(filter/pprint)
+add_subdirectory(filter/fuseprinter)
 add_subdirectory(fuser/topological)
 add_subdirectory(extmethods/matmul)
 
