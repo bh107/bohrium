@@ -118,9 +118,10 @@ DLLEXPORT void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[]);
  *
  * @dag       The DAG to write (of type 'Graph')
  * @filename  The name of DOT file
+ * @header    Header string for the graph
  */
 template <typename Graph>
-void bh_pprint_dag_file(Graph &dag, const char filename[])
+void bh_pprint_dag_file(Graph &dag, const char filename[], const char *header = "")
 {
     using namespace std;
     using namespace boost;
@@ -128,10 +129,13 @@ void bh_pprint_dag_file(Graph &dag, const char filename[])
     //We define a graph and a kernel writer for graphviz
     struct graph_writer
     {
+        const char *header;
+        graph_writer(const char *h) : header(h) {};
         void operator()(std::ostream& out) const
         {
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
+            out << header << endl;
         }
     };
     typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
@@ -173,7 +177,7 @@ void bh_pprint_dag_file(Graph &dag, const char filename[])
     //cout << "Writing file " << filename << endl;
     ofstream file;
     file.open(filename);
-    write_graphviz(file, dag, kernel_writer(dag), default_writer(), graph_writer());
+    write_graphviz(file, dag, kernel_writer(dag), default_writer(), graph_writer(header));
     file.close();
 }
 #endif
