@@ -30,12 +30,25 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
+/* Pretty print an base.
+ *
+ * @op      The base in question
+ * @buf     Output buffer (must have sufficient size)
+ */
+DLLEXPORT void bh_sprint_base(const bh_base *base, char buf[]);
+
 /* Pretty print an array.
  *
  * @view  The array view in question
  */
 DLLEXPORT void bh_pprint_array(const bh_view *view);
 
+/* Pretty print an view.
+ *
+ * @op      The view in question
+ * @buf     Output buffer (must have sufficient size)
+ */
+DLLEXPORT void bh_sprint_view(const bh_view *op, char buf[]);
 
 /* Pretty print an instruction.
  *
@@ -128,10 +141,29 @@ void bh_pprint_dag_file(Graph &dag, const char filename[])
         kernel_writer(const Graph &g) : graph(g) {};
         void operator()(std::ostream& out, const Vertex& v) const
         {
-            out << "[label=\"Kernel " << v << ":\\l";
-            BOOST_FOREACH(const bh_instruction &i, graph[v]->instr_list)
+            char buf[1024*10];
+            out << "[label=\"Kernel " << v << "\\n";
+            out << "Input views: \\l";
+            BOOST_FOREACH(const bh_view &i, graph[v]->input_list())
             {
-                char buf[1024*10];
+                bh_sprint_view(&i, buf);
+                out << buf << "\\l";
+            }
+            out << "Output views: \\l";
+            BOOST_FOREACH(const bh_view &i, graph[v]->output_list())
+            {
+                bh_sprint_view(&i, buf);
+                out << buf << "\\l";
+            }
+            out << "Temp base-arrays: \\l";
+            BOOST_FOREACH(const bh_base *i, graph[v]->temp_list())
+            {
+                bh_sprint_base(i, buf);
+                out << buf << "\\l";
+            }
+            out << "Instruction list: \\l";
+            BOOST_FOREACH(const bh_instruction &i, graph[v]->instr_list())
+            {
                 bh_sprint_instr(&i, buf, "\\l");
                 out << buf << "\\l";
             }

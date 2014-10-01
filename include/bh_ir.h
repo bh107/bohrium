@@ -43,10 +43,35 @@ protected:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)
     {
-        ar & instr_list;
+        ar & instrs;
     }
 
+    //List of input and output to this kernel.
+    //NB: system instruction (e.g. BH_DISCARD) is
+    //never part of kernel input or output
+    std::vector<bh_view> inputs;
+    std::vector<bh_view> outputs;
+
+    //Lets of temporary base-arrays in this kernel.
+    std::vector<const bh_base*> temps;
+
+    //The list of Bohrium instructions in this kernel
+    std::vector<bh_instruction> instrs;
+
 public:
+
+    /* Returns the instructions in this kernel (read-only) */
+    const std::vector<bh_instruction>& instr_list() const {return instrs;};
+
+    /* Returns a list of inputs to this kernel (read-only) */
+    const std::vector<bh_view>& input_list() const {return inputs;};
+
+    /* Returns a list of outputs from this kernel (read-only) */
+    const std::vector<bh_view>& output_list() const {return outputs;};
+
+    /* Returns a list of temporary base-arrays in this kernel (read-only) */
+    const std::vector<const bh_base*>& temp_list() const {return temps;};
+
     /* Add an instruction to the kernel
      *
      * @instr   The instruction to add
@@ -79,8 +104,6 @@ public:
      */
     bool dependency(const bh_ir_kernel &other) const;
 
-    //The list of Bohrium instructions in this kernel
-    std::vector<bh_instruction> instr_list;
 };
 
 

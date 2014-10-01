@@ -80,7 +80,7 @@ void bh_ir::pprint_kernel_list() const
     BOOST_FOREACH(const bh_ir_kernel &k, kernel_list)
     {
         snprintf(msg, 100, "kernel-%d", i++);
-        bh_pprint_instr_list(&k.instr_list[0], k.instr_list.size(), msg);
+        bh_pprint_instr_list(&k.instr_list()[0], k.instr_list().size(), msg);
     }
 }
 
@@ -132,7 +132,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
     unsigned int k=0;
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
-        const vector<bh_instruction> &kernel = kernel_list[k].instr_list;
+        const vector<bh_instruction> &kernel = kernel_list[k].instr_list();
         dag[v] = &kernel_list[k];
         for(unsigned int i=0; i<kernel.size(); ++i)
         {
@@ -178,7 +178,47 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
  */
 void bh_ir_kernel::add_instr(const bh_instruction &instr)
 {
-    instr_list.push_back(instr);
+    instrs.push_back(instr);
+
+    if(instr.opcode == BH_DISCARD)
+    {
+        const bh_base *base = instr.operand[0].base;
+        for(vector<bh_view>::iterator it=outputs.begin(); it != outputs.end(); ++it)
+        {
+            if(base == it->base)
+            {
+                temps.push_back(base);
+                outputs.erase(it);
+                break;
+            }
+        }
+    }
+    else if(instr.opcode != BH_FREE)
+    {
+        {
+            const bh_view &v = instr.operand[0];
+            BOOST_FOREACH(const bh_view &i, outputs)
+            {
+                if(bh_view_identical(&v, &i))
+                    return;
+            }
+            outputs.push_back(v);
+        }
+        const int nop = bh_operands(instr.opcode);
+        for(int i=1; i<nop; ++i)
+        {
+            const bh_view &v = instr.operand[i];
+            if(!bh_is_constant(&v))
+            {
+                BOOST_FOREACH(const bh_view &i, inputs)
+                {
+                    if(bh_view_identical(&v, &i))
+                        return;
+                }
+                inputs.push_back(v);
+            }
+        }
+    }
 };
 
 /* Determines whether it is legal to fuse with the kernel
@@ -188,9 +228,9 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
  */
 bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
 {
-    BOOST_FOREACH(const bh_instruction &a, instr_list)
+    BOOST_FOREACH(const bh_instruction &a, instr_list())
     {
-        BOOST_FOREACH(const bh_instruction &b, other.instr_list)
+        BOOST_FOREACH(const bh_instruction &b, other.instr_list())
         {
             if(not bh_instr_fusible(&a, &b))
                 return false;
@@ -210,9 +250,9 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
  */
 bool bh_ir_kernel::dependency(const bh_ir_kernel &other) const
 {
-    BOOST_FOREACH(const bh_instruction &i, instr_list)
+    BOOST_FOREACH(const bh_instruction &i, instr_list())
     {
-        BOOST_FOREACH(const bh_instruction &o, other.instr_list)
+        BOOST_FOREACH(const bh_instruction &o, other.instr_list())
         {
             if(bh_instr_dependency(&i, &o))
                 return true;
@@ -228,7 +268,7 @@ bool bh_ir_kernel::dependency(const bh_ir_kernel &other) const
  */
 bool bh_ir_kernel::fusible(const bh_instruction &instr) const
 {
-    BOOST_FOREACH(const bh_instruction &i, instr_list)
+    BOOST_FOREACH(const bh_instruction &i, instr_list())
     {
         if(not bh_instr_fusible(&i, &instr))
             return false;

@@ -100,15 +100,46 @@ static void bh_sprint_const(const bh_instruction *instr, char buf[] ) {
 
 }
 
-static void bh_sprint_base(const bh_base *base, char buf[] ) {
 
-        sprintf(buf, "[ Addr: %p Type: %s #elem: %ld Data: %p ]",
-                base, bh_type_text(base->type), (long) base->nelem, base->data
-        );
+
+static void bh_sprint_coord( char buf[], const bh_index coord[], bh_index dims ) {
+
+    char tmp[PPRINT_BUF_SHAPE_SIZE];
+    bh_index j;
+
+    for(j=0; j<dims; j++)
+    {
+        sprintf(tmp, "%lld", (long long)coord[j]);
+        strcat(buf, tmp);
+        if (j<dims-1) {
+            strcat(buf, ", ");
+        }
+    }
 }
 
-static void bh_sprint_view(const bh_view *op, char buf[] ) {
+/*********************************************************/
+/****************** Public functions *********************/
+/*********************************************************/
 
+/* Pretty print an base.
+ *
+ * @op      The base in question
+ * @buf     Output buffer (must have sufficient size)
+ */
+void bh_sprint_base(const bh_base *base, char buf[])
+{
+    sprintf(buf, "[ Addr: %p Type: %s #elem: %ld Data: %p ]",
+            base, bh_type_text(base->type), (long) base->nelem, base->data
+    );
+}
+
+/* Pretty print an view.
+ *
+ * @op      The view in question
+ * @buf     Output buffer (must have sufficient size)
+ */
+void bh_sprint_view(const bh_view *op, char buf[])
+{
     char    stride[PPRINT_BUF_STRIDE_SIZE]  = "?",
             shape[PPRINT_BUF_SHAPE_SIZE]    = "?",
             tmp[PPRINT_BUF_OPSTR_SIZE]      = "?";
@@ -139,26 +170,6 @@ static void bh_sprint_view(const bh_view *op, char buf[] ) {
     }
 
 }
-
-static void bh_sprint_coord( char buf[], const bh_index coord[], bh_index dims ) {
-
-    char tmp[PPRINT_BUF_SHAPE_SIZE];
-    bh_index j;
-
-    for(j=0; j<dims; j++)
-    {
-        sprintf(tmp, "%lld", (long long)coord[j]);
-        strcat(buf, tmp);
-        if (j<dims-1) {
-            strcat(buf, ", ");
-        }
-    }
-}
-
-/*********************************************************/
-/****************** Public functions *********************/
-/*********************************************************/
-
 
 /* Pretty print an instruction.
  *
