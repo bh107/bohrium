@@ -148,7 +148,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
 
     Graph dag(kernel_list.size());
 
-    //First we build a map from a index in the original instruction list
+    //First we build a map from an index in the original instruction list
     //to a vertex in the 'dag'
     map<int,Vertex> instr2vertex;
     unsigned int k=0;
@@ -188,6 +188,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
     }
     catch (const not_a_dag &e)
     {
+        cout << "Writing the failed kernel list: check_kernel_cycles-fail.dot" << endl;
         bh_pprint_dag_file<Graph>(dag, "check_kernel_cycles-fail.dot");
         return false;
     }
@@ -200,8 +201,6 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
  */
 void bh_ir_kernel::add_instr(const bh_instruction &instr)
 {
-    instrs.push_back(instr);
-
     if(instr.opcode == BH_DISCARD)
     {
         const bh_base *base = instr.operand[0].base;
@@ -218,29 +217,52 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
     else if(instr.opcode != BH_FREE)
     {
         {
+            bool duplicates = false;
             const bh_view &v = instr.operand[0];
             BOOST_FOREACH(const bh_view &i, outputs)
             {
                 if(bh_view_identical(&v, &i))
-                    return;
+                {
+                    duplicates = true;
+                    break;
+                }
             }
-            outputs.push_back(v);
+            if(!duplicates)
+                outputs.push_back(v);
         }
         const int nop = bh_operands(instr.opcode);
         for(int i=1; i<nop; ++i)
         {
             const bh_view &v = instr.operand[i];
-            if(!bh_is_constant(&v))
+            if(bh_is_constant(&v))
+                continue;
+
+            bool duplicates = false;
+            BOOST_FOREACH(const bh_view &i, inputs)
             {
-                BOOST_FOREACH(const bh_view &i, inputs)
+                if(bh_view_identical(&v, &i))
                 {
-                    if(bh_view_identical(&v, &i))
-                        return;
+                    duplicates = true;
+                    break;
                 }
-                inputs.push_back(v);
             }
+            if(duplicates)
+                continue;
+
+            bool local_source = false;
+            BOOST_FOREACH(const bh_instruction &i, instrs)
+            {
+                if(bh_view_identical(&v, &i.operand[0]))
+                {
+                    local_source = true;
+                    break;
+                }
+            }
+            if(!local_source)
+                inputs.push_back(v);
         }
     }
+    instrs.push_back(instr);
 };
 
 /* Determines whether it is legal to fuse with the kernel
