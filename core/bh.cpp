@@ -366,12 +366,14 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
         if(a->stride[ia] != b->stride[ib])
             return false;
     }
-    while (a->stride[ia] == 0)
-        if (++ia >= a->ndim)
-            break;
-    while (b->stride[ib] == 0)
-        if (++ib >= b->ndim)
-            break;
+    if(ia < a->ndim)
+        while (a->stride[ia] == 0)
+            if (++ia >= a->ndim)
+                break;
+    if(ib < b->ndim)
+        while (b->stride[ib] == 0)
+            if (++ib >= b->ndim)
+                break;
     if (ia == a->ndim && ib == b->ndim)
         return true;
     return false;
