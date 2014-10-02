@@ -161,10 +161,8 @@ void ResourceManager::calcLocalShape()
 
 void ResourceManager::registerExtensions(std::vector<std::string> extensions)
 {
-    float16 = extensions[0].find("cl_khr_fp16") != std::string::npos;
     float64 = extensions[0].find("cl_khr_fp64") != std::string::npos;
 #ifdef DEBUG
-    std::cout << "ResourceManager.float16 = " << float16 << std::endl;
     std::cout << "ResourceManager.float64 = " << float64 << std::endl;
 #endif
 }
@@ -330,11 +328,6 @@ std::vector<size_t> ResourceManager::localShape(const std::vector<size_t>& globa
     default:
         assert (false);
     }
-}
-
-bool ResourceManager::float16support()
-{
-    return float16;
 }
 
 bool ResourceManager::float64support()

@@ -43,7 +43,6 @@ private:
     std::vector<size_t> localShape2D;
     std::vector<size_t> localShape3D;
     bool float64;
-    bool float16;
     void calcLocalShape();
     void registerExtensions(std::vector<std::string> extensions);
 public:
@@ -85,7 +84,6 @@ public:
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
     std::string getIncludeStr();
-    bool float16support();
     bool float64support();
     bh_error childExecute(bh_ir* bhir);
     OCLtype intpType();

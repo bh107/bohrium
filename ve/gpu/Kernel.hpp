@@ -36,10 +36,8 @@ private:
 public:
     typedef std::vector<std::pair<KernelParameter*, bool> > Parameters;
     Kernel(ResourceManager* resourceManager_, 
-           bh_intp ndim_,
            cl::Kernel kernel_);
     Kernel(ResourceManager* resourceManager_, 
-           bh_intp ndim_,
            const std::string& source, 
            const std::string& name); 
     void call(Parameters& parameters,

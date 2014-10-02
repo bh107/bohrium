@@ -143,9 +143,6 @@ Kernel Reduce::getKernel(const bh_instruction* inst,
         
         switch (userFuncArg->operands[0]->type())
         {
-        case OCL_FLOAT16:
-            source << "#pragma OPENCL EXTENSION cl_khr_fp16 : enable\n";
-            break;
         case OCL_FLOAT64:
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
             break;
