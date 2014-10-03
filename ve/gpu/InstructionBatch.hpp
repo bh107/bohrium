@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <list>
 #include <queue>
+#include <mutex>
 #include <bh.h>
 #include "BaseArray.hpp"
 #include "Kernel.hpp"
@@ -39,7 +40,6 @@ class InstructionBatch
     typedef std::multimap<BaseArray*, unsigned int> ArrayMap;
     typedef std::map<unsigned int, BaseArray*> ArrayList;
     typedef std::pair<ArrayMap::iterator, ArrayMap::iterator> ArrayRange;
-    typedef std::map<std::pair<size_t,size_t>, Kernel> KernelMap;
     typedef std::list<std::pair<bh_instruction*, std::vector<int> > > InstructionList;
     typedef std::map<std::string, std::string> ConstantList;
     
@@ -56,7 +56,6 @@ private:
     ArrayMap input;
     ArrayList inputList;
     ParameterMap parameters;
-    ParameterList parameterList;
     ConstantList constantList;
     VariableMap kernelVariables;
     int arraynum;
@@ -72,7 +71,7 @@ private:
      std::string generateFunctionBody();
 
     static std::mutex kernelMutex;
-    static std::map<size_t,size_t> knowKernelID;
+    static std::map<size_t,size_t> knownKernelID;
     static KernelMap kernelMap;
     static CallQueue callQueue;
 public:
@@ -84,6 +83,7 @@ public:
     bool write(BaseArray* array);    
     bool access(BaseArray* array);
     bool discard(BaseArray* array);
+    static void CL_CALLBACK buildDone(cl_program p, void* id);
 };
 
 class BatchException 

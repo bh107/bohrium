@@ -49,7 +49,7 @@ InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<Kerne
 
 bool InstructionBatch::shapeMatch(bh_intp ndim,const bh_index dims[])
 {
-    size_t size = shape.size();
+    bh_intp size = shape.size();
     if (ndim == size)
     {
         for (int i = 0; i < ndim; ++i)
@@ -216,12 +216,12 @@ void InstructionBatch::run(ResourceManager* resourceManager)
         
         functionDeclaration << "(\n#ifndef STATIC_KERNEL";
 
-        for (int i = 0; i < shape.size(); ++i)
+        for (size_t i = 0; i < shape.size(); ++i)
         {
             std::stringstream ss;
             ss << "ds" << shape.size() -(i+1);
             Scalar* s = new Scalar(shape[i]);
-            defines << "#define " << ss.str() << " " <<= *s << "\n";
+            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
             sizeParameters.push_back(s);
             functionDeclaration << "\n\t" << (i==0?" ":", ") << *s << " " << ss.str();
         }
@@ -232,7 +232,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
                 std::stringstream ss;
                 ss << "v" << iit->second << "s0";
                 Scalar* s = new Scalar(views[iit->second].start);
-                defines << "#define " << ss.str() << " " <<= *s << "\n";
+                (defines << "#define " << ss.str() << " " <<= *s) << "\n";
                 sizeParameters.push_back(s);
                 functionDeclaration << "\n\t, " << *s << " " << ss.str();
             }
@@ -242,7 +242,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
                 std::stringstream ss;
                 ss << "v" << iit->second << "s" << vndim-d;
                 Scalar* s = new Scalar(views[iit->second].stride[d]);
-                defines << "#define " << ss.str() << " " <<= *s << "\n";
+                (defines << "#define " << ss.str() << " " <<= *s) << "\n";
                 sizeParameters.push_back(s);
                 functionDeclaration << "\n\t, " << *s << " " << ss.str();
             }
@@ -254,7 +254,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
                 std::stringstream ss;
                 ss << "v" << oit->second << "s0";
                 Scalar* s = new Scalar(views[oit->second].start);
-                defines << "#define " << ss.str() << " " <<= *s << "\n";
+                (defines << "#define " << ss.str() << " " <<= *s) << "\n";
                 sizeParameters.push_back(s);
                 functionDeclaration << "\n\t, " << *s << " " << ss.str();
             }
@@ -264,7 +264,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
                 std::stringstream ss;
                 ss << "v" << oit->second << "s" << vndim-d;
                 Scalar* s = new Scalar(views[oit->second].stride[d]);
-                defines << "#define " << ss.str() << " " <<= *s << "\n";
+                (defines << "#define " << ss.str() << " " <<= *s) << "\n";
                 sizeParameters.push_back(s);
                 functionDeclaration << "\n\t, " << *s << " " << ss.str();
             }
@@ -275,7 +275,8 @@ void InstructionBatch::run(ResourceManager* resourceManager)
         Kernel::Parameters kernelParameters;
         for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
         {
-            functionDeclaration << "\n\t" << (pit==parameters.begin()?" ":", ") << *s << " " << ss.str();
+            functionDeclaration << "\n\t" << (pit==parameters.begin()?" ":", ") << pit->first << " " << 
+                pit->second;
             if (output.find(dynamic_cast<BaseArray*>(pit->first)) == output.end())
                 kernelParameters.push_back(std::make_pair(pit->first, false));
             else
@@ -291,7 +292,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
             globalShape.push_back(shape[i]);
 
         kernelMutex.lock();
-        std::map<size_t,size_t>::iterator kidit = knowKernelID.find(functionID);
+        std::map<size_t,size_t>::iterator kidit = knownKernelID.find(functionID);
         if (kidit != knownKernelID.end())
         {
             KernelID kernelID(functionID,0); 
@@ -302,10 +303,11 @@ void InstructionBatch::run(ResourceManager* resourceManager)
                     kernelParameters.push_back(std::make_pair(sp, false));
             KernelMap::iterator kit = kernelMap.find(kernelID);
             if (callQueue.empty() && kit != kernelMap.end())
-                kit->call(kernelParameters, globalShape);
+                kit->second.call(kernelParameters, globalShape);
             else
                 callQueue.push(std::make_tuple(kernelID,kernelParameters,globalShape));
         } else { // New Kernel
+            knownKernelID[functionID] = literalID;
             std::stringstream source;
             if (float64)
                 source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
@@ -319,7 +321,9 @@ void InstructionBatch::run(ResourceManager* resourceManager)
                 "__kernel void\n#ifndef STATIC_KERNEL\nkernel" << std::hex << functionID <<
                 "\n#else\nkernel" << std::hex << functionID << "_\n" << functionDeclaration << 
                 "\n" << functionBody;
-            // TODO Initiate compilation of Kernels
+            resourceManager->buildKernels(source.str(), &buildDone, new KernelID(functionID,0));
+            resourceManager->buildKernels(source.str(), &buildDone, new KernelID(functionID,literalID),
+                                          "-DSTATIC_KERNEL");
             callQueue.push(std::make_tuple(KernelID(functionID,literalID),kernelParameters,globalShape));
         }
         kernelMutex.unlock();
@@ -332,7 +336,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
 void CL_CALLBACK InstructionBatch::buildDone(cl_program p, void* id)
 {
     clRetainProgram(p);
-    cp::Program program(p);
+    cl::Program program(p);
     KernelID *kernelID = (KernelID*)id;
     if (program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>() =! CL_BUILD_SUCCESS)
     {
@@ -361,6 +365,7 @@ void CL_CALLBACK InstructionBatch::buildDone(cl_program p, void* id)
             break;            
     }
     kernelMutex.unlock(); 
+    delete kernelID;
 }
 
 std::string InstructionBatch::generateFunctionBody()

@@ -236,6 +236,15 @@ cl::Kernel ResourceManager::createKernel(const std::string& source,
     return createKernels(source, std::vector<std::string>(1,kernelName)).front();
 }
 
+void ResourceManager::buildKernels(const std::string& source,  
+                                   void (CL_CALLBACK * notifyFptr)(cl_program, void *),void* kernelID,
+                                   const std::string& options)
+{
+    cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
+    cl::Program program(context, sources);
+    program.build(devices,(options+std::string(" ")+getIncludeStr()).c_str(),notifyFptr,kernelID));
+}
+
 std::vector<cl::Kernel> ResourceManager::createKernelsFromFile(const std::string& fileName, 
                                                                const std::vector<std::string>& kernelNames)
 {
@@ -350,7 +359,7 @@ std::string ResourceManager::getIncludeStr()
 {
     char* dir = bh_component_config_lookup(component, "include");
     if (dir == NULL)
-        return std::string("/opt/bohrium/gpu/include");
+        return std::string("-I/opt/bohrium/gpu/include");
     return std::string("-I") + std::string(dir);
 }
 
