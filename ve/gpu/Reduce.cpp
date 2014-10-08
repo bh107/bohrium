@@ -81,7 +81,7 @@ bh_error Reduce::bh_reduce(const bh_instruction* inst, const UserFuncArg* userFu
         }
     }
 #ifndef STATIC_KERNEL
-    for (int i = 0; i < shape.size(); ++i)
+    for (size_t i = 0; i < shape.size(); ++i)
     {
         {
             std::stringstream ss;
@@ -150,6 +150,8 @@ Kernel Reduce::getKernel(const bh_instruction* inst,
         case OCL_COMPLEX128:
             source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
             source << "#include <ocl_complex.h>\n";
+            break;
+        default:
             break;
         }
         source << "__kernel void " << kname.str() << code;
