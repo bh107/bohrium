@@ -250,7 +250,7 @@ void InstructionBatch::run(ResourceManager* resourceManager)
     if (output.begin() != output.end())
     {
 #ifndef STATIC_KERNEL
-        for (int i = 0; i < shape.size(); ++i)
+        for (size_t i = 0; i < shape.size(); ++i)
         {
             std::stringstream ss;
             ss << "ds" << shape.size() -(i+1);
