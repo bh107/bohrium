@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <stdexcept>
 #include <bh.h>
-#include <CL/cl_platform.h>
 #include "Scalar.hpp"
 #include "bh_ve_gpu.h"
 
