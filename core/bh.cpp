@@ -436,3 +436,38 @@ bool bh_instr_fusible(const bh_instruction *a, const bh_instruction *b)
     }
     return true;
 }
+
+/* Determines whether it is legal to fuse two instructions
+ * without changing any future possible fusings.
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+bool bh_instr_fusible_gently(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    if(not bh_view_aligned(&a->operand[0], &b->operand[0]))
+        return false;
+
+    const int a_nop = bh_operands(a->opcode);
+    const int b_nop = bh_operands(b->opcode);
+    for(int i=1; i<a_nop; ++i)
+    {
+        //Check that at least one input in 'b' is aligned with 'a[i]'
+        bool found_aligned = false;
+        for(int j=1; j<b_nop; ++j)
+        {
+             if(bh_view_aligned(&a->operand[i], &b->operand[j]))
+             {
+                 found_aligned = true;
+                 break;
+             }
+        }
+        if(not found_aligned)
+            return false;
+    }
+    return true;
+}
