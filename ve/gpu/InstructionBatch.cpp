@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <bh.h>
 #include <bh_timing.hpp>
+#include "bh_ve_gpu.h"
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
 #include "Scalar.hpp"
@@ -201,7 +202,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
     instructions.push_back(make_pair(inst, opids));
 }
 
-void InstructionBatch::run(ResourceManager* resourceManager)
+void InstructionBatch::run()
 {
 #ifdef BH_TIMING
     resourceManager->batchBuild->add({createTime, bh::Timer<>::stamp()}); 
@@ -338,7 +339,8 @@ void CL_CALLBACK InstructionBatch::buildDone(cl_program p, void* id)
     clRetainProgram(p);
     cl::Program program(p);
     KernelID *kernelID = (KernelID*)id;
-    if (program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>() =! CL_BUILD_SUCCESS)
+    std::vector<cl::Device> devices = program.getInfo<CL_PROGRAM_DEVICES>();
+    if (program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices[0]) != CL_BUILD_SUCCESS)
     {
 //#ifdef DEBUG
         std::cerr << "Program build error:\n";
@@ -351,16 +353,16 @@ void CL_CALLBACK InstructionBatch::buildDone(cl_program p, void* id)
     }
 
     std::stringstream kname;
-    kanme << "kernel" <<  std::hex << kernelID->first << (kernelID->second==0?"":"_");
-    Kernel kernel(resourceManager, cl::Kernel(program,kname.str()));
+    kname << "kernel" <<  std::hex << kernelID->first << (kernelID->second==0?"":"_");
+    Kernel kernel(resourceManager, cl::Kernel(program,kname.str().c_str()));
     kernelMutex.lock();
-    kernelMap[*kernelID] = kernel;
+    kernelMap.insert(std::make_pair(*kernelID, kernel));
     while (!callQueue.empty())
     {
         Call call = callQueue.front();
-        kernelMap::Iterator kit = kernelMap.find(std::get<0>(call));
+        KernelMap::iterator kit = kernelMap.find(std::get<0>(call));
         if (kit != kernelMap.end())
-            kit->call(std::get<1>(call),std::get<2>(call));
+            kit->second.call(std::get<1>(call),std::get<2>(call));
         else
             break;            
     }

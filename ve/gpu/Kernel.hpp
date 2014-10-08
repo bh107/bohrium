@@ -46,11 +46,9 @@ public:
               const std::vector<size_t>& globalShape,
               const std::vector<size_t>& localShape);
     static std::vector<Kernel> createKernels(ResourceManager* resourceManager_, 
-                                             const std::vector<bh_intp> ndims,
                                              const std::string& source, 
                                              const std::vector<std::string>& kernelNames); 
     static  std::vector<Kernel> createKernelsFromFile(ResourceManager* resourceManager_, 
-                                                      const std::vector<bh_intp> ndims,
                                                       const std::string& fileName, 
                                                       const std::vector<std::string>& kernelNames); 
 };

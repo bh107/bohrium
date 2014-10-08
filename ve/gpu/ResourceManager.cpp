@@ -242,7 +242,7 @@ void ResourceManager::buildKernels(const std::string& source,
 {
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
-    program.build(devices,(options+std::string(" ")+getIncludeStr()).c_str(),notifyFptr,kernelID));
+    program.build(devices,(options+std::string(" ")+getIncludeStr()).c_str(),notifyFptr,kernelID);
 }
 
 std::vector<cl::Kernel> ResourceManager::createKernelsFromFile(const std::string& fileName, 

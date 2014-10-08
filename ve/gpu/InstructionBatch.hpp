@@ -77,7 +77,7 @@ private:
 public:
     InstructionBatch(bh_instruction* inst, const std::vector<KernelParameter*>& operands);
     Kernel generateKernel(ResourceManager* resourceManager);
-    void run(ResourceManager* resourceManager);
+    void run();
     void add(bh_instruction* inst, const std::vector<KernelParameter*>& operands);
     bool read(BaseArray* array);
     bool write(BaseArray* array);    

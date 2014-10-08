@@ -95,7 +95,7 @@ void InstructionScheduler::executeBatch()
 {
     if (batch)
     {
-        batch->run(resourceManager);
+        batch->run();
         for (std::set<BaseArray*>::iterator dsit = discardSet.begin(); dsit != discardSet.end(); ++dsit)
         {
             delete *dsit;
