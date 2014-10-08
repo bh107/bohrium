@@ -265,24 +265,6 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
     instrs.push_back(instr);
 };
 
-/* Determines whether it is legal to fuse with the kernel
- *
- * @other The other kernel
- * @return The boolean answer
- */
-bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
-{
-    BOOST_FOREACH(const bh_instruction &a, instr_list())
-    {
-        BOOST_FOREACH(const bh_instruction &b, other.instr_list())
-        {
-            if(not bh_instr_fusible(&a, &b))
-                return false;
-        }
-    }
-    return true;
-}
-
 /* Determines whether this kernel depends on 'other',
  * which is true when:
  *      'other' writes to an array that 'this' access
@@ -305,6 +287,24 @@ bool bh_ir_kernel::dependency(const bh_ir_kernel &other) const
     return false;
 }
 
+/* Determines whether it is legal to fuse with the kernel
+ *
+ * @other The other kernel
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
+{
+    BOOST_FOREACH(const bh_instruction &a, instr_list())
+    {
+        BOOST_FOREACH(const bh_instruction &b, other.instr_list())
+        {
+            if(not bh_instr_fusible(&a, &b))
+                return false;
+        }
+    }
+    return true;
+}
+
 /* Determines whether it is legal to fuse with the instruction
  *
  * @instr  The instruction
@@ -320,3 +320,21 @@ bool bh_ir_kernel::fusible(const bh_instruction &instr) const
     return true;
 }
 
+/* Determines whether it is legal to fuse with the kernel without
+ * changing this kernel's input and output.
+ *
+ * @other The other kernel
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::fusible_gently(const bh_ir_kernel &other) const
+{
+    BOOST_FOREACH(const bh_instruction &a, instr_list())
+    {
+        BOOST_FOREACH(const bh_instruction &b, other.instr_list())
+        {
+            if(not bh_instr_fusible_gently(&a, &b))
+                return false;
+        }
+    }
+    return true;
+}

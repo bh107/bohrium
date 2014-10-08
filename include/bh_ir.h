@@ -79,6 +79,17 @@ public:
      */
     void add_instr(const bh_instruction &instr);
 
+    /* Determines whether this kernel depends on 'other',
+     * which is true when:
+     *      'other' writes to an array that 'this' access
+     *                        or
+     *      'this' writes to an array that 'other' access
+     *
+     * @other The other kernel
+     * @return The boolean answer
+     */
+    bool dependency(const bh_ir_kernel &other) const;
+
     /* Determines whether it is legal to fuse with the kernel
      *
      * @other   The other kernel
@@ -93,16 +104,13 @@ public:
      */
     bool fusible(const bh_instruction &instr) const;
 
-    /* Determines whether this kernel depends on 'other',
-     * which is true when:
-     *      'other' writes to an array that 'this' access
-     *                        or
-     *      'this' writes to an array that 'other' access
+    /* Determines whether it is legal to fuse with the kernel without
+     * changing this kernel's input and output.
      *
      * @other The other kernel
      * @return The boolean answer
      */
-    bool dependency(const bh_ir_kernel &other) const;
+    bool fusible_gently(const bh_ir_kernel &other) const;
 
 };
 
@@ -112,6 +120,7 @@ public:
 class bh_ir
 {
 public:
+    bh_ir(){};
     /* Constructs a Bohrium Internal Representation (BhIR)
      * from a instruction list.
      *
