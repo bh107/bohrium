@@ -63,6 +63,7 @@ def gen_cfile(opcodes):
 
     text    = ['        case %s: return "%s";' % (opcode['opcode'], opcode['opcode']) for opcode in opcodes]
     nops    = ['        case %s: return %s;' % (opcode['opcode'], opcode['nop']) for opcode in opcodes]
+    sys_op  = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['system_opcode']]
     stamp   = time.strftime("%d/%m/%Y")
 
     return """
@@ -122,7 +123,27 @@ __TEXT__
         default: return "Unknown opcode";
     }
 }
-    """.replace('__TIMESTAMP__', stamp).replace('__NOPS__', '\n'.join(nops)).replace('__TEXT__', '\n'.join(text))
+
+/* Determines if the operation is a system operation
+ *
+ * @opcode Opcode for operation
+ * @return TRUE if the operation is a system opcode, FALSE otherwise
+ */
+bool bh_opcode_is_system(bh_opcode opcode)
+{
+    switch(opcode)
+    {
+__SYS_OP__
+            return true;
+
+        default:
+            return false;
+    }
+}
+    """.replace('__TIMESTAMP__', stamp)\
+       .replace('__NOPS__', '\n'.join(nops))\
+       .replace('__TEXT__', '\n'.join(text))\
+       .replace('__SYS_OP__', '\n'.join(sys_op))
 
 def get_timestamp(f):
     st = os.stat(f)
