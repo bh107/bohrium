@@ -27,7 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/foreach.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/topological_sort.hpp>
 #include <bh.h>
 #include <vector>
 #include <map>
@@ -35,6 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <stdexcept>
 #include "bh_ir.h"
+#include "bh_dag.h"
 
 using namespace std;
 namespace io = boost::iostreams;
@@ -110,19 +110,19 @@ void bh_ir::pprint_kernel_list() const
 void bh_ir::pprint_kernel_dag(const char filename[]) const
 {
     using namespace boost;
-    typedef adjacency_list<setS, vecS, bidirectionalS, const bh_ir_kernel*> Graph;
+    typedef adjacency_list<setS, vecS, bidirectionalS, const bh_ir_kernel> Graph;
     typedef graph_traits<Graph>::vertex_descriptor Vertex;
     Graph dag;
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
     {
-        Vertex new_v = add_vertex(&kernel, dag);
+        Vertex new_v = add_vertex(kernel, dag);
 
         //Add dependencies
         BOOST_FOREACH(Vertex v, vertices(dag))
         {
             if(new_v != v)//We do not depend on ourself
             {
-                if(kernel.dependency(*dag[v]))
+                if(kernel.dependency(dag[v]))
                     add_edge(v, new_v, dag);
             }
         }
@@ -130,7 +130,7 @@ void bh_ir::pprint_kernel_dag(const char filename[]) const
     stringstream header;
     header << "labelloc=\"t\";" << endl;
     header << "label=\"DAG with a total cost of " << (cost()/1024) << " kbytes\";" << endl;
-    bh_pprint_dag_file<Graph>(dag, filename, header.str().c_str());
+    bh_dag_pprint(dag, filename, header.str().c_str());
 }
 
 /* Determines whether there are cyclic dependencies between the kernels in the BhIR
@@ -143,7 +143,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
 {
     //Create a DAG of the kernels and check for cycles
     using namespace boost;
-    typedef adjacency_list<setS, vecS, bidirectionalS, const bh_ir_kernel*> Graph;
+    typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
     typedef graph_traits<Graph>::vertex_descriptor Vertex;
 
     Graph dag(kernel_list.size());
@@ -155,7 +155,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         const vector<bh_instruction> &kernel = kernel_list[k].instr_list();
-        dag[v] = &kernel_list[k];
+        dag[v] = kernel_list[k];
         for(unsigned int i=0; i<kernel.size(); ++i)
         {
             int instr_index = index_map.at(make_pair(k,i));
@@ -189,7 +189,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
     catch (const not_a_dag &e)
     {
         cout << "Writing the failed kernel list: check_kernel_cycles-fail.dot" << endl;
-        bh_pprint_dag_file<Graph>(dag, "check_kernel_cycles-fail.dot");
+        bh_dag_pprint(dag, "check_kernel_cycles-fail.dot");
         return false;
     }
 }
