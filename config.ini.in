@@ -31,14 +31,19 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node${CMAKE_SHARED_LIBRARY_SUFFIX}
 # Fusers
 #
 
+[singleton]
+type = fuser
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_singleton${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = cpu
+
 [topological]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_topological${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 
-[singleton]
+[gentle]
 type = fuser
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_singleton${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_gentle${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 
 #
