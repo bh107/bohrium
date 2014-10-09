@@ -206,9 +206,10 @@ bool bh_dag_long_path_exist(const Vertex &a, const Vertex &b, const Graph &dag)
     return false;
 }
 
-/* Transitive reduce the 'dag', i.e. remove all redundant edges
+/* Transitive reduce the 'dag', i.e. remove all redundant edges,
+ * NB: invalidates all existing vertex and edge pointers.
  *
- * Complexity: O(E*(E + V))
+ * Complexity: O(E * (E + V))
  *
  * @a   The first vertex
  * @b   The second vertex
@@ -231,6 +232,59 @@ void bh_dag_transitive_reduction(Graph &dag)
     {
         remove_edge(e, dag);
     }
+}
+
+/* Fuse vertices in the graph that can be fused without
+ * changing any future possible fusings
+ * NB: invalidates all existing vertex and edge pointers.
+ *
+ * Complexity: O(E^2 * (V + E))
+ *
+ * @dag The DAG to fuse
+ */
+template <typename Graph>
+void bh_dag_fuse_gentle(Graph &dag)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::edge_descriptor Edge;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+
+    bool not_finished;
+    do
+    {
+        not_finished = false;
+        BOOST_FOREACH(Edge e, edges(dag))
+        {
+            Vertex src = source(e, dag);
+            Vertex dst = target(e, dag);
+            /* NOTE: if we check for cycles after merging we
+             *  don't need the following two adjacent checks
+            {
+                auto adj = adjacent_vertices(src, dag);
+                if(distance(adj.first, adj.second) != 1)
+                    continue;
+            }
+            {
+                auto adj = inv_adjacent_vertices(dst, dag);
+                if(distance(adj.first, adj.second) != 1)
+                    continue;
+            }
+            */
+            if(!dag[src].fusible_gently(dag[dst]))
+                continue;
+
+            Graph new_dag(dag);
+            bh_dag_merge_vertex(src, dst, new_dag);
+            if(bh_dag_cycles(new_dag))
+                continue;
+
+            //We merged successfully
+            dag = new_dag;
+            not_finished = true;
+            break;
+        }
+    }while(not_finished);
 }
 
 #endif
