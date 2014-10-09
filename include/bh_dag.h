@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <iostream>
 #include <fstream>
@@ -101,10 +102,12 @@ void bh_dag_pprint(Graph &dag, const char filename[], const char *header = "")
 
 /* Determines whether there are cycles in the Graph
  *
+ * Complexity: O(E + V)
+ *
  * @g       The digraph
  * @ba      The second vertex
  * @other   The other kernel
- * @return  true if there are cycles in the digraph, else false
+ * @return  True if there are cycles in the digraph, else false
  */
 template <typename Graph>
 bool bh_dag_cycles(const Graph &g)
@@ -157,6 +160,77 @@ void bh_dag_merge_vertex(const Vertex &a, const Vertex &b, Graph &dag)
     }
     clear_vertex(b, dag);
     remove_vertex(b, dag);
+}
+
+/* Determines whether there exist a path from 'a' to 'b' with
+ * length more than one ('a' and 'b' is not adjacent).
+ *
+ * Complexity: O(E + V)
+ *
+ * @a       The first vertex
+ * @b       The second vertex
+ * @dag     The DAG
+ * @return  True if there is a long path, else false
+ */
+template <typename Vertex, typename Graph>
+bool bh_dag_long_path_exist(const Vertex &a, const Vertex &b, const Graph &dag)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::edge_descriptor Edge;
+
+    struct local_visitor:default_bfs_visitor
+    {
+        const Vertex src, dst;
+        local_visitor(const Vertex &a, const Vertex &b):src(a),dst(b){};
+
+        void examine_edge(Edge e, const Graph &g) const
+        {
+            if(source(e,g) != src)
+            {
+                if(target(e,g) == dst)
+                {
+                    throw runtime_error("");
+                }
+            }
+        }
+    };
+    try
+    {
+        breadth_first_search(dag, a, visitor(local_visitor(a,b)));
+    }
+    catch (const runtime_error &e)
+    {
+        return true;
+    }
+    return false;
+}
+
+/* Transitive reduce the 'dag', i.e. remove all redundant edges
+ *
+ * Complexity: O(E*(E + V))
+ *
+ * @a   The first vertex
+ * @b   The second vertex
+ * @dag The DAG
+ */
+template <typename Graph>
+void bh_dag_transitive_reduction(Graph &dag)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::edge_descriptor Edge;
+
+    vector<Edge> removal;
+    BOOST_FOREACH(Edge e, edges(dag))
+    {
+        if(bh_dag_long_path_exist(source(e,dag), target(e,dag), dag))
+            removal.push_back(e);
+    }
+    BOOST_FOREACH(Edge &e, removal)
+    {
+        remove_edge(e, dag);
+    }
 }
 
 #endif
