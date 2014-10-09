@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 include_directories(../include)
-file(GLOB SRC *.cpp bhir/*.cpp)
+file(GLOB SRC *.cpp)
 
 #The timing require C++11
 if(USE_CXX98)
