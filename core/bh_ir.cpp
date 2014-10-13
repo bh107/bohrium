@@ -75,9 +75,9 @@ void bh_ir::serialize(vector<char> &buffer) const
 }
 
 /* Returns the cost of the BhIR */
-int bh_ir::cost() const
+uint64_t bh_ir::cost() const
 {
-    int cost = 0;
+    uint64_t cost = 0;
     BOOST_FOREACH(const bh_ir_kernel &k, kernel_list)
     {
         BOOST_FOREACH(const bh_view &v, k.input_list())

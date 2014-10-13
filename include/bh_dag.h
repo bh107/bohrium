@@ -237,6 +237,35 @@ void bh_dag_merge_vertices(const Graph &dag,
     }
 }
 
+/* Determines the cost of the DAG. NB: a vertex in the 'dag'
+ * must bundle with the bh_ir_kernel class
+ *
+ * Complexity: O(E + V)
+ *
+ * @dag     The DAG
+ * @return  The cost
+ */
+template <typename Graph>
+uint64_t bh_dag_cost(const Graph &dag)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+
+    uint64_t cost = 0;
+    BOOST_FOREACH(const Vertex &k, vertices(dag))
+    {
+        BOOST_FOREACH(const bh_view &v, dag[k].input_list())
+        {
+            cost += bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
+        }
+        BOOST_FOREACH(const bh_view &v, dag[k].output_list())
+        {
+            cost += bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
+        }
+    }
+    return cost;
+}
 
 /* Determines whether there exist a path from 'a' to 'b' with
  * length more than one ('a' and 'b' is not adjacent).

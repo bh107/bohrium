@@ -143,7 +143,7 @@ public:
     void serialize(std::vector<char> &buffer) const;
 
     /* Returns the cost of the BhIR */
-    int cost() const;
+    uint64_t cost() const;
 
     /* Pretty print the kernel list */
     void pprint_kernel_list() const;
