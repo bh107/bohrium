@@ -167,14 +167,18 @@ void bh_dag_merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
  * NB: a vertex in 'dag' and 'new_dag' must bundle with the
  *     bh_ir_kernel class
  *
- * @dag         The input DAG
- * @edges2merge The edges that specifies which vertices to merge
- * @dag         The output DAG
+ * @dag              The input DAG
+ * @edges2merge      List of edges that specifies which
+ *                   vertices to merge
+ * @new_dag          The output DAG
+ * @check_fusibility Whether to throw a runtime error when
+ *                   vertices isn't fusible
  */
 template <typename Graph, typename Edge>
 void bh_dag_merge_vertices(const Graph &dag,
                            const std::vector<Edge> edges2merge,
-                           Graph &new_dag)
+                           Graph &new_dag,
+                           bool check_fusibility=false)
 {
     using namespace std;
     using namespace boost;
@@ -186,7 +190,7 @@ void bh_dag_merge_vertices(const Graph &dag,
     map<Vertex, Vertex> old2old;
     //  Another mapping from vertices in the old dag to vertices in the new dag.
     map<Vertex, Vertex> old2new;
-    //Inititally old2old is a simple identity map
+    //Initially old2old is a simple identity map
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
         old2old[v] = v;
@@ -204,7 +208,6 @@ void bh_dag_merge_vertices(const Graph &dag,
         else
             old2old[old2old[dst]] = old2old[src];
     }
-
     //For all common vertices we make old2new point to a new vertex
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
@@ -217,7 +220,6 @@ void bh_dag_merge_vertices(const Graph &dag,
         if(old2old[v] != v)
             old2new[v] = old2new[old2old[v]];
     }
-
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
         //Do the merging of instructions
@@ -225,6 +227,8 @@ void bh_dag_merge_vertices(const Graph &dag,
         {
             BOOST_FOREACH(const bh_instruction &i, dag[v].instr_list())
             {
+                if(check_fusibility && !new_dag[old2new[v]].fusible(i))
+                    throw runtime_error("Vertex not fusible!");
                 new_dag[old2new[v]].add_instr(i);
             }
         }
