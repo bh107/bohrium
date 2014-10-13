@@ -58,6 +58,7 @@ add_subdirectory(filter/fuseprinter)
 add_subdirectory(fuser/singleton)
 add_subdirectory(fuser/topological)
 add_subdirectory(fuser/gentle)
+add_subdirectory(fuser/optimal)
 add_subdirectory(extmethods/matmul)
 
 #The other modules
