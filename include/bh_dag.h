@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <map>
 #include <stdexcept>
 #include <bh.h>
 
@@ -131,15 +132,14 @@ bool bh_dag_cycles(const Graph &g)
 
 /* Merge two vertices in the 'dag', which invalidates all existing
  * vertex and edge pointers (boost descriptors)
- * NB: a vertex in the 'dag' must have an instr_list() and
- *     an add_instr() method.
+ * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
  * @a   The first vertex
  * @b   The second vertex
  * @dag The DAG
  */
 template <typename Vertex, typename Graph>
-void bh_dag_merge_vertex(const Vertex &a, const Vertex &b, Graph &dag)
+void bh_dag_merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -161,6 +161,82 @@ void bh_dag_merge_vertex(const Vertex &a, const Vertex &b, Graph &dag)
     clear_vertex(b, dag);
     remove_vertex(b, dag);
 }
+
+/* Merge the vertices specified by a list of edges and write
+ * the result to new_dag, which should be empty.
+ * NB: a vertex in 'dag' and 'new_dag' must bundle with the
+ *     bh_ir_kernel class
+ *
+ * @dag         The input DAG
+ * @edges2merge The edges that specifies which vertices to merge
+ * @dag         The output DAG
+ */
+template <typename Graph, typename Edge>
+void bh_dag_merge_vertices(const Graph &dag,
+                           const std::vector<Edge> edges2merge,
+                           Graph &new_dag)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+
+    //We use two vertex maps:
+    //  One mapping between vertices in the old dag in which a vertex
+    //  maps to the vertex in should be merged with.
+    map<Vertex, Vertex> old2old;
+    //  Another mapping from vertices in the old dag to vertices in the new dag.
+    map<Vertex, Vertex> old2new;
+    //Inititally old2old is a simple identity map
+    BOOST_FOREACH(const Vertex &v, vertices(dag))
+    {
+        old2old[v] = v;
+    }
+    //Then we make merged vertices point to a common vertex
+    //(a vertex where old2old[v] == v holds). Note that old2old
+    //is now a surjective map.
+    BOOST_FOREACH(const Edge &e, edges2merge)
+    {
+        const Vertex src = source(e,dag);
+        const Vertex dst = target(e,dag);
+
+        if(old2old[dst] == dst)
+            old2old[dst] = old2old[src];
+        else
+            old2old[old2old[dst]] = old2old[src];
+    }
+
+    //For all common vertices we make old2new point to a new vertex
+    BOOST_FOREACH(const Vertex &v, vertices(dag))
+    {
+        if(old2old[v] == v)
+            old2new[v] = add_vertex(dag[v], new_dag);
+    }
+    //All merged vertices now point to one of the new vertices
+    BOOST_FOREACH(const Vertex &v, vertices(dag))
+    {
+        if(old2old[v] != v)
+            old2new[v] = old2new[old2old[v]];
+    }
+
+    BOOST_FOREACH(const Vertex &v, vertices(dag))
+    {
+        //Do the merging of instructions
+        if(old2old[v] != v)
+        {
+            BOOST_FOREACH(const bh_instruction &i, dag[v].instr_list())
+            {
+                new_dag[old2new[v]].add_instr(i);
+            }
+        }
+        //Add edges to the new dag.
+        BOOST_FOREACH(const Vertex &adj, adjacent_vertices(v, dag))
+        {
+            if(old2new[v] != old2new[adj])
+                add_edge(old2new[v], old2new[adj], new_dag);
+        }
+    }
+}
+
 
 /* Determines whether there exist a path from 'a' to 'b' with
  * length more than one ('a' and 'b' is not adjacent).
@@ -237,6 +313,7 @@ void bh_dag_transitive_reduction(Graph &dag)
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings
  * NB: invalidates all existing vertex and edge pointers.
+ * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
  * Complexity: O(E^2 * (V + E))
  *
@@ -275,7 +352,7 @@ void bh_dag_fuse_gentle(Graph &dag)
                 continue;
 
             Graph new_dag(dag);
-            bh_dag_merge_vertex(src, dst, new_dag);
+            bh_dag_merge_vertices(src, dst, new_dag);
             if(bh_dag_cycles(new_dag))
                 continue;
 
