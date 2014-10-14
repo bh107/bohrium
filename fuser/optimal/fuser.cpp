@@ -28,7 +28,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/graph/topological_sort.hpp>
 #include <vector>
 #include <map>
-#include <cmath>
 #include <iterator>
 
 using namespace std;
@@ -100,9 +99,9 @@ void fuser(bh_ir &bhir)
     if(mask.size() == 0)
         return;
 
-    if(mask.size() > 15)
+    if(mask.size() > 10)
     {
-        cout << "FUSER-OPTIMAL: the size of search space is 2^" << mask.size() << "!" << endl;
+        cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
     }
 
     bool not_finished = true;
