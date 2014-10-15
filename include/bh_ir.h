@@ -104,10 +104,18 @@ public:
      */
     bool fusible(const bh_instruction &instr) const;
 
-    /* Determines whether it is legal to fuse with the kernel without
-     * changing this kernel's input and output.
+    /* Determines whether it is legal to fuse with the instruction
+     * without changing this kernel's dependencies.
      *
-     * @other The other kernel
+     * @instr  The instruction
+     * @return The boolean answer
+     */
+    bool fusible_gently(const bh_instruction &instr) const;
+
+    /* Determines whether it is legal to fuse with the kernel without
+     * changing this kernel's dependencies.
+     *
+     * @other  The other kernel
      * @return The boolean answer
      */
     bool fusible_gently(const bh_ir_kernel &other) const;

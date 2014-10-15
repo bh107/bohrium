@@ -320,21 +320,41 @@ bool bh_ir_kernel::fusible(const bh_instruction &instr) const
     return true;
 }
 
-/* Determines whether it is legal to fuse with the kernel without
- * changing this kernel's input and output.
+/* Determines whether it is legal to fuse with the instruction
+ * without changing this kernel's dependencies.
  *
- * @other The other kernel
+ * @instr  The instruction
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::fusible_gently(const bh_instruction &instr) const
+{
+    if(bh_opcode_is_system(instr.opcode))
+        return true;
+
+    //Check that 'instr' is fusible with least one existing instruction
+    BOOST_FOREACH(const bh_instruction &i, instr_list())
+    {
+        if(bh_opcode_is_system(i.opcode))
+            continue;
+
+        if(bh_instr_fusible_gently(&instr, &i))
+            return true;
+    }
+    return false;
+}
+
+/* Determines whether it is legal to fuse with the kernel without
+ * changing this kernel's dependencies.
+ *
+ * @other  The other kernel
  * @return The boolean answer
  */
 bool bh_ir_kernel::fusible_gently(const bh_ir_kernel &other) const
 {
-    BOOST_FOREACH(const bh_instruction &a, instr_list())
+    BOOST_FOREACH(const bh_instruction &i, other.instr_list())
     {
-        BOOST_FOREACH(const bh_instruction &b, other.instr_list())
-        {
-            if(not bh_instr_fusible_gently(&a, &b))
-                return false;
-        }
+        if(not fusible_gently(i))
+            return false;
     }
     return true;
 }
