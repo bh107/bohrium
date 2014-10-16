@@ -34,15 +34,58 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <bh.h>
 
-/* Writes the DOT file of a DAG where
- * each vertex is a bh_ir_kernel.
+/* Creates a new DAG based on a bhir that consist of single
+ * instruction kernels.
+ * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
- * @dag       The DAG to write (of type 'Graph')
+ * Complexity: O(E + V)
+ *
+ * @bhir  The BhIR
+ * @dag   The output dag
+ *
+ * Throw logic_error() if the kernel_list wihtin 'bhir' isn't empty
+ */
+template <typename Graph>
+void bh_dag_from_bhir(const bh_ir &bhir, Graph &dag)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+
+    if(bhir.kernel_list.size() != 0)
+    {
+        throw logic_error("The kernel_list is not empty!");
+    }
+    BOOST_FOREACH(const bh_instruction &instr, bhir.instr_list)
+    {
+        bh_ir_kernel k;
+        k.add_instr(instr);
+        Vertex new_v = add_vertex(k, dag);
+
+        //Add dependencies
+        BOOST_FOREACH(Vertex v, vertices(dag))
+        {
+            if(new_v != v)//We do not depend on ourself
+            {
+                if(k.dependency(dag[v]))
+                    add_edge(v, new_v, dag);
+            }
+        }
+    }
+}
+
+
+/* Writes the DOT file of a DAG
+ * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
+ *
+ * Complexity: O(E + V)
+ *
+ * @dag       The DAG to write
  * @filename  The name of DOT file
  * @header    Header string for the graph
  */
 template <typename Graph>
-void bh_dag_pprint(Graph &dag, const char filename[], const char *header = "")
+void bh_dag_pprint(const Graph &dag, const char filename[], const char *header = "")
 {
     using namespace std;
     using namespace boost;

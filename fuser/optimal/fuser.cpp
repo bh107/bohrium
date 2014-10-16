@@ -67,28 +67,8 @@ bool fuse_mask(const Graph &dag, const vector<Edge> edges2explore,
 int fuser_count=0;
 void fuser(bh_ir &bhir)
 {
-    if(bhir.kernel_list.size() != 0)
-    {
-        throw logic_error("The kernel_list is not empty!");
-    }
-    //First we create singleton kernels
     Graph dag;
-    BOOST_FOREACH(const bh_instruction &instr, bhir.instr_list)
-    {
-        bh_ir_kernel k;
-        k.add_instr(instr);
-        Vertex new_v = add_vertex(k, dag);
-
-        //Add dependencies
-        BOOST_FOREACH(Vertex v, vertices(dag))
-        {
-            if(new_v != v)//We do not depend on ourself
-            {
-                if(k.dependency(dag[v]))
-                    add_edge(v, new_v, dag);
-            }
-        }
-    }
+    bh_dag_from_bhir(bhir, dag);
     bh_dag_transitive_reduction(dag);
     bh_dag_fuse_gentle(dag);
 
