@@ -221,7 +221,7 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
             const bh_view &v = instr.operand[0];
             BOOST_FOREACH(const bh_view &i, outputs)
             {
-                if(bh_view_identical(&v, &i))
+                if(bh_view_aligned(&v, &i))
                 {
                     duplicates = true;
                     break;
@@ -240,7 +240,7 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
             bool duplicates = false;
             BOOST_FOREACH(const bh_view &i, inputs)
             {
-                if(bh_view_identical(&v, &i))
+                if(bh_view_aligned(&v, &i))
                 {
                     duplicates = true;
                     break;
@@ -252,7 +252,7 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
             bool local_source = false;
             BOOST_FOREACH(const bh_instruction &i, instrs)
             {
-                if(bh_view_identical(&v, &i.operand[0]))
+                if(bh_view_aligned(&v, &i.operand[0]))
                 {
                     local_source = true;
                     break;
