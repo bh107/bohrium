@@ -99,7 +99,8 @@ void bh_dag_pprint(const Graph &dag, const char filename[])
         void operator()(std::ostream& out) const
         {
             out << "labelloc=\"t\";" << endl;
-            out << "label=\"DAG with a total cost of " << bh_dag_cost(graph) << " bytes\";" << endl;
+            out << "label=\"DAG with a total cost of " << bh_dag_cost(graph);
+            out << " bytes\";" << endl;
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
         }
@@ -111,7 +112,8 @@ void bh_dag_pprint(const Graph &dag, const char filename[])
         void operator()(std::ostream& out, const Vertex& v) const
         {
             char buf[1024*10];
-            out << "[label=\"Kernel " << v << ", cost: "<< graph[v].cost() <<"\\n";
+            out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
+            out << " bytes\\n";
             out << "Input views: \\l";
             BOOST_FOREACH(const bh_view &i, graph[v].input_list())
             {
@@ -145,7 +147,13 @@ void bh_dag_pprint(const Graph &dag, const char filename[])
         edge_writer(const Graph &g) : graph(g) {};
         void operator()(std::ostream& out, const Edge& e) const
         {
-            out << "[label=\" " << graph[target(e,graph)].dependency_cost(graph[source(e,graph)]) << "\"]";
+            int64_t c = graph[target(e,graph)].dependency_cost(graph[source(e,graph)]);
+            out << "[label=\" ";
+            if(c == -1)
+                out << "N/A";
+            else
+                out << c << " bytes";
+            out << "\"]";
         }
     };
     ofstream file;
