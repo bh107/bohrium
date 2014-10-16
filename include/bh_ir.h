@@ -72,6 +72,9 @@ public:
     /* Returns a list of temporary base-arrays in this kernel (read-only) */
     const std::vector<const bh_base*>& temp_list() const {return temps;};
 
+    /* Returns the cost of the kernel */
+    uint64_t cost() const;
+
     /* Add an instruction to the kernel
      *
      * @instr   The instruction to add
@@ -89,6 +92,18 @@ public:
      * @return The boolean answer
      */
     bool dependency(const bh_ir_kernel &other) const;
+
+    /* Returns the cost of this kernel's dependency on the 'other' kernel.
+     * The cost of a dependency is defined as the amount the BhIR will drop
+     * in price if the two kernels are fused.
+     * Note that a zero cost dependency is possible because of system
+     * instructions such as BH_FREE and BH_DISCARD.
+     *
+     * @other  The other kernel
+     * @return The cost value. Returns -1 if this and the 'other'
+     *         kernel isn't fusible.
+     */
+    int64_t dependency_cost(const bh_ir_kernel &other) const;
 
     /* Determines whether it is legal to fuse with the kernel
      *

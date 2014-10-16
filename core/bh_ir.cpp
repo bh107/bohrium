@@ -77,19 +77,12 @@ void bh_ir::serialize(vector<char> &buffer) const
 /* Returns the cost of the BhIR */
 uint64_t bh_ir::cost() const
 {
-    uint64_t cost = 0;
+    uint64_t sum = 0;
     BOOST_FOREACH(const bh_ir_kernel &k, kernel_list)
     {
-        BOOST_FOREACH(const bh_view &v, k.input_list())
-        {
-            cost += bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
-        }
-        BOOST_FOREACH(const bh_view &v, k.output_list())
-        {
-            cost += bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
-        }
+        sum += k.cost();
     }
-    return cost;
+    return sum;
 }
 
 /* Pretty print the kernel list */
@@ -127,10 +120,7 @@ void bh_ir::pprint_kernel_dag(const char filename[]) const
             }
         }
     }
-    stringstream header;
-    header << "labelloc=\"t\";" << endl;
-    header << "label=\"DAG with a total cost of " << (cost()/1024) << " kbytes\";" << endl;
-    bh_dag_pprint(dag, filename, header.str().c_str());
+    bh_dag_pprint(dag, filename);
 }
 
 /* Determines whether there are cyclic dependencies between the kernels in the BhIR
@@ -192,6 +182,27 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
         bh_dag_pprint(dag, "check_kernel_cycles-fail.dot");
         return false;
     }
+}
+
+/* Returns the cost of a bh_view */
+inline static uint64_t cost_of_view(const bh_view &v)
+{
+    return bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
+}
+
+/* Returns the cost of the kernel */
+uint64_t bh_ir_kernel::cost() const
+{
+    uint64_t sum = 0;
+    BOOST_FOREACH(const bh_view &v, input_list())
+    {
+        sum += cost_of_view(v);
+    }
+    BOOST_FOREACH(const bh_view &v, output_list())
+    {
+        sum += cost_of_view(v);
+    }
+    return sum;
 }
 
 /* Add an instruction to the kernel
@@ -285,6 +296,52 @@ bool bh_ir_kernel::dependency(const bh_ir_kernel &other) const
         }
     }
     return false;
+}
+
+/* Returns the cost of this kernel's dependency on the 'other' kernel.
+ * The cost of a dependency is defined as the amount the BhIR will drop
+ * in price if the two kernels are fused.
+ * Note that a zero cost dependency is possible because of system
+ * instructions such as BH_FREE and BH_DISCARD.
+ *
+ * @other  The other kernel
+ * @return The cost value. Returns -1 if this and the 'other'
+ *         kernel isn't fusible.
+ */
+int64_t bh_ir_kernel::dependency_cost(const bh_ir_kernel &other) const
+{
+    if(not fusible(other))
+        return -1;
+
+    int64_t price_drop = 0;
+
+    //Subtract inputs that comes from 'other' or is already an input in 'other'
+    BOOST_FOREACH(const bh_view &i, input_list())
+    {
+        BOOST_FOREACH(const bh_view &o, other.output_list())
+        {
+            if(bh_view_aligned(&i, &o))
+                price_drop += cost_of_view(i);
+        }
+        BOOST_FOREACH(const bh_view &o, other.input_list())
+        {
+            if(bh_view_aligned(&i, &o))
+                price_drop += cost_of_view(i);
+        }
+    }
+    //Subtract outputs that are discared in 'this'
+    BOOST_FOREACH(const bh_view &o, other.output_list())
+    {
+        BOOST_FOREACH(const bh_instruction &i, instr_list())
+        {
+            if(i.opcode == BH_DISCARD and i.operand[0].base == o.base)
+            {
+                price_drop += cost_of_view(o);
+                break;
+            }
+        }
+    }
+    return price_drop;
 }
 
 /* Determines whether it is legal to fuse with the kernel

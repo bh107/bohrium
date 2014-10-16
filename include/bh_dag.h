@@ -82,27 +82,28 @@ void bh_dag_from_bhir(const bh_ir &bhir, Graph &dag)
  *
  * @dag       The DAG to write
  * @filename  The name of DOT file
- * @header    Header string for the graph
  */
 template <typename Graph>
-void bh_dag_pprint(const Graph &dag, const char filename[], const char *header = "")
+void bh_dag_pprint(const Graph &dag, const char filename[])
 {
     using namespace std;
     using namespace boost;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+    typedef typename graph_traits<Graph>::edge_descriptor Edge;
 
     //We define a graph and a kernel writer for graphviz
     struct graph_writer
     {
-        const char *header;
-        graph_writer(const char *h) : header(h) {};
+        const Graph &graph;
+        graph_writer(const Graph &g) : graph(g) {};
         void operator()(std::ostream& out) const
         {
+            out << "labelloc=\"t\";" << endl;
+            out << "label=\"DAG with a total cost of " << bh_dag_cost(graph) << " bytes\";" << endl;
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
-            out << header << endl;
         }
     };
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
     struct kernel_writer
     {
         const Graph &graph;
@@ -110,7 +111,7 @@ void bh_dag_pprint(const Graph &dag, const char filename[], const char *header =
         void operator()(std::ostream& out, const Vertex& v) const
         {
             char buf[1024*10];
-            out << "[label=\"Kernel " << v << "\\n";
+            out << "[label=\"Kernel " << v << ", cost: "<< graph[v].cost() <<"\\n";
             out << "Input views: \\l";
             BOOST_FOREACH(const bh_view &i, graph[v].input_list())
             {
@@ -138,9 +139,18 @@ void bh_dag_pprint(const Graph &dag, const char filename[], const char *header =
             out << "\"]";
         }
     };
+    struct edge_writer
+    {
+        const Graph &graph;
+        edge_writer(const Graph &g) : graph(g) {};
+        void operator()(std::ostream& out, const Edge& e) const
+        {
+            out << "[label=\" " << graph[target(e,graph)].dependency_cost(graph[source(e,graph)]) << "\"]";
+        }
+    };
     ofstream file;
     file.open(filename);
-    write_graphviz(file, dag, kernel_writer(dag), default_writer(), graph_writer(header));
+    write_graphviz(file, dag, kernel_writer(dag), edge_writer(dag), graph_writer(dag));
     file.close();
 }
 
@@ -300,16 +310,9 @@ uint64_t bh_dag_cost(const Graph &dag)
     typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
 
     uint64_t cost = 0;
-    BOOST_FOREACH(const Vertex &k, vertices(dag))
+    BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
-        BOOST_FOREACH(const bh_view &v, dag[k].input_list())
-        {
-            cost += bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
-        }
-        BOOST_FOREACH(const bh_view &v, dag[k].output_list())
-        {
-            cost += bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
-        }
+        cost += dag[v].cost();
     }
     return cost;
 }
