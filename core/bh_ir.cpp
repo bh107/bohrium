@@ -120,6 +120,7 @@ void bh_ir::pprint_kernel_dag(const char filename[]) const
             }
         }
     }
+    bh_dag_transitive_reduction(dag);
     bh_dag_pprint(dag, filename);
 }
 
