@@ -37,11 +37,12 @@ typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
 typedef graph_traits<Graph>::vertex_descriptor Vertex;
 typedef graph_traits<Graph>::edge_descriptor Edge;
 
-bool fuse_mask(const Graph &dag, const vector<bool> mask, Graph &new_dag)
+bool fuse_mask(const Graph &dag, const vector<Edge> edges2explore,
+               const vector<bool> mask, Graph &new_dag)
 {
     vector<Edge> edges2merge;
     unsigned int i=0;
-    BOOST_FOREACH(const Edge &e, edges(dag))
+    BOOST_FOREACH(const Edge &e, edges2explore)
     {
         if(mask[i++])
         {
@@ -91,11 +92,18 @@ void fuser(bh_ir &bhir)
     bh_dag_transitive_reduction(dag);
     bh_dag_fuse_gentle(dag);
 
+    //The list of edges that we should try to merge
+    vector<Edge> edges2explore;
+    BOOST_FOREACH(const Edge &e, edges(dag))
+    {
+        if(dag[target(e,dag)].fusible(dag[source(e,dag)]))
+            edges2explore.push_back(e);
+    }
 
     uint64_t best_cost = numeric_limits<uint64_t>().max();
     Graph best_dag;
 
-    vector<bool> mask(num_edges(dag), false);
+    vector<bool> mask(edges2explore.size(), false);
     if(mask.size() == 0)
         return;
 
@@ -108,7 +116,7 @@ void fuser(bh_ir &bhir)
     while(not_finished)
     {
         Graph new_dag;
-        if(fuse_mask(dag, mask, new_dag))
+        if(fuse_mask(dag, edges2explore, mask, new_dag))
         {
             const uint64_t c = bh_dag_cost(new_dag);
             if(best_cost > c)
