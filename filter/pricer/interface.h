@@ -17,19 +17,23 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef __BH_FILTER_PRICER_H
+#define __BH_FILTER_PRICER_H
+
 #include <bh.h>
-#include <stdio.h>
+#include "filter.h"
 
-using namespace std;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-static int filter_count=0;
-void filter(const bh_ir &bhir)
-{
-    char dag_fn[8000];
+DLLEXPORT bh_error bh_filter_pricer_init(const char* name);
+DLLEXPORT bh_error bh_filter_pricer_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_filter_pricer_shutdown(void);
+DLLEXPORT bh_error bh_filter_pricer_extmethod(const char *name, bh_opcode opcode);
 
-    snprintf(dag_fn, 8000, "dag-%d.dot", ++filter_count);
-    printf("fuseprinter: writing dag('%s').\n", dag_fn);
-
-    bhir.pprint_kernel_dag(dag_fn);   // Trace
+#ifdef __cplusplus
 }
+#endif
 
+#endif

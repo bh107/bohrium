@@ -105,7 +105,6 @@ void bh_dag_from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
     }
 }
 
-
 /* Writes the DOT file of a DAG
  * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *

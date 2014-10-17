@@ -19,17 +19,34 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <stdio.h>
+#include <bh_dag.h>
+#include <boost/foreach.hpp>
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
 
 using namespace std;
+using namespace boost;
 
+typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
+typedef graph_traits<Graph>::vertex_descriptor Vertex;
+typedef graph_traits<Graph>::edge_descriptor Edge;
+
+static int64_t sum=0;
 static int filter_count=0;
 void filter(const bh_ir &bhir)
 {
-    char dag_fn[8000];
+    if(bhir.kernel_list.size() == 0)
+    {
+        cerr << "[PRICER-FILTER] cannot price an empty kernel list!" << endl;
+        return;
+    }
 
-    snprintf(dag_fn, 8000, "dag-%d.dot", ++filter_count);
-    printf("fuseprinter: writing dag('%s').\n", dag_fn);
+    Graph dag;
+    bh_dag_from_kernels(bhir.kernel_list, dag);
+    int64_t cost = bh_dag_cost(dag);
+    sum += cost;
+    cout << "bhir-" << filter_count++ << ", cost: " << cost;
+    cout << ", sum: " << sum << endl;
 
-    bhir.pprint_kernel_dag(dag_fn);   // Trace
 }
 
