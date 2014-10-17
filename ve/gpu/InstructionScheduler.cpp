@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
-#include "Reduce.hpp"
+//#include "Reduce.hpp"
 
 InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
     : resourceManager(resourceManager_)
@@ -95,15 +95,104 @@ void InstructionScheduler::executeBatch()
 {
     if (batch)
     {
-        batch->run();
-        for (std::set<BaseArray*>::iterator dsit = discardSet.begin(); dsit != discardSet.end(); ++dsit)
-        {
-            delete *dsit;
+        try {
+            SourceKernelCall sourceKernel = batch->generateKernel();
+            size_t functionID = id.first;
+            std::map<size_t,size_t>::iterator kidit = knownKernelID.find(functionID);
+            if (kidit != knownKernelID.end())
+            {
+                KernelID kernelID(sourceKernel.functionID(),0); 
+                if (kidit->second == sourceKernel.literalID())
+                {
+                    kernelID.second = kidit->second;
+                }
+                kernelMutex.lock();
+                if (callQueue.empty())
+                {
+                    KernelMap::iterator kit = kernelMap.find(kernelID);
+                    assert(kit != kernelMap.end());
+                    if (kernelID.second == 0)
+                    {
+                        kit->second.call(sourceKernel.allParameters(), sourceKernel.shape());
+                    } else {
+                        kit->second.call(sourceKernel.valueParameters(), sourceKernel.shape());
+                    }
+                } else {
+                    callQueue.push(std::make_pair(kernelID,sourceKernel));
+                }
+                kernelMutex.unlock();
+            } else { // New Kernel
+                knownKernelID.insert(sourceKernel.id());
+                kernelMutex.lock();
+                callQueue.push(std::make_pair(sourceKernel.id(),sourceKernel));
+                kernelMutex.unlock();
+                resourceManager->buildKernels(source.str(), &buildDone, new KernelID(functionID,literalID),
+                                              "-DSTATIC_KERNEL");
+                resourceManager->buildKernels(source.str(), &buildDone, new KernelID(functionID,0));
+            }
+
         }
-        discardSet.clear();
-        delete batch;
-        batch = 0;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    for (std::set<BaseArray*>::iterator dsit = discardSet.begin(); dsit != discardSet.end(); ++dsit)
+    {
+        delete *dsit;
+    }
+    discardSet.clear();
+    delete batch;
+    batch = 0;
+}
+
+
+void CL_CALLBACK InstructionBatch::buildDone(cl_program p, void* id)
+{
+    std::cout << "buildDone()" << std::endl;
+    clRetainProgram(p);
+    cl::Program program(p);
+    KernelID *kernelID = (KernelID*)id;
+    std::vector<cl::Device> devices = program.getInfo<CL_PROGRAM_DEVICES>();
+    if (program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices[0]) != CL_BUILD_SUCCESS)
+    {
+//#ifdef DEBUG
+        std::cerr << "Program build error:\n";
+        std::cerr << "------------------- SOURCE -----------------------\n";
+        std::cerr << program.getInfo<CL_PROGRAM_SOURCE>();
+        std::cerr << "------------------ SOURCE END --------------------\n";
+        std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
+//#endif
+        throw std::runtime_error("Could not build Kernel.");
+    }
+
+    std::stringstream kname;
+    kname << "kernel" <<  std::hex << kernelID->first << (kernelID->second==0?"":"_");
+    Kernel kernel(resourceManager, cl::Kernel(program,kname.str().c_str()));
+    kernelMutex.lock();
+    kernelMap.insert(std::make_pair(*kernelID, kernel));
+    std::cout << "saving " << kname.str() << std::endl;
+    while (!callQueue.empty())
+    {
+        Call call = callQueue.front();
+        KernelMap::iterator kit = kernelMap.find(std::get<0>(call));
+        if (kit != kernelMap.end())
+            kit->second.call(std::get<1>(call),std::get<2>(call));
+        else
+            break;            
+    }
+    kernelMutex.unlock(); 
+    delete kernelID;
 }
 
 void InstructionScheduler::sync(bh_base* base)
@@ -202,7 +291,7 @@ bh_error InstructionScheduler::ufunc(bh_instruction* inst)
 
 bh_error InstructionScheduler::reduce(bh_instruction* inst)
 {
-    if(inst->operand[1].ndim < 2)
+//    if(inst->operand[1].ndim < 2)
     {
         // TODO these two syncs are a hack. Are we sure this is correct?????
         sync(inst->operand[1].base);
@@ -214,22 +303,22 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
             return err;
         return resourceManager->childExecute(&bhir);
     }
-    try {
-        UserFuncArg userFuncArg;
-        userFuncArg.resourceManager = resourceManager;
-        userFuncArg.operands = getKernelParameters(inst);
+    // try {
+    //     UserFuncArg userFuncArg;
+    //     userFuncArg.resourceManager = resourceManager;
+    //     userFuncArg.operands = getKernelParameters(inst);
 
-        if (batch && (batch->access(static_cast<BaseArray*>(userFuncArg.operands[0])) ||
-                      batch->write(static_cast<BaseArray*>(userFuncArg.operands[1]))))
-        {
-            executeBatch();
-        }
-        return Reduce::bh_reduce(inst, &userFuncArg);
-    }
-    catch (bh_error e)
-    {
-        return e;
-    }
+    //     if (batch && (batch->access(static_cast<BaseArray*>(userFuncArg.operands[0])) ||
+    //                   batch->write(static_cast<BaseArray*>(userFuncArg.operands[1]))))
+    //     {
+    //         executeBatch();
+    //     }
+    //     return Reduce::bh_reduce(inst, &userFuncArg);
+    // }
+    // catch (bh_error e)
+    // {
+    //     return e;
+    // }
 }
 
 void InstructionScheduler::registerFunction(bh_opcode opcode, bh_extmethod_impl extmethod_impl)

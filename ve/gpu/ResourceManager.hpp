@@ -72,13 +72,14 @@ public:
                                  unsigned int device);
     cl::Event completeEvent();
     cl::Kernel createKernel(const std::string& source, 
-                            const std::string& kernelName);
-    void buildKernels(const std::string& source, void (CL_CALLBACK * notifyFptr)(cl_program, void *),
-                      void* kernelID, const std::string& options = std::string(""));
+                            const std::string& kernelName,
+                            const std::string& options = std::string(""));
     std::vector<cl::Kernel> createKernelsFromFile(const std::string& fileName, 
-                                                  const std::vector<std::string>& kernelNames);
+                                                  const std::vector<std::string>& kernelNames,
+                                                  const std::string& options = std::string(""));
     std::vector<cl::Kernel> createKernels(const std::string& source, 
-                                          const std::vector<std::string>& kernelNames);
+                                          const std::vector<std::string>& kernelNames, 
+                                          const std::string& options = std::string(""));
     cl::Event enqueueNDRangeKernel(const cl::Kernel& kernel, 
                                    const cl::NDRange& globalSize,
                                    const cl::NDRange& localSize,

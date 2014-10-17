@@ -27,12 +27,22 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "InstructionBatch.hpp"
 #include "ResourceManager.hpp"
+#include "SourceKernelCall.hpp"
 
 class InstructionScheduler
 {
 private:
     typedef std::map<bh_base*, BaseArray*> ArrayMap;
     typedef std::map<bh_opcode, bh_extmethod_impl> FunctionMap;
+
+    typedef std::map<KernelID, Kernel> KernelMap;
+    typedef std::pair<KernelID, SourceKernelCall&> KernelCall
+    typedef std::queue<KernelCall> CallQueue;
+    std::mutex kernelMutex;
+    std::map<size_t,size_t> knownKernelID;
+    KernelMap kernelMap;
+    CallQueue callQueue;
+
     ResourceManager* resourceManager;
     InstructionBatch* batch;
     ArrayMap arrayMap;

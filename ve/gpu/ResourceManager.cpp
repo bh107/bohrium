@@ -231,22 +231,15 @@ cl::Event ResourceManager::completeEvent()
 }
 
 cl::Kernel ResourceManager::createKernel(const std::string& source, 
-                                          const std::string& kernelName)
+                                         const std::string& kernelName,
+                                         const std::string& options)
 {
-    return createKernels(source, std::vector<std::string>(1,kernelName)).front();
-}
-
-void ResourceManager::buildKernels(const std::string& source,  
-                                   void (CL_CALLBACK * notifyFptr)(cl_program, void *),void* kernelID,
-                                   const std::string& options)
-{
-    cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
-    cl::Program program(context, sources);
-    program.build(devices,(options+std::string(" ")+getIncludeStr()).c_str(),notifyFptr,kernelID);
+    return createKernels(source, std::vector<std::string>(1,kernelName), options).front();
 }
 
 std::vector<cl::Kernel> ResourceManager::createKernelsFromFile(const std::string& fileName, 
-                                                               const std::vector<std::string>& kernelNames)
+                                                               const std::vector<std::string>& kernelNames,
+                                                               const std::string& options)
 {
     std::ifstream file(fileName.c_str(), std::ios::in);
     if (!file.is_open())
@@ -255,11 +248,12 @@ std::vector<cl::Kernel> ResourceManager::createKernelsFromFile(const std::string
     }
     std::ostringstream source;
     source << file.rdbuf();
-    return createKernels(source.str(), kernelNames);
+    return createKernels(source.str(), kernelNames, options);
 }
 
 std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source, 
-                                                       const std::vector<std::string>& kernelNames)
+                                                       const std::vector<std::string>& kernelNames,
+                                                       const std::string& options)
 {
 #ifdef BH_TIMING
     bh_uint64 start = bh::Timer<>::stamp(); 
@@ -274,7 +268,7 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
-        program.build(devices,getIncludeStr().c_str());
+        program.build(devices,(options+std::string(" ")+getIncludeStr()).c_str());
     } catch (cl::Error) {
 //#ifdef DEBUG
         std::cerr << "Program build error:\n";
