@@ -57,6 +57,7 @@ bh_error bh_filter_pricer_init(const char* name)
 
 bh_error bh_filter_pricer_shutdown(void)
 {
+    shutdown();
     bh_error err = child->shutdown();
     bh_component_destroy(&myself);
     return err;

@@ -32,21 +32,17 @@ typedef graph_traits<Graph>::vertex_descriptor Vertex;
 typedef graph_traits<Graph>::edge_descriptor Edge;
 
 static int64_t sum=0;
-static int filter_count=0;
 void filter(const bh_ir &bhir)
 {
     if(bhir.kernel_list.size() == 0)
-    {
-        cerr << "[PRICER-FILTER] cannot price an empty kernel list!" << endl;
         return;
-    }
 
     Graph dag;
     bh_dag_from_kernels(bhir.kernel_list, dag);
-    int64_t cost = bh_dag_cost(dag);
-    sum += cost;
-    cout << "bhir-" << filter_count++ << ", cost: " << cost;
-    cout << ", sum: " << sum << endl;
-
+    sum += bh_dag_cost(dag);
 }
 
+void shutdown()
+{
+    cout << "[PRICER-FILTER] total cost: " << sum << endl;
+}
