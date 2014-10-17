@@ -103,23 +103,9 @@ void bh_ir::pprint_kernel_list() const
 void bh_ir::pprint_kernel_dag(const char filename[]) const
 {
     using namespace boost;
-    typedef adjacency_list<setS, vecS, bidirectionalS, const bh_ir_kernel> Graph;
-    typedef graph_traits<Graph>::vertex_descriptor Vertex;
+    typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
     Graph dag;
-    BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
-    {
-        Vertex new_v = add_vertex(kernel, dag);
-
-        //Add dependencies
-        BOOST_FOREACH(Vertex v, vertices(dag))
-        {
-            if(new_v != v)//We do not depend on ourself
-            {
-                if(kernel.dependency(dag[v]))
-                    add_edge(v, new_v, dag);
-            }
-        }
-    }
+    bh_dag_from_kernels(kernel_list, dag);
     bh_dag_transitive_reduction(dag);
     bh_dag_pprint(dag, filename);
 }

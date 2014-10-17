@@ -74,6 +74,37 @@ void bh_dag_from_bhir(const bh_ir &bhir, Graph &dag)
     }
 }
 
+/* Creates a new DAG based on a kernel list where each vertex is a kernel.
+ * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
+ *
+ * Complexity: O(E + V)
+ *
+ * @kernels The kernel list
+ * @dag     The output dag
+ */
+template <typename Graph>
+void bh_dag_from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+
+    BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
+    {
+        Vertex new_v = add_vertex(kernel, dag);
+
+        //Add dependencies
+        BOOST_FOREACH(Vertex v, vertices(dag))
+        {
+            if(new_v != v)//We do not depend on ourself
+            {
+                if(kernel.dependency(dag[v]))
+                    add_edge(v, new_v, dag);
+            }
+        }
+    }
+}
+
 
 /* Writes the DOT file of a DAG
  * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
