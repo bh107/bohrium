@@ -87,7 +87,13 @@ void fuser(bh_ir &bhir)
     if(mask.size() == 0)
         return;
 
-    if(mask.size() > 10)
+    if(mask.size() > 20)
+    {
+        cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
+        cout << mask.size() << "!" << endl;
+        return;
+    }
+    else if(mask.size() > 10)
     {
         cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
     }
@@ -103,7 +109,7 @@ void fuser(bh_ir &bhir)
             {
                 best_cost = c;
                 best_dag = new_dag;
-
+#ifdef VERBOSE
                 std::stringstream ss;
                 ss << "new_dag-" << fuser_count << "-" << bh_dag_cost(new_dag);
                 /*
@@ -119,7 +125,7 @@ void fuser(bh_ir &bhir)
                 ss << ".dot";
                 printf("write file: %s\n", ss.str().c_str());
                 bh_dag_pprint(new_dag, ss.str().c_str());
-
+#endif
             }
         }
         for(unsigned int i=mask.size()-1; i >= 0; --i)
@@ -152,9 +158,5 @@ void fuser(bh_ir &bhir)
         b.instr_list = bhir.instr_list;
         bhir = b;
     }
-    char dag_fn[8000];
-    snprintf(dag_fn, 8000, "dag-%1d.dot", fuser_count++);
-    printf("write file: %s\n", dag_fn);
-    bh_dag_pprint(dag, dag_fn);
 }
 
