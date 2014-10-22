@@ -31,6 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <vector>
 #include <map>
+#include <set>
 #include <stdexcept>
 #include <bh.h>
 
@@ -479,6 +480,59 @@ void bh_dag_fuse_gentle(Graph &dag)
             break;
         }
     }while(not_finished);
+}
+
+/* Fuse vertices in the graph greedily, which is a non-optimal
+ * algorithm that fuses the most costly edges in the DAG first.
+ * NB: invalidates all existing vertex and edge pointers.
+ * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
+ *
+ * Complexity: O(E^2)
+ *
+ * @dag The DAG to fuse
+ */
+template <typename Graph>
+void bh_dag_fuse_greedy(Graph &dag)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::edge_descriptor Edge;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+
+    set<Edge> ignored;
+    while(ignored.size() < num_edges(dag))
+    {
+        //Lets find the currect best edge
+        Edge best;
+        int64_t best_cost = -1;
+        BOOST_FOREACH(const Edge &e, edges(dag))
+        {
+            if(ignored.find(e) != ignored.end())
+                continue;
+            const Vertex src = source(e, dag);
+            const Vertex dst = target(e, dag);
+            const int64_t cost = dag[dst].dependency_cost(dag[src]);
+            if(cost > best_cost)
+            {
+                best_cost = cost;
+                best = e;
+            }
+        }
+        if(best_cost == -1)
+            break;
+
+        Graph new_dag(dag);
+        bh_dag_merge_vertices(source(best, dag), target(best, dag), new_dag);
+        if(bh_dag_cycles(new_dag))
+        {
+            ignored.insert(best);
+        }
+        else
+        {
+            dag = new_dag;
+            ignored.clear();
+        }
+    }
 }
 
 #endif

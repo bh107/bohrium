@@ -42,41 +42,7 @@ void fuser(bh_ir &bhir)
     bh_dag_from_bhir(bhir, dag);
     bh_dag_transitive_reduction(dag);
     bh_dag_fuse_gentle(dag);
-
-    set<Edge> ignored;
-    while(ignored.size() < num_edges(dag))
-    {
-        //Lets find the currect best edge
-        Edge best;
-        int64_t best_cost = -1;
-        BOOST_FOREACH(const Edge &e, edges(dag))
-        {
-            if(ignored.find(e) != ignored.end())
-                continue;
-            const Vertex src = source(e, dag);
-            const Vertex dst = target(e, dag);
-            const int64_t cost = dag[dst].dependency_cost(dag[src]);
-            if(cost > best_cost)
-            {
-                best_cost = cost;
-                best = e;
-            }
-        }
-        if(best_cost == -1)
-            break;
-
-        Graph new_dag(dag);
-        bh_dag_merge_vertices(source(best, dag), target(best, dag), new_dag);
-        if(bh_dag_cycles(new_dag))
-        {
-            ignored.insert(best);
-        }
-        else
-        {
-            dag = new_dag;
-            ignored.clear();
-        }
-    }
+    bh_dag_fuse_greedy(dag);
 
     //Lets fill the bhir;
     vector<Vertex> topological_order;
