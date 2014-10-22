@@ -37,16 +37,6 @@ typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
 typedef graph_traits<Graph>::vertex_descriptor Vertex;
 typedef graph_traits<Graph>::edge_descriptor Edge;
 
-void dag2kernel_list(const Graph &dag, vector<bh_ir_kernel> &kernel_list)
-{
-    vector<Vertex> topological_order;
-    topological_sort(dag, back_inserter(topological_order));
-    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
-    {
-        kernel_list.push_back(dag[v]);
-    }
-}
-
 bool fuse_mask(const Graph &dag, const vector<Edge> &edges2explore,
                const vector<bool> &mask, Graph &new_dag)
 {
@@ -131,7 +121,7 @@ void fuser(bh_ir &bhir)
         Graph new_dag;
         if(fuse_mask(dag, edges2explore, mask, new_dag))
         {
-            dag2kernel_list(new_dag, bhir.kernel_list);
+            bh_dag_fill_kernels(new_dag, bhir.kernel_list);
             return;
         }
     }
@@ -140,6 +130,7 @@ void fuser(bh_ir &bhir)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
         cout << mask.size() << "!" << endl;
+        bh_dag_fill_kernels(dag, bhir.kernel_list);
         return;
     }
     else if(mask.size() > 10)
@@ -152,7 +143,7 @@ void fuser(bh_ir &bhir)
 
     if(best_cost < numeric_limits<uint64_t>().max())
     {
-        dag2kernel_list(best_dag, bhir.kernel_list);
+        bh_dag_fill_kernels(best_dag, bhir.kernel_list);
     }
 }
 

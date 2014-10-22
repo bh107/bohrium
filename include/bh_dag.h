@@ -27,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/graph/topological_sort.hpp>
 #include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/graphviz.hpp>
+#include <iterator>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -103,6 +104,29 @@ void bh_dag_from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
                     add_edge(v, new_v, dag);
             }
         }
+    }
+}
+
+/* Fills the kernel list based on the DAG where each vertex is a kernel.
+ * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
+ *
+ * Complexity: O(E + V)
+ *
+ * @dag     The dag
+ * @kernels The kernel list output
+ */
+template <typename Graph>
+void bh_dag_fill_kernels(const Graph &dag, std::vector<bh_ir_kernel> &kernels)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+
+    vector<Vertex> topological_order;
+    topological_sort(dag, back_inserter(topological_order));
+    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
+    {
+        kernels.push_back(dag[v]);
     }
 }
 

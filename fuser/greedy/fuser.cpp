@@ -33,8 +33,6 @@ using namespace std;
 using namespace boost;
 
 typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
-typedef graph_traits<Graph>::vertex_descriptor Vertex;
-typedef graph_traits<Graph>::edge_descriptor Edge;
 
 void fuser(bh_ir &bhir)
 {
@@ -43,12 +41,5 @@ void fuser(bh_ir &bhir)
     bh_dag_transitive_reduction(dag);
     bh_dag_fuse_gentle(dag);
     bh_dag_fuse_greedy(dag);
-
-    //Lets fill the bhir;
-    vector<Vertex> topological_order;
-    topological_sort(dag, back_inserter(topological_order));
-    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
-    {
-        bhir.kernel_list.push_back(dag[v]);
-    }
+    bh_dag_fill_kernels(dag, bhir.kernel_list);
 }
