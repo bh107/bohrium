@@ -22,12 +22,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 SourceKernelCall::SourceKernelCall(KernelID id,
                                    std::vector<size_t> shape,
-                                   std::string code,
+                                   std::string source,
                                    std::vector<KernelParameter*> sizeParameters,
                                    Kernel::Parameters valueParameters)
     : _id(id)
     , _shape(shape)
-    , _code(code)
+    , _source(source)
     , _sizeParameters(sizeParameters)
     , _valueParameters(valueParameters) 
 {}
@@ -47,6 +47,16 @@ size_t SourceKernelCall::literalID() const
     return _id.second;
 }
 
+std::vector<size_t> SourceKernelCall::shape() const
+{
+    return _shape;
+}
+
+std::string SourceKernelCall::source() const
+{
+    return _source;
+}
+
 Kernel::Parameters SourceKernelCall::valueParameters() const
 {
     return _valueParameters;
@@ -60,7 +70,17 @@ Kernel::Parameters SourceKernelCall::allParameters() const
     return all;
 }
 
-std::vector<size_t> SourceKernelCall::shape() const
+void SourceKernelCall::setDiscard(std::set<BaseArray*> _discardSet)
 {
-    return _shape;
+    discardSet = _discardSet;
+}
+
+void SourceKernelCall::deleteBuffers()
+{
+    for (BaseArray *ba: discardSet)
+    {
+        delete ba;
+    }
+    discardSet.clear();
+
 }

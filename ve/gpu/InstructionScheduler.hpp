@@ -36,14 +36,13 @@ private:
     typedef std::map<bh_opcode, bh_extmethod_impl> FunctionMap;
 
     typedef std::map<KernelID, Kernel> KernelMap;
-    typedef std::pair<KernelID, SourceKernelCall&> KernelCall
+    typedef std::pair<KernelID, SourceKernelCall> KernelCall;
     typedef std::queue<KernelCall> CallQueue;
     std::mutex kernelMutex;
     std::map<size_t,size_t> knownKernelID;
     KernelMap kernelMap;
     CallQueue callQueue;
 
-    ResourceManager* resourceManager;
     InstructionBatch* batch;
     ArrayMap arrayMap;
     FunctionMap functionMap;
@@ -51,13 +50,14 @@ private:
     void sync(bh_base* base);
     void discard(bh_base* base);
     void executeBatch();
+    void build(KernelID id, const std::string source);
     std::vector<KernelParameter*> getKernelParameters(bh_instruction* inst);
     bh_error ufunc(bh_instruction* inst);
     bh_error reduce(bh_instruction* inst);
     bh_error accumulate(bh_instruction* inst);
     bh_error extmethod(bh_instruction* inst);
 public:
-    InstructionScheduler(ResourceManager* resourceManager);
+    InstructionScheduler();
     void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);
     bh_error schedule(bh_ir* bhir);
 };

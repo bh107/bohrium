@@ -21,16 +21,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <cassert>
 #include <stdexcept>
+#include <thread>
+#include <chrono>
+#include <sstream>
 #include <bh.h>
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
 //#include "Reduce.hpp"
 
-InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
-    : resourceManager(resourceManager_)
-    , batch(0)
-{}
+InstructionScheduler::InstructionScheduler()
+    : batch(NULL) {}
 
 bh_error InstructionScheduler::schedule(bh_ir* bhir)
 {
@@ -97,7 +98,8 @@ void InstructionScheduler::executeBatch()
     {
         try {
             SourceKernelCall sourceKernel = batch->generateKernel();
-            size_t functionID = id.first;
+            sourceKernel.setDiscard(discardSet);
+            size_t functionID = sourceKernel.id().first;
             std::map<size_t,size_t>::iterator kidit = knownKernelID.find(functionID);
             if (kidit != knownKernelID.end())
             {
@@ -114,8 +116,10 @@ void InstructionScheduler::executeBatch()
                     if (kernelID.second == 0)
                     {
                         kit->second.call(sourceKernel.allParameters(), sourceKernel.shape());
+                        sourceKernel.deleteBuffers();
                     } else {
                         kit->second.call(sourceKernel.valueParameters(), sourceKernel.shape());
+                        sourceKernel.deleteBuffers();
                     }
                 } else {
                     callQueue.push(std::make_pair(kernelID,sourceKernel));
@@ -126,73 +130,44 @@ void InstructionScheduler::executeBatch()
                 kernelMutex.lock();
                 callQueue.push(std::make_pair(sourceKernel.id(),sourceKernel));
                 kernelMutex.unlock();
-                resourceManager->buildKernels(source.str(), &buildDone, new KernelID(functionID,literalID),
-                                              "-DSTATIC_KERNEL");
-                resourceManager->buildKernels(source.str(), &buildDone, new KernelID(functionID,0));
+                std::thread(&InstructionScheduler::build, this, sourceKernel.id(), sourceKernel.source()).detach();
+                std::thread(&InstructionScheduler::build, this, KernelID(functionID,0), sourceKernel.source()).detach();
             }
-
         }
+        catch(...) {}
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    for (std::set<BaseArray*>::iterator dsit = discardSet.begin(); dsit != discardSet.end(); ++dsit)
-    {
-        delete *dsit;
-    }
     discardSet.clear();
     delete batch;
     batch = 0;
 }
 
 
-void CL_CALLBACK InstructionBatch::buildDone(cl_program p, void* id)
+void InstructionScheduler::build(KernelID kernelID, const std::string source)
 {
-    std::cout << "buildDone()" << std::endl;
-    clRetainProgram(p);
-    cl::Program program(p);
-    KernelID *kernelID = (KernelID*)id;
-    std::vector<cl::Device> devices = program.getInfo<CL_PROGRAM_DEVICES>();
-    if (program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices[0]) != CL_BUILD_SUCCESS)
-    {
-//#ifdef DEBUG
-        std::cerr << "Program build error:\n";
-        std::cerr << "------------------- SOURCE -----------------------\n";
-        std::cerr << program.getInfo<CL_PROGRAM_SOURCE>();
-        std::cerr << "------------------ SOURCE END --------------------\n";
-        std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
-//#endif
-        throw std::runtime_error("Could not build Kernel.");
-    }
 
     std::stringstream kname;
-    kname << "kernel" <<  std::hex << kernelID->first << (kernelID->second==0?"":"_");
-    Kernel kernel(resourceManager, cl::Kernel(program,kname.str().c_str()));
+    kname << "kernel" <<  std::hex << kernelID.first << (kernelID.second==0?"":"_");
+    Kernel kernel(source, kname.str(), (kernelID.second==0?"":"-DSTATIC_KERNEL"));
     kernelMutex.lock();
-    kernelMap.insert(std::make_pair(*kernelID, kernel));
-    std::cout << "saving " << kname.str() << std::endl;
+    kernelMap.insert(std::make_pair(kernelID, kernel));
     while (!callQueue.empty())
     {
-        Call call = callQueue.front();
-        KernelMap::iterator kit = kernelMap.find(std::get<0>(call));
+        KernelCall kernelCall = callQueue.front();
+        KernelMap::iterator kit = kernelMap.find(kernelCall.first);
         if (kit != kernelMap.end())
-            kit->second.call(std::get<1>(call),std::get<2>(call));
+        {
+            kit->second.call((kernelID.second==0?
+                              kernelCall.second.allParameters():
+                              kernelCall.second.valueParameters()),
+                             kernelCall.second.shape());
+            kernelCall.second.deleteBuffers();
+            callQueue.pop();
+        }
         else
             break;            
     }
     kernelMutex.unlock(); 
-    delete kernelID;
 }
 
 void InstructionScheduler::sync(bh_base* base)
@@ -207,6 +182,10 @@ void InstructionScheduler::sync(bh_base* base)
     if (batch && batch->write(it->second))
     {
         executeBatch();
+    }
+    while (!callQueue.empty())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     it->second->sync();
 }

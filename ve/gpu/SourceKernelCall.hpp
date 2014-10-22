@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <utility>
 #include <string>
 #include <vector>
+#include <set>
 #include "Kernel.hpp"
 
 typedef std::pair<size_t,size_t> KernelID;
@@ -33,21 +34,25 @@ class SourceKernelCall
 private:
     KernelID _id;
     std::vector<size_t> _shape;
-    std::string _code;
+    std::string _source;
     std::vector<KernelParameter*> _sizeParameters;
     Kernel::Parameters _valueParameters;
+    std::set<BaseArray*> discardSet;
 public:
     SourceKernelCall(KernelID id,
                      std::vector<size_t> shape,
-                     std::string code,
+                     std::string source,
                      std::vector<KernelParameter*> sizeParameters,
                      Kernel::Parameters valueParameters);
     KernelID id() const;
     size_t functionID() const;
     size_t literalID() const;
+    std::vector<size_t> shape() const;
+    std::string source() const;
     Kernel::Parameters valueParameters() const;    
     Kernel::Parameters allParameters() const;
-    std::vector<size_t> shape() const;
+    void setDiscard(std::set<BaseArray*> discardSet);
+    void deleteBuffers();
 };
 
 #endif

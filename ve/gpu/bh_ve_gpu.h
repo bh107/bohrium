@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_VE_GPU_H
 
 #include <bh.h>
-#include "InstructionScheduler.hpp"
 #include "ResourceManager.hpp"
 #include <bh_win.h>
 
