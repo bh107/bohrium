@@ -37,8 +37,18 @@ typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
 typedef graph_traits<Graph>::vertex_descriptor Vertex;
 typedef graph_traits<Graph>::edge_descriptor Edge;
 
-bool fuse_mask(const Graph &dag, const vector<Edge> edges2explore,
-               const vector<bool> mask, Graph &new_dag)
+void dag2kernel_list(const Graph &dag, vector<bh_ir_kernel> &kernel_list)
+{
+    vector<Vertex> topological_order;
+    topological_sort(dag, back_inserter(topological_order));
+    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
+    {
+        kernel_list.push_back(dag[v]);
+    }
+}
+
+bool fuse_mask(const Graph &dag, const vector<Edge> &edges2explore,
+               const vector<bool> &mask, Graph &new_dag)
 {
     vector<Edge> edges2merge;
     unsigned int i=0;
@@ -65,6 +75,38 @@ bool fuse_mask(const Graph &dag, const vector<Edge> edges2explore,
 }
 
 int fuser_count=0;
+uint64_t best_cost = numeric_limits<uint64_t>().max();
+Graph best_dag;
+void fuse(const Graph &dag, const vector<Edge> &edges2explore,
+          vector<bool> mask, unsigned int offset, bool merge_next)
+{
+    if(not merge_next)
+    {
+        Graph new_dag;
+        mask[offset] = merge_next;
+        if(fuse_mask(dag, edges2explore, mask, new_dag))
+        {
+            const uint64_t c = bh_dag_cost(new_dag);
+            if(best_cost > c)
+            {
+                best_cost = c;
+                best_dag = new_dag;
+#ifdef VERBOSE
+                std::stringstream ss;
+                ss << "new_best_dag-" << fuser_count << "-" << bh_dag_cost(new_dag) << ".dot";
+                printf("write file: %s\n", ss.str().c_str());
+                bh_dag_pprint(new_dag, ss.str().c_str());
+#endif
+            }
+        }
+    }
+    if(offset+1 < mask.size())
+    {
+        fuse(dag, edges2explore, mask, offset+1, true);
+        fuse(dag, edges2explore, mask, offset+1, false);
+    }
+}
+
 void fuser(bh_ir &bhir)
 {
     Graph dag;
@@ -80,12 +122,19 @@ void fuser(bh_ir &bhir)
             edges2explore.push_back(e);
     }
 
-    uint64_t best_cost = numeric_limits<uint64_t>().max();
-    Graph best_dag;
-
-    vector<bool> mask(edges2explore.size(), false);
+    vector<bool> mask(edges2explore.size(), true);
     if(mask.size() == 0)
         return;
+
+    //First we check the trivial case where all kernels are merged
+    {
+        Graph new_dag;
+        if(fuse_mask(dag, edges2explore, mask, new_dag))
+        {
+            dag2kernel_list(new_dag, bhir.kernel_list);
+            return;
+        }
+    }
 
     if(mask.size() > 20)
     {
@@ -98,65 +147,12 @@ void fuser(bh_ir &bhir)
         cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
     }
 
-    bool not_finished = true;
-    while(not_finished)
-    {
-        Graph new_dag;
-        if(fuse_mask(dag, edges2explore, mask, new_dag))
-        {
-            const uint64_t c = bh_dag_cost(new_dag);
-            if(best_cost > c)
-            {
-                best_cost = c;
-                best_dag = new_dag;
-#ifdef VERBOSE
-                std::stringstream ss;
-                ss << "new_dag-" << fuser_count << "-" << bh_dag_cost(new_dag);
-                /*
-                ss << "-";
-                for(unsigned int i=0; i<mask.size(); ++i)
-                {
-                    if(mask[i])
-                        ss << "1";
-                    else
-                        ss << "0";
-                }
-                */
-                ss << ".dot";
-                printf("write file: %s\n", ss.str().c_str());
-                bh_dag_pprint(new_dag, ss.str().c_str());
-#endif
-            }
-        }
-        for(unsigned int i=mask.size()-1; i >= 0; --i)
-        {
-            if(mask[i])
-            {
-                if(i == 0)
-                {
-                    not_finished = false;
-                    break;
-                }
-                mask[i] = false;
-            }
-            else
-            {
-                mask[i] = true;
-                break;
-            }
-        }
-    }
+    fuse(dag, edges2explore, mask, 0, true);
+    fuse(dag, edges2explore, mask, 0, false);
+
     if(best_cost < numeric_limits<uint64_t>().max())
     {
-        bh_ir b;
-        vector<Vertex> topological_order;
-        topological_sort(best_dag, back_inserter(topological_order));
-        BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
-        {
-            b.kernel_list.push_back(best_dag[v]);
-        }
-        b.instr_list = bhir.instr_list;
-        bhir = b;
+        dag2kernel_list(best_dag, bhir.kernel_list);
     }
 }
 
