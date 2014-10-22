@@ -65,7 +65,7 @@ bool fuse_mask(const Graph &dag, const vector<Edge> &edges2explore,
 }
 
 int fuser_count=0;
-uint64_t best_cost = numeric_limits<uint64_t>().max();
+uint64_t best_cost;
 Graph best_dag;
 void fuse(const Graph &dag, const vector<Edge> &edges2explore,
           vector<bool> mask, unsigned int offset, bool merge_next)
@@ -74,20 +74,21 @@ void fuse(const Graph &dag, const vector<Edge> &edges2explore,
     {
         Graph new_dag;
         mask[offset] = merge_next;
-        if(fuse_mask(dag, edges2explore, mask, new_dag))
+        const bool fusible = fuse_mask(dag, edges2explore, mask, new_dag);
+        const uint64_t cost = bh_dag_cost(new_dag);
+        if(cost >= best_cost)
+            return;
+        if(fusible)
         {
-            const uint64_t c = bh_dag_cost(new_dag);
-            if(best_cost > c)
-            {
-                best_cost = c;
-                best_dag = new_dag;
-#ifdef VERBOSE
+            best_cost = cost;
+            best_dag = new_dag;
+            #ifdef VERBOSE
                 std::stringstream ss;
                 ss << "new_best_dag-" << fuser_count << "-" << bh_dag_cost(new_dag) << ".dot";
                 printf("write file: %s\n", ss.str().c_str());
                 bh_dag_pprint(new_dag, ss.str().c_str());
-#endif
-            }
+            #endif
+            return;
         }
     }
     if(offset+1 < mask.size())
@@ -112,11 +113,14 @@ void fuser(bh_ir &bhir)
             edges2explore.push_back(e);
     }
 
-    vector<bool> mask(edges2explore.size(), true);
-    if(mask.size() == 0)
+    if(edges2explore.size() == 0)
+    {
+        bh_dag_fill_kernels(dag, bhir.kernel_list);
         return;
+    }
 
     //First we check the trivial case where all kernels are merged
+    vector<bool> mask(edges2explore.size(), true);
     {
         Graph new_dag;
         if(fuse_mask(dag, edges2explore, mask, new_dag))
@@ -126,11 +130,16 @@ void fuser(bh_ir &bhir)
         }
     }
 
-    if(mask.size() > 20)
+    //Then we use the greedy algorithm to find a good initial guess
+    best_dag = dag;
+    bh_dag_fuse_greedy(best_dag);
+    best_cost = bh_dag_cost(best_dag);
+
+    if(mask.size() > 100)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
         cout << mask.size() << "!" << endl;
-        bh_dag_fill_kernels(dag, bhir.kernel_list);
+        bh_dag_fill_kernels(best_dag, bhir.kernel_list);
         return;
     }
     else if(mask.size() > 10)
@@ -140,10 +149,6 @@ void fuser(bh_ir &bhir)
 
     fuse(dag, edges2explore, mask, 0, true);
     fuse(dag, edges2explore, mask, 0, false);
-
-    if(best_cost < numeric_limits<uint64_t>().max())
-    {
-        bh_dag_fill_kernels(best_dag, bhir.kernel_list);
-    }
+    bh_dag_fill_kernels(best_dag, bhir.kernel_list);
 }
 
