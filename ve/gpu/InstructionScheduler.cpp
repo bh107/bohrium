@@ -122,13 +122,13 @@ void InstructionScheduler::executeBatch()
                         sourceKernel.deleteBuffers();
                     }
                 } else {
-                    callQueue.push(std::make_pair(kernelID,sourceKernel));
+                    callQueue.push_back(std::make_pair(kernelID,sourceKernel));
                 }
                 kernelMutex.unlock();
             } else { // New Kernel
                 knownKernelID.insert(sourceKernel.id());
                 kernelMutex.lock();
-                callQueue.push(std::make_pair(sourceKernel.id(),sourceKernel));
+                callQueue.push_back(std::make_pair(sourceKernel.id(),sourceKernel));
                 kernelMutex.unlock();
                 std::thread(&InstructionScheduler::build, this, sourceKernel.id(), sourceKernel.source()).detach();
                 std::thread(&InstructionScheduler::build, this, KernelID(functionID,0), sourceKernel.source()).detach();
@@ -162,7 +162,7 @@ void InstructionScheduler::build(KernelID kernelID, const std::string source)
                               kernelCall.second.valueParameters()),
                              kernelCall.second.shape());
             kernelCall.second.deleteBuffers();
-            callQueue.pop();
+            callQueue.pop_front();
         }
         else
             break;            
@@ -204,7 +204,16 @@ void InstructionScheduler::discard(bh_base* base)
     }
     else
     {
-        delete it->second;
+        kernelMutex.lock();
+        if (!callQueue.empty())
+        {
+            callQueue.back().second.addDiscard(it->second);
+            kernelMutex.unlock();  
+        }
+        else {
+            kernelMutex.unlock();  
+            delete it->second;
+        }
     }
     arrayMap.erase(it);
 }

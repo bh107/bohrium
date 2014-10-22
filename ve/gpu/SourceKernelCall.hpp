@@ -37,7 +37,7 @@ private:
     std::string _source;
     std::vector<KernelParameter*> _sizeParameters;
     Kernel::Parameters _valueParameters;
-    std::set<BaseArray*> discardSet;
+    std::set<BaseArray*> _discardSet;
 public:
     SourceKernelCall(KernelID id,
                      std::vector<size_t> shape,
@@ -52,6 +52,7 @@ public:
     Kernel::Parameters valueParameters() const;    
     Kernel::Parameters allParameters() const;
     void setDiscard(std::set<BaseArray*> discardSet);
+    void addDiscard(BaseArray* array);
     void deleteBuffers();
 };
 

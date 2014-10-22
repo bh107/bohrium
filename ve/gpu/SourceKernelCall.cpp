@@ -70,17 +70,21 @@ Kernel::Parameters SourceKernelCall::allParameters() const
     return all;
 }
 
-void SourceKernelCall::setDiscard(std::set<BaseArray*> _discardSet)
+void SourceKernelCall::setDiscard(std::set<BaseArray*> discardSet)
 {
-    discardSet = _discardSet;
+    _discardSet = discardSet;
+}
+
+void SourceKernelCall::addDiscard(BaseArray* array)
+{
+    _discardSet.insert(array);
 }
 
 void SourceKernelCall::deleteBuffers()
 {
-    for (BaseArray *ba: discardSet)
+    for (BaseArray *ba: _discardSet)
     {
         delete ba;
     }
-    discardSet.clear();
-
+    _discardSet.clear();
 }

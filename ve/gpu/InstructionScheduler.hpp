@@ -24,6 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <map>
 #include <set>
+#include <deque>
+#include <mutex>
 #include <bh.h>
 #include "InstructionBatch.hpp"
 #include "ResourceManager.hpp"
@@ -37,7 +39,7 @@ private:
 
     typedef std::map<KernelID, Kernel> KernelMap;
     typedef std::pair<KernelID, SourceKernelCall> KernelCall;
-    typedef std::queue<KernelCall> CallQueue;
+    typedef std::deque<KernelCall> CallQueue;
     std::mutex kernelMutex;
     std::map<size_t,size_t> knownKernelID;
     KernelMap kernelMap;

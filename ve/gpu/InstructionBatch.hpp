@@ -21,12 +21,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __INSTRUCTIONBATCH_HPP
 #define __INSTRUCTIONBATCH_HPP
 
-#include <tuple>
 #include <vector>
 #include <map>
 #include <list>
-#include <queue>
-#include <mutex>
 #include <bh.h>
 #include "BaseArray.hpp"
 #include "Kernel.hpp"
