@@ -270,13 +270,13 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     try {
         program.build(devices,(options+std::string(" ")+getIncludeStr()).c_str());
     } catch (cl::Error) {
-#ifdef DEBUG
+//#ifdef DEBUG
         std::cerr << "Program build error:\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
         std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) << std::endl;
-#endif
+//#endif
         throw std::runtime_error("Could not build Kernel.");
     }
     

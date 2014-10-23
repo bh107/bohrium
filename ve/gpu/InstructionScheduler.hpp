@@ -51,6 +51,7 @@ private:
     std::set<BaseArray*> discardSet;
     void sync(bh_base* base);
     void discard(bh_base* base);
+    void compileAndRun(SourceKernelCall sourceKernel);
     void executeBatch();
     void build(KernelID id, const std::string source);
     std::vector<KernelParameter*> getKernelParameters(bh_instruction* inst);

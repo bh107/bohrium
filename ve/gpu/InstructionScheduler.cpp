@@ -92,6 +92,44 @@ bh_error InstructionScheduler::schedule(bh_ir* bhir)
     return BH_SUCCESS;
 }
 
+void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
+{
+    size_t functionID = sourceKernel.id().first;
+    std::map<size_t,size_t>::iterator kidit = knownKernelID.find(functionID);
+    if (kidit != knownKernelID.end())
+    {
+        KernelID kernelID(sourceKernel.functionID(),0); 
+        if (kidit->second == sourceKernel.literalID())
+        {
+            kernelID.second = kidit->second;
+        }
+        kernelMutex.lock();
+        if (callQueue.empty())
+        {
+            KernelMap::iterator kit = kernelMap.find(kernelID);
+            assert(kit != kernelMap.end());
+            if (kernelID.second == 0)
+            {
+                kit->second.call(sourceKernel.allParameters(), sourceKernel.shape());
+                sourceKernel.deleteBuffers();
+            } else {
+                kit->second.call(sourceKernel.valueParameters(), sourceKernel.shape());
+                sourceKernel.deleteBuffers();
+            }
+        } else {
+            callQueue.push_back(std::make_pair(kernelID,sourceKernel));
+        }
+        kernelMutex.unlock();
+    } else { // New Kernel
+        knownKernelID.insert(sourceKernel.id());
+        kernelMutex.lock();
+        callQueue.push_back(std::make_pair(sourceKernel.id(),sourceKernel));
+        kernelMutex.unlock();
+        std::thread(&InstructionScheduler::build, this, sourceKernel.id(), sourceKernel.source()).detach();
+        std::thread(&InstructionScheduler::build, this, KernelID(functionID,0), sourceKernel.source()).detach();
+    }        
+}
+
 void InstructionScheduler::executeBatch()
 {
     if (batch)
@@ -99,47 +137,35 @@ void InstructionScheduler::executeBatch()
         try {
             SourceKernelCall sourceKernel = batch->generateKernel();
             sourceKernel.setDiscard(discardSet);
-            size_t functionID = sourceKernel.id().first;
-            std::map<size_t,size_t>::iterator kidit = knownKernelID.find(functionID);
-            if (kidit != knownKernelID.end())
+            compileAndRun(sourceKernel);
+        }
+        catch(BatchException be) 
+        {
+            if (!discardSet.empty())
             {
-                KernelID kernelID(sourceKernel.functionID(),0); 
-                if (kidit->second == sourceKernel.literalID())
-                {
-                    kernelID.second = kidit->second;
-                }
                 kernelMutex.lock();
-                if (callQueue.empty())
+                if (!callQueue.empty())
                 {
-                    KernelMap::iterator kit = kernelMap.find(kernelID);
-                    assert(kit != kernelMap.end());
-                    if (kernelID.second == 0)
+                    SourceKernelCall& sourceKernel = callQueue.back().second;
+                    for (BaseArray *ba: discardSet)
                     {
-                        kit->second.call(sourceKernel.allParameters(), sourceKernel.shape());
-                        sourceKernel.deleteBuffers();
-                    } else {
-                        kit->second.call(sourceKernel.valueParameters(), sourceKernel.shape());
-                        sourceKernel.deleteBuffers();
+                        sourceKernel.addDiscard(ba);
                     }
-                } else {
-                    callQueue.push_back(std::make_pair(kernelID,sourceKernel));
+                    kernelMutex.unlock();  
                 }
-                kernelMutex.unlock();
-            } else { // New Kernel
-                knownKernelID.insert(sourceKernel.id());
-                kernelMutex.lock();
-                callQueue.push_back(std::make_pair(sourceKernel.id(),sourceKernel));
-                kernelMutex.unlock();
-                std::thread(&InstructionScheduler::build, this, sourceKernel.id(), sourceKernel.source()).detach();
-                std::thread(&InstructionScheduler::build, this, KernelID(functionID,0), sourceKernel.source()).detach();
+                else {
+                    kernelMutex.unlock();  
+                    for (BaseArray *ba: discardSet)
+                    {
+                        delete ba;
+                    }
+                }
             }
         }
-        catch(...) {}
+        discardSet.clear();
+        delete batch;
+        batch = 0;
     }
-
-    discardSet.clear();
-    delete batch;
-    batch = 0;
 }
 
 
