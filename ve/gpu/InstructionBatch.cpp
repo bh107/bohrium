@@ -220,11 +220,11 @@ SourceKernelCall InstructionBatch::generateKernel()
     
     functionDeclaration << "(";
     Kernel::Parameters kernelParameters;
-    std::map<std::string, KernelParameter*> parameterList;
+    typedef std::map<std::string, KernelParameter*> ParameterList; 
+    ParameterList parameterList;
     for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
         parameterList.insert(std::make_pair(pit->second, pit->first));
-    for (std::map<std::string, KernelParameter*>::iterator pit = parameterList.begin(); 
-         pit != parameterList.end(); ++pit)
+    for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
     {
         functionDeclaration << "\n\t" << (pit==parameterList.begin()?"  ":", ") << *pit->second << " " << 
             pit->first;
@@ -245,54 +245,42 @@ SourceKernelCall InstructionBatch::generateKernel()
         sizeParameters.push_back(s);
         functionDeclaration << "\n\t, " << *s << " " << ss.str();
     }
-    
+
+    ViewList inputList, outputList, viewList;
     for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
     {
-        {
-            std::stringstream ss;
-            ss << "v" << iit->second << "s0";
-            Scalar* s = new Scalar(views[iit->second].start);
-            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
-            sizeParameters.push_back(s);
-            functionDeclaration << "\n\t, " << *s << " " << ss.str();
-        }
-        bh_intp vndim = views[iit->second].ndim;
-        for (bh_intp d = 0; d < vndim; ++d)
-        {
-            std::stringstream ss;
-            ss << "v" << iit->second << "s" << vndim-d;
-            Scalar* s = new Scalar(views[iit->second].stride[d]);
-            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
-            sizeParameters.push_back(s);
-            functionDeclaration << "\n\t, " << *s << " " << ss.str();
-        }
         inputList.insert(std::make_pair(iit->second, iit->first));
+        viewList.insert(std::make_pair(iit->second, iit->first));
     }
     for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
     {
+        outputList.insert(std::make_pair(oit->second, oit->first));
+        viewList.insert(std::make_pair(oit->second, oit->first));
+    }
+    for (ViewList::iterator vit = viewList.begin(); vit != viewList.end(); ++vit)
+    {
         {
             std::stringstream ss;
-            ss << "v" << oit->second << "s0";
-            Scalar* s = new Scalar(views[oit->second].start);
+            ss << "v" << vit->first << "s0";
+            Scalar* s = new Scalar(views[vit->first].start);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
             sizeParameters.push_back(s);
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
         }
-        bh_intp vndim = views[oit->second].ndim;
+        bh_intp vndim = views[vit->first].ndim;
         for (bh_intp d = 0; d < vndim; ++d)
         {
             std::stringstream ss;
-            ss << "v" << oit->second << "s" << vndim-d;
-            Scalar* s = new Scalar(views[oit->second].stride[d]);
+            ss << "v" << vit->first << "s" << vndim-d;
+            Scalar* s = new Scalar(views[vit->first].stride[d]);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
             sizeParameters.push_back(s);
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
         }
-        outputList.insert(std::make_pair(oit->second, oit->first));
     }
     functionDeclaration << "\n#endif\n)\n";
     
-    std::string functionBody = generateFunctionBody();
+    std::string functionBody = generateFunctionBody(inputList, outputList);
     size_t functionID = string_hasher(functionBody);
     size_t literalID = string_hasher(defines.str());
     
@@ -322,7 +310,7 @@ SourceKernelCall InstructionBatch::generateKernel()
     
 }
 
-std::string InstructionBatch::generateFunctionBody()
+std::string InstructionBatch::generateFunctionBody(ViewList inputList, ViewList outputList)
 {
     std::stringstream source;
     source << "{\n";
@@ -339,7 +327,7 @@ std::string InstructionBatch::generateFunctionBody()
     std::string indent = indentss.str();
     
     // Load input parameters
-    for (ArrayList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
+    for (ViewList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
     {
         std::stringstream ss;
         ss << "v" << iit->first;
@@ -391,7 +379,7 @@ std::string InstructionBatch::generateFunctionBody()
     }
 
     // Save output parameters
-    for (ArrayList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
+    for (ViewList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
     {
         source << indent << parameters[oit->second] << "[";
         generateOffsetSource(views[oit->first].ndim, oit->first, source);

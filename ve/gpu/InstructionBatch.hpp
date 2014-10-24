@@ -35,7 +35,7 @@ class InstructionBatch
     typedef std::map<KernelParameter*, std::string> ParameterMap;
     typedef std::map<unsigned int, std::string> VariableMap;
     typedef std::multimap<BaseArray*, unsigned int> ArrayMap;
-    typedef std::map<unsigned int, BaseArray*> ArrayList;
+    typedef std::map<unsigned int, BaseArray*> ViewList;
     typedef std::list<std::pair<bh_instruction*, std::vector<int> > > InstructionList;
     typedef std::map<std::string, std::string> ConstantList;
     
@@ -44,9 +44,7 @@ private:
     InstructionList instructions;
     std::vector<bh_view> views;
     ArrayMap output;
-    ArrayList outputList;
     ArrayMap input;
-    ArrayList inputList;
     ParameterMap parameters;
     ConstantList constantList;
     VariableMap kernelVariables;
@@ -60,7 +58,7 @@ private:
     bh_uint64 createTime;
 #endif
     bool shapeMatch(bh_intp ndim, const bh_index dims[]);
-    std::string generateFunctionBody();
+    std::string generateFunctionBody(ViewList inputList, ViewList outputList);
 
 public:
     InstructionBatch(bh_instruction* inst, const std::vector<KernelParameter*>& operands);
