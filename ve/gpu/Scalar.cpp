@@ -257,7 +257,8 @@ void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
         }
     } catch (cl::Error err)
     {
-        std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
+        std::cerr << "ERROR Setting Scalar kernel arg(" << argIndex << "): " << err.what() << "(" << 
+            err.err() << ")" << std::endl;
         throw err;
     }
 }

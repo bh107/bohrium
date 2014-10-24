@@ -86,7 +86,11 @@ SourceKernelCall Reduce::generateKernel(const bh_instruction* inst,
     std::stringstream defines;
     std::stringstream functionDeclaration;
 
-    functionDeclaration << "(\n#ifndef STATIC_KERNEL";
+    functionDeclaration << "(\n\t  " << *operands[0] << " out\n\t, " << *operands[1] << 
+        " in\n#ifndef STATIC_KERNEL";
+    Kernel::Parameters valueParameters;
+    valueParameters.push_back(std::make_pair(operands[0], true));
+    valueParameters.push_back(std::make_pair(operands[1], false));
 
     for (size_t i = 0; i < shape.size(); ++i)
     {
@@ -96,7 +100,7 @@ SourceKernelCall Reduce::generateKernel(const bh_instruction* inst,
             Scalar* s = new Scalar(shape[i]);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
             sizeParameters.push_back(s);
-            functionDeclaration << "\n\t" << (i==0?" ":", ") << *s << " " << ss.str();
+            functionDeclaration << "\n\t, "  << *s << " " << ss.str();
         }{
             std::stringstream ss;
             ss << "v0s" << shape.size()-i;
@@ -129,13 +133,7 @@ SourceKernelCall Reduce::generateKernel(const bh_instruction* inst,
     (defines << "#define S " <<= *s) << "\n";
     sizeParameters.push_back(s);
     functionDeclaration << "\n\t, " << *s << " S";
-    functionDeclaration << ", \n#endif\n";
-    functionDeclaration << "\n\t " << operands[0] << " out";
-    functionDeclaration << "\n\t, " << operands[1] << " in)\n";
-
-    Kernel::Parameters valueParameters;
-    valueParameters.push_back(std::make_pair(operands[0], true));
-    valueParameters.push_back(std::make_pair(operands[1], false));
+    functionDeclaration << "\n#endif\n)\n";
 
     std::string functionBody = generateFunctionBody(inst, operands[0]->type(), operands[1]->type(), 
                                                     shape, accumulate);

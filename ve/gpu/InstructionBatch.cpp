@@ -218,7 +218,19 @@ SourceKernelCall InstructionBatch::generateKernel()
     std::stringstream defines;
     std::stringstream functionDeclaration;
     
-    functionDeclaration << "(\n#ifndef STATIC_KERNEL";
+    functionDeclaration << "(";
+    Kernel::Parameters kernelParameters;
+    for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+    {
+        functionDeclaration << "\n\t" << (pit==parameters.begin()?"  ":", ") << *pit->first << " " << 
+            pit->second;
+        if (output.find(dynamic_cast<BaseArray*>(pit->first)) == output.end())
+            kernelParameters.push_back(std::make_pair(pit->first, false));
+        else
+            kernelParameters.push_back(std::make_pair(pit->first, true));
+    }
+
+    functionDeclaration << "\n#ifndef STATIC_KERNEL";
     
     for (size_t i = 0; i < shape.size(); ++i)
     {
@@ -227,7 +239,7 @@ SourceKernelCall InstructionBatch::generateKernel()
         Scalar* s = new Scalar(shape[i]);
         (defines << "#define " << ss.str() << " " <<= *s) << "\n";
         sizeParameters.push_back(s);
-        functionDeclaration << "\n\t" << (i==0?" ":", ") << *s << " " << ss.str();
+        functionDeclaration << "\n\t, " << *s << " " << ss.str();
     }
     
     for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
@@ -274,19 +286,8 @@ SourceKernelCall InstructionBatch::generateKernel()
         }
         outputList.insert(std::make_pair(oit->second, oit->first));
     }
-    functionDeclaration << ", \n#endif\n";
+    functionDeclaration << "\n#endif\n)\n";
     
-    Kernel::Parameters kernelParameters;
-    for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
-    {
-        functionDeclaration << "\n\t" << (pit==parameters.begin()?" ":", ") << *pit->first << " " << 
-            pit->second;
-        if (output.find(dynamic_cast<BaseArray*>(pit->first)) == output.end())
-            kernelParameters.push_back(std::make_pair(pit->first, false));
-        else
-            kernelParameters.push_back(std::make_pair(pit->first, true));
-    }
-    functionDeclaration << ")\n";
     std::string functionBody = generateFunctionBody();
     size_t functionID = string_hasher(functionBody);
     size_t literalID = string_hasher(defines.str());

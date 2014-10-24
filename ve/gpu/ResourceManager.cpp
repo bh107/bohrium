@@ -259,13 +259,13 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     bh_uint64 start = bh::Timer<>::stamp(); 
 #endif
 
-//#ifdef DEBUG
+#ifdef DEBUG
     std::cout << "Program build :\n";
     std::cout << "Options :" << options << "\n";
     std::cout << "------------------- SOURCE -----------------------\n";
     std::cout << source;
     std::cout << "------------------ SOURCE END --------------------" << std::endl;
-//#endif
+#endif
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
@@ -273,6 +273,7 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     } catch (cl::Error) {
 //#ifdef DEBUG
         std::cerr << "Program build error:\n";
+        std::cout << "Options :" << options << "\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
