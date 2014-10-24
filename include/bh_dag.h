@@ -40,7 +40,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * instruction kernels.
  * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
- * Complexity: O(E + V)
+ * Complexity: O(n^2) where 'n' is the number of instructions
  *
  * @bhir  The BhIR
  * @dag   The output dag
@@ -60,9 +60,9 @@ void bh_dag_from_bhir(const bh_ir &bhir, Graph &dag)
     }
     BOOST_FOREACH(const bh_instruction &instr, bhir.instr_list)
     {
-        bh_ir_kernel k;
+        Vertex new_v = add_vertex(dag);
+        bh_ir_kernel &k = dag[new_v];
         k.add_instr(instr);
-        Vertex new_v = add_vertex(k, dag);
 
         //Add dependencies
         BOOST_FOREACH(Vertex v, vertices(dag))
@@ -474,18 +474,31 @@ void bh_dag_fuse_gentle(Graph &dag)
         not_finished = false;
         BOOST_FOREACH(const Vertex &v, vertices(dag))
         {
-            //The target vertex must me a leaf (no children)
-            const auto children = adjacent_vertices(v, dag);
-            if(distance(children.first, children.second) != 0)
-                continue;
-
-            //And only have one parent
+            const auto child = adjacent_vertices(v, dag);
             const auto parent = inv_adjacent_vertices(v, dag);
-            if(distance(parent.first, parent.second) != 1)
-                continue;
 
-            //And be gentle fusible with that parent
-            if(not dag[*parent.first].fusible_gently(dag[v]))
+            //The target vertex must me a leaf (no child)
+            if(distance(child.first, child.second) == 0)
+            {
+                //And only have one parent
+                if(distance(parent.first, parent.second) != 1)
+                    continue;
+
+                //And is gentle fusible with that parent
+                if(not dag[*parent.first].fusible_gently(dag[v]))
+                    continue;
+            }//Or a root vertex (no parent)
+            else if(distance(parent.first, parent.second) == 0)
+            {
+                //And only have one child
+                if(distance(child.first, child.second) != 1)
+                    continue;
+
+                //And is gentle fusible with that child
+                if(not dag[*child.first].fusible_gently(dag[v]))
+                    continue;
+            }
+            else
                 continue;
 
             //Before we can merge the two vertices
