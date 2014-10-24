@@ -375,6 +375,20 @@ bool bh_ir_kernel::fusible_gently(const bh_instruction &instr) const
     if(bh_opcode_is_system(instr.opcode))
         return true;
 
+    //We are fusible if all instructions in this kernel are system opcodes
+    {
+        bool all_system = true;
+        BOOST_FOREACH(const bh_instruction &i, instr_list())
+        {
+            if(not bh_opcode_is_system(i.opcode))
+            {
+                all_system = false;
+                break;
+            }
+        }
+        if(all_system)
+            return true;
+    }
     //Check that 'instr' is fusible with least one existing instruction
     BOOST_FOREACH(const bh_instruction &i, instr_list())
     {
