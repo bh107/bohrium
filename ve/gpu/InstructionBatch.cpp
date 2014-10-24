@@ -220,14 +220,18 @@ SourceKernelCall InstructionBatch::generateKernel()
     
     functionDeclaration << "(";
     Kernel::Parameters kernelParameters;
+    std::map<std::string, KernelParameter*> parameterList;
     for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+        parameterList.insert(std::make_pair(pit->second, pit->first));
+    for (std::map<std::string, KernelParameter*>::iterator pit = parameterList.begin(); 
+         pit != parameterList.end(); ++pit)
     {
-        functionDeclaration << "\n\t" << (pit==parameters.begin()?"  ":", ") << *pit->first << " " << 
-            pit->second;
-        if (output.find(dynamic_cast<BaseArray*>(pit->first)) == output.end())
-            kernelParameters.push_back(std::make_pair(pit->first, false));
-        else
-            kernelParameters.push_back(std::make_pair(pit->first, true));
+        functionDeclaration << "\n\t" << (pit==parameterList.begin()?"  ":", ") << *pit->second << " " << 
+            pit->first;
+        if (output.find(dynamic_cast<BaseArray*>(pit->second)) == output.end())
+            kernelParameters.push_back(std::make_pair(pit->second, false));
+         else
+             kernelParameters.push_back(std::make_pair(pit->second, true));
     }
 
     functionDeclaration << "\n#ifndef STATIC_KERNEL";
