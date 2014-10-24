@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
-//#include "Reduce.hpp"
+#include "Reduce.hpp"
 
 InstructionScheduler::InstructionScheduler()
     : batch(NULL) {}
@@ -305,7 +305,7 @@ bh_error InstructionScheduler::ufunc(bh_instruction* inst)
 
 bh_error InstructionScheduler::reduce(bh_instruction* inst)
 {
-//    if(inst->operand[1].ndim < 2)
+    if(inst->operand[1].ndim < 2)
     {
         // TODO these two syncs are a hack. Are we sure this is correct?????
         sync(inst->operand[1].base);
@@ -317,22 +317,21 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
             return err;
         return resourceManager->childExecute(&bhir);
     }
-    // try {
-    //     UserFuncArg userFuncArg;
-    //     userFuncArg.resourceManager = resourceManager;
-    //     userFuncArg.operands = getKernelParameters(inst);
-
-    //     if (batch && (batch->access(static_cast<BaseArray*>(userFuncArg.operands[0])) ||
-    //                   batch->write(static_cast<BaseArray*>(userFuncArg.operands[1]))))
-    //     {
-    //         executeBatch();
-    //     }
-    //     return Reduce::bh_reduce(inst, &userFuncArg);
-    // }
-    // catch (bh_error e)
-    // {
-    //     return e;
-    // }
+    std::vector<KernelParameter*> operands = getKernelParameters(inst);
+    if (batch && (batch->access(static_cast<BaseArray*>(operands[0])) ||
+                  batch->write(static_cast<BaseArray*>(operands[1]))))
+    {
+        executeBatch();
+    }
+    try {
+        SourceKernelCall sourceKernel = Reduce::generateKernel(inst, operands);
+        compileAndRun(sourceKernel);
+    }
+    catch (bh_error e)
+    {
+        return e;
+    }
+    return BH_SUCCESS;
 }
 
 void InstructionScheduler::registerFunction(bh_opcode opcode, bh_extmethod_impl extmethod_impl)

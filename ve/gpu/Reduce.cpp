@@ -25,16 +25,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include "GenerateSourceCode.hpp"
 #include "Reduce.hpp"
-#include "KernelParameter.hpp"
 #include "Scalar.hpp"
+#include "StringHasher.hpp"
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-typedef std::vector<std::pair<std::string, KernelParameter*>> ParameterList;
-static ParameterList parameterList;
-static bool accumulate;
-
-bh_error Reduce::bh_reduce(const bh_instruction* inst, const UserFuncArg* userFuncArg)
+SourceKernelCall Reduce::generateKernel(const bh_instruction* inst, 
+                                        const std::vector<KernelParameter*> operands)
 {
+#ifdef BH_TIMING
+    bh_uint64 start = bh::Timer<>::stamp();
+#endif
+    bool accumulate;
     switch (inst->opcode)
     {
     case BH_ADD_ACCUMULATE:
@@ -80,94 +81,101 @@ bh_error Reduce::bh_reduce(const bh_instruction* inst, const UserFuncArg* userFu
                 ++a;
         }
     }
-#ifndef STATIC_KERNEL
+
+    std::vector<KernelParameter*> sizeParameters;
+    std::stringstream defines;
+    std::stringstream functionDeclaration;
+
+    functionDeclaration << "(\n#ifndef STATIC_KERNEL";
+
     for (size_t i = 0; i < shape.size(); ++i)
     {
         {
             std::stringstream ss;
             ss << "ds" << shape.size()-(i+1);
-            parameterList.push_back(std::make_pair(ss.str(), new Scalar(shape[i])));
+            Scalar* s = new Scalar(shape[i]);
+            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+            sizeParameters.push_back(s);
+            functionDeclaration << "\n\t" << (i==0?" ":", ") << *s << " " << ss.str();
         }{
             std::stringstream ss;
             ss << "v0s" << shape.size()-i;
-            parameterList.push_back(std::make_pair(ss.str(), new Scalar(out->stride[i])));
+            Scalar* s = new Scalar(out->stride[i]);
+            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+            sizeParameters.push_back(s);
+            functionDeclaration << "\n\t, " << *s << " " << ss.str();
         }{
             std::stringstream ss;
             ss << "v1s" << shape.size()-i;
-            parameterList.push_back(std::make_pair(ss.str(), new Scalar(inn.stride[i])));
+            Scalar* s = new Scalar(inn.stride[i]);
+            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+            sizeParameters.push_back(s);
+            functionDeclaration << "\n\t, " << *s << " " << ss.str();
         }
     }
-    parameterList.push_back(std::make_pair("v0s0", new Scalar(out->start)));
-    parameterList.push_back(std::make_pair("v1s0", new Scalar(inn.start)));
-    parameterList.push_back(std::make_pair("N", new Scalar(in->shape[axis])));
-    parameterList.push_back(std::make_pair("S", new Scalar(in->stride[axis])));
-#endif
-    parameterList.push_back(std::make_pair("out",userFuncArg->operands[0]));
-    parameterList.push_back(std::make_pair("in",userFuncArg->operands[1]));
-    std::vector<bh_view> views;
-    views.push_back(inst->operand[0]);
-    views.push_back(inn);
-    Kernel kernel = getKernel(inst, views, userFuncArg, shape);
-    std::vector<size_t> globalShape;
-    for (int i = shape.size()-1; i>=0 && shape.size()-i < 4; --i)
-        globalShape.push_back(shape[i]);
-    Kernel::Parameters kernelParameters;
-    ParameterList::iterator pit = parameterList.begin();
-    kernelParameters.push_back(std::make_pair(pit->second, true));
-    for (++pit; pit != parameterList.end(); ++pit)
-        kernelParameters.push_back(std::make_pair(pit->second, false));
-    kernel.call(kernelParameters, globalShape);
-    parameterList.clear();
-    return BH_SUCCESS;
-}
+    Scalar* s = new Scalar(out->start);
+    (defines << "#define v0s0 " <<= *s) << "\n";
+    sizeParameters.push_back(s);
+    functionDeclaration << "\n\t, " << *s << " v0s0";
+    s = new Scalar(inn.start);
+    (defines << "#define v1s0 " <<= *s) << "\n";
+    sizeParameters.push_back(s);
+    functionDeclaration << "\n\t, " << *s << " v1s0";
+    s = new Scalar(in->shape[axis]);
+    (defines << "#define N " <<= *s) << "\n";
+    sizeParameters.push_back(s);
+    functionDeclaration << "\n\t, " << *s << " N";
+    s = new Scalar(in->stride[axis]);
+    (defines << "#define S " <<= *s) << "\n";
+    sizeParameters.push_back(s);
+    functionDeclaration << "\n\t, " << *s << " S";
+    functionDeclaration << ", \n#endif\n";
+    functionDeclaration << "\n\t " << operands[0] << " out";
+    functionDeclaration << "\n\t, " << operands[1] << " in)\n";
 
-Kernel Reduce::getKernel(const bh_instruction* inst,
-                         const std::vector<bh_view>& views,
-                         const UserFuncArg* userFuncArg,
-                         const std::vector<bh_index> shape)
-{
-#ifdef BH_TIMING
-    bh_uint64 start = bh::Timer<>::stamp();
-#endif
-    std::string code = generateCode(inst, views, userFuncArg->operands[0]->type(), 
-                                    userFuncArg->operands[1]->type(), shape);
+    Kernel::Parameters valueParameters;
+    valueParameters.push_back(std::make_pair(operands[0], true));
+    valueParameters.push_back(std::make_pair(operands[1], false));
+
+    std::string functionBody = generateFunctionBody(inst, operands[0]->type(), operands[1]->type(), 
+                                                    shape, accumulate);
+    size_t functionID = string_hasher(functionBody);
+    size_t literalID = string_hasher(defines.str());
+
+    std::vector<size_t> kernelShape;
+    for (int i = shape.size()-1; i>=0 && shape.size()-i < 4; --i)
+        kernelShape.push_back(shape[i]);
+    
+    std::stringstream source;
+    switch (operands[0]->type())
+    {
+    case OCL_FLOAT64:
+        source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+        break;
+    case OCL_COMPLEX64:
+    case OCL_COMPLEX128:
+        source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+        source << "#include <ocl_complex.h>\n";
+        break;
+    default:
+        break;
+    }
+    source << "#ifdef STATIC_KERNEL\n" << defines.str() << "#endif\n" << 
+        "__kernel void\n#ifndef STATIC_KERNEL\nkernel" << std::hex << functionID <<
+        "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() << 
+        "\n" << functionBody;
+    
 #ifdef BH_TIMING
     userFuncArg->resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
 #endif
-    size_t codeHash = string_hasher(code);
-    KernelMap::iterator kit = kernelMap.find(codeHash);
-    if (kit == kernelMap.end())
-    {
-        std::stringstream source, kname;
-        kname << "reduce" << std::hex << codeHash;
-        
-        switch (userFuncArg->operands[0]->type())
-        {
-        case OCL_FLOAT64:
-            source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-            break;
-        case OCL_COMPLEX64:
-        case OCL_COMPLEX128:
-            source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-            source << "#include <ocl_complex.h>\n";
-            break;
-        default:
-            break;
-        }
-        source << "__kernel void " << kname.str() << code;
-        Kernel kernel(userFuncArg->resourceManager, MIN(shape.size(),3), source.str(), kname.str());
-        kernelMap.insert(std::make_pair(codeHash, kernel));
-        return kernel;
-    } else {
-        return kit->second;
-    }
+    return SourceKernelCall(KernelID(functionID, literalID), kernelShape, source.str(), 
+                            sizeParameters, valueParameters);
 }
 
-
-std::string Reduce::generateCode(const bh_instruction* inst, 
-                                 const std::vector<bh_view>& views,
-                                 const OCLtype outType, const OCLtype inType,
-                                 const std::vector<bh_index> shape)
+std::string Reduce::generateFunctionBody(const bh_instruction* inst, 
+                                         const OCLtype outType, const OCLtype inType,
+                                         const std::vector<bh_index>& shape,
+                                         bool accumulate)
 {
     bh_opcode opcode = 0;
     switch (inst->opcode)
@@ -212,52 +220,32 @@ std::string Reduce::generateCode(const bh_instruction* inst,
     operands[0] = "accu";
     operands[1] = "accu";
     operands[2] = "in[element]";
-    source << "( ";
-    // Add kernel parameters
-    ParameterList::iterator pit = parameterList.begin();
-    source << *(pit->second) << " " << pit->first;
-    for (++pit; pit != parameterList.end(); ++pit)
-    {
-        source << "\n                     , " << *(pit->second) << " " << pit->first;
-    }
-    source << ")\n{\n";
-    generateGIDSource(shape, source);
+    source << "{\n";
+    generateGIDSource(shape.size(), source);
     std::stringstream indentss;
     indentss << "\t";
     for (size_t d = shape.size()-1; d > 2; --d)
     {
-#ifdef STATIC_KERNEL
-        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < " << 
-            shape[shape.size()-(d+1)] << "; ++ids" << d << ")\n" << indentss.str() << "{\n";
-#else
         source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < ds" << d << 
             "; ++ids" << d << ")\n" << indentss.str() << "{\n";
-#endif
         indentss << "\t";
     }
     std::string indent = indentss.str();
     source << indent << "size_t element = ";
-    generateOffsetSource(views, 1, source);
+    generateOffsetSource(shape.size(), 1, source);
     source << ";\n";
     source << indent << oclTypeStr(outType) << " accu = in[element];\n";
     if (accumulate)
         source << indent << "out[element] = accu;\n";
-#ifdef STATIC_KERNEL
-    const bh_view* in = &inst->operand[1];
-    bh_int64 axis = inst->constant.value.int64;
-    source << indent << "for (int i = 1; i < " << in->shape[axis] << "; ++i)\n" << indent 
-           << "{\n" << indent << "\telement += " << in->stride[axis] << ";\n\t";
-#else
     source << indent << "for (int i = 1; i < N; ++i)\n" << indent 
            << "{\n" << indent << "\telement += S;\n\t";
-#endif
     generateInstructionSource(opcode, {outType, inType}, operands, indent, source);
     if (accumulate)
     {
         source << indent << "\tout[element] = accu;\n" << indent << "}\n";
     } else {
         source << indent << "}\n" << indent << "out[";
-        generateOffsetSource(views, 0, source);
+        generateOffsetSource(shape.size(), 0, source);
         source << "] = accu;\n";
     }
     source << indent.substr(1) << "}\n";

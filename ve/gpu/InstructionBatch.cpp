@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
 #include "Scalar.hpp"
+#include "StringHasher.hpp"
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<KernelParameter*>& operands)

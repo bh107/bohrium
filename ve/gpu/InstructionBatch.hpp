@@ -27,7 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "BaseArray.hpp"
 #include "Kernel.hpp"
-#include "StringHasher.hpp"
 #include "SourceKernelCall.hpp"
 
 #define SCALAR_OFFSET (1<<16)
