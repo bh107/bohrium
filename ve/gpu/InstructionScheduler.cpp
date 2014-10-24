@@ -107,14 +107,18 @@ void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
         if (callQueue.empty())
         {
             KernelMap::iterator kit = kernelMap.find(kernelID);
-            assert(kit != kernelMap.end());
-            if (kernelID.second == 0)
+            if (kit == kernelMap.end())
             {
-                kit->second.call(sourceKernel.allParameters(), sourceKernel.shape());
-                sourceKernel.deleteBuffers();
+                callQueue.push_back(std::make_pair(kernelID,sourceKernel));
             } else {
-                kit->second.call(sourceKernel.valueParameters(), sourceKernel.shape());
-                sourceKernel.deleteBuffers();
+                if (kernelID.second == 0)
+                {
+                    kit->second.call(sourceKernel.allParameters(), sourceKernel.shape());
+                    sourceKernel.deleteBuffers();
+                } else {
+                    kit->second.call(sourceKernel.valueParameters(), sourceKernel.shape());
+                    sourceKernel.deleteBuffers();
+                }
             }
         } else {
             callQueue.push_back(std::make_pair(kernelID,sourceKernel));
