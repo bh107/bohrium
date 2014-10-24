@@ -457,7 +457,7 @@ void bh_dag_transitive_reduction(Graph &dag)
  * NB: invalidates all existing vertex and edge pointers.
  * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
- * Complexity: O(E^2 * (V + E))
+ * Complexity: O(E * (V + E))
  *
  * @dag The DAG to fuse
  */
@@ -466,40 +466,30 @@ void bh_dag_fuse_gentle(Graph &dag)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::edge_descriptor Edge;
     typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
 
     bool not_finished;
     do
     {
         not_finished = false;
-        BOOST_FOREACH(Edge e, edges(dag))
+        BOOST_FOREACH(const Vertex &v, vertices(dag))
         {
-            Vertex src = source(e, dag);
-            Vertex dst = target(e, dag);
-            /* NOTE: if we check for cycles after merging we
-             *  don't need the following two adjacent checks
-            {
-                auto adj = adjacent_vertices(src, dag);
-                if(distance(adj.first, adj.second) != 1)
-                    continue;
-            }
-            {
-                auto adj = inv_adjacent_vertices(dst, dag);
-                if(distance(adj.first, adj.second) != 1)
-                    continue;
-            }
-            */
-            if(!dag[src].fusible_gently(dag[dst]))
+            //The target vertex must me a leaf (no children)
+            const auto children = adjacent_vertices(v, dag);
+            if(distance(children.first, children.second) != 0)
                 continue;
 
-            Graph new_dag(dag);
-            bh_dag_merge_vertices(src, dst, new_dag);
-            if(bh_dag_cycles(new_dag))
+            //And only have one parent
+            const auto parent = inv_adjacent_vertices(v, dag);
+            if(distance(parent.first, parent.second) != 1)
                 continue;
 
-            //We merged successfully
-            dag = new_dag;
+            //And be gentle fusible with that parent
+            if(not dag[*parent.first].fusible_gently(dag[v]))
+                continue;
+
+            //Before we can merge the two vertices
+            bh_dag_merge_vertices(*parent.first, v, dag);
             not_finished = true;
             break;
         }
