@@ -58,6 +58,7 @@ void bh_dag_from_bhir(const bh_ir &bhir, Graph &dag)
     {
         throw logic_error("The kernel_list is not empty!");
     }
+    //Build a singleton DAG
     BOOST_FOREACH(const bh_instruction &instr, bhir.instr_list)
     {
         Vertex new_v = add_vertex(dag);
@@ -71,6 +72,41 @@ void bh_dag_from_bhir(const bh_ir &bhir, Graph &dag)
             {
                 if(k.dependency(dag[v]))
                     add_edge(v, new_v, dag);
+            }
+        }
+    }
+    //Add inputs and outputs from outside the instruction list
+    map<const bh_base*, Vertex> knowns_in, knowns_out;
+    BOOST_FOREACH(Vertex v, vertices(dag))
+    {
+        BOOST_FOREACH(const bh_instruction &instr, dag[v].instr_list())
+        {
+            const int nop = bh_operands(instr.opcode);
+            for(int i=1; i<nop; ++i)
+            {
+                if(bh_is_constant(&instr.operand[i]))
+                    continue;
+                const bh_base *b = instr.operand[i].base;
+                if(knowns_in.find(b) == knowns_in.end())
+                {
+                    knowns_in[b] = add_vertex(dag);
+                }
+                dag[knowns_in[b]].outputs.push_back(instr.operand[i]);
+                add_edge(knowns_in[b], v, dag);
+            }
+        }
+        BOOST_FOREACH(const bh_instruction &instr, dag[v].instr_list())
+        {
+            const int nop = bh_operands(instr.opcode);
+            if(nop > 0)
+            {
+                const bh_base *b = instr.operand[0].base;
+                if(knowns_out.find(b) == knowns_out.end())
+                {
+                    knowns_out[b] = add_vertex(dag);
+                }
+                dag[knowns_out[b]].inputs.push_back(instr.operand[0]);
+                add_edge(v, knowns_out[b], dag);
             }
         }
     }
@@ -93,6 +129,9 @@ void bh_dag_from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
 
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
+        if(kernel.instr_list().size() == 0)
+            continue;
+
         Vertex new_v = add_vertex(kernel, dag);
 
         //Add dependencies
@@ -126,7 +165,8 @@ void bh_dag_fill_kernels(const Graph &dag, std::vector<bh_ir_kernel> &kernels)
     topological_sort(dag, back_inserter(topological_order));
     BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
     {
-        kernels.push_back(dag[v]);
+        if(dag[v].instr_list().size() > 0)
+            kernels.push_back(dag[v]);
     }
 }
 

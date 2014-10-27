@@ -46,6 +46,10 @@ protected:
         ar & instrs;
     }
 
+    //The list of Bohrium instructions in this kernel
+    std::vector<bh_instruction> instrs;
+
+public:
     //List of input and output to this kernel.
     //NB: system instruction (e.g. BH_DISCARD) is
     //never part of kernel input or output
@@ -54,9 +58,6 @@ protected:
 
     //Lets of temporary base-arrays in this kernel.
     std::vector<const bh_base*> temps;
-
-    //The list of Bohrium instructions in this kernel
-    std::vector<bh_instruction> instrs;
 
 public:
 
