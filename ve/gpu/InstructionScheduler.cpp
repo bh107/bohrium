@@ -187,7 +187,7 @@ void InstructionScheduler::build(KernelID kernelID, const std::string source)
         KernelMap::iterator kit = kernelMap.find(kernelCall.first);
         if (kit != kernelMap.end())
         {
-            kit->second.call((kernelID.second==0?
+            kit->second.call((kernelCall.first.second==0?
                               kernelCall.second.allParameters():
                               kernelCall.second.valueParameters()),
                              kernelCall.second.shape());
