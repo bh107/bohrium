@@ -352,31 +352,32 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
         return false;
     if(a->start != b->start)
         return false;
-    int ia,ib;
-    for(ia=0,ib=0; ia<a->ndim && ib<b->ndim; ++ia,++ib)
+
+    int a_ndim = 0;
+    for(int i=0; i<a->ndim; ++i)
+        if(a->stride != 0)
+            ++a_ndim;
+    int b_ndim = 0;
+    for(int i=0; i<b->ndim; ++i)
+        if(b->stride != 0)
+            ++b_ndim;
+
+    if(a_ndim != b_ndim)
+        return false;
+
+    int ia=0, ib=0;
+    for(int i=0; i<a_ndim; ++i)
     {
-        while (a->stride[ia] == 0)
-            if (++ia >= a->ndim)
-                break;
-        while (b->stride[ib] == 0)
-            if (++ib >= b->ndim)
-                break;
+        while(a->stride[ia] == 0)
+            ++ia;
+        while(b->stride[ib] == 0)
+            ++ib;
         if(a->shape[ia] != b->shape[ib])
             return false;
         if(a->stride[ia] != b->stride[ib])
             return false;
     }
-    if(ia < a->ndim)
-        while (a->stride[ia] == 0)
-            if (++ia >= a->ndim)
-                break;
-    if(ib < b->ndim)
-        while (b->stride[ib] == 0)
-            if (++ib >= b->ndim)
-                break;
-    if (ia == a->ndim && ib == b->ndim)
-        return true;
-    return false;
+    return true;
 }
 
 /* Determines whether instruction 'a' depends on instruction 'b',
