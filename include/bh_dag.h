@@ -517,7 +517,7 @@ void bh_dag_fuse_gentle(Graph &dag)
             const auto child = adjacent_vertices(v, dag);
             const auto parent = inv_adjacent_vertices(v, dag);
 
-            //The target vertex must me a leaf (no child)
+            //If target vertex is a leaf (has no children)
             if(distance(child.first, child.second) == 0)
             {
                 //And only have one parent
@@ -527,8 +527,14 @@ void bh_dag_fuse_gentle(Graph &dag)
                 //And is gentle fusible with that parent
                 if(not dag[*parent.first].fusible_gently(dag[v]))
                     continue;
-            }//Or a root vertex (no parent)
-            else if(distance(parent.first, parent.second) == 0)
+
+                //The target and parent may fuse
+                bh_dag_merge_vertices(*parent.first, v, dag);
+                not_finished = true;
+                break;
+            }
+            //If target vertex is a root (has no parents)
+            if(distance(parent.first, parent.second) == 0)
             {
                 //And only have one child
                 if(distance(child.first, child.second) != 1)
@@ -537,14 +543,12 @@ void bh_dag_fuse_gentle(Graph &dag)
                 //And is gentle fusible with that child
                 if(not dag[*child.first].fusible_gently(dag[v]))
                     continue;
-            }
-            else
-                continue;
 
-            //Before we can merge the two vertices
-            bh_dag_merge_vertices(*parent.first, v, dag);
-            not_finished = true;
-            break;
+                //The target and the child may fuse
+                bh_dag_merge_vertices(*child.first, v, dag);
+                not_finished = true;
+                break;
+            }
         }
     }while(not_finished);
 }
