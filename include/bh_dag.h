@@ -562,5 +562,57 @@ void bh_dag_fuse_greedy(Graph &dag)
     }
 }
 
+/* Fuse vertices in the graph topologically, which is a non-optimal
+ * algorithm that fuses based on the instruction order.
+ * NB: invalidates all existing vertex and edge pointers.
+ * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
+ *
+ * Complexity: O(n) where 'n' is number of instruction
+ *
+ * @instr_list The instruction list
+ * @dag        The output DAG
+ */
+template <typename Graph>
+void bh_dag_fuse_topological(const std::vector<bh_instruction> &instr_list, Graph &dag)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+    Vertex vNULL = graph_traits<Graph>::null_vertex();
+
+    //Find kernels
+    vector<bh_ir_kernel> kernel_list;
+    vector<bh_instruction>::const_iterator it = instr_list.begin();
+    while(it != instr_list.end())
+    {
+        bh_ir_kernel kernel;
+        kernel.add_instr(*it);
+
+        int i=1;
+        for(it=it+1; it != instr_list.end(); ++it, ++i)
+        {
+            if(kernel.fusible(*it))
+            {
+                kernel.add_instr(*it);
+            }
+            else
+                break;
+        }
+        kernel_list.push_back(kernel);
+    }
+
+    //Fill the DAG
+    uint64_t i=0;
+    Vertex prev = vNULL;
+    dag = Graph(kernel_list.size());
+    BOOST_FOREACH(const Vertex &v, vertices(dag))
+    {
+        dag[v] = kernel_list[i++];
+        if(prev != vNULL)
+            add_edge(prev, v, dag);
+        prev = v;
+    }
+}
+
 #endif
 
