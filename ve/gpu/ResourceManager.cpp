@@ -38,6 +38,12 @@ If not, see <http://www.gnu.org/licenses/>.
 ResourceManager::ResourceManager(bh_component* _component) 
     : component(_component)
 {
+    char* dir = bh_component_config_lookup(component, "include");
+    if (dir == NULL)
+        includeStr = std::string("-I/opt/bohrium/gpu/include");
+    else
+        includeStr = std::string("-I") + std::string(dir);
+
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
     bool foundPlatform = false;
@@ -113,11 +119,6 @@ OCLtype ResourceManager::intpType()
 #ifdef BH_TIMING
 ResourceManager::~ResourceManager()
 {
-#ifdef STATIC_KERNEL
-    std::cout << "---------------- STATS: STATIC_KERNEL -------------------" << std::endl;
-#else
-    std::cout << "---------------- STATS: DYNAMIC_KERNEL ------------------" << std::endl;
-#endif
     delete batchBuild;
     delete codeGen;
     delete kernelGen;
@@ -269,7 +270,7 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
-        program.build(devices,(options+std::string(" ")+getIncludeStr()).c_str());
+        program.build(devices,(options+std::string(" ")+includeStr).c_str());
     } catch (cl::Error) {
 //#ifdef DEBUG
         std::cerr << "Program build error:\n";
@@ -350,14 +351,6 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl::Event event, cl_int eventSta
                 event.getProfilingInfo<CL_PROFILING_COMMAND_END>()});
 }
 #endif
-
-std::string ResourceManager::getIncludeStr()
-{
-    char* dir = bh_component_config_lookup(component, "include");
-    if (dir == NULL)
-        return std::string("-I/opt/bohrium/gpu/include");
-    return std::string("-I") + std::string(dir);
-}
 
 bh_error ResourceManager::childExecute(bh_ir* bhir)
 {

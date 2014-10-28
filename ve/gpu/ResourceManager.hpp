@@ -45,6 +45,8 @@ private:
     bool float64;
     void calcLocalShape();
     void registerExtensions(std::vector<std::string> extensions);
+    std::string includeStr;
+
 public:
 #ifdef BH_TIMING
     bh::Timer<>* batchBuild;
@@ -86,7 +88,6 @@ public:
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
-    std::string getIncludeStr();
     bool float64support();
     bh_error childExecute(bh_ir* bhir);
     OCLtype intpType();
