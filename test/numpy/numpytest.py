@@ -303,7 +303,9 @@ if __name__ == "__main__":
                             print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
                             print _C.FAIL + str(error_msg) + _C.ENDC
                         else:
-                            if not np.allclose(res1, res2, rtol=cls_inst.config['maxerror']):
+                            rtol = cls_inst.config['maxerror']
+                            atol = rtol * 0.1
+                            if not np.allclose(res1, res2, rtol=rtol, atol=atol):
                                 print _C.FAIL + "[Error] %s"%(name) + _C.ENDC
                                 print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
                                 print _C.OKGREEN + str(res1) + _C.ENDC

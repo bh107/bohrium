@@ -79,7 +79,7 @@ class test_gauss_20x20(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
+        self.config['maxerror'] = 0.001
         self.size = 20
 
         # Benchmark parameters
@@ -250,7 +250,7 @@ class test_lu(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
+        self.config['maxerror'] = 0.01
         self.size = 100
 
         # Benchmark parameters
