@@ -96,12 +96,19 @@ void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
 {
     size_t functionID = sourceKernel.id().first;
     std::map<size_t,size_t>::iterator kidit = knownKernelID.find(functionID);
-    if (kidit != knownKernelID.end())
-    {
+    if (kidit != knownKernelID.end() && (resourceManager->dynamicSizeKernel() ||
+                                         kidit->second == sourceKernel.literalID()))
+    {   /*
+         * We know the functionID, and if we are only building fixed size kernels 
+         * we also know the literalID
+         */
         KernelID kernelID(sourceKernel.functionID(),0); 
         if (kidit->second == sourceKernel.literalID())
         {
             kernelID.second = kidit->second;
+            assert(resourceManager->fixedSizeKernel());
+        } else {
+            assert(resourceManager->dynamicSizeKernel());
         }
         kernelMutex.lock();
         if (callQueue.empty())
@@ -125,12 +132,27 @@ void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
         }
         kernelMutex.unlock();
     } else { // New Kernel
-        knownKernelID.insert(sourceKernel.id());
+        KernelID kernelID = sourceKernel.id();
+        if (!resourceManager->fixedSizeKernel())
+            kernelID.second = 0;
+        knownKernelID.insert(kernelID);
         kernelMutex.lock();
-        callQueue.push_back(std::make_pair(sourceKernel.id(),sourceKernel));
+        callQueue.push_back(std::make_pair(kernelID,sourceKernel));
         kernelMutex.unlock();
-        std::thread(&InstructionScheduler::build, this, sourceKernel.id(), sourceKernel.source()).detach();
-        std::thread(&InstructionScheduler::build, this, KernelID(functionID,0), sourceKernel.source()).detach();
+        if (resourceManager->asyncCompile())
+        {
+            if (resourceManager->fixedSizeKernel())
+                std::thread(&InstructionScheduler::build, this, sourceKernel.id(), 
+                            sourceKernel.source()).detach();
+            if (resourceManager->dynamicSizeKernel())
+                std::thread(&InstructionScheduler::build, this, KernelID(functionID,0), 
+                            sourceKernel.source()).detach();
+        } else {
+            if (resourceManager->fixedSizeKernel())
+                build(sourceKernel.id(), sourceKernel.source());
+            if (resourceManager->dynamicSizeKernel())
+                build(KernelID(functionID,0), sourceKernel.source());
+        }
     }        
 }
 

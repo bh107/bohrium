@@ -43,6 +43,9 @@ private:
     std::vector<size_t> localShape2D;
     std::vector<size_t> localShape3D;
     bool float64;
+    bool _fixedSizeKernel;
+    bool _dynamicSizeKernel;
+    bool _asyncCompile;
     void calcLocalShape();
     void registerExtensions(std::vector<std::string> extensions);
     std::string includeStr;
@@ -88,7 +91,10 @@ public:
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
-    bool float64support();
+    bool float64support() const;
+    bool fixedSizeKernel() const;
+    bool dynamicSizeKernel() const;
+    bool asyncCompile() const;
     bh_error childExecute(bh_ir* bhir);
     OCLtype intpType();
 };

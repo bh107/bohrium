@@ -37,12 +37,37 @@ If not, see <http://www.gnu.org/licenses/>.
 
 ResourceManager::ResourceManager(bh_component* _component) 
     : component(_component)
+    , _fixedSizeKernel(true)
+    , _dynamicSizeKernel(true)
+    , _asyncCompile(true)
+
 {
     char* dir = bh_component_config_lookup(component, "include");
     if (dir == NULL)
         includeStr = std::string("-I/opt/bohrium/gpu/include");
     else
         includeStr = std::string("-I") + std::string(dir);
+
+    char* kernel_type = bh_component_config_lookup(component, "kernel");
+    if (kernel_type != NULL)
+    {
+        std::string kernelType(kernel_type);
+        if (kernelType.find("fixed") != std::string::npos)
+            _dynamicSizeKernel = false;
+        if (kernelType.find("dynamic") != std::string::npos)
+            _fixedSizeKernel = false;
+    }
+    char* compile_type = bh_component_config_lookup(component, "compile");
+    if (compile_type != NULL)
+    {
+        std::string compileType(compile_type);
+        if (compileType.find("sync") != std::string::npos && compileType.find("async") == std::string::npos)
+            _asyncCompile = false;
+    }
+
+    std::cout << "Async. compile: " << asyncCompile() << std::endl;
+    std::cout << "Fixed size kernel: " << fixedSizeKernel() << std::endl;
+    std::cout << "Dynamic size kernel: " << dynamicSizeKernel() << std::endl;
 
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -336,9 +361,24 @@ std::vector<size_t> ResourceManager::localShape(const std::vector<size_t>& globa
     }
 }
 
-bool ResourceManager::float64support()
+bool ResourceManager::float64support() const
 {
     return float64;
+}
+
+bool ResourceManager::fixedSizeKernel() const
+{
+    return _fixedSizeKernel;
+}
+
+bool ResourceManager::dynamicSizeKernel() const
+{
+    return _dynamicSizeKernel;
+}
+ 
+bool ResourceManager::asyncCompile() const
+{
+    return _asyncCompile;
 }
 
 #ifdef BH_TIMING
