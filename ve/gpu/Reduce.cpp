@@ -87,7 +87,7 @@ SourceKernelCall Reduce::generateKernel(const bh_instruction* inst,
     std::stringstream functionDeclaration;
 
     functionDeclaration << "(\n\t  " << *operands[0] << " out\n\t, " << *operands[1] << 
-        " in\n#ifndef STATIC_KERNEL";
+        " in\n#ifndef FIXED_SIZE";
     Kernel::Parameters valueParameters;
     valueParameters.push_back(std::make_pair(operands[0], true));
     valueParameters.push_back(std::make_pair(operands[1], false));
@@ -158,8 +158,8 @@ SourceKernelCall Reduce::generateKernel(const bh_instruction* inst,
     default:
         break;
     }
-    source << "#ifdef STATIC_KERNEL\n" << defines.str() << "#endif\n" << 
-        "__kernel void\n#ifndef STATIC_KERNEL\nkernel" << std::hex << functionID <<
+    source << "#ifdef FIXED_SIZE\n" << defines.str() << "#endif\n" << 
+        "__kernel void\n#ifndef FIXED_SIZE\nkernel" << std::hex << functionID <<
         "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() << 
         "\n" << functionBody;
     

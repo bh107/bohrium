@@ -234,7 +234,7 @@ SourceKernelCall InstructionBatch::generateKernel()
              kernelParameters.push_back(std::make_pair(pit->second, true));
     }
 
-    functionDeclaration << "\n#ifndef STATIC_KERNEL";
+    functionDeclaration << "\n#ifndef FIXED_SIZE";
     
     for (size_t i = 0; i < shape.size(); ++i)
     {
@@ -297,8 +297,8 @@ SourceKernelCall InstructionBatch::generateKernel()
         source << "#include <ocl_integer.h>\n";
     if (random)
         source << "#include <ocl_random.h>\n";
-    source << "#ifdef STATIC_KERNEL\n" << defines.str() << "#endif\n" << 
-        "__kernel void\n#ifndef STATIC_KERNEL\nkernel" << std::hex << functionID <<
+    source << "#ifdef FIXED_SIZE\n" << defines.str() << "#endif\n" << 
+        "__kernel void\n#ifndef FIXED_SIZE\nkernel" << std::hex << functionID <<
         "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() << 
         "\n" << functionBody;
     

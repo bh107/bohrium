@@ -178,7 +178,7 @@ void InstructionScheduler::build(KernelID kernelID, const std::string source)
 
     std::stringstream kname;
     kname << "kernel" <<  std::hex << kernelID.first << (kernelID.second==0?"":"_");
-    Kernel kernel(source, kname.str(), (kernelID.second==0?"":"-DSTATIC_KERNEL"));
+    Kernel kernel(source, kname.str(), (kernelID.second==0?"":"-DFIXED_SIZE"));
     kernelMutex.lock();
     kernelMap.insert(std::make_pair(kernelID, kernel));
     while (!callQueue.empty())
