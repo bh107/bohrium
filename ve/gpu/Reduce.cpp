@@ -164,7 +164,7 @@ SourceKernelCall Reduce::generateKernel(const bh_instruction* inst,
         "\n" << functionBody;
     
 #ifdef BH_TIMING
-    userFuncArg->resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
+    resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
 #endif
     return SourceKernelCall(KernelID(functionID, literalID), kernelShape, source.str(), 
                             sizeParameters, valueParameters);
