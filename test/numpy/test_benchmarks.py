@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 
 from numpytest import numpytest, BenchHelper
@@ -434,17 +435,17 @@ class test_jacobi_module(numpytest):#disabled
         self.config['maxerror'] = 0.00001
         self.size = 20
     def init(self):
-        print "We need to implement numpy.norm() for test_jacobi() to work"
+        print("We need to implement numpy.norm() for test_jacobi() to work")
         raise StopIteration()
         for t in ['bh.float32','bh.float64']:
             a = {}
             cmd  = "a[0] = self.array(({0},{0}),dtype={1});".format(self.size,t)
             cmd += "a[1] = self.array(({0}),dtype={1}); ".format(self.size,t)
             cmd += "a[0] += bh.diag(bh.add.reduce(a[0],-1));"
-            exec cmd
+            exec(cmd)
             yield (a,cmd)
 
     def test_jacobi_module(self,a):
         cmd = "res = la.jacobi(a[0],a[1]);"
-        exec cmd
+        exec(cmd)
         return (res,cmd)

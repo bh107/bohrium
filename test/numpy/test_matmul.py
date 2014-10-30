@@ -12,15 +12,15 @@ class test_matmul(numpytest):
                         a = {}
                         cmd  = "a[0] = self.array((%d,%d),%s);"%(m,k,t)
                         cmd += "a[1] = self.array((%d,%d),%s);"%(k,n,t)
-                        exec cmd
+                        exec(cmd)
                         yield (a,cmd)
 
     def test_matmul(self,a):
         cmd = "res = np.matmul(a[0],a[1])"
-        exec cmd
+        exec(cmd)
         return (res, cmd)
 
     def test_dot(self,a):
         cmd = "res = np.dot(a[0],a[1], no_matmul=True)"
-        exec cmd
+        exec(cmd)
         return (res, cmd)

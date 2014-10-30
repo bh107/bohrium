@@ -16,6 +16,7 @@ import re
 
 import numpy as np
 import bohrium as bh
+from functools import reduce
 
 class TYPES:
     NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
