@@ -11,7 +11,7 @@ import operator
 import datetime
 import os
 import sys
-import backend
+from bohrium import backend
 import math
 
 from libc.stdint cimport uint64_t, uint32_t
@@ -24,15 +24,15 @@ cdef extern from "Random123/philox.h":
 ctypedef r123array2x32 philox2x32_ctr_t
 ctypedef r123array1x32 philox2x32_key_t
 cdef extern from "Random123/philox.h":
-    philox2x32_ctr_t philox2x32(philox2x32_ctr_t, philox2x32_key_t) 
+    philox2x32_ctr_t philox2x32(philox2x32_ctr_t, philox2x32_key_t)
 cdef union ctr_t:
     philox2x32_ctr_t c
-    uint64_t ul 
+    uint64_t ul
 cdef union key_t:
     philox2x32_key_t k
-    uint32_t ui 
+    uint32_t ui
 
-cdef extern from "Python.h": 
+cdef extern from "Python.h":
     void* PyLong_AsVoidPtr(object)
 
 cdef class RandomState:
@@ -169,32 +169,32 @@ cdef class RandomState:
             self.key = state[2]
         except TypeError:
             raise ValueError("state is not a valid Random123 state")
-            
+
 
     def random123(self, size=None, bohrium=True):
         """
         New array of uniform pseudo numbers based on the random123 philox2x32 algorithm.
         NB: dtype is np.uint64 always
-        
+
         Parameters
         ----------
         shape       : tuple of ints
         Defines the shape of the returned array of random floats.
-        
+
         Returns
         -------
         out : Array of uniform pseudo numbers
         """
-        cdef ctr_t ctr 
+        cdef ctr_t ctr
         cdef ctr_t rnd
         cdef key_t key
         cdef uint64_t* array_data
         cdef long length
         cdef long i
-        
+
         ctr.ul = self.index
         key.ui = self.key
-        
+
         if size is None:
             length = 1
             rnd.c = philox2x32(ctr.c,key.k)
@@ -260,7 +260,7 @@ cdef class RandomState:
         #Convert random numbers to float in the interval [0.0, 1.0).
         max_value = dtype(numpy.iinfo(numpy.uint64).max)
         if size is None:
-            return numpy.dtype(dtype).type(r_uint) / max_value 
+            return numpy.dtype(dtype).type(r_uint) / max_value
         else:
             r = np.empty_like(r_uint, dtype=dtype)
             r[...] = r_uint
@@ -315,7 +315,7 @@ cdef class RandomState:
         r_uint = self.random123(size,bohrium) >> (64 - sys.maxint.bit_length())
         res = np.empty_like(r_uint, dtype=int)
         res[...] = r_uint
-        return res 
+        return res
 
     def randint(self, low, high=None, size=None, dtype=int, bohrium=True):
         """

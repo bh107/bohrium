@@ -20,10 +20,11 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
-from _util import dtype_equal
+from ._util import dtype_equal
 import numpy
-import backend
+from . import backend
 import operator
+from functools import reduce
 
 # This module consist of bohrium.ndarray methods
 

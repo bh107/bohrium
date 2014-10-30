@@ -10,7 +10,7 @@ import time
 import numexpr
 import os
 import ctypes
-import backend_numpy
+from . import backend_numpy
 
 class base(backend_numpy.base):
     """base array handle"""

@@ -8,7 +8,7 @@ import numpy as np
 import mmap
 import time
 import ctypes
-import backend
+from . import backend
 import os
 
 VCACHE_SIZE = int(os.environ.get("VCACHE_SIZE", 10))

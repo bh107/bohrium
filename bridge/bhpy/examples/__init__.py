@@ -5,10 +5,10 @@ Examples
 Some code examples
 
 """
-import gameoflife
-import jacobi_stencil
-import k_nearest_neighbor
-import shallow_water
-import sor
-import black_scholes
-import ndstencil
+from . import gameoflife
+from . import jacobi_stencil
+from . import k_nearest_neighbor
+from . import shallow_water
+from . import sor
+from . import black_scholes
+from . import ndstencil

@@ -9,7 +9,7 @@ import time
 import os
 import pygpu
 from pygpu.array import gpuarray as elemary
-import backend_numpy
+from . import backend_numpy
 
 cxt_string = os.environ.get("GPUARRAY_DEVICE", "opencl0:0")
 cxt = pygpu.init(cxt_string)

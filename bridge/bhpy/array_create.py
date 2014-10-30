@@ -4,11 +4,11 @@ Array Create Routines
 
 """
 import math
-import ndarray
-from ndarray import fix_returned_biclass
+from . import ndarray
+from .ndarray import fix_returned_biclass
 import numpy
-from _util import dtype_equal, dtype_in
-import backend
+from ._util import dtype_equal, dtype_in
+from . import backend
 
 @fix_returned_biclass
 def array(object, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
@@ -768,7 +768,7 @@ def save(file, arr):
 ###############################################################################
 
 import unittest
-import _info
+from . import _info
 
 class Tests(unittest.TestCase):
 

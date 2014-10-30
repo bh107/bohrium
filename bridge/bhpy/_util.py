@@ -21,13 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 """
 import numpy as np
-import _info
-import bhc
+from . import _info
+from . import bhc
 import atexit
 
 #Flush the delayed operations for Bohrium execution
 def flush(a=None):
-    from ndarray import check
+    from .ndarray import check
     if a is None or check(a):
         bhc.bh_runtime_flush()
 

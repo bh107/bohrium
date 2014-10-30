@@ -6,7 +6,7 @@ import ctypes
 import numpy
 from .. import bhc
 from .._util import dtype_name
-import backend
+from . import backend
 
 class base(backend.base):
     """base array handle"""

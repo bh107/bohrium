@@ -3,10 +3,10 @@ Array manipulation routines
 ~~~~
 
 """
-import array_create
+from . import array_create
 import numpy
-import ndarray
-from ndarray import fix_returned_biclass
+from . import ndarray
+from .ndarray import fix_returned_biclass
 
 @fix_returned_biclass
 def flatten(A):

@@ -21,14 +21,14 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 """
 from __future__ import print_function
-import _util
-import array_create
+from . import _util
+from . import array_create
 import numpy as np
-import _info
-from _util import dtype_equal
-from ndarray import get_bhc, get_base, fix_returned_biclass
-import ndarray
-import backend
+from . import _info
+from ._util import dtype_equal
+from .ndarray import get_bhc, get_base, fix_returned_biclass
+from . import ndarray
+from . import backend
 
 @fix_returned_biclass
 def extmethod(name, out, in1, in2):
