@@ -1,6 +1,6 @@
 #Test and demonstration of the NumPy Bridge.
+from __future__ import print_function
 from operator import mul
-from itertools import izip as zip
 from numbers import Number
 import subprocess
 import warnings
@@ -252,8 +252,8 @@ if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:],"f:e:t:",["file=", "exclude=",
                                                           "test="])
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(2)
     for o, a in opts:
         if o in ("-f", "--file"):
@@ -268,7 +268,7 @@ if __name__ == "__main__":
     if len(script_list) == 0:
         script_list = os.listdir(os.path.dirname(os.path.abspath(__file__)))
 
-    print "*"*3, "Testing the equivalency of Bohrium-NumPy and NumPy", "*"*3
+    print("*"*3, "Testing the equivalency of Bohrium-NumPy and NumPy", "*"*3)
     for i in xrange(len(script_list)):
         f = script_list[i]
 
@@ -283,7 +283,7 @@ if __name__ == "__main__":
                 #All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     name = "%s/%s/%s"%(f,cls[5:],mth[5:])
-                    print "Testing %s"%(name)
+                    print("Testing %s"%(name))
                     for (np_arys,cmd) in getattr(cls_inst,"init")():
                         #Get Bohrium arrays
                         bh_arys = []
@@ -300,16 +300,16 @@ if __name__ == "__main__":
                             if not np.isscalar(res2):
                                 res2 = res2.copy2numpy()
                         except RuntimeError as error_msg:
-                            print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
-                            print _C.FAIL + str(error_msg) + _C.ENDC
+                            print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
+                            print(_C.FAIL + str(error_msg) + _C.ENDC)
                         else:
                             rtol = cls_inst.config['maxerror']
                             atol = rtol * 0.1
                             if not np.allclose(res1, res2, rtol=rtol, atol=atol):
-                                print _C.FAIL + "[Error] %s"%(name) + _C.ENDC
-                                print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
-                                print _C.OKGREEN + str(res1) + _C.ENDC
-                                print _C.FAIL + str(res2) + _C.ENDC
+                                print(_C.FAIL + "[Error] %s"%(name) + _C.ENDC)
+                                print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
+                                print(_C.OKGREEN + str(res1) + _C.ENDC)
+                                print(_C.FAIL + str(res2) + _C.ENDC)
                                 sys.exit (1)
 
-    print "*"*24, "Finish", "*"*24
+    print("*"*24, "Finish", "*"*24)
