@@ -71,7 +71,7 @@ def ufunc(op, *args):
         out[:] = i1
     elif op.info['name'] in ufunc_cmds:
         cmd = "out[:] = %s"%ufunc_cmds[op.info['name']]
-        exec cmd
+        exec(cmd)
     else:
         raise NotImplementedError()
 
@@ -120,6 +120,4 @@ def random123(size, start_index, key):
 import atexit
 @atexit.register
 def shutdown():
-#    print "ufunc:", t_ufunc
-#    print "vcache size at exit: %d"%len(vcache)
     pass

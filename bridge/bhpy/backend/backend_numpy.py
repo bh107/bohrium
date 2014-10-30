@@ -58,7 +58,7 @@ def ufunc(op, *args):
     """Apply the 'op' on args, which is the output followed by one or two inputs"""
     args = views2numpy(args)
     if op.info['name'] == "identity":
-        exec "args[0][...] = args[1][...]"
+        exec("args[0][...] = args[1][...]")
     else:
         f = eval("np.%s"%op.info['name'])
         f(*args[1:], out=args[0])
@@ -110,6 +110,4 @@ def random123(size, start_index, key):
 import atexit
 @atexit.register
 def shutdown():
-#    print "ufunc:", t_ufunc
-#    print "vcache size at exit: %d"%len(vcache)
     pass

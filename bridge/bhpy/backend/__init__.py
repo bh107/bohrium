@@ -9,5 +9,5 @@ cmd = "from backend_%s import %s"%(b, mth[0])
 for m in mth[1:]:
     cmd += ",%s"%m
 
-exec cmd
+exec(cmd)
 

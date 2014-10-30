@@ -1,3 +1,4 @@
+from __future__ import print_function
 import itertools
 
 def cartesian(x, size):
@@ -7,17 +8,17 @@ def cartesian(x, size):
         stop = -size+1+i
         if stop==0: stop = None
         dist.append((start,stop))
-    stencil = [x[s] for s in [map((lambda se : slice(se[0],se[1])),i) 
-               for i in itertools.product(dist,  
+    stencil = [x[s] for s in [map((lambda se : slice(se[0],se[1])),i)
+               for i in itertools.product(dist,
                repeat=len(x.shape))]]
     return stencil
 
 def no_border(x, boarder):
-    stencil = [x[s] for s in [map((lambda se : slice(se[0],se[1])),i) 
-               for i in itertools.product([(boarder,-boarder)],  
+    stencil = [x[s] for s in [map((lambda se : slice(se[0],se[1])),i)
+               for i in itertools.product([(boarder,-boarder)],
                repeat=len(x.shape))]]
     return stencil[0]
-    
+
 def D2P9(x):
     if len(x.shape)!=2:
         raise Exception('Invalid shape for stencil'+str(len(x)))
@@ -25,7 +26,7 @@ def D2P9(x):
 
 def D3P27(x):
     if len(x.shape)!=3:
-        print len(x)
+        print(len(x))
         raise Exception('Invalid shape for stencil')
     return cartesian(x,3)
 
@@ -62,4 +63,4 @@ def diagonals(x, size):
             result.append(data[i])
     result.pop(2)
     return result
-    
+

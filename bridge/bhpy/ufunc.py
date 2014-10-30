@@ -20,6 +20,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
+from __future__ import print_function
 import _util
 import array_create
 import numpy as np
@@ -442,7 +443,7 @@ for op in _info.op.itervalues():
     ufuncs.append(ufunc(op))
 
 for f in ufuncs:
-    exec "%s = f"%f.info['name']
+    exec("%s = f"%f.info['name'])
 
 
 ###############################################################################
@@ -471,7 +472,7 @@ class Tests(unittest.TestCase):
             for type_sig in f.info['type_sig']:
                 if f.info['name'] == "identity":
                     continue
-                print f, type_sig
+                print(f, type_sig)
                 A = array_create.empty((4,4), dtype=type_sig[1])
                 if type_sig[1] == "bool":
                     assign(False, A)
@@ -493,9 +494,9 @@ class Tests(unittest.TestCase):
                 B = np.empty((4,4), dtype=type_sig[1])
                 B[...] = 3
                 if f.info['nop'] == 2:
-                    exec "np_res = np.%s(A)"%f.info['name']
+                    exec("np_res = np.%s(A)"%f.info['name'])
                 elif f.info['nop'] == 3:
-                    exec "np_res = np.%s(A,B)"%f.info['name']
+                    exec("np_res = np.%s(A,B)"%f.info['name'])
                 self.assertTrue(np.allclose(res,np_res))
 
 if __name__ == '__main__':
