@@ -1,3 +1,4 @@
+from __future__ import print_function
 ## 3D Lattice Boltzmann (BGK) model of a fluid.
 ## D3Q19 model. At each timestep, particle densities propagate
 ## outwards in the directions indicated in the figure. An

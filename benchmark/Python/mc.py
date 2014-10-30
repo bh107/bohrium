@@ -1,3 +1,4 @@
+from __future__ import print_function
 import util
 B = util.Benchmark()
 if B.bohrium:

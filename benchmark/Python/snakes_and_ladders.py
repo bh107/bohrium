@@ -1,4 +1,5 @@
 # By  Natalino Busa <https://gist.github.com/natalinobusa/4633275>
+from __future__ import print_function
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -105,7 +106,7 @@ def main():
         pyplot.show()
 
     if B.verbose:
-        print pr_end
+        print(pr_end)
 
     if B.outputfn:
         B.tofile(B.outputfn, {'res': pr_end})
