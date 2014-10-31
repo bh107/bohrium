@@ -65,10 +65,6 @@ ResourceManager::ResourceManager(bh_component* _component)
             _asyncCompile = false;
     }
 
-    std::cout << "Async. compile: " << asyncCompile() << std::endl;
-    std::cout << "Fixed size kernel: " << fixedSizeKernel() << std::endl;
-    std::cout << "Dynamic size kernel: " << dynamicSizeKernel() << std::endl;
-
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
     bool foundPlatform = false;
