@@ -22,12 +22,12 @@ class base(backend.base):
 
 class view(backend.view):
     """array view handle"""
-    def __init__(self, ndim, start, shape, stride, base):
-        super(view, self).__init__(ndim, start, shape, stride, base)
+    def __init__(self, ndim, start, shape, strides, base):
+        super(view, self).__init__(ndim, start, shape, strides, base)
         dtype = dtype_name(self.dtype)
         exec("base = bhc.bh_multi_array_%s_get_base(base.bhc_obj)"%dtype)
         f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype)
-        self.bhc_obj = f(base, ndim, start, shape, stride)
+        self.bhc_obj = f(base, ndim, start, shape, strides)
 
     def __del__(self):
         exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)"%dtype_name(self.dtype))

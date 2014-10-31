@@ -24,10 +24,10 @@ class base(backend_numpy.base):
 
 class view(backend_numpy.view):
     """array view handle"""
-    def __init__(self, ndim, start, shape, stride, base):
-        super(view, self).__init__(ndim, start, shape, stride, base)
+    def __init__(self, ndim, start, shape, strides, base):
+        super(view, self).__init__(ndim, start, shape, strides, base)
         self.clary = pygpu.gpuarray.from_gpudata(base.clary.gpudata, offset=self.start,\
-                dtype=base.dtype, shape=shape, strides=self.stride, writable=True, base=base.clary, cls=elemary)
+                dtype=base.dtype, shape=shape, strides=self.strides, writable=True, base=base.clary, cls=elemary)
 
 def views2clary(views):
     ret = []

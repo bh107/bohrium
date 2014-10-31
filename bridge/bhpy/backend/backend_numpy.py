@@ -33,10 +33,10 @@ class base(backend.base):
 
 class view(backend.view):
     """array view handle"""
-    def __init__(self, ndim, start, shape, stride, base):
-        super(view, self).__init__(ndim, start, shape, stride, base)
+    def __init__(self, ndim, start, shape, strides, base):
+        super(view, self).__init__(ndim, start, shape, strides, base)
         buf = np.frombuffer(self.base.mmap, dtype=self.dtype, offset=self.start)
-        self.ndarray = np.lib.stride_tricks.as_strided(buf, shape, self.stride)
+        self.ndarray = np.lib.stride_tricks.as_strided(buf, shape, self.strides)
 
 def views2numpy(views):
     ret = []
