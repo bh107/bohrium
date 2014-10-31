@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <Python.h>
+#include <structmember.h>
 #include <dlfcn.h>
 #include <bh_mem_signal.h>
 
@@ -51,6 +52,7 @@ typedef struct
 {
     BH_PyArrayObject base;
     PyObject *bhc_ary;
+    PyObject *bhc_view;
     int mmap_allocated;
 }BhArray;
 
@@ -255,6 +257,9 @@ BhArray_finalize(PyObject *self, PyObject *args)
     ((BhArray*)self)->bhc_ary = Py_None;
     Py_INCREF(Py_None);
 
+    ((BhArray*)self)->bhc_view = Py_None;
+    Py_INCREF(Py_None);
+
     if(_protected_malloc((BhArray *) self) != 0)
         return NULL;
 
@@ -276,16 +281,9 @@ BhArray_dealloc(BhArray* self)
 {
     assert(BhArray_CheckExact(self));
 
-    if(self->bhc_ary == NULL)
-        goto finish;
+    Py_XDECREF(self->bhc_view);
+    Py_XDECREF(self->bhc_ary);
 
-    if(self->bhc_ary == Py_None)
-    {
-        Py_DECREF(Py_None);
-        goto finish;
-    }
-    Py_DECREF(self->bhc_ary);
-finish:
     if(!PyArray_CHKFLAGS((PyArrayObject*)self, NPY_ARRAY_OWNDATA))
     {
         BhArrayType.tp_base->tp_dealloc((PyObject*)self);
@@ -525,26 +523,11 @@ static PyMethodDef BhArrayMethods[] = {
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
-static PyObject *
-BhArray_get_bhc_ary(BhArray *self, void *closure)
-{
-    Py_INCREF(self->bhc_ary);
-    return self->bhc_ary;
-}
-static int
-BhArray_set_bhc_ary(BhArray *self, PyObject *value, void *closure)
-{
-    Py_INCREF(value);
-    self->bhc_ary = value;
-    return 0;
-
-}
-static PyGetSetDef BhArray_getseters[] = {
-    {"bhc_ary",
-     (getter)BhArray_get_bhc_ary,
-     (setter)BhArray_set_bhc_ary,
-     "The Bohrium C-Bridge array",
-     NULL},
+static PyMemberDef BhArrayMembers[] = {
+    {"bhc_ary", T_OBJECT_EX, offsetof(BhArray, bhc_ary), 0,
+     "The Bohrium backend base-array"},
+    {"bhc_view", T_OBJECT_EX, offsetof(BhArray, bhc_view), 0,
+     "The Bohrium backend view-array"},
     {NULL}  /* Sentinel */
 };
 
@@ -733,8 +716,8 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_iter */
     0,                       /* tp_iternext */
     BhArrayMethods,          /* tp_methods */
-    0,                       /* tp_members */
-    BhArray_getseters,       /* tp_getset */
+    BhArrayMembers,          /* tp_members */
+    0,                       /* tp_getset */
     0,                       /* tp_base */
     0,                       /* tp_dict */
     0,                       /* tp_descr_get */

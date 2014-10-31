@@ -126,9 +126,16 @@ def identical_views(view1, view2):
     return True
 
 #Returns the Bohrium-C part of the array (supports both Bohrium or NumPy arrays)
-#NB: the returned object is always a view and should be
-#deleted after use through call to 'del_bhc_obj()'
+#NB: the returned object is always a view
 def get_bhc(ary):
+
+	#Lets see if we can use an already existing array-view
+    if hasattr(ary, 'bhc_view') and ary.bhc_view is not None:
+        if not identical_views(ary, ary.bhc_view):
+            ary.bhc_view = None
+        else:
+            return ary.bhc_view
+
     base = get_base(ary)
     if not check(base):
         raise TypeError("the base must be a Bohrium array")
@@ -158,7 +165,10 @@ def get_bhc(ary):
     shape = ary.shape if len(ary.shape) > 0 else (1,)
     strides = strides if len(strides) > 0 else (1,)
 
-    return backend.view(ndim, offset, shape, strides, base.bhc_ary)
+    ret = backend.view(ndim, offset, shape, strides, base.bhc_ary)
+    if(hasattr(ary, 'bhc_view')):
+        ary.bhc_view = ret
+    return ret
 
 #Delete the Bohrium-C part of the bohrium.ndarray and its base
 def del_bhc(ary):
