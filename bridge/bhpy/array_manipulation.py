@@ -7,6 +7,7 @@ from . import array_create
 import numpy
 from . import ndarray
 from .ndarray import fix_returned_biclass
+from itertools import izip as zip
 
 @fix_returned_biclass
 def flatten(A):
@@ -302,6 +303,57 @@ def reshape(a, *newshape):
         a = t
     return numpy.ndarray.reshape(a, newshape)
 
+def broadcast_arrays(*args):
+    """
+    Broadcast any number of arrays against each other.
+    NB: This function differ from NumPy in one way: it does not touch arrays
+        that does not need broadcasting
+
+    Parameters
+    ----------
+    `*args` : array_likes
+        The arrays to broadcast.
+
+    Returns
+    -------
+    broadcasted : list of arrays
+        These arrays are views on the original arrays or the untouched originals.
+        They are typically not contiguous.  Furthermore, more than one element of a
+        broadcasted array may refer to a single memory location.  If you
+        need to write to the arrays, make copies first.
+
+    Examples
+    --------
+    >>> x = np.array([[1,2,3]])
+    >>> y = np.array([[1],[2],[3]])
+    >>> np.broadcast_arrays(x, y)
+    [array([[1, 2, 3],
+           [1, 2, 3],
+           [1, 2, 3]]), array([[1, 1, 1],
+           [2, 2, 2],
+           [3, 3, 3]])]
+
+    Here is a useful idiom for getting contiguous copies instead of
+    non-contiguous views.
+
+    >>> [np.array(a) for a in np.broadcast_arrays(x, y)]
+    [array([[1, 2, 3],
+           [1, 2, 3],
+           [1, 2, 3]]), array([[1, 1, 1],
+           [2, 2, 2],
+           [3, 3, 3]])]
+
+    """
+    ret = []
+    bargs = numpy.broadcast_arrays(*args)
+    for a, b in zip(args, bargs):
+        if numpy.isscalar(a):
+            ret.append(b)
+        elif ndarray.identical_views(a, b):
+            ret.append(a)
+        else:
+            ret.append(b)
+    return ret
 
 ###############################################################################
 ################################ UNIT TEST ####################################

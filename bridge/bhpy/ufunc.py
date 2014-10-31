@@ -29,6 +29,7 @@ from ._util import dtype_equal
 from .ndarray import get_bhc, get_base, fix_returned_biclass
 from . import ndarray
 from . import backend
+from .array_manipulation import broadcast_arrays
 
 @fix_returned_biclass
 def extmethod(name, out, in1, in2):
@@ -68,7 +69,7 @@ def assign(a, out):
     """Copy data from array 'a' to 'out'"""
 
     if not np.isscalar(a):
-        (a,out) = np.broadcast_arrays(a,out)
+        (a,out) = broadcast_arrays(a,out)
 
     #We use a tmp array if the in-/out-put has memory conflicts
     if overlap_conflict(out, a):
@@ -119,7 +120,7 @@ class ufunc:
                 raise ValueError("Bohrium funcs doesn't support the '%s' argument"%str(k))
 
         #Broadcast the args
-        bargs = np.broadcast_arrays(*args)
+        bargs = broadcast_arrays(*args)
 
         #Pop the output from the 'bargs' list
         out = None

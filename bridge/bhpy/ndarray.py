@@ -111,6 +111,20 @@ def is_base(ary):
     b = get_base(ary)
     return b is ary
 
+def identical_views(view1, view2):
+    """Returns True when 'view1' equals 'view2'.
+       NB: the base may differ
+    """
+    if(view1.dtype != view2.dtype):
+        return False
+    if(view1.ndim != view2.ndim):
+        return False
+    if(list(view1.shape) != list(view2.shape)):
+        return False
+    if(list(view1.strides) != list(view2.strides)):
+        return False
+    return True
+
 #Returns the Bohrium-C part of the array (supports both Bohrium or NumPy arrays)
 #NB: the returned object is always a view and should be
 #deleted after use through call to 'del_bhc_obj()'
