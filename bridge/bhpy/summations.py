@@ -5,9 +5,9 @@ Summations and products
 Common linear algebra functions
 
 """
-import ufunc
+from . import ufunc
 import numpy
-import ndarray
+from . import ndarray
 
 def sum(a, axis=None, out=None):
     """

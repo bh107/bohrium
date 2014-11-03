@@ -33,7 +33,7 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
                 cmd = ""
                 for i in xrange(len(t)):
                     cmd += "a[%d] = self.array((10),np.dtype('%s') %s);"%(i, t[i],high)
-                exec cmd
+                exec(cmd)
                 yield (a,cmd)
 
     def test_ufunc(self,a):
@@ -49,6 +49,6 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
             for i in xrange(1,self.nops):
                 cmd += "a[%d],"%(i)
             cmd += "a[0])"
-        exec cmd
+        exec(cmd)
         return (a[0],cmd)
 

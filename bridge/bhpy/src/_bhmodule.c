@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <Python.h>
+#include <structmember.h>
 #include <dlfcn.h>
 #include <bh_mem_signal.h>
 
@@ -31,6 +32,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #else
     #define BH_PyArrayObject PyArrayObject
     #define NPY_ARRAY_OWNDATA NPY_OWNDATA
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+    #define NPY_PY3K
 #endif
 
 //Forward declaration
@@ -47,6 +52,7 @@ typedef struct
 {
     BH_PyArrayObject base;
     PyObject *bhc_ary;
+    PyObject *bhc_view;
     int mmap_allocated;
 }BhArray;
 
@@ -65,7 +71,12 @@ static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify
                                          "Oii", ary, force_allocation, nullify);
     if(data == NULL)
         return -1;
+
+#if defined(NPY_PY3K)
+    if(!PyLong_Check(data))
+#else
     if(!PyInt_Check(data))
+#endif
     {
         PyErr_SetString(PyExc_TypeError, "get_bhc_data_pointer(ary) should "
                 "return a Python integer that represents a memory address");
@@ -246,6 +257,9 @@ BhArray_finalize(PyObject *self, PyObject *args)
     ((BhArray*)self)->bhc_ary = Py_None;
     Py_INCREF(Py_None);
 
+    ((BhArray*)self)->bhc_view = Py_None;
+    Py_INCREF(Py_None);
+
     if(_protected_malloc((BhArray *) self) != 0)
         return NULL;
 
@@ -267,16 +281,9 @@ BhArray_dealloc(BhArray* self)
 {
     assert(BhArray_CheckExact(self));
 
-    if(self->bhc_ary == NULL)
-        goto finish;
+    Py_XDECREF(self->bhc_view);
+    Py_XDECREF(self->bhc_ary);
 
-    if(self->bhc_ary == Py_None)
-    {
-        Py_DECREF(Py_None);
-        goto finish;
-    }
-    Py_DECREF(self->bhc_ary);
-finish:
     if(!PyArray_CHKFLAGS((PyArrayObject*)self, NPY_ARRAY_OWNDATA))
     {
         BhArrayType.tp_base->tp_dealloc((PyObject*)self);
@@ -516,26 +523,11 @@ static PyMethodDef BhArrayMethods[] = {
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
-static PyObject *
-BhArray_get_bhc_ary(BhArray *self, void *closure)
-{
-    Py_INCREF(self->bhc_ary);
-    return self->bhc_ary;
-}
-static int
-BhArray_set_bhc_ary(BhArray *self, PyObject *value, void *closure)
-{
-    Py_INCREF(value);
-    self->bhc_ary = value;
-    return 0;
-
-}
-static PyGetSetDef BhArray_getseters[] = {
-    {"bhc_ary",
-     (getter)BhArray_get_bhc_ary,
-     (setter)BhArray_set_bhc_ary,
-     "The Bohrium C-Bridge array",
-     NULL},
+static PyMemberDef BhArrayMembers[] = {
+    {"bhc_ary", T_OBJECT_EX, offsetof(BhArray, bhc_ary), 0,
+     "The Bohrium backend base-array"},
+    {"bhc_view", T_OBJECT_EX, offsetof(BhArray, bhc_view), 0,
+     "The Bohrium backend view-array"},
     {NULL}  /* Sentinel */
 };
 
@@ -552,8 +544,13 @@ BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
         PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
         return -1;
     }
+#if defined(NPY_PY3K)
+    PyObject *low = PyLong_FromSsize_t(ilow);
+    PyObject *high = PyLong_FromSsize_t(ihigh);
+#else
     PyObject *low = PyInt_FromSsize_t(ilow);
     PyObject *high = PyInt_FromSsize_t(ihigh);
+#endif
     PyObject *slice = PySlice_New(low, high, NULL);
     PyObject *ret = PyObject_CallMethod(ufunc, "setitem", "OOO", o, slice, v);
     Py_XDECREF(low);
@@ -605,7 +602,11 @@ BhArray_GetItem(PyObject *o, PyObject *k)
         }
     }
     //If the result is a scalar we let NumPy handle it
+#if defined(NPY_PY3K)
+    if(PyLong_Check(k) || PyArray_IsScalar(k, Integer) || (PyIndex_Check(k) && !PySequence_Check(k)))
+#else
     if(PyArray_IsIntegerScalar(k) || (PyIndex_Check(k) && !PySequence_Check(k)))
+#endif
     {
         if(BhArray_data_bhc2np(o, NULL) == NULL)
             return NULL;
@@ -617,7 +618,11 @@ static PyObject *
 BhArray_GetSeqItem(PyObject *o, Py_ssize_t i)
 {
     //If we wrap the index 'i' into a Python Object we can simply use BhArray_GetItem
+#if defined(NPY_PY3K)
+    PyObject *index = PyLong_FromSsize_t(i);
+#else
     PyObject *index = PyInt_FromSsize_t(i);
+#endif
     if(index == NULL)
         return NULL;
     PyObject *ret = BhArray_GetItem(o, index);
@@ -670,8 +675,12 @@ BhArray_Str(PyObject *self)
 #include "operator_overload.c"
 
 static PyTypeObject BhArrayType = {
+#if defined(NPY_PY3K)
+    PyVarObject_HEAD_INIT(NULL, 0)
+#else
     PyObject_HEAD_INIT(NULL)
     0,                       /* ob_size */
+#endif
     "bohrium.ndarray",       /* tp_name */
     sizeof(BhArray),         /* tp_basicsize */
     0,                       /* tp_itemsize */
@@ -679,7 +688,11 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_print */
     0,                       /* tp_getattr */
     0,                       /* tp_setattr */
+#if defined(NPY_PY3K)
+    0,                       /* tp_reserved */
+#else
     0,                       /* tp_compare */
+#endif
     &BhArray_Repr,           /* tp_repr */
     &array_as_number,        /* tp_as_number */
     &array_as_sequence,      /* tp_as_sequence */
@@ -690,9 +703,11 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_getattro */
     0,                       /* tp_setattro */
     0,                       /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT |
-      Py_TPFLAGS_BASETYPE |
-      Py_TPFLAGS_CHECKTYPES, /* tp_flags */
+    Py_TPFLAGS_DEFAULT
+#if !defined(NPY_PY3K)
+    | Py_TPFLAGS_CHECKTYPES
+#endif
+    | Py_TPFLAGS_BASETYPE,   /* tp_flags */
     0,                       /* tp_doc */
     0,                       /* tp_traverse */
     0,                       /* tp_clear */
@@ -701,8 +716,8 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_iter */
     0,                       /* tp_iternext */
     BhArrayMethods,          /* tp_methods */
-    0,                       /* tp_members */
-    BhArray_getseters,       /* tp_getset */
+    BhArrayMembers,          /* tp_members */
+    0,                       /* tp_getset */
     0,                       /* tp_base */
     0,                       /* tp_dict */
     0,                       /* tp_descr_get */
@@ -711,44 +726,76 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_init */
     BhArray_alloc,           /* tp_alloc */
     BhArray_new,             /* tp_new */
+    0,                                          /* tp_free */
+    0,                                          /* tp_is_gc */
+    0,                                          /* tp_bases */
+    0,                                          /* tp_mro */
+    0,                                          /* tp_cache */
+    0,                                          /* tp_subclasses */
+    0,                                          /* tp_weaklist */
+    0,                                          /* tp_del */
+    0,                                          /* tp_version_tag */
 };
 
-PyMODINIT_FUNC
-init_bh(void)
+#if defined(NPY_PY3K)
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "_bh",
+        NULL,
+        -1,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+#endif
+
+#if defined(NPY_PY3K)
+#define RETVAL m
+PyMODINIT_FUNC PyInit_bh(void)
+#else
+#define RETVAL
+PyMODINIT_FUNC init_bh(void)
+#endif
 {
     PyObject *m;
     Py_ssize_t i;
 
+#if defined(NPY_PY3K)
+    m = PyModule_Create(&moduledef);
+#else
     m = Py_InitModule("_bh", NULL);
+#endif
     if (m == NULL)
-        return;
+        return RETVAL;
 
     //Import NumPy
     import_array();
 
     BhArrayType.tp_base = &PyArray_Type;
     if (PyType_Ready(&BhArrayType) < 0)
-        return;
+        return RETVAL;
 
     PyObject *_info = PyImport_ImportModule("bohrium._info");
     if(_info == NULL)
-        return;
+        return RETVAL;
 
     //HACK: In order to force NumPy scalars on the left hand side of an operand to use Bohrium
     //we add all scalar types to the Method Resolution Order tuple.
     PyObject *dtypes = PyObject_GetAttrString(_info, "numpy_types");
     if(dtypes == NULL)
-        return;
+        return RETVAL;
     Py_ssize_t ndtypes = PyList_GET_SIZE(dtypes);
     Py_ssize_t old_size = PyTuple_GET_SIZE(BhArrayType.tp_mro);
     Py_ssize_t new_size = old_size + ndtypes;
     if(_PyTuple_Resize(&BhArrayType.tp_mro, new_size) != 0)
-        return;
+        return RETVAL;
     for(i=0; i<ndtypes; ++i)
     {
         PyObject *t = PyObject_GetAttrString(PyList_GET_ITEM(dtypes, i), "type");
         if(t == NULL)
-            return;
+            return RETVAL;
         PyTuple_SET_ITEM(BhArrayType.tp_mro, i+old_size, t);
     }
     Py_DECREF(_info);
@@ -757,17 +804,18 @@ init_bh(void)
 
     ndarray = PyImport_ImportModule("bohrium.ndarray");
     if(ndarray == NULL)
-        return;
+        return RETVAL;
     ufunc = PyImport_ImportModule("bohrium.ufunc");
     if(ufunc == NULL)
-        return;
+        return RETVAL;
     bohrium = PyImport_ImportModule("bohrium");
     if(bohrium == NULL)
-        return;
+        return RETVAL;
     array_create = PyImport_ImportModule("bohrium.array_create");
     if(array_create == NULL)
-        return;
+        return RETVAL;
 
     //Initialize the signal handler
     bh_mem_signal_init();
+    return RETVAL;
 }

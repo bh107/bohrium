@@ -37,7 +37,34 @@ If not, see <http://www.gnu.org/licenses/>.
 
 ResourceManager::ResourceManager(bh_component* _component) 
     : component(_component)
+    , _fixedSizeKernel(true)
+    , _dynamicSizeKernel(true)
+    , _asyncCompile(true)
+
 {
+    char* dir = bh_component_config_lookup(component, "include");
+    if (dir == NULL)
+        includeStr = std::string("-I/opt/bohrium/gpu/include");
+    else
+        includeStr = std::string("-I") + std::string(dir);
+
+    char* kernel_type = bh_component_config_lookup(component, "kernel");
+    if (kernel_type != NULL)
+    {
+        std::string kernelType(kernel_type);
+        if (kernelType.find("fixed") != std::string::npos)
+            _dynamicSizeKernel = false;
+        if (kernelType.find("dynamic") != std::string::npos)
+            _fixedSizeKernel = false;
+    }
+    char* compile_type = bh_component_config_lookup(component, "compile");
+    if (compile_type != NULL)
+    {
+        std::string compileType(compile_type);
+        if (compileType.find("sync") != std::string::npos && compileType.find("async") == std::string::npos)
+            _asyncCompile = false;
+    }
+
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
     bool foundPlatform = false;
@@ -113,11 +140,6 @@ OCLtype ResourceManager::intpType()
 #ifdef BH_TIMING
 ResourceManager::~ResourceManager()
 {
-#ifdef STATIC_KERNEL
-    std::cout << "---------------- STATS: STATIC_KERNEL -------------------" << std::endl;
-#else
-    std::cout << "---------------- STATS: DYNAMIC_KERNEL ------------------" << std::endl;
-#endif
     delete batchBuild;
     delete codeGen;
     delete kernelGen;
@@ -161,10 +183,8 @@ void ResourceManager::calcLocalShape()
 
 void ResourceManager::registerExtensions(std::vector<std::string> extensions)
 {
-    float16 = extensions[0].find("cl_khr_fp16") != std::string::npos;
     float64 = extensions[0].find("cl_khr_fp64") != std::string::npos;
 #ifdef DEBUG
-    std::cout << "ResourceManager.float16 = " << float16 << std::endl;
     std::cout << "ResourceManager.float64 = " << float64 << std::endl;
 #endif
 }
@@ -233,13 +253,15 @@ cl::Event ResourceManager::completeEvent()
 }
 
 cl::Kernel ResourceManager::createKernel(const std::string& source, 
-                                          const std::string& kernelName)
+                                         const std::string& kernelName,
+                                         const std::string& options)
 {
-    return createKernels(source, std::vector<std::string>(1,kernelName)).front();
+    return createKernels(source, std::vector<std::string>(1,kernelName), options).front();
 }
 
 std::vector<cl::Kernel> ResourceManager::createKernelsFromFile(const std::string& fileName, 
-                                                               const std::vector<std::string>& kernelNames)
+                                                               const std::vector<std::string>& kernelNames,
+                                                               const std::string& options)
 {
     std::ifstream file(fileName.c_str(), std::ios::in);
     if (!file.is_open())
@@ -248,11 +270,12 @@ std::vector<cl::Kernel> ResourceManager::createKernelsFromFile(const std::string
     }
     std::ostringstream source;
     source << file.rdbuf();
-    return createKernels(source.str(), kernelNames);
+    return createKernels(source.str(), kernelNames, options);
 }
 
 std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source, 
-                                                       const std::vector<std::string>& kernelNames)
+                                                       const std::vector<std::string>& kernelNames,
+                                                       const std::string& options)
 {
 #ifdef BH_TIMING
     bh_uint64 start = bh::Timer<>::stamp(); 
@@ -260,6 +283,7 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
 
 #ifdef DEBUG
     std::cout << "Program build :\n";
+    std::cout << "Options :" << options << "\n";
     std::cout << "------------------- SOURCE -----------------------\n";
     std::cout << source;
     std::cout << "------------------ SOURCE END --------------------" << std::endl;
@@ -267,10 +291,11 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
-        program.build(devices,getIncludeStr().c_str());
+        program.build(devices,(options+std::string(" ")+includeStr).c_str());
     } catch (cl::Error) {
 //#ifdef DEBUG
         std::cerr << "Program build error:\n";
+        std::cout << "Options :" << options << "\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
@@ -332,14 +357,24 @@ std::vector<size_t> ResourceManager::localShape(const std::vector<size_t>& globa
     }
 }
 
-bool ResourceManager::float16support()
-{
-    return float16;
-}
-
-bool ResourceManager::float64support()
+bool ResourceManager::float64support() const
 {
     return float64;
+}
+
+bool ResourceManager::fixedSizeKernel() const
+{
+    return _fixedSizeKernel;
+}
+
+bool ResourceManager::dynamicSizeKernel() const
+{
+    return _dynamicSizeKernel;
+}
+ 
+bool ResourceManager::asyncCompile() const
+{
+    return _asyncCompile;
 }
 
 #ifdef BH_TIMING
@@ -352,14 +387,6 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl::Event event, cl_int eventSta
                 event.getProfilingInfo<CL_PROFILING_COMMAND_END>()});
 }
 #endif
-
-std::string ResourceManager::getIncludeStr()
-{
-    char* dir = bh_component_config_lookup(component, "include");
-    if (dir == NULL)
-        return std::string("/opt/bohrium/gpu/include");
-    return std::string("-I") + std::string(dir);
-}
 
 bh_error ResourceManager::childExecute(bh_ir* bhir)
 {

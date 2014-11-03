@@ -3,35 +3,71 @@
 #include<bh_c.h>
 %}
 
-%typemap(in) uint64_t {
-    $1 = PyInt_AsUnsignedLongMask($input);
-}
 %typemap(in) bh_bool const {
     $1 = PyBool_Check($input);
 }
+%typemap(in) uint64_t {
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsUnsignedLongMask($input);
+    %#else
+        $1 = PyInt_AsUnsignedLongMask($input);
+    %#endif
+}
 %typemap(in) bh_int8 const {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_int16 const {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_int32 const {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_int64 const {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_uint8 const {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_uint16 const {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_uint32 const {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_uint64 const {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_float64 const {
     $1 = PyFloat_AsDouble($input);
@@ -51,28 +87,60 @@
     $1 = PyBool_Check($input);
 }
 %typemap(in) bh_int8 {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_int16 {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_int32 {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_int64 {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_uint8 {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_uint16 {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_uint32 {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_uint64 {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) bh_float64 {
     $1 = PyFloat_AsDouble($input);
@@ -89,7 +157,11 @@
     $1.imag = PyComplex_ImagAsDouble($input);
 }
 %typemap(in) int64_t const {
-    $1 = PyInt_AsLong($input);
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
 }
 %typemap(in) int64_t const * (int64_t temp[32]) {
   int i;
@@ -103,11 +175,21 @@
   }
   for (i = 0; i < PySequence_Length($input); i++) {
     PyObject *o = PySequence_GetItem($input,i);
-    if(PyInt_Check(o)) {
-      temp[i] = PyInt_AsLong(o);
-    } else {
-      PyErr_SetString(PyExc_ValueError,"Sequence elements must be Python integers");
-      return NULL;
+ %#if PY_MAJOR_VERSION >= 3
+    if(PyLong_Check(o))
+ %#else
+    if(PyInt_Check(o))
+ %#endif
+    {
+        %#if PY_MAJOR_VERSION >= 3
+            temp[i] = PyLong_AsLong(o);
+        %#else
+            temp[i] = PyInt_AsLong(o);
+        %#endif
+    } else
+    {
+        PyErr_SetString(PyExc_ValueError,"Sequence elements must be Python integers");
+        return NULL;
     }
   }
   $1 = temp;

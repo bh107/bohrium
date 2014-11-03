@@ -6,7 +6,7 @@ class test_array_create(numpytest):
         for t in  TYPES.NORMAL:
             a = {}
             cmd = "a[0] = np.zeros(%d,dtype=%s)"%(100,t)
-            exec cmd
+            exec(cmd)
             yield (a,cmd)
 
     def test_zeros(self,a):

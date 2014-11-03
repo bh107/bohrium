@@ -20,10 +20,11 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
-from _util import dtype_equal
+from ._util import dtype_equal
 import numpy
-import backend
+from . import backend
 import operator
+from functools import reduce
 
 # This module consist of bohrium.ndarray methods
 
@@ -110,10 +111,31 @@ def is_base(ary):
     b = get_base(ary)
     return b is ary
 
+def identical_views(view1, view2):
+    """Returns True when 'view1' equals 'view2'.
+       NB: the base may differ
+    """
+    if(view1.dtype != view2.dtype):
+        return False
+    if(view1.ndim != view2.ndim):
+        return False
+    if(list(view1.shape) != list(view2.shape)):
+        return False
+    if(list(view1.strides) != list(view2.strides)):
+        return False
+    return True
+
 #Returns the Bohrium-C part of the array (supports both Bohrium or NumPy arrays)
-#NB: the returned object is always a view and should be
-#deleted after use through call to 'del_bhc_obj()'
+#NB: the returned object is always a view
 def get_bhc(ary):
+
+    #Lets see if we can use an already existing array-view
+    if hasattr(ary, 'bhc_view') and ary.bhc_view is not None:
+        if not identical_views(ary, ary.bhc_view):
+            ary.bhc_view = None
+        else:
+            return ary.bhc_view
+
     base = get_base(ary)
     if not check(base):
         raise TypeError("the base must be a Bohrium array")
@@ -143,7 +165,10 @@ def get_bhc(ary):
     shape = ary.shape if len(ary.shape) > 0 else (1,)
     strides = strides if len(strides) > 0 else (1,)
 
-    return backend.view(ndim, offset, shape, strides, base.bhc_ary)
+    ret = backend.view(ndim, offset, shape, strides, base.bhc_ary)
+    if(hasattr(ary, 'bhc_view')):
+        ary.bhc_view = ret
+    return ret
 
 #Delete the Bohrium-C part of the bohrium.ndarray and its base
 def del_bhc(ary):

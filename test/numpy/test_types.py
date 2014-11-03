@@ -10,10 +10,10 @@ class test_different_inputs(numpytest):
                 a = {}
                 v =  "a[0] = self.array((10),%s);"%(t1)
                 v += "a[1] = self.array((10),%s);"%(t2)
-                exec v
+                exec(v)
                 yield (a,v)
 
     def test_typecast(self,a):
         cmd = "res = a[0] + a[1]"
-        exec cmd
+        exec(cmd)
         return (res,cmd)      

@@ -20,14 +20,16 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 """
-import _util
-import array_create
+from __future__ import print_function
+from . import _util
+from . import array_create
 import numpy as np
-import _info
-from _util import dtype_equal
-from ndarray import get_bhc, get_base, fix_returned_biclass
-import ndarray
-import backend
+from . import _info
+from ._util import dtype_equal
+from .ndarray import get_bhc, get_base, fix_returned_biclass
+from . import ndarray
+from . import backend
+from .array_manipulation import broadcast_arrays
 
 @fix_returned_biclass
 def extmethod(name, out, in1, in2):
@@ -67,7 +69,7 @@ def assign(a, out):
     """Copy data from array 'a' to 'out'"""
 
     if not np.isscalar(a):
-        (a,out) = np.broadcast_arrays(a,out)
+        (a,out) = broadcast_arrays(a,out)
 
     #We use a tmp array if the in-/out-put has memory conflicts
     if overlap_conflict(out, a):
@@ -118,7 +120,7 @@ class ufunc:
                 raise ValueError("Bohrium funcs doesn't support the '%s' argument"%str(k))
 
         #Broadcast the args
-        bargs = np.broadcast_arrays(*args)
+        bargs = broadcast_arrays(*args)
 
         #Pop the output from the 'bargs' list
         out = None
@@ -442,7 +444,7 @@ for op in _info.op.itervalues():
     ufuncs.append(ufunc(op))
 
 for f in ufuncs:
-    exec "%s = f"%f.info['name']
+    exec("%s = f"%f.info['name'])
 
 
 ###############################################################################
@@ -471,7 +473,7 @@ class Tests(unittest.TestCase):
             for type_sig in f.info['type_sig']:
                 if f.info['name'] == "identity":
                     continue
-                print f, type_sig
+                print(f, type_sig)
                 A = array_create.empty((4,4), dtype=type_sig[1])
                 if type_sig[1] == "bool":
                     assign(False, A)
@@ -493,9 +495,9 @@ class Tests(unittest.TestCase):
                 B = np.empty((4,4), dtype=type_sig[1])
                 B[...] = 3
                 if f.info['nop'] == 2:
-                    exec "np_res = np.%s(A)"%f.info['name']
+                    exec("np_res = np.%s(A)"%f.info['name'])
                 elif f.info['nop'] == 3:
-                    exec "np_res = np.%s(A,B)"%f.info['name']
+                    exec("np_res = np.%s(A,B)"%f.info['name'])
                 self.assertTrue(np.allclose(res,np_res))
 
 if __name__ == '__main__':

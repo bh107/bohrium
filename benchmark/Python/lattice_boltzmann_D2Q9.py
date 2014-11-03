@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 The Lattice Boltzmann Methods D2Q9
 ------------

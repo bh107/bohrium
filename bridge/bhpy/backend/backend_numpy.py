@@ -8,7 +8,7 @@ import numpy as np
 import mmap
 import time
 import ctypes
-import backend
+from . import backend
 import os
 
 VCACHE_SIZE = int(os.environ.get("VCACHE_SIZE", 10))
@@ -33,10 +33,10 @@ class base(backend.base):
 
 class view(backend.view):
     """array view handle"""
-    def __init__(self, ndim, start, shape, stride, base):
-        super(view, self).__init__(ndim, start, shape, stride, base)
+    def __init__(self, ndim, start, shape, strides, base):
+        super(view, self).__init__(ndim, start, shape, strides, base)
         buf = np.frombuffer(self.base.mmap, dtype=self.dtype, offset=self.start)
-        self.ndarray = np.lib.stride_tricks.as_strided(buf, shape, self.stride)
+        self.ndarray = np.lib.stride_tricks.as_strided(buf, shape, self.strides)
 
 def views2numpy(views):
     ret = []
@@ -58,7 +58,7 @@ def ufunc(op, *args):
     """Apply the 'op' on args, which is the output followed by one or two inputs"""
     args = views2numpy(args)
     if op.info['name'] == "identity":
-        exec "args[0][...] = args[1][...]"
+        exec("args[0][...] = args[1][...]")
     else:
         f = eval("np.%s"%op.info['name'])
         f(*args[1:], out=args[0])
@@ -110,6 +110,4 @@ def random123(size, start_index, key):
 import atexit
 @atexit.register
 def shutdown():
-#    print "ufunc:", t_ufunc
-#    print "vcache size at exit: %d"%len(vcache)
     pass

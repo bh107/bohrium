@@ -21,13 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 """
 import numpy as np
-import _info
-import bhc
+from . import _info
+from . import bhc
 import atexit
 
 #Flush the delayed operations for Bohrium execution
 def flush(a=None):
-    from ndarray import check
+    from .ndarray import check
     if a is None or check(a):
         bhc.bh_runtime_flush()
 
@@ -62,7 +62,6 @@ def dtype_in(dtype, dtypes):
     return False
 
 #Returns the Bohrium name of the data type of the object 'obj'
-#NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array
 def dtype_name(obj):
     t = dtype_of(obj)
     if dtype_in(t, [np.bool_, np.bool, bool]):

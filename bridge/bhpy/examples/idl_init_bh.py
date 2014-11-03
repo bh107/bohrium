@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from __future__ import print_function
 from time import time
 from sys import argv
 import bohrium as np
@@ -47,7 +46,7 @@ def calcB(B_x0, alpha=0.0,
     sinuy = np.sin(np.pi/y_max * u * y[:,None])                                                  # n²
     cosuy = np.cos(np.pi/y_max * u * y[:,None])                                                  # n²
     np.flush()
-    print "Setup calc:", time() -start
+    print("Setup calc:", time() -start)
     for i in xrange(n):
         start = time()
         for j in xrange(n):
@@ -72,7 +71,7 @@ def calcB(B_x0, alpha=0.0,
             del temp_z
             bzij.bohrium=False
             Bz[:,i,j] = bzij
-        print "Outer loop:", time()-start
+        print("Outer loop:", time()-start)
     return (Bx, By, Bz)
 
 if __name__ == '__main__':

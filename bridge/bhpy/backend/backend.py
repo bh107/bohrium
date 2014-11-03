@@ -8,13 +8,13 @@ class base(object):
 
 class view(object):
     """Abstract array view handle"""
-    def __init__(self, ndim, start, shape, stride, base):
+    def __init__(self, ndim, start, shape, strides, base):
         self.ndim = ndim #Number of dimensions
         self.shape = shape #Tuple of dimension sizes
         self.base = base #The base array this view refers to
         self.dtype = base.dtype
         self.start = start*base.dtype.itemsize #Offset from base (in bytes)
-        self.stride = [x * base.dtype.itemsize for x in stride] #Tuple of strides (in bytes)
+        self.strides = [x * base.dtype.itemsize for x in strides] #Tuple of strides (in bytes)
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     """Return a C-pointer to the array data (as a Python integer)"""

@@ -21,16 +21,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <cassert>
 #include <stdexcept>
+#include <thread>
+#include <chrono>
+#include <sstream>
 #include <bh.h>
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
 #include "Reduce.hpp"
 
-InstructionScheduler::InstructionScheduler(ResourceManager* resourceManager_)
-    : resourceManager(resourceManager_)
-    , batch(0)
-{}
+InstructionScheduler::InstructionScheduler()
+    : batch(NULL) {}
 
 bh_error InstructionScheduler::schedule(bh_ir* bhir)
 {
@@ -91,19 +92,134 @@ bh_error InstructionScheduler::schedule(bh_ir* bhir)
     return BH_SUCCESS;
 }
 
+void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
+{
+    size_t functionID = sourceKernel.id().first;
+    std::map<size_t,size_t>::iterator kidit = knownKernelID.find(functionID);
+    if (kidit != knownKernelID.end() && (resourceManager->dynamicSizeKernel() ||
+                                         kidit->second == sourceKernel.literalID()))
+    {   /*
+         * We know the functionID, and if we are only building fixed size kernels 
+         * we also know the literalID
+         */
+        KernelID kernelID(sourceKernel.functionID(),0); 
+        if (kidit->second == sourceKernel.literalID())
+        {
+            kernelID.second = kidit->second;
+            assert(resourceManager->fixedSizeKernel());
+        } else {
+            assert(resourceManager->dynamicSizeKernel());
+        }
+        kernelMutex.lock();
+        if (callQueue.empty())
+        {
+            KernelMap::iterator kit = kernelMap.find(kernelID);
+            if (kit == kernelMap.end())
+            {
+                callQueue.push_back(std::make_pair(kernelID,sourceKernel));
+            } else {
+                if (kernelID.second == 0)
+                {
+                    kit->second.call(sourceKernel.allParameters(), sourceKernel.shape());
+                    sourceKernel.deleteBuffers();
+                } else {
+                    kit->second.call(sourceKernel.valueParameters(), sourceKernel.shape());
+                    sourceKernel.deleteBuffers();
+                }
+            }
+        } else {
+            callQueue.push_back(std::make_pair(kernelID,sourceKernel));
+        }
+        kernelMutex.unlock();
+    } else { // New Kernel
+        KernelID kernelID = sourceKernel.id();
+        if (!resourceManager->fixedSizeKernel())
+            kernelID.second = 0;
+        knownKernelID.insert(kernelID);
+        kernelMutex.lock();
+        callQueue.push_back(std::make_pair(kernelID,sourceKernel));
+        kernelMutex.unlock();
+        if (resourceManager->asyncCompile())
+        {
+            if (resourceManager->fixedSizeKernel())
+                std::thread(&InstructionScheduler::build, this, sourceKernel.id(), 
+                            sourceKernel.source()).detach();
+            if (resourceManager->dynamicSizeKernel())
+                std::thread(&InstructionScheduler::build, this, KernelID(functionID,0), 
+                            sourceKernel.source()).detach();
+        } else {
+            if (resourceManager->fixedSizeKernel())
+                build(sourceKernel.id(), sourceKernel.source());
+            if (resourceManager->dynamicSizeKernel())
+                build(KernelID(functionID,0), sourceKernel.source());
+        }
+    }        
+}
+
 void InstructionScheduler::executeBatch()
 {
     if (batch)
     {
-        batch->run(resourceManager);
-        for (std::set<BaseArray*>::iterator dsit = discardSet.begin(); dsit != discardSet.end(); ++dsit)
+        try {
+            SourceKernelCall sourceKernel = batch->generateKernel();
+            sourceKernel.setDiscard(discardSet);
+            compileAndRun(sourceKernel);
+        }
+        catch(BatchException be) 
         {
-            delete *dsit;
+            if (!discardSet.empty())
+            {
+                kernelMutex.lock();
+                if (!callQueue.empty())
+                {
+                    SourceKernelCall& sourceKernel = callQueue.back().second;
+                    for (BaseArray *ba: discardSet)
+                    {
+                        sourceKernel.addDiscard(ba);
+                    }
+                    kernelMutex.unlock();  
+                }
+                else {
+                    kernelMutex.unlock();  
+                    for (BaseArray *ba: discardSet)
+                    {
+                        delete ba;
+                    }
+                }
+            }
         }
         discardSet.clear();
         delete batch;
         batch = 0;
     }
+}
+
+
+void InstructionScheduler::build(KernelID kernelID, const std::string source)
+{
+
+    std::stringstream kname;
+    kname << "kernel" <<  std::hex << kernelID.first << (kernelID.second==0?"":"_");
+    Kernel kernel(source, kname.str(), (kernelID.second==0?"":"-DFIXED_SIZE"));
+    kernelMutex.lock();
+    kernelMap.insert(std::make_pair(kernelID, kernel));
+    while (!callQueue.empty())
+    {
+        KernelCall kernelCall = callQueue.front();
+        KernelMap::iterator kit = kernelMap.find(kernelCall.first);
+        if (kit != kernelMap.end())
+        {
+            kit->second.call((kernelCall.first.second==0?
+                              kernelCall.second.allParameters():
+                              kernelCall.second.valueParameters()),
+                             kernelCall.second.shape());
+            kernelCall.second.deleteBuffers();
+            callQueue.pop_front();
+        }
+        else
+            break;            
+    }
+    kernelMutex.unlock(); 
 }
 
 void InstructionScheduler::sync(bh_base* base)
@@ -118,6 +234,10 @@ void InstructionScheduler::sync(bh_base* base)
     if (batch && batch->write(it->second))
     {
         executeBatch();
+    }
+    while (!callQueue.empty())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     it->second->sync();
 }
@@ -136,7 +256,16 @@ void InstructionScheduler::discard(bh_base* base)
     }
     else
     {
-        delete it->second;
+        kernelMutex.lock();
+        if (!callQueue.empty())
+        {
+            callQueue.back().second.addDiscard(it->second);
+            kernelMutex.unlock();  
+        }
+        else {
+            kernelMutex.unlock();  
+            delete it->second;
+        }
     }
     arrayMap.erase(it);
 }
@@ -211,22 +340,21 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
         bh_ir bhir = bh_ir( 1, inst);
         return resourceManager->childExecute(&bhir);
     }
+    std::vector<KernelParameter*> operands = getKernelParameters(inst);
+    if (batch && (batch->access(static_cast<BaseArray*>(operands[0])) ||
+                  batch->write(static_cast<BaseArray*>(operands[1]))))
+    {
+        executeBatch();
+    }
     try {
-        UserFuncArg userFuncArg;
-        userFuncArg.resourceManager = resourceManager;
-        userFuncArg.operands = getKernelParameters(inst);
-
-        if (batch && (batch->access(static_cast<BaseArray*>(userFuncArg.operands[0])) ||
-                      batch->write(static_cast<BaseArray*>(userFuncArg.operands[1]))))
-        {
-            executeBatch();
-        }
-        return Reduce::bh_reduce(inst, &userFuncArg);
+        SourceKernelCall sourceKernel = Reduce::generateKernel(inst, operands);
+        compileAndRun(sourceKernel);
     }
     catch (bh_error e)
     {
         return e;
     }
+    return BH_SUCCESS;
 }
 
 void InstructionScheduler::registerFunction(bh_opcode opcode, bh_extmethod_impl extmethod_impl)

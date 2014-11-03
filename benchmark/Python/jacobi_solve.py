@@ -1,3 +1,4 @@
+from __future__ import print_function
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -49,7 +50,7 @@ def main():
     ft = solve(ft, max_iterations=I, visualize=B.visualize)
     B.stop()
     if B.verbose:
-        print ft
+        print(ft)
     B.pprint()
     if B.outputfn:
         B.tofile(B.outputfn, {'res': ft})

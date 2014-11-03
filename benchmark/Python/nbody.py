@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 NBody in N^2 complexity
 

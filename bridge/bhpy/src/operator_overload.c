@@ -38,11 +38,14 @@ array_multiply(PyObject *m1, PyObject *m2)
     return PyObject_CallMethod(bohrium, "multiply", "OO", m1, m2);
 }
 
+
+#if !defined(NPY_PY3K)
 static PyObject *
 array_divide(PyObject *m1, PyObject *m2)
 {
     return PyObject_CallMethod(bohrium, "divide", "OO", m1, m2);
 }
+#endif
 
 static PyObject *
 array_remainder(PyObject *m1, PyObject *m2)
@@ -122,11 +125,13 @@ array_inplace_multiply(PyObject *m1, PyObject *m2)
     return PyObject_CallMethod(bohrium, "multiply", "OOO", m1, m2, m1);
 }
 
+#if !defined(NPY_PY3K)
 static PyObject *
 array_inplace_divide(PyObject *m1, PyObject *m2)
 {
     return PyObject_CallMethod(bohrium, "divide", "OOO", m1, m2, m1);
 }
+#endif
 
 static PyObject *
 array_inplace_remainder(PyObject *m1, PyObject *m2)
@@ -235,6 +240,7 @@ array_int(PyArrayObject *v)
     return NULL;
 }
 
+#if !defined(NPY_PY3K)
 static PyObject *
 array_long(PyArrayObject *v)
 {
@@ -254,6 +260,7 @@ array_hex(PyArrayObject *v)
     PyErr_SetString(PyExc_TypeError, "to hex is not implemented");
     return NULL;
 }
+#endif
 
 static PyObject *
 array_positive(PyArrayObject *v)
@@ -266,31 +273,42 @@ PyNumberMethods array_as_number = {
     (binaryfunc)array_add,                      /*nb_add*/
     (binaryfunc)array_subtract,                 /*nb_subtract*/
     (binaryfunc)array_multiply,                 /*nb_multiply*/
+#if !defined(NPY_PY3K)
     (binaryfunc)array_divide,                   /*nb_divide*/
+#endif
     (binaryfunc)array_remainder,                /*nb_remainder*/
     (binaryfunc)array_divmod,                   /*nb_divmod*/
     (ternaryfunc)array_power,                   /*nb_power*/
     (unaryfunc)array_negative,                  /*nb_neg*/
     (unaryfunc)array_positive,                  /*nb_pos*/
     (unaryfunc)array_absolute,                  /*array_abs,*/
-    (inquiry)0,                    /*nb_nonzero*/
+    (inquiry)0,                                 /*nb_nonzero*/
     (unaryfunc)array_invert,                    /*nb_invert*/
     (binaryfunc)array_left_shift,               /*nb_lshift*/
     (binaryfunc)array_right_shift,              /*nb_rshift*/
     (binaryfunc)array_bitwise_and,              /*nb_and*/
     (binaryfunc)array_bitwise_xor,              /*nb_xor*/
     (binaryfunc)array_bitwise_or,               /*nb_or*/
+#if !defined(NPY_PY3K)
     0,                                          /*nb_coerce*/
+#endif
     (unaryfunc)array_int,                       /*nb_int*/
+#if defined(NPY_PY3K)
+    0,                                          /*nb_reserved*/
+#else
     (unaryfunc)array_long,                      /*nb_long*/
+#endif
     (unaryfunc)array_float,                     /*nb_float*/
+#if !defined(NPY_PY3K)
     (unaryfunc)array_oct,                       /*nb_oct*/
     (unaryfunc)array_hex,                       /*nb_hex*/
-
+#endif
     (binaryfunc)array_inplace_add,              /*inplace_add*/
     (binaryfunc)array_inplace_subtract,         /*inplace_subtract*/
     (binaryfunc)array_inplace_multiply,         /*inplace_multiply*/
+#if !defined(NPY_PY3K)
     (binaryfunc)array_inplace_divide,           /*inplace_divide*/
+#endif
     (binaryfunc)array_inplace_remainder,        /*inplace_remainder*/
     (ternaryfunc)array_inplace_power,           /*inplace_power*/
     (binaryfunc)array_inplace_left_shift,       /*inplace_lshift*/
@@ -303,7 +321,7 @@ PyNumberMethods array_as_number = {
     (binaryfunc)array_true_divide,              /*nb_true_divide*/
     (binaryfunc)array_inplace_floor_divide,     /*nb_inplace_floor_divide*/
     (binaryfunc)array_inplace_true_divide,      /*nb_inplace_true_divide*/
-    (unaryfunc)0,                     /* nb_index */
+    (unaryfunc)0,                               /*nb_index */
 };
 
 static PyObject *

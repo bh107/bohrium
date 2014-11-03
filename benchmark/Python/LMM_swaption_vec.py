@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Leif Andersen - A simple Approach to the pricing of Bermudan swaptions
 # in the multifactor LIBOR market model - 1999 - Journal of computational finance.
 # Replication of Table 1 p. 16 - European Payer Swaptions.
@@ -10,7 +11,7 @@ else:
 # Various global values
 
 delta = 0.5             # Parameter values.
-f_0   = 0.06 	
+f_0   = 0.06
 theta = 0.06
 
 # Start dates for a series of swaptions.
@@ -50,13 +51,13 @@ def main(verbose=False):
 
             time_structure = np.arange(0,ts+delta,delta)
             maturity_structure = np.arange(0,Te,delta)
-            
+
             ############### MODEL #######################
-            
+
             # Variance reduction technique - Antithetic Variates.
             eps_tmp = np.random.normal(loc = 0.0, scale = 1.0, size = ((len(time_structure)-1),N))
             eps = np.concatenate((eps_tmp,-eps_tmp), axis = 1)
-            
+
             # Forward LIBOR rates for the construction of the spot measure.
             F_kk = np.zeros((len(time_structure),2*N))
             F_kk[0,:] += f_0
@@ -67,27 +68,27 @@ def main(verbose=False):
             # Simulations of the plane F_kN for each time step.
             for t in xrange(1,len(time_structure),1):
                 F_kN_new = np.ones((len(maturity_structure)-t,2*N))
-                F_kN_new = F_kN[1:,:]*np.exp(lamb*mu(F_kN)*delta-0.5*lamb*lamb*delta+lamb*eps[t-1,:]*np.sqrt(delta))		
+                F_kN_new = F_kN[1:,:]*np.exp(lamb*mu(F_kN)*delta-0.5*lamb*lamb*delta+lamb*eps[t-1,:]*np.sqrt(delta))
                 F_kk[t,:] = F_kN_new[0,:]
                 F_kN = F_kN_new
 
             ############### PRODUCT #####################
-            
+
             # Value of zero coupon bonds.
             zcb = np.ones((int((Te-ts)/delta)+1,2*N))
             for j in xrange(len(zcb)-1):
                 zcb[j+1,:] = zcb[j,:]/(1+delta*F_kN[j,:])
 
-            # Swaption price at maturity.	
+            # Swaption price at maturity.
             swap_Ts = np.maximum(1-zcb[-1,:]-theta*delta*np.sum(zcb[1:,:], axis = 0),0)
-            
-            # Spot measure used for discounting.			
+
+            # Spot measure used for discounting.
             B_Ts = np.ones((2*N))
             for j in xrange(int(ts/delta)):
                 B_Ts *= (1+delta*F_kk[j,:])
 
-            # Swaption price at time 0.	
-            swaption = swap_Ts/B_Ts	
+            # Swaption price at time 0.
+            swaption = swap_Ts/B_Ts
 
             # Save expected value in bps and std.
             swaptions = np.append(swaptions,[[np.average( (swaption[0:N] + swaption[N:])/2) *10000],\
@@ -102,8 +103,8 @@ def main(verbose=False):
             Te = Te_all[i]
             Ts = Ts_all[i]
             for j in xrange(len(Ts)):
-                print 	"Ts %i" %Ts[j] + " Te %i " %Te + " price %.2f" % swaptions[0,k]\
-                                + "(%.2f)" %swaptions[1,k]
+                print("Ts %i" %Ts[j] + " Te %i " %Te + " price %.2f" % swaptions[0,k]\
+                               + "(%.2f)" %swaptions[1,k])
                 k +=1
 
 if __name__ == "__main__":

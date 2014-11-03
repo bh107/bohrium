@@ -2,6 +2,7 @@
 The Computation Backend
 
 """
+from __future__ import print_function
 from .. import bhc
 from .._util import dtype_name
 import numpy as np
@@ -9,7 +10,7 @@ import time
 import numexpr
 import os
 import ctypes
-import backend_numpy
+from . import backend_numpy
 
 class base(backend_numpy.base):
     """base array handle"""
@@ -37,7 +38,7 @@ def set_bhc_data_from_ary(self, ary):
     ctypes.memmove(d, ary.ctypes.data, ary.dtype.itemsize * ary.size)
 
 numexpr.set_num_threads(int(os.getenv('OMP_NUM_THREADS',1)))
-print "using numexpr backend with %d threads"%int(os.getenv('OMP_NUM_THREADS',1))
+print("using numexpr backend with %d threads"%int(os.getenv('OMP_NUM_THREADS',1)))
 ufunc_cmds = {'identity' : "i1",
               'add' : "i1+i2",
               'subtract' : "i1-i2",
@@ -58,7 +59,7 @@ def ufunc(op, *args):
     if op.info['name'] in ufunc_cmds:
         numexpr.evaluate(ufunc_cmds[op.info['name']], out=args[0], casting='unsafe')
     else:
-        print "WARNING: ufunc '%s' not compiled"%op.info['name']
+        print("WARNING: ufunc '%s' not compiled"%op.info['name'])
         f = eval("np.%s"%op.info['name'])
         f(*args[1:], out=args[0])
 
@@ -71,7 +72,7 @@ def reduce(op, out, a, axis):
     elif op.info['name'] == 'multiply':
         numexpr.evaluate("prod(a, %d)"%axis, out=out, casting='unsafe')
     else:
-        print "WARNING: reduce '%s' not compiled"%op.info['name']
+        print ("WARNING: reduce '%s' not compiled"%op.info['name'])
         f = eval("np.%s.reduce"%op.info['name'])
         if a.ndim == 1:
             keepdims = True
@@ -115,6 +116,4 @@ def random123(size, start_index, key):
 import atexit
 @atexit.register
 def shutdown():
-#    print "ufunc:", t_ufunc
-#    print "vcache size at exit: %d"%len(vcache)
     pass

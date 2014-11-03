@@ -2,7 +2,7 @@ import imp
 import sys
 import inspect
 from importlib import import_module
-import ndarray
+from . import ndarray
 import numpy
 
 def bohriumify(obj):

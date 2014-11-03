@@ -6,7 +6,7 @@ import ctypes
 import numpy
 from .. import bhc
 from .._util import dtype_name
-import backend
+from . import backend
 
 class base(backend.base):
     """base array handle"""
@@ -18,19 +18,19 @@ class base(backend.base):
         self.bhc_obj = bhc_obj
 
     def __del__(self):
-        exec "bhc.bh_multi_array_%s_destroy(self.bhc_obj)"%dtype_name(self.dtype)
+        exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)"%dtype_name(self.dtype))
 
 class view(backend.view):
     """array view handle"""
-    def __init__(self, ndim, start, shape, stride, base):
-        super(view, self).__init__(ndim, start, shape, stride, base)
+    def __init__(self, ndim, start, shape, strides, base):
+        super(view, self).__init__(ndim, start, shape, strides, base)
         dtype = dtype_name(self.dtype)
-        exec "base = bhc.bh_multi_array_%s_get_base(base.bhc_obj)"%dtype
+        exec("base = bhc.bh_multi_array_%s_get_base(base.bhc_obj)"%dtype)
         f = eval("bhc.bh_multi_array_%s_new_from_view"%dtype)
-        self.bhc_obj = f(base, ndim, start, shape, stride)
+        self.bhc_obj = f(base, ndim, start, shape, strides)
 
     def __del__(self):
-        exec "bhc.bh_multi_array_%s_destroy(self.bhc_obj)"%dtype_name(self.dtype)
+        exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)"%dtype_name(self.dtype))
 
 def views2bhc(views):
     """returns the bhc objects in the 'views' but don't touch scalars"""
@@ -58,19 +58,19 @@ def bhc_exec(func, *args):
 def get_data_pointer(ary, allocate=False, nullify=False):
     dtype = dtype_name(ary)
     ary = views2bhc(ary)
-    exec "bhc.bh_multi_array_%s_sync(ary)"%dtype
-    exec "bhc.bh_multi_array_%s_discard(ary)"%dtype
-    exec "bhc.bh_runtime_flush()"
-    exec "base = bhc.bh_multi_array_%s_get_base(ary)"%dtype
-    exec "data = bhc.bh_multi_array_%s_get_base_data(base)"%dtype
+    exec("bhc.bh_multi_array_%s_sync(ary)"%dtype)
+    exec("bhc.bh_multi_array_%s_discard(ary)"%dtype)
+    exec("bhc.bh_runtime_flush()")
+    exec("base = bhc.bh_multi_array_%s_get_base(ary)"%dtype)
+    exec("data = bhc.bh_multi_array_%s_get_base_data(base)"%dtype)
     if data is None:
         if not allocate:
             return 0
-        exec "data = bhc.bh_multi_array_%s_get_base_data_and_force_alloc(base)"%dtype
+        exec("data = bhc.bh_multi_array_%s_get_base_data_and_force_alloc(base)"%dtype)
         if data is None:
             raise MemoryError()
     if nullify:
-        exec "bhc.bh_multi_array_%s_nullify_base_data(base)"%dtype
+        exec("bhc.bh_multi_array_%s_nullify_base_data(base)"%dtype)
     return int(data)
 
 def set_bhc_data_from_ary(self, ary):

@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 This benchmark does not seem to make a lot of sense...
 """

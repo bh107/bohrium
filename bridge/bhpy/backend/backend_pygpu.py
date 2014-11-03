@@ -9,7 +9,7 @@ import time
 import os
 import pygpu
 from pygpu.array import gpuarray as elemary
-import backend_numpy
+from . import backend_numpy
 
 cxt_string = os.environ.get("GPUARRAY_DEVICE", "opencl0:0")
 cxt = pygpu.init(cxt_string)
@@ -24,10 +24,10 @@ class base(backend_numpy.base):
 
 class view(backend_numpy.view):
     """array view handle"""
-    def __init__(self, ndim, start, shape, stride, base):
-        super(view, self).__init__(ndim, start, shape, stride, base)
+    def __init__(self, ndim, start, shape, strides, base):
+        super(view, self).__init__(ndim, start, shape, strides, base)
         self.clary = pygpu.gpuarray.from_gpudata(base.clary.gpudata, offset=self.start,\
-                dtype=base.dtype, shape=shape, strides=self.stride, writable=True, base=base.clary, cls=elemary)
+                dtype=base.dtype, shape=shape, strides=self.strides, writable=True, base=base.clary, cls=elemary)
 
 def views2clary(views):
     ret = []
@@ -71,7 +71,7 @@ def ufunc(op, *args):
         out[:] = i1
     elif op.info['name'] in ufunc_cmds:
         cmd = "out[:] = %s"%ufunc_cmds[op.info['name']]
-        exec cmd
+        exec(cmd)
     else:
         raise NotImplementedError()
 
@@ -120,6 +120,4 @@ def random123(size, start_index, key):
 import atexit
 @atexit.register
 def shutdown():
-#    print "ufunc:", t_ufunc
-#    print "vcache size at exit: %d"%len(vcache)
     pass

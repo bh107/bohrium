@@ -120,7 +120,8 @@ void Buffer::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
         kernel.setArg(argIndex, *clBuffer);
     } catch (cl::Error err)
     {
-        std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
+        std::cerr << "ERROR Setting Buffer kernel arg(" << argIndex << "): " << err.what() << "(" << 
+            err.err() << ")" << std::endl;
         throw err;
     }
 }
