@@ -129,7 +129,7 @@ def identical_views(view1, view2):
 #NB: the returned object is always a view
 def get_bhc(ary):
 
-	#Lets see if we can use an already existing array-view
+    #Lets see if we can use an already existing array-view
     if hasattr(ary, 'bhc_view') and ary.bhc_view is not None:
         if not identical_views(ary, ary.bhc_view):
             ary.bhc_view = None

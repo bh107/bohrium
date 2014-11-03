@@ -139,6 +139,8 @@ class CustomBuild(build):
 
 import shutil
 shutil.copy2(srcpath('random123.pyx'), buildpath('random123.pyx'))
+shutil.copy2(srcpath('ndarray.pyx'), buildpath('ndarray.pyx'))
+shutil.copy2(srcpath('_util.pyx'), buildpath('_util.pyx'))
 
 
 setup(name='Bohrium',
@@ -176,6 +178,18 @@ setup(name='Bohrium',
                              sources=[buildpath('random123.pyx')],
                              include_dirs=[srcpath('.'),
                                            srcpath('..','..','thirdparty','Random123-1.08','include')],
+                             libraries=[],
+                             library_dirs=[],
+                             ),
+                   Extension(name='_util',
+                             sources=[buildpath('_util.pyx')],
+                             include_dirs=[srcpath('.')],
+                             libraries=[],
+                             library_dirs=[],
+                             ),
+                   Extension(name='ndarray',
+                             sources=[buildpath('ndarray.pyx')],
+                             include_dirs=[srcpath('.')],
                              libraries=[],
                              library_dirs=[],
                              )

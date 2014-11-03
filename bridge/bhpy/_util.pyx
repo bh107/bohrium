@@ -62,7 +62,6 @@ def dtype_in(dtype, dtypes):
     return False
 
 #Returns the Bohrium name of the data type of the object 'obj'
-#NB: use dtype_from_bhc() when 'obj' is a Bohrium-C array
 def dtype_name(obj):
     t = dtype_of(obj)
     if dtype_in(t, [np.bool_, np.bool, bool]):
