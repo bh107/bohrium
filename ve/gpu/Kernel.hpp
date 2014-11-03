@@ -24,37 +24,32 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "cl.hpp"
 #include <vector>
 #include <bh.h>
+#include "bh_ve_gpu.h"
 #include "ResourceManager.hpp"
 #include "BaseArray.hpp"
 
 class Kernel
 {
 private:
-    ResourceManager* resourceManager;
     bh_intp ndim;
     cl::Kernel kernel;
 public:
     typedef std::vector<std::pair<KernelParameter*, bool> > Parameters;
-    Kernel(ResourceManager* resourceManager_, 
-           bh_intp ndim_,
-           cl::Kernel kernel_);
-    Kernel(ResourceManager* resourceManager_, 
-           bh_intp ndim_,
-           const std::string& source, 
-           const std::string& name); 
-    void call(Parameters& parameters,
-              const std::vector<size_t>& globalShape);
-    void call(Parameters& parameters,
-              const std::vector<size_t>& globalShape,
-              const std::vector<size_t>& localShape);
-    static std::vector<Kernel> createKernels(ResourceManager* resourceManager_, 
-                                             const std::vector<bh_intp> ndims,
-                                             const std::string& source, 
-                                             const std::vector<std::string>& kernelNames); 
-    static  std::vector<Kernel> createKernelsFromFile(ResourceManager* resourceManager_, 
-                                                      const std::vector<bh_intp> ndims,
-                                                      const std::string& fileName, 
-                                                      const std::vector<std::string>& kernelNames); 
+    Kernel(cl::Kernel kernel_);
+    Kernel(const std::string& source, 
+           const std::string& name,
+           const std::string& options = std::string("")); 
+    void call(Parameters parameters,
+              const std::vector<size_t> globalShape);
+    void call(Parameters parameters,
+              const std::vector<size_t> globalShape,
+              const std::vector<size_t> localShape);
+    static std::vector<Kernel> createKernels(const std::string& source, 
+                                             const std::vector<std::string>& kernelNames,
+                                             const std::string& options = std::string("")); 
+    static  std::vector<Kernel> createKernelsFromFile(const std::string& fileName, 
+                                                      const std::vector<std::string>& kernelNames,
+                                                      const std::string& options = std::string("")); 
 };
 
 #endif

@@ -37,7 +37,6 @@ typedef enum
     OCL_UINT16,
     OCL_UINT32,
     OCL_UINT64,
-    OCL_FLOAT16,
     OCL_FLOAT32,
     OCL_FLOAT64,
     OCL_COMPLEX64,

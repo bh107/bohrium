@@ -50,8 +50,6 @@ OCLtype oclType(bh_type vbtype)
         return OCL_UINT32;
     case BH_UINT64:
         return OCL_UINT64;
-//    case BH_FLOAT16:
-//        return OCL_FLOAT16;
     case BH_FLOAT32:
         return OCL_FLOAT32;
     case BH_FLOAT64:
@@ -80,7 +78,6 @@ const char* oclTypeStr(OCLtype type)
     case OCL_UINT16: return "ushort";
     case OCL_UINT32: return "uint";
     case OCL_UINT64: return "ulong";
-    case OCL_FLOAT16: return "half";
     case OCL_FLOAT32: return "float";
     case OCL_FLOAT64: return "double";
     case OCL_COMPLEX64: return "float2";
@@ -104,7 +101,6 @@ const char* oclAPItypeStr(OCLtype type)
     case OCL_UINT16: return "cl_ushort";
     case OCL_UINT32: return "cl_uint";
     case OCL_UINT64: return "cl_ulong";
-    case OCL_FLOAT16: return "cl_half";
     case OCL_FLOAT32: return "cl_float";
     case OCL_FLOAT64: return "cl_double";
     case OCL_COMPLEX64: return "cl_float2";
@@ -135,8 +131,6 @@ size_t oclSizeOf(OCLtype type)
         return sizeof(cl_uint);
     case OCL_UINT64:
         return sizeof(cl_ulong);
-    case OCL_FLOAT16:
-        return sizeof(cl_half);
     case OCL_FLOAT32:
         return sizeof(cl_float);
     case OCL_FLOAT64:
@@ -156,7 +150,6 @@ bool isFloat(OCLtype type)
 {
     switch (type)
     {
-    case OCL_FLOAT16:
     case OCL_FLOAT32:
     case OCL_FLOAT64:
         return true;

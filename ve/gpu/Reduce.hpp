@@ -21,27 +21,18 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __REDUCE_HPP
 #define __REDUCE_HPP
 
-#include <string>
-#include <map>
+#include <vector>
 #include <bh.h>
-#include "Kernel.hpp"
-#include "StringHasher.hpp"
-#include "UserFuncArg.hpp"
+#include "SourceKernelCall.hpp"
 
 namespace Reduce
 {
-    typedef std::map<size_t, Kernel> KernelMap;
-    static KernelMap kernelMap;
-    bh_error bh_reduce(const bh_instruction* inst, 
-                       const UserFuncArg* userFuncArg);
-    Kernel getKernel(const bh_instruction* inst,
-                     const std::vector<bh_view>& views,
-                     const UserFuncArg* userFuncArg,
-                     const std::vector<bh_index> shape);
-    std::string generateCode(const bh_instruction* inst, 
-                             const std::vector<bh_view>& views,
-                             const OCLtype outType, const OCLtype inType,
-                             const std::vector<bh_index> shape);
+    SourceKernelCall generateKernel(const bh_instruction* inst, 
+                                    const std::vector<KernelParameter*> operands);
+    std::string generateFunctionBody(const bh_instruction* inst, 
+                                     const OCLtype outType, const OCLtype inType,
+                                     const std::vector<bh_index>& shape,
+                                     bool accumulate);
 }
 
 #endif

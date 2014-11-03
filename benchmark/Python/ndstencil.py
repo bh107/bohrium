@@ -43,6 +43,8 @@ def solve(world, I):
     FAC = 1.0/len(stencil)
     for _ in xrange(I):
         stencil[len(stencil)/2][:] = sum(stencil)*FAC
+        if util.Benchmark().bohrium:
+            np.flush()
 
     return world
 

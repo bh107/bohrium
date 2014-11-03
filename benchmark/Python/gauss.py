@@ -20,6 +20,9 @@ def main():
 
     B.start()
     R = la.gauss(S)
+    if util.Benchmark().bohrium:
+        R.copy2numpy()
+    
     B.stop()
 
     B.pprint()

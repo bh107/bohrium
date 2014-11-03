@@ -44,7 +44,7 @@ namespace MatMul
             else
                 source << "MATMUL_TMPL(" << oclTypeStr(dtype) << ",a*b)\n";
             kname << "matmul_" << oclTypeStr(dtype);
-            Kernel kernel(userFuncArg->resourceManager, 2, source.str(), kname.str());
+            Kernel kernel(source.str(), kname.str());
             kernelMap.insert(std::make_pair(dtype, kernel));
             return kernel;
         } else {

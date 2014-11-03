@@ -46,12 +46,14 @@ private:
 
 protected:
     void printOn(std::ostream& os) const;
+    void printValueOn(std::ostream& os) const;
 public:
     Scalar(bh_base* spec);
     Scalar(bh_constant constant);
     Scalar(bh_intp);
     OCLtype type() const;
     void addToKernel(cl::Kernel& kernel, unsigned int argIndex);
+    friend std::ostream& operator<<= (std::ostream& os, Scalar const& s);
 };
 
 

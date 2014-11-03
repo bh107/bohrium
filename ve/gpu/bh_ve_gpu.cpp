@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <bh.h>
 #include "bh_ve_gpu.h"
+#include "InstructionScheduler.hpp"
 
 bh_component component;
 InstructionScheduler* instructionScheduler;
@@ -34,7 +35,7 @@ bh_error bh_ve_gpu_init(const char *name)
         return err;
     try {
         resourceManager = new ResourceManager(&component);
-        instructionScheduler = new InstructionScheduler(resourceManager);
+        instructionScheduler = new InstructionScheduler();
     } 
     catch (std::exception& e)
     {
