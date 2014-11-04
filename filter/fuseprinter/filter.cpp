@@ -19,17 +19,22 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <stdio.h>
+#include <bh_dag.h>
 
 using namespace std;
+using namespace boost;
 
 static int filter_count=0;
 void filter(const bh_ir &bhir)
 {
-    char dag_fn[8000];
+    typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
+    Graph dag;
+    char filename[8000];
 
-    snprintf(dag_fn, 8000, "dag-%d.dot", ++filter_count);
-    printf("fuseprinter: writing dag('%s').\n", dag_fn);
+    snprintf(filename, 8000, "dag-%d.dot", ++filter_count);
+    printf("fuseprinter: writing dag('%s').\n", filename);
 
-    bhir.pprint_kernel_dag(dag_fn);   // Trace
+    bh_dag_from_kernels(bhir.kernel_list, dag);
+    bh_dag_transitive_reduction(dag);
+    bh_dag_pprint(dag, filename);
 }
-

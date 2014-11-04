@@ -96,20 +96,6 @@ void bh_ir::pprint_kernel_list() const
     }
 }
 
-/* Pretty write the kernel DAG as a DOT file
-*
-*  @filename   Name of the DOT file
-*/
-void bh_ir::pprint_kernel_dag(const char filename[]) const
-{
-    using namespace boost;
-    typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
-    Graph dag;
-    bh_dag_from_kernels(kernel_list, dag);
-    bh_dag_transitive_reduction(dag);
-    bh_dag_pprint(dag, filename);
-}
-
 /* Determines whether there are cyclic dependencies between the kernels in the BhIR
 *
 *  @index_map  A map from an instruction in the kernel_list (a pair of a kernel and
@@ -297,6 +283,9 @@ bool bh_ir_kernel::dependency(const bh_ir_kernel &other) const
  */
 int64_t bh_ir_kernel::dependency_cost(const bh_ir_kernel &other) const
 {
+    if(this == &other)
+        return 0;
+
     if(not fusible(other))
         return -1;
 

@@ -172,12 +172,6 @@ public:
     /* Pretty print the kernel list */
     void pprint_kernel_list() const;
 
-    /* Pretty write the kernel DAG as a DOT file
-    *
-    *  @filename   Name of the DOT file
-    */
-    void pprint_kernel_dag(const char filename[]) const;
-
     /* Determines whether there are cyclic dependencies between the kernels in the BhIR
     *
     *  @index_map  A map from an instruction in the kernel_list (a pair of a kernel and
