@@ -11,7 +11,7 @@ import operator
 import datetime
 import os
 import sys
-from bohrium import backend
+from bohrium import target
 import math
 
 from libc.stdint cimport uint64_t, uint32_t
@@ -209,7 +209,7 @@ cdef class RandomState:
                 ctr.ul += 1
         else:
             length = numpy.asarray(size).prod()
-            bhc_obj = backend.random123(length, self.index, self.key)
+            bhc_obj = target.random123(length, self.index, self.key)
             ret = np.ndarray.new((length,), np.uint64, bhc_obj).reshape(size)
         self.index += length
         return ret

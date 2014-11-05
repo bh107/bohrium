@@ -67,7 +67,7 @@ add_subdirectory(bridge/NumCIL)
 if(NOT USE_CXX98)
     add_subdirectory(bridge/cpp)
     add_subdirectory(bridge/c)
-    add_subdirectory(bridge/bhpy)
+    add_subdirectory(bridge/npbackend)
     add_subdirectory(bridge/cil)
 endif()
 

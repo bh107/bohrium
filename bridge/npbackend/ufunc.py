@@ -28,13 +28,13 @@ from . import _info
 from ._util import dtype_equal
 from .ndarray import get_bhc, get_base, fix_returned_biclass
 from . import ndarray
-from . import backend
+from . import target
 from .array_manipulation import broadcast_arrays
 
 @fix_returned_biclass
 def extmethod(name, out, in1, in2):
     assert in1.dtype == in2.dtype
-    backend.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
+    target.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
 
 def setitem(ary, loc, value):
     """Set the 'value' into 'ary' at the location specified through 'loc'.
@@ -83,7 +83,7 @@ def assign(ary, out):
             if not ndarray.check(ary):
                 ary = array_create.array(ary)#Convert the NumPy array to bohrium
             ary = get_bhc(ary)
-        backend.ufunc(identity, out, ary)
+        target.ufunc(identity, out, ary)
     else:
         if ndarray.check(ary):
             get_base(ary)._data_bhc2np()
@@ -189,9 +189,9 @@ class ufunc:
         #Some simple optimizations
         if self.info['name'] == "power" and np.isscalar(bhcs[2]) and bhcs[2] == 2:
             #Replace power of 2 with a multiplication
-            backend.ufunc(multiply, bhcs[0], bhcs[1], bhcs[1])
+            target.ufunc(multiply, bhcs[0], bhcs[1], bhcs[1])
         else:
-            backend.ufunc(self, *bhcs)
+            target.ufunc(self, *bhcs)
 
         if out is None or dtype_equal(out_dtype, out.dtype):
             return args[0]
@@ -321,7 +321,7 @@ class ufunc:
                                      "shape '%s' got '%s'"%(shape, out.shape))
 
             tmp = array_create.empty(shape, dtype=ary.dtype)
-            backend.reduce(self, get_bhc(tmp), get_bhc(ary), axis)
+            target.reduce(self, get_bhc(tmp), get_bhc(ary), axis)
 
             if out is not None:
                 out[...] = tmp
@@ -429,7 +429,7 @@ class ufunc:
         if out is None:
             out = array_create.empty(ary.shape, dtype=ary.dtype)
 
-        backend.accumulate(self, get_bhc(out), get_bhc(ary), axis)
+        target.accumulate(self, get_bhc(out), get_bhc(ary), axis)
         return out
 
 #We have to add ufuncs that doesn't map to Bohrium operations directly

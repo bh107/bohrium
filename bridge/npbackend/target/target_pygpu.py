@@ -1,6 +1,5 @@
 """
-The Computation Backend
-
+pygpu as backend target for npbackend.
 """
 import numpy as np
 from .. import bhc
@@ -9,20 +8,20 @@ import time
 import os
 import pygpu
 from pygpu.array import gpuarray as elemary
-from . import backend_numpy
+from . import target_numpy
 
 cxt_string = os.environ.get("GPUARRAY_DEVICE", "opencl0:0")
 cxt = pygpu.init(cxt_string)
 #cxt = pygpu.init("cuda0")
 pygpu.set_default_context(cxt)
 
-class Base(backend_numpy.Base):
+class Base(target_numpy.Base):
     """base array handle"""
     def __init__(self, size, dtype):
         self.clary = pygpu.empty((size,), dtype=dtype, cls=elemary)
         super(Base, self).__init__(size, dtype)
 
-class View(backend_numpy.View):
+class View(target_numpy.View):
     """array view handle"""
     def __init__(self, ndim, start, shape, strides, base):
         super(View, self).__init__(ndim, start, shape, strides, base)

@@ -1,6 +1,5 @@
 """
-The Computation Backend
-
+Chapel as target for npbackend.
 """
 from .. import bhc
 from .._util import dtype_name
@@ -8,7 +7,7 @@ import numpy as np
 import mmap
 import time
 import ctypes
-import backend
+import target
 import pprint
 import pych
 from pych.array_ops import *
@@ -23,7 +22,7 @@ def views2numpy(views):
             ret.append(v)
     return ret
 
-class base(backend.base):
+class base(target.base):
     """base array handle"""
 
     def __init__(self, size, dtype):
@@ -33,7 +32,7 @@ class base(backend.base):
     def __del__(self):
         del self.ndarray
 
-class view(backend.view):
+class view(target.view):
     """array view handle"""
     def __init__(self, ndim, start, shape, stride, base):
         super(view, self).__init__(ndim, start, shape, stride, base)

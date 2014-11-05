@@ -8,7 +8,7 @@ from . import ndarray
 from .ndarray import fix_returned_biclass
 import numpy
 from ._util import dtype_equal, dtype_in
-from . import backend
+from . import target
 
 @fix_returned_biclass
 def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
@@ -535,7 +535,7 @@ def range(size, dtype=numpy.uint64):
         A = empty(size, dtype=numpy.uint32, bohrium=True)
     else:
         A = empty(size, dtype=numpy.uint64, bohrium=True)
-    ret = backend.range(size, A.dtype)
+    ret = target.range(size, A.dtype)
     A = ndarray.new((size,), A.dtype, ret)
     if not dtype_equal(dtype, A.dtype):
         B = empty_like(A, dtype=dtype)

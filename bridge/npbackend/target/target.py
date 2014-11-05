@@ -1,4 +1,4 @@
-"""Abstract module for computation backends"""
+"""Abstract module for computation backend targets"""
 
 class Base(object):
     """Abstract base array handle (a array has only one base)"""

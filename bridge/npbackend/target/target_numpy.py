@@ -8,13 +8,13 @@ import numpy as np
 import mmap
 import time
 import ctypes
-from . import backend
+from . import target
 import os
 
 VCACHE = []
 VCACHE_SIZE = int(os.environ.get("VCACHE_SIZE", 10))
 
-class Base(backend.Base):
+class Base(target.Base):
     """base array handle"""
 
     def __init__(self, size, dtype):
@@ -35,7 +35,7 @@ class Base(backend.Base):
         if len(VCACHE) < VCACHE_SIZE:
             VCACHE.append((self.size*self.dtype.itemsize, self.mmap))
 
-class View(backend.View):
+class View(target.View):
     """array view handle"""
 
     def __init__(self, ndim, start, shape, strides, base):
@@ -58,7 +58,7 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     """
     Extract the data-pointer from the given View (ary).
 
-    :param backend_numpy.View ary: The View to extract the ndarray form.
+    :param target_numpy.View ary: The View to extract the ndarray form.
     :returns: Pointer to data associated with the 'ary'.
     :rtype: ctypes pointer
     """

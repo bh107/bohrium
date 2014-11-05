@@ -162,15 +162,15 @@ class BenchHelper:
             )
 
     def get_meta(self, arrays):
-        """Determine backend and dtype based on meta-data from pseudo_init."""
+        """Determine target and dtype based on meta-data from pseudo_init."""
 
-        backend = "None"
+        target = "None"
         if 'bohrium.ndarray' in str(type(arrays[0])):
-            backend = "Bohrium"
+            target = "bhc"
 
         dtype = str(arrays[0].dtype)
 
-        return (backend, dtype)
+        return (target, dtype)
 
     def run(self, pseudo_input):
         """
@@ -179,11 +179,11 @@ class BenchHelper:
         Benchmarks are assumed to be installed along with the Bohrium module.
         """
 
-        (backend, dtype) = self.get_meta(pseudo_input)
+        (target, dtype) = self.get_meta(pseudo_input)
 
         # Setup output filename
         outputfn = "/tmp/%s_%s_%s_output_%s.npz" % (
-            self.script, dtype, backend, self.uuid
+            self.script, dtype, target, self.uuid
         )
 
         # Setup command
@@ -193,9 +193,10 @@ class BenchHelper:
             'bohrium.examples.%s' % self.script,
             '--size='       +self.sizetxt,
             '--dtype='      +str(dtype),
-            '--backend='    +backend,
+            '--target='    +target,
             '--outputfn='   +outputfn
         ]
+        
         # Setup the inputfn if one is needed/provided
         if self.inputfn:
             npt_path = os.path.dirname(sys.argv[0])
@@ -236,7 +237,7 @@ class BenchHelper:
             os.remove(outputfn)
 
         # Convert to whatever namespace it ought to be in
-        res['res'] = bh.array(res['res'], bohrium=backend!="None")
+        res['res'] = bh.array(res['res'], bohrium=target!="None")
 
         return (res['res'], ' '.join(cmd))
 

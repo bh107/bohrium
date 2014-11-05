@@ -26,7 +26,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from ._util import dtype_equal
-from . import backend
+from . import target
 import operator
 import functools
 
@@ -112,7 +112,7 @@ def new_bhc_base(ary):
         raise ValueError("For now Bohrium only supports C-style arrays")
     shape = ary.shape if len(ary.shape) > 0 else (1,)
     totalsize = functools.reduce(operator.mul, shape, 1)
-    ary.bhc_ary = backend.Base(totalsize, ary.dtype)
+    ary.bhc_ary = target.Base(totalsize, ary.dtype)
 
 def get_base(ary):
     """Get the final base array of 'ary'."""
@@ -197,7 +197,7 @@ def get_bhc(ary):
     shape = ary.shape if len(ary.shape) > 0 else (1,)
     strides = strides if len(strides) > 0 else (1,)
 
-    ret = backend.View(ndim, offset, shape, strides, base.bhc_ary)
+    ret = target.View(ndim, offset, shape, strides, base.bhc_ary)
     if hasattr(ary, 'bhc_view'):
         ary.bhc_view = ret
     return ret
@@ -221,7 +221,7 @@ def get_bhc_data_pointer(ary, allocate=False, nullify=False):
     if not check(ary):
         raise TypeError("must be a Bohrium array")
     ary = get_base(ary)
-    return backend.get_data_pointer(get_bhc(ary), allocate, nullify)
+    return target.get_data_pointer(get_bhc(ary), allocate, nullify)
 
 def set_bhc_data_from_ary(self, ary):
     """
@@ -237,5 +237,5 @@ def set_bhc_data_from_ary(self, ary):
     if not ary.flags['C_CONTIGUOUS']:
         raise ValueError("Input array must be C-style contiguous")
 
-    backend.set_bhc_data_from_ary(get_bhc(self), ary)
+    target.set_bhc_data_from_ary(get_bhc(self), ary)
 

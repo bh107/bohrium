@@ -11,6 +11,7 @@
 *.orig
 *.swp
 bridge/bhpy/examples/*.py
+bridge/npbackend/examples/*.py
 *~
 *.obj
 .DS_Store

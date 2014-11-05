@@ -1,14 +1,13 @@
 """
-The Computation Backend
-
+Bohrium C-backend as target for npbackend.
 """
 import ctypes
 import numpy
 from .. import bhc
 from .._util import dtype_name
-from . import backend
+from . import target
 
-class Base(backend.Base):
+class Base(target.Base):
     """base array handle"""
 
     def __init__(self, size, dtype, bhc_obj=None):
@@ -24,7 +23,7 @@ class Base(backend.Base):
              dtype_name(self.dtype)
         )
 
-class View(backend.View):
+class View(target.View):
     """array view handle"""
 
     def __init__(self, ndim, start, shape, strides, base):

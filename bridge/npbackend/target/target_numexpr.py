@@ -1,6 +1,5 @@
 """
-The Computation Backend
-
+numexpr as the target for npbackend.
 """
 from __future__ import print_function
 from .. import bhc
@@ -10,14 +9,14 @@ import time
 import numexpr
 import os
 import ctypes
-from . import backend_numpy
+from . import target_numpy
 
-class Base(backend_numpy.Base):
+class Base(target_numpy.Base):
     """base array handle"""
     pass
 
 
-class View(backend_numpy.View):
+class View(target_numpy.View):
     """array view handle"""
     pass
 
@@ -42,7 +41,7 @@ def set_bhc_data_from_ary(self, ary):
 
 # Setup numexpr
 numexpr.set_num_threads(int(os.getenv('OMP_NUM_THREADS', 1)))
-print("using numexpr backend with %d threads" % 
+print("using numexpr target with %d threads" % 
       int(os.getenv('OMP_NUM_THREADS', 1))
 )
 UFUNC_CMDS = {
