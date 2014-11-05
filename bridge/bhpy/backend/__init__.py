@@ -1,6 +1,6 @@
 import os
 
-mth = ['base', 'view', 'get_data_pointer', 'set_bhc_data_from_ary', \
+mth = ['Base', 'View', 'get_data_pointer', 'set_bhc_data_from_ary', \
        'ufunc', 'reduce', 'accumulate', 'extmethod', 'range', 'random123']
 
 b = os.getenv('BHPY_BACKEND', "bhc")

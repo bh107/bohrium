@@ -65,29 +65,29 @@ def overlap_conflict(out, *inputs):
     return False
 
 @fix_returned_biclass
-def assign(a, out):
+def assign(ary, out):
     """Copy data from array 'a' to 'out'"""
 
-    if not np.isscalar(a):
-        (a,out) = broadcast_arrays(a,out)
+    if not np.isscalar(ary):
+        (ary, out) = broadcast_arrays(ary, out)
 
     #We use a tmp array if the in-/out-put has memory conflicts
-    if overlap_conflict(out, a):
+    if overlap_conflict(out, ary):
         tmp = array_create.empty_like(out)
-        assign(a, tmp)
+        assign(ary, tmp)
         return assign(tmp, out)
 
     if ndarray.check(out):
         out = get_bhc(out)
-        if not np.isscalar(a):
-            if not ndarray.check(a):
-                a = array_create.array(a)#Convert the NumPy array to bohrium
-            a = get_bhc(a)
-        backend.ufunc(identity, out, a)
+        if not np.isscalar(ary):
+            if not ndarray.check(ary):
+                ary = array_create.array(ary)#Convert the NumPy array to bohrium
+            ary = get_bhc(ary)
+        backend.ufunc(identity, out, ary)
     else:
-        if ndarray.check(a):
-            get_base(a)._data_bhc2np()
-        out[...] = a
+        if ndarray.check(ary):
+            get_base(ary)._data_bhc2np()
+        out[...] = ary
 
 class ufunc:
     def __init__(self, info):
@@ -115,9 +115,11 @@ class ufunc:
             pass
 
         #We do not support NumPy's exotic arguments
-        for k,v in kwargs.iteritems():
-            if v is not None:
-                raise ValueError("Bohrium funcs doesn't support the '%s' argument"%str(k))
+        for k, val in kwargs.iteritems():
+            if val is not None:
+                raise ValueError(
+                    "Bohrium funcs doesn't support the '%s' argument" % str(k)
+                )
 
         #Broadcast the args
         bargs = broadcast_arrays(*args)
@@ -149,47 +151,47 @@ class ufunc:
                 raise NotImplementedError("For now, the output must be a Bohrium "\
                                           "array when the input arrays are")
         elif not ndarray.check(out):#All operands are regular NumPy arrays
-            f = eval("np.%s"%self.info['name'])
+            func = eval("np.%s"%self.info['name'])
             if out is not None:
                 args.append(out)
-            return f(*args)
+            return func(*args)
 
         if len(args) > 2:
             raise ValueError("Bohrium do not support ufunc with more than two inputs")
 
         #Find the type signature
-        (out_dtype,in_dtype) = _util.type_sig(self.info['name'], args)
+        (out_dtype, in_dtype) = _util.type_sig(self.info['name'], args)
 
         #Convert dtype of all inputs
         for i in xrange(len(args)):
             if not np.isscalar(args[i]) and not dtype_equal(args[i], in_dtype):
-                t = array_create.empty_like(args[i], dtype=in_dtype)
-                t[...] = args[i]
-                args[i] = t;
+                tmp = array_create.empty_like(args[i], dtype=in_dtype)
+                tmp[...] = args[i]
+                args[i] = tmp
 
         #Insert the output array
         if out is None or not dtype_equal(out_dtype, out.dtype):
-            args.insert(0,array_create.empty(out_shape, out_dtype))
+            args.insert(0, array_create.empty(out_shape, out_dtype))
         else:
-            args.insert(0,out)
+            args.insert(0, out)
 
         #Convert 'args' to Bohrium-C arrays
         bhcs = []
-        for a in args:
-            if np.isscalar(a):
-                bhcs.append(a)
-            elif ndarray.check(a):
-                bhcs.append(get_bhc(a))
+        for arg in args:
+            if np.isscalar(arg):
+                bhcs.append(arg)
+            elif ndarray.check(arg):
+                bhcs.append(get_bhc(arg))
             else:
-                a = array_create.array(a)
-                bhcs.append(get_bhc(a))
+                arg = array_create.array(arg)
+                bhcs.append(get_bhc(arg))
 
         #Some simple optimizations
         if self.info['name'] == "power" and np.isscalar(bhcs[2]) and bhcs[2] == 2:
             #Replace power of 2 with a multiplication
             backend.ufunc(multiply, bhcs[0], bhcs[1], bhcs[1])
         else:
-            backend.ufunc(self,*bhcs)
+            backend.ufunc(self, *bhcs)
 
         if out is None or dtype_equal(out_dtype, out.dtype):
             return args[0]
@@ -199,14 +201,15 @@ class ufunc:
         return out
 
     @fix_returned_biclass
-    def reduce(self, a, axis=0, out=None):
-        """ A Bohrium Reduction
-    Reduces `a`'s dimension by one, by applying ufunc along one axis.
+    def reduce(self, ary, axis=0, out=None):
+        """
+        A Bohrium Reduction
+    Reduces `ary`'s dimension by one, by applying ufunc along one axis.
 
-    Let :math:`a.shape = (N_0, ..., N_i, ..., N_{M-1})`.  Then
-    :math:`ufunc.reduce(a, axis=i)[k_0, ..,k_{i-1}, k_{i+1}, .., k_{M-1}]` =
+    Let :math:`ary.shape = (N_0, ..., N_i, ..., N_{M-1})`.  Then
+    :math:`ufunc.reduce(ary, axis=i)[k_0, ..,k_{i-1}, k_{i+1}, .., k_{M-1}]` =
     the result of iterating `j` over :math:`range(N_i)`, cumulatively applying
-    ufunc to each :math:`a[k_0, ..,k_{i-1}, j, k_{i+1}, .., k_{M-1}]`.
+    ufunc to each :math:`ary[k_0, ..,k_{i-1}, j, k_{i+1}, .., k_{M-1}]`.
     For a one-dimensional array, reduce produces results equivalent to:
     ::
 
@@ -219,7 +222,7 @@ class ufunc:
 
     Parameters
     ----------
-    a : array_like
+    ary : array_like
         The array to act on.
     axis : None or int or tuple of ints, optional
         Axis or axes along which a reduction is performed.
@@ -274,72 +277,72 @@ class ufunc:
 
         if out is not None:
             if ndarray.check(out):
-                if not ndarray.check(a):
-                    a = array_create.array(a)
+                if not ndarray.check(ary):
+                    ary = array_create.array(ary)
             else:
-                if ndarray.check(a):
-                    a = a.copy2numpy()
+                if ndarray.check(ary):
+                    ary = a.copy2numpy()
         #Let NumPy handle NumPy array reductions
-        if not ndarray.check(a):
-            f = eval("np.%s.reduce"%self.info['name'])
-            return f(a, axis=axis, out=out)
+        if not ndarray.check(ary):
+            func = eval("np.%s.reduce" % self.info['name'])
+            return func(ary, axis=axis, out=out)
 
         #Make sure that 'axis' is a list of dimensions to reduce
         if axis is None:
-            axis = range(a.ndim)#We reduce all dimensions
+            axis = range(ary.ndim)#We reduce all dimensions
         elif np.isscalar(axis):
             axis = [axis]#We reduce one dimension
         else:
             axis = list(axis)#We reduce multiple dimensions
 
         #When reducting booleans we count the number of True values
-        if dtype_equal(a,  np.bool):
-            a = array_create.array(a, dtype=np.uint64)
+        if dtype_equal(ary, np.bool):
+            ary = array_create.array(ary, dtype=np.uint64)
 
         #Check for out of bounds and convert negative axis values
-        if len(axis) > a.ndim:
+        if len(axis) > ary.ndim:
             raise ValueError("number of 'axises' to reduce is out of bounds")
         for i in xrange(len(axis)):
             if axis[i] < 0:
-                axis[i] = a.ndim+axis[i]
-            if axis[i] >= a.ndim:
+                axis[i] = ary.ndim+axis[i]
+            if axis[i] >= ary.ndim:
                 raise ValueError("'axis' is out of bounds")
 
         if len(axis) == 1:#One axis reduction we can handle directly
             axis = axis[0]
 
             #Find the output shape
-            if a.ndim == 1:
+            if ary.ndim == 1:
                 shape = (1,)
             else:
-                shape = tuple(s for i, s in enumerate(a.shape) if i != axis)
+                shape = tuple(s for i, s in enumerate(ary.shape) if i != axis)
                 if out is not None and out.shape != shape:
                     raise ValueError("output dimension mismatch expect "\
                                      "shape '%s' got '%s'"%(shape, out.shape))
 
-            tmp = array_create.empty(shape, dtype=a.dtype)
-            backend.reduce(self, get_bhc(tmp), get_bhc(a), axis)
+            tmp = array_create.empty(shape, dtype=ary.dtype)
+            backend.reduce(self, get_bhc(tmp), get_bhc(ary), axis)
 
             if out is not None:
                 out[...] = tmp
             else:
                 out = tmp
-            if a.ndim == 1:#return a Python Scalar
+            if ary.ndim == 1:#return a Python Scalar
                 return out[0]
             else:
                 return out
         else:
-            t1 = self.reduce(a, axis[0])
+            tmp1 = self.reduce(ary, axis[0])
             axis = [i-1 for i in axis[1:]]
-            t2 = self.reduce(t1, axis)
+            tmp2 = self.reduce(tmp1, axis)
             if out is not None:
-                out[...] = t2
+                out[...] = tmp2
             else:
-                out = t2
+                out = tmp2
             return out
 
     @fix_returned_biclass
-    def accumulate(self, a, axis=0, out=None):
+    def accumulate(self, ary, axis=0, out=None):
         """
     accumulate(array, axis=0, out=None)
 
@@ -409,33 +412,33 @@ class ufunc:
         """
         if out is not None:
             if ndarray.check(out):
-                if not ndarray.check(a):
-                    a = array_create.array(a)
+                if not ndarray.check(ary):
+                    ary = array_create.array(ary)
             else:
-                if ndarray.check(a):
-                    a = a.copy2numpy()
-            if out.shape != a.shape:
+                if ndarray.check(ary):
+                    ary = ary.copy2numpy()
+            if out.shape != ary.shape:
                 raise ValueError("output dimension mismatch expect "\
-                                 "shape '%s' got '%s'"%(a.shape, out.shape))
+                                 "shape '%s' got '%s'"%(ary.shape, out.shape))
 
         #Let NumPy handle NumPy array accumulate
-        if not ndarray.check(a):
-            f = eval("np.%s.accumulate"%self.info['name'])
-            return f(a, axis=axis, out=out)
+        if not ndarray.check(ary):
+            func = eval("np.%s.accumulate" % self.info['name'])
+            return func(ary, axis=axis, out=out)
 
         if out is None:
-            out = array_create.empty(a.shape, dtype=a.dtype)
+            out = array_create.empty(ary.shape, dtype=ary.dtype)
 
-        backend.accumulate(self, get_bhc(out), get_bhc(a), axis)
+        backend.accumulate(self, get_bhc(out), get_bhc(ary), axis)
         return out
 
 #We have to add ufuncs that doesn't map to Bohrium operations directly
 class negative(ufunc):
-    def __call__(self, a, out=None):
+    def __call__(self, ary, out=None):
         if out is None:
-            return -1 * a
+            return -1 * ary
         else:
-            out[...] = -1 * a
+            out[...] = -1 * ary
             return out
 
 #Expose all ufuncs
@@ -444,7 +447,7 @@ for op in _info.op.itervalues():
     ufuncs.append(ufunc(op))
 
 for f in ufuncs:
-    exec("%s = f"%f.info['name'])
+    exec("%s = f" % f.info['name'])
 
 
 ###############################################################################
@@ -456,50 +459,50 @@ import unittest
 class Tests(unittest.TestCase):
 
     def test_assign_copy(self):
-        A = array_create.empty((4,4), dtype=int)
-        B = array_create.empty((4,4), dtype=int)
+        A = array_create.empty((4, 4), dtype=int)
+        B = array_create.empty((4, 4), dtype=int)
         assign(42, A)
         assign(A, B)
         A = A.copy2numpy()
         B = B.copy2numpy()
         #Compare result to NumPy
-        N = np.empty((4,4), dtype=int)
+        N = np.empty((4, 4), dtype=int)
         N[...] = 42
-        self.assertTrue(np.array_equal(B,N))
-        self.assertTrue(np.array_equal(A,N))
+        self.assertTrue(np.array_equal(B, N))
+        self.assertTrue(np.array_equal(A, N))
 
     def test_ufunc(self):
-        for f in ufuncs:
-            for type_sig in f.info['type_sig']:
-                if f.info['name'] == "identity":
+        for func in ufuncs:
+            for type_sig in func.info['type_sig']:
+                if func.info['name'] == "identity":
                     continue
-                print(f, type_sig)
-                A = array_create.empty((4,4), dtype=type_sig[1])
+                print(func, type_sig)
+                A = array_create.empty((4, 4), dtype=type_sig[1])
                 if type_sig[1] == "bool":
                     assign(False, A)
                 else:
                     assign(2, A)
-                if f.info['nop'] == 2:
-                    res = f(A)
-                elif f.info['nop'] == 3:
-                    B = array_create.empty((4,4), dtype=type_sig[2])
+                if func.info['nop'] == 2:
+                    res = func(A)
+                elif func.info['nop'] == 3:
+                    B = array_create.empty((4, 4), dtype=type_sig[2])
                     if type_sig[1] == "bool":
                         assign(True, B)
                     else:
                         assign(3, B)
-                    res = f(A,B)
+                    res = func(A, B)
                 res = res.copy2numpy()
                 #Compare result to NumPy
-                A = np.empty((4,4), dtype=type_sig[1])
+                A = np.empty((4, 4), dtype=type_sig[1])
                 A[...] = 2
-                B = np.empty((4,4), dtype=type_sig[1])
+                B = np.empty((4, 4), dtype=type_sig[1])
                 B[...] = 3
-                if f.info['nop'] == 2:
-                    exec("np_res = np.%s(A)"%f.info['name'])
-                elif f.info['nop'] == 3:
-                    exec("np_res = np.%s(A,B)"%f.info['name'])
-                self.assertTrue(np.allclose(res,np_res))
+                if func.info['nop'] == 2:
+                    exec("np_res = np.%s(A)" % func.info['name'])
+                elif func.info['nop'] == 3:
+                    exec("np_res = np.%s(A,B)" % func.info['name'])
+                self.assertTrue(np.allclose(res, np_res))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(Tests)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(Tests)
+    unittest.TextTestRunner(verbosity=2).run(SUITE)

@@ -51,7 +51,7 @@ def api(objs):
 
         if inspect.ismodule(head_obj):
             if len(body) > 0:
-                sys_name = 'bohrium.' + head_obj.__name__.split(".",1)[1]
+                sys_name = 'bohrium.' + head_obj.__name__.split(".", 1)[1]
             else:
                 sys_name = 'bohrium'
 
@@ -67,7 +67,7 @@ def api(objs):
 
             for o in dir(head_obj):
                 if o not in m.__dict__:
-                    setattr(m, o, bohriumify(getattr(head_obj,o)))
+                    setattr(m, o, bohriumify(getattr(head_obj, o)))
             ret.append("import %s"%fullname)
         else:
             m = import_module(prefix)
@@ -85,6 +85,6 @@ def all_numpy(module=numpy, prefix="numpy", added=set()):
                 and not k.startswith("_") and not "random" in k:
             t = prefix + "." + k
             ret.append(t)
-            ret.extend(all_numpy(o,t,added))
+            ret.extend(all_numpy(o, t, added))
     return ret
 

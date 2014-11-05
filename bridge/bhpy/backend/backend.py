@@ -1,17 +1,17 @@
 """Abstract module for computation backends"""
 
-class base(object):
+class Base(object):
     """Abstract base array handle (a array has only one base)"""
     def __init__(self, size, dtype):
-        self.size = size #Total number of elements
-        self.dtype = dtype #Data type
+        self.size = size        # Total number of elements
+        self.dtype = dtype      # Data type
 
-class view(object):
+class View(object):
     """Abstract array view handle"""
     def __init__(self, ndim, start, shape, strides, base):
-        self.ndim = ndim #Number of dimensions
-        self.shape = shape #Tuple of dimension sizes
-        self.base = base #The base array this view refers to
+        self.ndim = ndim        # Number of dimensions
+        self.shape = shape      # Tuple of dimension sizes
+        self.base = base        # The base array this view refers to
         self.dtype = base.dtype
         self.start = start*base.dtype.itemsize #Offset from base (in bytes)
         self.strides = [x * base.dtype.itemsize for x in strides] #Tuple of strides (in bytes)
@@ -28,12 +28,12 @@ def ufunc(op, *args):
     """Perform the ufunc 'op' on the 'args' arrays"""
     raise NotImplementedError()
 
-def reduce(op, out, a, axis):
-    """Reduce 'axis' dimension of 'a' and write the result to out"""
+def reduce(op, out, ary, axis):
+    """Reduce 'axis' dimension of 'ary' and write the result to out"""
     raise NotImplementedError()
 
-def accumulate(op, out, a, axis):
-    """Accumulate 'axis' dimension of 'a' and write the result to out"""
+def accumulate(op, out, ary, axis):
+    """Accumulate 'axis' dimension of 'ary' and write the result to out"""
     raise NotImplementedError()
 
 def extmethod(name, out, in1, in2):

@@ -16,23 +16,23 @@ cxt = pygpu.init(cxt_string)
 #cxt = pygpu.init("cuda0")
 pygpu.set_default_context(cxt)
 
-class base(backend_numpy.base):
+class Base(backend_numpy.Base):
     """base array handle"""
     def __init__(self, size, dtype):
         self.clary = pygpu.empty((size,), dtype=dtype, cls=elemary)
-        super(base, self).__init__(size, dtype)
+        super(Base, self).__init__(size, dtype)
 
-class view(backend_numpy.view):
+class View(backend_numpy.View):
     """array view handle"""
     def __init__(self, ndim, start, shape, strides, base):
-        super(view, self).__init__(ndim, start, shape, strides, base)
+        super(View, self).__init__(ndim, start, shape, strides, base)
         self.clary = pygpu.gpuarray.from_gpudata(base.clary.gpudata, offset=self.start,\
                 dtype=base.dtype, shape=shape, strides=self.strides, writable=True, base=base.clary, cls=elemary)
 
 def views2clary(views):
     ret = []
     for v in views:
-        if isinstance(v, view):
+        if isinstance(v, View):
             ret.append(v.clary)
         else:
             ret.append(v)
