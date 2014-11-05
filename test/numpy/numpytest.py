@@ -247,16 +247,23 @@ if __name__ == "__main__":
     test_list       = []
     script_list     = []
     exclude_list    = []
+    test_exclude_list = []
+
     try:
         sys.gettotalrefcount()
     except AttributeError:
         pydebug = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"f:e:t:",["file=", "exclude=",
-                                                          "test="])
+        opts, args = getopt.getopt(sys.argv[1:], "f:e:t:x", [
+            "file=",
+            "exclude=",
+            "test=",
+            "exclude-test="
+        ])
     except getopt.GetoptError as err:
         print(str(err))
         sys.exit(2)
+
     for o, a in opts:
         if o in ("-f", "--file"):
             script_list.append(a)
@@ -264,6 +271,8 @@ if __name__ == "__main__":
             exclude_list.append(a)
         elif o in ["-t", "--test"]:
             test_list.append(a)
+        elif o in ["-x", "--exclude-test"]:
+            test_exclude_list.append(a)
         else:
             assert False, "unhandled option"
 
@@ -280,6 +289,9 @@ if __name__ == "__main__":
             #All test classes starts with "test_"
             for cls in [o for o in dir(m) if o.startswith("test_") and \
                         (True if test_list and o in test_list or not test_list else False)]:
+                if cls in test_exclude_list:
+                    continue
+
                 cls_obj  = getattr(m, cls)
                 cls_inst = cls_obj()
                 #All test methods starts with "test_"
