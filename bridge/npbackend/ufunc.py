@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 from . import _util
 from . import array_create
-import numpy as np
+import numpy_force as np
 from . import _info
 from ._util import dtype_equal
 from .ndarray import get_bhc, get_base, fix_returned_biclass

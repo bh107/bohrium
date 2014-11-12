@@ -6,7 +6,7 @@ Random functions
 
 """
 import bohrium as np
-import numpy
+import numpy_force as numpy
 import operator
 import datetime
 import os

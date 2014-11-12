@@ -1,3 +1,9 @@
+import sys
+if 'numpy_force' not in sys.modules:
+    import numpy
+    sys.modules['numpy_force'] = numpy
+    del numpy
+
 from .array_create import *
 from .array_manipulation import *
 from .ufunc import ufuncs
@@ -8,7 +14,7 @@ from . import linalg
 from .linalg import matmul, dot
 from .summations import sum, prod, max, min
 from . import import_external
-from numpy import dtype
+from numpy_force import dtype
 
 #Expose all ufuncs
 for f in ufuncs:

@@ -6,7 +6,7 @@ Common linear algebra functions
 
 """
 from . import ufunc
-import numpy
+import numpy_force as numpy
 from . import ndarray
 
 def sum(a, axis=None, out=None):

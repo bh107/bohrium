@@ -6,10 +6,10 @@ Common linear algebra functions
 
 """
 import bohrium as np
-import numpy.linalg as la
+import numpy_force.linalg as la
+import numpy_force as numpy
 from . import ndarray
 from . import ufunc
-import numpy
 from . import array_create
 from ._util import dtype_equal
 
