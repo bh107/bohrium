@@ -19,5 +19,5 @@ else:
 if len(sys.argv) > 0:
     execfile(sys.argv[0])
 else:
-    print('ERR: the "-m bohrium.as_numpy" does not support interactive mode');
+    print('ERR: the "-m bohrium" does not support interactive mode');
 
