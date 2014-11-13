@@ -161,14 +161,15 @@ def get_bhc(ary):
     NB: the returned object is always a view
     """
 
+    base = get_base(ary)
     # Lets see if we can use an already existing array-view
     if hasattr(ary, 'bhc_view') and ary.bhc_view is not None:
-        if not identical_views(ary, ary.bhc_view):
-            ary.bhc_view = None
-        else:
-            return ary.bhc_view
+        if base.bhc_ary_version == ary.bhc_view_version:
+            if not identical_views(ary, ary.bhc_view):
+                ary.bhc_view = None
+            else:
+                return ary.bhc_view
 
-    base = get_base(ary)
     if not check(base):
         raise TypeError("the base must be a Bohrium array")
     if not ary.flags['BEHAVED']:
@@ -200,6 +201,7 @@ def get_bhc(ary):
     ret = target.View(ndim, offset, shape, strides, base.bhc_ary)
     if hasattr(ary, 'bhc_view'):
         ary.bhc_view = ret
+        ary.bhc_view_version = base.bhc_ary_version
     return ret
 
 def del_bhc(ary):
@@ -207,9 +209,13 @@ def del_bhc(ary):
 
     if ary.bhc_ary is not None:
         ary.bhc_ary = None
+    if ary.bhc_view is not None:
+        ary.bhc_view = None
     base = get_base(ary)
     if base is not ary:
         del_bhc(base)
+    else:
+        base.bhc_ary_version += 1
 
 def get_bhc_data_pointer(ary, allocate=False, nullify=False):
     """
