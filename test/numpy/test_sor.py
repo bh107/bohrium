@@ -1,7 +1,6 @@
 import bohrium as np
 from numpytest import numpytest
 import bohrium.linalg as la
-from bohrium import examples as exp
 
 def sor_setup(W,H,dtype=np.float32,bohrium=False):
     if W%2 > 0 or H%2 > 0:
@@ -12,7 +11,7 @@ def sor_setup(W,H,dtype=np.float32,bohrium=False):
     full[0,:]  +=  40.0
     full[-1,:] += -273.13
     return full
- 
+
 
 def sor_compute(full):
     cells  = full[1:-1, 1:-1]
@@ -96,7 +95,7 @@ class test_sor(numpytest):
             cmd  = "a[0] = sor_setup({0},{0},dtype={1});".format(self.size,t)
             exec(cmd)
             yield (a,cmd)
-    
+
     def test_sor(self,a):
         cmd = "res = sor_compute(a[0]);"
         exec(cmd)
