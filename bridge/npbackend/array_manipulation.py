@@ -4,7 +4,7 @@ Array manipulation routines
 
 """
 from . import array_create
-import numpy
+import numpy_force as numpy
 from . import ndarray
 from .ndarray import fix_returned_biclass
 import itertools

@@ -28,6 +28,7 @@ import sys
 import stat
 import pprint
 import json
+import shutil
 import numpy as np
 from Cython.Distutils import build_ext
 
@@ -137,11 +138,9 @@ class CustomBuild(build):
             self.copy_file(buildpath('bhc.py'),buildpath(self.build_lib,'bohrium','bhc.py'))
         build.run(self)
 
-import shutil
 shutil.copy2(srcpath('random123.pyx'), buildpath('random123.pyx'))
 shutil.copy2(srcpath('ndarray.pyx'), buildpath('ndarray.pyx'))
 shutil.copy2(srcpath('_util.pyx'), buildpath('_util.pyx'))
-
 
 setup(name='Bohrium',
       version='0.2',
@@ -154,7 +153,7 @@ setup(name='Bohrium',
       platforms='Linux, OSX',
       cmdclass={'build': CustomBuild, 'build_ext':build_ext},
       package_dir={'bohrium': srcpath('')},
-      packages=['bohrium', 'bohrium.examples', 'bohrium.target'],
+      packages=['bohrium', 'bohrium.target'],
       ext_package='bohrium',
       ext_modules=[Extension(name='_bhmodule',
                              sources=[srcpath('src','_bhmodule.c')],

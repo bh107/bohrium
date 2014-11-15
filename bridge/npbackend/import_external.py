@@ -3,7 +3,7 @@ import sys
 import inspect
 from importlib import import_module
 from . import ndarray
-import numpy
+import numpy_force as numpy
 
 def bohriumify(obj):
     """Returns a bohrium compatible version of 'obj'"""

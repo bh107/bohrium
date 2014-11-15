@@ -20,16 +20,6 @@ if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND CYTHON_FOUND AND NUMPY_
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} buildpath=${CMAKE_CURRENT_BINARY_DIR} && ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --prefix=${CMAKE_CURRENT_BINARY_DIR}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-
-    # Copy benchmarks into examples bhpy.examples package
-    file(GLOB PythonBenchmarks ${BENCHMARK_DIR}/Python/*.py)
-    foreach(PythonBenchmark ${PythonBenchmarks})
-        add_custom_command(
-            TARGET bhpy PRE_BUILD COMMAND ${CMAKE_COMMAND} -E
-            copy ${PythonBenchmark} "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
-        )
-    endforeach()
-
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib DESTINATION . COMPONENT bohrium)
 else()
     if (NOT NUMPY_INCLUDE_DIRS)

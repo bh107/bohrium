@@ -9,45 +9,54 @@ import tempfile
 import re
 import traceback
 
-out = ""#The output of this build and/or testing
-#Execute command and capture output
-def cmd(*args, **kwarg):
-    global out
-    if 'stderr' not in kwarg:
-        kwarg['stderr'] = STDOUT#Default value
-    ret = check_output(*args, **kwarg)
-    out += ret
-    return ret
+log = ""#The output of this build and/or testing
+def bash_cmd(cmd, cwd=None):
+    global log
+    print cmd
+    p = subprocess.Popen(
+        cmd,
+        stdout  = subprocess.PIPE,
+        stderr  = subprocess.PIPE,
+        shell = True,
+        cwd=cwd
+    )
+    out, err = p.communicate()
+    print out,
+    print err,
+    log += cmd
+    log += out
+    log += err
+    return out
 
 def main(args):
-    global out
+    global log
+    script_dir = path.dirname(args.build_script)
     #Lets update the repos
-    ret = cmd(['git','pull'], cwd=args.cmake_file_dir)
+    ret = bash_cmd('git pull', cwd=script_dir)
     if args.only_on_changes and 'Already up-to-date' in ret:
-        out += "No changes to the git repos, exiting."
+        log += "No changes to the git repos, exiting."
         return
-    cmd(['git','checkout', args.branch], cwd=args.cmake_file_dir)
+    bash_cmd('git checkout %s'%args.branch, cwd=script_dir)
 
     #Make and change to a tmp dir
     tmpdir = tempfile.mkdtemp(prefix="bh_deb_builder_")
-    os.chdir(tmpdir)
 
-    cmd(['cmake', args.cmake_file_dir, '-DCPACK_PACKAGE_CONTACT=%s'%args.contact])
+    res = bash_cmd("python %s --output=%s"%(args.build_script, tmpdir))
 
     #Lets find the change files generatored by cmake
     m = re.findall("signfile (.*source\.changes) %s\s*Successfully signed "\
-                   "dsc and changes files"%args.contact, out)
+                   "dsc and changes files"%args.contact, res)
     if len(m) <= 0:
-        raise RuntimeError("cmake didn't generate any deb-src change files!")
-    out += "\ncmake generated the following deb-src change files: %s\n"%str(m)
+        raise RuntimeError("the build script didn't generate any deb-src change files!")
+    log += "\nthe build script generated the following deb-src change files: %s\n"%str(m)
 
     #Lets uploade the files
     for changefile in m:
-        out += "Uploading %s\n"%changefile
-        cmd(['dput', 'bohrium-nightly', 'Debian/%s'%changefile])
+        log += "Uploading %s\n"%changefile
+        bash_cmd('dput bohrium-nightly %s'%changefile, cwd=tmpdir)
 
     #Lets cleanup
-    cmd(['rm','-Rf',tmpdir])
+    bash_cmd('rm -Rf %s'%tmpdir)
 
 if __name__ == "__main__":
 
@@ -56,10 +65,10 @@ if __name__ == "__main__":
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(
-        '--cmake-file-dir',
-        default=str(path.dirname(path.abspath(__file__))),
+        '--build-script',
+        default=str(path.join(path.dirname(path.abspath(__file__)), "build-package.py")),
         type=str,
-        help='Path to directory where the CMakeLists.txt file is.'
+        help='Path to the build script.'
     )
     parser.add_argument(
         '--branch',
@@ -88,19 +97,20 @@ if __name__ == "__main__":
     try:
         main(args)
     except StandardError, e:
-        out += "*"*70
-        out += "\nERROR: %s"%traceback.format_exc()
-        out += "*"*70
-        out += "\n"
+        log += "*"*70
+        log += "\nERROR: %s"%traceback.format_exc()
+        log += "*"*70
+        log += "\n"
         status = "FAILURE"
         try:
-            out += e.output
+            log += e.output
         except:
             pass
-    print out
+    print
+    print log
     if args.email:
         print "send status email to '%s'"%args.email
         p = Popen(['mail','-s','"[Bohrium PPA Build] The result of build was a %s"'%status, args.email],
                   stdin=PIPE)
-        p.communicate(input=out)
+        p.communicate(input=log)
 

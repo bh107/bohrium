@@ -12,6 +12,7 @@ import uuid
 import copy
 import sys
 import os
+from os.path import join
 import re
 
 import numpy as np
@@ -186,17 +187,17 @@ class BenchHelper:
             self.script, dtype, target, self.uuid
         )
 
+        bench_dir = join(os.path.dirname(os.path.realpath(__file__)),"..","..","benchmark","Python")
         # Setup command
         cmd = [
             sys.executable, #The current Python interpreter
-            '-m',
-            'bohrium.examples.%s' % self.script,
+            join(bench_dir,"%s.py"%self.script),
             '--size='       +self.sizetxt,
             '--dtype='      +str(dtype),
             '--target='    +target,
             '--outputfn='   +outputfn
         ]
-        
+
         # Setup the inputfn if one is needed/provided
         if self.inputfn:
             npt_path = os.path.dirname(sys.argv[0])

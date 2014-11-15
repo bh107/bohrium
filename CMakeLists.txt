@@ -71,7 +71,10 @@ if(NOT USE_CXX98)
     add_subdirectory(bridge/cil)
 endif()
 
-install(DIRECTORY thirdparty/Random123-1.08/include/Random123 DESTINATION share/bohrium/include COMPONENT bohrium)
+install(DIRECTORY thirdparty/Random123-1.08/include/Random123
+        DESTINATION share/bohrium/include COMPONENT bohrium)
+install(DIRECTORY test DESTINATION share/bohrium COMPONENT bohrium)
+install(DIRECTORY benchmark DESTINATION share/bohrium COMPONENT bohrium)
 
 # Select the approriate compiler string
 if (APPLE)

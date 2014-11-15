@@ -6,7 +6,7 @@ Array Create Routines
 import math
 from . import ndarray
 from .ndarray import fix_returned_biclass
-import numpy
+import numpy_force as numpy
 from ._util import dtype_equal, dtype_in
 from . import target
 
