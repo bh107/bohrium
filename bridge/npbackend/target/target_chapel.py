@@ -7,7 +7,7 @@ import numpy as np
 import mmap
 import time
 import ctypes
-import target
+import interface
 import pprint
 import pych
 from pych.array_ops import *
@@ -16,26 +16,26 @@ import os
 def views2numpy(views):
     ret = []
     for v in views:
-        if isinstance(v, view):
+        if isinstance(v, View):
             ret.append(v.ndarray)
         else:
             ret.append(v)
     return ret
 
-class base(target.base):
-    """base array handle"""
+class Base(interface.Base):
+    """Base array handle"""
 
     def __init__(self, size, dtype):
-        super(base, self).__init__(size, dtype, mem_protected=False)
+        super(Base, self).__init__(size, dtype, mem_protected=False)
         self.ndarray = np.ones(size, dtype=dtype)
 
     def __del__(self):
         del self.ndarray
 
-class view(target.view):
-    """array view handle"""
+class View(interface.View):
+    """array View handle"""
     def __init__(self, ndim, start, shape, stride, base):
-        super(view, self).__init__(ndim, start, shape, stride, base)
+        super(View, self).__init__(ndim, start, shape, stride, base)
         self.ndarray = self.base.ndarray
         self.mem_protected = False
 

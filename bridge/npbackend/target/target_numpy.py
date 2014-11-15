@@ -8,13 +8,13 @@ import numpy as np
 import mmap
 import time
 import ctypes
-from . import target
+from . import interface
 import os
 
 VCACHE = []
 VCACHE_SIZE = int(os.environ.get("VCACHE_SIZE", 10))
 
-class Base(target.Base):
+class Base(interface.Base):
     """base array handle"""
 
     def __init__(self, size, dtype):
@@ -35,7 +35,7 @@ class Base(target.Base):
         if len(VCACHE) < VCACHE_SIZE:
             VCACHE.append((self.size*self.dtype.itemsize, self.mmap))
 
-class View(target.View):
+class View(interface.View):
     """array view handle"""
 
     def __init__(self, ndim, start, shape, strides, base):

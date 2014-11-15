@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 """
-/*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 http://bohrium.bitbucket.org
 
@@ -18,7 +17,6 @@ You should have received a copy of the
 GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
-*/
 """
 from __future__ import print_function
 from . import _util
@@ -89,12 +87,14 @@ def assign(ary, out):
             get_base(ary)._data_bhc2np()
         out[...] = ary
 
-class ufunc:
+class Ufunc(object):
+
     def __init__(self, info):
         """A Bohrium Universal Function"""
         self.info = info
+
     def __str__(self):
-        return "<bohrium ufunc '%s'>"%self.info['name']
+        return "<bohrium Ufunc '%s'>" % self.info['name']
 
     @fix_returned_biclass
     def __call__(self, *args, **kwargs):
@@ -432,8 +432,16 @@ class ufunc:
         target.accumulate(self, get_bhc(out), get_bhc(ary), axis)
         return out
 
-#We have to add ufuncs that doesn't map to Bohrium operations directly
-class negative(ufunc):
+#
+# Expose all ufuncs at the module-level.
+#
+# After the following is executed, all ufuncs will be available as
+# object instances of the Ufunc class via the  list of all ufuncs (UFUNCS)
+# and via their individual names such as "negative", "identity", "add" etc.
+
+# NOTE: We have to add ufuncs that doesn't map to Bohrium operations directly
+#       such as "negative" which can be done like below.
+class Negative(Ufunc):
     def __call__(self, ary, out=None):
         if out is None:
             return -1 * ary
@@ -441,14 +449,19 @@ class negative(ufunc):
             out[...] = -1 * ary
             return out
 
-#Expose all ufuncs
-ufuncs = [negative({'name':'negative'})]
+UFUNCS = [Negative({'name':'negative'})]    # Expose via UFUNCS
 for op in _info.op.itervalues():
-    ufuncs.append(ufunc(op))
+    UFUNCS.append(Ufunc(op))
 
-for f in ufuncs:
-    exec("%s = f" % f.info['name'])
+for ufunc in UFUNCS:                        # Expose via their name.
+    exec("%s = ufunc" % ufunc.info['name'])
+del(ufunc) # We do not want to expose a function named "ufunc"
 
+"""
+Since ufunc.py uses relative imports then these tests cannot be executed, I
+assume that they are deprecated code and haven't been used for anything in
+several years? This this "UNIT TEST" cover anything that numpytest does not?
+Does it every run?
 
 ###############################################################################
 ################################ UNIT TEST ####################################
@@ -506,3 +519,5 @@ class Tests(unittest.TestCase):
 if __name__ == '__main__':
     SUITE = unittest.TestLoader().loadTestsFromTestCase(Tests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
+
+"""

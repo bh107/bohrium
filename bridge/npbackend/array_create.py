@@ -763,6 +763,12 @@ def save(file, arr):
     if bohrium:
         array(arr, bohrium=True)
 
+"""
+Since ufunc.py uses relative imports then these tests cannot be executed, I
+assume that they are deprecated code and haven't been used for anything in
+several years? This this "UNIT TEST" cover anything that numpytest does not?
+Does it every run?
+
 ###############################################################################
 ################################ UNIT TEST ####################################
 ###############################################################################
@@ -780,3 +786,5 @@ class Tests(unittest.TestCase):
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Tests)
     unittest.TextTestRunner(verbosity=2).run(suite)
+
+"""

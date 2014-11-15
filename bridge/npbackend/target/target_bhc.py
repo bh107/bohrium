@@ -5,9 +5,9 @@ import ctypes
 import numpy
 from .. import bhc
 from .._util import dtype_name
-from . import target
+from . import interface
 
-class Base(target.Base):
+class Base(interface.Base):
     """base array handle"""
 
     def __init__(self, size, dtype, bhc_obj=None):
@@ -23,7 +23,7 @@ class Base(target.Base):
              dtype_name(self.dtype)
         )
 
-class View(target.View):
+class View(interface.View):
     """array view handle"""
 
     def __init__(self, ndim, start, shape, strides, base):
@@ -94,7 +94,13 @@ def set_bhc_data_from_ary(self, ary):
     ctypes.memmove(ptr, ary.ctypes.data, ary.dtype.itemsize * ary.size)
 
 def ufunc(op, *args):
-    """Apply the 'op' on args, which is the output followed by one or two inputs"""
+    """
+    Apply the 'op' on args, which is the output followed by one or two inputs
+    
+    :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
+    :args *?: Probably any one of ndarray, Base, Scalar, View, and npscalar.
+    :rtype: None
+    """
 
     scalar_str = ""
     in_dtype = dtype_name(args[1])
@@ -120,7 +126,11 @@ def ufunc(op, *args):
     bhc_exec(eval(cmd), *args)
 
 def reduce(op, out, ary, axis):
-    """reduce 'axis' dimension of 'ary' and write the result to out"""
+    """
+    reduce 'axis' dimension of 'ary' and write the result to out
+    
+    :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
+    """
 
     func = eval("bhc.bh_multi_array_%s_%s_reduce" % (
         dtype_name(ary), op.info['name']
@@ -128,7 +138,15 @@ def reduce(op, out, ary, axis):
     bhc_exec(func, out, ary, axis)
 
 def accumulate(op, out, ary, axis):
-    """accumulate 'axis' dimension of 'ary' and write the result to out"""
+    """
+    Accumulate 'axis' dimension of 'ary' and write the result to out
+    
+    :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
+    :out ?:
+    :in1 ?:
+    :in2 ?:
+    :rtype: None
+    """
 
     func = eval("bhc.bh_multi_array_%s_%s_accumulate" % (
         dtype_name(ary), op.info['name'])
@@ -136,7 +154,16 @@ def accumulate(op, out, ary, axis):
     bhc_exec(func, out, ary, axis)
 
 def extmethod(name, out, in1, in2):
-    """Apply the extended method 'name' """
+    """
+    
+    Apply the extended method 'name'
+    
+    :name str: Name of the extension method.
+    :out ?:
+    :in1 ?:
+    :in2 ?:
+    :rtype: None
+    """
 
     func = eval("bhc.bh_multi_array_extmethod_%s_%s_%s" % (
         dtype_name(out),
@@ -150,7 +177,13 @@ def extmethod(name, out, in1, in2):
                                   "the extension method '%s'" % name)
 
 def range(size, dtype):
-    """create a new array containing the values [0:size["""
+    """
+    create a new array containing the values [0:size[
+    
+    :size int: Number of elements in the range [0:size[
+    :in1 numpy.dtype: The 
+    :rtype: None
+    """
 
     func = eval("bhc.bh_multi_array_%s_new_range" % dtype_name(dtype))
     bhc_obj = bhc_exec(func, size)
