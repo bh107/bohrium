@@ -1,6 +1,6 @@
 """
 Array manipulation routines
-~~~~
+===========================
 
 """
 from . import array_create
@@ -306,8 +306,8 @@ def reshape(a, *newshape):
 def broadcast_arrays(*args):
     """
     Broadcast any number of arrays against each other.
-    NB: This function differ from NumPy in one way: it does not touch arrays
-        that does not need broadcasting
+
+    .. note:: This function differ from NumPy in one way: it does not touch arrays that does not need broadcasting
 
     Parameters
     ----------

@@ -1,6 +1,6 @@
 """
-Array Create Routines
-~~~~
+Array Creation Routines
+=======================
 
 """
 import math
