@@ -71,7 +71,8 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     :rtype: ctypes pointer
     """
     ret = ary.ndarray.ctypes.data
-    ary.base.mmap_valid = False
+    if nullify:
+        ary.base.mmap_valid = False
     return ret
 
 def set_bhc_data_from_ary(self, ary):
