@@ -83,7 +83,10 @@ def ufunc(op, *args):
 
     args = views2numpy(args)
     if op.info['name'] == "identity":
-        exec("args[0][...] = args[1][...]")
+        if np.isscalar(args[1]):
+            exec("args[0][...] = args[1]")
+        else:
+            exec("args[0][...] = args[1][...]")
     else:
         func = eval("np.%s" % op.info['name'])
         func(*args[1:], out=args[0])
