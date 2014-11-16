@@ -31,17 +31,14 @@ def views2numpy(views):
     return ret
 
 def get_data_pointer(ary, allocate=False, nullify=False):
-    """Retrieve the data-pointer associated with 'ary'."""
-    return ary.ndarray.ctypes.data
+    return target_numpy.get_data_pointer(ary, allocate, nullify)
 
 def set_bhc_data_from_ary(self, ary):
-    """Assign the data from 'ary' to 'self'."""
-    ptr = get_data_pointer(self, allocate=True, nullify=False)
-    ctypes.memmove(ptr, ary.ctypes.data, ary.dtype.itemsize * ary.size)
+    return target_numpy.set_bhc_data_from_ary(self, ary)
 
 # Setup numexpr
 numexpr.set_num_threads(int(os.getenv('OMP_NUM_THREADS', 1)))
-print("using numexpr target with %d threads" % 
+print("using numexpr target with %d threads" %
       int(os.getenv('OMP_NUM_THREADS', 1))
 )
 UFUNC_CMDS = {

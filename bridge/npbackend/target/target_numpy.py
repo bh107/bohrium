@@ -19,6 +19,7 @@ class Base(interface.Base):
 
     def __init__(self, size, dtype):
         super(Base, self).__init__(size, dtype)
+        self.mmap_valid = True
         size *= dtype.itemsize
         for i, (vc_size, vc_mem) in enumerate(VCACHE):
             if vc_size == size:
@@ -29,11 +30,18 @@ class Base(interface.Base):
         self.mmap = mmap.mmap(-1, size, mmap.MAP_PRIVATE)
 
     def __str__(self):
-        return "<base memory at %s>"%self.mmap
+        if self.mmap_valid:
+            s = mmap
+        else:
+            s = "NULL"
+        return "<base memory at %s>"%s
 
     def __del__(self):
-        if len(VCACHE) < VCACHE_SIZE:
-            VCACHE.append((self.size*self.dtype.itemsize, self.mmap))
+        if self.mmap_valid:
+            if len(VCACHE) < VCACHE_SIZE:
+                VCACHE.append((self.size*self.dtype.itemsize, self.mmap))
+                return
+        self.mmap.close()
 
 class View(interface.View):
     """array view handle"""
@@ -62,7 +70,9 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     :returns: Pointer to data associated with the 'ary'.
     :rtype: ctypes pointer
     """
-    return ary.ndarray.ctypes.data
+    ret = ary.ndarray.ctypes.data
+    ary.base.mmap_valid = False
+    return ret
 
 def set_bhc_data_from_ary(self, ary):
     ptr = get_data_pointer(self, allocate=True, nullify=False)
