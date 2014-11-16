@@ -39,7 +39,7 @@ def views2clary(views):
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     ary.ndarray[:] = np.asarray(ary.clary)
-    return ary.ndarray.ctypes.data
+    return target_numpy.get_data_pointer(ary, allocate, nullify)
 
 def set_bhc_data_from_ary(self, ary):
     self.clary[:] = pygpu.asarray(ary)
