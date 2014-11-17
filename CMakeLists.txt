@@ -87,7 +87,7 @@ endif()
 configure_file(config.ini.in config.ini)
 string(REGEX MATCH "^/home/" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})
 if ("${ROOT_INSTALL}" STREQUAL "")
-    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc COMPONENT bohrium)
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
 else()
     install(CODE "
     IF(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
