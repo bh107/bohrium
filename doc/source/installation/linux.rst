@@ -47,9 +47,11 @@ In order to utilize GPUs you need an OpenCL 1.2 compatible graphics card and the
 
 .. note:: On Nvidia Optimus architectures, remember to install and use bumblebee (``optirun``) when calling Bohrium.
 
-In order to utilize a Cluster of machines you need MPI-2 and the Bohrium Cluster package::
+In order to utilize a Cluster of machines you must choose between the two supported MPI libraries::
 
-  sudo apt-get install bohrium-cluster
+  sudo apt-get install bohrium-openmpi
+                or
+  sudo apt-get install bohrium-mpich
 
 Now execute using MPI::
 
@@ -67,7 +69,7 @@ Install From Source Package
 
 Visit https://bitbucket.org/bohrium/bohrium/downloads and download a specific tarball release or the whole repository. Then build and install Bohrium as described in the following subsections.
 
-.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download.
+.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download: https://bitbucket.org/bohrium/bohrium/get/master.tgz.
 
 Python / NumPy
 ~~~~~~~~~~~~~~
@@ -82,7 +84,9 @@ And some additional packages::
 
 Build and install::
 
-  cd <path to unpacked source directory>
+  wget https://bitbucket.org/bohrium/bohrium/get/master.tgz
+  tar -xzf master.tgz
+  cd bohrium-bohrium-<hash>
   mkdir build
   cd build
   cmake .. -DCMAKE_INSTALL_PREFIX=<path to install directory>
@@ -91,7 +95,7 @@ Build and install::
 
 .. note:: The default install directory is ~/.local
 
-.. note:: To compile to a custom Python (with valgrind debug support for example), set the -DPYTHON=<custom python binary> -DPY_SCRIPT=python.
+.. note:: To compile to a custom Python (with valgrind debug support for example), set ``-DPYTHON_EXECUTABLE=<custom python binary> -DPY_SCRIPT=python``.
 
 Finally, you need to set the ``LD_LIBRARY_PATH`` environment variables and if you didn't install Bohrium in ``$HOME/.local`` your need to set ``PYTHONPATH`` as well.
 
@@ -192,7 +196,7 @@ OpenCL / GPU Engine
 The GPU vector engine requires OpenCL compatible hardware as well as functioning drivers.
 Configuring your GPU with you operating system is out of scope of this documentation.
 
-Assuming that your GPU-hardware is functioning correctly you need to install an OpenCL SDK and some additional packages::
+Assuming that your GPU-hardware is functioning correctly you need to install an OpenCL SDK and some additional packages before building Bohrium::
 
   sudo apt-get install opencl-dev libopencl1 libgl-dev
 
@@ -202,7 +206,7 @@ You should now have everything you need to utilize the GPU engine.
 MPI / Cluster Engine
 ~~~~~~~~~~~~~~~~~~~~
 
-In order to utilize a computer clusters, you need to install mpich2::
+In order to utilize a computer clusters, you need to install mpich2 or OpenMPI before building Bohrium::
 
   sudo apt-get install mpich2 libmpich2-dev
 
