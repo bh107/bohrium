@@ -86,7 +86,7 @@ endif()
 #Install the config file, which depends on global or local installation
 configure_file(config.ini.in config.ini)
 string(REGEX MATCH "^/home/" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})
-if(${ROOT_INSTALL})
+if ("${ROOT_INSTALL}" STREQUAL "")
     install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc COMPONENT bohrium)
 else()
     install(CODE "
