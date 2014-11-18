@@ -63,6 +63,10 @@ For example, the following utilize eight cluster nodes::
 
   mpiexec -np 1 python /usr/share/bohrium/test/numpy/numpytest.py : -np 7 /usr/bin/bh_vem_cluster_slave
 
+When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
+
+.. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
+
 
 Install From Source Package
 ---------------------------
@@ -209,6 +213,8 @@ MPI / Cluster Engine
 In order to utilize a computer clusters, you need to install mpich2 or OpenMPI before building Bohrium::
 
   sudo apt-get install mpich2 libmpich2-dev
+                    or
+  sudo apt-get install libopenmpi-dev openmpi-bin
 
 And execute using mpi::
 
@@ -219,4 +225,9 @@ Where one process executes the user application and multiple processes executes 
 For example, the following utilize eight cluster nodes::
 
   mpiexec -np 1 python numpytest.py : -np 7 .local/bh_vem_cluster_slave
+
+When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
+
+
+.. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
 
