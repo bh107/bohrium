@@ -282,6 +282,11 @@ if __name__ == "__main__":
         help='Only run a specific test method '\
              '(supports multiple use of this argument)'
     )
+    parser.add_argument(
+        '--exclude-benchmarks',
+        action='store_true',
+        help='Excludes all benchmak tests'
+    )
     args = parser.parse_args()
     if len(args.file) == 0:
         args.file = os.listdir(os.path.dirname(os.path.abspath(__file__)))
@@ -300,6 +305,12 @@ if __name__ == "__main__":
 
                 cls_obj  = getattr(m, cls)
                 cls_inst = cls_obj()
+
+                import inspect
+                is_benchmark = BenchHelper.__name__ in [c.__name__ for c in inspect.getmro(cls_obj)]
+                if args.exclude_benchmarks and is_benchmark:
+                    continue
+
                 #All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     name = "%s/%s/%s"%(f,cls[5:],mth[5:])
