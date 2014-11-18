@@ -52,7 +52,9 @@ typedef struct
 {
     BH_PyArrayObject base;
     PyObject *bhc_ary;
+    PyObject *bhc_ary_version;
     PyObject *bhc_view;
+    PyObject *bhc_view_version;
     int mmap_allocated;
 }BhArray;
 
@@ -257,7 +259,12 @@ BhArray_finalize(PyObject *self, PyObject *args)
     ((BhArray*)self)->bhc_ary = Py_None;
     Py_INCREF(Py_None);
 
+    ((BhArray*)self)->bhc_ary_version = PyLong_FromLong(0);
+
     ((BhArray*)self)->bhc_view = Py_None;
+    Py_INCREF(Py_None);
+
+    ((BhArray*)self)->bhc_view_version = Py_None;
     Py_INCREF(Py_None);
 
     if(_protected_malloc((BhArray *) self) != 0)
@@ -282,6 +289,8 @@ BhArray_dealloc(BhArray* self)
     assert(BhArray_CheckExact(self));
 
     Py_XDECREF(self->bhc_view);
+    Py_XDECREF(self->bhc_view_version);
+    Py_XDECREF(self->bhc_ary_version);
     Py_XDECREF(self->bhc_ary);
 
     if(!PyArray_CHKFLAGS((PyArrayObject*)self, NPY_ARRAY_OWNDATA))
@@ -526,8 +535,12 @@ static PyMethodDef BhArrayMethods[] = {
 static PyMemberDef BhArrayMembers[] = {
     {"bhc_ary", T_OBJECT_EX, offsetof(BhArray, bhc_ary), 0,
      "The Bohrium backend base-array"},
+    {"bhc_ary_version", T_OBJECT_EX, offsetof(BhArray, bhc_ary_version), 0,
+     "The version of the Bohrium backend base-array"},
     {"bhc_view", T_OBJECT_EX, offsetof(BhArray, bhc_view), 0,
      "The Bohrium backend view-array"},
+    {"bhc_view_version", T_OBJECT_EX, offsetof(BhArray, bhc_view_version), 0,
+     "The version of the Bohrium backend view-array"},
     {NULL}  /* Sentinel */
 };
 

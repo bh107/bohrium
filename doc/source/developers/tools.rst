@@ -7,26 +7,35 @@ Valgrind and Python
 -------------------
 
 Valgrind is a great tool for memory debugging, memory leak detection, and profiling.
-However, both Python and NumPy floods the valgrind output with memory errors - it is therefore necessary to use a debug and valgrind friendly version of Python::
+However, both Python and NumPy floods the valgrind output with memory errors - it is therefore necessary to use a debug and valgrind friendly version of Python and NumPy::
 
   sudo apt-get build-dep python
-  sudo apt-get install zlib1g-dev
-  PV=2.7.3
+  sudo apt-get install zlib1g-dev valgrind
+  export PV=2.7.3
   sudo mkdir /opt/python
   cd /tmp
   wget http://www.python.org/ftp/python/$PV/Python-$PV.tgz
-  tar xf Python-$PV.tgz
+  tar -xzf Python-$PV.tgz
   cd Python-$PV
   ./configure --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
   sudo make install
   sudo ln -s /opt/python/bin/python /usr/bin/dython
 
+  export NV=1.8.2
+  wget http://optimate.dl.sourceforge.net/project/numpy/NumPy/$NV/numpy-$NV.tar.gz
+  tar -xzf numpy-$NV.tar.gz
+  cd numpy-$NV
+  dython install
+
 Build Bohrium with custom Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Build and install it::
+Build and install Bohrium::
 
-  make BH_PYTHON=dython
+  cd <bohrium path>
+  mkdir build
+  cd build
+  cmake -DPYTHON_EXECUTABLE=dython -DPY_SCRIPT=python
   make install
 
 Most Used Commands
@@ -34,7 +43,7 @@ Most Used Commands
 
 Valgrind can be used to detect memory errors by invoking it with::
 
-  valgrind --vex-iropt-precise-memory-exns=yes dython <SCRIPT_NAME>
+  valgrind --suppressions=<path to bohrium>/misc/valgrind.supp dython <SCRIPT_NAME>
 
 Narrowing the valgrind analysis, add the following to your source code::
 

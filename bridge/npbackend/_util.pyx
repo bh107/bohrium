@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 """
-/*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 http://bohrium.bitbucket.org
 
@@ -18,69 +17,82 @@ You should have received a copy of the
 GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
-*/
 """
-import numpy as np
+import numpy_force as np
 from . import _info
 from . import bhc
 import atexit
 
-#Flush the delayed operations for Bohrium execution
-def flush(a=None):
+def flush(ary=None):
+    """Flush the delayed operations for Bohrium execution."""
+
     from .ndarray import check
-    if a is None or check(a):
+    if ary is None or check(ary):
         bhc.bh_runtime_flush()
 
-#Returns the dtype of 'obj'
 def dtype_of(obj):
-    if isinstance(obj, np.dtype):
-        t = obj
-    elif isinstance(obj, basestring):
-        t = obj
-    elif isinstance(obj, type):
-        t = obj
-    elif hasattr(obj, "dtype"):
-        t = obj.dtype
-    else:
-        t = type(obj)
-    return np.dtype(t)
+    """Returns the dtype of 'obj'."""
 
-#Returns True when all 'args' is the same dtype
+    if isinstance(obj, np.dtype):
+        tmp = obj
+    elif isinstance(obj, basestring):
+        tmp = obj
+    elif isinstance(obj, type):
+        tmp = obj
+    elif hasattr(obj, "dtype"):
+        tmp = obj.dtype
+    else:
+        tmp = type(obj)
+    return np.dtype(tmp)
+
 def dtype_equal(*args):
+    """Returns True when all 'args' is the same dtype."""
+
     if len(args) > 1:
-        t1 = dtype_of(args[0])
-        for t in args[1:]:
-            if t1 is not dtype_of(t):
+        first_tmp = dtype_of(args[0])
+        for tmp in args[1:]:
+            if first_tmp is not dtype_of(tmp):
                 return False
     return True
 
-#Returns True when 'dtype' is in the list of 'dtypes'
 def dtype_in(dtype, dtypes):
-    for t in dtypes:
-        if dtype_equal(dtype, t):
+    """Returns True when 'dtype' is in the list of 'dtypes'."""
+
+    for datatype in dtypes:
+        if dtype_equal(dtype, datatype):
             return True
     return False
 
-#Returns the Bohrium name of the data type of the object 'obj'
 def dtype_name(obj):
-    t = dtype_of(obj)
-    if dtype_in(t, [np.bool_, np.bool, bool]):
+    """Returns the Bohrium name of the data type of the object 'obj'."""
+
+    dtype = dtype_of(obj)
+    if dtype_in(dtype, [np.bool_, np.bool, bool]):
         return 'bool8'
     else:
-        return t.name
+        return dtype.name
 
-#Returns the type signature (output, input) to use with the given operation.
-#NB: we only returns the type of the first input thus all input types must be identical
 def type_sig(op_name, inputs):
-    f = _info.op[op_name]
+    """
+    Returns the type signature (output, input) to use with the given operation.
+    NB: we only returns the type of the first input thus all input types must
+        be identical
+    """
+
+    func = _info.op[op_name]
     #Note that we first use the dtype before the array as inputs to result_type()
     inputs = [getattr(t, 'dtype', t) for t in inputs]
     dtype = np.result_type(*inputs).name
-    for sig in f['type_sig']:
+    for sig in func['type_sig']:
         if dtype == sig[1]:
-            return (np.dtype(sig[0]),np.dtype(sig[1]))
-    raise TypeError("Cannot detement the correct signature (%s:%s)"%(op_name,dtype))
+            return (np.dtype(sig[0]), np.dtype(sig[1]))
+
+    raise TypeError("Cannot detement the correct signature (%s:%s)" % (
+        op_name, dtype
+    ))
 
 @atexit.register
 def shutdown():
-   flush()
+    """Actions to invoke when shutting down."""
+
+    flush()

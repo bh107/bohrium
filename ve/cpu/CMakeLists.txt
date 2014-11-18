@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 include_directories(../../include)
 
+if(NO_VE_GPU)
+    return()
+endif()
+
 #
 #   Compiler flags
 #

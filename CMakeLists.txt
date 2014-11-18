@@ -75,11 +75,14 @@ add_subdirectory(bridge/NumCIL)
 if(NOT USE_CXX98)
     add_subdirectory(bridge/cpp)
     add_subdirectory(bridge/c)
-    add_subdirectory(bridge/bhpy)
+    add_subdirectory(bridge/npbackend)
     add_subdirectory(bridge/cil)
 endif()
 
-install(DIRECTORY thirdparty/Random123-1.08/include/Random123 DESTINATION share/bohrium/include COMPONENT bohrium)
+install(DIRECTORY thirdparty/Random123-1.08/include/Random123
+        DESTINATION share/bohrium/include COMPONENT bohrium)
+install(DIRECTORY test DESTINATION share/bohrium COMPONENT bohrium)
+install(DIRECTORY benchmark DESTINATION share/bohrium COMPONENT bohrium)
 
 # Select the approriate compiler string
 if (APPLE)
@@ -91,8 +94,8 @@ endif()
 #Install the config file, which depends on global or local installation
 configure_file(config.ini.in config.ini)
 string(REGEX MATCH "^/home/" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})
-if(${ROOT_INSTALL})
-    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc COMPONENT bohrium)
+if ("${ROOT_INSTALL}" STREQUAL "")
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
 else()
     install(CODE "
     IF(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")

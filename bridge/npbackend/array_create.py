@@ -1,23 +1,23 @@
 """
-Array Create Routines
-~~~~
+Array Creation Routines
+=======================
 
 """
 import math
 from . import ndarray
 from .ndarray import fix_returned_biclass
-import numpy
+import numpy_force as numpy
 from ._util import dtype_equal, dtype_in
-from . import backend
+from . import target
 
 @fix_returned_biclass
-def array(object, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
+def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
     """
     Create an array -- Bohrium or NumPy ndarray.
 
     Parameters
     ----------
-    object : array_like
+    obj : array_like
         An array, any object exposing the array interface, an
         object whose __array__ method returns an array, or any
         (nested) sequence.
@@ -103,36 +103,36 @@ def array(object, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohr
             [3, 4]])
 
     """
-    a = object
+    ary = obj
     if bohrium:
-        if ndarray.check(a):
+        if ndarray.check(ary):
             if order == 'F':
                 raise ValueError("Cannot convert a Bohrium array to "\
                             "column-major ('F') memory representation")
             if copy:
-                a = a.copy()
-            if dtype is not None and not dtype_equal(dtype, a.dtype):
-                t = empty_like(a,dtype=dtype)
-                t[...] = a
-                a = t
-            for i in xrange(a.ndim, ndmin):
-                a = numpy.expand_dims(a,i)
-            return a
+                ary = ary.copy()
+            if dtype is not None and not dtype_equal(dtype, ary.dtype):
+                t = empty_like(ary, dtype=dtype)
+                t[...] = ary
+                ary = t
+            for i in xrange(ary.ndim, ndmin):
+                ary = numpy.expand_dims(ary, i)
+            return ary
         else:
-            a = numpy.array(a, dtype=dtype, copy=copy, order=order,\
+            ary = numpy.array(ary, dtype=dtype, copy=copy, order=order,\
                             subok=subok, ndmin=ndmin)
-            a = numpy.require(a, requirements=['C_CONTIGUOUS', 'ALIGNED', \
+            ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', \
                                                 'OWNDATA'])
-            ret = empty(a.shape, dtype=a.dtype)
-            ret._data_fill(a)
+            ret = empty(ary.shape, dtype=ary.dtype)
+            ret._data_fill(ary)
             return ret
     else:
-        if ndarray.check(a):
-            ret = a.copy2numpy()
+        if ndarray.check(ary):
+            ret = ary.copy2numpy()
             return numpy.array(ret, dtype=dtype, copy=copy, order=order, \
                                subok=subok, ndmin=ndmin)
         else:
-            return numpy.array(a, dtype=dtype, copy=copy, order=order, \
+            return numpy.array(ary, dtype=dtype, copy=copy, order=order, \
                                subok=subok, ndmin=ndmin)
 
 @fix_returned_biclass
@@ -504,7 +504,7 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
 
     """
     if not bohrium:
-        return numpy.arange(start,stop,step,dtype)
+        return numpy.arange(start, stop, step, dtype)
     if not stop:
         stop = start
         start = type(stop)(0)
@@ -513,15 +513,15 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
         dtype = numpy.int64
     else:
         start = numpy.dtype(dtype).type(start)
-        stop  = numpy.dtype(dtype).type(stop)
-        step  = numpy.dtype(dtype).type(step)
-    return range(size,dtype=dtype) * step + start
+        stop = numpy.dtype(dtype).type(stop)
+        step = numpy.dtype(dtype).type(step)
+    return range(size, dtype=dtype) * step + start
 
 @fix_returned_biclass
 def range(size, dtype=numpy.uint64):
-    if (not isinstance(size, (int,long))):
+    if not isinstance(size, (int, long)):
         raise ValueError("size must be an integer")
-    if (size < 1):
+    if size < 1:
         raise ValueError("size must be greater than 0")
     if dtype_in(dtype, [numpy.int8,
                         numpy.int16,
@@ -532,13 +532,13 @@ def range(size, dtype=numpy.uint64):
                         numpy.float16,
                         numpy.float32,
                         numpy.complex64]):
-        A = empty(size,dtype=numpy.uint32,bohrium=True)
+        A = empty(size, dtype=numpy.uint32, bohrium=True)
     else:
-        A = empty(size,dtype=numpy.uint64,bohrium=True)
-    ret = backend.range(size, A.dtype)
+        A = empty(size, dtype=numpy.uint64, bohrium=True)
+    ret = target.range(size, A.dtype)
     A = ndarray.new((size,), A.dtype, ret)
     if not dtype_equal(dtype, A.dtype):
-        B = empty_like(A,dtype=dtype)
+        B = empty_like(A, dtype=dtype)
         B[...] = A[...]
         return B
     else:
@@ -715,7 +715,7 @@ def load(file, mmap_mode=None, bohrium=True):
     memmap([4, 5, 6])
 
     """
-    arr = numpy.load(file,mmap_mode)
+    arr = numpy.load(file, mmap_mode)
     if bohrium:
         arr = array(arr, bohrium=True)
     return arr
@@ -759,9 +759,15 @@ def save(file, arr):
     bohrium = ndarray.check(arr)
     if bohrium:
         array(arr, bohrium=False)
-    numpy.save(file,arr)
+    numpy.save(file, arr)
     if bohrium:
         array(arr, bohrium=True)
+
+"""
+Since ufunc.py uses relative imports then these tests cannot be executed, I
+assume that they are deprecated code and haven't been used for anything in
+several years? This this "UNIT TEST" cover anything that numpytest does not?
+Does it every run?
 
 ###############################################################################
 ################################ UNIT TEST ####################################
@@ -774,9 +780,11 @@ class Tests(unittest.TestCase):
 
     def test_empty_dtypes(self):
         for t in _info.numpy_types:
-            a = empty((4,4), dtype=t)
+            a = empty((4, 4), dtype=t)
 
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Tests)
     unittest.TextTestRunner(verbosity=2).run(suite)
+
+"""

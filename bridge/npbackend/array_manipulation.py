@@ -1,16 +1,16 @@
 """
 Array manipulation routines
-~~~~
+===========================
 
 """
 from . import array_create
-import numpy
+import numpy_force as numpy
 from . import ndarray
 from .ndarray import fix_returned_biclass
-from itertools import izip as zip
+import itertools
 
 @fix_returned_biclass
-def flatten(A):
+def flatten(ary):
     """
     Return a copy of the array collapsed into one dimension.
 
@@ -34,10 +34,10 @@ def flatten(A):
     >>> np.flatten(a)
     array([1, 2, 3, 4])
     """
-    return A.reshape(numpy.multiply.reduce(numpy.asarray(A.shape)))
+    return ary.reshape(numpy.multiply.reduce(numpy.asarray(ary.shape)))
 
 @fix_returned_biclass
-def diagonal(A,offset=0):
+def diagonal(ary, offset=0):
     """
     Return specified diagonals.
 
@@ -46,7 +46,7 @@ def diagonal(A,offset=0):
 
     Parameters
     ----------
-    a : array_like
+    ary : array_like
         Array from which the diagonals are taken.
     offset : int, optional
         Offset of the diagonal from the main diagonal.  Can be positive or
@@ -90,24 +90,24 @@ def diagonal(A,offset=0):
            [[4, 5],
             [6, 7]]])
     """
-    if A.ndim !=2 :
+    if ary.ndim != 2:
         raise Exception("diagonal only supports 2 dimensions\n")
     if offset < 0:
         offset = -offset
-        if (A.shape[0]-offset) > A.shape[1]:
-            d = A[offset,:]
+        if (ary.shape[0]-offset) > ary.shape[1]:
+            ary_diag = ary[offset, :]
         else:
-            d = A[offset:,0]
+            ary_diag = ary[offset:, 0]
     else:
-         if A.shape[1]-offset > A.shape[0]:
-             d = A[:,offset]
-         else:
-             d = A[0,offset:]
-    d.strides=(A.strides[0]+A.strides[1],)
-    return d
+        if ary.shape[1]-offset > ary.shape[0]:
+            ary_diag = ary[:, offset]
+        else:
+            ary_diag = ary[0, offset:]
+    ary_diag.strides = (ary.strides[0]+ary.strides[1],)
+    return ary_diag
 
 @fix_returned_biclass
-def diagflat(d,k=0):
+def diagflat(d, k=0):
     """
     Create a two-dimensional array with the flattened input as a diagonal.
 
@@ -148,7 +148,7 @@ def diagflat(d,k=0):
     """
     d = flatten(d)
     size = d.size+abs(k)
-    A = array_create.zeros((size,size), dtype=d.dtype, bohrium=ndarray.check(d))
+    A = array_create.zeros((size, size), dtype=d.dtype, bohrium=ndarray.check(d))
     Ad = diagonal(A, offset=k)
     Ad[...] = d
     return A
@@ -204,9 +204,9 @@ def diag(v, k=0):
     """
 
     if v.ndim == 1:
-        return diagflat(v,k)
+        return diagflat(v, k)
     elif v.ndim == 2:
-        return diagonal(v,k)
+        return diagonal(v, k)
     else:
         raise ValueError("Input must be 1- or 2-d.")
 
@@ -306,8 +306,8 @@ def reshape(a, *newshape):
 def broadcast_arrays(*args):
     """
     Broadcast any number of arrays against each other.
-    NB: This function differ from NumPy in one way: it does not touch arrays
-        that does not need broadcasting
+
+    .. note:: This function differ from NumPy in one way: it does not touch arrays that does not need broadcasting
 
     Parameters
     ----------
@@ -346,7 +346,7 @@ def broadcast_arrays(*args):
     """
     ret = []
     bargs = numpy.broadcast_arrays(*args)
-    for a, b in zip(args, bargs):
+    for a, b in itertools.izip(args, bargs):
         if numpy.isscalar(a):
             ret.append(b)
         elif ndarray.identical_views(a, b):
@@ -354,6 +354,13 @@ def broadcast_arrays(*args):
         else:
             ret.append(b)
     return ret
+
+"""
+Since ufunc.py uses relative imports then these tests cannot be executed, I
+assume that they are deprecated code and haven't been used for anything in
+several years? This this "UNIT TEST" cover anything that numpytest does not?
+Does it every run?
+
 
 ###############################################################################
 ################################ UNIT TEST ####################################
@@ -368,3 +375,5 @@ class Tests(unittest.TestCase):
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Tests)
     unittest.TextTestRunner(verbosity=2).run(suite)
+
+"""

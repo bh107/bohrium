@@ -1,6 +1,5 @@
 """
-The Computation Backend
-
+pygpu as backend target for npbackend.
 """
 import numpy as np
 from .. import bhc
@@ -9,30 +8,30 @@ import time
 import os
 import pygpu
 from pygpu.array import gpuarray as elemary
-from . import backend_numpy
+from . import target_numpy
 
 cxt_string = os.environ.get("GPUARRAY_DEVICE", "opencl0:0")
 cxt = pygpu.init(cxt_string)
 #cxt = pygpu.init("cuda0")
 pygpu.set_default_context(cxt)
 
-class base(backend_numpy.base):
+class Base(target_numpy.Base):
     """base array handle"""
     def __init__(self, size, dtype):
         self.clary = pygpu.empty((size,), dtype=dtype, cls=elemary)
-        super(base, self).__init__(size, dtype)
+        super(Base, self).__init__(size, dtype)
 
-class view(backend_numpy.view):
+class View(target_numpy.View):
     """array view handle"""
     def __init__(self, ndim, start, shape, strides, base):
-        super(view, self).__init__(ndim, start, shape, strides, base)
+        super(View, self).__init__(ndim, start, shape, strides, base)
         self.clary = pygpu.gpuarray.from_gpudata(base.clary.gpudata, offset=self.start,\
                 dtype=base.dtype, shape=shape, strides=self.strides, writable=True, base=base.clary, cls=elemary)
 
 def views2clary(views):
     ret = []
     for v in views:
-        if isinstance(v, view):
+        if isinstance(v, View):
             ret.append(v.clary)
         else:
             ret.append(v)
@@ -40,7 +39,7 @@ def views2clary(views):
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     ary.ndarray[:] = np.asarray(ary.clary)
-    return ary.ndarray.ctypes.data
+    return target_numpy.get_data_pointer(ary, allocate, nullify)
 
 def set_bhc_data_from_ary(self, ary):
     self.clary[:] = pygpu.asarray(ary)
