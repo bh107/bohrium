@@ -5,7 +5,6 @@ from numbers import Number
 import subprocess
 import warnings
 import random
-import getopt
 import pickle
 import time
 import uuid
@@ -14,6 +13,7 @@ import sys
 import os
 from os.path import join
 import re
+import argparse
 
 import numpy as np
 import bohrium as bh
@@ -245,52 +245,57 @@ class BenchHelper:
 if __name__ == "__main__":
     warnings.simplefilter('error')#Warnings will raise exceptions
     pydebug = True
-    test_list       = []
-    script_list     = []
-    exclude_list    = []
-    test_exclude_list = []
 
     try:
         sys.gettotalrefcount()
     except AttributeError:
         pydebug = False
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "f:e:t:x", [
-            "file=",
-            "exclude=",
-            "test=",
-            "exclude-test="
-        ])
-    except getopt.GetoptError as err:
-        print(str(err))
-        sys.exit(2)
 
-    for o, a in opts:
-        if o in ("-f", "--file"):
-            script_list.append(a)
-        elif o in ("-e", "--exclude"):
-            exclude_list.append(a)
-        elif o in ["-t", "--test"]:
-            test_list.append(a)
-        elif o in ["-x", "--exclude-test"]:
-            test_exclude_list.append(a)
-        else:
-            assert False, "unhandled option"
-
-    if len(script_list) == 0:
-        script_list = os.listdir(os.path.dirname(os.path.abspath(__file__)))
+    parser = argparse.ArgumentParser(description='Runs the test suite, which consist of all the test_*.py files')
+    parser.add_argument(
+        '--file',
+        type=str,
+        action='append',
+        default=[],
+        help='Add test file (supports multiple use of this argument)'
+    )
+    parser.add_argument(
+        '--exclude',
+        type=str,
+        action='append',
+        default=[],
+        help='Exclude test file (supports multiple use of this argument)'
+    )
+    parser.add_argument(
+        '--test',
+        type=str,
+        action='append',
+        default=[],
+        help='Only run a specific test method '\
+             '(supports multiple use of this argument)'
+    )
+    parser.add_argument(
+        '--exclude-test',
+        type=str,
+        action='append',
+        default=[],
+        help='Only run a specific test method '\
+             '(supports multiple use of this argument)'
+    )
+    args = parser.parse_args()
+    if len(args.file) == 0:
+        args.file = os.listdir(os.path.dirname(os.path.abspath(__file__)))
 
     print("*"*3, "Testing the equivalency of Bohrium-NumPy and NumPy", "*"*3)
-    for i in xrange(len(script_list)):
-        f = script_list[i]
+    for f in args.file:
 
-        if f.startswith("test_") and f.endswith("py") and f not in exclude_list:
+        if f.startswith("test_") and f.endswith("py") and f not in args.exclude:
             m = f[:-3]#Remove ".py"
             m = __import__(m)
             #All test classes starts with "test_"
             for cls in [o for o in dir(m) if o.startswith("test_") and \
-                        (True if test_list and o in test_list or not test_list else False)]:
-                if cls in test_exclude_list:
+                        (True if args.test and o in args.test or not args.test else False)]:
+                if cls in args.exclude_test:
                     continue
 
                 cls_obj  = getattr(m, cls)
