@@ -42,11 +42,16 @@ ResourceManager::ResourceManager(bh_component* _component)
     , _asyncCompile(true)
 
 {
+    
     char* dir = bh_component_config_lookup(component, "include");
     if (dir == NULL)
-        includeStr = std::string("-I/opt/bohrium/gpu/include");
+        compilerOptions = std::string("-I/opt/bohrium/gpu/include");
     else
-        includeStr = std::string("-I") + std::string(dir);
+        compilerOptions = std::string("-I") + std::string(dir);
+
+    char* compiler_options = bh_component_config_lookup(component, "compiler_options");
+    if (compiler_options != NULL)
+        compilerOptions += std::string(" ") + std::string(compiler_options);
 
     char* kernel_type = bh_component_config_lookup(component, "kernel");
     if (kernel_type != NULL)
@@ -280,10 +285,11 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
 #ifdef BH_TIMING
     bh_uint64 start = bh::Timer<>::stamp(); 
 #endif
-
+    std::string compilerOptions(this->compilerOptions);
+    compilerOptions += std::string(" ") + options;
 #ifdef DEBUG
     std::cout << "Program build :\n";
-    std::cout << "Options :" << options << "\n";
+    std::cout << "Options :" << compilerOptions << "\n";
     std::cout << "------------------- SOURCE -----------------------\n";
     std::cout << source;
     std::cout << "------------------ SOURCE END --------------------" << std::endl;
@@ -291,11 +297,11 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
-        program.build(devices,(options+std::string(" ")+includeStr).c_str());
+        program.build(devices,(compilerOptions).c_str());
     } catch (cl::Error) {
 //#ifdef DEBUG
         std::cerr << "Program build error:\n";
-        std::cout << "Options :" << options << "\n";
+        std::cout << "Options :" << compilerOptions << "\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";

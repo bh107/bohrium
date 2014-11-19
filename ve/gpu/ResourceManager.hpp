@@ -48,7 +48,7 @@ private:
     bool _asyncCompile;
     void calcLocalShape();
     void registerExtensions(std::vector<std::string> extensions);
-    std::string includeStr;
+    std::string compilerOptions;
 
 public:
 #ifdef BH_TIMING
