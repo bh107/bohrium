@@ -36,6 +36,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <bh.h>
 
+namespace bohrium {
+namespace dag {
+
 /* Creates a new DAG based on a bhir that consist of single
  * instruction kernels.
  * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
@@ -48,7 +51,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * Throw logic_error() if the kernel_list wihtin 'bhir' isn't empty
  */
 template <typename Graph>
-void bh_dag_from_bhir(const bh_ir &bhir, Graph &dag)
+void from_bhir(const bh_ir &bhir, Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -86,7 +89,7 @@ void bh_dag_from_bhir(const bh_ir &bhir, Graph &dag)
  * @dag     The output dag
  */
 template <typename Graph>
-void bh_dag_from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
+void from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -120,7 +123,7 @@ void bh_dag_from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
  * @kernels The kernel list output
  */
 template <typename Graph>
-void bh_dag_fill_kernels(const Graph &dag, std::vector<bh_ir_kernel> &kernels)
+void fill_kernels(const Graph &dag, std::vector<bh_ir_kernel> &kernels)
 {
     using namespace std;
     using namespace boost;
@@ -145,7 +148,7 @@ void bh_dag_fill_kernels(const Graph &dag, std::vector<bh_ir_kernel> &kernels)
  * @return  True if there are cycles in the digraph, else false
  */
 template <typename Graph>
-bool bh_dag_cycles(const Graph &g)
+bool cycles(const Graph &g)
 {
     using namespace std;
     using namespace boost;
@@ -173,7 +176,7 @@ bool bh_dag_cycles(const Graph &g)
  * @dag The DAG
  */
 template <typename Vertex, typename Graph>
-void bh_dag_merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
+void merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -209,10 +212,10 @@ void bh_dag_merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
  *                   vertices isn't fusible
  */
 template <typename Graph, typename Edge>
-void bh_dag_merge_vertices(const Graph &dag,
-                           const std::vector<Edge> edges2merge,
-                           Graph &new_dag,
-                           bool check_fusibility=false)
+void merge_vertices(const Graph &dag,
+                    const std::vector<Edge> edges2merge,
+                    Graph &new_dag,
+                    bool check_fusibility = false)
 {
     using namespace std;
     using namespace boost;
@@ -284,7 +287,7 @@ void bh_dag_merge_vertices(const Graph &dag,
  * @return  The cost
  */
 template <typename Graph>
-uint64_t bh_dag_cost(const Graph &dag)
+uint64_t cost(const Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -309,7 +312,7 @@ uint64_t bh_dag_cost(const Graph &dag)
  * @return  True if there is a long path, else false
  */
 template <typename Vertex, typename Graph>
-bool bh_dag_long_path_exist(const Vertex &a, const Vertex &b, const Graph &dag)
+bool long_path_exist(const Vertex &a, const Vertex &b, const Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -352,7 +355,7 @@ bool bh_dag_long_path_exist(const Vertex &a, const Vertex &b, const Graph &dag)
  * @dag The DAG
  */
 template <typename Graph>
-void bh_dag_transitive_reduction(Graph &dag)
+void transitive_reduction(Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -361,7 +364,7 @@ void bh_dag_transitive_reduction(Graph &dag)
     vector<Edge> removal;
     BOOST_FOREACH(Edge e, edges(dag))
     {
-        if(bh_dag_long_path_exist(source(e,dag), target(e,dag), dag))
+        if(long_path_exist(source(e,dag), target(e,dag), dag))
             removal.push_back(e);
     }
     BOOST_FOREACH(Edge &e, removal)
@@ -378,7 +381,7 @@ void bh_dag_transitive_reduction(Graph &dag)
  * @edges Output list of horizontal edges (as Vertex pairs)
  */
 template <typename Graph, typename Vertex>
-void bh_dag_horizontal_edges(const Graph &dag, std::vector<std::pair<Vertex,Vertex> > &edges)
+void horizontal_edges(const Graph &dag, std::vector<std::pair<Vertex,Vertex> > &edges)
 {
     using namespace std;
     using namespace boost;
@@ -400,9 +403,9 @@ void bh_dag_horizontal_edges(const Graph &dag, std::vector<std::pair<Vertex,Vert
 
             if(dag[*v1].dependency_cost(dag[*v2]) > 0)
             {
-                if(bh_dag_long_path_exist(*v1, *v2, dag))
+                if(long_path_exist(*v1, *v2, dag))
                     continue;
-                if(bh_dag_long_path_exist(*v2, *v1, dag))
+                if(long_path_exist(*v2, *v1, dag))
                     continue;
                 edges.push_back(make_pair(*v1,*v2));
             }
@@ -419,7 +422,7 @@ void bh_dag_horizontal_edges(const Graph &dag, std::vector<std::pair<Vertex,Vert
  * @filename  The name of DOT file
  */
 template <typename Graph>
-void bh_dag_pprint(const Graph &dag, const char filename[])
+void pprint(const Graph &dag, const char filename[])
 {
     using namespace std;
     using namespace boost;
@@ -431,7 +434,7 @@ void bh_dag_pprint(const Graph &dag, const char filename[])
     Graph new_dag(dag);
     vector<hEdge> h_edges1;//h-edges as Vertix pairs
     set<Edge> h_edges2;//h-edges as Edges
-    bh_dag_horizontal_edges(new_dag, h_edges1);
+    horizontal_edges(new_dag, h_edges1);
     BOOST_FOREACH(const hEdge &e, h_edges1)
     {
         h_edges2.insert(add_edge(e.first, e.second, new_dag).first);
@@ -445,7 +448,7 @@ void bh_dag_pprint(const Graph &dag, const char filename[])
         void operator()(std::ostream& out) const
         {
             out << "labelloc=\"t\";" << endl;
-            out << "label=\"DAG with a total cost of " << bh_dag_cost(graph);
+            out << "label=\"DAG with a total cost of " << cost(graph);
             out << " bytes\";" << endl;
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
@@ -522,7 +525,7 @@ void bh_dag_pprint(const Graph &dag, const char filename[])
  * @dag The DAG to fuse
  */
 template <typename Graph>
-void bh_dag_fuse_gentle(Graph &dag)
+void fuse_gentle(Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -549,7 +552,7 @@ void bh_dag_fuse_gentle(Graph &dag)
                     continue;
 
                 //The target and parent may fuse
-                bh_dag_merge_vertices(*parent.first, v, dag);
+                merge_vertices(*parent.first, v, dag);
                 not_finished = true;
                 break;
             }
@@ -565,7 +568,7 @@ void bh_dag_fuse_gentle(Graph &dag)
                     continue;
 
                 //The target and the child may fuse
-                bh_dag_merge_vertices(*child.first, v, dag);
+                merge_vertices(*child.first, v, dag);
                 not_finished = true;
                 break;
             }
@@ -583,7 +586,7 @@ void bh_dag_fuse_gentle(Graph &dag)
  * @dag The DAG to fuse
  */
 template <typename Graph>
-void bh_dag_fuse_greedy(Graph &dag)
+void fuse_greedy(Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -613,8 +616,8 @@ void bh_dag_fuse_greedy(Graph &dag)
             break;
 
         Graph new_dag(dag);
-        bh_dag_merge_vertices(source(best, dag), target(best, dag), new_dag);
-        if(bh_dag_cycles(new_dag))
+        merge_vertices(source(best, dag), target(best, dag), new_dag);
+        if(cycles(new_dag))
         {
             ignored.insert(best);
         }
@@ -637,7 +640,7 @@ void bh_dag_fuse_greedy(Graph &dag)
  * @dag        The output DAG
  */
 template <typename Graph>
-void bh_dag_fuse_topological(const std::vector<bh_instruction> &instr_list, Graph &dag)
+void fuse_topological(const std::vector<bh_instruction> &instr_list, Graph &dag)
 {
     using namespace std;
     using namespace boost;
@@ -677,6 +680,8 @@ void bh_dag_fuse_topological(const std::vector<bh_instruction> &instr_list, Grap
         prev = v;
     }
 }
+
+}} //namespace bohrium::dag
 
 #endif
 

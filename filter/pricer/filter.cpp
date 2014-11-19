@@ -38,8 +38,8 @@ void filter(const bh_ir &bhir)
         return;
 
     Graph dag;
-    bh_dag_from_kernels(bhir.kernel_list, dag);
-    sum += bh_dag_cost(dag);
+    bohrium::dag::from_kernels(bhir.kernel_list, dag);
+    sum += bohrium::dag::cost(dag);
 }
 
 void shutdown()

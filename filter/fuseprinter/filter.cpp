@@ -34,7 +34,7 @@ void filter(const bh_ir &bhir)
     snprintf(filename, 8000, "dag-%d.dot", ++filter_count);
     printf("fuseprinter: writing dag('%s').\n", filename);
 
-    bh_dag_from_kernels(bhir.kernel_list, dag);
-    bh_dag_transitive_reduction(dag);
-    bh_dag_pprint(dag, filename);
+    bohrium::dag::from_kernels(bhir.kernel_list, dag);
+    bohrium::dag::transitive_reduction(dag);
+    bohrium::dag::pprint(dag, filename);
 }

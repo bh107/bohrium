@@ -37,9 +37,9 @@ typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
 void fuser(bh_ir &bhir)
 {
     Graph dag;
-    bh_dag_from_bhir(bhir, dag);
-    bh_dag_transitive_reduction(dag);
-    bh_dag_fuse_gentle(dag);
-    bh_dag_fuse_greedy(dag);
-    bh_dag_fill_kernels(dag, bhir.kernel_list);
+    bohrium::dag::from_bhir(bhir, dag);
+    bohrium::dag::transitive_reduction(dag);
+    bohrium::dag::fuse_gentle(dag);
+    bohrium::dag::fuse_greedy(dag);
+    bohrium::dag::fill_kernels(dag, bhir.kernel_list);
 }

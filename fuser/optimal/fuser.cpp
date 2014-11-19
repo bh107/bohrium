@@ -51,14 +51,14 @@ bool fuse_mask(const Graph &dag, const vector<Edge> &edges2explore,
     }
     try
     {
-        bh_dag_merge_vertices(dag, edges2merge, new_dag, true);
+        bohrium::dag::merge_vertices(dag, edges2merge, new_dag, true);
     }
     catch (const runtime_error &e)
     {
         return false;
     }
 
-    if(bh_dag_cycles(new_dag))
+    if(bohrium::dag::cycles(new_dag))
         return false;
 
     return true;
@@ -75,7 +75,7 @@ void fuse(const Graph &dag, const vector<Edge> &edges2explore,
         Graph new_dag;
         mask[offset] = merge_next;
         const bool fusible = fuse_mask(dag, edges2explore, mask, new_dag);
-        const uint64_t cost = bh_dag_cost(new_dag);
+        const uint64_t cost = bohrium::dag::cost(new_dag);
         if(cost >= best_cost)
             return;
         if(fusible)
@@ -84,9 +84,9 @@ void fuse(const Graph &dag, const vector<Edge> &edges2explore,
             best_dag = new_dag;
             #ifdef VERBOSE
                 std::stringstream ss;
-                ss << "new_best_dag-" << fuser_count << "-" << bh_dag_cost(new_dag) << ".dot";
+                ss << "new_best_dag-" << fuser_count << "-" << bohrium::dag::cost(new_dag) << ".dot";
                 printf("write file: %s\n", ss.str().c_str());
-                bh_dag_pprint(new_dag, ss.str().c_str());
+                bohrium::dag::pprint(new_dag, ss.str().c_str());
             #endif
             return;
         }
@@ -101,9 +101,9 @@ void fuse(const Graph &dag, const vector<Edge> &edges2explore,
 void fuser(bh_ir &bhir)
 {
     Graph dag;
-    bh_dag_from_bhir(bhir, dag);
-    bh_dag_transitive_reduction(dag);
-    bh_dag_fuse_gentle(dag);
+    bohrium::dag::from_bhir(bhir, dag);
+    bohrium::dag::transitive_reduction(dag);
+    bohrium::dag::fuse_gentle(dag);
 
     //The list of edges that we should try to merge
     vector<Edge> edges2explore;
@@ -115,7 +115,7 @@ void fuser(bh_ir &bhir)
 
     if(edges2explore.size() == 0)
     {
-        bh_dag_fill_kernels(dag, bhir.kernel_list);
+        bohrium::dag::fill_kernels(dag, bhir.kernel_list);
         return;
     }
 
@@ -125,21 +125,21 @@ void fuser(bh_ir &bhir)
         Graph new_dag;
         if(fuse_mask(dag, edges2explore, mask, new_dag))
         {
-            bh_dag_fill_kernels(new_dag, bhir.kernel_list);
+            bohrium::dag::fill_kernels(new_dag, bhir.kernel_list);
             return;
         }
     }
 
     //Then we use the greedy algorithm to find a good initial guess
     best_dag = dag;
-    bh_dag_fuse_greedy(best_dag);
-    best_cost = bh_dag_cost(best_dag);
+    bohrium::dag::fuse_greedy(best_dag);
+    best_cost = bohrium::dag::cost(best_dag);
 
     if(mask.size() > 100)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
         cout << mask.size() << "!" << endl;
-        bh_dag_fill_kernels(best_dag, bhir.kernel_list);
+        bohrium::dag::fill_kernels(best_dag, bhir.kernel_list);
         return;
     }
     else if(mask.size() > 10)
@@ -149,6 +149,6 @@ void fuser(bh_ir &bhir)
 
     fuse(dag, edges2explore, mask, 0, true);
     fuse(dag, edges2explore, mask, 0, false);
-    bh_dag_fill_kernels(best_dag, bhir.kernel_list);
+    bohrium::dag::fill_kernels(best_dag, bhir.kernel_list);
 }
 

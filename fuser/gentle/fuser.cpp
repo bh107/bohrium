@@ -39,9 +39,9 @@ typedef graph_traits<Graph>::edge_descriptor Edge;
 void fuser(bh_ir &bhir)
 {
     Graph dag;
-    bh_dag_from_bhir(bhir, dag);
-    bh_dag_transitive_reduction(dag);
-    bh_dag_fuse_gentle(dag);
+    bohrium::dag::from_bhir(bhir, dag);
+    bohrium::dag::transitive_reduction(dag);
+    bohrium::dag::fuse_gentle(dag);
 
     //Lets fill the bhir;
     vector<Vertex> topological_order;

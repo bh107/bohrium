@@ -152,7 +152,7 @@ bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
     catch (const not_a_dag &e)
     {
         cout << "Writing the failed kernel list: check_kernel_cycles-fail.dot" << endl;
-        bh_dag_pprint(dag, "check_kernel_cycles-fail.dot");
+        bohrium::dag::pprint(dag, "check_kernel_cycles-fail.dot");
         return false;
     }
 }
