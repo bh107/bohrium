@@ -297,8 +297,12 @@ SourceKernelCall InstructionBatch::generateKernel()
         source << "#include <ocl_integer.h>\n";
     if (random)
         source << "#include <ocl_random.h>\n";
+    std::vector<size_t> localShape = resourceManager->localShape(kernelShape);
+    while (localShape.size() < 3)
+        localShape.push_back(1);
     source << "#ifdef FIXED_SIZE\n" << defines.str() << "#endif\n" << 
-        "__kernel void\n#ifndef FIXED_SIZE\nkernel" << std::hex << functionID <<
+        "__kernel __attribute__((work_group_size_hint(" << localShape[0] <<  ", " << localShape[1] <<  ", " << 
+        localShape[2]  << "))) void\n#ifndef FIXED_SIZE\nkernel" << std::hex << functionID <<
         "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() << 
         "\n" << functionBody;
     
