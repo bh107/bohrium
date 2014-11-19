@@ -75,41 +75,6 @@ void bh_dag_from_bhir(const bh_ir &bhir, Graph &dag)
             }
         }
     }
-    //Add inputs and outputs from outside the instruction list
-    map<const bh_base*, Vertex> knowns_in, knowns_out;
-    BOOST_FOREACH(Vertex v, vertices(dag))
-    {
-        BOOST_FOREACH(const bh_instruction &instr, dag[v].instr_list())
-        {
-            const int nop = bh_operands(instr.opcode);
-            for(int i=1; i<nop; ++i)
-            {
-                if(bh_is_constant(&instr.operand[i]))
-                    continue;
-                const bh_base *b = instr.operand[i].base;
-                if(knowns_in.find(b) == knowns_in.end())
-                {
-                    knowns_in[b] = add_vertex(dag);
-                }
-                dag[knowns_in[b]].outputs.push_back(instr.operand[i]);
-                add_edge(knowns_in[b], v, dag);
-            }
-        }
-        BOOST_FOREACH(const bh_instruction &instr, dag[v].instr_list())
-        {
-            const int nop = bh_operands(instr.opcode);
-            if(nop > 0)
-            {
-                const bh_base *b = instr.operand[0].base;
-                if(knowns_out.find(b) == knowns_out.end())
-                {
-                    knowns_out[b] = add_vertex(dag);
-                }
-                dag[knowns_out[b]].inputs.push_back(instr.operand[0]);
-                add_edge(v, knowns_out[b], dag);
-            }
-        }
-    }
 }
 
 /* Creates a new DAG based on a kernel list where each vertex is a kernel.
@@ -168,93 +133,6 @@ void bh_dag_fill_kernels(const Graph &dag, std::vector<bh_ir_kernel> &kernels)
         if(dag[v].instr_list().size() > 0)
             kernels.push_back(dag[v]);
     }
-}
-
-/* Writes the DOT file of a DAG
- * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
- *
- * Complexity: O(E + V)
- *
- * @dag       The DAG to write
- * @filename  The name of DOT file
- */
-template <typename Graph>
-void bh_dag_pprint(const Graph &dag, const char filename[])
-{
-    using namespace std;
-    using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
-    typedef typename graph_traits<Graph>::edge_descriptor Edge;
-
-    //We define a graph and a kernel writer for graphviz
-    struct graph_writer
-    {
-        const Graph &graph;
-        graph_writer(const Graph &g) : graph(g) {};
-        void operator()(std::ostream& out) const
-        {
-            out << "labelloc=\"t\";" << endl;
-            out << "label=\"DAG with a total cost of " << bh_dag_cost(graph);
-            out << " bytes\";" << endl;
-            out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
-            out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
-        }
-    };
-    struct kernel_writer
-    {
-        const Graph &graph;
-        kernel_writer(const Graph &g) : graph(g) {};
-        void operator()(std::ostream& out, const Vertex& v) const
-        {
-            char buf[1024*10];
-            out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
-            out << " bytes\\n";
-            out << "Input views: \\l";
-            BOOST_FOREACH(const bh_view &i, graph[v].input_list())
-            {
-                bh_sprint_view(&i, buf);
-                out << buf << "\\l";
-            }
-            out << "Output views: \\l";
-            BOOST_FOREACH(const bh_view &i, graph[v].output_list())
-            {
-                bh_sprint_view(&i, buf);
-                out << buf << "\\l";
-            }
-            out << "Temp base-arrays: \\l";
-            BOOST_FOREACH(const bh_base *i, graph[v].temp_list())
-            {
-                bh_sprint_base(i, buf);
-                out << buf << "\\l";
-            }
-            out << "Instruction list: \\l";
-            BOOST_FOREACH(const bh_instruction &i, graph[v].instr_list())
-            {
-                bh_sprint_instr(&i, buf, "\\l");
-                out << buf << "\\l";
-            }
-            out << "\"]";
-        }
-    };
-    struct edge_writer
-    {
-        const Graph &graph;
-        edge_writer(const Graph &g) : graph(g) {};
-        void operator()(std::ostream& out, const Edge& e) const
-        {
-            int64_t c = graph[target(e,graph)].dependency_cost(graph[source(e,graph)]);
-            out << "[label=\" ";
-            if(c == -1)
-                out << "N/A";
-            else
-                out << c << " bytes";
-            out << "\"]";
-        }
-    };
-    ofstream file;
-    file.open(filename);
-    write_graphviz(file, dag, kernel_writer(dag), edge_writer(dag), graph_writer(dag));
-    file.close();
 }
 
 /* Determines whether there are cycles in the Graph
@@ -490,6 +368,148 @@ void bh_dag_transitive_reduction(Graph &dag)
     {
         remove_edge(e, dag);
     }
+}
+
+/* Retrieves all horizontal edges, i.e independent edges with non-zero cost
+ *
+ * Complexity: O(E * V)
+ *
+ * @dag   The DAG
+ * @edges Output list of horizontal edges (as Vertex pairs)
+ */
+template <typename Graph, typename Vertex>
+void bh_dag_horizontal_edges(const Graph &dag, std::vector<std::pair<Vertex,Vertex> > &edges)
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::edge_descriptor Edge;
+
+    typename graph_traits<Graph>::vertex_iterator v1, v2, v_end;
+    for(tie(v1, v_end) = vertices(dag); v1 != v_end; ++v1)
+    {
+        for(v2=v1+1; v2 != v_end; ++v2)
+        {
+            Edge e;
+            bool exist;
+            tie(e, exist) = edge(*v1, *v2, dag);
+            if(exist)
+                continue;
+            tie(e, exist) = edge(*v2, *v1, dag);
+            if(exist)
+                continue;
+
+            if(dag[*v1].dependency_cost(dag[*v2]) > 0)
+            {
+                if(bh_dag_long_path_exist(*v1, *v2, dag))
+                    continue;
+                if(bh_dag_long_path_exist(*v2, *v1, dag))
+                    continue;
+                edges.push_back(make_pair(*v1,*v2));
+            }
+        }
+    }
+}
+
+/* Writes the DOT file of a DAG
+ * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
+ *
+ * Complexity: O(E + V)
+ *
+ * @dag       The DAG to write
+ * @filename  The name of DOT file
+ */
+template <typename Graph>
+void bh_dag_pprint(const Graph &dag, const char filename[])
+{
+    using namespace std;
+    using namespace boost;
+    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
+    typedef typename graph_traits<Graph>::edge_descriptor Edge;
+    typedef pair<Vertex,Vertex> hEdge;
+
+    //Lets add horizontal edges as nondirectional edges in the DAG
+    Graph new_dag(dag);
+    vector<hEdge> h_edges1;//h-edges as Vertix pairs
+    set<Edge> h_edges2;//h-edges as Edges
+    bh_dag_horizontal_edges(new_dag, h_edges1);
+    BOOST_FOREACH(const hEdge &e, h_edges1)
+    {
+        h_edges2.insert(add_edge(e.first, e.second, new_dag).first);
+    }
+
+    //We define a graph and a kernel writer for graphviz
+    struct graph_writer
+    {
+        const Graph &graph;
+        graph_writer(const Graph &g) : graph(g) {};
+        void operator()(std::ostream& out) const
+        {
+            out << "labelloc=\"t\";" << endl;
+            out << "label=\"DAG with a total cost of " << bh_dag_cost(graph);
+            out << " bytes\";" << endl;
+            out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
+            out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
+        }
+    };
+    struct kernel_writer
+    {
+        const Graph &graph;
+        kernel_writer(const Graph &g) : graph(g) {};
+        void operator()(std::ostream& out, const Vertex& v) const
+        {
+            char buf[1024*10];
+            out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
+            out << " bytes\\n";
+            out << "Input views: \\l";
+            BOOST_FOREACH(const bh_view &i, graph[v].input_list())
+            {
+                bh_sprint_view(&i, buf);
+                out << buf << "\\l";
+            }
+            out << "Output views: \\l";
+            BOOST_FOREACH(const bh_view &i, graph[v].output_list())
+            {
+                bh_sprint_view(&i, buf);
+                out << buf << "\\l";
+            }
+            out << "Temp base-arrays: \\l";
+            BOOST_FOREACH(const bh_base *i, graph[v].temp_list())
+            {
+                bh_sprint_base(i, buf);
+                out << buf << "\\l";
+            }
+            out << "Instruction list: \\l";
+            BOOST_FOREACH(const bh_instruction &i, graph[v].instr_list())
+            {
+                bh_sprint_instr(&i, buf, "\\l");
+                out << buf << "\\l";
+            }
+            out << "\"]";
+        }
+    };
+    struct edge_writer
+    {
+        const Graph &graph;
+        const set<Edge> &h_edges;
+        edge_writer(const Graph &g, const set<Edge> &e) : graph(g), h_edges(e) {};
+        void operator()(std::ostream& out, const Edge& e) const
+        {
+            int64_t c = graph[target(e,graph)].dependency_cost(graph[source(e,graph)]);
+            out << "[label=\" ";
+            if(c == -1)
+                out << "N/A\" color=red";
+            else
+                out << c << " bytes\"";
+            if(h_edges.find(e) != h_edges.end())
+                out << " dir=none color=green constraint=false";
+            out << "]";
+        }
+    };
+    ofstream file;
+    file.open(filename);
+    write_graphviz(file, new_dag, kernel_writer(new_dag),
+                   edge_writer(new_dag, h_edges2), graph_writer(new_dag));
+    file.close();
 }
 
 /* Fuse vertices in the graph that can be fused without
