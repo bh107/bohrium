@@ -148,7 +148,7 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
 {
     bh_uint64 start = bh_timer_stamp();
 
-    for(bh_intp i=0; i < bhir->instr_list.size(); ++i)
+    for(uint64_t i=0; i < bhir->instr_list.size(); ++i)
         inspect(&bhir->instr_list[i]);
 
     bh_error ret = child->execute(bhir);
