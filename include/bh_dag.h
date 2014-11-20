@@ -43,6 +43,37 @@ typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, b
 typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
 typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
 
+/* Class that represents a weight between two vertices */
+class EdgeW
+{
+public:
+    std::pair<Vertex,Vertex> edge;
+    uint64_t weight;
+
+    EdgeW(Vertex v1, Vertex v2, uint64_t w=0)
+    {
+        if(v1 < v2)
+        {
+            edge.first = v1;
+            edge.second = v2;
+        }
+        else
+        {
+            edge.first = v2;
+            edge.second = v1;
+        }
+        weight = w;
+    }
+    bool operator<(const EdgeW &rhs) const
+    {
+        return (edge < rhs.edge);
+    }
+    bool operator==(const EdgeW &rhs) const
+    {
+        return (edge == rhs.edge);
+    }
+};
+
 /* Creates a new DAG based on a bhir that consist of single
  * instruction kernels.
  * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
@@ -83,7 +114,6 @@ void from_bhir(const bh_ir &bhir, Graph &dag)
 }
 
 /* Creates a new DAG based on a kernel list where each vertex is a kernel.
- * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
  * Complexity: O(E + V)
  *
@@ -115,7 +145,6 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
 }
 
 /* Fills the kernel list based on the DAG where each vertex is a kernel.
- * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
  * Complexity: O(E + V)
  *
@@ -165,13 +194,11 @@ bool cycles(const Graph &g)
 
 /* Merge two vertices in the 'dag', which invalidates all existing
  * vertex and edge pointers (boost descriptors)
- * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
  * @a   The first vertex
  * @b   The second vertex
  * @dag The DAG
  */
-template <typename Vertex, typename Graph>
 void merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
 {
     using namespace std;
@@ -207,7 +234,6 @@ void merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
  * @check_fusibility Whether to throw a runtime error when
  *                   vertices isn't fusible
  */
-template <typename Graph, typename Edge>
 void merge_vertices(const Graph &dag,
                     const std::vector<Edge> edges2merge,
                     Graph &new_dag,
@@ -273,8 +299,7 @@ void merge_vertices(const Graph &dag,
     }
 }
 
-/* Determines the cost of the DAG. NB: a vertex in the 'dag'
- * must bundle with the bh_ir_kernel class
+/* Determines the cost of the DAG.
  *
  * Complexity: O(E + V)
  *
@@ -304,7 +329,6 @@ uint64_t dag_cost(const Graph &dag)
  * @dag     The DAG
  * @return  True if there is a long path, else false
  */
-template <typename Vertex, typename Graph>
 bool long_path_exist(const Vertex &a, const Vertex &b, const Graph &dag)
 {
     using namespace std;
@@ -365,13 +389,12 @@ void transitive_reduction(Graph &dag)
 
 /* Retrieves all horizontal edges, i.e independent edges with non-zero cost
  *
- * Complexity: O(E * V)
+ * Complexity: O(V^2 * E)
  *
  * @dag   The DAG
- * @edges Output list of horizontal edges (as Vertex pairs)
+ * @edges Output list of horizontal edges
  */
-template <typename Graph, typename Vertex>
-void horizontal_edges(const Graph &dag, std::vector<std::pair<Vertex,Vertex> > &edges)
+void horizontal_edges(const Graph &dag, std::vector<EdgeW> &edges)
 {
     using namespace std;
     using namespace boost;
@@ -389,21 +412,60 @@ void horizontal_edges(const Graph &dag, std::vector<std::pair<Vertex,Vertex> > &
             tie(e, exist) = edge(*v2, *v1, dag);
             if(exist)
                 continue;
-
-            if(dag[*v1].dependency_cost(dag[*v2]) > 0)
+            int64_t w = dag[*v1].dependency_cost(dag[*v2]);
+            if(w > 0)
             {
                 if(long_path_exist(*v1, *v2, dag))
                     continue;
                 if(long_path_exist(*v2, *v1, dag))
                     continue;
-                edges.push_back(make_pair(*v1,*v2));
+                edges.push_back(EdgeW(*v1,*v2, w));
             }
         }
     }
 }
 
+/* Retrieve all weights in a DAG
+ *
+ * Complexity: O(V^2 * E)
+ *
+ * @dag       The DAG
+ * @edges  The output edge list
+ */
+void all_weights(const Graph &dag, std::vector<EdgeW> &edges)
+{
+    horizontal_edges(dag, edges);
+    BOOST_FOREACH(const Edge &e, boost::edges(dag))
+    {
+        Vertex v1 = target(e,dag);
+        Vertex v2 = source(e,dag);
+        int64_t w = dag[v1].dependency_cost(dag[v2]);
+        if(w > 0)
+        {
+            edges.push_back(EdgeW(v1, v2, w));
+        }
+    }
+}
+
+/* Sort the weights in descending order
+ *
+ * Complexity: O(E * log E)
+ *
+ * @edges  The input/output edge list
+ */
+void sort_weights(std::vector<EdgeW> &edges)
+{
+    struct wcmp
+    {
+        bool operator() (const EdgeW &e1, const EdgeW &e2)
+        {
+            return (e1.weight > e2.weight);
+        }
+    };
+    sort(edges.begin(), edges.end(), wcmp());
+}
+
 /* Writes the DOT file of a DAG
- * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
  * Complexity: O(E + V)
  *
@@ -414,16 +476,14 @@ void pprint(const Graph &dag, const char filename[])
 {
     using namespace std;
     using namespace boost;
-    typedef pair<Vertex,Vertex> hEdge;
-
     //Lets add horizontal edges as nondirectional edges in the DAG
     Graph new_dag(dag);
-    vector<hEdge> h_edges1;//h-edges as Vertix pairs
+    vector<EdgeW> h_edges1;//h-edges as EdgeWs
     set<Edge> h_edges2;//h-edges as Edges
     horizontal_edges(new_dag, h_edges1);
-    BOOST_FOREACH(const hEdge &e, h_edges1)
+    BOOST_FOREACH(const EdgeW &e, h_edges1)
     {
-        h_edges2.insert(add_edge(e.first, e.second, new_dag).first);
+        h_edges2.insert(add_edge(e.edge.first, e.edge.second, new_dag).first);
     }
 
     //We define a graph and a kernel writer for graphviz
@@ -504,7 +564,6 @@ void pprint(const Graph &dag, const char filename[])
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings
  * NB: invalidates all existing vertex and edge pointers.
- * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
  * Complexity: O(E * (V + E))
  *
@@ -563,9 +622,8 @@ void fuse_gentle(Graph &dag)
 /* Fuse vertices in the graph greedily, which is a non-optimal
  * algorithm that fuses the most costly edges in the DAG first.
  * NB: invalidates all existing vertex and edge pointers.
- * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
- * Complexity: O(E^2)
+ * Complexity: O(E^2 * (E + V))
  *
  * @dag The DAG to fuse
  */
@@ -574,38 +632,23 @@ void fuse_greedy(Graph &dag)
     using namespace std;
     using namespace boost;
 
-    set<Edge> ignored;
-    while(ignored.size() < num_edges(dag))
+    bool not_finished = true;
+    while(not_finished)
     {
-        //Lets find the currect best edge
-        Edge best;
-        int64_t best_cost = -1;
-        BOOST_FOREACH(const Edge &e, edges(dag))
+        vector<EdgeW> edge_list;
+        all_weights(dag, edge_list);
+        sort_weights(edge_list);
+        not_finished = false;
+        BOOST_FOREACH(const EdgeW &e, edge_list)
         {
-            if(ignored.find(e) != ignored.end())
-                continue;
-            const Vertex src = source(e, dag);
-            const Vertex dst = target(e, dag);
-            const int64_t cost = dag[dst].dependency_cost(dag[src]);
-            if(cost > best_cost)
+            Graph new_dag(dag);
+            merge_vertices(e.edge.first, e.edge.second, new_dag);
+            if(not cycles(new_dag))
             {
-                best_cost = cost;
-                best = e;
+                dag = new_dag;
+                not_finished = true;
+                break;
             }
-        }
-        if(best_cost == -1)
-            break;
-
-        Graph new_dag(dag);
-        merge_vertices(source(best, dag), target(best, dag), new_dag);
-        if(cycles(new_dag))
-        {
-            ignored.insert(best);
-        }
-        else
-        {
-            dag = new_dag;
-            ignored.clear();
         }
     }
 }
@@ -613,7 +656,6 @@ void fuse_greedy(Graph &dag)
 /* Fuse vertices in the graph topologically, which is a non-optimal
  * algorithm that fuses based on the instruction order.
  * NB: invalidates all existing vertex and edge pointers.
- * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
  *
  * Complexity: O(n) where 'n' is number of instruction
  *
