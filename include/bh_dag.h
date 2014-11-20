@@ -39,6 +39,10 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace dag {
 
+typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, bh_ir_kernel> Graph;
+typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
+typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
+
 /* Creates a new DAG based on a bhir that consist of single
  * instruction kernels.
  * NB: a vertex in the 'dag' must bundle with the bh_ir_kernel class
@@ -50,12 +54,10 @@ namespace dag {
  *
  * Throw logic_error() if the kernel_list wihtin 'bhir' isn't empty
  */
-template <typename Graph>
 void from_bhir(const bh_ir &bhir, Graph &dag)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
 
     if(bhir.kernel_list.size() != 0)
     {
@@ -88,12 +90,10 @@ void from_bhir(const bh_ir &bhir, Graph &dag)
  * @kernels The kernel list
  * @dag     The output dag
  */
-template <typename Graph>
 void from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
 
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
@@ -122,12 +122,10 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, Graph &dag)
  * @dag     The dag
  * @kernels The kernel list output
  */
-template <typename Graph>
 void fill_kernels(const Graph &dag, std::vector<bh_ir_kernel> &kernels)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
 
     vector<Vertex> topological_order;
     topological_sort(dag, back_inserter(topological_order));
@@ -147,12 +145,10 @@ void fill_kernels(const Graph &dag, std::vector<bh_ir_kernel> &kernels)
  * @other   The other kernel
  * @return  True if there are cycles in the digraph, else false
  */
-template <typename Graph>
 bool cycles(const Graph &g)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
     try
     {
         //TODO: topological sort is an efficient method for finding cycles,
@@ -219,7 +215,6 @@ void merge_vertices(const Graph &dag,
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
 
     //We use two vertex maps:
     //  One mapping between vertices in the old dag in which a vertex
@@ -286,12 +281,10 @@ void merge_vertices(const Graph &dag,
  * @dag     The DAG
  * @return  The cost
  */
-template <typename Graph>
-uint64_t cost(const Graph &dag)
+uint64_t dag_cost(const Graph &dag)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
 
     uint64_t cost = 0;
     BOOST_FOREACH(const Vertex &v, vertices(dag))
@@ -316,7 +309,6 @@ bool long_path_exist(const Vertex &a, const Vertex &b, const Graph &dag)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::edge_descriptor Edge;
 
     struct local_visitor:default_bfs_visitor
     {
@@ -354,12 +346,10 @@ bool long_path_exist(const Vertex &a, const Vertex &b, const Graph &dag)
  * @b   The second vertex
  * @dag The DAG
  */
-template <typename Graph>
 void transitive_reduction(Graph &dag)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::edge_descriptor Edge;
 
     vector<Edge> removal;
     BOOST_FOREACH(Edge e, edges(dag))
@@ -385,7 +375,6 @@ void horizontal_edges(const Graph &dag, std::vector<std::pair<Vertex,Vertex> > &
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::edge_descriptor Edge;
 
     typename graph_traits<Graph>::vertex_iterator v1, v2, v_end;
     for(tie(v1, v_end) = vertices(dag); v1 != v_end; ++v1)
@@ -421,13 +410,10 @@ void horizontal_edges(const Graph &dag, std::vector<std::pair<Vertex,Vertex> > &
  * @dag       The DAG to write
  * @filename  The name of DOT file
  */
-template <typename Graph>
 void pprint(const Graph &dag, const char filename[])
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
-    typedef typename graph_traits<Graph>::edge_descriptor Edge;
     typedef pair<Vertex,Vertex> hEdge;
 
     //Lets add horizontal edges as nondirectional edges in the DAG
@@ -448,7 +434,7 @@ void pprint(const Graph &dag, const char filename[])
         void operator()(std::ostream& out) const
         {
             out << "labelloc=\"t\";" << endl;
-            out << "label=\"DAG with a total cost of " << cost(graph);
+            out << "label=\"DAG with a total cost of " << dag_cost(graph);
             out << " bytes\";" << endl;
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
@@ -524,12 +510,10 @@ void pprint(const Graph &dag, const char filename[])
  *
  * @dag The DAG to fuse
  */
-template <typename Graph>
 void fuse_gentle(Graph &dag)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
 
     bool not_finished;
     do
@@ -585,13 +569,10 @@ void fuse_gentle(Graph &dag)
  *
  * @dag The DAG to fuse
  */
-template <typename Graph>
 void fuse_greedy(Graph &dag)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::edge_descriptor Edge;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
 
     set<Edge> ignored;
     while(ignored.size() < num_edges(dag))
@@ -639,12 +620,10 @@ void fuse_greedy(Graph &dag)
  * @instr_list The instruction list
  * @dag        The output DAG
  */
-template <typename Graph>
 void fuse_topological(const std::vector<bh_instruction> &instr_list, Graph &dag)
 {
     using namespace std;
     using namespace boost;
-    typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
     Vertex vNULL = graph_traits<Graph>::null_vertex();
 
     //Find kernels

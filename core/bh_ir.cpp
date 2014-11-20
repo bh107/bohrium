@@ -25,8 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/foreach.hpp>
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
 #include <bh.h>
 #include <vector>
 #include <map>
@@ -37,6 +35,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_dag.h"
 
 using namespace std;
+using namespace boost;
+using namespace bohrium::dag;
 namespace io = boost::iostreams;
 
 /* Creates a Bohrium Internal Representation (BhIR) from a instruction list.
@@ -57,7 +57,7 @@ bh_ir::bh_ir(const char bhir[], bh_intp size)
 {
     io::basic_array_source<char> source(bhir,size);
     io::stream<io::basic_array_source <char> > input_stream(source);
-    boost::archive::binary_iarchive ia(input_stream);
+    archive::binary_iarchive ia(input_stream);
     ia >> *this;
 }
 
@@ -69,7 +69,7 @@ bh_ir::bh_ir(const char bhir[], bh_intp size)
 void bh_ir::serialize(vector<char> &buffer) const
 {
     io::stream<io::back_insert_device<vector<char> > > output_stream(buffer);
-    boost::archive::binary_oarchive oa(output_stream);
+    archive::binary_oarchive oa(output_stream);
     oa << *this;
     output_stream.flush();
 }
@@ -105,10 +105,6 @@ void bh_ir::pprint_kernel_list() const
 bool bh_ir::check_kernel_cycles(const map<pair<int,int>,int> index_map) const
 {
     //Create a DAG of the kernels and check for cycles
-    using namespace boost;
-    typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
-    typedef graph_traits<Graph>::vertex_descriptor Vertex;
-
     Graph dag(kernel_list.size());
 
     //First we build a map from an index in the original instruction list

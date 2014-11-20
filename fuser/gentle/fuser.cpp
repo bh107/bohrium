@@ -22,8 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <fstream>
 #include <boost/foreach.hpp>
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
 #include <vector>
 #include <map>
@@ -31,17 +29,14 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 using namespace boost;
-
-typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
-typedef graph_traits<Graph>::vertex_descriptor Vertex;
-typedef graph_traits<Graph>::edge_descriptor Edge;
+using namespace bohrium::dag;
 
 void fuser(bh_ir &bhir)
 {
     Graph dag;
-    bohrium::dag::from_bhir(bhir, dag);
-    bohrium::dag::transitive_reduction(dag);
-    bohrium::dag::fuse_gentle(dag);
+    from_bhir(bhir, dag);
+    transitive_reduction(dag);
+    fuse_gentle(dag);
 
     //Lets fill the bhir;
     vector<Vertex> topological_order;

@@ -21,15 +21,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <bh_dag.h>
 #include <boost/foreach.hpp>
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
 
 using namespace std;
 using namespace boost;
-
-typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
-typedef graph_traits<Graph>::vertex_descriptor Vertex;
-typedef graph_traits<Graph>::edge_descriptor Edge;
+using namespace bohrium::dag;
 
 static int64_t sum=0;
 void filter(const bh_ir &bhir)
@@ -38,8 +33,8 @@ void filter(const bh_ir &bhir)
         return;
 
     Graph dag;
-    bohrium::dag::from_kernels(bhir.kernel_list, dag);
-    sum += bohrium::dag::cost(dag);
+    from_kernels(bhir.kernel_list, dag);
+    sum += dag_cost(dag);
 }
 
 void shutdown()

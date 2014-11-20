@@ -23,18 +23,18 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 using namespace boost;
+using namespace bohrium::dag;
 
 static int filter_count=0;
 void filter(const bh_ir &bhir)
 {
-    typedef adjacency_list<setS, vecS, bidirectionalS, bh_ir_kernel> Graph;
     Graph dag;
     char filename[8000];
 
     snprintf(filename, 8000, "dag-%d.dot", ++filter_count);
     printf("fuseprinter: writing dag('%s').\n", filename);
 
-    bohrium::dag::from_kernels(bhir.kernel_list, dag);
-    bohrium::dag::transitive_reduction(dag);
-    bohrium::dag::pprint(dag, filename);
+    from_kernels(bhir.kernel_list, dag);
+    transitive_reduction(dag);
+    pprint(dag, filename);
 }
