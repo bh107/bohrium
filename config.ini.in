@@ -89,9 +89,11 @@ libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul${CMAKE_SHARED_LIBRARY_SUFFIX},${
 
 [gpu]
 type = ve
-include = ${CMAKE_INSTALL_PREFIX}/share/bohrium/include
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
+include = ${CMAKE_INSTALL_PREFIX}/share/bohrium/include
+# Aditional options (string) given to the opencl compiler. See documentation for clBuildProgram
+#compiler_options = "-cl-opt-disable"
 # kernel = {[both],fixed,dynamic}
 kernel = both
 # compile = {[async],sync}
