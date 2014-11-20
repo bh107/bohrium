@@ -40,11 +40,6 @@ static std::set<bh_base*> allocated_bases;
 //The timing ID for executions
 static bh_intp exec_timing;
 
-#ifdef BH_TIMING
-    //Number of elements executed
-    static bh_intp total_execution_size = 0;
-#endif
-
 /* Component interface: init (see bh_component.h) */
 bh_error bh_vem_node_init(const char* name)
 {
@@ -65,7 +60,7 @@ bh_error bh_vem_node_init(const char* name)
     if((err = child->init(child->name)) != 0)
         return err;
 
-    exec_timing = bh_timer_new("node-execution");
+    exec_timing = bh_timer_new("[Node] Execution");
 
     return BH_SUCCESS;
 }
@@ -96,10 +91,6 @@ bh_error bh_vem_node_shutdown(void)
     }
     bh_timer_finalize(exec_timing);
 
-    #ifdef BH_TIMING
-        printf("Number of elements executed: %ld\n", total_execution_size);
-    #endif
-
     return err;
 }
 
@@ -121,14 +112,6 @@ static bh_error inspect(bh_instruction *instr)
         if(!bh_is_constant(&operands[o]))
             allocated_bases.insert(operands[o].base);
     }
-
-    #ifdef BH_TIMING
-        if(operands[nop-1] != NULL)
-        {
-            bh_view *a = operands[nop-1];
-            total_execution_size += bh_nelements(a->ndim, a->shape);
-        }
-    #endif
 
     //And remove discared arrays
     if(instr->opcode == BH_DISCARD)
