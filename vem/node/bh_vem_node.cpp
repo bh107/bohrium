@@ -51,7 +51,7 @@ bh_error bh_vem_node_init(const char* name)
     if((err = bh_component_init(&vem_node_myself, name)) != BH_SUCCESS)
         return err;
 
-    timing = bh_component_config_lookup_bool(&vem_node_myself, "timimg", 0);
+    timing = bh_component_config_lookup_bool(&vem_node_myself, "timing", 0);
     
     //For now, we have one child exactly
     if(vem_node_myself.nchildren != 1)
