@@ -58,8 +58,11 @@ bool fuse_mask(const Graph &dag, const vector<EdgeW> &edges2explore,
 
     return true;
 }
-
+#ifdef VERBOSE
+double  purge_count=0;
+uint64_t explore_count=0;
 int fuser_count=0;
+#endif
 uint64_t best_cost;
 Graph best_dag;
 void fuse(const Graph &dag, const vector<EdgeW> &edges2explore,
@@ -67,22 +70,36 @@ void fuse(const Graph &dag, const vector<EdgeW> &edges2explore,
 {
     if(not merge_next)
     {
+#ifdef VERBOSE
+        ++explore_count;
+        if(explore_count%10000 == 0)
+        {
+            cout << "purge count: " << purge_count << " / " << pow(2.0,mask.size()) << endl;
+            cout << "explore count: " << explore_count << endl;
+        }
+#endif
         Graph new_dag;
         mask[offset] = merge_next;
         const bool fusible = fuse_mask(dag, edges2explore, mask, new_dag);
         const uint64_t cost = dag_cost(new_dag);
         if(cost >= best_cost)
+        {
+#ifdef VERBOSE
+            purge_count += pow(2.0, mask.size()-offset-1);
+#endif
             return;
+        }
         if(fusible)
         {
             best_cost = cost;
             best_dag = new_dag;
-            #ifdef VERBOSE
-                std::stringstream ss;
-                ss << "new_best_dag-" << fuser_count << "-" << dag_cost(new_dag) << ".dot";
-                printf("write file: %s\n", ss.str().c_str());
-                pprint(new_dag, ss.str().c_str());
-            #endif
+#ifdef VERBOSE
+            std::stringstream ss;
+            ss << "new_best_dag-" << fuser_count << "-" << dag_cost(new_dag) << ".dot";
+            printf("write file: %s\n", ss.str().c_str());
+            pprint(new_dag, ss.str().c_str());
+            purge_count += pow(2.0, mask.size()-offset-1);
+#endif
             return;
         }
     }

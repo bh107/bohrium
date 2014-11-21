@@ -281,7 +281,7 @@ void merge_vertices(const Graph &dag,
     {
         const Vertex &v1 = e.edge.first;
         const Vertex &v2 = e.edge.second;
-        //We find the common vertex of 'v1' and makes it point to common vertex of 'v2'
+        //We find the common vertex of 'v1' and makes it point to the common vertex of 'v2'
         old2old[find_common(old2old, v1)] = find_common(old2old, v2);
     }
     //For all common vertices we make old2new point to a new vertex
