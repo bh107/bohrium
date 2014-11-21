@@ -32,12 +32,12 @@ using namespace std;
 using namespace boost;
 using namespace bohrium::dag;
 
-bool fuse_mask(const Graph &dag, const vector<Edge> &edges2explore,
+bool fuse_mask(const Graph &dag, const vector<EdgeW> &edges2explore,
                const vector<bool> &mask, Graph &new_dag)
 {
-    vector<Edge> edges2merge;
+    vector<EdgeW> edges2merge;
     unsigned int i=0;
-    BOOST_FOREACH(const Edge &e, edges2explore)
+    BOOST_FOREACH(const EdgeW &e, edges2explore)
     {
         if(mask[i++])
         {
@@ -62,7 +62,7 @@ bool fuse_mask(const Graph &dag, const vector<Edge> &edges2explore,
 int fuser_count=0;
 uint64_t best_cost;
 Graph best_dag;
-void fuse(const Graph &dag, const vector<Edge> &edges2explore,
+void fuse(const Graph &dag, const vector<EdgeW> &edges2explore,
           vector<bool> mask, unsigned int offset, bool merge_next)
 {
     if(not merge_next)
@@ -101,12 +101,8 @@ void fuser(bh_ir &bhir)
     fuse_gentle(dag);
 
     //The list of edges that we should try to merge
-    vector<Edge> edges2explore;
-    BOOST_FOREACH(const Edge &e, edges(dag))
-    {
-        if(dag[target(e,dag)].fusible(dag[source(e,dag)]))
-            edges2explore.push_back(e);
-    }
+    vector<EdgeW> edges2explore;
+    all_weights(dag, edges2explore);
 
     if(edges2explore.size() == 0)
     {

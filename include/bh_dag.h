@@ -228,23 +228,44 @@ void merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
  *     bh_ir_kernel class
  *
  * @dag              The input DAG
- * @edges2merge      List of edges that specifies which
- *                   vertices to merge
+ * @edges2merge      List of weight edges that specifies which
+ *                   pair of vertices to merge
  * @new_dag          The output DAG
  * @check_fusibility Whether to throw a runtime error when
  *                   vertices isn't fusible
  */
 void merge_vertices(const Graph &dag,
-                    const std::vector<Edge> edges2merge,
+                    const std::vector<EdgeW> edges2merge,
                     Graph &new_dag,
                     bool check_fusibility = false)
 {
     using namespace std;
     using namespace boost;
 
+    //Help function to find the common vertex
+    struct find_common_vertex_in_old2old_map
+    {
+        Vertex find(map<Vertex, Vertex> &old2old, Vertex original, Vertex v)
+        {
+            Vertex v_mapped = old2old[v];
+            if(v_mapped != v)
+                return this->find(old2old, original, v_mapped);
+            else
+                return v;
+        }
+        Vertex operator()(map<Vertex, Vertex> &old2old, Vertex v)
+        {
+            Vertex v_mapped = old2old[v];
+            if(v_mapped == v)
+                return v;
+            else
+                return this->find(old2old, v, v_mapped);
+        }
+    }find_common;
+
     //We use two vertex maps:
     //  One mapping between vertices in the old dag in which a vertex
-    //  maps to the vertex in should be merged with.
+    //  maps to the vertex it should be merged with.
     map<Vertex, Vertex> old2old;
     //  Another mapping from vertices in the old dag to vertices in the new dag.
     map<Vertex, Vertex> old2new;
@@ -256,15 +277,12 @@ void merge_vertices(const Graph &dag,
     //Then we make merged vertices point to a common vertex
     //(a vertex where old2old[v] == v holds). Note that old2old
     //is now a surjective map.
-    BOOST_FOREACH(const Edge &e, edges2merge)
+    BOOST_FOREACH(const EdgeW &e, edges2merge)
     {
-        const Vertex src = source(e,dag);
-        const Vertex dst = target(e,dag);
-
-        if(old2old[dst] == dst)
-            old2old[dst] = old2old[src];
-        else
-            old2old[old2old[dst]] = old2old[src];
+        const Vertex &v1 = e.edge.first;
+        const Vertex &v2 = e.edge.second;
+        //We find the common vertex of 'v1' and makes it point to common vertex of 'v2'
+        old2old[find_common(old2old, v1)] = find_common(old2old, v2);
     }
     //For all common vertices we make old2new point to a new vertex
     BOOST_FOREACH(const Vertex &v, vertices(dag))
@@ -425,7 +443,7 @@ void horizontal_edges(const Graph &dag, std::vector<EdgeW> &edges)
     }
 }
 
-/* Retrieve all weights in a DAG
+/* Retrieve all non-zero weights in a DAG
  *
  * Complexity: O(V^2 * E)
  *
