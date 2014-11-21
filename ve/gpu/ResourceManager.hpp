@@ -46,7 +46,6 @@ private:
     bool _fixedSizeKernel;
     bool _dynamicSizeKernel;
     bool _asyncCompile;
-    void calcLocalShape();
     void registerExtensions(std::vector<std::string> extensions);
     std::string compilerOptions;
 
