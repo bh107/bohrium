@@ -33,6 +33,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include "bh_ir.h"
 #include "bh_dag.h"
+#include "bh_fuse.h"
 
 using namespace std;
 using namespace boost;
@@ -327,7 +328,7 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
     {
         BOOST_FOREACH(const bh_instruction &b, other.instr_list())
         {
-            if(not bh_instr_fusible(&a, &b))
+            if(not bohrium::check_fusible(&a, &b))
                 return false;
         }
     }
@@ -343,7 +344,7 @@ bool bh_ir_kernel::fusible(const bh_instruction &instr) const
 {
     BOOST_FOREACH(const bh_instruction &i, instr_list())
     {
-        if(not bh_instr_fusible(&i, &instr))
+        if(not bohrium::check_fusible(&i, &instr))
             return false;
     }
     return true;

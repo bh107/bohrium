@@ -407,37 +407,6 @@ bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
     return false;
 }
 
-/* Determines whether it is legal to fuse two instructions into one
- * using the broadest possible definition. I.e. a SIMD machine can
- * theoretically execute the two instructions in a single operation,
- * but accepts mismatch in broadcast, reduction, etc.
- *
- * @a The first instruction
- * @b The second instruction
- * @return The boolean answer
- */
-bool bh_instr_fusible(const bh_instruction *a, const bh_instruction *b)
-{
-    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
-        return true;
-
-    const int a_nop = bh_operands(a->opcode);
-    for(int i=0; i<a_nop; ++i)
-    {
-        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
-           && not bh_view_aligned(&b->operand[0], &a->operand[i]))
-            return false;
-    }
-    const int b_nop = bh_operands(b->opcode);
-    for(int i=0; i<b_nop; ++i)
-    {
-        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
-           && not bh_view_aligned(&a->operand[0], &b->operand[i]))
-            return false;
-    }
-    return true;
-}
-
 /* Determines whether it is legal to fuse two instructions
  * without changing any future possible fusings.
  *

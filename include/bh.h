@@ -291,17 +291,6 @@ DLLEXPORT bool bh_view_aligned(const bh_view *a, const bh_view *b);
  */
 DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
 
-/* Determines whether it is legal to fuse two instructions into one
- * using the broadest possible definition. I.e. a SIMD machine can
- * theoretically execute the two instructions in a single operation,
- * but accepts mismatch in broadcast, reduction, etc.
- *
- * @a The first instruction
- * @b The second instruction
- * @return The boolean answer
- */
-DLLEXPORT bool bh_instr_fusible(const bh_instruction *a, const bh_instruction *b);
-
 /* Determines whether it is legal to fuse two instructions
  * without changing any future possible fusings.
  *
