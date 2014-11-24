@@ -50,7 +50,11 @@ static const fuse_model default_fuse_model = BROADEST;
 /* The current selected fuse model */
 static fuse_model selected_fuse_model = NONE;
 
-/* a possible fuse model */
+
+/************************************************************************/
+/*************** Specific fuse model implementations ********************/
+/************************************************************************/
+
 static bool fuse_broadest(const bh_instruction *a, const bh_instruction *b)
 {
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
@@ -73,6 +77,35 @@ static bool fuse_broadest(const bh_instruction *a, const bh_instruction *b)
     return true;
 }
 
+static bool fuse_same_shape(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    if(!bh_opcode_is_elementwise(a->opcode) || !bh_opcode_is_elementwise(b->opcode))
+        return false;
+
+    const int a_nop = bh_operands(a->opcode);
+    for(int i=0; i<a_nop; ++i)
+    {
+        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
+           && not bh_view_aligned_and_same_shape(&b->operand[0], &a->operand[i]))
+            return false;
+    }
+    const int b_nop = bh_operands(b->opcode);
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
+           && not bh_view_aligned_and_same_shape(&a->operand[0], &b->operand[i]))
+            return false;
+    }
+    return true;
+}
+
+/************************************************************************/
+/*************** The public interface implementation ********************/
+/************************************************************************/
+
 /* Get the selected fuse model by reading the environment
  * variable 'BH_FUSE_MODEL' */
 static fuse_model get_selected_fuse_model()
@@ -88,6 +121,11 @@ static fuse_model get_selected_fuse_model()
         {
             cout << "[FUSE] info: selected fuse model: 'BROADEST'" << endl;
             return BROADEST;
+        }
+        else if(iequals(e, string("same_shape")))
+        {
+            cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
+            return SAME_SHAPE;
         }
         else
         {
@@ -115,6 +153,8 @@ bool check_fusible(const bh_instruction *a, const bh_instruction *b)
             return check_fusible(a, b);
         case BROADEST:
             return fuse_broadest(a,b);
+        case SAME_SHAPE:
+            return fuse_same_shape(a,b);
         default:
             throw runtime_error("No fuse module is selected!");
     }
