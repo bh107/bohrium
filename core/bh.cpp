@@ -380,6 +380,28 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
     return true;
 }
 
+/* Determines whether two views are aligned, points
+ * to the same base array, and have same shape.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b)
+{
+    if(a->ndim != b->ndim)
+        return false;
+    if(not bh_view_aligned(a, b))
+        return false;
+
+    for(int i=0; i<a->ndim; ++i)
+    {
+        if(a->shape[i] != b->shape[i])
+            return false;
+    }
+    return true;
+}
+
 /* Determines whether instruction 'a' depends on instruction 'b',
  * which is true when:
  *      'b' writes to an array that 'a' access

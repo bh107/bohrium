@@ -300,6 +300,15 @@ DLLEXPORT bool bh_view_identical(const bh_view *a, const bh_view *b);
  */
 DLLEXPORT bool bh_view_aligned(const bh_view *a, const bh_view *b);
 
+/* Determines whether two views are aligned, points
+ * to the same base array, and have same shape.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b);
+
 /* Determines whether instruction 'a' depends on instruction 'b',
  * which is true when:
  *      'b' writes to an array that 'a' access
