@@ -195,6 +195,8 @@ bool cycles(const Graph &g)
 /* Merge two vertices in the 'dag', which invalidates all existing
  * vertex and edge pointers (boost descriptors)
  *
+ * Complexity: O(1)
+ *
  * @a   The first vertex
  * @b   The second vertex
  * @dag The DAG
@@ -224,8 +226,8 @@ void merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
 
 /* Merge the vertices specified by a list of edges and write
  * the result to new_dag, which should be empty.
- * NB: a vertex in 'dag' and 'new_dag' must bundle with the
- *     bh_ir_kernel class
+ *
+ * Complexity: O(V + E)
  *
  * @dag              The input DAG
  * @edges2merge      List of weight edges that specifies which
@@ -294,7 +296,7 @@ void merge_vertices(const Graph &dag,
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
         if(old2old[v] != v)
-            old2new[v] = old2new[old2old[v]];
+            old2new[v] = old2new[find_common(old2old, v)];
     }
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
