@@ -42,7 +42,6 @@ ResourceManager::ResourceManager(bh_component* _component)
     , _asyncCompile(true)
 
 {
-    
     char* dir = bh_component_config_lookup(component, "include");
     if (dir == NULL)
         compilerOptions = std::string("-I/opt/bohrium/gpu/include");
@@ -51,8 +50,11 @@ ResourceManager::ResourceManager(bh_component* _component)
 
     char* compiler_options = bh_component_config_lookup(component, "compiler_options");
     if (compiler_options != NULL)
+    {
         compilerOptions += std::string(" ") + std::string(compiler_options);
+        std::cout << "[Info] [GPU] Compiler options: " << compiler_options << std::endl;
 
+    }
     char* kernel_type = bh_component_config_lookup(component, "kernel");
     if (kernel_type != NULL)
     {
@@ -62,6 +64,9 @@ ResourceManager::ResourceManager(bh_component* _component)
         if (kernelType.find("dynamic") != std::string::npos)
             _fixedSizeKernel = false;
     }
+    std::cout << "[Info] [GPU] Kernel type: " <<
+        (_dynamicSizeKernel&&_fixedSizeKernel?"both":(_dynamicSizeKernel?"dynamic":"fixed")) << std::endl;
+
     char* compile_type = bh_component_config_lookup(component, "compile");
     if (compile_type != NULL)
     {
@@ -69,6 +74,18 @@ ResourceManager::ResourceManager(bh_component* _component)
         if (compileType.find("sync") != std::string::npos && compileType.find("async") == std::string::npos)
             _asyncCompile = false;
     }
+    std::cout << "[Info] [GPU] Compile type: " << (_asyncCompile?"async.":"sync.") << std::endl;
+
+    localShape1D.push_back(bh_component_config_lookup_int(component, "work_goup_size_1dx",128));
+    localShape2D.push_back(bh_component_config_lookup_int(component, "work_goup_size_2dx",32));
+    localShape2D.push_back(bh_component_config_lookup_int(component, "work_goup_size_2dy",4));
+    localShape3D.push_back(bh_component_config_lookup_int(component, "work_goup_size_3dx",32));
+    localShape3D.push_back(bh_component_config_lookup_int(component, "work_goup_size_3dy",2));
+    localShape3D.push_back(bh_component_config_lookup_int(component, "work_goup_size_3dz",2));
+
+    std::cout << "[Info] [GPU] Work group sizes: 1D[" << localShape1D[0] << "], 2D[" <<
+        localShape2D[0] << ", " << localShape2D[1] << "], 3D[" << localShape3D[0] <<
+        ", " << localShape3D[1] << ", " << localShape3D[2] << "]" << std::endl;
 
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -124,7 +141,6 @@ ResourceManager::ResourceManager(bh_component* _component)
     } else {
         intpType_ = OCL_INT32;
     }
-    calcLocalShape();
     registerExtensions(extensions);
 
 #ifdef BH_TIMING
@@ -153,38 +169,6 @@ ResourceManager::~ResourceManager()
     delete kernelExec;
 }
 #endif
-
-
-void ResourceManager::calcLocalShape()
-{
-    // Calculate "sane" localShapes
-    size_t lsx = STD_MIN(256UL,maxWorkItemSizes[0]);
-#ifdef DEBUG
-    std::cout << "ResourceManager.localShape1D[" << lsx << "]" << std::endl;
-#endif
-    localShape1D.push_back(lsx);
-    lsx = STD_MIN(32UL,maxWorkItemSizes[0]);
-    size_t lsy = STD_MIN(maxWorkGroupSize/lsx,maxWorkItemSizes[1]);
-    lsy /= 2;
-#ifdef DEBUG
-    std::cout << "ResourceManager.localShape2D[" << lsx << ", " << lsy << "]" << std::endl;
-#endif
-    localShape2D.push_back(lsx);
-    localShape2D.push_back(lsy);
-    lsx = STD_MIN(16UL,maxWorkItemSizes[0]);
-    lsy = 1;
-    while(lsy < std::sqrt((float)(maxWorkGroupSize/lsx)))
-        lsy <<= 1;
-    lsy = STD_MIN(lsy,maxWorkItemSizes[1]);
-    size_t lsz = STD_MIN(maxWorkGroupSize/(lsx*lsy),maxWorkItemSizes[2]); 
-    lsz /= 2;
-#ifdef DEBUG
-    std::cout << "ResourceManager.localShape3D[" << lsx << ", " << lsy << ", " << lsz << "]" << std::endl;
-#endif
-    localShape3D.push_back(lsx);
-    localShape3D.push_back(lsy);
-    localShape3D.push_back(lsz);
-}
 
 void ResourceManager::registerExtensions(std::vector<std::string> extensions)
 {
