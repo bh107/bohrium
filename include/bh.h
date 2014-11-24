@@ -117,10 +117,31 @@ DLLEXPORT const char* bh_opcode_text(bh_opcode opcode);
 
 /* Determines if the operation is a system operation
  *
- * @opcode Opcode for operation
- * @return TRUE if the operation is a system opcode, FALSE otherwise
+ * @opcode The operation opcode
+ * @return The boolean answer
  */
 DLLEXPORT bool bh_opcode_is_system(bh_opcode opcode);
+
+/* Determines if the operation is an elementwise operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
+
+/* Determines if the operation is a reduction operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_reduction(bh_opcode opcode);
+
+/* Determines if the operation is an accumulate operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_accumulate(bh_opcode opcode);
 
 /* Determines if the operation is performed elementwise
  *

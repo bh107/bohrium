@@ -63,7 +63,10 @@ def gen_cfile(opcodes):
 
     text    = ['        case %s: return "%s";' % (opcode['opcode'], opcode['opcode']) for opcode in opcodes]
     nops    = ['        case %s: return %s;' % (opcode['opcode'], opcode['nop']) for opcode in opcodes]
-    sys_op  = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['system_opcode']]
+    sys_op    = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['system_opcode']]
+    elem_op   = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['elementwise']]
+    reduce_op = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['reduction']]
+    accum_op  = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['accumulate']]
     stamp   = time.strftime("%d/%m/%Y")
 
     return """
@@ -126,8 +129,8 @@ __TEXT__
 
 /* Determines if the operation is a system operation
  *
- * @opcode Opcode for operation
- * @return TRUE if the operation is a system opcode, FALSE otherwise
+ * @opcode The operation opcode
+ * @return The boolean answer
  */
 bool bh_opcode_is_system(bh_opcode opcode)
 {
@@ -140,10 +143,64 @@ __SYS_OP__
             return false;
     }
 }
+
+/* Determines if the operation is an elementwise operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+bool bh_opcode_is_elementwise(bh_opcode opcode)
+{
+    switch(opcode)
+    {
+__ELEM_OP__
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+/* Determines if the operation is a reduction operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+bool bh_opcode_is_reduction(bh_opcode opcode)
+{
+    switch(opcode)
+    {
+__REDUCE_OP__
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+/* Determines if the operation is an accumulate operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+bool bh_opcode_is_accumulate(bh_opcode opcode)
+{
+    switch(opcode)
+    {
+__ACCUM_OP__
+            return true;
+
+        default:
+            return false;
+    }
+}
     """.replace('__TIMESTAMP__', stamp)\
        .replace('__NOPS__', '\n'.join(nops))\
        .replace('__TEXT__', '\n'.join(text))\
-       .replace('__SYS_OP__', '\n'.join(sys_op))
+       .replace('__SYS_OP__', '\n'.join(sys_op))\
+       .replace('__ELEM_OP__', '\n'.join(elem_op))\
+       .replace('__REDUCE_OP__', '\n'.join(reduce_op))\
+       .replace('__ACCUM_OP__', '\n'.join(accum_op))
 
 def get_timestamp(f):
     st = os.stat(f)
