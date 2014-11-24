@@ -585,7 +585,7 @@ void pprint(const Graph &dag, const char filename[])
  * changing any future possible fusings
  * NB: invalidates all existing vertex and edge pointers.
  *
- * Complexity: O(E * (V + E))
+ * Complexity: O(E * (E + V))
  *
  * @dag The DAG to fuse
  */
@@ -594,49 +594,29 @@ void fuse_gentle(Graph &dag)
     using namespace std;
     using namespace boost;
 
-    bool not_finished;
+    vector<EdgeW> edges2merge;
     do
     {
-        not_finished = false;
-        BOOST_FOREACH(const Vertex &v, vertices(dag))
+        edges2merge.clear();
+        BOOST_FOREACH(const Edge &e, edges(dag))
         {
-            const auto child = adjacent_vertices(v, dag);
-            const auto parent = inv_adjacent_vertices(v, dag);
-
-            //If target vertex is a leaf (has no children)
-            if(distance(child.first, child.second) == 0)
+            const Vertex &src = source(e, dag);
+            const Vertex &dst = target(e, dag);
+            if((in_degree(dst, dag) == 1 and out_degree(dst, dag) == 0) or
+               (in_degree(src, dag) == 0 and out_degree(src, dag) == 1) or
+               (in_degree(dst, dag) <= 1 and out_degree(src, dag) <= 1))
             {
-                //And only have one parent
-                if(distance(parent.first, parent.second) != 1)
-                    continue;
-
-                //And is gentle fusible with that parent
-                if(not dag[*parent.first].fusible_gently(dag[v]))
-                    continue;
-
-                //The target and parent may fuse
-                merge_vertices(*parent.first, v, dag);
-                not_finished = true;
-                break;
-            }
-            //If target vertex is a root (has no parents)
-            if(distance(parent.first, parent.second) == 0)
-            {
-                //And only have one child
-                if(distance(child.first, child.second) != 1)
-                    continue;
-
-                //And is gentle fusible with that child
-                if(not dag[*child.first].fusible_gently(dag[v]))
-                    continue;
-
-                //The target and the child may fuse
-                merge_vertices(*child.first, v, dag);
-                not_finished = true;
-                break;
+                if(dag[dst].fusible_gently(dag[src]))
+                {
+                    edges2merge.push_back(EdgeW(src, dst));
+                }
             }
         }
-    }while(not_finished);
+        Graph new_dag;
+        merge_vertices(dag, edges2merge, new_dag);
+        dag = new_dag;
+    }
+    while(edges2merge.size() > 0);
 }
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
