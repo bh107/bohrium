@@ -286,11 +286,11 @@ void merge_vertices(const Graph &dag,
         //We find the common vertex of 'v1' and makes it point to the common vertex of 'v2'
         old2old[find_common(old2old, v1)] = find_common(old2old, v2);
     }
-    //For all common vertices we make old2new point to a new vertex
+    //For all common vertices we make old2new point to a new empty vertex
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
         if(old2old[v] == v)
-            old2new[v] = add_vertex(dag[v], new_dag);
+            old2new[v] = add_vertex(new_dag);
     }
     //All merged vertices now point to one of the new vertices
     BOOST_FOREACH(const Vertex &v, vertices(dag))
@@ -298,17 +298,18 @@ void merge_vertices(const Graph &dag,
         if(old2old[v] != v)
             old2new[v] = old2new[find_common(old2old, v)];
     }
-    BOOST_FOREACH(const Vertex &v, vertices(dag))
+
+    //Finally we merge the instruction into the their common vertices topologically
+    vector<Vertex> topological_order;
+    topological_sort(dag, back_inserter(topological_order));
+    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
     {
         //Do the merging of instructions
-        if(old2old[v] != v)
+        BOOST_FOREACH(const bh_instruction &i, dag[v].instr_list())
         {
-            BOOST_FOREACH(const bh_instruction &i, dag[v].instr_list())
-            {
-                if(check_fusibility && !new_dag[old2new[v]].fusible(i))
-                    throw runtime_error("Vertex not fusible!");
-                new_dag[old2new[v]].add_instr(i);
-            }
+            if(check_fusibility && !new_dag[old2new[v]].fusible(i))
+                throw runtime_error("Vertex not fusible!");
+            new_dag[old2new[v]].add_instr(i);
         }
         //Add edges to the new dag.
         BOOST_FOREACH(const Vertex &adj, adjacent_vertices(v, dag))
