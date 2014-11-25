@@ -381,7 +381,8 @@ bool bh_ir_kernel::fusible_gently(const bh_instruction &instr) const
         if(bh_opcode_is_system(i.opcode))
             continue;
 
-        if(bh_instr_fusible_gently(&instr, &i))
+        if(bh_instr_fusible_gently(&instr, &i) &&
+           bohrium::check_fusible(&instr, &i))
             return true;
     }
     return false;
