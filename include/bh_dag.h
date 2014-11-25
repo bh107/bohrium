@@ -446,7 +446,7 @@ void horizontal_edges(const Graph &dag, std::vector<EdgeW> &edges)
     }
 }
 
-/* Retrieve all non-zero weights in a DAG
+/* Retrieve all vertical and horizontal weights in a DAG
  *
  * Complexity: O(V^2 * E)
  *
@@ -461,7 +461,7 @@ void all_weights(const Graph &dag, std::vector<EdgeW> &edges)
         Vertex v1 = target(e,dag);
         Vertex v2 = source(e,dag);
         int64_t w = dag[v1].dependency_cost(dag[v2]);
-        if(w > 0)
+        if(w >= 0)
         {
             edges.push_back(EdgeW(v1, v2, w));
         }
