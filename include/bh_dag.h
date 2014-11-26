@@ -47,30 +47,16 @@ typedef typename boost::graph_traits<Graph>::edge_descriptor Edge;
 class EdgeW
 {
 public:
+    //The topological sorted vertex pair
     std::pair<Vertex,Vertex> edge;
+    //The weight between the vertex pair
     uint64_t weight;
 
     EdgeW(Vertex v1, Vertex v2, uint64_t w=0)
     {
-        if(v1 < v2)
-        {
-            edge.first = v1;
-            edge.second = v2;
-        }
-        else
-        {
-            edge.first = v2;
-            edge.second = v1;
-        }
+        edge.first = v1;
+        edge.second = v2;
         weight = w;
-    }
-    bool operator<(const EdgeW &rhs) const
-    {
-        return (edge < rhs.edge);
-    }
-    bool operator==(const EdgeW &rhs) const
-    {
-        return (edge == rhs.edge);
     }
 };
 
@@ -192,8 +178,26 @@ bool cycles(const Graph &g)
     }
 }
 
-/* Merge two vertices in the 'dag', which invalidates all existing
- * vertex and edge pointers (boost descriptors)
+/* Clear the vertex without actually removing it.
+ * NB: invalidates all existing edge iterators
+ *     but NOT pointers to neither vertices nor edges.
+ *
+ * Complexity: O(1)
+ *
+ * @dag  The DAG
+ * @v    The Vertex
+ */
+void nullify_vertex(Graph &dag, const Vertex &v)
+{
+    boost::clear_vertex(v, dag);
+    dag[v] = bh_ir_kernel();
+}
+
+/* Merge vertex 'a' and 'b' by appending 'b's instructions to 'a'.
+ * Vertex 'b' is nullified rather than removed thus existing vertex
+ * and edge pointers are still valid after the merge.
+ *
+ * NB: invalidates all existing edge iterators.
  *
  * Complexity: O(1)
  *
@@ -220,8 +224,7 @@ void merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
         if(a != v)
             add_edge(v, a, dag);
     }
-    clear_vertex(b, dag);
-    remove_vertex(b, dag);
+    nullify_vertex(dag, b);
 }
 
 /* Merge the vertices specified by a list of edges and write
@@ -383,7 +386,7 @@ bool long_path_exist(const Vertex &a, const Vertex &b, const Graph &dag)
 }
 
 /* Transitive reduce the 'dag', i.e. remove all redundant edges,
- * NB: invalidates all existing vertex and edge pointers.
+ * NB: invalidates all existing edge iterators.
  *
  * Complexity: O(E * (E + V))
  *
@@ -458,12 +461,12 @@ void all_weights(const Graph &dag, std::vector<EdgeW> &edges)
     horizontal_edges(dag, edges);
     BOOST_FOREACH(const Edge &e, boost::edges(dag))
     {
-        Vertex v1 = target(e,dag);
-        Vertex v2 = source(e,dag);
-        int64_t w = dag[v1].dependency_cost(dag[v2]);
+        Vertex src = source(e,dag);
+        Vertex dst = target(e,dag);
+        int64_t w = dag[dst].dependency_cost(dag[src]);
         if(w >= 0)
         {
-            edges.push_back(EdgeW(v1, v2, w));
+            edges.push_back(EdgeW(src, dst, w));
         }
     }
 }
@@ -622,7 +625,7 @@ void fuse_gentle(Graph &dag)
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
  * algorithm that fuses the most costly edges in the DAG first.
- * NB: invalidates all existing vertex and edge pointers.
+ * NB: invalidates all existing edge iterators.
  *
  * Complexity: O(E^2 * (E + V))
  *
@@ -656,7 +659,6 @@ void fuse_greedy(Graph &dag)
 
 /* Fuse vertices in the graph topologically, which is a non-optimal
  * algorithm that fuses based on the instruction order.
- * NB: invalidates all existing vertex and edge pointers.
  *
  * Complexity: O(n) where 'n' is number of instruction
  *
