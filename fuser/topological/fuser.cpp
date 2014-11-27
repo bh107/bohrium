@@ -65,10 +65,5 @@ void fuser(bh_ir &bhir)
         }
         bhir.kernel_list.push_back(kernel);
     }
-
-#ifndef NDEBUG
-    if(not bhir.check_kernel_cycles(index_map))
-        throw logic_error("Cyclic dependencies between the kernels in the BhIR!");
-#endif
 }
 

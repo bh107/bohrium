@@ -172,14 +172,6 @@ public:
     /* Pretty print the kernel list */
     void pprint_kernel_list() const;
 
-    /* Determines whether there are cyclic dependencies between the kernels in the BhIR
-    *
-    *  @index_map  A map from an instruction in the kernel_list (a pair of a kernel and
-    *              an instruction index) to an index into the original instruction list
-    *  @return     True when no cycles was found
-    */
-    bool check_kernel_cycles(const std::map<std::pair<int,int>,int> index_map) const;
-
     //The list of Bohrium instructions in topological order
     std::vector<bh_instruction> instr_list;
 
