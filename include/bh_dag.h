@@ -232,95 +232,50 @@ void merge_vertices(const Vertex &a, const Vertex &b, Graph &dag)
  *
  * Complexity: O(V + E)
  *
- * @dag              The input DAG
- * @edges2merge      List of weight edges that specifies which
- *                   pair of vertices to merge
- * @new_dag          The output DAG
- * @check_fusibility Whether to throw a runtime error when
- *                   vertices isn't fusible
+ * @dag          The input DAG
+ * @edges2merge  List of weight edges that specifies which
+ *               pair of vertices to merge
+ * @new_dag      The output DAG
+ * @return       Whether all merges where fusible
  */
-void merge_vertices(const Graph &dag,
-                    const std::vector<EdgeW> edges2merge,
-                    Graph &new_dag,
-                    bool check_fusibility = false)
+bool merge_vertices(Graph &dag, const std::vector<EdgeW> edges2merge)
 {
     using namespace std;
     using namespace boost;
 
-    //Help function to find the common vertex
-    struct find_common_vertex_in_old2old_map
+    //Help function to find the new location
+    struct find_new_location
     {
-        Vertex find(map<Vertex, Vertex> &old2old, Vertex original, Vertex v)
+        Vertex operator()(map<Vertex, Vertex> &loc_map, Vertex v)
         {
-            Vertex v_mapped = old2old[v];
-            if(v_mapped != v)
-                return this->find(old2old, original, v_mapped);
-            else
-                return v;
-        }
-        Vertex operator()(map<Vertex, Vertex> &old2old, Vertex v)
-        {
-            Vertex v_mapped = old2old[v];
+            Vertex v_mapped = loc_map[v];
             if(v_mapped == v)
                 return v;
             else
-                return this->find(old2old, v, v_mapped);
+                return (*this)(loc_map, v_mapped);
         }
-    }find_common;
+    }find_loc;
+    bool fusibility = true;
 
-    //We use two vertex maps:
-    //  One mapping between vertices in the old dag in which a vertex
-    //  maps to the vertex it should be merged with.
-    map<Vertex, Vertex> old2old;
-    //  Another mapping from vertices in the old dag to vertices in the new dag.
-    map<Vertex, Vertex> old2new;
-    //Initially old2old is a simple identity map
+    map<Vertex, Vertex> loc_map;
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
-        old2old[v] = v;
+        loc_map[v] = v;
     }
-    //Then we make merged vertices point to a common vertex
-    //(a vertex where old2old[v] == v holds). Note that old2old
-    //is now a surjective map.
+
     BOOST_FOREACH(const EdgeW &e, edges2merge)
     {
-        const Vertex &v1 = e.edge.first;
-        const Vertex &v2 = e.edge.second;
-        //We find the common vertex of 'v1' and makes it point to the common vertex of 'v2'
-        old2old[find_common(old2old, v1)] = find_common(old2old, v2);
-    }
-    //For all common vertices we make old2new point to a new empty vertex
-    BOOST_FOREACH(const Vertex &v, vertices(dag))
-    {
-        if(old2old[v] == v)
-            old2new[v] = add_vertex(new_dag);
-    }
-    //All merged vertices now point to one of the new vertices
-    BOOST_FOREACH(const Vertex &v, vertices(dag))
-    {
-        if(old2old[v] != v)
-            old2new[v] = old2new[find_common(old2old, v)];
-    }
-
-    //Finally we merge the instruction into the their common vertices topologically
-    vector<Vertex> topological_order;
-    topological_sort(dag, back_inserter(topological_order));
-    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
-    {
-        //Do the merging of instructions
-        BOOST_FOREACH(const bh_instruction &i, dag[v].instr_list())
+        Vertex v1 = find_loc(loc_map, e.edge.first);
+        Vertex v2 = find_loc(loc_map, e.edge.second);
+        if(v1 != v2)
         {
-            if(check_fusibility && !new_dag[old2new[v]].fusible(i))
-                throw runtime_error("Vertex not fusible!");
-            new_dag[old2new[v]].add_instr(i);
-        }
-        //Add edges to the new dag.
-        BOOST_FOREACH(const Vertex &adj, adjacent_vertices(v, dag))
-        {
-            if(old2new[v] != old2new[adj])
-                add_edge(old2new[v], old2new[adj], new_dag);
+            if(not dag[v1].fusible(dag[v2]))
+                fusibility = false;
+            merge_vertices(v1, v2, dag);
+            loc_map[v2] = v1;
         }
     }
+    return fusibility;
 }
 
 /* Determines the cost of the DAG.

@@ -32,8 +32,8 @@ using namespace std;
 using namespace boost;
 using namespace bohrium::dag;
 
-bool fuse_mask(const Graph &dag, const vector<EdgeW> &edges2explore,
-               const vector<bool> &mask, Graph &new_dag)
+bool fuse_mask(const vector<EdgeW> &edges2explore,
+               const vector<bool> &mask, Graph &dag)
 {
     vector<EdgeW> edges2merge;
     unsigned int i=0;
@@ -44,18 +44,10 @@ bool fuse_mask(const Graph &dag, const vector<EdgeW> &edges2explore,
             edges2merge.push_back(e);
         }
     }
-    try
-    {
-        merge_vertices(dag, edges2merge, new_dag, true);
-    }
-    catch (const runtime_error &e)
-    {
+    if(not merge_vertices(dag, edges2merge))
         return false;
-    }
-
-    if(cycles(new_dag))
+    if(cycles(dag))
         return false;
-
     return true;
 }
 #ifdef VERBOSE
@@ -72,15 +64,15 @@ void fuse(const Graph &dag, const vector<EdgeW> &edges2explore,
     {
 #ifdef VERBOSE
         ++explore_count;
-        if(explore_count%10000 == 0)
+        if(explore_count%1000 == 0)
         {
             cout << "purge count: " << purge_count << " / " << pow(2.0,mask.size()) << endl;
             cout << "explore count: " << explore_count << endl;
         }
 #endif
-        Graph new_dag;
+        Graph new_dag(dag);
         mask[offset] = merge_next;
-        const bool fusible = fuse_mask(dag, edges2explore, mask, new_dag);
+        const bool fusible = fuse_mask(edges2explore, mask, new_dag);
         const uint64_t cost = dag_cost(new_dag);
         if(cost >= best_cost)
         {
@@ -130,8 +122,8 @@ void fuser(bh_ir &bhir)
     //First we check the trivial case where all kernels are merged
     vector<bool> mask(edges2explore.size(), true);
     {
-        Graph new_dag;
-        if(fuse_mask(dag, edges2explore, mask, new_dag))
+        Graph new_dag(dag);
+        if(fuse_mask(edges2explore, mask, new_dag))
         {
             fill_kernels(new_dag, bhir.kernel_list);
             return;
