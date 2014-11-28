@@ -598,10 +598,10 @@ void fuse_gentle(Graph &dag)
     using namespace std;
     using namespace boost;
 
-    vector<EdgeW> edges2merge;
-    do
+    bool not_finished = true;
+    while(not_finished)
     {
-        edges2merge.clear();
+        not_finished = false;
         BOOST_FOREACH(const Edge &e, edges(dag))
         {
             const Vertex &src = source(e, dag);
@@ -612,15 +612,13 @@ void fuse_gentle(Graph &dag)
             {
                 if(dag[dst].fusible_gently(dag[src]))
                 {
-                    edges2merge.push_back(EdgeW(src, dst));
+                    merge_vertices(src, dst, dag);
+                    not_finished = true;
+                    break;
                 }
             }
         }
-        Graph new_dag;
-        merge_vertices(dag, edges2merge, new_dag);
-        dag = new_dag;
     }
-    while(edges2merge.size() > 0);
 }
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
