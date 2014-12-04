@@ -28,12 +28,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <iterator>
 
+#define VERBOSE
+
 using namespace std;
 using namespace boost;
 using namespace bohrium::dag;
 
 bool fuse_mask(const vector<EdgeW> &edges2explore,
-               const vector<bool> &mask, Graph &dag)
+               const vector<bool> &mask, GraphDW &dag)
 {
     vector<EdgeW> edges2merge;
     unsigned int i=0;
@@ -46,7 +48,7 @@ bool fuse_mask(const vector<EdgeW> &edges2explore,
     }
     if(not merge_vertices(dag, edges2merge))
         return false;
-    if(cycles(dag))
+    if(cycles(dag.bglD()))
         return false;
     return true;
 }
@@ -56,8 +58,8 @@ uint64_t explore_count=0;
 int fuser_count=0;
 #endif
 uint64_t best_cost;
-Graph best_dag;
-void fuse(const Graph &dag, const vector<EdgeW> &edges2explore,
+GraphDW best_dag;
+void fuse(const GraphDW &dag, const vector<EdgeW> &edges2explore,
           vector<bool> mask, unsigned int offset, bool merge_next)
 {
     if(not merge_next)
@@ -70,10 +72,10 @@ void fuse(const Graph &dag, const vector<EdgeW> &edges2explore,
             cout << "explore count: " << explore_count << endl;
         }
 #endif
-        Graph new_dag(dag);
+        GraphDW new_dag(dag);
         mask[offset] = merge_next;
         const bool fusible = fuse_mask(edges2explore, mask, new_dag);
-        const uint64_t cost = dag_cost(new_dag);
+        const uint64_t cost = dag_cost(new_dag.bglD());
         if(cost >= best_cost)
         {
 #ifdef VERBOSE
@@ -87,7 +89,7 @@ void fuse(const Graph &dag, const vector<EdgeW> &edges2explore,
             best_dag = new_dag;
 #ifdef VERBOSE
             std::stringstream ss;
-            ss << "new_best_dag-" << fuser_count << "-" << dag_cost(new_dag) << ".dot";
+            ss << "new_best_dag-" << fuser_count << "-" << dag_cost(new_dag.bglD()) << ".dot";
             printf("write file: %s\n", ss.str().c_str());
             pprint(new_dag, ss.str().c_str());
             purge_count += pow(2.0, mask.size()-offset-1);
@@ -104,28 +106,32 @@ void fuse(const Graph &dag, const vector<EdgeW> &edges2explore,
 
 void fuser(bh_ir &bhir)
 {
-    Graph dag;
+    GraphDW dag;
     from_bhir(bhir, dag);
-    transitive_reduction(dag);
     fuse_gentle(dag);
 
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
-    all_weights(dag, edges2explore);
+    BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
+    {
+        edges2explore.push_back(e);
+    }
+    sort_weights(dag.bglW(), edges2explore);
+    reverse(edges2explore.begin(), edges2explore.end());
 
     if(edges2explore.size() == 0)
     {
-        fill_kernels(dag, bhir.kernel_list);
+        fill_kernels(dag.bglD(), bhir.kernel_list);
         return;
     }
 
     //First we check the trivial case where all kernels are merged
     vector<bool> mask(edges2explore.size(), true);
     {
-        Graph new_dag(dag);
+        GraphDW new_dag(dag);
         if(fuse_mask(edges2explore, mask, new_dag))
         {
-            fill_kernels(new_dag, bhir.kernel_list);
+            fill_kernels(new_dag.bglD(), bhir.kernel_list);
             return;
         }
     }
@@ -133,13 +139,13 @@ void fuser(bh_ir &bhir)
     //Then we use the greedy algorithm to find a good initial guess
     best_dag = dag;
     fuse_greedy(best_dag);
-    best_cost = dag_cost(best_dag);
+    best_cost = dag_cost(best_dag.bglD());
 
     if(mask.size() > 100)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
         cout << mask.size() << "!" << endl;
-        fill_kernels(best_dag, bhir.kernel_list);
+        fill_kernels(best_dag.bglD(), bhir.kernel_list);
         return;
     }
     else if(mask.size() > 10)
@@ -149,6 +155,6 @@ void fuser(bh_ir &bhir)
 
     fuse(dag, edges2explore, mask, 0, true);
     fuse(dag, edges2explore, mask, 0, false);
-    fill_kernels(best_dag, bhir.kernel_list);
+    fill_kernels(best_dag.bglD(), bhir.kernel_list);
 }
 

@@ -32,9 +32,9 @@ void filter(const bh_ir &bhir)
     if(bhir.kernel_list.size() == 0)
         return;
 
-    Graph dag;
+    GraphDW dag;
     from_kernels(bhir.kernel_list, dag);
-    sum += dag_cost(dag);
+    sum += dag_cost(dag.bglD());
 }
 
 void shutdown()

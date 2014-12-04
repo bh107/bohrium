@@ -28,13 +28,12 @@ using namespace bohrium::dag;
 static int filter_count=0;
 void filter(const bh_ir &bhir)
 {
-    Graph dag;
+    GraphDW dag;
     char filename[8000];
 
     snprintf(filename, 8000, "dag-%d.dot", ++filter_count);
     printf("fuseprinter: writing dag('%s').\n", filename);
 
     from_kernels(bhir.kernel_list, dag);
-    transitive_reduction(dag);
     pprint(dag, filename);
 }

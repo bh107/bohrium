@@ -33,10 +33,9 @@ using namespace bohrium::dag;
 
 void fuser(bh_ir &bhir)
 {
-    Graph dag;
+    GraphDW dag;
     from_bhir(bhir, dag);
-    transitive_reduction(dag);
     fuse_gentle(dag);
     fuse_greedy(dag);
-    fill_kernels(dag, bhir.kernel_list);
+    fill_kernels(dag.bglD(), bhir.kernel_list);
 }

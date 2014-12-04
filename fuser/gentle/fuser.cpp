@@ -33,17 +33,16 @@ using namespace bohrium::dag;
 
 void fuser(bh_ir &bhir)
 {
-    Graph dag;
+    GraphDW dag;
     from_bhir(bhir, dag);
-    transitive_reduction(dag);
     fuse_gentle(dag);
 
     //Lets fill the bhir;
     vector<Vertex> topological_order;
-    topological_sort(dag, back_inserter(topological_order));
+    topological_sort(dag.bglD(), back_inserter(topological_order));
     BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
     {
-        bhir.kernel_list.push_back(dag[v]);
+        bhir.kernel_list.push_back(dag.bglD()[v]);
     }
 }
 
