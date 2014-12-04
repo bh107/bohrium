@@ -39,6 +39,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace dag {
 
+//The weight class bundled with the weight graph
 struct EdgeWeight
 {
     int64_t value;
@@ -46,56 +47,26 @@ struct EdgeWeight
     EdgeWeight(int64_t weight):value(weight){}
 };
 
+//The type declaration of the boost graphs, vertices and edges.
 typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS,
                               bh_ir_kernel> GraphD;
 typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS,
                               boost::no_property, EdgeWeight> GraphW;
-
 typedef uint64_t Vertex;
 typedef typename boost::graph_traits<GraphD>::edge_descriptor EdgeD;
 typedef typename boost::graph_traits<GraphW>::edge_descriptor EdgeW;
 
+//Forward declaration
+bool path_exist(Vertex a, Vertex b, const GraphD &dag,
+                bool ignore_neighbors);
 
-/* Determines whether there exist a path from 'a' to 'b' with
- * length more than one ('a' and 'b' is not adjacent).
- *
- * Complexity: O(E + V)
- *
- * @a       The first vertex
- * @b       The second vertex
- * @dag     The DAG
- * @return  True if there is a long path, else false
+/* The GraphDW class encapsulate both a dependency graph and
+ * a weight graph. The public methods ensures that the two
+ * graphs are synchronized and are always in a valid state.
  */
-bool path_exist(const Vertex &a, const Vertex &b, const GraphD &dag)
-{
-    using namespace std;
-    using namespace boost;
-
-    struct local_visitor:default_bfs_visitor
-    {
-        const Vertex dst;
-        local_visitor(const Vertex &b):dst(b){};
-
-        void examine_edge(EdgeD e, const GraphD &g) const
-        {
-            if(source(e,g) == dst or target(e,g) == dst)
-                throw runtime_error("");
-        }
-    };
-    try
-    {
-        breadth_first_search(dag, a, visitor(local_visitor(b)));
-    }
-    catch (const runtime_error &e)
-    {
-        return true;
-    }
-    return false;
-}
-
-
 class GraphDW
 {
+protected:
     GraphD _bglD;
     GraphW _bglW;
 
@@ -103,14 +74,12 @@ public:
     const GraphD &bglD() const {return _bglD;}
     const GraphW &bglW() const {return _bglW;}
 
-    EdgeD add_edgeD(Vertex a, Vertex b)
-    {
-        return boost::add_edge(a, b, _bglD).first;
-    }
-    EdgeW add_edgeW(Vertex a, Vertex b, int64_t weight=-1)
-    {
-        return boost::add_edge(a, b, EdgeWeight(weight), _bglW).first;
-    }
+    /* Adds a vertex to both the dependency and weight graph.
+     * Additionally, both dependency and weight edges are
+     * added / updated as needed.
+     *
+     * @kernel  The kernel to bundle with the new vertex
+     */
     Vertex add_vertex(const bh_ir_kernel &kernel)
     {
         Vertex d = boost::add_vertex(kernel, _bglD);
@@ -120,7 +89,7 @@ public:
         //Add edges
         BOOST_REVERSE_FOREACH(Vertex v, vertices(_bglD))
         {
-            if(d != v and not path_exist(v, d, _bglD))
+            if(d != v and not path_exist(v, d, _bglD, false))
             {
                 bool dependency = false;
                 if(kernel.dependency(_bglD[v]))
@@ -131,31 +100,20 @@ public:
                 int64_t cost = kernel.dependency_cost(_bglD[v]);
                 if((cost > 0) or (cost == 0 and dependency))
                 {
-                    add_edgeW(v, d, cost);
+                    boost::add_edge(v, d, EdgeWeight(cost), _bglW);
                 }
             }
         }
         return d;
     }
-    void add_instr(Vertex v, const bh_instruction &i)
-    {
-        _bglD[v].add_instr(i);
-    }
-    void clear_vertex(Vertex v)
-    {
-        boost::clear_vertex(v, _bglD);
-        boost::clear_vertex(v, _bglW);
-        _bglD[v] = bh_ir_kernel();
-    }
-    void remove_vertex(Vertex v)
-    {
-        boost::remove_vertex(v, _bglD);
-        boost::remove_vertex(v, _bglW);
-    }
-    void remove_edgeD(EdgeD a)
-    {
-        boost::remove_edge(a, _bglD);
-    }
+
+    /* Updates the weights of the edges that surrounds 'v', which includes
+     * the removal of non-fusible edges.
+     *
+     * NB: invalidates all existing edge iterators
+     *
+     * @v  The Vertex
+     */
     void update_weights(Vertex v)
     {
         std::vector<EdgeW> removes;
@@ -178,7 +136,25 @@ public:
             boost::remove_edge(e, _bglW);
         }
     }
-    void remove_empty_vertices()
+
+    /* Clear the vertex without actually removing it.
+     * NB: invalidates all existing edge iterators
+     *     but NOT pointers to neither vertices nor edges.
+     *
+     * @v  The Vertex
+     */
+    void clear_vertex(Vertex v)
+    {
+        boost::clear_vertex(v, _bglD);
+        boost::clear_vertex(v, _bglW);
+        _bglD[v] = bh_ir_kernel();
+    }
+
+    /* Remove the previously cleared vertices.
+     * NB: invalidates all existing vertex and edge pointers
+     *     and iterators
+     */
+    void remove_cleared_vertices()
     {
         std::vector<Vertex> removes;
         BOOST_FOREACH(Vertex v, vertices(_bglD))
@@ -191,7 +167,65 @@ public:
         //NB: because of Vertex invalidation, we have to traverse in reverse
         BOOST_REVERSE_FOREACH(Vertex &v, removes)
         {
-            remove_vertex(v);
+            boost::remove_vertex(v, _bglD);
+            boost::remove_vertex(v, _bglW);
+        }
+    }
+
+    /* Merge vertex 'a' and 'b' by appending 'b's instructions to 'a'.
+     * Vertex 'b' is cleared rather than removed thus existing vertex
+     * and edge pointers are still valid after the merge.
+     *
+     * NB: invalidates all existing edge iterators.
+     *
+     * @a   The first vertex
+     * @b   The second vertex
+     */
+    void merge_vertices(const Vertex &a, const Vertex &b)
+    {
+        using namespace std;
+        using namespace boost;
+
+        std::vector<pair<Vertex, Vertex> > edges2add;
+        BOOST_FOREACH(const bh_instruction &i, _bglD[b].instr_list())
+        {
+            _bglD[a].add_instr(i);
+        }
+        BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglD))
+        {
+            if(a != v)
+                edges2add.push_back(make_pair(a, v));
+        }
+        BOOST_FOREACH(const Vertex &v, inv_adjacent_vertices(b, _bglD))
+        {
+            if(a != v)
+                edges2add.push_back(make_pair(v, a));
+        }
+        std::pair<Vertex,Vertex> e;
+        BOOST_FOREACH(e, edges2add)
+        {
+            boost::add_edge(e.first, e.second, EdgeWeight(-1), _bglW);
+            boost::add_edge(e.first, e.second, _bglD);
+        }
+        clear_vertex(b);
+        update_weights(a);
+    }
+
+    /* Transitive reduce the 'dag', i.e. remove all redundant edges,
+     * NB: invalidates all existing edge iterators.
+     *
+     * Complexity: O(E * (E + V))
+     *
+     * @a   The first vertex
+     * @b   The second vertex
+     * @dag The DAG
+     */
+    void transitive_reduction()
+    {
+        BOOST_FOREACH(EdgeD e, edges(_bglD))
+        {
+            if(path_exist(source(e,_bglD), target(e,_bglD), _bglD, true))
+               boost::remove_edge(e, _bglD);
         }
     }
 };
@@ -267,6 +301,59 @@ void fill_kernels(const GraphD &dag, std::vector<bh_ir_kernel> &kernels)
     }
 }
 
+/* Determines whether there exist a path from 'a' to 'b' with
+ * length more than one ('a' and 'b' is not adjacent).
+ *
+ * Complexity: O(E + V)
+ *
+ * @a                 The first vertex
+ * @b                 The second vertex
+ * @dag               The DAG
+ * @ignore_neighbors  Whether to accept neighbor paths
+ * @return            True if there is a path
+ */
+bool path_exist(Vertex a, Vertex b, const GraphD &dag,
+                bool ignore_neighbors=false)
+{
+    using namespace std;
+    using namespace boost;
+
+    struct path_visitor:default_bfs_visitor
+    {
+        const Vertex dst;
+        path_visitor(Vertex b):dst(b){};
+
+        void examine_edge(EdgeD e, const GraphD &g) const
+        {
+            if(source(e,g) == dst or target(e,g) == dst)
+                throw runtime_error("");
+        }
+    };
+    struct long_visitor:default_bfs_visitor
+    {
+        const Vertex src, dst;
+        long_visitor(Vertex a, Vertex b):src(a),dst(b){};
+
+        void examine_edge(EdgeD e, const GraphD &g) const
+        {
+            if(source(e,g) != src and target(e,g) == dst)
+                throw runtime_error("");
+        }
+    };
+    try
+    {
+        if(ignore_neighbors)
+            breadth_first_search(dag, a, visitor(long_visitor(a,b)));
+        else
+            breadth_first_search(dag, a, visitor(path_visitor(b)));
+    }
+    catch (const runtime_error &e)
+    {
+        return true;
+    }
+    return false;
+}
+
 /* Determines whether there are cycles in the Graph
  *
  * Complexity: O(E + V)
@@ -290,62 +377,6 @@ bool cycles(const GraphD &g)
     {
         return true;
     }
-}
-
-/* Clear the vertex without actually removing it.
- * NB: invalidates all existing edge iterators
- *     but NOT pointers to neither vertices nor edges.
- *
- * Complexity: O(1)
- *
- * @dag  The DAG
- * @v    The Vertex
- */
-void nullify_vertex(GraphDW &dag, const Vertex &v)
-{
-    dag.clear_vertex(v);
-}
-
-/* Merge vertex 'a' and 'b' by appending 'b's instructions to 'a'.
- * Vertex 'b' is nullified rather than removed thus existing vertex
- * and edge pointers are still valid after the merge.
- *
- * NB: invalidates all existing edge iterators.
- *
- * Complexity: O(1)
- *
- * @a   The first vertex
- * @b   The second vertex
- * @dag The DAG
- */
-void merge_vertices(const Vertex &a, const Vertex &b, GraphDW &dag)
-{
-    using namespace std;
-    using namespace boost;
-
-    vector<pair<Vertex, Vertex> > edges2add;
-    BOOST_FOREACH(const bh_instruction &i, dag.bglD()[b].instr_list())
-    {
-        dag.add_instr(a, i);
-    }
-    BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, dag.bglD()))
-    {
-        if(a != v)
-            edges2add.push_back(make_pair(a, v));
-    }
-    BOOST_FOREACH(const Vertex &v, inv_adjacent_vertices(b, dag.bglD()))
-    {
-        if(a != v)
-            edges2add.push_back(make_pair(v, a));
-    }
-    pair<Vertex,Vertex> e;
-    BOOST_FOREACH(e, edges2add)
-    {
-        dag.add_edgeW(e.first, e.second);
-        dag.add_edgeD(e.first, e.second);
-    }
-    nullify_vertex(dag, b);
-    dag.update_weights(a);
 }
 
 /* Merge the vertices specified by a list of edges and write
@@ -393,7 +424,7 @@ bool merge_vertices(GraphDW &dag, const std::vector<EdgeW> edges2merge)
         {
             if(not dag.bglD()[v1].fusible(dag.bglD()[v2]))
                 fusibility = false;
-            merge_vertices(v1, v2, dag);
+            dag.merge_vertices(v1, v2);
             loc_map[v2] = v1;
         }
     }
@@ -577,14 +608,14 @@ void fuse_gentle(GraphDW &dag)
             {
                 if(d[dst].fusible_gently(d[src]))
                 {
-                    merge_vertices(src, dst, dag);
+                    dag.merge_vertices(src, dst);
                     not_finished = true;
                     break;
                 }
             }
         }
     }
-    dag.remove_empty_vertices();
+    dag.remove_cleared_vertices();
 }
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
@@ -614,10 +645,11 @@ void fuse_greedy(GraphDW &dag)
         BOOST_FOREACH(const EdgeW &e, sorted)
         {
             GraphDW new_dag(dag);
-            merge_vertices(source(e, dag.bglW()), target(e, dag.bglW()), new_dag);
+            new_dag.merge_vertices(source(e, dag.bglW()), target(e, dag.bglW()));
             if(not cycles(new_dag.bglD()))
             {
                 dag = new_dag;
+                not_finished = true;
                 break;
             }
         }

@@ -109,6 +109,7 @@ void fuser(bh_ir &bhir)
     GraphDW dag;
     from_bhir(bhir, dag);
     fuse_gentle(dag);
+    dag.transitive_reduction();
 
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
