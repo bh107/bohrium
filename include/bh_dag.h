@@ -172,19 +172,29 @@ public:
         }
     }
 
-    /* Merge vertex 'a' and 'b' by appending 'b's instructions to 'a'.
-     * Vertex 'b' is cleared rather than removed thus existing vertex
-     * and edge pointers are still valid after the merge.
+    /* Merge vertex 'a' and 'b'. One of the vertex is cleared rather than removed
+     * thus existing vertex and edge pointers are still valid after the merge.
      *
      * NB: invalidates all existing edge iterators.
      *
-     * @a   The first vertex
-     * @b   The second vertex
+     * @a       The first vertex
+     * @b       The second vertex
+     * @return  True if 'b' was removed and False if 'a' was removed
      */
-    void merge_vertices(const Vertex &a, const Vertex &b)
+    bool merge_vertices(Vertex a, Vertex b)
     {
         using namespace std;
         using namespace boost;
+        bool b_merged_into_a = true;
+
+        //Lets swap if 'b' depend on 'a'
+        if(edge(b, a, _bglD).second)
+        {
+            Vertex t = a;
+            a = b;
+            b = t;
+            b_merged_into_a = false;
+        }
 
         std::vector<pair<Vertex, Vertex> > edges2add;
         BOOST_FOREACH(const bh_instruction &i, _bglD[b].instr_list())
@@ -209,6 +219,7 @@ public:
         }
         clear_vertex(b);
         update_weights(a);
+        return b_merged_into_a;
     }
 
     /* Transitive reduce the 'dag', i.e. remove all redundant edges,
@@ -418,14 +429,17 @@ bool merge_vertices(GraphDW &dag, const std::vector<EdgeW> edges2merge)
 
     BOOST_FOREACH(const EdgeW &e, edges2merge)
     {
-        Vertex v1 = find_loc(loc_map, target(e, dag.bglW()));
-        Vertex v2 = find_loc(loc_map, source(e, dag.bglW()));
+        Vertex v1 = find_loc(loc_map, source(e, dag.bglW()));
+        Vertex v2 = find_loc(loc_map, target(e, dag.bglW()));
         if(v1 != v2)
         {
             if(not dag.bglD()[v1].fusible(dag.bglD()[v2]))
                 fusibility = false;
-            dag.merge_vertices(v1, v2);
-            loc_map[v2] = v1;
+
+            if(dag.merge_vertices(v1, v2))
+                loc_map[v2] = v1;
+            else
+                loc_map[v1] = v2;
         }
     }
     return fusibility;
@@ -654,6 +668,7 @@ void fuse_greedy(GraphDW &dag)
             }
         }
     }
+    dag.remove_cleared_vertices();
 }
 
 }} //namespace bohrium::dag
