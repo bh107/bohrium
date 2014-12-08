@@ -107,6 +107,20 @@ public:
         return d;
     }
 
+    /* The default and the copy constructors */
+    GraphDW(){};
+    GraphDW(const GraphDW &graph):_bglD(graph.bglD()), _bglW(graph.bglW()) {};
+
+    /* Constructor based on a dependency graph. All weights are zero.
+     *
+     * @dag     The dependency graph
+     */
+    GraphDW(const GraphD &dag)
+    {
+        _bglD = dag;
+        _bglW = GraphW(boost::num_vertices(dag));
+    }
+
     /* Updates the weights of the edges that surrounds 'v', which includes
      * the removal of non-fusible edges.
      *
@@ -117,10 +131,10 @@ public:
     void update_weights(Vertex v)
     {
         std::vector<EdgeW> removes;
-        BOOST_FOREACH(const EdgeW &e, out_edges(v, _bglW))
+        BOOST_FOREACH(const EdgeW &e, boost::out_edges(v, _bglW))
         {
-            Vertex src = source(e, _bglW);
-            Vertex dst = target(e, _bglW);
+            Vertex src = boost::source(e, _bglW);
+            Vertex dst = boost::target(e, _bglW);
             int64_t cost = _bglD[dst].dependency_cost(_bglD[src]);
             if(cost >= 0)
             {
@@ -157,7 +171,7 @@ public:
     void remove_cleared_vertices()
     {
         std::vector<Vertex> removes;
-        BOOST_FOREACH(Vertex v, vertices(_bglD))
+        BOOST_FOREACH(Vertex v, boost::vertices(_bglD))
         {
             if(_bglD[v].instr_list().size() == 0)
             {
