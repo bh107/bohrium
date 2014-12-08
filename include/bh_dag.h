@@ -172,31 +172,21 @@ public:
         }
     }
 
-    /* Merge vertex 'a' and 'b'. One of the vertex is cleared rather than removed
-     * thus existing vertex and edge pointers are still valid after the merge.
+    /* Merge vertex 'a' and 'b' by appending 'b's instructions to 'a'.
+     * Vertex 'b' is cleared rather than removed thus existing vertex
+     * and edge pointers are still valid after the merge.
      *
      * NB: invalidates all existing edge iterators.
      *
-     * @a       The first vertex
-     * @b       The second vertex
-     * @return  True if 'b' was removed and False if 'a' was removed
+     * @a  The first vertex
+     * @b  The second vertex
      */
-    bool merge_vertices(Vertex a, Vertex b)
+    void merge_vertices(Vertex a, Vertex b)
     {
         using namespace std;
         using namespace boost;
-        bool b_merged_into_a = true;
 
-        //Lets swap if 'b' depend on 'a'
-        if(edge(b, a, _bglD).second)
-        {
-            Vertex t = a;
-            a = b;
-            b = t;
-            b_merged_into_a = false;
-        }
-
-        std::vector<pair<Vertex, Vertex> > edges2add;
+        vector<pair<Vertex, Vertex> > edges2add;
         BOOST_FOREACH(const bh_instruction &i, _bglD[b].instr_list())
         {
             _bglD[a].add_instr(i);
@@ -211,15 +201,14 @@ public:
             if(a != v)
                 edges2add.push_back(make_pair(v, a));
         }
-        std::pair<Vertex,Vertex> e;
+        pair<Vertex,Vertex> e;
         BOOST_FOREACH(e, edges2add)
         {
-            boost::add_edge(e.first, e.second, EdgeWeight(-1), _bglW);
-            boost::add_edge(e.first, e.second, _bglD);
+            add_edge(e.first, e.second, EdgeWeight(-1), _bglW);
+            add_edge(e.first, e.second, _bglD);
         }
         clear_vertex(b);
         update_weights(a);
-        return b_merged_into_a;
     }
 
     /* Transitive reduce the 'dag', i.e. remove all redundant edges,
@@ -604,7 +593,13 @@ void fuse_greedy(GraphDW &dag)
         BOOST_FOREACH(const EdgeW &e, sorted)
         {
             GraphDW new_dag(dag);
-            new_dag.merge_vertices(source(e, dag.bglW()), target(e, dag.bglW()));
+            Vertex a = source(e, dag.bglW());
+            Vertex b = target(e, dag.bglW());
+            if(path_exist(a, b, dag.bglD(), false))
+                new_dag.merge_vertices(a, b);
+            else
+                new_dag.merge_vertices(b, a);
+
             if(not cycles(new_dag.bglD()))
             {
                 dag = new_dag;
