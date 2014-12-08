@@ -390,61 +390,6 @@ bool cycles(const GraphD &g)
     }
 }
 
-/* Merge the vertices specified by a list of edges and write
- * the result to new_dag, which should be empty.
- *
- * Complexity: O(V + E)
- *
- * @dag          The input DAG
- * @edges2merge  List of weight edges that specifies which
- *               pair of vertices to merge
- * @new_dag      The output DAG
- * @return       Whether all merges where fusible
- */
-bool merge_vertices(GraphDW &dag, const std::vector<EdgeW> edges2merge)
-{
-    using namespace std;
-    using namespace boost;
-
-    //Help function to find the new location
-    struct find_new_location
-    {
-        Vertex operator()(map<Vertex, Vertex> &loc_map, Vertex v)
-        {
-            Vertex v_mapped = loc_map[v];
-            if(v_mapped == v)
-                return v;
-            else
-                return (*this)(loc_map, v_mapped);
-        }
-    }find_loc;
-    bool fusibility = true;
-
-    //'loc_map' maps a vertex before the merge to the corresponding vertex after the merge
-    map<Vertex, Vertex> loc_map;
-    BOOST_FOREACH(const Vertex &v, vertices(dag.bglD()))
-    {
-        loc_map[v] = v;
-    }
-
-    BOOST_FOREACH(const EdgeW &e, edges2merge)
-    {
-        Vertex v1 = find_loc(loc_map, source(e, dag.bglW()));
-        Vertex v2 = find_loc(loc_map, target(e, dag.bglW()));
-        if(v1 != v2)
-        {
-            if(not dag.bglD()[v1].fusible(dag.bglD()[v2]))
-                fusibility = false;
-
-            if(dag.merge_vertices(v1, v2))
-                loc_map[v2] = v1;
-            else
-                loc_map[v1] = v2;
-        }
-    }
-    return fusibility;
-}
-
 /* Determines the cost of the DAG.
  *
  * Complexity: O(E + V)

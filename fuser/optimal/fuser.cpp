@@ -37,6 +37,7 @@ using namespace bohrium::dag;
 bool fuse_mask(const vector<EdgeW> &edges2explore,
                const vector<bool> &mask, GraphDW &dag)
 {
+    /*
     vector<EdgeW> edges2merge;
     unsigned int i=0;
     BOOST_FOREACH(const EdgeW &e, edges2explore)
@@ -50,6 +51,7 @@ bool fuse_mask(const vector<EdgeW> &edges2explore,
         return false;
     if(cycles(dag.bglD()))
         return false;
+    */
     return true;
 }
 #ifdef VERBOSE
