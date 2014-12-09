@@ -47,7 +47,6 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
             edges2merge.push_back(e);
         }
     }
-//    cout << "size: " << edges2merge.size() << " of " << edges2explore.size() << endl;
 
     //Help function to find the new location
     struct find_new_location
@@ -104,9 +103,8 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
             cost += new_vertices[v].cost();
     }
 
-    if(cost > best_cost or not fusibility)
+    if(cost >= best_cost or not fusibility)
         return make_pair(cost,fusibility);
-
 
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
@@ -136,7 +134,6 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         return make_pair(cost,false);
     }
 
-
     if(cost != (int64_t)dag_cost(dag))
     {
         cout << "cost: " << cost << ", dag_cost: " << dag_cost(dag) << endl;
@@ -144,7 +141,6 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         pprint(tmp, "what.dot");
         assert(1 == 2);
     }
-
 
     return make_pair(cost,true);
 }
@@ -177,7 +173,7 @@ void fuse(const GraphDW &dag, const vector<EdgeW> &edges2explore,
         ++explore_count;
 #endif
 
-        if(cost > best_cost)
+        if(cost >= best_cost)
         {
 #ifdef VERBOSE
             purge_count += pow(2.0, mask.size()-offset-1);
@@ -202,7 +198,6 @@ void fuse(const GraphDW &dag, const vector<EdgeW> &edges2explore,
     {
         fuse(dag, edges2explore, mask, offset+1, false);
         fuse(dag, edges2explore, mask, offset+1, true);
-        fuse(dag, edges2explore, mask, offset+1, false);
     }
 }
 
