@@ -27,6 +27,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <map>
 #include <iterator>
+#include <signal.h>
+#include <stdio.h>
+#include <sys/time.h>
 
 #define VERBOSE
 
@@ -163,7 +166,6 @@ void fuse(const GraphDW &dag, const vector<EdgeW> &edges2explore,
         int64_t cost;
         tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, new_dag);
 
-
 #ifdef VERBOSE
         if(explore_count%1000 == 0)
         {
@@ -201,11 +203,41 @@ void fuse(const GraphDW &dag, const vector<EdgeW> &edges2explore,
     }
 }
 
+void timer_handler(int signum)
+{
+    cout << "ABORT! - timeout" << endl;
+    exit(-1);
+}
+void set_abort_timer()
+{
+    const char *bh_fuser_timeout = getenv("BH_FUSER_TIMEOUT");
+    if(bh_fuser_timeout == NULL)
+        return;
+    long int timeout = strtol(bh_fuser_timeout, NULL, 10);
+    cout << "[ABORT] Fuse-Abort timeout is " << timeout << " sec" << endl;
+
+    struct sigaction sa;
+    struct itimerval timer;
+
+    memset(&sa, 0, sizeof(sa));
+
+    sa.sa_handler = &timer_handler;
+    sigaction(SIGALRM, &sa, NULL);
+
+    timer.it_value.tv_sec = timeout;
+    timer.it_value.tv_usec = 0;
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = 100000;
+
+    setitimer (ITIMER_REAL, &timer, NULL);
+}
+
 void fuser(bh_ir &bhir)
 {
 #ifdef VERBOSE
     ++fuser_count;
 #endif
+    set_abort_timer();
 
     GraphDW dag;
     from_bhir(bhir, dag);
