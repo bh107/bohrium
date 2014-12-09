@@ -291,6 +291,24 @@ bool bh_ir_kernel::fusible(const bh_instruction &instr) const
     return true;
 }
 
+/* Determines whether the kernel fusible legal
+ *
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::fusible() const
+{
+    BOOST_FOREACH(const bh_instruction &i1, instr_list())
+    {
+        BOOST_FOREACH(const bh_instruction &i2, instr_list())
+        {
+            if((&i1) != (&i2))
+                if(not bohrium::check_fusible(&i1, &i2))
+                    return false;
+        }
+    }
+    return true;
+}
+
 /* Determines whether it is legal to fuse with the instruction
  * without changing this kernel's dependencies.
  *

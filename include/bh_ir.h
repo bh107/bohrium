@@ -120,6 +120,12 @@ public:
      */
     bool fusible(const bh_instruction &instr) const;
 
+    /* Determines whether the kernel fusible legal
+     *
+     * @return The boolean answer
+     */
+    bool fusible() const;
+
     /* Determines whether it is legal to fuse with the instruction
      * without changing this kernel's dependencies.
      *
