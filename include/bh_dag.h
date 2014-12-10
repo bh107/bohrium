@@ -39,12 +39,17 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace dag {
 
+typedef uint64_t Vertex;
+
 //The weight class bundled with the weight graph
 struct EdgeWeight
 {
     int64_t value;
-    EdgeWeight():value(0){}
-    EdgeWeight(int64_t weight):value(weight){}
+    Vertex src, dst;
+    bool ordered;
+    EdgeWeight(){}
+    EdgeWeight(int64_t weight, Vertex s, Vertex d):value(weight), src(s), dst(d), ordered(true){}
+    EdgeWeight(int64_t weight):value(weight), ordered(false){}
 };
 
 //The type declaration of the boost graphs, vertices and edges.
@@ -52,7 +57,6 @@ typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS,
                               bh_ir_kernel> GraphD;
 typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS,
                               boost::no_property, EdgeWeight> GraphW;
-typedef uint64_t Vertex;
 typedef typename boost::graph_traits<GraphD>::edge_descriptor EdgeD;
 typedef typename boost::graph_traits<GraphW>::edge_descriptor EdgeW;
 
@@ -95,12 +99,15 @@ public:
                 if(kernel.dependency(_bglD[v]))
                 {
                     dependency = true;
-                    add_edge(v, d, _bglD);
+                    boost::add_edge(v, d, _bglD);
                 }
                 int64_t cost = kernel.dependency_cost(_bglD[v]);
                 if((cost > 0) or (cost == 0 and dependency))
                 {
-                    boost::add_edge(v, d, EdgeWeight(cost), _bglW);
+                    if(dependency)
+                        boost::add_edge(v, d, EdgeWeight(cost, v, d), _bglW);
+                    else
+                        boost::add_edge(v, d, EdgeWeight(cost), _bglW);
                 }
             }
         }
@@ -119,36 +126,6 @@ public:
     {
         _bglD = dag;
         _bglW = GraphW(boost::num_vertices(dag));
-    }
-
-    /* Updates the weights of the edges that surrounds 'v', which includes
-     * the removal of non-fusible edges.
-     *
-     * NB: invalidates all existing edge iterators
-     *
-     * @v  The Vertex
-     */
-    void update_weights(Vertex v)
-    {
-        std::vector<EdgeW> removes;
-        BOOST_FOREACH(const EdgeW &e, boost::out_edges(v, _bglW))
-        {
-            Vertex src = boost::source(e, _bglW);
-            Vertex dst = boost::target(e, _bglW);
-            int64_t cost = _bglD[dst].dependency_cost(_bglD[src]);
-            if(cost >= 0)
-            {
-                _bglW[e].value = cost;
-            }
-            else
-            {
-                removes.push_back(e);
-            }
-        }
-        BOOST_FOREACH(const EdgeW &e, removes)
-        {
-            boost::remove_edge(e, _bglW);
-        }
     }
 
     /* Clear the vertex without actually removing it.
@@ -200,7 +177,6 @@ public:
         using namespace std;
         using namespace boost;
 
-        vector<pair<Vertex, Vertex> > edges2add;
         BOOST_FOREACH(const bh_instruction &i, _bglD[b].instr_list())
         {
             _bglD[a].add_instr(i);
@@ -208,21 +184,77 @@ public:
         BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglD))
         {
             if(a != v)
-                edges2add.push_back(make_pair(a, v));
+            {
+                add_edge(a, v, _bglD);
+                int64_t cost = _bglD[v].dependency_cost(_bglD[a]);
+                EdgeD e;
+                bool exist;
+                tie(e, exist) = edge(a, v, _bglW);
+                if(exist)
+                {
+                    if(cost >= 0)
+                        _bglW[e] = EdgeWeight(cost, a, v);
+                    else
+                        remove_edge(e, _bglW);
+                }
+                else if(cost >= 0)
+                {
+                    add_edge(a, v, EdgeWeight(cost, a, v), _bglW);
+                }
+            }
         }
         BOOST_FOREACH(const Vertex &v, inv_adjacent_vertices(b, _bglD))
         {
             if(a != v)
-                edges2add.push_back(make_pair(v, a));
+            {
+                add_edge(v, a, _bglD);
+                int64_t cost = _bglD[a].dependency_cost(_bglD[v]);
+                EdgeD e;
+                bool exist;
+                tie(e, exist) = edge(v, a, _bglW);
+                if(exist)
+                {
+                    if(cost >= 0)
+                        _bglW[e] = EdgeWeight(cost, v, a);
+                    else
+                        remove_edge(e, _bglW);
+                }
+                else if(cost >= 0)
+                {
+                    add_edge(v, a, EdgeWeight(cost, v, a), _bglW);
+                }
+            }
         }
-        pair<Vertex,Vertex> e;
-        BOOST_FOREACH(e, edges2add)
+        BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglW))
         {
-            add_edge(e.first, e.second, EdgeWeight(-1), _bglW);
-            add_edge(e.first, e.second, _bglD);
+            if(a != v)
+            {
+                int64_t cost = _bglD[a].dependency_cost(_bglD[v]);
+                EdgeD e;
+                bool exist;
+                tie(e, exist) = edge(v, a, _bglW);
+                if(exist)
+                {
+                    if(_bglW[e].ordered)
+                    {
+                        if(cost >= 0)
+                            _bglW[e] = EdgeWeight(cost);
+                        else
+                            remove_edge(e, _bglW);
+                    }
+                }
+                else if(cost >= 0)
+                {
+                    add_edge(v, a, EdgeWeight(cost), _bglW);
+                }
+            }
         }
         clear_vertex(b);
-        update_weights(a);
+        if(not _bglD[a].fusible())
+        {
+            cout << "kernel merge " << a << " " << b << endl;
+            assert(1 == 2);
+        }
     }
 
     /* Transitive reduce the 'dag', i.e. remove all redundant edges,
@@ -339,7 +371,7 @@ bool path_exist(Vertex a, Vertex b, const GraphD &dag,
 
         void examine_edge(EdgeD e, const GraphD &g) const
         {
-            if(source(e,g) == dst or target(e,g) == dst)
+            if(target(e,g) == dst)
                 throw runtime_error("");
         }
     };
