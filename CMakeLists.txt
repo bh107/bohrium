@@ -42,11 +42,20 @@ set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming L
 set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Python is required to build Bohrium")
 message(STATUS "Python found: ${PYTHON_EXECUTABLE}")
 
-# The CPU VE (and possibly other modules) requires Boost
-find_package(Boost REQUIRED COMPONENTS serialization )
+# Bohrium Core requires Boost
+find_package(Boost REQUIRED COMPONENTS serialization)
 set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries" URL "www.boost.org")
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
+
+# The CPU VE requires OpenMP
+find_package(OpenMP REQUIRED COMPONENTS bohrium)
+set_package_properties(OpenMP PROPERTIES DESCRIPTION "OpenMP parallel library and compiler directives" URL "www.openmp.org")
+set_package_properties(OpenMP PROPERTIES TYPE REQUIRED PURPOSE "OpenMP is required to build and run Bohrium")
+
+find_package(Cheetah REQUIRED COMPONENTS bohrium)
+set_package_properties(Cheetah PROPERTIES DESCRIPTION "Cheetah is a template module for Python" URL "www.cheetahtemplate.org")
+set_package_properties(Cheetah PROPERTIES TYPE REQUIRED PURPOSE "Cheetah is required to build Bohrium")
 
 #The core modules
 add_subdirectory(core)
