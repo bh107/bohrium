@@ -68,7 +68,7 @@ children = cpu
 [fuseprinter]
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_fuseprinter${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
+children = pricer
 
 [pricer]
 type = filter
