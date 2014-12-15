@@ -13,7 +13,7 @@ if(MONO_FOUND)
   FOREACH(file ${files})
     SET(src ${file})
     GET_FILENAME_COMPONENT(basename ${file} NAME_WE)
-    GET_FILENAME_COMPONENT(targetfolder ${file} DIRECTORY)
+    GET_FILENAME_COMPONENT(targetfolder ${file} PATH)
     SET(dst ${targetfolder}/${basename}.cs)
     ADD_CUSTOM_COMMAND(
       OUTPUT ${dst}
@@ -37,7 +37,7 @@ if(MONO_FOUND)
     DEPENDS ${numcil_binaries}
   )
 
-  install(FILES ${numcil_binaries} DESTINATION lib COMPONENT bohrium)
+  install(FILES ${numcil_binaries} DESTINATION lib COMPONENT bohrium-numcil)
 
 else()
   message("Cannot build NumCIL as Mono or xbuild is missing")

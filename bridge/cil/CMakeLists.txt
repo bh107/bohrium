@@ -5,19 +5,19 @@ set_package_properties(Mono PROPERTIES DESCRIPTION "An open source implementatio
 set_package_properties(Mono PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the NumCIL package")
 
 if(MONO_FOUND AND PYTHONINTERP_FOUND)
-    
+
   # Determine names of output .cs files based on .ctpl input names
   FILE(GLOB files codegen/templates/*.ctpl)
   SET(ctpl_outputs)
 
   FOREACH(file ${files})
     GET_FILENAME_COMPONENT(basename ${file} NAME_WE)
-    GET_FILENAME_COMPONENT(targetfolder ${file} DIRECTORY)
+    GET_FILENAME_COMPONENT(targetfolder ${file} PATH)
     SET(ctpl_outputs ${ctpl_outputs} ${targetfolder}/../output/${basename}.cs)
   ENDFOREACH(file)
 
   file(GLOB ctpl_sources codegen/templates/*.ctpl codegen/*.json codegen/*.py)
-    
+
   add_custom_command(
     OUTPUT ${ctpl_outputs}
     COMMAND ${PY_SCRIPT} codegen/gen.py
@@ -39,7 +39,7 @@ if(MONO_FOUND AND PYTHONINTERP_FOUND)
     DEPENDS numcil bhc ${target_file}
   )
 
-  install(FILES ${target_file} DESTINATION lib COMPONENT bohrium)
+  install(FILES ${target_file} DESTINATION lib COMPONENT bohrium-numcil)
 
 else()
   message("Cannot build NumCIL.Bohrium as Mono, xbuild or Python is missing")
