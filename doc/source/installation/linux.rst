@@ -41,11 +41,25 @@ And you should see a result similar to this::
     Testing test_sor.py/sor/sor
     ************************ Finish ************************
 
+NumCIL (.NET) Support
+~~~~~~~~~~~~~~~~~~~~~
+
+In order to use NumCIL as the Bohrium frontend install the Bohrium NumCIL package::
+
+    sudo apt-get install bohrium-numcil
+
+GPU Support
+~~~~~~~~~~~
+
 In order to utilize GPUs you need an OpenCL 1.2 compatible graphics card and the Bohrium GPU package::
 
   sudo apt-get install bohrium-gpu
 
 .. note:: On Nvidia Optimus architectures, remember to install and use bumblebee (``optirun``) when calling Bohrium.
+
+
+Cluster Support
+~~~~~~~~~~~~~~~
 
 In order to utilize a Cluster of machines you must choose between the two supported MPI libraries::
 
@@ -84,7 +98,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy swig libctemplate-dev python-cheetah g++ cmake libboost-dev cython
+  sudo apt-get install python-numpy swig libctemplate-dev python-cheetah cmake libboost-serialization-dev cython
 
 Build and install::
 

@@ -16,16 +16,23 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-numpy, debhelper, cmake, swig, libctemplate-dev, libboost-dev, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, mpich2, libmpich2-dev, libopenmpi-dev, openmpi-bin
+Build-Depends: python-numpy, debhelper, cmake, swig, libctemplate-dev, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, mpich2, libmpich2-dev, libopenmpi-dev, openmpi-bin, libboost-serialization-dev, mono-devel, mono-gmcs
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
 Package: bohrium
 Architecture: amd64
-Depends: libctemplate-dev, build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3,
+Depends: libctemplate-dev, build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3, libboost-serialization-dev,
 Recommends:
 Suggests: bohrium-gpu, bohrium-mpich, bohrium-openmpi, ipython,
 Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python
+
+Package: bohrium-numcil
+Architecture: amd64
+Depends: bohrium, mono-devel, mono-gmcs
+Recommends:
+Suggests:
+Description: The NumCIL (.NET) frontend for the Bohrium Runtime System
 
 Package: bohrium-gpu
 Architecture: amd64
@@ -68,6 +75,13 @@ binary-core: build
 	dpkg-gencontrol -pbohrium -Pdebian/core
 	dpkg --build debian/core ..
 
+binary-numcil: build
+	cd b; cmake -DCOMPONENT=bohrium-numcil -DCMAKE_INSTALL_PREFIX=../debian/numcil/usr -P cmake_install.cmake
+	mkdir -p debian/numcil/DEBIAN
+	dpkg-gensymbols -q -pbohrium-numcil -Pdebian/numcil
+	dpkg-gencontrol -pbohrium-numcil -Pdebian/numcil -Tdebian/bohrium-numcil.substvars
+	dpkg --build debian/numcil ..
+
 binary-gpu: build
 	cd b; cmake -DCOMPONENT=bohrium-gpu -DCMAKE_INSTALL_PREFIX=../debian/gpu/usr -P cmake_install.cmake
 	mkdir -p debian/gpu/DEBIAN
@@ -101,7 +115,7 @@ binary: binary-indep binary-arch
 
 binary-indep: build
 
-binary-arch: binary-core binary-gpu binary-mpich binary-openmpi
+binary-arch: binary-core binary-gpu binary-mpich binary-openmpi binary-numcil
 
 clean:
 	rm -f build
