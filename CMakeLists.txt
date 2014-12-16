@@ -48,10 +48,12 @@ set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries"
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
 
-# The CPU VE requires OpenMP
-find_package(OpenMP REQUIRED COMPONENTS bohrium)
-set_package_properties(OpenMP PROPERTIES DESCRIPTION "OpenMP parallel library and compiler directives" URL "www.openmp.org")
-set_package_properties(OpenMP PROPERTIES TYPE REQUIRED PURPOSE "OpenMP is required to build and run Bohrium")
+# The CPU VE requires OpenMP, except on OSX
+if (NOT APPLE)
+    #find_package(OpenMP COMPONENTS bohrium)
+    #set_package_properties(OpenMP PROPERTIES DESCRIPTION "OpenMP parallel library and compiler directives" URL "www.openmp.org")
+    #set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "OpenMP is required to build and run Bohrium")
+endif()
 
 find_package(Cheetah REQUIRED COMPONENTS bohrium)
 set_package_properties(Cheetah PROPERTIES DESCRIPTION "Cheetah is a template module for Python" URL "www.cheetahtemplate.org")
