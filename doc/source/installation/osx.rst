@@ -1,43 +1,42 @@
 Mac OSX
 -------
 
-The following explains how to get going on Mac OSX. Bohrium and NumPy is not compatible with the Python interpreter included with OSX. We recommend that you use Python version 2.7 from the `MacPorts <http://www.macports.org>`_ project. Furthermore, MacPorts have all packages that are needed to compile and install Bohrium.
+The following explains how to get going on Mac OSX. You need some extra packages to build Bohrium from source. All packages are available from Homebrew, MacPorts and Fink, so you can use your prefered package manager.
 
-You need to install the `Xcode Developer Tools <https://developer.apple.com/xcode/>`_, which is found in the App Store.
+You need to install the `Xcode Developer Tools <https://developer.apple.com/xcode/>`_ package, which is found in the App Store.
 
-It seems that from version 10.9.4 you get Python 2.7 and can install most of the Python packages through pip::
+Start with installing pip and then the required Python packages::
 
   sudo easy_install pip
   sudo pip install cheetah cython numpy
 
-You can do the above to avoid having multiple Python installations, if you are on 10.9.4 or newer you only need MacPorts/Homebrew/Fink for the non-Python packages: ``cmake, swig, and boost``.
+Then install the required pacakages using your favorite package manager.
 
 If you are using Mac MacPorts::
 
   # System Packages
   sudo port install cmake swig boost
-  # Python and Python Packages
-  sudo port install python27 py27-numpy py27-cheetah
-
-If you also want to build the Mono libraries (only required for the C# NumCIL package), you also need the Mono package::
-
+  # Mono package, not required
   sudo port install mono
 
-.. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ is 32bit and thus only supports up to 2GB memory.
+If you are using Homebrew::
 
-If you are using homebrew::
-
-  # System Packagaes
-  brew install cmake cwig boost
-  # Python Packages (if not on 10.9.4)
-  brew install ...
+  # System Packages
+  brew install cmake swig
+  brew install boost --universal
+  # Mono package, not required
+  brew install mono
 
 If you are using finkproject::
 
   # System Packages
   fink install cmake swig boost1.53.nopython
-  # Python and Python Packages
-  fink install python27 numpy-py27 cheetah-py27 
+  # Mono package, not required
+  fink install mono
+
+
+.. note:: The Mono version found on the `Mono homepage <http://www.mono-project.com/Main_Page>`_ is 32bit and thus only supports up to 2GB memory.
+
 
 As Bohrium is still under active development you want to build the current development copy, instead of using the tar-ball::
 
@@ -52,20 +51,13 @@ Make sure your system compiler is the one provided by Xcode, you can run the fol
   Target: x86_64-apple-darwin13.0.0
   Thread model: posix
 
-..
-.. When building the Python/NumPy bridge make sure that NumPy development files are available:
-..
-..  export PYTHONPATH=<numpy install dir>/lib/python<python version>/site-packages:$PYTHONPATH
-..  #Example
-.. export PYTHONPATH=~/numpy-1.8.1/install/lib/python2.7/site-packages:$PYTHONPATH
-
-
-Bohrium uses CMake so everything is configured automatically, except that we need to specify that the non-Apple version of python should be used::
+Bohrium uses CMake so everything is configured automatically::
   
   mkdir build
   cd build
-  cmake .. -DPYTHON=python2.7
+  cmake ..
   make install
+  cd ..
 
 .. note:: If you want to make a system-wide installation, run the make install command with sudo.
           If you run the install command as a normal user, it will install all files to ``~/.local``.
@@ -97,7 +89,7 @@ The ``DYLD_LIBRARY_PATH`` should include the path to the installation directory:
 
 Now the basic installation should work. Try running the NumPy test suite::
 
-  python2.7 test/numpy/numpytest.py
+  python test/numpy/numpytest.py
 
 And you should see a result similar to this::
 
