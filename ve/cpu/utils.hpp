@@ -63,6 +63,9 @@ int tac_noperands(const tac_t& tac);
 void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs,
                     std::vector<tac_t>& tacs, SymbolTable& symbol_table);
 
+void instrs_to_tacs(std::vector<bh_instruction>& instrs, 
+                    std::vector<tac_t>& tacs, SymbolTable& symbol_table);
+
 /**
  *  Determine whether an operand has a contiguous layout.
  *

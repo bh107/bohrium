@@ -209,8 +209,16 @@ bh_error bh_ve_cpu_init(const char *name)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
+    bh_error res = BH_SUCCESS;
     TIMER_START
-    bh_error res = engine->execute(&bhir->instr_list[0], bhir->instr_list.size());
+    for(std::vector<bh_ir_kernel>::iterator kernel = bhir->kernel_list.begin();
+        kernel != bhir->kernel_list.end();
+        ++kernel) {
+        res = engine->execute(kernel->instrs);
+        if (res != BH_SUCCESS) {
+            break;
+        }
+    }
     TIMER_STOP("CPU-EXECUTE")
 
     return res;
