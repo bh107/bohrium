@@ -199,7 +199,8 @@ class Ufunc(object):
     def reduce(self, ary, axis=0, out=None):
         """
         A Bohrium Reduction
-    Reduces `ary`'s dimension by one, by applying ufunc along one axis.
+    Reduces `ary`'s dimension by len('axis'), by applying ufunc along the
+    axes in 'axis'.
 
     Let :math:`ary.shape = (N_0, ..., N_i, ..., N_{M-1})`.  Then
     :math:`ufunc.reduce(ary, axis=i)[k_0, ..,k_{i-1}, k_{i+1}, .., k_{M-1}]` =

@@ -34,7 +34,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_win.h"
 #include "bh_memory.h"
 #include "bh_ir.h"
-#include "bh_ir_map.h"
 #include "bh_mem_signal.h"
 
 #ifdef __cplusplus
@@ -118,10 +117,31 @@ DLLEXPORT const char* bh_opcode_text(bh_opcode opcode);
 
 /* Determines if the operation is a system operation
  *
- * @opcode Opcode for operation
- * @return TRUE if the operation is a system opcode, FALSE otherwise
+ * @opcode The operation opcode
+ * @return The boolean answer
  */
 DLLEXPORT bool bh_opcode_is_system(bh_opcode opcode);
+
+/* Determines if the operation is an elementwise operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
+
+/* Determines if the operation is a reduction operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_reduction(bh_opcode opcode);
+
+/* Determines if the operation is an accumulate operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_accumulate(bh_opcode opcode);
 
 /* Determines if the operation is performed elementwise
  *
@@ -279,6 +299,36 @@ DLLEXPORT bool bh_view_identical(const bh_view *a, const bh_view *b);
  * @return The boolean answer
  */
 DLLEXPORT bool bh_view_aligned(const bh_view *a, const bh_view *b);
+
+/* Determines whether two views are aligned, points
+ * to the same base array, and have same shape.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b);
+
+/* Determines whether instruction 'a' depends on instruction 'b',
+ * which is true when:
+ *      'b' writes to an array that 'a' access
+ *                        or
+ *      'a' writes to an array that 'b' access
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
+
+/* Determines whether it is legal to fuse two instructions
+ * without changing any future possible fusings.
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_instr_fusible_gently(const bh_instruction *a, const bh_instruction *b);
 
 #ifdef __cplusplus
 }

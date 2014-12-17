@@ -14,7 +14,7 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_visualizer${CMAKE_SHARED_LIBRARY_SUF
 [proxy]
 type = vem
 port = 4200
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_proxy_server${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_proxy${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
 
 [cluster]
@@ -27,6 +27,53 @@ type = vem
 children = cpu
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = false
+
+#
+# Fusers
+#
+
+[singleton]
+type = fuser
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_singleton${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = cpu
+
+[topological]
+type = fuser
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_topological${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = cpu
+
+[gentle]
+type = fuser
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_gentle${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = cpu
+
+[optimal]
+type = fuser
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_optimal${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = cpu
+
+[greedy]
+type = fuser
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_greedy${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = cpu
+
+#
+# Filters
+#
+[pprint]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pprint${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = cpu
+
+[fuseprinter]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_fuseprinter${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = pricer
+
+[pricer]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pricer${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = cpu
 
 #
 # Engines
@@ -60,26 +107,4 @@ kernel = both
 compile = async
 children = cpu
 
-#
-# Filters
-#
-[transitive_reduction]
-type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_transitive_reduction${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
-
-[pprint]
-type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pprint${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
-
-[validate]
-type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_validate${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
-
-[range]
-type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_range${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
 

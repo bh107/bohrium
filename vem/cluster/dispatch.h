@@ -160,6 +160,6 @@ void dispatch_array_data(std::stack<bh_base*> &arys);
 /* Dispatch the BhIR to the slaves, which includes new array-structs.
  * @bhir  The BhIR in question
  */
-void dispatch_bhir(const bh_ir *bhir);
+void dispatch_bhir(bh_ir *bhir);
 
 #endif

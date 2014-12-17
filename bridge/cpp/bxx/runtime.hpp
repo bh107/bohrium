@@ -95,13 +95,9 @@ size_t Runtime::execute()
 {
     size_t cur_size = queue_size;
 
-    bh_ir bhir;
-    bh_error status = bh_ir_create(&bhir, queue_size, queue);
-    if (status == BH_SUCCESS) {
-        status = runtime->execute(&bhir);   // Send instructions to Bohrium
-        queue_size = 0;                     // Reset size of the queue
-    }
-    bh_ir_destroy(&bhir);
+    bh_ir bhir = bh_ir(queue_size, queue);
+    bh_error status = runtime->execute(&bhir);   // Send instructions to Bohrium
+    queue_size = 0;                                // Reset size of the queue
 
     if (status != BH_SUCCESS) {
         std::stringstream err_msg;

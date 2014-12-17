@@ -22,7 +22,7 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-set(USE_CXX98 false CACHE BOOL "Choose to use the old C++98 standard instead of C++11 (some Bohrium components requires C++11 and will not be skipped.")
+set(USE_CXX98 false CACHE BOOL "Choose to use the old C++98 standard instead of C++11 (some Bohrium components requires C++11 and will be skipped.")
 message(STATUS "USE_CXX98: ${USE_CXX98}")
 
 # Benchmarks, used by numpy backend
@@ -42,10 +42,22 @@ set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming L
 set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Python is required to build Bohrium")
 message(STATUS "Python found: ${PYTHON_EXECUTABLE}")
 
-# The CPU VE (and possibly other modules) requires Boost
-find_package(Boost REQUIRED)
+# Bohrium Core requires Boost
+find_package(Boost REQUIRED COMPONENTS serialization)
 set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries" URL "www.boost.org")
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
+include_directories(${Boost_INCLUDE_DIRS})
+
+# The CPU VE requires OpenMP, except on OSX
+if (NOT APPLE)
+    #find_package(OpenMP COMPONENTS bohrium)
+    #set_package_properties(OpenMP PROPERTIES DESCRIPTION "OpenMP parallel library and compiler directives" URL "www.openmp.org")
+    #set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "OpenMP is required to build and run Bohrium")
+endif()
+
+find_package(Cheetah REQUIRED COMPONENTS bohrium)
+set_package_properties(Cheetah PROPERTIES DESCRIPTION "Cheetah is a template module for Python" URL "www.cheetahtemplate.org")
+set_package_properties(Cheetah PROPERTIES TYPE REQUIRED PURPOSE "Cheetah is required to build Bohrium")
 
 #The core modules
 add_subdirectory(core)
@@ -53,6 +65,13 @@ add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
 add_subdirectory(ve/cpu)
 add_subdirectory(filter/pprint)
+add_subdirectory(filter/fuseprinter)
+add_subdirectory(filter/pricer)
+add_subdirectory(fuser/singleton)
+add_subdirectory(fuser/topological)
+add_subdirectory(fuser/gentle)
+add_subdirectory(fuser/optimal)
+add_subdirectory(fuser/greedy)
 add_subdirectory(extmethods/matmul)
 
 #The other modules
@@ -60,14 +79,12 @@ add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(extmethods/fftw)
 
-#The NumCIL library
-add_subdirectory(bridge/NumCIL)
-
 #Non CXX98 compatible libraries
 if(NOT USE_CXX98)
     add_subdirectory(bridge/cpp)
     add_subdirectory(bridge/c)
     add_subdirectory(bridge/npbackend)
+    add_subdirectory(bridge/NumCIL)
     add_subdirectory(bridge/cil)
 endif()
 

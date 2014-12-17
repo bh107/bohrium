@@ -30,12 +30,25 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
+/* Pretty print an base.
+ *
+ * @op      The base in question
+ * @buf     Output buffer (must have sufficient size)
+ */
+DLLEXPORT void bh_sprint_base(const bh_base *base, char buf[]);
+
 /* Pretty print an array.
  *
  * @view  The array view in question
  */
 DLLEXPORT void bh_pprint_array(const bh_view *view);
 
+/* Pretty print an view.
+ *
+ * @op      The view in question
+ * @buf     Output buffer (must have sufficient size)
+ */
+DLLEXPORT void bh_sprint_view(const bh_view *op, char buf[]);
 
 /* Pretty print an instruction.
  *
@@ -81,26 +94,14 @@ DLLEXPORT void bh_pprint_base(const bh_base *base);
  */
 DLLEXPORT void bh_pprint_coord(const bh_index coord[], bh_index ndims);
 
-/* Pretty print an BhIR DAG.
- *
- * @bhir The BhIR in question
- * @dag  The DAG in question
- *
- */
-DLLEXPORT void bh_pprint_dag(const bh_ir *bhir, const bh_dag *dag);
-
-/* Pretty print an BhIR.
+/* Pretty print an instruction trace of the BhIR.
  *
  * @bhir The BhIR in question
  *
  */
-DLLEXPORT void bh_pprint_bhir(const bh_ir *bhir);
-
 DLLEXPORT void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[]);
-
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif

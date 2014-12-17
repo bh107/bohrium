@@ -41,11 +41,25 @@ And you should see a result similar to this::
     Testing test_sor.py/sor/sor
     ************************ Finish ************************
 
+NumCIL (.NET) Support
+~~~~~~~~~~~~~~~~~~~~~
+
+In order to use NumCIL as the Bohrium frontend install the Bohrium NumCIL package::
+
+    sudo apt-get install bohrium-numcil
+
+GPU Support
+~~~~~~~~~~~
+
 In order to utilize GPUs you need an OpenCL 1.2 compatible graphics card and the Bohrium GPU package::
 
   sudo apt-get install bohrium-gpu
 
 .. note:: On Nvidia Optimus architectures, remember to install and use bumblebee (``optirun``) when calling Bohrium.
+
+
+Cluster Support
+~~~~~~~~~~~~~~~
 
 In order to utilize a Cluster of machines you must choose between the two supported MPI libraries::
 
@@ -84,7 +98,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy swig libctemplate-dev python-cheetah g++ cmake libboost-dev cython
+  sudo apt-get install python-numpy swig libctemplate-dev python-cheetah cmake libboost-serialization-dev cython
 
 Build and install::
 
@@ -101,13 +115,13 @@ Build and install::
 
 .. note:: To compile to a custom Python (with valgrind debug support for example), set ``-DPYTHON_EXECUTABLE=<custom python binary> -DPY_SCRIPT=python``.
 
-Finally, you need to set the ``LD_LIBRARY_PATH`` environment variables and if you didn't install Bohrium in ``$HOME/.local`` your need to set ``PYTHONPATH`` as well.
+Finally, you need to set the ``LD_LIBRARY_PATH`` environment variables and if you didn't install Bohrium in ``$HOME/.local/lib`` your need to set ``PYTHONPATH`` as well.
 
 The ``LD_LIBRARY_PATH`` should include the path to the installation directory::
 
   export LD_LIBRARY_PATH="<install dir>:$LD_LIBRARY_PATH"
   #Example
-  export LD_LIBRARY_PATH="$HOME/.local:$LD_LIBRARY_PATH"
+  export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
 
 
 The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module.::

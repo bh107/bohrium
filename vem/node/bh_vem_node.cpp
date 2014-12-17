@@ -140,8 +140,8 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
     if (timing)
         start = bh_timer_stamp();
 
-    //Inspect the BhIR for new base arrays starting at the root DAG
-    bh_ir_map_instr(bhir, &bhir->dag_list[0], &inspect);
+    for(uint64_t i=0; i < bhir->instr_list.size(); ++i)
+        inspect(&bhir->instr_list[i]);
 
     bh_error ret = child->execute(bhir);
     

@@ -352,17 +352,113 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
         return false;
     if(a->start != b->start)
         return false;
-    for(int ia=0,ib=0; ia<a->ndim && ib<b->ndim; ++ia,++ib)
+
+    int a_ndim = 0;
+    for(int i=0; i<a->ndim; ++i)
+        if(a->stride != 0)
+            ++a_ndim;
+    int b_ndim = 0;
+    for(int i=0; i<b->ndim; ++i)
+        if(b->stride != 0)
+            ++b_ndim;
+
+    if(a_ndim != b_ndim)
+        return false;
+
+    int ia=0, ib=0;
+    for(int i=0; i<a_ndim; ++i)
     {
-        while (a->stride[ia] == 0)
-            if (++ia >= a->ndim)
-                break;
-        while (b->stride[ib] == 0)
-            if (++ib >= b->ndim)
-                break;
+        while(a->stride[ia] == 0)
+            ++ia;
+        while(b->stride[ib] == 0)
+            ++ib;
         if(a->shape[ia] != b->shape[ib])
             return false;
         if(a->stride[ia] != b->stride[ib])
+            return false;
+    }
+    return true;
+}
+
+/* Determines whether two views are aligned, points
+ * to the same base array, and have same shape.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b)
+{
+    if(a->ndim != b->ndim)
+        return false;
+    if(not bh_view_aligned(a, b))
+        return false;
+
+    for(int i=0; i<a->ndim; ++i)
+    {
+        if(a->shape[i] != b->shape[i])
+            return false;
+    }
+    return true;
+}
+
+/* Determines whether instruction 'a' depends on instruction 'b',
+ * which is true when:
+ *      'b' writes to an array that 'a' access
+ *                        or
+ *      'a' writes to an array that 'b' access
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
+{
+    const int a_nop = bh_operands(a->opcode);
+    for(int i=0; i<a_nop; ++i)
+    {
+        if(not bh_view_disjoint(&b->operand[0], &a->operand[i]))
+            return true;
+    }
+    const int b_nop = bh_operands(b->opcode);
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(not bh_view_disjoint(&a->operand[0], &b->operand[i]))
+            return true;
+    }
+    return false;
+}
+
+/* Determines whether it is legal to fuse two instructions
+ * without changing any future possible fusings.
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+bool bh_instr_fusible_gently(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    if(not bh_view_aligned(&a->operand[0], &b->operand[0]))
+        return false;
+
+    const int a_nop = bh_operands(a->opcode);
+    const int b_nop = bh_operands(b->opcode);
+    for(int i=1; i<a_nop; ++i)
+    {
+        //Check that at least one input in 'b' is aligned with 'a[i]'
+        bool found_aligned = false;
+        for(int j=1; j<b_nop; ++j)
+        {
+             if(bh_view_aligned(&a->operand[i], &b->operand[j]))
+             {
+                 found_aligned = true;
+                 break;
+             }
+        }
+        if(not found_aligned)
             return false;
     }
     return true;

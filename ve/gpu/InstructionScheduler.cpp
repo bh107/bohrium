@@ -35,7 +35,7 @@ InstructionScheduler::InstructionScheduler()
 
 bh_error InstructionScheduler::schedule(bh_ir* bhir)
 {
-    for (bh_intp i = 0; i < bhir->ninstr; ++i)
+    for (bh_intp i = 0; i < bhir->instr_list.size(); ++i)
     {
         bh_instruction* inst = &(bhir->instr_list[i]);
         if (inst->opcode != BH_NONE)
@@ -336,11 +336,8 @@ bh_error InstructionScheduler::reduce(bh_instruction* inst)
         // TODO these two syncs are a hack. Are we sure this is correct?????
         sync(inst->operand[1].base);
         sync(inst->operand[0].base);
-        
-        bh_ir bhir;
-        bh_error err = bh_ir_create(&bhir, 1, inst);
-        if(err != BH_SUCCESS)
-            return err;
+
+        bh_ir bhir = bh_ir( 1, inst);
         return resourceManager->childExecute(&bhir);
     }
     std::vector<KernelParameter*> operands = getKernelParameters(inst);

@@ -21,121 +21,179 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_IR_H
 #define __BH_IR_H
 
-#include "bh_adjmat.h"
+#include <vector>
+#include <map>
+#include <boost/serialization/vector.hpp>
+
 #include "bh_type.h"
 #include "bh_error.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// Forward declaration of class boost::serialization::access
+namespace boost {namespace serialization {class access;}}
 
-/* The Directed Acyclic Graph (DAG) dictates the dependencies
- * between the nodes, such that a topological order obeys the
- * precedence constraints of the nodes. That is, all dependencies
- * of a DAG node must be executed before itself. */
-typedef struct
+/* A kernel is a list of instructions that are fusible. That is, a SIMD
+ * machine can theoretically execute all the instructions in a single
+ * operation.
+*/
+class bh_ir_kernel
 {
-    //Number of nodes
-    bh_intp nnode;
+protected:
+    // Serialization using Boost
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & instrs;
+    }
 
-    //The Adjacency Matrix where each row or column index
-    //represents a node in the DAG.
-    bh_adjmat *adjmat;
+    //The list of Bohrium instructions in this kernel
+    std::vector<bh_instruction> instrs;
 
-    //The Node Map that translate DAG nodes into a Bohrium instruction
-    //or a sub-DAG. Given a row or column index from the Adjacency Matrix,
-    //the Node Map maps to an index in the instruction list or an index
-    //in the DAG list. A positive index refers to the instruction list
-    //and a negative index refers to the DAG list (-1*index-1).
-    bh_intp *node_map;
+public:
+    //List of input and output to this kernel.
+    //NB: system instruction (e.g. BH_DISCARD) is
+    //never part of kernel input or output
+    std::vector<bh_view> inputs;
+    std::vector<bh_view> outputs;
 
-    //The tag that represents some additional information associated this DAG.
-    bh_intp tag;
-} bh_dag;
+    //Lets of temporary base-arrays in this kernel.
+    std::vector<const bh_base*> temps;
+
+public:
+
+    /* Returns the instructions in this kernel (read-only) */
+    const std::vector<bh_instruction>& instr_list() const {return instrs;};
+
+    /* Returns a list of inputs to this kernel (read-only) */
+    const std::vector<bh_view>& input_list() const {return inputs;};
+
+    /* Returns a list of outputs from this kernel (read-only) */
+    const std::vector<bh_view>& output_list() const {return outputs;};
+
+    /* Returns a list of temporary base-arrays in this kernel (read-only) */
+    const std::vector<const bh_base*>& temp_list() const {return temps;};
+
+    /* Returns the cost of the kernel */
+    uint64_t cost() const;
+
+    /* Add an instruction to the kernel
+     *
+     * @instr   The instruction to add
+     * @return  The boolean answer
+     */
+    void add_instr(const bh_instruction &instr);
+
+    /* Determines whether this kernel depends on 'other',
+     * which is true when:
+     *      'other' writes to an array that 'this' access
+     *                        or
+     *      'this' writes to an array that 'other' access
+     *
+     * @other The other kernel
+     * @return The boolean answer
+     */
+    bool dependency(const bh_ir_kernel &other) const;
+
+    /* Returns the cost of this kernel's dependency on the 'other' kernel.
+     * The cost of a dependency is defined as the amount the BhIR will drop
+     * in price if the two kernels are fused.
+     * Note that a zero cost dependency is possible because of system
+     * instructions such as BH_FREE and BH_DISCARD.
+     *
+     * @other  The other kernel
+     * @return The cost value. Returns -1 if this and the 'other'
+     *         kernel isn't fusible.
+     */
+    int64_t dependency_cost(const bh_ir_kernel &other) const;
+
+    /* Determines whether it is legal to fuse with the kernel
+     *
+     * @other   The other kernel
+     * @return  The boolean answer
+     */
+    bool fusible(const bh_ir_kernel &other) const;
+
+    /* Determines whether it is legal to fuse with the instruction
+     *
+     * @instr  The instruction
+     * @return The boolean answer
+     */
+    bool fusible(const bh_instruction &instr) const;
+
+    /* Determines whether the kernel fusible legal
+     *
+     * @return The boolean answer
+     */
+    bool fusible() const;
+
+    /* Determines whether it is legal to fuse with the instruction
+     * without changing this kernel's dependencies.
+     *
+     * @instr  The instruction
+     * @return The boolean answer
+     */
+    bool fusible_gently(const bh_instruction &instr) const;
+
+    /* Determines whether it is legal to fuse with the kernel without
+     * changing this kernel's dependencies.
+     *
+     * @other  The other kernel
+     * @return The boolean answer
+     */
+    bool fusible_gently(const bh_ir_kernel &other) const;
+
+};
+
 
 /* The Bohrium Internal Representation (BhIR) represents an instruction
  * batch created by the Bridge component typically. */
-typedef struct
+class bh_ir
 {
-    //The list of Bohrium instructions
-    bh_instruction *instr_list;
-    //Number of instruction in the instruction list
-    bh_intp ninstr;
-    //The list of DAGs
-    bh_dag *dag_list;
-    //Number of DAGs in the DAG list
-    bh_intp ndag;
-    //Whether the BhIR did the memory allocation itself or not
-    bool self_allocated;
-} bh_ir;
+public:
+    bh_ir(){};
+    /* Constructs a Bohrium Internal Representation (BhIR)
+     * from a instruction list.
+     *
+     * @ninstr      Number of instructions
+     * @instr_list  The instruction list
+     */
+    bh_ir(bh_intp ninstr, const bh_instruction instr_list[]);
 
-/* Returns the total size of the BhIR including overhead (in bytes).
- *
- * @bhir    The BhIR in question
- * @return  Total size in bytes
- */
-DLLEXPORT bh_intp bh_ir_totalsize(const bh_ir *bhir);
+    /* Constructs a BhIR from a serialized BhIR.
+    *
+    * @bhir The BhIR serialized as a char array
+    */
+    bh_ir(const char bhir[], bh_intp size);
 
-/* Creates a Bohrium Internal Representation (BhIR)
- * based on a instruction list. It will consist of one DAG.
- *
- * @bhir        The BhIR handle
- * @ninstr      Number of instructions
- * @instr_list  The instruction list
- * @return      Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
- */
-DLLEXPORT bh_error bh_ir_create(bh_ir *bhir, bh_intp ninstr,
-                                const bh_instruction instr_list[]);
+    /* Serialize the BhIR object into a char buffer
+    *  (use the bh_ir constructor above to deserialization)
+    *
+    *  @buffer   The char vector to serialize into
+    */
+    void serialize(std::vector<char> &buffer) const;
 
-/* Destory a Bohrium Internal Representation (BhIR).
- *
- * @bhir        The BhIR handle
- */
-DLLEXPORT void bh_ir_destroy(bh_ir *bhir);
+    /* Returns the cost of the BhIR */
+    uint64_t cost() const;
 
-/* Serialize a Bohrium Internal Representation (BhIR).
- *
- * @dest    The destination of the serialized BhIR
- * @bhir    The BhIR to serialize
- * @return  Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
- */
-DLLEXPORT bh_error bh_ir_serialize(void *dest, const bh_ir *bhir);
+    /* Pretty print the kernel list */
+    void pprint_kernel_list() const;
 
-/* De-serialize the BhIR (inplace)
- *
- * @bhir The BhIR in question
- */
-DLLEXPORT void bh_ir_deserialize(bh_ir *bhir);
+    //The list of Bohrium instructions in topological order
+    std::vector<bh_instruction> instr_list;
 
-/* Splits the DAG into an updated version of itself and a new sub-DAG that
- * consist of the nodes in 'nodes_idx'. Instead of the nodes in sub-DAG,
- * the updated DAG will have a new node that represents the sub-DAG.
- *
- * @bhir        The BhIR node
- * @nnodes      Number of nodes in the new sub-DAG
- * @nodes_idx   The nodes in the original DAG that will constitute the new sub-DAG.
- *              NB: this list will be sorted inplace
- * @dag_idx     The original DAG to split and thus modified
- * @sub_dag_idx The new sub-DAG which will be overwritten. -1 indicates that the
- *              new sub-DAG should be appended the DAG list
- *
- * @return      Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
-*/
-DLLEXPORT bh_error bh_dag_split(bh_ir *bhir, bh_intp nnodes, bh_intp nodes_idx[],
-                                bh_intp dag_idx, bh_intp sub_dag_idx);
+    //The list of kernels in topological order
+    std::vector<bh_ir_kernel> kernel_list;
 
-/* Write the BhIR in the DOT format.
- *
- * @bhir      The graph to print
- * @filename  Name of the written dot file
- */
-DLLEXPORT void bh_bhir2dot(const bh_ir* bhir, const char* filename);
-
-
-
-#ifdef __cplusplus
-}
-#endif
+protected:
+    // Serialization using Boost
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & instr_list;
+        ar & kernel_list;
+    }
+};
 
 #endif
 

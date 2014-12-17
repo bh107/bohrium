@@ -60,13 +60,11 @@ int main()
             case BH_CLUSTER_DISPATCH_INIT:
             {
                 char *name = msg->payload;
-                printf("Slave (rank %d) received INIT. name: %s\n", pgrid_myrank, name);
                 check_error(exec_init(name),__FILE__,__LINE__);
                 break;
             }
             case BH_CLUSTER_DISPATCH_SHUTDOWN:
             {
-                printf("Slave (rank %d) received SHUTDOWN\n",pgrid_myrank);
                 check_error(exec_shutdown(),__FILE__,__LINE__);
                 return 0;
             }
@@ -74,18 +72,19 @@ int main()
             {
                 bh_opcode opcode = *((bh_opcode *)msg->payload);
                 char *name = msg->payload+sizeof(bh_opcode);
-                printf("Slave (rank %d) received UFUNC. fun: %s, id: %ld\n",pgrid_myrank, name, opcode);
                 check_error(exec_extmethod(name, opcode),__FILE__,__LINE__);
                 break;
             }
             case BH_CLUSTER_DISPATCH_EXEC:
             {
-                //Deserialize the BhIRi
-                bh_ir *bhir = (bh_ir*) msg->payload;
-                bh_ir_deserialize(bhir);
+                //Get the size of the the serialized BhIR
+                bh_intp bhir_size = *((bh_intp*) msg->payload);
+
+                //Deserialize the BhIR
+                bh_ir bhir = bh_ir(((char*)msg->payload)+sizeof(bh_intp), bhir_size);
 
                 //The number of new arrays
-                bh_intp *noa = (bh_intp *)(((char*)msg->payload)+bh_ir_totalsize(bhir));
+                bh_intp *noa = (bh_intp *)(((char*)msg->payload)+sizeof(bh_intp)+bhir_size);
                 //The list of new arrays
                 dispatch_array *darys = (dispatch_array*)(noa+1); //number of new arrays
 
@@ -101,9 +100,9 @@ int main()
                 dispatch_array_data(base_darys);
 
                 //Update all instruction to reference local arrays
-                for(bh_intp i=0; i < bhir->ninstr; ++i)
+                for(uint64_t i=0; i < bhir.instr_list.size(); ++i)
                 {
-                    bh_instruction *inst = &bhir->instr_list[i];
+                    bh_instruction *inst = &bhir.instr_list[i];
                     int nop = bh_operands_in_instruction(inst);
                     bh_view *ops = bh_inst_operands(inst);
 
@@ -117,7 +116,7 @@ int main()
                         bh_base_array(&ops[j]) = dispatch_master2slave((bh_intp)base);
                     }
                 }
-                check_error(exec_execute(bhir),__FILE__,__LINE__);
+                check_error(exec_execute(&bhir),__FILE__,__LINE__);
                 break;
             }
             default:
