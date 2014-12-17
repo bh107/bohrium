@@ -26,6 +26,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <boost/algorithm/string/predicate.hpp>
+
 #include <bh.h>
 #include "bh_ve_cpu.h"
 #include "engine.hpp"
@@ -157,6 +159,16 @@ bh_error bh_ve_cpu_init(const char *name)
          fprintf(stderr, "BH_VE_CPU_JIT_DUMPSRC (%ld) should 0 or 1.\n", (long int)jit_dumpsrc);
         return BH_ERROR;
     }
+
+    env = getenv("BH_FUSE_MODEL");
+    if (env != NULL) {
+        string e(env);
+        if (not boost::iequals(e, string("same_shape"))) {
+            cerr << "VE-CPU: Unsupported fuse model: '" << e;
+            cerr << "', reverting to 'SAME_SHAPE'." << endl;
+        }
+    }
+    setenv("BH_FUSE_MODEL", "SAME_SHAPE", 1);
 
     // Configuration
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
