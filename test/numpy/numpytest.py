@@ -1,20 +1,23 @@
 #Test and demonstration of the NumPy Bridge.
+from __future__ import print_function
 from operator import mul
-from itertools import izip as zip
 from numbers import Number
 import subprocess
 import warnings
 import random
-import getopt
 import pickle
 import time
 import uuid
 import copy
 import sys
 import os
+from os.path import join
+import re
+import argparse
 
 import numpy as np
 import bohrium as bh
+from functools import reduce
 
 class TYPES:
     NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
@@ -160,15 +163,15 @@ class BenchHelper:
             )
 
     def get_meta(self, arrays):
-        """Determine backend and dtype based on meta-data from pseudo_init."""
-        
-        backend = "None"
+        """Determine target and dtype based on meta-data from pseudo_init."""
+
+        target = "None"
         if 'bohrium.ndarray' in str(type(arrays[0])):
-            backend = "Bohrium"
-        
+            target = "bhc"
+
         dtype = str(arrays[0].dtype)
-        
-        return (backend, dtype)
+
+        return (target, dtype)
 
     def run(self, pseudo_input):
         """
@@ -176,24 +179,25 @@ class BenchHelper:
 
         Benchmarks are assumed to be installed along with the Bohrium module.
         """
-        
-        (backend, dtype) = self.get_meta(pseudo_input)
+
+        (target, dtype) = self.get_meta(pseudo_input)
 
         # Setup output filename
         outputfn = "/tmp/%s_%s_%s_output_%s.npz" % (
-            self.script, dtype, backend, self.uuid
+            self.script, dtype, target, self.uuid
         )
 
+        bench_dir = join(os.path.dirname(os.path.realpath(__file__)),"..","..","benchmark","Python")
         # Setup command
         cmd = [
-            'python',
-            '-m',
-            'bohrium.examples.%s' % self.script,
+            sys.executable, #The current Python interpreter
+            join(bench_dir,"%s.py"%self.script),
             '--size='       +self.sizetxt,
             '--dtype='      +str(dtype),
-            '--backend='    +backend,
+            '--target='    +target,
             '--outputfn='   +outputfn
         ]
+
         # Setup the inputfn if one is needed/provided
         if self.inputfn:
             npt_path = os.path.dirname(sys.argv[0])
@@ -218,7 +222,7 @@ class BenchHelper:
         out, err = p.communicate()
         if 'elapsed-time' not in out:
             raise Exception("Benchmark error [stdout:%s,stderr:%s]" % (out, err))
-        if err:
+        if err and not re.match("\[[0-9]+ refs\]", err): #We accept the Python object count
             raise Exception("Benchmark error[%s]" % err)
 
         if not os.path.exists(outputfn):
@@ -234,55 +238,83 @@ class BenchHelper:
             os.remove(outputfn)
 
         # Convert to whatever namespace it ought to be in
-        res['res'] = bh.array(res['res'], bohrium=backend!="None")
+        res['res'] = bh.array(res['res'], bohrium=target!="None")
 
         return (res['res'], ' '.join(cmd))
 
 if __name__ == "__main__":
     warnings.simplefilter('error')#Warnings will raise exceptions
     pydebug = True
-    test_list       = []
-    script_list     = []
-    exclude_list    = []
+
     try:
         sys.gettotalrefcount()
     except AttributeError:
         pydebug = False
-    try:
-        opts, args = getopt.getopt(sys.argv[1:],"f:e:t:",["file=", "exclude=",
-                                                          "test="])
-    except getopt.GetoptError, err:
-        print str(err)
-        sys.exit(2)
-    for o, a in opts:
-        if o in ("-f", "--file"):
-            script_list.append(a)
-        elif o in ("-e", "--exclude"):
-            exclude_list.append(a)
-        elif o in ["-t", "--test"]:
-            test_list.append(a)
-        else:
-            assert False, "unhandled option"
 
-    if len(script_list) == 0:
-        script_list = os.listdir(os.path.dirname(os.path.abspath(__file__)))
+    parser = argparse.ArgumentParser(description='Runs the test suite, which consist of all the test_*.py files')
+    parser.add_argument(
+        '--file',
+        type=str,
+        action='append',
+        default=[],
+        help='Add test file (supports multiple use of this argument)'
+    )
+    parser.add_argument(
+        '--exclude',
+        type=str,
+        action='append',
+        default=[],
+        help='Exclude test file (supports multiple use of this argument)'
+    )
+    parser.add_argument(
+        '--test',
+        type=str,
+        action='append',
+        default=[],
+        help='Only run a specific test method '\
+             '(supports multiple use of this argument)'
+    )
+    parser.add_argument(
+        '--exclude-test',
+        type=str,
+        action='append',
+        default=[],
+        help='Only run a specific test method '\
+             '(supports multiple use of this argument)'
+    )
+    parser.add_argument(
+        '--exclude-benchmarks',
+        action='store_true',
+        help='Excludes all benchmak tests'
+    )
+    args = parser.parse_args()
+    if len(args.file) == 0:
+        args.file = os.listdir(os.path.dirname(os.path.abspath(__file__)))
 
-    print "*"*3, "Testing the equivalency of Bohrium-NumPy and NumPy", "*"*3
-    for i in xrange(len(script_list)):
-        f = script_list[i]
+    print("*"*3, "Testing the equivalency of Bohrium-NumPy and NumPy", "*"*3)
+    for f in args.file:
 
-        if f.startswith("test_") and f.endswith("py") and f not in exclude_list:
+        if f.startswith("test_") and f.endswith("py") and f not in args.exclude:
             m = f[:-3]#Remove ".py"
             m = __import__(m)
             #All test classes starts with "test_"
             for cls in [o for o in dir(m) if o.startswith("test_") and \
-                        (True if test_list and o in test_list or not test_list else False)]:
+                        (True if args.test and o in args.test or not args.test else False)]:
+                if cls in args.exclude_test:
+                    continue
+
                 cls_obj  = getattr(m, cls)
                 cls_inst = cls_obj()
+
+                import inspect
+                is_benchmark = BenchHelper.__name__ in [c.__name__ for c in inspect.getmro(cls_obj)]
+                if args.exclude_benchmarks and is_benchmark:
+                    continue
+
                 #All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     name = "%s/%s/%s"%(f,cls[5:],mth[5:])
-                    print "Testing %s"%(name)
+                    print("Testing %s"%(name))
                     for (np_arys,cmd) in getattr(cls_inst,"init")():
                         #Get Bohrium arrays
                         bh_arys = []
@@ -299,14 +331,16 @@ if __name__ == "__main__":
                             if not np.isscalar(res2):
                                 res2 = res2.copy2numpy()
                         except RuntimeError as error_msg:
-                            print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
-                            print _C.FAIL + str(error_msg) + _C.ENDC
+                            print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
+                            print(_C.FAIL + str(error_msg) + _C.ENDC)
                         else:
-                            if not np.allclose(res1, res2, rtol=cls_inst.config['maxerror']):
-                                print _C.FAIL + "[Error] %s"%(name) + _C.ENDC
-                                print _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC
-                                print _C.OKGREEN + str(res1) + _C.ENDC
-                                print _C.FAIL + str(res2) + _C.ENDC
+                            rtol = cls_inst.config['maxerror']
+                            atol = rtol * 0.1
+                            if not np.allclose(res1, res2, rtol=rtol, atol=atol):
+                                print(_C.FAIL + "[Error] %s"%(name) + _C.ENDC)
+                                print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
+                                print(_C.OKGREEN + str(res1) + _C.ENDC)
+                                print(_C.FAIL + str(res2) + _C.ENDC)
                                 sys.exit (1)
 
-    print "*"*24, "Finish", "*"*24
+    print("*"*24, "Finish", "*"*24)

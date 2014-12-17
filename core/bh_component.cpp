@@ -361,3 +361,48 @@ char* bh_component_config_lookup(const bh_component *component, const char* key)
     snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
     return iniparser_getstring(component->config, dictkey, NULL);
 }
+
+/*
+ * @brief     Lookup a keys value in the config fil converted to a bool
+ * @component The component.
+ * @key       The key to lookup in the config file
+ * @notfound  Value to return in case of error
+ * @return    int(bool)
+*/
+int bh_component_config_lookup_bool(const bh_component *component,
+                                    const char* key, int notfound)
+{
+    char dictkey[BH_COMPONENT_NAME_SIZE];
+    snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
+    return iniparser_getboolean(component->config, dictkey, notfound);
+}
+
+/*
+ * @brief     Lookup a keys value in the config fil converted to an int
+ * @component The component.
+ * @key       The key to lookup in the config file
+ * @notfound  Value to return in case of error
+ * @return    int
+*/
+int bh_component_config_lookup_int(const bh_component *component,
+                                   const char* key, int notfound)
+{
+    char dictkey[BH_COMPONENT_NAME_SIZE];
+    snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
+    return iniparser_getint(component->config, dictkey, notfound);
+}
+
+/*
+ * @brief     Lookup a keys value in the config fil converted to a double
+ * @component The component.
+ * @key       The key to lookup in the config file
+ * @notfound  Value to return in case of error
+ * @return    double
+*/
+double bh_component_config_lookup_double(const bh_component *component,
+                                         const char* key, double notfound)
+{
+    char dictkey[BH_COMPONENT_NAME_SIZE];
+    snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
+    return iniparser_getdouble(component->config, dictkey, notfound);
+}

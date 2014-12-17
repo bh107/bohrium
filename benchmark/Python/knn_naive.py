@@ -1,3 +1,4 @@
+from __future__ import print_function
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -26,7 +27,7 @@ def data_image(B, N, F):
         x       = np.array([[0],[250],[0]])
         return data, x
     except Exception as e:
-        print "Failed using image data-set, reverting to range. Err=[%s]" % e
+        print("Failed using image data-set, reverting to range. Err=[%s]"%e)
 
     return data_range(B, N, F)
 
@@ -47,7 +48,7 @@ def main():
 
     B.pprint()
     if B.verbose:
-        print sqd
+        print(sqd)
     if B.outputfn:
         B.tofile(B.outputfn, {'res': sqd})
 

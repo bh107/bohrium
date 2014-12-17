@@ -21,13 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_MEM_SIGNAL_H
 #define __BH_MEM_SIGNAL_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 #include <sys/mman.h>
 #include <signal.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** Init arrays and signal handler
  *

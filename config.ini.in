@@ -26,6 +26,7 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_cluster${CMAKE_SHARED_LIBRARY_SUFFI
 type = vem
 children = cpu
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node${CMAKE_SHARED_LIBRARY_SUFFIX}
+timing = false
 
 #
 # Engines
@@ -42,9 +43,21 @@ libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul${CMAKE_SHARED_LIBRARY_SUFFIX},${
 
 [gpu]
 type = ve
-include = ${CMAKE_INSTALL_PREFIX}/share/bohrium/include
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
+include = ${CMAKE_INSTALL_PREFIX}/share/bohrium/include
+# Aditional options (string) given to the opencl compiler. See documentation for clBuildProgram
+#compiler_options = "-cl-opt-disable"
+work_goup_size_1dx = 128
+work_goup_size_2dx = 32
+work_goup_size_2dy = 4
+work_goup_size_3dx = 32
+work_goup_size_3dy = 2
+work_goup_size_3dz = 2
+# kernel = {[both],fixed,dynamic}
+kernel = both
+# compile = {[async],sync}
+compile = async
 children = cpu
 
 #

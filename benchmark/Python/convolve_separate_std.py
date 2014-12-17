@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from __future__ import print_function
 import sys
 from numpy.linalg import svd
 import util
@@ -162,7 +161,7 @@ def main():
         vectical_vector     = np.array(vectical_vector)
         input = np.array(input)
 
-    print 'Convolve: %sx%s data with %sx%s filter'% (input_size, input_size, filter_size, filter_size)
+    print('Convolve: %sx%s data with %sx%s filter'% (input_size, input_size, filter_size, filter_size))
 
     B.start()
     result = convolve2d_seperate(input, (horizontal_vector, vectical_vector))

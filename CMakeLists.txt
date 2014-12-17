@@ -31,21 +31,16 @@ message(STATUS "Benchmark-dir: ${BENCHMARKS_DIR}")
 
 #Set global compile flags TODO: support other compilers
 if(USE_CXX98)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98 -Wall")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -Wall")
 endif()
 
-#Some of the modules needs Python in order to build
-set(PYTHON "auto" CACHE STRING "The Python interpreter to use. 'auto' is default")
-if(NOT (${PYTHON} STREQUAL "auto"))
-    set(PYTHON_EXECUTABLE ${PYTHON})
-    message(STATUS "User-defined Python Interpreter: ${PYTHON}")
-endif()
 #External dependencies
 find_package(PythonInterp)
 set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming Language" URL "www.python.org")
 set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Python is required to build Bohrium")
+message(STATUS "Python found: ${PYTHON_EXECUTABLE}")
 
 # The CPU VE (and possibly other modules) requires Boost
 find_package(Boost REQUIRED)
@@ -72,11 +67,14 @@ add_subdirectory(bridge/NumCIL)
 if(NOT USE_CXX98)
     add_subdirectory(bridge/cpp)
     add_subdirectory(bridge/c)
-    add_subdirectory(bridge/bhpy)
+    add_subdirectory(bridge/npbackend)
     add_subdirectory(bridge/cil)
 endif()
 
-install(DIRECTORY thirdparty/Random123-1.08/include/Random123 DESTINATION share/bohrium/include COMPONENT bohrium)
+install(DIRECTORY thirdparty/Random123-1.08/include/Random123
+        DESTINATION share/bohrium/include COMPONENT bohrium)
+install(DIRECTORY test DESTINATION share/bohrium COMPONENT bohrium)
+install(DIRECTORY benchmark DESTINATION share/bohrium COMPONENT bohrium)
 
 # Select the approriate compiler string
 if (APPLE)
@@ -88,8 +86,8 @@ endif()
 #Install the config file, which depends on global or local installation
 configure_file(config.ini.in config.ini)
 string(REGEX MATCH "^/home/" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})
-if(${ROOT_INSTALL})
-    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc COMPONENT bohrium)
+if ("${ROOT_INSTALL}" STREQUAL "")
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
 else()
     install(CODE "
     IF(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")

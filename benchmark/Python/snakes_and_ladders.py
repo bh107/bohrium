@@ -1,10 +1,10 @@
 # By  Natalino Busa <https://gist.github.com/natalinobusa/4633275>
+from __future__ import print_function
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
 else:
     import numpy as np
-from matplotlib import pyplot
 
 """
 #
@@ -53,6 +53,9 @@ def main():
     B           = util.Benchmark()
     size        = B.size[0]
     iterations  = B.size[1]
+
+    if B.visualize:
+        from matplotlib import pyplot
 
     if B.inputfn:
         arrays = B.load_arrays(B.inputfn)
@@ -103,7 +106,7 @@ def main():
         pyplot.show()
 
     if B.verbose:
-        print pr_end
+        print(pr_end)
 
     if B.outputfn:
         B.tofile(B.outputfn, {'res': pr_end})

@@ -37,7 +37,56 @@ If not, see <http://www.gnu.org/licenses/>.
 
 ResourceManager::ResourceManager(bh_component* _component) 
     : component(_component)
+    , _fixedSizeKernel(true)
+    , _dynamicSizeKernel(true)
+    , _asyncCompile(true)
+
 {
+    char* dir = bh_component_config_lookup(component, "include");
+    if (dir == NULL)
+        compilerOptions = std::string("-I/opt/bohrium/gpu/include");
+    else
+        compilerOptions = std::string("-I") + std::string(dir);
+
+    char* compiler_options = bh_component_config_lookup(component, "compiler_options");
+    if (compiler_options != NULL)
+    {
+        compilerOptions += std::string(" ") + std::string(compiler_options);
+        std::cout << "[Info] [GPU] Compiler options: " << compiler_options << std::endl;
+
+    }
+    char* kernel_type = bh_component_config_lookup(component, "kernel");
+    if (kernel_type != NULL)
+    {
+        std::string kernelType(kernel_type);
+        if (kernelType.find("fixed") != std::string::npos)
+            _dynamicSizeKernel = false;
+        if (kernelType.find("dynamic") != std::string::npos)
+            _fixedSizeKernel = false;
+    }
+    std::cout << "[Info] [GPU] Kernel type: " <<
+        (_dynamicSizeKernel&&_fixedSizeKernel?"both":(_dynamicSizeKernel?"dynamic":"fixed")) << std::endl;
+
+    char* compile_type = bh_component_config_lookup(component, "compile");
+    if (compile_type != NULL)
+    {
+        std::string compileType(compile_type);
+        if (compileType.find("sync") != std::string::npos && compileType.find("async") == std::string::npos)
+            _asyncCompile = false;
+    }
+    std::cout << "[Info] [GPU] Compile type: " << (_asyncCompile?"async.":"sync.") << std::endl;
+
+    localShape1D.push_back(bh_component_config_lookup_int(component, "work_goup_size_1dx",128));
+    localShape2D.push_back(bh_component_config_lookup_int(component, "work_goup_size_2dx",32));
+    localShape2D.push_back(bh_component_config_lookup_int(component, "work_goup_size_2dy",4));
+    localShape3D.push_back(bh_component_config_lookup_int(component, "work_goup_size_3dx",32));
+    localShape3D.push_back(bh_component_config_lookup_int(component, "work_goup_size_3dy",2));
+    localShape3D.push_back(bh_component_config_lookup_int(component, "work_goup_size_3dz",2));
+
+    std::cout << "[Info] [GPU] Work group sizes: 1D[" << localShape1D[0] << "], 2D[" <<
+        localShape2D[0] << ", " << localShape2D[1] << "], 3D[" << localShape3D[0] <<
+        ", " << localShape3D[1] << ", " << localShape3D[2] << "]" << std::endl;
+
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
     bool foundPlatform = false;
@@ -92,7 +141,6 @@ ResourceManager::ResourceManager(bh_component* _component)
     } else {
         intpType_ = OCL_INT32;
     }
-    calcLocalShape();
     registerExtensions(extensions);
 
 #ifdef BH_TIMING
@@ -113,11 +161,6 @@ OCLtype ResourceManager::intpType()
 #ifdef BH_TIMING
 ResourceManager::~ResourceManager()
 {
-#ifdef STATIC_KERNEL
-    std::cout << "---------------- STATS: STATIC_KERNEL -------------------" << std::endl;
-#else
-    std::cout << "---------------- STATS: DYNAMIC_KERNEL ------------------" << std::endl;
-#endif
     delete batchBuild;
     delete codeGen;
     delete kernelGen;
@@ -127,44 +170,10 @@ ResourceManager::~ResourceManager()
 }
 #endif
 
-
-void ResourceManager::calcLocalShape()
-{
-    // Calculate "sane" localShapes
-    size_t lsx = STD_MIN(256UL,maxWorkItemSizes[0]);
-#ifdef DEBUG
-    std::cout << "ResourceManager.localShape1D[" << lsx << "]" << std::endl;
-#endif
-    localShape1D.push_back(lsx);
-    lsx = STD_MIN(32UL,maxWorkItemSizes[0]);
-    size_t lsy = STD_MIN(maxWorkGroupSize/lsx,maxWorkItemSizes[1]);
-    lsy /= 2;
-#ifdef DEBUG
-    std::cout << "ResourceManager.localShape2D[" << lsx << ", " << lsy << "]" << std::endl;
-#endif
-    localShape2D.push_back(lsx);
-    localShape2D.push_back(lsy);
-    lsx = STD_MIN(16UL,maxWorkItemSizes[0]);
-    lsy = 1;
-    while(lsy < std::sqrt((float)(maxWorkGroupSize/lsx)))
-        lsy <<= 1;
-    lsy = STD_MIN(lsy,maxWorkItemSizes[1]);
-    size_t lsz = STD_MIN(maxWorkGroupSize/(lsx*lsy),maxWorkItemSizes[2]); 
-    lsz /= 2;
-#ifdef DEBUG
-    std::cout << "ResourceManager.localShape3D[" << lsx << ", " << lsy << ", " << lsz << "]" << std::endl;
-#endif
-    localShape3D.push_back(lsx);
-    localShape3D.push_back(lsy);
-    localShape3D.push_back(lsz);
-}
-
 void ResourceManager::registerExtensions(std::vector<std::string> extensions)
 {
-    float16 = extensions[0].find("cl_khr_fp16") != std::string::npos;
     float64 = extensions[0].find("cl_khr_fp64") != std::string::npos;
 #ifdef DEBUG
-    std::cout << "ResourceManager.float16 = " << float16 << std::endl;
     std::cout << "ResourceManager.float64 = " << float64 << std::endl;
 #endif
 }
@@ -233,13 +242,15 @@ cl::Event ResourceManager::completeEvent()
 }
 
 cl::Kernel ResourceManager::createKernel(const std::string& source, 
-                                          const std::string& kernelName)
+                                         const std::string& kernelName,
+                                         const std::string& options)
 {
-    return createKernels(source, std::vector<std::string>(1,kernelName)).front();
+    return createKernels(source, std::vector<std::string>(1,kernelName), options).front();
 }
 
 std::vector<cl::Kernel> ResourceManager::createKernelsFromFile(const std::string& fileName, 
-                                                               const std::vector<std::string>& kernelNames)
+                                                               const std::vector<std::string>& kernelNames,
+                                                               const std::string& options)
 {
     std::ifstream file(fileName.c_str(), std::ios::in);
     if (!file.is_open())
@@ -248,18 +259,21 @@ std::vector<cl::Kernel> ResourceManager::createKernelsFromFile(const std::string
     }
     std::ostringstream source;
     source << file.rdbuf();
-    return createKernels(source.str(), kernelNames);
+    return createKernels(source.str(), kernelNames, options);
 }
 
 std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source, 
-                                                       const std::vector<std::string>& kernelNames)
+                                                       const std::vector<std::string>& kernelNames,
+                                                       const std::string& options)
 {
 #ifdef BH_TIMING
     bh_uint64 start = bh::Timer<>::stamp(); 
 #endif
-
+    std::string compilerOptions(this->compilerOptions);
+    compilerOptions += std::string(" ") + options;
 #ifdef DEBUG
     std::cout << "Program build :\n";
+    std::cout << "Options :" << compilerOptions << "\n";
     std::cout << "------------------- SOURCE -----------------------\n";
     std::cout << source;
     std::cout << "------------------ SOURCE END --------------------" << std::endl;
@@ -267,10 +281,11 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
     cl::Program::Sources sources(1,std::make_pair(source.c_str(),source.size()));
     cl::Program program(context, sources);
     try {
-        program.build(devices,getIncludeStr().c_str());
+        program.build(devices,(compilerOptions).c_str());
     } catch (cl::Error) {
 //#ifdef DEBUG
         std::cerr << "Program build error:\n";
+        std::cout << "Options :" << compilerOptions << "\n";
         std::cerr << "------------------- SOURCE -----------------------\n";
         std::cerr << source;
         std::cerr << "------------------ SOURCE END --------------------\n";
@@ -332,14 +347,24 @@ std::vector<size_t> ResourceManager::localShape(const std::vector<size_t>& globa
     }
 }
 
-bool ResourceManager::float16support()
-{
-    return float16;
-}
-
-bool ResourceManager::float64support()
+bool ResourceManager::float64support() const
 {
     return float64;
+}
+
+bool ResourceManager::fixedSizeKernel() const
+{
+    return _fixedSizeKernel;
+}
+
+bool ResourceManager::dynamicSizeKernel() const
+{
+    return _dynamicSizeKernel;
+}
+ 
+bool ResourceManager::asyncCompile() const
+{
+    return _asyncCompile;
 }
 
 #ifdef BH_TIMING
@@ -352,14 +377,6 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl::Event event, cl_int eventSta
                 event.getProfilingInfo<CL_PROFILING_COMMAND_END>()});
 }
 #endif
-
-std::string ResourceManager::getIncludeStr()
-{
-    char* dir = bh_component_config_lookup(component, "include");
-    if (dir == NULL)
-        return std::string("/opt/bohrium/gpu/include");
-    return std::string("-I") + std::string(dir);
-}
 
 bh_error ResourceManager::childExecute(bh_ir* bhir)
 {

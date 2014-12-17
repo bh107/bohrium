@@ -11,10 +11,10 @@ class test_accumulate(numpytest):
         for v in gen_views(4,8,6,min_ndim=1):
             a = {}
             self.axis = 0
-            exec v
+            exec(v)
             yield (a,v)
-            for axis in xrange(1,a[0].ndim):
-                exec v
+            for axis in range(1,a[0].ndim):
+                exec(v)
                 self.axis = axis
                 yield (a,v)
 
@@ -23,7 +23,7 @@ class test_accumulate(numpytest):
             cmd = "res = bh.add.accumulate(a[0],axis=%d)"%self.axis
         else:
             cmd = "res = bh.add.accumulate(a[0],axis=%d)"%self.axis
-        exec cmd
+        exec(cmd)
         return (res,cmd)
 
     def test_cumprod(self,a):
@@ -31,6 +31,6 @@ class test_accumulate(numpytest):
             cmd = "res = bh.multiply.accumulate(a[0],axis=%d)"%self.axis
         else:
             cmd = "res = np.multiply.accumulate(a[0],axis=%d)"%self.axis
-        exec cmd
+        exec(cmd)
         return (res,cmd)
 

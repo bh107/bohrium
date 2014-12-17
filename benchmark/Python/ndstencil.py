@@ -1,5 +1,5 @@
+from __future__ import print_function
 import itertools as it
-
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -43,6 +43,8 @@ def solve(world, I):
     FAC = 1.0/len(stencil)
     for _ in xrange(I):
         stencil[len(stencil)/2][:] = sum(stencil)*FAC
+        if util.Benchmark().bohrium:
+            np.flush()
 
     return world
 
@@ -56,7 +58,7 @@ def main():
         world = B.load_array()
     else:
         world = np.array(np.random.random(shape(D, size)), dtype=B.dtype)
-    
+
     if B.dumpinput:
         B.dump_arrays("ndstencil", {'input': world})
 
@@ -65,9 +67,9 @@ def main():
     B.stop()
     B.pprint()
     if B.verbose:
-        print "Solving",D, "dimensional",world.shape,"problem with",     \
+        print( "Solving",D, "dimensional",world.shape,"problem with",     \
                len([i for i in it.product([None,None,None], repeat=D)]), \
-               "point stencil."
+               "point stencil.")
     if B.outputfn:
         B.tofile(B.outputfn, {'res': R})
 

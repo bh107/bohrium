@@ -1,3 +1,4 @@
+from __future__ import print_function
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -19,6 +20,9 @@ def main():
 
     B.start()
     (l, u) = la.lu(a)
+    if util.Benchmark().bohrium:
+        l.copy2numpy()
+        u.copy2numpy()
     B.stop()
 
     B.pprint()

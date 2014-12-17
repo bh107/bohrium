@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <bh.h>
 #include <set>
+#define BH_TIMING_SUM
 #include <bh_timing.hpp>
 
 #include "bh_vem_node.h"
@@ -40,10 +41,7 @@ static std::set<bh_base*> allocated_bases;
 //The timing ID for executions
 static bh_intp exec_timing;
 
-#ifdef BH_TIMING
-    //Number of elements executed
-    static bh_intp total_execution_size = 0;
-#endif
+static int timing;
 
 /* Component interface: init (see bh_component.h) */
 bh_error bh_vem_node_init(const char* name)
@@ -53,6 +51,8 @@ bh_error bh_vem_node_init(const char* name)
     if((err = bh_component_init(&vem_node_myself, name)) != BH_SUCCESS)
         return err;
 
+    timing = bh_component_config_lookup_bool(&vem_node_myself, "timing", 0);
+    
     //For now, we have one child exactly
     if(vem_node_myself.nchildren != 1)
     {
@@ -65,7 +65,8 @@ bh_error bh_vem_node_init(const char* name)
     if((err = child->init(child->name)) != 0)
         return err;
 
-    exec_timing = bh_timer_new("node-execution");
+    if (timing)
+        exec_timing = bh_timer_new("[Node] Execution");
 
     return BH_SUCCESS;
 }
@@ -94,11 +95,8 @@ bh_error bh_vem_node_shutdown(void)
             }
         }
     }
-    bh_timer_finalize(exec_timing);
-
-    #ifdef BH_TIMING
-        printf("Number of elements executed: %ld\n", total_execution_size);
-    #endif
+    if (timing)
+        bh_timer_finalize(exec_timing);
 
     return err;
 }
@@ -122,14 +120,6 @@ static bh_error inspect(bh_instruction *instr)
             allocated_bases.insert(operands[o].base);
     }
 
-    #ifdef BH_TIMING
-        if(operands[nop-1] != NULL)
-        {
-            bh_view *a = operands[nop-1];
-            total_execution_size += bh_nelements(a->ndim, a->shape);
-        }
-    #endif
-
     //And remove discared arrays
     if(instr->opcode == BH_DISCARD)
     {
@@ -146,14 +136,17 @@ static bh_error inspect(bh_instruction *instr)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_vem_node_execute(bh_ir* bhir)
 {
-    bh_uint64 start = bh_timer_stamp();
+    bh_uint64 start;
+    if (timing)
+        start = bh_timer_stamp();
 
     //Inspect the BhIR for new base arrays starting at the root DAG
     bh_ir_map_instr(bhir, &bhir->dag_list[0], &inspect);
 
     bh_error ret = child->execute(bhir);
-
-    bh_timer_add(exec_timing, start, bh_timer_stamp());
+    
+    if (timing)
+        bh_timer_add(exec_timing, start, bh_timer_stamp());
 
     return ret;
 }

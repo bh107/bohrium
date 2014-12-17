@@ -56,9 +56,6 @@ Scalar::Scalar(bh_constant constant)
     case BH_UINT64:
         value.ul = constant.value.uint64;
         break;
-    // case BH_FLOAT16:
-    //     value.h = constant.value.float16;
-    //     break;
     case BH_FLOAT32:
         value.f = constant.value.float32;
         break;
@@ -116,9 +113,6 @@ Scalar::Scalar(bh_base* spec)
     case BH_UINT64:
         value.ul = *(bh_uint64*)spec->data;
         break;
-    // case BH_FLOAT16:
-    //     value.h = *(bh_float16*)spec->data;
-    //     break;
     case BH_FLOAT32:
         value.f = *(bh_float32*)spec->data;
         break;
@@ -163,11 +157,55 @@ OCLtype Scalar::type() const
 
 void Scalar::printOn(std::ostream& os) const
 {
-    os << "const " << oclTypeStr(mytype)
-#ifdef DEBUG
-       << "/*" << value.i << "*/"
-#endif
-        ;
+    os << "const " << oclTypeStr(mytype);
+}
+
+void Scalar::printValueOn(std::ostream& os) const
+{
+    switch(mytype)
+    {
+        case OCL_INT8:
+            os <<  value.c;
+            break;
+        case OCL_INT16:
+            os << value.s;
+            break;
+        case OCL_INT32:
+            os << value.i;
+            break;
+        case OCL_INT64:
+            os << value.l << "l";
+            break;
+        case OCL_UINT8:
+            os << value.uc << "u";
+            break;
+        case OCL_UINT16:
+            os << value.us << "u";
+            break;
+        case OCL_UINT32:
+            os << value.ui << "u";
+            break;
+        case OCL_UINT64:
+            os <<  value.ul << "ul";
+            break;
+        case OCL_FLOAT32:
+            os << value.f << "f";
+            break;
+        case OCL_FLOAT64:
+            os << value.d;
+            break;
+        case OCL_COMPLEX64:
+            os << "(float2)(" << value.fcx.s0 << "f, " << value.fcx.s1 << "f)";
+            break;
+        case OCL_COMPLEX128:
+            os << "(double2)(" << value.dcx.s0 << ", " << value.dcx.s1 << ")";
+            break;
+        case OCL_R123:
+            os << "(ulong2)(" << value.r123.s0 << "ul, " << value.r123.s1 << "ul)" ;
+            break;
+        default:
+            assert(false);
+    }
 }
 
 void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
@@ -175,54 +213,58 @@ void Scalar::addToKernel(cl::Kernel& kernel, unsigned int argIndex)
     try {
         switch(mytype)
         {
-        case OCL_INT8:
-            kernel.setArg(argIndex, value.c);
-            break;
-        case OCL_INT16:
-            kernel.setArg(argIndex, value.s);
-            break;
-        case OCL_INT32:
-            kernel.setArg(argIndex, value.i);
-            break;
-        case OCL_INT64:
-            kernel.setArg(argIndex, value.l);
-            break;
-        case OCL_UINT8:
-            kernel.setArg(argIndex, value.uc);
-            break;
-        case OCL_UINT16:
-            kernel.setArg(argIndex, value.us);
-            break;
-        case OCL_UINT32:
-            kernel.setArg(argIndex, value.ui);
-            break;
-        case OCL_UINT64:
-            kernel.setArg(argIndex, value.ul);
-            break;
-            // case OCL_FLOAT16:
-            //     kernel.setArg(argIndex, value.h);
-            //     break;
-        case OCL_FLOAT32:
-            kernel.setArg(argIndex, value.f);
-            break;
-        case OCL_FLOAT64:
-            kernel.setArg(argIndex, value.d);
-            break;
-        case OCL_COMPLEX64:
-            kernel.setArg(argIndex, value.fcx);
-            break;
-        case OCL_COMPLEX128:
-            kernel.setArg(argIndex, value.dcx);
-            break;
-        case OCL_R123:
-            kernel.setArg(argIndex, value.r123);
-            break;
-        default:
-            assert(false);
-        }    
+            case OCL_INT8:
+                kernel.setArg(argIndex, value.c);
+                break;
+            case OCL_INT16:
+                kernel.setArg(argIndex, value.s);
+                break;
+            case OCL_INT32:
+                kernel.setArg(argIndex, value.i);
+                break;
+            case OCL_INT64:
+                kernel.setArg(argIndex, value.l);
+                break;
+            case OCL_UINT8:
+                kernel.setArg(argIndex, value.uc);
+                break;
+            case OCL_UINT16:
+                kernel.setArg(argIndex, value.us);
+                break;
+            case OCL_UINT32:
+                kernel.setArg(argIndex, value.ui);
+                break;
+            case OCL_UINT64:
+                kernel.setArg(argIndex, value.ul);
+                break;
+            case OCL_FLOAT32:
+                kernel.setArg(argIndex, value.f);
+                break;
+            case OCL_FLOAT64:
+                kernel.setArg(argIndex, value.d);
+                break;
+            case OCL_COMPLEX64:
+                kernel.setArg(argIndex, value.fcx);
+                break;
+            case OCL_COMPLEX128:
+                kernel.setArg(argIndex, value.dcx);
+                break;
+            case OCL_R123:
+                kernel.setArg(argIndex, value.r123);
+                break;
+            default:
+                assert(false);
+        }
     } catch (cl::Error err)
     {
-        std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
+        std::cerr << "ERROR Setting Scalar kernel arg(" << argIndex << "): " << err.what() << "(" << 
+            err.err() << ")" << std::endl;
         throw err;
     }
+}
+
+std::ostream& operator<<= (std::ostream& os, Scalar const& s)
+{
+    s.printValueOn(os);
+    return os;
 }

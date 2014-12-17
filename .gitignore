@@ -11,6 +11,7 @@
 *.orig
 *.swp
 bridge/bhpy/examples/*.py
+bridge/npbackend/examples/*.py
 *~
 *.obj
 .DS_Store
@@ -23,6 +24,7 @@ bridge/bhpy/examples/*.py
 *.suo
 *.gen
 *.log
+*.idea
 doc/doxygen
 doc/build
 doc/source/users/pythonnumpygen

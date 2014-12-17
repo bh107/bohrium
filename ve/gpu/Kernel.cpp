@@ -24,43 +24,34 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include "Kernel.hpp"
 
-Kernel::Kernel(ResourceManager* resourceManager_, 
-               bh_intp ndim_,
-               const std::string& source, 
-               const std::string& name)
-    : resourceManager(resourceManager_)
-    , ndim(ndim_)
+Kernel::Kernel(const std::string& source, 
+               const std::string& name,
+               const std::string& options)
 {
-    assert(ndim > 0);
-    kernel = resourceManager->createKernel(source , name);
+    kernel = resourceManager->createKernel(source, name, options);
 }
 
-Kernel::Kernel(ResourceManager* resourceManager_, bh_intp ndim_, cl::Kernel kernel_)
-    : resourceManager(resourceManager_)
-    , ndim(ndim_)
-    , kernel(kernel_) {}
+Kernel::Kernel(cl::Kernel kernel_)
+    : kernel(kernel_) {}
 
 
 
-std::vector<Kernel> Kernel::createKernels(ResourceManager* resourceManager, 
-                                          const std::vector<bh_intp> ndims,
-                                          const std::string& source, 
-                                          const std::vector<std::string>& kernelNames)
+std::vector<Kernel> Kernel::createKernels(const std::string& source, 
+                                          const std::vector<std::string>& kernelNames,
+                                          const std::string& options)
 {
-    assert(ndims.size() == kernelNames.size());
-    std::vector<cl::Kernel> clKernels = resourceManager->createKernels(source, kernelNames);
+    std::vector<cl::Kernel> clKernels = resourceManager->createKernels(source, kernelNames, options);
     std::vector<Kernel> kernels;
     for (size_t i = 0; i < clKernels.size(); ++i)
     {
-        kernels.push_back(Kernel(resourceManager, ndims[i], clKernels[i]));
+        kernels.push_back(Kernel(clKernels[i]));
     }
     return kernels;
 }
  
-std::vector<Kernel> Kernel::createKernelsFromFile(ResourceManager* resourceManager, 
-                                                  const std::vector<bh_intp> ndims,
-                                                  const std::string& fileName, 
-                                                  const std::vector<std::string>& kernelNames)
+std::vector<Kernel> Kernel::createKernelsFromFile(const std::string& fileName, 
+                                                  const std::vector<std::string>& kernelNames,
+                                                  const std::string& options)
 {
     std::ifstream file(fileName.c_str(), std::ios::in);
     if (!file.is_open())
@@ -69,21 +60,21 @@ std::vector<Kernel> Kernel::createKernelsFromFile(ResourceManager* resourceManag
     }
     std::ostringstream source;
     source << file.rdbuf();
-    return createKernels(resourceManager, ndims, source.str(), kernelNames);
+    return createKernels(source.str(), kernelNames, options);
 }
 
 
-void Kernel::call(Parameters& parameters,
-                  const std::vector<size_t>& globalShape)
+void Kernel::call(Parameters parameters,
+                  const std::vector<size_t> globalShape)
 {
     call(parameters, globalShape, resourceManager->localShape(globalShape));
 }
 
-void Kernel::call(Parameters& parameters,
-                  const std::vector<size_t>& globalShape,
-                  const std::vector<size_t>& localShape)
+void Kernel::call(Parameters parameters,
+                  const std::vector<size_t> globalShape,
+                  const std::vector<size_t> localShape)
 {
-    assert(globalShape.size() ==  (size_t)ndim && localShape.size() == (size_t)ndim);
+    assert(globalShape.size() ==  localShape.size());
     unsigned int device = 0;
     cl::NDRange globalSize, localSize;
     int rem0, rem1, rem2;

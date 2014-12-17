@@ -7,7 +7,6 @@ set_package_properties(OpenCL PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the G
 
 if(OPENCL_FOUND)
 #    add_definitions("-DBH_TIMING_SUM")
-#    add_definitions("-DSTATIC_KERNEL")
 #    add_definitions("-DDEBUG")
 
     include_directories(../../include)

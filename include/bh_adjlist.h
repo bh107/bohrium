@@ -77,7 +77,7 @@ typedef struct
 DLLEXPORT void bh_adjlist_create_from_instr(bh_adjlist &adjlist, bh_intp ninstr,
                                             const bh_instruction instr_list[]);
 
-/* Fills the dag_list in the ‘bhir’ based on the adjacency list ‘adjlist’
+/* Fills the dag_list in the 'bhir' based on the adjacency list 'adjlist'
  * and the instruction list in the bhir.
  * NB: The dag_list within the bhir should be uninitialized (NULL).
  *
@@ -89,7 +89,7 @@ DLLEXPORT void bh_adjlist_fill_bhir(const bh_adjlist &adjlist, bh_ir *bhir);
 
 /* Pretty Print the adjlist
  *
- * @adjmat  The adjacency list in question 
+ * @adjmat  The adjacency list in question
 */
 DLLEXPORT void bh_adjlist_pprint(const bh_adjlist &adjlist);
 

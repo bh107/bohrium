@@ -1,3 +1,4 @@
+from __future__ import print_function
 #!/usr/bin/python
 import argparse
 import pprint
@@ -40,7 +41,7 @@ class Benchmark:
             'size',         'dtype',
             'inputfn',      'dumpinput',
             'outputfn'
-            'backend',      'bohrium',
+            'target',      'bohrium',
             'no_extmethods',
             'visualize',    'verbose',
         ]
@@ -52,7 +53,7 @@ class Benchmark:
         # command-line. When either directly or indirectly imported
         # we cant.
         owns_main = __name__ == "__main__"
-        
+
         p.add_argument('--size',
                        help = "Tell the script the size of the data to work on."
         )
@@ -74,12 +75,13 @@ class Benchmark:
         p.add_argument('--outputfn',
                        help     = "Output file to store results in."
         )
-        
+
         g2 = p.add_mutually_exclusive_group()
-        g2.add_argument('--backend',
-                       choices  = ['None', 'NumPy', 'Bohrium'],
+        g2.add_argument('--target',
+                       choices  = ['None', 'numpy', 'bhc',
+                                   'numexpr', 'pygpu', 'chapel'],
                        default  = "None",
-                       help     = "Enable npbackend using the specified backend."
+                       help     = "Enable npbackend using the specified target."
                                   " Disable npbackend using None."
                                   " (default: %(default)s)"
         )
@@ -87,8 +89,8 @@ class Benchmark:
                        choices  = [True, False],
                        default  = False,
                        type     = t_or_f,
-                       help     = "Same as --backend=bohrium which means:"
-                                  " enable npbackend using bohrium."
+                       help     = "Same as --target=bhc which means:"
+                                  " enable npbackend using Bohrium."
                                   " (default: %(default)s)"
         )
         p.add_argument('--no-extmethods',
@@ -119,13 +121,17 @@ class Benchmark:
         self.inputfn    = args.inputfn
         self.outputfn   = args.outputfn
 
-        # Unify the options: 'backend' and 'bohrium'
-        if args.bohrium or args.backend.lower() == 'bohrium':
-            self.backend    = "bohrium"
-            self.bohrium    = True
+        # Unify the options: 'target' and 'bohrium'
+        if args.bohrium:
+            self.target = "bhc"
+            self.bohrium = True
+        elif args.target.lower() != 'none':
+            self.target = args.target
+            self.bohrium = True
         else:
-            self.backend = args.backend
+            self.target = args.target
             self.bohrium = args.bohrium
+
         self.no_extmethods = args.no_extmethods
 
         self.visualize  = args.visualize
@@ -145,7 +151,7 @@ class Benchmark:
         self.__elapsed = time.time() - self.__elapsed
 
     def tofile(self, filename, arrays):
-        
+
         for k in arrays:
             arrays[k] = bh.array(arrays[k], bohrium=False)
         np.savez(filename, **arrays)
@@ -153,7 +159,7 @@ class Benchmark:
     def dump_arrays(self, prefix, arrays):
         """
         Dumps a dict of arrays organized such as:
-            
+
         arrays = {'lbl1': array1, 'lbl2': array2}
 
         Into a file using the following naming convention:
@@ -177,7 +183,7 @@ class Benchmark:
             filename = self.inputfn
 
         npz = np.load(filename)
-        
+
         arrays  = {}            # Make sure arrays are in the correct space
         for k in npz:
             arrays[k] = bh.array(npz[k], bohrium=self.bohrium)
@@ -194,13 +200,13 @@ class Benchmark:
         return self.load_arrays(filename)[label]
 
     def pprint(self):
-        print "%s - backend: %s, bohrium: %s, size: %s, elapsed-time: %f" % (
+        print("%s - target: %s, bohrium: %s, size: %s, elapsed-time: %f" % (
                 self.__script,
-                self.backend,
+                self.target,
                 self.bohrium,
                 '*'.join([str(s) for s in self.size]),
                 self.__elapsed
-        )
+        ))
 
 def main():
     B = Benchmark()

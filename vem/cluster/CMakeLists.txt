@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 include_directories(../../include)
 
+if(NO_VEM_CLUSTER)
+    return()
+endif()
+
 #External dependencies
 find_package(MPI)
 set_package_properties(MPI PROPERTIES DESCRIPTION "Message Passing Interface" URL "www.mpi-forum.org")

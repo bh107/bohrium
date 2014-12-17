@@ -31,6 +31,8 @@ inline int omp_get_num_threads() { return 1; }
 #define CPU_MAXDIM 16
 #endif
 
+#define ARGS_DPTR(I) *(args[I]->data)
+
 // KERNEL-DESCRIPTION [
 //  MODE={{MODE}}, NINSTR={{NINSTR}}, NARGS={{NARGS}}
 //  SYMBOL_TEXT {{SYMBOL_TEXT}}
@@ -45,17 +47,17 @@ void KRN_{{SYMBOL}}(operand_t** args)
     // Argument {{NR}} - [{{#SCALAR}}SCALAR{{/SCALAR}}{{#SCALAR_CONST}}SCALAR_CONST{{/SCALAR_CONST}}{{#SCALAR_TEMP}}SCALAR_TEMP{{/SCALAR_TEMP}}{{#ARRAY}}ARRAY{{/ARRAY}}]
     //
     {{#SCALAR}}
-    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+    {{TYPE}} *a{{NR}}_first = ARGS_DPTR({{NR}});
     assert(a{{NR}}_first != NULL);
     {{/SCALAR}}
 
     {{#SCALAR_CONST}}
-    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+    {{TYPE}} *a{{NR}}_first = ARGS_DPTR({{NR}});
     assert(a{{NR}}_first != NULL);
     {{/SCALAR_CONST}}
 
     {{#ARRAY}}
-    {{TYPE}} *a{{NR}}_first = *(args[{{NR}}]->data);
+    {{TYPE}} *a{{NR}}_first = ARGS_DPTR({{NR}});
     assert(a{{NR}}_first != NULL);
     int64_t  a{{NR}}_start  = args[{{NR}}]->start;
     int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;

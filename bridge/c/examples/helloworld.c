@@ -32,8 +32,13 @@ void compute()
     output = bh_multi_array_float32_new_empty(2, shape);
     bh_multi_array_float32_add(output, a, b);
 
-    // Sync and grab data pointer
+    // Issue a sync instruction to ensure data is present in local memory space
     bh_multi_array_float32_sync(output);
+
+    // Execute all pending instructions, including the sync command
+    bh_runtime_flush();
+
+    // Grab the result data
     data = bh_multi_array_float32_get_base_data(bh_multi_array_float32_get_base(output));
 
     // Print out the result

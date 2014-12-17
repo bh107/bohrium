@@ -25,17 +25,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <bh.h>
 #include <bh_timing.hpp>
+#include "bh_ve_gpu.h"
 #include "InstructionBatch.hpp"
 #include "GenerateSourceCode.hpp"
 #include "Scalar.hpp"
+#include "StringHasher.hpp"
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
-
-InstructionBatch::KernelMap InstructionBatch::kernelMap = InstructionBatch::KernelMap();
 
 InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<KernelParameter*>& operands)
     : arraynum(0)
     , scalarnum(0)
-    , float16(false)
     , float64(false)
     , complex(false)
     , integer(false)
@@ -50,7 +49,7 @@ InstructionBatch::InstructionBatch(bh_instruction* inst, const std::vector<Kerne
 
 bool InstructionBatch::shapeMatch(bh_intp ndim,const bh_index dims[])
 {
-    int size = shape.size();
+    bh_intp size = shape.size();
     if (ndim == size)
     {
         for (int i = 0; i < ndim; ++i)
@@ -65,6 +64,8 @@ bool InstructionBatch::shapeMatch(bh_intp ndim,const bh_index dims[])
 
 void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParameter*>& operands)
 {
+    typedef std::pair<ArrayMap::iterator, ArrayMap::iterator> ArrayRange;
+
     assert(!isScalar(operands[0]));
 
     // Check that the shape matches
@@ -78,7 +79,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
         BaseArray* ba = dynamic_cast<BaseArray*>(operands[op]);
         if (ba) // not a scalar
         {
-            // If any operand's base is already used as output, it has to be alligned or disjoint
+            // If any operand's base is already used as output, it has to be aligned or disjoint
             ArrayRange orange = output.equal_range(ba);
             for (ArrayMap::iterator oit = orange.first ; oit != orange.second; ++oit)
             {
@@ -86,14 +87,14 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
                 {
                     // Same view so we use the ID for it
                     opids[op] = oit->second;
-                    load_store[op] = false; // Allready exists
+                    load_store[op] = false; // Already exists
                 } 
                 else if (!bh_view_disjoint(&views[oit->second], &inst->operand[op])) 
                 { 
                     throw BatchException(0);
                 }
             }
-            // If the output operand is allready used as input it has to be alligned or disjoint
+            // If the output operand is already used as input it has to be aligned or disjoint
             ArrayRange irange = input.equal_range(ba);
             for (ArrayMap::iterator iit = irange.first ; iit != irange.second; ++iit)
             {
@@ -170,9 +171,6 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             }
             switch (kp->type())
             {
-            case OCL_FLOAT16:
-                float16 = true;
-                break;
             case OCL_FLOAT64:
                 float64 = true;
                 break;
@@ -205,151 +203,142 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
     instructions.push_back(make_pair(inst, opids));
 }
 
-Kernel InstructionBatch::generateKernel(ResourceManager* resourceManager)
-{
-#ifdef BH_TIMING
-    bh_uint64 start = bh::Timer<>::stamp();
-#endif
-    std::string code = generateCode();
-#ifdef BH_TIMING
-    resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
-#endif
-    size_t codeHash = string_hasher(code);
-
-    KernelMap::iterator kit = kernelMap.find(codeHash);
-    if (kit == kernelMap.end())
-    {
-        std::stringstream source, kname;
-        kname << "kernel" << std::hex << codeHash;
-        if (float16)
-            source << "#pragma OPENCL EXTENSION cl_khr_fp16 : enable\n";
-        if (float64)
-            source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-        if (complex)
-            source << "#include <ocl_complex.h>\n";
-        if (integer)
-            source << "#include <ocl_integer.h>\n";
-        if (random)
-            source << "#include <ocl_random.h>\n";
-
-        source << "__kernel void " << kname.str() << code;
-        Kernel kernel(resourceManager, MIN(shape.size(),3), source.str(), kname.str());
-        kernelMap.insert(std::make_pair(codeHash, kernel));
-        return kernel;
-    } else {
-        return kit->second;
-    }
-}
-
-void InstructionBatch::run(ResourceManager* resourceManager)
+SourceKernelCall InstructionBatch::generateKernel()
 {
 #ifdef BH_TIMING
     resourceManager->batchBuild->add({createTime, bh::Timer<>::stamp()}); 
+    bh_uint64 start = bh::Timer<>::stamp();
 #endif
-
-    if (output.begin() != output.end())
+    // If there is no output we just skip execution
+    if (output.begin() == output.end())
     {
-#ifndef STATIC_KERNEL
-        for (int i = 0; i < shape.size(); ++i)
+        throw BatchException(1);
+    }
+    std::vector<KernelParameter*> sizeParameters;
+    std::stringstream defines;
+    std::stringstream functionDeclaration;
+    
+    functionDeclaration << "(";
+    Kernel::Parameters kernelParameters;
+    typedef std::map<std::string, KernelParameter*> ParameterList; 
+    ParameterList parameterList;
+    for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
+        parameterList.insert(std::make_pair(pit->second, pit->first));
+    for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
+    {
+        functionDeclaration << "\n\t" << (pit==parameterList.begin()?"  ":", ") << *pit->second << " " << 
+            pit->first;
+        if (output.find(dynamic_cast<BaseArray*>(pit->second)) == output.end())
+            kernelParameters.push_back(std::make_pair(pit->second, false));
+         else
+             kernelParameters.push_back(std::make_pair(pit->second, true));
+    }
+
+    functionDeclaration << "\n#ifndef FIXED_SIZE";
+    
+    for (size_t i = 0; i < shape.size(); ++i)
+    {
+        std::stringstream ss;
+        ss << "ds" << shape.size() -(i+1);
+        Scalar* s = new Scalar(shape[i]);
+        (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+        sizeParameters.push_back(s);
+        functionDeclaration << "\n\t, " << *s << " " << ss.str();
+    }
+
+    ViewList inputList, outputList, viewList;
+    for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
+    {
+        inputList.insert(std::make_pair(iit->second, iit->first));
+        viewList.insert(std::make_pair(iit->second, iit->first));
+    }
+    for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
+    {
+        outputList.insert(std::make_pair(oit->second, oit->first));
+        viewList.insert(std::make_pair(oit->second, oit->first));
+    }
+    for (ViewList::iterator vit = viewList.begin(); vit != viewList.end(); ++vit)
+    {
         {
             std::stringstream ss;
-            ss << "ds" << shape.size() -(i+1);
-            parameterList.insert(std::make_pair(ss.str(), new Scalar(shape[i])));
+            ss << "v" << vit->first << "s0";
+            Scalar* s = new Scalar(views[vit->first].start);
+            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+            sizeParameters.push_back(s);
+            functionDeclaration << "\n\t, " << *s << " " << ss.str();
         }
-#endif
-        for (ArrayMap::iterator iit = input.begin(); iit != input.end(); ++iit)
+        bh_intp vndim = views[vit->first].ndim;
+        for (bh_intp d = 0; d < vndim; ++d)
         {
-#ifndef STATIC_KERNEL
-            {
-                std::stringstream ss;
-                ss << "v" << iit->second << "s0";
-                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[iit->second].start)));
-            }
-            bh_intp vndim = views[iit->second].ndim;
-            for (bh_intp d = 0; d < vndim; ++d)
-            {
-                std::stringstream ss;
-                ss << "v" << iit->second << "s" << vndim-d;
-                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[iit->second].stride[d])));
-            }
-#endif
-            inputList.insert(std::make_pair(iit->second, iit->first));
+            std::stringstream ss;
+            ss << "v" << vit->first << "s" << vndim-d;
+            Scalar* s = new Scalar(views[vit->first].stride[d]);
+            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+            sizeParameters.push_back(s);
+            functionDeclaration << "\n\t, " << *s << " " << ss.str();
         }
-        for (ArrayMap::iterator oit = output.begin(); oit != output.end(); ++oit)
-        {
-#ifndef STATIC_KERNEL
-            {
-                std::stringstream ss;
-                ss << "v" << oit->second << "s0";
-                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[oit->second].start)));
-            }
-            bh_intp vndim = views[oit->second].ndim;
-            for (bh_intp d = 0; d < vndim; ++d)
-            {
-                std::stringstream ss;
-                ss << "v" << oit->second << "s" << vndim-d;
-                parameterList.insert(std::make_pair(ss.str(), new Scalar(views[oit->second].stride[d])));
-            }
-#endif
-            outputList.insert(std::make_pair(oit->second, oit->first));
-        }
-        for (ParameterMap::iterator pit = parameters.begin(); pit != parameters.end(); ++pit)
-            parameterList.insert(std::make_pair(pit->second, pit->first));
-        Kernel kernel = generateKernel(resourceManager);
-        Kernel::Parameters kernelParameters;
-        for (ParameterList::iterator pit = parameterList.begin(); pit != parameterList.end(); ++pit)
-        {
-            if (output.find(dynamic_cast<BaseArray*>(pit->second)) == output.end())
-                kernelParameters.push_back(std::make_pair(pit->second, false));
-            else
-                kernelParameters.push_back(std::make_pair(pit->second, true));
-        }
-        std::vector<size_t> globalShape;
-        for (int i = shape.size()-1; i>=0 && shape.size()-i < 4; --i)
-            globalShape.push_back(shape[i]);
-        kernel.call(kernelParameters, globalShape);
     }
+    functionDeclaration << "\n#endif\n)\n";
+    
+    std::string functionBody = generateFunctionBody(inputList, outputList);
+    size_t functionID = string_hasher(functionBody);
+    size_t literalID = string_hasher(defines.str());
+    
+    std::vector<size_t> kernelShape;
+    for (int i = shape.size()-1; i>=0 && shape.size()-i < 4; --i)
+        kernelShape.push_back(shape[i]);
+    
+    std::stringstream source;
+    if (float64)
+        source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+    if (complex)
+        source << "#include <ocl_complex.h>\n";
+    if (integer)
+        source << "#include <ocl_integer.h>\n";
+    if (random)
+        source << "#include <ocl_random.h>\n";
+    std::vector<size_t> localShape = resourceManager->localShape(kernelShape);
+    while (localShape.size() < 3)
+        localShape.push_back(1);
+    source << "#ifdef FIXED_SIZE\n" << defines.str() << "#endif\n" << 
+        "__kernel __attribute__((work_group_size_hint(" << localShape[0] <<  ", " << localShape[1] <<  ", " << 
+        localShape[2]  << "))) void\n#ifndef FIXED_SIZE\nkernel" << std::hex << functionID <<
+        "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() << 
+        "\n" << functionBody;
+    
+#ifdef BH_TIMING
+    resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
+#endif
+    return SourceKernelCall(KernelID(functionID, literalID), kernelShape,source.str(),
+                            sizeParameters, kernelParameters);
+    
 }
 
-std::string InstructionBatch::generateCode()
+std::string InstructionBatch::generateFunctionBody(ViewList inputList, ViewList outputList)
 {
     std::stringstream source;
-    source << "( ";
-    // Add kernel parameters
-    ParameterList::iterator pit = parameterList.begin();
-    source << *(pit->second) << " " << pit->first;
-    for (++pit; pit != parameterList.end(); ++pit)
-    {
-        source << "\n                     , " << *(pit->second) << " " << pit->first;
-    }
-
-    source << ")\n{\n";
+    source << "{\n";
     
-    generateGIDSource(shape, source);
+    generateGIDSource(shape.size(), source);
     std::stringstream indentss;
     indentss << "\t";
     for (size_t d = shape.size()-1; d > 2; --d)
     {
-#ifdef STATIC_KERNEL
-        source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < " << 
-            shape[shape.size()-(d+1)] << "; ++ids" << d << ")\n" << indentss.str() << "{\n";
-#else
         source << indentss.str() << "for (int ids" << d << " = 0; ids" << d << " < ds" << d << 
             "; ++ids" << d << ")\n" << indentss.str() << "{\n";
-#endif
         indentss << "\t";
     }
     std::string indent = indentss.str();
     
     // Load input parameters
-    for (ArrayList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
+    for (ViewList::iterator iit = inputList.begin(); iit != inputList.end(); ++iit)
     {
         std::stringstream ss;
         ss << "v" << iit->first;
         kernelVariables[iit->first] = ss.str();
         source << indent << oclTypeStr(iit->second->type()) << " " << ss.str() << " = " <<
             parameters[iit->second] << "[";
-        generateOffsetSource(views, iit->first, source);
+        generateOffsetSource(views[iit->first].ndim, iit->first, source);
         source << "];\n";
     }
 
@@ -394,10 +383,10 @@ std::string InstructionBatch::generateCode()
     }
 
     // Save output parameters
-    for (ArrayList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
+    for (ViewList::iterator oit = outputList.begin(); oit != outputList.end(); ++oit)
     {
         source << indent << parameters[oit->second] << "[";
-        generateOffsetSource(views, oit->first, source);
+        generateOffsetSource(views[oit->first].ndim, oit->first, source);
         source << "] = " <<  kernelVariables[oit->first] << ";\n";
     }
     for (size_t d = 3; d < shape.size(); ++d)

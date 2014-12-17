@@ -24,30 +24,43 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <map>
 #include <set>
+#include <deque>
+#include <mutex>
 #include <bh.h>
 #include "InstructionBatch.hpp"
 #include "ResourceManager.hpp"
+#include "SourceKernelCall.hpp"
 
 class InstructionScheduler
 {
 private:
     typedef std::map<bh_base*, BaseArray*> ArrayMap;
     typedef std::map<bh_opcode, bh_extmethod_impl> FunctionMap;
-    ResourceManager* resourceManager;
+
+    typedef std::map<KernelID, Kernel> KernelMap;
+    typedef std::pair<KernelID, SourceKernelCall> KernelCall;
+    typedef std::deque<KernelCall> CallQueue;
+    std::mutex kernelMutex;
+    std::map<size_t,size_t> knownKernelID;
+    KernelMap kernelMap;
+    CallQueue callQueue;
+
     InstructionBatch* batch;
     ArrayMap arrayMap;
     FunctionMap functionMap;
     std::set<BaseArray*> discardSet;
     void sync(bh_base* base);
     void discard(bh_base* base);
+    void compileAndRun(SourceKernelCall sourceKernel);
     void executeBatch();
+    void build(KernelID id, const std::string source);
     std::vector<KernelParameter*> getKernelParameters(bh_instruction* inst);
     bh_error ufunc(bh_instruction* inst);
     bh_error reduce(bh_instruction* inst);
     bh_error accumulate(bh_instruction* inst);
     bh_error extmethod(bh_instruction* inst);
 public:
-    InstructionScheduler(ResourceManager* resourceManager);
+    InstructionScheduler();
     void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);
     bh_error schedule(bh_ir* bhir);
 };

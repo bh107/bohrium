@@ -1,3 +1,4 @@
+from __future__ import print_function
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -38,7 +39,7 @@ def main():
 
     B.pprint()
     if B.verbose:
-        print R
+        print(R)
     if B.outputfn:
         B.tofile(B.outputfn, {'res': R})
 

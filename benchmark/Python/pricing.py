@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 #
 # NumPy version of Rolf Poulsens code for pricing american options.
@@ -66,7 +67,6 @@ def main():
             put[j,i] = max(max(strike-S, 0.0), (q*put[j+1,i+1]+(1-q) * put[j,i+1])/R)
     B.stop()
     B.pprint()
-    #print put[0,0], put[1,1]
 
 if __name__ == "__main__":
     main()

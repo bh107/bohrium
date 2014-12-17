@@ -14,6 +14,7 @@ r0 b0 r0 b0 r0 b0
 b1 r1 b1 r1 b1 r1
 
 """
+from __future__ import print_function
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -26,10 +27,10 @@ def freezetrap(height, width, dtype=np.float32):
     r1   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype)
     b0   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype)
     b1   = np.zeros(((height+2)/2,(width+2)/2), dtype=dtype)
-    r0[0,:]  =   40.0  # Top 
+    r0[0,:]  =   40.0  # Top
     b0[0,:]  =   40.0  # Top
     r1[-1,:] = -273.15 # Bottom
-    b1[-1,:] = -273.15 # Bottom 
+    b1[-1,:] = -273.15 # Bottom
     r0[:,0]  = -273.15 # Left
     b1[:,0]  = -273.15 # Left
     b0[:,-1] = -273.15 # Right
@@ -52,7 +53,7 @@ def solve(grid, epsilon=0.005, max_iterations=None):
         delta = np.add.reduce(np.add.reduce(np.absolute(r0[1:,1:] - b0[1:,:-1]))) + \
             np.add.reduce(np.add.reduce(np.absolute(r1[:-1,:-1] - b1[:-1,1:]))) + \
             np.add.reduce(np.add.reduce(np.absolute(r0[1:,1:] - b1[:-1,1:]))) + \
-            np.add.reduce(np.add.reduce(np.absolute(b0[1:,:-1] - r1[:-1,:-1]))) 
+            np.add.reduce(np.add.reduce(np.absolute(b0[1:,:-1] - r1[:-1,:-1])))
         if max_iterations != None and max_iterations <= iteration:
             break
     return (r0,r1,b0,b1)
@@ -84,7 +85,7 @@ def main():
 
     B.pprint()
     if B.verbose:
-        print R
+        print(R)
     if B.outputfn:
         B.tofile(B.outputfn, {'res': R})
 

@@ -43,9 +43,12 @@ private:
     std::vector<size_t> localShape2D;
     std::vector<size_t> localShape3D;
     bool float64;
-    bool float16;
-    void calcLocalShape();
+    bool _fixedSizeKernel;
+    bool _dynamicSizeKernel;
+    bool _asyncCompile;
     void registerExtensions(std::vector<std::string> extensions);
+    std::string compilerOptions;
+
 public:
 #ifdef BH_TIMING
     bh::Timer<>* batchBuild;
@@ -73,20 +76,24 @@ public:
                                  unsigned int device);
     cl::Event completeEvent();
     cl::Kernel createKernel(const std::string& source, 
-                            const std::string& kernelName);
+                            const std::string& kernelName,
+                            const std::string& options = std::string(""));
     std::vector<cl::Kernel> createKernelsFromFile(const std::string& fileName, 
-                                                  const std::vector<std::string>& kernelNames);
+                                                  const std::vector<std::string>& kernelNames,
+                                                  const std::string& options = std::string(""));
     std::vector<cl::Kernel> createKernels(const std::string& source, 
-                                          const std::vector<std::string>& kernelNames);
+                                          const std::vector<std::string>& kernelNames, 
+                                          const std::string& options = std::string(""));
     cl::Event enqueueNDRangeKernel(const cl::Kernel& kernel, 
                                    const cl::NDRange& globalSize,
                                    const cl::NDRange& localSize,
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
-    std::string getIncludeStr();
-    bool float16support();
-    bool float64support();
+    bool float64support() const;
+    bool fixedSizeKernel() const;
+    bool dynamicSizeKernel() const;
+    bool asyncCompile() const;
     bh_error childExecute(bh_ir* bhir);
     OCLtype intpType();
 };

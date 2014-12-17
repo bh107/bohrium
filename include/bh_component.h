@@ -21,9 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_INTERFACE_H
 #define __BH_INTERFACE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <bh_type.h>
 #include <bh_instruction.h>
@@ -32,6 +29,11 @@ extern "C" {
 #include <iniparser.h>
 #include <bh_win.h>
 #include <bh_ir.h>
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //Maximum number of characters in the name of a component, a attribute or
 //a function.
@@ -154,6 +156,12 @@ DLLEXPORT bh_error bh_component_extmethod(const bh_component *self,
  */
 DLLEXPORT char* bh_component_config_lookup(const bh_component *component,
                                            const char* key);
+DLLEXPORT int bh_component_config_lookup_bool(const bh_component *component,
+                                              const char* key, int notfound);
+DLLEXPORT int bh_component_config_lookup_int(const bh_component *component,
+                                             const char* key, int notfound);
+DLLEXPORT double bh_component_config_lookup_double(const bh_component *component,
+                                                   const char* key, double notfound);
 
 #ifdef __cplusplus
 }
