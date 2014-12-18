@@ -347,19 +347,18 @@ void fill_kernels(const GraphD &dag, std::vector<bh_ir_kernel> &kernels)
     }
 }
 
-/* Determines whether there exist a path from 'a' to 'b' with
- * length more than one ('a' and 'b' is not adjacent).
+/* Determines whether there exist a path from 'a' to 'b'
  *
  * Complexity: O(E + V)
  *
- * @a                 The first vertex
- * @b                 The second vertex
- * @dag               The DAG
- * @ignore_neighbors  Whether to accept neighbor paths
- * @return            True if there is a path
+ * @a          The first vertex
+ * @b          The second vertex
+ * @dag        The DAG
+ * @long_path  Whether to accept path of length one
+ * @return     True if there is a path
  */
 bool path_exist(Vertex a, Vertex b, const GraphD &dag,
-                bool ignore_neighbors=false)
+                bool long_path=false)
 {
     using namespace std;
     using namespace boost;
@@ -388,7 +387,7 @@ bool path_exist(Vertex a, Vertex b, const GraphD &dag,
     };
     try
     {
-        if(ignore_neighbors)
+        if(long_path)
             breadth_first_search(dag, a, visitor(long_visitor(a,b)));
         else
             breadth_first_search(dag, a, visitor(path_visitor(b)));
