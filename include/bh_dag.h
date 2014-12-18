@@ -45,11 +45,8 @@ typedef uint64_t Vertex;
 struct EdgeWeight
 {
     int64_t value;
-    Vertex src, dst;
-    bool ordered;
     EdgeWeight(){}
-    EdgeWeight(int64_t weight, Vertex s, Vertex d):value(weight), src(s), dst(d), ordered(true){}
-    EdgeWeight(int64_t weight):value(weight), ordered(false){}
+    EdgeWeight(int64_t weight):value(weight){}
 };
 
 //The type declaration of the boost graphs, vertices and edges.
@@ -104,10 +101,7 @@ public:
                 int64_t cost = kernel.dependency_cost(_bglD[v]);
                 if((cost > 0) or (cost == 0 and dependency))
                 {
-                    if(dependency)
-                        boost::add_edge(v, d, EdgeWeight(cost, v, d), _bglW);
-                    else
-                        boost::add_edge(v, d, EdgeWeight(cost), _bglW);
+                    boost::add_edge(v, d, EdgeWeight(cost), _bglW);
                 }
             }
         }
@@ -186,21 +180,7 @@ public:
             if(a != v)
             {
                 add_edge(a, v, _bglD);
-                int64_t cost = _bglD[v].dependency_cost(_bglD[a]);
-                EdgeW e;
-                bool exist;
-                tie(e, exist) = edge(a, v, _bglW);
-                if(exist)
-                {
-                    if(cost >= 0)
-                        _bglW[e] = EdgeWeight(cost, a, v);
-                    else
-                        remove_edge(e, _bglW);
-                }
-                else if(cost >= 0)
-                {
-                    add_edge(a, v, EdgeWeight(cost, a, v), _bglW);
-                }
+                add_edge(a, v, _bglW);
             }
         }
         BOOST_FOREACH(const Vertex &v, inv_adjacent_vertices(b, _bglD))
@@ -208,48 +188,64 @@ public:
             if(a != v)
             {
                 add_edge(v, a, _bglD);
-                int64_t cost = _bglD[a].dependency_cost(_bglD[v]);
-                EdgeW e;
-                bool exist;
-                tie(e, exist) = edge(v, a, _bglW);
-                if(exist)
-                {
-                    if(cost >= 0)
-                        _bglW[e] = EdgeWeight(cost, v, a);
-                    else
-                        remove_edge(e, _bglW);
-                }
-                else if(cost >= 0)
-                {
-                    add_edge(v, a, EdgeWeight(cost, v, a), _bglW);
-                }
+                add_edge(a, v, _bglW);
             }
         }
         BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglW))
         {
             if(a != v)
             {
-                int64_t cost = _bglD[a].dependency_cost(_bglD[v]);
-                EdgeW e;
-                bool exist;
-                tie(e, exist) = edge(v, a, _bglW);
-                if(exist)
-                {
-                    if(_bglW[e].ordered)
-                    {
-                        if(cost >= 0)
-                            _bglW[e] = EdgeWeight(cost);
-                        else
-                            remove_edge(e, _bglW);
-                    }
-                }
-                else if(cost >= 0)
-                {
-                    add_edge(v, a, EdgeWeight(cost), _bglW);
-                }
+                add_edge(a, v, _bglW);
             }
         }
         clear_vertex(b);
+
+        vector<EdgeW> edges2remove;
+        BOOST_FOREACH(const EdgeW &e, out_edges(a, _bglW))
+        {
+            Vertex v1 = source(e, _bglW);
+            Vertex v2 = target(e, _bglW);
+            if(path_exist(v1, v2, _bglD, false))
+            {
+                int64_t cost = _bglD[v2].dependency_cost(_bglD[v1]);
+                if(cost >= 0)
+                    _bglW[e].value = cost;
+                else
+                    edges2remove.push_back(e);
+            }
+            else if(path_exist(v2, v1, _bglD, false))
+            {
+                int64_t cost = _bglD[v1].dependency_cost(_bglD[v2]);
+                if(cost >= 0)
+                    _bglW[e].value = cost;
+                else
+                    edges2remove.push_back(e);
+            }
+            else
+            {
+                int64_t cost = _bglD[v1].dependency_cost(_bglD[v2]);
+                if(cost > 0)
+                    _bglW[e].value = cost;
+                else
+                    edges2remove.push_back(e);
+            }
+        }
+        //In order not to invalidate the 'out_edges' iterator, we have
+        //to delay the edge removals to this point.
+        BOOST_FOREACH(const EdgeW &e, edges2remove)
+        {
+            remove_edge(e, _bglW);
+        }
+
+        //TODO: for now we run some unittests
+        BOOST_FOREACH(const EdgeW &e, edges(_bglW))
+        {
+            if(not _bglD[source(e, _bglW)].fusible(_bglD[target(e, _bglW)]))
+            {
+                cout << "non fusible weight edge!: " << e << endl;
+                assert( 1 == 2);
+            }
+        }
         if(not _bglD[a].fusible())
         {
             cout << "kernel merge " << a << " " << b << endl;
@@ -653,7 +649,7 @@ void fuse_greedy(GraphDW &dag)
             }
         }
     }
-    dag.remove_cleared_vertices();
+//    dag.remove_cleared_vertices();
 }
 
 }} //namespace bohrium::dag
