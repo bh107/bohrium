@@ -381,6 +381,84 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     return BH_SUCCESS;
 }
 
+bh_error Engine::execute(std::vector<bh_instruction>& instrs)
+{
+    exec_count++;
+    DEBUG(TAG, "EXEC #" << exec_count);
+    bh_error res = BH_SUCCESS;
+
+    bh_intp ninstrs = instrs.size();
+
+    //
+    // Instantiate the symbol-table and tac-program
+    SymbolTable symbol_table(ninstrs*6+2);              // SymbolTable
+    vector<tac_t> program(ninstrs);                     // Program
+    
+    // Map instructions to tac and symbol_table
+    instrs_to_tacs(instrs, program, symbol_table);
+    symbol_table.count_tmp();
+
+    //
+    // Construct graph with instructions as nodes.
+    Dag graph(symbol_table, program);                   // Graph
+
+    //
+    //  Map subgraphs to blocks one at a time and execute them.
+    Block block(symbol_table, program);                 // Block
+    for(size_t subgraph_idx=0; subgraph_idx<graph.subgraphs().size(); ++subgraph_idx) {
+        Graph& subgraph = *(graph.subgraphs()[subgraph_idx]);
+
+        DEBUG(TAG, "Subgraph #" << subgraph_idx);
+        DEBUG(TAG, "omask=" << graph.omask(subgraph_idx));
+
+        block.clear();
+        block.compose(subgraph);
+
+        // FUSE_MODE
+        if (jit_fusion && \
+            ((graph.omask(subgraph_idx) & (NON_FUSABLE))==0) && \
+            (block.narray_tacs() > 1)) {
+
+            DEBUG(TAG, "FUSE START");
+            res = fuse_mode(symbol_table, program, graph, subgraph_idx, block);
+            if (BH_SUCCESS != res) {
+                return res;
+            }
+            DEBUG(TAG, "FUSE END");
+        
+        // SIJ_MODE
+        } else {
+
+            DEBUG(TAG, "SIJ START");
+            std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
+            for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
+                // Compose the block
+                block.clear();
+                block.compose(  
+                    subgraph.local_to_global(*vi), subgraph.local_to_global(*vi)
+                );
+
+                // Generate/Load code and execute it
+                res = sij_mode(symbol_table, program, block);
+                if (BH_SUCCESS != res) {
+                    return res;
+                }
+            }
+            DEBUG(TAG, "SIJ END");
+        }
+    }
+
+    if (dump_rep) {                                     // Dump it to file
+        stringstream filename;
+        filename << "graph" << exec_count << ".dot";
+
+        std::ofstream fout(filename.str());
+        fout << graph.dot() << std::endl;
+    }
+
+    return res;
+}
+
 bh_error Engine::execute(bh_instruction* instrs, bh_intp ninstrs)
 {
     exec_count++;

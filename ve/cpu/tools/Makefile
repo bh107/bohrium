@@ -20,9 +20,47 @@ gen:
 	cp $(CPU)/autogen/output/tac.cpp $(CPU)/tac.h
 	rm $(CPU)/autogen/output/*.cpp
 
+COMMON_CFLAGS=-Wall -Wno-unknown-pragmas -lm -std=c99
+OMP_CFLAGS=-fopenmp -fopenmp-simd -openmp-report2 -ftree-vectorizer-verbose=2
+
+basics_compile:
+	gcc openmp/basics.c $(COMMON_CFLAGS) -O3 $(OMP_CFLAGS) -o bin/basics_O3_omp
+	gcc openmp/basics.c $(COMMON_CFLAGS) -O2 $(OMP_CFLAGS) -o bin/basics_O2_omp
+	gcc openmp/basics.c $(COMMON_CFLAGS) -O1 $(OMP_CFLAGS) -o bin/basics_O1_omp
+	gcc openmp/basics.c $(COMMON_CFLAGS) -O0 $(OMP_CFLAGS) -o bin/basics_O0_omp
+	gcc openmp/basics.c $(COMMON_CFLAGS) -O3 -o bin/basics_O3
+	gcc openmp/basics.c $(COMMON_CFLAGS) -O2 -o bin/basics_O2
+	gcc openmp/basics.c $(COMMON_CFLAGS) -O1 -o bin/basics_O1
+	gcc openmp/basics.c $(COMMON_CFLAGS) -O0 -o bin/basics_O0
+
+basics_run:
+	@echo "O3"
+	/usr/bin/time bin/basics_O3
+	/usr/bin/time bin/basics_O3_omp
+	@echo "O2"
+	/usr/bin/time bin/basics_O2
+	/usr/bin/time bin/basics_O2_omp
+	@echo "O1"
+	/usr/bin/time bin/basics_O1
+	/usr/bin/time bin/basics_O1_omp
+	@echo "O0"
+	/usr/bin/time bin/basics_O0
+	/usr/bin/time bin/basics_O0_omp
+
+basics: basics_compile basics_run
+
+purge_ko:
+	rm -f ~/.local/var/bohrium/kernels/*
+	rm -f ~/.local/var/bohrium/objects/*
+
+purge_krn:
+	rm -rf ~/.local/share/bohrium/templates
+	rm -rf ~/.local/var/bohrium/kernels
+	rm -rf ~/.local/var/bohrium/objects
+
 #
 # Remove installed stuff specific to the cpu-engine
-purge:
+purge_cpu:
 	rm -rf ~/.local/share/bohrium/templates
 	rm -rf ~/.local/var/bohrium/kernels
 	rm -rf ~/.local/var/bohrium/objects
@@ -32,7 +70,7 @@ purge:
 
 #
 # Remove everything
-purge_all: purge
+purge_all: purge_cpu
 	rm -rf $(BDIR)
 	rm -rf ~/.local/bin
 	rm -rf ~/.local/include
@@ -43,7 +81,10 @@ purge_all: purge
 
 #
 # "Reinstall" the cpu-engine
-reset: purge install
+#
+reset_krn: purge_krn install
+reset_cpu: purge_cpu install
+reset_all: purge_all install
 
 #
 # "Install the cpu-engine
@@ -71,7 +112,7 @@ prep:
 	[ -d ~/.local/var/bohrium/kernels ] && rm -f ~/.local/var/bohrium/kernels/*.c
 	[ -d ~/.local/var/bohrium/objects ] && rm -f ~/.local/var/bohrium/kernels/*.so
 
-prep_fused: prep
+prep_fsd: prep
 	mkdir -p /tmp/code/fused
 	rm -rf /tmp/code/fused/*.c
 
@@ -84,8 +125,8 @@ prep_sij: prep
 gauss_sij: prep_sij
 	BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
-gauss_fus: prep_sij
-	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPRC=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
+gauss_fsd: prep_fsd
+	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
 #
 # Tests

@@ -33,7 +33,7 @@ If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 
 static long PAGE_SIZE = sysconf(_SC_PAGESIZE);
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t signal_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool initialized=false;
 
 typedef struct
@@ -71,9 +71,9 @@ static map<const void*,segment>::const_iterator get_segment(const void *addr)
  */
 static void sighandler(int signal_number, siginfo_t *info, void *context)
 {
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&signal_mutex);
     map<const void*,segment>::const_iterator s = get_segment(info->si_addr);
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&signal_mutex);
     if(s == segments.end())
     {
 //        printf("bh_signal: Defaulting to segfaul at addr: %p\n", info->si_addr);
@@ -92,7 +92,7 @@ static void sighandler(int signal_number, siginfo_t *info, void *context)
  */
 int bh_mem_signal_init(void)
 {
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&signal_mutex);
     if(!initialized)
     {
         struct sigaction sact;
@@ -102,7 +102,7 @@ int bh_mem_signal_init(void)
         sigaction(SIGSEGV, &sact, &sact);
     }
     initialized = true;
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&signal_mutex);
     return 0;
 }
 
@@ -118,7 +118,7 @@ int bh_mem_signal_init(void)
 int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
                          void (*callback)(void*, void*))
 {
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&signal_mutex);
     if(get_segment(addr) != segments.end())
     {
         fprintf(stderr, "Could not attach signal, memory segment is in conflict with "
@@ -130,7 +130,7 @@ int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
     s.size = size;
     s.callback = callback;
 
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&signal_mutex);
     return 0;
 }
 
@@ -141,8 +141,8 @@ int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
  */
 int bh_mem_signal_detach(const void *addr)
 {
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&signal_mutex);
     segments.erase(addr);
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&signal_mutex);
     return 0;
 }

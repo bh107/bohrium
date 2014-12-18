@@ -119,12 +119,12 @@ static fuse_model get_selected_fuse_model()
         string e(env);
         if(iequals(e, string("broadest")))
         {
-            cout << "[FUSE] info: selected fuse model: 'BROADEST'" << endl;
+            //cout << "[FUSE] info: selected fuse model: 'BROADEST'" << endl;
             return BROADEST;
         }
         else if(iequals(e, string("same_shape")))
         {
-            cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
+            //cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
             return SAME_SHAPE;
         }
         else
@@ -133,7 +133,7 @@ static fuse_model get_selected_fuse_model()
             cerr << "', using the default model instead" << endl;
         }
     }
-    cout << "[FUSE] info: selected fuse model: 'BROADEST'" << endl;
+    //cout << "[FUSE] info: selected fuse model: 'BROADEST'" << endl;
     return default_fuse_model;
 }
 

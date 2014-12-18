@@ -26,6 +26,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <boost/algorithm/string/predicate.hpp>
+
 #include <bh.h>
 #include "bh_ve_cpu.h"
 #include "engine.hpp"
@@ -158,6 +160,16 @@ bh_error bh_ve_cpu_init(const char *name)
         return BH_ERROR;
     }
 
+    env = getenv("BH_FUSE_MODEL");
+    if (env != NULL) {
+        string e(env);
+        if (not boost::iequals(e, string("same_shape"))) {
+            cerr << "VE-CPU: Unsupported fuse model: '" << e;
+            cerr << "', reverting to 'SAME_SHAPE'." << endl;
+        }
+    }
+    setenv("BH_FUSE_MODEL", "SAME_SHAPE", 1);
+
     // Configuration
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
     bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");
@@ -197,8 +209,16 @@ bh_error bh_ve_cpu_init(const char *name)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
+    bh_error res = BH_SUCCESS;
     TIMER_START
-    bh_error res = engine->execute(&bhir->instr_list[0], bhir->instr_list.size());
+    for(std::vector<bh_ir_kernel>::iterator kernel = bhir->kernel_list.begin();
+        kernel != bhir->kernel_list.end();
+        ++kernel) {
+        res = engine->execute(kernel->instrs);
+        if (res != BH_SUCCESS) {
+            break;
+        }
+    }
     TIMER_STOP("CPU-EXECUTE")
 
     return res;

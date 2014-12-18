@@ -46,10 +46,16 @@ protected:
         ar & instrs;
     }
 
+public:
     //The list of Bohrium instructions in this kernel
     std::vector<bh_instruction> instrs;
+    // NOTE: I guess this should be "shielded" behind protected
+    //       but for "right now" this makes it a lot easier to integrate
+    //       with the current CPU-VE codebase.
+    //       For the future 'instrs' should be hidden behind protected
+    //       and accessed via const getters along with inputs, 
+    //       outputs and temps?
 
-public:
     //List of input and output to this kernel.
     //NB: system instruction (e.g. BH_DISCARD) is
     //never part of kernel input or output
