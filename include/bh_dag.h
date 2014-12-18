@@ -55,7 +55,7 @@ struct EdgeWeight
 //The type declaration of the boost graphs, vertices and edges.
 typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS,
                               bh_ir_kernel> GraphD;
-typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS,
+typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS,
                               boost::no_property, EdgeWeight> GraphW;
 typedef typename boost::graph_traits<GraphD>::edge_descriptor EdgeD;
 typedef typename boost::graph_traits<GraphW>::edge_descriptor EdgeW;
@@ -187,7 +187,7 @@ public:
             {
                 add_edge(a, v, _bglD);
                 int64_t cost = _bglD[v].dependency_cost(_bglD[a]);
-                EdgeD e;
+                EdgeW e;
                 bool exist;
                 tie(e, exist) = edge(a, v, _bglW);
                 if(exist)
@@ -209,7 +209,7 @@ public:
             {
                 add_edge(v, a, _bglD);
                 int64_t cost = _bglD[a].dependency_cost(_bglD[v]);
-                EdgeD e;
+                EdgeW e;
                 bool exist;
                 tie(e, exist) = edge(v, a, _bglW);
                 if(exist)
@@ -230,7 +230,7 @@ public:
             if(a != v)
             {
                 int64_t cost = _bglD[a].dependency_cost(_bglD[v]);
-                EdgeD e;
+                EdgeW e;
                 bool exist;
                 tie(e, exist) = edge(v, a, _bglW);
                 if(exist)
