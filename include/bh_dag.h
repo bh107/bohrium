@@ -609,16 +609,44 @@ void fuse_gentle(GraphDW &dag)
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
  * algorithm that fuses the most costly edges in the DAG first.
+ * The edges in 'ignores' will not be merged.
  * NB: invalidates all existing edge iterators.
  *
  * Complexity: O(E^2 * (E + V))
  *
- * @dag The DAG to fuse
+ * @dag      The DAG to fuse
+ * @ignores  List of edges not to merge
  */
-void fuse_greedy(GraphDW &dag)
+void fuse_greedy(GraphDW &dag, const std::set<Vertex> &ignores={})
 {
     using namespace std;
     using namespace boost;
+
+    //Help function to find and sort the weight edges.
+    struct
+    {
+        void operator()(const GraphDW &g, vector<EdgeW> &edge_list,
+                        const set<Vertex> &ignores)
+        {
+            if(ignores.size() == 0)
+            {
+                BOOST_FOREACH(const EdgeW &e, edges(g.bglW()))
+                {
+                    edge_list.push_back(e);
+                }
+            }
+            else
+            {
+                BOOST_FOREACH(const EdgeW &e, edges(g.bglW()))
+                {
+                    if(ignores.find(source(e, g.bglW())) == ignores.end() and
+                       ignores.find(target(e, g.bglW())) == ignores.end())
+                        edge_list.push_back(e);
+                }
+            }
+            sort_weights(g.bglW(), edge_list);
+        }
+    }get_sorted_edges;
 
     bool not_finished = true;
     vector<EdgeW> sorted;
@@ -626,11 +654,7 @@ void fuse_greedy(GraphDW &dag)
     {
         not_finished = false;
         sorted.clear();
-        BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
-        {
-            sorted.push_back(e);
-        }
-        sort_weights(dag.bglW(), sorted);
+        get_sorted_edges(dag, sorted, ignores);
         BOOST_FOREACH(const EdgeW &e, sorted)
         {
             GraphDW new_dag(dag);
@@ -649,7 +673,6 @@ void fuse_greedy(GraphDW &dag)
             }
         }
     }
-//    dag.remove_cleared_vertices();
 }
 
 }} //namespace bohrium::dag
