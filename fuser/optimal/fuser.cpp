@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <boost/foreach.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include <boost/range/adaptors.hpp>
 #include <vector>
 #include <map>
 #include <iterator>
@@ -54,9 +55,9 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     //Help function to find the new location
     struct find_new_location
     {
-        Vertex operator()(map<Vertex, Vertex> &loc_map, Vertex v)
+        Vertex operator()(const map<Vertex, Vertex> &loc_map, Vertex v)
         {
-            Vertex v_mapped = loc_map[v];
+            Vertex v_mapped = loc_map.at(v);
             if(v_mapped == v)
                 return v;
             else
@@ -70,26 +71,34 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     {
         loc_map[v] = v;
     }
-
+    //Lets record the merges into 'loc_map'
     BOOST_FOREACH(const EdgeW &e, edges2merge)
     {
         Vertex v1 = find_loc(loc_map, source(e, graph.bglW()));
         Vertex v2 = find_loc(loc_map, target(e, graph.bglW()));
         loc_map[v1] = v2;
     }
+    //Pack 'loc_map' such that all keys maps directly to a new vertex thus after
+    //this point there is no need to call find_loc().
+    BOOST_FOREACH(Vertex v, vertices(dag))
+    {
+        Vertex v_mapped = find_loc(loc_map, loc_map.at(v));
+        if(v_mapped != v)
+            loc_map[v] = v_mapped;
+    }
 
+    //Create the new vertices and insert instruction topologically
     map<Vertex, bh_ir_kernel> new_vertices;
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
-        if(loc_map[v] == v)
+        if(loc_map.at(v) == v)
             new_vertices[v] = bh_ir_kernel();
     }
-
     vector<Vertex> topological_order;
     topological_sort(dag, back_inserter(topological_order));
     BOOST_REVERSE_FOREACH(Vertex vertex, topological_order)
     {
-        Vertex v = find_loc(loc_map, vertex);
+        Vertex v = loc_map.at(vertex);
         bh_ir_kernel &k = new_vertices.at(v);
         BOOST_FOREACH(const bh_instruction &i, dag[vertex].instr_list())
         {
@@ -99,32 +108,44 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         }
     }
 
-    int64_t cost=0;
+    //TODO: Assert check
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
-        if(loc_map[v] == v)
-            cost += new_vertices[v].cost();
+        if(loc_map.at(v) == v)
+            assert(new_vertices[v].instr_list().size() > 0);
     }
 
-    if(cost >= best_cost or not fusibility)
-        return make_pair(cost,fusibility);
+    //Find the total cost
+    int64_t cost=0;
+    BOOST_FOREACH(const bh_ir_kernel &k, new_vertices | adaptors::map_values)
+    {
+        cost += k.cost();
+    }
 
+    //Check if we need to continue
+    if(cost >= best_cost or not fusibility)
+        return make_pair(cost,false);
+
+    //Merge the vertice in the DAG
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
-        Vertex loc_v = loc_map[v];
+        Vertex loc_v = loc_map.at(v);
         if(loc_v == v)
         {
-            dag[v] = new_vertices[v];
+            dag[v] = new_vertices.at(v);
+            assert(dag[v].instr_list().size() > 0);
         }
         else//Lets merge 'v' into 'loc_v'
         {
             BOOST_FOREACH(Vertex a, adjacent_vertices(v, dag))
             {
+                a = loc_map.at(a);
                 if(a != loc_v)
                     add_edge(loc_v, a, dag);
             }
             BOOST_FOREACH(Vertex a, inv_adjacent_vertices(v, dag))
             {
+                a = loc_map.at(a);
                 if(a != loc_v)
                     add_edge(a, loc_v, dag);
             }
@@ -132,19 +153,26 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
             dag[v] = bh_ir_kernel();
         }
     }
+
+    //TODO: Assert check
+    BOOST_FOREACH(Vertex v, vertices(dag))
+    {
+        if(dag[loc_map.at(v)].instr_list().size() == 0)
+        {
+            cout << v << endl;
+            cout << loc_map.at(v) << endl;
+            assert(1 == 2);
+        }
+    }
+    pprint(dag, "cycle.dot");
+
+    //Check for cycles
     if(cycles(dag))
     {
         return make_pair(cost,false);
     }
 
-    if(cost != (int64_t)dag_cost(dag))
-    {
-        cout << "cost: " << cost << ", dag_cost: " << dag_cost(dag) << endl;
-        GraphDW tmp(dag);
-        pprint(tmp, "what.dot");
-        assert(1 == 2);
-    }
-
+    assert(cost == (int64_t)dag_cost(dag));
     return make_pair(cost,true);
 }
 #ifdef VERBOSE
