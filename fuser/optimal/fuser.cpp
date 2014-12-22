@@ -38,7 +38,7 @@ using namespace boost;
 using namespace bohrium::dag;
 
 pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explore,
-                             const GraphDW graph, const vector<bool> &mask, GraphD &dag)
+                             const GraphDW &graph, const vector<bool> &mask, GraphD &dag)
 {
     bool fusibility=true;
     vector<EdgeW> edges2merge;
