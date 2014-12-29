@@ -211,14 +211,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     bh_error res = BH_SUCCESS;
     TIMER_START
-    for(std::vector<bh_ir_kernel>::iterator kernel = bhir->kernel_list.begin();
-        kernel != bhir->kernel_list.end();
-        ++kernel) {
-        res = engine->execute(kernel->instrs);
-        if (res != BH_SUCCESS) {
-            break;
-        }
-    }
+    res = engine->execute(bhir);
     TIMER_STOP("CPU-EXECUTE")
 
     return res;

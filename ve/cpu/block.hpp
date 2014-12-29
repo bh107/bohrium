@@ -7,7 +7,6 @@
 #include "tac.h"
 #include "symbol_table.hpp"
 #include "utils.hpp"
-#include "dag.hpp"
 
 namespace bohrium{
 namespace core{
@@ -31,7 +30,7 @@ public:
      *
      *  NOTE: This will reset the current state of the block.
      */
-    void compose(Graph& subgraph);
+    void compose(std::vector<bh_instruction>& instrs);
 
     /**
      *  Compose the block based based on a subset of program instructions.

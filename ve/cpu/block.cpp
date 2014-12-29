@@ -66,32 +66,9 @@ void Block::compose(size_t prg_begin, size_t prg_end)
     }
 }
 
-void Block::compose(Graph& subgraph)
+void Block::compose(std::vector<bh_instruction>& instrs)
 {
-    operands_ = new operand_t*[(num_vertices(subgraph)+1)*3];
-
-    // Fill tacs_ based on the subgraph
-    std::pair<vertex_iter, vertex_iter> vip = vertices(subgraph);
-    for(vertex_iter vi = vip.first; vi != vip.second; ++vi) {
-        tac_t& tac = program_[subgraph.local_to_global(*vi)];
-
-        tacs_.push_back(&tac);
-        if ((tac.op & (ARRAY_OPS))>0) {
-            array_tacs_.push_back(&tac);
-        }
-
-        // Map operands to local-scope
-        switch(tac_noperands(tac)) {
-            case 3:
-                localize(tac.in2);
-            case 2:
-                localize(tac.in1);
-            case 1:
-                localize(tac.out);
-            default:
-                break;
-        }
-    }
+    compose(0, instrs.size()-1);
 }
 
 size_t Block::localize(size_t global_idx)
