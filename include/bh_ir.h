@@ -53,7 +53,7 @@ public:
     //       but for "right now" this makes it a lot easier to integrate
     //       with the current CPU-VE codebase.
     //       For the future 'instrs' should be hidden behind protected
-    //       and accessed via const getters along with inputs, 
+    //       and accessed via const getters along with inputs,
     //       outputs and temps?
 
     //List of input and output to this kernel.
@@ -99,55 +99,6 @@ public:
      * @return The boolean answer
      */
     bool dependency(const bh_ir_kernel &other) const;
-
-    /* Returns the cost of this kernel's dependency on the 'other' kernel.
-     * The cost of a dependency is defined as the amount the BhIR will drop
-     * in price if the two kernels are fused.
-     * Note that a zero cost dependency is possible because of system
-     * instructions such as BH_FREE and BH_DISCARD.
-     *
-     * @other  The other kernel
-     * @return The cost value. Returns -1 if this and the 'other'
-     *         kernel isn't fusible.
-     */
-    int64_t dependency_cost(const bh_ir_kernel &other) const;
-
-    /* Determines whether it is legal to fuse with the kernel
-     *
-     * @other   The other kernel
-     * @return  The boolean answer
-     */
-    bool fusible(const bh_ir_kernel &other) const;
-
-    /* Determines whether it is legal to fuse with the instruction
-     *
-     * @instr  The instruction
-     * @return The boolean answer
-     */
-    bool fusible(const bh_instruction &instr) const;
-
-    /* Determines whether the kernel fusible legal
-     *
-     * @return The boolean answer
-     */
-    bool fusible() const;
-
-    /* Determines whether it is legal to fuse with the instruction
-     * without changing this kernel's dependencies.
-     *
-     * @instr  The instruction
-     * @return The boolean answer
-     */
-    bool fusible_gently(const bh_instruction &instr) const;
-
-    /* Determines whether it is legal to fuse with the kernel without
-     * changing this kernel's dependencies.
-     *
-     * @other  The other kernel
-     * @return The boolean answer
-     */
-    bool fusible_gently(const bh_ir_kernel &other) const;
-
 };
 
 

@@ -88,23 +88,23 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     }
 
     //Create the new vertices and insert instruction topologically
-    map<Vertex, bh_ir_kernel> new_vertices;
+    map<Vertex, GraphKernel> new_vertices;
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         if(loc_map.at(v) == v)
-            new_vertices[v] = bh_ir_kernel();
+            new_vertices[v] = GraphKernel();
     }
     vector<Vertex> topological_order;
     topological_sort(dag, back_inserter(topological_order));
     BOOST_REVERSE_FOREACH(Vertex vertex, topological_order)
     {
         Vertex v = loc_map.at(vertex);
-        bh_ir_kernel &k = new_vertices.at(v);
-        BOOST_FOREACH(const bh_instruction &i, dag[vertex].instr_list())
+        GraphKernel &k = new_vertices.at(v);
+        BOOST_FOREACH(const bh_instruction *i, dag[vertex].instr_list)
         {
             if(not k.fusible(i))
                 fusibility = false;
-            k.add_instr(i);
+            k.add_instr(*i);
         }
     }
 
@@ -112,12 +112,12 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         if(loc_map.at(v) == v)
-            assert(new_vertices[v].instr_list().size() > 0);
+            assert(new_vertices[v].instr_list.size() > 0);
     }
 
     //Find the total cost
     int64_t cost=0;
-    BOOST_FOREACH(const bh_ir_kernel &k, new_vertices | adaptors::map_values)
+    BOOST_FOREACH(const GraphKernel &k, new_vertices | adaptors::map_values)
     {
         cost += k.cost();
     }
@@ -133,7 +133,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         if(loc_v == v)
         {
             dag[v] = new_vertices.at(v);
-            assert(dag[v].instr_list().size() > 0);
+            assert(dag[v].instr_list.size() > 0);
         }
         else//Lets merge 'v' into 'loc_v'
         {
@@ -150,14 +150,14 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
                     add_edge(a, loc_v, dag);
             }
             clear_vertex(v, dag);
-            dag[v] = bh_ir_kernel();
+            dag[v] = GraphKernel();
         }
     }
 
     //TODO: Assert check
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
-        if(dag[loc_map.at(v)].instr_list().size() == 0)
+        if(dag[loc_map.at(v)].instr_list.size() == 0)
         {
             cout << v << endl;
             cout << loc_map.at(v) << endl;

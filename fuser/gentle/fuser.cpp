@@ -36,13 +36,6 @@ void fuser(bh_ir &bhir)
     GraphDW dag;
     from_bhir(bhir, dag);
     fuse_gentle(dag);
-
-    //Lets fill the bhir;
-    vector<Vertex> topological_order;
-    topological_sort(dag.bglD(), back_inserter(topological_order));
-    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
-    {
-        bhir.kernel_list.push_back(dag.bglD()[v]);
-    }
+    fill_kernels(dag.bglD(), bhir.kernel_list);
 }
 

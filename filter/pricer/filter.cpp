@@ -35,14 +35,6 @@ void filter(const bh_ir &bhir)
     GraphDW dag;
     from_kernels(bhir.kernel_list, dag);
     sum += dag_cost(dag.bglD());
-
-    BOOST_FOREACH(const bh_ir_kernel &k, bhir.kernel_list)
-    {
-        if(not k.fusible())
-        {
-            cout << "[PRICER-FILTER] Ilegal non-fusible kernel in the kernel list!" << endl;
-        }
-    }
 }
 
 void shutdown()
