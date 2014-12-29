@@ -18,12 +18,9 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
-#include <iostream>
-#include <fstream>
+#include <bh_fuse.h>
 #include <boost/foreach.hpp>
 #include <vector>
-#include <map>
-#include <stdexcept>
 
 using namespace std;
 using namespace boost;
@@ -34,31 +31,29 @@ void fuser(bh_ir &bhir)
     {
         throw logic_error("The kernel_list is not empty!");
     }
-    //map from an instruction in the kernel_list to an index into the
-    //original instruction list
-    map<pair<int,int>,int> index_map;
-
     vector<bh_instruction>::iterator it = bhir.instr_list.begin();
-    int instr_count=0;
     while(it != bhir.instr_list.end())
     {
-        const unsigned int ksize = bhir.kernel_list.size();
-
         //Start new kernel
         bh_ir_kernel kernel;
         kernel.add_instr(*it);
 
-        //Add the instruction to the map
-        index_map.insert(pair<pair<int,int>,int>(pair<int,int>(ksize, 0), instr_count++));
-
         //Add fusible instructions to the kernel
-        int i=1;
-        for(it=it+1; it != bhir.instr_list.end(); ++it, ++i)
+        for(it=it+1; it != bhir.instr_list.end(); ++it)
         {
-            if(kernel.fusible(*it))
+            //Check that 'it' is fusible with all instructions 'kernel'
+            bool fusible = true;
+            BOOST_FOREACH(const bh_instruction &i, kernel.instr_list())
+            {
+                if(not bohrium::check_fusible(&i, &(*it)))
+                {
+                    fusible = false;
+                    break;
+                }
+            }
+            if(fusible)
             {
                 kernel.add_instr(*it);
-                index_map.insert(pair<pair<int,int>,int>(pair<int,int>(ksize, i), instr_count++));
             }
             else
                 break;
