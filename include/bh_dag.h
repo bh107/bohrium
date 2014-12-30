@@ -56,12 +56,30 @@ struct EdgeWeight
     EdgeWeight(int64_t weight):value(weight){}
 };
 
+//The GraphInstr extend the bh_instruction with an
+//topological order ID. That is, if the memory access
+//of two instructions overlaps, the instruction with
+//the lower order ID precedes the other instruction.
+struct GraphInstr
+{
+    const bh_instruction *instr;
+    uint64_t order;
+
+    GraphInstr(){}
+    GraphInstr(const bh_instruction *i, uint64_t o):instr(i),order(o) {}
+};
+
+/* The GraphKernel class encapsulates a kernel of instructions
+ * much like the bh_ir_kernel class. The main different is the
+ * use of GraphInstr instead bh_ir_kernel.
+ */
 class GraphKernel
 {
 public:
     //The list of Bohrium instructions in this kernel
-    //Note that this is a vertor of pointers
-    std::vector<const bh_instruction*> instr_list;
+    //Note that this is a vertor of pointers and not a
+    //copy of the original instruction list.
+    std::vector<GraphInstr> instr_list;
 
     //List of input and output to this kernel.
     //NB: system instruction (e.g. BH_DISCARD) is
@@ -72,19 +90,18 @@ public:
     //Lets of temporary base-arrays in this kernel.
     std::vector<const bh_base*> temp_list;
 
-
     /* Add an instruction reference to the kernel
      *
      * @instr   The instruction to add
      * @return  The boolean answer
      */
-    void add_instr(const bh_instruction &instr)
+    void add_instr(const GraphInstr &instr)
     {
-            using namespace std;
-            using namespace boost;
-        if(instr.opcode == BH_DISCARD)
+        using namespace std;
+        using namespace boost;
+        if(instr.instr->opcode == BH_DISCARD)
         {
-            const bh_base *base = instr.operand[0].base;
+            const bh_base *base = instr.instr->operand[0].base;
             for(vector<bh_view>::iterator it=output_list.begin();
                 it != output_list.end(); ++it)
             {
@@ -96,11 +113,11 @@ public:
                 }
             }
         }
-        else if(instr.opcode != BH_FREE)
+        else if(instr.instr->opcode != BH_FREE)
         {
             {
                 bool duplicates = false;
-                const bh_view &v = instr.operand[0];
+                const bh_view &v = instr.instr->operand[0];
                 BOOST_FOREACH(const bh_view &i, output_list)
                 {
                     if(bh_view_aligned(&v, &i))
@@ -113,10 +130,10 @@ public:
 
                     output_list.push_back(v);
             }
-            const int nop = bh_operands(instr.opcode);
+            const int nop = bh_operands(instr.instr->opcode);
             for(int i=1; i<nop; ++i)
             {
-                const bh_view &v = instr.operand[i];
+                const bh_view &v = instr.instr->operand[i];
                 if(bh_is_constant(&v))
                     continue;
 
@@ -133,9 +150,9 @@ public:
                     continue;
 
                 bool local_source = false;
-                BOOST_FOREACH(const bh_instruction *i, instr_list)
+                BOOST_FOREACH(const GraphInstr &i, instr_list)
                 {
-                    if(bh_view_aligned(&v, &i->operand[0]))
+                    if(bh_view_aligned(&v, &i.instr->operand[0]))
                     {
                         local_source = true;
                         break;
@@ -145,7 +162,7 @@ public:
                     input_list.push_back(v);
             }
         }
-        instr_list.push_back(&instr);
+        instr_list.push_back(instr);
     };
 
     /* Determines whether the kernel fusible legal
@@ -154,12 +171,12 @@ public:
      */
     bool fusible() const
     {
-        BOOST_FOREACH(const bh_instruction *i1, instr_list)
+        BOOST_FOREACH(const GraphInstr &i1, instr_list)
         {
-            BOOST_FOREACH(const bh_instruction *i2, instr_list)
+            BOOST_FOREACH(const GraphInstr &i2, instr_list)
             {
-                if(i1 != i2)
-                    if(not bohrium::check_fusible(i1, i2))
+                if(i1.instr != i2.instr)
+                    if(not bohrium::check_fusible(i1.instr, i2.instr))
                         return false;
             }
         }
@@ -171,11 +188,11 @@ public:
      * @instr  The instruction
      * @return The boolean answer
      */
-    bool fusible(const bh_instruction *instr) const
+    bool fusible(const GraphInstr &instr) const
     {
-        BOOST_FOREACH(const bh_instruction *i, instr_list)
+        BOOST_FOREACH(const GraphInstr &i, instr_list)
         {
-            if(not bohrium::check_fusible(i, instr))
+            if(not bohrium::check_fusible(i.instr, instr.instr))
                 return false;
         }
         return true;
@@ -188,11 +205,11 @@ public:
      */
     bool fusible(const GraphKernel &other) const
     {
-        BOOST_FOREACH(const bh_instruction *a, this->instr_list)
+        BOOST_FOREACH(const GraphInstr &a, this->instr_list)
         {
-            BOOST_FOREACH(const bh_instruction *b, other.instr_list)
+            BOOST_FOREACH(const GraphInstr &b, other.instr_list)
             {
-                if(not bohrium::check_fusible(a, b))
+                if(not bohrium::check_fusible(a.instr, b.instr))
                     return false;
             }
         }
@@ -205,17 +222,17 @@ public:
      * @instr  The instruction
      * @return The boolean answer
      */
-    bool fusible_gently(const bh_instruction *instr) const
+    bool fusible_gently(const GraphInstr &instr) const
     {
-        if(bh_opcode_is_system(instr->opcode))
+        if(bh_opcode_is_system(instr.instr->opcode))
             return true;
 
         //We are fusible if all instructions in this kernel are system opcodes
         {
             bool all_system = true;
-            BOOST_FOREACH(const bh_instruction *i, instr_list)
+            BOOST_FOREACH(const GraphInstr &i, instr_list)
             {
-                if(not bh_opcode_is_system(i->opcode))
+                if(not bh_opcode_is_system(i.instr->opcode))
                 {
                     all_system = false;
                     break;
@@ -225,13 +242,13 @@ public:
                 return true;
         }
         //Check that 'instr' is fusible with least one existing instruction
-        BOOST_FOREACH(const bh_instruction *i, instr_list)
+        BOOST_FOREACH(const GraphInstr &i, instr_list)
         {
-            if(bh_opcode_is_system(i->opcode))
+            if(bh_opcode_is_system(i.instr->opcode))
                 continue;
 
-            if(bh_instr_fusible_gently(instr, i) &&
-               bohrium::check_fusible(instr, i))
+            if(bh_instr_fusible_gently(instr.instr, i.instr) &&
+               bohrium::check_fusible(instr.instr, i.instr))
                 return true;
         }
         return false;
@@ -245,7 +262,8 @@ public:
      */
     bool fusible_gently(const GraphKernel &other) const
     {
-        BOOST_FOREACH(const bh_instruction *i, other.instr_list)
+
+        BOOST_FOREACH(const GraphInstr &i, other.instr_list)
         {
             if(not fusible_gently(i))
                 return false;
@@ -264,11 +282,11 @@ public:
      */
     bool dependency(const GraphKernel &other) const
     {
-        BOOST_FOREACH(const bh_instruction *i, this->instr_list)
+        BOOST_FOREACH(const GraphInstr &i, this->instr_list)
         {
-            BOOST_FOREACH(const bh_instruction *o, other.instr_list)
+            BOOST_FOREACH(const GraphInstr &o, other.instr_list)
             {
-                if(bh_instr_dependency(i, o))
+                if(bh_instr_dependency(i.instr, o.instr))
                     return true;
             }
         }
@@ -312,9 +330,9 @@ public:
         //Subtract outputs that are discared in 'this'
         BOOST_FOREACH(const bh_view &o, other.output_list)
         {
-            BOOST_FOREACH(const bh_instruction *i, this->instr_list)
+            BOOST_FOREACH(const GraphInstr &i, this->instr_list)
             {
-                if(i->opcode == BH_DISCARD and i->operand[0].base == o.base)
+                if(i.instr->opcode == BH_DISCARD and i.instr->operand[0].base == o.base)
                 {
                     price_drop += cost_of_view(o);
                     break;
@@ -462,9 +480,9 @@ public:
         using namespace std;
         using namespace boost;
 
-        BOOST_FOREACH(const bh_instruction *i, _bglD[b].instr_list)
+        BOOST_FOREACH(const GraphInstr &i, _bglD[b].instr_list)
         {
-            _bglD[a].add_instr(*i);
+            _bglD[a].add_instr(i);
         }
         BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglD))
         {
@@ -565,6 +583,7 @@ public:
 
 /* Creates a new DAG based on a bhir that consist of single
  * instruction kernels.
+ * NB: the 'bhir' must not be deallocated or moved before 'dag'
  *
  * Complexity: O(n^2) where 'n' is the number of instructions
  *
@@ -583,15 +602,17 @@ void from_bhir(const bh_ir &bhir, GraphDW &dag)
         throw logic_error("The kernel_list is not empty!");
     }
     //Build a singleton DAG
+    uint64_t count = 0;
     BOOST_FOREACH(const bh_instruction &instr, bhir.instr_list)
     {
         GraphKernel k;
-        k.add_instr(instr);
+        k.add_instr(GraphInstr(&instr, count++));
         dag.add_vertex(k);
     }
 }
 
 /* Creates a new DAG based on a kernel list where each vertex is a kernel.
+ * NB: the 'kernels' must not be deallocated or moved before 'dag'.
  *
  * Complexity: O(E + V)
  *
@@ -603,6 +624,7 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
     using namespace std;
     using namespace boost;
 
+    uint64_t count = 0;
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
         if(kernel.instr_list().size() == 0)
@@ -611,7 +633,7 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
         GraphKernel k;
         BOOST_FOREACH(const bh_instruction &instr, kernel.instr_list())
         {
-            k.add_instr(instr);
+            k.add_instr(GraphInstr(&instr, count++));
         }
         dag.add_vertex(k);
     }
@@ -643,9 +665,9 @@ void fill_kernels(const GraphD &dag, std::vector<bh_ir_kernel> &kernels)
             k.temps = gk.temp_list;
 
             k.instrs.reserve(gk.instr_list.size());
-            BOOST_FOREACH(const bh_instruction *i, gk.instr_list)
+            BOOST_FOREACH(const GraphInstr &i, gk.instr_list)
             {
-                k.instrs.push_back(*i);
+                k.instrs.push_back(*i.instr);
             }
             kernels.push_back(k);
         }
@@ -838,9 +860,10 @@ void pprint(const GraphDW &dag, const char filename[])
                 out << buf << "\\l";
             }
             out << "Instruction list: \\l";
-            BOOST_FOREACH(const bh_instruction *i, graph[v].instr_list)
+            BOOST_FOREACH(const GraphInstr &i, graph[v].instr_list)
             {
-                bh_sprint_instr(i, buf, "\\l");
+                out << "[" << i.order << "] ";
+                bh_sprint_instr(i.instr, buf, "\\l");
                 out << buf << "\\l";
             }
             out << "\"]";

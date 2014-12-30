@@ -100,11 +100,11 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     {
         Vertex v = loc_map.at(vertex);
         GraphKernel &k = new_vertices.at(v);
-        BOOST_FOREACH(const bh_instruction *i, dag[vertex].instr_list)
+        BOOST_FOREACH(const GraphInstr &i, dag[vertex].instr_list)
         {
             if(not k.fusible(i))
                 fusibility = false;
-            k.add_instr(*i);
+            k.add_instr(i);
         }
     }
 
