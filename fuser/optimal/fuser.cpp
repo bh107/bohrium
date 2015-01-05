@@ -47,9 +47,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     BOOST_FOREACH(const EdgeW &e, edges2explore)
     {
         if(mask[i++])
-        {
             edges2merge.push_back(e);
-        }
     }
 
     //Help function to find the new location
@@ -71,6 +69,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     {
         loc_map[v] = v;
     }
+
     //Lets record the merges into 'loc_map'
     BOOST_FOREACH(const EdgeW &e, edges2merge)
     {
@@ -78,6 +77,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         Vertex v2 = find_loc(loc_map, target(e, graph.bglW()));
         loc_map[v1] = v2;
     }
+
     //Pack 'loc_map' such that all keys maps directly to a new vertex thus after
     //this point there is no need to call find_loc().
     BOOST_FOREACH(Vertex v, vertices(dag))
@@ -108,7 +108,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         }
     }
 
-    //TODO: Assert check
+    //TODO: Remove this assert check
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         if(loc_map.at(v) == v)
@@ -154,7 +154,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         }
     }
 
-    //TODO: Assert check
+    //TODO: remove assert check
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         if(dag[loc_map.at(v)].instr_list.size() == 0)
@@ -164,7 +164,6 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
             assert(1 == 2);
         }
     }
-    pprint(dag, "cycle.dot");
 
     //Check for cycles
     if(cycles(dag))
@@ -197,8 +196,10 @@ void fuse(const GraphDW &dag, const vector<EdgeW> &edges2explore,
 #ifdef VERBOSE
         if(explore_count%1000 == 0)
         {
-            cout << "[" << explore_count << "] " << "purge count: " << purge_count << " / " << pow(2.0,mask.size()) << endl;
-            cout << "cost: " << cost << ", best_cost: " << best_cost << ", fusibility: " << fusibility << endl;
+            cout << "[" << explore_count << "] " << "purge count: ";
+            cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
+            cout << "cost: " << cost << ", best_cost: " << best_cost;
+            cout << ", fusibility: " << fusibility << endl;
         }
         ++explore_count;
 #endif
@@ -271,6 +272,7 @@ void fuser(bh_ir &bhir)
     from_bhir(bhir, dag);
     fuse_gentle(dag);
     dag.transitive_reduction();
+    assert(dag_validate(dag.bglD()));
 
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
@@ -283,7 +285,7 @@ void fuser(bh_ir &bhir)
 
     if(edges2explore.size() == 0)
     {
-        fill_kernels(dag.bglD(), bhir.kernel_list);
+        fill_bhir_kernel_list(dag.bglD(), bhir);
         return;
     }
 
@@ -292,10 +294,12 @@ void fuser(bh_ir &bhir)
     {
         GraphD new_dag(dag.bglD());
         bool fuse;
-        tie(one_cost, fuse) = fuse_mask(numeric_limits<int64_t>::max(), edges2explore, dag, mask, new_dag);
+        tie(one_cost, fuse) = fuse_mask(numeric_limits<int64_t>::max(), edges2explore,
+                                        dag, mask, new_dag);
         if(fuse)
         {
-            fill_kernels(new_dag, bhir.kernel_list);
+            assert(dag_validate(new_dag));
+            fill_bhir_kernel_list(new_dag, bhir);
             return;
         }
     }
@@ -312,7 +316,7 @@ void fuser(bh_ir &bhir)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
         cout << mask.size() << "!" << endl;
-        fill_kernels(best_dag, bhir.kernel_list);
+        fill_bhir_kernel_list(best_dag, bhir);
         return;
     }
     else if(mask.size() > 10)
@@ -322,6 +326,7 @@ void fuser(bh_ir &bhir)
 
     fuse(dag, edges2explore, mask, 0, false);
     fuse(dag, edges2explore, mask, 0, true);
-    fill_kernels(best_dag, bhir.kernel_list);
+    assert(dag_validate(best_dag));
+    fill_bhir_kernel_list(best_dag, bhir);
 }
 

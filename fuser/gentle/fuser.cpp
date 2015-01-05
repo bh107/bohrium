@@ -36,6 +36,6 @@ void fuser(bh_ir &bhir)
     GraphDW dag;
     from_bhir(bhir, dag);
     fuse_gentle(dag);
-    fill_kernels(dag.bglD(), bhir.kernel_list);
+    fill_bhir_kernel_list(dag.bglD(), bhir);
 }
 

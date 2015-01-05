@@ -37,5 +37,5 @@ void fuser(bh_ir &bhir)
     from_bhir(bhir, dag);
     fuse_gentle(dag);
     fuse_greedy(dag);
-    fill_kernels(dag.bglD(), bhir.kernel_list);
+    fill_bhir_kernel_list(dag.bglD(), bhir);
 }
