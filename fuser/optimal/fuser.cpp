@@ -272,6 +272,7 @@ void fuser(bh_ir &bhir)
     from_bhir(bhir, dag);
     fuse_gentle(dag);
     dag.transitive_reduction();
+    assert(dag_validate(dag.bglD()));
 
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
@@ -297,6 +298,7 @@ void fuser(bh_ir &bhir)
                                         dag, mask, new_dag);
         if(fuse)
         {
+            assert(dag_validate(new_dag));
             fill_kernels(new_dag, bhir.kernel_list);
             return;
         }
@@ -324,6 +326,7 @@ void fuser(bh_ir &bhir)
 
     fuse(dag, edges2explore, mask, 0, false);
     fuse(dag, edges2explore, mask, 0, true);
+    assert(dag_validate(best_dag));
     fill_kernels(best_dag, bhir.kernel_list);
 }
 

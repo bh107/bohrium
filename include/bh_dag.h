@@ -956,6 +956,37 @@ void pprint(const GraphDW &dag, const char filename[])
     file.close();
 }
 
+/* Check that the 'dag' is valid
+ *
+ * @dag     The dag in question
+ * @return  The bool answer
+ */
+bool dag_validate(const GraphD &dag)
+{
+    using namespace std;
+    using namespace boost;
+    BOOST_FOREACH(Vertex v1, vertices(dag))
+    {
+        BOOST_FOREACH(Vertex v2, vertices(dag))
+        {
+            if(v1 != v2)
+            {
+                const int dep = dag[v1].dependency(dag[v2]);
+                if(dep == 1)//'v1' depend on 'v2'
+                {
+                    if(not path_exist(v2, v1, dag, false))
+                    {
+                        cout << "not path between " << v1 << " and " << v2 << endl;
+                        pprint(dag, "validate-fail.dot");
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings
  * NB: invalidates all existing vertex and edge pointers.
