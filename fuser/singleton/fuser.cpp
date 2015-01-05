@@ -34,10 +34,10 @@ void fuser(bh_ir &bhir)
     {
         throw logic_error("The kernel_list is not empty!");
     }
-    BOOST_FOREACH(const bh_instruction &i, bhir.instr_list)
-    {
-        bh_ir_kernel kernel;
-        kernel.add_instr(i);
+    for(uint64_t idx=0; idx < bhir.instr_list.size(); idx++)
+	{
+        bh_ir_kernel kernel(bhir);
+        kernel.add_instr(idx);
         bhir.kernel_list.push_back(kernel);
     }
 }

@@ -146,7 +146,9 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
     return tpl_opcode + tpl_layout + tpl_ndim  + "tpl";
 }
 
-string Specializer::specialize( SymbolTable& symbol_table, Block& block, LAYOUT fusion_layout)
+string Specializer::specialize( SymbolTable& symbol_table,
+                                Block& block,
+                                LAYOUT fusion_layout)
 {
     string sourcecode = "";
 
@@ -318,6 +320,31 @@ string Specializer::specialize( SymbolTable& symbol_table,
     kernel_d.SetIntValue("NARGS", block.noperands());
 
     //
+    //  Assign arguments for kernel operand unpacking
+    for(size_t opr_idx=0; opr_idx<block.noperands(); ++opr_idx) {
+        const operand_t& operand = block.operand(opr_idx);
+        ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
+        argument_d->SetIntValue("NR", opr_idx);
+        argument_d->SetValue("TYPE", core::etype_to_ctype_text(operand.etype));
+        switch(operand.layout) {
+            case SCALAR:
+                argument_d->ShowSection("SCALAR");
+                break;
+            case SCALAR_CONST:
+                argument_d->ShowSection("SCALAR_CONST");
+                break;
+            case SCALAR_TEMP:
+                argument_d->ShowSection("SCALAR_TEMP");
+                break;
+            case CONTIGUOUS:
+            case STRIDED:
+            case SPARSE:
+                argument_d->ShowSection("ARRAY");
+                break;
+        }
+    }
+
+    //
     // Now process the array operations
     for(size_t tac_idx=tac_start; tac_idx<=tac_end; ++tac_idx) {
 
@@ -405,31 +432,6 @@ string Specializer::specialize( SymbolTable& symbol_table,
             }
         }
         operands.clear();
-    }
-
-    //
-    //  Assign arguments for kernel operand unpacking
-    for(size_t opr_idx=0; opr_idx<block.noperands(); ++opr_idx) {
-        const operand_t& operand = block.operand(opr_idx);
-        ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-        argument_d->SetIntValue("NR", opr_idx);
-        argument_d->SetValue("TYPE", core::etype_to_ctype_text(operand.etype));
-        switch(operand.layout) {
-            case SCALAR:
-                argument_d->ShowSection("SCALAR");
-                break;
-            case SCALAR_CONST:
-                argument_d->ShowSection("SCALAR_CONST");
-                break;
-            case SCALAR_TEMP:
-                argument_d->ShowSection("SCALAR_TEMP");
-                break;
-            case CONTIGUOUS:
-            case STRIDED:
-            case SPARSE:
-                argument_d->ShowSection("ARRAY");
-                break;
-        }
     }
 
     //

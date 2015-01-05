@@ -37,6 +37,39 @@ void Block::clear(void)
     symbol_         = "";
 }
 
+void Block::compose(bh_ir_kernel& krnl)
+{
+    // An array pointers to operands
+    // Will be handed to the kernel-function.
+    operands_ = new operand_t*[krnl.instr_indexes.size()*3];
+
+    for(std::vector<uint64_t>::iterator idx_it = krnl.instr_indexes.begin();
+        idx_it != krnl.instr_indexes.end();
+        ++idx_it) {
+
+        tac_t& tac = program_[*idx_it];
+
+        tacs_.push_back(&tac);              // <-- All tacs
+
+        if ((tac.op & (ARRAY_OPS))>0) { 
+            array_tacs_.push_back(&tac);    // <-- Only array operations
+        }
+
+        // Map operands to local-scope
+        switch(tac_noperands(tac)) {
+            case 3:
+                localize(tac.in2);
+            case 2:
+                localize(tac.in1);
+            case 1:
+                localize(tac.out);
+            default:
+                break;
+        }
+    }
+}
+
+
 void Block::compose(size_t prg_begin, size_t prg_end)
 {
     // An array pointers to operands
@@ -64,11 +97,6 @@ void Block::compose(size_t prg_begin, size_t prg_end)
                 break;
         }
     }
-}
-
-void Block::compose(std::vector<bh_instruction>& instrs)
-{
-    compose(0, instrs.size()-1);
 }
 
 size_t Block::localize(size_t global_idx)

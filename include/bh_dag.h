@@ -679,18 +679,15 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
     using namespace std;
     using namespace boost;
 
-    uint64_t count = 0;
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
-        // TODO: Change needed when changing kernel-instruction representation
-        if(kernel.get_instrs().size() == 0)
+        if(kernel.instr_indexes.size() == 0)
             continue;
 
         GraphKernel k;
-        // TODO: Change needed when changing kernel-instruction representation
-        BOOST_FOREACH(const bh_instruction &instr, kernel.get_instrs())
+        BOOST_FOREACH(uint64_t instr_idx, kernel.instr_indexes)
         {
-            k.add_instr(GraphInstr(&instr, count++));
+            k.add_instr(GraphInstr(&kernel.bhir.instr_list[instr_idx], instr_idx));
         }
         dag.add_vertex(k);
     }
@@ -716,16 +713,18 @@ void fill_bhir_kernel_list(const GraphD &dag, bh_ir &bhir)
         if(dag[v].instr_list.size() > 0)
         {
             const GraphKernel &gk = dag[v];
-            bh_ir_kernel k;
+            bh_ir_kernel k(bhir);
 
             k.inputs = gk.input_list;
             k.outputs = gk.output_list;
             k.temps = gk.temp_list;
 
-            k.instrs.reserve(gk.instr_list.size());
+            //k.instrs.reserve(gk.instr_list.size());
+            k.instr_indexes.reserve(gk.instr_list.size());
             BOOST_FOREACH(const GraphInstr &i, gk.instr_list)
             {
-                k.instrs.push_back(*i.instr);
+                //k.instrs.push_back(*i.instr);
+                k.instr_indexes.push_back(i.order);
             }
             bhir.kernel_list.push_back(k);
         }

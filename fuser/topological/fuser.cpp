@@ -31,22 +31,22 @@ void fuser(bh_ir &bhir)
     {
         throw logic_error("The kernel_list is not empty!");
     }
-    vector<bh_instruction>::iterator it = bhir.instr_list.begin();
-    while(it != bhir.instr_list.end())
+    uint64_t idx=0;
+    while(idx < bhir.instr_list.size())
     {
         //Start new kernel
-        bh_ir_kernel kernel;
-        kernel.add_instr(*it);
+        bh_ir_kernel kernel(bhir);
+        kernel.add_instr(idx);
 
         //Add fusible instructions to the kernel
-        for(it=it+1; it != bhir.instr_list.end(); ++it)
+        for(idx=idx+1; idx< bhir.instr_list.size(); ++idx)
         {
             //Check that 'it' is fusible with all instructions 'kernel'
             bool fusible = true;
             // TODO: Change needed when changing representation of kernel-instructions
-            BOOST_FOREACH(const bh_instruction &i, kernel.get_instrs())
+            BOOST_FOREACH(uint64_t k_idx, kernel.instr_indexes)
             {
-                if(not bohrium::check_fusible(&i, &(*it)))
+                if(not bohrium::check_fusible(&bhir.instr_list[idx], &bhir.instr_list[k_idx]))
                 {
                     fusible = false;
                     break;
@@ -54,7 +54,7 @@ void fuser(bh_ir &bhir)
             }
             if(fusible)
             {
-                kernel.add_instr(*it);
+                kernel.add_instr(idx);
             }
             else
                 break;

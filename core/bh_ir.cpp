@@ -91,8 +91,7 @@ void bh_ir::pprint_kernel_list() const
     BOOST_FOREACH(const bh_ir_kernel &k, kernel_list)
     {
         snprintf(msg, 100, "kernel-%d", i++);
-        // TODO: Change needed when switching kernel-instruction representation
-        bh_pprint_instr_list(&k.get_instrs()[0], k.get_instrs().size(), msg);
+        bh_pprint_instr_krnl(&k, msg);
     }
 }
 
@@ -117,13 +116,10 @@ uint64_t bh_ir_kernel::cost() const
     return sum;
 }
 
-/* Add an instruction to the kernel
- *
- * @instr   The instruction to add
- * @return  The boolean answer
- */
-void bh_ir_kernel::add_instr(const bh_instruction &instr)
+void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
+    bh_instruction& instr = bhir.instr_list[instr_idx];
+
     if(instr.opcode == BH_DISCARD)
     {
         const bh_base *base = instr.operand[0].base;
@@ -173,9 +169,9 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
                 continue;
 
             bool local_source = false;
-            BOOST_FOREACH(const bh_instruction &i, instrs)
+            BOOST_FOREACH(uint64_t idx, instr_indexes)
             {
-                if(bh_view_aligned(&v, &i.operand[0]))
+                if(bh_view_aligned(&v, &bhir.instr_list[idx].operand[0]))
                 {
                     local_source = true;
                     break;
@@ -185,7 +181,7 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
                 inputs.push_back(v);
         }
     }
-    instrs.push_back(instr);
+    instr_indexes.push_back(instr_idx);
 };
 
 /* Determines whether this kernel depends on 'other',
@@ -200,11 +196,11 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
 bool bh_ir_kernel::dependency(const bh_ir_kernel &other) const
 {
     // TODO: Change needed when switching kernel-instruction representation
-    BOOST_FOREACH(const bh_instruction &i, get_instrs())
+    BOOST_FOREACH(uint64_t idx, instr_indexes)
     {
-        BOOST_FOREACH(const bh_instruction &o, other.get_instrs())
+        BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
         {
-            if(bh_instr_dependency(&i, &o))
+            if(bh_instr_dependency(&bhir.instr_list[idx], &bhir.instr_list[other_idx]))
                 return true;
         }
     }

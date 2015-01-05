@@ -31,76 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost {namespace serialization {class access;}}
 
-/* A kernel is a list of instructions that are fusible. That is, a SIMD
- * machine can theoretically execute all the instructions in a single
- * operation.
-*/
-class bh_ir_kernel
-{
-protected:
-    // Serialization using Boost
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
-    {
-        ar & instrs;
-    }
-
-public:
-    //The list of Bohrium instructions in this kernel
-    std::vector<bh_instruction> instrs;
-    // NOTE: I guess this should be "shielded" behind protected
-    //       but for "right now" this makes it a lot easier to integrate
-    //       with the current CPU-VE codebase.
-    //       For the future 'instrs' should be hidden behind protected
-    //       and accessed via const getters along with inputs,
-    //       outputs and temps?
-
-    //List of input and output to this kernel.
-    //NB: system instruction (e.g. BH_DISCARD) is
-    //never part of kernel input or output
-    std::vector<bh_view> inputs;
-    std::vector<bh_view> outputs;
-
-    //Lets of temporary base-arrays in this kernel.
-    std::vector<const bh_base*> temps;
-
-public:
-
-    /* Returns the instructions in this kernel (read-only) */
-    const std::vector<bh_instruction>& get_instrs() const {return instrs;};
-
-    /* Returns a list of inputs to this kernel (read-only) */
-    const std::vector<bh_view>& input_list() const {return inputs;};
-
-    /* Returns a list of outputs from this kernel (read-only) */
-    const std::vector<bh_view>& output_list() const {return outputs;};
-
-    /* Returns a list of temporary base-arrays in this kernel (read-only) */
-    const std::vector<const bh_base*>& temp_list() const {return temps;};
-
-    /* Returns the cost of the kernel */
-    uint64_t cost() const;
-
-    /* Add an instruction to the kernel
-     *
-     * @instr   The instruction to add
-     * @return  The boolean answer
-     */
-    void add_instr(const bh_instruction &instr);
-
-    /* Determines whether this kernel depends on 'other',
-     * which is true when:
-     *      'other' writes to an array that 'this' access
-     *                        or
-     *      'this' writes to an array that 'other' access
-     *
-     * @other The other kernel
-     * @return The boolean answer
-     */
-    bool dependency(const bh_ir_kernel &other) const;
-};
-
+class bh_ir_kernel; // Forward declaration
 
 /* The Bohrium Internal Representation (BhIR) represents an instruction
  * batch created by the Bridge component typically. */
@@ -151,6 +82,88 @@ protected:
         ar & kernel_list;
     }
 };
+
+/* A kernel is a list of instructions that are fusible. That is, a SIMD
+ * machine can theoretically execute all the instructions in a single
+ * operation.
+*/
+class bh_ir_kernel
+{
+private:
+    bh_ir_kernel() : bhir(*(new bh_ir())) {};   // Should never be called
+
+protected:
+    // Serialization using Boost
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & instr_indexes;
+    }
+
+public:
+    // The program representation that the kernel is subset of
+    bh_ir& bhir;
+
+    // Topologically ordered list of instruction indexes
+    std::vector<uint64_t> instr_indexes;    
+
+    //The list of Bohrium instructions in this kernel
+    //std::vector<bh_instruction> instrs;
+    // NOTE: I guess this should be "shielded" behind protected
+    //       but for "right now" this makes it a lot easier to integrate
+    //       with the current CPU-VE codebase.
+    //       For the future 'instrs' should be hidden behind protected
+    //       and accessed via const getters along with inputs,
+    //       outputs and temps?
+
+    //List of input and output to this kernel.
+    //NB: system instruction (e.g. BH_DISCARD) is
+    //never part of kernel input or output
+    std::vector<bh_view> inputs;
+    std::vector<bh_view> outputs;
+
+    //Lets of temporary base-arrays in this kernel.
+    std::vector<const bh_base*> temps;
+
+public:
+
+    /* Kernel constructor, takes the bhir as constructor */
+    bh_ir_kernel(bh_ir& bhir) : bhir(bhir) {};
+
+    /* Returns a list of inputs to this kernel (read-only) */
+    const std::vector<bh_view>& input_list() const {return inputs;};
+
+    /* Returns a list of outputs from this kernel (read-only) */
+    const std::vector<bh_view>& output_list() const {return outputs;};
+
+    /* Returns a list of temporary base-arrays in this kernel (read-only) */
+    const std::vector<const bh_base*>& temp_list() const {return temps;};
+
+    /* Returns the cost of the kernel */
+    uint64_t cost() const;
+
+    /* Add an instruction to the kernel
+     *
+     * TODO: Comment.
+     *
+     * @instr   The instruction to add
+     * @return  The boolean answer
+     */
+    void add_instr(uint64_t instr_idx);
+
+    /* Determines whether this kernel depends on 'other',
+     * which is true when:
+     *      'other' writes to an array that 'this' access
+     *                        or
+     *      'this' writes to an array that 'other' access
+     *
+     * @other The other kernel
+     * @return The boolean answer
+     */
+    bool dependency(const bh_ir_kernel &other) const;
+};
+
 
 #endif
 

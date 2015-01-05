@@ -75,6 +75,8 @@ DLLEXPORT void bh_sprint_instr(const bh_instruction *instr, char buf[],
 DLLEXPORT void bh_pprint_instr_list(const bh_instruction instr_list[],
                                     bh_intp ninstr, const char* txt);
 
+DLLEXPORT void bh_pprint_instr_krnl(const bh_ir_kernel* krnl, const char* txt);
+
 /* Pretty print an array view.
  *
  * @view  The array view in question

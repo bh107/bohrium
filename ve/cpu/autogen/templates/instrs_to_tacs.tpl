@@ -11,16 +11,14 @@ using namespace std;
 namespace bohrium{
 namespace core{
 
-void instrs_to_tacs(std::vector<bh_instruction>& instrs, vector<tac_t>& tacs, SymbolTable& symbol_table)
+void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
 {
     // Reset metadata
     int omask = 0;        // And the operation mask
-    bh_intp idx = 0; 
-    for(std::vector<bh_instruction>::iterator instr_iter=instrs.begin();
-        instr_iter != instrs.end();
-        ++instr_iter, ++idx) {
+    uint64_t ninstr = bhir.instr_list.size();
+    for(uint64_t idx=0; idx<ninstr; idx++) {
 
-        bh_instruction& instr = *instr_iter;
+        bh_instruction& instr = bhir.instr_list[idx];
 
         uint32_t out=0, in1=0, in2=0;
 

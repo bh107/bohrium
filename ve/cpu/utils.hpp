@@ -59,7 +59,7 @@ int tac_noperands(const tac_t& tac);
 /**
  *  Map bh_ir->instr_list (bh_instruction) to tac_t with entries in symbol_table.
  */
-void instrs_to_tacs(std::vector<bh_instruction>& instrs, 
+void instrs_to_tacs(bh_ir& bhir, 
                     std::vector<tac_t>& tacs,
                     SymbolTable& symbol_table);
 

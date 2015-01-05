@@ -25,20 +25,22 @@ public:
     void clear(void);
 
     /**
-     *  Compose a block of tacs in a legal execution order, with a
-     *  block-scoped symbol table and construct a symbol representing the block.
-     *
-     *  NOTE: This will reset the current state of the block.
-     */
-    void compose(std::vector<bh_instruction>& instrs);
-
-    /**
      *  Compose the block based based on a subset of program instructions.
      *
      *  @param prg_begin Start of the subset.
      *  @param prg_end End of the subset, to and including prg_end.
      */
     void compose(size_t prg_begin, size_t prg_end);
+
+    /**
+     *  Compose the block based based on a subset of program instructions.
+     *
+     *  TODO: Document
+     *
+     *  @param prg_begin Start of the subset.
+     *  @param prg_end End of the subset, to and including prg_end.
+     */
+    void compose(bh_ir_kernel& krnl);
 
     /**
      *  Return the block-local operand-index corresponding 

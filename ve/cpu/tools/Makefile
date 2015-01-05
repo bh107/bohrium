@@ -88,7 +88,7 @@ reset_all: purge_all install
 
 #
 # "Install the cpu-engine
-install: gen
+install:
 	mkdir -p $(BDIR)
 	cd $(BDIR) && cmake $(ROOT) && make && make install
 

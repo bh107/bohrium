@@ -395,29 +395,33 @@ bh_error Engine::execute(bh_ir* bhir)
     bh_error res = BH_SUCCESS;
 
     //
+    // Instantiate the tac-program and symbol-table
+    uint64_t program_size = bhir->instr_list.size();
+    vector<tac_t> program(program_size);                // Program
+    SymbolTable symbol_table(program_size*6+2);         // SymbolTable
+    
+    
+    instrs_to_tacs(*bhir, program, symbol_table);       // Map instructions to 
+                                                        // tac and symbol_table.
+
+    symbol_table.count_tmp();                           // Count intermediates
+                                                        // in symbol_table.
+
+    Block block(symbol_table, program);                 // Construct a block
+
+    //
     //  Map kernels to blocks one at a time and execute them.
     for(krnl_iter krnl = bhir->kernel_list.begin();
         krnl != bhir->kernel_list.end();
         ++krnl) {
 
-        bh_intp ninstrs = krnl->instrs.size();
+        bh_intp krnl_size = krnl->instr_indexes.size();
 
-        //
-        // Instantiate the symbol-table and tac-program
-        SymbolTable symbol_table(ninstrs*6+2);              // SymbolTable
-        vector<tac_t> program(ninstrs);                     // Program
-        
-        // Map instructions to tac and symbol_table
-        instrs_to_tacs(krnl->instrs, program, symbol_table);
-        symbol_table.count_tmp();
-
-        Block block(symbol_table, program);                 // Block
         block.clear();
-        block.compose(krnl->instrs);
-
-        // FUSE_MODE
+        block.compose(*krnl);
+        
         if (jit_fusion && \
-            (block.narray_tacs() > 1)) {
+            (block.narray_tacs() > 1)) {                // FUSE_MODE
 
             DEBUG(TAG, "FUSE START");
             res = fuse_mode(symbol_table, program, block);
@@ -426,14 +430,16 @@ bh_error Engine::execute(bh_ir* bhir)
             }
             DEBUG(TAG, "FUSE END");
         
-        // SIJ_MODE
-        } else {
+        } else {                                        // SIJ_MODE
 
             DEBUG(TAG, "SIJ START");
-            for(size_t instr_i=0; instr_i<ninstrs; ++instr_i) {
+            for(std::vector<uint64_t>::iterator idx_it = krnl->instr_indexes.begin();
+                idx_it != krnl->instr_indexes.end();
+                ++idx_it) {
+
                 // Compose the block
                 block.clear();
-                block.compose(instr_i, instr_i);
+                block.compose(*idx_it, *idx_it);
 
                 // Generate/Load code and execute it
                 res = sij_mode(symbol_table, program, block);

@@ -230,6 +230,18 @@ void bh_pprint_instr_list(const bh_instruction instr_list[],
     printf("}\n");
 }
 
+void bh_pprint_instr_krnl(const bh_ir_kernel* krnl, const char* txt)
+{
+    printf("%s %d {\n", txt, (int)krnl->instr_indexes.size());
+
+    for(std::vector<uint64_t>::const_iterator idx_it=krnl->instr_indexes.begin();
+        idx_it != krnl->instr_indexes.end();
+        ++idx_it) {
+        bh_pprint_instr(&krnl->bhir.instr_list[*idx_it]);
+    }
+    printf("}\n");
+}
+
 /* Pretty print an array view.
  *
  * @view  The array view in question
