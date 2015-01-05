@@ -127,7 +127,6 @@ public:
                     }
                 }
                 if(!duplicates)
-
                     output_list.push_back(v);
             }
             const int nop = bh_operands(instr.instr->opcode);
@@ -162,6 +161,7 @@ public:
                     input_list.push_back(v);
             }
         }
+        this->dependency(instr);//Sanity check
         instr_list.push_back(instr);
     };
 
@@ -271,26 +271,79 @@ public:
         return true;
     }
 
-    /* Determines whether this kernel depends on 'other',
+    /* Determines dependency between this kernel and the instruction 'instr',
+     * which is true when:
+     *      'instr' writes to an array that 'this' access
+     *                        or
+     *      'this' writes to an array that 'instr' access
+     *
+     * @instr    The instruction
+     * @return   0: no dependency
+     *           1: this kernel depend on 'instr'
+     *          -1: 'instr' depend on this kernel
+     */
+    int dependency(const GraphInstr &instr) const
+    {
+        int ret = 0;
+        BOOST_FOREACH(const GraphInstr &i, this->instr_list)
+        {
+            if(bh_instr_dependency(i.instr, instr.instr))
+            {
+                const bool i_depend_on_instr = i.order > instr.order;
+                assert(i.order != instr.order);
+                if(i_depend_on_instr)
+                {
+                    if(ret != -1)
+                    {
+                        ret = 1;
+                    }
+                    else
+                    {
+                        std::cerr << "cyclic dependency!" << std::endl;
+                        assert(1 == 2);
+                    }
+                }
+                else
+                {
+                    if(ret != 1)
+                    {
+                        ret = -1;
+                    }
+                    else
+                    {
+                        std::cerr << "cyclic dependency!" << std::endl;
+                        assert(1 == 2);
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+
+    /* Determines dependency between this kernel and 'other',
      * which is true when:
      *      'other' writes to an array that 'this' access
      *                        or
      *      'this' writes to an array that 'other' access
      *
-     * @other The other kernel
-     * @return The boolean answer
+     * @other    The other kernel
+     * @return   0: no dependency
+     *           1: this kernel depend on 'other'
+     *          -1: 'other' depend on this kernel
      */
-    bool dependency(const GraphKernel &other) const
+    int dependency(const GraphKernel &other) const
     {
-        BOOST_FOREACH(const GraphInstr &i, this->instr_list)
+        int ret = 0;
+        BOOST_FOREACH(const GraphInstr &o, other.instr_list)
         {
-            BOOST_FOREACH(const GraphInstr &o, other.instr_list)
+            const int dep = dependency(o);
+            if(dep)
             {
-                if(bh_instr_dependency(i.instr, o.instr))
-                    return true;
+                assert(ret == 0 or ret == dep);//Check for cyclic dependencies
+                ret = dep;
             }
         }
-        return false;
+        return ret;
     }
 
     /* Returns the cost of this kernel's dependency on the 'other' kernel.
@@ -402,8 +455,10 @@ public:
             if(d != v and not path_exist(v, d, _bglD, false))
             {
                 bool dependency = false;
-                if(kernel.dependency(_bglD[v]))
+                int dep = kernel.dependency(_bglD[v]);
+                if(dep)
                 {
+                    assert(dep == 1);
                     dependency = true;
                     boost::add_edge(v, d, _bglD);
                 }
