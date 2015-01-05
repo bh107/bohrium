@@ -285,7 +285,7 @@ void fuser(bh_ir &bhir)
 
     if(edges2explore.size() == 0)
     {
-        fill_kernels(dag.bglD(), bhir.kernel_list);
+        fill_bhir_kernel_list(dag.bglD(), bhir);
         return;
     }
 
@@ -299,7 +299,7 @@ void fuser(bh_ir &bhir)
         if(fuse)
         {
             assert(dag_validate(new_dag));
-            fill_kernels(new_dag, bhir.kernel_list);
+            fill_bhir_kernel_list(new_dag, bhir);
             return;
         }
     }
@@ -316,7 +316,7 @@ void fuser(bh_ir &bhir)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
         cout << mask.size() << "!" << endl;
-        fill_kernels(best_dag, bhir.kernel_list);
+        fill_bhir_kernel_list(best_dag, bhir);
         return;
     }
     else if(mask.size() > 10)
@@ -327,6 +327,6 @@ void fuser(bh_ir &bhir)
     fuse(dag, edges2explore, mask, 0, false);
     fuse(dag, edges2explore, mask, 0, true);
     assert(dag_validate(best_dag));
-    fill_kernels(best_dag, bhir.kernel_list);
+    fill_bhir_kernel_list(best_dag, bhir);
 }
 
