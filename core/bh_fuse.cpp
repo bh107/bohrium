@@ -86,20 +86,34 @@ static bool fuse_same_shape(const bh_instruction *a, const bh_instruction *b)
         return false;
 
     const int a_nop = bh_operands(a->opcode);
-    for(int i=0; i<a_nop; ++i)
-    {
-        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
-           && not bh_view_aligned_and_same_shape(&b->operand[0], &a->operand[i]))
-            return false;
-    }
     const int b_nop = bh_operands(b->opcode);
+    const bh_intp *shape = a->operand[0].shape;
+    const bh_intp ndim = a->operand[0].ndim;
+    for(int i=1; i<a_nop; ++i)
+    {
+        if(bh_is_constant(&a->operand[i]))
+            continue;
+        if(ndim != a->operand[i].ndim)
+            return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(a->operand[i].shape[j] != shape[j])
+                return false;
+        }
+    }
     for(int i=0; i<b_nop; ++i)
     {
-        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
-           && not bh_view_aligned_and_same_shape(&a->operand[0], &b->operand[i]))
+        if(bh_is_constant(&b->operand[i]))
+            continue;
+        if(ndim != b->operand[i].ndim)
             return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(b->operand[i].shape[j] != shape[j])
+                return false;
+        }
     }
-    return true;
+    return fuse_broadest(a, b);
 }
 
 /************************************************************************/
