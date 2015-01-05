@@ -57,14 +57,11 @@ std::string tac_text(const tac_t& tac);
 int tac_noperands(const tac_t& tac);
 
 /**
- *  Map bh_instruction* to tac_t with entries in symbol_table.
- *
+ *  Map bh_ir->instr_list (bh_instruction) to tac_t with entries in symbol_table.
  */
-void instrs_to_tacs(bh_instruction* instrs, bh_intp ninstrs,
-                    std::vector<tac_t>& tacs, SymbolTable& symbol_table);
-
 void instrs_to_tacs(std::vector<bh_instruction>& instrs, 
-                    std::vector<tac_t>& tacs, SymbolTable& symbol_table);
+                    std::vector<tac_t>& tacs,
+                    SymbolTable& symbol_table);
 
 /**
  *  Determine whether an operand has a contiguous layout.
