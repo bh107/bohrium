@@ -43,7 +43,8 @@ void fuser(bh_ir &bhir)
         {
             //Check that 'it' is fusible with all instructions 'kernel'
             bool fusible = true;
-            BOOST_FOREACH(const bh_instruction &i, kernel.instr_list())
+            // TODO: Change needed when changing representation of kernel-instructions
+            BOOST_FOREACH(const bh_instruction &i, kernel.get_instrs())
             {
                 if(not bohrium::check_fusible(&i, &(*it)))
                 {

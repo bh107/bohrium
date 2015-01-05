@@ -68,7 +68,7 @@ public:
 public:
 
     /* Returns the instructions in this kernel (read-only) */
-    const std::vector<bh_instruction>& instr_list() const {return instrs;};
+    const std::vector<bh_instruction>& get_instrs() const {return instrs;};
 
     /* Returns a list of inputs to this kernel (read-only) */
     const std::vector<bh_view>& input_list() const {return inputs;};
