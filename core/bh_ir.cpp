@@ -91,7 +91,8 @@ void bh_ir::pprint_kernel_list() const
     BOOST_FOREACH(const bh_ir_kernel &k, kernel_list)
     {
         snprintf(msg, 100, "kernel-%d", i++);
-        bh_pprint_instr_list(&k.instr_list()[0], k.instr_list().size(), msg);
+        // TODO: Change needed when switching kernel-instruction representation
+        bh_pprint_instr_list(&k.get_instrs()[0], k.get_instrs().size(), msg);
     }
 }
 
@@ -198,9 +199,10 @@ void bh_ir_kernel::add_instr(const bh_instruction &instr)
  */
 bool bh_ir_kernel::dependency(const bh_ir_kernel &other) const
 {
-    BOOST_FOREACH(const bh_instruction &i, instr_list())
+    // TODO: Change needed when switching kernel-instruction representation
+    BOOST_FOREACH(const bh_instruction &i, get_instrs())
     {
-        BOOST_FOREACH(const bh_instruction &o, other.instr_list())
+        BOOST_FOREACH(const bh_instruction &o, other.get_instrs())
         {
             if(bh_instr_dependency(&i, &o))
                 return true;

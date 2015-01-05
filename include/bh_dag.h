@@ -682,11 +682,13 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
     uint64_t count = 0;
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
-        if(kernel.instr_list().size() == 0)
+        // TODO: Change needed when changing kernel-instruction representation
+        if(kernel.get_instrs().size() == 0)
             continue;
 
         GraphKernel k;
-        BOOST_FOREACH(const bh_instruction &instr, kernel.instr_list())
+        // TODO: Change needed when changing kernel-instruction representation
+        BOOST_FOREACH(const bh_instruction &instr, kernel.get_instrs())
         {
             k.add_instr(GraphInstr(&instr, count++));
         }
