@@ -106,7 +106,7 @@ public:
     bh_ir& bhir;
 
     // Topologically ordered list of instruction indexes
-    std::vector<uint64_t> instr_indexes;    
+    std::vector<uint64_t> instr_indexes;
 
     //The list of Bohrium instructions in this kernel
     //std::vector<bh_instruction> instrs;
@@ -152,18 +152,69 @@ public:
      */
     void add_instr(uint64_t instr_idx);
 
-    /* Determines whether this kernel depends on 'other',
+    /* Determines whether the kernel fusible legal
+     *
+     * @return The boolean answer
+     */
+    bool fusible() const;
+
+    /* Determines whether it is legal to fuse with the instruction
+     *
+     * @instr_idx  The index of the instruction
+     * @return     The boolean answer
+     */
+    bool fusible(uint64_t instr_idx) const;
+
+    /* Determines whether it is legal to fuse with the kernel
+     *
+     * @other  The other kernel
+     * @return The boolean answer
+     */
+    bool fusible(const bh_ir_kernel &other) const;
+
+    /* Determines whether it is legal to fuse with the instruction
+     * without changing this kernel's dependencies.
+     *
+     * @instr_idx  The index of the instruction
+     * @return     The boolean answer
+     */
+    bool fusible_gently(uint64_t instr_idx) const;
+
+    /* Determines whether it is legal to fuse with the kernel without
+     * changing this kernel's dependencies.
+     *
+     * @other  The other kernel
+     * @return The boolean answer
+     */
+    bool fusible_gently(const bh_ir_kernel &other) const;
+
+    /* Determines dependency between this kernel and the instruction 'instr',
+     * which is true when:
+     *      'instr' writes to an array that 'this' access
+     *                        or
+     *      'this' writes to an array that 'instr' access
+     *
+     * @instr_idx  The index of the instruction
+     * @return     0: no dependency
+     *             1: this kernel depend on 'instr'
+     *            -1: 'instr' depend on this kernel
+     */
+    int dependency(uint64_t instr_idx) const;
+
+    /* Determines dependency between this kernel and 'other',
      * which is true when:
      *      'other' writes to an array that 'this' access
      *                        or
      *      'this' writes to an array that 'other' access
      *
-     * @other The other kernel
-     * @return The boolean answer
+     * @other    The other kernel
+     * @return   0: no dependency
+     *           1: this kernel depend on 'other'
+     *          -1: 'other' depend on this kernel
      */
-    bool dependency(const bh_ir_kernel &other) const;
-};
+    int dependency(const bh_ir_kernel &other) const;
 
+};
 
 #endif
 
