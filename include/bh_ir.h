@@ -79,7 +79,6 @@ protected:
     void serialize(Archive &ar, const unsigned int version)
     {
         ar & instr_list;
-        ar & kernel_list;
     }
 };
 
@@ -89,33 +88,12 @@ protected:
 */
 class bh_ir_kernel
 {
-private:
-    bh_ir_kernel() : bhir(*(new bh_ir())) {};   // Should never be called
-
-protected:
-    // Serialization using Boost
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
-    {
-        ar & instr_indexes;
-    }
-
 public:
     // The program representation that the kernel is subset of
-    bh_ir& bhir;
+    bh_ir *bhir;
 
     // Topologically ordered list of instruction indexes
-    std::vector<uint64_t> instr_indexes;    
-
-    //The list of Bohrium instructions in this kernel
-    //std::vector<bh_instruction> instrs;
-    // NOTE: I guess this should be "shielded" behind protected
-    //       but for "right now" this makes it a lot easier to integrate
-    //       with the current CPU-VE codebase.
-    //       For the future 'instrs' should be hidden behind protected
-    //       and accessed via const getters along with inputs,
-    //       outputs and temps?
+    std::vector<uint64_t> instr_indexes;
 
     //List of input and output to this kernel.
     //NB: system instruction (e.g. BH_DISCARD) is
@@ -127,9 +105,11 @@ public:
     std::vector<const bh_base*> temps;
 
 public:
+    /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
+    bh_ir_kernel():bhir(NULL){};
 
     /* Kernel constructor, takes the bhir as constructor */
-    bh_ir_kernel(bh_ir& bhir) : bhir(bhir) {};
+    bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {};
 
     /* Returns a list of inputs to this kernel (read-only) */
     const std::vector<bh_view>& input_list() const {return inputs;};
@@ -152,18 +132,69 @@ public:
      */
     void add_instr(uint64_t instr_idx);
 
-    /* Determines whether this kernel depends on 'other',
+    /* Determines whether the kernel fusible legal
+     *
+     * @return The boolean answer
+     */
+    bool fusible() const;
+
+    /* Determines whether it is legal to fuse with the instruction
+     *
+     * @instr_idx  The index of the instruction
+     * @return     The boolean answer
+     */
+    bool fusible(uint64_t instr_idx) const;
+
+    /* Determines whether it is legal to fuse with the kernel
+     *
+     * @other  The other kernel
+     * @return The boolean answer
+     */
+    bool fusible(const bh_ir_kernel &other) const;
+
+    /* Determines whether it is legal to fuse with the instruction
+     * without changing this kernel's dependencies.
+     *
+     * @instr_idx  The index of the instruction
+     * @return     The boolean answer
+     */
+    bool fusible_gently(uint64_t instr_idx) const;
+
+    /* Determines whether it is legal to fuse with the kernel without
+     * changing this kernel's dependencies.
+     *
+     * @other  The other kernel
+     * @return The boolean answer
+     */
+    bool fusible_gently(const bh_ir_kernel &other) const;
+
+    /* Determines dependency between this kernel and the instruction 'instr',
+     * which is true when:
+     *      'instr' writes to an array that 'this' access
+     *                        or
+     *      'this' writes to an array that 'instr' access
+     *
+     * @instr_idx  The index of the instruction
+     * @return     0: no dependency
+     *             1: this kernel depend on 'instr'
+     *            -1: 'instr' depend on this kernel
+     */
+    int dependency(uint64_t instr_idx) const;
+
+    /* Determines dependency between this kernel and 'other',
      * which is true when:
      *      'other' writes to an array that 'this' access
      *                        or
      *      'this' writes to an array that 'other' access
      *
-     * @other The other kernel
-     * @return The boolean answer
+     * @other    The other kernel
+     * @return   0: no dependency
+     *           1: this kernel depend on 'other'
+     *          -1: 'other' depend on this kernel
      */
-    bool dependency(const bh_ir_kernel &other) const;
-};
+    int dependency(const bh_ir_kernel &other) const;
 
+};
 
 #endif
 

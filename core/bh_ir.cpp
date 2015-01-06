@@ -118,7 +118,7 @@ uint64_t bh_ir_kernel::cost() const
 
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
-    bh_instruction& instr = bhir.instr_list[instr_idx];
+    bh_instruction& instr = bhir->instr_list[instr_idx];
 
     if(instr.opcode == BH_DISCARD)
     {
@@ -171,7 +171,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             bool local_source = false;
             BOOST_FOREACH(uint64_t idx, instr_indexes)
             {
-                if(bh_view_aligned(&v, &bhir.instr_list[idx].operand[0]))
+                if(bh_view_aligned(&v, &bhir->instr_list[idx].operand[0]))
                 {
                     local_source = true;
                     break;
@@ -184,26 +184,171 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     instr_indexes.push_back(instr_idx);
 };
 
-/* Determines whether this kernel depends on 'other',
+/* Determines whether the kernel fusible legal
+ *
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::fusible() const
+{
+    for(uint64_t i=0; i<instr_indexes.size(); ++i)
+    {
+        const bh_instruction *instr = &bhir->instr_list[i];
+        for(uint64_t j=i; j<instr_indexes.size(); ++j)
+        {
+            if(not bohrium::check_fusible(instr, &bhir->instr_list[j]))
+                return false;
+        }
+    }
+    return true;
+}
+
+/* Determines whether it is legal to fuse with the instruction
+ *
+ * @instr_idx  The index of the instruction
+ * @return     The boolean answer
+ */
+bool bh_ir_kernel::fusible(uint64_t instr_idx) const
+{
+    const bh_instruction *instr = &bhir->instr_list[instr_idx];
+    BOOST_FOREACH(uint64_t i, instr_indexes)
+    {
+        if(not bohrium::check_fusible(instr, &bhir->instr_list[i]))
+            return false;
+    }
+    return true;
+}
+
+/* Determines whether it is legal to fuse with the kernel
+ *
+ * @other  The other kernel
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
+{
+    BOOST_FOREACH(uint64_t idx1, instr_indexes)
+    {
+        const bh_instruction *instr = &bhir->instr_list[idx1];
+        BOOST_FOREACH(uint64_t idx2, other.instr_indexes)
+        {
+            if(not bohrium::check_fusible(instr, &other.bhir->instr_list[idx2]))
+                return false;
+        }
+    }
+    return true;
+}
+
+/* Determines whether it is legal to fuse with the instruction
+ * without changing this kernel's dependencies.
+ *
+ * @instr_idx  The index of the instruction
+ * @return     The boolean answer
+ */
+bool bh_ir_kernel::fusible_gently(uint64_t instr_idx) const
+{
+    const bh_instruction &instr = bhir->instr_list[instr_idx];
+    if(bh_opcode_is_system(instr.opcode))
+        return true;
+
+    //We are fusible if all instructions in 'this' kernel are system opcodes
+    {
+        bool all_system = true;
+        BOOST_FOREACH(uint64_t i, instr_indexes)
+        {
+            if(not bh_opcode_is_system(bhir->instr_list[i].opcode))
+            {
+                all_system = false;
+                break;
+            }
+        }
+        if(all_system)
+            return true;
+    }
+    //Check that 'instr' is gentle fusible with least one existing instruction
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    {
+        const bh_instruction &this_instr = bhir->instr_list[this_idx];
+        if(bh_opcode_is_system(this_instr.opcode))
+            continue;
+
+        if(bh_instr_fusible_gently(&instr, &this_instr) &&
+           bohrium::check_fusible(&instr, &this_instr))
+            return true;
+    }
+    return false;
+}
+
+/* Determines whether it is legal to fuse with the kernel without
+ * changing this kernel's dependencies.
+ *
+ * @other  The other kernel
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::fusible_gently(const bh_ir_kernel &other) const
+{
+    BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
+    {
+        if(not fusible_gently(other_idx))
+            return false;
+    }
+    return true;
+}
+
+/* Determines dependency between this kernel and the instruction 'instr',
+ * which is true when:
+ *      'instr' writes to an array that 'this' access
+ *                        or
+ *      'this' writes to an array that 'instr' access
+ *
+ * @instr_idx  The index of the instruction
+ * @return     0: no dependency
+ *             1: this kernel depend on 'instr'
+ *            -1: 'instr' depend on this kernel
+ */
+int bh_ir_kernel::dependency(uint64_t instr_idx) const
+{
+    int ret = 0;
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    {
+        if(bh_instr_dependency(&bhir->instr_list[instr_idx],
+                               &bhir->instr_list[this_idx]))
+        {
+            if(this_idx >= instr_idx)
+            {
+                assert(ret == 0 or ret == 1);//Check for cyclic dependency
+                ret = 1;
+            }
+            else
+            {
+                assert(ret == 0 or ret == -1);//Check for cyclic dependency
+                ret = -1;
+            }
+        }
+    }
+    return ret;
+}
+
+/* Determines dependency between this kernel and 'other',
  * which is true when:
  *      'other' writes to an array that 'this' access
  *                        or
  *      'this' writes to an array that 'other' access
  *
- * @other The other kernel
- * @return The boolean answer
+ * @other    The other kernel
+ * @return   0: no dependency
+ *           1: this kernel depend on 'other'
+ *          -1: 'other' depend on this kernel
  */
-bool bh_ir_kernel::dependency(const bh_ir_kernel &other) const
+int bh_ir_kernel::dependency(const bh_ir_kernel &other) const
 {
-    // TODO: Change needed when switching kernel-instruction representation
-    BOOST_FOREACH(uint64_t idx, instr_indexes)
+    int ret = 0;
+    BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
     {
-        BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
+        const int dep = dependency(other_idx);
+        if(dep)
         {
-            if(bh_instr_dependency(&bhir.instr_list[idx], &bhir.instr_list[other_idx]))
-                return true;
+            assert(ret == 0 or ret == dep);//Check for cyclic dependency
+            ret = dep;
         }
     }
-    return false;
+    return ret;
 }
-
