@@ -38,11 +38,11 @@ Engine::Engine(
     jit_enabled(jit_enabled),
     jit_fusion(jit_fusion),
     jit_dumpsrc(jit_dumpsrc),
+    dump_rep(dump_rep),
     storage(object_directory, kernel_directory),
     specializer(template_directory),
     compiler(compiler_cmd),
-    exec_count(0),
-    dump_rep(dump_rep)
+    exec_count(0)
 {
     bh_vcache_init(vcache_size);    // Victim cache
     if (preload) {
@@ -137,8 +137,8 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             if (jit_enabled && \
                 (!storage.symbol_ready(block.symbol()))) {   
                                                             // Specialize sourcecode
-                string sourcecode = specializer.specialize(symbol_table, block, 0, 0);
-                if (jit_dumpsrc==1) {                       // Dump sourcecode to file                
+                string sourcecode = specializer.specialize(symbol_table, block);
+                if (jit_dumpsrc==1) {                       // Dump sourcecode to file
                     core::write_file(
                         storage.src_abspath(block.symbol()),
                         sourcecode.c_str(), 
@@ -414,8 +414,6 @@ bh_error Engine::execute(bh_ir* bhir)
     for(krnl_iter krnl = bhir->kernel_list.begin();
         krnl != bhir->kernel_list.end();
         ++krnl) {
-
-        bh_intp krnl_size = krnl->instr_indexes.size();
 
         block.clear();
         block.compose(*krnl);

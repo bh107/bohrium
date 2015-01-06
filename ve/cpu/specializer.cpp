@@ -256,7 +256,10 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
     //
     // Assign operands to the operation, we use a set to avoid redeclaration within the operation.
-    for(set<size_t>::iterator operands_it=operands.begin(); operands_it != operands.end(); operands_it++) {
+    for(set<size_t>::iterator operands_it=operands.begin();
+        operands_it != operands.end();
+        operands_it++) {
+
         size_t opr_idx = *operands_it;
         const operand_t& operand = block.operand(opr_idx);
 
@@ -445,6 +448,12 @@ string Specializer::specialize( SymbolTable& symbol_table,
     );
 
     return sourcecode;
+}
+
+string Specializer::specialize( SymbolTable& symbol_table,
+                                Block& block)
+{
+    return specialize(symbol_table, block, 0, (block.ntacs()-1));
 }
 
 }}}
