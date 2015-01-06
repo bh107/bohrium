@@ -35,6 +35,7 @@ inline int omp_get_num_threads() { return 1; }
 /*
 KERNEL-DESCRIPTION {
   MODE          = {{MODE}},
+  LAYOUT        = {{LAYOUT}},
   NINSTR        = {{NINSTR}},
   NARRAY_INSTR  = {{NARRAY_INSTR}},
   NARGS         = {{NARGS}},
