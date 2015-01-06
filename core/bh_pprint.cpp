@@ -237,7 +237,7 @@ void bh_pprint_instr_krnl(const bh_ir_kernel* krnl, const char* txt)
     for(std::vector<uint64_t>::const_iterator idx_it=krnl->instr_indexes.begin();
         idx_it != krnl->instr_indexes.end();
         ++idx_it) {
-        bh_pprint_instr(&krnl->bhir.instr_list[*idx_it]);
+        bh_pprint_instr(&krnl->bhir->instr_list[*idx_it]);
     }
     printf("}\n");
 }

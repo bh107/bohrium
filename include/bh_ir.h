@@ -79,7 +79,6 @@ protected:
     void serialize(Archive &ar, const unsigned int version)
     {
         ar & instr_list;
-        ar & kernel_list;
     }
 };
 
@@ -89,33 +88,12 @@ protected:
 */
 class bh_ir_kernel
 {
-private:
-    bh_ir_kernel() : bhir(*(new bh_ir())) {};   // Should never be called
-
-protected:
-    // Serialization using Boost
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
-    {
-        ar & instr_indexes;
-    }
-
 public:
     // The program representation that the kernel is subset of
-    bh_ir& bhir;
+    bh_ir *bhir;
 
     // Topologically ordered list of instruction indexes
     std::vector<uint64_t> instr_indexes;
-
-    //The list of Bohrium instructions in this kernel
-    //std::vector<bh_instruction> instrs;
-    // NOTE: I guess this should be "shielded" behind protected
-    //       but for "right now" this makes it a lot easier to integrate
-    //       with the current CPU-VE codebase.
-    //       For the future 'instrs' should be hidden behind protected
-    //       and accessed via const getters along with inputs,
-    //       outputs and temps?
 
     //List of input and output to this kernel.
     //NB: system instruction (e.g. BH_DISCARD) is
@@ -127,9 +105,11 @@ public:
     std::vector<const bh_base*> temps;
 
 public:
+    /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
+    bh_ir_kernel():bhir(NULL){};
 
     /* Kernel constructor, takes the bhir as constructor */
-    bh_ir_kernel(bh_ir& bhir) : bhir(bhir) {};
+    bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {};
 
     /* Returns a list of inputs to this kernel (read-only) */
     const std::vector<bh_view>& input_list() const {return inputs;};

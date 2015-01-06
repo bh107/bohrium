@@ -687,7 +687,7 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
         GraphKernel k;
         BOOST_FOREACH(uint64_t instr_idx, kernel.instr_indexes)
         {
-            k.add_instr(GraphInstr(&kernel.bhir.instr_list[instr_idx], instr_idx));
+            k.add_instr(GraphInstr(&kernel.bhir->instr_list[instr_idx], instr_idx));
         }
         dag.add_vertex(k);
     }
