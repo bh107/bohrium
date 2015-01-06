@@ -360,12 +360,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     // Execute block handling array operations.
     // 
     DEBUG(TAG, "SYMBOL="<< block.symbol());
-    for(size_t tac_idx=0; tac_idx<block.ntacs(); ++tac_idx) {
-        tac_t& tac = block.tac(tac_idx);
-        cout << tac_text(tac) << endl;
-    }
-
-    cout << "Executing: " << block.symbol() << endl;
     storage.funcs[block.symbol()](block.operands());
 
     //
