@@ -161,31 +161,6 @@ string Specializer::specialize( SymbolTable& symbol_table,
     kernel_d.SetIntValue("NARGS",   block.noperands());
 
     //
-    //  Assign arguments for kernel operand unpacking
-    for(size_t opr_idx=0; opr_idx<block.noperands(); ++opr_idx) {
-        const operand_t& operand = block.operand(opr_idx);
-        ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
-        argument_d->SetIntValue("NR", opr_idx);
-        argument_d->SetValue("TYPE", core::etype_to_ctype_text(operand.etype));
-        switch(operand.layout) {
-            case SCALAR:
-                argument_d->ShowSection("SCALAR");
-                break;
-            case SCALAR_CONST:
-                argument_d->ShowSection("SCALAR_CONST");
-                break;
-            case SCALAR_TEMP:
-                argument_d->ShowSection("SCALAR_TEMP");
-                break;
-            case CONTIGUOUS:
-            case STRIDED:
-            case SPARSE:
-                argument_d->ShowSection("ARRAY");
-                break;
-        }
-    }
-
-    //
     // Assign information needed for generation of operation and operator code
     ctemplate::TemplateDictionary* operation_d = kernel_d.AddIncludeDictionary("OPERATIONS");
 
@@ -256,7 +231,10 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
     //
     // Assign operands to the operation, we use a set to avoid redeclaration within the operation.
-    for(set<size_t>::iterator operands_it=operands.begin(); operands_it != operands.end(); operands_it++) {
+    for(set<size_t>::iterator operands_it=operands.begin();
+        operands_it != operands.end();
+        operands_it++) {
+
         size_t opr_idx = *operands_it;
         const operand_t& operand = block.operand(opr_idx);
 
@@ -278,6 +256,28 @@ string Specializer::specialize( SymbolTable& symbol_table,
             case STRIDED:
             case SPARSE:
                 operand_d->ShowSection("ARRAY");
+                break;
+        }
+
+        //
+        //  Assign arguments for kernel operand unpacking
+        ctemplate::TemplateDictionary* argument_d = kernel_d.AddSectionDictionary("ARGUMENT");
+        argument_d->SetIntValue("NR", opr_idx);
+        argument_d->SetValue("TYPE", core::etype_to_ctype_text(operand.etype));
+        switch(operand.layout) {
+            case SCALAR_TEMP:
+                argument_d->ShowSection("SCALAR_TEMP");
+                break;
+            case SCALAR:
+                argument_d->ShowSection("SCALAR");
+                break;
+            case SCALAR_CONST:
+                argument_d->ShowSection("SCALAR_CONST");
+                break;
+            case CONTIGUOUS:
+            case STRIDED:
+            case SPARSE:
+                argument_d->ShowSection("ARRAY");
                 break;
         }
     }
@@ -445,6 +445,12 @@ string Specializer::specialize( SymbolTable& symbol_table,
     );
 
     return sourcecode;
+}
+
+string Specializer::specialize( SymbolTable& symbol_table,
+                                Block& block)
+{
+    return specialize(symbol_table, block, 0, (block.ntacs()-1));
 }
 
 }}}

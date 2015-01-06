@@ -111,11 +111,14 @@ public:
      *  Count of tacs in the block.
      */
     size_t ntacs(void) const;
+
+    /**
+     *  Count of array-tacs in the block.
+     */
     size_t narray_tacs(void) const;
 
     std::string symbol(void) const;
     std::string symbol_text(void) const;
-
 
     /**
      * Returns a textual representation of the block in dot-format.

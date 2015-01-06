@@ -29,12 +29,15 @@ public:
                                     size_t pc);
 
     std::string specialize( SymbolTable& symbol_table,
-                            Block& block,
-                            LAYOUT fusion_layout);
+                            Block& block);
 
     std::string specialize( SymbolTable& symbol_table,
                             Block& block,
                             size_t tac_start, size_t tac_end);
+
+    std::string specialize( SymbolTable& symbol_table,
+                            Block& block,
+                            LAYOUT fusion_layout);
 
 private:
     ctemplate::Strip strip_mode;
