@@ -32,11 +32,16 @@ inline int omp_get_num_threads() { return 1; }
 #endif
 
 #define ARGS_DPTR(I) *(args[I]->data)
-
-// KERNEL-DESCRIPTION [
-//  MODE={{MODE}}, NINSTR={{NINSTR}}, NARGS={{NARGS}}
-//  SYMBOL_TEXT {{SYMBOL_TEXT}}
-// ]
+/*
+KERNEL-DESCRIPTION {
+  MODE          = {{MODE}},
+  NINSTR        = {{NINSTR}},
+  NARRAY_INSTR  = {{NARRAY_INSTR}},
+  NARGS         = {{NARGS}},
+  NARRAY_ARGS   = {{NARRAY_ARGS}},
+  SYMBOL_TEXT   = {{SYMBOL_TEXT}}
+}
+*/
 void KRN_{{SYMBOL}}(operand_t** args)
 {
     //

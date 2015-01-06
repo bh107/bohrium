@@ -157,8 +157,10 @@ string Specializer::specialize( SymbolTable& symbol_table,
     kernel_d.SetValue("SYMBOL_TEXT",    block.symbol_text());
 
     kernel_d.SetValue("MODE", "FUSED");
-    kernel_d.SetIntValue("NINSTR",  block.narray_tacs());
-    kernel_d.SetIntValue("NARGS",   block.noperands());
+    kernel_d.SetIntValue("NINSTR", block.ntacs());
+    kernel_d.SetIntValue("NARRAY_INSTR", block.narray_tacs());
+    kernel_d.SetIntValue("NARGS", block.noperands());
+    kernel_d.SetIntValue("NARRAY_ARGS", 0);
 
     //
     // Assign information needed for generation of operation and operator code
@@ -317,7 +319,9 @@ string Specializer::specialize( SymbolTable& symbol_table,
 
     kernel_d.SetValue("MODE", "SIJ");
     kernel_d.SetIntValue("NINSTR", block.ntacs());
+    kernel_d.SetIntValue("NARRAY_INSTR", block.narray_tacs());
     kernel_d.SetIntValue("NARGS", block.noperands());
+    kernel_d.SetIntValue("NARRAY_ARGS", 0);
 
     //
     //  Assign arguments for kernel operand unpacking
