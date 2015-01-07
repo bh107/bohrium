@@ -192,10 +192,10 @@ bool bh_ir_kernel::fusible() const
 {
     for(uint64_t i=0; i<instr_indexes.size(); ++i)
     {
-        const bh_instruction *instr = &bhir->instr_list[i];
-        for(uint64_t j=i; j<instr_indexes.size(); ++j)
+        const bh_instruction *instr = &bhir->instr_list[instr_indexes[i]];
+        for(uint64_t j=i+1; j<instr_indexes.size(); ++j)
         {
-            if(not bohrium::check_fusible(instr, &bhir->instr_list[j]))
+            if(not bohrium::check_fusible(instr, &bhir->instr_list[instr_indexes[j]]))
                 return false;
         }
     }
@@ -293,7 +293,7 @@ bool bh_ir_kernel::fusible_gently(const bh_ir_kernel &other) const
     return true;
 }
 
-/* Determines dependency between this kernel and the instruction 'instr',
+/* Determines dependency between 'this' kernel and the instruction 'instr',
  * which is true when:
  *      'instr' writes to an array that 'this' access
  *                        or
@@ -316,11 +316,13 @@ int bh_ir_kernel::dependency(uint64_t instr_idx) const
             {
                 assert(ret == 0 or ret == 1);//Check for cyclic dependency
                 ret = 1;
+                //TODO: return 'ret' here, but for now we check all instructions
             }
             else
             {
                 assert(ret == 0 or ret == -1);//Check for cyclic dependency
                 ret = -1;
+                //TODO: return 'ret' here, but for now we check all instructions
             }
         }
     }
