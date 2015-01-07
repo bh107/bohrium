@@ -104,7 +104,15 @@ public:
     //Lets of temporary base-arrays in this kernel.
     std::vector<const bh_base*> temps;
 
-public:
+    /* Clear this kernel of all instructions */
+    void clear()
+    {
+        instr_indexes.clear();
+        inputs.clear();
+        outputs.clear();
+        temps.clear();
+    }
+
     /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
     bh_ir_kernel():bhir(NULL){};
 
@@ -120,8 +128,6 @@ public:
     /* Returns a list of temporary base-arrays in this kernel (read-only) */
     const std::vector<const bh_base*>& temp_list() const {return temps;};
 
-    /* Returns the cost of the kernel */
-    uint64_t cost() const;
 
     /* Add an instruction to the kernel
      *
@@ -193,6 +199,21 @@ public:
      *          -1: 'other' depend on this kernel
      */
     int dependency(const bh_ir_kernel &other) const;
+
+    /* Returns the cost of the kernel */
+    uint64_t cost() const;
+
+    /* Returns the cost savings of merging with the 'other' kernel.
+     * The cost savings is defined as the amount the BhIR will drop
+     * in price if the two kernels are fused.
+     * NB: This function determens the dependency order between the
+     * two kernels and calculate the cost saving based on that order.
+     *
+     * @other  The other kernel
+     * @return The cost value. Returns -1 if 'this' and the 'other'
+     *         kernel isn't fusible.
+     */
+    int64_t merge_cost_savings(const bh_ir_kernel &other) const;
 
 };
 

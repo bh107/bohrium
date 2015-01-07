@@ -56,372 +56,21 @@ struct EdgeWeight
     EdgeWeight(int64_t weight):value(weight){}
 };
 
-//The GraphInstr extend the bh_instruction with an
-//topological order ID. That is, if the memory access
-//of two instructions overlaps, the instruction with
-//the lower order ID precedes the other instruction.
-struct GraphInstr
-{
-    const bh_instruction *instr;
-    uint64_t order;
-
-    GraphInstr(){}
-    GraphInstr(const bh_instruction *i, uint64_t o):instr(i),order(o) {}
-};
-
-/* The GraphKernel class encapsulates a kernel of instructions
- * much like the bh_ir_kernel class. The main different is the
- * use of GraphInstr instead bh_ir_kernel.
- */
-class GraphKernel
-{
-public:
-    //The list of Bohrium instructions in this kernel
-    //Note that this is a vertor of pointers and not a
-    //copy of the original instruction list.
-    std::vector<GraphInstr> instr_list;
-
-    //List of input and output to this kernel.
-    //NB: system instruction (e.g. BH_DISCARD) is
-    //never part of kernel input or output
-    std::vector<bh_view> input_list;
-    std::vector<bh_view> output_list;
-
-    //Lets of temporary base-arrays in this kernel.
-    std::vector<const bh_base*> temp_list;
-
-    /* Add an instruction reference to the kernel
-     *
-     * @instr   The instruction to add
-     * @return  The boolean answer
-     */
-    void add_instr(const GraphInstr &instr)
-    {
-        using namespace std;
-        using namespace boost;
-        if(instr.instr->opcode == BH_DISCARD)
-        {
-            const bh_base *base = instr.instr->operand[0].base;
-            for(vector<bh_view>::iterator it=output_list.begin();
-                it != output_list.end(); ++it)
-            {
-                if(base == it->base)
-                {
-                    temp_list.push_back(base);
-                    output_list.erase(it);
-                    break;
-                }
-            }
-        }
-        else if(instr.instr->opcode != BH_FREE)
-        {
-            {
-                bool duplicates = false;
-                const bh_view &v = instr.instr->operand[0];
-                BOOST_FOREACH(const bh_view &i, output_list)
-                {
-                    if(bh_view_aligned(&v, &i))
-                    {
-                        duplicates = true;
-                        break;
-                    }
-                }
-                if(!duplicates)
-                    output_list.push_back(v);
-            }
-            const int nop = bh_operands(instr.instr->opcode);
-            for(int i=1; i<nop; ++i)
-            {
-                const bh_view &v = instr.instr->operand[i];
-                if(bh_is_constant(&v))
-                    continue;
-
-                bool duplicates = false;
-                BOOST_FOREACH(const bh_view &i, input_list)
-                {
-                    if(bh_view_aligned(&v, &i))
-                    {
-                        duplicates = true;
-                        break;
-                    }
-                }
-                if(duplicates)
-                    continue;
-
-                bool local_source = false;
-                BOOST_FOREACH(const GraphInstr &i, instr_list)
-                {
-                    if(bh_view_aligned(&v, &i.instr->operand[0]))
-                    {
-                        local_source = true;
-                        break;
-                    }
-                }
-                if(!local_source)
-                    input_list.push_back(v);
-            }
-        }
-        this->dependency(instr);//Sanity check
-        instr_list.push_back(instr);
-    };
-
-    /* Determines whether the kernel fusible legal
-     *
-     * @return The boolean answer
-     */
-    bool fusible() const
-    {
-        BOOST_FOREACH(const GraphInstr &i1, instr_list)
-        {
-            BOOST_FOREACH(const GraphInstr &i2, instr_list)
-            {
-                if(i1.instr != i2.instr)
-                    if(not bohrium::check_fusible(i1.instr, i2.instr))
-                        return false;
-            }
-        }
-        return true;
-    }
-
-    /* Determines whether it is legal to fuse with the instruction
-     *
-     * @instr  The instruction
-     * @return The boolean answer
-     */
-    bool fusible(const GraphInstr &instr) const
-    {
-        BOOST_FOREACH(const GraphInstr &i, instr_list)
-        {
-            if(not bohrium::check_fusible(i.instr, instr.instr))
-                return false;
-        }
-        return true;
-    }
-
-    /* Determines whether it is legal to fuse with the kernel
-     *
-     * @other The other kernel
-     * @return The boolean answer
-     */
-    bool fusible(const GraphKernel &other) const
-    {
-        BOOST_FOREACH(const GraphInstr &a, this->instr_list)
-        {
-            BOOST_FOREACH(const GraphInstr &b, other.instr_list)
-            {
-                if(not bohrium::check_fusible(a.instr, b.instr))
-                    return false;
-            }
-        }
-        return true;
-    }
-
-    /* Determines whether it is legal to fuse with the instruction
-     * without changing this kernel's dependencies.
-     *
-     * @instr  The instruction
-     * @return The boolean answer
-     */
-    bool fusible_gently(const GraphInstr &instr) const
-    {
-        if(bh_opcode_is_system(instr.instr->opcode))
-            return true;
-
-        //We are fusible if all instructions in this kernel are system opcodes
-        {
-            bool all_system = true;
-            BOOST_FOREACH(const GraphInstr &i, instr_list)
-            {
-                if(not bh_opcode_is_system(i.instr->opcode))
-                {
-                    all_system = false;
-                    break;
-                }
-            }
-            if(all_system)
-                return true;
-        }
-        //Check that 'instr' is fusible with least one existing instruction
-        BOOST_FOREACH(const GraphInstr &i, instr_list)
-        {
-            if(bh_opcode_is_system(i.instr->opcode))
-                continue;
-
-            if(bh_instr_fusible_gently(instr.instr, i.instr) &&
-               bohrium::check_fusible(instr.instr, i.instr))
-                return true;
-        }
-        return false;
-    }
-
-    /* Determines whether it is legal to fuse with the kernel without
-     * changing this kernel's dependencies.
-     *
-     * @other  The other kernel
-     * @return The boolean answer
-     */
-    bool fusible_gently(const GraphKernel &other) const
-    {
-
-        BOOST_FOREACH(const GraphInstr &i, other.instr_list)
-        {
-            if(not fusible_gently(i))
-                return false;
-        }
-        return true;
-    }
-
-    /* Determines dependency between this kernel and the instruction 'instr',
-     * which is true when:
-     *      'instr' writes to an array that 'this' access
-     *                        or
-     *      'this' writes to an array that 'instr' access
-     *
-     * @instr    The instruction
-     * @return   0: no dependency
-     *           1: this kernel depend on 'instr'
-     *          -1: 'instr' depend on this kernel
-     */
-    int dependency(const GraphInstr &instr) const
-    {
-        int ret = 0;
-        BOOST_FOREACH(const GraphInstr &i, this->instr_list)
-        {
-            if(bh_instr_dependency(i.instr, instr.instr))
-            {
-                const bool i_depend_on_instr = i.order > instr.order;
-                assert(i.order != instr.order);
-                if(i_depend_on_instr)
-                {
-                    if(ret != -1)
-                    {
-                        ret = 1;
-                    }
-                    else
-                    {
-                        std::cerr << "cyclic dependency!" << std::endl;
-                        assert(1 == 2);
-                    }
-                }
-                else
-                {
-                    if(ret != 1)
-                    {
-                        ret = -1;
-                    }
-                    else
-                    {
-                        std::cerr << "cyclic dependency!" << std::endl;
-                        assert(1 == 2);
-                    }
-                }
-            }
-        }
-        return ret;
-    }
-
-    /* Determines dependency between this kernel and 'other',
-     * which is true when:
-     *      'other' writes to an array that 'this' access
-     *                        or
-     *      'this' writes to an array that 'other' access
-     *
-     * @other    The other kernel
-     * @return   0: no dependency
-     *           1: this kernel depend on 'other'
-     *          -1: 'other' depend on this kernel
-     */
-    int dependency(const GraphKernel &other) const
-    {
-        int ret = 0;
-        BOOST_FOREACH(const GraphInstr &o, other.instr_list)
-        {
-            const int dep = dependency(o);
-            if(dep)
-            {
-                assert(ret == 0 or ret == dep);//Check for cyclic dependencies
-                ret = dep;
-            }
-        }
-        return ret;
-    }
-
-    /* Returns the cost of this kernel's dependency on the 'other' kernel.
-     * The cost of a dependency is defined as the amount the BhIR will drop
-     * in price if the two kernels are fused.
-     * Note that a zero cost dependency is possible because of system
-     * instructions such as BH_FREE and BH_DISCARD.
-     *
-     * @other  The other kernel
-     * @return The cost value. Returns -1 if this and the 'other'
-     *         kernel isn't fusible.
-     */
-    int64_t dependency_cost(const GraphKernel &other) const
-    {
-        if(this == &other)
-            return 0;
-
-        if(not fusible(other))
-            return -1;
-
-        int64_t price_drop = 0;
-
-        //Subtract inputs that comes from 'other' or is already an input in 'other'
-        BOOST_FOREACH(const bh_view &i, this->input_list)
-        {
-            BOOST_FOREACH(const bh_view &o, other.output_list)
-            {
-                if(bh_view_aligned(&i, &o))
-                    price_drop += cost_of_view(i);
-            }
-            BOOST_FOREACH(const bh_view &o, other.input_list)
-            {
-                if(bh_view_aligned(&i, &o))
-                    price_drop += cost_of_view(i);
-            }
-        }
-        //Subtract outputs that are discared in 'this'
-        BOOST_FOREACH(const bh_view &o, other.output_list)
-        {
-            BOOST_FOREACH(const GraphInstr &i, this->instr_list)
-            {
-                if(i.instr->opcode == BH_DISCARD and i.instr->operand[0].base == o.base)
-                {
-                    price_drop += cost_of_view(o);
-                    break;
-                }
-            }
-        }
-        return price_drop;
-    }
-
-    /* Returns the cost of the kernel */
-    uint64_t cost() const
-    {
-        uint64_t sum = 0;
-        BOOST_FOREACH(const bh_view &v, input_list)
-        {
-            sum += cost_of_view(v);
-        }
-        BOOST_FOREACH(const bh_view &v, output_list)
-        {
-            sum += cost_of_view(v);
-        }
-        return sum;
-    }
-};
-
 //The type declaration of the boost graphs, vertices and edges.
 typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS,
-                              GraphKernel> GraphD;
+                              bh_ir_kernel> GraphD;
 typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS,
                               boost::no_property, EdgeWeight> GraphW;
 typedef typename boost::graph_traits<GraphD>::edge_descriptor EdgeD;
 typedef typename boost::graph_traits<GraphW>::edge_descriptor EdgeW;
 
-//Forward declaration
+//Forward declarations
+class GraphDW;
 bool path_exist(Vertex a, Vertex b, const GraphD &dag,
                 bool ignore_neighbors);
+void pprint(const GraphDW &dag, const char filename[]);
+bool cycles(const GraphD &g);
+
 
 /* The GraphDW class encapsulate both a dependency graph and
  * a weight graph. The public methods ensures that the two
@@ -443,7 +92,7 @@ public:
      *
      * @kernel  The kernel to bundle with the new vertex
      */
-    Vertex add_vertex(const GraphKernel &kernel)
+    Vertex add_vertex(const bh_ir_kernel &kernel)
     {
         Vertex d = boost::add_vertex(kernel, _bglD);
         Vertex w = boost::add_vertex(_bglW);
@@ -462,7 +111,7 @@ public:
                     dependency = true;
                     boost::add_edge(v, d, _bglD);
                 }
-                int64_t cost = kernel.dependency_cost(_bglD[v]);
+                int64_t cost = kernel.merge_cost_savings(_bglD[v]);
                 if((cost > 0) or (cost == 0 and dependency))
                 {
                     boost::add_edge(v, d, EdgeWeight(cost), _bglW);
@@ -496,7 +145,7 @@ public:
     {
         boost::clear_vertex(v, _bglD);
         boost::clear_vertex(v, _bglW);
-        _bglD[v] = GraphKernel();
+        _bglD[v].clear();
     }
 
     /* Remove the previously cleared vertices.
@@ -508,7 +157,7 @@ public:
         std::vector<Vertex> removes;
         BOOST_FOREACH(Vertex v, boost::vertices(_bglD))
         {
-            if(_bglD[v].instr_list.size() == 0)
+            if(_bglD[v].instr_indexes.size() == 0)
             {
                 removes.push_back(v);
             }
@@ -535,9 +184,9 @@ public:
         using namespace std;
         using namespace boost;
 
-        BOOST_FOREACH(const GraphInstr &i, _bglD[b].instr_list)
+        BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
         {
-            _bglD[a].add_instr(i);
+            _bglD[a].add_instr(idx);
         }
         BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglD))
         {
@@ -571,7 +220,7 @@ public:
             Vertex v2 = target(e, _bglW);
             if(path_exist(v1, v2, _bglD, false))
             {
-                int64_t cost = _bglD[v2].dependency_cost(_bglD[v1]);
+                int64_t cost = _bglD[v2].merge_cost_savings(_bglD[v1]);
                 if(cost >= 0)
                     _bglW[e].value = cost;
                 else
@@ -579,7 +228,7 @@ public:
             }
             else if(path_exist(v2, v1, _bglD, false))
             {
-                int64_t cost = _bglD[v1].dependency_cost(_bglD[v2]);
+                int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
                 if(cost >= 0)
                     _bglW[e].value = cost;
                 else
@@ -587,7 +236,7 @@ public:
             }
             else
             {
-                int64_t cost = _bglD[v1].dependency_cost(_bglD[v2]);
+                int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
                 if(cost > 0)
                     _bglW[e].value = cost;
                 else
@@ -607,10 +256,15 @@ public:
             if(not _bglD[source(e, _bglW)].fusible(_bglD[target(e, _bglW)]))
             {
                 cout << "non fusible weight edge!: " << e << endl;
-                assert( 1 == 2);
+                assert(1 == 2);
             }
         }
         if(not _bglD[a].fusible())
+        {
+            cout << "kernel merge " << a << " " << b << endl;
+            assert(1 == 2);
+        }
+        if(cycles(_bglD))
         {
             cout << "kernel merge " << a << " " << b << endl;
             assert(1 == 2);
@@ -628,10 +282,40 @@ public:
      */
     void transitive_reduction()
     {
-        BOOST_FOREACH(EdgeD e, edges(_bglD))
+        using namespace std;
+        using namespace boost;
+
+        //Remove redundant dependency edges
         {
-            if(path_exist(source(e,_bglD), target(e,_bglD), _bglD, true))
-               boost::remove_edge(e, _bglD);
+            vector<EdgeD> removals;
+            BOOST_FOREACH(EdgeD e, edges(_bglD))
+            {
+                if(path_exist(source(e,_bglD), target(e,_bglD), _bglD, true))
+                    removals.push_back(e);
+            }
+            BOOST_FOREACH(EdgeD e, removals)
+            {
+                remove_edge(e, _bglD);
+            }
+        }
+        //Remove redundant weight edges
+        {
+            vector<EdgeW> removals;
+            BOOST_FOREACH(EdgeW e, edges(_bglW))
+            {
+                Vertex a = source(e, _bglW);
+                Vertex b = target(e, _bglW);
+                if(edge(a, b, _bglD).second or edge(b, a, _bglD).second)
+                    continue;//'a' and 'b' are adjacent in the DAG
+
+                //Remove the edge if 'a' and 'b' are connected in the DAG
+                if(path_exist(a, b, _bglD, true) or path_exist(b, a, _bglD, true))
+                    removals.push_back(e);
+            }
+            BOOST_FOREACH(EdgeW e, removals)
+            {
+                remove_edge(e, _bglW);
+            }
         }
     }
 };
@@ -647,7 +331,7 @@ public:
  *
  * Throw logic_error() if the kernel_list wihtin 'bhir' isn't empty
  */
-void from_bhir(const bh_ir &bhir, GraphDW &dag)
+void from_bhir(bh_ir &bhir, GraphDW &dag)
 {
     using namespace std;
     using namespace boost;
@@ -657,11 +341,10 @@ void from_bhir(const bh_ir &bhir, GraphDW &dag)
         throw logic_error("The kernel_list is not empty!");
     }
     //Build a singleton DAG
-    uint64_t count = 0;
-    BOOST_FOREACH(const bh_instruction &instr, bhir.instr_list)
+    for(uint64_t idx=0; idx<bhir.instr_list.size(); ++idx)
     {
-        GraphKernel k;
-        k.add_instr(GraphInstr(&instr, count++));
+        bh_ir_kernel k(bhir);
+        k.add_instr(idx);
         dag.add_vertex(k);
     }
 }
@@ -681,15 +364,8 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
 
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
-        if(kernel.instr_indexes.size() == 0)
-            continue;
-
-        GraphKernel k;
-        BOOST_FOREACH(uint64_t instr_idx, kernel.instr_indexes)
-        {
-            k.add_instr(GraphInstr(&kernel.bhir->instr_list[instr_idx], instr_idx));
-        }
-        dag.add_vertex(k);
+        if(kernel.instr_indexes.size() > 0)
+            dag.add_vertex(kernel);
     }
 }
 
@@ -710,23 +386,9 @@ void fill_bhir_kernel_list(const GraphD &dag, bh_ir &bhir)
     topological_sort(dag, back_inserter(topological_order));
     BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
     {
-        if(dag[v].instr_list.size() > 0)
+        if(dag[v].instr_indexes.size() > 0)
         {
-            const GraphKernel &gk = dag[v];
-            bh_ir_kernel k(bhir);
-
-            k.inputs = gk.input_list;
-            k.outputs = gk.output_list;
-            k.temps = gk.temp_list;
-
-            //k.instrs.reserve(gk.instr_list.size());
-            k.instr_indexes.reserve(gk.instr_list.size());
-            BOOST_FOREACH(const GraphInstr &i, gk.instr_list)
-            {
-                //k.instrs.push_back(*i.instr);
-                k.instr_indexes.push_back(i.order);
-            }
-            bhir.kernel_list.push_back(k);
+            bhir.kernel_list.push_back(dag[v]);
         }
     }
 }
@@ -899,28 +561,29 @@ void pprint(const GraphDW &dag, const char filename[])
             out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
             out << " bytes\\n";
             out << "Input views: \\l";
-            BOOST_FOREACH(const bh_view &i, graph[v].input_list)
+            BOOST_FOREACH(const bh_view &i, graph[v].input_list())
             {
                 bh_sprint_view(&i, buf);
                 out << buf << "\\l";
             }
             out << "Output views: \\l";
-            BOOST_FOREACH(const bh_view &i, graph[v].output_list)
+            BOOST_FOREACH(const bh_view &i, graph[v].output_list())
             {
                 bh_sprint_view(&i, buf);
                 out << buf << "\\l";
             }
             out << "Temp base-arrays: \\l";
-            BOOST_FOREACH(const bh_base *i, graph[v].temp_list)
+            BOOST_FOREACH(const bh_base *i, graph[v].temp_list())
             {
                 bh_sprint_base(i, buf);
                 out << buf << "\\l";
             }
             out << "Instruction list: \\l";
-            BOOST_FOREACH(const GraphInstr &i, graph[v].instr_list)
+            BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes)
             {
-                out << "[" << i.order << "] ";
-                bh_sprint_instr(i.instr, buf, "\\l");
+                const bh_instruction &instr = graph[v].bhir->instr_list[idx];
+                out << "[" << idx << "] ";
+                bh_sprint_instr(&instr, buf, "\\l");
                 out << buf << "\\l";
             }
             out << "\"]";
@@ -1025,6 +688,7 @@ void fuse_gentle(GraphDW &dag)
         }
     }
     dag.remove_cleared_vertices();
+    dag.transitive_reduction();
 }
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
@@ -1068,30 +732,27 @@ void fuse_greedy(GraphDW &dag, const std::set<Vertex> &ignores={})
         }
     }get_sorted_edges;
 
-    bool not_finished = true;
     vector<EdgeW> sorted;
-    while(not_finished)
+    while(true)
     {
-        not_finished = false;
+        dag.transitive_reduction();
         sorted.clear();
         get_sorted_edges(dag, sorted, ignores);
-        BOOST_FOREACH(const EdgeW &e, sorted)
-        {
-            GraphDW new_dag(dag);
-            Vertex a = source(e, dag.bglW());
-            Vertex b = target(e, dag.bglW());
-            if(path_exist(a, b, dag.bglD(), false))
-                new_dag.merge_vertices(a, b);
-            else
-                new_dag.merge_vertices(b, a);
 
-            if(not cycles(new_dag.bglD()))
-            {
-                dag = new_dag;
-                not_finished = true;
-                break;
-            }
-        }
+        if(sorted.size() == 0)
+            break;//No more fusible edges left
+
+        EdgeW &e = sorted[0];
+        Vertex a = source(e, dag.bglW());
+        Vertex b = target(e, dag.bglW());
+        if(path_exist(a, b, dag.bglD(), false))
+            dag.merge_vertices(a, b);
+        else
+            dag.merge_vertices(b, a);
+
+        //Note: since we call transitive_reduction() in each iteration,
+        //the merge will never introduce cyclic dependencies.
+        assert(not cycles(dag.bglD()));
     }
 }
 
