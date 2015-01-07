@@ -39,7 +39,8 @@ using namespace boost;
 using namespace bohrium::dag;
 
 pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explore,
-                             const GraphDW &graph, const vector<bool> &mask, GraphD &dag)
+                             const GraphDW &graph, const vector<bool> &mask, bh_ir &bhir, 
+                             GraphD &dag)
 {
     bool fusibility=true;
     vector<EdgeW> edges2merge;
@@ -88,23 +89,23 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     }
 
     //Create the new vertices and insert instruction topologically
-    map<Vertex, GraphKernel> new_vertices;
+    map<Vertex, bh_ir_kernel> new_vertices;
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         if(loc_map.at(v) == v)
-            new_vertices[v] = GraphKernel();
+            new_vertices[v] = bh_ir_kernel(bhir);
     }
     vector<Vertex> topological_order;
     topological_sort(dag, back_inserter(topological_order));
     BOOST_REVERSE_FOREACH(Vertex vertex, topological_order)
     {
         Vertex v = loc_map.at(vertex);
-        GraphKernel &k = new_vertices.at(v);
-        BOOST_FOREACH(const GraphInstr &i, dag[vertex].instr_list)
+        bh_ir_kernel &k = new_vertices.at(v);
+        BOOST_FOREACH(uint64_t idx, dag[vertex].instr_indexes)
         {
-            if(not k.fusible(i))
+            if(not k.fusible(idx))
                 fusibility = false;
-            k.add_instr(i);
+            k.add_instr(idx);
         }
     }
 
@@ -112,12 +113,12 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         if(loc_map.at(v) == v)
-            assert(new_vertices[v].instr_list.size() > 0);
+            assert(new_vertices[v].instr_indexes.size() > 0);
     }
 
     //Find the total cost
     int64_t cost=0;
-    BOOST_FOREACH(const GraphKernel &k, new_vertices | adaptors::map_values)
+    BOOST_FOREACH(const bh_ir_kernel &k, new_vertices | adaptors::map_values)
     {
         cost += k.cost();
     }
@@ -133,7 +134,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         if(loc_v == v)
         {
             dag[v] = new_vertices.at(v);
-            assert(dag[v].instr_list.size() > 0);
+            assert(dag[v].instr_indexes.size() > 0);
         }
         else//Lets merge 'v' into 'loc_v'
         {
@@ -150,14 +151,14 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
                     add_edge(a, loc_v, dag);
             }
             clear_vertex(v, dag);
-            dag[v] = GraphKernel();
+            dag[v] = bh_ir_kernel(bhir);
         }
     }
 
     //TODO: remove assert check
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
-        if(dag[loc_map.at(v)].instr_list.size() == 0)
+        if(dag[loc_map.at(v)].instr_indexes.size() == 0)
         {
             cout << v << endl;
             cout << loc_map.at(v) << endl;
@@ -182,7 +183,7 @@ int fuser_count=0;
 int64_t best_cost;
 int64_t one_cost;
 GraphD best_dag;
-void fuse(const GraphDW &dag, const vector<EdgeW> &edges2explore,
+void fuse(const GraphDW &dag, bh_ir &bhir, const vector<EdgeW> &edges2explore,
           vector<bool> mask, unsigned int offset, bool merge_next)
 {
     if(not merge_next)
@@ -191,7 +192,7 @@ void fuse(const GraphDW &dag, const vector<EdgeW> &edges2explore,
         mask[offset] = merge_next;
         bool fusibility;
         int64_t cost;
-        tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, new_dag);
+        tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
 
 #ifdef VERBOSE
         if(explore_count%1000 == 0)
@@ -227,8 +228,8 @@ void fuse(const GraphDW &dag, const vector<EdgeW> &edges2explore,
     }
     if(offset+1 < mask.size())
     {
-        fuse(dag, edges2explore, mask, offset+1, false);
-        fuse(dag, edges2explore, mask, offset+1, true);
+        fuse(dag, bhir, edges2explore, mask, offset+1, false);
+        fuse(dag, bhir, edges2explore, mask, offset+1, true);
     }
 }
 
@@ -295,7 +296,7 @@ void fuser(bh_ir &bhir)
         GraphD new_dag(dag.bglD());
         bool fuse;
         tie(one_cost, fuse) = fuse_mask(numeric_limits<int64_t>::max(), edges2explore,
-                                        dag, mask, new_dag);
+                                        dag, mask, bhir, new_dag);
         if(fuse)
         {
             assert(dag_validate(new_dag));
@@ -324,8 +325,8 @@ void fuser(bh_ir &bhir)
         cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
     }
 
-    fuse(dag, edges2explore, mask, 0, false);
-    fuse(dag, edges2explore, mask, 0, true);
+    fuse(dag, bhir, edges2explore, mask, 0, false);
+    fuse(dag, bhir, edges2explore, mask, 0, true);
     assert(dag_validate(best_dag));
     fill_bhir_kernel_list(best_dag, bhir);
 }
