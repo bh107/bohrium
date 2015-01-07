@@ -607,7 +607,7 @@ public:
             if(not _bglD[source(e, _bglW)].fusible(_bglD[target(e, _bglW)]))
             {
                 cout << "non fusible weight edge!: " << e << endl;
-                assert( 1 == 2);
+                assert(1 == 2);
             }
         }
         if(not _bglD[a].fusible())
@@ -1099,31 +1099,27 @@ void fuse_greedy(GraphDW &dag, const std::set<Vertex> &ignores={})
         }
     }get_sorted_edges;
 
-    bool not_finished = true;
     vector<EdgeW> sorted;
-    while(not_finished)
+    while(true)
     {
         dag.transitive_reduction();
-        not_finished = false;
         sorted.clear();
         get_sorted_edges(dag, sorted, ignores);
-        BOOST_FOREACH(const EdgeW &e, sorted)
-        {
-            GraphDW new_dag(dag);
-            Vertex a = source(e, dag.bglW());
-            Vertex b = target(e, dag.bglW());
-            if(path_exist(a, b, dag.bglD(), false))
-                new_dag.merge_vertices(a, b);
-            else
-                new_dag.merge_vertices(b, a);
 
-            if(not cycles(new_dag.bglD()))
-            {
-                dag = new_dag;
-                not_finished = true;
-                break;
-            }
-        }
+        if(sorted.size() == 0)
+            break;//No more fusible edges left
+
+        EdgeW &e = sorted[0];
+        Vertex a = source(e, dag.bglW());
+        Vertex b = target(e, dag.bglW());
+        if(path_exist(a, b, dag.bglD(), false))
+            dag.merge_vertices(a, b);
+        else
+            dag.merge_vertices(b, a);
+
+        //Note: since we call transitive_reduction() in each iteration,
+        //the merge will never introduce cyclic dependencies.
+        assert(not cycles(dag.bglD()));
     }
 }
 
