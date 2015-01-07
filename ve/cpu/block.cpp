@@ -32,6 +32,7 @@ void Block::clear(void)
         noperands_  = 0;
     }
     global_to_local_.clear();
+    local_to_global_.clear();
 
     symbol_text_    = "";
     symbol_         = "";
@@ -125,6 +126,7 @@ size_t Block::localize(size_t global_idx)
     //
     // Insert entry such that tac operands can be resolved in block-scope.
     global_to_local_.insert(pair<size_t,size_t>(global_idx, local_idx));
+    local_to_global_.insert(pair<size_t,size_t>(local_idx, global_idx));
 
     return local_idx;
 }
@@ -215,6 +217,11 @@ size_t Block::noperands(void)
 size_t Block::global_to_local(size_t global_idx) const
 {
     return global_to_local_.find(global_idx)->second;
+}
+
+size_t Block::local_to_global(size_t local_idx) const
+{
+    return local_to_global_.find(local_idx)->second;
 }
 
 tac_t& Block::tac(size_t idx) const

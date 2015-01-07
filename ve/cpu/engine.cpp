@@ -191,15 +191,33 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
     return BH_SUCCESS;
 }
 
-bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& program, Block& block)
+bh_error Engine::fuse_mode(SymbolTable& symbol_table,
+                            std::vector<tac_t>& program,
+                            Block& block,
+                            bh_ir_kernel& krnl)
 {
     bh_error res = BH_SUCCESS;
     TIMER_START
 
     //
     // Turn temps into scalars
-    // TODO: Run over the kernel-temps to determine contractable arrays
+    const std::vector<const bh_base*>& temps = krnl.temp_list();
+    for(std::vector<const bh_base*>::const_iterator tmp_it = temps.begin();
+        tmp_it != temps.end();
+        ++tmp_it) {
 
+        for(size_t operand_idx = 0;
+            operand_idx < block.noperands();
+            ++operand_idx) {
+            if (block.operand(operand_idx).base == *tmp_it) {
+                //cout << "Got contractable array with base= "<< *tmp_it << endl;
+                symbol_table.turn_scalar_temp(block.local_to_global(operand_idx));
+            }
+        }
+    }
+
+    //
+    // Determine the layout that will dictate the fused loop
     LAYOUT fusion_layout = SCALAR;
     for(size_t tac_idx=0; tac_idx<block.ntacs(); ++tac_idx) {
         tac_t& tac = block.tac(tac_idx);
@@ -343,7 +361,7 @@ bh_error Engine::execute(bh_ir* bhir)
             (block.narray_tacs() > 1)) {                // FUSE_MODE
 
             DEBUG(TAG, "FUSE START");
-            res = fuse_mode(symbol_table, program, block);
+            res = fuse_mode(symbol_table, program, block, *krnl);
             if (BH_SUCCESS != res) {
                 return res;
             }

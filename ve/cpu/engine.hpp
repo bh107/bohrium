@@ -67,7 +67,8 @@ private:
     bh_error fuse_mode(
         SymbolTable& symbol_table,
         std::vector<tac_t>& program,
-        Block& block
+        Block& block,
+        bh_ir_kernel& krnl
     );
 
     std::string compiler_cmd,

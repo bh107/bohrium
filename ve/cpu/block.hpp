@@ -52,6 +52,15 @@ public:
     size_t global_to_local(size_t global_idx) const;
 
     /**
+     *  Return the global operand-index corresponding 
+     *  to the given local operand-index.
+     *
+     *  @param local_idx The local operand-index to resolve
+     *  @return The global operand-index
+     */
+    size_t local_to_global(size_t local_idx) const;
+
+    /**
      *  Create an operand with block scope based on the operand in global scope.
      *
      *  Reuses operands of equivalent meta-data.
@@ -139,6 +148,7 @@ private:
     operand_t** operands_;
     size_t noperands_;
     std::map<size_t, size_t> global_to_local_;  // Mapping from global to block-local scope.
+    std::map<size_t, size_t> local_to_global_;  // Mapping from global to block-local scope.
 
     std::string symbol_text_;       // Textual representation of the block
     std::string symbol_;            // Hash of textual representation
