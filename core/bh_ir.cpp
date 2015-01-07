@@ -95,27 +95,6 @@ void bh_ir::pprint_kernel_list() const
     }
 }
 
-/* Returns the cost of a bh_view */
-inline static uint64_t cost_of_view(const bh_view &v)
-{
-    return bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
-}
-
-/* Returns the cost of the kernel */
-uint64_t bh_ir_kernel::cost() const
-{
-    uint64_t sum = 0;
-    BOOST_FOREACH(const bh_view &v, input_list())
-    {
-        sum += cost_of_view(v);
-    }
-    BOOST_FOREACH(const bh_view &v, output_list())
-    {
-        sum += cost_of_view(v);
-    }
-    return sum;
-}
-
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
     bh_instruction& instr = bhir->instr_list[instr_idx];
@@ -346,11 +325,98 @@ int bh_ir_kernel::dependency(const bh_ir_kernel &other) const
     BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
     {
         const int dep = dependency(other_idx);
-        if(dep)
+        if(dep != 0)
         {
             assert(ret == 0 or ret == dep);//Check for cyclic dependency
             ret = dep;
+            //TODO: return 'ret' here, but for now we check all instructions
         }
     }
     return ret;
 }
+
+/* Returns the cost of a bh_view */
+inline static uint64_t cost_of_view(const bh_view &v)
+{
+    return bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
+}
+
+/* Returns the cost of the kernel */
+uint64_t bh_ir_kernel::cost() const
+{
+    uint64_t sum = 0;
+    BOOST_FOREACH(const bh_view &v, input_list())
+    {
+        sum += cost_of_view(v);
+    }
+    BOOST_FOREACH(const bh_view &v, output_list())
+    {
+        sum += cost_of_view(v);
+    }
+    return sum;
+}
+
+/* Returns the cost savings of merging with the 'other' kernel.
+ * The cost savings is defined as the amount the BhIR will drop
+ * in price if the two kernels are fused.
+ * NB: This function determens the dependency order between the
+ * two kernels and calculate the cost saving based on that order.
+ *
+ * @other  The other kernel
+ * @return The cost value. Returns -1 if 'this' and the 'other'
+ *         kernel isn't fusible.
+ */
+int64_t bh_ir_kernel::merge_cost_savings(const bh_ir_kernel &other) const
+{
+    if(this == &other)
+        return 0;
+
+    if(not fusible(other))
+        return -1;
+
+    const bh_ir_kernel *a;
+    const bh_ir_kernel *b;
+    //Lets make sure that 'a' depend on 'b'
+    if(this->dependency(other) == 1)
+    {
+        a = this;
+        b = &other;
+    }
+    else
+    {
+        a = &other;
+        b = this;
+    }
+
+    int64_t price_drop = 0;
+
+    //Subtract inputs in 'a' that comes from 'b' or is already an input in 'b'
+    BOOST_FOREACH(const bh_view &i, a->input_list())
+    {
+        BOOST_FOREACH(const bh_view &o, b->output_list())
+        {
+            if(bh_view_aligned(&i, &o))
+                price_drop += cost_of_view(i);
+        }
+        BOOST_FOREACH(const bh_view &o, b->input_list())
+        {
+            if(bh_view_aligned(&i, &o))
+                price_drop += cost_of_view(i);
+        }
+    }
+    //Subtract outputs from 'b' that are discared in 'a'
+    BOOST_FOREACH(const bh_view &o, b->output_list())
+    {
+        BOOST_FOREACH(uint64_t a_instr_idx, a->instr_indexes)
+        {
+            const bh_instruction &a_instr = a->bhir->instr_list[a_instr_idx];
+            if(a_instr.opcode == BH_DISCARD and a_instr.operand[0].base == o.base)
+            {
+                price_drop += cost_of_view(o);
+                break;
+            }
+        }
+    }
+    return price_drop;
+}
+
