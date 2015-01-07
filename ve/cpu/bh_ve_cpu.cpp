@@ -210,9 +210,7 @@ bh_error bh_ve_cpu_init(const char *name)
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
     bh_error res = BH_SUCCESS;
-    TIMER_START
     res = engine->execute(bhir);
-    TIMER_STOP("CPU-EXECUTE")
 
     return res;
 }

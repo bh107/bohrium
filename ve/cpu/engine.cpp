@@ -79,6 +79,7 @@ string Engine::text()
 
 bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Block& block)
 {
+    TIMER_START
     bh_error res = BH_SUCCESS;
 
     tac_t& tac = block.tac(0);
@@ -185,6 +186,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
 
             break;
     }
+    TIMER_STOP("S: " + block.symbol())
     return BH_SUCCESS;
 }
 
@@ -252,6 +254,7 @@ void count_rw(  tac_t& tac, set<size_t>& freed,
 bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& program, Block& block)
 {
     bh_error res = BH_SUCCESS;
+    TIMER_START
 
     //
     // Determine temps and fusion_layout
@@ -339,9 +342,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     }
 
     //
-    // Allocate memory for output
+    // Allocate memory for output operand(s)
     //
-
     for(size_t i=0; i<block.ntacs(); ++i) {
         tac_t& tac = block.tac(i);
         operand_t& operand = symbol_table[tac.out];
@@ -363,8 +365,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
     storage.funcs[block.symbol()](block.operands());
 
     //
-    // De-Allocate operand memory
-
+    // De-Allocate memory for operand(s)
+    //
     for(size_t i=0; i<block.ntacs(); ++i) {
         tac_t& tac = block.tac(i);
         operand_t& operand = symbol_table[tac.out];
@@ -378,7 +380,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
             }
         }
     }
-
+    TIMER_STOP("F: " + block.symbol())
     return BH_SUCCESS;
 }
 

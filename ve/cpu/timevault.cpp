@@ -85,7 +85,7 @@ string Timevault::format_row(string identifier, time_t elapsed, int samples)
     stringstream ss;
     string sep = " | ";
 
-    ss << setw(42)  << identifier << sep;
+    ss << setw(52)  << identifier << sep;
     ss << setw(7)   << samples << sep;
     ss << setw(10)  << format(elapsed) << sep;
     ss << setw(10)  << format(elapsed/(float)samples);
@@ -97,7 +97,7 @@ string Timevault::format_line(char fill, char sep)
 {
     stringstream line;
 
-    line << sep << setw(43) << setfill(fill) << sep;
+    line << sep << setw(53) << setfill(fill) << sep;
     line << setw(10) << setfill(fill) << sep;
     line << setw(13) << setfill(fill) << sep;
     line << setw(13) << setfill(fill) << sep;
@@ -119,7 +119,7 @@ string Timevault::text(bool detailed)
     size_t samples_total = 0;
 
     header << endl;
-    header << "  Identifier" << setw(32) << "|";
+    header << "  Identifier" << setw(42) << "|";
     header << " Samples " << "|";
     header << "  Elapsed   " << "|";
     header << "  Average " << endl;
