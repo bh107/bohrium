@@ -182,6 +182,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             //
             // Execute block handling array operations.
             // 
+            DEBUG(TAG, "SYMBOL="<< block.symbol());
             storage.funcs[block.symbol()](block.operands());
 
             break;

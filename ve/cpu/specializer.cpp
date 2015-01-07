@@ -206,7 +206,7 @@ string Specializer::specialize( SymbolTable& symbol_table,
         //        
         ctemplate::TemplateDictionary* operator_d = operation_d->AddSectionDictionary("OPERATORS");
         operator_d->SetValue("OPERATOR", cexpression(symbol_table, block, tac_idx));
-        DEBUG(TAG, tac_text(tac));
+        
         //
         // Map the tac operands into block-scope
         switch(core::tac_noperands(tac)) {
