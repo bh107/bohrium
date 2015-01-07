@@ -628,10 +628,40 @@ public:
      */
     void transitive_reduction()
     {
-        BOOST_FOREACH(EdgeD e, edges(_bglD))
+        using namespace std;
+        using namespace boost;
+
+        //Remove redundant dependency edges
         {
-            if(path_exist(source(e,_bglD), target(e,_bglD), _bglD, true))
-               boost::remove_edge(e, _bglD);
+            vector<EdgeD> removals;
+            BOOST_FOREACH(EdgeD e, edges(_bglD))
+            {
+                if(path_exist(source(e,_bglD), target(e,_bglD), _bglD, true))
+                    removals.push_back(e);
+            }
+            BOOST_FOREACH(EdgeD e, removals)
+            {
+                remove_edge(e, _bglD);
+            }
+        }
+        //Remove redundant weight edges
+        {
+            vector<EdgeW> removals;
+            BOOST_FOREACH(EdgeW e, edges(_bglW))
+            {
+                Vertex a = source(e, _bglW);
+                Vertex b = target(e, _bglW);
+                if(edge(a, b, _bglD).second or edge(b, a, _bglD).second)
+                    continue;//'a' and 'b' are adjacent in the DAG
+
+                //Remove the edge if 'a' and 'b' are connected in the DAG
+                if(path_exist(a, b, _bglD, true) or path_exist(b, a, _bglD, true))
+                    removals.push_back(e);
+            }
+            BOOST_FOREACH(EdgeW e, removals)
+            {
+                remove_edge(e, _bglW);
+            }
         }
     }
 };
@@ -1025,6 +1055,7 @@ void fuse_gentle(GraphDW &dag)
         }
     }
     dag.remove_cleared_vertices();
+    dag.transitive_reduction();
 }
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
@@ -1072,6 +1103,7 @@ void fuse_greedy(GraphDW &dag, const std::set<Vertex> &ignores={})
     vector<EdgeW> sorted;
     while(not_finished)
     {
+        dag.transitive_reduction();
         not_finished = false;
         sorted.clear();
         get_sorted_edges(dag, sorted, ignores);
