@@ -76,23 +76,6 @@ public:
     void turn_scalar_temp(size_t operand_idx);
 
     /**
-     * Maintain records of how many times an operand has been read, written,
-     * and whether it is potentially a temporary operand.
-     *
-     * "Potentially Temporary" are operands which are subject to the FREE operator.
-     * "Temporary" operands, are operands which within their life-time, that means
-     * up until they are subject to FREE have the state:
-     *
-     * (reads[operand_symbol] == writes[operand_symbol] == 1)
-     *
-     * NOTE:
-     * When a (in1 == in2) for binary operators then it only counts as a single "read".
-     */
-    void count_rw(const tac_t& tac);
-
-    void count_tmp(void);
-
-    /**
      *  Reset refcounted / temp information and operands.
      */
     void clear(void);
@@ -103,25 +86,6 @@ public:
     operand_t& operator[](size_t operand_idx);
 
     operand_t* operands(void);
-    size_t* reads(void);
-    size_t* writes(void);
-
-    /**
-     * Returns the set of operand indexes which are unfit for temp.
-     */
-    std::set<size_t>& disqualified(void);
-    
-    /**
-     * Return the set of operand-indexes which subject to a FREE instruction.
-     */
-    std::set<size_t>& freed(void);
-
-    bool is_temp(size_t operand_idx);
-
-    /**
-     * Returns the set of operand_indexes which are temporary operands.
-     */
-    std::set<size_t>& temp(void);
 
     /**
      * Create a textual representation of the table.
@@ -143,16 +107,6 @@ private:
                         // with assumptions on capacity.
 
     operand_t* table_;           // The actual symbol-table
-    size_t* reads_;              // Read-count of operands
-    size_t* writes_;             // Write-cout of operands
-
-    //
-    // The following are used to detect temporary arrays
-    //
-    std::set<size_t> disqualified_;     // Operands which could be temps
-    std::set<size_t> freed_;            // Operands which are freed
-    std::set<size_t> temp_;             // Operands which are temps
-
     size_t capacity_;    // Capacity reserved
     size_t nsymbols_;    // The current number of symbols in the table
 

@@ -75,10 +75,6 @@ void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
                     fprintf(stderr, "}\n");
                 }
         }
-
-        //
-        // Update the ref count
-        symbol_table.count_rw(tacs[idx]);
     }
 }
 

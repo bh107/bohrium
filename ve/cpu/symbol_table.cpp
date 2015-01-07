@@ -7,15 +7,9 @@ namespace core{
 
 const char SymbolTable::TAG[] = "SymbolTable";
 
-SymbolTable::SymbolTable(size_t n) : table_(NULL), reads_(NULL), writes_(NULL), capacity_(n), nsymbols_(0)
+SymbolTable::SymbolTable(size_t n) : table_(NULL), capacity_(n), nsymbols_(0)
 {
     table_ = new operand_t[capacity_];
-
-    reads_ = new size_t[capacity_];
-    memset(reads_, 0, capacity_*sizeof(size_t));
-
-    writes_ = new size_t[capacity_];
-    memset(writes_, 0, capacity_*sizeof(size_t));
 }
 
 SymbolTable::~SymbolTable(void)
@@ -23,8 +17,6 @@ SymbolTable::~SymbolTable(void)
     //
     // De-allocate storage for symbol_table, reads, and writes.
     delete[] table_;
-    delete[] reads_;
-    delete[] writes_;
 }
 
 string SymbolTable::text(void)
@@ -74,8 +66,6 @@ string SymbolTable::text(string prefix)
             }
         }
         ss << "),";
-        ss << " reads_(" << reads_[sbl_idx] << "),";
-        ss << " writes_(" << writes_[sbl_idx] << ")";
         ss << endl << prefix << "  ";
         ss << "}" << endl;
     }
@@ -86,9 +76,6 @@ string SymbolTable::text(string prefix)
 
 void SymbolTable::clear(void)
 {
-    disqualified_.clear();
-    freed_.clear();
-    temp_.clear();
     nsymbols_ = 0;
 }
 
@@ -105,26 +92,6 @@ size_t SymbolTable::size(void)
 operand_t& SymbolTable::operator[](size_t operand_idx)
 {
     return table_[operand_idx];
-}
-
-set<size_t>& SymbolTable::disqualified(void)
-{
-    return disqualified_;
-}
-
-set<size_t>& SymbolTable::freed(void)
-{
-    return freed_;
-}
-
-set<size_t>& SymbolTable::temp(void)
-{
-    return temp_;
-}
-
-bool SymbolTable::is_temp(size_t operand_idx)
-{
-    return temp_.find(operand_idx) != temp_.end();
 }
 
 size_t SymbolTable::import(operand_t& operand)
@@ -183,64 +150,6 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         break;
     }
     return arg_idx;
-}
-
-void SymbolTable::count_rw(const tac_t& tac)
-{
-    switch(tac.op) {    // Do read/write counting ...
-        case MAP:
-            reads_[tac.in1]++;
-            writes_[tac.out]++;
-            break;
-
-        case ZIP:
-        case EXTENSION:
-            if (tac.in2!=tac.in1) {
-                reads_[tac.in2]++;
-            }
-            reads_[tac.in1]++;
-            writes_[tac.out]++;
-            break;
-
-        case REDUCE:
-        case SCAN:
-            reads_[tac.in2]++;
-            reads_[tac.in1]++;
-            writes_[tac.out]++;
-
-            disqualified_.insert(tac.in2);
-            disqualified_.insert(tac.in1);
-            disqualified_.insert(tac.out);
-            break;
-
-        case GENERATE:
-            switch(tac.oper) {
-                case RANDOM:
-                case FLOOD:
-                    reads_[tac.in1]++;
-                    disqualified_.insert(tac.in1);
-                default:
-                    writes_[tac.out]++;
-                    disqualified_.insert(tac.out);
-            }
-            break;
-
-        case NOOP:
-        case SYSTEM:    // ... or annotate operands with temp potential.
-            if (FREE == tac.oper) {
-                freed_.insert(tac.out);
-            }
-            break;
-    }
-}
-
-void SymbolTable::count_tmp(void)
-{
-    for(set<size_t>::iterator it=freed_.begin(); it!=freed_.end(); ++it) {
-        if ((reads_[*it] == 1) && (writes_[*it] == 1)) {
-            temp_.insert(*it);
-        }
-    }
 }
 
 void SymbolTable::turn_scalar(size_t symbol_idx)

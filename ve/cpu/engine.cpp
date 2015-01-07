@@ -191,85 +191,18 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
     return BH_SUCCESS;
 }
 
-/**
- *  Count temporaries in the 
- *
- */
-void count_temp( set<size_t>& disqualified,  set<size_t>& freed,
-                 vector<size_t>& reads,  vector<size_t>& writes,
-                 set<size_t>& temps) {
-
-    for(set<size_t>::iterator fi=freed.begin(); fi!=freed.end(); ++fi) {
-        size_t operand_idx = *fi;
-        if ((reads[operand_idx] == 1) && (writes[operand_idx] == 1)) {
-            temps.insert(operand_idx);
-        }
-    }
-}
-
-void count_rw(  tac_t& tac, set<size_t>& freed,
-                vector<size_t>& reads, vector<size_t>& writes,
-                set<size_t>& temps)
-{
-
-    switch(tac.op) {    // Do read/write counting ...
-        case MAP:
-            reads[tac.in1]++;
-            writes[tac.out]++;
-            break;
-
-        case EXTENSION:
-        case ZIP:
-            if (tac.in2!=tac.in1) {
-                reads[tac.in2]++;
-            }
-            reads[tac.in1]++;
-            writes[tac.out]++;
-            break;
-        case REDUCE:
-        case SCAN:
-            reads[tac.in2]++;
-            reads[tac.in1]++;
-            writes[tac.out]++;
-            break;
-
-        case GENERATE:
-            switch(tac.oper) {
-                case RANDOM:
-                case FLOOD:
-                    reads[tac.in1]++;
-                default:
-                    writes[tac.out]++;
-            }
-            break;
-
-        case NOOP:
-        case SYSTEM:    // ... or annotate operands with temp potential.
-            if (FREE == tac.oper) {
-                freed.insert(tac.out);
-            }
-            break;
-    }
-}
-
 bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& program, Block& block)
 {
     bh_error res = BH_SUCCESS;
     TIMER_START
 
     //
-    // Determine temps and fusion_layout
-    set<size_t> freed;
-    vector<size_t> reads(symbol_table.size()+1);
-    fill(reads.begin(), reads.end(), 0);
-    vector<size_t> writes(symbol_table.size()+1);
-    fill(writes.begin(), writes.end(), 0);
-    set<size_t> temps;
+    // Turn temps into scalars
+    // TODO: Run over the kernel-temps to determine contractable arrays
 
     LAYOUT fusion_layout = SCALAR;
     for(size_t tac_idx=0; tac_idx<block.ntacs(); ++tac_idx) {
         tac_t& tac = block.tac(tac_idx);
-        count_rw(tac, freed, reads, writes, temps);
 
         switch(tac_noperands(tac)) {
             case 3:
@@ -287,12 +220,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table, std::vector<tac_t>& progra
             default:
                 break;
         }
-    }
-    count_temp(symbol_table.disqualified(), freed, reads, writes, temps);
-    //
-    // Turn temps into scalars
-    for(set<size_t>::iterator ti=temps.begin(); ti!=temps.end(); ++ti) {
-        symbol_table.turn_scalar_temp(*ti);
     }
 
     //
@@ -400,9 +327,6 @@ bh_error Engine::execute(bh_ir* bhir)
     
     instrs_to_tacs(*bhir, program, symbol_table);       // Map instructions to 
                                                         // tac and symbol_table.
-
-    symbol_table.count_tmp();                           // Count intermediates
-                                                        // in symbol_table.
 
     Block block(symbol_table, program);                 // Construct a block
 
