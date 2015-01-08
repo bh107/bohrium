@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <boost/foreach.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include <boost/graph/connected_components.hpp>
 #include <boost/range/adaptors.hpp>
 #include <vector>
 #include <map>
@@ -259,21 +260,21 @@ public:
 };
 
 /* Fuse the 'dag' optimally */
-void fuse_optimal(bh_ir &bhir, const GraphDW &dag, GraphD &output)
+void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2explore, GraphD &output)
 {
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
     BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
     {
-        edges2explore.push_back(e);
+        if(vertices2explore.find(source(e, dag.bglW())) != vertices2explore.end() or
+           vertices2explore.find(target(e, dag.bglW())) != vertices2explore.end())
+            edges2explore.push_back(e);
     }
     sort_weights(dag.bglW(), edges2explore);
     //reverse(edges2explore.begin(), edges2explore.end());
 
     if(edges2explore.size() == 0)
-    {
         return;
-    }
 
     //First we check the trivial case where all kernels are merged
     vector<bool> mask(edges2explore.size(), true);
@@ -339,18 +340,60 @@ void fuser(bh_ir &bhir)
 #endif
     set_abort_timer();
 
-    GraphDW dag;
-    from_bhir(bhir, dag);
-    fuse_gentle(dag);
-    dag.transitive_reduction();
-    assert(dag_validate(dag.bglD()));
+    {
+        GraphDW dag;
+        from_bhir(bhir, dag);
+        fuse_gentle(dag);
+        fill_bhir_kernel_list(dag.bglD(), bhir);
+    }
 
-    GraphD output;
-    fuse_optimal(bhir, dag, output);
-    if(num_vertices(output) == 0)
-        output = dag.bglD();
+    while(true)
+    {
+        GraphDW dag;
+        from_kernels(bhir.kernel_list, dag);
+        fuse_gentle(dag);
+        dag.transitive_reduction();
+        assert(dag_validate(dag.bglD()));
 
-    assert(dag_validate(output));
-    fill_bhir_kernel_list(output, bhir);
+        vector<set<Vertex> > component2vertices;
+        {
+            vector<Vertex> vertex2component(num_vertices(dag.bglW()));
+            uint64_t num = connected_components(dag.bglW(), &vertex2component[0]);
+            component2vertices.resize(num);
+            for(Vertex v=0; v<vertex2component.size(); ++v)
+            {
+                component2vertices[vertex2component[v]].insert(v);
+            }
+        }
+
+        uint64_t component_id = 0;
+        BOOST_FOREACH(set<Vertex> &vertices, component2vertices)
+        {
+            cout << "Component " << component_id << ": ";
+            BOOST_FOREACH(Vertex v, vertices)
+            {
+                cout << v << ", ";
+            }
+            cout << endl;
+            ++component_id;
+        }
+
+        //Find the first component with more than one vertex
+        uint64_t comp_id;
+        for(comp_id=0; comp_id < component2vertices.size(); ++comp_id)
+        {
+           if(component2vertices[comp_id].size() > 1)
+               break;
+        }
+        if(comp_id >= component2vertices.size())
+            break;//No more singleton components to fuse
+
+        GraphD output;
+        fuse_optimal(bhir, dag, component2vertices[comp_id], output);
+        assert(num_vertices(output) > 0);
+        assert(dag_validate(output));
+        bhir.kernel_list.clear();
+        fill_bhir_kernel_list(output, bhir);
+    }
 }
 
