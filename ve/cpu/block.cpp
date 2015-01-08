@@ -22,20 +22,25 @@ Block::~Block()
 }
 
 void Block::clear(void)
-{
-    tacs_.clear();      // Reset the current state of the blocks
-    array_tacs_.clear();
+{                               // Reset the current state of the block
+    tacs_.clear();              // tacs
+    array_tacs_.clear();        // array_tacs
+
+    iterspace_.layout = SCALAR; // iteraton space
+    iterspace_.ndim = 0;
+    iterspace_.shape = NULL;
+    iterspace_.nelem = 0;
     
-    if (operands_) {
+    if (operands_) {            // operands
         delete[] operands_;
         operands_   = NULL;
         noperands_  = 0;
     }
-    global_to_local_.clear();
-    local_to_global_.clear();
+    global_to_local_.clear();   // global to local operand mapping
+    local_to_global_.clear();   // local to global operand mapping
 
-    symbol_text_    = "";
-    symbol_         = "";
+    symbol_text_    = "";       // textual symbol representation
+    symbol_         = "";       // hashed symbol representation
 }
 
 void Block::compose(bh_ir_kernel& krnl)
@@ -252,6 +257,50 @@ string Block::symbol(void) const
 string Block::symbol_text(void) const
 {
     return symbol_text_;
+}
+
+const iterspace_t& Block::iterspace(void) const
+{
+    return iterspace_;
+}
+
+void Block::update_iterspace(void)
+{
+    for(size_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
+        tac_t& tac = this->tac(tac_idx);
+
+        if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
+            continue;
+        }
+
+        switch(tac_noperands(tac)) {            // Determine layout and ndim
+            case 3:
+                if (globals_[tac.in2].layout > iterspace_.layout) {
+                    iterspace_.layout = globals_[tac.in2].layout;
+                }
+            case 2:
+                if (globals_[tac.in1].layout > iterspace_.layout) {
+                    iterspace_.layout = globals_[tac.in1].layout;
+                }
+            case 1:
+                if (globals_[tac.out].layout > iterspace_.layout) {
+                    iterspace_.layout = globals_[tac.out].layout;
+                    if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                        iterspace_.ndim  = globals_[tac.out].ndim;
+                        iterspace_.shape = globals_[tac.out].shape;
+                    }
+                }
+            default:
+                break;
+        }
+    }
+
+    if (NULL != iterspace_.shape) {             // Determine number of elements
+        iterspace_.nelem = 1;   
+        for(int k=0; k<iterspace_.ndim; ++k) {
+            iterspace_.nelem *= iterspace_.shape[k];
+        }
+    }
 }
 
 string Block::dot(void) const

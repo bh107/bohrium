@@ -131,8 +131,11 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
         case SCAN:
 
             //
-            // We start by creating a symbol for the block
+            // We start by creating a symbol for the block and updating the
+            // iteration space
             block.symbolize();
+            block.update_iterspace();
+
             //
             // JIT-compile the block if enabled
             if (jit_enabled && \
@@ -210,42 +213,21 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
             operand_idx < block.noperands();
             ++operand_idx) {
             if (block.operand(operand_idx).base == *tmp_it) {
-                //cout << "Got contractable array with base= "<< *tmp_it << endl;
                 symbol_table.turn_scalar_temp(block.local_to_global(operand_idx));
             }
         }
     }
 
     //
-    // Determine the layout that will dictate the fused loop
-    LAYOUT fusion_layout = SCALAR;
-    for(size_t tac_idx=0; tac_idx<block.ntacs(); ++tac_idx) {
-        tac_t& tac = block.tac(tac_idx);
-
-        switch(tac_noperands(tac)) {
-            case 3:
-                if (symbol_table[tac.in2].layout > fusion_layout) {
-                    fusion_layout = symbol_table[tac.in2].layout;
-                }
-            case 2:
-                if (symbol_table[tac.in1].layout > fusion_layout) {
-                    fusion_layout = symbol_table[tac.in1].layout;
-                }
-            case 1:
-                if (symbol_table[tac.out].layout > fusion_layout) {
-                    fusion_layout = symbol_table[tac.out].layout;
-                }
-            default:
-                break;
-        }
-    }
-
-    //
     // The operands might have been modified at this point, so we need to create a new symbol.
-    if (!block.symbolize()) {
+    // and update the iteration-space
+    if (!block.symbolize()) {                           // update block-symbol
         fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
         return BH_ERROR;
     }
+    block.update_iterspace();                           // update iterspace
+
+    const iterspace_t& iterspace = block.iterspace();   // retrieve iterspace
 
     //
     // JIT-compile the block if enabled
@@ -253,7 +235,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     if (jit_enabled && \
         (!storage.symbol_ready(block.symbol()))) {   
         // Specialize and dump sourcecode to file
-        string sourcecode = specializer.specialize(symbol_table, block, fusion_layout);
+        string sourcecode = specializer.specialize(symbol_table, block, iterspace.layout);
         if (jit_dumpsrc==1) {
             core::write_file(
                 storage.src_abspath(block.symbol()),
