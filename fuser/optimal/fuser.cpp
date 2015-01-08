@@ -38,8 +38,9 @@ using namespace std;
 using namespace boost;
 using namespace bohrium::dag;
 
+/* Help function that fuses the edges in 'edges2explore' where the 'mask' is true */
 pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explore,
-                             const GraphDW &graph, const vector<bool> &mask, bh_ir &bhir, 
+                             const GraphDW &graph, const vector<bool> &mask, bh_ir &bhir,
                              GraphD &dag)
 {
     bool fusibility=true;
@@ -175,63 +176,87 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     assert(cost == (int64_t)dag_cost(dag));
     return make_pair(cost,true);
 }
+
 #ifdef VERBOSE
-double  purge_count=0;
-uint64_t explore_count=0;
 int fuser_count=0;
 #endif
-int64_t best_cost;
-int64_t one_cost;
-GraphD best_dag;
-void fuse(const GraphDW &dag, bh_ir &bhir, const vector<EdgeW> &edges2explore,
-          vector<bool> mask, unsigned int offset, bool merge_next)
+
+/* Private class to find the optimal solution through branch and bound */
+class Solver
 {
-    if(not merge_next)
+public:
+    bh_ir &bhir;
+    const GraphDW &dag;
+    const vector<EdgeW> &edges2explore;
+    int64_t best_cost;
+    int64_t one_cost;
+    GraphD best_dag;
+
+    #ifdef VERBOSE
+    double  purge_count=0;
+    uint64_t explore_count=0;
+    #endif
+
+    /* The constructor */
+    Solver(bh_ir &b, const GraphDW &d, const vector<EdgeW> &e):bhir(b),dag(d),edges2explore(e)
     {
-        GraphD new_dag(dag.bglD());
-        mask[offset] = merge_next;
-        bool fusibility;
-        int64_t cost;
-        tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
+        //Wwe use the greedy algorithm to find a good initial guess
+        GraphDW new_dag(dag);
+        fuse_greedy(new_dag);
+        best_dag = new_dag.bglD();
+        best_cost = dag_cost(best_dag);
+    }
+
+    /* Find the optimal solution through branch and bound */
+    void branch_n_bound(vector<bool> mask, unsigned int offset, bool merge_next)
+    {
+        if(not merge_next)
+        {
+            GraphD new_dag(dag.bglD());
+            mask[offset] = merge_next;
+            bool fusibility;
+            int64_t cost;
+            tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
 
 #ifdef VERBOSE
-        if(explore_count%1000 == 0)
-        {
-            cout << "[" << explore_count << "] " << "purge count: ";
-            cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
-            cout << "cost: " << cost << ", best_cost: " << best_cost;
-            cout << ", fusibility: " << fusibility << endl;
-        }
-        ++explore_count;
+            if(explore_count%1000 == 0)
+            {
+                cout << "[" << explore_count << "] " << "purge count: ";
+                cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
+                cout << "cost: " << cost << ", best_cost: " << best_cost;
+                cout << ", fusibility: " << fusibility << endl;
+            }
+            ++explore_count;
 #endif
 
-        if(cost >= best_cost)
-        {
+            if(cost >= best_cost)
+            {
 #ifdef VERBOSE
-            purge_count += pow(2.0, mask.size()-offset-1);
+                purge_count += pow(2.0, mask.size()-offset-1);
 #endif
-            return;
+                return;
+            }
+            if(fusibility)
+            {
+                best_cost = cost;
+                best_dag = new_dag;
+#ifdef VERBOSE
+                std::stringstream ss;
+                ss << "new_best_dag-" << fuser_count << "-" << dag_cost(new_dag) << ".dot";
+                printf("write file: %s\n", ss.str().c_str());
+                pprint(GraphDW(new_dag), ss.str().c_str());
+                purge_count += pow(2.0, mask.size()-offset-1);
+#endif
+                return;
+            }
         }
-        if(fusibility)
+        if(offset+1 < mask.size())
         {
-            best_cost = cost;
-            best_dag = new_dag;
-#ifdef VERBOSE
-            std::stringstream ss;
-            ss << "new_best_dag-" << fuser_count << "-" << dag_cost(new_dag) << ".dot";
-            printf("write file: %s\n", ss.str().c_str());
-            pprint(GraphDW(new_dag), ss.str().c_str());
-            purge_count += pow(2.0, mask.size()-offset-1);
-#endif
-            return;
+            branch_n_bound(mask, offset+1, false);
+            branch_n_bound(mask, offset+1, true);
         }
     }
-    if(offset+1 < mask.size())
-    {
-        fuse(dag, bhir, edges2explore, mask, offset+1, false);
-        fuse(dag, bhir, edges2explore, mask, offset+1, true);
-    }
-}
+};
 
 void timer_handler(int signum)
 {
@@ -294,9 +319,8 @@ void fuser(bh_ir &bhir)
     vector<bool> mask(edges2explore.size(), true);
     {
         GraphD new_dag(dag.bglD());
-        bool fuse;
-        tie(one_cost, fuse) = fuse_mask(numeric_limits<int64_t>::max(), edges2explore,
-                                        dag, mask, bhir, new_dag);
+        bool fuse = fuse_mask(numeric_limits<int64_t>::max(), edges2explore,
+                                        dag, mask, bhir, new_dag).second;
         if(fuse)
         {
             assert(dag_validate(new_dag));
@@ -305,29 +329,19 @@ void fuser(bh_ir &bhir)
         }
     }
 
-    //Then we use the greedy algorithm to find a good initial guess
-    {
-        GraphDW new_dag(dag);
-        fuse_greedy(new_dag);
-        best_dag = new_dag.bglD();
-        best_cost = dag_cost(best_dag);
-    }
-
+    Solver solver(bhir, dag, edges2explore);
     if(mask.size() > 100)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
         cout << mask.size() << "!" << endl;
-        fill_bhir_kernel_list(best_dag, bhir);
-        return;
     }
-    else if(mask.size() > 10)
+    else
     {
         cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
+        solver.branch_n_bound(mask, 0, false);
+        solver.branch_n_bound(mask, 0, true);
     }
-
-    fuse(dag, bhir, edges2explore, mask, 0, false);
-    fuse(dag, bhir, edges2explore, mask, 0, true);
-    assert(dag_validate(best_dag));
-    fill_bhir_kernel_list(best_dag, bhir);
+    assert(dag_validate(solver.best_dag));
+    fill_bhir_kernel_list(solver.best_dag, bhir);
 }
 
