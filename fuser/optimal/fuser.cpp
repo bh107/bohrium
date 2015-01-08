@@ -258,6 +258,51 @@ public:
     }
 };
 
+/* Fuse the 'dag' optimally */
+void fuse_optimal(bh_ir &bhir, const GraphDW &dag, GraphD &output)
+{
+    //The list of edges that we should try to merge
+    vector<EdgeW> edges2explore;
+    BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
+    {
+        edges2explore.push_back(e);
+    }
+    sort_weights(dag.bglW(), edges2explore);
+    //reverse(edges2explore.begin(), edges2explore.end());
+
+    if(edges2explore.size() == 0)
+    {
+        return;
+    }
+
+    //First we check the trivial case where all kernels are merged
+    vector<bool> mask(edges2explore.size(), true);
+    {
+        GraphD new_dag(dag.bglD());
+        bool fuse = fuse_mask(numeric_limits<int64_t>::max(), edges2explore,
+                                        dag, mask, bhir, new_dag).second;
+        if(fuse)
+        {
+            output = new_dag;
+            return;
+        }
+    }
+
+    Solver solver(bhir, dag, edges2explore);
+    if(mask.size() > 100)
+    {
+        cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
+        cout << mask.size() << "!" << endl;
+    }
+    else
+    {
+        cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
+        solver.branch_n_bound(mask, 0, false);
+        solver.branch_n_bound(mask, 0, true);
+    }
+    output = solver.best_dag;
+}
+
 void timer_handler(int signum)
 {
     cout << "ABORT! - timeout" << endl;
@@ -300,48 +345,12 @@ void fuser(bh_ir &bhir)
     dag.transitive_reduction();
     assert(dag_validate(dag.bglD()));
 
-    //The list of edges that we should try to merge
-    vector<EdgeW> edges2explore;
-    BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
-    {
-        edges2explore.push_back(e);
-    }
-    sort_weights(dag.bglW(), edges2explore);
-    //reverse(edges2explore.begin(), edges2explore.end());
+    GraphD output;
+    fuse_optimal(bhir, dag, output);
+    if(num_vertices(output) == 0)
+        output = dag.bglD();
 
-    if(edges2explore.size() == 0)
-    {
-        fill_bhir_kernel_list(dag.bglD(), bhir);
-        return;
-    }
-
-    //First we check the trivial case where all kernels are merged
-    vector<bool> mask(edges2explore.size(), true);
-    {
-        GraphD new_dag(dag.bglD());
-        bool fuse = fuse_mask(numeric_limits<int64_t>::max(), edges2explore,
-                                        dag, mask, bhir, new_dag).second;
-        if(fuse)
-        {
-            assert(dag_validate(new_dag));
-            fill_bhir_kernel_list(new_dag, bhir);
-            return;
-        }
-    }
-
-    Solver solver(bhir, dag, edges2explore);
-    if(mask.size() > 100)
-    {
-        cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
-        cout << mask.size() << "!" << endl;
-    }
-    else
-    {
-        cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-        solver.branch_n_bound(mask, 0, false);
-        solver.branch_n_bound(mask, 0, true);
-    }
-    assert(dag_validate(solver.best_dag));
-    fill_bhir_kernel_list(solver.best_dag, bhir);
+    assert(dag_validate(output));
+    fill_bhir_kernel_list(output, bhir);
 }
 
