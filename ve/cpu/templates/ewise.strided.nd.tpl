@@ -1,13 +1,10 @@
 //
 // Elementwise operation on strided arrays of any dimension/rank.
 {
-    int64_t nelements = 1;
-    for(int k=0; k<a{{NR_OUTPUT}}_ndim; ++k) {
-        nelements *= a{{NR_OUTPUT}}_shape[k];
-    }
+    int64_t nelements = iterspace->nelem;
 
-    int64_t last_dim  = a{{NR_OUTPUT}}_ndim-1;
-    int64_t shape_ld  = a{{NR_OUTPUT}}_shape[last_dim];
+    int64_t last_dim  = iterspace->ndim-1;
+    int64_t shape_ld  = iterspace->shape[last_dim];
     int64_t last_e    = nelements-1;
     int64_t cur_e     = 0;
     int64_t j;
@@ -51,7 +48,7 @@
         // coord[last_dim] is never used, only all the other coord[dim!=last_dim]
         for (j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
             coord[j]++;
-            if (coord[j] < a{{NR_OUTPUT}}_shape[j]) {      // Still within this dimension
+            if (coord[j] < iterspace->shape[j]) {      // Still within this dimension
                 break;
             } else {                        // Reached the end of this dimension
                 coord[j] = 0;               // Reset coordinate
