@@ -186,7 +186,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             // Execute block handling array operations.
             // 
             DEBUG(TAG, "SYMBOL="<< block.symbol());
-            storage.funcs[block.symbol()](block.operands());
+            storage.funcs[block.symbol()](block.operands(), &block.iterspace());
 
             break;
     }
@@ -227,7 +227,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     }
     block.update_iterspace();                           // update iterspace
 
-    const iterspace_t& iterspace = block.iterspace();   // retrieve iterspace
+    iterspace_t& iterspace = block.iterspace();   // retrieve iterspace
 
     //
     // JIT-compile the block if enabled
@@ -290,7 +290,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     // Execute block handling array operations.
     // 
     DEBUG(TAG, "SYMBOL="<< block.symbol());
-    storage.funcs[block.symbol()](block.operands());
+    storage.funcs[block.symbol()](block.operands(), &iterspace);
 
     //
     // De-Allocate memory for operand(s)

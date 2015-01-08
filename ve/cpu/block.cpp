@@ -259,7 +259,7 @@ string Block::symbol_text(void) const
     return symbol_text_;
 }
 
-const iterspace_t& Block::iterspace(void) const
+iterspace_t& Block::iterspace(void)
 {
     return iterspace_;
 }

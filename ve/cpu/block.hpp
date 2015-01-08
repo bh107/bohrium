@@ -132,7 +132,7 @@ public:
     /**
      *  Returns the iteration space of the block.
      */
-    const iterspace_t& iterspace(void) const;
+    iterspace_t& iterspace(void);
 
     /**
      *  Update the iteration space of the block.
