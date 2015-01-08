@@ -108,7 +108,7 @@ public:
     /**
      * Count of operands in the block.
      */
-    size_t noperands(void);
+    size_t noperands(void) const;
 
     /**
      * Return the tac-instance with the given index.
@@ -155,6 +155,11 @@ public:
      * Returns a textual representation of the block in dot-format.
      */
     std::string dot(void) const;
+
+    /**
+     * Returns a plaintext representation of the block.
+     */
+    std::string text(void);
 
 private:
 

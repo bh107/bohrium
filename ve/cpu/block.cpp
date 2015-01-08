@@ -214,7 +214,7 @@ operand_t** Block::operands(void)
     return operands_;
 }
 
-size_t Block::noperands(void)
+size_t Block::noperands(void) const
 {
     return noperands_;
 }
@@ -265,33 +265,53 @@ iterspace_t& Block::iterspace(void)
 }
 
 void Block::update_iterspace(void)
-{
+{   
+    // NOTE: This stuff is only valid for SIJ, and FUSION, streaming
+    //       will require another way to determine the iteration space.
+    
+    //
+    // Determine layout, ndim and shape
     for(size_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
         tac_t& tac = this->tac(tac_idx);
-
         if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
-        }
-
-        switch(tac_noperands(tac)) {            // Determine layout and ndim
-            case 3:
-                if (globals_[tac.in2].layout > iterspace_.layout) {
-                    iterspace_.layout = globals_[tac.in2].layout;
+        } else if ((tac.op & (REDUCE))>0) {     // Reductions are weird
+            if (globals_[tac.in1].layout > iterspace_.layout) {
+                iterspace_.layout = globals_[tac.in1].layout;
+                if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                    iterspace_.ndim  = globals_[tac.in1].ndim;
+                    iterspace_.shape = globals_[tac.in1].shape;
                 }
-            case 2:
-                if (globals_[tac.in1].layout > iterspace_.layout) {
-                    iterspace_.layout = globals_[tac.in1].layout;
-                }
-            case 1:
-                if (globals_[tac.out].layout > iterspace_.layout) {
-                    iterspace_.layout = globals_[tac.out].layout;
-                    if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
-                        iterspace_.ndim  = globals_[tac.out].ndim;
-                        iterspace_.shape = globals_[tac.out].shape;
+            }
+        } else {
+            switch(tac_noperands(tac)) {        // Ewise are common-case
+                case 3:
+                    if (globals_[tac.in2].layout > iterspace_.layout) {
+                        iterspace_.layout = globals_[tac.in2].layout;
+                        if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                            iterspace_.ndim  = globals_[tac.in2].ndim;
+                            iterspace_.shape = globals_[tac.in2].shape;
+                        }
                     }
-                }
-            default:
-                break;
+                case 2:
+                    if (globals_[tac.in1].layout > iterspace_.layout) {
+                        iterspace_.layout = globals_[tac.in1].layout;
+                        if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                            iterspace_.ndim  = globals_[tac.in1].ndim;
+                            iterspace_.shape = globals_[tac.in1].shape;
+                        }
+                    }
+                case 1:
+                    if (globals_[tac.out].layout > iterspace_.layout) {
+                        iterspace_.layout = globals_[tac.out].layout;
+                        if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                            iterspace_.ndim  = globals_[tac.out].ndim;
+                            iterspace_.shape = globals_[tac.out].shape;
+                        }
+                    }
+                default:
+                    break;
+            }
         }
     }
 
@@ -305,7 +325,45 @@ void Block::update_iterspace(void)
 
 string Block::dot(void) const
 {
-    return "";    
+    stringstream ss;
+    return ss.str();
+}
+
+std::string Block::text(void)
+{
+    stringstream ss;
+    ss << "BLOCK [" << endl;
+    
+    ss << "TACS (" << ntacs() << ") {" << endl;
+    for(uint64_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
+        ss << tac_text(tac(tac_idx)) << endl;
+    }
+    ss << "}" << endl;
+
+    ss << "OPERANDS (" << noperands() << ") {" << endl;
+    for(size_t opr_idx=0; opr_idx < noperands(); ++opr_idx) {
+        operand_t& opr = operand(opr_idx);
+        ss << " loc_idx(" << opr_idx << ")";
+        ss << " gbl_idx(" << local_to_global(opr_idx) << ") = ";
+        ss << operand_text(opr);
+    }
+    ss << "}" << endl;
+
+    ss << "ITERSPACE {" << endl;
+    ss << " LAYOUT = " << layout_text(iterspace_.layout) << "," << endl;
+    ss << " NDIM   = " << iterspace_.ndim << "," << endl;
+    ss << " SHAPE  = {"; 
+    for(int64_t dim=0; dim < iterspace_.ndim; ++dim) {
+        ss << iterspace_.shape[dim];
+        if (dim != (iterspace_.ndim-1)) {
+            ss << ", ";
+        }
+    }
+    ss << "}" << endl;
+    ss << " NELEM  = " << iterspace_.nelem << endl;
+    ss << "}" << endl;
+    ss << "]" << endl;
+    return ss.str();
 }
 
 }}
