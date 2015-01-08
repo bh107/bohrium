@@ -26,7 +26,7 @@
         inner_axis = 0;
     }
     
-    int64_t nelements   = a{{NR_FINPUT}}_shape[OUTER]+a{{NR_FINPUT}}_shape[INNER];
+    int64_t nelements   = iterspace->shape[OUTER] + iterspace->shape[INNER];
     int mthreads        = omp_get_max_threads();
     int64_t nworkers    = nelements > mthreads ? mthreads : 1;
 
@@ -38,7 +38,7 @@
                                         j*a{{NR_FINPUT}}_stride[inner_axis];
 
             {{TYPE_INPUT}} state = *tmp_current;
-            for(int64_t k=1; k<a{{NR_FINPUT}}_shape[axis]; ++k) {
+            for(int64_t k=1; k<iterspace->shape[axis]; ++k) {
                 tmp_current += a{{NR_FINPUT}}_stride[axis];
 
                 {{#OPERATORS}}

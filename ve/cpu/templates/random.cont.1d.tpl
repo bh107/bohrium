@@ -1,7 +1,7 @@
 //
 // RANDOM, unclassified operation
 {
-    uint64_t nelements  = a{{NR_OUTPUT}}_nelem;
+    uint64_t nelements  = iterspace->nelem;
     uint64_t r_start    = a{{NR_FINPUT}}_first->first;
     uint64_t r_key      = a{{NR_FINPUT}}_first->second;
 

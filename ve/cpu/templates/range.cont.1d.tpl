@@ -1,7 +1,7 @@
 //
 // Unclassified operation... iota/range/generator of data..
 {
-    int64_t nelements = a{{NR_OUTPUT}}_nelem;
+    int64_t nelements = iterspace->nelem;
 
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
