@@ -97,37 +97,48 @@ void bh_ir::pprint_kernel_list() const
 
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
-    bh_instruction& instr = bhir->instr_list[instr_idx];
+
+    /* Help function that checks if aligned view 'v' exist in 'views' */
+    struct
+    {
+        bool operator()(const bh_view &v, const vector<bh_view> &views)
+        {
+            BOOST_FOREACH(const bh_view &i, views)
+            {
+                if(bh_view_aligned(&v, &i))
+                    return true;
+            }
+            return false;
+        }
+    }aligned_view_exist;
+
+    const bh_instruction& instr = bhir->instr_list[instr_idx];
 
     if(instr.opcode == BH_DISCARD)
     {
+        //When discarding we might have to remove arrays from 'outputs' and 'temps'
         const bh_base *base = instr.operand[0].base;
         for(vector<bh_view>::iterator it=outputs.begin(); it != outputs.end(); ++it)
         {
             if(base == it->base)
             {
-                temps.push_back(base);
                 outputs.erase(it);
+
+                //If the discarded array isn't in 'inputs' (and not in 'outputs')
+                //than it is a temp array
+                if(not aligned_view_exist(*it, inputs))
+                   temps.push_back(base);
                 break;
             }
         }
     }
     else if(instr.opcode != BH_FREE)
     {
-        {
-            bool duplicates = false;
-            const bh_view &v = instr.operand[0];
-            BOOST_FOREACH(const bh_view &i, outputs)
-            {
-                if(bh_view_aligned(&v, &i))
-                {
-                    duplicates = true;
-                    break;
-                }
-            }
-            if(!duplicates)
-                outputs.push_back(v);
-        }
+        //Add the output of the instruction to 'outputs'
+        if(not aligned_view_exist(instr.operand[0], outputs))
+            outputs.push_back(instr.operand[0]);
+
+        //Add the inputs of the instruction to 'inputs'
         const int nop = bh_operands(instr.opcode);
         for(int i=1; i<nop; ++i)
         {
@@ -135,18 +146,12 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             if(bh_is_constant(&v))
                 continue;
 
-            bool duplicates = false;
-            BOOST_FOREACH(const bh_view &i, inputs)
-            {
-                if(bh_view_aligned(&v, &i))
-                {
-                    duplicates = true;
-                    break;
-                }
-            }
-            if(duplicates)
+            //If 'v' is in 'inputs' already we can continue
+            if(aligned_view_exist(v, inputs))
                 continue;
 
+            //Additionally, we shouldn't add 'v' to 'inputs' if it is
+            //the output of an existing instruction.
             bool local_source = false;
             BOOST_FOREACH(uint64_t idx, instr_indexes)
             {
