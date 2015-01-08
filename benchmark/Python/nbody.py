@@ -21,6 +21,76 @@ dt    = 60*60*24*365.25 # Years in seconds
 r_ly  = 9.4607e15       # Lightyear in m
 m_sol = 1.9891e30       # Solar mass in kg
 
+def diagonal(ary, offset=0):
+    """
+    Return specified diagonals.
+
+    If `a` is 2-D, returns the diagonal of `a` with the given offset,
+    i.e., the collection of elements of the form ``a[i, i+offset]``.
+
+    Parameters
+    ----------
+    ary : array_like
+        Array from which the diagonals are taken.
+    offset : int, optional
+        Offset of the diagonal from the main diagonal.  Can be positive or
+        negative.  Defaults to main diagonal (0).
+
+    Returns
+    -------
+    array_of_diagonals : ndarray
+        If `a` is 2-D, a 1-D array containing the diagonal is returned.
+        If the dimension of `a` is larger, then an array of diagonals is
+        returned, "packed" from left-most dimension to right-most (e.g.,
+        if `a` is 3-D, then the diagonals are "packed" along rows).
+
+    Raises
+    ------
+    ValueError
+        If the dimension of `a` is less than 2.
+
+    See Also
+    --------
+    diag : MATLAB work-a-like for 1-D and 2-D arrays.
+    diagflat : Create diagonal arrays.
+    trace : Sum along diagonals.
+
+    Examples
+    --------
+    >>> a = np.arange(4).reshape(2,2)
+    >>> a
+    array([[0, 1],
+           [2, 3]])
+    >>> a.diagonal()
+    array([0, 3])
+    >>> a.diagonal(1)
+    array([1])
+
+    A 3-D example:
+
+    >>> a = np.arange(8).reshape(2,2,2); a
+    array([[[0, 1],
+            [2, 3]],
+           [[4, 5],
+            [6, 7]]])
+    """
+    if ary.ndim != 2:
+        raise Exception("diagonal only supports 2 dimensions\n")
+    if offset < 0:
+        offset = -offset
+        if (ary.shape[0]-offset) > ary.shape[1]:
+            ary_diag = ary[offset, :]
+        else:
+            ary_diag = ary[offset:, 0]
+    else:
+        if ary.shape[1]-offset > ary.shape[0]:
+            ary_diag = ary[:, offset]
+        else:
+            ary_diag = ary[0, offset:]
+    ary_diag.strides = (ary.strides[0]+ary.strides[1],)
+    return ary_diag
+
+
 def random_galaxy(N, dtype=np.float64):
     """Generate a galaxy of random bodies"""
 
@@ -52,7 +122,7 @@ def move(galaxy, dt):
 
     # Euclidian distances (all bodys)
     r = np.sqrt(dx**2 + dy**2 + dz**2)
-    np.diagonal(r)[:] = 1.0
+    diagonal(r)[:] = 1.0
 
     # prevent collition
     mask = r < 1.0
@@ -65,9 +135,9 @@ def move(galaxy, dt):
     Fy = G*m*dy/r**3
     Fz = G*m*dz/r**3
     # Set the force (acceleration) a body exerts on it self to zero
-    np.diagonal(Fx)[:] = 0.0
-    np.diagonal(Fy)[:] = 0.0
-    np.diagonal(Fz)[:] = 0.0
+    diagonal(Fx)[:] = 0.0
+    diagonal(Fy)[:] = 0.0
+    diagonal(Fz)[:] = 0.0
 
     galaxy['vx'] += dt*np.sum(Fx, axis=0)
     galaxy['vy'] += dt*np.sum(Fy, axis=0)
