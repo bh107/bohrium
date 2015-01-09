@@ -2,16 +2,17 @@
 // RANDOM, unclassified operation
 {
     uint64_t nelements  = iterspace->nelem;
-    uint64_t r_start    = a{{NR_FINPUT}}_first->first;
-    uint64_t r_key      = a{{NR_FINPUT}}_first->second;
+    uint64_t r_start    = a{{NR_FINPUT}}_first->first;  // Counter "offset"
+    uint64_t r_key      = a{{NR_FINPUT}}_first->second; // Key / Seed
 
-    union {philox2x32_ctr_t c; uint64_t ul;} ctr, res;
-    ctr.ul = r_start;
+    philox2x32_key_t key = { {r_key} };                 // Assign the key/seed
 
-    for(int64_t i=0; i<nelements; i++) {
-        res.c = philox2x32(ctr.c, (philox2x32_key_t) { { (uint32_t)r_key } });
-        a{{NR_OUTPUT}}_first[i] = res.ul;
-        ctr.ul++;
+    #pragma omp parallel for
+    for(uint64_t i=0; i<nelements; i++) {
+        philox2x32_as_1x64_t ctr, rand;
+        ctr.combined = r_start+i;
+
+        rand.orig = philox2x32(ctr.orig, key);
+        a{{NR_OUTPUT}}_first[i] = rand.combined;
     }
-    // TODO: scalar-management..
 }
