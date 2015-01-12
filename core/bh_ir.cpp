@@ -245,49 +245,67 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
 bool bh_ir_kernel::fusible_gently(uint64_t instr_idx) const
 {
     const bh_instruction &instr = bhir->instr_list[instr_idx];
-    if(bh_opcode_is_system(instr.opcode))
-        return true;
 
-    //We are fusible if all instructions in 'this' kernel are system opcodes
+    //Check that 'instr' is gentle fusible with at least one existing instruction
+    //that is not a system opcode (unless all instructions in 'this' kernel are
+    //system opcodes)
+    if(only_system_opcodes())
     {
-        bool all_system = true;
-        BOOST_FOREACH(uint64_t i, instr_indexes)
+        BOOST_FOREACH(uint64_t this_idx, instr_indexes)
         {
-            if(not bh_opcode_is_system(bhir->instr_list[i].opcode))
-            {
-                all_system = false;
-                break;
-            }
+            const bh_instruction &this_instr = bhir->instr_list[this_idx];
+            if(bh_instr_fusible_gently(&instr, &this_instr) &&
+               bohrium::check_fusible(&instr, &this_instr))
+                return true;
         }
-        if(all_system)
-            return true;
     }
-    //Check that 'instr' is gentle fusible with least one existing instruction
-    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    else
     {
-        const bh_instruction &this_instr = bhir->instr_list[this_idx];
-        if(bh_opcode_is_system(this_instr.opcode))
-            continue;
+        BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+        {
+            const bh_instruction &this_instr = bhir->instr_list[this_idx];
+            if(bh_opcode_is_system(this_instr.opcode))
+                continue;
 
-        if(bh_instr_fusible_gently(&instr, &this_instr) &&
-           bohrium::check_fusible(&instr, &this_instr))
-            return true;
+            if(bh_instr_fusible_gently(&instr, &this_instr) &&
+               bohrium::check_fusible(&instr, &this_instr))
+                return true;
+        }
     }
     return false;
 }
 
 /* Determines whether it is legal to fuse with the kernel without
- * changing this kernel's dependencies.
+ * changing 'this' kernel's dependencies.
  *
  * @other  The other kernel
  * @return The boolean answer
  */
 bool bh_ir_kernel::fusible_gently(const bh_ir_kernel &other) const
 {
-    BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
+
+    //When all instructions in the 'other' kernel are system opcodes
+    //only one of the instructions needs to be gentle fusible.
+    if(other.only_system_opcodes())
     {
-        if(not fusible_gently(other_idx))
-            return false;
+        BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
+        {
+            if(fusible_gently(other_idx))
+                return true;
+        }
+        return false;
+    }
+    else
+    {
+        //Check that each instruction in 'other' is gentle fusible
+        //with 'this' kernel while ignoring system opcodes.
+        BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
+        {
+            if(bh_opcode_is_system(bhir->instr_list[other_idx].opcode))
+                continue;
+            if(not fusible_gently(other_idx))
+                return false;
+        }
     }
     return true;
 }
