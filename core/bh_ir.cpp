@@ -112,23 +112,41 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         }
     }aligned_view_exist;
 
-    const bh_instruction& instr = bhir->instr_list[instr_idx];
+    /* Help function that checks if 'b' is synchronized in kernel 'k' */
+    struct
+    {
+        bool operator()(const bh_ir_kernel &k, const bh_base *b)
+        {
+            BOOST_FOREACH(uint64_t idx, k.instr_indexes)
+            {
+                const bh_instruction &instr = k.bhir->instr_list[idx];
+                if(instr.opcode == BH_SYNC and instr.operand[0].base == b)
+                    return true;
+            }
+            return false;
+        }
+    }is_base_synced;
 
+    const bh_instruction& instr = bhir->instr_list[instr_idx];
     if(instr.opcode == BH_DISCARD)
     {
         //When discarding we might have to remove arrays from 'outputs' and 'temps'
+        //if the discared array isn't synchronized
         const bh_base *base = instr.operand[0].base;
-        for(vector<bh_view>::iterator it=outputs.begin(); it != outputs.end(); ++it)
+        if(not is_base_synced(*this, base))
         {
-            if(base == it->base)
+            for(vector<bh_view>::iterator it=outputs.begin(); it != outputs.end(); ++it)
             {
-                outputs.erase(it);
+                if(base == it->base)
+                {
+                    outputs.erase(it);
 
-                //If the discarded array isn't in 'inputs' (and not in 'outputs')
-                //than it is a temp array
-                if(not aligned_view_exist(*it, inputs))
-                   temps.push_back(base);
-                break;
+                    //If the discarded array isn't in 'inputs' (and not in 'outputs')
+                    //than it is a temp array
+                    if(not aligned_view_exist(*it, inputs))
+                       temps.push_back(base);
+                    break;
+                }
             }
         }
     }
