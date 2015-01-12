@@ -226,7 +226,7 @@ int tac_noperands(const tac_t& tac)
                 case FLOOD:
                     return 2;
                 case RANDOM:
-                    return 2;
+                    return 3;
                 case RANGE:
                     return 1;
                 default:

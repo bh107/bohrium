@@ -58,10 +58,15 @@ public:
      *  Add instruction operand as argument to block.
      *
      *  Reuses operands of equivalent meta-data.
+     *  NOTE: When mapping "BH_R123" a single operand is mapped to
+     *        to two operands. In such cases the tac will be mapped like::
+     *
+     *        in1 = arg_idx-1
+     *        in2 = arg_idx
      *
      *  @param instr        The instruction whos operand should be converted.
      *  @param operand_idx  Index of the operand to represent as arg_t
-     *  @param block        The block in which scope the argument will exist.
+     *  @return arg_idx     Index of the operand in symbol table
      */
     size_t map_operand(bh_instruction& instr, size_t operand_idx);
 
