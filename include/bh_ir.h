@@ -128,7 +128,6 @@ public:
     /* Returns a list of temporary base-arrays in this kernel (read-only) */
     const std::vector<const bh_base*>& temp_list() const {return temps;};
 
-
     /* Add an instruction to the kernel
      *
      * TODO: Comment.
@@ -137,6 +136,13 @@ public:
      * @return  The boolean answer
      */
     void add_instr(uint64_t instr_idx);
+
+    /* Determines whether all instructions in 'this' kernel
+     * are system opcodes (e.g. BH_DISCARD, BH_FREE, etc.)
+     *
+     * @return The boolean answer
+     */
+    bool only_system_opcodes() const;
 
     /* Determines whether the kernel fusible legal
      *

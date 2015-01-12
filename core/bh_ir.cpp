@@ -168,6 +168,21 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     instr_indexes.push_back(instr_idx);
 };
 
+/* Determines whether all instructions in 'this' kernel
+ * are system opcodes (e.g. BH_DISCARD, BH_FREE, etc.)
+ *
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::only_system_opcodes() const
+{
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    {
+        if(not bh_opcode_is_system(bhir->instr_list[this_idx].opcode))
+            return false;
+    }
+    return true;
+}
+
 /* Determines whether the kernel fusible legal
  *
  * @return The boolean answer
@@ -222,7 +237,7 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
 }
 
 /* Determines whether it is legal to fuse with the instruction
- * without changing this kernel's dependencies.
+ * without changing 'this' kernel's dependencies.
  *
  * @instr_idx  The index of the instruction
  * @return     The boolean answer
