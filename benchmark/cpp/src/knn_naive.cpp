@@ -2,18 +2,15 @@
 #include "bxx/bohrium.hpp"
 
 using namespace std;
-using namespace bh;
+using namespace bxx;
 
 template <typename T>
 multi_array<T>& knn_naive(int n, int features, int k)
 {
     multi_array<T> data_set((features, n)),
-                    target(features),
-                    sqd;
+                    target(features);
 
-    sqd = sqrt((data_set - target)*(data_set - target)).reduce(0);
-
-    return sqd;
+    return sum(sqrt((data_set - target)*(data_set - target)));
 }
 
 int main(int argc, char* argv[])
@@ -34,7 +31,7 @@ int main(int argc, char* argv[])
             ",height=" << height << \
             ",iter=" << iterations << \
             ")]" << endl;
-    iterate<double>(width, height, iterations);
+    knn_naive<double>(width, height, iterations);
     cout << "done!" << endl;
 
     return 0;
