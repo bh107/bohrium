@@ -95,11 +95,12 @@ def specializer_cexpression(opcodes, ops, opers, types, layouts, cexprs):
     """Apply a naming convention to the pseud-variables, and make it string-formattable."""
 
     def naming_convention(expression):
-        """
-        expression  = expression.replace('out', '*a%1$d_current')
-        expression  = expression.replace('in1', '*a%2$d_current')
-        expression  = expression.replace('in2', '*a%3$d_current')
-        """
+        # Just want the number
+        expression  = expression.replace('out_nr', '%2$d')
+        expression  = expression.replace('in1_nr', '%4$d')
+        expression  = expression.replace('in2_nr', '%6$d')
+
+        # Rename to watch the "a{N}_current" as either scalar or pointer
         expression  = expression.replace('out', '%1$ca%2$d_current')
         expression  = expression.replace('in1', '%3$ca%4$d_current')
         expression  = expression.replace('in2', '%5$ca%6$d_current')
