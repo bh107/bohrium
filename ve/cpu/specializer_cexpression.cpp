@@ -368,7 +368,7 @@ string Specializer::cexpression(SymbolTable& symbol_table, const Block& block, s
             break;
         case RANGE:            
             
-            expr_text = "%1$ca%2$d_current = state"; break;
+            expr_text = "%1$ca%2$d_current = i"; break;
             break;
         case REAL:            
             

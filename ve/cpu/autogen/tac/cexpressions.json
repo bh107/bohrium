@@ -712,7 +712,7 @@
         "op":   "GENERATOR",
         "oper": "RANGE",
         "scalar": {
-            "default":  "out = state"
+            "default":  "out = i"
         },
         "simd": {}
     },
