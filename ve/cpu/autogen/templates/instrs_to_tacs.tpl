@@ -38,10 +38,6 @@ void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
             %if $opcode == "BH_RANDOM"
                 in2 = symbol_table.map_operand(instr, 1);
                 in1 = in2-1;
-                cout << "out=" << out;
-                cout << ", in1=" << in1;
-                cout << ", in2=" << in2;
-                cout << endl;
                 tacs[idx].op    = $operation;  // TAC
                 tacs[idx].oper  = $operator;
                 tacs[idx].ext   = NULL;
