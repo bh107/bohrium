@@ -1,6 +1,5 @@
 ROOT=../..
 HEADER=$(ROOT)/include/*
-CPPB_INCLUDE=$(ROOT)/bridge/cpp
 
 BENCH_SRC  = $(wildcard src/*.cpp)
 BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
@@ -8,7 +7,7 @@ BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
 #CXX=clang
 CXX=g++
 EXTRAS+=
-CXXFLAGS=-Wall -Wextra -pedantic -O3 -std=c++98 -Wno-variadic-macros $(EXTRAS)
+CXXFLAGS=-Wall -Wextra -pedantic -O3 -std=c++98 -Wno-variadic-macros -I$(ROOT)/include -lstdc++ -larmadillo $(EXTRAS)
 
 all: benchmarks
 
@@ -22,7 +21,7 @@ clean:
 # Benchmarks
 #
 black_scholes: src/black_scholes.cpp $(HEADER)
-	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++ -larmadillo
+	$(CXX) $< -o bin/$@ $(LCFLAGS) $(CXXFLAGS)
 
 synth: src/synth.cpp $(HEADER)
 	$(CXX) $< -o bin/$@ -L$(ROOT)/core -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) $(CXXFLAGS) -lstdc++ -larmadillo
