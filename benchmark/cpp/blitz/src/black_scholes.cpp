@@ -1,7 +1,7 @@
 #include <blitz/array.h>
 #include <random/uniform.h>
-#include <util/argparse.hpp>
-#include <util/timing.hpp>
+#include "util/argparse.hpp"
+#include "util/timing.hpp"
 
 using namespace blitz;
 using namespace ranlib;

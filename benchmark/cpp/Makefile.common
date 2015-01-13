@@ -1,0 +1,16 @@
+ROOT=../../..
+HEADER=$(ROOT)/include/*
+
+BENCH_SRC  = $(wildcard src/*.cpp)
+BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
+
+CXX=g++
+DEBUG=-g
+CXXFLAGS=-Wall -Wextra -pedantic -O3 -std=c++0x -Wno-variadic-macros $(DEBUG)
+INCLUDE=-L/home/safl/.local/lib
+INCLUDE+=-I$(ROOT)/include 
+INCLUDE+=-I$(ROOT)/bridge/cpp
+INCLUDE+=-I/usr/include/eigen3/
+LIBS=-lbh -lstdc++ -larmadillo -lblitz
+EXTRAS+=
+
