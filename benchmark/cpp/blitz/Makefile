@@ -1,4 +1,4 @@
-ROOT=../..
+ROOT=../../..
 BENCH_SRC  = $(wildcard src/*.cpp)
 BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
 BH_CPPB=$(ROOT)/bridge/cpp/

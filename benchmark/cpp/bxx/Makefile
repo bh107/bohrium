@@ -1,4 +1,4 @@
-ROOT=../..
+ROOT=../../..
 HEADER=$(ROOT)/include/*
 CPPB_INCLUDE=$(ROOT)/bridge/cpp
 
@@ -10,7 +10,7 @@ BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
 #CXX=clang
 CXX=g++
 EXTRAS+=
-CXXFLAGS=-L/home/safl/.local/lib -Wall -Wextra -pedantic -g -O0 -std=c++0x -Wno-variadic-macros -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) -lstdc++ $(EXTRAS) 
+CXXFLAGS=-L/home/safl/.local/lib -Wall -Wextra -pedantic -g -O3 -std=c++0x -Wno-variadic-macros -I$(ROOT)/include -I$(CPPB_INCLUDE) -lbh $(LCFLAGS) -lstdc++ $(EXTRAS) 
 
 all: benchmarks
 

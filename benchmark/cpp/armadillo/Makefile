@@ -1,4 +1,4 @@
-ROOT=../..
+ROOT=../../..
 HEADER=$(ROOT)/include/*
 
 BENCH_SRC  = $(wildcard src/*.cpp)

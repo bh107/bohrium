@@ -27,10 +27,10 @@ int main(int argc, char* argv[])
     iterations  = atoi(argv[3]);
 
     cout << "[Jacobi Stencil(" \
-            "width=" << width << \
-            ",height=" << height << \
-            ",iter=" << iterations << \
-            ")]" << endl;
+            "width="    << width << \
+            ",height="  << height << \
+            ",iter="    << iterations << \
+            ")]"        << endl;
     knn_naive<double>(width, height, iterations);
     cout << "done!" << endl;
 
