@@ -1,5 +1,7 @@
 include ../Makefile.common
 
+BENCHMARKS=mc
+
 all: benchmarks
 
 clean:
@@ -12,6 +14,7 @@ benchmarks: $(BENCHMARKS)
 # Benchmarks
 #
 black_scholes: src/black_scholes.cpp
+	echo $(BENCHMARKS)
 	$(CXX) $< -o bin/$@ $(CXXFLAGS) $(INCLUDE) $(LIBS) $(EXTRAS)
 
 mc: src/mc.cpp

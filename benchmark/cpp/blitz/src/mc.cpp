@@ -9,19 +9,23 @@ using namespace argparse;
 
 double monte_carlo_pi(int samples, int iterations)
 {
-    Array<double, 1> x, y, m, c, accu(1);    // Operands
-    accu = (double)0.0;                         // Acculumate across iterations
-    for(int i=0; i<iterations; ++i) {
-        x = random<double>(samples);            // Sample random numbers
-        y = random<double>(samples);
-        m = as<double>(sqrt(x*x + y*y)<=1.0);   // Model
-        c = sum(m);                             // Count
+    Array<double, 1> x(samples), y(samples), m(samples);       // Operands
+    Array<double, 1> c(1), accu(1);
+    accu = 0;
 
+    Uniform<double> rand;
+    rand.seed((unsigned int)time(0));
+
+    for(int i=0; i<iterations; ++i) {
+        x = rand.random();               // Sample random numbers
+        y = rand.random();
+        m = cast<double>(sqrt(x*x + y*y)<=1.0); // Model
+        c = sum(m);                             // Count
         accu += (c*4.0) / (double)samples;      // Approximate
     }
     accu /= (double)iterations;
     
-    return scalar(accu);
+    return accu(0);
 }
 
 int main(int argc, char* argv[])
@@ -59,6 +63,8 @@ int main(int argc, char* argv[])
         cout << mcp;
         cout << "]";
     }
+    cout << "--size=" << args.size[0];
+    cout << "*" << args.size[1];
     cout << "}" << endl;
 
     return 0;
