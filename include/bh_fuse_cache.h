@@ -1,0 +1,71 @@
+/*
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef __BH_FUSE_CACHE_H
+#define __BH_FUSE_CACHE_H
+
+#include <bh.h>
+#include <string>
+#include <map>
+#include <boost/foreach.hpp>
+
+namespace bohrium {
+
+    //Forward declarations
+    struct BatchHash;
+
+    /* A class that represets a hash of a single instruction */
+    struct InstrHash: public std::string
+    {
+        InstrHash(BatchHash &batch, const bh_instruction &instr);
+    };
+
+    /* A class that represets a hash of a instruction batch
+     * (aka instruction list) */
+    struct BatchHash: public std::string
+    {
+        uint64_t base_id_count;
+        std::map<const bh_base*, uint64_t> base2id;
+        BatchHash(const std::vector<bh_instruction> &instr_list);
+    };
+
+    /* Insert a 'kernel_list' into the fuse cache
+     *
+     * @hash  The hash of the batch (aka instruction list)
+     *        that matches the 'kernel_list'
+     */
+    void fuse_cache_insert(const BatchHash &hash,
+                           const std::vector<bh_ir_kernel> &kernel_list);
+
+    /* Lookup a 'kernel_list' in the cache
+     *
+     * @hash   The hash of the batch (aka instruction list)
+     *         that matches the 'kernel_list'
+     * @bhir   The BhIR associated with the batch
+     * @return Whether the lookup was a success or not
+     */
+    bool fuse_cache_lookup(const BatchHash &hash,
+                           bh_ir &bhir,
+                           std::vector<bh_ir_kernel> &kernel_list);
+
+} //namespace bohrium
+
+#endif
+
