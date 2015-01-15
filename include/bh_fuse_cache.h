@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <map>
 #include <boost/foreach.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace bohrium {
 
@@ -46,24 +47,33 @@ namespace bohrium {
         BatchHash(const std::vector<bh_instruction> &instr_list);
     };
 
-    /* Insert a 'kernel_list' into the fuse cache
-     *
-     * @hash  The hash of the batch (aka instruction list)
-     *        that matches the 'kernel_list'
-     */
-    void fuse_cache_insert(const BatchHash &hash,
-                           const std::vector<bh_ir_kernel> &kernel_list);
+    /* A class that represets a cache of calculated 'instr_indexes' */
+    class FuseCache
+    {
+        //The map from BatchHash to a list of 'instr_indexes'
+        boost::unordered_map<BatchHash, std::vector<std::vector<uint64_t> > > cache;
 
-    /* Lookup a 'kernel_list' in the cache
-     *
-     * @hash   The hash of the batch (aka instruction list)
-     *         that matches the 'kernel_list'
-     * @bhir   The BhIR associated with the batch
-     * @return Whether the lookup was a success or not
-     */
-    bool fuse_cache_lookup(const BatchHash &hash,
-                           bh_ir &bhir,
-                           std::vector<bh_ir_kernel> &kernel_list);
+    public:
+
+        /* Insert a 'kernel_list' into the fuse cache
+         *
+         * @hash  The hash of the batch (aka instruction list)
+         *        that matches the 'kernel_list'
+         */
+        void insert(const BatchHash &hash,
+                    const std::vector<bh_ir_kernel> &kernel_list);
+
+        /* Lookup a 'kernel_list' in the cache
+         *
+         * @hash   The hash of the batch (aka instruction list)
+         *         that matches the 'kernel_list'
+         * @bhir   The BhIR associated with the batch
+         * @return Whether the lookup was a success or not
+         */
+        bool lookup(const BatchHash &hash,
+                    bh_ir &bhir,
+                    std::vector<bh_ir_kernel> &kernel_list);
+    };
 
 } //namespace bohrium
 

@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <cstring>
 #include <bh.h>
-#include <boost/unordered_map.hpp>
 #include "bh_fuse_cache.h"
 
 using namespace std;
@@ -70,8 +69,7 @@ namespace bohrium {
         }
     }
 
-    static unordered_map<BatchHash, vector<vector<uint64_t> > > cache;
-    void fuse_cache_insert(const BatchHash &batch,
+    void FuseCache::insert(const BatchHash &batch,
                            const vector<bh_ir_kernel> &kernel_list)
     {
         vector<vector<uint64_t> > instr_indexes_list;
@@ -82,7 +80,7 @@ namespace bohrium {
         cache[batch] = instr_indexes_list;
     }
 
-    bool fuse_cache_lookup(const BatchHash &batch,
+    bool FuseCache::lookup(const BatchHash &batch,
                            bh_ir &bhir,
                            vector<bh_ir_kernel> &kernel_list)
     {
