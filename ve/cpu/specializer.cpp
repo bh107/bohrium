@@ -20,7 +20,6 @@ Specializer::Specializer(const string template_directory)
     ctemplate::LoadTemplate("ewise.strided.nd.tpl", strip_mode);
     ctemplate::LoadTemplate("kernel.tpl",   strip_mode);
     ctemplate::LoadTemplate("license.tpl",  strip_mode);
-    ctemplate::LoadTemplate("range.cont.1d.tpl",    strip_mode);
     ctemplate::LoadTemplate("reduce.strided.1d.tpl", strip_mode);
     ctemplate::LoadTemplate("reduce.strided.2d.tpl", strip_mode);
     ctemplate::LoadTemplate("reduce.strided.3d.tpl", strip_mode);
@@ -123,11 +122,10 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
                     tpl_ndim    = "nd.";
                     break;
                 case RANGE:
-                    tpl_opcode = "range.";
-                    tpl_layout = "cont.";
-                    tpl_ndim    = "1d.";
+                    tpl_opcode  = "ewise.";
+                    tpl_layout  = "cont.";
+                    tpl_ndim    = "nd.";
                     break;
-
                 default:
                     fprintf(
                         stderr,

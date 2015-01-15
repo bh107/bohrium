@@ -46,6 +46,9 @@ enum fuse_model
 /* Like same shape but includes random */
     SAME_SHAPE_RANDOM,
 
+/* Like same shape but includes random */
+    SAME_SHAPE_RANGE_RANDOM,
+
 /* The sentinel */
     NONE
 };
@@ -202,6 +205,46 @@ static bool fuse_same_shape_random(const bh_instruction *a, const bh_instruction
     return fuse_broadest(a, b);
 }
 
+static bool fuse_same_shape_range_random(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    if((a->opcode != BH_RANGE and a->opcode != BH_RANDOM and not bh_opcode_is_elementwise(a->opcode)) or
+       (b->opcode != BH_RANGE and b->opcode != BH_RANDOM and not bh_opcode_is_elementwise(b->opcode)))
+        return false;
+
+    const int a_nop = bh_operands(a->opcode);
+    const int b_nop = bh_operands(b->opcode);
+    const bh_intp *shape = a->operand[0].shape;
+    const bh_intp ndim = a->operand[0].ndim;
+    for(int i=1; i<a_nop; ++i)
+    {
+        if(bh_is_constant(&a->operand[i]))
+            continue;
+        if(ndim != a->operand[i].ndim)
+            return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(a->operand[i].shape[j] != shape[j])
+                return false;
+        }
+    }
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(bh_is_constant(&b->operand[i]))
+            continue;
+        if(ndim != b->operand[i].ndim)
+            return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(b->operand[i].shape[j] != shape[j])
+                return false;
+        }
+    }
+    return fuse_broadest(a, b);
+}
+
 
 /************************************************************************/
 /*************** The public interface implementation ********************/
@@ -238,6 +281,11 @@ static fuse_model get_selected_fuse_model()
             //cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
             return SAME_SHAPE_RANDOM;
         }
+        else if(iequals(e, string("same_shape_range_random")))
+        {
+            //cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
+            return SAME_SHAPE_RANGE_RANDOM;
+        }
         else
         {
             cerr << "[FUSE] WARNING: unknown fuse model: '" << e;
@@ -270,6 +318,8 @@ bool check_fusible(const bh_instruction *a, const bh_instruction *b)
             return fuse_same_shape_range(a,b);
         case SAME_SHAPE_RANDOM:
             return fuse_same_shape_random(a,b);
+        case SAME_SHAPE_RANGE_RANDOM:
+            return fuse_same_shape_range_random(a,b);
         default:
             throw runtime_error("No fuse module is selected!");
     }
