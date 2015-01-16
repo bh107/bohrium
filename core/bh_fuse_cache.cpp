@@ -63,16 +63,18 @@ namespace bohrium {
     //Constructor of the BatchHash class
     BatchHash::BatchHash(const vector<bh_instruction> &instr_list):base_id_count(0)
     {
+        string data;
         BOOST_FOREACH(const bh_instruction &instr, instr_list)
         {
-            this->append(InstrHash(*this, instr));
+            data.append(InstrHash(*this, instr));
         }
+        boost::hash<string> hasher;
+        hash_key = hasher(data);
     }
 
     uint64_t BatchHash::hash() const
     {
-        std::hash<string> hasher;
-        return hasher(*this);
+        return hash_key;
     }
 
     void FuseCache::insert(const BatchHash &batch,
@@ -83,7 +85,7 @@ namespace bohrium {
         {
             instr_indexes_list.push_back(kernel.instr_indexes);
         }
-        cache[batch] = instr_indexes_list;
+        cache[batch.hash()] = instr_indexes_list;
     }
 
     bool FuseCache::lookup(const BatchHash &batch,
@@ -91,7 +93,7 @@ namespace bohrium {
                            vector<bh_ir_kernel> &kernel_list)
     {
         assert(kernel_list.size() == 0);
-        CacheMap::iterator it = cache.find(batch);
+        CacheMap::iterator it = cache.find(batch.hash());
         if(it == cache.end())
             return false;
 

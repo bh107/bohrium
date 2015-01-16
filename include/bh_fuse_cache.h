@@ -40,10 +40,11 @@ namespace bohrium {
 
     /* A class that represets a hash of a instruction batch
      * (aka instruction list) */
-    struct BatchHash: public std::string
+    struct BatchHash
     {
         uint64_t base_id_count;
         std::map<const bh_base*, uint64_t> base2id;
+        uint64_t hash_key;
 
         /* Construct a BatchHash instant based on the instruction list */
         BatchHash(const std::vector<bh_instruction> &instr_list);
@@ -56,7 +57,7 @@ namespace bohrium {
     class FuseCache
     {
         typedef typename std::vector<std::vector<uint64_t> > InstrIndexesList;
-        typedef typename boost::unordered_map<BatchHash, InstrIndexesList> CacheMap;
+        typedef typename boost::unordered_map<uint64_t, InstrIndexesList> CacheMap;
 
         //The map from BatchHash to a list of 'instr_indexes'
         CacheMap cache;
