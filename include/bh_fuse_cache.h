@@ -50,8 +50,11 @@ namespace bohrium {
     /* A class that represets a cache of calculated 'instr_indexes' */
     class FuseCache
     {
+        typedef typename std::vector<std::vector<uint64_t> > InstrIndexesList;
+        typedef typename boost::unordered_map<BatchHash, InstrIndexesList> CacheMap;
+
         //The map from BatchHash to a list of 'instr_indexes'
-        boost::unordered_map<BatchHash, std::vector<std::vector<uint64_t> > > cache;
+        CacheMap cache;
 
     public:
 

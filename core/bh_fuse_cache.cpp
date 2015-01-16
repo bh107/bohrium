@@ -72,7 +72,7 @@ namespace bohrium {
     void FuseCache::insert(const BatchHash &batch,
                            const vector<bh_ir_kernel> &kernel_list)
     {
-        vector<vector<uint64_t> > instr_indexes_list;
+        InstrIndexesList instr_indexes_list;
         BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
         {
             instr_indexes_list.push_back(kernel.instr_indexes);
@@ -85,7 +85,7 @@ namespace bohrium {
                            vector<bh_ir_kernel> &kernel_list)
     {
         assert(kernel_list.size() == 0);
-        auto it = cache.find(batch);
+        CacheMap::iterator it = cache.find(batch);
         if(it == cache.end())
             return false;
 
