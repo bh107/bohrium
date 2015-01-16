@@ -22,9 +22,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <bh.h>
 #include "bh_fuse_cache.h"
+#include <fstream>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 using namespace boost;
+using namespace boost::filesystem;
 
 namespace bohrium {
 
@@ -90,10 +97,10 @@ namespace bohrium {
 
     bool FuseCache::lookup(const BatchHash &batch,
                            bh_ir &bhir,
-                           vector<bh_ir_kernel> &kernel_list)
+                           vector<bh_ir_kernel> &kernel_list) const
     {
         assert(kernel_list.size() == 0);
-        CacheMap::iterator it = cache.find(batch.hash());
+        CacheMap::const_iterator it = cache.find(batch.hash());
         if(it == cache.end())
             return false;
 
@@ -107,5 +114,46 @@ namespace bohrium {
             kernel_list.push_back(kernel);
         }
         return true;
+    }
+
+    void FuseCache::write_to_files() const
+    {
+        cout << "writing files:" << endl;
+        for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
+        {
+            path p(dir_path);
+            p /= lexical_cast<string>(it->first);
+            ofstream ofs(p.string());
+            boost::archive::text_oarchive oa(ofs);
+            oa << it->second;
+            cout << p << endl;
+        }
+    }
+
+    void FuseCache::load_from_files()
+    {
+        path p(dir_path);
+        if(not (exists(p) and is_directory(p)))
+        {
+            cout << "[FUSE-CACHE] ERROR: cache diretory " << p;
+            cout << " does not exist" << endl;
+            assert(1 == 2);
+        }
+
+        cout << "load file from dir " << p << endl;
+
+        //Iterate the 'dir_path' diretory and load each file
+        directory_iterator it(p), eod;
+        BOOST_FOREACH(const path &f, make_pair(it, eod))
+        {
+            if(is_regular_file(f))
+            {
+                cout << f << endl;
+                ifstream ifs(f.string());
+                boost::archive::text_iarchive ia(ifs);
+                const uint64_t key = lexical_cast<uint64_t>(f.filename().string());
+                ia >> cache[key];
+            }
+        }
     }
 } //namespace bohrium

@@ -62,7 +62,16 @@ namespace bohrium {
         //The map from BatchHash to a list of 'instr_indexes'
         CacheMap cache;
 
+        //Path to the directory of the fuse cache files
+        std::string dir_path;
+
     public:
+        FuseCache(){}
+
+        FuseCache(const char *file_dir_path) : dir_path(file_dir_path)
+        {
+            load_from_files();
+        }
 
         /* Insert a 'kernel_list' into the fuse cache
          *
@@ -81,7 +90,14 @@ namespace bohrium {
          */
         bool lookup(const BatchHash &hash,
                     bh_ir &bhir,
-                    std::vector<bh_ir_kernel> &kernel_list);
+                    std::vector<bh_ir_kernel> &kernel_list) const;
+
+        /* Writes the cache to files */
+        void write_to_files() const;
+
+        /* Loads the cache from prevuoisly written files */
+        void load_from_files();
+
     };
 
 } //namespace bohrium
