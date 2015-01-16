@@ -71,9 +71,9 @@ def cylinder(height, width, obstacle=True, dtype=np.float32):
 
 def solve(state, iterations, visualization=0):
     #load the state
-    ly = state['ly'] 
-    lx = state['lx'] 
-    fIn = state['fIn'] 
+    ly = state['ly']
+    lx = state['lx']
+    fIn = state['fIn']
     cx_3d = state['cx_3d']
     cy_3d = state['cy_3d']
     col = state['col']
@@ -84,9 +84,9 @@ def solve(state, iterations, visualization=0):
     for cycle in xrange(iterations):
 
       # Macroscopic variables
-      rho = fIn.sum(axis = 0)
-      ux = (cx_3d * fIn).sum(axis = 0) / rho
-      uy = (cy_3d * fIn).sum(axis = 0) / rho
+      rho = np.sum(fIn, axis = 0)
+      ux = np.sum(cx_3d * fIn, axis = 0) / rho
+      uy = np.sum(cy_3d * fIn, axis = 0) / rho
 
       # Macroscopic (Dirichlet) boundary conditions
 
@@ -142,7 +142,7 @@ def solve(state, iterations, visualization=0):
           # Bounce back region:
           #fOut[i,bbRegion] = fIn[opp[i],bbRegion]
           #Using a explict mask
-          if bbRegion is not None: 
+          if bbRegion is not None:
               masked = fIn[opp[i]].copy() * bbRegion
               fOut[i] = fOut[i] * ~bbRegion + masked
 
@@ -176,8 +176,8 @@ def solve(state, iterations, visualization=0):
               t1[:,-1] = fOut[i][:,0]
               fIn[i] = t1
           else:
-              fIn[i] = fOut[i]         
-      
+              fIn[i] = fOut[i]
+
       if visualization and not cycle % visualization:
           axes1.clear()
           axes2.clear()
