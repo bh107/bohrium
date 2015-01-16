@@ -44,7 +44,12 @@ namespace bohrium {
     {
         uint64_t base_id_count;
         std::map<const bh_base*, uint64_t> base2id;
+
+        /* Construct a BatchHash instant based on the instruction list */
         BatchHash(const std::vector<bh_instruction> &instr_list);
+
+        /* Returns the hash value */
+        uint64_t hash() const;
     };
 
     /* A class that represets a cache of calculated 'instr_indexes' */

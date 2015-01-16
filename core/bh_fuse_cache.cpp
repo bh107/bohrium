@@ -69,6 +69,12 @@ namespace bohrium {
         }
     }
 
+    uint64_t BatchHash::hash() const
+    {
+        std::hash<string> hasher;
+        return hasher(*this);
+    }
+
     void FuseCache::insert(const BatchHash &batch,
                            const vector<bh_ir_kernel> &kernel_list)
     {
