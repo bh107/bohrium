@@ -8,6 +8,7 @@ Copyright (C) 2006 Jonas Latt
 Address: Rue General Dufour 24,  1211 Geneva 4, Switzerland
 E-mail: Jonas.Latt@cui.unige.ch
 """
+import threading
 import util
 if util.Benchmark().bohrium:
     import bohrium as np
@@ -69,7 +70,8 @@ def cylinder(height, width, obstacle=True, dtype=np.float32):
 
     return state
 
-def solve(state, iterations, visualization=0):
+def solve(state, iterations, viz=None):
+
     #load the state
     ly = state['ly']
     lx = state['lx']
@@ -178,14 +180,42 @@ def solve(state, iterations, visualization=0):
           else:
               fIn[i] = fOut[i]
 
-      if visualization and not cycle % visualization:
-          axes1.clear()
-          axes2.clear()
-          axes3.clear()
-          axes1.imshow(fIn[4].T.copy())
-          axes2.imshow(ux.T.copy())
-          axes3.imshow(uy.T.copy())
-          canvas.show()
+      if viz and not cycle % 10:
+          viz['axes1'].clear()
+          viz['axes2'].clear()
+          viz['axes3'].clear()
+          viz['axes1'].imshow(fIn[4].T.copy())
+          viz['axes2'].imshow(ux.T.copy())
+          viz['axes3'].imshow(uy.T.copy())
+          viz['canvas'].show()
+
+def setup_viz(state):
+    """Setup visualization."""
+
+    import matplotlib
+    import matplotlib.figure
+    import matplotlib.backends.backend_tkagg
+    import Tkinter
+    import threading
+
+    viz = {}
+
+    # Initialise Tk ...
+    figure = matplotlib.figure.Figure()
+    figure.set_size_inches((8, 6))
+
+    viz['axes1'] = figure.add_subplot(311)
+    viz['axes2'] = figure.add_subplot(312)
+    viz['axes3'] = figure.add_subplot(313)
+
+    viz['tk'] = Tkinter.Tk()
+    viz['canvas'] = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(
+        figure,
+        master=viz['tk']
+    )
+    viz['canvas'].get_tk_widget().pack(expand = True, fill = Tkinter.BOTH)
+
+    return viz 
 
 def main():
     B = util.Benchmark()
@@ -195,36 +225,22 @@ def main():
 
     state = cylinder(H, W, obstacle=False)
 
+    viz = None
+    if B.verbose:
+        viz = setup_viz(state)
+
     B.start()
-    solve(state, I)
+    if viz:
+        thread = threading.Thread(target = solve, args=(state, I, viz))
+        thread.start()
+        viz['tk'].mainloop()   
+    else:
+        R = solve(state, I, viz)
     B.stop()
     B.pprint()
 
-    """
-    import matplotlib
-    import matplotlib.figure
-    import matplotlib.backends.backend_tkagg
-    import Tkinter
-    import threading
-
-    # Initialise Tk ...
-    figure = matplotlib.figure.Figure()
-    figure.set_size_inches((8, 6))
-
-    axes1 = figure.add_subplot(311)
-    axes2 = figure.add_subplot(312)
-    axes3 = figure.add_subplot(313)
-
-    tk = Tkinter.Tk()
-    canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(figure, master = tk)
-    canvas.get_tk_widget().pack(expand = True, fill = Tkinter.BOTH)
-
-    state = cylinder(51, 250, obstacle=False)
-
-    thread = threading.Thread(target = solve, args=(state,1000, 1))
-    thread.start()
-    tk.mainloop()
-    """
+    if B.outputfn:
+        B.tofile(B.outputfn, {'res': np.array(R)})
 
 if __name__ == "__main__":
     main()
