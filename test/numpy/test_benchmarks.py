@@ -180,23 +180,7 @@ Cannot test: k_nearest_neighbor.py
 It needs to have main() implemented.
 """
 
-class test_knn(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
-        self.size=1000
-
-        # Benchmark parameters
-        self.script     = "knn"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "1000*10*1"
-        self.inputfn    = "knn_base-{0}-1000*10_targets-{0}-1000*10.npz"
-
-    def test_knn(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
-
-class test_knn_naive(BenchHelper, numpytest):
+class test_knn_naive1(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
@@ -204,12 +188,29 @@ class test_knn_naive(BenchHelper, numpytest):
         self.size=10000
 
         # Benchmark parameters
-        self.script     = "knn_naive"
+        self.script     = "knn_naive1"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "10000*100*3"
         self.inputfn    = None
 
-    def test_knn_naive(self, pseudo_arrays):
+    def test_knn_naive1(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_knn_naive2(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size=10000
+
+        # Benchmark parameters
+        self.script     = "knn_naive2"
+        self.dtypes     = [bh.float32, bh.float64]
+
+        self.sizetxt = "1000*10*1"
+        self.inputfn = "knn_base-{0}-1000*10_targets-{0}-1000*10.npz"
+
+    def test_knn_naive2(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 """
