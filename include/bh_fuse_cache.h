@@ -63,7 +63,7 @@ namespace bohrium {
         CacheMap cache;
 
         //Path to the directory of the fuse cache files
-        std::string dir_path;
+        const char* dir_path;
 
     public:
         FuseCache(){}

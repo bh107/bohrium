@@ -119,20 +119,13 @@ namespace bohrium {
 
     void FuseCache::write_to_files() const
     {
-        cout << "writing files:" << endl;
-        for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
+        if(dir_path == NULL)
         {
-            path p(dir_path);
-            p /= lexical_cast<string>(it->first);
-            ofstream ofs(p.string());
-            boost::archive::text_oarchive oa(ofs);
-            oa << it->second;
-            cout << p << endl;
+            cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "\
+            "the configure file thus no cache files are written to disk!" << endl;
+            return;
         }
-    }
 
-    void FuseCache::load_from_files()
-    {
         path p(dir_path);
         {//Append the name of the fuse model to the cache dir
             string model_name;
@@ -142,6 +135,35 @@ namespace bohrium {
 
         if(create_directories(p))
             cout << "[FUSE-CACHE] Creating cache diretory " << p << endl;
+
+        cout << "writing files:" << endl;
+        for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
+        {
+            path filename = p / lexical_cast<string>(it->first);
+            cout << filename << endl;
+            ofstream ofs(filename.string());
+            boost::archive::text_oarchive oa(ofs);
+            oa << it->second;
+        }
+    }
+
+    void FuseCache::load_from_files()
+    {
+        if(dir_path == NULL)
+        {
+            cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "\
+            "the configure file thus no cache files are loaded from disk!" << endl;
+            return;
+        }
+
+        path p(dir_path);
+        {//Append the name of the fuse model to the cache dir
+            string model_name;
+            fuse_model_text(fuse_get_selected_model(), model_name);
+            p /= path(model_name);
+        }
+        if(not (exists(p) and is_directory(p)))
+            return;
 
         cout << "load file from dir " << p << endl;
 
