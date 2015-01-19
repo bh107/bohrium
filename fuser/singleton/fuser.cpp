@@ -18,6 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
+#include <bh_fuse_cache.h>
 #include <iostream>
 #include <fstream>
 #include <boost/foreach.hpp>
@@ -27,18 +28,28 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 using namespace boost;
+using namespace bohrium;
 
-void fuser(bh_ir &bhir)
+static void do_fusion(bh_ir &bhir)
 {
-    if(bhir.kernel_list.size() != 0)
-    {
-        throw logic_error("The kernel_list is not empty!");
-    }
     for(uint64_t idx=0; idx < bhir.instr_list.size(); idx++)
-	{
+    {
         bh_ir_kernel kernel(bhir);
         kernel.add_instr(idx);
         bhir.kernel_list.push_back(kernel);
+    }
+}
+
+void fuser(bh_ir &bhir, FuseCache &cache)
+{
+    if(bhir.kernel_list.size() != 0)
+        throw logic_error("The kernel_list is not empty!");
+
+    BatchHash batch(bhir.instr_list);
+    if(not cache.lookup(batch, bhir, bhir.kernel_list))
+    {
+        do_fusion(bhir);
+        cache.insert(batch, bhir.kernel_list);
     }
 }
 
