@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <cstring>
 #include <bh.h>
+#include "bh_fuse.h"
 #include "bh_fuse_cache.h"
 #include <fstream>
 #include <boost/archive/text_oarchive.hpp>
@@ -133,12 +134,14 @@ namespace bohrium {
     void FuseCache::load_from_files()
     {
         path p(dir_path);
-        if(not (exists(p) and is_directory(p)))
-        {
-            cout << "[FUSE-CACHE] ERROR: cache diretory " << p;
-            cout << " does not exist" << endl;
-            assert(1 == 2);
+        {//Append the name of the fuse model to the cache dir
+            string model_name;
+            fuse_model_text(fuse_get_selected_model(), model_name);
+            p /= path(model_name);
         }
+
+        if(create_directories(p))
+            cout << "[FUSE-CACHE] Creating cache diretory " << p << endl;
 
         cout << "load file from dir " << p << endl;
 
