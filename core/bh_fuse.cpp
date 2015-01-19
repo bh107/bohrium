@@ -226,9 +226,12 @@ static bool fuse_same_shape_range_random(const bh_instruction *a, const bh_instr
 
 /* Get the selected fuse model by reading the environment
  * variable 'BH_FUSE_MODEL' */
-static FuseModel get_selected_fuse_model()
+FuseModel fuse_get_selected_model()
 {
     using namespace boost;
+
+    if(selected_fuse_model != NUM_OF_MODELS)
+        return selected_fuse_model;
 
     string default_model;
     fuse_model_text(default_fuse_model, default_model);
@@ -250,8 +253,8 @@ static FuseModel get_selected_fuse_model()
                 return m;
             }
         }
-//        cerr << "[FUSE] WARNING: unknown fuse model: '" << e;
-//        cerr << "', using the default model '" << default_model << "' instead" << endl;
+        cerr << "[FUSE] WARNING: unknown fuse model: '" << e;
+        cerr << "', using the default model '" << default_model << "' instead" << endl;
     }
 //    cout << "[FUSE] info: selected fuse model: '" << default_model << "'" << endl;
     return default_fuse_model;
@@ -298,7 +301,7 @@ bool check_fusible(const bh_instruction *a, const bh_instruction *b)
     switch(selected_fuse_model)
     {
         case NUM_OF_MODELS:
-            selected_fuse_model = get_selected_fuse_model();
+            selected_fuse_model = fuse_get_selected_model();
             return check_fusible(a, b);
         case BROADEST:
             return fuse_broadest(a,b);
