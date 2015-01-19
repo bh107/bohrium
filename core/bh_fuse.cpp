@@ -28,36 +28,11 @@ using namespace std;
 
 namespace bohrium {
 
-/* The possible fuse models */
-enum fuse_model
-{
-/* The broadest possible model. I.e. a SIMD machine can
- * theoretically execute the two instructions in a single operation,
- * thus accepts broadcast, reduction, extension methods, etc. */
-    BROADEST,
-
-/* A very simple mode that only fuses same shaped arrays thus no
- * broadcast, reduction, extension methods, etc. */
-    SAME_SHAPE,
-
-/* Like same shape but includes range */
-    SAME_SHAPE_RANGE,
-
-/* Like same shape but includes random */
-    SAME_SHAPE_RANDOM,
-
-/* Like same shape but includes random */
-    SAME_SHAPE_RANGE_RANDOM,
-
-/* The sentinel */
-    NONE
-};
-
 /* The default fuse model */
-static const fuse_model default_fuse_model = BROADEST;
+static const FuseModel default_fuse_model = BROADEST;
 
 /* The current selected fuse model */
-static fuse_model selected_fuse_model = NONE;
+static FuseModel selected_fuse_model = NUM_OF_MODELS;
 
 
 /************************************************************************/
@@ -245,55 +220,70 @@ static bool fuse_same_shape_range_random(const bh_instruction *a, const bh_instr
     return fuse_broadest(a, b);
 }
 
-
 /************************************************************************/
 /*************** The public interface implementation ********************/
 /************************************************************************/
 
 /* Get the selected fuse model by reading the environment
  * variable 'BH_FUSE_MODEL' */
-static fuse_model get_selected_fuse_model()
+static FuseModel get_selected_fuse_model()
 {
     using namespace boost;
+
+    string default_model;
+    fuse_model_text(default_fuse_model, default_model);
 
     //Check enviroment variable
     const char *env = getenv("BH_FUSE_MODEL");
     if(env != NULL)
     {
         string e(env);
-        if(iequals(e, string("broadest")))
+        //Iterate through the 'FuseModel' enum and find the enum that matches
+        //the enviroment variable string 'e'
+        for(FuseModel m = BROADEST; m < NUM_OF_MODELS; m = FuseModel(m + 1))
         {
-            //cout << "[FUSE] info: selected fuse model: 'BROADEST'" << endl;
-            return BROADEST;
+            string model;
+            fuse_model_text(m, model);
+            if(iequals(e, model))
+            {
+//                cout << "[FUSE] info: selected fuse model: '" << model << "'" << endl;
+                return m;
+            }
         }
-        else if(iequals(e, string("same_shape")))
-        {
-            //cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
-            return SAME_SHAPE;
-        }
-        else if(iequals(e, string("same_shape_range")))
-        {
-            //cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
-            return SAME_SHAPE_RANGE;
-        }
-        else if(iequals(e, string("same_shape_random")))
-        {
-            //cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
-            return SAME_SHAPE_RANDOM;
-        }
-        else if(iequals(e, string("same_shape_range_random")))
-        {
-            //cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
-            return SAME_SHAPE_RANGE_RANDOM;
-        }
-        else
-        {
-            cerr << "[FUSE] WARNING: unknown fuse model: '" << e;
-            cerr << "', using the default model instead" << endl;
-        }
+//        cerr << "[FUSE] WARNING: unknown fuse model: '" << e;
+//        cerr << "', using the default model '" << default_model << "' instead" << endl;
     }
-    //cout << "[FUSE] info: selected fuse model: 'BROADEST'" << endl;
+//    cout << "[FUSE] info: selected fuse model: '" << default_model << "'" << endl;
     return default_fuse_model;
+}
+
+/* Writes the name of the 'fuse_model' to the 'output' string
+ *
+ * @fuse_model  The fuse model
+ * @output      The output string
+ */
+void fuse_model_text(FuseModel fuse_model, string &output)
+{
+    switch(fuse_model)
+    {
+        case BROADEST:
+            output = "broadest";
+            break;
+        case SAME_SHAPE:
+            output = "same_shape";
+            break;
+        case SAME_SHAPE_RANGE:
+            output = "same_shape_range";
+            break;
+        case SAME_SHAPE_RANDOM:
+            output = "same_shape_random";
+            break;
+        case SAME_SHAPE_RANGE_RANDOM:
+            output = "same_shape_range_random";
+            break;
+        default:
+            output = "unknown";
+    }
 }
 
 /* Determines whether it is legal to fuse two instructions into one
@@ -307,7 +297,7 @@ bool check_fusible(const bh_instruction *a, const bh_instruction *b)
 {
     switch(selected_fuse_model)
     {
-        case NONE:
+        case NUM_OF_MODELS:
             selected_fuse_model = get_selected_fuse_model();
             return check_fusible(a, b);
         case BROADEST:
