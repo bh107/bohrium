@@ -100,10 +100,15 @@ namespace bohrium {
                            bh_ir &bhir,
                            vector<bh_ir_kernel> &kernel_list) const
     {
+//        cout << "looking up " << batch.hash() << ": ";
+
         assert(kernel_list.size() == 0);
         CacheMap::const_iterator it = cache.find(batch.hash());
         if(it == cache.end())
+        {
+//            cout << "cache miss!" << endl;
             return false;
+        }
 
         BOOST_FOREACH(const vector<uint64_t> &instr_indexes, it->second)
         {
@@ -114,6 +119,7 @@ namespace bohrium {
             }
             kernel_list.push_back(kernel);
         }
+//        cout << "cache hit!" << endl;
         return true;
     }
 
@@ -139,11 +145,9 @@ namespace bohrium {
             permissions(p, all_all);
         }
 
-        cout << "writing files:" << endl;
         for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
         {
             path filename = p / lexical_cast<string>(it->first);
-            cout << filename << endl;
             ofstream ofs(filename.string());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
@@ -170,15 +174,12 @@ namespace bohrium {
         if(not (exists(p) and is_directory(p)))
             return;
 
-        cout << "load file from dir " << p << endl;
-
         //Iterate the 'dir_path' diretory and load each file
         directory_iterator it(p), eod;
         BOOST_FOREACH(const path &f, make_pair(it, eod))
         {
             if(is_regular_file(f))
             {
-                cout << f << endl;
                 ifstream ifs(f.string());
                 boost::archive::text_iarchive ia(ifs);
                 const uint64_t key = lexical_cast<uint64_t>(f.filename().string());
