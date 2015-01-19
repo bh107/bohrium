@@ -134,7 +134,10 @@ namespace bohrium {
         }
 
         if(create_directories(p))
+        {
             cout << "[FUSE-CACHE] Creating cache diretory " << p << endl;
+            permissions(p, all_all);
+        }
 
         cout << "writing files:" << endl;
         for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
@@ -144,6 +147,8 @@ namespace bohrium {
             ofstream ofs(filename.string());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
+            ofs.flush();
+            permissions(filename, all_all);
         }
     }
 
