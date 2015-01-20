@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/vector.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/version.hpp>
 
 using namespace std;
 using namespace boost;
@@ -125,7 +126,9 @@ namespace bohrium {
         if(create_directories(p))
         {
             cout << "[FUSE-CACHE] Creating cache diretory " << p << endl;
+        #if BOOST_VERSION > 104900
             permissions(p, all_all);
+        #endif
         }
 
         for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
@@ -135,7 +138,9 @@ namespace bohrium {
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
             ofs.flush();
+        #if BOOST_VERSION > 104900
             permissions(filename, all_all);
+        #endif
             assert(it->second.fuse_model() == model_name);
         }
     }
