@@ -19,6 +19,7 @@ from .linalg import matmul, dot
 from .summations import sum, prod, max, min
 from . import import_external
 from numpy_force import dtype
+asarray = array
 
 # Expose all ufuncs
 for f in UFUNCS:

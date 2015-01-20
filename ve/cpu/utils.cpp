@@ -123,21 +123,14 @@ bool compatible(const operand_t& one, const operand_t& other)
 
 bool contiguous(const operand_t& arg)
 {
-    if ((arg.ndim == 3) && \
-        (arg.stride[2] == 1) && \
-        (arg.stride[1] == arg.shape[2]) && \
-        (arg.stride[0] == arg.shape[2]*arg.shape[1])
-    ) {
-        return true;
-    } else if ((arg.ndim == 2) && \
-               (arg.stride[1] == 1) && \
-               (arg.stride[0] == arg.shape[1])) {
-        return true;
-    } else if ((arg.ndim == 1) && (arg.stride[0] == 1)) {
-        return true;
+    int64_t shape = 1;
+    for(int ldim=arg.ndim-1; ldim>=0; --ldim) {
+        if (arg.stride[ldim] != shape) {
+            return false;
+        }
+        shape *= arg.shape[ldim];
     }
-
-    return false;
+    return true;
 }
 
 std::string operand_text(const operand_t& operand)
@@ -226,7 +219,7 @@ int tac_noperands(const tac_t& tac)
                 case FLOOD:
                     return 2;
                 case RANDOM:
-                    return 2;
+                    return 3;
                 case RANGE:
                     return 1;
                 default:

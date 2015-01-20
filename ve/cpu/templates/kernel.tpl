@@ -31,7 +31,15 @@ inline int omp_get_num_threads() { return 1; }
 #define CPU_MAXDIM 16
 #endif
 
+#ifndef CPU_CODEGEN_MISC
+#define CPU_CODEGEN_MISC 1
 #define ARGS_DPTR(I) *(args[I]->data)
+typedef union philox2x32_as_1x64 {
+    philox2x32_ctr_t orig;
+    uint64_t combined;
+} philox2x32_as_1x64_t;
+#endif
+
 /*
 KERNEL-DESCRIPTION {
   MODE          = {{MODE}},
@@ -43,7 +51,7 @@ KERNEL-DESCRIPTION {
   SYMBOL_TEXT   = {{SYMBOL_TEXT}}
 }
 */
-void KRN_{{SYMBOL}}(operand_t** args)
+void KRN_{{SYMBOL}}(operand_t** args, iterspace_t* iterspace)
 {
     //
     // Argument unpacking

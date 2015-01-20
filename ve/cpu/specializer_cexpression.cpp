@@ -364,11 +364,11 @@ string Specializer::cexpression(SymbolTable& symbol_table, const Block& block, s
             break;
         case RANDOM:            
             
-            expr_text = "__ERROR__GENERATOR_RANDOM_NOT_IMLEMENTED__"; break;
+            expr_text = "philox2x32_as_1x64_t ctr_%4$d; philox2x32_as_1x64_t rand_%2$d; ctr_%4$d.combined = %3$ca%4$d_current + i; rand_%2$d.orig = philox2x32(ctr_%4$d.orig, (philox2x32_key_t){ { %5$ca%6$d_current } } ); %1$ca%2$d_current = rand_%2$d.combined;"; break;
             break;
         case RANGE:            
             
-            expr_text = "%1$ca%2$d_current = state"; break;
+            expr_text = "%1$ca%2$d_current = i"; break;
             break;
         case REAL:            
             

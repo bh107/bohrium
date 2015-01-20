@@ -5,7 +5,11 @@ find_package(OpenCL)
 set_package_properties(OpenCL PROPERTIES DESCRIPTION "Open Computing Language" URL "www.khronos.org/opencl/")
 set_package_properties(OpenCL PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the GPU-VE.")
 
-if(OPENCL_FOUND)
+find_package(OpenGL)
+set_package_properties(OpenGL PROPERTIES DESCRIPTION "Open Graphics Library" URL "www.opengl.org")
+set_package_properties(OpenGL PROPERTIES TYPE RECOMMENDED PURPOSE "Required by OpenCL/GPU-VE.")
+
+if(OPENCL_FOUND AND OPENGL_FOUND)
 #    add_definitions("-DBH_TIMING_SUM")
 #    add_definitions("-DDEBUG")
 

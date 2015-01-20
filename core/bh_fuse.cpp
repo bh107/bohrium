@@ -28,27 +28,11 @@ using namespace std;
 
 namespace bohrium {
 
-/* The possible fuse models */
-enum fuse_model
-{
-/* The broadest possible model. I.e. a SIMD machine can
- * theoretically execute the two instructions in a single operation,
- * thus accepts broadcast, reduction, extension methods, etc. */
-    BROADEST,
-
-/* A very simple mode that only fuses same shaped arrays thus no
- * broadcast, reduction, extension methods, etc. */
-    SAME_SHAPE,
-
-/* The sentinel */
-    NONE
-};
-
 /* The default fuse model */
-static const fuse_model default_fuse_model = BROADEST;
+static const FuseModel default_fuse_model = BROADEST;
 
 /* The current selected fuse model */
-static fuse_model selected_fuse_model = NONE;
+static FuseModel selected_fuse_model = NUM_OF_MODELS;
 
 
 /************************************************************************/
@@ -116,39 +100,193 @@ static bool fuse_same_shape(const bh_instruction *a, const bh_instruction *b)
     return fuse_broadest(a, b);
 }
 
+static bool fuse_same_shape_range(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    if((a->opcode != BH_RANGE and not bh_opcode_is_elementwise(a->opcode)) or
+       (b->opcode != BH_RANGE and not bh_opcode_is_elementwise(b->opcode)))
+        return false;
+
+    const int a_nop = bh_operands(a->opcode);
+    const int b_nop = bh_operands(b->opcode);
+    const bh_intp *shape = a->operand[0].shape;
+    const bh_intp ndim = a->operand[0].ndim;
+    for(int i=1; i<a_nop; ++i)
+    {
+        if(bh_is_constant(&a->operand[i]))
+            continue;
+        if(ndim != a->operand[i].ndim)
+            return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(a->operand[i].shape[j] != shape[j])
+                return false;
+        }
+    }
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(bh_is_constant(&b->operand[i]))
+            continue;
+        if(ndim != b->operand[i].ndim)
+            return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(b->operand[i].shape[j] != shape[j])
+                return false;
+        }
+    }
+    return fuse_broadest(a, b);
+}
+
+static bool fuse_same_shape_random(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    if((a->opcode != BH_RANDOM and not bh_opcode_is_elementwise(a->opcode)) or
+       (b->opcode != BH_RANDOM and not bh_opcode_is_elementwise(b->opcode)))
+        return false;
+
+    const int a_nop = bh_operands(a->opcode);
+    const int b_nop = bh_operands(b->opcode);
+    const bh_intp *shape = a->operand[0].shape;
+    const bh_intp ndim = a->operand[0].ndim;
+    for(int i=1; i<a_nop; ++i)
+    {
+        if(bh_is_constant(&a->operand[i]))
+            continue;
+        if(ndim != a->operand[i].ndim)
+            return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(a->operand[i].shape[j] != shape[j])
+                return false;
+        }
+    }
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(bh_is_constant(&b->operand[i]))
+            continue;
+        if(ndim != b->operand[i].ndim)
+            return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(b->operand[i].shape[j] != shape[j])
+                return false;
+        }
+    }
+    return fuse_broadest(a, b);
+}
+
+static bool fuse_same_shape_range_random(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    if((a->opcode != BH_RANGE and a->opcode != BH_RANDOM and not bh_opcode_is_elementwise(a->opcode)) or
+       (b->opcode != BH_RANGE and b->opcode != BH_RANDOM and not bh_opcode_is_elementwise(b->opcode)))
+        return false;
+
+    const int a_nop = bh_operands(a->opcode);
+    const int b_nop = bh_operands(b->opcode);
+    const bh_intp *shape = a->operand[0].shape;
+    const bh_intp ndim = a->operand[0].ndim;
+    for(int i=1; i<a_nop; ++i)
+    {
+        if(bh_is_constant(&a->operand[i]))
+            continue;
+        if(ndim != a->operand[i].ndim)
+            return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(a->operand[i].shape[j] != shape[j])
+                return false;
+        }
+    }
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(bh_is_constant(&b->operand[i]))
+            continue;
+        if(ndim != b->operand[i].ndim)
+            return false;
+        for(bh_intp j=0; j<ndim; ++j)
+        {
+            if(b->operand[i].shape[j] != shape[j])
+                return false;
+        }
+    }
+    return fuse_broadest(a, b);
+}
+
 /************************************************************************/
 /*************** The public interface implementation ********************/
 /************************************************************************/
 
 /* Get the selected fuse model by reading the environment
  * variable 'BH_FUSE_MODEL' */
-static fuse_model get_selected_fuse_model()
+FuseModel fuse_get_selected_model()
 {
     using namespace boost;
+
+    if(selected_fuse_model != NUM_OF_MODELS)
+        return selected_fuse_model;
+
+    string default_model;
+    fuse_model_text(default_fuse_model, default_model);
 
     //Check enviroment variable
     const char *env = getenv("BH_FUSE_MODEL");
     if(env != NULL)
     {
         string e(env);
-        if(iequals(e, string("broadest")))
+        //Iterate through the 'FuseModel' enum and find the enum that matches
+        //the enviroment variable string 'e'
+        for(FuseModel m = BROADEST; m < NUM_OF_MODELS; m = FuseModel(m + 1))
         {
-            //cout << "[FUSE] info: selected fuse model: 'BROADEST'" << endl;
-            return BROADEST;
+            string model;
+            fuse_model_text(m, model);
+            if(iequals(e, model))
+            {
+//                cout << "[FUSE] info: selected fuse model: '" << model << "'" << endl;
+                return m;
+            }
         }
-        else if(iequals(e, string("same_shape")))
-        {
-            //cout << "[FUSE] info: selected fuse model: 'SAME_SHAPE'" << endl;
-            return SAME_SHAPE;
-        }
-        else
-        {
-            cerr << "[FUSE] WARNING: unknown fuse model: '" << e;
-            cerr << "', using the default model instead" << endl;
-        }
+        cerr << "[FUSE] WARNING: unknown fuse model: '" << e;
+        cerr << "', using the default model '" << default_model << "' instead" << endl;
     }
-    //cout << "[FUSE] info: selected fuse model: 'BROADEST'" << endl;
+//    cout << "[FUSE] info: selected fuse model: '" << default_model << "'" << endl;
     return default_fuse_model;
+}
+
+/* Writes the name of the 'fuse_model' to the 'output' string
+ *
+ * @fuse_model  The fuse model
+ * @output      The output string
+ */
+void fuse_model_text(FuseModel fuse_model, string &output)
+{
+    switch(fuse_model)
+    {
+        case BROADEST:
+            output = "broadest";
+            break;
+        case SAME_SHAPE:
+            output = "same_shape";
+            break;
+        case SAME_SHAPE_RANGE:
+            output = "same_shape_range";
+            break;
+        case SAME_SHAPE_RANDOM:
+            output = "same_shape_random";
+            break;
+        case SAME_SHAPE_RANGE_RANDOM:
+            output = "same_shape_range_random";
+            break;
+        default:
+            output = "unknown";
+    }
 }
 
 /* Determines whether it is legal to fuse two instructions into one
@@ -162,13 +300,19 @@ bool check_fusible(const bh_instruction *a, const bh_instruction *b)
 {
     switch(selected_fuse_model)
     {
-        case NONE:
-            selected_fuse_model = get_selected_fuse_model();
+        case NUM_OF_MODELS:
+            selected_fuse_model = fuse_get_selected_model();
             return check_fusible(a, b);
         case BROADEST:
             return fuse_broadest(a,b);
         case SAME_SHAPE:
             return fuse_same_shape(a,b);
+        case SAME_SHAPE_RANGE:
+            return fuse_same_shape_range(a,b);
+        case SAME_SHAPE_RANDOM:
+            return fuse_same_shape_random(a,b);
+        case SAME_SHAPE_RANGE_RANDOM:
+            return fuse_same_shape_range_random(a,b);
         default:
             throw runtime_error("No fuse module is selected!");
     }

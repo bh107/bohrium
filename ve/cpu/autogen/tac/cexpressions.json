@@ -712,7 +712,7 @@
         "op":   "GENERATOR",
         "oper": "RANGE",
         "scalar": {
-            "default":  "out = state"
+            "default":  "out = i"
         },
         "simd": {}
     },
@@ -761,7 +761,7 @@
         "op":   "GENERATOR",
         "oper": "RANDOM",
         "scalar": {
-            "default": "__ERROR__GENERATOR_RANDOM_NOT_IMLEMENTED__"
+            "default": "philox2x32_as_1x64_t ctr_in1_nr; philox2x32_as_1x64_t rand_out_nr; ctr_in1_nr.combined = in1 + i; rand_out_nr.orig = philox2x32(ctr_in1_nr.orig, (philox2x32_key_t){ { in2 } } ); out = rand_out_nr.combined;"
         },
         "simd": {}
     },

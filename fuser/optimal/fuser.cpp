@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <bh_dag.h>
+#include <bh_fuse_cache.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -37,6 +38,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 using namespace boost;
+using namespace bohrium;
 using namespace bohrium::dag;
 
 /* Help function that fuses the edges in 'edges2explore' where the 'mask' is true */
@@ -333,7 +335,7 @@ void set_abort_timer()
     setitimer (ITIMER_REAL, &timer, NULL);
 }
 
-void fuser(bh_ir &bhir)
+void do_fusion(bh_ir &bhir)
 {
 #ifdef VERBOSE
     ++fuser_count;
@@ -394,6 +396,19 @@ void fuser(bh_ir &bhir)
         assert(dag_validate(output));
         bhir.kernel_list.clear();
         fill_bhir_kernel_list(output, bhir);
+    }
+}
+
+void fuser(bh_ir &bhir, FuseCache &cache)
+{
+    if(bhir.kernel_list.size() != 0)
+        throw logic_error("The kernel_list is not empty!");
+
+    BatchHash batch(bhir.instr_list);
+    if(not cache.lookup(batch, bhir, bhir.kernel_list))
+    {
+        do_fusion(bhir);
+        cache.insert(batch, bhir.kernel_list);
     }
 }
 

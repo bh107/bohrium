@@ -152,6 +152,13 @@ typedef struct operand {
     bh_base* base;      // Pointer to operand base or NULL when layout == SCALAR_CONST.
 } operand_t;            // Meta-data for a block argument
 
+typedef struct iterspace {
+    LAYOUT layout;  // The dominating layout
+    int64_t ndim;   // The dominating rank/dimension of the iteration space
+    int64_t* shape; // Shape of the iteration space
+    int64_t nelem;  // The number of elements in the iteration space
+} iterspace_t;
+
 #define SCALAR_LAYOUT   (SCALAR | SCALAR_CONST | SCALAR_TEMP)
 #define ARRAY_LAYOUT    (CONTIGUOUS | STRIDED | SPARSE)
 #define CONT_COMPATIBLE (SCALAR | SCALAR_CONST | SCALAR_TEMP | CONTIGUOUS)

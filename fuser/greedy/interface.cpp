@@ -21,6 +21,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "interface.h"
 #include "fuser.h"
+#include "bh_fuse_cache.h"
+
+using namespace bohrium;
 
 //
 // Components
@@ -30,6 +33,9 @@ static bh_component myself; // Myself
 
 //Function pointers to our child.
 static bh_component_iface *child;
+
+//The fuse cache
+static FuseCache fuse_cache;
 
 //
 // Component interface init/execute/shutdown
@@ -44,7 +50,7 @@ bh_error bh_fuser_greedy_init(const char* name)
     //For now, we have one child exactly
     if(myself.nchildren != 1)
     {
-        fprintf(stderr, "[FILTER-DUPLICATES] Unexpected number of children, must be 1");
+        fprintf(stderr, "[GREEDY FUSER] Unexpected number of children, must be 1");
         return BH_ERROR;
     }
 
@@ -53,19 +59,22 @@ bh_error bh_fuser_greedy_init(const char* name)
     if((err = child->init(child->name)) != 0)
         return err;
 
+    fuse_cache = FuseCache(bh_component_config_lookup(&myself, "cache_path"), myself.name);
+
     return BH_SUCCESS;
 }
 
 bh_error bh_fuser_greedy_shutdown(void)
 {
     bh_error err = child->shutdown();
+    fuse_cache.write_to_files();
     bh_component_destroy(&myself);
     return err;
 }
 
 bh_error bh_fuser_greedy_execute(bh_ir* bhir)
 {
-    fuser(*bhir);        // Run the filter
+    fuser(*bhir, fuse_cache);     // Run the filter
     return child->execute(bhir); // Execute the filtered bhir
 }
 

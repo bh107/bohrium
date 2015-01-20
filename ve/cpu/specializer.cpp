@@ -20,8 +20,6 @@ Specializer::Specializer(const string template_directory)
     ctemplate::LoadTemplate("ewise.strided.nd.tpl", strip_mode);
     ctemplate::LoadTemplate("kernel.tpl",   strip_mode);
     ctemplate::LoadTemplate("license.tpl",  strip_mode);
-    ctemplate::LoadTemplate("random.cont.1d.tpl",   strip_mode);
-    ctemplate::LoadTemplate("range.cont.1d.tpl",    strip_mode);
     ctemplate::LoadTemplate("reduce.strided.1d.tpl", strip_mode);
     ctemplate::LoadTemplate("reduce.strided.2d.tpl", strip_mode);
     ctemplate::LoadTemplate("reduce.strided.3d.tpl", strip_mode);
@@ -119,14 +117,15 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
         case GENERATE:
             switch(tac.oper) {
                 case RANDOM:
-                    tpl_opcode  = "random.";
-                    tpl_ndim    = "1d.";
+                    tpl_opcode  = "ewise.";
+                    tpl_layout  = "cont.";
+                    tpl_ndim    = "nd.";
                     break;
                 case RANGE:
-                    tpl_opcode = "range.";
-                    tpl_ndim    = "1d.";
+                    tpl_opcode  = "ewise.";
+                    tpl_layout  = "cont.";
+                    tpl_ndim    = "nd.";
                     break;
-
                 default:
                     fprintf(
                         stderr,
@@ -135,7 +134,6 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
                         core::operator_text(tac.oper).c_str()
                     );
             }
-            tpl_layout = "cont.";
             break;
 
         default:

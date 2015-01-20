@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_IR_FUSE_H
 
 #include <bh.h>
+#include <string>
 
 namespace bohrium {
 
@@ -34,6 +35,43 @@ namespace bohrium {
  * @return The boolean answer
  */
 bool check_fusible(const bh_instruction *a, const bh_instruction *b);
+
+/* The possible fuse models */
+enum FuseModel
+{
+/* The broadest possible model. I.e. a SIMD machine can
+ * theoretically execute the two instructions in a single operation,
+ * thus accepts broadcast, reduction, extension methods, etc. */
+    BROADEST,
+
+/* A very simple mode that only fuses same shaped arrays thus no
+ * broadcast, reduction, extension methods, etc. */
+    SAME_SHAPE,
+
+/* Like same shape but includes range */
+    SAME_SHAPE_RANGE,
+
+/* Like same shape but includes random */
+    SAME_SHAPE_RANDOM,
+
+/* Like same shape but includes random */
+    SAME_SHAPE_RANGE_RANDOM,
+
+/* The number of models in this enum */
+    NUM_OF_MODELS
+};
+
+/* Writes the name of the 'fuse_model' to the 'output' string
+ *
+ * @fuse_model  The fuse model
+ * @output      The output string
+ */
+void fuse_model_text(FuseModel fuse_model, std::string &output);
+
+
+/* Get the selected fuse model by reading the environment
+ * variable 'BH_FUSE_MODEL' */
+FuseModel fuse_get_selected_model();
 
 } //namespace bohrium
 

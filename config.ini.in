@@ -36,26 +36,31 @@ timing = false
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_singleton${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 [topological]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_topological${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 [gentle]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_gentle${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
-
-[optimal]
-type = fuser
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_optimal${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 [greedy]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_greedy${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+
+[optimal]
+type = fuser
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_optimal${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = cpu
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 #
 # Filters
@@ -80,7 +85,7 @@ children = cpu
 #
 [cpu]
 type = ve
-${DISABLE_LINUX_COMPILER}compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include -lm -O3 -fopenmp -fPIC -std=c99 -x c -shared - -o "
+${DISABLE_LINUX_COMPILER}compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include -lm -O3 -fstrict-aliasing -fopenmp -fPIC -std=c99 -x c -shared - -o "
 #${DISABLE_LINUX_COMPILER}compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include -lm -O3 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
 ${DISABLE_OSX_COMPILER}compiler_cmd="${CMAKE_INSTALL_PREFIX}/var/bohrium/scripts/osx_compile.sh -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include -o "
 object_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/objects

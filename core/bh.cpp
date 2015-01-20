@@ -438,14 +438,35 @@ bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
  */
 bool bh_instr_fusible_gently(const bh_instruction *a, const bh_instruction *b)
 {
+    const int a_nop = bh_operands(a->opcode);
+    const int b_nop = bh_operands(b->opcode);
+
+    //System opcodes are gentle fusible with everything as long as they
+    //access the same base array
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
-        return true;
+    {
+        for(int i=0; i<a_nop; ++i)
+        {
+            const bh_view *v1 = &a->operand[i];
+            if(not bh_is_constant(v1))
+            {
+                for(int j=0; j<b_nop; ++j)
+                {
+                    const bh_view *v2 = &b->operand[j];
+                    if(not bh_is_constant(v2))
+                    {
+                        if(v1->base == v2->base)
+                            return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     if(not bh_view_aligned(&a->operand[0], &b->operand[0]))
         return false;
 
-    const int a_nop = bh_operands(a->opcode);
-    const int b_nop = bh_operands(b->opcode);
     for(int i=1; i<a_nop; ++i)
     {
         //Check that at least one input in 'b' is aligned with 'a[i]'

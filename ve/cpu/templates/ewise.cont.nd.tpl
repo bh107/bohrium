@@ -3,11 +3,7 @@
 //  * Simplified array-walking (++)
 //  * TODO: Vectorization, alias/restrict
 {
-    int64_t nelements = 1;
-    for(int k=0; k<a{{NR_OUTPUT}}_ndim; ++k) {
-        nelements *= a{{NR_OUTPUT}}_shape[k];
-    }
-
+    int64_t nelements = iterspace->nelem;
     int mthreads      = omp_get_max_threads();
     int64_t nworkers  = nelements > mthreads ? mthreads : 1;
 

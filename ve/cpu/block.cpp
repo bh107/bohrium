@@ -22,20 +22,25 @@ Block::~Block()
 }
 
 void Block::clear(void)
-{
-    tacs_.clear();      // Reset the current state of the blocks
-    array_tacs_.clear();
+{                               // Reset the current state of the block
+    tacs_.clear();              // tacs
+    array_tacs_.clear();        // array_tacs
+
+    iterspace_.layout = SCALAR; // iteraton space
+    iterspace_.ndim = 0;
+    iterspace_.shape = NULL;
+    iterspace_.nelem = 0;
     
-    if (operands_) {
+    if (operands_) {            // operands
         delete[] operands_;
         operands_   = NULL;
         noperands_  = 0;
     }
-    global_to_local_.clear();
-    local_to_global_.clear();
+    global_to_local_.clear();   // global to local operand mapping
+    local_to_global_.clear();   // local to global operand mapping
 
-    symbol_text_    = "";
-    symbol_         = "";
+    symbol_text_    = "";       // textual symbol representation
+    symbol_         = "";       // hashed symbol representation
 }
 
 void Block::compose(bh_ir_kernel& krnl)
@@ -209,7 +214,7 @@ operand_t** Block::operands(void)
     return operands_;
 }
 
-size_t Block::noperands(void)
+size_t Block::noperands(void) const
 {
     return noperands_;
 }
@@ -254,9 +259,111 @@ string Block::symbol_text(void) const
     return symbol_text_;
 }
 
+iterspace_t& Block::iterspace(void)
+{
+    return iterspace_;
+}
+
+void Block::update_iterspace(void)
+{   
+    // NOTE: This stuff is only valid for SIJ, and FUSION, streaming
+    //       will require another way to determine the iteration space.
+    
+    //
+    // Determine layout, ndim and shape
+    for(size_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
+        tac_t& tac = this->tac(tac_idx);
+        if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
+            continue;
+        } else if ((tac.op & (REDUCE))>0) {     // Reductions are weird
+            if (globals_[tac.in1].layout > iterspace_.layout) {
+                iterspace_.layout = globals_[tac.in1].layout;
+                if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                    iterspace_.ndim  = globals_[tac.in1].ndim;
+                    iterspace_.shape = globals_[tac.in1].shape;
+                }
+            }
+        } else {
+            switch(tac_noperands(tac)) {        // Ewise are common-case
+                case 3:
+                    if (globals_[tac.in2].layout > iterspace_.layout) {
+                        iterspace_.layout = globals_[tac.in2].layout;
+                        if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                            iterspace_.ndim  = globals_[tac.in2].ndim;
+                            iterspace_.shape = globals_[tac.in2].shape;
+                        }
+                    }
+                case 2:
+                    if (globals_[tac.in1].layout > iterspace_.layout) {
+                        iterspace_.layout = globals_[tac.in1].layout;
+                        if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                            iterspace_.ndim  = globals_[tac.in1].ndim;
+                            iterspace_.shape = globals_[tac.in1].shape;
+                        }
+                    }
+                case 1:
+                    if (globals_[tac.out].layout > iterspace_.layout) {
+                        iterspace_.layout = globals_[tac.out].layout;
+                        if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                            iterspace_.ndim  = globals_[tac.out].ndim;
+                            iterspace_.shape = globals_[tac.out].shape;
+                        }
+                    }
+                default:
+                    break;
+            }
+        }
+    }
+
+    if (NULL != iterspace_.shape) {             // Determine number of elements
+        iterspace_.nelem = 1;   
+        for(int k=0; k<iterspace_.ndim; ++k) {
+            iterspace_.nelem *= iterspace_.shape[k];
+        }
+    }
+}
+
 string Block::dot(void) const
 {
-    return "";    
+    stringstream ss;
+    return ss.str();
+}
+
+std::string Block::text(void)
+{
+    stringstream ss;
+    ss << "BLOCK [" << endl;
+    
+    ss << "TACS (" << ntacs() << ") {" << endl;
+    for(uint64_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
+        ss << tac_text(tac(tac_idx)) << endl;
+    }
+    ss << "}" << endl;
+
+    ss << "OPERANDS (" << noperands() << ") {" << endl;
+    for(size_t opr_idx=0; opr_idx < noperands(); ++opr_idx) {
+        operand_t& opr = operand(opr_idx);
+        ss << " loc_idx(" << opr_idx << ")";
+        ss << " gbl_idx(" << local_to_global(opr_idx) << ") = ";
+        ss << operand_text(opr);
+    }
+    ss << "}" << endl;
+
+    ss << "ITERSPACE {" << endl;
+    ss << " LAYOUT = " << layout_text(iterspace_.layout) << "," << endl;
+    ss << " NDIM   = " << iterspace_.ndim << "," << endl;
+    ss << " SHAPE  = {"; 
+    for(int64_t dim=0; dim < iterspace_.ndim; ++dim) {
+        ss << iterspace_.shape[dim];
+        if (dim != (iterspace_.ndim-1)) {
+            ss << ", ";
+        }
+    }
+    ss << "}" << endl;
+    ss << " NELEM  = " << iterspace_.nelem << endl;
+    ss << "}" << endl;
+    ss << "]" << endl;
+    return ss.str();
 }
 
 }}

@@ -108,7 +108,7 @@ public:
     /**
      * Count of operands in the block.
      */
-    size_t noperands(void);
+    size_t noperands(void) const;
 
     /**
      * Return the tac-instance with the given index.
@@ -130,9 +130,36 @@ public:
     std::string symbol_text(void) const;
 
     /**
+     *  Returns the iteration space of the block.
+     */
+    iterspace_t& iterspace(void);
+
+    /**
+     *  Update the iteration space of the block.
+     *
+     *  This means determing the "dominating" LAYOUT, ndim, shape,
+     *  and number of elements of an operation within the block.
+     *
+     *  That is choosing the "worst" LAYOUT, highest ndim, and then
+     *  choosing the shape of the operand with chose characteristics.
+     *
+     *  Since this is what will be the upper-bounds used in when
+     *  generating / specializing code, primarily for fusion / contraction.
+     *
+     *  NOTE: This should be done after applying array contraction or 
+     *  any other changes to tacs and operands.
+     */
+    void update_iterspace(void);
+
+    /**
      * Returns a textual representation of the block in dot-format.
      */
     std::string dot(void) const;
+
+    /**
+     * Returns a plaintext representation of the block.
+     */
+    std::string text(void);
 
 private:
 
@@ -140,6 +167,8 @@ private:
 
     SymbolTable& globals_;          // A reference to the global symbol table
     std::vector<tac_t>& program_;   // A reference to the entire bytecode program
+
+    iterspace_t iterspace_;           // The iteration-space of the block
 
     std::vector<tac_t*> tacs_;      // A subset of the tac-program reprensting the block.
     std::vector<tac_t*> array_tacs_;// A subset of the tac-program containing only array ops.

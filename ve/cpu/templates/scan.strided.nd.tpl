@@ -3,15 +3,12 @@
 //       dimension-based optimizations
 //       loop collapsing...
 {
-    int64_t nelements = 1;
-    for(int k=0; k<a{{NR_OUTPUT}}_ndim; ++k) {
-        nelements *= a{{NR_OUTPUT}}_shape[k];
-    }
+    int64_t nelements = iterspace->nelem;
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
 
     int64_t last_e      = nelements-1;
-    int64_t shape_axis  = a{{NR_OUTPUT}}_shape[axis];
-    int64_t ndim        = a{{NR_OUTPUT}}_ndim;
+    int64_t shape_axis  = iterspace->shape[axis];
+    int64_t ndim        = iterspace->ndim;
 
     {{#OPERAND}}
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
@@ -66,7 +63,7 @@
                 continue;       // It is calculated within the loop above
             }
             coord[j]++;         // Still within this dimension
-            if (coord[j] < a{{NR_OUTPUT}}_shape[j]) {       
+            if (coord[j] < iterspace->shape[j]) {       
                 break;
             } else {            // Reached the end of this dimension
                 coord[j] = 0;   // Reset coordinate

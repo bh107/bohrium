@@ -23,7 +23,7 @@ namespace bohrium {
 namespace engine {
 namespace cpu {
 
-typedef void (*func)(operand_t** args);
+typedef void (*func)(operand_t** args, iterspace_t* iterspace);
 
 //
 //  Retrieve a function pointer for the symbol (SYMBOL -> func)
