@@ -80,20 +80,10 @@ namespace bohrium {
         hash_key = hasher(data);
     }
 
-    uint64_t BatchHash::hash() const
-    {
-        return hash_key;
-    }
-
     void FuseCache::insert(const BatchHash &batch,
                            const vector<bh_ir_kernel> &kernel_list)
     {
-        InstrIndexesList instr_indexes_list;
-        BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
-        {
-            instr_indexes_list.push_back(kernel.instr_indexes);
-        }
-        cache[batch.hash()] = instr_indexes_list;
+        cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash());
     }
 
     bool FuseCache::lookup(const BatchHash &batch,
@@ -109,18 +99,12 @@ namespace bohrium {
 //            cout << "cache miss!" << endl;
             return false;
         }
-
-        BOOST_FOREACH(const vector<uint64_t> &instr_indexes, it->second)
+        else
         {
-            bh_ir_kernel kernel(bhir);
-            BOOST_FOREACH(uint64_t instr_idx, instr_indexes)
-            {
-                kernel.add_instr(instr_idx);
-            }
-            kernel_list.push_back(kernel);
+            it->second.fill_kernel_list(bhir, kernel_list);
+//          cout << "cache hit!" << endl;
+          return true;
         }
-//        cout << "cache hit!" << endl;
-        return true;
     }
 
     void FuseCache::write_to_files() const
@@ -133,11 +117,10 @@ namespace bohrium {
         }
 
         path p(dir_path);
-        {//Append the name of the fuse model to the cache dir
-            string model_name;
-            fuse_model_text(fuse_get_selected_model(), model_name);
-            p /= path(model_name);
-        }
+        //Append the name of the fuse model to the cache dir
+        string model_name;
+        fuse_model_text(fuse_get_selected_model(), model_name);
+        p /= path(model_name);
 
         if(create_directories(p))
         {
@@ -153,6 +136,7 @@ namespace bohrium {
             oa << it->second;
             ofs.flush();
             permissions(filename, all_all);
+            assert(it->second.fuse_model() == model_name);
         }
     }
 
@@ -166,11 +150,10 @@ namespace bohrium {
         }
 
         path p(dir_path);
-        {//Append the name of the fuse model to the cache dir
-            string model_name;
-            fuse_model_text(fuse_get_selected_model(), model_name);
-            p /= path(model_name);
-        }
+        //Append the name of the fuse model to the cache dir
+        string model_name;
+        fuse_model_text(fuse_get_selected_model(), model_name);
+        p /= path(model_name);
         if(not (exists(p) and is_directory(p)))
             return;
 
@@ -182,8 +165,11 @@ namespace bohrium {
             {
                 ifstream ifs(f.string());
                 boost::archive::text_iarchive ia(ifs);
-                const uint64_t key = lexical_cast<uint64_t>(f.filename().string());
-                ia >> cache[key];
+                InstrIndexesList t;
+                ia >> t;
+                cache[t.hash()] = t;
+                assert(lexical_cast<uint64_t>(f.filename().string()) == t.hash());
+                assert(t.fuse_model() == model_name);
             }
         }
     }
