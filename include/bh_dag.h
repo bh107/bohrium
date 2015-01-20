@@ -701,7 +701,7 @@ void fuse_gentle(GraphDW &dag)
  * @dag      The DAG to fuse
  * @ignores  List of edges not to merge
  */
-void fuse_greedy(GraphDW &dag, const std::set<Vertex> &ignores={})
+void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores=NULL)
 {
     using namespace std;
     using namespace boost;
@@ -710,9 +710,9 @@ void fuse_greedy(GraphDW &dag, const std::set<Vertex> &ignores={})
     struct
     {
         void operator()(const GraphDW &g, vector<EdgeW> &edge_list,
-                        const set<Vertex> &ignores)
+                        const set<Vertex> *ignores)
         {
-            if(ignores.size() == 0)
+            if(ignores == NULL)
             {
                 BOOST_FOREACH(const EdgeW &e, edges(g.bglW()))
                 {
@@ -723,8 +723,8 @@ void fuse_greedy(GraphDW &dag, const std::set<Vertex> &ignores={})
             {
                 BOOST_FOREACH(const EdgeW &e, edges(g.bglW()))
                 {
-                    if(ignores.find(source(e, g.bglW())) == ignores.end() and
-                       ignores.find(target(e, g.bglW())) == ignores.end())
+                    if(ignores->find(source(e, g.bglW())) == ignores->end() and
+                       ignores->find(target(e, g.bglW())) == ignores->end())
                         edge_list.push_back(e);
                 }
             }
