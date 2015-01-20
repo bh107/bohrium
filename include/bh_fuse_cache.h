@@ -64,6 +64,7 @@ class InstrIndexesList
     uint64_t cost;
     uint64_t hash_key;
     std::string fuse_model_name;
+    std::string fuser_name;
 
 public:
     /* The serialization and vector class needs a default constructor */
@@ -73,8 +74,10 @@ public:
      *
      * @kernel_list  The kernel list
      * @hash         The has value of the kernel list
+     * @fuser_name   The name of the fuser (e.g. topological)
      */
-    InstrIndexesList(const std::vector<bh_ir_kernel> &kernel_list, uint64_t hash):cost(0),hash_key(hash)
+    InstrIndexesList(const std::vector<bh_ir_kernel> &kernel_list,
+                     uint64_t hash, std::string fuser_name):cost(0),hash_key(hash), fuser_name(fuser_name)
     {
         BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
         {
@@ -118,6 +121,7 @@ protected:
         ar & cost;
         ar & hash_key;
         ar & fuse_model_name;
+        ar & fuser_name;
     }
 };
 
@@ -132,6 +136,9 @@ class FuseCache
     //Path to the directory of the fuse cache files
     const char* dir_path;
 
+    //The name of the current fuser component
+    std::string fuser_name;
+
 public:
 
     /* The vector class needs a default constructor */
@@ -141,8 +148,10 @@ public:
      *
      * @file_dir_path  The Path to the directory of the fuse cache files
      *                 Set to NULL to disable reading and writing files
+     * @fuser_name     The name of the fuser (e.g. topological)
      */
-    FuseCache(const char *file_dir_path) : dir_path(file_dir_path)
+    FuseCache(const char *file_dir_path, std::string fuser_name): dir_path(file_dir_path),
+                                                                  fuser_name(fuser_name)
     {
         load_from_files();
     }

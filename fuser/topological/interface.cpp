@@ -59,7 +59,7 @@ bh_error bh_fuser_topological_init(const char* name)
     if((err = child->init(child->name)) != 0)
         return err;
 
-    fuse_cache = FuseCache(bh_component_config_lookup(&myself, "cache_path"));
+    fuse_cache = FuseCache(bh_component_config_lookup(&myself, "cache_path"), myself.name);
 
     return BH_SUCCESS;
 }

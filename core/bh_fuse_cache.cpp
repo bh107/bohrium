@@ -84,7 +84,7 @@ namespace bohrium {
     void FuseCache::insert(const BatchHash &batch,
                            const vector<bh_ir_kernel> &kernel_list)
     {
-        cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash());
+        cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash(), fuser_name);
     }
 
     bool FuseCache::lookup(const BatchHash &batch,
