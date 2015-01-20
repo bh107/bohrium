@@ -201,11 +201,11 @@ public:
     #endif
 
     /* The constructor */
-    Solver(bh_ir &b, const GraphDW &d, const vector<EdgeW> &e):bhir(b),dag(d),edges2explore(e)
+    Solver(bh_ir &b, const GraphDW &d, const vector<EdgeW> &e, const set<Vertex> &ignores):bhir(b),dag(d),edges2explore(e)
     {
-        //Wwe use the greedy algorithm to find a good initial guess
+        //We use the greedy algorithm to find a good initial guess
         GraphDW new_dag(dag);
-        fuse_greedy(new_dag);
+        fuse_greedy(new_dag, &ignores);
         best_dag = new_dag.bglD();
         best_cost = dag_cost(best_dag);
     }
@@ -291,7 +291,15 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
         }
     }
 
-    Solver solver(bhir, dag, edges2explore);
+    //We need the set of vertices that the greedy fusion must ignore
+    set<Vertex> ignores;
+    BOOST_FOREACH(Vertex v, vertices(dag.bglD()))
+    {
+        if(vertices2explore.find(v) != vertices2explore.end())
+            ignores.insert(v);
+    }
+
+    Solver solver(bhir, dag, edges2explore, ignores);
     if(mask.size() > 100)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
