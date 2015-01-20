@@ -26,79 +26,152 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/string.hpp>
+#include "bh_fuse.h"
 
 namespace bohrium {
 
-    //Forward declarations
-    struct BatchHash;
+//Forward declarations
+struct BatchHash;
 
-    /* A class that represets a hash of a single instruction */
-    struct InstrHash: public std::string
+/* A class that represets a hash of a single instruction */
+struct InstrHash: public std::string
+{
+    InstrHash(BatchHash &batch, const bh_instruction &instr);
+};
+
+/* A class that represets a hash of a instruction batch
+ * (aka instruction list) */
+struct BatchHash
+{
+    uint64_t base_id_count;
+    std::map<const bh_base*, uint64_t> base2id;
+    uint64_t hash_key;
+
+    /* Construct a BatchHash instant based on the instruction list */
+    BatchHash(const std::vector<bh_instruction> &instr_list);
+
+    /* Returns the hash value */
+    uint64_t hash() const {return hash_key;}
+};
+
+/* A class that represets a cached instruction indexes list.
+ * Note that this is the class we serialize */
+class InstrIndexesList
+{
+    std::vector<std::vector<uint64_t> > instr_indexes_list;
+    uint64_t cost;
+    uint64_t hash_key;
+    std::string fuse_model_name;
+
+public:
+    /* The serialization and vector class needs a default constructor */
+    InstrIndexesList(){}
+
+    /* Construct a new InstrIndexesList instant based on a kernel list
+     *
+     * @kernel_list  The kernel list
+     * @hash         The has value of the kernel list
+     */
+    InstrIndexesList(const std::vector<bh_ir_kernel> &kernel_list, uint64_t hash):cost(0),hash_key(hash)
     {
-        InstrHash(BatchHash &batch, const bh_instruction &instr);
-    };
-
-    /* A class that represets a hash of a instruction batch
-     * (aka instruction list) */
-    struct BatchHash
-    {
-        uint64_t base_id_count;
-        std::map<const bh_base*, uint64_t> base2id;
-        uint64_t hash_key;
-
-        /* Construct a BatchHash instant based on the instruction list */
-        BatchHash(const std::vector<bh_instruction> &instr_list);
-
-        /* Returns the hash value */
-        uint64_t hash() const;
-    };
-
-    /* A class that represets a cache of calculated 'instr_indexes' */
-    class FuseCache
-    {
-        typedef typename std::vector<std::vector<uint64_t> > InstrIndexesList;
-        typedef typename boost::unordered_map<uint64_t, InstrIndexesList> CacheMap;
-
-        //The map from BatchHash to a list of 'instr_indexes'
-        CacheMap cache;
-
-        //Path to the directory of the fuse cache files
-        std::string dir_path;
-
-    public:
-        FuseCache(){}
-
-        FuseCache(const char *file_dir_path) : dir_path(file_dir_path)
+        BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
         {
-            load_from_files();
+            instr_indexes_list.push_back(kernel.instr_indexes);
+            cost += kernel.cost();
         }
+        fuse_model_text(fuse_get_selected_model(), fuse_model_name);
+    }
 
-        /* Insert a 'kernel_list' into the fuse cache
-         *
-         * @hash  The hash of the batch (aka instruction list)
-         *        that matches the 'kernel_list'
-         */
-        void insert(const BatchHash &hash,
-                    const std::vector<bh_ir_kernel> &kernel_list);
+    /* Fills the 'kernel_list' with the content of 'this' cached instruction indexes list
+     *
+     * @bhir        The BhIR associated with the batch
+     * @kernel_list The kernel list to fill
+     */
+    void fill_kernel_list(bh_ir &bhir, std::vector<bh_ir_kernel> &kernel_list) const
+    {
+        BOOST_FOREACH(const std::vector<uint64_t> &instr_indexes, instr_indexes_list)
+        {
+            bh_ir_kernel kernel(bhir);
+            BOOST_FOREACH(uint64_t instr_idx, instr_indexes)
+            {
+                kernel.add_instr(instr_idx);
+            }
+            kernel_list.push_back(kernel);
+        }
+    }
 
-        /* Lookup a 'kernel_list' in the cache
-         *
-         * @hash   The hash of the batch (aka instruction list)
-         *         that matches the 'kernel_list'
-         * @bhir   The BhIR associated with the batch
-         * @return Whether the lookup was a success or not
-         */
-        bool lookup(const BatchHash &hash,
-                    bh_ir &bhir,
-                    std::vector<bh_ir_kernel> &kernel_list) const;
+    /* Returns the hash value */
+    uint64_t hash() const {return hash_key;}
 
-        /* Writes the cache to files */
-        void write_to_files() const;
+    /* Returns the name of the fuse model */
+    const std::string& fuse_model() const {return fuse_model_name;}
 
-        /* Loads the cache from prevuoisly written files */
-        void load_from_files();
+protected:
+    // Serialization using Boost
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & instr_indexes_list;
+        ar & cost;
+        ar & hash_key;
+        ar & fuse_model_name;
+    }
+};
 
-    };
+/* A class that represets a cache of calculated 'instr_indexes' */
+class FuseCache
+{
+    typedef typename boost::unordered_map<uint64_t, InstrIndexesList> CacheMap;
+
+    //The map from BatchHash to a list of 'instr_indexes'
+    CacheMap cache;
+
+    //Path to the directory of the fuse cache files
+    const char* dir_path;
+
+public:
+
+    /* The vector class needs a default constructor */
+    FuseCache(){}
+
+    /* Construct a new FuseCache instant
+     *
+     * @file_dir_path  The Path to the directory of the fuse cache files
+     *                 Set to NULL to disable reading and writing files
+     */
+    FuseCache(const char *file_dir_path) : dir_path(file_dir_path)
+    {
+        load_from_files();
+    }
+
+    /* Insert a 'kernel_list' into the fuse cache
+     *
+     * @hash  The hash of the batch (aka instruction list)
+     *        that matches the 'kernel_list'
+     */
+    void insert(const BatchHash &hash,
+                const std::vector<bh_ir_kernel> &kernel_list);
+
+    /* Lookup a 'kernel_list' in the cache
+     *
+     * @hash   The hash of the batch (aka instruction list)
+     *         that matches the 'kernel_list'
+     * @bhir   The BhIR associated with the batch
+     * @return Whether the lookup was a success or not
+     */
+    bool lookup(const BatchHash &hash,
+                bh_ir &bhir,
+                std::vector<bh_ir_kernel> &kernel_list) const;
+
+    /* Writes the cache to files */
+    void write_to_files() const;
+
+    /* Loads the cache from prevuoisly written files */
+    void load_from_files();
+};
 
 } //namespace bohrium
 

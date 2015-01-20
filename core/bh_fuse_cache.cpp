@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <cstring>
 #include <bh.h>
+#include "bh_fuse.h"
 #include "bh_fuse_cache.h"
 #include <fstream>
 #include <boost/archive/text_oarchive.hpp>
@@ -79,68 +80,82 @@ namespace bohrium {
         hash_key = hasher(data);
     }
 
-    uint64_t BatchHash::hash() const
-    {
-        return hash_key;
-    }
-
     void FuseCache::insert(const BatchHash &batch,
                            const vector<bh_ir_kernel> &kernel_list)
     {
-        InstrIndexesList instr_indexes_list;
-        BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
-        {
-            instr_indexes_list.push_back(kernel.instr_indexes);
-        }
-        cache[batch.hash()] = instr_indexes_list;
+        cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash());
     }
 
     bool FuseCache::lookup(const BatchHash &batch,
                            bh_ir &bhir,
                            vector<bh_ir_kernel> &kernel_list) const
     {
+//        cout << "looking up " << batch.hash() << ": ";
+
         assert(kernel_list.size() == 0);
         CacheMap::const_iterator it = cache.find(batch.hash());
         if(it == cache.end())
-            return false;
-
-        BOOST_FOREACH(const vector<uint64_t> &instr_indexes, it->second)
         {
-            bh_ir_kernel kernel(bhir);
-            BOOST_FOREACH(uint64_t instr_idx, instr_indexes)
-            {
-                kernel.add_instr(instr_idx);
-            }
-            kernel_list.push_back(kernel);
+//            cout << "cache miss!" << endl;
+            return false;
         }
-        return true;
+        else
+        {
+            it->second.fill_kernel_list(bhir, kernel_list);
+//          cout << "cache hit!" << endl;
+          return true;
+        }
     }
 
     void FuseCache::write_to_files() const
     {
-        cout << "writing files:" << endl;
+        if(dir_path == NULL)
+        {
+            cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "\
+            "the configure file thus no cache files are written to disk!" << endl;
+            return;
+        }
+
+        path p(dir_path);
+        //Append the name of the fuse model to the cache dir
+        string model_name;
+        fuse_model_text(fuse_get_selected_model(), model_name);
+        p /= path(model_name);
+
+        if(create_directories(p))
+        {
+            cout << "[FUSE-CACHE] Creating cache diretory " << p << endl;
+            permissions(p, all_all);
+        }
+
         for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
         {
-            path p(dir_path);
-            p /= lexical_cast<string>(it->first);
-            ofstream ofs(p.string());
+            path filename = p / lexical_cast<string>(it->first);
+            ofstream ofs(filename.string());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
-            cout << p << endl;
+            ofs.flush();
+            permissions(filename, all_all);
+            assert(it->second.fuse_model() == model_name);
         }
     }
 
     void FuseCache::load_from_files()
     {
-        path p(dir_path);
-        if(not (exists(p) and is_directory(p)))
+        if(dir_path == NULL)
         {
-            cout << "[FUSE-CACHE] ERROR: cache diretory " << p;
-            cout << " does not exist" << endl;
-            assert(1 == 2);
+            cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "\
+            "the configure file thus no cache files are loaded from disk!" << endl;
+            return;
         }
 
-        cout << "load file from dir " << p << endl;
+        path p(dir_path);
+        //Append the name of the fuse model to the cache dir
+        string model_name;
+        fuse_model_text(fuse_get_selected_model(), model_name);
+        p /= path(model_name);
+        if(not (exists(p) and is_directory(p)))
+            return;
 
         //Iterate the 'dir_path' diretory and load each file
         directory_iterator it(p), eod;
@@ -148,11 +163,13 @@ namespace bohrium {
         {
             if(is_regular_file(f))
             {
-                cout << f << endl;
                 ifstream ifs(f.string());
                 boost::archive::text_iarchive ia(ifs);
-                const uint64_t key = lexical_cast<uint64_t>(f.filename().string());
-                ia >> cache[key];
+                InstrIndexesList t;
+                ia >> t;
+                cache[t.hash()] = t;
+                assert(lexical_cast<uint64_t>(f.filename().string()) == t.hash());
+                assert(t.fuse_model() == model_name);
             }
         }
     }

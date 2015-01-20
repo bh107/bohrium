@@ -69,6 +69,10 @@ enum FuseModel
 void fuse_model_text(FuseModel fuse_model, std::string &output);
 
 
+/* Get the selected fuse model by reading the environment
+ * variable 'BH_FUSE_MODEL' */
+FuseModel fuse_get_selected_model();
+
 } //namespace bohrium
 
 #endif

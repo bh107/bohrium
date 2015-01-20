@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <bh_dag.h>
+#include <bh_fuse_cache.h>
 #include <iostream>
 #include <fstream>
 #include <boost/foreach.hpp>
@@ -29,13 +30,27 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 using namespace boost;
-using namespace bohrium::dag;
+using namespace bohrium;
 
-void fuser(bh_ir &bhir)
+static void do_fusion(bh_ir &bhir)
 {
+    using namespace bohrium::dag;
     GraphDW dag;
     from_bhir(bhir, dag);
     fuse_gentle(dag);
     fuse_greedy(dag);
     fill_bhir_kernel_list(dag.bglD(), bhir);
+}
+
+void fuser(bh_ir &bhir, FuseCache &cache)
+{
+    if(bhir.kernel_list.size() != 0)
+        throw logic_error("The kernel_list is not empty!");
+
+    BatchHash batch(bhir.instr_list);
+    if(not cache.lookup(batch, bhir, bhir.kernel_list))
+    {
+        do_fusion(bhir);
+        cache.insert(batch, bhir.kernel_list);
+    }
 }
