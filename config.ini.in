@@ -36,31 +36,31 @@ timing = false
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_singleton${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
-cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache/singleton
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 [topological]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_topological${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
-cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache/topological
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 [gentle]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_gentle${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
-cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache/gentle
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 [greedy]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_greedy${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
-cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache/greedy
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 [optimal]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_optimal${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
-cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache/optimal
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 #
 # Filters

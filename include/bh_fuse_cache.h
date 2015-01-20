@@ -47,13 +47,13 @@ struct BatchHash
 {
     uint64_t base_id_count;
     std::map<const bh_base*, uint64_t> base2id;
-    uint64_t hash_key;
+    uint64_t _hash;
 
     /* Construct a BatchHash instant based on the instruction list */
     BatchHash(const std::vector<bh_instruction> &instr_list);
 
     /* Returns the hash value */
-    uint64_t hash() const {return hash_key;}
+    uint64_t hash() const {return _hash;}
 };
 
 /* A class that represets a cached instruction indexes list.
@@ -61,8 +61,8 @@ struct BatchHash
 class InstrIndexesList
 {
     std::vector<std::vector<uint64_t> > instr_indexes_list;
-    uint64_t cost;
-    uint64_t hash_key;
+    uint64_t _cost;
+    uint64_t _hash;
     std::string _fuse_model;
     std::string _fuser_name;
 
@@ -77,12 +77,12 @@ public:
      * @fuser_name   The name of the fuser (e.g. topological)
      */
     InstrIndexesList(const std::vector<bh_ir_kernel> &kernel_list,
-                     uint64_t hash, std::string fuser_name):cost(0),hash_key(hash),_fuser_name(fuser_name)
+                     uint64_t hash, std::string fuser_name):_cost(0),_hash(hash),_fuser_name(fuser_name)
     {
         BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
         {
             instr_indexes_list.push_back(kernel.instr_indexes);
-            cost += kernel.cost();
+            _cost += kernel.cost();
         }
         fuse_model_text(fuse_get_selected_model(), _fuse_model);
     }
@@ -105,8 +105,11 @@ public:
         }
     }
 
+    /* Returns the cost value */
+    uint64_t cost() const {return _cost;}
+
     /* Returns the hash value */
-    uint64_t hash() const {return hash_key;}
+    uint64_t hash() const {return _hash;}
 
     /* Returns the name of the fuse model */
     const std::string& fuse_model() const {return _fuse_model;}
@@ -118,7 +121,8 @@ public:
     void get_filename(std::string &filename) const
     {
         std::stringstream ss;
-        ss << fuse_model() << "--" << fuser_name() << "--" << hash();
+        ss << fuse_model() << "--" << std::hex << hash() << "--";
+        ss << std::dec << cost() << "--" << fuser_name();
         filename = ss.str();
     }
 
@@ -130,8 +134,8 @@ protected:
     void serialize(Archive &ar, const unsigned int version)
     {
         ar & instr_indexes_list;
-        ar & cost;
-        ar & hash_key;
+        ar & _cost;
+        ar & _hash;
         ar & _fuse_model;
         ar & _fuser_name;
     }

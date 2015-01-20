@@ -79,7 +79,7 @@ namespace bohrium {
             data.append(InstrHash(*this, instr));
         }
         boost::hash<string> hasher;
-        hash_key = hasher(data);
+        _hash = hasher(data);
     }
 
     void FuseCache::insert(const BatchHash &batch,
