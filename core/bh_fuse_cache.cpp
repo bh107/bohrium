@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/version.hpp>
+#include <boost/algorithm/string/predicate.hpp> //For iequals()
 
 using namespace std;
 using namespace boost;
@@ -116,13 +117,7 @@ namespace bohrium {
             "the configure file thus no cache files are written to disk!" << endl;
             return;
         }
-
         path p(dir_path);
-        //Append the name of the fuse model to the cache dir
-        string model_name;
-        fuse_model_text(fuse_get_selected_model(), model_name);
-        p /= path(model_name);
-
         if(create_directories(p))
         {
             cout << "[FUSE-CACHE] Creating cache diretory " << p << endl;
@@ -133,7 +128,9 @@ namespace bohrium {
 
         for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
         {
-            path filename = p / lexical_cast<string>(it->first);
+            string name;
+            it->second.get_filename(name);
+            path filename = p / name;
             ofstream ofs(filename.string());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
@@ -153,14 +150,12 @@ namespace bohrium {
             "the configure file thus no cache files are loaded from disk!" << endl;
             return;
         }
-
         path p(dir_path);
-        //Append the name of the fuse model to the cache dir
-        string model_name;
-        fuse_model_text(fuse_get_selected_model(), model_name);
-        p /= path(model_name);
         if(not (exists(p) and is_directory(p)))
             return;
+
+        string fuse_model_name;
+        fuse_model_text(fuse_get_selected_model(), fuse_model_name);
 
         //Iterate the 'dir_path' diretory and load each file
         directory_iterator it(p), eod;
@@ -172,9 +167,11 @@ namespace bohrium {
                 boost::archive::text_iarchive ia(ifs);
                 InstrIndexesList t;
                 ia >> t;
-                cache[t.hash()] = t;
-                assert(lexical_cast<uint64_t>(f.filename().string()) == t.hash());
-                assert(t.fuse_model() == model_name);
+                if(iequals(t.fuser_name(), fuser_name) and
+                   iequals(t.fuse_model(), fuse_model_name))
+                {
+                    cache[t.hash()] = t;
+                }
             }
         }
     }

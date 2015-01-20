@@ -63,8 +63,8 @@ class InstrIndexesList
     std::vector<std::vector<uint64_t> > instr_indexes_list;
     uint64_t cost;
     uint64_t hash_key;
-    std::string fuse_model_name;
-    std::string fuser_name;
+    std::string _fuse_model;
+    std::string _fuser_name;
 
 public:
     /* The serialization and vector class needs a default constructor */
@@ -77,14 +77,14 @@ public:
      * @fuser_name   The name of the fuser (e.g. topological)
      */
     InstrIndexesList(const std::vector<bh_ir_kernel> &kernel_list,
-                     uint64_t hash, std::string fuser_name):cost(0),hash_key(hash), fuser_name(fuser_name)
+                     uint64_t hash, std::string fuser_name):cost(0),hash_key(hash),_fuser_name(fuser_name)
     {
         BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
         {
             instr_indexes_list.push_back(kernel.instr_indexes);
             cost += kernel.cost();
         }
-        fuse_model_text(fuse_get_selected_model(), fuse_model_name);
+        fuse_model_text(fuse_get_selected_model(), _fuse_model);
     }
 
     /* Fills the 'kernel_list' with the content of 'this' cached instruction indexes list
@@ -109,7 +109,19 @@ public:
     uint64_t hash() const {return hash_key;}
 
     /* Returns the name of the fuse model */
-    const std::string& fuse_model() const {return fuse_model_name;}
+    const std::string& fuse_model() const {return _fuse_model;}
+
+    /* Returns the name of the fuser component that generated this fusion */
+    const std::string& fuser_name() const {return _fuser_name;}
+
+    /* Writes the filename of the this cached fusion to 'filename' */
+    void get_filename(std::string &filename) const
+    {
+        std::stringstream ss;
+        ss << fuse_model() << "--" << fuser_name() << "--" << hash();
+        filename = ss.str();
+    }
+
 
 protected:
     // Serialization using Boost
@@ -120,8 +132,8 @@ protected:
         ar & instr_indexes_list;
         ar & cost;
         ar & hash_key;
-        ar & fuse_model_name;
-        ar & fuser_name;
+        ar & _fuse_model;
+        ar & _fuser_name;
     }
 };
 
