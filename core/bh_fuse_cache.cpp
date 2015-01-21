@@ -138,7 +138,6 @@ namespace bohrium {
         #if BOOST_VERSION > 104900
             permissions(filename, all_all);
         #endif
-            assert(it->second.fuse_model() == model_name);
         }
     }
 
