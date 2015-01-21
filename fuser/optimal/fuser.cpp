@@ -195,8 +195,8 @@ public:
     GraphD best_dag;
 
     #ifdef VERBOSE
-    double  purge_count=0;
-    uint64_t explore_count=0;
+        double  purge_count;
+        uint64_t explore_count;
     #endif
 
     /* The constructor */
@@ -207,6 +207,11 @@ public:
         fuse_greedy(new_dag);
         best_dag = new_dag.bglD();
         best_cost = dag_cost(best_dag);
+
+        #ifdef VERBOSE
+            purge_count=0;
+            explore_count=0;
+        #endif
     }
 
     /* Find the optimal solution through branch and bound */
@@ -220,35 +225,35 @@ public:
             int64_t cost;
             tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
 
-#ifdef VERBOSE
-            if(explore_count%1000 == 0)
-            {
-                cout << "[" << explore_count << "] " << "purge count: ";
-                cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
-                cout << "cost: " << cost << ", best_cost: " << best_cost;
-                cout << ", fusibility: " << fusibility << endl;
-            }
-            ++explore_count;
-#endif
+            #ifdef VERBOSE
+                if(explore_count%1000 == 0)
+                {
+                    cout << "[" << explore_count << "] " << "purge count: ";
+                    cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
+                    cout << "cost: " << cost << ", best_cost: " << best_cost;
+                    cout << ", fusibility: " << fusibility << endl;
+                }
+                ++explore_count;
+            #endif
 
             if(cost >= best_cost)
             {
-#ifdef VERBOSE
-                purge_count += pow(2.0, mask.size()-offset-1);
-#endif
+                #ifdef VERBOSE
+                    purge_count += pow(2.0, mask.size()-offset-1);
+                #endif
                 return;
             }
             if(fusibility)
             {
                 best_cost = cost;
                 best_dag = new_dag;
-#ifdef VERBOSE
-                std::stringstream ss;
-                ss << "new_best_dag-" << fuser_count << "-" << dag_cost(new_dag) << ".dot";
-                printf("write file: %s\n", ss.str().c_str());
-                pprint(GraphDW(new_dag), ss.str().c_str());
-                purge_count += pow(2.0, mask.size()-offset-1);
-#endif
+                #ifdef VERBOSE
+                    std::stringstream ss;
+                    ss << "new_best_dag-" << fuser_count << "-" << dag_cost(new_dag) << ".dot";
+                    printf("write file: %s\n", ss.str().c_str());
+                    pprint(GraphDW(new_dag), ss.str().c_str());
+                    purge_count += pow(2.0, mask.size()-offset-1);
+                #endif
                 return;
             }
         }
