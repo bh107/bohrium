@@ -11,5 +11,4 @@ target_link_libraries(bh_fuser_greedy bh)
 install(TARGETS bh_fuser_greedy DESTINATION lib COMPONENT bohrium)
 
 file(MAKE_DIRECTORY fuse_cache)
-file(MAKE_DIRECTORY fuse_cache/greedy)
 install(DIRECTORY fuse_cache DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)

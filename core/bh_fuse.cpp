@@ -255,6 +255,7 @@ FuseModel fuse_get_selected_model()
         }
         cerr << "[FUSE] WARNING: unknown fuse model: '" << e;
         cerr << "', using the default model '" << default_model << "' instead" << endl;
+        setenv("BH_FUSE_MODEL", default_model.c_str(), 1);
     }
 //    cout << "[FUSE] info: selected fuse model: '" << default_model << "'" << endl;
     return default_fuse_model;
