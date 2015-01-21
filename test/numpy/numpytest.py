@@ -1,5 +1,7 @@
 #Test and demonstration of the NumPy Bridge.
 from __future__ import print_function
+import warnings
+
 from operator import mul
 from numbers import Number
 import subprocess
@@ -18,6 +20,13 @@ import argparse
 import numpy as np
 import bohrium as bh
 from functools import reduce
+
+def fxn():
+    warnings.warn("deprecated", DeprecationWarning)
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    fxn()
 
 class TYPES:
     NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
