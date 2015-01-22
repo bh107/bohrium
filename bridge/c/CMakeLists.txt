@@ -29,6 +29,8 @@ if(PYTHONINTERP_FOUND)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c.h DESTINATION include/bohrium COMPONENT bohrium)
     install(TARGETS bhc DESTINATION lib COMPONENT bohrium)
 
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../include/bh_type.h DESTINATION include/bohrium COMPONENT bohrium)
+
     #Compile hellow world as a test
     add_subdirectory(examples)
 else()
