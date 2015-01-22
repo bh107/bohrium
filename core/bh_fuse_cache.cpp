@@ -117,20 +117,22 @@ namespace bohrium {
             "the configure file thus no cache files are written to disk!" << endl;
             return;
         }
-        path p(dir_path);
-        if(create_directories(p))
+        path cache_dir(dir_path);
+        if(create_directories(cache_dir))
         {
-            cout << "[FUSE-CACHE] Creating cache diretory " << p << endl;
+            cout << "[FUSE-CACHE] Creating cache diretory " << cache_dir << endl;
         #if BOOST_VERSION > 104900
-            permissions(p, all_all);
+            permissions(cache_dir, all_all);
         #endif
         }
 
+        path tmp_dir = cache_dir / unique_path();
+        create_directories(tmp_dir);
         for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
         {
             string name;
             it->second.get_filename(name);
-            path filename = p / name;
+            path filename = tmp_dir / name;
             ofstream ofs(filename.string());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
@@ -138,7 +140,9 @@ namespace bohrium {
         #if BOOST_VERSION > 104900
             permissions(filename, all_all);
         #endif
+            rename(filename, cache_dir / name);
         }
+        remove(tmp_dir);
     }
 
     void FuseCache::load_from_files()
