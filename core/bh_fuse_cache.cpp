@@ -136,7 +136,7 @@ namespace bohrium {
             ofstream ofs(filename.string());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
-            ofs.flush();
+            ofs.close();
         #if BOOST_VERSION > 104900
             permissions(filename, all_all);
         #endif
@@ -175,6 +175,7 @@ namespace bohrium {
                 {
                     cache[t.hash()] = t;
                 }
+                ifs.close();
             }
         }
     }
