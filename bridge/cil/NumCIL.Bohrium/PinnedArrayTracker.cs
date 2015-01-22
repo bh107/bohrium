@@ -35,6 +35,12 @@ namespace NumCIL.Bohrium
         /// The lock object that protects access to the pinner
         /// </summary>
         private static object _lock = new object();
+
+		/// <summary>
+		/// Gets the execute lock object.
+		/// </summary>
+		/// <value>The execute lock object.</value>
+		public static object ExecuteLock { get { return _lock; } }
     
         /// <summary>
         /// Pins the array.
@@ -201,6 +207,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         internal static void ReleaseInternal()
         {
+			var reflush = false;
             lock (_lock)
             {
                 // Notify the bridge that these elements are no longer used
@@ -210,15 +217,17 @@ namespace NumCIL.Bohrium
                 // Execute all the discards
                 PInvoke.bh_runtime_flush();
 
-                _allocations.Clear();
-
                 // Unpin any pinned memory
                 foreach (var h in _allocations.Values)
-                    h.Item2.Free();
+					try { h.Item2.Free(); }
+					catch { }
+
+				_allocations.Clear();
                 
                 // Handle all protected discards
                 if (_protectedReleases.Count > 0)
                 {
+					reflush = true;
                     // Make sure that all CIL managed pointers are set to null
                     foreach (var h in _protectedReleases)
                     {
@@ -227,13 +236,20 @@ namespace NumCIL.Bohrium
                         if (h.Item2.IsAllocated)
                             h.Item2.Free();
                     }
-
-                    // Then execute the discards for these entries
-                    PInvoke.bh_runtime_flush();
-
+						
                     _protectedReleases.Clear();
                 }
             }
+
+			// This needs to be done outside the locking, 
+			// because the finalizers are locking as well
+			if (reflush)
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				lock(_lock)
+					PInvoke.bh_runtime_flush();
+			}
         }
                 
         /// <summary>
