@@ -32,14 +32,11 @@ def world(shape, core_v, edge_v, dtype=np.float32):
 
     return w
 
-def solve(world, I):
+def solve(stencil, world, I):
     """
     Run a simple dence stencil operation on a ND array world
     for I iterations
     """
-    stencil = [world[s] for s in [map((lambda se : slice(se[0],se[1])),i)
-                                  for i in it.product([(0,-2),(1,-1),(2,None)],
-                                                      repeat=len(world.shape))]]
     FAC = 1.0/len(stencil)
     for _ in xrange(I):
         stencil[len(stencil)/2][:] = sum(stencil)*FAC
@@ -59,11 +56,14 @@ def main():
     else:
         world = np.array(np.random.random(shape(D, size)), dtype=B.dtype)
 
+    stencil = [world[s] for s in [map((lambda se : slice(se[0],se[1])),i)
+                                  for i in it.product([(0,-2),(1,-1),(2,None)],
+                                                      repeat=len(world.shape))]]
     if B.dumpinput:
         B.dump_arrays("ndstencil", {'input': world})
 
     B.start()
-    R = solve(world, I)
+    R = solve(stencil, world, I)
     B.stop()
     B.pprint()
     if B.verbose:

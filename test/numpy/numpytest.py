@@ -1,5 +1,6 @@
 #Test and demonstration of the NumPy Bridge.
 from __future__ import print_function
+
 from operator import mul
 from numbers import Number
 import subprocess
