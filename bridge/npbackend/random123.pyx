@@ -208,7 +208,7 @@ cdef class RandomState:
                 array_data[i] = rnd.ul
                 ctr.ul += 1
         else:
-            length = numpy.asarray(size).prod()
+            length = size if numpy.isscalar(size) else reduce(operator.mul, size)
             bhc_obj = target.random123(length, self.index, self.key)
             ret = np.ndarray.new((length,), np.uint64, bhc_obj).reshape(size)
         self.index += length
@@ -688,7 +688,7 @@ cdef class RandomState:
                 self.has_gauss = True
                 return dtype(z0)
         else:
-            length = numpy.asarray(size).prod()
+            length = size if numpy.isscalar(size) else reduce(operator.mul, size)
             hlength = length / 2 + length % 2
             u1 = self.random_sample(size=hlength, dtype=dtype, bohrium=bohrium)
             u2 = self.random_sample(size=hlength, dtype=dtype, bohrium=bohrium)
