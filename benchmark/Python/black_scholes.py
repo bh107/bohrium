@@ -4,6 +4,7 @@ if util.Benchmark().bohrium:
     import bohrium as np
 else:
     import numpy as np
+import numpy_force as numpy
 
 def model(N, dtype=np.float32):
     """Construct pseudo-data representing price samples?"""
@@ -71,8 +72,12 @@ def main():
     R = price(S, I, visualize=B.visualize)   # Run the model
     B.stop()
     B.pprint()
+    # Convert to one array
+    for i in range(len(R)):
+        if not numpy.isscalar(R[i]):
+            R[i] = R[i][0]
     if B.outputfn:
-        B.tofile(B.outputfn, {'res': np.array(R)})
+        B.tofile(B.outputfn, {'res':R})
 
     if B.verbose:
         print (R)
