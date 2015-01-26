@@ -80,7 +80,6 @@ def solve(a, b):
     return x
 
 def jacobi(a, b, tol=0.0005):
-    raise NotImplementedError("norm() isn't implemented")
     """
     Solve a linear matrix equation, or system of linear scalar equations
     using the Jacobi Method.
@@ -240,3 +239,16 @@ def dot(a,b, no_matmul=False):
     if (not no_matmul) and a.ndim == 2 and b.ndim == 2:
         return matmul(a,b)
     return ufunc.add.reduce(a[:,numpy.newaxis]*numpy.transpose(b),-1)
+
+def norm(x, ord=None, axis=None):
+    """
+    This version of norm is not fully compliant with the NumPy version,
+    it only supports computing 2-norm of a vector.
+    """
+
+    if ord != None:
+        raise NotImplementedError("Unsupported value param ord=%s" % ord)
+    if axis != None:
+        raise NotImplementedError("Unsupported value of param ord=%s" % axis)
+
+    return np.sqrt(np.sum(x*x))
