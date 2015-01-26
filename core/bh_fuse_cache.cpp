@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_fuse.h"
 #include "bh_fuse_cache.h"
 #include <fstream>
+#include <exception>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -132,15 +133,20 @@ namespace bohrium {
         {
             string name;
             it->second.get_filename(name);
-            path filename = tmp_dir / name;
-            ofstream ofs(filename.string());
+            path shared_name = cache_dir / name;
+
+            if(exists(shared_name))
+                continue;//No need to overwrite an existing file
+
+            path unique_name = tmp_dir / name;
+            ofstream ofs(unique_name.string());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
             ofs.close();
         #if BOOST_VERSION > 104900
-            permissions(filename, all_all);
+            permissions(unique_name, all_all);
         #endif
-            rename(filename, cache_dir / name);
+            rename(unique_name, shared_name);
         }
         remove(tmp_dir);
     }
@@ -166,16 +172,33 @@ namespace bohrium {
         {
             if(is_regular_file(f))
             {
-                ifstream ifs(f.string());
-                boost::archive::text_iarchive ia(ifs);
-                InstrIndexesList t;
-                ia >> t;
-                if(iequals(t.fuser_name(), fuser_name) and
-                   iequals(t.fuse_model(), fuse_model_name))
+                int tries = 0;
+                while(1)
                 {
-                    cache[t.hash()] = t;
+                    try
+                    {
+                        ifstream ifs(f.string());
+                        boost::archive::text_iarchive ia(ifs);
+                        InstrIndexesList t;
+                        ia >> t;
+                        if(iequals(t.fuser_name(), fuser_name) and
+                           iequals(t.fuse_model(), fuse_model_name))
+                        {
+                            cache[t.hash()] = t;
+                        }
+                    }
+                    catch(const std::exception &e)
+                    {
+                        if(++tries >= 10)
+                        {
+                            cerr << "[FUSE-CACHE] failed to open file '" << f.string();
+                            cerr << "' (" << tries << " tries): " << e.what() << endl;
+                        }
+                        else
+                            continue;
+                    }
+                    break;
                 }
-                ifs.close();
             }
         }
     }
