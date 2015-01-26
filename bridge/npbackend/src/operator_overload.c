@@ -226,6 +226,31 @@ array_divmod(PyObject *op1, PyObject *op2)
     return result;
 }
 
+static int
+array_nonzero(PyArrayObject *mp)
+{
+    npy_intp n;
+    int ret;
+
+    n = PyArray_SIZE(mp);
+    if (n == 1) {
+        PyArrayObject *np_ary = (PyArrayObject*) BhArray_copy2numpy((PyObject*)mp, NULL);
+        ret = PyArray_DESCR(np_ary)->f->nonzero(PyArray_DATA(np_ary), np_ary);
+        Py_DECREF(np_ary);
+        return ret;
+    }
+    else if (n == 0) {
+        return 0;
+    }
+    else {
+        PyErr_SetString(PyExc_ValueError,
+                        "The truth value of an array " \
+                        "with more than one element is ambiguous. " \
+                        "Use a.any() or a.all()");
+        return -1;
+    }
+}
+
 static PyObject *
 array_float(PyArrayObject *v)
 {
@@ -282,7 +307,7 @@ PyNumberMethods array_as_number = {
     (unaryfunc)array_negative,                  /*nb_neg*/
     (unaryfunc)array_positive,                  /*nb_pos*/
     (unaryfunc)array_absolute,                  /*array_abs,*/
-    (inquiry)0,                                 /*nb_nonzero*/
+    (inquiry)array_nonzero,                     /*nb_nonzero*/
     (unaryfunc)array_invert,                    /*nb_invert*/
     (binaryfunc)array_left_shift,               /*nb_lshift*/
     (binaryfunc)array_right_shift,              /*nb_rshift*/
