@@ -35,7 +35,10 @@ def setitem(ary, loc, value):
             loc[0] += ary.shape[0]
         loc[0] = slice(loc[0], loc[0]+1)
     #Copy the 'value' to 'ary' using the 'loc'
-    assign(value, ary[tuple(loc)])
+    if ary.ndim == 0:
+        assign(value, ary)
+    else:
+        assign(value, ary[tuple(loc)])
 
 def overlap_conflict(out, *inputs):
     """
@@ -309,7 +312,7 @@ class Ufunc(object):
 
             #Find the output shape
             if ary.ndim == 1:
-                shape = (1,)
+                shape = []
             else:
                 shape = tuple(s for i, s in enumerate(ary.shape) if i != axis)
                 if out is not None and out.shape != shape:
@@ -323,10 +326,7 @@ class Ufunc(object):
                 out[...] = tmp
             else:
                 out = tmp
-            if ary.ndim == 1:#return a Python Scalar
-                return out[0]
-            else:
-                return out
+            return out
         else:
             tmp1 = self.reduce(ary, axis[0])
             axis = [i-1 for i in axis[1:]]

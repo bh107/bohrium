@@ -71,8 +71,12 @@ def main():
     R = price(S, I, visualize=B.visualize)   # Run the model
     B.stop()
     B.pprint()
+    # Convert to one array
+    for i in range(len(R)):
+        if hasattr(R[i], "copy2numpy"):
+            R[i] = R[i].copy2numpy()[()]
     if B.outputfn:
-        B.tofile(B.outputfn, {'res': np.array(R)})
+        B.tofile(B.outputfn, {'res':R})
 
     if B.verbose:
         print (R)

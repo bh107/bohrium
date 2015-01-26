@@ -6,15 +6,16 @@ if B.bohrium:
 else:
     import numpy as np
 
+def solve(N):
+    x = np.array(np.random.random(N), dtype=B.dtype)
+    y = np.array(np.random.random(N), dtype=B.dtype)
+    z = np.sqrt(x**2 + y**2) <= 1.0
+    return np.add.reduce(z) * 4.0 / N
+
 def montecarlo_pi(N, I):
     acc=0.0
     for i in xrange(I):
-        x = np.array(np.random.random(N), dtype=B.dtype)
-        y = np.array(np.random.random(N), dtype=B.dtype)
-
-        z = np.sqrt(x**2 + y**2) <= 1.0
-        acc += np.sum(z) * 4.0 / N
-
+        acc += solve(N)
     acc /= I
     return acc
 
