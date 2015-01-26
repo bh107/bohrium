@@ -1433,7 +1433,9 @@
             [ "BH_COMPLEX128", "BH_COMPLEX128" ],
             [ "BH_COMPLEX64", "BH_COMPLEX64" ],
             [ "BH_FLOAT32", "BH_FLOAT32" ],
-            [ "BH_FLOAT64", "BH_FLOAT64" ]
+            [ "BH_FLOAT32", "BH_INT32" ],
+            [ "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_FLOAT64", "BH_INT64" ]
     ],
     "layout": [
             [ "C", "C" ],
