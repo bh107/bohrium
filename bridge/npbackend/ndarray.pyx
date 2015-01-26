@@ -147,7 +147,11 @@ def identical_views(view1, view2):
 
     if view1.dtype != view2.dtype:
         return False
-    if view1.ndim != view2.ndim:
+
+    view1_ndim = view1.ndim if view1.ndim > 0 else 1
+    view2_ndim = view2.ndim if view2.ndim > 0 else 1
+
+    if view1_ndim != view2_ndim:
         return False
     if list(view1.shape) != list(view2.shape):
         return False
