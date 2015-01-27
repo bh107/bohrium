@@ -178,8 +178,8 @@ public:
      * @hash  The hash of the batch (aka instruction list)
      *        that matches the 'kernel_list'
      */
-    void insert(const BatchHash &hash,
-                const std::vector<bh_ir_kernel> &kernel_list);
+    InstrIndexesList& insert(const BatchHash &hash,
+                             const std::vector<bh_ir_kernel> &kernel_list);
 
     /* Lookup a 'kernel_list' in the cache
      *

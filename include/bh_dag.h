@@ -369,27 +369,25 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
     }
 }
 
-/* Fills the BhIR's kernel list based on the DAG where each vertex is a kernel.
+/* Fills the kernel list based on the DAG where each vertex is a kernel.
  *
  * Complexity: O(E + V)
  *
  * @dag     The dag
  * @kernels The kernel list output
  */
-void fill_bhir_kernel_list(const GraphD &dag, bh_ir &bhir)
+void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
 {
     using namespace std;
     using namespace boost;
-    assert(bhir.kernel_list.size() == 0);
+    assert(kernel_list.size() == 0);
 
     vector<Vertex> topological_order;
     topological_sort(dag, back_inserter(topological_order));
     BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
     {
         if(dag[v].instr_indexes.size() > 0)
-        {
-            bhir.kernel_list.push_back(dag[v]);
-        }
+            kernel_list.push_back(dag[v]);
     }
 }
 

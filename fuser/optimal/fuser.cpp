@@ -194,6 +194,7 @@ public:
     int64_t best_cost;
     int64_t one_cost;
     GraphD best_dag;
+    FuseCache cache;
 
     #ifdef VERBOSE
         double  purge_count;
@@ -201,7 +202,8 @@ public:
     #endif
 
     /* The constructor */
-    Solver(bh_ir &b, const GraphDW &d, const vector<EdgeW> &e, const set<Vertex> &ignores):bhir(b),dag(d),edges2explore(e)
+    Solver(bh_ir &b, const GraphDW &d, const vector<EdgeW> &e, FuseCache &cache, const set<Vertex> &ignores):
+           bhir(b),dag(d),edges2explore(e), cache(cache)
     {
         //We use the greedy algorithm to find a good initial guess
         GraphDW new_dag(dag);
@@ -246,12 +248,23 @@ public:
             }
             if(fusibility)
             {
+                //Lets save the new best dag
                 best_cost = cost;
                 best_dag = new_dag;
+                assert(dag_validate(best_dag));
+
+                //Lets write the current best to file
+                vector<bh_ir_kernel> kernel_list;
+                fill_kernel_list(best_dag, kernel_list);
+                const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
+                cache.write_to_files();
+
                 #ifdef VERBOSE
-                    std::stringstream ss;
-                    ss << "new_best_dag-" << fuser_count << "-" << dag_cost(new_dag) << ".dot";
-                    printf("write file: %s\n", ss.str().c_str());
+                    stringstream ss;
+                    string filename;
+                    i.get_filename(filename);
+                    ss << "new_best_dag-" << filename << ".dot";
+                    cout << "write file: " << ss.str() << endl;
                     pprint(GraphDW(new_dag), ss.str().c_str());
                     purge_count += pow(2.0, mask.size()-offset-1);
                 #endif
@@ -267,7 +280,8 @@ public:
 };
 
 /* Fuse the 'dag' optimally */
-void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2explore, GraphD &output)
+void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2explore,
+                  GraphD &output, FuseCache &cache)
 {
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
@@ -278,7 +292,7 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
             edges2explore.push_back(e);
     }
     sort_weights(dag.bglW(), edges2explore);
-    //reverse(edges2explore.begin(), edges2explore.end());
+    reverse(edges2explore.begin(), edges2explore.end());
 
     if(edges2explore.size() == 0)
         return;
@@ -304,7 +318,7 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
             ignores.insert(v);
     }
 
-    Solver solver(bhir, dag, edges2explore, ignores);
+    Solver solver(bhir, dag, edges2explore, cache, ignores);
     if(mask.size() > 100)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
@@ -348,24 +362,24 @@ void set_abort_timer()
     setitimer (ITIMER_REAL, &timer, NULL);
 }
 
-void do_fusion(bh_ir &bhir)
+void do_fusion(bh_ir &bhir, FuseCache &cache)
 {
 #ifdef VERBOSE
     ++fuser_count;
 #endif
     set_abort_timer();
 
+    vector<bh_ir_kernel> kernel_list;
     {
         GraphDW dag;
         from_bhir(bhir, dag);
-        fuse_gentle(dag);
-        fill_bhir_kernel_list(dag.bglD(), bhir);
+        fill_kernel_list(dag.bglD(), kernel_list);
     }
-
     while(true)
     {
+        cout << endl << "Starting new round." << endl;
         GraphDW dag;
-        from_kernels(bhir.kernel_list, dag);
+        from_kernels(kernel_list, dag);
         fuse_gentle(dag);
         dag.transitive_reduction();
         assert(dag_validate(dag.bglD()));
@@ -404,12 +418,13 @@ void do_fusion(bh_ir &bhir)
             break;//No more singleton components to fuse
 
         GraphD output;
-        fuse_optimal(bhir, dag, component2vertices[comp_id], output);
+        fuse_optimal(bhir, dag, component2vertices[comp_id], output, cache);
         assert(num_vertices(output) > 0);
         assert(dag_validate(output));
-        bhir.kernel_list.clear();
-        fill_bhir_kernel_list(output, bhir);
+        kernel_list.clear();
+        fill_kernel_list(output, kernel_list);
     }
+    bhir.kernel_list = kernel_list;
 }
 
 void fuser(bh_ir &bhir, FuseCache &cache)
@@ -420,7 +435,7 @@ void fuser(bh_ir &bhir, FuseCache &cache)
     BatchHash batch(bhir.instr_list);
     if(not cache.lookup(batch, bhir, bhir.kernel_list))
     {
-        do_fusion(bhir);
+        do_fusion(bhir, cache);
         cache.insert(batch, bhir.kernel_list);
     }
 }
