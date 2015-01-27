@@ -223,7 +223,8 @@ namespace NumCIL.Bohrium
                     if (IsAllocated)
                     {
                         //Console.WriteLine("Destroying multi_array {0}", this.pointer.ToInt64());
-                        bh_multi_array_${bh_ctype}_destroy(this); 
+                        lock(PinnedArrayTracker.ExecuteLock)
+                            bh_multi_array_${bh_ctype}_destroy(this); 
                     }
                 }
                 finally 

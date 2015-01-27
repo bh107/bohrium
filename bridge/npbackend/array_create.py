@@ -532,9 +532,9 @@ def range(size, dtype=numpy.uint64):
                         numpy.float16,
                         numpy.float32,
                         numpy.complex64]):
-        A = empty(size, dtype=numpy.uint32, bohrium=True)
+        A = empty((size,), dtype=numpy.uint32, bohrium=True)
     else:
-        A = empty(size, dtype=numpy.uint64, bohrium=True)
+        A = empty((size,), dtype=numpy.uint64, bohrium=True)
     ret = target.range(size, A.dtype)
     A = ndarray.new((size,), A.dtype, ret)
     if not dtype_equal(dtype, A.dtype):

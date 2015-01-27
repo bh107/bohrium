@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh.h>
 #include <string>
+#include <sstream>
 #include <map>
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>

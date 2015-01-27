@@ -164,11 +164,13 @@ bh_error bh_ve_cpu_init(const char *name)
     if (env != NULL) {
         string e(env);
         if (not boost::iequals(e, string("same_shape_range_random"))) {
-            cerr << "VE-CPU: Unsupported fuse model: '" << e;
-            cerr << "', reverting to 'SAME_SHAPE_RANGE_RANDOM'." << endl;
+            cerr << "VE-CPU: Warning! unsupported fuse model: '" << e;
+            cerr << "', it may not work." << endl;
         }
     }
-    setenv("BH_FUSE_MODEL", "SAME_SHAPE_RANGE_RANDOM", 1);
+    else{
+        setenv("BH_FUSE_MODEL", "SAME_SHAPE_RANGE_RANDOM", 1);
+    }
 
     // Configuration
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");

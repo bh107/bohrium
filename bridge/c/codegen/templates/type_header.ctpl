@@ -8,7 +8,7 @@ directiveStartToken = %
 #define __BH_C_DATA_TYPES_H
 
 #include <stdint.h>
-#include <bh_type.h>
+#include "bh_type.h"
 
 #ifdef _WIN32
 #define DLLEXPORT __declspec( dllexport )

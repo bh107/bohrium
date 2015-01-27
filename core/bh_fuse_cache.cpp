@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_fuse.h"
 #include "bh_fuse_cache.h"
 #include <fstream>
+#include <exception>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -117,29 +118,37 @@ namespace bohrium {
             "the configure file thus no cache files are written to disk!" << endl;
             return;
         }
-        path p(dir_path);
-        if(create_directories(p))
+        path cache_dir(dir_path);
+        if(create_directories(cache_dir))
         {
-            cout << "[FUSE-CACHE] Creating cache diretory " << p << endl;
+            cout << "[FUSE-CACHE] Creating cache diretory " << cache_dir << endl;
         #if BOOST_VERSION > 104900
-            permissions(p, all_all);
+            permissions(cache_dir, all_all);
         #endif
         }
 
+        path tmp_dir = cache_dir / unique_path();
+        create_directories(tmp_dir);
         for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
         {
             string name;
             it->second.get_filename(name);
-            path filename = p / name;
-            ofstream ofs(filename.string());
+            path shared_name = cache_dir / name;
+
+            if(exists(shared_name))
+                continue;//No need to overwrite an existing file
+
+            path unique_name = tmp_dir / name;
+            ofstream ofs(unique_name.string().c_str());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
-            ofs.flush();
+            ofs.close();
         #if BOOST_VERSION > 104900
-            permissions(filename, all_all);
+            permissions(unique_name, all_all);
         #endif
-            assert(it->second.fuse_model() == model_name);
+            rename(unique_name, shared_name);
         }
+        remove(tmp_dir);
     }
 
     void FuseCache::load_from_files()
@@ -163,14 +172,32 @@ namespace bohrium {
         {
             if(is_regular_file(f))
             {
-                ifstream ifs(f.string());
-                boost::archive::text_iarchive ia(ifs);
-                InstrIndexesList t;
-                ia >> t;
-                if(iequals(t.fuser_name(), fuser_name) and
-                   iequals(t.fuse_model(), fuse_model_name))
+                int tries = 0;
+                while(1)
                 {
-                    cache[t.hash()] = t;
+                    try
+                    {
+                        ifstream ifs(f.string().c_str());
+                        boost::archive::text_iarchive ia(ifs);
+                        InstrIndexesList t;
+                        ia >> t;
+                        if(iequals(t.fuser_name(), fuser_name) and
+                           iequals(t.fuse_model(), fuse_model_name))
+                        {
+                            cache[t.hash()] = t;
+                        }
+                    }
+                    catch(const std::exception &e)
+                    {
+                        if(++tries >= 10)
+                        {
+                            cerr << "[FUSE-CACHE] failed to open file '" << f.string();
+                            cerr << "' (" << tries << " tries): " << e.what() << endl;
+                        }
+                        else
+                            continue;
+                    }
+                    break;
                 }
             }
         }

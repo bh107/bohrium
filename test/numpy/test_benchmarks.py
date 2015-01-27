@@ -11,7 +11,7 @@ import bohrium as bh
 
 """
 Cannot test:
-    
+
     LMM_swaption_vec.py
 
 Due to missing functionality: concatenate.
@@ -35,7 +35,7 @@ class test_black_scholes(BenchHelper, numpytest):
 
 """
 Cannot test:
-    
+
     convolve.py
     convolve_2d.py
     convolve_3d.py
@@ -184,7 +184,7 @@ class test_knn_naive1(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
+        self.config['maxerror'] = 0.01
         self.size=10000
 
         # Benchmark parameters
@@ -194,23 +194,6 @@ class test_knn_naive1(BenchHelper, numpytest):
         self.inputfn    = None
 
     def test_knn_naive1(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
-
-class test_knn_naive2(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
-        self.size=10000
-
-        # Benchmark parameters
-        self.script     = "knn_naive2"
-        self.dtypes     = [bh.float32, bh.float64]
-
-        self.sizetxt = "1000*10*1"
-        self.inputfn = "knn_base-{0}-1000*10_targets-{0}-1000*10.npz"
-
-    def test_knn_naive2(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 """
@@ -391,7 +374,7 @@ class test_synth(BenchHelper, numpytest):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
         self.size = 1000
-        
+
         # Benchmark parameters
         self.script     = "synth"
         self.dtypes     = [bh.float32, bh.float64]
