@@ -139,7 +139,7 @@ namespace bohrium {
                 continue;//No need to overwrite an existing file
 
             path unique_name = tmp_dir / name;
-            ofstream ofs(unique_name.string());
+            ofstream ofs(unique_name.string().c_str());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
             ofs.close();
@@ -177,7 +177,7 @@ namespace bohrium {
                 {
                     try
                     {
-                        ifstream ifs(f.string());
+                        ifstream ifs(f.string().c_str());
                         boost::archive::text_iarchive ia(ifs);
                         InstrIndexesList t;
                         ia >> t;
