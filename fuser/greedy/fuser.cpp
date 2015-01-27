@@ -39,7 +39,7 @@ static void do_fusion(bh_ir &bhir)
     from_bhir(bhir, dag);
     fuse_gentle(dag);
     fuse_greedy(dag);
-    fill_bhir_kernel_list(dag.bglD(), bhir);
+    fill_kernel_list(dag.bglD(), bhir.kernel_list);
 }
 
 void fuser(bh_ir &bhir, FuseCache &cache)

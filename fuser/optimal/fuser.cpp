@@ -358,7 +358,7 @@ void do_fusion(bh_ir &bhir)
         output = dag.bglD();
 
     assert(dag_validate(output));
-    fill_bhir_kernel_list(output, bhir);
+    fill_kernel_list(output, bhir.kernel_list);
 }
 
 void fuser(bh_ir &bhir, FuseCache &cache)
