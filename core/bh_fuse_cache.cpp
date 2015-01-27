@@ -184,6 +184,14 @@ namespace bohrium {
                         if(iequals(t.fuser_name(), fuser_name) and
                            iequals(t.fuse_model(), fuse_model_name))
                         {
+                            if(cache.find(t.hash()) != cache.end())
+                            {
+                                if(cache[t.hash()].cost() < t.cost())
+                                {
+                                    cout << "[FUSE-CACHE] ignoring cache file with higher cost" << endl;
+                                    break;
+                                }
+                            }
                             cache[t.hash()] = t;
                         }
                     }
