@@ -83,29 +83,26 @@ namespace bohrium {
         _hash = hasher(data);
     }
 
-    void FuseCache::insert(const BatchHash &batch,
-                           const vector<bh_ir_kernel> &kernel_list)
+    InstrIndexesList &FuseCache::insert(const BatchHash &batch,
+                                        const vector<bh_ir_kernel> &kernel_list)
     {
         cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash(), fuser_name);
+        return cache[batch.hash()];
     }
 
     bool FuseCache::lookup(const BatchHash &batch,
                            bh_ir &bhir,
                            vector<bh_ir_kernel> &kernel_list) const
     {
-//        cout << "looking up " << batch.hash() << ": ";
-
         assert(kernel_list.size() == 0);
         CacheMap::const_iterator it = cache.find(batch.hash());
         if(it == cache.end())
         {
-//            cout << "cache miss!" << endl;
             return false;
         }
         else
         {
             it->second.fill_kernel_list(bhir, kernel_list);
-//          cout << "cache hit!" << endl;
           return true;
         }
     }
