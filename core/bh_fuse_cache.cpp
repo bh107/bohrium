@@ -83,29 +83,26 @@ namespace bohrium {
         _hash = hasher(data);
     }
 
-    void FuseCache::insert(const BatchHash &batch,
-                           const vector<bh_ir_kernel> &kernel_list)
+    InstrIndexesList &FuseCache::insert(const BatchHash &batch,
+                                        const vector<bh_ir_kernel> &kernel_list)
     {
         cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash(), fuser_name);
+        return cache[batch.hash()];
     }
 
     bool FuseCache::lookup(const BatchHash &batch,
                            bh_ir &bhir,
                            vector<bh_ir_kernel> &kernel_list) const
     {
-//        cout << "looking up " << batch.hash() << ": ";
-
         assert(kernel_list.size() == 0);
         CacheMap::const_iterator it = cache.find(batch.hash());
         if(it == cache.end())
         {
-//            cout << "cache miss!" << endl;
             return false;
         }
         else
         {
             it->second.fill_kernel_list(bhir, kernel_list);
-//          cout << "cache hit!" << endl;
           return true;
         }
     }
@@ -139,7 +136,7 @@ namespace bohrium {
                 continue;//No need to overwrite an existing file
 
             path unique_name = tmp_dir / name;
-            ofstream ofs(unique_name.string());
+            ofstream ofs(unique_name.string().c_str());
             boost::archive::text_oarchive oa(ofs);
             oa << it->second;
             ofs.close();
@@ -177,13 +174,21 @@ namespace bohrium {
                 {
                     try
                     {
-                        ifstream ifs(f.string());
+                        ifstream ifs(f.string().c_str());
                         boost::archive::text_iarchive ia(ifs);
                         InstrIndexesList t;
                         ia >> t;
                         if(iequals(t.fuser_name(), fuser_name) and
                            iequals(t.fuse_model(), fuse_model_name))
                         {
+                            if(cache.find(t.hash()) != cache.end())
+                            {
+                                if(cache[t.hash()].cost() < t.cost())
+                                {
+                                    cout << "[FUSE-CACHE] ignoring cache file with higher cost" << endl;
+                                    break;
+                                }
+                            }
                             cache[t.hash()] = t;
                         }
                     }
