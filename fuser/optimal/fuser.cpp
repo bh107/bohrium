@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <boost/foreach.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include <boost/algorithm/string/predicate.hpp> //For iequals()
 #include <boost/range/adaptors.hpp>
 #include <vector>
 #include <map>
@@ -278,22 +279,49 @@ public:
     }
 };
 
-/* Fuse the 'dag' optimally */
-void fuse_optimal(bh_ir &bhir, const GraphDW &dag, GraphD &output, FuseCache &cache)
+void get_edges2explore(const GraphDW &dag, vector<EdgeW> &edges2explore)
 {
-    //The list of edges that we should try to merge
-    vector<EdgeW> edges2explore;
     BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
     {
         edges2explore.push_back(e);
     }
     sort_weights(dag.bglW(), edges2explore);
-    //reverse(edges2explore.begin(), edges2explore.end());
-
-    if(edges2explore.size() == 0)
+    string order;
     {
-        return;
+        const char *t = getenv("BH_FUSER_OPTIMAL_ORDER");
+        if(t == NULL)
+            order ="regular";
+        else
+            order = t;
     }
+    if(not iequals(order, "regular"))
+    {
+        if(iequals(order, "reverse"))
+        {
+            reverse(edges2explore.begin(), edges2explore.end());
+        }
+        else if(iequals(order, "random"))
+        {
+            random_shuffle(edges2explore.begin(), edges2explore.end());
+        }
+        else
+        {
+            cerr << "FUSER-OPTIMAL: unknown BH_FUSER_OPTIMAL_ORDER: " << order << endl;
+            order = "regular";
+        }
+    }
+    cout << "BH_FUSER_OPTIMAL_ORDER: " << order << endl;
+}
+
+
+/* Fuse the 'dag' optimally */
+void fuse_optimal(bh_ir &bhir, const GraphDW &dag, GraphD &output, FuseCache &cache)
+{
+    //The list of edges that we should try to merge
+    vector<EdgeW> edges2explore;
+    get_edges2explore(dag, edges2explore);
+    if(edges2explore.size() == 0)
+        return;
 
     //First we check the trivial case where all kernels are merged
     vector<bool> mask(edges2explore.size(), true);
