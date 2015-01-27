@@ -77,7 +77,7 @@ purge_all: purge_cpu
 	rm -rf ~/.local/lib
 	rm -rf ~/.local/share/bohrium
 	rm -rf ~/.local/var
-	rm ~/.bohrium/config.ini
+	rm -f ~/.bohrium/config.ini
 
 #
 # "Reinstall" the cpu-engine

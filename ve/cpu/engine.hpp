@@ -5,6 +5,7 @@
 
 #include "tac.h"
 #include "block.hpp"
+#include "thread_control.hpp"
 #include "store.hpp"
 #include "compiler.hpp"
 #include "specializer.hpp"
@@ -29,7 +30,10 @@ public:
         const bool jit_enabled,
         const bool jit_fusion,
         const bool jit_dumpsrc,
-        const bool dump_rep);
+        const bool dump_rep,
+        const thread_binding binding,
+        const size_t mthreads
+        );
 
     ~Engine();
 
@@ -63,7 +67,6 @@ private:
      *      - The block contains at least one array operation (should be increased to more than 1)
      *      - The block contains does not contain any extensions
      */
-    //bh_error fuse_mode(SymbolTable& symbol_table, Block& block);
     bh_error fuse_mode(
         SymbolTable& symbol_table,
         std::vector<tac_t>& program,
@@ -87,6 +90,7 @@ private:
     Store          storage;
     Specializer    specializer;
     Compiler       compiler;
+    ThreadControl  thread_control;
 
     std::map<bh_opcode, bh_extmethod_impl> extensions;
 
