@@ -88,6 +88,8 @@ bh_error bh_ve_cpu_init(const char *name)
     bh_intp jit_preload  = 1;
     bh_intp jit_fusion   = 0;
     bh_intp jit_dumpsrc  = 0;
+    bh_intp binding = bohrium::engine::cpu::BIND_TO_CORE;
+    bh_intp mthreads = 0;
     bh_intp dump_rep = 0;
 
     char* compiler_cmd;   // cpu Arguments
@@ -160,6 +162,26 @@ bh_error bh_ve_cpu_init(const char *name)
         return BH_ERROR;
     }
 
+    env = getenv("BH_VE_CPU_BIND");
+    if (NULL != env) {
+        binding = atoi(env);
+        if (!((0==binding) || \
+              (1==binding) || \
+              (2==binding))) {
+             fprintf(stderr, "BH_VE_CPU_BIND (%ld) should 0, 1 or 2.\n", (long int)binding);
+            return BH_ERROR;
+        }
+    }
+
+    env = getenv("BH_VE_CPU_MTHREADS");
+    if (NULL != env) {
+        mthreads = atoi(env);
+        if (!((0<mthreads) || (2048>mthreads))) {
+             fprintf(stderr, "BH_VE_CPU_MTHREADS (%ld) should 0<= mthreads <= 2048.\n", (long int)mthreads);
+            return BH_ERROR;
+        }
+    }
+
     env = getenv("BH_FUSE_MODEL");
     if (env != NULL) {
         string e(env);
@@ -202,7 +224,9 @@ bh_error bh_ve_cpu_init(const char *name)
         (bool)jit_preload,
         (bool)jit_fusion,
         (bool)jit_dumpsrc,
-        (bool)dump_rep
+        (bool)dump_rep,
+        (bohrium::engine::cpu::thread_binding)binding,
+        (size_t)mthreads
     );
 
     return BH_SUCCESS;

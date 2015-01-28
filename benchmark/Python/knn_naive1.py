@@ -39,7 +39,7 @@ def data_random(B, N, F):
 
     # Target is a single coordinate / feature in N-dimensional euclidian-space.
     x = np.empty((F, 1))
-    x[:] = 0.5
+    x[:,:] = 0.5
 
     return data, x
 

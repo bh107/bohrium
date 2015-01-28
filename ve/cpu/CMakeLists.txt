@@ -71,3 +71,43 @@ if(Boost_FOUND)
     target_link_libraries(bh_ve_cpu ${Boost_LIBRARIES})
 endif()
 
+#
+#   Multi-core stuff
+#
+find_package(OpenMP COMPONENTS bohrium)
+set_package_properties(OpenMP PROPERTIES DESCRIPTION "OpenMP parallel library and compiler directives" URL "www.openmp.org")
+set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it for multi-core parallelization.")
+
+if(OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+
+    find_package(HWLOC)
+    set_package_properties(HWLOC PROPERTIES DESCRIPTION "hardware locality (hwloc)" URL "http://www.open-mpi.org/projects/hwloc/")
+    set_package_properties(HWLOC PROPERTIES TYPE REQUIRED PURPOSE "VE-CPU use it to control thread affinity.")
+
+    if(HWLOC_FOUND)
+        include_directories(${HWLOC_INCLUDE_DIR})
+        target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
+    endif()
+
+else()
+    message("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    message("!!                                                    !!")
+    message("!!      WARNING  /// ERROR /// ALERT /// PANIC        !!")
+    message("!!                                                    !!")
+    message("!!         Compiler does not support OpenMP           !!")
+    message("!!                                                    !!")
+    message("!!     You should STOP, ABORT, CANCEL this build      !!")
+    message("!!                                                    !!")
+    message("!!                     and then                       !!")
+    message("!!                                                    !!")
+    message("!!   ---={[   INSTALL A DESCENT COMPILER    ]}=---    !!")
+    message("!!                                                    !!")
+    message("!!   Change your operating system if you have to...   !!")
+    message("!!                                                    !!")
+    message("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    exec_program(sleep ARGS 60)
+    exec_program(timeout ARGS 60)
+endif()

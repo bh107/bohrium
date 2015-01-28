@@ -87,7 +87,7 @@ def type_sig(op_name, inputs):
         if dtype == sig[1]:
             return (np.dtype(sig[0]), np.dtype(sig[1]))
 
-    raise TypeError("Cannot detement the correct signature (%s:%s)" % (
+    raise TypeError("Cannot determine the correct signature (%s:%s)" % (
         op_name, dtype
     ))
 
