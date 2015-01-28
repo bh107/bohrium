@@ -180,10 +180,6 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     return make_pair(cost,true);
 }
 
-#ifdef VERBOSE
-int fuser_count=0;
-#endif
-
 /* Private class to find the optimal solution through branch and bound */
 class Solver
 {
@@ -205,9 +201,21 @@ public:
     Solver(bh_ir &b, const GraphDW &d, const vector<EdgeW> &e, FuseCache &cache):
            bhir(b),dag(d),edges2explore(e), cache(cache)
     {
-        //Wwe use the greedy algorithm to find a good initial guess
-        GraphDW new_dag(dag);
-        fuse_greedy(new_dag);
+        //Lets find a good initial guess
+        GraphDW new_dag;
+        vector<bh_ir_kernel> kernel_list;
+        if(cache.lookup(bhir.instr_list, bhir, kernel_list))
+        {
+            from_kernels(kernel_list, new_dag);
+            #ifdef VERBOSE
+                cout << "Loading initial guess from the cache" << endl;
+            #endif
+        }
+        else
+        {
+            new_dag = dag;
+            fuse_greedy(new_dag);
+        }
         best_dag = new_dag.bglD();
         best_cost = dag_cost(best_dag);
 
@@ -265,7 +273,7 @@ public:
                     i.get_filename(filename);
                     ss << "new_best_dag-" << filename << ".dot";
                     cout << "write file: " << ss.str() << endl;
-                    pprint(GraphDW(new_dag), ss.str().c_str());
+                    pprint(best_dag, ss.str().c_str());
                     purge_count += pow(2.0, mask.size()-offset-1);
                 #endif
                 return;
@@ -382,9 +390,6 @@ void set_abort_timer()
 
 void do_fusion(bh_ir &bhir, FuseCache &cache)
 {
-#ifdef VERBOSE
-    ++fuser_count;
-#endif
     set_abort_timer();
 
     GraphDW dag;
@@ -408,7 +413,7 @@ void fuser(bh_ir &bhir, FuseCache &cache)
         throw logic_error("The kernel_list is not empty!");
 
     BatchHash batch(bhir.instr_list);
-    if(not cache.lookup(batch, bhir, bhir.kernel_list))
+//    if(not cache.lookup(batch, bhir, bhir.kernel_list))
     {
         do_fusion(bhir, cache);
         cache.insert(batch, bhir.kernel_list);
