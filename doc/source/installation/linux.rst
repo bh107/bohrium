@@ -98,7 +98,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy swig libctemplate-dev python-cheetah cmake libboost-serialization-dev cython
+  sudo apt-get install python-numpy swig libctemplate-dev python-cheetah cmake libboost-serialization-dev cython hwloc
 
 Build and install::
 
