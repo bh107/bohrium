@@ -1,5 +1,7 @@
 #include "thread_control.hpp"
 
+#include <stdlib.h>
+
 #if defined(_OPENMP)
 #include <omp.h>
 #include <hwloc.h>
