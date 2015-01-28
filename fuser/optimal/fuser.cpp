@@ -322,7 +322,7 @@ void get_edges2explore(const GraphDW &dag, const set<Vertex> &vertices2explore,
 void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2explore,
                   GraphD &output, FuseCache &cache)
 {
-        //The list of edges that we should try to merge
+    //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
     get_edges2explore(dag, vertices2explore, edges2explore);
     if(edges2explore.size() == 0)

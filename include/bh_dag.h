@@ -335,6 +335,7 @@ void from_bhir(bh_ir &bhir, GraphDW &dag)
 {
     using namespace std;
     using namespace boost;
+    assert(num_vertices(dag.bglD()) == 0);
 
     if(bhir.kernel_list.size() != 0)
     {
@@ -361,6 +362,7 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
 {
     using namespace std;
     using namespace boost;
+    assert(num_vertices(dag.bglD()) == 0);
 
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
