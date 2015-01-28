@@ -71,6 +71,9 @@ if(Boost_FOUND)
     target_link_libraries(bh_ve_cpu ${Boost_LIBRARIES})
 endif()
 
+#
+#   Multi-core stuff
+#
 find_package(OpenMP COMPONENTS bohrium)
 set_package_properties(OpenMP PROPERTIES DESCRIPTION "OpenMP parallel library and compiler directives" URL "www.openmp.org")
 set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it for multi-core parallelization.")
