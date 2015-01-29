@@ -120,9 +120,14 @@ template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
     if (base) {
-        bh_free(*this);
-        bh_discard(*this);
-        Runtime::instance().trash(base);
+        Runtime::instance().ref_count[base] -= 1;       // Decrement ref-count
+        
+        if (0==Runtime::instance().ref_count[base]) {   // De-allocate it
+            bh_free(*this);                             // Send BH_FREE to Bohrium
+            bh_discard(*this);                          // Send BH_DISCARD to Bohrium
+            Runtime::instance().trash(base);            // Queue the bh_base for de-allocation
+            Runtime::instance().ref_count.erase(base);  // Remove from ref-count
+        }
     }
 }
 
@@ -348,6 +353,7 @@ void multi_array<T>::link()
         throw std::runtime_error("Dude you are ALREADY linked!");
     }
     base = new bh_base;
+    Runtime::instance().ref_count[base] += 1;
     assign_array_type<T>(base);
     base->nelem = bh_nelements(meta.ndim, meta.shape);
     base->data  = NULL;

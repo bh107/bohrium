@@ -310,6 +310,8 @@ public:
 
     void trash(bh_base *base_ptr);
 
+    std::map<bh_base*, size_t> ref_count;       // Count references to bh_base
+
 private:
                                                 // Bohrium
     bh_component        bridge;
@@ -322,9 +324,8 @@ private:
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     size_t          ext_in_queue;
     size_t          queue_size;
-                                                // DSEL stuff
-    std::list<bh_base*> garbage;                // NOTE: This is probably deprecated with bh_base...
-                                                // Collection of bh_base which will
+
+    std::list<bh_base*> garbage;                // Collection of bh_base which will
                                                 // be deleted when the current batch is flushed.
 
     Runtime();                                  // Ensure no external instantiation.
