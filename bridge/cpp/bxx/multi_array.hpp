@@ -119,15 +119,15 @@ multi_array<T>::multi_array(Dimensions... shape) : temp(false), base(NULL)
 template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
-    if (base) {
+    if (linked()) {
         Runtime::instance().ref_count[base] -= 1;       // Decrement ref-count
-        
         if (0==Runtime::instance().ref_count[base]) {   // De-allocate it
             bh_free(*this);                             // Send BH_FREE to Bohrium
             bh_discard(*this);                          // Send BH_DISCARD to Bohrium
             Runtime::instance().trash(base);            // Queue the bh_base for de-allocation
             Runtime::instance().ref_count.erase(base);  // Remove from ref-count
         }
+        unlink();
     }
 }
 
@@ -327,7 +327,6 @@ template <typename T>
 inline
 bool multi_array<T>::linked() const
 {
-    //return (key != 0);
     return (base != NULL);
 }
 
@@ -345,11 +344,16 @@ bool multi_array<T>::allocated() const
     return ((meta.base != NULL) && (meta.base->data != NULL));
 }
 
-// Linking - Assign a base to the multi_array.
+//
+// Linking and Unlinking
+//
+// linking: Assign a bh_base to a multi_array
+// unlinking: Removing a bh_base from a multi_array
+//
 template <typename T>
 void multi_array<T>::link()
 {
-    if (base) {
+    if (linked()) {
         throw std::runtime_error("Dude you are ALREADY linked!");
     }
     base = new bh_base;
@@ -363,7 +367,7 @@ void multi_array<T>::link()
 template <typename T>
 void multi_array<T>::link(bh_base *base_ptr)
 {
-    if (base) {
+    if (linked()) {
         throw std::runtime_error("Dude you are ALREADY linked!");
     }
     base      = base_ptr;
@@ -373,7 +377,7 @@ void multi_array<T>::link(bh_base *base_ptr)
 template <typename T>
 bh_base* multi_array<T>::unlink()
 {
-    if (!base) {
+    if (!linked()) {
         throw std::runtime_error("Err: Unlinking operand which is not linked!");
     }
 
@@ -386,19 +390,24 @@ bh_base* multi_array<T>::unlink()
 }
 
 //
-//  Aliasing
+//  Aliasing and assignment
 //
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
-    if ((base) && (base == rhs.getBase())) {  // Self-aliasing is a NOOP
+    std::cout << "Aliasing..." << std::endl;
+    if ((linked()) && (base == rhs.getBase())) {  // Self-aliasing is a NOOP
         return *this;
     }
 
-    if (base) {
-        bh_free(*this);
-        bh_discard(*this);
-        Runtime::instance().trash(base);
+    if (linked()) {
+        Runtime::instance().ref_count[base] -= 1;       // Decrement ref-count
+        if (0==Runtime::instance().ref_count[base]) {   // De-allocate it
+            bh_free(*this);                             // Send BH_FREE to Bohrium
+            bh_discard(*this);                          // Send BH_DISCARD to Bohrium
+            Runtime::instance().trash(base);            // Queue the bh_base for de-allocation
+            Runtime::instance().ref_count.erase(base);  // Remove from ref-count
+        }
         unlink();
     }
                                 // Create alias of rhs
@@ -408,7 +417,10 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
         if (rhs.linked()) {
             link(rhs.unlink());
         }
-        delete &rhs;            // Cleanup
+        delete &rhs;
+    } else {                    // Create another reference to base
+        link(rhs.meta.base);
+        Runtime::instance().ref_count[base] +=1;
     }
 
     return *this;
@@ -425,10 +437,14 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
 {
-    if (base) {
-        bh_free(*this);
-        bh_discard(*this);
-        Runtime::instance().trash(base);
+    if (linked()) {
+        Runtime::instance().ref_count[base] -= 1;       // Decrement ref-count
+        if (0==Runtime::instance().ref_count[base]) {   // De-allocate it
+            bh_free(*this);                             // Send BH_FREE to Bohrium
+            bh_discard(*this);                          // Send BH_DISCARD to Bohrium
+            Runtime::instance().trash(base);            // Queue the bh_base for de-allocation
+            Runtime::instance().ref_count.erase(base);  // Remove from ref-count
+        }
         unlink();
     }
 
