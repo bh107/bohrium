@@ -54,9 +54,6 @@ typedef struct bh_multi_array_${bh_ctype}* bh_multi_array_${bh_ctype}_p;
 typedef struct bh_slice_range_${bh_ctype}* bh_slice_range_${bh_ctype}_p;
 
 
-// Create a view from existing data pointer
-DLLEXPORT bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_data(${bh_atype}* data, int64_t nelem);
-
 // Gets the data pointer from a view
 DLLEXPORT ${bh_atype}* bh_multi_array_${bh_ctype}_get_data(const bh_multi_array_${bh_ctype}_p self);
 
