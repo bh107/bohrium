@@ -173,6 +173,20 @@ bh_base* multi_array<T>::getBase() const
 
 template <typename T>
 inline
+void* multi_array<T>::getBaseData(void)
+{
+    return meta.base->data;
+}
+
+template <typename T>
+inline
+void multi_array<T>::setBaseData(void* data)
+{
+    meta.base->data = data;
+}
+
+template <typename T>
+inline
 unsigned long multi_array<T>::getRank() const
 {
     return (unsigned long)meta.ndim;

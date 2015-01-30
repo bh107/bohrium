@@ -221,6 +221,10 @@ public:
     bh_base* unlink();
 
     bh_base* getBase() const;
+
+    void* getBaseData(void);                // These are NOT for the faint of heart!
+    void setBaseData(void* data);           // These are only intended for the C-bridge.
+
     bool getTemp() const;
     void setTemp(bool temp);
     bool linked() const;
