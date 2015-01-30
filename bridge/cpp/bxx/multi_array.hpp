@@ -395,7 +395,6 @@ bh_base* multi_array<T>::unlink()
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
-    std::cout << "Aliasing..." << std::endl;
     if ((linked()) && (base_ == rhs.getBase())) {  // Self-aliasing is a NOOP
         return *this;
     }
