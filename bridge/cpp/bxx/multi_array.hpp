@@ -40,6 +40,9 @@ multi_array<T>::multi_array() : temp_(false), base_(NULL)
     meta.stride[0]  = 0;
 }
 
+//
+// C-Bridge constructors - START
+//
 template <typename T>           // Plain shaped constructor
 multi_array<T>::multi_array(const uint64_t rank, const int64_t* sizes) : temp_(false), base_(NULL)
 {
@@ -68,9 +71,25 @@ multi_array<T>::multi_array(bh_base* base, uint64_t rank, const int64_t start, c
     }
 }
 
-template <typename T>           // Copy constructor
+//
+// C-Bridge constructors - END
+//
+
+/**
+
+    Why are these copy-constructors not sharing the bh_base with those
+    they are copied from? The copy-construction should basically just be:
+
+    this = operand;
+
+    But i guess they are used in some weird way somewhere???
+
+*/
+
+template <typename T>           // Copy constructor same element type
 multi_array<T>::multi_array(const multi_array<T>& operand) : temp_(false), base_(NULL)
 {
+    std::cout << "Copy constructor, same type." << std::endl;
     meta = operand.meta;
     meta.base = NULL;
     meta.start = 0;
@@ -82,10 +101,11 @@ multi_array<T>::multi_array(const multi_array<T>& operand) : temp_(false), base_
     }
 }
 
-template <typename T>           // Copy constructor
+template <typename T>           // Copy constructor different element type
 template <typename OtherT>
 multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp_(false), base_(NULL)
 {
+    std::cout << "Copy constructor, different type type." << std::endl;
     meta.base   = NULL;
     meta.ndim   = operand.meta.ndim;
     meta.start  = 0;
@@ -116,7 +136,10 @@ multi_array<T>::multi_array(Dimensions... shape) : temp_(false), base_(NULL)
     }
 }
 
-template <typename T>                   // Deconstructor
+//
+// Deconstructor
+//
+template <typename T>
 multi_array<T>::~multi_array()
 {
     if (linked()) {
@@ -323,27 +346,6 @@ void multi_array<T>::setTemp(bool temp)
     temp_ = temp;
 }
 
-template <typename T>
-inline
-bool multi_array<T>::linked() const
-{
-    return (NULL != base_);
-}
-
-template <typename T>
-inline
-bool multi_array<T>::initialized() const
-{
-    return (meta.base != NULL);
-}
-
-template <typename T>
-inline
-bool multi_array<T>::allocated() const
-{
-    return ((meta.base != NULL) && (meta.base->data != NULL));
-}
-
 //
 // Linking and Unlinking
 //
@@ -387,6 +389,37 @@ bh_base* multi_array<T>::unlink()
     base_      = NULL;
     meta.base = NULL;
     return ret_base;
+}
+
+//
+//  A multi_array is linked when it has a bh_base assigned to it.
+//
+template <typename T>
+inline
+bool multi_array<T>::linked() const
+{
+    return (NULL != base_);
+}
+
+//
+//  A multi_array is initialized when the meta-data has a bh_base.
+//
+template <typename T>
+inline
+bool multi_array<T>::initialized() const
+{
+    return (NULL != meta.base);
+}
+
+//
+// A multi_array is initialized when its attached bh_view has a
+// bh_base with memory allocated.
+//
+template <typename T>
+inline
+bool multi_array<T>::allocated() const
+{
+    return (initialized() && (meta.base->data != NULL));
 }
 
 //
