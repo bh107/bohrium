@@ -30,14 +30,19 @@ namespace bxx {
 //  CONSTRUCTORS
 //
 //
-template <typename T>           // Default constructor - rank 0
-multi_array<T>::multi_array() : temp_(false)
-{
+template <typename T>       // Helper shared among constructors
+void multi_array<T>::reset_meta(void) {
     meta.base       = NULL;
     meta.ndim       = 0;
     meta.start      = 0;
     meta.shape[0]   = 0;
     meta.stride[0]  = 0;
+}
+
+template <typename T>           // Default constructor - rank 0
+multi_array<T>::multi_array() : temp_(false)
+{
+    reset_meta();
 }
 
 //

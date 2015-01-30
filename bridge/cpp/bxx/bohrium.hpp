@@ -232,6 +232,7 @@ protected:
     bool temp_;
 
 private:
+    void reset_meta();						// Helper, shared among constructors
 
 };
 
