@@ -28,15 +28,6 @@ void bh_runtime_shutdown(void){
 
 // $bh_enum
 
-// Create a view from existing data pointer
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_data(${bh_atype}* data, int64_t nelem)
-{
-    bh_multi_array_${bh_ctype}_p r = bh_multi_array_${bh_ctype}_new_empty(1, &nelem);
-    bh_multi_array_${bh_ctype}_set_data(r, data);
-
-    return r;
-}
-
 // Gets the base from a view
 bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
 {
@@ -72,19 +63,19 @@ void bh_multi_array_${bh_ctype}_set_data(bh_multi_array_${bh_ctype}_p self, ${bh
     bh_multi_array_${bh_ctype}_get_base(self)->data = data;
 }
 
-// Nullify the data pointer for a base
+// Nullify the data pointer for
 void bh_multi_array_${bh_ctype}_nullify_data(bh_multi_array_${bh_ctype}_p self)
 {
     bh_multi_array_${bh_ctype}_set_data(self, NULL);
 }
 
-// Sync the current base
+// Sync the current data
 void bh_multi_array_${bh_ctype}_sync(const bh_multi_array_${bh_ctype}_p self)
 {
     bh_sync(*((multi_array<${ctype}>*)self));
 }
 
-// Discard the current base
+// Discard the current view
 void bh_multi_array_${bh_ctype}_discard(const bh_multi_array_${bh_ctype}_p self)
 {
     bh_discard(*((multi_array<${ctype}>*)self));
