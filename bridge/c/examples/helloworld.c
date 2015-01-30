@@ -22,7 +22,7 @@ void compute()
     r_flat = bh_multi_array_uint32_new_range(10);
 
     // Reshaped to 3x3
-    r_shaped = bh_multi_array_uint32_new_from_view(bh_multi_array_uint32_get_base(r_flat), 2, 0, shape, stride);
+    r_shaped = bh_multi_array_uint32_new_view(r_flat, 2, 0, shape, stride);
 
     // Make into floats
     b = bh_multi_array_float32_new_empty(2, shape);
@@ -39,7 +39,7 @@ void compute()
     bh_runtime_flush();
 
     // Grab the result data
-    data = bh_multi_array_float32_get_base_data(bh_multi_array_float32_get_base(output));
+    data = bh_multi_array_float32_get_data(output);
 
     // Print out the result
     printf("Adding ones to range in 2D: \n");
@@ -55,6 +55,7 @@ void compute()
     bh_multi_array_float32_destroy(b);
     bh_multi_array_float32_destroy(output);
     bh_multi_array_uint32_destroy(r_flat);
+    bh_multi_array_uint32_destroy(r_shaped);
 }
 
 int main()

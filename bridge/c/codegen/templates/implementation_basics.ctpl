@@ -28,61 +28,54 @@ void bh_runtime_shutdown(void){
 
 // $bh_enum
 
-// Create a base pointer from existing data
-bh_base_p bh_multi_array_${bh_ctype}_create_base(${bh_atype}* data, int64_t nelem)
+// Create a view from existing data pointer
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_data(${bh_atype}* data, int64_t nelem)
 {
-    bh_base_p base = new bh_base;
-    assign_array_type<${bh_atype}>(base);
-    base->nelem = nelem;
-    base->data  = data;
+    bh_multi_array_${bh_ctype}_p r = bh_multi_array_${bh_ctype}_new_empty(1, &nelem);
+    bh_multi_array_${bh_ctype}_set_data(r, data);
 
-    return base;
+    return r;
 }
 
-// Destroy a base pointer
-void bh_multi_array_${bh_ctype}_destroy_base(bh_base_p base)
+// Gets the base from a view
+bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
 {
-    delete base;
+    return ((multi_array<${ctype}>*)self)->meta.base;
 }
 
-// Gets the data pointer from a base
-${bh_atype}* bh_multi_array_${bh_ctype}_get_base_data(bh_base_p base)
+// Gets the data pointer from a view
+${bh_atype}* bh_multi_array_${bh_ctype}_get_data(const bh_multi_array_${bh_ctype}_p self)
 {
-    return (${bh_atype}*)base->data;
+    return (${bh_atype}*)((bh_multi_array_${bh_ctype}_get_base(self))->data);
 }
 
 // Gets the data pointer from a base and force memory allocation
 // Return NULL when out of memory
-${bh_atype}* bh_multi_array_${bh_ctype}_get_base_data_and_force_alloc(bh_base_p base)
+${bh_atype}* bh_multi_array_${bh_ctype}_get_data_and_force_alloc(const bh_multi_array_${bh_ctype}_p self)
 {
+    bh_base* base = bh_multi_array_${bh_ctype}_get_base(self);
     if(bh_data_malloc(base) != 0)
         return NULL;
 
-    return (${bh_atype}*)base->data;
+    return (${bh_atype}*)(base->data);
 }
 
-// Gets the number of elements in a base
-int64_t bh_multi_array_${bh_ctype}_get_base_nelem(bh_base_p base)
+// Gets the number of elements in the underlying data
+int64_t bh_multi_array_${bh_ctype}_get_data_nelem(const bh_multi_array_${bh_ctype}_p self)
 {
-    return base->nelem;
+    return bh_multi_array_${bh_ctype}_get_base(self)->nelem;
 }
 
-// Sets the data pointer for a base
-void bh_multi_array_${bh_ctype}_set_base_data(bh_base_p base, ${bh_atype}* data)
+// Sets the data pointer for a view
+void bh_multi_array_${bh_ctype}_set_data(bh_multi_array_${bh_ctype}_p self, ${bh_atype}* data)
 {
-    base->data = data;
+    bh_multi_array_${bh_ctype}_get_base(self)->data = data;
 }
 
 // Nullify the data pointer for a base
-void bh_multi_array_${bh_ctype}_nullify_base_data(bh_base_p base)
+void bh_multi_array_${bh_ctype}_nullify_data(bh_multi_array_${bh_ctype}_p self)
 {
-    base->data = NULL;
-}
-
-// Get the base from an existing array
-bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
-{
-    return ((multi_array<${ctype}>*)self)->meta.base;
+    bh_multi_array_${bh_ctype}_set_data(self, NULL);
 }
 
 // Sync the current base
@@ -109,23 +102,14 @@ bh_bool bh_multi_array_${bh_ctype}_get_temp(const bh_multi_array_${bh_ctype}_p s
     return ((multi_array<${ctype}>*)self)->getTemp();
 }
 
-// Construct a new array from bh_base_p and view setup
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_base(const bh_base_p base)
+
+// Construct a new array from an view
+bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_view(const bh_multi_array_${bh_ctype}_p source, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride)
 {
-    const int64_t stride = 1;
-    const int64_t shape = base->nelem;
-    bh_multi_array_${bh_ctype}_p self = bh_multi_array_${bh_ctype}_new_from_view(base, 1, 0, &shape, &stride);
-    ((multi_array<${ctype}>*)self)->link(base);
+    multi_array<${ctype}>* result = new multi_array<${ctype}>(bh_multi_array_${bh_ctype}_get_base(source), rank, start, shape, stride);
 
-    return self;
-}
-
-
-// Construct a new array from bh_base_p and bh_view_p
-bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_from_view(const bh_base_p base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride)
-{
-    bh_multi_array_${bh_ctype}_p tmp = (bh_multi_array_${bh_ctype}_p)new multi_array<${ctype}>(base, rank, start, shape, stride);
-    return tmp;
+    result->setTemp(false);
+    return (bh_multi_array_${bh_ctype}_p)result;    
 }
 
 
