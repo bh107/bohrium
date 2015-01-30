@@ -54,7 +54,6 @@ inline Runtime::Runtime() : extension_count(BH_MAX_OPCODE_ID+1), queue_size(0)
 
 inline Runtime::~Runtime()
 {
-    // Print the ref-counts
     std::cout << "There are " << ref_count.size() << " dangling refs." << std::endl;
     for (std::map<bh_base*, size_t>::iterator it=ref_count.begin();
         it!=ref_count.end();
@@ -187,7 +186,9 @@ multi_array<T>& Runtime::view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
     // TODO: Increment ref-count
+    //       investigate when view is used.
     operand->meta.base = base.meta.base;
+    Runtime::instance().ref_count[operand->meta.base] += 1;
 
     return *operand;
 }
@@ -203,6 +204,7 @@ multi_array<T>& Runtime::temp_view(multi_array<T>& base)
     // TODO: increment ref-count
     operand->meta.base = base.meta.base;
     operand->setTemp(true);
+    Runtime::instance().ref_count[operand->meta.base] += 1;
 
     return *operand;
 }
@@ -385,9 +387,9 @@ T scalar(multi_array<T>& op)
     return value;
 }
 
-inline void Runtime::trash(bh_base *base_ptr)
+inline void Runtime::trash(bh_base *base)
 {
-    garbage.push_back(base_ptr);
+    garbage.push_back(base);
 }
 
 }

@@ -217,7 +217,7 @@ public:
     multi_array& operator--(int);
 
     void link();                            // Bohrium Runtime Specifics
-    void link(bh_base *base_ptr);           // Bohrium Runtime Specifics
+    void link(bh_base* base);               // Bohrium Runtime Specifics
     bh_base* unlink();
 
     bh_base* getBase() const;
@@ -230,7 +230,6 @@ public:
 
 protected:
     bool temp_;
-    bh_base* base_;
 
 private:
 
@@ -308,7 +307,7 @@ public:
     template <typename T>
     multi_array<T>& temp_view(multi_array<T>& base);
 
-    void trash(bh_base *base_ptr);
+    void trash(bh_base* base);
 
     std::map<bh_base*, size_t> ref_count;       // Count references to bh_base
 
