@@ -31,7 +31,7 @@ namespace bxx {
 //
 //
 template <typename T>           // Default constructor - rank 0
-multi_array<T>::multi_array() : temp(false), base(NULL)
+multi_array<T>::multi_array() : temp_(false), base_(NULL)
 {
     meta.base       = NULL;
     meta.ndim       = 0;
@@ -41,7 +41,7 @@ multi_array<T>::multi_array() : temp(false), base(NULL)
 }
 
 template <typename T>           // Plain shaped constructor
-multi_array<T>::multi_array(const uint64_t rank, const int64_t* sizes) : temp(false), base(NULL)
+multi_array<T>::multi_array(const uint64_t rank, const int64_t* sizes) : temp_(false), base_(NULL)
 {
     meta.base       = NULL;
     meta.ndim       = rank;
@@ -56,11 +56,11 @@ multi_array<T>::multi_array(const uint64_t rank, const int64_t* sizes) : temp(fa
 }
 
 template <typename T>           // base/view constructor
-multi_array<T>::multi_array(bh_base* _base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride) : temp(false), base(NULL)
+multi_array<T>::multi_array(bh_base* base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride) : temp_(false), base_(NULL)
 {
     meta.ndim   = rank;
     meta.start  = start;
-    meta.base   = _base;
+    meta.base   = base;
 
     for(uint64_t i=0; i < rank; i++) {
         meta.shape[i]   = shape[i];
@@ -69,7 +69,7 @@ multi_array<T>::multi_array(bh_base* _base, uint64_t rank, const int64_t start, 
 }
 
 template <typename T>           // Copy constructor
-multi_array<T>::multi_array(const multi_array<T>& operand) : temp(false), base(NULL)
+multi_array<T>::multi_array(const multi_array<T>& operand) : temp_(false), base_(NULL)
 {
     meta = operand.meta;
     meta.base = NULL;
@@ -84,7 +84,7 @@ multi_array<T>::multi_array(const multi_array<T>& operand) : temp(false), base(N
 
 template <typename T>           // Copy constructor
 template <typename OtherT>
-multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp(false), base(NULL)
+multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp_(false), base_(NULL)
 {
     meta.base   = NULL;
     meta.ndim   = operand.meta.ndim;
@@ -101,7 +101,7 @@ multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp(false), b
 
 template <typename T>
 template <typename ...Dimensions>       // Variadic constructor
-multi_array<T>::multi_array(Dimensions... shape) : temp(false), base(NULL)
+multi_array<T>::multi_array(Dimensions... shape) : temp_(false), base_(NULL)
 {
     meta.base   = NULL;
     meta.ndim   = sizeof...(Dimensions);
@@ -120,12 +120,12 @@ template <typename T>                   // Deconstructor
 multi_array<T>::~multi_array()
 {
     if (linked()) {
-        Runtime::instance().ref_count[base] -= 1;       // Decrement ref-count
-        if (0==Runtime::instance().ref_count[base]) {   // De-allocate it
+        Runtime::instance().ref_count[base_] -= 1;       // Decrement ref-count
+        if (0==Runtime::instance().ref_count[base_]) {   // De-allocate it
             bh_free(*this);                             // Send BH_FREE to Bohrium
             bh_discard(*this);                          // Send BH_DISCARD to Bohrium
-            Runtime::instance().trash(base);            // Queue the bh_base for de-allocation
-            Runtime::instance().ref_count.erase(base);  // Remove from ref-count
+            Runtime::instance().trash(base_);            // Queue the bh_base for de-allocation
+            Runtime::instance().ref_count.erase(base_);  // Remove from ref-count
         }
         unlink();
     }
@@ -139,7 +139,7 @@ template <typename T>
 inline
 bh_base* multi_array<T>::getBase() const
 {
-    return base;
+    return base_;
 }
 
 template <typename T>
@@ -313,21 +313,21 @@ template <typename T>
 inline
 bool multi_array<T>::getTemp() const
 {
-    return temp;
+    return temp_;
 }
 
 template <typename T>
 inline
 void multi_array<T>::setTemp(bool temp)
 {
-    this->temp = temp;
+    temp_ = temp;
 }
 
 template <typename T>
 inline
 bool multi_array<T>::linked() const
 {
-    return (base != NULL);
+    return (NULL != base_);
 }
 
 template <typename T>
@@ -356,12 +356,12 @@ void multi_array<T>::link()
     if (linked()) {
         throw std::runtime_error("Dude you are ALREADY linked!");
     }
-    base = new bh_base;
-    Runtime::instance().ref_count[base] += 1;
-    assign_array_type<T>(base);
-    base->nelem = bh_nelements(meta.ndim, meta.shape);
-    base->data  = NULL;
-    meta.base   = base;
+    base_ = new bh_base;
+    Runtime::instance().ref_count[base_] += 1;
+    assign_array_type<T>(base_);
+    base_->nelem = bh_nelements(meta.ndim, meta.shape);
+    base_->data  = NULL;
+    meta.base   = base_;
 }
 
 template <typename T>
@@ -370,8 +370,8 @@ void multi_array<T>::link(bh_base *base_ptr)
     if (linked()) {
         throw std::runtime_error("Dude you are ALREADY linked!");
     }
-    base      = base_ptr;
-    meta.base = base;
+    base_       = base_ptr;
+    meta.base   = base_;
 }
 
 template <typename T>
@@ -382,9 +382,9 @@ bh_base* multi_array<T>::unlink()
     }
 
     bh_base *ret_base;
-    ret_base = base;
+    ret_base = base_;
 
-    base      = NULL;
+    base_      = NULL;
     meta.base = NULL;
     return ret_base;
 }
@@ -396,17 +396,17 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
     std::cout << "Aliasing..." << std::endl;
-    if ((linked()) && (base == rhs.getBase())) {  // Self-aliasing is a NOOP
+    if ((linked()) && (base_ == rhs.getBase())) {  // Self-aliasing is a NOOP
         return *this;
     }
 
     if (linked()) {
-        Runtime::instance().ref_count[base] -= 1;       // Decrement ref-count
-        if (0==Runtime::instance().ref_count[base]) {   // De-allocate it
+        Runtime::instance().ref_count[base_] -= 1;       // Decrement ref-count
+        if (0==Runtime::instance().ref_count[base_]) {   // De-allocate it
             bh_free(*this);                             // Send BH_FREE to Bohrium
             bh_discard(*this);                          // Send BH_DISCARD to Bohrium
-            Runtime::instance().trash(base);            // Queue the bh_base for de-allocation
-            Runtime::instance().ref_count.erase(base);  // Remove from ref-count
+            Runtime::instance().trash(base_);            // Queue the bh_base for de-allocation
+            Runtime::instance().ref_count.erase(base_);  // Remove from ref-count
         }
         unlink();
     }
@@ -420,7 +420,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
         delete &rhs;
     } else {                    // Create another reference to base
         link(rhs.meta.base);
-        Runtime::instance().ref_count[base] +=1;
+        Runtime::instance().ref_count[base_] +=1;
     }
 
     return *this;
@@ -438,12 +438,12 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
 {
     if (linked()) {
-        Runtime::instance().ref_count[base] -= 1;       // Decrement ref-count
-        if (0==Runtime::instance().ref_count[base]) {   // De-allocate it
+        Runtime::instance().ref_count[base_] -= 1;       // Decrement ref-count
+        if (0==Runtime::instance().ref_count[base_]) {   // De-allocate it
             bh_free(*this);                             // Send BH_FREE to Bohrium
             bh_discard(*this);                          // Send BH_DISCARD to Bohrium
-            Runtime::instance().trash(base);            // Queue the bh_base for de-allocation
-            Runtime::instance().ref_count.erase(base);  // Remove from ref-count
+            Runtime::instance().trash(base_);            // Queue the bh_base for de-allocation
+            Runtime::instance().ref_count.erase(base_);  // Remove from ref-count
         }
         unlink();
     }
@@ -521,15 +521,15 @@ multi_array<T>& multi_array<T>::operator()(const void* data) {
                                  "something that does not exist!");
     }
 
-    size_t nbytes = (this->base->nelem) * bh_type_size(this->base->type);
+    size_t nbytes = (base_->nelem) * bh_type_size(base_->type);
 
     // Ensure that we have memory to write to.
     if (!allocated()) {
-        this->base->data = bh_memory_malloc(nbytes);
+        base_->data = bh_memory_malloc(nbytes);
     }
 
     // Copy the data
-    memcpy(this->base->data, data, nbytes);
+    memcpy(base_->data, data, nbytes);
 
     return *this;
 }

@@ -229,8 +229,8 @@ public:
     void sync();
 
 protected:
-    bool temp;
-    bh_base *base;
+    bool temp_;
+    bh_base* base_;
 
 private:
 
