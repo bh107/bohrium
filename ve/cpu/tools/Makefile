@@ -71,6 +71,7 @@ purge_cpu:
 #
 # Remove everything
 purge_all: purge_cpu
+	cd $(ROOT) && git clean -fdx && git clean -fdX
 	rm -rf $(BDIR)
 	rm -rf ~/.local/bin
 	rm -rf ~/.local/include
