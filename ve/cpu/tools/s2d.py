@@ -17,8 +17,8 @@ def eidx_to_coord(eidx, ndim):
     coord = [(eidx / weight[dim]) % shape[dim] for dim in xrange(0, ndim)]
     return coord
 
-nthreads = 3
-shape = [1,3,4]
+nthreads = 32
+shape = [18]
 rank = len(shape)
 nelements = prod(shape)
 nrows = prod(shape[:-1])
@@ -46,12 +46,17 @@ def partition(tid):
 
     work  = nelements / nthreads # Take what can be shared equal
     spill = nelements % nthreads
+
+    begin = end = 0
     if tid < spill:
         work += 1
         begin = tid * work
-    else:
+        end = begin + work -1
+    elif work>0:
         begin = tid * work + spill
-    end = begin + work -1
+        end = begin + work -1
+    else:
+        print "No work!"
 
     coord_begin = eidx_to_coord(begin, rank)
     coord_end = eidx_to_coord(end, rank)
