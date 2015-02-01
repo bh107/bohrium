@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import numpy
 import pprint
 
 def prod(values):
@@ -9,22 +10,26 @@ def prod(values):
     return valp
 
 def rscan(shape):
-    #return [prod(shape[i:-1]) for i in xrange(0, len(shape))]
     hej = [prod(shape[i:]) for i in xrange(0, len(shape))]+[1]
     return hej[1:]
 
 def eidx_to_coord(eidx, ndim):
     coord = [(eidx / weight[dim]) % shape[dim] for dim in xrange(0, ndim)]
-    #print eidx, coord
     return coord
 
 nthreads = 3
-shape = [4,4,4]
+shape = [1,3,4]
 rank = len(shape)
 nelements = prod(shape)
 nrows = prod(shape[:-1])
 spill = nelements % nthreads
 weight = rscan(shape)
+
+w = [1]*rank
+acc = 1
+for i in xrange(rank-1, -1, -1):
+    w[i] = acc
+    acc *= shape[i]
 
 part = [{
     'work': 0,
@@ -39,11 +44,13 @@ def ceilDiv(a, b):
 
 def partition(tid):
 
-    work = nelements / nthreads # Take what can be shared equal
-
-    begin = tid * work
-    if tid==nthreads-1:
-        work += nelements % nthreads
+    work  = nelements / nthreads # Take what can be shared equal
+    spill = nelements % nthreads
+    if tid < spill:
+        work += 1
+        begin = tid * work
+    else:
+        begin = tid * work + spill
     end = begin + work -1
 
     coord_begin = eidx_to_coord(begin, rank)
@@ -57,7 +64,7 @@ def partition(tid):
         'end': end,
         'coord_begin': coord_begin,
         'coord_end': coord_end,
-        'rows_accesed': rows
+        'rows_accessed': rows
     }
 
 for tid in xrange(0, nthreads):
@@ -71,5 +78,5 @@ print "nelements =", nelements
 print "shape =", shape
 print "nrows =", nrows
 print "spill =", spill
-print "weight =", weight
+print "weight =", weight, w
 
