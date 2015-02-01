@@ -1,40 +1,40 @@
 #include <stdlib.h>
-#include <iostream>
+#include <stdio.h>
 #include <omp.h>
 #include <math.h>
 
 using namespace std;
 
-void print_stuff(size_t values[], size_t nvalues)
+void print_stuff(int values[], int nvalues)
 {
-    for(size_t idx=0; idx<nvalues; ++idx) {
-        cout << values[idx];
+    for(int idx=0; idx<nvalues; ++idx) {
+        printf("%d", values[idx]);
         if (idx < nvalues-1) {
-            cout << ", ";
+            printf(", ");
         }
     }
-    cout << endl;
+    printf("\n");
 }
 
-size_t prod(size_t values[], size_t nvalues)
+int prod(int values[], int nvalues)
 {
-    size_t res = 1;
+    int res = 1;
     for(int idx=0; idx<nvalues; ++idx) {
         res *= values[idx];
     }
     return res;
 }
 
-void calc_weight(size_t shape[], size_t weight[], size_t rank)
+void calc_weight(int shape[], int weight[], int rank)
 {
-    size_t acc = 1;
+    int acc = 1;
     for(int idx=rank-1; idx >=0; --idx) {
         weight[idx] = acc;
         acc *= shape[idx];
     }
 }
 
-void eidx_to_coord(size_t eidx, size_t shape[], size_t weight[], size_t rank, size_t coord[])
+void eidx_to_coord(int eidx, int shape[], int weight[], int rank, int coord[])
 {
     for(int idx=0; idx<rank; ++idx) {
         coord[idx] = (eidx / weight[idx]) % shape[idx];
@@ -43,23 +43,23 @@ void eidx_to_coord(size_t eidx, size_t shape[], size_t weight[], size_t rank, si
 
 int main() {
 
-    size_t rank = 3;
-    size_t shape[] = {4,4,4};
-    size_t nelements = prod(shape, rank);
-    size_t weight[rank];
-    size_t start_coord[rank];
-    size_t end_coor[rank];
+    int rank = 3;
+    int shape[] = {4,4,4};
+    int nelements = prod(shape, rank);
+    int weight[rank];
+    int start_coord[rank];
+    int end_coor[rank];
   
     calc_weight(shape, weight, rank);
  
-    size_t nthreads = 3;
-    size_t nrows = prod(shape, rank-1);
+    int nthreads = 3;
+    int nrows = prod(shape, rank-1);
 
-    size_t work_split   = nelements / nthreads;
-    size_t work_spill   = nelements % nthreads;
+    int work_split   = nelements / nthreads;
+    int work_spill   = nelements % nthreads;
 
-    for(size_t tid =0; tid<nthreads; ++tid) {
-        size_t work, begin, end;   // Partition elements
+    for(int tid =0; tid<nthreads; ++tid) {
+        int work, begin, end;   // Partition elements
         //tid = omp_get_thread_num();
         if (tid < work_spill) {
             work = work_split + 1;
@@ -70,29 +70,31 @@ int main() {
         }
         end = begin + work -1; 
                                         // Convert to loop-boundaries
-        size_t coord_begin[rank];
-        size_t coord_end[rank];
-        size_t rows_accessed = size_t(ceil((float(work) / float(shape[rank-1]))));
+        int coord_begin[rank];
+        int coord_end[rank];
+        int rows_accessed = int(ceil((float(work) / float(shape[rank-1]))));
 
         eidx_to_coord(begin, shape, weight, rank, coord_begin);
         eidx_to_coord(end, shape, weight, rank, coord_end); 
-        //cout << "TID: " << tid << endl;
-        cout << "begin = " << begin << endl;
-        cout << "coord_begin: ";
+        
+        printf("\nbegin = %d\n",  begin);
+        printf("coord_begin = ");
         print_stuff(coord_begin, rank);
-        cout << "coord_end: ";
+        printf("coord_end   = ");
         print_stuff(coord_end, rank);
-        cout << "end = " << end << endl;
-        cout << "rows_accessed: " << rows_accessed  << endl;
-        cout << "work:" << work << endl << endl;
+        printf("end = %d\n",  end);
+        printf("rows_accessed = %d\n",  rows_accessed);
+        printf("work = %d\n",  work);
     }
-    cout << "nthreads = " << nthreads << endl;
-    cout << "rank = " << rank << endl;
-    cout << "nelements = " << nelements << endl;
-    cout << "shape = ";
+
+    printf("\n** INFO **\n\n");
+    printf("nthreads = %d\n",  nthreads);
+    printf("rank = %d\n",  rank);
+    printf("nelements = %d\n",  nelements);
+    printf("shape = ");
     print_stuff(shape, rank);
-    cout << "spill = " << work_spill << endl;
-    cout << "weight = ";
+    printf("spill = %d\n",  work_spill);
+    printf("weight = ");
     print_stuff(weight, rank);
     
     return 0;
