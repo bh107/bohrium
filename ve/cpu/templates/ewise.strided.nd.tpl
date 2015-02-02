@@ -5,8 +5,7 @@
 
     int64_t last_dim  = iterspace->ndim-1;
     int64_t shape_ld  = iterspace->shape[last_dim];
-    int64_t last_e    = nelements-1;
-    int64_t cur_e     = 0;
+    int64_t eidx     = 0;
     int64_t j;
 
     {{#OPERAND}}
@@ -19,16 +18,23 @@
     int mthreads = omp_get_max_threads();
     int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
+    int64_t weight[CPU_MAXDIM];
+    int acc = 1;
+    for(int idx=iterspace->ndim-1; idx >=0; --idx) {
+        weight[idx] = acc;
+        acc *= iterspace->shape[idx];
+    }
+
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
-    while (cur_e <= last_e) {
+    while (eidx < nelements) {
         // Reset offsets
         {{#OPERAND}}{{#ARRAY}}
         {{TYPE}}* a{{NR}}_current = a{{NR}}_first;
         {{/ARRAY}}{{/OPERAND}}
 
-        for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
+        for (j=0; j<last_dim; ++j) {           // Compute offset based on coordinate
             {{#OPERAND}}{{#ARRAY}}
             a{{NR}}_current += coord[j] * a{{NR}}_stride[j];
             {{/ARRAY}}{{/OPERAND}}
@@ -43,16 +49,10 @@
             a{{NR}}_current += a{{NR}}_stride_ld;
             {{/ARRAY}}{{/OPERAND}}
         }
-        cur_e += shape_ld;
+        eidx += shape_ld;
 
-        // coord[last_dim] is never used, only all the other coord[dim!=last_dim]
-        for (j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
-            coord[j]++;
-            if (coord[j] < iterspace->shape[j]) {      // Still within this dimension
-                break;
-            } else {                        // Reached the end of this dimension
-                coord[j] = 0;               // Reset coordinate
-            }                               // Loop then continues to increment the next dimension
+        for (j=0; j < last_dim; ++j) {
+            coord[j] = (eidx / weight[j]) % iterspace->shape[j];
         }
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
