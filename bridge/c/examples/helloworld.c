@@ -50,9 +50,10 @@ void compute()
         printf("\n");
     }
 
-    // And clean up what has not been auto-cleaned
-    bh_multi_array_float32_destroy(output);
+    // Clean up anything that was allocated
+    bh_multi_array_float32_destroy(a);
     bh_multi_array_float32_destroy(b);
+    bh_multi_array_float32_destroy(output);
     bh_multi_array_uint32_destroy(r_flat);
 }
 

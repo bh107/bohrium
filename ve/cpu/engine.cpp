@@ -28,7 +28,9 @@ Engine::Engine(
     const bool jit_enabled,
     const bool jit_fusion,
     const bool jit_dumpsrc,
-    const bool dump_rep)
+    const bool dump_rep,
+    const thread_binding binding,
+    const size_t mthreads)
 : compiler_cmd(compiler_cmd),
     template_directory(template_directory),
     kernel_directory(kernel_directory),
@@ -42,12 +44,14 @@ Engine::Engine(
     storage(object_directory, kernel_directory),
     specializer(template_directory),
     compiler(compiler_cmd),
+    thread_control(binding, mthreads),
     exec_count(0)
 {
     bh_vcache_init(vcache_size);    // Victim cache
     if (preload) {
         storage.preload();
     }
+    thread_control.bind_threads();
 }
 
 Engine::~Engine()
@@ -67,6 +71,8 @@ string Engine::text()
     ss << "  BH_VE_CPU_JIT_ENABLED="    << this->jit_enabled  << endl;    
     ss << "  BH_VE_CPU_JIT_FUSION="     << this->jit_fusion   << endl;
     ss << "  BH_VE_CPU_JIT_DUMPSRC="    << this->jit_dumpsrc  << endl;
+    ss << "  BH_VE_CPU_BIND="           << this->thread_control.get_binding() << endl;
+    ss << "  BH_VE_CPU_MTHREADS="       << this->thread_control.get_mthreads() << endl;
     ss << "}" << endl;
     
     ss << "Attributes {" << endl;
@@ -185,7 +191,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             //
             // Execute block handling array operations.
             // 
-            DEBUG(TAG, "EXECUTING SYMBOL="<< block.symbol());
+            DEBUG(TAG, "EXECUTING " << block.text());
             storage.funcs[block.symbol()](block.operands(), &block.iterspace());
 
             break;
@@ -289,7 +295,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     //
     // Execute block handling array operations.
     // 
-    DEBUG(TAG, "EXECUTING SYMBOL="<< block.symbol());
+    DEBUG(TAG, "EXECUTING "<< block.text());
     storage.funcs[block.symbol()](block.operands(), &iterspace);
 
     //

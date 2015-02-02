@@ -358,11 +358,6 @@ void Runtime::typecheck<BH_ADD_ACCUMULATE, uint8_t, uint8_t, int64_t>(void) { }
 
 template <>
 inline
-void Runtime::typecheck<BH_ADD_REDUCE, bool, bool, int64_t>(void) { }
-
-
-template <>
-inline
 void Runtime::typecheck<BH_ADD_REDUCE, std::complex<double> , std::complex<double> , int64_t>(void) { }
 
 
@@ -2803,7 +2798,17 @@ void Runtime::typecheck<BH_SQRT, float, float>(void) { }
 
 template <>
 inline
+void Runtime::typecheck<BH_SQRT, float, int32_t>(void) { }
+
+
+template <>
+inline
 void Runtime::typecheck<BH_SQRT, double, double>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SQRT, double, int64_t>(void) { }
 
 
 template <>
