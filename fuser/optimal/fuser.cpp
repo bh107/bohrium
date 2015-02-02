@@ -344,6 +344,24 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, GraphD &output, FuseCache &ca
         }
     }
 
+    //Check for a preloaded initial condition
+    const char *t = getenv("BH_FUSER_OPTIMAL_PRELOAD");
+    unsigned int preload_offset=0;
+    if(t != NULL)
+    {
+        BOOST_FOREACH(const char &c, string(t))
+        {
+            mask[preload_offset++] = lexical_cast<bool>(c);
+            if(preload_offset == mask.size())
+                break;
+        }
+        cout << "Preloaded path (" << preload_offset << "): ";
+        for(unsigned int j=0; j<preload_offset; ++j)
+            cout << mask[j] << ", ";
+        cout << endl;
+        --preload_offset;
+    }
+
     Solver solver(bhir, dag, edges2explore, cache);
     if(mask.size() > 100)
     {
@@ -353,8 +371,8 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, GraphD &output, FuseCache &ca
     else
     {
         cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-        solver.branch_n_bound(mask, 0, false);
-        solver.branch_n_bound(mask, 0, true);
+        solver.branch_n_bound(mask, preload_offset, false);
+        solver.branch_n_bound(mask, preload_offset, true);
     }
     output = solver.best_dag;
 }
