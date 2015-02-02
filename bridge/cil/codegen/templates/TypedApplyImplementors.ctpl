@@ -30,10 +30,10 @@ namespace NumCIL.Bohrium
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
         public static void Random(ma_${bh_ctype} target)
         {
-            var len = target.Base.Size;
-            var tmp = PInvoke.bh_multi_array_uint64_new_random123((ulong)len, 0u, 0u);
-            var view = PInvoke.bh_multi_array_${bh_ctype}_new_from_view(target.Base, 1, 0, new long[] { len }, new long[] { 1 });
-            PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+            var len = target.DataSize;
+            using(var view = PInvoke.bh_multi_array_${bh_ctype}_new_view(target, 1, 0, new long[] { len }, new long[] { 1 }))
+            using (var tmp = PInvoke.bh_multi_array_uint64_new_random123((ulong)len, 0u, 0u))
+                PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
         }
 %end for
     }
@@ -43,8 +43,8 @@ namespace NumCIL.Bohrium
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
         public static void Range(ma_${bh_ctype} target)
         {
-            var len = target.Base.Size;
-            var view = PInvoke.bh_multi_array_${bh_ctype}_new_from_view(target.Base, 1, 0, new long[] { len }, new long[] { 1 });
+            var len = target.DataSize;
+            using(var view = PInvoke.bh_multi_array_${bh_ctype}_new_view(target, 1, 0, new long[] { len }, new long[] { 1 }))
             using(var tmp = PInvoke.bh_multi_array_uint64_new_range((ulong)len))
                 PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
         }

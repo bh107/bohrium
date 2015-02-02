@@ -83,17 +83,12 @@ namespace NumCIL.Bohrium
         {
             if (!m_array.IsAllocated)
             {
+                m_array = PInvoke.bh_multi_array_${bh_ctype}_new_empty(1, new long[] { m_size });
                 if (m_data == null)
                 {
                     //Console.WriteLine("Creating data in C land");
 
                     // No CIL allocation, create a new multi-array
-                    m_array = PInvoke.bh_multi_array_${bh_ctype}_new_from_base(
-                        PInvoke.bh_multi_array_${bh_ctype}_create_base(
-                            IntPtr.Zero, m_size
-                        )
-                    );
-
                     m_dirty = true;
                 }
                 else
@@ -102,11 +97,7 @@ namespace NumCIL.Bohrium
 
                     // Existing CIL allocation, wrap it
                     m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
-                    m_array = PInvoke.bh_multi_array_${bh_ctype}_new_from_base(
-                        PInvoke.bh_multi_array_${bh_ctype}_create_base(
-                            m_handle.AddrOfPinnedObject(), m_size
-                        )
-                    );
+                    m_array.Data = m_handle.AddrOfPinnedObject();
                 }
             }
 
@@ -138,7 +129,6 @@ namespace NumCIL.Bohrium
 
             if (m_array.IsAllocated)
             {
-                var bs = m_array.Base;
                 if (m_data == null)
                 {
                     //Console.WriteLine("Copy data from C land");
@@ -146,7 +136,7 @@ namespace NumCIL.Bohrium
                     //In this case, data resides in C land, 
                     // so we copy it back to CIL and free it in C land
                     m_data = new ${bh_atype}[m_size];
-                    var ptr = bs.Data;
+                    var ptr = m_array.Data;
                     
                     if (ptr != IntPtr.Zero) 
                         Utility.WritePointerToArray(ptr, m_data);
@@ -161,7 +151,7 @@ namespace NumCIL.Bohrium
                     // release the array and unpin it
                     Console.WriteLine("Release data in C land");
 
-                    bs.Data = IntPtr.Zero;
+                    m_array.Data = IntPtr.Zero;
                     m_handle.Free();
                     m_array.Dispose();
                 }
@@ -205,8 +195,7 @@ namespace NumCIL.Bohrium
 
                     //Console.WriteLine("array is {0}", m_array.AsString());
 
-                    var bs = m_array.Base;
-                    var ptr = bs.Data;
+                    var ptr = m_array.Data;
                     if (ptr == IntPtr.Zero)
                         throw new InvalidOperationException("The data pointer was null");
 
@@ -230,8 +219,7 @@ namespace NumCIL.Bohrium
                     if (index < 0 || index >= m_size)
                         throw new ArgumentOutOfRangeException("index");
 
-                    var bs = m_array.Base;
-                    var ptr = bs.Data;
+                    var ptr = m_array.Data;
                     if (ptr == IntPtr.Zero)
                         throw new InvalidOperationException("The data pointer was null");
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-make purge_ko install
+make purge_krn install
 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_JIT_FUSION=1 python ~/bohrium/test/numpy/numpytest.py
 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_JIT_FUSION=0 python ~/bohrium/test/numpy/numpytest.py
 

@@ -217,10 +217,14 @@ public:
     multi_array& operator--(int);
 
     void link();                            // Bohrium Runtime Specifics
-    void link(bh_base *base_ptr);           // Bohrium Runtime Specifics
+    void link(bh_base* base);               // Bohrium Runtime Specifics
     bh_base* unlink();
 
     bh_base* getBase() const;
+
+    void* getBaseData(void);                // These are NOT for the faint of heart!
+    void setBaseData(void* data);           // These are only intended for the C-bridge.
+
     bool getTemp() const;
     void setTemp(bool temp);
     bool linked() const;
@@ -229,10 +233,10 @@ public:
     void sync();
 
 protected:
-    bool temp;
-    bh_base *base;
+    bool temp_;
 
 private:
+    void reset_meta();						// Helper, shared among constructors
 
 };
 
@@ -308,7 +312,9 @@ public:
     template <typename T>
     multi_array<T>& temp_view(multi_array<T>& base);
 
-    void trash(bh_base *base_ptr);
+    void trash(bh_base* base);
+
+    std::map<bh_base*, size_t> ref_count;       // Count references to bh_base
 
 private:
                                                 // Bohrium
@@ -322,9 +328,8 @@ private:
     bh_instruction  queue[BH_CPP_QUEUE_MAX];    // Bytecode queue
     size_t          ext_in_queue;
     size_t          queue_size;
-                                                // DSEL stuff
-    std::list<bh_base*> garbage;                // NOTE: This is probably deprecated with bh_base...
-                                                // Collection of bh_base which will
+
+    std::list<bh_base*> garbage;                // Collection of bh_base which will
                                                 // be deleted when the current batch is flushed.
 
     Runtime();                                  // Ensure no external instantiation.

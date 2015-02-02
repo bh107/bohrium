@@ -71,6 +71,7 @@ purge_cpu:
 #
 # Remove everything
 purge_all: purge_cpu
+	cd $(ROOT) && git clean -fdx && git clean -fdX
 	rm -rf $(BDIR)
 	rm -rf ~/.local/bin
 	rm -rf ~/.local/include
@@ -84,7 +85,7 @@ purge_all: purge_cpu
 #
 reset_krn: purge_krn install
 reset_cpu: purge_cpu install
-reset_all: purge_all install
+purge_install: purge_cpu purge_all clean gen install
 
 #
 # "Install the cpu-engine
