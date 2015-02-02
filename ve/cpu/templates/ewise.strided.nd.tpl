@@ -19,14 +19,13 @@
         acc *= iterspace->shape[idx];
     }
 
-    int64_t eidx = 0;
-    while (eidx < nelements) {
+    for(int64_t eidx=0; eidx<nelements; eidx+=shape_ld) {
 
         {{#OPERAND}}{{#ARRAY}}
         {{TYPE}}* a{{NR}}_current = a{{NR}}_first;
         {{/ARRAY}}{{/OPERAND}}
         for (int64_t dim=0; dim < last_dim; ++dim) {    // offset from coord
-            int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
+            const int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
             {{#OPERAND}}{{#ARRAY}}
             a{{NR}}_current += coord * a{{NR}}_stride[dim];
             {{/ARRAY}}{{/OPERAND}}
@@ -41,7 +40,6 @@
             a{{NR}}_current += a{{NR}}_stride_ld;
             {{/ARRAY}}{{/OPERAND}}
         }
-        eidx += shape_ld;
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
 }
