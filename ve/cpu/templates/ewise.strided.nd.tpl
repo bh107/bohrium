@@ -19,7 +19,7 @@
         acc *= iterspace->shape[idx];
     }
 
-    #pragma omp parallel for schedule(static, shape_ld)
+    #pragma omp parallel for schedule(static)
     for(int64_t eidx=0; eidx<nelements; eidx+=shape_ld) {
 
         {{#OPERAND}}{{#ARRAY}}
