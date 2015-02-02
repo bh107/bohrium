@@ -2,10 +2,8 @@
 // Elementwise operation on strided arrays of any dimension/rank.
 {
     int64_t nelements = iterspace->nelem;
-
     int64_t last_dim  = iterspace->ndim-1;
     int64_t shape_ld  = iterspace->shape[last_dim];
-    int64_t eidx      = 0;
 
     {{#OPERAND}}
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
@@ -21,19 +19,16 @@
         acc *= iterspace->shape[idx];
     }
 
-    int64_t coord[CPU_MAXDIM];
-    memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
-
+    int64_t eidx = 0;
     while (eidx < nelements) {
-        for (int64_t dim=0; dim < last_dim; ++dim) {    // coord from eidx
-            coord[dim] = (eidx / weight[dim]) % iterspace->shape[dim];
-        }
+
         {{#OPERAND}}{{#ARRAY}}
         {{TYPE}}* a{{NR}}_current = a{{NR}}_first;
         {{/ARRAY}}{{/OPERAND}}
         for (int64_t dim=0; dim < last_dim; ++dim) {    // offset from coord
+            int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
             {{#OPERAND}}{{#ARRAY}}
-            a{{NR}}_current += coord[dim] * a{{NR}}_stride[dim];
+            a{{NR}}_current += coord * a{{NR}}_stride[dim];
             {{/ARRAY}}{{/OPERAND}}
         }
 
