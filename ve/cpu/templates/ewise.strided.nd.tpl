@@ -1,15 +1,15 @@
 //
 // Elementwise operation on strided arrays of any dimension/rank.
 {
-    int64_t nelements = iterspace->nelem;
-    int64_t last_dim  = iterspace->ndim-1;
-    int64_t shape_ld  = iterspace->shape[last_dim];
+    const int64_t nelements = iterspace->nelem;
+    const int64_t last_dim  = iterspace->ndim-1;
+    const int64_t shape_ld  = iterspace->shape[last_dim];
 
     {{#OPERAND}}
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
     {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
     {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-    {{#ARRAY}}int64_t  a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];{{/ARRAY}}
+    {{#ARRAY}}int64_t a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];{{/ARRAY}}
     {{/OPERAND}}
 
     int64_t weight[CPU_MAXDIM];

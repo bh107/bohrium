@@ -1,25 +1,25 @@
 //
 // Elementwise operation on two-dimensional arrays using strided indexing
 {
-    int64_t shape_ld  = iterspace->shape[1];
-    int64_t shape_sld = iterspace->shape[0];
+    const int64_t shape_ld  = iterspace->shape[1];
+    const int64_t shape_sld = iterspace->shape[0];
 
     {{#OPERAND}}{{#ARRAY}}
-    int64_t a{{NR}}_stride_ld   = a{{NR}}_stride[1];
-    int64_t a{{NR}}_stride_sld  = a{{NR}}_stride[0];
+    const int64_t a{{NR}}_stride_ld   = a{{NR}}_stride[1];
+    const int64_t a{{NR}}_stride_sld  = a{{NR}}_stride[0];
 
-    int64_t a{{NR}}_rewind_ld   = shape_ld * a{{NR}}_stride_ld;
+    const int64_t a{{NR}}_rewind_ld   = shape_ld * a{{NR}}_stride_ld;
     {{/ARRAY}}{{/OPERAND}}
 
-    int mthreads = omp_get_max_threads();
-    int64_t nworkers = shape_sld > mthreads ? mthreads : 1;
-    int64_t work_split= shape_sld / nworkers;
-    int64_t work_spill= shape_sld % nworkers;
+    const int mthreads = omp_get_max_threads();
+    const int64_t nworkers = shape_sld > mthreads ? mthreads : 1;
+    const int64_t work_split= shape_sld / nworkers;
+    const int64_t work_spill= shape_sld % nworkers;
 
     #pragma omp parallel num_threads(nworkers)
     {
-        int tid      = omp_get_thread_num();        // Thread info
-        int nthreads = omp_get_num_threads();
+        const int tid      = omp_get_thread_num();  // Thread info
+        const int nthreads = omp_get_num_threads();
 
         int64_t work=0, work_offset=0, work_end=0;  // Work distribution
         if (tid < work_spill) {
@@ -35,7 +35,7 @@
         {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
         {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
         {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-        {{#ARRAY}}{{TYPE}} *a{{NR}}_current = a{{NR}}_first + (work_offset * a{{NR}}_stride_sld);{{/ARRAY}}
+        {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first + (work_offset * a{{NR}}_stride_sld);{{/ARRAY}}
         {{/OPERAND}}
 
         for(int64_t j=work_offset; j<work_end; ++j) {

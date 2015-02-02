@@ -3,22 +3,22 @@
 //       dimension-based optimizations
 //       loop collapsing...
 {
-    int64_t nelements = iterspace->nelem;
+    const int64_t nelements = iterspace->nelem;
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
 
-    int64_t last_e      = nelements-1;
-    int64_t shape_axis  = iterspace->shape[axis];
-    int64_t ndim        = iterspace->ndim;
+    const int64_t last_e      = nelements-1;
+    const int64_t shape_axis  = iterspace->shape[axis];
+    const int64_t ndim        = iterspace->ndim;
 
     {{#OPERAND}}
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
     {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
     {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-    {{#ARRAY}}int64_t  a{{NR}}_stride_axis = a{{NR_OUTPUT}}_stride[axis];{{/ARRAY}}
+    {{#ARRAY}}int64_t a{{NR}}_stride_axis = a{{NR_OUTPUT}}_stride[axis];{{/ARRAY}}
     {{/OPERAND}}
 
-    int mthreads = omp_get_max_threads();
-    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+    const int mthreads = omp_get_max_threads();
+    const int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
