@@ -19,6 +19,7 @@
         acc *= iterspace->shape[idx];
     }
 
+    #pragma omp parallel for
     for(int64_t eidx=0; eidx<nelements; eidx+=shape_ld) {
 
         {{#OPERAND}}{{#ARRAY}}
