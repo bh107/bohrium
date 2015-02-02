@@ -1,9 +1,9 @@
 //
 // Elementwise operation on strided arrays of any dimension/rank.
 {
-    const int64_t nelements = iterspace->nelem;
-    const int64_t last_dim  = iterspace->ndim-1;
-    const int64_t shape_ld  = iterspace->shape[last_dim];
+    int64_t nelements = iterspace->nelem;
+    int64_t last_dim  = iterspace->ndim-1;
+    int64_t shape_ld  = iterspace->shape[last_dim];
 
     {{#OPERAND}}
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
@@ -20,22 +20,27 @@
     }
 
     #pragma omp parallel for schedule(static)
-    for(int64_t eidx=0; eidx<nelements; ++eidx) {
+    for(int64_t eidx=0; eidx<nelements; eidx+=shape_ld) {
 
         {{#OPERAND}}{{#ARRAY}}
         {{TYPE}}* a{{NR}}_current = a{{NR}}_first;
         {{/ARRAY}}{{/OPERAND}}
-        
-        for (int64_t dim=0; dim <= last_dim; ++dim) {
-            const int64_t dim_position = (eidx / weight[dim]) % iterspace->shape[dim];
+        for (int64_t dim=0; dim < last_dim; ++dim) {    // offset from coord
+            const int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
             {{#OPERAND}}{{#ARRAY}}
-            a{{NR}}_current += dim_position * a{{NR}}_stride[dim];
+            a{{NR}}_current += coord * a{{NR}}_stride[dim];
             {{/ARRAY}}{{/OPERAND}}
         }
 
-        {{#OPERATORS}}
-        {{OPERATOR}};
-        {{/OPERATORS}}
+        for (int64_t iidx=0; iidx < shape_ld; iidx++) { // Execute array-operations
+            {{#OPERATORS}}
+            {{OPERATOR}};
+            {{/OPERATORS}}
+
+            {{#OPERAND}}{{#ARRAY}}
+            a{{NR}}_current += a{{NR}}_stride_ld;
+            {{/ARRAY}}{{/OPERAND}}
+        }
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
 }
