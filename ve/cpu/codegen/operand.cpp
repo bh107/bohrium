@@ -63,12 +63,14 @@ string Operand::stride(void)
 }
 
 string Operand::layout(void) {
-    return operand_.layout;
+    // operand_.layout
+    return "";
 }
 
 string Operand::etype(void)
 {
-    return operand_.etype;
+    //operand_.etype
+    return "";
 }
 
 }}}}
