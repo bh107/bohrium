@@ -5,20 +5,20 @@
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
     {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
     {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-    {{#ARRAY}}{{TYPE}} *a{{NR}}_current = a{{NR}}_first;{{/ARRAY}}
+    {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first;{{/ARRAY}}
     {{/OPERAND}}
 
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
     {{TYPE_AXIS}} other_axis = (axis==0) ? 1 : 0;
 
-    int64_t nelements   = iterspace->shape[other_axis];
-    int mthreads        = omp_get_max_threads();
-    int64_t nworkers    = nelements > mthreads ? mthreads : 1;
+    const int64_t nelements   = iterspace->shape[other_axis];
+    const int mthreads        = omp_get_max_threads();
+    const int64_t nworkers    = nelements > mthreads ? mthreads : 1;
 
     #pragma omp parallel for num_threads(nworkers)
     for(int64_t j=0; j<iterspace->shape[other_axis]; ++j) {
         
-        {{TYPE_INPUT}} *tmp_current = a{{NR_FINPUT}}_first + \
+        {{TYPE_INPUT}}* tmp_current = a{{NR_FINPUT}}_first + \
                                       a{{NR_FINPUT}}_stride[other_axis] * j;
 
         {{TYPE_INPUT}} state = *tmp_current;                   // Scalar-temp 

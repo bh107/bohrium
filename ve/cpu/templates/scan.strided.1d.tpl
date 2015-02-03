@@ -5,14 +5,14 @@
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
     {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
     {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-    {{#ARRAY}}{{TYPE}} *a{{NR}}_current = a{{NR}}_first;{{/ARRAY}}
+    {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first;{{/ARRAY}}
     {{/OPERAND}}
 
     {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
 
-    int64_t nelements = iterspace->shape[axis];
-    int mthreads = omp_get_max_threads();
-    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+    const int64_t nelements = iterspace->shape[axis];
+    const int mthreads = omp_get_max_threads();
+    const int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
     {{TYPE_INPUT}} state = ({{TYPE_INPUT}}){{NEUTRAL_ELEMENT}};
     for(int64_t j=0; j<iterspace->shape[axis]; ++j) {

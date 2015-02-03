@@ -1,0 +1,683 @@
+rm -rf ~/.local/share/bohrium/templates
+rm -rf ~/.local/var/bohrium/kernels
+rm -rf ~/.local/var/bohrium/objects
+mkdir -p ../../../ve/cpu/bdir
+cd ../../../ve/cpu/bdir && cmake ../../.. && make && make install
+-- CMAKE_BUILD_TYPE: Debug
+-- USE_CXX98: false
+-- Benchmark-dir: 
+-- Python found: /usr/bin/python
+-- Boost version: 1.54.0
+-- Found the following Boost libraries:
+--   serialization
+--   filesystem
+--   system
+-- Could NOT find FFTW (missing:  FFTW_LIBRARIES FFTW_INCLUDES) 
+-- Path of mono: /usr/bin/mono
+-- Path of gmcs: /usr/bin/gmcs
+-- Path of xbuild: /usr/bin/xbuild
+-- Path of gacutil: /usr/bin/gacutil
+-- Path of mono: /usr/bin/mono
+-- Path of gmcs: /usr/bin/gmcs
+-- Path of xbuild: /usr/bin/xbuild
+-- Path of gacutil: /usr/bin/gacutil
+-- Compiler flags:
+-- Compiler cxx debug flags:-g
+-- Compiler cxx release flags:-O3 -DNDEBUG
+-- Compiler cxx min size flags:-Os -DNDEBUG
+-- Compiler cxx flags: -std=gnu++0x -Wall
+-- 
+-- The following RECOMMENDED packages have been found:
+
+ * OpenMP , OpenMP parallel library and compiler directives , <www.openmp.org>
+   VE-CPU use it for multi-core parallelization.
+ * MPI , Message Passing Interface , <www.mpi-forum.org>
+   Enables the Cluster-VEM.
+ * OpenCL , Open Computing Language , <www.khronos.org/opencl/>
+   Enables the GPU-VE.
+ * OpenGL , Open Graphics Library , <www.opengl.org>
+   Required by OpenCL/GPU-VE.
+ * NumPy , Numerical Python , <www.numpy.org>
+   Enables the Python/NumPy bridge (together with Python and SWIG).
+ * SWIG , Simplified Wrapper and Interface Generator , <www.swig.org>
+   Enables the Python/NumPy bridge (together with Python and NumPy).
+ * Cython , C-Extensions for Python , <cython.org>
+   Enables the Python/NumPy bridge (together with Python and SWIG).
+ * Mono , An open source implementation the CLR , <www.mono-project.com>
+   Enables the NumCIL package
+   Enables the NumCIL package
+
+-- The following REQUIRED packages have been found:
+
+ * Boost , Boost C++ source libraries , <www.boost.org>
+   Boost is required to build Bohrium
+ * Cheetah , Cheetah is a template module for Python , <www.cheetahtemplate.org>
+   Cheetah is required to build Bohrium
+ * CTemplate , Template language for C++ , <code.google.com/p/ctemplate/>
+   Used by CPU-VE for code generation.
+ * HWLOC , hardware locality (hwloc) , <http://www.open-mpi.org/projects/hwloc/>
+   VE-CPU use it to control thread affinity.
+ * PythonInterp , Python Programming Language , <www.python.org>
+   Python is required to build Bohrium
+
+-- The following RECOMMENDED packages have not been found:
+
+ * FFTW , Fastest Fourier Transform in the West , <www.fftw.org>
+   Enables the FFTW extended method
+
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/safl/bohrium/ve/cpu/bdir
+make[1]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[2]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[  2%] Built target iniparser
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 17%] Built target bh
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 18%] Built target bh_vem_node
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 29%] Built target bh_vem_proxy
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 30%] Built target bh_proxy_client
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 46%] Built target bh_ve_cpu
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 48%] Built target bh_filter_pprint
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 50%] Built target bh_filter_fuseprinter
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 52%] Built target bh_filter_pricer
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 54%] Built target bh_fuser_singleton
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 55%] Built target bh_fuser_topological
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 56%] Built target bh_fuser_gentle
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 58%] Built target bh_fuser_optimal
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 60%] Built target bh_fuser_greedy
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 61%] Built target bh_matmul
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 72%] Built target bh_vem_cluster
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 73%] Built target bh_vem_cluster_slave
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 86%] Built target bh_ve_gpu
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 87%] Built target bh_hello_world_cpp
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 90%] Built target bhc
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 91%] Built target bh_hello_world_c
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+running build_ext
+skipping '/home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/random123.c' Cython extension (up-to-date)
+skipping '/home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/_util.c' Cython extension (up-to-date)
+skipping '/home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/ndarray.c' Cython extension (up-to-date)
+running install
+running build
+running build_ext
+skipping 'random123.c' Cython extension (up-to-date)
+skipping '_util.c' Cython extension (up-to-date)
+skipping 'ndarray.c' Cython extension (up-to-date)
+running build_py
+running install_lib
+running install_egg_info
+Removing /home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/lib/python2.7/site-packages/Bohrium-0.2-py2.7.egg-info
+Writing /home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/lib/python2.7/site-packages/Bohrium-0.2-py2.7.egg-info
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 91%] Built target bhpy
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 98%] Built target numcil
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[100%] Built target numcil_bohrium
+make[2]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+make[1]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+make[1]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[2]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[  2%] Built target iniparser
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 17%] Built target bh
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 18%] Built target bh_vem_node
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 29%] Built target bh_vem_proxy
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 30%] Built target bh_proxy_client
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 46%] Built target bh_ve_cpu
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 48%] Built target bh_filter_pprint
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 50%] Built target bh_filter_fuseprinter
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 52%] Built target bh_filter_pricer
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 54%] Built target bh_fuser_singleton
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 55%] Built target bh_fuser_topological
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 56%] Built target bh_fuser_gentle
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 58%] Built target bh_fuser_optimal
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 60%] Built target bh_fuser_greedy
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 61%] Built target bh_matmul
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 72%] Built target bh_vem_cluster
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 73%] Built target bh_vem_cluster_slave
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 86%] Built target bh_ve_gpu
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 87%] Built target bh_hello_world_cpp
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 90%] Built target bhc
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 91%] Built target bh_hello_world_c
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+running build_ext
+skipping '/home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/random123.c' Cython extension (up-to-date)
+skipping '/home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/_util.c' Cython extension (up-to-date)
+skipping '/home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/ndarray.c' Cython extension (up-to-date)
+running install
+running build
+running build_ext
+skipping 'random123.c' Cython extension (up-to-date)
+skipping '_util.c' Cython extension (up-to-date)
+skipping 'ndarray.c' Cython extension (up-to-date)
+running build_py
+running install_lib
+running install_egg_info
+Removing /home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/lib/python2.7/site-packages/Bohrium-0.2-py2.7.egg-info
+Writing /home/safl/bohrium/ve/cpu/bdir/bridge/npbackend/lib/python2.7/site-packages/Bohrium-0.2-py2.7.egg-info
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 91%] Built target bhpy
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[ 98%] Built target numcil
+make[3]: Entering directory `/home/safl/bohrium/ve/cpu/bdir'
+make[3]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+[100%] Built target numcil_bohrium
+make[2]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+Install the project...
+-- Install configuration: "Debug"
+-- Installing: /home/safl/.local/share/bohrium/include/Random123
+-- Installing: /home/safl/.local/share/bohrium/include/Random123/features
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/sse.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/pgccfeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/openclfeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/open64features.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/xlcfeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/iccfeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/sunprofeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/clangfeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/nvccfeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/msvcfeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/compilerfeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/features/gccfeatures.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/array.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/gsl_microrng.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/ReinterpretCtr.hpp
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/aes.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/philox.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/MicroURNG.hpp
+-- Installing: /home/safl/.local/share/bohrium/include/Random123/conventional
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/conventional/Engine.hpp
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/conventional/gsl_cbrng.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/ars.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/Random123/threefry.h
+-- Installing: /home/safl/.local/share/bohrium/test
+-- Installing: /home/safl/.local/share/bohrium/test/numpy
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_primitives.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/numpytest.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_array_create.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_sor.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_primitives.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_accumulate.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/numpytest.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_ndstencil.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_reduce.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_specials.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_types.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_benchmarks.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_array_create.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_ndstencil.pyc
+-- Installing: /home/safl/.local/share/bohrium/test/numpy/datasets
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/gauss_input-float64-4*4.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/nbody_m-float32-100_vx-float32-100_vy-float32-100_y-float32-100_x-float32-100_vz-float32-100_z-float32-100.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/gauss_input-float64-20*20.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/mxmul_y-float64-500*500_x-float64-500*500.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/snakes_and_ladders_a-float64-101_p-float64-101*101.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/mxmul_y-float32-500*500_x-float32-500*500.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/lu_input-float64-100*100.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/gauss_input-float32-4*4.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/nbody_m-float64-100_vx-float64-100_vy-float64-100_y-float64-100_x-float64-100_vz-float64-100_z-float64-100.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/gauss_input-float32-20*20.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/ndstencil_input-float64-1026.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/ndstencil_input-float64-10*10*18.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/knn_base-float32-1000*10_targets-float32-1000*10.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/black_scholes_input-float32-10000.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/shallow_water_input-float64-20*20.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/lu_input-float32-100*100.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/ndstencil_input-float64-6*6*10*10.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/shallow_water_input-float32-20*20.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/wireworld_input-uint8-1002*1002.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/black_scholes_input-float64-10000.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/gameoflife_input-float64-12*12.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/knn_base-float64-1000*10_targets-float64-1000*10.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/datasets/ndstencil_input-float64-34*34.npz
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_matmul.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_sor.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_specials.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_accumulate.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_views.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_matmul.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_views.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_benchmarks.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_types.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/test/numpy/test_reduce.py
+-- Installing: /home/safl/.local/share/bohrium/test/CIL
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/Unittest.sln
+-- Installing: /home/safl/.local/share/bohrium/test/CIL/UnitTest
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/LogicalTests.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/ComplexTests.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/app.config
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/BasicTests.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/TypeLookupTests.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/CustomTimer.cs
+-- Installing: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Properties
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Properties/AssemblyInfo.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/BenchmarkTests.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Program.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Profiling.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/RepeatTests.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/UnitTest.csproj
+-- Installing: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/kNNSolver.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/nBodySolver.cs
+-- Installing: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/FSharp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/FSharp/Program.fs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/FSharp/TesterFSharp.fsproj
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/FSharp/BlackScholesSolver.fs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/FSharp/TesterFSharp.sln
+-- Installing: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/numcil.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/TesterIronPython.py
+-- Installing: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/cphhpc
+-- Installing: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/cphhpc/signal
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/cphhpc/signal/__init__.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/cphhpc/signal/convolution.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/cphhpc/__init__.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/nbody.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/sobel.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/util.py
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/IronPython/TesterIronPython.pyproj
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/CustomTimer.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/JacobiSolver.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/ShallowWaterSolver.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/test/CIL/UnitTest/Benchmarks/BlackScholesSolver.cs
+-- Installing: /home/safl/.local/share/bohrium/test/cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/assignment.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/reduction.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/slicing.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/operators.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/README
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/function_scope.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/loop_scope.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/broadcasting.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/constructor.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/iterator.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/compound.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/check_collections.hpp
+-- Up-to-date: /home/safl/.local/share/bohrium/test/cpp/Makefile
+-- Installing: /home/safl/.local/share/bohrium/benchmark
+-- Installing: /home/safl/.local/share/bohrium/benchmark/CIL
+-- Installing: /home/safl/.local/share/bohrium/benchmark/CIL/Utilities
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Utilities/Utilities.sln
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Utilities/Timer.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Utilities/Utilites.csproj
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Utilities/AssemblyInfo.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Utilities/CommandLineParser.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Utilities/RunBenchmark.cs
+-- Installing: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp
+-- Installing: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/nbody
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/nbody/AssemblyInfo.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/nbody/Main.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/nbody/nbody.tt
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/nbody/nbody.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/nbody/nbody.sln
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/nbody/nbody.csproj
+-- Installing: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/jacobi
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/jacobi/AssemblyInfo.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/jacobi/jacobi.csproj
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/jacobi/Main.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/jacobi/jacobi.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/jacobi/jacobi.tt
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/jacobi/jacobi.sln
+-- Installing: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/blackscholes
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/blackscholes/AssemblyInfo.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/blackscholes/Main.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/blackscholes/blackscholes.sln
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/blackscholes/blackscholes.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/blackscholes/blackscholes.csproj
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/blackscholes/blackscholes.tt
+-- Installing: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/shallow_water
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/shallow_water/AssemblyInfo.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/shallow_water/Main.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/shallow_water/shallow_water.csproj
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/shallow_water/shallow_water.sln
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/shallow_water/Solver.tt
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/shallow_water/Solver.cs
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/CIL/Csharp/Makefile
+-- Installing: /home/safl/.local/share/bohrium/benchmark/c
+-- Installing: /home/safl/.local/share/bohrium/benchmark/c/bin
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/bin/empty
+-- Installing: /home/safl/.local/share/bohrium/benchmark/c/src
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/fusion.unary.c
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/jacobi.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/black_scholes.c
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/jacobi-tuned.c
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/jacobi.sh
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/synth.c
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/jacobi-vtuned.c
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/heat-eq-jacobi.c
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/jacobi-boost.cc
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/loop.c
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/jacobi-naive.c
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/src/jacobi-simple.c
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/c/Makefile
+-- Installing: /home/safl/.local/share/bohrium/benchmark/chapel
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/chapel/.gitignore
+-- Installing: /home/safl/.local/share/bohrium/benchmark/chapel/src
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/chapel/src/montecarlo.hl.chpl
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/chapel/src/knn.naive.hl.chpl
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/chapel/src/Utils.chpl
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/chapel/src/what.chpl
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/chapel/src/mc.chpl
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/chapel/src/montecarlo.ll.chpl
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/chapel/src/heat_equation.hl.chpl
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/chapel/Makefile
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/Makefile.common
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/bxx
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/core
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/src
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/src/synth_branch.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/src/synth.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/src/fusion.contraction.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/src/jacobi_stencil.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/src/synth_inplace.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/src/black_scholes.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/src/mc.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/src/knn_naive.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/bxx/Makefile
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/blitz
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/blitz/.gitignore
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/blitz/src
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/blitz/src/synth.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/blitz/src/black_scholes.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/blitz/src/mc.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/blitz/Makefile
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/eigen
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/eigen/bin
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/eigen/bin/empty
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/eigen/src
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/eigen/src/synth.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/eigen/src/black_scholes.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/eigen/Makefile
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/armadillo
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/armadillo/bin
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/armadillo/bin/empty
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/armadillo/.gitignore
+-- Installing: /home/safl/.local/share/bohrium/benchmark/cpp/armadillo/src
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/armadillo/src/synth.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/armadillo/src/black_scholes.cpp
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/cpp/armadillo/Makefile
+-- Installing: /home/safl/.local/share/bohrium/benchmark/Python
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/idl_init_fast.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/lbm_3d.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/util.pyc
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/snakes_and_ladders.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/jacobi.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/idl_init_bh.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/mc.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/jacobi_stencil.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/README.rst
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/point27.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/gameoflife.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/black_scholes.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/pricing.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/gauss.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/LMM_swaption_vec.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/mxmul.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/synth_inplace.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/convolve_separate_std.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/lattice_boltzmann_D2Q9.py
+-- Installing: /home/safl/.local/share/bohrium/benchmark/Python/datasets
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/datasets/Hell.jpg
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/sor.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/k_nearest_neighbor.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/nbody.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/convolve_3d.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/ndstencil.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/knn_naive1.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/convolve.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/synth.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/jacobi_fixed.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/heat_equation.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/lbm_2d.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/util.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/idl_init_orig.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/jacobi_solve.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/wireworld.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/synth_strided.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/convolve_2d.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/lu.py
+-- Up-to-date: /home/safl/.local/share/bohrium/benchmark/Python/shallow_water.py
+-- Up-to-date: /home/safl/.local/lib/libbh.so
+-- Up-to-date: /home/safl/.local/lib/libiniparser.so
+-- Up-to-date: /home/safl/.local/lib/libbh_vem_node.so
+-- Up-to-date: /home/safl/.local/lib/libbh_vem_proxy.so
+-- Up-to-date: /home/safl/.local/bin/bh_proxy_client
+-- Up-to-date: /home/safl/.local/lib/libbh_ve_cpu.so
+-- Installing: /home/safl/.local/share/bohrium/templates
+-- Installing: /home/safl/.local/share/bohrium/templates/ewise.strided.3d.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/reduce.strided.3d.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/ewise.strided.1d.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/reduce.strided.1d.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/ewise.strided.2d.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/kernel.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/ewise.strided.nd.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/ewise.cont.nd.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/scan.strided.nd.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/reduce.strided.nd.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/reduce.strided.2d.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/scan.strided.1d.tpl
+-- Installing: /home/safl/.local/share/bohrium/templates/license.tpl
+-- Up-to-date: /home/safl/.local/include/bohrium/tac.h
+-- Installing: /home/safl/.local/var/bohrium/kernels
+-- Installing: /home/safl/.local/var/bohrium/objects
+-- Up-to-date: /home/safl/.local/lib/libbh_filter_pprint.so
+-- Up-to-date: /home/safl/.local/lib/libbh_filter_fuseprinter.so
+-- Up-to-date: /home/safl/.local/lib/libbh_filter_pricer.so
+-- Up-to-date: /home/safl/.local/lib/libbh_fuser_singleton.so
+-- Installing: /home/safl/.local/var/bohrium/fuse_cache
+-- Up-to-date: /home/safl/.local/lib/libbh_fuser_topological.so
+-- Installing: /home/safl/.local/var/bohrium/fuse_cache
+-- Up-to-date: /home/safl/.local/lib/libbh_fuser_gentle.so
+-- Installing: /home/safl/.local/var/bohrium/fuse_cache
+-- Up-to-date: /home/safl/.local/lib/libbh_fuser_optimal.so
+-- Installing: /home/safl/.local/var/bohrium/fuse_cache
+-- Up-to-date: /home/safl/.local/lib/libbh_fuser_greedy.so
+-- Installing: /home/safl/.local/var/bohrium/fuse_cache
+-- Up-to-date: /home/safl/.local/lib/libbh_matmul.so
+-- Up-to-date: /home/safl/.local/lib/libbh_vem_cluster.so
+-- Up-to-date: /home/safl/.local/bin/bh_vem_cluster_slave
+-- Up-to-date: /home/safl/.local/lib/libbh_ve_gpu.so
+-- Installing: /home/safl/.local/share/bohrium/include
+-- Up-to-date: /home/safl/.local/share/bohrium/include/ocl_matmul.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/ocl_random.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/ocl_complex.h
+-- Up-to-date: /home/safl/.local/share/bohrium/include/ocl_integer.h
+-- Installing: /home/safl/.local/include/bxx
+-- Up-to-date: /home/safl/.local/include/bxx/runtime.typechecker.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/iterator.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/operators.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/reduction.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/runtime.broadcast.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/sugar.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/traits.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/runtime.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/generator.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/runtime.operations.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/multi_array.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/slicing.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/scan.hpp
+-- Installing: /home/safl/.local/include/bxx/sugar
+-- Up-to-date: /home/safl/.local/include/bxx/sugar/armadillo.hpp
+-- Up-to-date: /home/safl/.local/include/bxx/bohrium.hpp
+-- Up-to-date: /home/safl/.local/bin/bh_hello_world_cpp
+-- Up-to-date: /home/safl/.local/include/bohrium/bh_c.h
+-- Up-to-date: /home/safl/.local/lib/libbhc.so
+-- Up-to-date: /home/safl/.local/include/bohrium/bh_type.h
+-- Up-to-date: /home/safl/.local/bin/bh_hello_world_c
+-- Installing: /home/safl/.local/./lib
+-- Installing: /home/safl/.local/./lib/python2.7
+-- Installing: /home/safl/.local/./lib/python2.7/site-packages
+-- Installing: /home/safl/.local/./lib/python2.7/site-packages/Bohrium-0.2-py2.7.egg-info
+-- Installing: /home/safl/.local/./lib/python2.7/site-packages/bohrium
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/import_external.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/stdviews.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/_info.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/summations.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/bhc.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/ndarray.so
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/array_create.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/__init__.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/_bhc.so
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/_info.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/random123.so
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/array_create.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/ufunc.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/_util.so
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/_bhmodule.so
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/array_manipulation.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/bhc.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/ufunc.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/array_manipulation.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/__main__.py
+-- Installing: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/interface.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_pygpu.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_chapel.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/interface.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_pygpu.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_bhc.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_numpy.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/__init__.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_numexpr.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_numpy.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_bhc.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_numexpr.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/__init__.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/target/target_chapel.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/__init__.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/linalg.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/setup.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/setup.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/summations.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/stdviews.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/__main__.pyc
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/import_external.py
+-- Up-to-date: /home/safl/.local/./lib/python2.7/site-packages/bohrium/linalg.pyc
+-- Up-to-date: /home/safl/.local/lib/NumCIL.dll
+-- Up-to-date: /home/safl/.local/lib/NumCIL.Unsafe.dll
+-- Up-to-date: /home/safl/.local/lib/NumCIL.Bohrium.dll
+make[1]: Leaving directory `/home/safl/bohrium/ve/cpu/bdir'
+NUMPY
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: None, bohrium: False, size: 100000000*10, elapsed-time: 2.489867
+There are 0 dangling refs.
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: None, bohrium: False, size: 100000000*10, elapsed-time: 2.494082
+There are 0 dangling refs.
+BH-FUSION-MC
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 0.682868
+There are 0 dangling refs.
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 0.539295
+There are 0 dangling refs.
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 0.519299
+There are 0 dangling refs.
+BH-FUSION-SC
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 0.512338
+There are 0 dangling refs.
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 0.518601
+There are 0 dangling refs.
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 0.512878
+There are 0 dangling refs.
+BH-SIJ-MC
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 3.652769
+There are 0 dangling refs.
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 3.406865
+There are 0 dangling refs.
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 3.382370
+There are 0 dangling refs.
+BH-SIJ-SC
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 6.088779
+There are 0 dangling refs.
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 6.095770
+There are 0 dangling refs.
+/home/safl/bohrium/benchmark/Python/synth_strided.py - target: bhc, bohrium: True, size: 100000000*10, elapsed-time: 6.100472
+There are 0 dangling refs.

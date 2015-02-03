@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 include_directories(../../include)
 
-if(NO_VE_GPU)
+if(NO_VE_CPU)
     return()
 endif()
 
@@ -29,7 +29,7 @@ set_package_properties(CTemplate PROPERTIES DESCRIPTION "Template language for C
 set_package_properties(CTemplate PROPERTIES TYPE REQUIRED PURPOSE "Used by CPU-VE for code generation.")
 
 if(CTEMPLATE_FOUND)
-    file(GLOB SRC *.cpp thirdparty/*.cpp)
+    file(GLOB SRC codegen/*.cpp *.cpp thirdparty/*.cpp)
 
     add_library(bh_ve_cpu SHARED ${SRC})
 
@@ -40,6 +40,8 @@ if(CTEMPLATE_FOUND)
 
     include_directories(${CTEMPLATE_INCLUDE_DIR})
     include_directories(${Boost_INCLUDE_DIRS})
+    include_directories("./codegen")
+    include_directories("./")
     set(LIBS ${LIBS} ${CTEMPLATE_LIBRARIES})
     target_link_libraries(bh_ve_cpu ${LIBS})
 
