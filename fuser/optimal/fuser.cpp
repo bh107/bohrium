@@ -237,7 +237,7 @@ public:
             tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
 
             #ifdef VERBOSE
-                if(explore_count%1000 == 0)
+                if(explore_count%10000 == 0)
                 {
                     cout << "[" << explore_count << "] " << "purge count: ";
                     cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
@@ -431,7 +431,7 @@ void fuser(bh_ir &bhir, FuseCache &cache)
         throw logic_error("The kernel_list is not empty!");
 
     BatchHash batch(bhir.instr_list);
-    if(not cache.lookup(batch, bhir, bhir.kernel_list))
+    //if(not cache.lookup(batch, bhir, bhir.kernel_list))
     {
         do_fusion(bhir, cache);
         cache.insert(batch, bhir.kernel_list);
