@@ -61,12 +61,12 @@ void KRN_{{SYMBOL}}(operand_t** args, iterspace_t* iterspace)
     // Argument {{NR}} - [{{#SCALAR}}SCALAR{{/SCALAR}}{{#SCALAR_CONST}}SCALAR_CONST{{/SCALAR_CONST}}{{#SCALAR_TEMP}}SCALAR_TEMP{{/SCALAR_TEMP}}{{#ARRAY}}ARRAY{{/ARRAY}}]
     //
     {{#SCALAR}}
-    const {{TYPE}}* a{{NR}}_first = ARGS_DPTR({{NR}});
+    {{TYPE}}* a{{NR}}_first = ARGS_DPTR({{NR}});
     assert(a{{NR}}_first != NULL);
     {{/SCALAR}}
 
     {{#SCALAR_CONST}}
-    const {{TYPE}}* a{{NR}}_first = ARGS_DPTR({{NR}});
+    {{TYPE}}* a{{NR}}_first = ARGS_DPTR({{NR}});
     assert(a{{NR}}_first != NULL);
     {{/SCALAR_CONST}}
 
@@ -77,7 +77,7 @@ void KRN_{{SYMBOL}}(operand_t** args, iterspace_t* iterspace)
     const int64_t* a{{NR}}_shape  = args[{{NR}}]->shape;
     const int64_t* a{{NR}}_stride = args[{{NR}}]->stride;
 
-    const {{TYPE}}* a{{NR}}_first = ARGS_DPTR({{NR}}) + a{{NR}}_start;
+    {{TYPE}}* a{{NR}}_first = ARGS_DPTR({{NR}}) + a{{NR}}_start;
     assert(a{{NR}}_first != NULL);
     {{/ARRAY}}
 
