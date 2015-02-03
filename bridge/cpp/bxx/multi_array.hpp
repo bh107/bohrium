@@ -95,7 +95,7 @@ multi_array<T>::multi_array(bh_base* base, uint64_t rank, const int64_t start, c
 template <typename T>           // Copy constructor same element type
 multi_array<T>::multi_array(const multi_array<T>& operand) : temp_(false)
 {
-    std::cout << "Copy constructor, same type." << std::endl;
+    //std::cout << "Copy constructor, same type." << std::endl;
     meta = operand.meta;
     meta.base = NULL;
     meta.start = 0;
@@ -111,7 +111,7 @@ template <typename T>           // Copy constructor different element type
 template <typename OtherT>
 multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp_(false)
 {
-    std::cout << "Copy constructor, different type type." << std::endl;
+    //std::cout << "Copy constructor, different type." << std::endl;
     meta.base   = NULL;
     meta.ndim   = operand.meta.ndim;
     meta.start  = 0;
