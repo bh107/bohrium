@@ -71,13 +71,14 @@ void KRN_{{SYMBOL}}(operand_t** args, iterspace_t* iterspace)
     {{/SCALAR_CONST}}
 
     {{#ARRAY}}
+    {{TYPE}}* a{{NR}}_first = ARGS_DPTR({{NR}});
     const int64_t  a{{NR}}_start  = args[{{NR}}]->start;
     const int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
     const int64_t  a{{NR}}_ndim   = args[{{NR}}]->ndim;    
-    const int64_t* a{{NR}}_shape  = args[{{NR}}]->shape;
-    const int64_t* a{{NR}}_stride = args[{{NR}}]->stride;
+    int64_t*       a{{NR}}_shape  = args[{{NR}}]->shape;
+    int64_t*       a{{NR}}_stride = args[{{NR}}]->stride;
 
-    {{TYPE}}* a{{NR}}_first = ARGS_DPTR({{NR}}) + a{{NR}}_start;
+    a{{NR}}_first += a{{NR}}_start;
     assert(a{{NR}}_first != NULL);
     {{/ARRAY}}
 
