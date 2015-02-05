@@ -205,6 +205,8 @@ public:
         //We use the greedy algorithm to find a good initial guess
         GraphDW new_dag(dag);
         fuse_greedy(new_dag, &ignores);
+
+        pprint(new_dag, "greedy.dot");
         best_dag = new_dag.bglD();
         best_cost = dag_cost(best_dag);
 
@@ -341,26 +343,29 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
     set<Vertex> ignores;
     BOOST_FOREACH(Vertex v, vertices(dag.bglD()))
     {
-        if(vertices2explore.find(v) != vertices2explore.end())
+        if(vertices2explore.find(v) == vertices2explore.end())
             ignores.insert(v);
     }
 
     //Check for a preloaded initial condition
-    const char *t = getenv("BH_FUSER_OPTIMAL_PRELOAD");
     unsigned int preload_offset=0;
-    if(t != NULL)
+    if(edges2explore.size() > 10)
     {
-        BOOST_FOREACH(const char &c, string(t))
+        const char *t = getenv("BH_FUSER_OPTIMAL_PRELOAD");
+        if(t != NULL)
         {
-            mask[preload_offset++] = lexical_cast<bool>(c);
-            if(preload_offset == mask.size())
-                break;
+            BOOST_FOREACH(const char &c, string(t))
+            {
+                mask[preload_offset++] = lexical_cast<bool>(c);
+                if(preload_offset == mask.size())
+                    break;
+            }
+            cout << "Preloaded path (" << preload_offset << "): ";
+            for(unsigned int j=0; j<preload_offset; ++j)
+                cout << mask[j] << ", ";
+            cout << endl;
+            --preload_offset;
         }
-        cout << "Preloaded path (" << preload_offset << "): ";
-        for(unsigned int j=0; j<preload_offset; ++j)
-            cout << mask[j] << ", ";
-        cout << endl;
-        --preload_offset;
     }
 
     Solver solver(bhir, dag, edges2explore, cache, ignores);
@@ -449,17 +454,23 @@ void do_fusion(bh_ir &bhir, FuseCache &cache)
             ++component_id;
         }
 
-        //Find the first component with more than one vertex
-        uint64_t comp_id;
-        for(comp_id=0; comp_id < component2vertices.size(); ++comp_id)
+        //Find the smallest component with more than one vertex
+        uint64_t comp_size=num_vertices(dag.bglW())+1;
+        int comp_id=-1;
+        for(uint64_t i=0; i < component2vertices.size(); ++i)
         {
-           if(component2vertices[comp_id].size() > 1)
-               break;
+            const uint64_t size = component2vertices[i].size();
+           if(1 < size and size < comp_size)
+           {
+               comp_size = size;
+               comp_id = i;
+           }
         }
-        if(comp_id >= component2vertices.size())
-            break;//No more singleton components to fuse
+        if(comp_id == -1)
+            break;//No more components to fuse
 
         GraphD output;
+        cout << "Fusing component: " << comp_id << endl;
         fuse_optimal(bhir, dag, component2vertices[comp_id], output, cache);
         assert(num_vertices(output) > 0);
         assert(dag_validate(output));
