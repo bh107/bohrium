@@ -3,6 +3,7 @@ HEADER=$(ROOT)/include/*
 
 BENCH_SRC  = $(wildcard src/*.cpp)
 BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
+BENCHMARKS = black_scholes
 
 CXX=g++
 DEBUG=-g

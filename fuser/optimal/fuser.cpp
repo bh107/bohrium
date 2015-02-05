@@ -181,10 +181,6 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     return make_pair(cost,true);
 }
 
-#ifdef VERBOSE
-int fuser_count=0;
-#endif
-
 /* Private class to find the optimal solution through branch and bound */
 class Solver
 {
@@ -230,7 +226,7 @@ public:
             tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
 
             #ifdef VERBOSE
-                if(explore_count%1000 == 0)
+                if(explore_count%10000 == 0)
                 {
                     cout << "[" << explore_count << "] " << "purge count: ";
                     cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
@@ -266,7 +262,7 @@ public:
                     i.get_filename(filename);
                     ss << "new_best_dag-" << filename << ".dot";
                     cout << "write file: " << ss.str() << endl;
-                    pprint(GraphDW(new_dag), ss.str().c_str());
+                    pprint(best_dag, ss.str().c_str());
                     purge_count += pow(2.0, mask.size()-offset-1);
                 #endif
                 return;
@@ -349,6 +345,24 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
             ignores.insert(v);
     }
 
+    //Check for a preloaded initial condition
+    const char *t = getenv("BH_FUSER_OPTIMAL_PRELOAD");
+    unsigned int preload_offset=0;
+    if(t != NULL)
+    {
+        BOOST_FOREACH(const char &c, string(t))
+        {
+            mask[preload_offset++] = lexical_cast<bool>(c);
+            if(preload_offset == mask.size())
+                break;
+        }
+        cout << "Preloaded path (" << preload_offset << "): ";
+        for(unsigned int j=0; j<preload_offset; ++j)
+            cout << mask[j] << ", ";
+        cout << endl;
+        --preload_offset;
+    }
+
     Solver solver(bhir, dag, edges2explore, cache, ignores);
     if(mask.size() > 100)
     {
@@ -358,8 +372,8 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
     else
     {
         cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-        solver.branch_n_bound(mask, 0, false);
-        solver.branch_n_bound(mask, 0, true);
+        solver.branch_n_bound(mask, preload_offset, false);
+        solver.branch_n_bound(mask, preload_offset, true);
     }
     output = solver.best_dag;
 }
@@ -395,9 +409,6 @@ void set_abort_timer()
 
 void do_fusion(bh_ir &bhir, FuseCache &cache)
 {
-#ifdef VERBOSE
-    ++fuser_count;
-#endif
     set_abort_timer();
 
     vector<bh_ir_kernel> kernel_list;
@@ -464,7 +475,7 @@ void fuser(bh_ir &bhir, FuseCache &cache)
         throw logic_error("The kernel_list is not empty!");
 
     BatchHash batch(bhir.instr_list);
-    if(not cache.lookup(batch, bhir, bhir.kernel_list))
+    //if(not cache.lookup(batch, bhir, bhir.kernel_list))
     {
         do_fusion(bhir, cache);
         cache.insert(batch, bhir.kernel_list);

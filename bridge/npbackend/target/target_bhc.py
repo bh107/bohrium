@@ -19,7 +19,7 @@ class Base(interface.Base):
         self.bhc_obj = bhc_obj
 
     def __del__(self):
-        exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)" % 
+        exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)" %
              dtype_name(self.dtype)
         )
 
@@ -29,9 +29,8 @@ class View(interface.View):
     def __init__(self, ndim, start, shape, strides, base):
         super(View, self).__init__(ndim, start, shape, strides, base)
         dtype = dtype_name(self.dtype)
-        exec("base = bhc.bh_multi_array_%s_get_base(base.bhc_obj)"%dtype)
-        func = eval("bhc.bh_multi_array_%s_new_from_view" % dtype)
-        self.bhc_obj = func(base, ndim, start, shape, strides)
+        func = eval("bhc.bh_multi_array_%s_new_view" % dtype)
+        self.bhc_obj = func(base.bhc_obj, ndim, start, shape, strides)
 
     def __del__(self):
         exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)" % dtype_name(
@@ -71,18 +70,17 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     exec("bhc.bh_multi_array_%s_sync(ary)" % dtype)
     exec("bhc.bh_multi_array_%s_discard(ary)" % dtype)
     exec("bhc.bh_runtime_flush()")
-    exec("base = bhc.bh_multi_array_%s_get_base(ary)" % dtype)
-    exec("data = bhc.bh_multi_array_%s_get_base_data(base)" % dtype)
+    exec("data = bhc.bh_multi_array_%s_get_data(ary)" % dtype)
     if data is None:
         if not allocate:
             return 0
-        exec("data = bhc.bh_multi_array_%s_get_base_data_and_force_alloc(base)"
+        exec("data = bhc.bh_multi_array_%s_get_data_and_force_alloc(ary)"
              % dtype
         )
         if data is None:
             raise MemoryError()
     if nullify:
-        exec("bhc.bh_multi_array_%s_nullify_base_data(base)"%dtype)
+        exec("bhc.bh_multi_array_%s_nullify_data(ary)"%dtype)
     return int(data)
 
 def set_bhc_data_from_ary(self, ary):
@@ -96,7 +94,7 @@ def set_bhc_data_from_ary(self, ary):
 def ufunc(op, *args):
     """
     Apply the 'op' on args, which is the output followed by one or two inputs
-    
+
     :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
     :args *?: Probably any one of ndarray, Base, Scalar, View, and npscalar.
     :rtype: None
@@ -128,7 +126,7 @@ def ufunc(op, *args):
 def reduce(op, out, ary, axis):
     """
     reduce 'axis' dimension of 'ary' and write the result to out
-    
+
     :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
     """
 
@@ -140,7 +138,7 @@ def reduce(op, out, ary, axis):
 def accumulate(op, out, ary, axis):
     """
     Accumulate 'axis' dimension of 'ary' and write the result to out
-    
+
     :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
     :out ?:
     :in1 ?:
@@ -155,9 +153,9 @@ def accumulate(op, out, ary, axis):
 
 def extmethod(name, out, in1, in2):
     """
-    
+
     Apply the extended method 'name'
-    
+
     :name str: Name of the extension method.
     :out ?:
     :in1 ?:
@@ -179,9 +177,9 @@ def extmethod(name, out, in1, in2):
 def range(size, dtype):
     """
     create a new array containing the values [0:size[
-    
+
     :size int: Number of elements in the range [0:size[
-    :in1 numpy.dtype: The 
+    :in1 numpy.dtype: The
     :rtype: None
     """
 

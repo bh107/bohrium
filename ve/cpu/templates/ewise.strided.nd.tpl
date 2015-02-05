@@ -1,40 +1,38 @@
 //
 // Elementwise operation on strided arrays of any dimension/rank.
 {
-    int64_t nelements = iterspace->nelem;
-
-    int64_t last_dim  = iterspace->ndim-1;
-    int64_t shape_ld  = iterspace->shape[last_dim];
-    int64_t last_e    = nelements-1;
-    int64_t cur_e     = 0;
-    int64_t j;
+    const int64_t nelements = iterspace->nelem;
+    const int64_t last_dim  = iterspace->ndim-1;
+    const int64_t shape_ld  = iterspace->shape[last_dim];
 
     {{#OPERAND}}
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
     {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
     {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-    {{#ARRAY}}int64_t  a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];{{/ARRAY}}
+    {{#ARRAY}}int64_t a{{NR}}_stride_ld = a{{NR}}_stride[last_dim];{{/ARRAY}}
     {{/OPERAND}}
 
-    int mthreads = omp_get_max_threads();
-    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+    int64_t weight[CPU_MAXDIM];
+    int acc = 1;
+    for(int idx=iterspace->ndim-1; idx >=0; --idx) {
+        weight[idx] = acc;
+        acc *= iterspace->shape[idx];
+    }
 
-    int64_t coord[CPU_MAXDIM];
-    memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
+    #pragma omp parallel for schedule(static)
+    for(int64_t eidx=0; eidx<nelements; eidx+=shape_ld) {
 
-    while (cur_e <= last_e) {
-        // Reset offsets
         {{#OPERAND}}{{#ARRAY}}
         {{TYPE}}* a{{NR}}_current = a{{NR}}_first;
         {{/ARRAY}}{{/OPERAND}}
-
-        for (j=0; j<=last_dim; ++j) {           // Compute offset based on coordinate
+        for (int64_t dim=0; dim < last_dim; ++dim) {    // offset from coord
+            const int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
             {{#OPERAND}}{{#ARRAY}}
-            a{{NR}}_current += coord[j] * a{{NR}}_stride[j];
+            a{{NR}}_current += coord * a{{NR}}_stride[dim];
             {{/ARRAY}}{{/OPERAND}}
         }
 
-        for (j = 0; j < shape_ld; j++) {        // Iterate over "last" / "innermost" dimension
+        for (int64_t iidx=0; iidx < shape_ld; iidx++) { // Execute array-operations
             {{#OPERATORS}}
             {{OPERATOR}};
             {{/OPERATORS}}
@@ -42,17 +40,6 @@
             {{#OPERAND}}{{#ARRAY}}
             a{{NR}}_current += a{{NR}}_stride_ld;
             {{/ARRAY}}{{/OPERAND}}
-        }
-        cur_e += shape_ld;
-
-        // coord[last_dim] is never used, only all the other coord[dim!=last_dim]
-        for (j = last_dim-1; j >= 0; --j) {  // Increment coordinates for the remaining dimensions
-            coord[j]++;
-            if (coord[j] < iterspace->shape[j]) {      // Still within this dimension
-                break;
-            } else {                        // Reached the end of this dimension
-                coord[j] = 0;               // Reset coordinate
-            }                               // Loop then continues to increment the next dimension
         }
     }
     // TODO: Handle write-out of non-temp and non-const scalars.

@@ -8,9 +8,9 @@
         nelements *= a{{NR_OUTPUT}}_shape[k];
     }
 
-    int64_t last_dim  = a{{NR_OUTPUT}}_ndim-1;
-    int64_t shape_ld  = a{{NR_OUTPUT}}_shape[last_dim];
-    int64_t last_e    = nelements-1;
+    const int64_t last_dim  = a{{NR_OUTPUT}}_ndim-1;
+    const int64_t shape_ld  = a{{NR_OUTPUT}}_shape[last_dim];
+    const int64_t last_e    = nelements-1;
 
     {{#OPERAND}}
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
@@ -19,8 +19,8 @@
     {{#ARRAY}}int64_t  a{{NR}}_stride_ld  = a{{NR}}_stride[last_dim];{{/ARRAY}}
     {{/OPERAND}}
 
-    int mthreads = omp_get_max_threads();
-    int64_t nworkers = nelements > mthreads ? mthreads : 1;
+    const int mthreads = omp_get_max_threads();
+    const int64_t nworkers = nelements > mthreads ? mthreads : 1;
 
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));

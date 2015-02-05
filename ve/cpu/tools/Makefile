@@ -71,6 +71,7 @@ purge_cpu:
 #
 # Remove everything
 purge_all: purge_cpu
+	cd $(ROOT) && git clean -fdx && git clean -fdX
 	rm -rf $(BDIR)
 	rm -rf ~/.local/bin
 	rm -rf ~/.local/include
@@ -84,7 +85,7 @@ purge_all: purge_cpu
 #
 reset_krn: purge_krn install
 reset_cpu: purge_cpu install
-reset_all: purge_all install
+purge_install: purge_cpu purge_all clean gen install
 
 #
 # "Install the cpu-engine
@@ -131,7 +132,8 @@ gauss_fsd: prep_fsd
 #
 # Tests
 test:
-	$(BH_PYTHON) $(ROOT)/test/numpy/numpytest.py
+	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/test/numpy/numpytest.py
+	BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/test/numpy/numpytest.py
 
 graphs:
 	python ./create_svg.py ./ /tmp/
