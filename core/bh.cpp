@@ -353,30 +353,53 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
     if(a->start != b->start)
         return false;
 
+    // Check that the "real" number of dimensions are the same 
+    // Stride == 0 and shape == 1 are NOT "real"
     int a_ndim = 0;
     for(int i=0; i<a->ndim; ++i)
-        if(a->stride != 0)
+        if(a->stride[i] != 0 && a->shape[i] != 1)
             ++a_ndim;
     int b_ndim = 0;
     for(int i=0; i<b->ndim; ++i)
-        if(b->stride != 0)
+        if(b->stride[i] != 0  && b->shape[i] != 1)
             ++b_ndim;
-
     if(a_ndim != b_ndim)
         return false;
 
+    // Check that shape and stride for all "real" dimensions are the same  
     int ia=0, ib=0;
-    for(int i=0; i<a_ndim; ++i)
+    for(int i=0; i<a_ndim; ++i) // we know: (a_ndim == b_ndim) 
     {
-        while(a->stride[ia] == 0)
+        // skip "virtual dimensions in both views
+        while(a->stride[ia] == 0 || a->shape[ia] == 1)
             ++ia;
-        while(b->stride[ib] == 0)
+        while(b->stride[ib] == 0 || b->shape[ib] == 1 )
             ++ib;
+        
+        // If we are done with eather view the other may only contain 
+        // virtual dimensions
+        if (ia >= a->ndim)
+        {
+            while (ib < b->ndim)
+                if (b->stride[ib] != 0 || b->shape[ib] != 1 )
+                    return false;
+            return true;
+        }
+        if (ib >= b->ndim)
+        {
+            while (ia < a->ndim)
+                if (a->stride[ia] != 0 || a->shape[ia] != 1 )
+                    return false;
+            return true;
+        }
+
+        // We are at a real dimension both have so we check it
         if(a->shape[ia] != b->shape[ib])
             return false;
         if(a->stride[ia] != b->stride[ib])
             return false;
     }
+    // If we have not failed yet all is good
     return true;
 }
 
