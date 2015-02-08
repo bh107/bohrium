@@ -178,12 +178,12 @@ string Specializer::specialize( SymbolTable& symbol_table,
         case SPARSE:
             tpl_filename << "strided.";
             switch(symbol_table[block.array_tac(0).out].ndim) {
-                case 3:
-                    tpl_filename << "3d.";
-                    break;
-                case 2:
-                    tpl_filename << "2d.";
-                    break;
+                //case 3:
+                //    tpl_filename << "3d.";
+                //    break;
+                //case 2:
+                //    tpl_filename << "2d.";
+                //    break;
                 case 1:
                     tpl_filename << "1d.";
                     break;
