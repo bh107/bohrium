@@ -55,6 +55,13 @@ string Operand::shape(void)
     return ss.str();
 }
 
+string Operand::start(void)
+{
+    stringstream ss;
+    ss << name() << "_start";
+    return ss.str();
+}
+
 string Operand::stride(void)
 {
     stringstream ss;

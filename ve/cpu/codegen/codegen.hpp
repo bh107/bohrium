@@ -37,7 +37,7 @@ std::string _assert_not_null(std::string object);
 std::string _assign(std::string lvalue, std::string rvalue);
 std::string _end(void);
 
-std::string _declare(string type, string name);
+std::string _declare(std::string type, std::string name, std::string expr);
 
 class Operand
 {
@@ -46,15 +46,16 @@ public:
 
     std::string name(void);
     
-    std::string first(void);
     std::string current(void);
-    
+
+    std::string first(void);
     std::string layout(void);
     std::string etype(void);
     std::string nelem(void);
     std::string ndim(void);
     std::string shape(void);
     std::string stride(void);
+    std::string start(void);
 
     operand_t operand_;
 

@@ -27,25 +27,25 @@ string Kernel::unpack_operand(uint32_t id)
     switch(operand.operand_.layout) {
         case STRIDED:
         case SPARSE:
-            ss << _const("int64_t") << operand.start();
-            ss << _const("int64_t") << operand.nelem();
-            ss << _const("int64_t") << operand.ndim();
-            ss << _ptr("int64_t") << operand.shape();
-            ss << _ptr("int64_t") << operand.stride();
+            ss << _const(_int64()) << operand.start();
+            ss << _const(_int64()) << operand.nelem();
+            ss << _const(_int64()) << operand.ndim();
+            ss << _ptr(_int64()) << operand.shape();
+            ss << _ptr(_int64()) << operand.stride();
 
         case CONTIGUOUS:    // We only use the data-pointer
-            ss << _declare(_ptr(operand.etype()), operand_first);
+            ss << _declare(_ptr(operand.etype()), operand.first(), "TOOD");
             ss << " = ARGS_DPTR(" << id << ");" << endl;
 
-            ss << assert_not_null(operand.first()) << endl;
+            ss << _assert_not_null(operand.first()) << endl;
             break;
 
         case SCALAR:
         case SCALAR_CONST:
-            ss << ptr_type(operand.etype()) << " ";
+            ss << _ptr(operand.etype()) << " ";
             ss << operand.first();
             ss << " = ARGS_DPTR(" << id << ");" << endl;
-            ss << assert_not_null(operand.first()) << endl;
+            ss << _assert_not_null(operand.first()) << endl;
             break;
         case SCALAR_TEMP:   // Data pointer is never used.
         default:
