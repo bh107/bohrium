@@ -33,7 +33,6 @@ inline int omp_get_num_threads() { return 1; }
 
 #ifndef CPU_CODEGEN_MISC
 #define CPU_CODEGEN_MISC 1
-#define ARGS_DPTR(I) *(args[I]->data)
 typedef union philox2x32_as_1x64 {
     philox2x32_ctr_t orig;
     uint64_t combined;
@@ -61,12 +60,12 @@ void KRN_{{SYMBOL}}(operand_t** args, iterspace_t* iterspace)
     // Argument {{NR}} - [{{#SCALAR}}SCALAR{{/SCALAR}}{{#SCALAR_CONST}}SCALAR_CONST{{/SCALAR_CONST}}{{#SCALAR_TEMP}}SCALAR_TEMP{{/SCALAR_TEMP}}{{#ARRAY}}ARRAY{{/ARRAY}}]
     //
     {{#SCALAR}}
-    {{TYPE}}* const a{{NR}}_first = ARGS_DPTR({{NR}});
+    {{TYPE}}* const a{{NR}}_first = *(args[{{NR}}]->data);
     assert(a{{NR}}_first != NULL);
     {{/SCALAR}}
 
     {{#SCALAR_CONST}}
-    {{TYPE}}* const a{{NR}}_first = ARGS_DPTR({{NR}});
+    {{TYPE}}* const a{{NR}}_first = *(args[{{NR}}]->data);
     assert(a{{NR}}_first != NULL);
     {{/SCALAR_CONST}}
 
@@ -74,9 +73,9 @@ void KRN_{{SYMBOL}}(operand_t** args, iterspace_t* iterspace)
     const int64_t  a{{NR}}_start  = args[{{NR}}]->start;
     const int64_t  a{{NR}}_nelem  = args[{{NR}}]->nelem;
     const int64_t  a{{NR}}_ndim   = args[{{NR}}]->ndim;    
-    int64_t*       a{{NR}}_shape  = args[{{NR}}]->shape;
-    int64_t*       a{{NR}}_stride = args[{{NR}}]->stride;
-    {{TYPE}}* const a{{NR}}_first = ({{TYPE}}*)(ARGS_DPTR({{NR}})) + a{{NR}}_start;
+    int64_t* const a{{NR}}_shape  = args[{{NR}}]->shape;
+    int64_t* const a{{NR}}_stride = args[{{NR}}]->stride;
+    {{TYPE}}* const a{{NR}}_first = ({{TYPE}}*)(*(args[{{NR}}]->data)) + a{{NR}}_start;
 
     assert(a{{NR}}_first != NULL);
     {{/ARRAY}}
