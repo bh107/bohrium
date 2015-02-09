@@ -131,6 +131,27 @@ string _assign(string lvalue, string rvalue)
     return ss.str();
 }
 
+string _declare(string type, string variable)
+{
+    stringstream ss;
+    ss << type << " " << variable << _end();
+    return ss.str(); 
+}
+
+string _declare(string type, string variable, string expr)
+{
+    stringstream ss;
+    ss << type << " " << variable << " = " << expr << _end();
+    return ss.str(); 
+}
+
+string _cast(string type, string object)
+{
+    stringstream ss;
+    ss << "(" << type << ")" << "(" << object << ")";
+    return ss.str();
+}
+
 string _end(void)
 {
     stringstream ss;

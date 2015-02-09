@@ -37,7 +37,10 @@ std::string _assert_not_null(std::string object);
 std::string _assign(std::string lvalue, std::string rvalue);
 std::string _end(void);
 
-std::string _declare(std::string type, std::string name, std::string expr);
+std::string _cast(std::string type, std::string object);
+
+std::string _declare(std::string type, std::string variable);
+std::string _declare(std::string type, std::string variable, std::string expr);
 
 class Operand
 {

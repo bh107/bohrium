@@ -32,9 +32,8 @@ string Kernel::unpack_operand(uint32_t id)
             ss << _const(_int64()) << operand.ndim();
             ss << _ptr(_int64()) << operand.shape();
             ss << _ptr(_int64()) << operand.stride();
-
         case CONTIGUOUS:    // We only use the data-pointer
-            ss << _declare(_ptr(operand.etype()), operand.first(), "TOOD");
+            ss << _declare(_ptr(operand.etype()), operand.first(), "ARGS_DPTR");
             ss << " = ARGS_DPTR(" << id << ");" << endl;
 
             ss << _assert_not_null(operand.first()) << endl;
