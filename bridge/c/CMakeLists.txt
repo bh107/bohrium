@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
+set(BRIDGE_C true CACHE BOOL "BRIDGE-C: Build the C-bridge.")
+if(NOT BRIDGE_C)
+    return()
+endif()
 
 include_directories(../../include)
 include_directories(../cpp/bxx)

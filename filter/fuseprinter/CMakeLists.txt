@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+set(FILTER_FUSEPRINTER true CACHE BOOL "FILTER-FUSEPRINTER: Build the FUSEPRINTER filter.")
+if(NOT FILTER_FUSEPRINTER)
+    return()
+endif()
+
 include_directories(../../include)
 
 file(GLOB SRC *.cpp)

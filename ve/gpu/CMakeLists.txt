@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
+set(VE_GPU true CACHE BOOL "VE-GPU: Build GPU engine.")
+if(NOT VE_GPU)
+    return()
+endif()
 
 #External dependencies
 find_package(OpenCL)

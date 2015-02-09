@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+set(FILTER_PRICER true CACHE BOOL "FILTER-PRICER: Build the PRICER filter.")
+if(NOT FILTER_PRICER)
+    return()
+endif()
+
 include_directories(../../include)
 
 file(GLOB SRC *.cpp)

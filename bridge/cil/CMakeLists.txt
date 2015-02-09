@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
+set(BRIDGE_CIL true CACHE BOOL "BRIDGE-CIL: Build the CIL-bridge.")
+if(NOT BRIDGE_CIL)
+    return()
+endif()
 
 find_package(Mono)
 set_package_properties(Mono PROPERTIES DESCRIPTION "An open source implementation the CLR" URL "www.mono-project.com")

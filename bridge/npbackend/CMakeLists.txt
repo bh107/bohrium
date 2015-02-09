@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
+set(BRIDGE_NPBACKEND true CACHE BOOL "BRIDGE-NPBACKEND: Build the NPBACKEND-bridge.")
+if(NOT BRIDGE_NPBACKEND)
+    return()
+endif()
 
 find_package(NumPy)
 set_package_properties(NumPy PROPERTIES DESCRIPTION "Numerical Python" URL "www.numpy.org")

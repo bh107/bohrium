@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+set(FUSER_SINGLETON true CACHE BOOL "FUSER-SINGLETON: Build SINGLETON fuser.")
+if(NOT FUSER_SINGLETON)
+    return()
+endif()
+
 include_directories(../../include)
 
 file(GLOB SRC *.cpp)

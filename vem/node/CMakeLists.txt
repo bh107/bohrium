@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
+set(VEM_NODE true CACHE BOOL "VEM-NODE: Build the node VEM.")
+if(NOT VEM_NODE)
+    return()
+endif()
 
 include_directories(../../include)
 

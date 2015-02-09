@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+set(FUSER_GREEDY true CACHE BOOL "FUSER-GREEDY: Build greedy fuser.")
+if(NOT FUSER_GREEDY)
+    return()
+endif()
+
 include_directories(../../include)
 
 file(GLOB SRC *.cpp)

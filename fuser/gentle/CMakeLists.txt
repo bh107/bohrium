@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+set(FUSER_GENTLE true CACHE BOOL "FUSER-GENTLE: Build gentle fuser.")
+if(NOT FUSER_GENTLE)
+    return()
+endif()
+
 include_directories(../../include)
 
 file(GLOB SRC *.cpp)

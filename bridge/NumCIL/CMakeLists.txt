@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
+set(BRIDGE_NUMCIL true CACHE BOOL "BRIDGE-NUMCIL: Build the NUMCIL-bridge.")
+if(NOT BRIDGE_NUMCIL)
+    return()
+endif()
 
 find_package(Mono)
 set_package_properties(Mono PROPERTIES DESCRIPTION "An open source implementation the CLR" URL "www.mono-project.com")

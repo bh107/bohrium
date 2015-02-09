@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+set(FUSER_TOPOLOGICAL true CACHE BOOL "FUSER-TOPOLOGICAL: Build TOPOLOGICAL fuser.")
+if(NOT FUSER_TOPOLOGICAL)
+    return()
+endif()
+
 include_directories(../../include)
 
 file(GLOB SRC *.cpp)
