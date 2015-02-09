@@ -15,8 +15,8 @@ Specializer::Specializer(const string template_directory)
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_directory);
     ctemplate::LoadTemplate("ewise.cont.nd.tpl",    strip_mode);
     ctemplate::LoadTemplate("ewise.strided.1d.tpl", strip_mode);
-    //ctemplate::LoadTemplate("ewise.strided.2d.tpl", strip_mode);
-    //ctemplate::LoadTemplate("ewise.strided.3d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.2d.tpl", strip_mode);
+    ctemplate::LoadTemplate("ewise.strided.3d.tpl", strip_mode);
     ctemplate::LoadTemplate("ewise.strided.nd.tpl", strip_mode);
     ctemplate::LoadTemplate("kernel.tpl",   strip_mode);
     ctemplate::LoadTemplate("license.tpl",  strip_mode);
@@ -73,10 +73,10 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
                 tpl_layout  = "cont.";
             } else if (ndim == 1) {
                 tpl_ndim = "1d.";
-            //} else if (ndim == 2) {
-            //    tpl_ndim = "2d.";
-            //} else if (ndim == 3) {
-            //    tpl_ndim = "3d.";
+            } else if (ndim == 2) {
+                tpl_ndim = "2d.";
+            } else if (ndim == 3) {
+                tpl_ndim = "3d.";
             }
             break;
 
@@ -89,10 +89,10 @@ string Specializer::template_filename(SymbolTable& symbol_table, const Block& bl
                 tpl_layout  = "cont.";
             } else if (ndim == 1) {
                 tpl_ndim = "1d.";
-            //} else if (ndim == 2) {
-            //    tpl_ndim = "2d.";
-            //} else if (ndim == 3) {
-            //    tpl_ndim = "3d.";
+            } else if (ndim == 2) {
+                tpl_ndim = "2d.";
+            } else if (ndim == 3) {
+                tpl_ndim = "3d.";
             }
             break;
 
@@ -178,12 +178,12 @@ string Specializer::specialize( SymbolTable& symbol_table,
         case SPARSE:
             tpl_filename << "strided.";
             switch(symbol_table[block.array_tac(0).out].ndim) {
-                //case 3:
-                //    tpl_filename << "3d.";
-                //    break;
-                //case 2:
-                //    tpl_filename << "2d.";
-                //    break;
+                case 3:
+                    tpl_filename << "3d.";
+                    break;
+                case 2:
+                    tpl_filename << "2d.";
+                    break;
                 case 1:
                     tpl_filename << "1d.";
                     break;
