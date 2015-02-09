@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 include_directories(../../include)
 
-if(NO_VE_CPU)
+set(VE_CPU true CACHE BOOL "VE-CPU: Build CPU engine.")
+if(NOT VE_CPU)
     return()
 endif()
 
@@ -9,21 +10,19 @@ endif()
 #   Compiler flags
 #
 
-# CPU Profiling
-set(CPU_PROFILING false CACHE BOOL "VE-CPU: Enabling CPU profiling.")
-if (CPU_PROFILING)
+set(VE_CPU_PROFILING false CACHE BOOL "VE-CPU: Enabling CPU profiling.")
+if (VE_CPU_PROFILING)
     message(STATUS "VE-CPU: Enabling CPU profiling.")
     add_definitions( -DCPU_PROFILING )
 endif()
 
-# Debugging
-set(CPU_DEBUGGING false CACHE BOOL "VE-CPU: Enable debugging.")
-if (CPU_DEBUGGING)
+set(VE_CPU_DEBUGGING false CACHE BOOL "VE-CPU: Enable debugging.")
+if (VE_CPU_DEBUGGING)
     message(STATUS "VE-CPU: Enabling debugging.")
     add_definitions( -DDEBUGGING )
 endif()
 
-#External dependencies
+# External dependencies
 find_package(CTemplate)
 set_package_properties(CTemplate PROPERTIES DESCRIPTION "Template language for C++" URL "code.google.com/p/ctemplate/")
 set_package_properties(CTemplate PROPERTIES TYPE REQUIRED PURPOSE "Used by CPU-VE for code generation.")
