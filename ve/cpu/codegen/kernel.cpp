@@ -25,18 +25,17 @@ string Kernel::unpack_operand(uint32_t id)
     ss << "// Argument " << id;
     ss << "[" << operand.layout() << "]" << endl;
     switch(operand.operand_.layout) {
-        case CONTIGUOUS:
         case STRIDED:
         case SPARSE:
-            ss << ptr_type(operand.etype());
-            ss << operand.first();
-            ss << " = ARGS_DPTR(" << id << ");" << endl;
+            ss << _const("int64_t") << operand.start();
+            ss << _const("int64_t") << operand.nelem();
+            ss << _const("int64_t") << operand.ndim();
+            ss << _ptr("int64_t") << operand.shape();
+            ss << _ptr("int64_t") << operand.stride();
 
-            ss << const_type("const int64_t") << operand.name() << "_start";
-            ss << const_type("int64_t") << operand.name() << "_nelem";
-            ss << const_type("int64_t") << operand.name() << "_ndim";
-            ss << ptr_type("int64_t") << operand.name() << "_shape";
-            ss << ptr_type("int64_t") << operand.name() << "_stride";
+        case CONTIGUOUS:    // We only use the data-pointer
+            ss << _declare(_ptr(operand.etype()), operand_first);
+            ss << " = ARGS_DPTR(" << id << ");" << endl;
 
             ss << assert_not_null(operand.first()) << endl;
             break;

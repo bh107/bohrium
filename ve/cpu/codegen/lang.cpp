@@ -10,62 +10,128 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-string ref(string object)
+// Element types;
+string _int8(void)
+{
+    return "int8_t";
+}
+
+string _int16(void)
+{
+    return "int16_t";
+}
+
+string _int32(void)
+{
+    return "int32_t";
+}
+
+string _int64(void)
+{
+    return "int64_t";
+}
+
+string _uint8(void)
+{
+    return "uint8_t";
+}
+
+string _uint16(void)
+{
+    return "uint16_t";
+}
+
+string _uint32(void)
+{
+    return "uint32_t";
+}
+
+string _uint64(void)
+{
+    return "uint64_t";
+}
+
+string _float(void)
+{
+    return "float";
+}
+string _double(void)
+{
+    return "double";
+}
+string _float_complex(void)
+{
+    return "float complex";
+}
+string _double_complex(void)
+{
+    return "double complex";
+}
+
+string _ref(string object)
 {
     stringstream ss;
     ss << "&" << object;
     return ss.str();
 }
 
-string deref(string object)
+string _deref(string object)
 {
     stringstream ss;
     ss << "*" << object;
     return ss.str();
 }
 
-string index(string object, int64_t idx)
+string _index(string object, int64_t idx)
 {
     stringstream ss;
     ss << object << "[" << idx << "]";
     return ss.str();
 }
 
-string ptr_type(string object)
+string _ptr(string object)
 {
     stringstream ss;
     ss << object << "*";
     return ss.str();
 }
 
-string const_type(string object)
+string _ptr_const(string object)
+{
+    stringstream ss;
+    ss << object << "* const";
+    return ss.str();
+}
+
+string _const(string object)
 {
     stringstream ss;
     ss << "const " << object;
     return ss.str();
 }
 
-string assert_not_null(string object)
+string _const_ptr(string object)
+{
+    stringstream ss;
+    ss << "const " << object << "*";
+    return ss.str();
+}
+
+string _assert_not_null(string object)
 {
     stringstream ss;
     ss << "assert(NULL!=" << object << ")";
     return ss.str();
 }
 
-string declare_var(string object)
+string _assign(string lvalue, string rvalue)
 {
     stringstream ss;
-    
+    ss << lvalue << " = " << rvalue;
     return ss.str();
 }
 
-string declare_ptr_var(string object)
-{
-    stringstream ss;
-    return ss.str();
-}
-
-string end(void)
+string _end(void)
 {
     stringstream ss;
     ss << ";" << endl;
