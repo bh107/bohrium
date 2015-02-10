@@ -14,8 +14,10 @@ Requires that you have the Google Test Framework as well as CMake installed::
 
 The source distribution contains a bunch of unittest-samples and examples of build-environment setup. You can explore gtest/samples for inspiration on writing tests. Anyway... compile and run the tests with::
 
+    cd gtest
     ./configure
     make clean all
+    cd ..
     make run
 
 A bunch of green and possibly red should then light up your terminal.
