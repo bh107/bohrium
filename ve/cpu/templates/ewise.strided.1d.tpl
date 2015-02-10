@@ -1,16 +1,16 @@
 //
 // Elementwise operation on one-dimensional arrays using strided indexing
 {
-    int64_t nelements = iterspace->nelem;
-    int mthreads      = omp_get_max_threads();
-    int64_t nworkers  = nelements > mthreads ? mthreads : 1;
-    int64_t work_split= nelements / nworkers;
-    int64_t work_spill= nelements % nworkers;
+    const int64_t nelements = iterspace->nelem;
+    const int mthreads      = omp_get_max_threads();
+    const int64_t nworkers  = nelements > mthreads ? mthreads : 1;
+    const int64_t work_split= nelements / nworkers;
+    const int64_t work_spill= nelements % nworkers;
 
     #pragma omp parallel num_threads(nworkers)
     {
-        int tid      = omp_get_thread_num();        // Thread info
-        int nthreads = omp_get_num_threads();
+        const int tid      = omp_get_thread_num();        // Thread info
+        const int nthreads = omp_get_num_threads();
 
         int64_t work=0, work_offset=0, work_end=0;  // Work distribution
         if (tid < work_spill) {
@@ -26,7 +26,7 @@
         {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
         {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
         {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-        {{#ARRAY}}{{TYPE}} *a{{NR}}_current = a{{NR}}_first + (work_offset *a{{NR}}_stride[0]);{{/ARRAY}}
+        {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first + (work_offset *a{{NR}}_stride[0]);{{/ARRAY}}
         {{/OPERAND}}
 
         for (int64_t i = work_offset; i < work_end; ++i) {

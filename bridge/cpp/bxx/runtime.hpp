@@ -54,11 +54,13 @@ inline Runtime::Runtime() : extension_count(BH_MAX_OPCODE_ID+1), queue_size(0)
 
 inline Runtime::~Runtime()
 {
-    std::cout << "There are " << ref_count.size() << " dangling refs." << std::endl;
-    for (std::map<bh_base*, size_t>::iterator it=ref_count.begin();
-        it!=ref_count.end();
-        ++it) {
-        std::cout << it->first << " => " << it->second << '\n';
+    if (ref_count.size()) {
+        std::cout << "There are " << ref_count.size() << " dangling refs." << std::endl;
+        for (std::map<bh_base*, size_t>::iterator it=ref_count.begin();
+            it!=ref_count.end();
+            ++it) {
+            std::cout << it->first << " => " << it->second << '\n';
+        }
     }
  
     flush();
