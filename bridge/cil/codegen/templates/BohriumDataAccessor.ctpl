@@ -25,7 +25,6 @@ namespace NumCIL.Bohrium
         protected PInvoke.bh_multi_array_${bh_ctype}_p m_array;
         protected ${bh_atype}[] m_data;
         protected readonly long m_size;
-        protected GCHandle m_handle;
         protected bool m_dirty;
         private static readonly int ELSIZE = System.Runtime.InteropServices.Marshal.SizeOf(typeof(${bh_atype}));
         private static long MAX_INDEX = int.MaxValue / ELSIZE;
@@ -83,21 +82,23 @@ namespace NumCIL.Bohrium
         {
             if (!m_array.IsAllocated)
             {
-                m_array = PInvoke.bh_multi_array_${bh_ctype}_new_empty(1, new long[] { m_size });
-                if (m_data == null)
+                lock(PinnedArrayTracker.ExecuteLock)
                 {
-                    //Console.WriteLine("Creating data in C land");
+                    m_array = PInvoke.bh_multi_array_${bh_ctype}_new_empty(1, new long[] { m_size });
+                    if (m_data == null)
+                    {
+                        //Console.WriteLine("Creating data in C land");
 
-                    // No CIL allocation, create a new multi-array
-                    m_dirty = true;
-                }
-                else
-                {
-                    //Console.WriteLine("Wraping CIL data");
+                        // No CIL allocation, create a new multi-array
+                        m_dirty = true;
+                    }
+                    else
+                    {
+                        //Console.WriteLine("Wraping CIL data");
 
-                    // Existing CIL allocation, wrap it
-                    m_handle = GCHandle.Alloc(m_data, GCHandleType.Pinned);
-                    m_array.Data = m_handle.AddrOfPinnedObject();
+                        // Existing CIL allocation, wrap it
+                        m_array.Data = PinnedArrayTracker.CreatePinnedArray(m_data);
+                    }
                 }
             }
 
@@ -147,12 +148,10 @@ namespace NumCIL.Bohrium
                 }
                 else
                 {
-                    //Data resides in CIL so we detach the data pointer and
-                    // release the array and unpin it
-                    Console.WriteLine("Release data in C land");
+                    //Data resides in CIL so detach the data and release the array
+                    //Console.WriteLine("Release data in C land");
 
                     m_array.Data = IntPtr.Zero;
-                    m_handle.Free();
                     m_array.Dispose();
                 }
             }
@@ -265,21 +264,7 @@ namespace NumCIL.Bohrium
                 GC.SuppressFinalize(this);
 
             if (m_array.IsAllocated)
-            {
-                // If the data is in CIL, make sure C land does not free it
-                if (m_data != null)
-                {
-                    PinnedArrayTracker.RegisterProtectedDiscard(m_array, m_handle);
-                }
-                else
-                {
-                    m_array.Dispose();
-                    if (m_handle.IsAllocated)
-                        m_handle.Free();
-                }
-            }
-            else if (m_handle.IsAllocated)
-                m_handle.Free();
+                m_array.Dispose();
         }
     }    
     %end for

@@ -69,8 +69,9 @@ namespace NumCIL.Bohrium
             /// </summary>
             public bool Temp
             {
-                get { return IsAllocated ? bh_multi_array_${bh_ctype}_get_temp(this) : false; }
-                set { bh_multi_array_${bh_ctype}_set_temp(this, value); }
+                get { lock(PinnedArrayTracker.ExecuteLock) { return IsAllocated ? bh_multi_array_${bh_ctype}_get_temp(this) : false; } }
+                set { lock(PinnedArrayTracker.ExecuteLock)
+ bh_multi_array_${bh_ctype}_set_temp(this, value); }
             }
 
             /// <summary>
@@ -79,29 +80,36 @@ namespace NumCIL.Bohrium
             public bh_multi_array_${bh_ctype}_p (NumCIL.Generic.NdArray<${bh_atype}> a)
             {
                 var ac = a.DataAccessor;
-                if (ac is DataAccessor_${bh_ctype}) {
-                    var acp = ((DataAccessor_${bh_ctype})a.DataAccessor).GetArrayPointer();
-    
-                    this.pointer = bh_multi_array_${bh_ctype}_new_view(
-                        acp,
-                        (ulong)a.Shape.Dimensions.Length, 
-                        a.Shape.Offset, 
-                        a.Shape.Dimensions.Select(x => x.Length).ToArray(),
-                        a.Shape.Dimensions.Select(x => x.Stride).ToArray()
-                    ).pointer;
-                } else {
-                        var al = new bh_multi_array_${bh_ctype}_p(PinnedArrayTracker.PinArray(a.DataAccessor.AsArray()));
+                lock(PinnedArrayTracker.ExecuteLock)
+                {
+                    if (ac is DataAccessor_${bh_ctype}) {
+                        var acp = ((DataAccessor_${bh_ctype})a.DataAccessor).GetArrayPointer();
+        
+
+                        this.pointer = bh_multi_array_${bh_ctype}_new_view(
+                            acp,
+                            (ulong)a.Shape.Dimensions.Length, 
+                            a.Shape.Offset, 
+                            a.Shape.Dimensions.Select(x => x.Length).ToArray(),
+                            a.Shape.Dimensions.Select(x => x.Stride).ToArray()
+                        ).pointer;
+                    } else {
+                        using(var acp = bh_multi_array_${bh_ctype}_new_empty(1, new long[] { a.DataAccessor.Length }))
+                        {
+                            ((IMultiArray)acp).SetData(PinnedArrayTracker.CreatePinnedArray(a.DataAccessor.AsArray()));
                             this.pointer = bh_multi_array_${bh_ctype}_new_view(
-                                al,
+                                acp,
                                 (ulong)a.Shape.Dimensions.Length, 
                                 a.Shape.Offset, 
                                 a.Shape.Dimensions.Select(x => x.Length).ToArray(),
                                 a.Shape.Dimensions.Select(x => x.Stride).ToArray()
                             ).pointer;
+                        }
 
+                    }
+
+                    //Console.WriteLine("Created multi_array from NdArray: {0}", this.pointer.ToInt64());
                 }
-
-                //Console.WriteLine("Created multi_array from NdArray: {0}", this.pointer.ToInt64());
             }
 
             /// <summary>
@@ -114,8 +122,18 @@ namespace NumCIL.Bohrium
                     if (IsAllocated)
                     {
                         //Console.WriteLine("Destroying multi_array {0}", this.pointer.ToInt64());
+
+                        var data = this.Data;
+                        if (PinnedArrayTracker.IsManagedData(data))
+                        {
+                            lock(PinnedArrayTracker.ExecuteLock)
+                                bh_multi_array_${bh_ctype}_set_external(this, true);
+
+                            PinnedArrayTracker.DecReference(data);
+                        }
+
                         lock(PinnedArrayTracker.ExecuteLock)
-                            bh_multi_array_${bh_ctype}_destroy(this); 
+                            bh_multi_array_${bh_ctype}_destroy(this);
                     }
                 }
                 finally 
@@ -147,7 +165,7 @@ namespace NumCIL.Bohrium
             /// </summary>
             void IMultiArray.SetData(IntPtr dataPtr)
             {
-                bh_multi_array_${bh_ctype}_set_data(this, dataPtr);
+                this.Data = dataPtr;
             }
 
             /// <summary>
@@ -165,8 +183,22 @@ namespace NumCIL.Bohrium
             /// </summary>
             public IntPtr Data 
             { 
-                get { return bh_multi_array_${bh_ctype}_get_data(this); } 
-                set { bh_multi_array_${bh_ctype}_set_data(this, value); } 
+                get { lock(PinnedArrayTracker.ExecuteLock) return bh_multi_array_${bh_ctype}_get_data(this); } 
+                set 
+                { 
+                    var prevPtr = this.Data;
+                    if (prevPtr != value)
+                    {
+                        PinnedArrayTracker.DecReference(prevPtr);
+                        PinnedArrayTracker.IncReference(value);
+                        lock(PinnedArrayTracker.ExecuteLock)
+                        {
+                            bh_multi_array_${bh_ctype}_set_data(this, value); 
+                            if (PinnedArrayTracker.IsManagedData(value))
+                                bh_multi_array_${bh_ctype}_set_external(this, true);
+                        }
+                    }
+                }
             }
         }
 
