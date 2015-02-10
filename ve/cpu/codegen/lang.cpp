@@ -71,14 +71,14 @@ string _double_complex(void)
 string _ref(string object)
 {
     stringstream ss;
-    ss << "&" << object;
+    ss << "&(" << object << ")";
     return ss.str();
 }
 
 string _deref(string object)
 {
     stringstream ss;
-    ss << "*" << object;
+    ss << "*(" << object << ")";
     return ss.str();
 }
 
@@ -86,6 +86,20 @@ string _index(string object, int64_t idx)
 {
     stringstream ss;
     ss << object << "[" << idx << "]";
+    return ss.str();
+}
+
+string _access(string object, string member)
+{
+    stringstream ss;
+    ss << object << "." << member;
+    return ss.str();
+}
+
+string _access_ptr(string object, string member)
+{
+    stringstream ss;
+    ss << object << "->" << member;
     return ss.str();
 }
 
@@ -156,6 +170,62 @@ string _end(void)
 {
     stringstream ss;
     ss << ";" << endl;
+    return ss.str();
+}
+
+string _line(string object)
+{
+    stringstream ss;
+    ss << object << _end();
+    return ss.str();
+}
+
+string _add(string left, string right)
+{
+    stringstream ss;
+    ss << left << " + " << right;
+    return ss.str();
+}
+
+string _sub(string left, string right)
+{
+    stringstream ss;
+    ss << left << " - " << right;
+    return ss.str();
+}
+
+string _mul(string left, string right)
+{
+    stringstream ss;
+    ss << left << " * " << right;
+    return ss.str();
+}
+
+string _div(string left, string right)
+{
+    stringstream ss;
+    ss << left << " / " << right;
+    return ss.str();
+}
+
+string _mod(string left, string right)
+{
+    stringstream ss;
+    ss << left << " % " << right;
+    return ss.str();
+}
+
+string _inc(string object)
+{
+    stringstream ss;
+    ss << "++("<< object << ")";
+    return ss.str();
+}
+
+string _inc_post(string object)
+{
+    stringstream ss;
+    ss << "("<< object << ")++";
     return ss.str();
 }
 

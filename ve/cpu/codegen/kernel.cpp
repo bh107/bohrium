@@ -11,45 +11,83 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Kernel::Kernel() {}
+Kernel::Kernel(Block& block) : block_(block) {}
 
-void Kernel::add_operand(Operand& operand, uint32_t id)
+string Kernel::unpack_operands(void)
 {
-    operands_[id] = &operand;
+    stringstream ss;
+    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
+        ss << unpack_operand(oidx);
+    }
+    return ss.str();
+}
+
+string Kernel::args(void)
+{
+    return "args";
 }
 
 string Kernel::unpack_operand(uint32_t id)
 {
-    Operand& operand = *operands_[id];
+    Operand operand(block_.operand(id), id);    // Grab the operand
     stringstream ss;
-    ss << "// Argument " << id;
-    ss << "[" << operand.layout() << "]" << endl;
+    ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
     switch(operand.operand_.layout) {
-        case STRIDED:
-        case SPARSE:
-            ss << _const(_int64()) << operand.start();
-            ss << _const(_int64()) << operand.nelem();
-            ss << _const(_int64()) << operand.ndim();
-            ss << _ptr(_int64()) << operand.shape();
-            ss << _ptr(_int64()) << operand.stride();
-        case CONTIGUOUS:    // We only use the data-pointer
-            ss << _declare(_ptr(operand.etype()), operand.first(), "ARGS_DPTR");
-            ss << " = ARGS_DPTR(" << id << ");" << endl;
+        case STRIDED:       
+        case SPARSE:        // start, nelem, ndim, shape, stride
+            ss
+            << _declare(
+                _const(_int64()), operand.start(),
+                _access_ptr(_index(args(), id), "start")
+            ) 
+            << _declare(
+                _const(_int64()), operand.nelem(),
+                _access_ptr(_index(args(), id), "nelem")
+            )
+            << _declare(
+                _const(_int64()), operand.ndim(),
+                _access_ptr(_index(args(), id), "ndim")
+            )
+            << _declare(
+                _ptr_const(_int64()), operand.shape(),
+                _access_ptr(_index(args(), id), "shape")
+            )
+            << _declare(
+                _ptr_const(_int64()), operand.stride(),
+                _access_ptr(_index(args(), id), "stride")
+            );
 
-            ss << _assert_not_null(operand.first()) << endl;
+        case CONTIGUOUS:    // "first" = operand_t.data + operand_t.start
+            ss
+            << _declare(
+                _ptr_const(operand.etype()), operand.first(),
+                _add(
+                    _cast(
+                        _ptr(operand.etype()),
+                        _deref(_access_ptr(_index(args(), id), "data"))
+                    ),
+                    _access_ptr(_index(args(), id), "start")
+                )
+            ) 
+            << _assert_not_null(operand.first()) << _end();
             break;
 
         case SCALAR:
-        case SCALAR_CONST:
-            ss << _ptr(operand.etype()) << " ";
-            ss << operand.first();
-            ss << " = ARGS_DPTR(" << id << ");" << endl;
-            ss << _assert_not_null(operand.first()) << endl;
+        case SCALAR_CONST:  // "first" = operand_t.data
+            ss << _declare(
+                _ptr_const(operand.etype()), operand.first(),
+                _cast(
+                    _ptr(operand.etype()),
+                    _deref(_access_ptr(_index(args(), id), "data"))
+                )
+            )
+            << _assert_not_null(operand.first()) << _end();
             break;
         case SCALAR_TEMP:   // Data pointer is never used.
         default:
             break;
     }
+    ss << endl;
     return ss.str();
 }
 

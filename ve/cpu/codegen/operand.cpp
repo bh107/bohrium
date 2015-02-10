@@ -11,7 +11,7 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Operand::Operand(operand_t operand, uint32_t id) : operand_(operand), id_(id) {}
+Operand::Operand(operand_t& operand, uint32_t id) : operand_(operand), id_(id) {}
 
 string Operand::name(void)
 {
