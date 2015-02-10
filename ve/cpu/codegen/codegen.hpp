@@ -83,12 +83,20 @@ class Kernel
 {
 public:
     Kernel(bohrium::core::Block& block);
+    
+    std::string generate_source(void);
+
+private:
     std::string unpack_operands(void);
     std::string unpack_operand(uint32_t id);
 
+    std::string head(void);
+    std::string body(void);
+    std::string foot(void);
+
     std::string args(void);
-    
-private:
+    std::string iterspace(void);
+
     bohrium::core::Block& block_;
 };
 
