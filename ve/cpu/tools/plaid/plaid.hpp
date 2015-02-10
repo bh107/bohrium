@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <map>
@@ -40,8 +41,13 @@ public:
     */
     void add_from_file(string name, string filepath)
     {
-        // TODO: Load from disk
-        templates_[name] = "";
+        ifstream ifs(filepath.c_str());
+        
+        string content(
+            (istreambuf_iterator<char>(ifs)),
+            (istreambuf_iterator<char>())
+        );
+        templates_[name] = content;
     }
      
     string fill(string name, map<string, string>& subjects)
