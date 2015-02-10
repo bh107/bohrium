@@ -1,3 +1,6 @@
+#ifndef __BH_PLAID
+#define __BH_PLAID
+
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
@@ -58,7 +61,7 @@ public:
         int place_open, place_close;
 
         states state = NONE;
-        for(int idx=0; idx<tmpl.size(); ++idx) {
+        for(unsigned int idx=0; idx<tmpl.size(); ++idx) {
             char token = tmpl[idx];
             switch (state) {    // State transition
                 case CURLY_OPEN:
@@ -119,6 +122,8 @@ public:
                     tmpl.replace(place_open, (place_close-place_open)+1, subjects[place.str()]);
                     idx = place_open-1;
                     break;
+                default:
+                    break;
             }
         }
         return tmpl;
@@ -130,3 +135,5 @@ private:
 };
 
 }
+
+#endif

@@ -5,6 +5,7 @@
 #include <map>
 #include <tac.h>
 #include <block.hpp>
+#include <plaid.hpp>
 
 namespace bohrium{
 namespace engine{
@@ -82,7 +83,7 @@ private:
 class Kernel
 {
 public:
-    Kernel(bohrium::core::Block& block);
+    Kernel(Plaid::Plaid& plaid, bohrium::core::Block& block);
     
     std::string generate_source(void);
 
@@ -97,6 +98,7 @@ private:
     std::string args(void);
     std::string iterspace(void);
 
+    Plaid::Plaid& plaid_;
     bohrium::core::Block& block_;
 };
 

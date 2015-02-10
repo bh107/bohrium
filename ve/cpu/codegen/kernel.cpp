@@ -11,7 +11,7 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Kernel::Kernel(Block& block) : block_(block) {}
+Kernel::Kernel(Plaid::Plaid& plaid, Block& block) : plaid_(plaid), block_(block) {}
 
 string Kernel::unpack_operands(void)
 {
@@ -32,51 +32,19 @@ string Kernel::iterspace(void)
     return "iterspace";
 }
 
-string Kernel::head(void)
-{
-    stringstream ss;
-    
-    ss
-    << "/*" << endl
-    << "KERNEL-DESCRIPTION {" << endl
-    << " MODE           = "                                           << "," << endl
-    << " LAYOUT         = " << layout_text(block_.iterspace().layout) << "," << endl
-    << " NINSTR         = " << block_.ntacs()                         << "," << endl
-    << " NARRAY_INSTR   = " << block_.narray_tacs()                   << "," << endl
-    << " NARGS          = " << block_.noperands()                     << "," << endl
-    << " NARRAY_ARGS    = "                                           << "," << endl
-    << " SYMBOL_TEXT    = " << block_.symbol_text()                          << endl
-    << "}" << endl
-    << "*/" << endl 
-    << "void KRN_" << block_.symbol() << "("
-    << "operand_t** " << args() << ", "
-    << "iterspace_t* " << iterspace() << ") {" << endl;
-    return ss.str();
-}
-
-string Kernel::body(void)
-{
-    stringstream ss;
-    ss << unpack_operands();
-    return ss.str();
-}
-
-string Kernel::foot(void)
-{
-    stringstream ss;
-    ss << "}";
-    return ss.str();
-}
-
 string Kernel::generate_source(void)
 {
-    stringstream ss;
-    ss
-    << head()
-    << body()
-    << foot()
-    ;
-    return ss.str();
+    std::map<string, string> subjects;
+    subjects["MODE"] = "";
+    subjects["LAYOUT"] = layout_text(block_.iterspace().layout);
+    subjects["NINSTR"] = block_.ntacs();
+    subjects["NARRAY_INSTR"] = block_.narray_tacs();
+    subjects["NARGS"] = block_.noperands();
+    subjects["NARRAY_ARGS"] = string("");
+    subjects["SYMBOL_TEXT"] = block_.symbol_text();
+    subjects["SYMBOL"] = block_.symbol();
+    subjects["ARGUMENTS"] = unpack_operands();
+    return plaid_.fill("kernel", subjects);
 }
 
 string Kernel::unpack_operand(uint32_t id)
