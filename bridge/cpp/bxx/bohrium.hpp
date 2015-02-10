@@ -315,6 +315,7 @@ public:
     void trash(bh_base* base);
 
     std::map<bh_base*, size_t> ref_count;       // Count references to bh_base
+    std::map<bh_base*, size_t> ext_allocated;   // Lookup register for externally allocated data
 
 private:
                                                 // Bohrium

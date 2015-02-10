@@ -170,6 +170,17 @@ namespace NumCIL.Bohrium
             }
         }
 
+        /// <summary>
+        /// Marks the data as externally allocated
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static void bh_multi_array_${bh_ctype}_set_external([In] bh_multi_array_${bh_ctype}_p self, bh_bool value);
+
+        /// <summary>
+        /// Returns true if the data is externally managed, false otherwise
+        /// </summary>
+        [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public extern static bh_bool bh_multi_array_${bh_ctype}_get_external([In] bh_multi_array_${bh_ctype}_p self);
 
         /// <summary>
         /// Gets the data pointer from a view
