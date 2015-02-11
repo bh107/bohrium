@@ -83,7 +83,7 @@ private:
 class Kernel
 {
 public:
-    Kernel(Plaid::Plaid& plaid, bohrium::core::Block& block);
+    Kernel(Plaid& plaid, bohrium::core::Block& block);
     
     std::string generate_source(void);
 
@@ -98,7 +98,7 @@ private:
     std::string args(void);
     std::string iterspace(void);
 
-    Plaid::Plaid& plaid_;
+    Plaid& plaid_;
     bohrium::core::Block& block_;
 };
 

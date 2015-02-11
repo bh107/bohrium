@@ -11,7 +11,7 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Kernel::Kernel(Plaid::Plaid& plaid, Block& block) : plaid_(plaid), block_(block) {}
+Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block) {}
 
 string Kernel::unpack_operands(void)
 {
