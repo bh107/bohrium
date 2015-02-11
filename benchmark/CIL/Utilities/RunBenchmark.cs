@@ -11,6 +11,8 @@ namespace Utilities
 			public long[] sizes;
 			public bool use_bohrium;
 			public System.Type type;
+
+			public Dictionary<string, string> cmd_opts;
 		}
 	
 		public static void Run(string[] args, long size_count, Action<InstanceData> run, Action<InstanceData> validate = null)
@@ -70,13 +72,36 @@ namespace Utilities
 					throw new ArgumentException(string.Format("Bad input type: {0}", dtype));
 			}
 			
-			var data = new InstanceData() { sizes = sizes, type = t, use_bohrium = use_bohrium };
+			var data = new InstanceData() { sizes = sizes, type = t, use_bohrium = use_bohrium, cmd_opts = dict };
 			
 			if (validate != null)
 				validate(data);
 			
 			if (use_bohrium)
-				NumCIL.Bohrium.Utility.Activate();
+			{
+				try
+				{
+					NumCIL.Bohrium.Utility.Activate();
+				}
+				catch(Exception ex)
+				{
+					data.use_bohrium = false;
+					use_bohrium = false;
+
+					try
+					{
+						NumCIL.Bohrium.Utility.Deactivate();
+					}
+					catch
+					{
+					}
+
+					if (dict.ContainsKey("bohrium"))
+						throw ex;
+					else
+						Console.WriteLine("Bohrium failed to load, running without.{0}Error message: {1}", Environment.NewLine, ex.Message);
+				}
+			}
 				
 			run(data);
 			

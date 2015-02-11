@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{D6CA1418-5885-4311-AFD8-94916E437EFE}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Timer</RootNamespace>
+    <RootNamespace>Utilities</RootNamespace>
     <AssemblyName>Timer</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -31,18 +31,24 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="CommandLineParser.cs" />
     <Compile Include="Timer.cs" />
     <Compile Include="RunBenchmark.cs" />
+    <Compile Include="Render.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <ProjectReference Include="..\..\..\bridge\cil\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
-      <Project>{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}</Project>
+      <Project>{94B0C811-511A-420C-9E3E-898B253E8D46}</Project>
       <Name>NumCIL.Bohrium</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
+      <Project>{08C17283-4F2A-466C-AE28-1923837A2F58}</Project>
+      <Name>NumCIL</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
