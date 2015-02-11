@@ -35,7 +35,6 @@ string Kernel::iterspace(void)
 string Kernel::generate_source(void)
 {
     std::map<string, string> subjects;
-    subjects["MODE"] = "";
     subjects["LAYOUT"] = layout_text(block_.iterspace().layout);
     subjects["NINSTR"] = block_.ntacs();
     subjects["NARRAY_INSTR"] = block_.narray_tacs();

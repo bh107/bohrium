@@ -126,7 +126,24 @@ public:
                     break;
             }
         }
+        indent(tmpl, 2);
         return tmpl;
+    }
+
+    void indent(string& lines, unsigned int level)
+    {
+        stringstream ss;    // Create indentation replacement string
+        ss << '\n';
+        for(unsigned int lvl=0; lvl<level; ++lvl) {
+            ss << ' ';
+        }
+        string indentation = ss.str();
+
+        for(unsigned int idx=0; idx<lines.size(); ++idx) { // Indent
+            if ('\n' == lines[idx]) {
+                lines.replace(idx, 1, indentation);
+            }
+        }
     }
 
 private:

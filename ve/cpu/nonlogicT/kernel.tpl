@@ -41,7 +41,6 @@ typedef union philox2x32_as_1x64 {
 
 /*
 KERNEL-DESCRIPTION {
-  MODE          = {{MODE}},
   LAYOUT        = {{LAYOUT}},
   NINSTR        = {{NINSTR}},
   NARRAY_INSTR  = {{NARRAY_INSTR}},
