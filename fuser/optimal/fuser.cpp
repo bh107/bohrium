@@ -216,60 +216,78 @@ public:
     }
 
     /* Find the optimal solution through branch and bound */
-    void branch_n_bound(const vector<bool> &mask, unsigned int offset=0)
+    void branch_n_bound(const vector<bool> &init_mask, unsigned int init_offset=0)
     {
-        GraphD new_dag(dag.bglD());
-        bool fusibility;
-        int64_t cost;
-        tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
+        vector<pair<const vector<bool>, const unsigned int> > tasks;
+        tasks.push_back(make_pair(init_mask, init_offset));
+        while(tasks.size() > 0)
+        {
+            //Pop a task
+            vector<bool> mask;
+            unsigned int offset;
+            tie(mask, offset) = tasks.back();
+            tasks.pop_back();
 
-        #ifdef VERBOSE
-            if(explore_count%10000 == 0)
+            //Fuse the task
+            GraphD new_dag(dag.bglD());
+            bool fusibility;
+            int64_t cost;
+            tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
+
+            #ifdef VERBOSE
+                if(explore_count%10000 == 0)
+                {
+                    cout << "[" << explore_count << "][";
+                    BOOST_FOREACH(bool b, mask)
+                    {
+                        if(b){cout << "1";}else{cout << "0";}
+                    }
+                    cout << "] purge count: ";
+                    cout << purge_count << " / " << pow(2.0,mask.size());
+                    cout << ", cost: " << cost << ", best_cost: " << best_cost;
+                    cout << ", fusibility: " << fusibility << endl;
+                }
+                ++explore_count;
+            #endif
+
+            if(cost >= best_cost)
             {
-                cout << "[" << explore_count << "] " << "purge count: ";
-                cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
-                cout << "cost: " << cost << ", best_cost: " << best_cost;
-                cout << ", fusibility: " << fusibility << endl;
+                #ifdef VERBOSE
+                    purge_count += pow(2.0, mask.size()-offset);
+                #endif
+                continue;
             }
-            ++explore_count;
-        #endif
+            if(fusibility)
+            {
+                //Lets save the new best dag
+                best_cost = cost;
+                best_dag = new_dag;
+                assert(dag_validate(best_dag));
 
-        if(cost >= best_cost)
-        {
-            #ifdef VERBOSE
-                purge_count += pow(2.0, mask.size()-offset);
-            #endif
-            return;
-        }
-        if(fusibility)
-        {
-            //Lets save the new best dag
-            best_cost = cost;
-            best_dag = new_dag;
-            assert(dag_validate(best_dag));
+                //Lets write the current best to file
+                vector<bh_ir_kernel> kernel_list;
+                fill_kernel_list(best_dag, kernel_list);
+                const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
+                cache.write_to_files();
 
-            //Lets write the current best to file
-            vector<bh_ir_kernel> kernel_list;
-            fill_kernel_list(best_dag, kernel_list);
-            const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
-            cache.write_to_files();
-
-            #ifdef VERBOSE
-                stringstream ss;
-                string filename;
-                i.get_filename(filename);
-                ss << "new_best_dag-" << filename << ".dot";
-                cout << "write file: " << ss.str() << endl;
-                pprint(best_dag, ss.str().c_str());
-                purge_count += pow(2.0, mask.size()-offset);
-            #endif
-            return;
-        }
-        for(unsigned int i=offset; i<mask.size(); ++i)
-        {
-            vector<bool> m1(mask);
-            m1[i] = false;
-            branch_n_bound(m1, i+1);
+                #ifdef VERBOSE
+                    stringstream ss;
+                    string filename;
+                    i.get_filename(filename);
+                    ss << "new_best_dag-" << filename << ".dot";
+                    cout << "write file: " << ss.str() << endl;
+                    pprint(best_dag, ss.str().c_str());
+                    purge_count += pow(2.0, mask.size()-offset);
+                #endif
+                continue;
+            }
+            //for(unsigned int i=offset; i<mask.size(); ++i) //breadth first
+            for(int i=mask.size()-1; i>= (int)offset; --i)   //depth first
+            {
+                vector<bool> m1(mask);
+                m1[i] = false;
+                tasks.push_back(make_pair(m1, i+1));
+            }
         }
     }
 };
