@@ -168,6 +168,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
             cout << v << endl;
             cout << loc_map.at(v) << endl;
             assert(1 == 2);
+            exit(-1);
         }
     }
 
@@ -189,7 +190,6 @@ public:
     const GraphDW &dag;
     const vector<EdgeW> &edges2explore;
     int64_t best_cost;
-    int64_t one_cost;
     GraphD best_dag;
     FuseCache cache;
 
@@ -206,7 +206,6 @@ public:
         GraphDW new_dag(dag);
         fuse_greedy(new_dag, &ignores);
 
-        pprint(new_dag, "greedy.dot");
         best_dag = new_dag.bglD();
         best_cost = dag_cost(best_dag);
 
@@ -217,63 +216,60 @@ public:
     }
 
     /* Find the optimal solution through branch and bound */
-    void branch_n_bound(vector<bool> mask, unsigned int offset, bool merge_next)
+    void branch_n_bound(const vector<bool> &mask, unsigned int offset=0)
     {
-        if(not merge_next)
+        GraphD new_dag(dag.bglD());
+        bool fusibility;
+        int64_t cost;
+        tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
+
+        #ifdef VERBOSE
+            if(explore_count%10000 == 0)
+            {
+                cout << "[" << explore_count << "] " << "purge count: ";
+                cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
+                cout << "cost: " << cost << ", best_cost: " << best_cost;
+                cout << ", fusibility: " << fusibility << endl;
+            }
+            ++explore_count;
+        #endif
+
+        if(cost >= best_cost)
         {
-            GraphD new_dag(dag.bglD());
-            mask[offset] = merge_next;
-            bool fusibility;
-            int64_t cost;
-            tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
+            #ifdef VERBOSE
+                purge_count += pow(2.0, mask.size()-offset);
+            #endif
+            return;
+        }
+        if(fusibility)
+        {
+            //Lets save the new best dag
+            best_cost = cost;
+            best_dag = new_dag;
+            assert(dag_validate(best_dag));
+
+            //Lets write the current best to file
+            vector<bh_ir_kernel> kernel_list;
+            fill_kernel_list(best_dag, kernel_list);
+            const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
+            cache.write_to_files();
 
             #ifdef VERBOSE
-                if(explore_count%10000 == 0)
-                {
-                    cout << "[" << explore_count << "] " << "purge count: ";
-                    cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
-                    cout << "cost: " << cost << ", best_cost: " << best_cost;
-                    cout << ", fusibility: " << fusibility << endl;
-                }
-                ++explore_count;
+                stringstream ss;
+                string filename;
+                i.get_filename(filename);
+                ss << "new_best_dag-" << filename << ".dot";
+                cout << "write file: " << ss.str() << endl;
+                pprint(best_dag, ss.str().c_str());
+                purge_count += pow(2.0, mask.size()-offset);
             #endif
-
-            if(cost >= best_cost)
-            {
-                #ifdef VERBOSE
-                    purge_count += pow(2.0, mask.size()-offset-1);
-                #endif
-                return;
-            }
-            if(fusibility)
-            {
-                //Lets save the new best dag
-                best_cost = cost;
-                best_dag = new_dag;
-                assert(dag_validate(best_dag));
-
-                //Lets write the current best to file
-                vector<bh_ir_kernel> kernel_list;
-                fill_kernel_list(best_dag, kernel_list);
-                const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
-                cache.write_to_files();
-
-                #ifdef VERBOSE
-                    stringstream ss;
-                    string filename;
-                    i.get_filename(filename);
-                    ss << "new_best_dag-" << filename << ".dot";
-                    cout << "write file: " << ss.str() << endl;
-                    pprint(best_dag, ss.str().c_str());
-                    purge_count += pow(2.0, mask.size()-offset-1);
-                #endif
-                return;
-            }
+            return;
         }
-        if(offset+1 < mask.size())
+        for(unsigned int i=offset; i<mask.size(); ++i)
         {
-            branch_n_bound(mask, offset+1, false);
-            branch_n_bound(mask, offset+1, true);
+            vector<bool> m1(mask);
+            m1[i] = false;
+            branch_n_bound(m1, i+1);
         }
     }
 };
@@ -326,19 +322,6 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
     if(edges2explore.size() == 0)
         return;
 
-    //First we check the trivial case where all kernels are merged
-    vector<bool> mask(edges2explore.size(), true);
-    {
-        GraphD new_dag(dag.bglD());
-        bool fuse = fuse_mask(numeric_limits<int64_t>::max(), edges2explore,
-                                        dag, mask, bhir, new_dag).second;
-        if(fuse)
-        {
-            output = new_dag;
-            return;
-        }
-    }
-
     //We need the set of vertices that the greedy fusion must ignore
     set<Vertex> ignores;
     BOOST_FOREACH(Vertex v, vertices(dag.bglD()))
@@ -348,6 +331,7 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
     }
 
     //Check for a preloaded initial condition
+    vector<bool> mask(edges2explore.size(), true);
     unsigned int preload_offset=0;
     if(edges2explore.size() > 10)
     {
@@ -377,8 +361,7 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
     else
     {
         cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-        solver.branch_n_bound(mask, preload_offset, false);
-        solver.branch_n_bound(mask, preload_offset, true);
+        solver.branch_n_bound(mask, preload_offset);
     }
     output = solver.best_dag;
 }
