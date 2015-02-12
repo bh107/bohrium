@@ -72,31 +72,31 @@ namespace UnitTest
                 throw new Exception("Failure in flatten");
 
             List<T> fln = new List<T>(b[1, 0, 1].Value);
-            if (fln.Count != 3) throw new Exception("Failure in basic test");
-            if (fln[0] != 30) throw new Exception("Failure in basic test");
-            if (fln[1] != 31) throw new Exception("Failure in basic test");
-            if (fln[2] != 32) throw new Exception("Failure in basic test");
+            if (fln.Count != 3) throw new Exception("Failure in basic test 1");
+            if (fln[0] != 30) throw new Exception("Failure in basic test 2");
+            if (fln[1] != 31) throw new Exception("Failure in basic test 3");
+            if (fln[2] != 32) throw new Exception("Failure in basic test 4");
 
             T n = b.Value[1, 0, 1, 2];
-            if (n != 32) throw new Exception("Failure in basic test");
-            if (c.Value[2] != 32) throw new Exception("Failure in basic test");
-            if (c.Value[0] != 30) throw new Exception("Failure in basic test");
-            if (c.Value[1] != 31) throw new Exception("Failure in basic test");
-            if (b.Sum() != 228) throw new Exception("Failure in basic test");
+            if (n != 32) throw new Exception("Failure in basic test 5");
+            if (c.Value[2] != 32) throw new Exception("Failure in basic test 6");
+            if (c.Value[0] != 30) throw new Exception("Failure in basic test 7");
+            if (c.Value[1] != 31) throw new Exception("Failure in basic test 8");
+            if (b.Sum() != 228) throw new Exception("Failure in basic test 9");
 
             var r1 = Generate.Range(12).Reshape(new long[] { 2, 1, 2, 3 });
-            if (!Equals(r1.AsArray(), new T[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 })) throw new Exception("Failure in basic test");
+            if (!Equals(r1.AsArray(), new T[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 })) throw new Exception("Failure in basic test 10");
             var r2 = r1.Reduce<Add>(0);
-            if (!Equals(r2.AsArray(), new T[] { 6, 8, 10, 12, 14, 16 })) throw new Exception("Failure in basic test");
+            if (!Equals(r2.AsArray(), new T[] { 6, 8, 10, 12, 14, 16 })) throw new Exception("Failure in basic test 11");
             r2 = r1.Reduce<Add>(1);
-            if (!Equals(r2.AsArray(), new T[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 })) throw new Exception("Failure in basic test");
+            if (!Equals(r2.AsArray(), new T[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 })) throw new Exception("Failure in basic test 12");
             r2 = r1.Reduce<Add>(2);
-            if (!Equals(r2.AsArray(), new T[] { 3, 5, 7, 15, 17, 19 })) throw new Exception("Failure in basic test");
+            if (!Equals(r2.AsArray(), new T[] { 3, 5, 7, 15, 17, 19 })) throw new Exception("Failure in basic test 13");
             r2 = r1.Reduce<Add>(3);
-            if (!Equals(r2.AsArray(), new T[] { 3, 12, 21, 30 })) throw new Exception("Failure in basic test");
+			if (!Equals(r2.AsArray(), new T[] { 3, 12, 21, 30 })) throw new Exception(string.Format("Failure in basic test 14"));
 
             var r3 = b.Reduce<Add>();
-            if (!Equals(r3.AsArray(), new T[] { 30, 32, 34, 42, 44, 46 })) throw new Exception("Failure in basic test");
+            if (!Equals(r3.AsArray(), new T[] { 30, 32, 34, 42, 44, 46 })) throw new Exception("Failure in basic test 15");
 
             var x1 = Generate.Range(12).Reshape(new long[] { 4, 3 });
             var x2 = Generate.Range(3);
@@ -113,11 +113,11 @@ namespace UnitTest
             if (UFunc.Reduce<T, Add>(UFunc.Reduce<T, Add>(sqrd, 1)).Value[0] != 138) throw new Exception("Failure in basic arithmetics");
 
             var x5 = sqrd.Apply((x) => x % 2 == 0 ? x : -x);
-            if (!Equals(x5.AsArray(), new T[] { -5, -7, -9, 8, 10, 12, -11, -13, -15, 14, 16, 18 })) throw new Exception("Failure in basic test");
+            if (!Equals(x5.AsArray(), new T[] { -5, -7, -9, 8, 10, 12, -11, -13, -15, 14, 16, 18 })) throw new Exception("Failure in basic test 16");
 
             NumCIL.UFunc.Apply<T, Add>(x1, x2, x3);
             NumCIL.Double.NdArray x4 = (NumCIL.Double.NdArray)x3;
-            if (!Equals(x4.AsArray(), new double[] { 0, 2, 4, 3, 5, 7, 6, 8, 10, 9, 11, 13 })) throw new Exception("Failure in basic test");
+            if (!Equals(x4.AsArray(), new double[] { 0, 2, 4, 3, 5, 7, 6, 8, 10, 9, 11, 13 })) throw new Exception("Failure in basic test 17");
 
             var x6 = Generate.Range(6).Reshape(new long[] { 2, 3 });
 
