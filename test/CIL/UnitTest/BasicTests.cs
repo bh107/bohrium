@@ -183,6 +183,16 @@ namespace UnitTest
             var y7 = y6 * (Generate.Range(2) + 1);
             if (y7.Sum() != 3040)
                 throw new Exception("Failure with 6 dimensions");
+
+			var r = Generate.Random(2000);
+			var rmin = Min.Aggregate(r);
+			var rmax = Min.Aggregate(r);
+			var ravg = Add.Aggregate(r) / r.DataAccessor.Length;
+
+			if (rmin < 0 || rmax > 1.0)
+				throw new Exception("Error in random");
+			if (ravg < 0.4 || ravg > 0.6)
+				throw new Exception("Deviation in random average");
         }
 
         private static bool Equals(double[] a, double[] b)
