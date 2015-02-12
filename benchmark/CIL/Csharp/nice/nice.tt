@@ -202,64 +202,76 @@ namespace nice
 
 		public static void Solve(Galaxy galaxy, long steps, bool image_output)
 		{
+			if (image_output)
+				Render(galaxy, 0, steps);
+
 			for (long step = 0; step < steps; step++)
 			{
 				Move(galaxy);
 
 				if (image_output)
+					Render(galaxy, step + 1, steps);
+			}
+		}
+
+		private static void Render(Galaxy galaxy, long step, long steps)
+		{
+			var image_width = 1024;
+			var image_height = 1024;
+
+			var axz = galaxy.Asteroids.x;// / galaxy.Asteroids.z;
+			var ayz = galaxy.Asteroids.y;// / galaxy.Asteroids.z;
+			var sxz = galaxy.SolarSystem.x;// / galaxy.SolarSystem.z;
+			var syz = galaxy.SolarSystem.y;// / galaxy.SolarSystem.z;
+
+			Func<int, int, int, System.Drawing.Rectangle> inflateBox = (x, y, s) => new System.Drawing.Rectangle(new System.Drawing.Point(x - (s/2), y - (s/2)), new System.Drawing.Size(s, s));
+
+			var mass_min = Min.Reduce(galaxy.SolarSystem.mass).Value[0];
+			var mass_max = Max.Reduce(galaxy.SolarSystem.mass).Value[0];
+
+			var rangex_max = Math.Max(Max.Reduce(axz).Value[0], Max.Reduce(sxz).Value[0]);
+			var rangex_min = Math.Min(Min.Reduce(axz).Value[0], Min.Reduce(sxz).Value[0]);
+
+			var rangey_max = Math.Max(Max.Reduce(ayz).Value[0], Max.Reduce(syz).Value[0]);
+			var rangey_min = Math.Min(Min.Reduce(ayz).Value[0], Min.Reduce(syz).Value[0]);
+
+			var rangex_diff = rangex_max - rangex_min;
+			var rangey_diff = rangey_max - rangey_min;
+
+			rangex_min = Bodies.XMAX / 2;
+			rangey_min = Bodies.YMAX / 2;
+
+			rangex_diff = Bodies.XMAX;
+			rangey_diff = Bodies.YMAX;
+
+			rangex_min = -Bodies.XMAX * 2;
+			rangey_min = -Bodies.YMAX * 2;
+			rangex_diff = Bodies.XMAX * 4;
+			rangey_diff = Bodies.YMAX * 4;
+
+			var sx = NumCIL.Int32.Min.Apply(image_width - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((sxz - rangex_min) / rangex_diff) * (image_width - 1))))).AsArray();
+			var sy = NumCIL.Int32.Min.Apply(image_height - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((syz - rangey_min) / rangey_diff) * (image_height - 1))))).AsArray();
+
+			var ax = NumCIL.Int32.Min.Apply(image_width - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((axz - rangex_min) / rangex_diff) * (image_width - 1))))).AsArray();
+			var ay = NumCIL.Int32.Min.Apply(image_height - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((ayz - rangey_min) / rangey_diff) * (image_height - 1))))).AsArray();
+
+			using (var image = new System.Drawing.Bitmap(image_width, image_height))
+			{
+				using (var gc = System.Drawing.Graphics.FromImage(image))
+					gc.Clear(System.Drawing.Color.White);
+					
+				using (var gc = System.Drawing.Graphics.FromImage(image))
 				{
-					var image_width = 500;
-					var image_height = 500;
-
-					var axz = galaxy.Asteroids.x / galaxy.Asteroids.z;
-					var ayz = galaxy.Asteroids.y / galaxy.Asteroids.z;
-					var sxz = galaxy.SolarSystem.x / galaxy.SolarSystem.z;
-					var syz = galaxy.SolarSystem.y / galaxy.SolarSystem.z;
-
-					Func<int, int, int, System.Drawing.Rectangle> inflateBox = (x, y, s) => new System.Drawing.Rectangle(new System.Drawing.Point(x - (s/2), y - (s/2)), new System.Drawing.Size(s, s));
-
-					var rangex_max = Math.Max(Max.Reduce(axz).Value[0], Max.Reduce(sxz).Value[0]);
-					var rangex_min = Math.Min(Min.Reduce(axz).Value[0], Min.Reduce(sxz).Value[0]);
-
-					var rangey_max = Math.Max(Max.Reduce(ayz).Value[0], Max.Reduce(syz).Value[0]);
-					var rangey_min = Math.Min(Min.Reduce(ayz).Value[0], Min.Reduce(syz).Value[0]);
-
-					var rangex_diff = rangex_max - rangex_min;
-					var rangey_diff = rangey_max - rangey_min;
-
-					//rangex_min = Bodies.XMAX / 2;
-					//rangey_min = Bodies.YMAX / 2;
-
-					//rangex_diff = Bodies.XMAX;
-					//rangey_diff = Bodies.YMAX;
-
-					var sx = NumCIL.Int32.Min.Apply(image_width - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((sxz - rangex_min) / rangex_diff) * (image_width - 1))))).AsArray();
-					var sy = NumCIL.Int32.Min.Apply(image_height - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((syz - rangey_min) / rangey_diff) * (image_height - 1))))).AsArray();
-
-					var ax = NumCIL.Int32.Min.Apply(image_width - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((axz - rangex_min) / rangex_diff) * (image_width - 1))))).AsArray();
-					var ay = NumCIL.Int32.Min.Apply(image_height - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((ayz - rangey_min) / rangey_diff) * (image_height - 1))))).AsArray();
-
-					using (var image = new System.Drawing.Bitmap(image_width, image_height))
-					{
-						using (var gc = System.Drawing.Graphics.FromImage(image))
-							gc.Clear(System.Drawing.Color.White);
-							
-						using (var gc = System.Drawing.Graphics.FromImage(image))
-						{
-							for (var s = 0; s < ax.Length; s++)
-								gc.DrawEllipse(System.Drawing.Pens.DarkGray, inflateBox(ax[s], ay[s], 1));
-							for (var s = 0; s < sx.Length; s++)
-								gc.DrawEllipse(System.Drawing.Pens.Red, inflateBox(sx[s], sy[s], 2));
-						}
-
-						image.Save(string.Format("step-{0:0000}.png", step), System.Drawing.Imaging.ImageFormat.Png);
-					}
-
-					Console.WriteLine("Completed step {0} of {1}", step, steps);
+					for (var s = 0; s < ax.Length; s++)
+						gc.DrawEllipse(System.Drawing.Pens.DarkGray, inflateBox(ax[s], ay[s], 1));
+					for (var s = 0; s < sx.Length; s++)
+						gc.DrawEllipse(System.Drawing.Pens.Red, inflateBox(sx[s], sy[s], 2));
 				}
+
+				image.Save(string.Format("step-{0:0000}.png", step), System.Drawing.Imaging.ImageFormat.Png);
 			}
 
-
+			Console.WriteLine("Completed step {0} of {1}", step, steps);
 		}
 	}
 }
