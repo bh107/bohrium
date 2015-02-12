@@ -50,6 +50,11 @@ namespace NumCIL.Bohrium
         private static object _lock = new object();
 
 		/// <summary>
+		/// Environment variable that checks if the GC should be flushed before flushing instructions
+		/// </summary>
+		private static readonly bool BH_GC_FLUSH = "1".Equals(Environment.GetEnvironmentVariable("BH_GC_FLUSH"));
+
+		/// <summary>
 		/// Gets the execute lock object.
 		/// </summary>
 		/// <value>The execute lock object.</value>
@@ -144,6 +149,12 @@ namespace NumCIL.Bohrium
         /// </summary>
         internal static void ReleaseInternal()
         {
+			if (BH_GC_FLUSH)
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+			}
+
 			lock (_lock)
 			{
 				// Execute all the operations
