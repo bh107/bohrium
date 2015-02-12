@@ -321,7 +321,6 @@ void get_edges2explore(const GraphDW &dag, vector<EdgeW> &edges2explore)
     cout << "BH_FUSER_OPTIMAL_ORDER: " << order << endl;
 }
 
-
 /* Fuse the 'dag' optimally */
 void fuse_optimal(bh_ir &bhir, const GraphDW &dag, GraphD &output, FuseCache &cache)
 {
@@ -377,39 +376,8 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, GraphD &output, FuseCache &ca
     output = solver.best_dag;
 }
 
-void timer_handler(int signum)
-{
-    cout << "ABORT! - timeout" << endl;
-    exit(-1);
-}
-void set_abort_timer()
-{
-    const char *bh_fuser_timeout = getenv("BH_FUSER_TIMEOUT");
-    if(bh_fuser_timeout == NULL)
-        return;
-    long int timeout = strtol(bh_fuser_timeout, NULL, 10);
-    cout << "[ABORT] Fuse-Abort timeout is " << timeout << " sec" << endl;
-
-    struct sigaction sa;
-    struct itimerval timer;
-
-    memset(&sa, 0, sizeof(sa));
-
-    sa.sa_handler = &timer_handler;
-    sigaction(SIGALRM, &sa, NULL);
-
-    timer.it_value.tv_sec = timeout;
-    timer.it_value.tv_usec = 0;
-    timer.it_interval.tv_sec = 0;
-    timer.it_interval.tv_usec = 100000;
-
-    setitimer (ITIMER_REAL, &timer, NULL);
-}
-
 void do_fusion(bh_ir &bhir, FuseCache &cache)
 {
-    set_abort_timer();
-
     GraphDW dag;
     from_bhir(bhir, dag);
     fuse_gentle(dag);
