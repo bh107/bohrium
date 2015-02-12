@@ -208,7 +208,8 @@ namespace NumCIL.Bohrium
             // If the input is used, no special action is performed until 
             // a sync is executed, then all the BH queue is flushed and 
             // the GC handles released
-                        
+
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};                  
             lock(PinnedArrayTracker.ExecuteLock)
             {                        
                 using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
@@ -216,20 +217,19 @@ namespace NumCIL.Bohrium
                 using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                 {
                     m(v0, v1, v2);
-                    // If the output is CIL-managed, we must sync immediately
-                    if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                    {
-                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                    }
-                    else
-                    {
-                        v0.Sync();
-                        PinnedArrayTracker.Release();
-                    }
-                }
 
-                return true;
+                    if (isUnmanaged)
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    else
+                        v0.Sync();
+                }
             }
+
+            // If the output is CIL-managed, we must sync immediately
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
+
+            return true;
         }
 
         public bool ApplyBinaryConvOp<Ta>(Type c, NdArray<Ta> in1, NdArray<Ta> in2, NdArray<${bh_atype}> @out)
@@ -253,6 +253,7 @@ namespace NumCIL.Bohrium
                     return false;
                 }
 
+                var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};                  
                 lock(PinnedArrayTracker.ExecuteLock)
                 {
                     using (var v1 = new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)@in1))
@@ -260,20 +261,19 @@ namespace NumCIL.Bohrium
                     using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                     {
                         m(v0, v1, v2);
-                        // If the output is CIL-managed, we must sync immediately
-                        if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                        {
-                            ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                        }
-                        else
-                        {
-                            v0.Sync();
-                            PinnedArrayTracker.Release();
-                        }
-                    }
 
-                    return true;
+                        if (isUnmanaged)
+                            ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                        else
+                            v0.Sync();
+                    }
                 }
+
+                // If the output is CIL-managed, we must sync immediately
+                if (!isUnmanaged)
+                    PinnedArrayTracker.Release();
+
+                return true;
             }
 %end for
 %end if
@@ -286,6 +286,8 @@ namespace NumCIL.Bohrium
             
             Action<NdArray<${bh_atype}>, NdArray<${bh_atype}>> exec = null;
             
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};
+
             lock(PinnedArrayTracker.ExecuteLock)
             {            
                 // Special handling of the copy operator as it happens "in-place" (kind-of)
@@ -297,7 +299,7 @@ namespace NumCIL.Bohrium
                             using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
                             {                                
                                 PInvoke.bh_multi_array_${bh_ctype}_identity_${bh_ctype}_scalar(v2, _in.DataAccessor[0]);
-                                if (!(_out.DataAccessor is DataAccessor_${bh_ctype}))
+                                if (!isUnmanaged)
                                     v2.Sync();
                             }
                         else
@@ -305,7 +307,7 @@ namespace NumCIL.Bohrium
                             using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
                             {
                                 PInvoke.bh_multi_array_${bh_ctype}_identity_${bh_ctype}(v2, v1);
-                                if (!(_out.DataAccessor is DataAccessor_${bh_ctype}))
+                                if (!isUnmanaged)
                                     v2.Sync();
 
                             }
@@ -333,7 +335,7 @@ namespace NumCIL.Bohrium
                             using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
                             {
                                 m(v0, v1);
-                                if (!(_out.DataAccessor is DataAccessor_${bh_ctype}))
+                                if (!isUnmanaged)
                                     v0.Sync();
                             }
                         };
@@ -348,7 +350,7 @@ namespace NumCIL.Bohrium
                 
                 exec(@in1, @out);
                 
-                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                if (isUnmanaged)
                     ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
                 else
                     PinnedArrayTracker.Release();
@@ -360,25 +362,25 @@ namespace NumCIL.Bohrium
         private bool DoConvert<T>(NdArray<${bh_atype}> @out, Func<T> constructor, Action<ma_${bh_ctype}, T> converter)
             where T : IDisposable
         {
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};
             lock(PinnedArrayTracker.ExecuteLock)
             {
                 using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                 using (var v1 = constructor())
                 {
                     converter(v0, v1);
-                    if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                    {
+
+                    if (isUnmanaged)
                         ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                    }
                     else
-                    {
                         v0.Sync();
-                        PinnedArrayTracker.Release();
-                    }
                 }
-                
-                return true;
             }
+
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
+
+            return true;
         }
 
         public bool ApplyUnaryConvOp<Ta>(Type c, NdArray<Ta> in1, NdArray<${bh_atype}> @out)
@@ -445,25 +447,26 @@ namespace NumCIL.Bohrium
                 return false;
             }
 
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};
+
             lock(PinnedArrayTracker.ExecuteLock)                
             {
                 using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                 {
                     m(v0);
-                    // If the output is CIL-managed, we must sync immediately
-                    if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                    {
-                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                    }
-                    else
-                    {
-                        v0.Sync();
-                        PinnedArrayTracker.Release();
-                    }
-                }
 
-                return true;
+                    if (isUnmanaged)
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    else
+                        v0.Sync();
+                }
             }
+
+            // If the output is CIL-managed, we must sync immediately
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
+
+            return true;
         }
 
         public bool ApplyReduce(Type c, long axis, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> @out)
@@ -483,25 +486,26 @@ namespace NumCIL.Bohrium
                 return false;
             }
 
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};
+
             lock(PinnedArrayTracker.ExecuteLock)
             {            
                 using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
                 using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                 {
                     m(v0, v1, axis);
-                    if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                    {
+
+                    if (isUnmanaged)
                         ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                    }
                     else
-                    {
                         v0.Sync();
-                        PinnedArrayTracker.Release();
-                    }
                 }
 
-                return true;
             }
+
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
+            return true;
         }
 
         public bool ApplyMatmul(Type cadd, Type cmul, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> in2, NdArray<${bh_atype}> @out = null)
