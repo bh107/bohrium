@@ -27,6 +27,22 @@ namespace NumCIL.Bohrium
 {
     internal static class RandomSuppliers
     {
+        private static ulong m_seed;
+        private static ulong m_index = 0;
+
+        public static void SetSeed(ulong seed)
+        {
+            m_seed = seed;
+            m_index = 0;
+        }
+
+        static RandomSuppliers()
+        {
+            var bytes = new byte[8];
+            new Random().NextBytes(bytes);
+            m_seed = BitConverter.ToUInt64(bytes, 0);
+        }
+
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
         public static void Random(ma_${bh_ctype} target)
         {
@@ -34,8 +50,14 @@ namespace NumCIL.Bohrium
             {
                 var len = target.DataSize;
                 using(var view = PInvoke.bh_multi_array_${bh_ctype}_new_view(target, 1, 0, new long[] { len }, new long[] { 1 }))
-                using (var tmp = PInvoke.bh_multi_array_uint64_new_random123((ulong)len, 0u, 0u))
+                using (var tmp = PInvoke.bh_multi_array_uint64_new_random123((ulong)len, m_index, m_seed))
+                {
+                    m_index += (ulong)len;
                     PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+%if $bh_ctype == "float32" or $bh_ctype == "float64" or $bh_ctype == "complex64" or $bh_ctype == "complex128"           
+                    PInvoke.bh_multi_array_${bh_ctype}_divide_scalar_rhs(view, view, bh_uint64.MaxValue);
+%end if
+                }
             }
         }
 %end for
