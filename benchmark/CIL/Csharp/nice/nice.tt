@@ -238,16 +238,10 @@ namespace nice
 			var rangex_diff = rangex_max - rangex_min;
 			var rangey_diff = rangey_max - rangey_min;
 
-			rangex_min = Bodies.XMAX / 2;
-			rangey_min = Bodies.YMAX / 2;
-
-			rangex_diff = Bodies.XMAX;
-			rangey_diff = Bodies.YMAX;
-
-			rangex_min = -Bodies.XMAX * 2;
-			rangey_min = -Bodies.YMAX * 2;
-			rangex_diff = Bodies.XMAX * 4;
-			rangey_diff = Bodies.YMAX * 4;
+			rangex_min = -Bodies.XMAX * 1.2f;
+			rangey_min = -Bodies.YMAX * 1.2f;
+			rangex_diff = Bodies.XMAX * 2.4f;
+			rangey_diff = Bodies.YMAX * 2.4f;
 
 			var sx = NumCIL.Int32.Min.Apply(image_width - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((sxz - rangex_min) / rangex_diff) * (image_width - 1))))).AsArray();
 			var sy = NumCIL.Int32.Min.Apply(image_height - 1, NumCIL.Int32.Max.Apply(0, ((NumCIL.Int32.NdArray)(((syz - rangey_min) / rangey_diff) * (image_height - 1))))).AsArray();
