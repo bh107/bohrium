@@ -34,6 +34,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <signal.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <mutex>
+#include <condition_variable>
+#include <exception>
+#include <omp.h>
 
 #define VERBOSE
 
@@ -41,6 +45,51 @@ using namespace std;
 using namespace boost;
 using namespace bohrium;
 using namespace bohrium::dag;
+
+//FILO Task Queue thread safe
+class TaskQueue
+{
+public:
+    typedef pair<vector<bool>, unsigned int> Task;
+private:
+    mutex mtx;
+    condition_variable non_empty;
+    vector<Task> tasks;
+    unsigned int nwaiting;
+    const unsigned int nthreads;
+    bool finished;
+public:
+    TaskQueue(unsigned int nthreads):nwaiting(0), nthreads(nthreads), finished(false){}
+
+    void push(const vector<bool> &mask, unsigned int offset)
+    {
+        unique_lock<mutex> lock(mtx);
+        tasks.push_back(make_pair(mask, offset));
+        non_empty.notify_one();
+    }
+
+    Task pop()
+    {
+        unique_lock<mutex> lock(mtx);
+        if(++nwaiting >= nthreads and tasks.size() == 0)
+        {
+            finished = true;
+            non_empty.notify_all();
+            throw overflow_error("Out of work");
+        }
+
+        while(tasks.size() == 0 and not finished)
+            non_empty.wait(lock);
+
+        if(finished)
+            throw overflow_error("Out of work");
+
+        Task ret = tasks.back();
+        tasks.pop_back();
+        --nwaiting;
+        return ret;
+    }
+};
 
 /* Help function that fuses the edges in 'edges2explore' where the 'mask' is true */
 pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explore,
@@ -218,15 +267,19 @@ public:
     /* Find the optimal solution through branch and bound */
     void branch_n_bound(const vector<bool> &init_mask, unsigned int init_offset=0)
     {
-        vector<pair<const vector<bool>, const unsigned int> > tasks;
-        tasks.push_back(make_pair(init_mask, init_offset));
-        while(tasks.size() > 0)
+        TaskQueue tasks(omp_get_max_threads());
+        tasks.push(init_mask, init_offset);
+        #pragma omp parallel
         {
-            //Pop a task
+        while(1)
+        {
             vector<bool> mask;
             unsigned int offset;
-            tie(mask, offset) = tasks.back();
-            tasks.pop_back();
+            try{
+                tie(mask, offset) = tasks.pop();
+            }catch(overflow_error &e){
+                break;
+            }
 
             //Fuse the task
             GraphD new_dag(dag.bglD());
@@ -286,9 +339,9 @@ public:
             {
                 vector<bool> m1(mask);
                 m1[i] = false;
-                tasks.push_back(make_pair(m1, i+1));
+                tasks.push(m1, i+1);
             }
-        }
+        }}
     }
 };
 
