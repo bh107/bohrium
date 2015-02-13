@@ -39,6 +39,7 @@
     <Compile Include="Timer.cs" />
     <Compile Include="RunBenchmark.cs" />
     <Compile Include="Render.cs" />
+    <Compile Include="LockBitmap.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
