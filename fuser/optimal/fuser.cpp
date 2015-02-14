@@ -39,8 +39,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <exception>
 #include <omp.h>
 
-#define VERBOSE
-
 using namespace std;
 using namespace boost;
 using namespace bohrium;
@@ -231,126 +229,101 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     return make_pair(cost,true);
 }
 
-/* Private class to find the optimal solution through branch and bound */
-class Solver
+/* Find the optimal solution through branch and bound */
+GraphD branch_n_bound(bh_ir &bhir, const GraphDW &dag, const vector<EdgeW> &edges2explore, FuseCache &cache,
+                      const set<Vertex> &ignores, const vector<bool> &init_mask, unsigned int init_offset=0)
 {
-public:
-    bh_ir &bhir;
-    const GraphDW &dag;
-    const vector<EdgeW> &edges2explore;
+    //We use the greedy algorithm to find a good initial guess
     int64_t best_cost;
     GraphD best_dag;
-    FuseCache cache;
-
-    #ifdef VERBOSE
-        double  purge_count;
-        uint64_t explore_count;
-    #endif
-
-    /* The constructor */
-    Solver(bh_ir &b, const GraphDW &d, const vector<EdgeW> &e, FuseCache &cache, const set<Vertex> &ignores):
-           bhir(b),dag(d),edges2explore(e), cache(cache)
     {
-        //We use the greedy algorithm to find a good initial guess
         GraphDW new_dag(dag);
         fuse_greedy(new_dag, &ignores);
-
         best_dag = new_dag.bglD();
         best_cost = dag_cost(best_dag);
-
-        #ifdef VERBOSE
-            purge_count=0;
-            explore_count=0;
-        #endif
     }
+    double purge_count=0;
+    uint64_t explore_count=0;
 
-    /* Find the optimal solution through branch and bound */
-    void branch_n_bound(const vector<bool> &init_mask, unsigned int init_offset=0)
+    TaskQueue tasks(omp_get_max_threads());
+    tasks.push(init_mask, init_offset);
+    #pragma omp parallel
     {
-        TaskQueue tasks(omp_get_max_threads());
-        tasks.push(init_mask, init_offset);
-        #pragma omp parallel
+    while(1)
+    {
+        vector<bool> mask;
+        unsigned int offset;
+        try{
+            tie(mask, offset) = tasks.pop();
+        }catch(overflow_error &e){
+            break;
+        }
+
+        //Fuse the task
+        GraphD new_dag(dag.bglD());
+        bool fusibility;
+        int64_t cost;
+        tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
+
+        if(explore_count%1000000 == 0)
         {
-        while(1)
+            #pragma omp critical
+            {
+                cout << "[" << explore_count << "][";
+                BOOST_FOREACH(bool b, mask)
+                {
+                    if(b){cout << "1";}else{cout << "0";}
+                }
+                cout << "] purge count: ";
+                cout << purge_count << " / " << pow(2.0,mask.size());
+                cout << ", cost: " << cost << ", best_cost: " << best_cost;
+                cout << ", fusibility: " << fusibility << endl;
+            }
+        }
+        #pragma omp critical
+        ++explore_count;
+
+        if(cost >= best_cost)
         {
-            vector<bool> mask;
-            unsigned int offset;
-            try{
-                tie(mask, offset) = tasks.pop();
-            }catch(overflow_error &e){
-                break;
-            }
-
-            //Fuse the task
-            GraphD new_dag(dag.bglD());
-            bool fusibility;
-            int64_t cost;
-            tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
-
-            #ifdef VERBOSE
-                if(explore_count%10000 == 0)
-                {
-                    #pragma omp critical
-                    {
-                        cout << "[" << explore_count << "][";
-                        BOOST_FOREACH(bool b, mask)
-                        {
-                            if(b){cout << "1";}else{cout << "0";}
-                        }
-                        cout << "] purge count: ";
-                        cout << purge_count << " / " << pow(2.0,mask.size());
-                        cout << ", cost: " << cost << ", best_cost: " << best_cost;
-                        cout << ", fusibility: " << fusibility << endl;
-                    }
-                }
-                #pragma omp atomic
-                ++explore_count;
-            #endif
-
-            if(cost >= best_cost)
+            #pragma omp critical
+            purge_count += pow(2.0, mask.size()-offset);
+            continue;
+        }
+        if(fusibility)
+        {
+            #pragma omp critical
             {
-                #ifdef VERBOSE
-                    purge_count += pow(2.0, mask.size()-offset);
-                #endif
-                continue;
-            }
-            if(fusibility)
-            {
-                #pragma omp critical
-                {
-                    //Lets save the new best dag
-                    best_cost = cost;
-                    best_dag = new_dag;
-                    assert(dag_validate(best_dag));
+                //Lets save the new best dag
+                best_cost = cost;
+                best_dag = new_dag;
+                assert(dag_validate(best_dag));
 
-                    //Lets write the current best to file
-                    vector<bh_ir_kernel> kernel_list;
-                    fill_kernel_list(best_dag, kernel_list);
-                    const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
-                    cache.write_to_files();
+                //Lets write the current best to file
+                vector<bh_ir_kernel> kernel_list;
+                fill_kernel_list(best_dag, kernel_list);
+                const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
+                cache.write_to_files();
 
-                    #ifdef VERBOSE
-                        stringstream ss;
-                        string filename;
-                        i.get_filename(filename);
-                        ss << "new_best_dag-" << filename << ".dot";
-                        cout << "write file: " << ss.str() << endl;
-                        pprint(best_dag, ss.str().c_str());
-                        purge_count += pow(2.0, mask.size()-offset);
-                    #endif
-                }
-                continue;
+                stringstream ss;
+                string filename;
+                i.get_filename(filename);
+                ss << "new_best_dag-" << filename << ".dot";
+                cout << "write file: " << ss.str() << endl;
+                pprint(best_dag, ss.str().c_str());
+                purge_count += pow(2.0, mask.size()-offset);
             }
-            //for(unsigned int i=offset; i<mask.size(); ++i) //breadth first
-            for(int i=mask.size()-1; i>= (int)offset; --i)   //depth first
-            {
-                vector<bool> m1(mask);
-                m1[i] = false;
-                tasks.push(m1, i+1);
-            }
-        }}
-    }
-};
+            continue;
+        }
+        //for(unsigned int i=offset; i<mask.size(); ++i) //breadth first
+        for(int i=mask.size()-1; i>= (int)offset; --i)   //depth first
+        {
+            vector<bool> m1(mask);
+            m1[i] = false;
+            tasks.push(m1, i+1);
+        }
+    }}
+    return best_dag;
+}
 
 void get_edges2explore(const GraphDW &dag, const set<Vertex> &vertices2explore,
                        vector<EdgeW> &edges2explore)
@@ -430,7 +403,6 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
         }
     }
 
-    Solver solver(bhir, dag, edges2explore, cache, ignores);
     if(mask.size() > 100)
     {
         cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
@@ -439,9 +411,9 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
     else
     {
         cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-        solver.branch_n_bound(mask, preload_offset);
+
+        output = branch_n_bound(bhir, dag, edges2explore, cache, ignores, mask, preload_offset);
     }
-    output = solver.best_dag;
 }
 
 void do_fusion(bh_ir &bhir, FuseCache &cache)
