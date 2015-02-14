@@ -13,11 +13,11 @@ namespace codegen{
 
 Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block) {}
 
-string Kernel::unpack_operands(void)
+string Kernel::unpack_arguments(void)
 {
     stringstream ss;
     for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        ss << unpack_operand(oidx);
+        ss << unpack_argument(oidx);
     }
     return ss.str();
 }
@@ -35,18 +35,106 @@ string Kernel::iterspace(void)
 string Kernel::generate_source(void)
 {
     std::map<string, string> subjects;
+
+    if (block_.narray_tacs()>1) {
+        subjects["MODE"] = "FUSED";
+    } else {
+        subjects["MODE"] = "SIJ";
+    }
     subjects["LAYOUT"] = layout_text(block_.iterspace().layout);
-    subjects["NINSTR"] = block_.ntacs();
-    subjects["NARRAY_INSTR"] = block_.narray_tacs();
-    subjects["NARGS"] = block_.noperands();
-    subjects["NARRAY_ARGS"] = string("");
+    subjects["NINSTR"] = to_string(block_.ntacs());
+    subjects["NARRAY_INSTR"] = to_string(block_.narray_tacs());
+    subjects["NARGS"] = to_string(block_.noperands());
+    subjects["NARRAY_ARGS"] = "?";
     subjects["SYMBOL_TEXT"] = block_.symbol_text();
     subjects["SYMBOL"] = block_.symbol();
-    subjects["ARGUMENTS"] = unpack_operands();
+
+    string unpacked_args = unpack_arguments();  // Indent arguments
+    plaid_.indent(unpacked_args, 4);
+    subjects["ARGUMENTS"] = unpacked_args;
+
+    string declared_operands = declare_operands();
+    plaid_.indent(declared_operands, 4);
+    subjects["OPERATIONS"] = declared_operands;
+
     return plaid_.fill("kernel", subjects);
 }
 
-string Kernel::unpack_operand(uint32_t id)
+string Kernel::operand_walk_forward(uint32_t id)
+{
+    Operand operand(block_.operand(id), id);    // Grab the operand
+    stringstream ss;
+
+    return "";
+}
+
+string Kernel::operand_walk_forward(uint32_t id, uint32_t dim)
+{
+    Operand operand(block_.operand(id), id);    // Grab the operand
+    stringstream ss;
+    
+    return "";
+}
+
+string Kernel::declare_operands(void)
+{
+    stringstream ss;
+    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
+        ss << declare_operand(oidx);
+    }
+    return ss.str();
+}
+
+string Kernel::declare_operand(uint32_t id)
+{
+    Operand operand(block_.operand(id), id);    // Grab the operand
+    stringstream ss;
+    ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
+    switch(operand.operand_.layout) {
+        case STRIDED:       
+        case SPARSE:
+        case CONTIGUOUS:
+            ss
+            << _declare(
+                _ptr(operand.etype()),
+                operand.current(),
+                _deref(operand.first())
+            );
+            break;
+
+        case SCALAR:
+            ss
+             << _declare(
+                operand.etype(),
+                operand.current(),
+                _deref(operand.first())
+            );
+            break;
+        case SCALAR_CONST:
+            ss
+            << _declare(
+                _const(operand.etype()),
+                operand.current(),
+                _deref(operand.first())
+            );
+
+            break;
+        case SCALAR_TEMP:
+            ss
+            << _declare(
+                operand.etype(),
+                operand.current()
+            );
+            break;
+
+        default:
+            break;
+    }
+    ss << endl;
+    return ss.str();
+}
+
+string Kernel::unpack_argument(uint32_t id)
 {
     Operand operand(block_.operand(id), id);    // Grab the operand
     stringstream ss;

@@ -145,6 +145,13 @@ string _assign(string lvalue, string rvalue)
     return ss.str();
 }
 
+string _add_assign(string lvalue, string rvalue)
+{
+    stringstream ss;
+    ss << lvalue << " += " << rvalue;
+    return ss.str();
+}
+
 string _declare(string type, string variable)
 {
     stringstream ss;

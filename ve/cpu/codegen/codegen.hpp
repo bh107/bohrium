@@ -56,6 +56,8 @@ std::string _div(std::string left, std::string right);
 std::string _mod(std::string left, std::string right);
 std::string _inc(std::string object);
 
+std::string _add_assign(std::string left, std::string right);
+
 class Operand
 {
 public:
@@ -88,8 +90,14 @@ public:
     std::string generate_source(void);
 
 private:
-    std::string unpack_operands(void);
-    std::string unpack_operand(uint32_t id);
+    std::string declare_operands(void);
+    std::string declare_operand(uint32_t id);
+    
+    std::string unpack_arguments(void);
+    std::string unpack_argument(uint32_t id);
+
+    std::string operand_walk_forward(uint32_t id);
+    std::string operand_walk_forward(uint32_t id, uint32_t dim);
 
     std::string head(void);
     std::string body(void);

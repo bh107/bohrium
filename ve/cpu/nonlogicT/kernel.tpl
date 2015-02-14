@@ -1,5 +1,5 @@
-#ifndef BH_CPU_LIBS
-#define BH_CPU_LIBS
+#ifndef BH_CPU_KERNEL_LIBS
+#define BH_CPU_KERNEL_LIBS
 #include <assert.h>
 #include <stdarg.h>
 #include <string.h>
@@ -10,6 +10,7 @@
 #include <math.h>
 #include <Random123/philox.h>
 #include <tac.h>
+
 #if defined(_OPENMP)
 #include <omp.h>
 #else
@@ -41,6 +42,7 @@ typedef union philox2x32_as_1x64 {
 
 /*
 KERNEL-DESCRIPTION {
+  MODE          = {{MODE}},
   LAYOUT        = {{LAYOUT}},
   NINSTR        = {{NINSTR}},
   NARRAY_INSTR  = {{NARRAY_INSTR}},
