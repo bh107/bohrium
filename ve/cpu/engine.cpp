@@ -1,7 +1,6 @@
 #include "engine.hpp"
 #include "symbol_table.hpp"
 #include "timevault.hpp"
-#include "codegen.hpp"
 
 #include <algorithm>
 #include <set>
@@ -193,9 +192,6 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             // Execute block handling array operations.
             // 
             DEBUG(TAG, "EXECUTING " << block.text());
-            codegen::Kernel krnl_cgen(block);
-            cout << krnl_cgen.generate_source() << endl;
-
             storage.funcs[block.symbol()](block.operands(), &block.iterspace());
 
             break;
@@ -300,8 +296,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     // Execute block handling array operations.
     // 
     DEBUG(TAG, "EXECUTING "<< block.text());
-    codegen::Kernel krnl_cgen(block);
-    cout << krnl_cgen.generate_source() << endl;
     storage.funcs[block.symbol()](block.operands(), &iterspace);
 
     //
