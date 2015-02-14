@@ -290,16 +290,20 @@ public:
             #ifdef VERBOSE
                 if(explore_count%10000 == 0)
                 {
-                    cout << "[" << explore_count << "][";
-                    BOOST_FOREACH(bool b, mask)
+                    #pragma omp critical
                     {
-                        if(b){cout << "1";}else{cout << "0";}
+                        cout << "[" << explore_count << "][";
+                        BOOST_FOREACH(bool b, mask)
+                        {
+                            if(b){cout << "1";}else{cout << "0";}
+                        }
+                        cout << "] purge count: ";
+                        cout << purge_count << " / " << pow(2.0,mask.size());
+                        cout << ", cost: " << cost << ", best_cost: " << best_cost;
+                        cout << ", fusibility: " << fusibility << endl;
                     }
-                    cout << "] purge count: ";
-                    cout << purge_count << " / " << pow(2.0,mask.size());
-                    cout << ", cost: " << cost << ", best_cost: " << best_cost;
-                    cout << ", fusibility: " << fusibility << endl;
                 }
+                #pragma omp atomic
                 ++explore_count;
             #endif
 
@@ -312,26 +316,29 @@ public:
             }
             if(fusibility)
             {
-                //Lets save the new best dag
-                best_cost = cost;
-                best_dag = new_dag;
-                assert(dag_validate(best_dag));
+                #pragma omp critical
+                {
+                    //Lets save the new best dag
+                    best_cost = cost;
+                    best_dag = new_dag;
+                    assert(dag_validate(best_dag));
 
-                //Lets write the current best to file
-                vector<bh_ir_kernel> kernel_list;
-                fill_kernel_list(best_dag, kernel_list);
-                const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
-                cache.write_to_files();
+                    //Lets write the current best to file
+                    vector<bh_ir_kernel> kernel_list;
+                    fill_kernel_list(best_dag, kernel_list);
+                    const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
+                    cache.write_to_files();
 
-                #ifdef VERBOSE
-                    stringstream ss;
-                    string filename;
-                    i.get_filename(filename);
-                    ss << "new_best_dag-" << filename << ".dot";
-                    cout << "write file: " << ss.str() << endl;
-                    pprint(best_dag, ss.str().c_str());
-                    purge_count += pow(2.0, mask.size()-offset);
-                #endif
+                    #ifdef VERBOSE
+                        stringstream ss;
+                        string filename;
+                        i.get_filename(filename);
+                        ss << "new_best_dag-" << filename << ".dot";
+                        cout << "write file: " << ss.str() << endl;
+                        pprint(best_dag, ss.str().c_str());
+                        purge_count += pow(2.0, mask.size()-offset);
+                    #endif
+                }
                 continue;
             }
             //for(unsigned int i=offset; i<mask.size(); ++i) //breadth first
