@@ -35,6 +35,7 @@ string Kernel::iterspace(void)
 string Kernel::generate_source(void)
 {
     std::map<string, string> subjects;
+    Walker walker(plaid_, block_);
 
     if (block_.narray_tacs()>1) {
         subjects["MODE"] = "FUSED";
@@ -48,90 +49,10 @@ string Kernel::generate_source(void)
     subjects["NARRAY_ARGS"] = "?";
     subjects["SYMBOL_TEXT"] = block_.symbol_text();
     subjects["SYMBOL"] = block_.symbol();
-
-    string unpacked_args = unpack_arguments();  // Indent arguments
-    plaid_.indent(unpacked_args, 4);
-    subjects["ARGUMENTS"] = unpacked_args;
-
-    string declared_operands = declare_operands();
-    plaid_.indent(declared_operands, 4);
-    subjects["OPERATIONS"] = declared_operands;
+    subjects["ARGUMENTS"] = unpack_arguments();
+    subjects["WALKER"] = walker.generate_source();
 
     return plaid_.fill("kernel", subjects);
-}
-
-string Kernel::operand_walk_forward(uint32_t id)
-{
-    Operand operand(block_.operand(id), id);    // Grab the operand
-    stringstream ss;
-
-    return "";
-}
-
-string Kernel::operand_walk_forward(uint32_t id, uint32_t dim)
-{
-    Operand operand(block_.operand(id), id);    // Grab the operand
-    stringstream ss;
-    
-    return "";
-}
-
-string Kernel::declare_operands(void)
-{
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        ss << declare_operand(oidx);
-    }
-    return ss.str();
-}
-
-string Kernel::declare_operand(uint32_t id)
-{
-    Operand operand(block_.operand(id), id);    // Grab the operand
-    stringstream ss;
-    ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
-    switch(operand.operand_.layout) {
-        case STRIDED:       
-        case SPARSE:
-        case CONTIGUOUS:
-            ss
-            << _declare(
-                _ptr(operand.etype()),
-                operand.current(),
-                _deref(operand.first())
-            );
-            break;
-
-        case SCALAR:
-            ss
-             << _declare(
-                operand.etype(),
-                operand.current(),
-                _deref(operand.first())
-            );
-            break;
-        case SCALAR_CONST:
-            ss
-            << _declare(
-                _const(operand.etype()),
-                operand.current(),
-                _deref(operand.first())
-            );
-
-            break;
-        case SCALAR_TEMP:
-            ss
-            << _declare(
-                operand.etype(),
-                operand.current()
-            );
-            break;
-
-        default:
-            break;
-    }
-    ss << endl;
-    return ss.str();
 }
 
 string Kernel::unpack_argument(uint32_t id)

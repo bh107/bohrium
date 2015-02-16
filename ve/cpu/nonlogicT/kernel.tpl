@@ -56,9 +56,9 @@ void KRN_{{SYMBOL}}(operand_t** args, iterspace_t* iterspace)
     //
     // Argument unpacking
     //
-    {{ARGUMENTS}}    
+    {{ARGUMENTS}}
     //
     // Operation(s)
     //
-    {{OPERATIONS}}
+    {{WALKER}}
 }

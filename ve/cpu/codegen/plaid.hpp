@@ -34,14 +34,19 @@ public:
     std::string fill(std::string name, std::map<std::string, std::string>& subjects);
 
     /**
+    *
+    */
+    void replace(std::string& tmpl, unsigned int begin, unsigned int count, std::string subject);
+
+private:
+    std::map<std::string, std::string> templates_;
+
+    /**
     *   Idents the given string 'level' space on each newline.
     *   
     *   TODO: Indent the very first line.
     */
-    void indent(std::string& lines, unsigned int level);
-
-private:
-    std::map<std::string, std::string> templates_;
+    unsigned int indentlevel(std::string text, unsigned int index);
 
 };
 

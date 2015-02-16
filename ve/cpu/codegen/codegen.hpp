@@ -57,6 +57,7 @@ std::string _mod(std::string left, std::string right);
 std::string _inc(std::string object);
 
 std::string _add_assign(std::string left, std::string right);
+std::string _sub_assign(std::string left, std::string right);
 
 class Operand
 {
@@ -82,6 +83,37 @@ private:
     uint32_t id_;
 };
 
+class Walker
+{
+public:
+    Walker(Plaid& plaid, bohrium::core::Block& block);
+
+    std::string generate_source(void);
+    
+private:
+    std::string declare_operands(void);
+    std::string declare_operand(uint32_t id);
+
+    std::string operations(void);
+    std::string operation(unsigned int tac_idx);
+
+    std::string step_forward(unsigned int id);
+    std::string step_forward(void);
+
+    std::string step_forward_last(unsigned int id);
+    std::string step_forward_last(void);
+
+    std::string step_forward_2nd_last(unsigned int id);
+    std::string step_forward_2nd_last(void);
+
+    std::string step_forward_3rd_last(unsigned int id);
+    std::string step_forward_3rd_last(void);
+
+    Plaid& plaid_;
+    bohrium::core::Block& block_;
+
+};
+
 class Kernel
 {
 public:
@@ -90,34 +122,15 @@ public:
     std::string generate_source(void);
 
 private:
-    std::string declare_operands(void);
-    std::string declare_operand(uint32_t id);
-    
+        
     std::string unpack_arguments(void);
     std::string unpack_argument(uint32_t id);
-
-    std::string operand_walk_forward(uint32_t id);
-    std::string operand_walk_forward(uint32_t id, uint32_t dim);
-
-    std::string head(void);
-    std::string body(void);
-    std::string foot(void);
-
+    
     std::string args(void);
     std::string iterspace(void);
 
     Plaid& plaid_;
     bohrium::core::Block& block_;
-};
-
-class Expr
-{
-
-};
-
-class Loop
-{
-    Loop();
 };
 
 }}}}

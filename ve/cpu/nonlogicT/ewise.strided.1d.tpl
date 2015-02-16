@@ -22,23 +22,16 @@
         }
         work_end = work_offset+work;
         if (work) {
-        {{#OPERAND}}
-        {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
-        {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
-        {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-        {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first + (work_offset *a{{NR}}_stride[0]);{{/ARRAY}}
-        {{/OPERAND}}
+        {{WALKER_DECLARATION}}
+        {{WALKER_OFFSET}}
 
-        for (int64_t i = work_offset; i < work_end; ++i) {
-            {{#OPERATORS}}
-            {{OPERATOR}};
-            {{/OPERATORS}}
-        
-            {{#OPERAND}}{{#ARRAY}}
-            a{{NR}}_current += a{{NR}}_stride[0];
-            {{/ARRAY}}{{/OPERAND}}
+        for (int64_t i = work_offset; i<work_end; ++i) {
+            {{OPERATIONS}}
+            
+            {{WALKER_STEP}}
         }
         }
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
 }
+
