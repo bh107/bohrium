@@ -8,7 +8,7 @@
     {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
     {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
     {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-    {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first + a{{NR}}_start;{{/ARRAY}}
+    {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first;{{/ARRAY}}
     {{/OPERAND}}
 
     const {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
@@ -33,7 +33,7 @@
     #pragma omp parallel for num_threads(nworkers) collapse(2)
     for(int64_t i=0; i<a{{NR_OUTPUT}}_shape[OUTER]; ++i) {
         for(int64_t j=0; j<a{{NR_OUTPUT}}_shape[INNER]; ++j) {
-            {{TYPE_INPUT}}* tmp_current = a{{NR_FINPUT}}_first + a{{NR_FINPUT}}_start + \
+            {{TYPE_INPUT}}* tmp_current = a{{NR_FINPUT}}_first + \
                                         i*a{{NR_FINPUT}}_stride[outer_axis] + \
                                         j*a{{NR_FINPUT}}_stride[inner_axis];
 
@@ -45,7 +45,7 @@
                 {{OPERATOR}};
                 {{/OPERATORS}}
             }
-            *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + i*a{{NR_OUTPUT}}_stride[OUTER] + j*a{{NR_OUTPUT}}_stride[INNER]) = state;
+            *(a{{NR_OUTPUT}}_first + i*a{{NR_OUTPUT}}_stride[OUTER] + j*a{{NR_OUTPUT}}_stride[INNER]) = state;
         }
     }
     // TODO: Handle write-out of non-temp and non-const scalars.

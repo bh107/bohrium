@@ -30,7 +30,7 @@
             {{/OPERATORS}}
         }
         // Update array
-        *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_start + a{{NR_OUTPUT}}_stride[0]*j) = state; 
+        *(a{{NR_OUTPUT}}_first + a{{NR_OUTPUT}}_stride[0]*j) = state; 
     }
 
     // TODO: Handle write-out of non-temp and non-const scalars.
