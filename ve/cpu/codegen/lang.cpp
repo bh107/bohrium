@@ -194,6 +194,20 @@ string _line(string object)
     return ss.str();
 }
 
+string _dec(string object)
+{
+    stringstream ss;
+    ss << "--("<< object << ")";
+    return ss.str();
+}
+
+string _dec_post(string object)
+{
+    stringstream ss;
+    ss << "("<< object << ")--";
+    return ss.str();
+}
+
 string _inc(string object)
 {
     stringstream ss;
@@ -715,7 +729,21 @@ string _clog(string right)
 string _log10(string right)
 {
     stringstream ss;
-    ss << "log10(" << right << ")";
+    ss << "log(" << right << ")/log(10)";
+    return ss.str();
+}
+
+string _clog10f(string right)
+{
+    stringstream ss;
+    ss << "clog10f(" << right << ")/log(10)";
+    return ss.str();
+}
+
+string _clog10(string right)
+{
+    stringstream ss;
+    ss << "clog10(" << right << ")/log(10)";
     return ss.str();
 }
 

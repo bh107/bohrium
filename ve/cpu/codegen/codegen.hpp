@@ -26,6 +26,7 @@ std::string _double(void);
 std::string _float_complex(void);
 std::string _double_complex(void);
 
+// Variable declaration, access and modifiers
 std::string _ref(std::string object);
 std::string _deref(std::string object);
 std::string _index(std::string object, int64_t idx);
@@ -49,15 +50,124 @@ std::string _declare(std::string type, std::string variable);
 std::string _declare(std::string type, std::string variable, std::string expr);
 
 // Operators
+std::string _inc(std::string object);
+std::string _dec(std::string object);
+
+std::string _add_assign(std::string left, std::string right);
+std::string _sub_assign(std::string left, std::string right);
+
 std::string _add(std::string left, std::string right);
 std::string _sub(std::string left, std::string right);
 std::string _mul(std::string left, std::string right);
 std::string _div(std::string left, std::string right);
 std::string _mod(std::string left, std::string right);
-std::string _inc(std::string object);
+std::string _pow(std::string left, std::string right);
+std::string _abs(std::string left, std::string right);
 
-std::string _add_assign(std::string left, std::string right);
-std::string _sub_assign(std::string left, std::string right);
+std::string _max(std::string left, std::string right);
+std::string _min(std::string left, std::string right);
+
+std::string _gt(std::string left, std::string right);
+std::string _gteq(std::string left, std::string right);
+std::string _lt(std::string left, std::string right);
+std::string _lteq(std::string left, std::string right);
+std::string _eq(std::string left, std::string right);
+std::string _neq(std::string left, std::string right);
+
+std::string _logic_and(std::string left, std::string right);
+std::string _logic_or(std::string left, std::string right);
+std::string _logic_xor(std::string left, std::string right);
+std::string _logic_not(std::string right);
+
+std::string _bitw_and(std::string left, std::string right);
+std::string _bitw_or(std::string left, std::string right);
+std::string _bitw_xor(std::string left, std::string right);
+std::string _bitw_invert(std::string right);
+
+std::string _bitw_leftshift(std::string left, std::string right);
+std::string _bitw_rightshift(std::string left, std::string right);
+
+std::string _sin(std::string right);
+std::string _csinf(std::string right);
+std::string _csin(std::string right);
+
+std::string _sinh(std::string right);
+std::string _csinhf(std::string right);
+std::string _csinh(std::string right);
+
+std::string _asin(std::string right);
+std::string _casinf(std::string right);
+std::string _casin(std::string right);
+
+std::string _asinh(std::string right);
+std::string _casinhf(std::string right);
+std::string _casinh(std::string right);
+
+std::string _cos(std::string right);
+std::string _ccosf(std::string right);
+std::string _ccos(std::string right);
+
+std::string _cosh(std::string right);
+std::string _ccoshf(std::string right);
+std::string _ccosh(std::string right);
+
+std::string _acos(std::string right);
+std::string _cacos(std::string right);
+std::string _cacosf(std::string right);
+
+std::string _acosh(std::string right);
+std::string _cacoshf(std::string right);
+std::string _cacosh(std::string right);
+
+std::string _tan(std::string right);
+std::string _ctanf(std::string right);
+std::string _ctan(std::string right);
+
+std::string _tanh(std::string right);
+std::string _ctanhf(std::string right);
+std::string _ctanh(std::string right);
+
+std::string _atan(std::string right);
+std::string _catanf(std::string right);
+std::string _catan(std::string right);
+
+std::string _atanh(std::string right);
+std::string _catanhf(std::string right);
+std::string _catanh(std::string right);
+
+std::string _atan2(std::string right);
+
+std::string _exp(std::string right);
+std::string _cexpf(std::string right);
+std::string _cexp(std::string right);
+
+std::string _exp2(std::string right);
+std::string _cexp2f(std::string right);
+std::string _cexp2(std::string right);
+
+std::string _expm1(std::string right);
+
+std::string _log(std::string right);
+std::string _clogf(std::string right);
+std::string _clog(std::string right);
+
+std::string _log10(std::string right);
+std::string _log2(std::string right);
+std::string _log1p(std::string right);
+
+std::string _sqrt(std::string right);
+std::string _ceil(std::string right);
+std::string _trunc(std::string right);
+std::string _floor(std::string right);
+std::string _rint(std::string right);
+std::string _isnan(std::string right);
+std::string _isinf(std::string right);
+
+std::string _creal(std::string right);
+std::string _crealf(std::string right);
+
+std::string _cimagf(std::string right);
+std::string _cimag(std::string right);
 
 class Operand
 {
