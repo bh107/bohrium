@@ -62,12 +62,8 @@ string Kernel::unpack_argument(uint32_t id)
     ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
     switch(operand.operand_.layout) {
         case STRIDED:       
-        case SPARSE:        // start, nelem, ndim, shape, stride
+        case SPARSE:        // nelem, ndim, shape, stride
             ss
-            << _declare(
-                _const(_int64()), operand.start(),
-                _access_ptr(_index(args(), id), "start")
-            ) 
             << _declare(
                 _const(_int64()), operand.nelem(),
                 _access_ptr(_index(args(), id), "nelem")

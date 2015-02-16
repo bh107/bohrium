@@ -185,7 +185,6 @@ public:
     std::string ndim(void);
     std::string shape(void);
     std::string stride(void);
-    std::string start(void);
 
     operand_t& operand_;
 
