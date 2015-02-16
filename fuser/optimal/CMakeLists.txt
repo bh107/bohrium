@@ -8,6 +8,9 @@ add_library(bh_fuser_optimal SHARED ${SRC})
 #We depend on bh.so
 target_link_libraries(bh_fuser_optimal bh)
 
+#We depend on boost
+target_link_libraries(bh_fuser_optimal ${Boost_LIBRARIES})
+
 install(TARGETS bh_fuser_optimal DESTINATION lib COMPONENT bohrium)
 
 file(MAKE_DIRECTORY fuse_cache)

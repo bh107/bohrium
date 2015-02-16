@@ -28,14 +28,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/algorithm/string/predicate.hpp> //For iequals()
 #include <boost/graph/connected_components.hpp>
 #include <boost/range/adaptors.hpp>
+#include <boost/thread.hpp>
 #include <vector>
 #include <map>
 #include <iterator>
-#include <signal.h>
 #include <stdio.h>
-#include <sys/time.h>
-#include <mutex>
-#include <condition_variable>
 #include <exception>
 #include <omp.h>
 
