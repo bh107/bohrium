@@ -181,7 +181,6 @@ public:
     std::string first(void);
     std::string layout(void);
     std::string etype(void);
-    std::string nelem(void);
     std::string ndim(void);
     std::string shape(void);
     std::string stride(void);

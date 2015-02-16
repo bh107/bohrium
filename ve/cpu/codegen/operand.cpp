@@ -34,13 +34,6 @@ string Operand::current(void)
     return ss.str();
 }
 
-string Operand::nelem(void)
-{
-    stringstream ss;
-    ss << name() << "_nelem";
-    return ss.str();
-}
-
 string Operand::ndim(void)
 {
     stringstream ss;
