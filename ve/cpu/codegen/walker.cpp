@@ -33,7 +33,7 @@ string Walker::declare_operand(uint32_t id)
             ss
             << _declare(
                 _ptr(operand.etype()),
-                operand.current(),
+                operand.walker(),
                 _deref(operand.first())
             );
             break;
@@ -42,7 +42,7 @@ string Walker::declare_operand(uint32_t id)
             ss
              << _declare(
                 operand.etype(),
-                operand.current(),
+                operand.walker(),
                 _deref(operand.first())
             );
             break;
@@ -50,7 +50,7 @@ string Walker::declare_operand(uint32_t id)
             ss
             << _declare(
                 _const(operand.etype()),
-                operand.current(),
+                operand.walker(),
                 _deref(operand.first())
             );
 
@@ -59,7 +59,7 @@ string Walker::declare_operand(uint32_t id)
             ss
             << _declare(
                 operand.etype(),
-                operand.current()
+                operand.walker()
             );
             break;
 
@@ -88,14 +88,14 @@ string Walker::step_forward(unsigned int id)
         case STRIDED:       
         case SPARSE:
             ss << _add_assign(
-                operand.current(),
+                operand.walker(),
                 _index(operand.stride(), 0)
             )
             << _end();
             break;
 
         case CONTIGUOUS:
-            ss << _inc(operand.current()) << _end();
+            ss << _inc(operand.walker()) << _end();
             break;
 
         case SCALAR:
@@ -121,7 +121,7 @@ string Walker::step_forward_2nd_last(void)
     stringstream ss;
     /*
     Operand operand(block_.operand(id), id);    // Grab the operand
-    ss << _add_assign(operand.current(), index(operand.stride, 0)) << _endl();*/
+    ss << _add_assign(operand.walker(), index(operand.stride, 0)) << _endl();*/
 
     return ss.str();
 }
@@ -131,7 +131,7 @@ string Walker::step_forward_3rd_last(void)
     stringstream ss;
     /*
     Operand operand(block_.operand(id), id);    // Grab the operand
-    ss << _add_assign(operand.current(), index(operand.stride, 0)) << _endl();*/
+    ss << _add_assign(operand.walker(), index(operand.stride, 0)) << _endl();*/
 
     return ss.str();
 }

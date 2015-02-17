@@ -2,6 +2,8 @@
 #include <set>
 #include <algorithm>
 
+#include "codegen.hpp"
+
 using namespace std;
 namespace bohrium {
 namespace engine {
@@ -10,7 +12,7 @@ namespace cpu {
 const char Specializer::TAG[] = "Specializer";
 
 Specializer::Specializer(const string template_directory)
-: strip_mode(ctemplate::STRIP_BLANK_LINES), template_directory(template_directory)
+: plaid_(), strip_mode(ctemplate::STRIP_BLANK_LINES), template_directory(template_directory)
 {
     ctemplate::mutable_default_template_cache()->SetTemplateRootDirectory(template_directory);
     ctemplate::LoadTemplate("ewise.cont.nd.tpl",    strip_mode);
@@ -27,6 +29,15 @@ Specializer::Specializer(const string template_directory)
     ctemplate::LoadTemplate("scan.strided.1d.tpl", strip_mode);
     ctemplate::LoadTemplate("scan.strided.nd.tpl", strip_mode);
     ctemplate::mutable_default_template_cache()->Freeze();
+
+    /*
+    plaid_.add_from_file("kernel", "/home/safl/bohrium/ve/cpu/nonlogicT/kernel.tpl");
+    plaid_.add_from_file("ewise.cont.nd", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.cont.nd.tpl");
+    plaid_.add_from_file("ewise.strided.nd", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.strided.nd.tpl");
+    plaid_.add_from_file("ewise.strided.1d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.strided.1d.tpl");
+    plaid_.add_from_file("ewise.strided.2d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.strided.2d.tpl");
+    plaid_.add_from_file("ewise.strided.3d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.strided.3d.tpl");
+    */
 }
 
 Specializer::~Specializer()
@@ -148,6 +159,10 @@ string Specializer::specialize( SymbolTable& symbol_table,
                                 Block& block,
                                 LAYOUT fusion_layout)
 {
+    
+    //codegen::Kernel krnl_cgen(plaid_, block);
+    //cout << krnl_cgen.generate_source() << endl;
+
     string sourcecode = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code

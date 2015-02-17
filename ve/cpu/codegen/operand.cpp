@@ -27,10 +27,31 @@ string Operand::first(void)
     return ss.str();
 }
 
-string Operand::current(void)
+string Operand::walker(void)
 {
     stringstream ss;
-    ss << name() << "_current";
+    ss << name() << "_walker";
+    return ss.str();
+}
+
+string Operand::walker_val(void)
+{
+    stringstream ss;
+    switch(operand_.layout) {
+        case SCALAR:
+        case SCALAR_CONST:
+        case SCALAR_TEMP:
+            ss << walker();
+            break;
+
+        case CONTIGUOUS:
+        case STRIDED:
+        case SPARSE:
+            ss << _deref(walker());
+            break;
+        default:    // TOOD: Throw an exception here...
+            break;
+    }
     return ss.str();
 }
 

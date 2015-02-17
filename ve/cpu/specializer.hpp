@@ -2,6 +2,7 @@
 #define __BH_VE_CPU_SPECIALIZER
 #include "block.hpp"
 #include "utils.hpp"
+#include "plaid.hpp"
 
 #include <ctemplate/template.h>
 #include <string>
@@ -38,6 +39,8 @@ public:
     std::string specialize( SymbolTable& symbol_table,
                             Block& block,
                             LAYOUT fusion_layout);
+
+    codegen::Plaid plaid_;
 
 private:
     ctemplate::Strip strip_mode;

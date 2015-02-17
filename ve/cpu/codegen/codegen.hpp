@@ -176,7 +176,8 @@ public:
 
     std::string name(void);
     
-    std::string current(void);
+    std::string walker(void);
+    std::string walker_val(void);
 
     std::string first(void);
     std::string layout(void);
