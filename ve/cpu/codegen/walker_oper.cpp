@@ -158,7 +158,7 @@ string Walker::oper(tac_t tac)
                 default:            return _creal(in1.walker_val());
             }
         case RIGHT_SHIFT:           return _bitw_rightshift(in1.walker_val(), in2.walker_val());
-        case RINT:                  return _rint(in1.walker_val(), in2.walker_val());
+        case RINT:                  return _rint(in1.walker_val());
         case SIN:
             switch(etype) {
                 case COMPLEX128:    return _csin(in1.walker_val());

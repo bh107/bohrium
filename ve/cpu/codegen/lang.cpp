@@ -271,6 +271,20 @@ string _pow(string left, string right)
     return ss.str();
 }
 
+string _cpow(string left, string right)
+{
+    stringstream ss;
+    ss << "cpow(" << left << ", " << right << ")";
+    return ss.str();
+}
+
+string _cpowf(string left, string right)
+{
+    stringstream ss;
+    ss << "cpowf(" << left << ", " << right << ")";
+    return ss.str();
+}
+
 string _abs(string left, string right)
 {
     stringstream ss;
@@ -369,10 +383,17 @@ string _bitw_xor(string left, string right)
     return ss.str();
 }
 
-string _bitw_invert(string right)
+string _invert(string right)
 {
     stringstream ss;
     ss << "~" << right;
+    return ss.str();
+}
+
+string _invertb(string right)
+{
+    stringstream ss;
+    ss << "!" << right;
     return ss.str();
 }
 
@@ -656,10 +677,10 @@ string _catanh(string right)
     return ss.str();
 }
 
-string _atan2(string right)
+string _atan2(string left, string right)
 {
     stringstream ss;
-    ss << "atan2(" << right << ")";
+    ss << "atan2(" << left << ", " << right << ")";
     return ss.str();
 }
 
@@ -774,6 +795,21 @@ string _sqrt(string right)
     ss << "sqrt(" << right << ")";
     return ss.str();
 }
+
+string _csqrt(string right)
+{
+    stringstream ss;
+    ss << "csqrt(" << right << ")";
+    return ss.str();
+}
+
+string _csqrtf(string right)
+{
+    stringstream ss;
+    ss << "csqrtf(" << right << ")";
+    return ss.str();
+}
+
 
 string _ceil(string right)
 {

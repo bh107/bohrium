@@ -135,7 +135,6 @@ string Walker::step_forward_3rd_last(void)
     return ss.str();
 }
 
-
 string Walker::ewise_operations(void)
 {
     stringstream ss;

@@ -63,6 +63,8 @@ std::string _mul(std::string left, std::string right);
 std::string _div(std::string left, std::string right);
 std::string _mod(std::string left, std::string right);
 std::string _pow(std::string left, std::string right);
+std::string _cpow(std::string left, std::string right);
+std::string _cpowf(std::string left, std::string right);
 std::string _abs(std::string left, std::string right);
 
 std::string _max(std::string left, std::string right);
@@ -83,7 +85,9 @@ std::string _logic_not(std::string right);
 std::string _bitw_and(std::string left, std::string right);
 std::string _bitw_or(std::string left, std::string right);
 std::string _bitw_xor(std::string left, std::string right);
-std::string _bitw_invert(std::string right);
+
+std::string _invert(std::string right);
+std::string _invertb(std::string right);
 
 std::string _bitw_leftshift(std::string left, std::string right);
 std::string _bitw_rightshift(std::string left, std::string right);
@@ -136,7 +140,7 @@ std::string _atanh(std::string right);
 std::string _catanhf(std::string right);
 std::string _catanh(std::string right);
 
-std::string _atan2(std::string right);
+std::string _atan2(std::string left, std::string right);
 
 std::string _exp(std::string right);
 std::string _cexpf(std::string right);
@@ -149,18 +153,25 @@ std::string _cexp2(std::string right);
 std::string _expm1(std::string right);
 
 std::string _log(std::string right);
-std::string _clogf(std::string right);
 std::string _clog(std::string right);
+std::string _clogf(std::string right);
 
 std::string _log10(std::string right);
+std::string _clog10(std::string right);
+std::string _clog10f(std::string right);
+
 std::string _log2(std::string right);
 std::string _log1p(std::string right);
 
 std::string _sqrt(std::string right);
+std::string _csqrt(std::string right);
+std::string _csqrtf(std::string right);
 std::string _ceil(std::string right);
 std::string _trunc(std::string right);
 std::string _floor(std::string right);
 std::string _rint(std::string right);
+std::string _range(void);
+std::string _random(std::string left, std::string right);
 std::string _isnan(std::string right);
 std::string _isinf(std::string right);
 
