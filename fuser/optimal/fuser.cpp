@@ -400,17 +400,8 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
         }
     }
 
-    if(mask.size() > 100)
-    {
-        cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
-        cout << mask.size() << "!" << endl;
-    }
-    else
-    {
-        cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-
-        output = branch_n_bound(bhir, dag, edges2explore, cache, ignores, mask, preload_offset);
-    }
+    cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
+    output = branch_n_bound(bhir, dag, edges2explore, cache, ignores, mask, preload_offset);
 }
 
 void do_fusion(bh_ir &bhir, FuseCache &cache)
@@ -465,16 +456,25 @@ void do_fusion(bh_ir &bhir, FuseCache &cache)
                comp_id = i;
            }
         }
-        if(comp_id == -1)
-            break;//No more components to fuse
 
         GraphD output;
-        cout << "Fusing component: " << comp_id << endl;
-        fuse_optimal(bhir, dag, component2vertices[comp_id], output, cache);
+        if(comp_id == -1)
+        {
+            cout << "Round ended, no more components to fuse" << endl << endl;
+            output = dag.bglD();
+        }
+        else
+        {
+            cout << "Fusing component: " << comp_id << endl;
+            fuse_optimal(bhir, dag, component2vertices[comp_id], output, cache);
+        }
         assert(num_vertices(output) > 0);
         assert(dag_validate(output));
         kernel_list.clear();
         fill_kernel_list(output, kernel_list);
+
+        if(comp_id == -1)
+            break;
     }
     bhir.kernel_list = kernel_list;
 }
