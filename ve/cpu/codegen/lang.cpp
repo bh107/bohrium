@@ -162,14 +162,14 @@ string _sub_assign(string lvalue, string rvalue)
 string _declare(string type, string variable)
 {
     stringstream ss;
-    ss << type << " " << variable << _end();
+    ss << type << " " << variable;
     return ss.str(); 
 }
 
 string _declare(string type, string variable, string expr)
 {
     stringstream ss;
-    ss << type << " " << variable << " = " << expr << _end();
+    ss << type << " " << variable << " = " << expr;
     return ss.str(); 
 }
 
@@ -184,6 +184,13 @@ string _end(void)
 {
     stringstream ss;
     ss << ";" << endl;
+    return ss.str();
+}
+
+string _end(string comment)
+{
+    stringstream ss;
+    ss << "; // " << comment << endl;
     return ss.str();
 }
 
@@ -795,6 +802,20 @@ string _rint(string right)
     ss << "(" << right << " > 0.0) ? "
        << "floor(" << right << " + 0.5) : "
        << "ceil(" << right << " - 0.5)";
+    return ss.str();
+}
+
+string _range(void)
+{
+    stringstream ss;
+    ss << "// TODO: Implement range...";
+    return ss.str();
+}
+
+string _random(string left, string right)
+{
+    stringstream ss;
+    ss << "// TODO: Implement random...";
     return ss.str();
 }
 

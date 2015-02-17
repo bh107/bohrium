@@ -11,15 +11,8 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block) {}
-
-string Kernel::unpack_arguments(void)
-{
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        ss << unpack_argument(oidx);
-    }
-    return ss.str();
+Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block) {
+    
 }
 
 string Kernel::args(void)
@@ -55,6 +48,15 @@ string Kernel::generate_source(void)
     return plaid_.fill("kernel", subjects);
 }
 
+string Kernel::unpack_arguments(void)
+{
+    stringstream ss;
+    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
+        ss << unpack_argument(oidx);
+    }
+    return ss.str();
+}
+
 string Kernel::unpack_argument(uint32_t id)
 {
     Operand operand(block_.operand(id), id);    // Grab the operand
@@ -68,14 +70,17 @@ string Kernel::unpack_argument(uint32_t id)
                 _const(_int64()), operand.ndim(),
                 _access_ptr(_index(args(), id), "ndim")
             )
+            << _end()
             << _declare(
                 _ptr_const(_int64()), operand.shape(),
                 _access_ptr(_index(args(), id), "shape")
             )
+            << _end()
             << _declare(
                 _ptr_const(_int64()), operand.stride(),
                 _access_ptr(_index(args(), id), "stride")
-            );
+            )
+            << _end();
 
         case CONTIGUOUS:    // "first" = operand_t.data + operand_t.start
             ss
@@ -88,8 +93,10 @@ string Kernel::unpack_argument(uint32_t id)
                     ),
                     _access_ptr(_index(args(), id), "start")
                 )
-            ) 
-            << _assert_not_null(operand.first()) << _end();
+            )
+            << _end() 
+            << _assert_not_null(operand.first())
+            << _end();
             break;
 
         case SCALAR:
@@ -101,6 +108,7 @@ string Kernel::unpack_argument(uint32_t id)
                     _deref(_access_ptr(_index(args(), id), "data"))
                 )
             )
+            << _end() 
             << _assert_not_null(operand.first()) << _end();
             break;
         case SCALAR_TEMP:   // Data pointer is never used.

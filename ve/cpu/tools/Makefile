@@ -54,16 +54,13 @@ purge_ko:
 	rm -f ~/.local/var/bohrium/objects/*
 
 purge_krn:
-	rm -rf ~/.local/share/bohrium/templates
-	rm -rf ~/.local/var/bohrium/kernels
-	rm -rf ~/.local/var/bohrium/objects
+	rm -rf ~/.local/share/bohrium/templates/*
+	rm -rf ~/.local/var/bohrium/kernels/*
+	rm -rf ~/.local/var/bohrium/objects/*
 
 #
 # Remove installed stuff specific to the cpu-engine
-purge_cpu:
-	rm -rf ~/.local/share/bohrium/templates
-	rm -rf ~/.local/var/bohrium/kernels
-	rm -rf ~/.local/var/bohrium/objects
+purge_cpu: purge_krn
 	rm -rf ~/.local/var/bohrium/scripts
 	rm -f ~/.local/lib/libbh_ve_cpu.*
 	rm -f ~/.local/include/bohrium/tac.h

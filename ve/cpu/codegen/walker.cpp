@@ -25,7 +25,6 @@ string Walker::declare_operand(uint32_t id)
 {
     Operand operand(block_.operand(id), id);    // Grab the operand
     stringstream ss;
-    ss << "// Operand " << operand.name() << " [" << operand.layout() << "]" << endl;
     switch(operand.operand_.layout) {
         case STRIDED:       
         case SPARSE:
@@ -66,7 +65,7 @@ string Walker::declare_operand(uint32_t id)
         default:
             break;
     }
-    ss << endl;
+    ss << _end(operand.layout());
     return ss.str();
 }
 
@@ -136,23 +135,19 @@ string Walker::step_forward_3rd_last(void)
     return ss.str();
 }
 
-string Walker::operation(unsigned int tac_idx)
+
+string Walker::ewise_operations(void)
 {
     stringstream ss;
-    
-    const tac_t& tac = block_.tac(tac_idx);
-    switch(tac.op) {
-        default:
-            break;
+    for(size_t tac_idx=0; tac_idx<block_.narray_tacs(); ++tac_idx) {
+        tac_t& tac = block_.array_tac(tac_idx);
+        Operand out = Operand(
+            block_.operand(block_.global_to_local(tac.out)),
+            block_.global_to_local(tac.out)
+        );
+
+        ss << _assign(out.walker_val(), oper(tac)) << _end();
     }
-
-    return ss.str();
-}
-
-string Walker::operations(void)
-{
-    stringstream ss;
-
     return ss.str();
 }
 
@@ -162,7 +157,7 @@ string Walker::generate_source(void)
     subjects["WALKER_DECLARATION"] = declare_operands();
     subjects["WALKER_OFFSET"] = "//TODO: Offset...";
     subjects["WALKER_STEP"] = step_forward();
-    subjects["OPERATIONS"] = "";
+    subjects["OPERATIONS"] = ewise_operations();
 
     return plaid_.fill("ewise.cont.nd", subjects);
 }

@@ -25,15 +25,18 @@
         work_end = work_offset+work;
     
         //        
-        // Walker
-        //
-
+        // Operand declaration(s)
         {{WALKER_DECLARATION}}
+
+        //
+        // Operand offsets(s)
         {{WALKER_OFFSET}}
 
         for (int64_t i = work_offset; i<work_end; ++i) {
+            // Apply operator(s)
             {{OPERATIONS}}
-
+            
+            // Increment operands
             {{WALKER_STEP}}
         }
     }

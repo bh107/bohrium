@@ -42,6 +42,7 @@ std::string _const_ptr(std::string object);
 std::string _assert_not_null(std::string object);
 std::string _assign(std::string lvalue, std::string rvalue);
 std::string _end(void);
+std::string _end(std::string comment);
 std::string _line(std::string object);
 
 std::string _cast(std::string type, std::string object);
@@ -203,8 +204,8 @@ private:
     std::string declare_operands(void);
     std::string declare_operand(uint32_t id);
 
-    std::string operations(void);
-    std::string operation(unsigned int tac_idx);
+    std::string oper(tac_t tac);
+    std::string ewise_operations(void);
 
     std::string step_forward(unsigned int id);
     std::string step_forward(void);

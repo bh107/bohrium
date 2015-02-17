@@ -16,7 +16,7 @@ Operand::Operand(operand_t& operand, uint32_t id) : operand_(operand), id_(id) {
 string Operand::name(void)
 {
     stringstream ss;
-    ss << "a" << id_;
+    ss << "opd" << id_;
     return ss.str();
 }
 
@@ -30,7 +30,7 @@ string Operand::first(void)
 string Operand::walker(void)
 {
     stringstream ss;
-    ss << name() << "_walker";
+    ss << name();
     return ss.str();
 }
 
