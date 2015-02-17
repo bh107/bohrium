@@ -42,12 +42,6 @@ namespace dag {
 
 typedef uint64_t Vertex;
 
-/* Returns the cost of a bh_view */
-inline static uint64_t cost_of_view(const bh_view &v)
-{
-    return bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
-}
-
 //The weight class bundled with the weight graph
 struct EdgeWeight
 {

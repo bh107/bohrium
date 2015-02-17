@@ -43,7 +43,7 @@ set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Python is 
 message(STATUS "Python found: ${PYTHON_EXECUTABLE}")
 
 # Bohrium Core requires Boost
-find_package(Boost REQUIRED COMPONENTS serialization filesystem system)
+find_package(Boost REQUIRED COMPONENTS serialization filesystem system thread)
 set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries" URL "www.boost.org")
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
