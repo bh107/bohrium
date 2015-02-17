@@ -25,7 +25,7 @@
         {{WALKER_DECLARATION}}
         {{WALKER_OFFSET}}
 
-        for (int64_t i = work_offset; i<work_end; ++i) {
+        for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
             {{OPERATIONS}}
             
             {{WALKER_STEP}}

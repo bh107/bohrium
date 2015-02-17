@@ -15,16 +15,24 @@ namespace codegen{
 
 string Walker::oper(tac_t tac)
 {
-    ETYPE etype = block_.operand(block_.global_to_local(tac.in1)).etype;
+    ETYPE etype = block_.operand(block_.global_to_local(tac.out)).etype;
     
-    Operand in1 = Operand(
-        block_.operand(block_.global_to_local(tac.in1)),
-        block_.global_to_local(tac.in1)
-    );
-    Operand in2 = Operand(
-        block_.operand(block_.global_to_local(tac.in2)),
-        block_.global_to_local(tac.in2)
-    );
+    Operand in1, in2;
+
+    switch(core::tac_noperands(tac)) {
+        case 3:
+            in2 = Operand(
+                &block_.operand(block_.global_to_local(tac.in2)),
+                block_.global_to_local(tac.in2)
+            );
+        case 2:
+            in1 = Operand(
+                &block_.operand(block_.global_to_local(tac.in1)),
+                block_.global_to_local(tac.in1)
+            );
+        default:
+            break;
+    }
 
     switch(tac.oper) {
         case ABSOLUTE:              return _abs(in1.walker_val(), in2.walker_val());
@@ -83,7 +91,7 @@ string Walker::oper(tac_t tac)
                 default:            return _cosh(in1.walker_val());
             }
         case DISCARD:               break;  // TODO: Raise exception
-        case DIVIDE:                return _eq(in1.walker_val(), in2.walker_val());
+        case DIVIDE:                return _div(in1.walker_val(), in2.walker_val());
         case EQUAL:                 return _eq(in1.walker_val(), in2.walker_val());
         case EXP:
             switch(etype) {
@@ -104,7 +112,7 @@ string Walker::oper(tac_t tac)
         case FREE:                  break;  // TODO: Raise exception
         case GREATER:               return _gt(in1.walker_val(), in2.walker_val());
         case GREATER_EQUAL:         return _gteq(in1.walker_val(), in2.walker_val());
-        case IDENTITY:              return _assign(in1.walker_val(), in2.walker_val());
+        case IDENTITY:              return in1.walker_val();
         case IMAG:
             switch(etype) {
                 case FLOAT32:       return _cimagf(in1.walker_val());

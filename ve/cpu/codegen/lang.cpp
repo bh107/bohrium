@@ -843,15 +843,37 @@ string _rint(string right)
 
 string _range(void)
 {
+    // NOTE: eidx is only defined in ewise.cont template
     stringstream ss;
-    ss << "// TODO: Implement range...";
+    ss << "eidx";   
     return ss.str();
 }
 
 string _random(string left, string right)
 {
+    //
+    // NOTE: eidx is only defined in ewise.cont template
+    //
+    // NOTE: This is a very funky implementation...
+    //       the union_type (philox2x32_as1x64_t) is used as a means to 
+    //       generate 64bit numbers using the philox2x32 routing.
+    //
+    //       Casting and anonymous unions are relied upon to avoid
+    //       naming the naming intermediate variables that could cause
+    //       collision.
+    //
+    //       Wrapping this into a nice function is avoided since we do
+    //       wish to pay the overhead of calling a function for each
+    //       element in the array.
+    //
     stringstream ss;
-    ss << "// TODO: Implement random...";
+    ss  << "("
+        << "    (philox2x32_as_1x64_t)"
+        << "    philox2x32("
+        << "        ((philox2x32_as_1x64_t)( " << right << " + eidx)).orig,"
+        << "        (philox2x32_key_t){ { " << left << " } }"
+        << "    )"
+        << ").combined;";
     return ss.str();
 }
 

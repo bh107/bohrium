@@ -11,7 +11,8 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Operand::Operand(operand_t& operand, uint32_t id) : operand_(operand), id_(id) {}
+Operand::Operand(void) : operand_(NULL), id_(0) {}
+Operand::Operand(operand_t* operand, uint32_t id) : operand_(operand), id_(id) {}
 
 string Operand::name(void)
 {
@@ -37,7 +38,7 @@ string Operand::walker(void)
 string Operand::walker_val(void)
 {
     stringstream ss;
-    switch(operand_.layout) {
+    switch(operand_->layout) {
         case SCALAR:
         case SCALAR_CONST:
         case SCALAR_TEMP:
@@ -77,12 +78,12 @@ string Operand::stride(void)
 }
 
 string Operand::layout(void) {
-    return layout_text(operand_.layout);    
+    return layout_text(operand_->layout);    
 }
 
 string Operand::etype(void)
 {
-    return etype_to_ctype_text(operand_.etype);
+    return etype_to_ctype_text(operand_->etype);
 }
 
 }}}}

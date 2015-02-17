@@ -184,7 +184,8 @@ std::string _cimag(std::string right);
 class Operand
 {
 public:
-    Operand(operand_t& operand, uint32_t id);
+    Operand(void);
+    Operand(operand_t* operand, uint32_t id);
 
     std::string name(void);
     
@@ -198,7 +199,7 @@ public:
     std::string shape(void);
     std::string stride(void);
 
-    operand_t& operand_;
+    operand_t* operand_;
 
 private:
     uint32_t id_;

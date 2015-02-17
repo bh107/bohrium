@@ -32,7 +32,7 @@
         // Operand offsets(s)
         {{WALKER_OFFSET}}
 
-        for (int64_t i = work_offset; i<work_end; ++i) {
+        for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
             // Apply operator(s)
             {{OPERATIONS}}
             

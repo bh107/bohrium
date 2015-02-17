@@ -59,10 +59,10 @@ string Kernel::unpack_arguments(void)
 
 string Kernel::unpack_argument(uint32_t id)
 {
-    Operand operand(block_.operand(id), id);    // Grab the operand
+    Operand operand(&block_.operand(id), id);    // Grab the operand
     stringstream ss;
     ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
-    switch(operand.operand_.layout) {
+    switch(operand.operand_->layout) {
         case STRIDED:       
         case SPARSE:        // ndim, shape, stride
             ss
@@ -82,7 +82,7 @@ string Kernel::unpack_argument(uint32_t id)
             )
             << _end();
 
-        case CONTIGUOUS:    // "first" = operand_t.data + operand_t.start
+        case CONTIGUOUS:    // "first" = operand_t->data + operand_t->start
             ss
             << _declare(
                 _ptr_const(operand.etype()), operand.first(),
@@ -100,7 +100,7 @@ string Kernel::unpack_argument(uint32_t id)
             break;
 
         case SCALAR:
-        case SCALAR_CONST:  // "first" = operand_t.data
+        case SCALAR_CONST:  // "first" = operand_t->data
             ss << _declare(
                 _ptr_const(operand.etype()), operand.first(),
                 _cast(

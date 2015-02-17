@@ -23,9 +23,9 @@ string Walker::declare_operands(void)
 
 string Walker::declare_operand(uint32_t id)
 {
-    Operand operand(block_.operand(id), id);    // Grab the operand
+    Operand operand(&block_.operand(id), id);    // Grab the operand
     stringstream ss;
-    switch(operand.operand_.layout) {
+    switch(operand.operand_->layout) {
         case STRIDED:       
         case SPARSE:
         case CONTIGUOUS:
@@ -80,10 +80,10 @@ string Walker::step_forward(void)
 
 string Walker::step_forward(unsigned int id)
 {
-    Operand operand(block_.operand(id), id);    // Grab the operand
+    Operand operand(&block_.operand(id), id);    // Grab the operand
     stringstream ss;
 
-    switch(operand.operand_.layout) {
+    switch(operand.operand_->layout) {
         case STRIDED:       
         case SPARSE:
             ss << _add_assign(
@@ -140,11 +140,11 @@ string Walker::ewise_operations(void)
     stringstream ss;
     for(size_t tac_idx=0; tac_idx<block_.narray_tacs(); ++tac_idx) {
         tac_t& tac = block_.array_tac(tac_idx);
+
         Operand out = Operand(
-            block_.operand(block_.global_to_local(tac.out)),
+            &block_.operand(block_.global_to_local(tac.out)),
             block_.global_to_local(tac.out)
         );
-
         ss << _assign(out.walker_val(), oper(tac)) << _end();
     }
     return ss.str();
