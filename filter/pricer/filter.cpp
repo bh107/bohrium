@@ -35,6 +35,11 @@ void filter(const bh_ir &bhir)
     GraphDW dag;
     from_kernels(bhir.kernel_list, dag);
     sum += dag_cost(dag.bglD());
+    if(not dag_validate(dag.bglD()))
+    {
+        cerr << "[PRICER-FILTER] Invalid BhIR! " << endl;
+
+    }
 }
 
 void shutdown()

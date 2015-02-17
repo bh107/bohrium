@@ -26,20 +26,65 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/foreach.hpp>
 #include <boost/graph/topological_sort.hpp>
 #include <boost/algorithm/string/predicate.hpp> //For iequals()
+#include <boost/graph/connected_components.hpp>
 #include <boost/range/adaptors.hpp>
+#include <boost/thread.hpp>
 #include <vector>
 #include <map>
 #include <iterator>
-#include <signal.h>
 #include <stdio.h>
-#include <sys/time.h>
-
-#define VERBOSE
+#include <exception>
+#include <omp.h>
 
 using namespace std;
 using namespace boost;
 using namespace bohrium;
 using namespace bohrium::dag;
+
+//FILO Task Queue thread safe
+class TaskQueue
+{
+public:
+    typedef pair<vector<bool>, unsigned int> Task;
+private:
+    mutex mtx;
+    condition_variable non_empty;
+    vector<Task> tasks;
+    unsigned int nwaiting;
+    const unsigned int nthreads;
+    bool finished;
+public:
+    TaskQueue(unsigned int nthreads):nwaiting(0), nthreads(nthreads), finished(false){}
+
+    void push(const vector<bool> &mask, unsigned int offset)
+    {
+        unique_lock<mutex> lock(mtx);
+        tasks.push_back(make_pair(mask, offset));
+        non_empty.notify_one();
+    }
+
+    Task pop()
+    {
+        unique_lock<mutex> lock(mtx);
+        if(++nwaiting >= nthreads and tasks.size() == 0)
+        {
+            finished = true;
+            non_empty.notify_all();
+            throw overflow_error("Out of work");
+        }
+
+        while(tasks.size() == 0 and not finished)
+            non_empty.wait(lock);
+
+        if(finished)
+            throw overflow_error("Out of work");
+
+        Task ret = tasks.back();
+        tasks.pop_back();
+        --nwaiting;
+        return ret;
+    }
+};
 
 /* Help function that fuses the edges in 'edges2explore' where the 'mask' is true */
 pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explore,
@@ -167,6 +212,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
             cout << v << endl;
             cout << loc_map.at(v) << endl;
             assert(1 == 2);
+            exit(-1);
         }
     }
 
@@ -180,81 +226,69 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     return make_pair(cost,true);
 }
 
-/* Private class to find the optimal solution through branch and bound */
-class Solver
+/* Find the optimal solution through branch and bound */
+GraphD branch_n_bound(bh_ir &bhir, const GraphDW &dag, const vector<EdgeW> &edges2explore, FuseCache &cache,
+                      const set<Vertex> &ignores, const vector<bool> &init_mask, unsigned int init_offset=0)
 {
-public:
-    bh_ir &bhir;
-    const GraphDW &dag;
-    const vector<EdgeW> &edges2explore;
+    //We use the greedy algorithm to find a good initial guess
     int64_t best_cost;
-    int64_t one_cost;
     GraphD best_dag;
-    FuseCache cache;
-
-    #ifdef VERBOSE
-        double  purge_count;
-        uint64_t explore_count;
-    #endif
-
-    /* The constructor */
-    Solver(bh_ir &b, const GraphDW &d, const vector<EdgeW> &e, FuseCache &cache):
-           bhir(b),dag(d),edges2explore(e), cache(cache)
     {
-        //Lets find a good initial guess
-        GraphDW new_dag;
-        vector<bh_ir_kernel> kernel_list;
-        if(cache.lookup(bhir.instr_list, bhir, kernel_list))
-        {
-            from_kernels(kernel_list, new_dag);
-            #ifdef VERBOSE
-                cout << "Loading initial guess from the cache" << endl;
-            #endif
-        }
-        else
-        {
-            new_dag = dag;
-            fuse_greedy(new_dag);
-        }
+        GraphDW new_dag(dag);
+        fuse_greedy(new_dag, &ignores);
         best_dag = new_dag.bglD();
         best_cost = dag_cost(best_dag);
-
-        #ifdef VERBOSE
-            purge_count=0;
-            explore_count=0;
-        #endif
     }
+    double purge_count=0;
+    uint64_t explore_count=0;
 
-    /* Find the optimal solution through branch and bound */
-    void branch_n_bound(vector<bool> mask, unsigned int offset, bool merge_next)
+    TaskQueue tasks(omp_get_max_threads());
+    tasks.push(init_mask, init_offset);
+    #pragma omp parallel
     {
-        if(not merge_next)
+    while(1)
+    {
+        vector<bool> mask;
+        unsigned int offset;
+        try{
+            tie(mask, offset) = tasks.pop();
+        }catch(overflow_error &e){
+            break;
+        }
+
+        //Fuse the task
+        GraphD new_dag(dag.bglD());
+        bool fusibility;
+        int64_t cost;
+        tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
+
+        if(explore_count%1000000 == 0)
         {
-            GraphD new_dag(dag.bglD());
-            mask[offset] = merge_next;
-            bool fusibility;
-            int64_t cost;
-            tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
-
-            #ifdef VERBOSE
-                if(explore_count%10000 == 0)
-                {
-                    cout << "[" << explore_count << "] " << "purge count: ";
-                    cout << purge_count << " / " << pow(2.0,mask.size()) << endl;
-                    cout << "cost: " << cost << ", best_cost: " << best_cost;
-                    cout << ", fusibility: " << fusibility << endl;
-                }
-                ++explore_count;
-            #endif
-
-            if(cost >= best_cost)
+            #pragma omp critical
             {
-                #ifdef VERBOSE
-                    purge_count += pow(2.0, mask.size()-offset-1);
-                #endif
-                return;
+                cout << "[" << explore_count << "][";
+                BOOST_FOREACH(bool b, mask)
+                {
+                    if(b){cout << "1";}else{cout << "0";}
+                }
+                cout << "] purge count: ";
+                cout << purge_count << " / " << pow(2.0,mask.size());
+                cout << ", cost: " << cost << ", best_cost: " << best_cost;
+                cout << ", fusibility: " << fusibility << endl;
             }
-            if(fusibility)
+        }
+        #pragma omp critical
+        ++explore_count;
+
+        if(cost >= best_cost)
+        {
+            #pragma omp critical
+            purge_count += pow(2.0, mask.size()-offset);
+            continue;
+        }
+        if(fusibility)
+        {
+            #pragma omp critical
             {
                 //Lets save the new best dag
                 best_cost = cost;
@@ -267,31 +301,36 @@ public:
                 const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
                 cache.write_to_files();
 
-                #ifdef VERBOSE
-                    stringstream ss;
-                    string filename;
-                    i.get_filename(filename);
-                    ss << "new_best_dag-" << filename << ".dot";
-                    cout << "write file: " << ss.str() << endl;
-                    pprint(best_dag, ss.str().c_str());
-                    purge_count += pow(2.0, mask.size()-offset-1);
-                #endif
-                return;
+                stringstream ss;
+                string filename;
+                i.get_filename(filename);
+                ss << "new_best_dag-" << filename << ".dot";
+                cout << "write file: " << ss.str() << endl;
+                pprint(best_dag, ss.str().c_str());
+                purge_count += pow(2.0, mask.size()-offset);
             }
+            continue;
         }
-        if(offset+1 < mask.size())
+        //for(unsigned int i=offset; i<mask.size(); ++i) //breadth first
+        for(int i=mask.size()-1; i>= (int)offset; --i)   //depth first
         {
-            branch_n_bound(mask, offset+1, false);
-            branch_n_bound(mask, offset+1, true);
+            vector<bool> m1(mask);
+            m1[i] = false;
+            tasks.push(m1, i+1);
         }
-    }
-};
+    }}
+    return best_dag;
+}
 
-void get_edges2explore(const GraphDW &dag, vector<EdgeW> &edges2explore)
+void get_edges2explore(const GraphDW &dag, const set<Vertex> &vertices2explore,
+                       vector<EdgeW> &edges2explore)
 {
+    //The list of edges that we should try to merge
     BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
     {
-        edges2explore.push_back(e);
+        if(vertices2explore.find(source(e, dag.bglW())) != vertices2explore.end() or
+           vertices2explore.find(target(e, dag.bglW())) != vertices2explore.end())
+            edges2explore.push_back(e);
     }
     sort_weights(dag.bglW(), edges2explore);
     string order;
@@ -321,108 +360,126 @@ void get_edges2explore(const GraphDW &dag, vector<EdgeW> &edges2explore)
     cout << "BH_FUSER_OPTIMAL_ORDER: " << order << endl;
 }
 
-
 /* Fuse the 'dag' optimally */
-void fuse_optimal(bh_ir &bhir, const GraphDW &dag, GraphD &output, FuseCache &cache)
+void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2explore,
+                  GraphD &output, FuseCache &cache)
 {
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
-    get_edges2explore(dag, edges2explore);
+    get_edges2explore(dag, vertices2explore, edges2explore);
     if(edges2explore.size() == 0)
         return;
 
-    //First we check the trivial case where all kernels are merged
-    vector<bool> mask(edges2explore.size(), true);
+    //We need the set of vertices that the greedy fusion must ignore
+    set<Vertex> ignores;
+    BOOST_FOREACH(Vertex v, vertices(dag.bglD()))
     {
-        GraphD new_dag(dag.bglD());
-        bool fuse = fuse_mask(numeric_limits<int64_t>::max(), edges2explore,
-                                        dag, mask, bhir, new_dag).second;
-        if(fuse)
-        {
-            output = new_dag;
-            return;
-        }
+        if(vertices2explore.find(v) == vertices2explore.end())
+            ignores.insert(v);
     }
 
     //Check for a preloaded initial condition
-    const char *t = getenv("BH_FUSER_OPTIMAL_PRELOAD");
+    vector<bool> mask(edges2explore.size(), true);
     unsigned int preload_offset=0;
-    if(t != NULL)
+    if(edges2explore.size() > 10)
     {
-        BOOST_FOREACH(const char &c, string(t))
+        const char *t = getenv("BH_FUSER_OPTIMAL_PRELOAD");
+        if(t != NULL)
         {
-            mask[preload_offset++] = lexical_cast<bool>(c);
-            if(preload_offset == mask.size())
-                break;
+            BOOST_FOREACH(const char &c, string(t))
+            {
+                mask[preload_offset++] = lexical_cast<bool>(c);
+                if(preload_offset == mask.size())
+                    break;
+            }
+            cout << "Preloaded path (" << preload_offset << "): ";
+            for(unsigned int j=0; j<preload_offset; ++j)
+                cout << mask[j] << ", ";
+            cout << endl;
+            --preload_offset;
         }
-        cout << "Preloaded path (" << preload_offset << "): ";
-        for(unsigned int j=0; j<preload_offset; ++j)
-            cout << mask[j] << ", ";
-        cout << endl;
-        --preload_offset;
     }
 
-    Solver solver(bhir, dag, edges2explore, cache);
-    if(mask.size() > 100)
-    {
-        cout << "FUSER-OPTIMAL: ABORT the size of the search space is too large: 2^";
-        cout << mask.size() << "!" << endl;
-    }
-    else
-    {
-        cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-        solver.branch_n_bound(mask, preload_offset, false);
-        solver.branch_n_bound(mask, preload_offset, true);
-    }
-    output = solver.best_dag;
-}
-
-void timer_handler(int signum)
-{
-    cout << "ABORT! - timeout" << endl;
-    exit(-1);
-}
-void set_abort_timer()
-{
-    const char *bh_fuser_timeout = getenv("BH_FUSER_TIMEOUT");
-    if(bh_fuser_timeout == NULL)
-        return;
-    long int timeout = strtol(bh_fuser_timeout, NULL, 10);
-    cout << "[ABORT] Fuse-Abort timeout is " << timeout << " sec" << endl;
-
-    struct sigaction sa;
-    struct itimerval timer;
-
-    memset(&sa, 0, sizeof(sa));
-
-    sa.sa_handler = &timer_handler;
-    sigaction(SIGALRM, &sa, NULL);
-
-    timer.it_value.tv_sec = timeout;
-    timer.it_value.tv_usec = 0;
-    timer.it_interval.tv_sec = 0;
-    timer.it_interval.tv_usec = 100000;
-
-    setitimer (ITIMER_REAL, &timer, NULL);
+    cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
+    output = branch_n_bound(bhir, dag, edges2explore, cache, ignores, mask, preload_offset);
 }
 
 void do_fusion(bh_ir &bhir, FuseCache &cache)
 {
-    set_abort_timer();
+    vector<bh_ir_kernel> kernel_list;
+    {
+        GraphDW dag;
+        from_bhir(bhir, dag);
+        fill_kernel_list(dag.bglD(), kernel_list);
+    }
+    while(true)
+    {
+//        cout << endl << "Starting new round." << endl;
+        GraphDW dag;
+        from_kernels(kernel_list, dag);
+        fuse_gentle(dag);
+        dag.transitive_reduction();
+        assert(dag_validate(dag.bglD()));
 
-    GraphDW dag;
-    from_bhir(bhir, dag);
-    fuse_gentle(dag);
-    dag.transitive_reduction();
-    assert(dag_validate(dag.bglD()));
+        vector<set<Vertex> > component2vertices;
+        {
+            vector<Vertex> vertex2component(num_vertices(dag.bglW()));
+            uint64_t num = connected_components(dag.bglW(), &vertex2component[0]);
+            component2vertices.resize(num);
+            for(Vertex v=0; v<vertex2component.size(); ++v)
+            {
+                component2vertices[vertex2component[v]].insert(v);
+            }
+        }
 
-    GraphD output;
-    fuse_optimal(bhir, dag, output, cache);
-    if(num_vertices(output) == 0)
-        output = dag.bglD();
+/*        {
+            uint64_t component_id = 0;
+            BOOST_FOREACH(set<Vertex> &vertices, component2vertices)
+            {
+                cout << "Component " << component_id << ": ";
+                BOOST_FOREACH(Vertex v, vertices)
+                {
+                    cout << v << ", ";
+                }
+                cout << endl;
+                ++component_id;
+            }
+        }
+*/
 
-    assert(dag_validate(output));
-    fill_kernel_list(output, bhir.kernel_list);
+        //Find the smallest component with more than one vertex
+        uint64_t comp_size=num_vertices(dag.bglW())+1;
+        int comp_id=-1;
+        for(uint64_t i=0; i < component2vertices.size(); ++i)
+        {
+            const uint64_t size = component2vertices[i].size();
+           if(1 < size and size < comp_size)
+           {
+               comp_size = size;
+               comp_id = i;
+           }
+        }
+
+        GraphD output;
+        if(comp_id == -1)
+        {
+//            cout << "Round ended, no more components to fuse" << endl << endl;
+            output = dag.bglD();
+        }
+        else
+        {
+//            cout << "Fusing component: " << comp_id << endl;
+            fuse_optimal(bhir, dag, component2vertices[comp_id], output, cache);
+        }
+        assert(num_vertices(output) > 0);
+        assert(dag_validate(output));
+        kernel_list.clear();
+        fill_kernel_list(output, kernel_list);
+
+        if(comp_id == -1)
+            break;
+    }
+    bhir.kernel_list = kernel_list;
 }
 
 void fuser(bh_ir &bhir, FuseCache &cache)
