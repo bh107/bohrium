@@ -414,7 +414,7 @@ void do_fusion(bh_ir &bhir, FuseCache &cache)
     }
     while(true)
     {
-        cout << endl << "Starting new round." << endl;
+//        cout << endl << "Starting new round." << endl;
         GraphDW dag;
         from_kernels(kernel_list, dag);
         fuse_gentle(dag);
@@ -432,17 +432,20 @@ void do_fusion(bh_ir &bhir, FuseCache &cache)
             }
         }
 
-        uint64_t component_id = 0;
-        BOOST_FOREACH(set<Vertex> &vertices, component2vertices)
-        {
-            cout << "Component " << component_id << ": ";
-            BOOST_FOREACH(Vertex v, vertices)
+/*        {
+            uint64_t component_id = 0;
+            BOOST_FOREACH(set<Vertex> &vertices, component2vertices)
             {
-                cout << v << ", ";
+                cout << "Component " << component_id << ": ";
+                BOOST_FOREACH(Vertex v, vertices)
+                {
+                    cout << v << ", ";
+                }
+                cout << endl;
+                ++component_id;
             }
-            cout << endl;
-            ++component_id;
         }
+*/
 
         //Find the smallest component with more than one vertex
         uint64_t comp_size=num_vertices(dag.bglW())+1;
@@ -460,12 +463,12 @@ void do_fusion(bh_ir &bhir, FuseCache &cache)
         GraphD output;
         if(comp_id == -1)
         {
-            cout << "Round ended, no more components to fuse" << endl << endl;
+//            cout << "Round ended, no more components to fuse" << endl << endl;
             output = dag.bglD();
         }
         else
         {
-            cout << "Fusing component: " << comp_id << endl;
+//            cout << "Fusing component: " << comp_id << endl;
             fuse_optimal(bhir, dag, component2vertices[comp_id], output, cache);
         }
         assert(num_vertices(output) > 0);
