@@ -22,12 +22,23 @@
         }
         work_end = work_offset+work;
         if (work) {
+        // Step
+        {{#OPERAND}}{{#ARRAY}}
+        const int64_t a{{NR}}_step_ld = a{{NR}}_stride[0];
+        {{/ARRAY}}{{/OPERAND}}
+
+        // Operands
         {{#OPERAND}}
         {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
         {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
         {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-        {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first + (work_offset *a{{NR}}_stride[0]);{{/ARRAY}}
+        {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first;{{/ARRAY}}
         {{/OPERAND}}
+
+        // Do offset
+        {{#OPERAND}}{{#ARRAY}}
+        a{{NR}}_current += work_offset * a{{NR}}_stride[0];
+        {{/ARRAY}}{{/OPERAND}}
 
         for (int64_t i = work_offset; i < work_end; ++i) {
             {{#OPERATORS}}
@@ -35,10 +46,9 @@
             {{/OPERATORS}}
         
             {{#OPERAND}}{{#ARRAY}}
-            a{{NR}}_current += a{{NR}}_stride[0];
+            a{{NR}}_current += a{{NR}}_step_ld;
             {{/ARRAY}}{{/OPERAND}}
-        }
-        }
+        }}
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
 }
