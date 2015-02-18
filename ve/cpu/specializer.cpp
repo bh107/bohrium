@@ -326,6 +326,9 @@ string Specializer::specialize( SymbolTable& symbol_table,
                                 Block& block,
                                 size_t tac_start, size_t tac_end)
 {
+    //codegen::Kernel krnl_cgen(plaid_, block);
+    //cout << krnl_cgen.generate_source() << endl;
+
     string sourcecode  = "";
 
     ctemplate::TemplateDictionary kernel_d("KERNEL");   // Kernel - function wrapping code
