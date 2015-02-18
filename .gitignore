@@ -77,3 +77,5 @@ benchmark/CIL/Csharp/nice/obj
 bridge/cil/codegen/output
 benchmark/CIL/Csharp/reationdiffusion/bin
 benchmark/CIL/Csharp/reationdiffusion/obj
+benchmark/CIL/Csharp/reactiondiffusion/bin
+benchmark/CIL/Csharp/reactiondiffusion/obj
