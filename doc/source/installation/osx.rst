@@ -52,7 +52,7 @@ Make sure your system compiler is the one provided by Xcode, you can run the fol
   Thread model: posix
 
 Bohrium uses CMake so everything is configured automatically::
-  
+
   mkdir build
   cd build
   cmake ..
@@ -89,7 +89,7 @@ The ``DYLD_LIBRARY_PATH`` should include the path to the installation directory:
 
 Now the basic installation should work. Try running the NumPy test suite::
 
-  python test/numpy/numpytest.py
+  python test/python/numpytest.py
 
 And you should see a result similar to this::
 

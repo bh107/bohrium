@@ -98,7 +98,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy swig python-cheetah cmake libboost-serialization-dev cython libhwloc-dev libctemplate-dev 
+  sudo apt-get install python-numpy swig python-cheetah cmake libboost-serialization-dev cython libhwloc-dev libctemplate-dev
 
 Build and install::
 
@@ -132,7 +132,7 @@ The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python
 
 Now the basic installation should work. Try running the NumPy test suite::
 
-  python test/numpy/numpytest.py
+  python test/python/numpytest.py
 
 And you should see a result similar to this::
 
@@ -232,13 +232,13 @@ In order to utilize a computer clusters, you need to install mpich2 or OpenMPI b
 
 And execute using mpi::
 
-  mpiexec -np 1 <user application> : -np 3 <install dir>/bh_vem_cluster_slave
+  mpiexec -np 1 <user application> : -np 3 <install dir>/bin/bh_vem_cluster_slave
 
 Where one process executes the user application and multiple processes executes the slave binary from the installation directory.
 
 For example, the following utilize eight cluster nodes::
 
-  mpiexec -np 1 python numpytest.py : -np 7 .local/bh_vem_cluster_slave
+  mpiexec -np 1 python numpytest.py : -np 7 ~/.local/bin/bh_vem_cluster_slave
 
 When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
 
