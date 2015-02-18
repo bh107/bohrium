@@ -68,9 +68,9 @@ If you are upgrading from a previous version you should delete the config file a
   rm ~/.bohrium/config.ini
   make install
 
-If you have previously used Bohrium, issue the following command to clean old JIT kernels::
+If you have previously used Bohrium, issue the following command to clean the old install::
 
-  rm -rf ~/.local/cpu/objects/*
+  rm -rf ~/.local/var/bohrium ~/.local/share/bohrium/
 
 Python / NumPy
 ~~~~~~~~~~~~~~
@@ -141,4 +141,9 @@ And you should see a result similar to this::
    ...
    Running benchmark tests - Bohrium
    benchmark tests: 0,44233
+
+If you prefer to not mess with your system and instead use the commandline, you can execute the unittest like this::
+
+  MONO_PATH=~/.local/lib/mono DYLD_LIBRARY_PATH=~/.local/lib mono ~/.local/share/bohrium/test/cil/bin/UnitTest.exe
+
 
