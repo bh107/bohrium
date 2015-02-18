@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
-include_directories(../../include)
-
-if(NO_EXTMETHODS_FFTW)
+set(EXT_FFTW true CACHE BOOL "EXT-FFTW: Build FFTW extension method.")
+if(NOT EXT_FFTW)
     return()
 endif()
+
+include_directories(../../include)
 
 #External dependencies
 find_package(FFTW)
