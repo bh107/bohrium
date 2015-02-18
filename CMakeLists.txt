@@ -53,6 +53,7 @@ set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries"
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
 
+# Cheetah is required to build some parts of Bohrium
 find_package(Cheetah REQUIRED COMPONENTS bohrium)
 set_package_properties(Cheetah PROPERTIES DESCRIPTION "Cheetah is a template module for Python" URL "www.cheetahtemplate.org")
 set_package_properties(Cheetah PROPERTIES TYPE REQUIRED PURPOSE "Cheetah is required to build Bohrium")
