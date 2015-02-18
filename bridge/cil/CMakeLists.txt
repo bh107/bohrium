@@ -4,9 +4,8 @@ if(NOT BRIDGE_CIL)
     return()
 endif()
 
+set(Mono_FIND_QUIETLY 1)
 find_package(Mono)
-set_package_properties(Mono PROPERTIES DESCRIPTION "An open source implementation the CLR" URL "www.mono-project.com")
-set_package_properties(Mono PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the NumCIL package")
 
 if(MONO_FOUND AND PYTHONINTERP_FOUND)
 
@@ -43,7 +42,7 @@ if(MONO_FOUND AND PYTHONINTERP_FOUND)
     DEPENDS numcil bhc ${target_file}
   )
 
-  install(FILES ${target_file} DESTINATION lib COMPONENT bohrium-numcil)
+  install(FILES ${target_file} DESTINATION lib/mono COMPONENT bohrium-numcil)
 
 else()
   message("Cannot build NumCIL.Bohrium as Mono, xbuild or Python is missing")

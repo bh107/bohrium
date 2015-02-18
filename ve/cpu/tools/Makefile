@@ -132,8 +132,8 @@ gentest:
 	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 ./gentest.py
 	
 test:
-	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/test/numpy/numpytest.py
-	BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/test/numpy/numpytest.py
+	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/test/python/numpytest.py
+	BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/test/python/numpytest.py
 
 graphs:
 	python ./create_svg.py ./ /tmp/

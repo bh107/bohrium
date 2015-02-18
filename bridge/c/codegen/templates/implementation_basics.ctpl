@@ -28,6 +28,22 @@ void bh_runtime_shutdown(void){
 
 // $bh_enum
 
+// Marks the data as externally allocated
+void bh_multi_array_${bh_ctype}_set_external(const bh_multi_array_${bh_ctype}_p self, bh_bool value)
+{
+    if (value)
+        Runtime::instance().ext_allocated[((multi_array<${ctype}>*)self)->meta.base] = 1;
+    else
+        Runtime::instance().ext_allocated.erase(((multi_array<${ctype}>*)self)->meta.base);
+}
+
+// Returns true if the data is externally managed, false otherwise
+bh_bool bh_multi_array_${bh_ctype}_get_external(const bh_multi_array_${bh_ctype}_p self)
+{
+    return Runtime::instance().ext_allocated.count(((multi_array<${ctype}>*)self)->meta.base) == 1;
+}
+
+
 // Gets the base from a view
 bh_base_p bh_multi_array_${bh_ctype}_get_base(const bh_multi_array_${bh_ctype}_p self)
 {

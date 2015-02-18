@@ -41,7 +41,7 @@ if(MONO_FOUND)
     DEPENDS ${numcil_binaries}
   )
 
-  install(FILES ${numcil_binaries} DESTINATION lib COMPONENT bohrium-numcil)
+  install(FILES ${numcil_binaries} DESTINATION lib/mono COMPONENT bohrium-numcil)
 
 else()
   message("Cannot build NumCIL as Mono or xbuild is missing")

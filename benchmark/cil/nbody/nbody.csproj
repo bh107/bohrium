@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{226D254B-E858-4964-BC99-4B3D93A78080}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>nbody</RootNamespace>
+    <AssemblyName>nbody</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Commandlineparameters>--size=10*100 --bohrium=true --no-temp-arrays=true</Commandlineparameters>
+    <ConsolePause>false</ConsolePause>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="LD_LIBRARY_PATH" value="/home/madsbk/.local" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <Commandlineparameters>--size=10*100 --no-temp-arrays=true</Commandlineparameters>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="LD_LIBRARY_PATH" value="/home/madsbk/.local" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Main.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="nbody.cs">
+      <DependentUpon>nbody.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
+      <Project>{08C17283-4F2A-466C-AE28-1923837A2F58}</Project>
+      <Name>NumCIL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\bridge\cil\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
+      <Project>{94B0C811-511A-420C-9E3E-898B253E8D46}</Project>
+      <Name>NumCIL.Bohrium</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj">
+      <Project>{F3DA9742-5A09-4456-9531-548324D35CE3}</Project>
+      <Name>NumCIL.Unsafe</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utilities\Utilities.csproj">
+      <Project>{D6CA1418-5885-4311-AFD8-94916E437EFE}</Project>
+      <Name>Utilites</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="nbody.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>nbody.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+</Project>

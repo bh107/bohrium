@@ -151,8 +151,14 @@ multi_array<T>::~multi_array()
     if (linked()) {
         Runtime::instance().ref_count[meta.base] -= 1;       // Decrement ref-count
         if (0==Runtime::instance().ref_count[meta.base]) {   // De-allocate it
-            bh_free(*this);                             // Send BH_FREE to Bohrium
-            bh_discard(*this);                          // Send BH_DISCARD to Bohrium
+
+            // Send BH_FREE to Bohrium, unless the data is allocated externally
+            if (Runtime::instance().ext_allocated.count(meta.base) == 1)
+                Runtime::instance().ext_allocated.erase(meta.base);
+            else
+                bh_free(*this);                             
+            
+            bh_discard(*this);                               // Send BH_DISCARD to Bohrium
             Runtime::instance().trash(meta.base);            // Queue the bh_base for de-allocation
             Runtime::instance().ref_count.erase(meta.base);  // Remove from ref-count
         }

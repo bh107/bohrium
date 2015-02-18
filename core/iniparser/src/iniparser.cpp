@@ -15,7 +15,7 @@
 */
 /*---------------------------- Includes ------------------------------------*/
 #include <ctype.h>
-#include "iniparser.h"
+#include <bh_iniparser.h>
 
 /*---------------------------- Defines -------------------------------------*/
 #define ASCIILINESZ         (1024)

@@ -1368,7 +1368,7 @@ foreach(var opname in new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "M
 
 	#region Unary operations implementation
 <#
-foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", "Abs", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Log", "Log10", "Invert", "Not"}) 
+foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", "Abs", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Log", "Log10", "Invert", "Not", "Sign"}) 
 {
 	if (opname == "Not" && fulltypename != "System.Boolean")
 		continue;
@@ -1376,10 +1376,10 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
 	if (fulltypename == "System.Boolean" && opname != "Not")
 		continue;
 
-	if ((opname == "Ceiling" || opname == "Floor" || opname == "Round" || opname == "Not" || opname == "Invert") && typename.StartsWith("Complex"))
+	if ((opname == "Ceiling" || opname == "Floor" || opname == "Round" || opname == "Not" || opname == "Invert" || opname == "Sign") && typename.StartsWith("Complex"))
 		continue;
 
-	if ((opname == "Abs") && typename.StartsWith("U"))
+	if ((opname == "Abs" || opname == "Sign") && typename.StartsWith("U"))
 		continue;
 
 	if ((opname == "Round" || opname == "Ceiling" || opname == "Floor") && (typename.StartsWith("U") || typename.StartsWith("I")))
@@ -1416,6 +1416,7 @@ foreach(var opname in new string[] {"Ceiling", "Floor", "Round", "Sqrt", "Exp", 
 		<# } else if (opname == "Tanh")    { #>{ return (T)<#=mathlib#>.Tanh(a); }
 		<# } else if (opname == "Log")     { #>{ return (T)<#=mathlib#>.Log(a); }
 		<# } else if (opname == "Log10")   { #>{ return (T)<#=mathlib#>.Log10(a); }
+		<# } else if (opname == "Sign")    { #>{ return (T)<#=mathlib#>.Sign(a); }
 		<# } else if (opname == "Invert")  { #>{ return (T)(~a); }
 		<# } else if (opname == "Not")     { #>{ return (T)(!a); }
 		<# } #>

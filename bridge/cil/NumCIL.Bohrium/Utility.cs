@@ -57,7 +57,7 @@ namespace NumCIL.Bohrium
         /// <summary>
         /// Static destructor helper
         /// </summary>
-        private static UnloaderHelper _unloaderHelper = new UnloaderHelper();
+        private static UnloaderHelper _unloaderHelper = null;
 
         /// <summary>
         /// Attempts to set up Bohrium by looking for the Bohrium checkout folder.
@@ -159,6 +159,7 @@ namespace NumCIL.Bohrium
 			Activate<System.Numerics.Complex>();
             
             NumCIL.UFunc.ApplyManager.RegisterHandler(new NumCIL.Bohrium.ApplyImplementor());
+			_unloaderHelper = new UnloaderHelper();
             _unloaderHelper.SetTime();
         }
 
@@ -167,6 +168,7 @@ namespace NumCIL.Bohrium
         /// </summary>
         public static void Deactivate()
         {
+			_unloaderHelper = null;
             Flush();
             Deactivate<float>();
             Deactivate<double>();
@@ -181,6 +183,9 @@ namespace NumCIL.Bohrium
 			Deactivate<bool>();
 			Deactivate<NumCIL.Complex64.DataType>();
 			Deactivate<System.Numerics.Complex>();
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
         }
             
         /// <summary>

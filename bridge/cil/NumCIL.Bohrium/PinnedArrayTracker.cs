@@ -24,12 +24,25 @@ namespace NumCIL.Bohrium
     /// </summary>
     public static class PinnedArrayTracker
     {
-        /// <summary>
-        /// The lookup table with all pinned items
-        /// </summary>
-        private static Dictionary<Array, Tuple<IntPtr, GCHandle, IDisposable>> _allocations = new Dictionary<Array, Tuple<IntPtr, GCHandle, IDisposable>>();
+		/// <summary>
+		/// Pinned arrays that are to be unpinned
+		/// </summary>
+		private static List<GCHandle> _delayUnpins = new List<GCHandle>();
 
-        private static List<Tuple<IMultiArray, GCHandle>> _protectedReleases = new List<Tuple<IMultiArray, GCHandle>>();
+		/// <summary>
+		/// Reference count for allocated data pointers
+		/// </summary>
+		private static Dictionary<IntPtr, long> _refCount = new Dictionary<IntPtr, long>();
+
+		/// <summary>
+		/// Handles for the pinned data entries
+		/// </summary>
+		private static Dictionary<IntPtr, GCHandle> _handles = new Dictionary<IntPtr, GCHandle>();
+
+		/// <summary>
+		/// List of allocated handles, used to detect multiple requests for pinning
+		/// </summary>
+		private static Dictionary<Array, IntPtr> _allocated = new Dictionary<Array, IntPtr>();
 
         /// <summary>
         /// The lock object that protects access to the pinner
@@ -37,234 +50,125 @@ namespace NumCIL.Bohrium
         private static object _lock = new object();
 
 		/// <summary>
+		/// Environment variable that checks if the GC should be flushed before flushing instructions
+		/// </summary>
+		private static readonly bool BH_GC_FLUSH = "1".Equals(Environment.GetEnvironmentVariable("BH_GC_FLUSH"));
+
+		/// <summary>
 		/// Gets the execute lock object.
 		/// </summary>
 		/// <value>The execute lock object.</value>
 		public static object ExecuteLock { get { return _lock; } }
     
-        /// <summary>
-        /// Pins the array.
-        /// </summary>
-        /// <param name="item">The array to pin</param>
-        /// <typeparam name="T">The 1st type parameter.</typeparam>
-        /// <returns>The base_p IntPtr for the pinned entry</returns>
-        public static IntPtr PinArray<T>(T[] item)
-        {
-            lock (_lock)
-            {
-                Tuple<IntPtr, GCHandle, IDisposable> r;
-                if (_allocations.TryGetValue(item, out r))
-                    return r.Item1;
+		/// <summary>
+		/// Pins an array and returns the data pointer
+		/// </summary>
+		/// <param name="item">The item to pin</param>
+		/// <returns>The pinned data pointer</returns>
+		public static IntPtr CreatePinnedArray(Array item)
+		{
+			lock (_lock)
+			{
+				IntPtr ptr;
+				if (_allocated.TryGetValue(item, out ptr))
+					return ptr;
 
-                var handle = GCHandle.Alloc(item, GCHandleType.Pinned);
-                if (typeof(T) == typeof(bh_bool))
-                {
-					var p = PInvoke.bh_multi_array_int8_new_empty(1, new long[]{ item.Length }); 
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_uint8))
-                {
-					var p = PInvoke.bh_multi_array_uint8_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_int8))
-                {
-					var p = PInvoke.bh_multi_array_int8_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_int16))
-                {
-					var p = PInvoke.bh_multi_array_int16_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_uint16))
-                {
-					var p = PInvoke.bh_multi_array_uint16_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_int32))
-                {
-					var p = PInvoke.bh_multi_array_int32_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_uint32))
-                {
-					var p = PInvoke.bh_multi_array_uint32_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_int64))
-                {
-					var p = PInvoke.bh_multi_array_int64_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_uint64))
-                {
-					var p = PInvoke.bh_multi_array_uint64_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_float32))
-                {
-					var p = PInvoke.bh_multi_array_float32_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_float64))
-                {
-					var p = PInvoke.bh_multi_array_float64_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_complex64))
-                {
-					var p = PInvoke.bh_multi_array_complex64_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else if (typeof(T) == typeof(bh_complex128))
-                {
-					var p = PInvoke.bh_multi_array_complex128_new_empty(1, new long[]{ item.Length });
-					p.Data = handle.AddrOfPinnedObject();
-                    r = new Tuple<IntPtr, GCHandle, IDisposable>(
-                        p.Pointer,
-                        handle,
-                        p
-                    );
-                }
-                else
-                {
-                    handle.Free();
-                    throw new Exception("Unexpected data type: " + typeof(T).FullName);
-                }
-                
-                _allocations[item] = r;
-                return r.Item1;
-            }
-        }
-        
-        /// <summary>
-        /// Gets a value indicating if there are pinned entries
-        /// </summary>
-        /// <value><c>true</c> there are pinned entries; otherwise, <c>false</c>.</value>
-        public static bool HasEntries { get { return _allocations.Count != 0; } }
+				var handle = GCHandle.Alloc(item, GCHandleType.Pinned);
+				ptr = handle.AddrOfPinnedObject();
+
+				_handles.Add(ptr, handle);
+				_refCount.Add(ptr, 0);
+				_allocated.Add(item, ptr);
+
+				return ptr;
+			}
+		}
+
+		/// <summary>
+		/// Determines if the data pointer is a managed data reference.
+		/// </summary>
+		/// <returns><c>true</c> if the data pointer is a managed data reference; otherwise, <c>false</c>.</returns>
+		/// <param name="ptr">The data pointer</param>
+		public static bool IsManagedData(IntPtr ptr)
+		{
+			if (ptr == IntPtr.Zero)
+				return false;
+
+			//lock (_lock)
+			return _refCount.ContainsKey(ptr);
+		}
+
+		/// <summary>
+		/// Incs the reference count.
+		/// </summary>
+		/// <param name="data">The data pointer</param>
+		public static void IncReference(IntPtr data)
+		{
+			lock (_lock)
+			{
+				if (IsManagedData(data))
+				{
+					var d = _refCount[data];
+					d++;
+					_refCount[data] = d;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Decs the reference count.
+		/// </summary>
+		/// <param name="data">The data pointer</param>
+		public static void DecReference(IntPtr data)
+		{
+			lock (_lock)
+			{
+				if (IsManagedData(data))
+				{
+					long rc = (_refCount[data] -= 1);
+					if (rc == 0)
+					{
+						_refCount.Remove(data);
+						_delayUnpins.Add(_handles[data]);
+						_handles.Remove(data);
+
+						//TODO: Slow
+						foreach (var n in _allocated)
+							if (n.Value == data)
+							{
+								_allocated.Remove(n.Key);
+								break;
+							}
+					}
+				}
+			}
+		}
 
         /// <summary>
-        /// Registers a protected invoke
-        /// </summary>
-        /// <param name="m_array">M array.</param>
-        /// <param name="m_handle">M handle.</param>
-        internal static void RegisterProtectedDiscard(IMultiArray array, GCHandle handle)
-        {
-            lock(_lock)
-                _protectedReleases.Add(new Tuple<IMultiArray, GCHandle>(array, handle));
-        }
-
-        /// <summary>
-        /// Releases all pinned items
+        /// Flushes the pending queue and releases pinned arrays
         /// </summary>
         internal static void ReleaseInternal()
         {
-			var reflush = false;
-            lock (_lock)
-            {
-                // Notify the bridge that these elements are no longer used
-                foreach (var h in _allocations.Values)
-                    h.Item3.Dispose();
-                
-                // Execute all the discards
-                PInvoke.bh_runtime_flush();
-
-                // Unpin any pinned memory
-                foreach (var h in _allocations.Values)
-					try { h.Item2.Free(); }
-					catch { }
-
-				_allocations.Clear();
-                
-                // Handle all protected discards
-                if (_protectedReleases.Count > 0)
-                {
-					reflush = true;
-                    // Make sure that all CIL managed pointers are set to null
-                    foreach (var h in _protectedReleases)
-                    {
-                        h.Item1.SetData(IntPtr.Zero);
-                        h.Item1.Dispose();
-                        if (h.Item2.IsAllocated)
-                            h.Item2.Free();
-                    }
-						
-                    _protectedReleases.Clear();
-                }
-            }
-
-			// This needs to be done outside the locking, 
-			// because the finalizers are locking as well
-			if (reflush)
+			if (BH_GC_FLUSH)
 			{
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
-				lock(_lock)
-					PInvoke.bh_runtime_flush();
+			}
+
+			lock (_lock)
+			{
+				// Execute all the operations
+				PInvoke.bh_runtime_flush();
+
+				/*if (_delayUnpins.Count != 0)
+					Console.WriteLine("Unpinning {0} items", _delayUnpins.Count); */
+
+				foreach (var h in _delayUnpins)
+					h.Free();
+				_delayUnpins.Clear();
 			}
         }
-                
+			                
         /// <summary>
         /// Releases all pinned items
         /// </summary>

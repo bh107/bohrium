@@ -27,13 +27,38 @@ namespace NumCIL.Bohrium
 {
     internal static class RandomSuppliers
     {
+        private static ulong m_seed;
+        private static ulong m_index = 0;
+
+        public static void SetSeed(ulong seed)
+        {
+            m_seed = seed;
+            m_index = 0;
+        }
+
+        static RandomSuppliers()
+        {
+            var bytes = new byte[8];
+            new Random().NextBytes(bytes);
+            m_seed = BitConverter.ToUInt64(bytes, 0);
+        }
+
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
         public static void Random(ma_${bh_ctype} target)
         {
-            var len = target.DataSize;
-            using(var view = PInvoke.bh_multi_array_${bh_ctype}_new_view(target, 1, 0, new long[] { len }, new long[] { 1 }))
-            using (var tmp = PInvoke.bh_multi_array_uint64_new_random123((ulong)len, 0u, 0u))
-                PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+            lock(PinnedArrayTracker.ExecuteLock)
+            {
+                var len = target.DataSize;
+                using(var view = PInvoke.bh_multi_array_${bh_ctype}_new_view(target, 1, 0, new long[] { len }, new long[] { 1 }))
+                using (var tmp = PInvoke.bh_multi_array_uint64_new_random123((ulong)len, m_index, m_seed))
+                {
+                    m_index += (ulong)len;
+                    PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+%if $bh_ctype == "float32" or $bh_ctype == "float64" or $bh_ctype == "complex64" or $bh_ctype == "complex128"           
+                    PInvoke.bh_multi_array_${bh_ctype}_divide_scalar_rhs(view, view, bh_uint64.MaxValue);
+%end if
+                }
+            }
         }
 %end for
     }
@@ -43,10 +68,13 @@ namespace NumCIL.Bohrium
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
         public static void Range(ma_${bh_ctype} target)
         {
-            var len = target.DataSize;
-            using(var view = PInvoke.bh_multi_array_${bh_ctype}_new_view(target, 1, 0, new long[] { len }, new long[] { 1 }))
-            using(var tmp = PInvoke.bh_multi_array_uint64_new_range((ulong)len))
-                PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+            lock(PinnedArrayTracker.ExecuteLock)
+            {    
+                var len = target.DataSize;
+                using(var view = PInvoke.bh_multi_array_${bh_ctype}_new_view(target, 1, 0, new long[] { len }, new long[] { 1 }))
+                using(var tmp = PInvoke.bh_multi_array_uint64_new_range((ulong)len))
+                    PInvoke.bh_multi_array_${bh_ctype}_identity_uint64(view, tmp);
+            }
         }
 %end for
     }
@@ -180,23 +208,26 @@ namespace NumCIL.Bohrium
             // If the input is used, no special action is performed until 
             // a sync is executed, then all the BH queue is flushed and 
             // the GC handles released
-                        
-            using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
-            using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in2))
-            using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
-            {
-                m(v0, v1, v2);
-                // If the output is CIL-managed, we must sync immediately
-                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};                  
+            lock(PinnedArrayTracker.ExecuteLock)
+            {                        
+                using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
+                using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in2))
+                using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                 {
-                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                }
-                else
-                {
-                    v0.Sync();
-                    PinnedArrayTracker.Release();
+                    m(v0, v1, v2);
+
+                    if (isUnmanaged)
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    else
+                        v0.Sync();
                 }
             }
+
+            // If the output is CIL-managed, we must sync immediately
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
 
             return true;
         }
@@ -222,22 +253,25 @@ namespace NumCIL.Bohrium
                     return false;
                 }
 
-                using (var v1 = new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)@in1))
-                using (var v2 = new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)@in2))
-                using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+                var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};                  
+                lock(PinnedArrayTracker.ExecuteLock)
                 {
-                    m(v0, v1, v2);
-                    // If the output is CIL-managed, we must sync immediately
-                    if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                    using (var v1 = new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)@in1))
+                    using (var v2 = new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)@in2))
+                    using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                     {
-                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                    }
-                    else
-                    {
-                        v0.Sync();
-                        PinnedArrayTracker.Release();
+                        m(v0, v1, v2);
+
+                        if (isUnmanaged)
+                            ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                        else
+                            v0.Sync();
                     }
                 }
+
+                // If the output is CIL-managed, we must sync immediately
+                if (!isUnmanaged)
+                    PinnedArrayTracker.Release();
 
                 return true;
             }
@@ -252,101 +286,111 @@ namespace NumCIL.Bohrium
             
             Action<NdArray<${bh_atype}>, NdArray<${bh_atype}>> exec = null;
             
-            // Special handling of the copy operator as it happens "in-place" (kind-of)
-            if (typeof(NumCIL.Generic.Operators.ICopyOperation).IsAssignableFrom(c))
-            {
-                exec = (_in, _out) =>
-                {
-                    if (isScalarIn1)
-                        using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
-                        {                                
-                            PInvoke.bh_multi_array_${bh_ctype}_identity_${bh_ctype}_scalar(v2, _in.DataAccessor[0]);
-                            if (!(_out.DataAccessor is DataAccessor_${bh_ctype}))
-                                v2.Sync();
-                        }
-                    else
-                        using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in))
-                        using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
-                        {
-                            PInvoke.bh_multi_array_${bh_ctype}_identity_${bh_ctype}(v2, v1);
-                            if (!(_out.DataAccessor is DataAccessor_${bh_ctype}))
-                                v2.Sync();
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};
 
-                        }
-                };
-            }
-                    
-            if (exec == null)
-            {
-                Action<ma_${bh_ctype}, ma_${bh_ctype}> m;
-            
-                // This lookup prevents a linear scan of the supported operands
-                if (!m_unOpLookup.TryGetValue(c, out m))
-                {
-                    m = (from n in m_unOps
-                            where n.Item1.IsAssignableFrom(c)
-                            select n.Item2).FirstOrDefault();
-                    m_unOpLookup[c] = m;
-                }
-                
-                if (m != null)
+            lock(PinnedArrayTracker.ExecuteLock)
+            {            
+                // Special handling of the copy operator as it happens "in-place" (kind-of)
+                if (typeof(NumCIL.Generic.Operators.ICopyOperation).IsAssignableFrom(c))
                 {
                     exec = (_in, _out) =>
                     {
-                        using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in))
-                        using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
-                        {
-                            m(v0, v1);
-                            if (!(_out.DataAccessor is DataAccessor_${bh_ctype}))
-                                v0.Sync();
-                        }
+                        if (isScalarIn1)
+                            using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                            {                                
+                                PInvoke.bh_multi_array_${bh_ctype}_identity_${bh_ctype}_scalar(v2, _in.DataAccessor[0]);
+                                if (!isUnmanaged)
+                                    v2.Sync();
+                            }
+                        else
+                            using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in))
+                            using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                            {
+                                PInvoke.bh_multi_array_${bh_ctype}_identity_${bh_ctype}(v2, v1);
+                                if (!isUnmanaged)
+                                    v2.Sync();
+
+                            }
                     };
                 }
+                        
+                if (exec == null)
+                {
+                    Action<ma_${bh_ctype}, ma_${bh_ctype}> m;
+                
+                    // This lookup prevents a linear scan of the supported operands
+                    if (!m_unOpLookup.TryGetValue(c, out m))
+                    {
+                        m = (from n in m_unOps
+                                where n.Item1.IsAssignableFrom(c)
+                                select n.Item2).FirstOrDefault();
+                        m_unOpLookup[c] = m;
+                    }
+                    
+                    if (m != null)
+                    {
+                        exec = (_in, _out) =>
+                        {
+                            using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(_in))
+                            using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(_out))
+                            {
+                                m(v0, v1);
+                                if (!isUnmanaged)
+                                    v0.Sync();
+                            }
+                        };
+                    }
+                }
+                
+                if (exec == null)
+                {
+                    Console.WriteLine("No registered match for: {0}", c.FullName);
+                    return false;
+                }
+                
+                exec(@in1, @out);
+                
+                if (isUnmanaged)
+                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                else
+                    PinnedArrayTracker.Release();
+                
+                return true;
             }
-            
-            if (exec == null)
-            {
-                Console.WriteLine("No registered match for: {0}", c.FullName);
-                return false;
-            }
-            
-            exec(@in1, @out);
-            
-            if (@out.DataAccessor is DataAccessor_${bh_ctype})
-                ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-            else
-                PinnedArrayTracker.Release();
-            
-            return true;
         }
 
         private bool DoConvert<T>(NdArray<${bh_atype}> @out, Func<T> constructor, Action<ma_${bh_ctype}, T> converter)
             where T : IDisposable
         {
-            using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
-            using (var v1 = constructor())
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};
+            lock(PinnedArrayTracker.ExecuteLock)
             {
-                converter(v0, v1);
-                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+                using (var v1 = constructor())
                 {
-                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                }
-                else
-                {
-                    v0.Sync();
-                    PinnedArrayTracker.Release();
+                    converter(v0, v1);
+
+                    if (isUnmanaged)
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    else
+                        v0.Sync();
                 }
             }
-            
+
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
+
             return true;
         }
 
         public bool ApplyUnaryConvOp<Ta>(Type c, NdArray<Ta> in1, NdArray<${bh_atype}> @out)
         {
-            if (typeof(NumCIL.Generic.Operators.ITypeConversion).IsAssignableFrom(c))
-            {
-                if (typeof(Ta) == typeof(${bh_atype}))
-                    return ApplyUnaryOp(c, (NdArray<${bh_atype}>)(object)in1, @out);
+            lock(PinnedArrayTracker.ExecuteLock)
+            {        
+                if (typeof(NumCIL.Generic.Operators.ITypeConversion).IsAssignableFrom(c))
+                {
+                    if (typeof(Ta) == typeof(${bh_atype}))
+                        return ApplyUnaryOp(c, (NdArray<${bh_atype}>)(object)in1, @out);
 %for $op, $opcode, $opname, $opcount, $typesigs, $cilname in $methods
 %if $opcode == "BH_IDENTITY" and opcount == 2
 %for $op1_type, $op2_type in $typesigs
@@ -359,29 +403,30 @@ namespace NumCIL.Bohrium
 %end for
 %end if
 %end for
-            }
+                }
 %if $bh_ctype == "float32"
-            else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
-                return DoConvert(@out, 
-                    () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
-                    PInvoke.bh_multi_array_complex64_real);
-            else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
-                return DoConvert(@out, 
-                    () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
-                    PInvoke.bh_multi_array_complex64_imag);
+                else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
+                    return DoConvert(@out, 
+                        () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
+                        PInvoke.bh_multi_array_complex64_real);
+                else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(NumCIL.Complex64.DataType)))
+                    return DoConvert(@out, 
+                        () => new PInvoke.bh_multi_array_complex64_p((NdArray<NumCIL.Complex64.DataType>)(object)in1),
+                        PInvoke.bh_multi_array_complex64_imag);
 %end if
 %if $bh_ctype == "float64"
-            else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
-                return DoConvert(@out, 
-                    () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
-                    PInvoke.bh_multi_array_complex128_real);
-            else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
-                return DoConvert(@out, 
-                    () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
-                    PInvoke.bh_multi_array_complex128_imag);
+                else if (typeof(NumCIL.Generic.Operators.IRealValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
+                    return DoConvert(@out, 
+                        () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
+                        PInvoke.bh_multi_array_complex128_real);
+                else if (typeof(NumCIL.Generic.Operators.IImaginaryValue).IsAssignableFrom(c) && (typeof(Ta) == typeof(System.Numerics.Complex)))
+                    return DoConvert(@out, 
+                        () => new PInvoke.bh_multi_array_complex128_p((NdArray<System.Numerics.Complex>)(object)in1),
+                        PInvoke.bh_multi_array_complex128_imag);
 %end if
 
-            return false;
+                return false;
+            }
         }
 
         public bool ApplyNullaryOp(Type c, NdArray<${bh_atype}> @out)
@@ -401,21 +446,25 @@ namespace NumCIL.Bohrium
                 Console.WriteLine("No registered match for: {0}", c.FullName);
                 return false;
             }
-                
-            using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};
+
+            lock(PinnedArrayTracker.ExecuteLock)                
             {
-                m(v0);
-                // If the output is CIL-managed, we must sync immediately
-                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+                using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                 {
-                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
-                }
-                else
-                {
-                    v0.Sync();
-                    PinnedArrayTracker.Release();
+                    m(v0);
+
+                    if (isUnmanaged)
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    else
+                        v0.Sync();
                 }
             }
+
+            // If the output is CIL-managed, we must sync immediately
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
 
             return true;
         }
@@ -436,22 +485,26 @@ namespace NumCIL.Bohrium
                 Console.WriteLine("No registered match for reduce: {0}: {1}", c.FullName, in1.DataAccessor.GetType().FullName);
                 return false;
             }
-            
-            using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
-            using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
-            {
-                m(v0, v1, axis);
-                if (@out.DataAccessor is DataAccessor_${bh_ctype})
+
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};
+
+            lock(PinnedArrayTracker.ExecuteLock)
+            {            
+                using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
+                using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                 {
-                    ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    m(v0, v1, axis);
+
+                    if (isUnmanaged)
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    else
+                        v0.Sync();
                 }
-                else
-                {
-                    v0.Sync();
-                    PinnedArrayTracker.Release();
-                }
+
             }
 
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
             return true;
         }
 
@@ -478,8 +531,9 @@ namespace NumCIL.Bohrium
                 return false;
             }
 
-            using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
-                result = m(v1);
+            lock(PinnedArrayTracker.ExecuteLock)    
+                using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
+                    result = m(v1);
 
             return true;
         }

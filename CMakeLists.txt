@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 
-# Build multi-arch OSX binaries
-set(CMAKE_OSX_ARCHITECTURES "i386;x86_64")
+if (APPLE)
+    # Build multi-arch OSX binaries
+    set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
+
+    # Skip any user-supplied python installs
+    set(PYTHON_EXECUTABLE "/usr/bin/python" CACHE STRING "Sets the python path to the Apple supplied Python, not any user-installed versions")
+endif()
 
 #We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
 if(DEFINED CMAKE_BUILD_TYPE)
@@ -48,6 +53,7 @@ set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries"
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
 
+# Cheetah is required to build some parts of Bohrium
 find_package(Cheetah REQUIRED COMPONENTS bohrium)
 set_package_properties(Cheetah PROPERTIES DESCRIPTION "Cheetah is a template module for Python" URL "www.cheetahtemplate.org")
 set_package_properties(Cheetah PROPERTIES TYPE REQUIRED PURPOSE "Cheetah is required to build Bohrium")
@@ -81,10 +87,11 @@ if(NOT USE_CXX98)
     add_subdirectory(bridge/cil)
 endif()
 
+add_subdirectory(benchmark)
+add_subdirectory(test)
+
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
         DESTINATION share/bohrium/include COMPONENT bohrium)
-install(DIRECTORY test DESTINATION share/bohrium COMPONENT bohrium)
-install(DIRECTORY benchmark DESTINATION share/bohrium COMPONENT bohrium)
 
 # Select the approriate compiler string
 if (APPLE)

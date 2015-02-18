@@ -83,6 +83,11 @@ namespace NumCIL.Generic.Operators
     /// </summary>
     public interface IAbs { };
 
+	/// <summary>
+	/// This is the sign operator
+	/// </summary>
+	public interface ISign { };
+
     /// <summary>
     /// This is the square root operator
     /// </summary>

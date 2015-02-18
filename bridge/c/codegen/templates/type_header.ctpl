@@ -53,6 +53,11 @@ struct bh_slice_${bh_ctype};
 typedef struct bh_multi_array_${bh_ctype}* bh_multi_array_${bh_ctype}_p;
 typedef struct bh_slice_range_${bh_ctype}* bh_slice_range_${bh_ctype}_p;
 
+// Marks the data as externally allocated
+DLLEXPORT void bh_multi_array_${bh_ctype}_set_external(const bh_multi_array_${bh_ctype}_p self, bh_bool value);
+
+// Returns true if the data is externally managed, false otherwise
+DLLEXPORT bh_bool bh_multi_array_${bh_ctype}_get_external(const bh_multi_array_${bh_ctype}_p self);
 
 // Gets the data pointer from a view
 DLLEXPORT ${bh_atype}* bh_multi_array_${bh_ctype}_get_data(const bh_multi_array_${bh_ctype}_p self);

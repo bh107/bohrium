@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __BOHRIUM_BRIDGE_CPP_BROADCAST
 #define __BOHRIUM_BRIDGE_CPP_BROADCAST
-#include "bh.h"
+#include <bh.h>
 
 namespace bxx {
 
