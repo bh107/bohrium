@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+set(EXT_MATMUL true CACHE BOOL "EXT-MATMUL: Build MATMUL extension method.")
+if(NOT EXT_MATMUL)
+    return()
+endif()
+
 include_directories(../../include)
 
 file(GLOB SRC *.cpp)

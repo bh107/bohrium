@@ -3,6 +3,8 @@ CPU=$(ROOT)/ve/cpu
 BDIR=$(CPU)/bdir
 BH_PYTHON=python
 
+CPU_ONLY=-DBRIDGE_CIL=OFF -DBRIDGE_NUMCIL=OFF -DFILTER_FUSEPRINTER=OFF -DFILTER_PPRINT=OFF -DFILTER_PRICER=OFF -DFUSER_GENTLE=OFF -DFUSER_GREEDY=OFF -DFUSER_OPTIMAL=OFF -DFUSER_SINGLETON=OFF -DVEM_CLUSTER=OFF -DVEM_PROXY=OFF -DVE_GPU=OFF -DTEST_CIL=OFF -DBENCHMARK_CIL=OFF
+
 #
 # Generate Doxygen documentation
 docs:
@@ -89,6 +91,10 @@ purge_install: purge_cpu purge_all clean gen install
 install:
 	mkdir -p $(BDIR)
 	cd $(BDIR) && cmake $(ROOT) && make && make install
+
+install_cpuonly:
+	mkdir -p $(BDIR)
+	cd $(BDIR) && cmake $(ROOT) $(CPU_ONLY) && make && make install
 
 #
 # Clean up the build-files
