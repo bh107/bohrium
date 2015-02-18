@@ -200,10 +200,10 @@ string Walker::ewise_operations(void)
 string Walker::generate_source(void)
 {
     std::map<string, string> subjects;
-    subjects["WALKER_DECLARATION"] = declare_operands();
-    subjects["WALKER_OFFSET"] = ewise_cont_offset();
-    subjects["WALKER_STEP"] = ewise_cont_step();
-    subjects["OPERATIONS"] = ewise_operations();
+    subjects["WALKER_DECLARATION"]  = declare_operands();
+    subjects["WALKER_OFFSET"]       = ewise_cont_offset();
+    subjects["WALKER_STEP"]         = ewise_cont_step();
+    subjects["OPERATIONS"]          = ewise_operations();
 
     return plaid_.fill("ewise.cont.nd", subjects);
 }
