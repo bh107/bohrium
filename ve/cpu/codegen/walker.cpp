@@ -69,16 +69,8 @@ string Walker::declare_operand(uint32_t id)
     return ss.str();
 }
 
-string Walker::step_forward(void)
-{
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        ss << step_forward(oidx);
-    }
-    return ss.str();
-}
 
-string Walker::step_forward(unsigned int id)
+string Walker::ewise_cont_step(unsigned int id)
 {
     Operand operand(&block_.operand(id), id);    // Grab the operand
     stringstream ss;
@@ -108,30 +100,85 @@ string Walker::step_forward(unsigned int id)
 
 }
 
-string Walker::step_forward_last(void)
+string Walker::ewise_cont_step(void)
 {
     stringstream ss;
+    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
+        ss << ewise_cont_step(oidx);
+    }
+    return ss.str();
+}
+
+string Walker::ewise_cont_offset(uint32_t oidx)
+{
+    stringstream ss;
+    Operand opd(&block_.operand(oidx), oidx);
+
+    switch(opd.operand_->layout) {
+        case STRIDED:       
+        case SPARSE:
+        case CONTIGUOUS:
+            ss
+            << _add_assign(
+                opd.walker(),
+                "work_offset"
+            ) << _end();
+            break;
+
+        case SCALAR:
+        case SCALAR_CONST:
+        case SCALAR_TEMP:
+        default:
+            break;
+    }
 
     return ss.str();
 }
 
-string Walker::step_forward_2nd_last(void)
+string Walker::ewise_cont_offset(void)
 {
     stringstream ss;
-    /*
-    Operand operand(block_.operand(id), id);    // Grab the operand
-    ss << _add_assign(operand.walker(), index(operand.stride, 0)) << _endl();*/
+    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
+        ss << ewise_cont_offset(oidx);
+    }
+    return ss.str();
+}
+
+string Walker::ewise_strided_1d_offset(uint32_t oidx)
+{
+    stringstream ss;
+    Operand opd(&block_.operand(oidx), oidx);
+
+    switch(opd.operand_->layout) {
+        case STRIDED:       
+        case SPARSE:
+        case CONTIGUOUS:
+            ss
+            << _add_assign(
+                opd.walker(),
+                _mul(
+                    "work_offset",
+                    _index(opd.stride(), 0)
+                )
+            ) << _end();
+            break;
+
+        case SCALAR:
+        case SCALAR_CONST:
+        case SCALAR_TEMP:
+        default:
+            break;
+    }
 
     return ss.str();
 }
 
-string Walker::step_forward_3rd_last(void)
+string Walker::ewise_strided_1d_offset(void)
 {
     stringstream ss;
-    /*
-    Operand operand(block_.operand(id), id);    // Grab the operand
-    ss << _add_assign(operand.walker(), index(operand.stride, 0)) << _endl();*/
-
+    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
+        ss << ewise_strided_1d_offset(oidx);
+    }
     return ss.str();
 }
 
@@ -154,8 +201,8 @@ string Walker::generate_source(void)
 {
     std::map<string, string> subjects;
     subjects["WALKER_DECLARATION"] = declare_operands();
-    subjects["WALKER_OFFSET"] = "//TODO: Offset...";
-    subjects["WALKER_STEP"] = step_forward();
+    subjects["WALKER_OFFSET"] = ewise_cont_offset();
+    subjects["WALKER_STEP"] = ewise_cont_step();
     subjects["OPERATIONS"] = ewise_operations();
 
     return plaid_.fill("ewise.cont.nd", subjects);

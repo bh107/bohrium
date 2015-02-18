@@ -214,26 +214,43 @@ public:
     
 private:
     std::string declare_operands(void);
-    std::string declare_operand(uint32_t id);
+    std::string declare_operand(uint32_t oidx);
 
     std::string oper(tac_t tac);
+
+    //
+    //  map / zip / flood / generate
+    //
     std::string ewise_operations(void);
 
-    std::string step_forward(unsigned int id);
-    std::string step_forward(void);
+    // Offsets
+    std::string ewise_cont_offset(uint32_t oidx);
+    std::string ewise_cont_offset(void);
 
-    std::string step_forward_last(unsigned int id);
-    std::string step_forward_last(void);
+    std::string ewise_strided_1d_offset(uint32_t oidx);
+    std::string ewise_strided_1d_offset(void);
 
-    std::string step_forward_2nd_last(unsigned int id);
-    std::string step_forward_2nd_last(void);
+    std::string ewise_strided_2d_offset(uint32_t oidx);
+    std::string ewise_strided_2d_offset(void);
 
-    std::string step_forward_3rd_last(unsigned int id);
-    std::string step_forward_3rd_last(void);
+    std::string ewise_strided_3d_offset(uint32_t oidx);
+    std::string ewise_strided_3d_offset(void);
+
+    std::string ewise_strided_nd_offset(uint32_t oidx);
+    std::string ewise_strided_nd_offset(void);
+
+    // Steps
+    std::string ewise_cont_step(uint32_t oidx);
+    std::string ewise_cont_step(void);
+
+    std::string ewise_strided_1d_step(unsigned int oidx);
+    std::string ewise_strided_1d_step(void);
+
+    std::string ewise_strided_nd_step(unsigned int oidx);
+    std::string ewise_strided_nd_step(void);
 
     Plaid& plaid_;
     bohrium::core::Block& block_;
-
 };
 
 class Kernel
