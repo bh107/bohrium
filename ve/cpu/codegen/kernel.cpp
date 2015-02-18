@@ -66,26 +66,30 @@ string Kernel::unpack_argument(uint32_t id)
         case STRIDED:       
         case SPARSE:        // ndim, shape, stride
             ss
-            << _declare(
-                _const(_int64()), operand.ndim(),
+            << _declare_init(
+                _const(_int64()),
+                operand.ndim(),
                 _access_ptr(_index(args(), id), "ndim")
             )
             << _end()
-            << _declare(
-                _ptr_const(_int64()), operand.shape(),
+            << _declare_init(
+                _ptr_const(_int64()),
+                operand.shape(),
                 _access_ptr(_index(args(), id), "shape")
             )
             << _end()
-            << _declare(
-                _ptr_const(_int64()), operand.stride(),
+            << _declare_init(
+                _ptr_const(_int64()),
+                operand.stride(),
                 _access_ptr(_index(args(), id), "stride")
             )
             << _end();
 
         case CONTIGUOUS:    // "first" = operand_t->data + operand_t->start
             ss
-            << _declare(
-                _ptr_const(operand.etype()), operand.first(),
+            << _declare_init(
+                _ptr_const(operand.etype()),
+                operand.first(),
                 _add(
                     _cast(
                         _ptr(operand.etype()),
@@ -101,8 +105,9 @@ string Kernel::unpack_argument(uint32_t id)
 
         case SCALAR:
         case SCALAR_CONST:  // "first" = operand_t->data
-            ss << _declare(
-                _ptr_const(operand.etype()), operand.first(),
+            ss << _declare_init(
+                _ptr_const(operand.etype()),
+                operand.first(),
                 _cast(
                     _ptr(operand.etype()),
                     _deref(_access_ptr(_index(args(), id), "data"))

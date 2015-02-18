@@ -48,7 +48,7 @@ std::string _line(std::string object);
 std::string _cast(std::string type, std::string object);
 
 std::string _declare(std::string type, std::string variable);
-std::string _declare(std::string type, std::string variable, std::string expr);
+std::string _declare_init(std::string type, std::string variable, std::string expr);
 
 // Operators
 std::string _inc(std::string object);

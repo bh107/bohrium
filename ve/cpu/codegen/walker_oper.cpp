@@ -204,6 +204,7 @@ string Walker::oper(tac_t tac)
             return "NOT_IMPLEMENTED_YET";
             break;
     }
+    return "THIS SHOULD NEVER HAPPEN";
 }
 
 }}}}

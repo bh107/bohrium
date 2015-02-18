@@ -166,7 +166,7 @@ string _declare(string type, string variable)
     return ss.str(); 
 }
 
-string _declare(string type, string variable, string expr)
+string _declare_init(string type, string variable, string expr)
 {
     stringstream ss;
     ss << type << " " << variable << " = " << expr;

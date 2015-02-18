@@ -30,16 +30,16 @@ string Walker::declare_operand(uint32_t id)
         case SPARSE:
         case CONTIGUOUS:
             ss
-            << _declare(
+            << _declare_init(
                 _ptr(operand.etype()),
                 operand.walker(),
-                _deref(operand.first())
+                operand.first()
             );
             break;
 
         case SCALAR:
             ss
-             << _declare(
+             << _declare_init(
                 operand.etype(),
                 operand.walker(),
                 _deref(operand.first())
@@ -47,7 +47,7 @@ string Walker::declare_operand(uint32_t id)
             break;
         case SCALAR_CONST:
             ss
-            << _declare(
+            << _declare_init(
                 _const(operand.etype()),
                 operand.walker(),
                 _deref(operand.first())
