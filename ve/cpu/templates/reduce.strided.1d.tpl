@@ -8,7 +8,7 @@
     {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first;{{/ARRAY}}
     {{/OPERAND}}
 
-    {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
+    const {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
     {{TYPE_INPUT}} state = 0;
 
     const int64_t nelements   = iterspace->shape[axis];
@@ -16,8 +16,8 @@
     const int64_t nworkers    = nelements > mthreads ? mthreads : 1;
 
     #pragma omp parallel for reduction(+:state) num_threads(nworkers)
-    for(int64_t j=0; j<iterspace->shape[axis]; ++j) {
-        {{TYPE_INPUT}} *tmp_current = a{{NR_FINPUT}}_current + a{{NR_FINPUT}}_stride[axis]*j;
+    for(int64_t eidx=0; eidx<iterspace->shape[axis]; ++eidx) {
+        {{TYPE_INPUT}}* tmp_current = a{{NR_FINPUT}}_current + a{{NR_FINPUT}}_stride[axis]*eidx;
 
         {{#OPERATORS}}
         {{OPERATOR}};

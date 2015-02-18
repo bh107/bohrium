@@ -11,7 +11,7 @@
 
     #pragma omp parallel num_threads(nworkers)
     {
-        const int tid      = omp_get_thread_num();        // Thread info
+        const int tid      = omp_get_thread_num();  // Thread info
         const int nthreads = omp_get_num_threads();
 
         int64_t work=0, work_offset=0, work_end=0;  // Work distribution
@@ -39,8 +39,7 @@
             {{#OPERAND}}{{#ARRAY}}
             ++a{{NR}}_current;
             {{/ARRAY}}{{/OPERAND}}
-        }
-        }
+        }}
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
 }

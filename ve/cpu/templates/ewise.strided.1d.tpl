@@ -9,7 +9,7 @@
 
     #pragma omp parallel num_threads(nworkers)
     {
-        const int tid      = omp_get_thread_num();        // Thread info
+        const int tid      = omp_get_thread_num();  // Thread info
         const int nthreads = omp_get_num_threads();
 
         int64_t work=0, work_offset=0, work_end=0;  // Work distribution
@@ -40,7 +40,7 @@
         a{{NR}}_current += work_offset * a{{NR}}_stride[0];
         {{/ARRAY}}{{/OPERAND}}
 
-        for (int64_t i = work_offset; i < work_end; ++i) {
+        for (int64_t eidx = work_offset; eidx < work_end; ++eidx) {
             {{#OPERATORS}}
             {{OPERATOR}};
             {{/OPERATORS}}
