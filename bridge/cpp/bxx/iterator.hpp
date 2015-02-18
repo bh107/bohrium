@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __BOHRIUM_BRIDGE_CPP_ITERATOR
 #define __BOHRIUM_BRIDGE_CPP_ITERATOR
-#include "bh.h"
+#include <bh.h>
 #include <iterator>
 
 namespace bxx {

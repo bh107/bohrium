@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <list>
 #include <map>
 
-#include "bh.h"
+#include <bh.h>
 #include "iterator.hpp"
 
 #ifdef DEBUG
