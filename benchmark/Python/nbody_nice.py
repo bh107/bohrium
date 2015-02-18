@@ -111,7 +111,6 @@ def random_system(x_max, y_max, z_max, n, b):
 
         absangle = np.arctan(abs(py/px))
         thetav= np.pi/2-absangle
-        #phiv = np.random.random()*np.pi
         vx   = -1*sign(py)*np.cos(thetav)*magv
         vy   = sign(px)*np.sin(thetav)*magv
         vz   = 0
@@ -211,10 +210,11 @@ def main():
     z_max = 1e18
     dt = 1e12
 
+    print("INITIALIZING SYSTEM")
     solarsystem, astoroids = random_system(x_max, y_max, z_max, num_planets, num_asteroids)
     if B.verbose:
         P3 = gfx_init(x_max, y_max, z_max)
-
+    print("I WILL START NOW")
     B.start()
     for _ in range(num_iteratinos):
         move(solarsystem, astoroids, dt)
