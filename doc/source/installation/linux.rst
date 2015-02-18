@@ -17,7 +17,7 @@ And then install the package::
 
 Now the basic installation should work. Try running the NumPy test suite::
 
-  python /usr/share/bohrium/test/numpy/numpytest.py
+  python /usr/share/bohrium/test/python/numpytest.py
 
 And you should see a result similar to this::
 
@@ -75,7 +75,7 @@ Where one process executes the user application and multiple processes executes 
 
 For example, the following utilize eight cluster nodes::
 
-  mpiexec -np 1 python /usr/share/bohrium/test/numpy/numpytest.py : -np 7 /usr/bin/bh_vem_cluster_slave
+  mpiexec -np 1 python /usr/share/bohrium/test/python/numpytest.py : -np 7 /usr/bin/bh_vem_cluster_slave
 
 When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
 
