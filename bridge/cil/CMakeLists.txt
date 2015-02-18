@@ -39,7 +39,7 @@ if(MONO_FOUND AND PYTHONINTERP_FOUND)
     DEPENDS numcil bhc ${target_file}
   )
 
-  install(FILES ${target_file} DESTINATION lib COMPONENT bohrium-numcil)
+  install(FILES ${target_file} DESTINATION lib/mono COMPONENT bohrium-numcil)
 
 else()
   message("Cannot build NumCIL.Bohrium as Mono, xbuild or Python is missing")
