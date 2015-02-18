@@ -8,7 +8,7 @@
     <ProjectGuid>{D6CA1418-5885-4311-AFD8-94916E437EFE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Utilities</RootNamespace>
-    <AssemblyName>Timer</AssemblyName>
+    <AssemblyName>Utilities</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

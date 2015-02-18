@@ -5,75 +5,64 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{226D254B-E858-4964-BC99-4B3D93A78080}</ProjectGuid>
+    <ProjectGuid>{AE1D26CB-58A7-4811-8914-0615A4559A48}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>nbody</RootNamespace>
-    <AssemblyName>nbody</AssemblyName>
+    <RootNamespace>blackscholes</RootNamespace>
+    <AssemblyName>jacobi</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Commandlineparameters>--size=10*100 --bohrium=true --no-temp-arrays=true</Commandlineparameters>
-    <ConsolePause>false</ConsolePause>
-    <EnvironmentVariables>
-      <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="/home/madsbk/.local" />
-      </EnvironmentVariables>
-    </EnvironmentVariables>
+    <Commandlineparameters>--size=100*10</Commandlineparameters>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-    <Commandlineparameters>--size=10*100 --no-temp-arrays=true</Commandlineparameters>
-    <EnvironmentVariables>
-      <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="/home/madsbk/.local" />
-      </EnvironmentVariables>
-    </EnvironmentVariables>
+    <Externalconsole>True</Externalconsole>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Main.cs" />
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="nbody.cs">
-      <DependentUpon>nbody.tt</DependentUpon>
+    <Compile Include="Main.cs" />
+    <Compile Include="jacobi.cs">
+      <DependentUpon>jacobi.tt</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
+    <None Include="jacobi.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>jacobi.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
       <Project>{08C17283-4F2A-466C-AE28-1923837A2F58}</Project>
       <Name>NumCIL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\bridge\cil\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
-      <Project>{78CBE5F3-AD51-4B1E-A8AB-1A085F4D6A07}</Project>
+    <ProjectReference Include="..\..\..\bridge\cil\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
+      <Project>{94B0C811-511A-420C-9E3E-898B253E8D46}</Project>
       <Name>NumCIL.Bohrium</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj">
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj">
       <Project>{F3DA9742-5A09-4456-9531-548324D35CE3}</Project>
       <Name>NumCIL.Unsafe</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Utilities\Utilites.csproj">
+    <ProjectReference Include="..\Utilities\Utilities.csproj">
       <Project>{D6CA1418-5885-4311-AFD8-94916E437EFE}</Project>
       <Name>Utilites</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="nbody.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>nbody.cs</LastGenOutput>
-    </None>
   </ItemGroup>
 </Project>

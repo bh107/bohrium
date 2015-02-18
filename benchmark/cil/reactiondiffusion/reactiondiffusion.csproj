@@ -8,7 +8,7 @@
     <ProjectGuid>{AE1D26CB-58A7-4811-8914-1615A4559A48}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>reactiondiffusion</RootNamespace>
-    <AssemblyName>reationdiffusion</AssemblyName>
+    <AssemblyName>reactiondiffusion</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -49,19 +49,19 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL\NumCIL.csproj">
       <Project>{08C17283-4F2A-466C-AE28-1923837A2F58}</Project>
       <Name>NumCIL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\bridge\cil\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
+    <ProjectReference Include="..\..\..\bridge\cil\NumCIL.Bohrium\NumCIL.Bohrium.csproj">
       <Project>{94B0C811-511A-420C-9E3E-898B253E8D46}</Project>
       <Name>NumCIL.Bohrium</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj">
+    <ProjectReference Include="..\..\..\bridge\NumCIL\NumCIL.Unsafe\NumCIL.Unsafe.csproj">
       <Project>{F3DA9742-5A09-4456-9531-548324D35CE3}</Project>
       <Name>NumCIL.Unsafe</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Utilities\Utilities.csproj">
+    <ProjectReference Include="..\Utilities\Utilities.csproj">
       <Project>{D6CA1418-5885-4311-AFD8-94916E437EFE}</Project>
       <Name>Utilities</Name>
     </ProjectReference>
