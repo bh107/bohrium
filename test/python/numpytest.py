@@ -188,7 +188,7 @@ class BenchHelper:
             self.script, dtype, target, self.uuid
         )
 
-        bench_dir = join(os.path.dirname(os.path.realpath(__file__)),"..","..","benchmark","Python")
+        bench_dir = join(os.path.dirname(os.path.realpath(__file__)),"..","..","benchmark","python")
         # Setup command
         cmd = [
             sys.executable, #The current Python interpreter
