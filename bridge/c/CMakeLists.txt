@@ -30,9 +30,6 @@ if(PYTHONINTERP_FOUND)
     install(TARGETS bhc DESTINATION lib COMPONENT bohrium)
 
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../include/bh_type.h DESTINATION include/bohrium COMPONENT bohrium)
-
-    #Compile hellow world as a test
-    add_subdirectory(examples)
 else()
     message(STATUS "The C-Bridge cannot be build!")
 endif()
