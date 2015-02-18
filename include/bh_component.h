@@ -26,7 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.h>
 #include <bh_opcode.h>
 #include <bh_error.h>
-#include <iniparser.h>
+#include <bh_iniparser.h>
 #include <bh_win.h>
 #include <bh_ir.h>
 

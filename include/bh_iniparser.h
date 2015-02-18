@@ -36,7 +36,7 @@ extern "C" {
  */
 /* #include <unistd.h> */
 
-#include "dictionary.h"
+#include <bh_dictionary.h>
 
 /*-------------------------------------------------------------------------*/
 /**

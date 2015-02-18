@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bh.h>
-#include <iniparser.h>
 #include <string.h>
 #include <assert.h>
 

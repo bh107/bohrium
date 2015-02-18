@@ -26,4 +26,5 @@ target_link_libraries(bh ${CMAKE_DL_LIBS})
 target_link_libraries(bh ${Boost_LIBRARIES})
 
 install(TARGETS bh DESTINATION lib COMPONENT bohrium)
+install(DIRECTORY ../include DESTINATION . COMPONENT bohrium)
 

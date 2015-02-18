@@ -29,7 +29,6 @@ if(PYTHONINTERP_FOUND)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bh_c.h DESTINATION include/bohrium COMPONENT bohrium)
     install(TARGETS bhc DESTINATION lib COMPONENT bohrium)
 
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../include/bh_type.h DESTINATION include/bohrium COMPONENT bohrium)
 else()
     message(STATUS "The C-Bridge cannot be build!")
 endif()
