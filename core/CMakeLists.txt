@@ -3,12 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 include_directories(../include)
 file(GLOB SRC *.cpp)
 
-#The timing require C++11
-if(USE_CXX98)
-    file(GLOB EXCLUDE_SRC bh_timing.cpp)
-    list(REMOVE_ITEM SRC ${EXCLUDE_SRC})
-endif()
-
 add_library(bh SHARED ${SRC} bh_opcode.cpp)
 
 #Rules for how to generate bh_opcode.cpp and bh_opcode.h
@@ -26,5 +20,5 @@ target_link_libraries(bh ${CMAKE_DL_LIBS})
 target_link_libraries(bh ${Boost_LIBRARIES})
 
 install(TARGETS bh DESTINATION lib COMPONENT bohrium)
-install(DIRECTORY ../include DESTINATION . COMPONENT bohrium)
+install(DIRECTORY ../include/ DESTINATION include/bohrium COMPONENT bohrium)
 

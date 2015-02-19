@@ -27,19 +27,12 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-set(USE_CXX98 false CACHE BOOL "Choose to use the old C++98 standard instead of C++11 (some Bohrium components requires C++11 and will be skipped.")
-message(STATUS "USE_CXX98: ${USE_CXX98}")
-
 # Benchmarks, used by numpy backend
 set(BENCHMARK_DIR "${CMAKE_SOURCE_DIR}/benchmark")
 message(STATUS "Benchmark-dir: ${BENCHMARKS_DIR}")
 
 #Set global compile flags TODO: support other compilers
-if(USE_CXX98)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98 -Wall")
-else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -Wall")
-endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -Wall")
 
 #External dependencies
 find_package(PythonInterp)
@@ -77,16 +70,11 @@ add_subdirectory(extmethods/matmul)
 add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(extmethods/fftw)
-
-#Non CXX98 compatible libraries
-if(NOT USE_CXX98)
-    add_subdirectory(bridge/cpp)
-    add_subdirectory(bridge/c)
-    add_subdirectory(bridge/npbackend)
-    add_subdirectory(bridge/NumCIL)
-    add_subdirectory(bridge/cil)
-endif()
-
+add_subdirectory(bridge/cpp)
+add_subdirectory(bridge/c)
+add_subdirectory(bridge/npbackend)
+add_subdirectory(bridge/NumCIL)
+add_subdirectory(bridge/cil)
 add_subdirectory(benchmark)
 add_subdirectory(test)
 
