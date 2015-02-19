@@ -164,14 +164,6 @@ public:
      */
     bool fusible(const bh_ir_kernel &other) const;
 
-    /* Determines whether it is legal to fuse with the instruction
-     * without changing this kernel's dependencies.
-     *
-     * @instr_idx  The index of the instruction
-     * @return     The boolean answer
-     */
-    bool fusible_gently(uint64_t instr_idx) const;
-
     /* Determines whether it is legal to fuse with the kernel without
      * changing this kernel's dependencies.
      *

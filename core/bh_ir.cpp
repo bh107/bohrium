@@ -250,45 +250,6 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
     return true;
 }
 
-/* Determines whether it is legal to fuse with the instruction
- * without changing 'this' kernel's dependencies.
- *
- * @instr_idx  The index of the instruction
- * @return     The boolean answer
- */
-bool bh_ir_kernel::fusible_gently(uint64_t instr_idx) const
-{
-    const bh_instruction &instr = bhir->instr_list[instr_idx];
-
-    //Check that 'instr' is gentle fusible with at least one existing instruction
-    //that is not a system opcode (unless all instructions in 'this' kernel are
-    //system opcodes)
-    if(only_system_opcodes())
-    {
-        BOOST_FOREACH(uint64_t this_idx, instr_indexes)
-        {
-            const bh_instruction &this_instr = bhir->instr_list[this_idx];
-            if(bh_instr_fusible_gently(&instr, &this_instr) &&
-               bohrium::check_fusible(&instr, &this_instr))
-                return true;
-        }
-    }
-    else
-    {
-        BOOST_FOREACH(uint64_t this_idx, instr_indexes)
-        {
-            const bh_instruction &this_instr = bhir->instr_list[this_idx];
-            if(bh_opcode_is_system(this_instr.opcode))
-                continue;
-
-            if(bh_instr_fusible_gently(&instr, &this_instr) &&
-               bohrium::check_fusible(&instr, &this_instr))
-                return true;
-        }
-    }
-    return false;
-}
-
 /* Determines whether it is legal to fuse with the kernel without
  * changing 'this' kernel's dependencies.
  *
@@ -297,27 +258,32 @@ bool bh_ir_kernel::fusible_gently(uint64_t instr_idx) const
  */
 bool bh_ir_kernel::fusible_gently(const bh_ir_kernel &other) const
 {
-
-    //When all instructions in the 'other' kernel are system opcodes
-    //only one of the instructions needs to be gentle fusible.
-    if(other.only_system_opcodes())
-    {
-        BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
-        {
-            if(fusible_gently(other_idx))
-                return true;
-        }
+    if(not fusible(other))
         return false;
-    }
-    else
+
+    //Make sure 'b' depend on 'a'
+    const bh_ir_kernel *a = this;
+    const bh_ir_kernel *b = &other;
+    if(this->dependency(other) == 1)
     {
-        //Check that each instruction in 'other' is gentle fusible
-        //with 'this' kernel while ignoring system opcodes.
-        BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
+        a = &other;
+        b = this;
+    }
+
+    if(b->input_list().size() > 0)
+    {
+        BOOST_FOREACH(const bh_view &v, a->input_list())
         {
-            if(bh_opcode_is_system(bhir->instr_list[other_idx].opcode))
-                continue;
-            if(not fusible_gently(other_idx))
+            if(not aligned_view_exist(v, b->input_list()))
+                return false;
+        }
+    }
+
+    if(b->input_list().size() > 0 or b->output_list().size() > 0)
+    {
+        BOOST_FOREACH(const bh_view &v, a->output_list())
+        {
+            if(not(aligned_view_exist(v, b->output_list()) or aligned_view_exist(v, b->input_list())))
                 return false;
         }
     }
