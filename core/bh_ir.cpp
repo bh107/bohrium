@@ -95,23 +95,19 @@ void bh_ir::pprint_kernel_list() const
     }
 }
 
+/* Help function that checks if 'b' is synchronized in kernel 'k' */
+static bool aligned_view_exist(const bh_view &v, const vector<bh_view> &views)
+{
+    BOOST_FOREACH(const bh_view &i, views)
+    {
+        if(bh_view_aligned(&v, &i))
+            return true;
+    }
+    return false;
+};
+
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
-
-    /* Help function that checks if aligned view 'v' exist in 'views' */
-    struct
-    {
-        bool operator()(const bh_view &v, const vector<bh_view> &views)
-        {
-            BOOST_FOREACH(const bh_view &i, views)
-            {
-                if(bh_view_aligned(&v, &i))
-                    return true;
-            }
-            return false;
-        }
-    }aligned_view_exist;
-
     /* Help function that checks if 'b' is synchronized in kernel 'k' */
     struct
     {
