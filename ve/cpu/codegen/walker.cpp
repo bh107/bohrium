@@ -62,7 +62,7 @@ string Walker::declare_operands(void)
     return ss.str();
 }
 
-string Walker::ewise_cont_step(void)
+string Walker::ewise_1d_assign_offset(void)
 {
     stringstream ss;
     for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
@@ -76,196 +76,12 @@ string Walker::ewise_cont_step(void)
                 )
                 << _end();
                 break;
-
             case CONTIGUOUS:
-                ss << _inc(operand.walker()) << _end();
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-    }
-    return ss.str();
-}
-
-string Walker::ewise_strided_1d_step(void)
-{
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand operand(&block_.operand(oidx), oidx);
-        switch(operand.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-                break;
-
-            case CONTIGUOUS:
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-    }
-    return ss.str();
-}
-
-string Walker::ewise_strided_2d_step(void)
-{
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand operand(&block_.operand(oidx), oidx);
-        switch(operand.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-                break;
-
-            case CONTIGUOUS:
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-    }
-    return ss.str();
-}
-
-string Walker::ewise_strided_3d_step(void)
-{
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand operand(&block_.operand(oidx), oidx);
-        switch(operand.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-                break;
-
-            case CONTIGUOUS:
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-    }
-    return ss.str();
-}
-
-string Walker::ewise_strided_nd_step(void)
-{
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand operand(&block_.operand(oidx), oidx);
-        switch(operand.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-                break;
-
-            case CONTIGUOUS:
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-    }
-    return ss.str();
-}
-
-string Walker::ewise_cont_offset(void)
-{
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand opd(&block_.operand(oidx), oidx);
-
-        switch(opd.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-            case CONTIGUOUS:
-                ss
-                << _add_assign(
-                    opd.walker(),
+                ss << _add_assign(
+                    operand.walker(),
                     "work_offset"
                 ) << _end();
                 break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-
-    }
-    return ss.str();
-}
-
-/*
-string Walker::ewise_strided_step(void)
-{
-    return "";
-}
-
-string Walker::ewise_strided_step(uint32_t dim)
-{
-    stringstream ss;
-    bool innermost = (block_.iterspace().ndim-1 - dim) == 0;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand opd(&block_.operand(oidx), oidx);
-        switch(opd.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-                if (innermost) {
-                    ss << _add_assign(
-                        operand.walker,
-                        _index(operand.stride, dim)
-                    ) << _end();
-                } else 
-                break;
-            case CONTIGUOUS:
-                if (innermost) {
-                    ss << _add_assign(
-                        operand.walker,
-                        _index(operand.stride, dim)
-                    ) << _end();
-                }
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-    }
-    return ss.str();
-}*/
-
-string Walker::ewise_strided_1d_offset(void)
-{
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand opd(&block_.operand(oidx), oidx);
-        switch(opd.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-            case CONTIGUOUS:
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
             default:
                 break;
         }
@@ -273,67 +89,19 @@ string Walker::ewise_strided_1d_offset(void)
     return ss.str();
 }
 
-string Walker::ewise_strided_2d_offset(void)
+string Walker::ewise_2d_assign_offset(void)
 {
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand opd(&block_.operand(oidx), oidx);
-        switch(opd.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-            case CONTIGUOUS:
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-    }
-    return ss.str();
+    return ewise_1d_assign_offset();
 }
 
-string Walker::ewise_strided_3d_offset(void)
+string Walker::ewise_3d_assign_offset(void)
 {
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand opd(&block_.operand(oidx), oidx);
-        switch(opd.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-            case CONTIGUOUS:
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-    }
-    return ss.str();
+    return ewise_1d_assign_offset();
 }
 
-string Walker::ewise_strided_nd_offset(void)
+string Walker::ewise_nd_assign_offset(void)
 {
-    stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand opd(&block_.operand(oidx), oidx);
-        switch(opd.operand_->layout) {
-            case STRIDED:       
-            case SPARSE:
-            case CONTIGUOUS:
-                break;
-
-            case SCALAR:
-            case SCALAR_CONST:
-            case SCALAR_TEMP:
-            default:
-                break;
-        }
-    }
-    return ss.str();
+    return ewise_1d_assign_offset();
 }
 
 string Walker::ewise_operations(void)
@@ -351,77 +119,41 @@ string Walker::ewise_operations(void)
     return ss.str();
 }
 
-string Walker::ewise_cont_nd(void)
-{
-    std::map<string, string> subjects;
-
-    subjects["WALKER_DECLARATION"]  = declare_operands();
-    subjects["WALKER_OFFSET"]       = ewise_cont_offset();
-    subjects["WALKER_STEP"]         = ewise_cont_step();
-    subjects["OPERATIONS"]          = ewise_operations();
-
-    return plaid_.fill("ewise.1d", subjects);
-}
-
-string Walker::ewise_strided_1d(void)
-{
-    std::map<string, string> subjects;
-
-    subjects["WALKER_DECLARATION"]  = declare_operands();
-    subjects["WALKER_OFFSET"]       = ewise_strided_1d_offset();
-    subjects["WALKER_STEP"]         = ewise_strided_1d_step();
-    subjects["OPERATIONS"]          = ewise_operations();
-
-    return plaid_.fill("ewise.1d", subjects);
-}
-
-string Walker::ewise_strided_2d(void)
-{
-    std::map<string, string> subjects;
-
-    subjects["WALKER_DECLARATION"]  = declare_operands();
-    subjects["WALKER_OFFSET"]       = ewise_strided_2d_offset();
-    subjects["WALKER_STEP"]         = ewise_strided_2d_step();
-    subjects["OPERATIONS"]          = ewise_operations();
-
-    return plaid_.fill("ewise.2d", subjects);
-}
-
-string Walker::ewise_strided_3d(void)
-{
-    std::map<string, string> subjects;
-
-    subjects["WALKER_DECLARATION"]  = declare_operands();
-    subjects["WALKER_OFFSET"]       = ewise_strided_3d_offset();
-    subjects["WALKER_STEP"]         = ewise_strided_3d_step();
-    subjects["OPERATIONS"]          = ewise_operations();
-
-    return plaid_.fill("ewise.3d", subjects);
-}
-
-string Walker::ewise_strided_nd(void)
-{
-    std::map<string, string> subjects;
-
-    subjects["WALKER_DECLARATION"]  = declare_operands();
-    subjects["WALKER_OFFSET"]       = ewise_strided_nd_offset();
-    subjects["WALKER_STEP"]         = ewise_strided_nd_step();
-    subjects["OPERATIONS"]          = ewise_operations();
-
-    return plaid_.fill("ewise.nd", subjects);
-}
-
 string Walker::generate_source(void)
 {
     std::map<string, string> subjects;
+    string plaid;
 
     subjects["WALKER_DECLARATION"]  = declare_operands();
-    // Switch here on layout
-    subjects["WALKER_OFFSET"]       = ewise_cont_offset();
-    subjects["WALKER_STEP"]         = ewise_cont_step();
     subjects["OPERATIONS"]          = ewise_operations();
+    switch(block_.iterspace().ndim) {
+        case 1:
+            subjects["WALKER_OFFSET"]   = ewise_1d_assign_offset();
+            subjects["WALKER_STEP_LD"]  = ewise_1d_step_fwd();
+            plaid = "ewise.1d";
+            break;
+        case 2:
+            subjects["WALKER_OFFSET"]   = ewise_2d_assign_offset();
+            subjects["WALKER_STEP_LD"]  = ewise_2d_step_fwd(1);
+            subjects["WALKER_STEP_SLD"] = ewise_2d_step_fwd(0);
+            plaid = "ewise.2d";
+            break;
+        case 3:
+            subjects["WALKER_OFFSET"]   = ewise_3d_assign_offset();
+            subjects["WALKER_STEP_LD"]  = ewise_2d_step_fwd(2);
+            subjects["WALKER_STEP_SLD"] = ewise_2d_step_fwd(1);
+            subjects["WALKER_STEP_TLD"] = ewise_2d_step_fwd(0);
 
-    return plaid_.fill("ewise.1d", subjects);
+            plaid = "ewise.3d";
+            break;
+        default:
+            subjects["WALKER_OFFSET"]       = ewise_nd_assign_offset();
+            subjects["WALKER_STEP_INNER"]   = ewise_nd_step_fwd(0);
+            subjects["WALKER_STEP_OUTER"]   = ewise_nd_step_fwd(1);
+            plaid = "ewise.nd";
+            break;
+    }
+    return plaid_.fill(plaid, subjects);
 }
 
 }}}}
