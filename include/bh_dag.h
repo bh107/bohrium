@@ -659,10 +659,11 @@ void fuse_gentle(GraphDW &dag)
     using namespace std;
     using namespace boost;
 
-    const GraphD &d = dag.bglD();
     bool not_finished = true;
     while(not_finished)
     {
+        dag.transitive_reduction();
+        const GraphD &d = dag.bglD();
         not_finished = false;
         BOOST_FOREACH(const EdgeD &e, edges(d))
         {
@@ -682,7 +683,6 @@ void fuse_gentle(GraphDW &dag)
         }
     }
     dag.remove_cleared_vertices();
-    dag.transitive_reduction();
 }
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
