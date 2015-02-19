@@ -1,6 +1,9 @@
-// Elementwise operation on contigous arrays of any dimension/rank.
-//  * Collapses the loops for every dimension into a single loop.
-//  * Simplified array-walking (++)
+//
+// Codegen template is used for:
+//
+//	* MAP|ZIP|GENERATE|FLOOD on contigous arrays of any dimension/rank.
+//	* MAP|ZIP|GENERATE|FLOOD on 1D strided arrays.
+//
 //  * TODO: Vectorization, alias/restrict
 {
     const int64_t nelements = iterspace->nelem;
@@ -23,14 +26,14 @@
             work_offset = tid * work + work_spill;
         }
         work_end = work_offset+work;
-    
-        //        
+
+        if (work) {
         // Operand declaration(s)
         {{WALKER_DECLARATION}}
-
-        //
         // Operand offsets(s)
         {{WALKER_OFFSET}}
+        // Stepsize
+        {{WALKER_STEPSIZE}}
 
         for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
             // Apply operator(s)
@@ -38,7 +41,7 @@
             
             // Increment operands
             {{WALKER_STEP}}
-        }
+        }}
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
 }

@@ -216,6 +216,7 @@ private:
     std::string declare_operands(void);
     std::string declare_operand(uint32_t oidx);
 
+    // Construct the operator source for the tac.oper
     std::string oper(tac_t tac);
 
     //
@@ -223,31 +224,27 @@ private:
     //
     std::string ewise_operations(void);
 
-    // Offsets
-    std::string ewise_cont_offset(uint32_t oidx);
-    std::string ewise_cont_offset(void);
+    // Ewise walker -- innards
+    std::string ewise_1d_assign_offset(void);
+    std::string ewise_2d_assign_offset(void);
+    std::string ewise_3d_assign_offset(void);
+    std::string ewise_nd_assign_offset(void);
 
-    std::string ewise_strided_1d_offset(uint32_t oidx);
-    std::string ewise_strided_1d_offset(void);
+    std::string ewise_1d_declare_step(void);
+    std::string ewise_2d_declare_step(void);
+    std::string ewise_3d_declare_step(void);
+    std::string ewise_nd_declare_step(void);
 
-    std::string ewise_strided_2d_offset(uint32_t oidx);
-    std::string ewise_strided_2d_offset(void);
+    std::string ewise_1d_step_fwd(void);
+    std::string ewise_2d_step_fwd(uint32_t dim);
+    std::string ewise_3d_step_fwd(uint32_t dim);
+    std::string ewise_nd_step_fwd(uint32_t dim);
 
-    std::string ewise_strided_3d_offset(uint32_t oidx);
-    std::string ewise_strided_3d_offset(void);
-
-    std::string ewise_strided_nd_offset(uint32_t oidx);
-    std::string ewise_strided_nd_offset(void);
-
-    // Steps
-    std::string ewise_cont_step(uint32_t oidx);
-    std::string ewise_cont_step(void);
-
-    std::string ewise_strided_1d_step(unsigned int oidx);
-    std::string ewise_strided_1d_step(void);
-
-    std::string ewise_strided_nd_step(unsigned int oidx);
-    std::string ewise_strided_nd_step(void);
+    // Ewise walker -- the encapsulating thing
+    std::string ewise_1d(void);
+    std::string ewise_2d(void);
+    std::string ewise_3d(void);
+    std::string ewise_nd(void);
 
     Plaid& plaid_;
     bohrium::core::Block& block_;

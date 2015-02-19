@@ -28,6 +28,14 @@ string Operand::first(void)
     return ss.str();
 }
 
+/*
+string Operand::walker_step(void)
+{
+    stringstream ss;
+    ss << name() << "_step";
+    return ss.str();
+}*/
+
 string Operand::walker(void)
 {
     stringstream ss;
