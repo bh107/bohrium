@@ -95,7 +95,7 @@ void bh_ir::pprint_kernel_list() const
     }
 }
 
-/* Help function that checks if 'b' is synchronized in kernel 'k' */
+/* Help function that checks if 'b' exist in kernel 'k' */
 static bool aligned_view_exist(const bh_view &v, const vector<bh_view> &views)
 {
     BOOST_FOREACH(const bh_view &i, views)
@@ -106,30 +106,28 @@ static bool aligned_view_exist(const bh_view &v, const vector<bh_view> &views)
     return false;
 };
 
+/* Help function that checks if 'b' is opcode'ed in kernel 'k' */
+bool is_base_opcodeed(const bh_ir_kernel &k, const bh_base *b, bh_opcode opcode)
+{
+    BOOST_FOREACH(uint64_t idx, k.instr_indexes)
+    {
+        const bh_instruction &instr = k.bhir->instr_list[idx];
+        if(instr.opcode == opcode and instr.operand[0].base == b)
+            return true;
+    }
+    return false;
+}
+
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
-    /* Help function that checks if 'b' is synchronized in kernel 'k' */
-    struct
-    {
-        bool operator()(const bh_ir_kernel &k, const bh_base *b)
-        {
-            BOOST_FOREACH(uint64_t idx, k.instr_indexes)
-            {
-                const bh_instruction &instr = k.bhir->instr_list[idx];
-                if(instr.opcode == BH_SYNC and instr.operand[0].base == b)
-                    return true;
-            }
-            return false;
-        }
-    }is_base_synced;
 
     const bh_instruction& instr = bhir->instr_list[instr_idx];
     if(instr.opcode == BH_DISCARD)
     {
-        //When discarding we might have to remove arrays from 'outputs' and 'temps'
-        //if the discared array isn't synchronized
+        //When discarding we might have to remove arrays from 'outputs' and add
+        //them to 'temps' (if the discared array isn't synchronized)
         const bh_base *base = instr.operand[0].base;
-        if(not is_base_synced(*this, base))
+        if(not is_base_opcodeed(*this, base, BH_SYNC))
         {
             for(vector<bh_view>::iterator it=outputs.begin(); it != outputs.end(); ++it)
             {
