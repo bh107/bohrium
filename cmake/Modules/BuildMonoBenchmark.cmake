@@ -1,5 +1,5 @@
 
-function(build_mono_benchmark_project solutionname outputname)
+function(build_mono_benchmark_project solutionname outputname extra_depends)
 
   set(Mono_FIND_QUIETLY 1)
   find_package(Mono)
@@ -18,7 +18,7 @@ function(build_mono_benchmark_project solutionname outputname)
       SET(dst ${targetfolder}/${basename}.cs)
       ADD_CUSTOM_COMMAND(
         OUTPUT ${dst}
-        DEPENDS ${file}
+        DEPENDS ${file} ${extra_depends}
         COMMAND ${MONO_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../../bridge/NumCIL/buildsupport/TextTransform.exe --out=${dst} ${src}
       )
       SET(numcil_tt_outputs ${numcil_tt_outputs} ${dst})
