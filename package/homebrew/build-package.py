@@ -24,6 +24,7 @@ class Bohrium < Formula
   depends_on "mono" => :build
   depends_on "swig" => :build
   depends_on "Python" => :build
+  depends_on "boost" => [:build,  "universal"]
   #depends_on "cheetah" => :build
 
   head do
