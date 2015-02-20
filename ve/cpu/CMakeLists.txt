@@ -94,7 +94,7 @@ if(OPENMP_FOUND)
     endif()
 
 else()
-    if (APPLE)
+    if(APPLE AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         message("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         message("!!                                                    !!")
         message("!!                 !!!! NOTICE !!!!                   !!")
