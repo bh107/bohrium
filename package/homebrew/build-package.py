@@ -37,6 +37,9 @@ class Bohrium < Formula
 
     system "cmake", ".", *std_cmake_args
     system "make", "install"
+    system "touch", "#{prefix}/var/bohrium/objects/.empty"
+    system "touch", "#{prefix}/var/bohrium/kernels/.empty"
+    system "touch", "#{prefix}/var/bohrium/fuse_cache/.empty"
   end
 
   test do
