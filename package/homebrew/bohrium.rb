@@ -3,14 +3,15 @@ require "formula"
 class Bohrium < Formula
   homepage "http://bh107.org/"
   head "https://bitbucket.org/bohrium/bohrium.git"
-  url "https://bitbucket.org/bohrium/bohrium/get/58f9bcf2d65df8aa9b289da7f3d637cae9ec74a2.zip"
-  version "v0.2-1720-g58f9bcf"
-  sha1 "b468dbc6f9c4824c6036b37499359999f6118d96"
+  url "https://bitbucket.org/bohrium/bohrium/get/2bb557d48f8b485ef99d4b89b17989f5a7cc963f.zip"
+  version "v0.2-1724-g2bb557d"
+  sha1 "624549bf072ec3054780365d2ecfa44ed75307f7"
 
   depends_on "cmake" => :build
   depends_on "mono" => :build
   depends_on "swig" => :build
   depends_on "Python" => :build
+  depends_on "boost" => [:build,  "universal"]
   #depends_on "cheetah" => :build
 
   head do
