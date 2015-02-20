@@ -321,15 +321,6 @@ DLLEXPORT bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b
  */
 DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
 
-/* Determines whether it is legal to fuse two instructions
- * without changing any future possible fusings.
- *
- * @a The first instruction
- * @b The second instruction
- * @return The boolean answer
- */
-DLLEXPORT bool bh_instr_fusible_gently(const bh_instruction *a, const bh_instruction *b);
-
 #ifdef __cplusplus
 }
 #endif

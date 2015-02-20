@@ -353,7 +353,7 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
     if(a->start != b->start)
         return false;
 
-    // Check that the "real" number of dimensions are the same 
+    // Check that the "real" number of dimensions are the same
     // Stride == 0 and shape == 1 are NOT "real"
     int a_ndim = 0;
     for(int i=0; i<a->ndim; ++i)
@@ -366,17 +366,17 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
     if(a_ndim != b_ndim)
         return false;
 
-    // Check that shape and stride for all "real" dimensions are the same  
+    // Check that shape and stride for all "real" dimensions are the same
     int ia=0, ib=0;
-    for(int i=0; i<a_ndim; ++i) // we know: (a_ndim == b_ndim) 
+    for(int i=0; i<a_ndim; ++i) // we know: (a_ndim == b_ndim)
     {
         // skip "virtual dimensions in both views
         while(a->stride[ia] == 0 || a->shape[ia] == 1)
             ++ia;
         while(b->stride[ib] == 0 || b->shape[ib] == 1 )
             ++ib;
-        
-        // If we are done with eather view the other may only contain 
+
+        // If we are done with eather view the other may only contain
         // virtual dimensions
         if (ia >= a->ndim)
         {
@@ -450,60 +450,4 @@ bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
             return true;
     }
     return false;
-}
-
-/* Determines whether it is legal to fuse two instructions
- * without changing any future possible fusings.
- *
- * @a The first instruction
- * @b The second instruction
- * @return The boolean answer
- */
-bool bh_instr_fusible_gently(const bh_instruction *a, const bh_instruction *b)
-{
-    const int a_nop = bh_operands(a->opcode);
-    const int b_nop = bh_operands(b->opcode);
-
-    //System opcodes are gentle fusible with everything as long as they
-    //access the same base array
-    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
-    {
-        for(int i=0; i<a_nop; ++i)
-        {
-            const bh_view *v1 = &a->operand[i];
-            if(not bh_is_constant(v1))
-            {
-                for(int j=0; j<b_nop; ++j)
-                {
-                    const bh_view *v2 = &b->operand[j];
-                    if(not bh_is_constant(v2))
-                    {
-                        if(v1->base == v2->base)
-                            return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    if(not bh_view_aligned(&a->operand[0], &b->operand[0]))
-        return false;
-
-    for(int i=1; i<a_nop; ++i)
-    {
-        //Check that at least one input in 'b' is aligned with 'a[i]'
-        bool found_aligned = false;
-        for(int j=1; j<b_nop; ++j)
-        {
-             if(bh_view_aligned(&a->operand[i], &b->operand[j]))
-             {
-                 found_aligned = true;
-                 break;
-             }
-        }
-        if(not found_aligned)
-            return false;
-    }
-    return true;
 }

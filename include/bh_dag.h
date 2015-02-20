@@ -659,30 +659,28 @@ void fuse_gentle(GraphDW &dag)
     using namespace std;
     using namespace boost;
 
-    const GraphD &d = dag.bglD();
     bool not_finished = true;
     while(not_finished)
     {
+        dag.transitive_reduction();
+        const GraphD &d = dag.bglD();
         not_finished = false;
         BOOST_FOREACH(const EdgeD &e, edges(d))
         {
             const Vertex &src = source(e, d);
             const Vertex &dst = target(e, d);
-            if((in_degree(dst, d) == 1 and out_degree(dst, d) == 0) or
-               (in_degree(src, d) == 0 and out_degree(src, d) == 1) or
-               (in_degree(dst, d) <= 1 and out_degree(src, d) <= 1))
+            if(d[dst].fusible_gently(d[src]))
             {
-                if(d[dst].fusible_gently(d[src]))
-                {
-                    dag.merge_vertices(src, dst);
-                    not_finished = true;
-                    break;
-                }
+                dag.merge_vertices(src, dst);
+                not_finished = true;
+                break;
             }
         }
     }
+    //Note: since we call transitive_reduction() in each iteration,
+    //the merge will never introduce cyclic dependencies.
+    assert(not cycles(dag.bglD()));
     dag.remove_cleared_vertices();
-    dag.transitive_reduction();
 }
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
