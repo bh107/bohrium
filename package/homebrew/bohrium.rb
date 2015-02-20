@@ -3,9 +3,9 @@ require "formula"
 class Bohrium < Formula
   homepage "http://bh107.org/"
   head "https://bitbucket.org/bohrium/bohrium.git"
-  url "https://bitbucket.org/bohrium/bohrium/get/f28bbf8c146a1f679cc9a3ef81f044e99f2d52d8.zip"
-  version "v0.2-1712-gf28bbf8"
-  sha1 "82cf69d85a6e054b1a60ec8b53b5a805e59c6fbb"
+  url "https://bitbucket.org/bohrium/bohrium/get/c1fbbca3a21abfaf95e03d2b7bb64a5ab4cc273f.zip"
+  version "v0.2-1713-gc1fbbca"
+  sha1 "1e9f8bac7b109c4b8b4e2a095f60c918fd2363b4"
 
   depends_on "cmake" => :build
   depends_on "mono" => :build
@@ -20,7 +20,6 @@ class Bohrium < Formula
   def install
     if build.head?
       ln_s cached_download/".git", ".git"
-      system "./bootstrap"
     end
 
     system "cmake", ".", *std_cmake_args

@@ -33,7 +33,6 @@ class Bohrium < Formula
   def install
     if build.head?
       ln_s cached_download/".git", ".git"
-      system "./bootstrap"
     end
 
     system "cmake", ".", *std_cmake_args
