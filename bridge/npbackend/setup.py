@@ -138,9 +138,10 @@ class CustomBuild(build):
             self.copy_file(buildpath('bhc.py'),buildpath(self.build_lib,'bohrium','bhc.py'))
         build.run(self)
 
-shutil.copy2(srcpath('random123.pyx'), buildpath('random123.pyx'))
-shutil.copy2(srcpath('ndarray.pyx'), buildpath('ndarray.pyx'))
-shutil.copy2(srcpath('_util.pyx'), buildpath('_util.pyx'))
+if buildpath('random123.pyx') != srcpath('random123.pyx'):
+  shutil.copy2(srcpath('random123.pyx'), buildpath('random123.pyx'))
+  shutil.copy2(srcpath('ndarray.pyx'), buildpath('ndarray.pyx'))
+  shutil.copy2(srcpath('_util.pyx'), buildpath('_util.pyx'))
 
 setup(name='Bohrium',
       version='0.2',
