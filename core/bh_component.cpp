@@ -28,11 +28,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <dlfcn-win32.h>
 
 #define HOME_INI_PATH "%APPDATA%\\bohrium\\config.ini"
-#define SYSTEM_INI_PATH "%PROGRAMFILES%\\bohrium\\config.ini"
+#define SYSTEM_INI_PATH_1 "%PROGRAMFILES%\\bohrium\\config.ini"
+#define SYSTEM_INI_PATH_2 "%PROGRAMFILES%\\bohrium\\config.ini"
 
 //We need a buffer for path expansion
 char _expand_buffer1[MAX_PATH];
 char _expand_buffer2[MAX_PATH];
+char _expand_buffer3[MAX_PATH];
 
 //Nasty function renaming
 #define snprintf _snprintf
@@ -44,7 +46,8 @@ char _expand_buffer2[MAX_PATH];
 #include <limits.h>
 
 #define HOME_INI_PATH "~/.bohrium/config.ini"
-#define SYSTEM_INI_PATH "/usr/etc/bohrium/config.ini"
+#define SYSTEM_INI_PATH_1 "/usr/local/etc/bohrium/config.ini"
+#define SYSTEM_INI_PATH_2 "/usr/etc/bohrium/config.ini"
 
 //We need a buffer for path expansion
 char _expand_buffer[PATH_MAX];
@@ -126,7 +129,8 @@ static void *get_dlsym(void *handle, const char *name,
 bh_error bh_component_init(bh_component *self, const char* name)
 {
     const char* homepath = HOME_INI_PATH;
-    const char* syspath = SYSTEM_INI_PATH;
+    const char* syspath1 = SYSTEM_INI_PATH_1;
+    const char* syspath2 = SYSTEM_INI_PATH_2;
 
     //Clear memory so we do not have any random pointers
     memset(self, 0, sizeof(bh_component));
@@ -182,28 +186,51 @@ bh_error bh_component_init(bh_component *self, const char* name)
         }
     }
 
-    //And finally system-wide.
+    //And then system-wide.
     if(env == NULL)
     {
 #if _WIN32
         DWORD result = ExpandEnvironmentStrings(
-            syspath,
+            syspath1,
             _expand_buffer2,
             MAX_PATH-1
         );
 
         if(result != 0)
         {
-            syspath = _expand_buffer2;
+            syspath1 = _expand_buffer2;
         }
 #endif
-        FILE *fp = fopen(syspath,"r");
+        FILE *fp = fopen(syspath1,"r");
         if(fp)
         {
-            env = syspath;
+            env = syspath1;
             fclose(fp);
         }
     }
+
+    //And then system-wide.
+    if(env == NULL)
+    {
+#if _WIN32
+        DWORD result = ExpandEnvironmentStrings(
+            syspath2,
+            _expand_buffer3,
+            MAX_PATH-1
+        );
+
+        if(result != 0)
+        {
+            syspath2 = _expand_buffer3;
+        }
+#endif
+        FILE *fp = fopen(syspath2,"r");
+        if(fp)
+        {
+            env = syspath2;
+            fclose(fp);
+        }
+    }    
     // We could not find the configuration file anywhere
     if(env == NULL)
     {
@@ -211,7 +238,8 @@ bh_error bh_component_init(bh_component *self, const char* name)
             " The search is:\n"
             "\t* The environment variable BH_CONFIG.\n"
             "\t* The home directory \"%s\".\n"
-            "\t* And system-wide \"%s\".\n", homepath, syspath);
+            "\t* The local directory \"%s\".\n"
+            "\t* And system-wide \"%s\".\n", homepath, syspath1, syspath2);
         return BH_ERROR;
     }
 
