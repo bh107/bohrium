@@ -24,12 +24,17 @@ function(build_mono_benchmark_project solutionname outputname)
       SET(numcil_tt_outputs ${numcil_tt_outputs} ${dst})
     ENDFOREACH(file)
 
+    set(build_type "Release")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      set(build_type "Debug")
+    endif()
+
     # Find source files
     file(GLOB_RECURSE SRCS *.cs *.sln *.csproj)
-    set(output_binary ${CMAKE_CURRENT_BINARY_DIR}/bin/Release/${outputname})
+    set(output_binary ${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type}/${outputname})
     add_custom_command(
         OUTPUT ${output_binary}
-        COMMAND ${XBUILD_EXECUTABLE} /property:Configuration=Release /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/bin/Release ${CMAKE_CURRENT_SOURCE_DIR}/${projname}.sln
+        COMMAND ${XBUILD_EXECUTABLE} /property:Configuration=${build_type} /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type} ${CMAKE_CURRENT_SOURCE_DIR}/${projname}.sln
         DEPENDS ${SRCS} ${numcil_tt_outputs} numcil_bohrium
     )
 
