@@ -164,13 +164,12 @@ public:
      */
     bool fusible(const bh_ir_kernel &other) const;
 
-    /* Determines whether it is legal to fuse with the kernel without
-     * changing this kernel's dependencies.
+    /* Determines whether the in-/output of 'this' kernel is a subset of 'other'
      *
      * @other  The other kernel
      * @return The boolean answer
      */
-    bool fusible_gently(const bh_ir_kernel &other) const;
+    bool input_and_output_subset_of(const bh_ir_kernel &other) const;
 
     /* Determines dependency between this kernel and the instruction 'instr',
      * which is true when:
@@ -212,7 +211,6 @@ public:
      *         kernel isn't fusible.
      */
     int64_t merge_cost_savings(const bh_ir_kernel &other) const;
-
 };
 
 #endif

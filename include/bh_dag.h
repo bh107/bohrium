@@ -646,6 +646,66 @@ bool dag_validate(const GraphD &dag)
     return true;
 }
 
+/* Determines whether the dependencies of 'sub' is a subset of 'super'
+ *
+ * @dag    The dependency DAG
+ * @sub    The vertex with the dependency subset
+ * @super  The vertex with the dependency superset
+ * @return The boolean answer
+ */
+bool dependency_subset(const GraphD &dag, Vertex sub, Vertex super)
+{
+    using namespace std;
+    using namespace boost;
+
+    //The sub-vertex should have equal or less in- and out-degree.
+    if(in_degree(sub,dag) > in_degree(super,dag))
+        return false;
+    if(out_degree(sub,dag) > out_degree(super,dag))
+        return false;
+
+    //Check that all adjacent vertices of 'sub' is also adjacent to 'super'
+    BOOST_FOREACH(Vertex v1, adjacent_vertices(sub,dag))
+    {
+        if(v1 == super)
+            continue;
+        bool found = false;
+        BOOST_FOREACH(Vertex v2, adjacent_vertices(super,dag))
+        {
+            if(v2 == sub)
+                continue;
+            if(v1 == v2)
+            {
+                found = true;
+                break;
+            }
+        }
+        if(not found)
+            return false;
+    }
+    //Check that all inverse adjacent vertices of 'sub' is also inverse
+    //adjacent to 'super'
+    BOOST_FOREACH(Vertex v1, inv_adjacent_vertices(sub,dag))
+    {
+        if(v1 == super)
+            continue;
+        bool found = false;
+        BOOST_FOREACH(Vertex v2, inv_adjacent_vertices(super,dag))
+        {
+            if(v2 == sub)
+                continue;
+            if(v1 == v2)
+            {
+                found = true;
+                break;
+            }
+        }
+        if(not found)
+            return false;
+    }
+    return true;
+}
+
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings
  * NB: invalidates all existing vertex and edge pointers.
@@ -654,7 +714,7 @@ bool dag_validate(const GraphD &dag)
  *
  * @dag The DAG to fuse
  */
-void fuse_gentle(GraphDW &dag)
+void fuse_gently(GraphDW &dag)
 {
     using namespace std;
     using namespace boost;
@@ -669,11 +729,23 @@ void fuse_gentle(GraphDW &dag)
         {
             const Vertex &src = source(e, d);
             const Vertex &dst = target(e, d);
-            if(d[dst].fusible_gently(d[src]))
+            if(dependency_subset(d, src, dst))
             {
-                dag.merge_vertices(src, dst);
-                not_finished = true;
-                break;
+                if(d[src].fusible(d[dst]) and d[src].input_and_output_subset_of(d[dst]))
+                {
+                    dag.merge_vertices(src, dst);
+                    not_finished = true;
+                    break;
+                }
+            }
+            if(dependency_subset(d, dst, src))
+            {
+                if(d[dst].fusible(d[src]) and d[dst].input_and_output_subset_of(d[src]))
+                {
+                    dag.merge_vertices(src, dst);
+                    not_finished = true;
+                    break;
+                }
             }
         }
     }
