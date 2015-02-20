@@ -27,11 +27,16 @@ if(MONO_FOUND)
     SET(numcil_tt_outputs ${numcil_tt_outputs} ${dst})
   ENDFOREACH(file)
 
+  set(build_type "Release")
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(build_type "Debug")
+  endif()  
+
   file(GLOB sln_sources NumCIL/*.cs NumCIL/*.csproj NumCIL.Unsafe/*.cs NumCIL.Unsafe/*.csproj)
-  set(numcil_binaries ${CMAKE_CURRENT_BINARY_DIR}/bin/Release/NumCIL.dll ${CMAKE_CURRENT_BINARY_DIR}/bin/Release/NumCIL.Unsafe.dll)
+  set(numcil_binaries ${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type}/NumCIL.dll ${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type}/NumCIL.Unsafe.dll)
   add_custom_command(
       OUTPUT ${numcil_binaries}
-      COMMAND ${XBUILD_EXECUTABLE} /property:Configuration=Release /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/bin/Release ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.sln
+      COMMAND ${XBUILD_EXECUTABLE} /property:Configuration=${build_type} /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.sln
       DEPENDS ${sln_sources} ${numcil_tt_outputs}
   )
 

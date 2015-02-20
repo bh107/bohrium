@@ -9,12 +9,17 @@ find_package(Mono)
 
 if(MONO_FOUND)
 
+  set(build_type "Release")
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(build_type "Debug")
+  endif()
+
   # Find source files
   file(GLOB_RECURSE SRCS *.cs *.sln *.csproj)
-  set(numcil_test_binaries ${CMAKE_CURRENT_BINARY_DIR}/bin/Release/UnitTest.exe)
+  set(numcil_test_binaries ${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type}/UnitTest.exe)
   add_custom_command(
       OUTPUT ${numcil_test_binaries}
-      COMMAND ${XBUILD_EXECUTABLE} /property:Configuration=Release /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/bin/Release ${CMAKE_CURRENT_SOURCE_DIR}/Unittest.sln
+      COMMAND ${XBUILD_EXECUTABLE} /property:Configuration=${build_type} /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type} ${CMAKE_CURRENT_SOURCE_DIR}/Unittest.sln
       DEPENDS ${SRCS}
   )
 
