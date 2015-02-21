@@ -867,13 +867,11 @@ string _random(string left, string right)
     //       element in the array.
     //
     stringstream ss;
-    ss  << "("
-        << "    (philox2x32_as_1x64_t)"
-        << "    philox2x32("
-        << "        ((philox2x32_as_1x64_t)( " << right << " + eidx)).orig,"
-        << "        (philox2x32_key_t){ { " << left << " } }"
-        << "    )"
-        << ").combined;";
+    ss  << "((philox2x32_as_1x64_t)"
+        << "philox2x32("
+        << "  ((philox2x32_as_1x64_t)( " << right << " + eidx)).orig,"
+        << "  (philox2x32_key_t){ { " << left << " } }"
+        << ")).combined";
     return ss.str();
 }
 

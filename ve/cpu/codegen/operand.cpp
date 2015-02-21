@@ -28,13 +28,27 @@ string Operand::first(void)
     return ss.str();
 }
 
-/*
-string Operand::walker_step(void)
+string Operand::stepsize(uint32_t dim)
 {
     stringstream ss;
-    ss << name() << "_step";
+    ss << name() << "_stepsize";
+    switch(dim) {
+        case 3:
+            ss << name() << "_stepsize_tld";
+            break;
+        case 2:
+            ss << name() << "_stepsize_sld";
+            break;
+        case 1:
+            ss << name() << "_stepsize_ld";
+            break;
+        default:
+            ss << "{{ND stepsize is not constant but variable}}";
+            break;
+    }
+
     return ss.str();
-}*/
+}
 
 string Operand::walker(void)
 {

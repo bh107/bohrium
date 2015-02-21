@@ -40,7 +40,7 @@
             {{OPERATIONS}}
             
             // Increment operands
-            {{WALKER_STEP}}
+            {{WALKER_STEP_LD}}
         }}
     }
     // TODO: Handle write-out of non-temp and non-const scalars.

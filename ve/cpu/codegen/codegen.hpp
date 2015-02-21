@@ -198,6 +198,7 @@ public:
     std::string ndim(void);
     std::string shape(void);
     std::string stride(void);
+    std::string stepsize(uint32_t dim);
 
     operand_t* operand_;
 
@@ -218,6 +219,7 @@ private:
 
     // Construct the operator source for the tac.oper
     std::string oper(tac_t tac);
+    std::string oper_description(tac_t tac);
 
     //
     //  map / zip / flood / generate
@@ -225,27 +227,10 @@ private:
     std::string ewise_operations(void);
 
     // Ewise walker -- innards
-    std::string ewise_1d_assign_offset(void);
-    std::string ewise_2d_assign_offset(void);
-    std::string ewise_3d_assign_offset(void);
-    std::string ewise_nd_assign_offset(void);
-
-    std::string ewise_1d_declare_step(void);
-    std::string ewise_2d_declare_step(void);
-    std::string ewise_3d_declare_step(void);
-    std::string ewise_nd_declare_step(void);
-
-    std::string ewise_1d_step_fwd(void);
-    std::string ewise_2d_step_fwd(uint32_t dim);
-    std::string ewise_3d_step_fwd(uint32_t dim);
-    std::string ewise_nd_step_fwd(uint32_t dim);
-
-    // Ewise walker -- the encapsulating thing
-    std::string ewise_1d(void);
-    std::string ewise_2d(void);
-    std::string ewise_3d(void);
-    std::string ewise_nd(void);
-
+    std::string ewise_declare_stepsizes(uint32_t rank);
+    std::string ewise_assign_offset(uint32_t rank);
+    std::string ewise_step_fwd(uint32_t dim);
+    
     Plaid& plaid_;
     bohrium::core::Block& block_;
 };

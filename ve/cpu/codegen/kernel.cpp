@@ -11,9 +11,7 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block) {
-    
-}
+Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block) {}
 
 string Kernel::args(void)
 {
@@ -35,15 +33,15 @@ string Kernel::generate_source(void)
     } else {
         subjects["MODE"] = "SIJ";
     }
-    subjects["LAYOUT"] = layout_text(block_.iterspace().layout);
-    subjects["NINSTR"] = to_string(block_.ntacs());
-    subjects["NARRAY_INSTR"] = to_string(block_.narray_tacs());
-    subjects["NARGS"] = to_string(block_.noperands());
-    subjects["NARRAY_ARGS"] = "?";
-    subjects["SYMBOL_TEXT"] = block_.symbol_text();
-    subjects["SYMBOL"] = block_.symbol();
-    subjects["ARGUMENTS"] = unpack_arguments();
-    subjects["WALKER"] = walker.generate_source();
+    subjects["LAYOUT"]          = layout_text(block_.iterspace().layout);
+    subjects["NINSTR"]          = to_string(block_.ntacs());
+    subjects["NARRAY_INSTR"]    = to_string(block_.narray_tacs());
+    subjects["NARGS"]           = to_string(block_.noperands());
+    subjects["NARRAY_ARGS"]     = "?";
+    subjects["SYMBOL_TEXT"]     = block_.symbol_text();
+    subjects["SYMBOL"]          = block_.symbol();
+    subjects["ARGUMENTS"]       = unpack_arguments();
+    subjects["WALKER"]          = walker.generate_source();
 
     return plaid_.fill("kernel", subjects);
 }

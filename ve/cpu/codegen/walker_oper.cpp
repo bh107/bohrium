@@ -13,6 +13,33 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
+string Walker::oper_description(tac_t tac)
+{
+    stringstream ss;
+    ss << operator_text(tac.oper) << " (";
+    switch(core::tac_noperands(tac)) {
+        case 3:
+            ss << layout_text(block_.operand(block_.global_to_local(tac.out)).layout);
+            ss << ", ";
+            ss << layout_text(block_.operand(block_.global_to_local(tac.in1)).layout);
+            ss << ", ";
+            ss << layout_text(block_.operand(block_.global_to_local(tac.in2)).layout);
+            break;
+        case 2:
+            ss << layout_text(block_.operand(block_.global_to_local(tac.out)).layout);
+            ss << ", ";
+            ss << layout_text(block_.operand(block_.global_to_local(tac.in1)).layout);
+            break;
+        case 1:
+            ss << layout_text(block_.operand(block_.global_to_local(tac.out)).layout);
+            break;
+        default:
+            break;
+    }
+    ss << ")";
+    return ss.str();
+}
+
 string Walker::oper(tac_t tac)
 {
     ETYPE etype = block_.operand(block_.global_to_local(tac.out)).etype;

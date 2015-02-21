@@ -62,7 +62,7 @@ string Walker::declare_operands(void)
     return ss.str();
 }
 
-string Walker::ewise_1d_assign_offset(void)
+string Walker::ewise_assign_offset(uint32_t rank)
 {
     stringstream ss;
     for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
@@ -89,19 +89,55 @@ string Walker::ewise_1d_assign_offset(void)
     return ss.str();
 }
 
-string Walker::ewise_2d_assign_offset(void)
+string Walker::ewise_declare_stepsizes(uint32_t rank)
 {
-    return ewise_1d_assign_offset();
+    stringstream ss;
+    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
+        Operand operand(&block_.operand(oidx), oidx);    // Grab the operand
+        switch(operand.operand_->layout) {
+            case SPARSE:
+            case STRIDED:
+                ss << _declare_init(
+                    _const(_uint64()),
+                    operand.stepsize(0),
+                    _index(operand.stride(), 0)
+                )
+                << _end();
+                break;
+            default:
+                ss << "// " << operand.name() << " " << operand.layout() << endl;
+                break;
+        }
+    }
+    return ss.str();
 }
 
-string Walker::ewise_3d_assign_offset(void)
+string Walker::ewise_step_fwd(uint32_t dim)
 {
-    return ewise_1d_assign_offset();
-}
-
-string Walker::ewise_nd_assign_offset(void)
-{
-    return ewise_1d_assign_offset();
+    stringstream ss;
+    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
+        Operand operand(&block_.operand(oidx), oidx);    // Grab the operand
+        bool innermost = ((operand.operand_->ndim-1) == dim);
+        switch(operand.operand_->layout) {
+            case SPARSE:
+            case STRIDED:
+                ss
+                << _add_assign(
+                    operand.walker(),
+                    operand.stepsize(dim)
+                ) << _end(operand.layout());
+                break;
+            case CONTIGUOUS:    // Only step forward in the innermost loop
+                if (innermost) {
+                    ss << _inc(operand.walker()) << _end(operand.layout());
+                }
+                break;
+            default:
+                ss << "// " << operand.name() << " " << operand.layout() << endl;
+                break;
+        }
+    }
+    return ss.str();
 }
 
 string Walker::ewise_operations(void)
@@ -114,7 +150,7 @@ string Walker::ewise_operations(void)
             &block_.operand(block_.global_to_local(tac.out)),
             block_.global_to_local(tac.out)
         );
-        ss << _assign(out.walker_val(), oper(tac)) << _end();
+        ss << _assign(out.walker_val(), oper(tac)) << _end(oper_description(tac));
     }
     return ss.str();
 }
@@ -123,33 +159,32 @@ string Walker::generate_source(void)
 {
     std::map<string, string> subjects;
     string plaid;
+    uint32_t rank = block_.iterspace().ndim;
 
     subjects["WALKER_DECLARATION"]  = declare_operands();
+    subjects["WALKER_STEPSIZE"]     = ewise_declare_stepsizes(rank);
+    subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
     subjects["OPERATIONS"]          = ewise_operations();
+
     switch(block_.iterspace().ndim) {
         case 1:
-            subjects["WALKER_OFFSET"]   = ewise_1d_assign_offset();
-            subjects["WALKER_STEP_LD"]  = ewise_1d_step_fwd();
+            subjects["WALKER_STEP_LD"]  = ewise_step_fwd(0);
             plaid = "ewise.1d";
             break;
         case 2:
-            subjects["WALKER_OFFSET"]   = ewise_2d_assign_offset();
-            subjects["WALKER_STEP_LD"]  = ewise_2d_step_fwd(1);
-            subjects["WALKER_STEP_SLD"] = ewise_2d_step_fwd(0);
+            subjects["WALKER_STEP_LD"]  = ewise_step_fwd(1);
+            subjects["WALKER_STEP_SLD"] = ewise_step_fwd(0);
             plaid = "ewise.2d";
             break;
         case 3:
-            subjects["WALKER_OFFSET"]   = ewise_3d_assign_offset();
-            subjects["WALKER_STEP_LD"]  = ewise_2d_step_fwd(2);
-            subjects["WALKER_STEP_SLD"] = ewise_2d_step_fwd(1);
-            subjects["WALKER_STEP_TLD"] = ewise_2d_step_fwd(0);
-
+            subjects["WALKER_STEP_LD"]  = ewise_step_fwd(2);
+            subjects["WALKER_STEP_SLD"] = ewise_step_fwd(1);
+            subjects["WALKER_STEP_TLD"] = ewise_step_fwd(0);
             plaid = "ewise.3d";
             break;
         default:
-            subjects["WALKER_OFFSET"]       = ewise_nd_assign_offset();
-            subjects["WALKER_STEP_INNER"]   = ewise_nd_step_fwd(0);
-            subjects["WALKER_STEP_OUTER"]   = ewise_nd_step_fwd(1);
+            subjects["WALKER_STEP_INNER"]   = ewise_step_fwd(rank-1);
+            subjects["WALKER_STEP_OUTER"]   = "TODO";
             plaid = "ewise.nd";
             break;
     }
