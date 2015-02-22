@@ -1,9 +1,6 @@
 //
 // Elementwise operation on two-dimensional arrays using strided indexing
 {
-    const int64_t shape_ld  = iterspace->shape[1];
-    const int64_t shape_sld = iterspace->shape[0];
-
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = shape_sld > mthreads ? mthreads : 1;
     const int64_t work_split= shape_sld / nworkers;
@@ -31,8 +28,8 @@
         // Stepsize
         {{WALKER_STEPSIZE}}
 
-        for(int64_t j=work_offset; j<work_end; ++j) {
-            for (int64_t i = 0; i < shape_ld; ++i) {
+        for(int64_t sld_idx=work_offset; sld_idx<iterspace->shape[0]; ++sld_idx) {
+            for (int64_t ld_idx = 0; ld_idx <iterspace->shape[1]; ++ld_idx) {
                 // Apply operator(s)
                 {{OPERATIONS}}
                 

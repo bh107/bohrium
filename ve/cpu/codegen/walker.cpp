@@ -70,11 +70,20 @@ string Walker::ewise_assign_offset(uint32_t rank)
         switch(operand.operand_->layout) {
             case STRIDED:       
             case SPARSE:
-                ss << _add_assign(
-                    operand.walker(),
-                    _index(operand.stride(), 0)
-                )
-                << _end();
+                switch(rank) {
+                    case 3:
+                    case 2:
+                    case 1:
+                        ss << _add_assign(
+                            operand.walker(),
+                            _mul("work_offset", _index(operand.stride(), rank-1))
+                        )
+                        << _end();
+                        break;
+                    default:
+                        // TODO: implement ND-case
+                        break;
+                }
                 break;
             case CONTIGUOUS:
                 ss << _add_assign(
@@ -92,17 +101,44 @@ string Walker::ewise_assign_offset(uint32_t rank)
 string Walker::ewise_declare_stepsizes(uint32_t rank)
 {
     stringstream ss;
+    Iterspace iterspace;
     for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
         Operand operand(&block_.operand(oidx), oidx);    // Grab the operand
         switch(operand.operand_->layout) {
             case SPARSE:
             case STRIDED:
-                ss << _declare_init(
-                    _const(_uint64()),
-                    operand.stepsize(0),
-                    _index(operand.stride(), 0)
-                )
-                << _end();
+                switch(rank) {
+                    case 3:
+                        ss << _declare_init(
+                            _const(_uint64()),
+                            operand.stepsize(2),
+                            _sub(
+                                _index(operand.stride(), 2),
+                                _mul(iterspace.shape(1), _index(operand.stride(), 1))
+                            )
+                        )
+                        << _end();
+
+                    case 2:
+                        ss << _declare_init(
+                            _const(_uint64()),
+                            operand.stepsize(1),
+                            _sub(
+                                _index(operand.stride(), 1),
+                                _mul(iterspace.shape(0), _index(operand.stride(), 0))
+                            )
+                        )
+                        << _end();
+                    case 1:
+                        ss << _declare_init(
+                            _const(_uint64()),
+                            operand.stepsize(0),
+                            _index(operand.stride(), 0)
+                        )
+                        << _end();
+                    default:
+                        break;
+                }
                 break;
             default:
                 ss << "// " << operand.name() << " " << operand.layout() << endl;

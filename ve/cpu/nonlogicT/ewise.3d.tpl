@@ -1,19 +1,6 @@
 //
 // Elementwise operation on three-dimensional arrays using strided indexing
 {
-    const int64_t shape_ld    = iterspace->shape[2];
-    const int64_t shape_sld   = iterspace->shape[1];
-    const int64_t shape_tld   = iterspace->shape[0];
-
-    {{#OPERAND}}{{#ARRAY}}
-    const int64_t a{{NR}}_stride_ld   = a{{NR}}_stride[2];
-    const int64_t a{{NR}}_stride_sld  = a{{NR}}_stride[1];
-    const int64_t a{{NR}}_stride_tld  = a{{NR}}_stride[0];
-
-    const int64_t a{{NR}}_rewind_ld   = shape_ld  * a{{NR}}_stride_ld;
-    const int64_t a{{NR}}_rewind_sld  = shape_sld * a{{NR}}_stride_sld;
-    {{/ARRAY}}{{/OPERAND}}
-
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = shape_tld > mthreads ? mthreads : 1;
     const int64_t work_split= shape_tld / nworkers;
@@ -34,36 +21,27 @@
         }
         work_end = work_offset+work;
         if (work) {
-        {{#OPERAND}}
-        {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
-        {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
-        {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-        {{#ARRAY}}{{TYPE}}* a{{NR}}_current = a{{NR}}_first + (work_offset * a{{NR}}_stride_tld);{{/ARRAY}}
-        {{/OPERAND}}
+        // Operand declaration(s)
+        {{WALKER_DECLARATION}}
+        // Operand offsets(s)
+        {{WALKER_OFFSET}}
+        // Stepsize
+        {{WALKER_STEPSIZE}}
 
-        for (int64_t k=work_offset; k<work_end; ++k) {
-            for (int64_t j = 0; j<shape_sld; ++j) {
-                for (int64_t i = 0; i<shape_ld; ++i) {
-                    {{#OPERATORS}}
-                    {{OPERATOR}};
-                    {{/OPERATORS}}
+        for (int64_t tld_idx=work_offset; tld_idx<iterspace->shape[0]; ++tld_idx) {
+            for (int64_t sld_idx = 0; sld_idx<iterspace->shape[1]; ++sld_idx) {
+                for (int64_t ld_idx = 0; ld_idx<iterspace->shape[2]; ++ld_idx) {
+                    {{OPERATIONS}}
 
-                    {{#OPERAND}}{{#ARRAY}}
-                    a{{NR}}_current += a{{NR}}_stride_ld;
-                    {{/ARRAY}}{{/OPERAND}}
+                    // Increment operands
+                    {{WALKER_STEP_LD}}
                 }
-                
-                {{#OPERAND}}{{#ARRAY}}
-                a{{NR}}_current -= a{{NR}}_rewind_ld;
-                a{{NR}}_current += a{{NR}}_stride_sld;
-                {{/ARRAY}}{{/OPERAND}}
+                // Increment operands
+                {{WALKER_STEP_SLD}}
             }
-            {{#OPERAND}}{{#ARRAY}}
-            a{{NR}}_current -= a{{NR}}_rewind_sld;
-            a{{NR}}_current += a{{NR}}_stride_tld;
-            {{/ARRAY}}{{/OPERAND}}
-        }
-        }
+            // Increment operands
+            {{WALKER_STEP_TLD}}
+        }}
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
 }

@@ -32,18 +32,19 @@ string Operand::stepsize(uint32_t dim)
 {
     stringstream ss;
     ss << name() << "_stepsize";
-    switch(dim) {
-        case 3:
-            ss << name() << "_stepsize_tld";
-            break;
+    switch(operand_->ndim -1 - dim) {
         case 2:
-            ss << name() << "_stepsize_sld";
+            ss << "_tld";
             break;
         case 1:
-            ss << name() << "_stepsize_ld";
+            ss << "_sld";
             break;
+        case 0:
+            ss << "_ld";
+            break;
+
         default:
-            ss << "{{ND stepsize is not constant but variable}}";
+            ss << "__ND stepsize is not constant but variable__";
             break;
     }
 

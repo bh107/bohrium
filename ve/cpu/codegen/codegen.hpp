@@ -254,6 +254,19 @@ private:
     bohrium::core::Block& block_;
 };
 
+class Iterspace
+{
+public:
+    Iterspace(void);
+    Iterspace(iterspace_t& iterspace);
+
+    std::string name(void);
+    std::string ndim(void);
+    std::string shape(uint32_t dim);
+private:
+    iterspace_t* iterspace_;
+};
+
 }}}}
 
 #endif
