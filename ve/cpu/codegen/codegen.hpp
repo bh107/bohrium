@@ -30,6 +30,7 @@ std::string _double_complex(void);
 std::string _ref(std::string object);
 std::string _deref(std::string object);
 std::string _index(std::string object, int64_t idx);
+std::string _index(std::string object, std::string idx);
 
 std::string _access(std::string object, std::string member);
 std::string _access_ptr(std::string object, std::string member);

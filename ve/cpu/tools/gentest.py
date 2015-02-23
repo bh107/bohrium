@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import numpy as np
+#import numpy as np
+import bohrium as np
 
 def test_range(n):
     a = np.arange(1,n+1)

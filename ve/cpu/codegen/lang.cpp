@@ -89,6 +89,13 @@ string _index(string object, int64_t idx)
     return ss.str();
 }
 
+string _index(string object, string idx)
+{
+    stringstream ss;
+    ss << object << "[" << idx << "]";
+    return ss.str();
+}
+
 string _access(string object, string member)
 {
     stringstream ss;

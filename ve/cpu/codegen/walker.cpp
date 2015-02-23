@@ -135,7 +135,15 @@ string Walker::ewise_declare_stepsizes(uint32_t rank)
                             _index(operand.stride(), rank-1)
                         )
                         << _end(operand.layout());
-                    default:
+                        break;
+
+                    default:    // ND only declare stepsize of the innermost
+                        ss << _declare_init(
+                            _const(_uint64()),
+                            operand.stepsize(rank-1),
+                            _index(operand.stride(), "last_dim")
+                        )
+                        << _end(operand.layout());
                         break;
                 }
                 break;
@@ -151,20 +159,38 @@ string Walker::ewise_step_fwd(uint32_t dim)
 {
     stringstream ss;
     for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand operand(&block_.operand(oidx), oidx);    // Grab the operand
-        bool innermost = ((operand.operand_->ndim-1) == dim);
+        Operand operand(&block_.operand(oidx), oidx);   // Grab the operand
+        const int64_t rank = operand.operand_->ndim;
+        const int64_t last_dim = rank-1;
+        const bool innermost = (last_dim == dim);
         switch(operand.operand_->layout) {
             case SPARSE:
             case STRIDED:
-                ss
-                << _add_assign(
-                    operand.walker(),
-                    operand.stepsize(dim)
-                ) << _end(operand.layout());
+                if ((rank > 3) and innermost) {             // ND-inner
+                    ss
+                    << _add_assign(
+                        operand.walker(),
+                        operand.stepsize(dim)
+                    ) << _end(operand.layout());
+                } else if ((rank > 3) and (!innermost)) {   // ND-outer
+                    ss
+                    << _add_assign(
+                        operand.walker(),
+                        _mul("coord", _index(operand.stride(), "dim"))
+                    ) << _end(operand.layout());
+                } else {                                    // 1D, 2D, and 3D.
+                    ss
+                    << _add_assign(
+                        operand.walker(),
+                        operand.stepsize(dim)
+                    ) << _end(operand.layout());
+                }
                 break;
-            case CONTIGUOUS:    // Only step forward in the innermost loop
-                if (innermost) {
+            case CONTIGUOUS:    
+                if (innermost) {    // Only step forward in the innermost loop
                     ss << _inc(operand.walker()) << _end(operand.layout());
+                } else {
+                    ss << "// " << operand.name() << " " << operand.layout() << endl;
                 }
                 break;
             default:
@@ -194,32 +220,32 @@ string Walker::generate_source(void)
 {
     std::map<string, string> subjects;
     string plaid;
-    uint32_t rank = block_.iterspace().ndim;
+    const uint32_t rank = block_.iterspace().ndim;
 
     subjects["WALKER_DECLARATION"]  = declare_operands();
     subjects["WALKER_STEPSIZE"]     = ewise_declare_stepsizes(rank);
     subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
     subjects["OPERATIONS"]          = ewise_operations();
 
-    switch(block_.iterspace().ndim) {
-        case 1:
+    switch(rank) {
+        case 1:     // 1D specialization
             subjects["WALKER_STEP_LD"]  = ewise_step_fwd(0);
             plaid = "ewise.1d";
             break;
-        case 2:
+        case 2:     // 2D specialization
             subjects["WALKER_STEP_LD"]  = ewise_step_fwd(1);
             subjects["WALKER_STEP_SLD"] = ewise_step_fwd(0);
             plaid = "ewise.2d";
             break;
-        case 3:
+        case 3:     // 3D specialization
             subjects["WALKER_STEP_LD"]  = ewise_step_fwd(2);
             subjects["WALKER_STEP_SLD"] = ewise_step_fwd(1);
             subjects["WALKER_STEP_TLD"] = ewise_step_fwd(0);
             plaid = "ewise.3d";
             break;
-        default:
+        default:    // ND
+            subjects["WALKER_STEP_OUTER"]   = ewise_step_fwd(0);
             subjects["WALKER_STEP_INNER"]   = ewise_step_fwd(rank-1);
-            subjects["WALKER_STEP_OUTER"]   = "TODO";
             plaid = "ewise.nd";
             break;
     }
