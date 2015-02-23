@@ -10,8 +10,7 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Iterspace::Iterspace(void) : iterspace_(NULL) {}
-Iterspace::Iterspace(iterspace_t& iterspace) : iterspace_(&iterspace) {}
+Iterspace::Iterspace(iterspace_t& iterspace) : iterspace_(iterspace) {}
 
 string Iterspace::name(void)
 {
@@ -32,6 +31,11 @@ string Iterspace::shape(uint32_t dim)
     stringstream ss;
     ss << _index(_access_ptr(name(), "shape"), dim);
     return ss.str();
+}
+
+iterspace_t& Iterspace::meta(void)
+{
+    return iterspace_;
 }
 
 }}}}

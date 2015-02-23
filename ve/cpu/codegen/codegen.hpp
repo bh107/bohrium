@@ -201,10 +201,32 @@ public:
     std::string stride(void);
     std::string stepsize(uint32_t dim);
 
-    operand_t* operand_;
+    operand_t& meta(void);
+    uint64_t local_id(void);
 
 private:
-    uint32_t local_id_;
+    operand_t* operand_;
+    uint64_t local_id_;
+};
+
+typedef std::map<uint64_t, Operand> kernel_operands;
+typedef kernel_operands::iterator kernel_operand_iter;
+
+typedef std::vector<tac_t*> kernel_tacs;
+typedef kernel_tacs::iterator kernel_tac_iter;
+
+class Iterspace
+{
+public:
+    Iterspace(iterspace_t& iterspace);
+
+    std::string name(void);
+    std::string ndim(void);
+    std::string shape(uint32_t dim);
+
+    iterspace_t& meta(void);
+private:
+    iterspace_t& iterspace_;
 };
 
 class Kernel
@@ -214,19 +236,31 @@ public:
     
     std::string generate_source(void);
 
-    /** Mapping of tac operands to Operand using the global index **/
+    uint64_t noperands(void);
+    Operand& operand_glb(uint64_t gidx);
+    Operand& operand_lcl(uint64_t lidx);
 
-    std::map<uint32_t, Operand> operands_;
-    bohrium::core::Block& block_;
+    kernel_operand_iter operands_begin(void);
+    kernel_operand_iter operands_end(void);
+
+    uint64_t ntacs(void);
+    tac_t& tac(uint64_t tidx);
+    kernel_tac_iter tacs_begin(void);
+    kernel_tac_iter tacs_end(void);
+
+    Iterspace& iterspace(void);
+
 private:
         
     std::string unpack_arguments(void);
-    std::string unpack_argument(uint32_t id);
     
     std::string args(void);
-    std::string iterspace(void);
 
     Plaid& plaid_;
+    bohrium::core::Block& block_;
+    kernel_operands operands_;
+    kernel_tacs tacs_;
+    Iterspace iterspace_;
     
 };
 
@@ -264,18 +298,6 @@ private:
 };
 
 
-class Iterspace
-{
-public:
-    Iterspace(void);
-    Iterspace(iterspace_t& iterspace);
-
-    std::string name(void);
-    std::string ndim(void);
-    std::string shape(uint32_t dim);
-private:
-    iterspace_t* iterspace_;
-};
 
 }}}}
 

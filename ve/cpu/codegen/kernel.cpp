@@ -11,13 +11,14 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Kernel::Kernel(Plaid& plaid, Block& block) :  operands_(), block_(block), plaid_(plaid) {
+Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block), iterspace_(block.iterspace()) {
 
     for(size_t tac_idx=0; tac_idx<block_.ntacs(); ++tac_idx) {
         tac_t& tac = block_.tac(tac_idx);
         if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
+        tacs_.push_back(&tac);
         switch(tac_noperands(tac)) {
             case 3:
                 operands_[tac.in2] = Operand(
@@ -45,9 +46,54 @@ string Kernel::args(void)
     return "args";
 }
 
-string Kernel::iterspace(void)
+Iterspace& Kernel::iterspace(void)
 {
-    return "iterspace";
+    return iterspace_;
+}
+
+uint64_t Kernel::noperands(void)
+{
+    return tacs_.size();
+}
+
+Operand& Kernel::operand_glb(uint64_t gidx)
+{
+    return operands_[block_.global_to_local(gidx)];
+}
+
+Operand& Kernel::operand_lcl(uint64_t lidx)
+{
+    return operands_[lidx];
+}
+
+kernel_operand_iter Kernel::operands_begin(void)
+{
+    return operands_.begin();
+}
+
+kernel_operand_iter Kernel::operands_end(void)
+{
+    return operands_.end();
+}
+
+uint64_t Kernel::ntacs(void)
+{
+    return tacs_.size();
+}
+
+tac_t& Kernel::tac(uint64_t tidx)
+{
+    return *tacs_[tidx];
+}
+
+kernel_tac_iter Kernel::tacs_begin(void)
+{
+    return tacs_.begin();
+}
+
+kernel_tac_iter Kernel::tacs_end(void)
+{
+    return tacs_.end();
 }
 
 string Kernel::generate_source(void)
@@ -76,76 +122,71 @@ string Kernel::generate_source(void)
 string Kernel::unpack_arguments(void)
 {
     stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        ss << unpack_argument(oidx);
-    }
-    return ss.str();
-}
+    for(kernel_operand_iter oit=operands_begin(); oit != operands_end(); ++oit) {
+        Operand& operand = oit->second;
+        uint64_t id = operand.local_id();
+        ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
+        switch(operand.meta().layout) {
+            case STRIDED:       
+            case SPARSE:        // ndim, shape, stride
+                ss
+                << _declare_init(
+                    _const(_int64()),
+                    operand.ndim(),
+                    _access_ptr(_index(args(), id), "ndim")
+                )
+                << _end()
+                << _declare_init(
+                    _ptr_const(_int64()),
+                    operand.shape(),
+                    _access_ptr(_index(args(), id), "shape")
+                )
+                << _end()
+                << _declare_init(
+                    _ptr_const(_int64()),
+                    operand.stride(),
+                    _access_ptr(_index(args(), id), "stride")
+                )
+                << _end();
 
-string Kernel::unpack_argument(uint32_t id)
-{
-    Operand operand(&block_.operand(id), id);    // Grab the operand
-    stringstream ss;
-    ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
-    switch(operand.operand_->layout) {
-        case STRIDED:       
-        case SPARSE:        // ndim, shape, stride
-            ss
-            << _declare_init(
-                _const(_int64()),
-                operand.ndim(),
-                _access_ptr(_index(args(), id), "ndim")
-            )
-            << _end()
-            << _declare_init(
-                _ptr_const(_int64()),
-                operand.shape(),
-                _access_ptr(_index(args(), id), "shape")
-            )
-            << _end()
-            << _declare_init(
-                _ptr_const(_int64()),
-                operand.stride(),
-                _access_ptr(_index(args(), id), "stride")
-            )
-            << _end();
+            case CONTIGUOUS:    // "first" = operand_t->data + operand_t->start
+                ss
+                << _declare_init(
+                    _ptr_const(operand.etype()),
+                    operand.first(),
+                    _add(
+                        _cast(
+                            _ptr(operand.etype()),
+                            _deref(_access_ptr(_index(args(), id), "data"))
+                        ),
+                        _access_ptr(_index(args(), id), "start")
+                    )
+                )
+                << _end() 
+                << _assert_not_null(operand.first())
+                << _end();
+                break;
 
-        case CONTIGUOUS:    // "first" = operand_t->data + operand_t->start
-            ss
-            << _declare_init(
-                _ptr_const(operand.etype()),
-                operand.first(),
-                _add(
+            case SCALAR:
+            case SCALAR_CONST:  // "first" = operand_t->data
+                ss << _declare_init(
+                    _ptr_const(operand.etype()),
+                    operand.first(),
                     _cast(
                         _ptr(operand.etype()),
                         _deref(_access_ptr(_index(args(), id), "data"))
-                    ),
-                    _access_ptr(_index(args(), id), "start")
+                    )
                 )
-            )
-            << _end() 
-            << _assert_not_null(operand.first())
-            << _end();
-            break;
+                << _end() 
+                << _assert_not_null(operand.first()) << _end();
+                break;
+            case SCALAR_TEMP:   // Data pointer is never used.
+            default:
+                break;
+        }
+        ss << endl;
 
-        case SCALAR:
-        case SCALAR_CONST:  // "first" = operand_t->data
-            ss << _declare_init(
-                _ptr_const(operand.etype()),
-                operand.first(),
-                _cast(
-                    _ptr(operand.etype()),
-                    _deref(_access_ptr(_index(args(), id), "data"))
-                )
-            )
-            << _end() 
-            << _assert_not_null(operand.first()) << _end();
-            break;
-        case SCALAR_TEMP:   // Data pointer is never used.
-        default:
-            break;
     }
-    ss << endl;
     return ss.str();
 }
 

@@ -12,7 +12,11 @@ namespace cpu{
 namespace codegen{
 
 Operand::Operand(void) : operand_(NULL), local_id_(0) {}
-Operand::Operand(operand_t* operand, uint32_t local_id) : operand_(operand), local_id_(local_id) {}
+Operand::Operand(operand_t* operand, uint32_t local_id) : operand_(operand), local_id_(local_id) {
+    if (NULL == operand_) {
+        cout << "Constructing a NULL operand_, when expecting to have one" << endl;
+    }
+}
 
 string Operand::name(void)
 {
@@ -61,7 +65,8 @@ string Operand::walker(void)
 string Operand::walker_val(void)
 {
     stringstream ss;
-    switch(operand_->layout) {
+    LAYOUT operand_layout = operand_->layout;
+    switch(operand_layout) {
         case SCALAR:
         case SCALAR_CONST:
         case SCALAR_TEMP:
@@ -107,6 +112,19 @@ string Operand::layout(void) {
 string Operand::etype(void)
 {
     return etype_to_ctype_text(operand_->etype);
+}
+
+uint64_t Operand::local_id(void)
+{
+    return local_id_;
+}
+
+operand_t& Operand::meta(void)
+{
+    if (NULL==operand_) {
+        cout << "THIS WILL FAIL... eventually!" << endl;
+    }
+    return *operand_;
 }
 
 }}}}

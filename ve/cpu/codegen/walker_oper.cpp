@@ -19,19 +19,19 @@ string Walker::oper_description(tac_t tac)
     ss << operator_text(tac.oper) << " (";
     switch(core::tac_noperands(tac)) {
         case 3:
-            ss << layout_text(kernel_.operands_[tac.out].operand_->layout);
+            ss << layout_text(kernel_.operand_glb(tac.out).meta().layout);
             ss << ", ";
-            ss << layout_text(kernel_.operands_[tac.in1].operand_->layout);
+            ss << layout_text(kernel_.operand_glb(tac.in1).meta().layout);
             ss << ", ";
-            ss << layout_text(kernel_.operands_[tac.in2].operand_->layout);
+            ss << layout_text(kernel_.operand_glb(tac.in2).meta().layout);
             break;
         case 2:
-            ss << layout_text(kernel_.operands_[tac.out].operand_->layout);
+            ss << layout_text(kernel_.operand_glb(tac.out).meta().layout);
             ss << ", ";
-            ss << layout_text(kernel_.operands_[tac.in1].operand_->layout);
+            ss << layout_text(kernel_.operand_glb(tac.in1).meta().layout);
             break;
         case 1:
-            ss << layout_text(kernel_.operands_[tac.out].operand_->layout);
+            ss << layout_text(kernel_.operand_glb(tac.out).meta().layout);
             break;
         default:
             break;
@@ -42,15 +42,15 @@ string Walker::oper_description(tac_t tac)
 
 string Walker::oper(tac_t tac)
 {
-    ETYPE etype = kernel_.operands_[tac.out].operand_->etype;
+    ETYPE etype = kernel_.operand_glb(tac.out).meta().etype;
     
     Operand in1, in2;
 
     switch(core::tac_noperands(tac)) {
         case 3:
-            in2 = kernel_.operands_[tac.in2];
+            in2 = kernel_.operand_glb(tac.in2);
         case 2:
-            in1 = kernel_.operands_[tac.in1];
+            in1 = kernel_.operand_glb(tac.in1);
         default:
             break;
     }
