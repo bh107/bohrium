@@ -1,7 +1,10 @@
 //
-// Elementwise operation on strided arrays of any dimension/rank.
-// Partitions work into chunks of size equal to the inner-most dimension.
-// Distribites work staticly/evenly among threads.
+// Codegen template is used for:
+//
+//	* MAP|ZIP|GENERATE|FLOOD on STRIDED arrays of any dimension/rank.
+//
+//	Partitions work into chunks of size equal to the inner-most dimension.
+//	Distribites work staticly/evenly among threads.
 //
 {
     const int64_t nelements = iterspace->nelem;
@@ -34,11 +37,12 @@
             work_offset = tid * work + work_spill;
         }
         work_end = work_offset+work;
+
         if (work) {
         for(int64_t eidx=work_offset; eidx<(work_end*shape_ld); eidx+=shape_ld) {
             // Operand declaration(s)
             {{WALKER_DECLARATION}}
-            // Stepsize innermost / last dimension
+            // Stepsize
             {{WALKER_STEPSIZE}}
             
             // Walker step outer dimensions

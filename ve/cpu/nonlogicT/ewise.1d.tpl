@@ -1,23 +1,22 @@
 //
 // Codegen template is used for:
 //
-//	* MAP|ZIP|GENERATE|FLOOD on contigous arrays of any dimension/rank.
 //	* MAP|ZIP|GENERATE|FLOOD on 1D strided arrays.
+//	* MAP|ZIP|GENERATE|FLOOD on contigous arrays of any dimension/rank.
 //
 //  * TODO: Vectorization, alias/restrict
 {
-    const int64_t nelements = iterspace->nelem;
-    const int mthreads      = omp_get_max_threads();
-    const int64_t nworkers  = nelements > mthreads ? mthreads : 1;
-    const int64_t work_split= nelements / nworkers;
-    const int64_t work_spill= nelements % nworkers;
+    const int mthreads = omp_get_max_threads();
+    const int64_t nworkers = iterspace->shape[0] > mthreads ? mthreads : 1;
+    const int64_t work_split= iterspace->shape[0] / nworkers;
+    const int64_t work_spill= iterspace->shape[0] % nworkers;
 
     #pragma omp parallel num_threads(nworkers)
     {
-        const int tid      = omp_get_thread_num();  // Thread info
+        const int tid      = omp_get_thread_num();
         const int nthreads = omp_get_num_threads();
 
-        int64_t work=0, work_offset=0, work_end=0;  // Work distribution
+        int64_t work=0, work_offset=0, work_end=0;
         if (tid < work_spill) {
             work = work_split + 1;
             work_offset = tid * work;
