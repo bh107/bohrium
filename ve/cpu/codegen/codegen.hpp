@@ -219,6 +219,10 @@ private:
 
     // Construct the operator source for the tac.oper
     std::string oper(tac_t tac);
+
+    /**
+     *  Generate a comment describing the tac-operation.
+     */
     std::string oper_description(tac_t tac);
 
     //
