@@ -3,9 +3,9 @@ require "formula"
 class Bohrium < Formula
   homepage "http://bh107.org/"
   head "https://bitbucket.org/bohrium/bohrium.git"
-  url "https://bitbucket.org/bohrium/bohrium/get/9d18be344b963c9e5b903794651b5fa2eb5c4088.zip"
-  version "v0.2-1726-g9d18be3"
-  sha1 "5b444fbac7d963499fde844cfdfbfe996a41f0e1"
+  url "https://bitbucket.org/bohrium/bohrium/get/7750fe940c8bd5d0d8c1efe24f9a5faace7d6c91.zip"
+  version "v0.2-1727-g7750fe9"
+  sha1 "53b85c89c32e07641b5f7568f90b3c84a0a24c66"
 
   depends_on "cmake" => :build
   depends_on "mono" => :build
