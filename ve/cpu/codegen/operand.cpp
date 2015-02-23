@@ -11,13 +11,13 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Operand::Operand(void) : operand_(NULL), id_(0) {}
-Operand::Operand(operand_t* operand, uint32_t id) : operand_(operand), id_(id) {}
+Operand::Operand(void) : operand_(NULL), local_id_(0) {}
+Operand::Operand(operand_t* operand, uint32_t local_id) : operand_(operand), local_id_(local_id) {}
 
 string Operand::name(void)
 {
     stringstream ss;
-    ss << "opd" << id_;
+    ss << "opd" << local_id_;
     return ss.str();
 }
 

@@ -11,7 +11,34 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block) {}
+Kernel::Kernel(Plaid& plaid, Block& block) :  operands_(), block_(block), plaid_(plaid) {
+
+    for(size_t tac_idx=0; tac_idx<block_.ntacs(); ++tac_idx) {
+        tac_t& tac = block_.tac(tac_idx);
+        if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
+            continue;
+        }
+        switch(tac_noperands(tac)) {
+            case 3:
+                operands_[tac.in2] = Operand(
+                    &block_.operand(block_.global_to_local(tac.in2)),
+                    block_.global_to_local(tac.in2)
+                );
+            case 2:
+                operands_[tac.in1] = Operand(
+                    &block_.operand(block_.global_to_local(tac.in1)),
+                    block_.global_to_local(tac.in1)
+                );
+            case 1:
+                operands_[tac.out] = Operand(
+                    &block_.operand(block_.global_to_local(tac.out)),
+                    block_.global_to_local(tac.out)
+                );
+            default:
+                break;
+        }
+    }
+}
 
 string Kernel::args(void)
 {
@@ -26,7 +53,7 @@ string Kernel::iterspace(void)
 string Kernel::generate_source(void)
 {
     std::map<string, string> subjects;
-    Walker walker(plaid_, block_);
+    Walker walker(plaid_, *this);
 
     if (block_.narray_tacs()>1) {
         subjects["MODE"] = "FUSED";
@@ -37,7 +64,7 @@ string Kernel::generate_source(void)
     subjects["NINSTR"]          = to_string(block_.ntacs());
     subjects["NARRAY_INSTR"]    = to_string(block_.narray_tacs());
     subjects["NARGS"]           = to_string(block_.noperands());
-    subjects["NARRAY_ARGS"]     = "?";
+    subjects["NARRAY_ARGS"]     = to_string(operands_.size());
     subjects["SYMBOL_TEXT"]     = block_.symbol_text();
     subjects["SYMBOL"]          = block_.symbol();
     subjects["ARGUMENTS"]       = unpack_arguments();

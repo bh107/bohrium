@@ -10,13 +10,16 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Walker::Walker(Plaid& plaid, bohrium::core::Block& block) : plaid_(plaid), block_(block) {}
+Walker::Walker(Plaid& plaid, Kernel& kernel) : plaid_(plaid), kernel_(kernel) {}
 
 string Walker::declare_operands(void)
 {
     stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand operand(&block_.operand(oidx), oidx);    // Grab the operand
+
+    for(std::map<uint32_t, Operand>::iterator oit=kernel_.operands_.begin();
+        oit != kernel_.operands_.end();
+        ++oit) {
+        Operand& operand = oit->second;
         switch(operand.operand_->layout) {
             case STRIDED:       
             case SPARSE:
@@ -65,8 +68,12 @@ string Walker::declare_operands(void)
 string Walker::ewise_assign_offset(uint32_t rank)
 {
     stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand operand(&block_.operand(oidx), oidx);    // Grab the operand
+
+    for(std::map<uint32_t, Operand>::iterator oit=kernel_.operands_.begin();
+        oit != kernel_.operands_.end();
+        ++oit) {
+        Operand& operand = oit->second;
+
         switch(operand.operand_->layout) {
             case STRIDED:       
             case SPARSE:
@@ -102,8 +109,11 @@ string Walker::ewise_declare_stepsizes(uint32_t rank)
 {
     stringstream ss;
     Iterspace iterspace;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand operand(&block_.operand(oidx), oidx);    // Grab the operand
+
+    for(std::map<uint32_t, Operand>::iterator oit=kernel_.operands_.begin();
+        oit != kernel_.operands_.end();
+        ++oit) {
+        Operand& operand = oit->second;
         switch(operand.operand_->layout) {
             case SPARSE:
             case STRIDED:
@@ -158,8 +168,12 @@ string Walker::ewise_declare_stepsizes(uint32_t rank)
 string Walker::ewise_step_fwd(uint32_t dim)
 {
     stringstream ss;
-    for(size_t oidx=0; oidx<block_.noperands(); ++oidx) {
-        Operand operand(&block_.operand(oidx), oidx);   // Grab the operand
+
+    for(std::map<uint32_t, Operand>::iterator oit=kernel_.operands_.begin();
+        oit != kernel_.operands_.end();
+        ++oit) {
+        Operand& operand = oit->second;
+
         const int64_t rank = operand.operand_->ndim;
         const int64_t last_dim = rank-1;
         const bool innermost = (last_dim == dim);
@@ -204,12 +218,12 @@ string Walker::ewise_step_fwd(uint32_t dim)
 string Walker::ewise_operations(void)
 {
     stringstream ss;
-    for(size_t tac_idx=0; tac_idx<block_.narray_tacs(); ++tac_idx) {
-        tac_t& tac = block_.array_tac(tac_idx);
+    for(size_t tac_idx=0; tac_idx<kernel_.block_.narray_tacs(); ++tac_idx) {
+        tac_t& tac = kernel_.block_.array_tac(tac_idx);
 
         Operand out = Operand(
-            &block_.operand(block_.global_to_local(tac.out)),
-            block_.global_to_local(tac.out)
+            &kernel_.block_.operand(kernel_.block_.global_to_local(tac.out)),
+            kernel_.block_.global_to_local(tac.out)
         );
         ss << _assign(out.walker_val(), oper(tac)) << _end(oper_description(tac));
     }
@@ -220,7 +234,7 @@ string Walker::generate_source(void)
 {
     std::map<string, string> subjects;
     string plaid;
-    const uint32_t rank = block_.iterspace().ndim;
+    const uint32_t rank = kernel_.block_.iterspace().ndim;
 
     subjects["WALKER_DECLARATION"]  = declare_operands();
     subjects["WALKER_STEPSIZE"]     = ewise_declare_stepsizes(rank);

@@ -186,7 +186,7 @@ class Operand
 {
 public:
     Operand(void);
-    Operand(operand_t* operand, uint32_t id);
+    Operand(operand_t* operand, uint32_t local_id);
 
     std::string name(void);
     
@@ -204,13 +204,36 @@ public:
     operand_t* operand_;
 
 private:
-    uint32_t id_;
+    uint32_t local_id_;
+};
+
+class Kernel
+{
+public:
+    Kernel(Plaid& plaid, bohrium::core::Block& block);
+    
+    std::string generate_source(void);
+
+    /** Mapping of tac operands to Operand using the global index **/
+
+    std::map<uint32_t, Operand> operands_;
+    bohrium::core::Block& block_;
+private:
+        
+    std::string unpack_arguments(void);
+    std::string unpack_argument(uint32_t id);
+    
+    std::string args(void);
+    std::string iterspace(void);
+
+    Plaid& plaid_;
+    
 };
 
 class Walker
 {
 public:
-    Walker(Plaid& plaid, bohrium::core::Block& block);
+    Walker(Plaid& plaid, Kernel& kernel);
 
     std::string generate_source(void);
     
@@ -237,27 +260,9 @@ private:
     std::string ewise_step_fwd(uint32_t dim);
     
     Plaid& plaid_;
-    bohrium::core::Block& block_;
+    Kernel& kernel_;
 };
 
-class Kernel
-{
-public:
-    Kernel(Plaid& plaid, bohrium::core::Block& block);
-    
-    std::string generate_source(void);
-
-private:
-        
-    std::string unpack_arguments(void);
-    std::string unpack_argument(uint32_t id);
-    
-    std::string args(void);
-    std::string iterspace(void);
-
-    Plaid& plaid_;
-    bohrium::core::Block& block_;
-};
 
 class Iterspace
 {
