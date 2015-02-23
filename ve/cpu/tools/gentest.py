@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import bohrium as np
+import numpy as np
 
 def test_range(n):
     a = np.arange(1,n+1)
@@ -23,7 +23,7 @@ def test_random(n):
     return r
 
 def test_ones(n):
-    a = np.ones((n,n))
+    a = np.ones((n,n,n,n))
     #a = np.ones((n, n,n))
     b = a[::2]
     c = a[::2]
