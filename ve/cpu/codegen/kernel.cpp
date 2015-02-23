@@ -58,12 +58,12 @@ uint64_t Kernel::noperands(void)
 
 Operand& Kernel::operand_glb(uint64_t gidx)
 {
-    return operands_[block_.global_to_local(gidx)];
+    return operands_[gidx];
 }
 
 Operand& Kernel::operand_lcl(uint64_t lidx)
 {
-    return operands_[lidx];
+    return operands_[block_.local_to_global(lidx)];
 }
 
 kernel_operand_iter Kernel::operands_begin(void)
