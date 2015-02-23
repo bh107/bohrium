@@ -111,31 +111,30 @@ string Walker::ewise_declare_stepsizes(uint32_t rank)
                     case 3:
                         ss << _declare_init(
                             _const(_uint64()),
-                            operand.stepsize(2),
+                            operand.stepsize(rank-3),
                             _sub(
-                                _index(operand.stride(), 2),
-                                _mul(iterspace.shape(1), _index(operand.stride(), 1))
+                                _index(operand.stride(), rank-3),
+                                _mul(iterspace.shape(rank-2), _index(operand.stride(), rank-2))
                             )
                         )
                         << _end();
-
                     case 2:
                         ss << _declare_init(
                             _const(_uint64()),
-                            operand.stepsize(1),
+                            operand.stepsize(rank-2),
                             _sub(
-                                _index(operand.stride(), 1),
-                                _mul(iterspace.shape(0), _index(operand.stride(), 0))
+                                _index(operand.stride(), rank-2),
+                                _mul(iterspace.shape(rank-1), _index(operand.stride(), rank-1))
                             )
                         )
                         << _end();
                     case 1:
                         ss << _declare_init(
                             _const(_uint64()),
-                            operand.stepsize(0),
-                            _index(operand.stride(), 0)
+                            operand.stepsize(rank-1),
+                            _index(operand.stride(), rank-1)
                         )
-                        << _end();
+                        << _end(operand.layout());
                     default:
                         break;
                 }

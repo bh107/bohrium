@@ -1,27 +1,36 @@
 #!/usr/bin/env python
 import bohrium as np
 
-#a = np.arange(0, n)
 def test_range(n):
-    a = np.ones(n)
+    a = np.arange(1,n+1)
     b = a
     c = a
-    
-    return ((b+c)*b)/c
+    r = ((b+c)*b)/c
+    return r
 
-def test_random(n):
-    a = np.random(n)
+def test_range(n):
+    a = np.arange(1,n+1)
     b = a[::2]
     c = a[::2]
-    
-    return ((b+c)*b)/c
+    r = ((b+c)*b)/c
+    return r
+
+def test_random(n):
+    a = np.random.random(n)
+    b = a
+    c = a
+    r = ((b+c)*b)/c
+    return r
 
 def test_ones(n):
-    a = np.ones(n)
+    a = np.ones((n,n))
+    #a = np.ones((n, n,n))
     b = a[::2]
     c = a[::2]
     
     return ((b+c)*b)/c
 
 if __name__ == "__main__":
-    print(test_range(20))
+    print(test_ones(20))
+    #print(test_range(20))
+    #print(test_random(20))
