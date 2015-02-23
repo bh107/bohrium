@@ -25,7 +25,7 @@ class Bohrium < Formula
   depends_on "swig" => :build
   depends_on "Python" => :build
   depends_on "boost" => [:build,  "universal"]
-  #depends_on "cheetah" => :build
+  depends_on "cheetah" => [:python, "Cheetah.Template", :build]
 
   head do
     url "https://bitbucket.org/bohrium/bohrium.git"
@@ -36,6 +36,8 @@ class Bohrium < Formula
       ln_s cached_download/".git", ".git"
     end
 
+    # Set the python-path to also pick up the Brew-installed items, as pip will install there
+    ENV["PYTHONPATH"] = ENV["PYTHONPATH"] + ":/usr/local/lib/python2.7/site-packages/"
     system "cmake", ".", *std_cmake_args
     system "make", "install"
     system "touch", "#{prefix}/var/bohrium/objects/.empty"
