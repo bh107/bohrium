@@ -50,7 +50,7 @@ KERNEL-DESCRIPTION {
   SYMBOL_TEXT   = {{SYMBOL_TEXT}}
 }
 */
-void KRN_{{SYMBOL}}(operand_t** args, iterspace_t* iterspace)
+void KRN_{{SYMBOL}}(operand_t** args, const iterspace_t* const iterspace)
 {
     //
     // Argument unpacking

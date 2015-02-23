@@ -30,14 +30,13 @@ Specializer::Specializer(const string template_directory)
     ctemplate::LoadTemplate("scan.strided.nd.tpl", strip_mode);
     ctemplate::mutable_default_template_cache()->Freeze();
 
-    /*
-    plaid_.add_from_file("kernel", "/home/safl/bohrium/ve/cpu/nonlogicT/kernel.tpl");
-    plaid_.add_from_file("ewise.cont.nd", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.cont.nd.tpl");
-    plaid_.add_from_file("ewise.strided.nd", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.strided.nd.tpl");
-    plaid_.add_from_file("ewise.strided.1d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.strided.1d.tpl");
-    plaid_.add_from_file("ewise.strided.2d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.strided.2d.tpl");
-    plaid_.add_from_file("ewise.strided.3d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.strided.3d.tpl");
-    */
+#ifdef VE_CPU_NONLOGIC
+    plaid_.add_from_file("kernel",   "/home/safl/bohrium/ve/cpu/nonlogicT/kernel.tpl");
+    plaid_.add_from_file("ewise.1d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.1d.tpl");
+    plaid_.add_from_file("ewise.2d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.2d.tpl");
+    plaid_.add_from_file("ewise.3d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.3d.tpl");
+    plaid_.add_from_file("ewise.nd", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.nd.tpl");
+#endif
 }
 
 Specializer::~Specializer()
@@ -159,9 +158,10 @@ string Specializer::specialize( SymbolTable& symbol_table,
                                 Block& block,
                                 LAYOUT fusion_layout)
 {
-    
-    //codegen::Kernel krnl_cgen(plaid_, block);
-    //cout << krnl_cgen.generate_source() << endl;
+#ifdef VE_CPU_NONLOGIC
+    codegen::Kernel krnl_cgen(plaid_, block);
+    cout << krnl_cgen.generate_source() << endl;
+#endif
 
     string sourcecode = "";
 
@@ -326,8 +326,10 @@ string Specializer::specialize( SymbolTable& symbol_table,
                                 Block& block,
                                 size_t tac_start, size_t tac_end)
 {
-    //codegen::Kernel krnl_cgen(plaid_, block);
-    //cout << krnl_cgen.generate_source() << endl;
+#ifdef VE_CPU_NONLOGIC
+    codegen::Kernel krnl_cgen(plaid_, block);
+    cout << krnl_cgen.generate_source() << endl;
+#endif
 
     string sourcecode  = "";
 
