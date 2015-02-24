@@ -3,15 +3,16 @@ require "formula"
 class Bohrium < Formula
   homepage "http://bh107.org/"
   head "https://bitbucket.org/bohrium/bohrium.git"
-  url "https://bitbucket.org/bohrium/bohrium/get/58f9bcf2d65df8aa9b289da7f3d637cae9ec74a2.zip"
-  version "v0.2-1720-g58f9bcf"
-  sha1 "b468dbc6f9c4824c6036b37499359999f6118d96"
+  url "https://bitbucket.org/bohrium/bohrium/get/7750fe940c8bd5d0d8c1efe24f9a5faace7d6c91.zip"
+  version "v0.2-1727-g7750fe9"
+  sha1 "53b85c89c32e07641b5f7568f90b3c84a0a24c66"
 
   depends_on "cmake" => :build
   depends_on "mono" => :build
   depends_on "swig" => :build
   depends_on "Python" => :build
-  #depends_on "cheetah" => :build
+  depends_on "boost" => [:build,  "universal"]
+  depends_on "cheetah" => [:python, "Cheetah.Template", :build]
 
   head do
     url "https://bitbucket.org/bohrium/bohrium.git"
@@ -22,6 +23,8 @@ class Bohrium < Formula
       ln_s cached_download/".git", ".git"
     end
 
+    # Set the python-path to also pick up the Brew-installed items, as pip will install there
+    ENV["PYTHONPATH"] = ENV["PYTHONPATH"] + ":/usr/local/lib/python2.7/site-packages/"
     system "cmake", ".", *std_cmake_args
     system "make", "install"
     system "touch", "#{prefix}/var/bohrium/objects/.empty"
