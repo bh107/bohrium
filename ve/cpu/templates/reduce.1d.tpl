@@ -1,5 +1,9 @@
 //
 // 1D Reduction
+//
+//
+//
+//
 {
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = iterspace->shape[0] > mthreads ? mthreads : 1;
@@ -8,7 +12,6 @@
 
     {{ETYPE}} partials[nworkers];
 
-    // Parallel reduction, accumulate reduction into partials
     #pragma omp parallel num_threads(nworkers)
     {
         const int tid      = omp_get_thread_num();
@@ -53,6 +56,7 @@
         {{SEQ_OPERATIONS}}
     }
     // Write it out to memory
+    *({{OPD_OUT}}_first) = accu;
 
 }
 

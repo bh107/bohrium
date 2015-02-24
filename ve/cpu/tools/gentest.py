@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #import numpy as np
-import bohrium as np
+import numpy as np
 
 def test_range(n):
     a = np.arange(1,n+1)
@@ -32,10 +32,10 @@ def test_ones(n):
     return ((b+c)*b)/c
 
 def test_reduce(n):
-    a = np.ones(n)
+    a = np.ones((n,n))
     b = a + 1
-    
     return np.sum(b) 
+    #return np.add.reduce(b) 
 
 if __name__ == "__main__":
     print(test_reduce(20))

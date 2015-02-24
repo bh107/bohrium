@@ -294,11 +294,12 @@ string Walker::generate_source(void)
 {
     std::map<string, string> subjects;
     string plaid;
-    const uint32_t rank = kernel_.iterspace().meta().ndim;
 
     subjects["WALKER_DECLARATION"]  = declare_operands();
     
     if ((kernel_.omask() & EWISE)>0) {  // Element-wise operations
+
+        const uint32_t rank = kernel_.iterspace().meta().ndim;
         subjects["WALKER_STEPSIZE"]     = ewise_declare_stepsizes(rank);
         subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
         subjects["OPERATIONS"]          = ewise_operations();
@@ -325,9 +326,10 @@ string Walker::generate_source(void)
                 break;
         }
     } else if ((kernel_.omask() & REDUCE)>0) {   // Reductions
-        
         tac_t* tac = NULL;
-        Operand* operand = NULL;
+        Operand* out = NULL;
+        Operand* in1 = NULL;
+        Operand* in2 = NULL;
         for(kernel_tac_iter tit=kernel_.tacs_begin();
             tit != kernel_.tacs_end();
             ++tit) {
@@ -336,12 +338,21 @@ string Walker::generate_source(void)
             }
         }
 
-        operand = &kernel_.operand_glb(tac->in1);
+        out = &kernel_.operand_glb(tac->out);
+        in1 = &kernel_.operand_glb(tac->in1);
+        in2 = &kernel_.operand_glb(tac->in2);
 
-        subjects["NEUTRAL_ELEMENT"] = "0";  // TODO: fix
-        subjects["ETYPE"] = operand->etype();
-        subjects["PAR_OPERATIONS"] = reduce_par_operations();
-        subjects["SEQ_OPERATIONS"] = reduce_seq_operations();
+        const uint32_t rank = in1->meta().ndim;
+
+        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper);
+        subjects["ATYPE"]           = _const(in2->etype());
+        subjects["ETYPE"]           = out->etype();
+        subjects["PAR_OPERATIONS"]  = reduce_par_operations();
+        subjects["SEQ_OPERATIONS"]  = reduce_seq_operations();
+        subjects["OPD_OUT"] = out->name();
+        subjects["OPD_IN1"] = in1->name();
+        subjects["OPD_IN2"] = in2->name();
+
         switch(rank) {
             case 1:
                 subjects["WALKER_STEP_LD"] = step_fwd(0, tac->in1);
@@ -358,6 +369,7 @@ string Walker::generate_source(void)
                 break;
         }
     } else if ((kernel_.omask() & SCAN)>0) {     // Scans
+        const uint32_t rank = kernel_.iterspace().meta().ndim;
         switch(rank) {
             case 1:
                 plaid = "scan.1d";
