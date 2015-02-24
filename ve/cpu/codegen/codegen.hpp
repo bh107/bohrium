@@ -272,13 +272,14 @@ public:
     Walker(Plaid& plaid, Kernel& kernel);
 
     std::string generate_source(void);
+    std::string oper_neutral_element(OPERATOR oper);
     
 private:
     std::string declare_operands(void);
     std::string declare_operand(uint32_t oidx);
 
     // Construct the operator source for the tac.oper
-    std::string oper(tac_t tac);
+    std::string oper(OPERATOR oper, ETYPE etype, std::string in1, std::string in2);
 
     /**
      *  Generate a comment describing the tac-operation.
@@ -293,7 +294,11 @@ private:
     // Ewise walker -- innards
     std::string ewise_declare_stepsizes(uint32_t rank);
     std::string ewise_assign_offset(uint32_t rank);
-    std::string ewise_step_fwd(uint32_t dim);
+    std::string step_fwd(uint32_t dim, uint64_t oidx);
+    std::string step_fwd(uint32_t dim);
+
+    std::string reduce_par_operations(void);
+    std::string reduce_seq_operations(void);
     
     Plaid& plaid_;
     Kernel& kernel_;
