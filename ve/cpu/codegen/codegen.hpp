@@ -66,7 +66,7 @@ std::string _mod(std::string left, std::string right);
 std::string _pow(std::string left, std::string right);
 std::string _cpow(std::string left, std::string right);
 std::string _cpowf(std::string left, std::string right);
-std::string _abs(std::string left, std::string right);
+std::string _abs(std::string right);
 
 std::string _max(std::string left, std::string right);
 std::string _min(std::string left, std::string right);

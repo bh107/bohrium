@@ -223,12 +223,6 @@ string Walker::ewise_operations(void)
         tit!=kernel_.tacs_end();
         ++tit) {
         tac_t& tac = **tit;
-        cout << tac_text(tac) << endl; 
-        for(kernel_operand_iter oit=kernel_.operands_begin();
-            oit!= kernel_.operands_end();
-            ++oit) {
-            cout << "global=" << oit->first << ", local=" << (oit->second.local_id()) << endl;
-        }
         Operand& out = kernel_.operand_glb(tac.out);
         ss << _assign(
             out.walker_val(),
@@ -248,7 +242,7 @@ string Walker::generate_source(void)
     subjects["WALKER_STEPSIZE"]     = ewise_declare_stepsizes(rank);
     subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
     subjects["OPERATIONS"]          = ewise_operations();
-
+    
     switch(rank) {
         case 1:     // 1D specialization
             subjects["WALKER_STEP_LD"]  = ewise_step_fwd(0);

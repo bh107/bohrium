@@ -14,7 +14,7 @@ namespace codegen{
 Operand::Operand(void) : operand_(NULL), local_id_(0) {}
 Operand::Operand(operand_t* operand, uint32_t local_id) : operand_(operand), local_id_(local_id) {
     if (NULL == operand_) {
-        cout << "Constructing a NULL operand_, when expecting to have one" << endl;
+        throw runtime_error("Constructing a NULL operand_, when expecting to have one");
     }
 }
 
@@ -36,7 +36,7 @@ string Operand::stepsize(uint32_t dim)
 {
     stringstream ss;
     ss << name() << "_stepsize";
-    switch(operand_->ndim -1 - dim) {
+    switch(meta().ndim -1 - dim) {
         case 2:
             ss << "_tld";
             break;
@@ -65,7 +65,7 @@ string Operand::walker(void)
 string Operand::walker_val(void)
 {
     stringstream ss;
-    LAYOUT operand_layout = operand_->layout;
+    LAYOUT operand_layout = meta().layout;
     switch(operand_layout) {
         case SCALAR:
         case SCALAR_CONST:
@@ -106,12 +106,12 @@ string Operand::stride(void)
 }
 
 string Operand::layout(void) {
-    return layout_text(operand_->layout);    
+    return layout_text(meta().layout);    
 }
 
 string Operand::etype(void)
 {
-    return etype_to_ctype_text(operand_->etype);
+    return etype_to_ctype_text(meta().etype);
 }
 
 uint64_t Operand::local_id(void)
@@ -121,9 +121,6 @@ uint64_t Operand::local_id(void)
 
 operand_t& Operand::meta(void)
 {
-    if (NULL==operand_) {
-        cout << "THIS WILL FAIL... eventually!" << endl;
-    }
     return *operand_;
 }
 

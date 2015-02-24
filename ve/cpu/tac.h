@@ -166,6 +166,6 @@ typedef struct iterspace {
 #define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    7
 #define NBUILTIN_OPERS  62
-#define NON_FUSABLE ( GENERATE | REDUCE | SCAN | EXTENSION )
+#define NON_FUSABLE ( REDUCE | SCAN | EXTENSION )
 
 #endif

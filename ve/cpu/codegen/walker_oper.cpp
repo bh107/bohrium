@@ -56,7 +56,7 @@ string Walker::oper(tac_t tac)
     }
 
     switch(tac.oper) {
-        case ABSOLUTE:              return _abs(in1.walker_val(), in2.walker_val());
+        case ABSOLUTE:              return _abs(in1.walker_val());
         case ADD:                   return _add(in1.walker_val(), in2.walker_val());
         case ARCCOS:            
             switch(etype) {

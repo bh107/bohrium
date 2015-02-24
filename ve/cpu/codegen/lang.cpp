@@ -292,10 +292,10 @@ string _cpowf(string left, string right)
     return ss.str();
 }
 
-string _abs(string left, string right)
+string _abs(string right)
 {
     stringstream ss;
-    ss << left << " < 0.0 ? -" << right << ": " << right;
+    ss << right << " < 0.0 ? -" << right << ": " << right;
     return ss.str();
 }
 
