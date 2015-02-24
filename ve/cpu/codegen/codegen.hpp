@@ -243,6 +243,8 @@ public:
     kernel_operand_iter operands_begin(void);
     kernel_operand_iter operands_end(void);
 
+    uint32_t omask(void);
+
     uint64_t ntacs(void);
     tac_t& tac(uint64_t tidx);
     kernel_tac_iter tacs_begin(void);

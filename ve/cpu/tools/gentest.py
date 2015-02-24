@@ -31,7 +31,13 @@ def test_ones(n):
     
     return ((b+c)*b)/c
 
+def test_reduce(n):
+    a = np.ones(n)
+    b = a + 1
+    
+    return np.sum(b) 
+
 if __name__ == "__main__":
-    print(test_ones(20))
+    print(test_reduce(20))
     #print(test_range(20))
     #print(test_random(20))

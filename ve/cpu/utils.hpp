@@ -30,6 +30,8 @@ namespace core {
 // Self-explanatory function returning the textual representation of 
 // TAC enums; useful for pretty-printing.
 //
+
+std::string omask_text(uint32_t omask);
 std::string operation_text(OPERATION op);
 std::string operator_text(OPERATOR op);
 std::string operand_text(const operand_t& operand);

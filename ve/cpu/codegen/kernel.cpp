@@ -76,6 +76,11 @@ kernel_operand_iter Kernel::operands_end(void)
     return operands_.end();
 }
 
+uint32_t Kernel::omask(void)
+{
+    return block_.omask();
+}
+
 uint64_t Kernel::ntacs(void)
 {
     return tacs_.size();
@@ -111,6 +116,7 @@ string Kernel::generate_source(void)
     subjects["NARRAY_INSTR"]    = to_string(block_.narray_tacs());
     subjects["NARGS"]           = to_string(block_.noperands());
     subjects["NARRAY_ARGS"]     = to_string(operands_.size());
+    subjects["OMASK"]           = omask_text(omask());
     subjects["SYMBOL_TEXT"]     = block_.symbol_text();
     subjects["SYMBOL"]          = block_.symbol();
     subjects["ARGUMENTS"]       = unpack_arguments();

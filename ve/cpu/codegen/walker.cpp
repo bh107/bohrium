@@ -239,31 +239,57 @@ string Walker::generate_source(void)
     const uint32_t rank = kernel_.iterspace().meta().ndim;
 
     subjects["WALKER_DECLARATION"]  = declare_operands();
-    subjects["WALKER_STEPSIZE"]     = ewise_declare_stepsizes(rank);
-    subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
-    subjects["OPERATIONS"]          = ewise_operations();
     
-    switch(rank) {
-        case 1:     // 1D specialization
-            subjects["WALKER_STEP_LD"]  = ewise_step_fwd(0);
-            plaid = "ewise.1d";
-            break;
-        case 2:     // 2D specialization
-            subjects["WALKER_STEP_LD"]  = ewise_step_fwd(1);
-            subjects["WALKER_STEP_SLD"] = ewise_step_fwd(0);
-            plaid = "ewise.2d";
-            break;
-        case 3:     // 3D specialization
-            subjects["WALKER_STEP_LD"]  = ewise_step_fwd(2);
-            subjects["WALKER_STEP_SLD"] = ewise_step_fwd(1);
-            subjects["WALKER_STEP_TLD"] = ewise_step_fwd(0);
-            plaid = "ewise.3d";
-            break;
-        default:    // ND
-            subjects["WALKER_STEP_OUTER"]   = ewise_step_fwd(0);
-            subjects["WALKER_STEP_INNER"]   = ewise_step_fwd(rank-1);
-            plaid = "ewise.nd";
-            break;
+    if ((kernel_.omask() & EWISE)>0) {  // Element-wise operations
+        subjects["WALKER_STEPSIZE"]     = ewise_declare_stepsizes(rank);
+        subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
+        subjects["OPERATIONS"]          = ewise_operations();
+        switch(rank) {
+            case 1:     // 1D specialization
+                subjects["WALKER_STEP_LD"]  = ewise_step_fwd(0);
+                plaid = "ewise.1d";
+                break;
+            case 2:     // 2D specialization
+                subjects["WALKER_STEP_LD"]  = ewise_step_fwd(1);
+                subjects["WALKER_STEP_SLD"] = ewise_step_fwd(0);
+                plaid = "ewise.2d";
+                break;
+            case 3:     // 3D specialization
+                subjects["WALKER_STEP_LD"]  = ewise_step_fwd(2);
+                subjects["WALKER_STEP_SLD"] = ewise_step_fwd(1);
+                subjects["WALKER_STEP_TLD"] = ewise_step_fwd(0);
+                plaid = "ewise.3d";
+                break;
+            default:    // ND
+                subjects["WALKER_STEP_OUTER"]   = ewise_step_fwd(0);
+                subjects["WALKER_STEP_INNER"]   = ewise_step_fwd(rank-1);
+                plaid = "ewise.nd";
+                break;
+        }
+    } else if ((kernel_.omask() & REDUCE)>0) {   // Reductions
+        switch(rank) {
+            case 1:
+                plaid = "reduce.1d";
+                break;
+            case 2:
+                plaid = "reduce.2d";
+                break;
+            case 3:
+                plaid = "reduce.3d";
+                break;
+            default:
+                plaid = "reduce.nd";
+                break;
+        }
+    } else if ((kernel_.omask() & SCAN)>0) {     // Scans
+        switch(rank) {
+            case 1:
+                plaid = "scan.1d";
+                break;
+            default:
+                plaid = "scan.nd";
+                break;
+        }
     }
     return plaid_.fill(plaid, subjects);
 }

@@ -31,11 +31,17 @@ Specializer::Specializer(const string template_directory)
     ctemplate::mutable_default_template_cache()->Freeze();
 
 #ifdef VE_CPU_NONLOGIC
-    plaid_.add_from_file("kernel",   "/home/safl/bohrium/ve/cpu/nonlogicT/kernel.tpl");
-    plaid_.add_from_file("ewise.1d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.1d.tpl");
-    plaid_.add_from_file("ewise.2d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.2d.tpl");
-    plaid_.add_from_file("ewise.3d", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.3d.tpl");
-    plaid_.add_from_file("ewise.nd", "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.nd.tpl");
+    plaid_.add_from_file("kernel",      "/home/safl/bohrium/ve/cpu/nonlogicT/kernel.tpl");
+    plaid_.add_from_file("ewise.1d",    "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.1d.tpl");
+    plaid_.add_from_file("ewise.2d",    "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.2d.tpl");
+    plaid_.add_from_file("ewise.3d",    "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.3d.tpl");
+    plaid_.add_from_file("ewise.nd",    "/home/safl/bohrium/ve/cpu/nonlogicT/ewise.nd.tpl");
+    plaid_.add_from_file("reduce.1d",   "/home/safl/bohrium/ve/cpu/nonlogicT/reduce.1d.tpl");
+    plaid_.add_from_file("reduce.2d",   "/home/safl/bohrium/ve/cpu/nonlogicT/reduce.2d.tpl");
+    plaid_.add_from_file("reduce.3d",   "/home/safl/bohrium/ve/cpu/nonlogicT/reduce.3d.tpl");
+    plaid_.add_from_file("reduce.nd",   "/home/safl/bohrium/ve/cpu/nonlogicT/reduce.nd.tpl");
+    plaid_.add_from_file("scan.1d",     "/home/safl/bohrium/ve/cpu/nonlogicT/scan.1d.tpl");
+    plaid_.add_from_file("scan.nd",     "/home/safl/bohrium/ve/cpu/nonlogicT/scan.nd.tpl");
 #endif
 }
 

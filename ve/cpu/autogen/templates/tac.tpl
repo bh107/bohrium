@@ -88,6 +88,7 @@ typedef struct iterspace {
 #define ARRAY_LAYOUT    (CONTIGUOUS | STRIDED | SPARSE)
 #define CONT_COMPATIBLE (SCALAR | SCALAR_CONST | SCALAR_TEMP | CONTIGUOUS)
 
+#define EWISE (MAP | ZIP)
 #define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
 #define NBUILTIN_OPS    %echo $len($ops)-1
 #define NBUILTIN_OPERS  %echo $len($opers)-1

@@ -48,6 +48,7 @@ KERNEL-DESCRIPTION {
   NARRAY_INSTR  = {{NARRAY_INSTR}},
   NARGS         = {{NARGS}},
   NARRAY_ARGS   = {{NARRAY_ARGS}},
+  OMASK         = {{OMASK}},
   SYMBOL_TEXT   = {{SYMBOL_TEXT}}
 }
 */
