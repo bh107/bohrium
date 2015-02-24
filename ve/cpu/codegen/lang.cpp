@@ -414,7 +414,7 @@ string _bitw_leftshift(string left, string right)
 string _bitw_rightshift(string left, string right)
 {
     stringstream ss;
-    ss << "((" << left << ") << (" << right << "))";
+    ss << "((" << left << ") >> (" << right << "))";
     return ss.str();
 }
 
@@ -771,14 +771,14 @@ string _log10(string right)
 string _clog10f(string right)
 {
     stringstream ss;
-    ss << "clog10f(" << right << ")/log(10)";
+    ss << "clogf(" << right << ")/log(10)";
     return ss.str();
 }
 
 string _clog10(string right)
 {
     stringstream ss;
-    ss << "clog10(" << right << ")/log(10)";
+    ss << "clog(" << right << ")/log(10)";
     return ss.str();
 }
 

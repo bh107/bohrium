@@ -22,16 +22,36 @@ enum states {
     PLACE
 };
 
-Plaid::Plaid(void) {}
+Plaid::Plaid(string template_directory) : template_directory_(template_directory) {
+    add_from_file("kernel",      "kernel.tpl");
+    add_from_file("ewise.1d",    "ewise.1d.tpl");
+    add_from_file("ewise.2d",    "ewise.2d.tpl");
+    add_from_file("ewise.3d",    "ewise.3d.tpl");
+    add_from_file("ewise.nd",    "ewise.nd.tpl");
+    add_from_file("reduce.1d",   "reduce.1d.tpl");
+    add_from_file("reduce.2d",   "reduce.2d.tpl");
+    add_from_file("reduce.3d",   "reduce.3d.tpl");
+    add_from_file("reduce.nd",   "reduce.nd.tpl");
+    add_from_file("scan.1d",     "scan.1d.tpl");
+    add_from_file("scan.nd",     "scan.nd.tpl");
+}
+
+string Plaid::text(void)
+{
+    return "";
+}
 
 void Plaid::add_from_string(string name, string tmpl)
 {
     templates_[name] = tmpl;
 }
 
-void Plaid::add_from_file(string name, string filepath)
+void Plaid::add_from_file(string name, string filename)
 {
-    ifstream ifs(filepath.c_str());
+    stringstream ss;
+    ss << template_directory_ << "/" << filename;
+    string abspath = ss.str();
+    ifstream ifs(abspath.c_str());
     
     string content(
         (istreambuf_iterator<char>(ifs)),

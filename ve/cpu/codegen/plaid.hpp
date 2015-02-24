@@ -12,7 +12,7 @@ namespace codegen{
 class Plaid
 {
 public:
-    Plaid(void);
+    Plaid(std::string template_directory);
 
     /**
     *   Add template from string.
@@ -24,9 +24,9 @@ public:
     /**
     *   Add template from file.
     *
-    *   @param filepath Full path of 
+    *   @param filename must exists inside template_directory.
     */
-    void add_from_file(std::string name, std::string filepath);
+    void add_from_file(std::string name, std::string filename);
     
     /**
     *   Fill out the template with "name" wihh subjects.
@@ -38,6 +38,8 @@ public:
     */
     void replace(std::string& tmpl, unsigned int begin, unsigned int count, std::string subject);
 
+    std::string text(void);
+
 private:
     std::map<std::string, std::string> templates_;
 
@@ -47,6 +49,8 @@ private:
     *   TODO: Indent the very first line.
     */
     unsigned int indentlevel(std::string text, unsigned int index);
+
+    std::string template_directory_;
 
 };
 

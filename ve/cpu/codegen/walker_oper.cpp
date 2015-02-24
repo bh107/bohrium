@@ -67,7 +67,7 @@ string Walker::oper(OPERATOR oper, ETYPE etype, string in1, string in2)
             switch(etype) {
                 case COMPLEX128:    return _cacosh(in1);
                 case COMPLEX64:     return _cacosf(in1);
-                default:            return _acos(in1);
+                default:            return _acosh(in1);
             }
         case ARCSIN:
             switch(etype) {
@@ -205,6 +205,7 @@ string Walker::oper(OPERATOR oper, ETYPE etype, string in1, string in2)
                 case COMPLEX64:     return _csqrtf(in1);
                 default:            return _sqrt(in1);
             }
+        case SUBTRACT:              return _sub(in1, in2);
         case SYNC:                  break;  // TODO: Raise exception
         case TAN:
             switch(etype) {
@@ -221,6 +222,7 @@ string Walker::oper(OPERATOR oper, ETYPE etype, string in1, string in2)
         case TRUNC:                 return _trunc(in1);
         default:                    return "NOT_IMPLEMENTED_YET";
     }
+    return "NO NO< NO NO NO NO NONO NO NO NO NOTHERES NO LIMITS";
 }
 
 }}}}

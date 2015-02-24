@@ -91,53 +91,6 @@ def instrs_to_tacs(opcodes, ops, opers, types, layouts, cexprs):
 
     return operations
 
-def specializer_cexpression(opcodes, ops, opers, types, layouts, cexprs):
-    """Apply a naming convention to the pseud-variables, and make it string-formattable."""
-
-    def naming_convention(expression):
-        # Just want the number
-        expression  = expression.replace('out_nr', '%2$d')
-        expression  = expression.replace('in1_nr', '%4$d')
-        expression  = expression.replace('in2_nr', '%6$d')
-
-        # Rename to watch the "a{N}_current" as either scalar or pointer
-        expression  = expression.replace('out', '%1$ca%2$d_current')
-        expression  = expression.replace('in1', '%3$ca%4$d_current')
-        expression  = expression.replace('in2', '%5$ca%6$d_current')
-        return expression
-
-    expressions = {}
-    for cexpr in cexprs:
-        op      = cexpr['op']
-        oper    = cexpr['oper']
-
-        # Grab the expressing and apply the naming convention
-        oper_expr = [                                   
-            (case, naming_convention(expr))             
-            for case, expr in cexpr['scalar'].items()  
-            if expr
-        ]
-
-        if oper in expressions:
-            expressions[oper].append((op, oper_expr))
-        else:
-            expressions[oper] = [(op, oper_expr)]
-
-    expr_list = []
-    for oper in expressions:
-        for op, oper_expr in expressions[oper]:
-            oper_expr.sort()
-        expr_list.append((oper, expressions[oper]))
-
-    expr_list.sort()
-
-    return {'expressions': expr_list}
-
-def operator_cexpression(opcodes, ops, opers, types, layouts, cexprs):
-    """Apply a naming convention to the pseud-variables, and make it string-formattable."""
-
-    return specializer_cexpression(opcodes, ops, opers, types, layouts, cexprs)
-
 def main(self):
 
     root    = "../../../core/codegen"
