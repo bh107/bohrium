@@ -83,7 +83,7 @@ string Walker::ewise_assign_offset(uint32_t rank)
                     case 1:
                         ss << _add_assign(
                             operand.walker(),
-                            _mul("work_offset", _index(operand.stride(), rank-1))
+                            _mul("work_offset", _index(operand.stride(), 0))
                         )
                         << _end();
                         break;
@@ -93,10 +93,24 @@ string Walker::ewise_assign_offset(uint32_t rank)
                 }
                 break;
             case CONTIGUOUS:
-                ss << _add_assign(
-                    operand.walker(),
-                    "work_offset"
-                ) << _end();
+                switch(rank) {
+                    case 3:
+                    case 2:
+                        ss << _add_assign(
+                            operand.walker(),
+                            _mul("work_offset", _index("weight", 0))
+                        ) << _end();
+                        break;
+                    case 1:
+                        ss << _add_assign(
+                            operand.walker(),
+                            "work_offset"
+                        ) << _end();
+                        break;
+                    default:    // ND-case
+                        // TODO: implement ND-case
+                        break;
+                }
                 break;
             default:
                 break;
@@ -177,31 +191,31 @@ string Walker::step_fwd(uint32_t dim, uint64_t oidx)
     switch(operand.meta().layout) {
         case SPARSE:
         case STRIDED:
-            if ((rank > 3) and innermost) {             // ND-inner
-                ss
-                << _add_assign(
-                    operand.walker(),
-                    operand.stepsize(dim)
-                ) << _end(operand.layout());
-            } else if ((rank > 3) and (!innermost)) {   // ND-outer
+            if ((rank > 3) and (!innermost)) {          // ND-outer
                 ss
                 << _add_assign(
                     operand.walker(),
                     _mul("coord", _index(operand.stride(), "dim"))
                 ) << _end(operand.layout());
-            } else {                                    // 1D, 2D, and 3D.
+            } else {                                    // ND-inner, 1D, 2D, and 3D.
                 ss
                 << _add_assign(
                     operand.walker(),
                     operand.stepsize(dim)
                 ) << _end(operand.layout());
-            }
+            } 
             break;
-        case CONTIGUOUS:    
-            if (innermost) {    // Only step forward in the innermost loop
-                ss << _inc(operand.walker()) << _end(operand.layout());
-            } else {
-                ss << "// " << operand.name() << " " << operand.layout() << endl;
+
+        case CONTIGUOUS:
+            if ((rank > 3) and (!innermost)) {          // ND-outer
+                ss
+                << _add_assign(
+                    operand.walker(),
+                    _mul("coord", _index("weight", "dim"))
+                ) << _end(operand.layout());
+            } else if (innermost) {                     // ND-inner, 1D, 2D, and 3D.
+                ss
+                << _inc(operand.walker()) << _end(operand.layout());
             }
             break;
         default:
@@ -345,7 +359,7 @@ string Walker::generate_source(void)
         const uint32_t rank = in1->meta().ndim;
 
         subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper);
-        subjects["ATYPE"]           = _const(in2->etype());
+        subjects["ATYPE"]           = in2->etype();
         subjects["ETYPE"]           = out->etype();
         subjects["PAR_OPERATIONS"]  = reduce_par_operations();
         subjects["SEQ_OPERATIONS"]  = reduce_seq_operations();

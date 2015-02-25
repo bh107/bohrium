@@ -4,6 +4,15 @@
 //	* MAP|ZIP|GENERATE|FLOOD on 2D strided arrays.
 //
 {
+    const int64_t last_dim = iterspace->ndim-1;
+
+    int64_t weight[CPU_MAXDIM]; // Helper for step-calculation
+    int acc = 1;
+    for(int idx=last_dim; idx >=0; --idx) {
+        weight[idx] = acc;
+        acc *= iterspace->shape[idx];
+    }
+
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = iterspace->shape[0] > mthreads ? mthreads : 1;
     const int64_t work_split= iterspace->shape[0] / nworkers;

@@ -2,7 +2,10 @@ ROOT=../../..
 CPU=$(ROOT)/ve/cpu
 BDIR=$(CPU)/bdir
 BH_PYTHON=python
-TEST_EXCLUDE=--exclude-test=test_accumulate --exclude-test=test_ndstencil_4D --exclude=test_benchmarks.py --exclude=test_sor.py --exclude-test=test_doubletranspose --exclude-test=test_largedim --exclude-test=test_overlapping --exclude=test_matmul.py --exclude=test_reduce.py
+TEST_EXCLUDE=--exclude-test=test_accumulate --exclude=test_benchmarks.py --exclude=test_sor.py  --exclude-test=test_largedim --exclude-test=test_overlapping --exclude=test_matmul.py --exclude=test_reduce.py
+#TEST_EXCLUDE=--exclude-test=test_accumulate --exclude-test=test_ndstencil_4D --exclude=test_benchmarks.py --exclude=test_sor.py --exclude-test=test_doubletranspose --exclude-test=test_largedim --exclude-test=test_overlapping --exclude=test_matmul.py
+#TEST_EXCLUDE=--exclude-test=test_accumulate --exclude-test=test_ndstencil_4D --exclude=test_benchmarks.py --exclude=test_sor.py --exclude-test=test_doubletranspose --exclude-test=test_largedim --exclude-test=test_overlapping --exclude=test_matmul.py --exclude=test_reduce.py
+
 BENCHMARK_BUILD=-DBRIDGE_CIL=OFF -DBRIDGE_NUMCIL=OFF -DFILTER_FUSEPRINTER=OFF -DFILTER_PPRINT=OFF -DFILTER_PRICER=OFF -DFUSER_GENTLE=OFF -DFUSER_GREEDY=OFF -DFUSER_OPTIMAL=OFF -DFUSER_SINGLETON=OFF -DVEM_CLUSTER=OFF -DVEM_PROXY=OFF -DVE_GPU=OFF -DTEST_CIL=OFF -DBENCHMARK_CIL=OFF -DCMAKE_BUILD_TYPE=Release
 
 DEV_BUILD=-DBRIDGE_CIL=OFF -DBRIDGE_NUMCIL=OFF -DFILTER_FUSEPRINTER=OFF -DFILTER_PPRINT=OFF -DFILTER_PRICER=OFF -DFUSER_GENTLE=OFF -DFUSER_GREEDY=OFF -DFUSER_OPTIMAL=OFF -DFUSER_SINGLETON=OFF -DVEM_CLUSTER=OFF -DVEM_PROXY=OFF -DVE_GPU=OFF -DTEST_CIL=OFF -DBENCHMARK_CIL=OFF -DCMAKE_BUILD_TYPE=Debug -DVE_CPU_DEBUGGING=OFF -DVE_CPU_PROFILING=OFF -DVE_CPU_NONLOGIC=ON
@@ -144,7 +147,7 @@ gauss_fsd: prep_fsd
 #
 # Tests
 gentest:
-	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 ./gentest.py
+	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python -m bohrium gentest.py
 	
 test:
 	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 $(BH_PYTHON) $(ROOT)/test/python/numpytest.py $(TEST_EXCLUDE)

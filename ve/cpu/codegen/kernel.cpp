@@ -18,6 +18,7 @@ Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block), iters
         if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
+        cout << tac_text(tac) << endl;
         tacs_.push_back(&tac);
         switch(tac_noperands(tac)) {
             case 3:

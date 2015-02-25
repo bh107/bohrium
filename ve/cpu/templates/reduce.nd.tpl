@@ -4,20 +4,16 @@
 //       loop collapsing...
 {
     int64_t nelements = 1;
-    for(int k=0; k<a{{NR_OUTPUT}}_ndim; ++k) {
-        nelements *= a{{NR_OUTPUT}}_shape[k];
+    for(int k=0; k<{{OPD_OUT}}_ndim; ++k) {
+        nelements *= {{OPD_OUT}}_shape[k];
     }
 
-    const int64_t last_dim  = a{{NR_OUTPUT}}_ndim-1;
-    const int64_t shape_ld  = a{{NR_OUTPUT}}_shape[last_dim];
+    const int64_t last_dim  = {{OPD_OUT}}_ndim-1;
+    const int64_t shape_ld  = {{OPD_OUT}}_shape[last_dim];
     const int64_t last_e    = nelements-1;
 
-    {{#OPERAND}}
-    {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
-    {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
-    {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-    {{#ARRAY}}int64_t  a{{NR}}_stride_ld  = a{{NR}}_stride[last_dim];{{/ARRAY}}
-    {{/OPERAND}}
+    // Operand declaration(s)
+    {{WALKER_DECLARATION}}
 
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = nelements > mthreads ? mthreads : 1;
@@ -25,15 +21,15 @@
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
-    {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
+    {{ATYPE}} axis = *{{OPD_IN2}}_first;
 
     // Create a stride-structure for the input without the axis dimension
     int64_t stride[CPU_MAXDIM];
-    for(int i=0,t=0; i<a{{NR_FINPUT}}_ndim; ++i) {
+    for(int i=0,t=0; i<{{OPD_IN1}}_ndim; ++i) {
         if (i==axis) {  // Skip the axis dimension
             continue;
         }
-        stride[t] = a{{NR_FINPUT}}_stride[i];
+        stride[t] = {{OPD_IN1}}_stride[i];
         t++;
     }
 
@@ -46,46 +42,46 @@
         //
         // Compute offset based on coordinate
         //
-        {{TYPE_OUTPUT}}* a{{NR_OUTPUT}}_current = a{{NR_OUTPUT}}_first;
+        {{ETYPE}}* {{OPD_OUT}}_current = {{OPD_OUT}}_first;
         for (int64_t j=0; j<=last_dim; ++j) {           
-            a{{NR_OUTPUT}}_current += coord[j] * a{{NR_OUTPUT}}_stride[j];
+            {{OPD_OUT}}_current += coord[j] * {{OPD_OUT}}_stride[j];
         }
 
         //
         // Iterate over "last" / "innermost" dimension
         //
-        for (int64_t j = 0; j < shape_ld; ++j) {
+        for (int64_t j=0; j<shape_ld; ++j) {
 
             //
             // Walk over the input
-            {{TYPE_INPUT}} *a{{NR_FINPUT}}_current = a{{NR_FINPUT}}_first;
+            {{TYPE_INPUT}} *{{OPD_IN1}}_current = {{OPD_IN1}}_first;
             // Increment the input-offset based on every but the axis dimension
-            for(int64_t s=0; s<a{{NR_FINPUT}}_ndim-1; ++s) {
-                a{{NR_FINPUT}}_current += coord[s] * stride[s];
+            for(int64_t s=0; s<{{OPD_IN1}}_ndim-1; ++s) {
+                {{OPD_IN1}}_current += coord[s] * stride[s];
             }
-            a{{NR_FINPUT}}_current += j*stride[last_dim];
+            {{OPD_IN1}}_current += j*stride[last_dim];
             // Non-axis offset ready
             //
             
             //
             // Do the reduction over the axis dimension
             //
-            {{TYPE_OUTPUT}} state = *a{{NR_FINPUT}}_current;
-            for(int64_t k=1; k<a{{NR_FINPUT}}_shape[axis]; ++k) {
+            {{ETYPE}} state = *{{OPD_IN1}}_current;
+            for(int64_t k=1; k<{{OPD_IN1}}_shape[axis]; ++k) {
                 //
                 // Walk to the next element input-element along the axis dimension
-                a{{NR_FINPUT}}_current += a{{NR_FINPUT}}_stride[axis];
+                {{OPD_IN1}}_current += {{OPD_IN1}}_stride[axis];
 
                 //
                 // Apply the operator
                 //
-                state += *a{{NR_FINPUT}}_current;
+                state += *{{OPD_IN1}}_current;
             }
             // Write the accumulation output
-            *a{{NR_OUTPUT}}_current = state;
+            *{{OPD_OUT}}_current = state;
 
             // Now increment the output
-            a{{NR_OUTPUT}}_current += a{{NR_OUTPUT}}_stride_ld;
+            {{OPD_OUT}}_current += {{OPD_OUT}}_stride_ld;
         }
         cur_e += shape_ld;
 
@@ -93,7 +89,7 @@
         // coord[last_dim] is never used, only all the other coord[dim!=last_dim]
         for (int64_t j = last_dim-1; j >= 0; --j) {         // Increment coordinates for the remaining dimensions
             coord[j]++;
-            if (coord[j] < a{{NR_OUTPUT}}_shape[j]) {       // Still within this dimension
+            if (coord[j] < {{OPD_OUT}}_shape[j]) {       // Still within this dimension
                 break;
             } else {            // Reached the end of this dimension
                 coord[j] = 0;   // Reset coordinate

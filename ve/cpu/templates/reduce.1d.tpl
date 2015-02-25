@@ -10,8 +10,6 @@
     const int64_t work_split= iterspace->shape[0] / nworkers;
     const int64_t work_spill= iterspace->shape[0] % nworkers;
 
-    {{ETYPE}} partials[nworkers];
-
     #pragma omp parallel num_threads(nworkers)
     {
         const int tid      = omp_get_thread_num();
@@ -32,6 +30,7 @@
         {{WALKER_DECLARATION}}
         // Operand offsets(s)
         {{WALKER_OFFSET}}
+        {{OPD_IN1}} += work_offset;
         // Stepsize
         {{WALKER_STEPSIZE}}
 
@@ -44,19 +43,10 @@
             // Increment operands
             {{WALKER_STEP_LD}}
         }
+        #pragma omp atomic
+        *{{OPD_OUT}}_first += accu;
 
-        // Write out the result to partials
-        partials[tid] = accu;
         }
     }
-   
-    // Sequential reduction, accumulate partials into scalar
-    {{ETYPE}} accu = partials[0];
-    for(int64_t pidx=1; pidx<nworkers; ++pidx) {
-        {{SEQ_OPERATIONS}}
-    }
-    // Write it out to memory
-    *({{OPD_OUT}}_first) = accu;
-
 }
 
