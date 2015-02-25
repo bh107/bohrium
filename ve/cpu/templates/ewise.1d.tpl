@@ -7,9 +7,9 @@
 //  * TODO: Vectorization, alias/restrict
 {
     const int mthreads = omp_get_max_threads();
-    const int64_t nworkers = iterspace->shape[0] > mthreads ? mthreads : 1;
-    const int64_t work_split= iterspace->shape[0] / nworkers;
-    const int64_t work_spill= iterspace->shape[0] % nworkers;
+    const int64_t nworkers = iterspace->nelem > mthreads ? mthreads : 1;
+    const int64_t work_split= iterspace->nelem / nworkers;
+    const int64_t work_spill= iterspace->nelem % nworkers;
 
     #pragma omp parallel num_threads(nworkers)
     {

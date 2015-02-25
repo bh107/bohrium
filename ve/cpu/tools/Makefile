@@ -2,7 +2,7 @@ ROOT=../../..
 CPU=$(ROOT)/ve/cpu
 BDIR=$(CPU)/bdir
 BH_PYTHON=python
-TEST_EXCLUDE=--exclude-test=test_accumulate --exclude=test_benchmarks.py --exclude=test_sor.py  --exclude-test=test_largedim --exclude-test=test_overlapping --exclude=test_matmul.py --exclude=test_reduce.py
+TEST_EXCLUDE=--exclude-test=test_accumulate --exclude=test_benchmarks.py --exclude=test_sor.py  --exclude-test=test_overlapping --exclude=test_matmul.py --exclude=test_reduce.py
 #TEST_EXCLUDE=--exclude-test=test_accumulate --exclude-test=test_ndstencil_4D --exclude=test_benchmarks.py --exclude=test_sor.py --exclude-test=test_doubletranspose --exclude-test=test_largedim --exclude-test=test_overlapping --exclude=test_matmul.py
 #TEST_EXCLUDE=--exclude-test=test_accumulate --exclude-test=test_ndstencil_4D --exclude=test_benchmarks.py --exclude=test_sor.py --exclude-test=test_doubletranspose --exclude-test=test_largedim --exclude-test=test_overlapping --exclude=test_matmul.py --exclude=test_reduce.py
 
