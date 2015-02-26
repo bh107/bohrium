@@ -65,55 +65,121 @@ string Walker::declare_operands(void)
     return ss.str();
 }
 
+string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
+{
+    stringstream ss;
+    LAYOUT ispace_layout = kernel_.iterspace().meta().layout;
+    Operand& operand = kernel_.operand_glb(oidx);
+    switch(operand.meta().layout) {
+        case STRIDED:       
+        case SPARSE:
+            switch(rank) {
+                case 3:
+                case 2:
+                case 1:
+                    ss << _add_assign(
+                        operand.walker(),
+                        _mul("work_offset", _index(operand.stride(), 0))
+                    )
+                    << _end();
+                    break;
+                default:
+                    // TODO: implement ND-case
+                    break;
+            }
+            break;
+        case CONTIGUOUS:
+            // CONT COMPATIBLE iteration construct
+            // or specialized
+            // STRIDED construct for rank=1
+            if (((ispace_layout & CONT_COMPATIBLE)>0) or (rank==1)) {
+                ss << _add_assign(
+                    operand.walker(),
+                    "work_offset"
+                ) << _end();
+            // STRIDED iteration construct with rank>1
+            } else {
+                ss << _add_assign(
+                    operand.walker(),
+                    _mul("work_offset", _index("weight", 0))
+                ) << _end();
+            }
+            break;
+        default:
+            break;
+    }
+    return ss.str();
+}
+
 string Walker::ewise_assign_offset(uint32_t rank)
 {
     stringstream ss;
+    for(kernel_operand_iter oit=kernel_.operands_begin();
+        oit != kernel_.operands_end();
+        ++oit) {
+        ss << ewise_assign_offset(rank, oit->first);
+        
+    }
+    return ss.str();
+}
 
-    LAYOUT ispace_layout = kernel_.iterspace().meta().layout;
+string Walker::declare_stridesize(uint64_t oidx)
+{
+    stringstream ss;
+    Operand& operand = kernel_.operand_glb(oidx);
+    const uint32_t rank = operand.meta().ndim;
+    switch(operand.meta().layout) {
+        case SPARSE:
+        case STRIDED:
+            switch(rank) {
+                case 3:
+                    ss << _declare_init(
+                        _const(_uint64()),
+                        operand.stridevar(rank-3),
+                        _index(operand.stride(), rank-3)
+                    )
+                    << _end();
+                case 2:
+                    ss << _declare_init(
+                        _const(_uint64()),
+                        operand.stridevar(rank-2),
+                        _index(operand.stride(), rank-2)
+                    )
+                    << _end();
+                case 1:
+                    ss << _declare_init(
+                        _const(_uint64()),
+                        operand.stridevar(rank-1),
+                        _index(operand.stride(), rank-1)
+                    )
+                    << _end(operand.layout());
+                    break;
+
+                default:    // ND only declare stride of the innermost
+                    ss << _declare_init(
+                        _const(_uint64()),
+                        operand.stridevar(rank-1),
+                        _index(operand.stride(), "last_dim")
+                    )
+                    << _end(operand.layout());
+                    break;
+            }
+            break;
+        default:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+    }
+    return ss.str();
+}
+
+string Walker::declare_stridesizes(void)
+{
+    stringstream ss;
 
     for(kernel_operand_iter oit=kernel_.operands_begin();
         oit != kernel_.operands_end();
         ++oit) {
-        Operand& operand = oit->second;
-
-        switch(operand.meta().layout) {
-            case STRIDED:       
-            case SPARSE:
-                switch(rank) {
-                    case 3:
-                    case 2:
-                    case 1:
-                        ss << _add_assign(
-                            operand.walker(),
-                            _mul("work_offset", _index(operand.stride(), 0))
-                        )
-                        << _end();
-                        break;
-                    default:
-                        // TODO: implement ND-case
-                        break;
-                }
-                break;
-            case CONTIGUOUS:
-                // CONT COMPATIBLE iteration construct
-                // or specialized
-                // STRIDED construct for rank=1
-                if (((ispace_layout & CONT_COMPATIBLE)>0) or (rank==1)) {
-                    ss << _add_assign(
-                        operand.walker(),
-                        "work_offset"
-                    ) << _end();
-                // STRIDED iteration construct with rank>1
-                } else {
-                    ss << _add_assign(
-                        operand.walker(),
-                        _mul("work_offset", _index("weight", 0))
-                    ) << _end();
-                }
-                break;
-            default:
-                break;
-        }
+        ss << declare_stridesize(oit->first);
     }
     return ss.str();
 }
@@ -345,6 +411,8 @@ string Walker::generate_source(void)
             }
         }
     } else if ((kernel_.omask() & REDUCE)>0) {   // Reductions
+
+        // Note: start of crappy code...
         tac_t* tac = NULL;
         Operand* out = NULL;
         Operand* in1 = NULL;
@@ -362,28 +430,43 @@ string Walker::generate_source(void)
         in2 = &kernel_.operand_glb(tac->in2);
 
         const uint32_t rank = in1->meta().ndim;
+        // Note: end of crappy code...
 
         subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper);
         subjects["ATYPE"]           = in2->etype();
         subjects["ETYPE"]           = out->etype();
         subjects["PAR_OPERATIONS"]  = reduce_par_operations();
         subjects["SEQ_OPERATIONS"]  = reduce_seq_operations();
-        subjects["OPD_OUT"] = out->name();
-        subjects["OPD_IN1"] = in1->name();
-        subjects["OPD_IN2"] = in2->name();
+        subjects["OPD_OUT"]         = out->name();
+        subjects["OPD_IN1"]         = in1->name();
+        subjects["OPD_IN2"]         = in2->name();
+
 
         switch(rank) {
             case 1:
-                subjects["WALKER_STEP_LD"] = step_fwd(0, tac->in1);
+                subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
+                subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
+                subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
                 plaid = "reduce.1d";
                 break;
             case 2:
+                subjects["WALKER_STRIDES"]  = declare_stridesizes();
+                subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
+                subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
+                subjects["WALKER_STEP_SL"]  = step_fwd(1, tac->in1);
+
                 plaid = "reduce.2d";
                 break;
             case 3:
+                subjects["WALKER_STRIDES"]  = declare_stridesizes();
+                subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
+                subjects["WALKER_STEP_SL"]  = step_fwd(1, tac->in1);
+                subjects["WALKER_STEP_TL"]  = step_fwd(2, tac->in1);
+
                 plaid = "reduce.3d";
                 break;
             default:
+                subjects["WALKER_STRIDES"]  = declare_stridesizes();
                 plaid = "reduce.nd";
                 break;
         }

@@ -1,6 +1,11 @@
 #!/usr/bin/env python
-#import numpy as np
-import numpy as np
+import sys
+
+if len(sys.argv) > 1:
+    import bohrium as np
+else:
+    import numpy as np
+
 def test_range(n):
     a = np.arange(1,n+1)
     b = a
@@ -31,12 +36,12 @@ def test_ones(n):
     return ((b+c)*b)/c
 
 def test_reduce(n):
-    #a = np.array([ 0.48126301,  0.8642754 ,  0.71703511,  0.96928668,  0.66822982, 0.17131269,  0.66362536,  0.03300979,  0.49494377,  0.91533864])
-    #a = np.array([ 0.48126301])
-    a = np.array([ 0.921345  ,  0.43139523,  0.21352844,  0.73983538,  0.0227413 ,
-     0.4394924 ,  0.50938076,  0.97166544,  0.67383581,  0.04343996], dtype=np.float32)
+    a = np.asarray(
+    [  8.74143481e-01,   5.95615208e-01,   6.19592845e-01,   4.99800116e-01,
+       3.60308260e-01,   9.47238982e-01,   2.68870294e-01,   6.87112629e-01,
+          5.45386188e-02,   2.58751588e-05], dtype=np.float32)
 
-    return np.sum(a, 0) 
+    return np.add.reduce(a, axis=-1) 
     #return np.add.reduce(b) 
 
 if __name__ == "__main__":

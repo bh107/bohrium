@@ -157,6 +157,17 @@ string Kernel::unpack_arguments(void)
                 << _end();
 
             case CONTIGUOUS:    // "first" = operand_t->data + operand_t->start
+                // If there are reductions in the kernel we also want strides
+                // for contiguous arrays.
+                if ((operand.meta().layout == CONTIGUOUS) && \
+                   ((omask() & REDUCE) > 0)) {
+                    ss << _declare_init(
+                        _ptr_const(_int64()),
+                        operand.stride(),
+                        _access_ptr(_index(args(), id), "stride")
+                    )
+                    << _end();
+                }
                 ss
                 << _declare_init(
                     _ptr_const(operand.etype()),

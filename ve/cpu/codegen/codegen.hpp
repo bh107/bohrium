@@ -51,6 +51,8 @@ std::string _cast(std::string type, std::string object);
 std::string _declare(std::string type, std::string variable);
 std::string _declare_init(std::string type, std::string variable, std::string expr);
 
+
+
 // Operators
 std::string _inc(std::string object);
 std::string _dec(std::string object);
@@ -199,6 +201,7 @@ public:
     std::string ndim(void);
     std::string shape(void);
     std::string stride(void);
+    std::string stridevar(uint32_t dim);
     std::string stepsize(uint32_t dim);
 
     operand_t& meta(void);
@@ -291,9 +294,13 @@ private:
     //
     std::string ewise_operations(void);
 
+    std::string declare_stridesize(uint64_t oidx);
+    std::string declare_stridesizes(void);
+
     // Ewise walker -- innards
     std::string ewise_declare_stepsizes(uint32_t rank);
     std::string ewise_assign_offset(uint32_t rank);
+    std::string ewise_assign_offset(uint32_t rank, uint64_t oidx);
     std::string step_fwd(uint32_t dim, uint64_t oidx);
     std::string step_fwd(uint32_t dim);
 

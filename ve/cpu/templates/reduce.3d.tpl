@@ -27,18 +27,18 @@
     for(int64_t outer_idx=0; outer_idx<iterspace->shape[OUTER]; ++outer_idx) {
         for(int64_t inner_idx=0; inner_idx<iterspace->shape[INNER]; ++inner_idx) {
             // todo: need another step function, stride-step
-            {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first + outer_idx + inner_idx;
+            {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first +\
+                                    outer_idx* {{OPD_IN1}}_stride[outer_axis] +\
+                                    inner_idx* {{OPD_IN1}}_stride[inner_axis];
 
             {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
-            for(int64_t k=0; k<iterspace->shape[axis]; ++k) {
-                ++{{OPD_IN1}};
-                
-                {{PAR_OPERATIONS}}        
+            for(int64_t axis_idx=0; axis_idx<iterspace->shape[axis]; ++axis_idx) {
+                {{PAR_OPERATIONS}}
+                {{OPD_IN1}} += {{OPD_IN1}}_stride[axis];
             }
             // todo: need another step function, stride-step
-            *({{OPD_OUT}}_first + outer_idx + inner_idx) = accu;
+            *({{OPD_OUT}}_first + outer_idx*{{OPD_OUT}}_stride[OUTER] + inner_idx*{{OPD_OUT}}_stride[INNER]) = accu;
         }
     }
-    // TODO: Handle write-out of non-temp and non-const scalars.
 }
 

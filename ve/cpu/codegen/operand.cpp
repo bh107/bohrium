@@ -55,6 +55,29 @@ string Operand::stepsize(uint32_t dim)
     return ss.str();
 }
 
+string Operand::stridevar(uint32_t dim)
+{
+    stringstream ss;
+    ss << name() << "_stride";
+    switch(meta().ndim -1 - dim) {
+        case 2:
+            ss << "_tld";
+            break;
+        case 1:
+            ss << "_sld";
+            break;
+        case 0:
+            ss << "_ld";
+            break;
+
+        default:
+            ss << "__ND stepsize is not constant but variable__";
+            break;
+    }
+
+    return ss.str();
+}
+
 string Operand::walker(void)
 {
     stringstream ss;

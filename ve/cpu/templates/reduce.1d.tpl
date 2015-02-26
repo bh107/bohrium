@@ -1,52 +1,23 @@
 //
-// 1D Reduction
+// Codegen template is used for:
 //
-//
-//
+//  * REDUCE on 1D strided and contiguous arrays.
 //
 {
-    const int mthreads = omp_get_max_threads();
-    const int64_t nworkers = iterspace->shape[0] > mthreads ? mthreads : 1;
-    const int64_t work_split= iterspace->shape[0] / nworkers;
-    const int64_t work_spill= iterspace->shape[0] % nworkers;
+    const {{ATYPE}} axis = *{{OPD_IN2}}_first;
+    {{ETYPE}} accu = 0;
 
-    #pragma omp parallel num_threads(nworkers)
-    {
-        const int tid      = omp_get_thread_num();
-        const int nthreads = omp_get_num_threads();
+    const int64_t nelements   = iterspace->shape[axis];
+    const int mthreads        = omp_get_max_threads();
+    const int64_t nworkers    = nelements > mthreads ? mthreads : 1;
 
-        int64_t work=0, work_offset=0, work_end=0;
-        if (tid < work_spill) {
-            work = work_split + 1;
-            work_offset = tid * work;
-        } else {
-            work = work_split;
-            work_offset = tid * work + work_spill;
-        }
-        work_end = work_offset+work;
+    #pragma omp parallel for reduction(+:accu) num_threads(nworkers)
+    for(int64_t eidx=0; eidx<iterspace->shape[axis]; ++eidx) {
+        {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first + {{OPD_IN1}}_stride[axis]*eidx;
 
-        if (work) {
-        // Operand declaration(s)
-        {{WALKER_DECLARATION}}
-        // Operand offsets(s)
-        {{WALKER_OFFSET}}
-        {{OPD_IN1}} += work_offset;
-        // Stepsize
-        {{WALKER_STEPSIZE}}
-
-        // Axis is ignored for 1D, since there is only one...
-        {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
-        for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
-            // Apply operator(s)
-            {{PAR_OPERATIONS}}
-            
-            // Increment operands
-            {{WALKER_STEP_LD}}
-        }
-        #pragma omp atomic
-        *{{OPD_OUT}}_first += accu;
-
-        }
+        {{PAR_OPERATIONS}}
     }
+    *{{OPD_OUT}}_first = accu;
+
 }
 

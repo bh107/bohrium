@@ -14,6 +14,7 @@
 
     // Operand declaration(s)
     {{WALKER_DECLARATION}}
+    {{WALKER_STRIDES}}
 
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = nelements > mthreads ? mthreads : 1;

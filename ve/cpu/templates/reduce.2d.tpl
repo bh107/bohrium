@@ -9,21 +9,16 @@
     const int64_t nworkers    = nelements > mthreads ? mthreads : 1;
 
     #pragma omp parallel for num_threads(nworkers)
-    for(int64_t j=0; j<iterspace->shape[other_axis]; ++j) {
-        // todo: need another step function, stride-step
-        {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first + j;
-
-        {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};             // Scalar-temp 
-        for(int64_t i=0; i<iterspace->shape[axis]; ++i) { // Accumulate
-            // todo: need another step function, stride-step
-            ++{{OPD_IN1}};
+    for(int64_t other_idx=0; other_idx<iterspace->shape[other_axis]; ++other_idx) {
+       
+        {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first + \
+                                 {{OPD_IN1}}_stride[other_axis] *other_idx;
+        {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
+        for(int64_t axis_idx=0; axis_idx<iterspace->shape[axis]; ++axis_idx) { // Accumulate
             {{PAR_OPERATIONS}}
+            {{OPD_IN1}} += {{OPD_IN1}}_stride[axis];
         }
-        // Update array
-        // todo: need another step function, stride-step
-        *({{OPD_OUT}}_first + j) = accu; 
+        *({{OPD_OUT}}_first + {{OPD_OUT}}_stride[0]*other_idx) = accu;
     }
-
-    // TODO: Handle write-out of non-temp and non-const scalars.
 }
 
