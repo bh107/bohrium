@@ -24,17 +24,18 @@
     const int64_t nworkers    = nelements > mthreads ? mthreads : 1;
 
     #pragma omp parallel for num_threads(nworkers) collapse(2)
-    for(int64_t outer_idx=0; outer_idx<iterspace->shape[OUTER]; ++outer_idx) {
-        for(int64_t inner_idx=0; inner_idx<iterspace->shape[INNER]; ++inner_idx) {
+    for(int64_t outer_idx=0; outer_idx<iterspace->shape[outer_axis]; ++outer_idx) {
+        for(int64_t inner_idx=0; inner_idx<iterspace->shape[inner_axis]; ++inner_idx) {
             // todo: need another step function, stride-step
             {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first +\
-                                    outer_idx* {{OPD_IN1}}_stride[outer_axis] +\
-                                    inner_idx* {{OPD_IN1}}_stride[inner_axis];
+                          outer_idx* {{OPD_IN1}}_stride[outer_axis] +\
+                          inner_idx* {{OPD_IN1}}_stride[inner_axis];
 
-            {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
-            for(int64_t axis_idx=0; axis_idx<iterspace->shape[axis]; ++axis_idx) {
-                {{PAR_OPERATIONS}}
+            //{{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
+            {{ETYPE}} accu = *{{OPD_IN1}};
+            for(int64_t axis_idx=1; axis_idx<iterspace->shape[axis]; ++axis_idx) {
                 {{OPD_IN1}} += {{OPD_IN1}}_stride[axis];
+                {{PAR_OPERATIONS}}
             }
             // todo: need another step function, stride-step
             *({{OPD_OUT}}_first + outer_idx*{{OPD_OUT}}_stride[OUTER] + inner_idx*{{OPD_OUT}}_stride[INNER]) = accu;
