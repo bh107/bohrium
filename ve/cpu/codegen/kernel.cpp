@@ -18,7 +18,6 @@ Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block), iters
         if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
-        cout << tac_text(tac) << endl;
         tacs_.push_back(&tac);
         switch(tac_noperands(tac)) {
             case 3:
@@ -138,24 +137,11 @@ string Kernel::unpack_arguments(void)
             case SPARSE:        // ndim, shape, stride
                 ss
                 << _declare_init(
-                    _const(_int64()),
-                    operand.ndim(),
-                    _access_ptr(_index(args(), id), "ndim")
-                )
-                << _end()
-                << _declare_init(
-                    _ptr_const(_int64()),
-                    operand.shape(),
-                    _access_ptr(_index(args(), id), "shape")
-                )
-                << _end()
-                << _declare_init(
                     _ptr_const(_int64()),
                     operand.stride(),
                     _access_ptr(_index(args(), id), "stride")
                 )
                 << _end();
-
             case CONTIGUOUS:    // "first" = operand_t->data + operand_t->start
                 // If there are reductions in the kernel we also want strides
                 // for contiguous arrays.

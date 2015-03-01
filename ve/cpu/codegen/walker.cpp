@@ -471,12 +471,45 @@ string Walker::generate_source(void)
                 break;
         }
     } else if ((kernel_.omask() & SCAN)>0) {     // Scans
-        const uint32_t rank = kernel_.iterspace().meta().ndim;
+
+        // Note: start of crappy code...
+        tac_t* tac = NULL;
+        Operand* out = NULL;
+        Operand* in1 = NULL;
+        Operand* in2 = NULL;
+        for(kernel_tac_iter tit=kernel_.tacs_begin();
+            tit != kernel_.tacs_end();
+            ++tit) {
+            if ((((*tit)->op) & SCAN)>0) {
+                tac = *tit;
+            }
+        }
+
+        out = &kernel_.operand_glb(tac->out);
+        in1 = &kernel_.operand_glb(tac->in1);
+        in2 = &kernel_.operand_glb(tac->in2);
+
+        const uint32_t rank = in1->meta().ndim;
+        // Note: end of crappy code...
+
+        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper);
+        subjects["ATYPE"]           = in2->etype();
+        subjects["ETYPE"]           = out->etype();
+        subjects["PAR_OPERATIONS"]  = reduce_par_operations();
+        subjects["OPD_OUT"]         = out->name();
+        subjects["OPD_IN1"]         = in1->name();
+        subjects["OPD_IN2"]         = in2->name();
+
+
         switch(rank) {
             case 1:
+                subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
+                subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
+                subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
                 plaid = "scan.1d";
                 break;
             default:
+                subjects["WALKER_STRIDES"]  = declare_stridesizes();
                 plaid = "scan.nd";
                 break;
         }

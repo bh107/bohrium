@@ -27,6 +27,8 @@ Store::Store(const string object_directory, const string kernel_directory)
     uid[6] = 0;
 
     this->uid = string(uid);
+
+    cout << "Storage " << this->uid << endl;
 }
 
 Store::~Store()

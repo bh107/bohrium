@@ -147,8 +147,6 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
                 (!storage.symbol_ready(block.symbol()))) {   
                                                             // Specialize sourcecode
                 string sourcecode = codegen::Kernel(plaid_, block).generate_source();
-                cout << sourcecode << endl;
-                //string sourcecode = specializer.specialize(symbol_table, block);
                 if (jit_dumpsrc==1) {                       // Dump sourcecode to file
                     core::write_file(
                         storage.src_abspath(block.symbol()),
@@ -243,7 +241,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
         (!storage.symbol_ready(block.symbol()))) {   
         // Specialize and dump sourcecode to file
         string sourcecode = codegen::Kernel(plaid_, block).generate_source();
-        cout << sourcecode << endl;
         if (jit_dumpsrc==1) {
             core::write_file(
                 storage.src_abspath(block.symbol()),

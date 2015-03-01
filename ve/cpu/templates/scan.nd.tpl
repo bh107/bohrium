@@ -4,18 +4,11 @@
 //       loop collapsing...
 {
     const int64_t nelements = iterspace->nelem;
-    {{TYPE_AXIS}} axis = *a{{NR_SINPUT}}_first;
+    {{ATYPE}} axis = *{{OPD_IN2}}_first;
 
     const int64_t last_e      = nelements-1;
     const int64_t shape_axis  = iterspace->shape[axis];
     const int64_t ndim        = iterspace->ndim;
-
-    {{#OPERAND}}
-    {{#SCALAR}}{{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR}}
-    {{#SCALAR_CONST}}const {{TYPE}} a{{NR}}_current = *a{{NR}}_first;{{/SCALAR_CONST}}
-    {{#SCALAR_TEMP}}{{TYPE}} a{{NR}}_current;{{/SCALAR_TEMP}}
-    {{#ARRAY}}int64_t a{{NR}}_stride_axis = a{{NR_OUTPUT}}_stride[axis];{{/ARRAY}}
-    {{/OPERAND}}
 
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = nelements > mthreads ? mthreads : 1;
@@ -32,28 +25,26 @@
         //
         // Compute offset based on coordinate
         //
-        {{TYPE_OUTPUT}}* a{{NR_OUTPUT}}_current = a{{NR_OUTPUT}}_first;
-        {{TYPE_INPUT}}*  a{{NR_FINPUT}}_current = a{{NR_FINPUT}}_first;
+        {{ETYPE}}* a{{OPD_OUT}}_current = a{{OPD_OUT}}_first;
+        {{ETYPE}}*  a{{OPD_IN1}}_current = a{{OPD_IN1}}_first;
 
         for (int64_t j=0; j<ndim; ++j) {           
-            a{{NR_OUTPUT}}_current += coord[j] * a{{NR_OUTPUT}}_stride[j];
-            a{{NR_FINPUT}}_current += coord[j] * a{{NR_FINPUT}}_stride[j];
+            a{{OPD_OUT}}_current += coord[j] * a{{OPD_OUT}}_stride[j];
+            a{{OPD_IN1}}_current += coord[j] * a{{OPD_IN1}}_stride[j];
         }
 
         //
         // Iterate over axis dimension
         //
-        {{TYPE_INPUT}} state = ({{TYPE_INPUT}}){{NEUTRAL_ELEMENT}};
+        {{ETYPE}} accu = ({{ETYPE}}){{NEUTRAL_ELEMENT}};
         for (int64_t j = 0; j<shape_axis; ++j) {
-            {{#OPERATORS}}
-            {{OPERATOR}};
-            {{/OPERATORS}}
-
-            // Update the output
-            *a{{NR_OUTPUT}}_current = state;
+            {{PAR_OPERATIONS}}
             
-            a{{NR_OUTPUT}}_current += a{{NR_OUTPUT}}_stride_axis;
-            a{{NR_FINPUT}}_current += a{{NR_FINPUT}}_stride_axis;
+            // Update the output
+            *a{{OPD_OUT}}_current = accu;
+            
+            a{{OPD_OUT}}_current += a{{OPD_OUT}}_stride_axis;
+            a{{OPD_IN1}}_current += a{{OPD_IN1}}_stride_axis;
         }
         cur_e += shape_axis;
 
