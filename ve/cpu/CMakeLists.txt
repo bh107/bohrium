@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+include(CheckCCompilerFlag)
 include_directories(../../include)
 
 set(VE_CPU true CACHE BOOL "VE-CPU: Build CPU engine.")
@@ -71,6 +72,32 @@ endif()
 find_package(OpenMP COMPONENTS bohrium)
 #set_package_properties(OpenMP PROPERTIES DESCRIPTION "OpenMP parallel library and compiler directives" URL "www.openmp.org")
 #set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it for multi-core parallelization.")
+
+#
+#   Compiler-flags for JIT-compilation
+#
+check_c_compiler_flag(-O3 HAS_O3)
+if (HAS_O3)
+    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -O3")
+endif()
+
+check_c_compiler_flag(-fstrict-aliasing HAS_STRICT_ALIASING)
+if (HAS_STRICT_ALIASING)
+    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -fstrict-aliasing")
+endif()
+
+check_c_compiler_flag(-march=native HAS_MARCH_NATIVE)
+if (HAS_MARCH_NATIVE)
+    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -march=native")
+endif()
+
+if(OPENMP_FOUND)
+    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} ${OpenMP_C_FLAGS}")
+endif()
+set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS}" PARENT_SCOPE)
+#
+#   The above are used by config.ini.in
+#
 
 if(OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
