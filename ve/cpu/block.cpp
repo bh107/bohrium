@@ -9,7 +9,7 @@ namespace core{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& globals, vector<tac_t>& program)
-: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_("")
+: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_(""), omask_(0)
 {}
 
 Block::~Block()
