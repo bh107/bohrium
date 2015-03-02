@@ -869,8 +869,9 @@ void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
                 omask |= SCAN;    // Operationmask
                 break;
             case BH_RANDOM:
-                in2 = symbol_table.map_operand(instr, 1);
-                in1 = in2-1;
+                in1 = symbol_table.map_operand(instr, 1);
+                in2 = symbol_table.map_operand(instr, 2);
+
                 tacs[idx].op    = GENERATE;  // TAC
                 tacs[idx].oper  = RANDOM;
                 tacs[idx].ext   = NULL;

@@ -21,24 +21,21 @@ Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block), iters
         tacs_.push_back(&tac);
         switch(tac_noperands(tac)) {
             case 3:
-                operands_[tac.in2] = Operand(
-                    &block_.operand(block_.global_to_local(tac.in2)),
-                    block_.global_to_local(tac.in2)
-                );
+                add_operand(tac.in2);
             case 2:
-                operands_[tac.in1] = Operand(
-                    &block_.operand(block_.global_to_local(tac.in1)),
-                    block_.global_to_local(tac.in1)
-                );
+                add_operand(tac.in1);
             case 1:
-                operands_[tac.out] = Operand(
-                    &block_.operand(block_.global_to_local(tac.out)),
-                    block_.global_to_local(tac.out)
-                );
+                add_operand(tac.out);
             default:
                 break;
         }
     }
+}
+
+void Kernel::add_operand(uint64_t global_idx)
+{
+    uint64_t local_idx = block_.global_to_local(global_idx);
+    operands_[global_idx] = Operand(&block_.operand(local_idx), local_idx);
 }
 
 string Kernel::args(void)

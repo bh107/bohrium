@@ -261,6 +261,8 @@ private:
     
     std::string args(void);
 
+    void add_operand(uint64_t global_idx);
+
     Plaid& plaid_;
     bohrium::core::Block& block_;
     kernel_operands operands_;
