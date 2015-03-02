@@ -35,18 +35,6 @@ void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
 
             %for $opcode, $operation, $operator, $nin in $operations
             case $opcode:
-            %if $opcode == "BH_RANDOM"
-                in2 = symbol_table.map_operand(instr, 1);
-                in1 = in2-1;
-                tacs[idx].op    = $operation;  // TAC
-                tacs[idx].oper  = $operator;
-                tacs[idx].ext   = NULL;
-                tacs[idx].out   = out;
-                tacs[idx].in1   = in1;
-                tacs[idx].in2   = in2;
-            
-                omask |= $operation;    // Operationmask
-            %else
                 %if nin >= 1
                 in1 = symbol_table.map_operand(instr, 1);
                 %end if
@@ -62,7 +50,6 @@ void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
                 tacs[idx].in2   = in2;
             
                 omask |= $operation;    // Operationmask
-            %end if
                 break;
             %end for
 

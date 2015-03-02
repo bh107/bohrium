@@ -161,6 +161,8 @@ public:
      */
     std::string text(void);
 
+    uint32_t omask(void);    
+
 private:
 
     Block();
@@ -181,6 +183,8 @@ private:
 
     std::string symbol_text_;       // Textual representation of the block
     std::string symbol_;            // Hash of textual representation
+
+    uint32_t omask_;
 
     static const char TAG[];
 };

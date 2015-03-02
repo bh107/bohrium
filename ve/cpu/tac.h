@@ -159,13 +159,14 @@ typedef struct iterspace {
     int64_t nelem;  // The number of elements in the iteration space
 } iterspace_t;
 
-#define SCALAR_LAYOUT   (SCALAR | SCALAR_CONST | SCALAR_TEMP)
-#define ARRAY_LAYOUT    (CONTIGUOUS | STRIDED | SPARSE)
-#define CONT_COMPATIBLE (SCALAR | SCALAR_CONST | SCALAR_TEMP | CONTIGUOUS)
+#define SCALAR_LAYOUT   ( SCALAR | SCALAR_CONST | SCALAR_TEMP )
+#define ARRAY_LAYOUT    ( CONTIGUOUS | STRIDED | SPARSE )
+#define CONT_COMPATIBLE ( SCALAR | SCALAR_CONST | SCALAR_TEMP | CONTIGUOUS )
 
-#define ARRAY_OPS (MAP | ZIP | REDUCE | SCAN | GENERATE)
+#define EWISE           ( MAP | ZIP | GENERATE )
+#define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE | SCAN )
 #define NBUILTIN_OPS    7
 #define NBUILTIN_OPERS  62
-#define NON_FUSABLE ( GENERATE | REDUCE | SCAN | EXTENSION )
+#define NON_FUSABLE     ( REDUCE | SCAN | EXTENSION )
 
 #endif

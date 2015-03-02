@@ -89,6 +89,13 @@ string _index(string object, int64_t idx)
     return ss.str();
 }
 
+string _index(string object, string idx)
+{
+    stringstream ss;
+    ss << object << "[" << idx << "]";
+    return ss.str();
+}
+
 string _access(string object, string member)
 {
     stringstream ss;
@@ -285,10 +292,10 @@ string _cpowf(string left, string right)
     return ss.str();
 }
 
-string _abs(string left, string right)
+string _abs(string right)
 {
     stringstream ss;
-    ss << left << " < 0.0 ? -" << right << ": " << right;
+    ss << right << " < 0.0 ? -" << right << ": " << right;
     return ss.str();
 }
 
@@ -407,7 +414,7 @@ string _bitw_leftshift(string left, string right)
 string _bitw_rightshift(string left, string right)
 {
     stringstream ss;
-    ss << "((" << left << ") << (" << right << "))";
+    ss << "((" << left << ") >> (" << right << "))";
     return ss.str();
 }
 
@@ -764,14 +771,14 @@ string _log10(string right)
 string _clog10f(string right)
 {
     stringstream ss;
-    ss << "clog10f(" << right << ")/log(10)";
+    ss << "clogf(" << right << ")/log(10)";
     return ss.str();
 }
 
 string _clog10(string right)
 {
     stringstream ss;
-    ss << "clog10(" << right << ")/log(10)";
+    ss << "clog(" << right << ")/log(10)";
     return ss.str();
 }
 
@@ -867,13 +874,11 @@ string _random(string left, string right)
     //       element in the array.
     //
     stringstream ss;
-    ss  << "("
-        << "    (philox2x32_as_1x64_t)"
-        << "    philox2x32("
-        << "        ((philox2x32_as_1x64_t)( " << right << " + eidx)).orig,"
-        << "        (philox2x32_key_t){ { " << left << " } }"
-        << "    )"
-        << ").combined;";
+    ss  << "((philox2x32_as_1x64_t)"
+        << "philox2x32("
+        << "  ((philox2x32_as_1x64_t)( " << right << " + eidx)).orig,"
+        << "  (philox2x32_key_t){ { " << left << " } }"
+        << ")).combined";
     return ss.str();
 }
 

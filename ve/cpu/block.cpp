@@ -9,7 +9,7 @@ namespace core{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& globals, vector<tac_t>& program)
-: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_("")
+: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_(""), omask_(0)
 {}
 
 Block::~Block()
@@ -25,6 +25,8 @@ void Block::clear(void)
 {                               // Reset the current state of the block
     tacs_.clear();              // tacs
     array_tacs_.clear();        // array_tacs
+
+    omask_ = 0;
 
     iterspace_.layout = SCALAR; // iteraton space
     iterspace_.ndim = 0;
@@ -56,6 +58,7 @@ void Block::compose(bh_ir_kernel& krnl)
         tac_t& tac = program_[*idx_it];
 
         tacs_.push_back(&tac);              // <-- All tacs
+        omask_ |= tac.op;                   // Update omask
 
         if ((tac.op & (ARRAY_OPS))>0) { 
             array_tacs_.push_back(&tac);    // <-- Only array operations
@@ -86,6 +89,7 @@ void Block::compose(size_t prg_begin, size_t prg_end)
         tac_t& tac = program_[prg_idx];
 
         tacs_.push_back(&tac);              // <-- All tacs
+        omask_ |= tac.op;                   // Update omask
 
         if ((tac.op & (ARRAY_OPS))>0) { 
             array_tacs_.push_back(&tac);    // <-- Only array operations
@@ -237,6 +241,11 @@ tac_t& Block::tac(size_t idx) const
 tac_t& Block::array_tac(size_t idx) const
 {
     return *array_tacs_[idx];
+}
+
+uint32_t Block::omask(void)
+{
+    return omask_;
 }
 
 size_t Block::ntacs(void) const

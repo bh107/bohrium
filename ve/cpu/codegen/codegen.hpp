@@ -30,6 +30,7 @@ std::string _double_complex(void);
 std::string _ref(std::string object);
 std::string _deref(std::string object);
 std::string _index(std::string object, int64_t idx);
+std::string _index(std::string object, std::string idx);
 
 std::string _access(std::string object, std::string member);
 std::string _access_ptr(std::string object, std::string member);
@@ -50,6 +51,8 @@ std::string _cast(std::string type, std::string object);
 std::string _declare(std::string type, std::string variable);
 std::string _declare_init(std::string type, std::string variable, std::string expr);
 
+
+
 // Operators
 std::string _inc(std::string object);
 std::string _dec(std::string object);
@@ -65,7 +68,7 @@ std::string _mod(std::string left, std::string right);
 std::string _pow(std::string left, std::string right);
 std::string _cpow(std::string left, std::string right);
 std::string _cpowf(std::string left, std::string right);
-std::string _abs(std::string left, std::string right);
+std::string _abs(std::string right);
 
 std::string _max(std::string left, std::string right);
 std::string _min(std::string left, std::string right);
@@ -185,7 +188,7 @@ class Operand
 {
 public:
     Operand(void);
-    Operand(operand_t* operand, uint32_t id);
+    Operand(operand_t* operand, uint32_t local_id);
 
     std::string name(void);
     
@@ -198,59 +201,35 @@ public:
     std::string ndim(void);
     std::string shape(void);
     std::string stride(void);
+    std::string stridevar(uint32_t dim);
+    std::string stepsize(uint32_t dim);
 
-    operand_t* operand_;
+    operand_t& meta(void);
+    uint64_t local_id(void);
 
 private:
-    uint32_t id_;
+    operand_t* operand_;
+    uint64_t local_id_;
 };
 
-class Walker
+typedef std::map<uint64_t, Operand> kernel_operands;
+typedef kernel_operands::iterator kernel_operand_iter;
+
+typedef std::vector<tac_t*> kernel_tacs;
+typedef kernel_tacs::iterator kernel_tac_iter;
+
+class Iterspace
 {
 public:
-    Walker(Plaid& plaid, bohrium::core::Block& block);
+    Iterspace(iterspace_t& iterspace);
 
-    std::string generate_source(void);
-    
+    std::string name(void);
+    std::string ndim(void);
+    std::string shape(uint32_t dim);
+
+    iterspace_t& meta(void);
 private:
-    std::string declare_operands(void);
-    std::string declare_operand(uint32_t oidx);
-
-    std::string oper(tac_t tac);
-
-    //
-    //  map / zip / flood / generate
-    //
-    std::string ewise_operations(void);
-
-    // Offsets
-    std::string ewise_cont_offset(uint32_t oidx);
-    std::string ewise_cont_offset(void);
-
-    std::string ewise_strided_1d_offset(uint32_t oidx);
-    std::string ewise_strided_1d_offset(void);
-
-    std::string ewise_strided_2d_offset(uint32_t oidx);
-    std::string ewise_strided_2d_offset(void);
-
-    std::string ewise_strided_3d_offset(uint32_t oidx);
-    std::string ewise_strided_3d_offset(void);
-
-    std::string ewise_strided_nd_offset(uint32_t oidx);
-    std::string ewise_strided_nd_offset(void);
-
-    // Steps
-    std::string ewise_cont_step(uint32_t oidx);
-    std::string ewise_cont_step(void);
-
-    std::string ewise_strided_1d_step(unsigned int oidx);
-    std::string ewise_strided_1d_step(void);
-
-    std::string ewise_strided_nd_step(unsigned int oidx);
-    std::string ewise_strided_nd_step(void);
-
-    Plaid& plaid_;
-    bohrium::core::Block& block_;
+    iterspace_t& iterspace_;
 };
 
 class Kernel
@@ -260,17 +239,83 @@ public:
     
     std::string generate_source(void);
 
+    uint64_t noperands(void);
+    Operand& operand_glb(uint64_t gidx);
+    Operand& operand_lcl(uint64_t lidx);
+
+    kernel_operand_iter operands_begin(void);
+    kernel_operand_iter operands_end(void);
+
+    uint32_t omask(void);
+
+    uint64_t ntacs(void);
+    tac_t& tac(uint64_t tidx);
+    kernel_tac_iter tacs_begin(void);
+    kernel_tac_iter tacs_end(void);
+
+    Iterspace& iterspace(void);
+
 private:
         
     std::string unpack_arguments(void);
-    std::string unpack_argument(uint32_t id);
     
     std::string args(void);
-    std::string iterspace(void);
+
+    void add_operand(uint64_t global_idx);
 
     Plaid& plaid_;
     bohrium::core::Block& block_;
+    kernel_operands operands_;
+    kernel_tacs tacs_;
+    Iterspace iterspace_;
+    
 };
+
+class Walker
+{
+public:
+    Walker(Plaid& plaid, Kernel& kernel);
+
+    std::string generate_source(void);
+    std::string oper_neutral_element(OPERATOR oper);
+    
+private:
+    std::string declare_operands(void);
+    std::string declare_operand(uint32_t oidx);
+
+    // Construct the operator source for the tac.oper
+    std::string oper(OPERATOR oper, ETYPE etype, std::string in1, std::string in2);
+
+    /**
+     *  Generate a comment describing the tac-operation.
+     */
+    std::string oper_description(tac_t tac);
+
+    //
+    //  map / zip / flood / generate
+    //
+    std::string ewise_operations(void);
+
+    std::string declare_stridesize(uint64_t oidx);
+    std::string declare_stridesizes(void);
+
+    // Ewise walker -- innards
+    std::string ewise_declare_stepsizes(uint32_t rank);
+    std::string ewise_assign_offset(uint32_t rank);
+    std::string ewise_assign_offset(uint32_t rank, uint64_t oidx);
+    std::string step_fwd(uint32_t dim, uint64_t oidx);
+    std::string step_fwd(uint32_t dim);
+
+    std::string reduce_par_operations(void);
+    std::string reduce_seq_operations(void);
+    
+    std::string scan_operations(void);
+
+    Plaid& plaid_;
+    Kernel& kernel_;
+};
+
+
 
 }}}}
 

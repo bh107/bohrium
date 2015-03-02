@@ -5,10 +5,12 @@
 
 #include "tac.h"
 #include "block.hpp"
+#include "symbol_table.hpp"
 #include "thread_control.hpp"
 #include "store.hpp"
 #include "compiler.hpp"
-#include "specializer.hpp"
+#include "plaid.hpp"
+#include "codegen.hpp"
 
 #include <string>
 #include <vector>
@@ -56,7 +58,7 @@ private:
      *  The block does contain array operations but also an extension
      *
      */
-    bh_error sij_mode(SymbolTable& symbol_table, std::vector<tac_t>& program, Block& block);
+    bh_error sij_mode(core::SymbolTable& symbol_table, std::vector<tac_t>& program, core::Block& block);
 
     /**
      *  Compile and execute multiple tac/instructions at a time.
@@ -68,9 +70,9 @@ private:
      *      - The block contains does not contain any extensions
      */
     bh_error fuse_mode(
-        SymbolTable& symbol_table,
+        core::SymbolTable& symbol_table,
         std::vector<tac_t>& program,
-        Block& block,
+        core::Block& block,
         bh_ir_kernel& krnl
     );
 
@@ -87,10 +89,10 @@ private:
          jit_dumpsrc,
          dump_rep;
     
-    Store          storage;
-    Specializer    specializer;
-    Compiler       compiler;
-    ThreadControl  thread_control;
+    Store           storage;
+    codegen::Plaid  plaid_;
+    Compiler        compiler;
+    ThreadControl   thread_control;
 
     std::map<bh_opcode, bh_extmethod_impl> extensions;
 

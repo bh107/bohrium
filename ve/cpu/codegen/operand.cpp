@@ -11,13 +11,17 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Operand::Operand(void) : operand_(NULL), id_(0) {}
-Operand::Operand(operand_t* operand, uint32_t id) : operand_(operand), id_(id) {}
+Operand::Operand(void) : operand_(NULL), local_id_(0) {}
+Operand::Operand(operand_t* operand, uint32_t local_id) : operand_(operand), local_id_(local_id) {
+    if (NULL == operand_) {
+        throw runtime_error("Constructing a NULL operand_, when expecting to have one");
+    }
+}
 
 string Operand::name(void)
 {
     stringstream ss;
-    ss << "opd" << id_;
+    ss << "opd" << local_id_;
     return ss.str();
 }
 
@@ -25,6 +29,52 @@ string Operand::first(void)
 {
     stringstream ss;
     ss << name() << "_first";
+    return ss.str();
+}
+
+string Operand::stepsize(uint32_t dim)
+{
+    stringstream ss;
+    ss << name() << "_stepsize";
+    switch(meta().ndim -1 - dim) {
+        case 2:
+            ss << "_tld";
+            break;
+        case 1:
+            ss << "_sld";
+            break;
+        case 0:
+            ss << "_ld";
+            break;
+
+        default:
+            ss << "__ND stepsize is not constant but variable__";
+            break;
+    }
+
+    return ss.str();
+}
+
+string Operand::stridevar(uint32_t dim)
+{
+    stringstream ss;
+    ss << name() << "_stride";
+    switch(meta().ndim -1 - dim) {
+        case 2:
+            ss << "_tld";
+            break;
+        case 1:
+            ss << "_sld";
+            break;
+        case 0:
+            ss << "_ld";
+            break;
+
+        default:
+            ss << "__ND stepsize is not constant but variable__";
+            break;
+    }
+
     return ss.str();
 }
 
@@ -38,7 +88,8 @@ string Operand::walker(void)
 string Operand::walker_val(void)
 {
     stringstream ss;
-    switch(operand_->layout) {
+    LAYOUT operand_layout = meta().layout;
+    switch(operand_layout) {
         case SCALAR:
         case SCALAR_CONST:
         case SCALAR_TEMP:
@@ -78,12 +129,22 @@ string Operand::stride(void)
 }
 
 string Operand::layout(void) {
-    return layout_text(operand_->layout);    
+    return layout_text(meta().layout);    
 }
 
 string Operand::etype(void)
 {
-    return etype_to_ctype_text(operand_->etype);
+    return etype_to_ctype_text(meta().etype);
+}
+
+uint64_t Operand::local_id(void)
+{
+    return local_id_;
+}
+
+operand_t& Operand::meta(void)
+{
+    return *operand_;
 }
 
 }}}}

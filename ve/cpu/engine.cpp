@@ -1,5 +1,4 @@
 #include "engine.hpp"
-#include "symbol_table.hpp"
 #include "timevault.hpp"
 
 #include <algorithm>
@@ -42,7 +41,7 @@ Engine::Engine(
     jit_dumpsrc(jit_dumpsrc),
     dump_rep(dump_rep),
     storage(object_directory, kernel_directory),
-    specializer(template_directory),
+    plaid_(template_directory),
     compiler(compiler_cmd),
     thread_control(binding, mthreads),
     exec_count(0)
@@ -76,7 +75,7 @@ string Engine::text()
     ss << "}" << endl;
     
     ss << "Attributes {" << endl;
-    ss << "  " << specializer.text();    
+    ss << "  " << plaid_.text();    
     ss << "  " << compiler.text();
     ss << "}" << endl;
 
@@ -147,7 +146,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             if (jit_enabled && \
                 (!storage.symbol_ready(block.symbol()))) {   
                                                             // Specialize sourcecode
-                string sourcecode = specializer.specialize(symbol_table, block);
+                string sourcecode = codegen::Kernel(plaid_, block).generate_source();
                 if (jit_dumpsrc==1) {                       // Dump sourcecode to file
                     core::write_file(
                         storage.src_abspath(block.symbol()),
@@ -241,7 +240,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     if (jit_enabled && \
         (!storage.symbol_ready(block.symbol()))) {   
         // Specialize and dump sourcecode to file
-        string sourcecode = specializer.specialize(symbol_table, block, iterspace.layout);
+        string sourcecode = codegen::Kernel(plaid_, block).generate_source();
         if (jit_dumpsrc==1) {
             core::write_file(
                 storage.src_abspath(block.symbol()),

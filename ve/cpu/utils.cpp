@@ -165,6 +165,28 @@ std::string operand_text(const operand_t& operand)
     return ss.str();
 }
 
+std::string omask_text(uint32_t omask)
+{
+    stringstream ss;
+    std::vector<std::string> entries;
+    for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
+        if((omask&op)>0) {
+            entries.push_back(operation_text((OPERATION)op));
+        }
+    }
+    for(std::vector<std::string>::iterator eit=entries.begin();
+        eit!=entries.end();
+        ++eit) {
+        ss << *eit;
+        eit++;
+        if (eit!=entries.end()) {
+            ss << " | ";
+        }
+        eit--;
+    }
+    return ss.str();
+}
+
 std::string tac_text(const tac_t& tac)
 {
     std::stringstream ss;

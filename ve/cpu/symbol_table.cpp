@@ -103,54 +103,31 @@ size_t SymbolTable::import(operand_t& operand)
 size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
 {
     size_t arg_idx = ++(nsymbols_); // Candidate arg_idx if not reused
-    bool try_reuse = true;          // By default we try to reuse all 
 
     if (bh_is_constant(&instr.operand[operand_idx])) {  // Constants
         if (BH_R123 != instr.constant.type) {           // Regular
             table_[arg_idx].const_data   = &(instr.constant.value);
-            table_[arg_idx].data         = &table_[arg_idx].const_data;
             table_[arg_idx].etype        = bhtype_to_etype(instr.constant.type);
-            table_[arg_idx].nelem        = 1;
-            table_[arg_idx].ndim         = 1;
-            table_[arg_idx].start        = 0;
-            table_[arg_idx].shape        = instr.operand[operand_idx].shape;
-            table_[arg_idx].shape[0]     = 1;
-            table_[arg_idx].stride       = instr.operand[operand_idx].shape;
-            table_[arg_idx].stride[0]    = 0;
-            table_[arg_idx].layout       = SCALAR_CONST;
-            table_[arg_idx].base         = NULL;
-        } else {                                        // Special "BH_R123"
-            try_reuse = false;                          // aren't reused
-            
-            // First bh_r123.start is mapped
-            table_[arg_idx].const_data   = &(instr.constant.value.r123.start);
-            table_[arg_idx].data         = &table_[arg_idx].const_data;
+        } else {                                        // "Special"
             table_[arg_idx].etype        = UINT64;
-            table_[arg_idx].nelem        = 1;
-            table_[arg_idx].ndim         = 1;
-            table_[arg_idx].start        = 0;
-            table_[arg_idx].shape        = instr.operand[operand_idx].shape;
-            table_[arg_idx].shape[0]     = 1;
-            table_[arg_idx].stride       = instr.operand[operand_idx].shape;
-            table_[arg_idx].stride[0]    = 0;
-            table_[arg_idx].layout       = SCALAR_CONST;
-            table_[arg_idx].base         = NULL;
-            
-            // Then bh_r123.key is mapped
-            arg_idx = ++(nsymbols_);
-            table_[arg_idx].const_data   = &(instr.constant.value.r123.key);
-            table_[arg_idx].data         = &table_[arg_idx].const_data;
-            table_[arg_idx].etype        = UINT64;
-            table_[arg_idx].nelem        = 1;
-            table_[arg_idx].ndim         = 1;
-            table_[arg_idx].start        = 0;
-            table_[arg_idx].shape        = instr.operand[operand_idx].shape;
-            table_[arg_idx].shape[0]     = 1;
-            table_[arg_idx].stride       = instr.operand[operand_idx].shape;
-            table_[arg_idx].stride[0]    = 0;
-            table_[arg_idx].layout       = SCALAR_CONST;
-            table_[arg_idx].base         = NULL;
+            if (1 == operand_idx) {
+                table_[arg_idx].const_data  = &(instr.constant.value.r123.start);
+            } else if (2 == operand_idx) {
+                table_[arg_idx].const_data  = &(instr.constant.value.r123.key);
+            } else {
+                throw runtime_error("THIS SHOULD NEVER HAPPEN!");
+            }
         }
+        table_[arg_idx].data         = &table_[arg_idx].const_data;
+        table_[arg_idx].nelem        = 1;
+        table_[arg_idx].ndim         = 1;
+        table_[arg_idx].start        = 0;
+        table_[arg_idx].shape        = instr.operand[operand_idx].shape;
+        table_[arg_idx].shape[0]     = 1;
+        table_[arg_idx].stride       = instr.operand[operand_idx].shape;
+        table_[arg_idx].stride[0]    = 0;
+        table_[arg_idx].layout       = SCALAR_CONST;
+        table_[arg_idx].base         = NULL;
     } else {
         table_[arg_idx].const_data= NULL;
         table_[arg_idx].data     = &(bh_base_array(&instr.operand[operand_idx])->data);
@@ -175,7 +152,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
     // with all other operands in the current scope [1,arg_idx[
     // Do remember that 0 is is not a valid operand and we therefore index from 1.
     // Also we do not want to compare with selv, that is when i == arg_idx.
-    for(size_t i=1; try_reuse and (i<arg_idx); ++i) {
+    for(size_t i=1; i<arg_idx; ++i) {
         if (!equivalent(table_[i], table_[arg_idx])) {
             continue; // Not equivalent, continue search.
         }

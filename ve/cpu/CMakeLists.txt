@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+include(CheckCCompilerFlag)
 include_directories(../../include)
 
 set(VE_CPU true CACHE BOOL "VE-CPU: Build CPU engine.")
@@ -22,50 +23,43 @@ if (VE_CPU_DEBUGGING)
     add_definitions( -DDEBUGGING )
 endif()
 
-# External dependencies
-find_package(CTemplate)
-set_package_properties(CTemplate PROPERTIES DESCRIPTION "Template language for C++" URL "code.google.com/p/ctemplate/")
-set_package_properties(CTemplate PROPERTIES TYPE REQUIRED PURPOSE "Used by CPU-VE for code generation.")
 
-if(CTEMPLATE_FOUND)
-    file(GLOB SRC codegen/*.cpp *.cpp thirdparty/*.cpp)
+file(GLOB SRC codegen/*.cpp *.cpp thirdparty/*.cpp)
 
-    add_library(bh_ve_cpu SHARED ${SRC})
+add_library(bh_ve_cpu SHARED ${SRC})
 
-    #We depend on bh.so
-    target_link_libraries(bh_ve_cpu bh)
+#We depend on bh.so
+target_link_libraries(bh_ve_cpu bh)
 
-    install(TARGETS bh_ve_cpu DESTINATION lib COMPONENT bohrium)
+install(TARGETS bh_ve_cpu DESTINATION lib COMPONENT bohrium)
 
-    include_directories(${CTEMPLATE_INCLUDE_DIR})
-    include_directories(${Boost_INCLUDE_DIRS})
-    include_directories("./codegen")
-    include_directories("./")
-    set(LIBS ${LIBS} ${CTEMPLATE_LIBRARIES})
-    target_link_libraries(bh_ve_cpu ${LIBS})
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories("./codegen")
+include_directories("./")
+set(LIBS ${LIBS})
+target_link_libraries(bh_ve_cpu ${LIBS})
 
-    #Install all kernal templates
-    install(DIRECTORY templates COMPONENT bohrium DESTINATION share/bohrium FILES_MATCHING PATTERN "*.tpl")
+#Install all kernal templates
+install(DIRECTORY templates COMPONENT bohrium DESTINATION share/bohrium FILES_MATCHING PATTERN "*.tpl")
 
-    install(FILES tac.h DESTINATION include/bohrium/ COMPONENT bohrium)
+install(FILES tac.h DESTINATION include/bohrium/ COMPONENT bohrium)
 
-    #We need some empty dirs writable by all
-    file(MAKE_DIRECTORY kernels)
-    file(MAKE_DIRECTORY objects)
-    file(MAKE_DIRECTORY scripts)
+#We need some empty dirs writable by all
+file(MAKE_DIRECTORY kernels)
+file(MAKE_DIRECTORY objects)
+file(MAKE_DIRECTORY scripts)
 
-    install(DIRECTORY kernels DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
-    install(DIRECTORY objects DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
+install(DIRECTORY kernels DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
+install(DIRECTORY objects DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
 
-    if (APPLE)
-        install(
-            FILES scripts/osx_compile.sh
-            PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-            DESTINATION var/bohrium/scripts
-        )
-    endif()
-    #install(DIRECTORY scripts DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
+if (APPLE)
+    install(
+        FILES scripts/osx_compile.sh
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        DESTINATION var/bohrium/scripts
+    )
 endif()
+#install(DIRECTORY scripts DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
@@ -78,6 +72,32 @@ endif()
 find_package(OpenMP COMPONENTS bohrium)
 #set_package_properties(OpenMP PROPERTIES DESCRIPTION "OpenMP parallel library and compiler directives" URL "www.openmp.org")
 #set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it for multi-core parallelization.")
+
+#
+#   Compiler-flags for JIT-compilation
+#
+check_c_compiler_flag(-O3 HAS_O3)
+if (HAS_O3)
+    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -O3")
+endif()
+
+check_c_compiler_flag(-fstrict-aliasing HAS_STRICT_ALIASING)
+if (HAS_STRICT_ALIASING)
+    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -fstrict-aliasing")
+endif()
+
+check_c_compiler_flag(-march=native HAS_MARCH_NATIVE)
+if (HAS_MARCH_NATIVE)
+    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -march=native")
+endif()
+
+if(OPENMP_FOUND)
+    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} ${OpenMP_C_FLAGS}")
+endif()
+set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS}" PARENT_SCOPE)
+#
+#   The above are used by config.ini.in
+#
 
 if(OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
