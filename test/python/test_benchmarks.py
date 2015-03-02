@@ -80,7 +80,7 @@ class test_gauss_20x20(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.001
+        self.config['maxerror'] = 0.002
         self.size = 20
 
         # Benchmark parameters
