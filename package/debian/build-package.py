@@ -16,13 +16,13 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-numpy, debhelper, cmake, swig, libctemplate-dev, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, mpich2, libmpich2-dev, libopenmpi-dev, openmpi-bin, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, mono-devel, mono-gmcs, libhwloc-dev
+Build-Depends: python-numpy, debhelper, cmake, swig, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, mpich2, libmpich2-dev, libopenmpi-dev, openmpi-bin, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, mono-devel, mono-gmcs, libhwloc-dev
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
 Package: bohrium
 Architecture: amd64
-Depends: libctemplate-dev, build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, libhwloc-dev
+Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, libhwloc-dev
 Recommends:
 Suggests: bohrium-gpu, bohrium-mpich, bohrium-openmpi, ipython,
 Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python

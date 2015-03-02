@@ -22,50 +22,43 @@ if (VE_CPU_DEBUGGING)
     add_definitions( -DDEBUGGING )
 endif()
 
-# External dependencies
-find_package(CTemplate)
-set_package_properties(CTemplate PROPERTIES DESCRIPTION "Template language for C++" URL "code.google.com/p/ctemplate/")
-set_package_properties(CTemplate PROPERTIES TYPE REQUIRED PURPOSE "Used by CPU-VE for code generation.")
 
-if(CTEMPLATE_FOUND)
-    file(GLOB SRC codegen/*.cpp *.cpp thirdparty/*.cpp)
+file(GLOB SRC codegen/*.cpp *.cpp thirdparty/*.cpp)
 
-    add_library(bh_ve_cpu SHARED ${SRC})
+add_library(bh_ve_cpu SHARED ${SRC})
 
-    #We depend on bh.so
-    target_link_libraries(bh_ve_cpu bh)
+#We depend on bh.so
+target_link_libraries(bh_ve_cpu bh)
 
-    install(TARGETS bh_ve_cpu DESTINATION lib COMPONENT bohrium)
+install(TARGETS bh_ve_cpu DESTINATION lib COMPONENT bohrium)
 
-    include_directories(${CTEMPLATE_INCLUDE_DIR})
-    include_directories(${Boost_INCLUDE_DIRS})
-    include_directories("./codegen")
-    include_directories("./")
-    set(LIBS ${LIBS} ${CTEMPLATE_LIBRARIES})
-    target_link_libraries(bh_ve_cpu ${LIBS})
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories("./codegen")
+include_directories("./")
+set(LIBS ${LIBS})
+target_link_libraries(bh_ve_cpu ${LIBS})
 
-    #Install all kernal templates
-    install(DIRECTORY templates COMPONENT bohrium DESTINATION share/bohrium FILES_MATCHING PATTERN "*.tpl")
+#Install all kernal templates
+install(DIRECTORY templates COMPONENT bohrium DESTINATION share/bohrium FILES_MATCHING PATTERN "*.tpl")
 
-    install(FILES tac.h DESTINATION include/bohrium/ COMPONENT bohrium)
+install(FILES tac.h DESTINATION include/bohrium/ COMPONENT bohrium)
 
-    #We need some empty dirs writable by all
-    file(MAKE_DIRECTORY kernels)
-    file(MAKE_DIRECTORY objects)
-    file(MAKE_DIRECTORY scripts)
+#We need some empty dirs writable by all
+file(MAKE_DIRECTORY kernels)
+file(MAKE_DIRECTORY objects)
+file(MAKE_DIRECTORY scripts)
 
-    install(DIRECTORY kernels DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
-    install(DIRECTORY objects DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
+install(DIRECTORY kernels DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
+install(DIRECTORY objects DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
 
-    if (APPLE)
-        install(
-            FILES scripts/osx_compile.sh
-            PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-            DESTINATION var/bohrium/scripts
-        )
-    endif()
-    #install(DIRECTORY scripts DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
+if (APPLE)
+    install(
+        FILES scripts/osx_compile.sh
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        DESTINATION var/bohrium/scripts
+    )
 endif()
+#install(DIRECTORY scripts DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
