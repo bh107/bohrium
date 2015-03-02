@@ -351,6 +351,29 @@ string Walker::reduce_par_operations(void)
     return ss.str();
 }
 
+string Walker::scan_operations(void)
+{
+    stringstream ss;
+    
+    for(kernel_tac_iter tit=kernel_.tacs_begin();
+        tit!=kernel_.tacs_end();
+        ++tit) {
+        tac_t& tac = **tit;
+        ETYPE etype = kernel_.operand_glb(tac.out).meta().etype;
+        string in1 = kernel_.operand_glb(tac.in1).walker_val();
+
+        ss << _assign(
+            "accu",
+            oper(tac.oper, etype, "accu", in1)
+        ) << _end();
+        ss << _assign(
+            kernel_.operand_glb(tac.out).walker_val(),
+            "accu"
+        ) << _end();
+    }
+    return ss.str();
+}
+
 string Walker::reduce_seq_operations(void)
 {
     stringstream ss;
@@ -410,7 +433,7 @@ string Walker::generate_source(void)
                     break;
             }
         }
-    } else if ((kernel_.omask() & REDUCE)>0) {   // Reductions
+    } else if ((kernel_.omask() & (REDUCE|SCAN))>0) {   // Reductions
 
         // Note: start of crappy code...
         tac_t* tac = NULL;
@@ -420,7 +443,7 @@ string Walker::generate_source(void)
         for(kernel_tac_iter tit=kernel_.tacs_begin();
             tit != kernel_.tacs_end();
             ++tit) {
-            if ((((*tit)->op) & REDUCE)>0) {
+            if ((((*tit)->op) & (REDUCE|SCAN))>0) {
                 tac = *tit;
             }
         }
@@ -435,83 +458,57 @@ string Walker::generate_source(void)
         subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper);
         subjects["ATYPE"]           = in2->etype();
         subjects["ETYPE"]           = out->etype();
-        subjects["PAR_OPERATIONS"]  = reduce_par_operations();
-        subjects["SEQ_OPERATIONS"]  = reduce_seq_operations();
         subjects["OPD_OUT"]         = out->name();
         subjects["OPD_IN1"]         = in1->name();
         subjects["OPD_IN2"]         = in2->name();
 
+        if ((kernel_.omask() & REDUCE)>0) {
+            subjects["PAR_OPERATIONS"]  = reduce_par_operations();
+            subjects["SEQ_OPERATIONS"]  = reduce_seq_operations();
+            switch(rank) {
+                case 1:
+                    subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
+                    subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
+                    subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
+                    plaid = "reduce.1d";
+                    break;
+                case 2:
+                    subjects["WALKER_STRIDES"]  = declare_stridesizes();
+                    subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
+                    subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
+                    subjects["WALKER_STEP_SL"]  = step_fwd(1, tac->in1);
 
-        switch(rank) {
-            case 1:
-                subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
-                subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
-                subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
-                plaid = "reduce.1d";
-                break;
-            case 2:
-                subjects["WALKER_STRIDES"]  = declare_stridesizes();
-                subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
-                subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
-                subjects["WALKER_STEP_SL"]  = step_fwd(1, tac->in1);
+                    plaid = "reduce.2d";
+                    break;
+                case 3:
+                    subjects["WALKER_STRIDES"]  = declare_stridesizes();
+                    subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
+                    subjects["WALKER_STEP_SL"]  = step_fwd(1, tac->in1);
+                    subjects["WALKER_STEP_TL"]  = step_fwd(2, tac->in1);
 
-                plaid = "reduce.2d";
-                break;
-            case 3:
-                subjects["WALKER_STRIDES"]  = declare_stridesizes();
-                subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
-                subjects["WALKER_STEP_SL"]  = step_fwd(1, tac->in1);
-                subjects["WALKER_STEP_TL"]  = step_fwd(2, tac->in1);
-
-                plaid = "reduce.3d";
-                break;
-            default:
-                subjects["WALKER_STRIDES"]  = declare_stridesizes();
-                plaid = "reduce.nd";
-                break;
-        }
-    } else if ((kernel_.omask() & SCAN)>0) {     // Scans
-
-        // Note: start of crappy code...
-        tac_t* tac = NULL;
-        Operand* out = NULL;
-        Operand* in1 = NULL;
-        Operand* in2 = NULL;
-        for(kernel_tac_iter tit=kernel_.tacs_begin();
-            tit != kernel_.tacs_end();
-            ++tit) {
-            if ((((*tit)->op) & SCAN)>0) {
-                tac = *tit;
+                    plaid = "reduce.3d";
+                    break;
+                default:
+                    subjects["WALKER_STRIDES"]  = declare_stridesizes();
+                    plaid = "reduce.nd";
+                    break;
             }
-        }
+        } else {
 
-        out = &kernel_.operand_glb(tac->out);
-        in1 = &kernel_.operand_glb(tac->in1);
-        in2 = &kernel_.operand_glb(tac->in2);
+            subjects["PAR_OPERATIONS"]  = scan_operations();
+            switch(rank) {
+                case 1:
+                    subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
+                    subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
+                    subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
+                    plaid = "scan.1d";
+                    break;
+                default:
+                    subjects["WALKER_STRIDES"]  = declare_stridesizes();
+                    plaid = "scan.nd";
 
-        const uint32_t rank = in1->meta().ndim;
-        // Note: end of crappy code...
-
-        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper);
-        subjects["ATYPE"]           = in2->etype();
-        subjects["ETYPE"]           = out->etype();
-        subjects["PAR_OPERATIONS"]  = reduce_par_operations();
-        subjects["OPD_OUT"]         = out->name();
-        subjects["OPD_IN1"]         = in1->name();
-        subjects["OPD_IN2"]         = in2->name();
-
-
-        switch(rank) {
-            case 1:
-                subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
-                subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
-                subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
-                plaid = "scan.1d";
-                break;
-            default:
-                subjects["WALKER_STRIDES"]  = declare_stridesizes();
-                plaid = "scan.nd";
-                break;
+                    break;
+            }
         }
     }
     return plaid_.fill(plaid, subjects);

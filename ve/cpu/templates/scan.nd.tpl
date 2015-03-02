@@ -16,6 +16,9 @@
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
+    int64_t {{OPD_IN1}}_stride_axis = {{OPD_OUT}}_stride[axis];
+    int64_t {{OPD_OUT}}_stride_axis = {{OPD_OUT}}_stride[axis];
+
     //
     //  Walk over the output
     //
@@ -25,12 +28,12 @@
         //
         // Compute offset based on coordinate
         //
-        {{ETYPE}}* a{{OPD_OUT}}_current = a{{OPD_OUT}}_first;
-        {{ETYPE}}*  a{{OPD_IN1}}_current = a{{OPD_IN1}}_first;
+        {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
+        {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first;
 
         for (int64_t j=0; j<ndim; ++j) {           
-            a{{OPD_OUT}}_current += coord[j] * a{{OPD_OUT}}_stride[j];
-            a{{OPD_IN1}}_current += coord[j] * a{{OPD_IN1}}_stride[j];
+            {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_stride[j];
+            {{OPD_IN1}} += coord[j] * {{OPD_IN1}}_stride[j];
         }
 
         //
@@ -41,10 +44,10 @@
             {{PAR_OPERATIONS}}
             
             // Update the output
-            *a{{OPD_OUT}}_current = accu;
+            *{{OPD_OUT}} = accu;
             
-            a{{OPD_OUT}}_current += a{{OPD_OUT}}_stride_axis;
-            a{{OPD_IN1}}_current += a{{OPD_IN1}}_stride_axis;
+            {{OPD_OUT}} += {{OPD_OUT}}_stride_axis;
+            {{OPD_IN1}} += {{OPD_IN1}}_stride_axis;
         }
         cur_e += shape_axis;
 

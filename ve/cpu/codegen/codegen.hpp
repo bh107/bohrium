@@ -309,6 +309,8 @@ private:
     std::string reduce_par_operations(void);
     std::string reduce_seq_operations(void);
     
+    std::string scan_operations(void);
+
     Plaid& plaid_;
     Kernel& kernel_;
 };

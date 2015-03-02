@@ -143,7 +143,7 @@ string Kernel::unpack_arguments(void)
                 // If there are reductions in the kernel we also want strides
                 // for contiguous arrays.
                 if ((operand.meta().layout == CONTIGUOUS) && \
-                   ((omask() & REDUCE) > 0)) {
+                   ((omask() & (REDUCE|SCAN)) > 0)) {
                     ss << _declare_init(
                         _ptr_const(_int64()),
                         operand.stride(),
