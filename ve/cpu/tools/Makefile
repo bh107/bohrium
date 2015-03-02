@@ -99,6 +99,10 @@ install:
 	mkdir -p $(BDIR)
 	cd $(BDIR) && cmake $(ROOT) && make && make install
 
+install_profiling:
+	mkdir -p $(BDIR)
+	cd $(BDIR) && cmake $(ROOT) $(PROFILE_BUILD) && make && make install
+
 install_dev:
 	mkdir -p $(BDIR)
 	cd $(BDIR) && cmake $(ROOT) $(DEV_BUILD) && make && make install
