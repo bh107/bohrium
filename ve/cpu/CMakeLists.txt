@@ -16,12 +16,6 @@ if (VE_CPU_PROFILING)
     add_definitions( -DCPU_PROFILING )
 endif()
 
-set(VE_CPU_NONLOGIC false CACHE BOOL "VE-CPU: Compile for 'nonlogic' templates.")
-if (VE_CPU_NONLOGIC)
-    message(STATUS "VE-CPU: Compiling for 'nonlogic' templates.")
-    add_definitions( -DVE_CPU_NONLOGIC )
-endif()
-
 set(VE_CPU_DEBUGGING false CACHE BOOL "VE-CPU: Enable debugging.")
 if (VE_CPU_DEBUGGING)
     message(STATUS "VE-CPU: Enabling debugging.")
