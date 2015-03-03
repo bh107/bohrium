@@ -41,8 +41,9 @@
         if (work) {
         // Stepsize
         {{WALKER_STEPSIZE}}
-
-        for(int64_t eidx=(work_offset*chunksize); eidx<(work_end*chunksize); eidx+=chunksize) {
+        const int64_t eidx_begin = work_offset*chunksize;
+        const int64_t eidx_end   = work_end*chunksize;
+        for(int64_t eidx=eidx_begin; eidx<eidx_end; eidx+=chunksize) {
             // Operand declaration(s)
             {{WALKER_DECLARATION}}
             

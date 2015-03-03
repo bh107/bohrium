@@ -256,7 +256,8 @@ string Walker::step_fwd(uint32_t dim, uint64_t oidx)
     switch(operand.meta().layout) {
         case SPARSE:
         case STRIDED:
-            if ((rank > 3) and (!innermost)) {          // ND-outer
+            if ((rank > 1) and (!innermost)) {          // ND-outer
+            //if ((rank > 3) and (!innermost)) {          // ND-outer
                 ss
                 << _add_assign(
                     operand.walker(),
@@ -272,7 +273,8 @@ string Walker::step_fwd(uint32_t dim, uint64_t oidx)
             break;
 
         case CONTIGUOUS:
-            if ((rank > 3) and (!innermost)) {          // ND-outer
+            if ((rank > 1) and (!innermost)) {          // ND-outer
+            //if ((rank > 3) and (!innermost)) {          // ND-outer
                 ss
                 << _add_assign(
                     operand.walker(),
@@ -416,16 +418,16 @@ string Walker::generate_source(void)
                     plaid = "ewise.1d";
                     break;
                 case 2:     // 2D specialization
-                    subjects["WALKER_STEP_LD"]  = step_fwd(1);
-                    subjects["WALKER_STEP_SLD"] = step_fwd(0);
-                    plaid = "ewise.2d";
-                    break;
+                    //subjects["WALKER_STEP_LD"]  = step_fwd(1);
+                    //subjects["WALKER_STEP_SLD"] = step_fwd(0);
+                    //plaid = "ewise.2d";
+                    //break;
                 case 3:     // 3D specialization
-                    subjects["WALKER_STEP_LD"]  = step_fwd(2);
-                    subjects["WALKER_STEP_SLD"] = step_fwd(1);
-                    subjects["WALKER_STEP_TLD"] = step_fwd(0);
-                    plaid = "ewise.3d";
-                    break;
+                    //subjects["WALKER_STEP_LD"]  = step_fwd(2);
+                    //subjects["WALKER_STEP_SLD"] = step_fwd(1);
+                    //subjects["WALKER_STEP_TLD"] = step_fwd(0);
+                    //plaid = "ewise.3d";
+                    //break;
                 default:    // ND
                     subjects["WALKER_STEP_OUTER"]   = step_fwd(0);
                     subjects["WALKER_STEP_INNER"]   = step_fwd(rank-1);
