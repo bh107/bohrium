@@ -31,6 +31,7 @@ namespace core {
 // TAC enums; useful for pretty-printing.
 //
 
+std::string iterspace_text(const iterspace_t& iterspace);
 std::string omask_text(uint32_t omask);
 std::string operation_text(OPERATION op);
 std::string operator_text(OPERATOR op);

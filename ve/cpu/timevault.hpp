@@ -113,6 +113,8 @@ class Timevault {
         std::multimap<std::string, time_t> _elapsed; // Storage of elapsed time.
 
         time_t timer_start; // Storage for timer
+
+        static const uint32_t width;
 };
 
 }};

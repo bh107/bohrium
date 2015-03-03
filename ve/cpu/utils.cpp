@@ -133,6 +133,23 @@ bool contiguous(const operand_t& arg)
     return true;
 }
 
+std::string iterspace_text(const iterspace_t& iterspace)
+{
+    stringstream ss;
+    ss << core::layout_text(iterspace.layout) << "_";
+    ss << iterspace.ndim << "D_";
+    for(int64_t dim=0; dim <iterspace.ndim; ++dim) {
+        ss << iterspace.shape[dim];
+        if (dim!=iterspace.ndim-1) {
+            ss << "*";
+        }
+    }
+    ss << "=";
+    ss << iterspace.nelem;
+    
+    return ss.str();
+}
+
 std::string operand_text(const operand_t& operand)
 {
     stringstream ss;
