@@ -7,9 +7,7 @@
 //	Distribites work staticly/evenly among threads.
 //
 {
-    const int64_t nelements = iterspace->nelem;
     const int64_t last_dim  = iterspace->ndim-1;
-    const int64_t shape_ld  = iterspace->shape[last_dim];
 
     int64_t weight[CPU_MAXDIM]; // Helper for step-calculation
     int acc = 1;
@@ -19,9 +17,11 @@
     }
 
     const int mthreads          = omp_get_max_threads();
-    const int64_t nworkers      = (nelements/shape_ld) > mthreads ? mthreads : 1;
-    const int64_t work_split    = (nelements/shape_ld) / nworkers;
-    const int64_t work_spill    = (nelements/shape_ld) % nworkers;
+    const int64_t chunksize     = iterspace->shape[last_dim];
+    const int64_t nchunks       = iterspace->nelem / chunksize;
+    const int64_t nworkers      = nchunks > mthreads ? mthreads : 1;
+    const int64_t work_split    = nchunks / nworkers;
+    const int64_t work_spill    = nchunks % nworkers;
     
     #pragma omp parallel num_threads(nworkers)
     {
@@ -39,11 +39,12 @@
         work_end = work_offset+work;
 
         if (work) {
-        for(int64_t eidx=work_offset; eidx<(work_end*shape_ld); eidx+=shape_ld) {
+        // Stepsize
+        {{WALKER_STEPSIZE}}
+
+        for(int64_t eidx=(work_offset*chunksize); eidx<(work_end*chunksize); eidx+=chunksize) {
             // Operand declaration(s)
             {{WALKER_DECLARATION}}
-            // Stepsize
-            {{WALKER_STEPSIZE}}
             
             // Walker step outer dimensions
             for (int64_t dim=0; dim < last_dim; ++dim) {    // offset from coord
@@ -51,7 +52,7 @@
                 {{WALKER_STEP_OUTER}}
             }
 
-            for (int64_t iidx=0; iidx < shape_ld; iidx++) { // Execute array-operations
+            for (int64_t iidx=0; iidx < chunksize; iidx++) { // Execute array-operations
                 {{OPERATIONS}}
 
                 // Walker step innermost dimension
