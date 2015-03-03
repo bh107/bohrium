@@ -23,7 +23,6 @@ if (VE_CPU_DEBUGGING)
     add_definitions( -DDEBUGGING )
 endif()
 
-
 file(GLOB SRC codegen/*.cpp *.cpp thirdparty/*.cpp)
 
 add_library(bh_ve_cpu SHARED ${SRC})
@@ -106,13 +105,13 @@ if(OPENMP_FOUND)
 
     find_package(HWLOC)
     set_package_properties(HWLOC PROPERTIES DESCRIPTION "hardware locality (hwloc)" URL "http://www.open-mpi.org/projects/hwloc/")
-    set_package_properties(HWLOC PROPERTIES TYPE REQUIRED PURPOSE "VE-CPU use it to control thread affinity.")
+    set_package_properties(HWLOC PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it to control thread affinity.")
 
     if(HWLOC_FOUND)
         include_directories(${HWLOC_INCLUDE_DIR})
         target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
+        add_definitions(-DVE_CPU_BIND)
     endif()
-
 else()
     if(APPLE)
         if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")

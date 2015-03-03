@@ -1,6 +1,7 @@
 ROOT=../../..
 CPU=$(ROOT)/ve/cpu
 BDIR=$(CPU)/bdir
+PAR_LVL=-j4
 BH_PYTHON=python
 #TEST_EXCLUDE=--exclude-test=test_gauss_20x20
 TEST_EXCLUDE=
@@ -97,19 +98,19 @@ purge_install: purge_cpu purge_all clean gen install
 # "Install the cpu-engine
 install:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) && make && make install
+	cd $(BDIR) && cmake $(ROOT) && make $(PAR_LVL) && make install
 
 install_profiling:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) $(PROFILE_BUILD) && make && make install
+	cd $(BDIR) && cmake $(ROOT) $(PROFILE_BUILD) && make $(PAR_LVL) && make install
 
 install_dev:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) $(DEV_BUILD) && make && make install
+	cd $(BDIR) && cmake $(ROOT) $(DEV_BUILD) && make $(PAR_LVL) && make install
 
 install_benchmark:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) $(BENCHMARK_BUILD) && make && make install
+	cd $(BDIR) && cmake $(ROOT) $(BENCHMARK_BUILD) && make $(PAR_LVL) && make install
 
 #
 # Clean up the build-files
