@@ -1,4 +1,5 @@
 #include "block.hpp"
+#include <iomanip>
 
 using namespace std;
 using namespace boost;
@@ -335,6 +336,29 @@ void Block::update_iterspace(void)
 string Block::dot(void) const
 {
     stringstream ss;
+    return ss.str();
+}
+
+std::string Block::text_compact(void)
+{
+    stringstream ss;
+    ss << setfill(' ');
+    ss << setw(3);
+    ss << narray_tacs();
+    ss << ",";
+    ss << setw(36);
+    ss << symbol();
+    ss << ", ";
+    ss << left;
+    ss << setw(36);
+    ss << setfill('-');
+    ss << omask_aop_text(omask());
+    ss << ", ";
+    ss << left;
+    ss << setfill('-');
+    ss << setw(57);
+    ss << iterspace_text(iterspace());
+
     return ss.str();
 }
 

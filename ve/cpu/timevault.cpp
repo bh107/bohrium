@@ -53,30 +53,12 @@ time_t Timevault::stop(void)
 
 void Timevault::store(time_t elapsed)
 {
-    store("default", "", "", "", elapsed);
+    store("default", elapsed);
 }
 
-void Timevault::store(string id1, string id2, string id3, string id4, time_t elapsed)
+void Timevault::store(string ident, time_t elapsed)
 {
-    stringstream ss;
-    ss << setfill(' ');
-    ss << setw(3);
-    ss << id1;
-    ss << ",";
-    ss << setw(36);
-    ss << id2;
-    ss << ", ";
-    ss << left;
-    ss << setw(36);
-    ss << setfill('-');
-    ss << id3;
-    ss << ", ";
-    ss << left;
-    ss << setfill('-');
-    ss << setw(57);
-    ss << id4;
-
-    _elapsed.insert(pair<string, time_t>(ss.str(), elapsed));
+    _elapsed.insert(pair<string, time_t>(ident, elapsed));
 }
 
 void Timevault::clear(void)
