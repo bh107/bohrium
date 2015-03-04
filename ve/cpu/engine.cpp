@@ -195,7 +195,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
 
             break;
     }
-    TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), iterspace_text(block.iterspace()))
+    TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), omask_aop_text(block.omask()), iterspace_text(block.iterspace()))
     return BH_SUCCESS;
 }
 
@@ -313,7 +313,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
             }
         }
     }
-    TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), iterspace_text(block.iterspace()))
+    TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), omask_aop_text(block.omask()), iterspace_text(block.iterspace()))
     return BH_SUCCESS;
 }
 

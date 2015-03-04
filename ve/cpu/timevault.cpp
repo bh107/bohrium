@@ -7,7 +7,7 @@ using namespace std;
 namespace bohrium{
 namespace core {
 
-const uint32_t Timevault::width = 100;
+const uint32_t Timevault::width = 140;
 
 Timevault::Timevault() {}
 
@@ -53,10 +53,10 @@ time_t Timevault::stop(void)
 
 void Timevault::store(time_t elapsed)
 {
-    store("default", "", "", elapsed);
+    store("default", "", "", "", elapsed);
 }
 
-void Timevault::store(string id1, string id2, string id3, time_t elapsed)
+void Timevault::store(string id1, string id2, string id3, string id4, time_t elapsed)
 {
     stringstream ss;
     ss << setfill(' ');
@@ -67,9 +67,14 @@ void Timevault::store(string id1, string id2, string id3, time_t elapsed)
     ss << id2;
     ss << ", ";
     ss << left;
+    ss << setw(36);
+    ss << setfill('-');
+    ss << id3;
+    ss << ", ";
+    ss << left;
     ss << setfill('-');
     ss << setw(57);
-    ss << id3;
+    ss << id4;
 
     _elapsed.insert(pair<string, time_t>(ss.str(), elapsed));
 }

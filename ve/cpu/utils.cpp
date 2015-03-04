@@ -137,15 +137,22 @@ bool contiguous(const operand_t& arg)
 std::string iterspace_text(const iterspace_t& iterspace)
 {
     stringstream ss;
+    ss << setw(12);
+    ss << setfill('-');
     ss << core::layout_text(iterspace.layout) << "_";
     ss << iterspace.ndim << "D_";
+
+    stringstream ss_shape;
     for(int64_t dim=0; dim <iterspace.ndim; ++dim) {
-        ss << iterspace.shape[dim];
+        ss_shape << iterspace.shape[dim];
         if (dim!=iterspace.ndim-1) {
-            ss << "*";
+            ss_shape << "x";
         }
     }
-    ss << "=";
+    ss << left;
+    ss << setw(20);
+    ss << ss_shape.str();
+    ss << "_";
     ss << iterspace.nelem;
     
     return ss.str();
@@ -180,6 +187,28 @@ std::string operand_text(const operand_t& operand)
     ss << ") ";
     ss << "}" << endl;
 
+    return ss.str();
+}
+
+std::string omask_aop_text(uint32_t omask)
+{
+    stringstream ss;
+    std::vector<std::string> entries;
+    for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
+        if ((((omask&op)>0) and ((op&ARRAY_OPS)>0))) {
+            entries.push_back(operation_text((OPERATION)op));
+        }
+    }
+    for(std::vector<std::string>::iterator eit=entries.begin();
+        eit!=entries.end();
+        ++eit) {
+        ss << *eit;
+        eit++;
+        if (eit!=entries.end()) {
+            ss << "|";
+        }
+        eit--;
+    }
     return ss.str();
 }
 
