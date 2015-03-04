@@ -38,10 +38,10 @@ class Timevault {
          */
         void store(time_t elapsed);
 
-        /**
+         /**
          *  Store elapsed time and associate it with the given identifier.
          */
-        void store(std::string id1, std::string id2, std::string id3, std::string id4, time_t elapsed);
+        void store(std::string, time_t elapsed);
 
         /**
          *  Clears all stored time within the timevault.
@@ -124,12 +124,12 @@ class Timevault {
 //
 #ifdef CPU_PROFILING
 #define TIMER_START               do{ Timevault::instance().start(); } while(0);
-#define TIMER_STOP(IDENT1, IDENT2, IDENT3, IDENT4) do{ Timevault::instance().store(IDENT1, IDENT2, IDENT3, IDENT4, Timevault::instance().stop()); } while(0);
+#define TIMER_STOP(IDENT) do{ Timevault::instance().store(IDENT, Timevault::instance().stop()); } while(0);
 #define TIMER_DUMP                do{ cout << Timevault::instance().text() << endl; } while(0);
 #define TIMER_DUMP_DETAILED       do{ cout << Timevault::instance().text(true) << endl; } while(0);
 #else
 #define TIMER_START
-#define TIMER_STOP(IDENT1, IDENT2, IDENT3, IDENT4)
+#define TIMER_STOP(IDENT)
 #define TIMER_DUMP
 #define TIMER_DUMP_DETAILED
 #endif

@@ -193,7 +193,7 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
 
             TIMER_START
             storage.funcs[block.symbol()](block.operands(), &block.iterspace());
-            TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), omask_aop_text(block.omask()), iterspace_text(block.iterspace()))
+            TIMER_STOP(block.text_compact())
 
             break;
     }
@@ -297,7 +297,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     DEBUG(TAG, "EXECUTING "<< block.text());
     TIMER_START
     storage.funcs[block.symbol()](block.operands(), &iterspace);
-    TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), omask_aop_text(block.omask()), iterspace_text(block.iterspace()))
+    TIMER_STOP(block.text_compact())
 
     //
     // De-Allocate memory for operand(s)

@@ -161,6 +161,11 @@ public:
      */
     std::string text(void);
 
+    /**
+     * Returns a compact plaintext representation of the block.
+     */
+    std::string text_compact(void);
+
     uint32_t omask(void);    
 
 private:
