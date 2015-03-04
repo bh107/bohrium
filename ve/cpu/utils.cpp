@@ -1,3 +1,4 @@
+#include <iomanip>
 #include "utils.hpp"
 #include "thirdparty/MurmurHash3.h"
 
@@ -234,9 +235,21 @@ string hash_text(std::string text)
     uint32_t seed = 4200;
 
     MurmurHash3_x86_128(text.c_str(), text.length(), seed, &hash);
+    ss << std::hex;
+    ss << std::setw(8);
+    ss << std::setfill('0');
     ss << hash[0];
+    ss << "_";
+    ss << std::setw(8);
+    ss << std::setfill('0');
     ss << hash[1];
+    ss << "_";
+    ss << std::setw(8);
+    ss << std::setfill('0');
     ss << hash[2];
+    ss << "_";
+    ss << std::setw(8);
+    ss << std::setfill('0');
     ss << hash[3];
     
     return ss.str();
