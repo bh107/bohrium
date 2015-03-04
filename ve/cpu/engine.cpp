@@ -84,7 +84,6 @@ string Engine::text()
 
 bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Block& block)
 {
-    TIMER_START
     bh_error res = BH_SUCCESS;
 
     tac_t& tac = block.tac(0);
@@ -191,11 +190,13 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             // Execute block handling array operations.
             // 
             DEBUG(TAG, "EXECUTING " << block.text());
+
+            TIMER_START
             storage.funcs[block.symbol()](block.operands(), &block.iterspace());
+            TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), omask_aop_text(block.omask()), iterspace_text(block.iterspace()))
 
             break;
     }
-    TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), omask_aop_text(block.omask()), iterspace_text(block.iterspace()))
     return BH_SUCCESS;
 }
 
@@ -205,7 +206,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
                             bh_ir_kernel& krnl)
 {
     bh_error res = BH_SUCCESS;
-    TIMER_START
 
     //
     // Turn temps into scalars
@@ -295,7 +295,9 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     // Execute block handling array operations.
     // 
     DEBUG(TAG, "EXECUTING "<< block.text());
+    TIMER_START
     storage.funcs[block.symbol()](block.operands(), &iterspace);
+    TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), omask_aop_text(block.omask()), iterspace_text(block.iterspace()))
 
     //
     // De-Allocate memory for operand(s)
@@ -313,7 +315,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
             }
         }
     }
-    TIMER_STOP(std::to_string(block.narray_tacs()), block.symbol(), omask_aop_text(block.omask()), iterspace_text(block.iterspace()))
     return BH_SUCCESS;
 }
 
