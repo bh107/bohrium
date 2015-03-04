@@ -342,10 +342,11 @@ string Block::dot(void) const
 std::string Block::text_compact(void)
 {
     stringstream ss;
-    ss << setfill(' ');
+    ss << setfill('0');
     ss << setw(3);
     ss << narray_tacs();
-    ss << ",";
+    ss << ", ";
+    ss << setfill(' ');
     ss << setw(36);
     ss << symbol();
     ss << ", ";
