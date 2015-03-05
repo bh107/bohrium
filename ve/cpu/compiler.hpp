@@ -17,11 +17,23 @@ public:
 
     std::string text();
 
+    /**
+     *  Compile by piping sourcecode to stdin.
+     */
     bool compile(
         std::string object_abspath,
         const char* sourcecode,
         size_t source_len
     );
+
+    /**
+     *  Compile source on disk.
+     */
+    bool compile(
+        std::string object_abspath,
+        std::string src_abspath
+    );
+
 
 private:
     std::string process_str;

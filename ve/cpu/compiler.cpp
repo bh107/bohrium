@@ -1,6 +1,6 @@
 #include "utils.hpp"
 #include "compiler.hpp"
-
+#include <sstream>
 using namespace std;
 
 namespace bohrium{
@@ -18,9 +18,9 @@ const char Compiler::TAG[] = "Compiler";
  *
  * Examples:
  *
- *  Compiler tcc("tcc -O2 -march=core2 -fPIC -x c -shared - -o ");
- *  Compiler gcc("gcc -O2 -march=core2 -fPIC -x c -shared - -o ");
- *  Compiler clang("clang -O2 -march=core2 -fPIC -x c -shared - -o ");
+ *  Compiler tcc("tcc -O2 -march=core2 -fPIC -x c -shared");
+ *  Compiler gcc("gcc -O2 -march=core2 -fPIC -x c -shared");
+ *  Compiler clang("clang -O2 -march=core2 -fPIC -x c -shared");
  *
  */
 Compiler::Compiler(string process_str) : process_str(process_str) {}
@@ -47,7 +47,13 @@ bool Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
 {
     //
     // Constuct the compiler command
-    string cmd = process_str +" "+ object_abspath;
+    stringstream ss_cmd;
+    ss_cmd << process_str;
+    ss_cmd << " - ";
+    ss_cmd << " -o ";
+    ss_cmd << object_abspath;
+
+    string cmd = ss_cmd.str();
 
     // Execute the process
     FILE *cmd_stdin = NULL;                     // Handle for library-file
@@ -57,6 +63,35 @@ bool Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
         return false;
     }
     fwrite(sourcecode, 1, source_len, cmd_stdin);   // Write sourcecode to stdin
+    fflush(cmd_stdin);
+    int exit_code = (pclose(cmd_stdin)/256);
+    return (exit_code==0);
+}
+
+/**
+ *  Compile the given sourcecode into a shared object.
+ *
+ *  @returns True the system compiler returns exit-code 0 and False othervise.
+ */
+bool Compiler::compile(string object_abspath, string src_abspath)
+{
+    //
+    // Constuct the compiler command
+    stringstream ss_cmd;
+    ss_cmd << process_str;
+    ss_cmd << " " << src_abspath;
+    ss_cmd << " -o ";
+    ss_cmd << object_abspath;
+
+    string cmd = ss_cmd.str();
+
+    // Execute the process
+    FILE *cmd_stdin = NULL;                     // Handle for library-file
+    cmd_stdin = popen(cmd.c_str(), "w");        // Execute the command
+    if (!cmd_stdin) {
+        std::cout << "Err: Could not execute process! ["<< cmd <<"]" << std::endl;
+        return false;
+    }
     fflush(cmd_stdin);
     int exit_code = (pclose(cmd_stdin)/256);
     return (exit_code==0);

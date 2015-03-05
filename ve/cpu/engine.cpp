@@ -146,19 +146,26 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
                 (!storage.symbol_ready(block.symbol()))) {   
                                                             // Specialize sourcecode
                 string sourcecode = codegen::Kernel(plaid_, block).generate_source();
+                bool compile_res;
                 if (jit_dumpsrc==1) {                       // Dump sourcecode to file
                     core::write_file(
                         storage.src_abspath(block.symbol()),
                         sourcecode.c_str(), 
                         sourcecode.size()
                     );
+                    // Send to compiler
+                    compile_res = compiler.compile(
+                        storage.obj_abspath(block.symbol()), 
+                        storage.src_abspath(block.symbol())
+                    );
+                } else {
+                    // Send to compiler
+                    compile_res = compiler.compile(
+                        storage.obj_abspath(block.symbol()), 
+                        sourcecode.c_str(), 
+                        sourcecode.size()
+                    );
                 }
-                // Send to compiler
-                bool compile_res = compiler.compile(
-                    storage.obj_abspath(block.symbol()), 
-                    sourcecode.c_str(), 
-                    sourcecode.size()
-                );
                 if (!compile_res) {
                     fprintf(stderr, "Engine::sij_mode(...) == Compilation failed.\n");
                     return BH_ERROR;
@@ -241,19 +248,26 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
         (!storage.symbol_ready(block.symbol()))) {   
         // Specialize and dump sourcecode to file
         string sourcecode = codegen::Kernel(plaid_, block).generate_source();
+        bool compile_res;
         if (jit_dumpsrc==1) {
             core::write_file(
                 storage.src_abspath(block.symbol()),
                 sourcecode.c_str(), 
                 sourcecode.size()
             );
+            // Send to compiler
+            compile_res = compiler.compile(
+                storage.obj_abspath(block.symbol()),
+                storage.src_abspath(block.symbol())
+            );
+        } else {
+            // Send to compiler
+            compile_res = compiler.compile(
+                storage.obj_abspath(block.symbol()),
+                sourcecode.c_str(), 
+                sourcecode.size()
+            );
         }
-        // Send to compiler
-        bool compile_res = compiler.compile(
-            storage.obj_abspath(block.symbol()),
-            sourcecode.c_str(), 
-            sourcecode.size()
-        );
         if (!compile_res) {
             fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
 
