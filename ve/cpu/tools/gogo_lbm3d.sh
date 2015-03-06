@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 HOSTNAME=`hostname`
 
+TASKSET="taskset -c 0"
+BINDING=1
+DUMPSRC=1
+THREADS=1
+SCRIPT=~/bohrium/benchmark/python/lbm_3d.py
+#SCRIPT=locate.py
+
 echo "NumPy"
-OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ~/bohrium/benchmark/python/lbm_3d.py --size=150*150*150*10 --bohrium=False > $HOSTNAME.np.txt
+BH_VE_CPU_JIT_FUSION=0 OMP_NUM_THREADS=$THREADS BH_VE_CPU_BIND=$BINDING BH_VE_CPU_JIT_DUMPSRC=$DUMPSRC $TASKSET python $SCRIPT --size=150*150*150*10 --bohrium=False > $HOSTNAME.np.txt
 echo "SIJ"
-OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ~/bohrium/benchmark/python/lbm_3d.py --size=150*150*150*10 --bohrium=True > $HOSTNAME.sij1.txt
-OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 python ~/bohrium/benchmark/python/lbm_3d.py --size=150*150*150*10 --bohrium=True > $HOSTNAME.sij2.txt
+BH_VE_CPU_JIT_FUSION=0 OMP_NUM_THREADS=$THREADS BH_VE_CPU_BIND=$BINDING BH_VE_CPU_JIT_DUMPSRC=$DUMPSRC $TASKSET python $SCRIPT --size=150*150*150*10 --bohrium=True > $HOSTNAME.sij1.txt
+BH_VE_CPU_JIT_FUSION=0 OMP_NUM_THREADS=$THREADS BH_VE_CPU_BIND=$BINDING BH_VE_CPU_JIT_DUMPSRC=$DUMPSRC $TASKSET python $SCRIPT --size=150*150*150*10 --bohrium=True > $HOSTNAME.sij2.txt
 echo "Fusion"
-OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ~/bohrium/benchmark/python/lbm_3d.py --size=150*150*150*10 --bohrium=True > $HOSTNAME.fused1.txt
-OMP_NUM_THREADS=1 BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python ~/bohrium/benchmark/python/lbm_3d.py --size=150*150*150*10 --bohrium=True > $HOSTNAME.fused2.txt
+BH_VE_CPU_JIT_FUSION=1 OMP_NUM_THREADS=$THREADS BH_VE_CPU_BIND=$BINDING BH_VE_CPU_JIT_DUMPSRC=$DUMPSRC $TASKSET python $SCRIPT --size=150*150*150*10 --bohrium=True > $HOSTNAME.fused1.txt
+BH_VE_CPU_JIT_FUSION=1 OMP_NUM_THREADS=$THREADS BH_VE_CPU_BIND=$BINDING BH_VE_CPU_JIT_DUMPSRC=$DUMPSRC $TASKSET python $SCRIPT --size=150*150*150*10 --bohrium=True > $HOSTNAME.fused2.txt
 
