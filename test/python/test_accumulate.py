@@ -22,7 +22,7 @@ class test_accumulate(numpytest):
         if bh.check(a[0]):
             cmd = "res = bh.add.accumulate(a[0],axis=%d)"%self.axis
         else:
-            cmd = "res = bh.add.accumulate(a[0],axis=%d)"%self.axis
+            cmd = "res = np.add.accumulate(a[0],axis=%d)"%self.axis
         exec(cmd)
         return (res,cmd)
 
@@ -33,4 +33,3 @@ class test_accumulate(numpytest):
             cmd = "res = np.multiply.accumulate(a[0],axis=%d)"%self.axis
         exec(cmd)
         return (res,cmd)
-
