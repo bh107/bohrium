@@ -8,6 +8,34 @@ namespace core{
 
 const char TAG[] = "Utils";
 
+void tac_transform(tac_t& tac, SymbolTable& symbol_table)
+{
+    switch(tac.op) {
+        case MAP:
+            switch(tac.oper) {
+                case IDENTITY:
+                    if(tac.out == tac.in1) {
+                        tac.op = NOOP;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case ZIP:
+            switch(tac.oper) {
+                case POWER:
+                case MULTIPLY:
+                case DIVIDE:
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
 std::string string_format(const std::string fmt_str, ...) {
     int size = 100;
     std::string str;

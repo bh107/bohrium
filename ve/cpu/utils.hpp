@@ -61,6 +61,30 @@ std::string tac_text(const tac_t& tac);
 int tac_noperands(const tac_t& tac);
 
 /**
+ *  Transforms the given tac to a NOOP or an equivalent tac,
+ *  which should be cheaper compute. 
+ *
+ *  # Silly stuff like
+ *
+ *  IDENTITY a, a   -> NOOP
+ *
+ *  # Operators with scalar neutral element
+ * 
+ *  ADD a, a, 0     -> NOOP
+ *  MUL b, b, 1     -> NOOP
+ *  DIV a, a, 1     -> NOOP
+
+ *  ADD a, b, 0     -> IDENTITY a, b
+ *  MUL a, b, 1     -> IDENTITY a, b
+ *  MUL a, b, 0     -> IDENTITY a, 0
+ *
+ *  # Specialization
+ *
+ *  POW a, a, 2     -> MUL a, a, a
+ */
+void tac_transform(tac_t& tac, SymbolTable& symbol_table);
+
+/**
  *  Map bh_ir->instr_list (bh_instruction) to tac_t with entries in symbol_table.
  */
 void instrs_to_tacs(bh_ir& bhir, 
