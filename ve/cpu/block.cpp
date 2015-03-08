@@ -160,7 +160,7 @@ bool Block::symbolize(void)
         if (base_refs_[operands_[i]->base].size()==1) {
             operands_ss << "R";
         } else {
-            operands_ss << "S";
+            operands_ss << "A";
         }
     }
 
