@@ -105,6 +105,8 @@ public:
      */
     operand_t** operands(void);
 
+    size_t base_refcount(bh_base* base);
+
     /**
      * Count of operands in the block.
      */
@@ -128,6 +130,7 @@ public:
 
     std::string symbol(void) const;
     std::string symbol_text(void) const;
+
 
     /**
      *  Returns the iteration space of the block.
@@ -168,6 +171,7 @@ public:
 
     uint32_t omask(void);    
 
+
 private:
 
     Block();
@@ -192,6 +196,9 @@ private:
     uint32_t omask_;
 
     static const char TAG[];
+
+    std::map<bh_base*, std::set<uint64_t>> base_refs_;
+
 };
 
 }}

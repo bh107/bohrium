@@ -27,6 +27,7 @@ std::string _float_complex(void);
 std::string _double_complex(void);
 
 // Variable declaration, access and modifiers
+std::string _restrict(std::string object);
 std::string _ref(std::string object);
 std::string _deref(std::string object);
 std::string _index(std::string object, int64_t idx);
@@ -245,6 +246,8 @@ public:
 
     kernel_operand_iter operands_begin(void);
     kernel_operand_iter operands_end(void);
+
+    uint64_t base_refcount(uint64_t gidx);
 
     uint32_t omask(void);
 

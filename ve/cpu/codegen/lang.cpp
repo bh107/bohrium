@@ -68,6 +68,13 @@ string _double_complex(void)
     return "double complex";
 }
 
+string _restrict(string object)
+{
+    stringstream ss;
+    ss << object << " restrict";
+    return ss.str();
+}
+
 string _ref(string object)
 {
     stringstream ss;

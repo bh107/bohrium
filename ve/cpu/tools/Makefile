@@ -100,6 +100,10 @@ install:
 	mkdir -p $(BDIR)
 	cd $(BDIR) && cmake $(ROOT) && make $(PAR_LVL) && make install
 
+install_debug:
+	mkdir -p $(BDIR)
+	cd $(BDIR) && cmake $(ROOT) $(DEBUG_BUILD) && make $(PAR_LVL) && make install
+
 install_profiling:
 	mkdir -p $(BDIR)
 	cd $(BDIR) && cmake $(ROOT) $(PROFILE_BUILD) && make $(PAR_LVL) && make install

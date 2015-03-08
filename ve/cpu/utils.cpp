@@ -25,8 +25,11 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
         case ZIP:
             switch(tac.oper) {
                 case POWER:
+                    break;
                 case MULTIPLY:
+                    break;
                 case DIVIDE:
+                    break;
                 default:
                     break;
             }

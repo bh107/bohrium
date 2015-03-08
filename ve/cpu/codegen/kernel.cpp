@@ -48,6 +48,11 @@ Iterspace& Kernel::iterspace(void)
     return iterspace_;
 }
 
+uint64_t Kernel::base_refcount(uint64_t gidx)
+{
+    return block_.base_refcount(operand_glb(gidx).meta().base);
+}
+
 uint64_t Kernel::noperands(void)
 {
     return tacs_.size();

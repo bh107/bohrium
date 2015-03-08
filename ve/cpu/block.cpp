@@ -26,6 +26,7 @@ void Block::clear(void)
 {                               // Reset the current state of the block
     tacs_.clear();              // tacs
     array_tacs_.clear();        // array_tacs
+    base_refs_.clear();
 
     omask_ = 0;
 
@@ -138,6 +139,9 @@ size_t Block::localize(size_t global_idx)
     global_to_local_.insert(pair<size_t,size_t>(global_idx, local_idx));
     local_to_global_.insert(pair<size_t,size_t>(local_idx, global_idx));
 
+    // Maintain references to bases within the block.
+    base_refs_[operands_[local_idx]->base].insert(global_idx);
+
     return local_idx;
 }
 
@@ -151,6 +155,13 @@ bool Block::symbolize(void)
         operands_ss << "~" << i;
         operands_ss << core::layout_text_shand(operands_[i]->layout);
         operands_ss << core::etype_text_shand(operands_[i]->etype);
+
+        // Let the "Restrictable" flag be part of the symbol.
+        if (base_refs_[operands_[i]->base].size()==1) {
+            operands_ss << "R";
+        } else {
+            operands_ss << "S";
+        }
     }
 
     //
@@ -207,6 +218,11 @@ bool Block::symbolize(void)
     symbol_         = core::hash_text(symbol_text_);
 
     return true;
+}
+
+size_t Block::base_refcount(bh_base* base)
+{
+    return base_refs_[base].size();
 }
 
 operand_t& Block::operand(size_t local_idx)
@@ -382,6 +398,21 @@ std::string Block::text(void)
         ss << operand_text(opr);
     }
     ss << "}" << endl;
+
+    ss << "BASE_REFS {" << endl;
+    for(std::map<bh_base*, std::set<uint64_t> >::iterator it=base_refs_.begin();
+        it!=base_refs_.end();
+        ++it) {
+        std::set<uint64_t>& op_bases = it->second;
+        ss << " " << it->first << " = ";
+        for(std::set<uint64_t>::iterator oit=op_bases.begin();
+            oit != op_bases.end();
+            oit++) {
+            ss << *oit << ", ";
+        }
+        ss << endl;
+    }
+    ss << "}";
 
     ss << "ITERSPACE {" << endl;
     ss << " LAYOUT = " << layout_text(iterspace_.layout) << "," << endl;

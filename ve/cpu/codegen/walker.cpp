@@ -20,16 +20,26 @@ string Walker::declare_operands(void)
         oit != kernel_.operands_end();
         ++oit) {
         Operand& operand = oit->second;
+        bool restrictable = kernel_.base_refcount(oit->first)==1;
         switch(operand.meta().layout) {
             case STRIDED:       
             case SPARSE:
             case CONTIGUOUS:
-                ss
-                << _declare_init(
-                    _ptr(operand.etype()),
-                    operand.walker(),
-                    operand.first()
-                );
+                if (restrictable) {
+                    ss
+                    << _declare_init(
+                        _restrict(_ptr(operand.etype())),
+                        operand.walker(),
+                        operand.first()
+                    );
+                } else {
+                    ss
+                    << _declare_init(
+                        _ptr(operand.etype()),
+                        operand.walker(),
+                        operand.first()
+                    );
+                }
                 break;
 
             case SCALAR:
