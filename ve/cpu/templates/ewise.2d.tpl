@@ -42,6 +42,8 @@
         {{WALKER_STEPSIZE}}
 
         for(int64_t sld_idx=work_offset; sld_idx<work_end; ++sld_idx) {
+
+            {{PRAGMA_SIMD}}
             for (int64_t ld_idx = 0; ld_idx <iterspace->shape[1]; ++ld_idx) {
                 // Apply operator(s)
                 {{OPERATIONS}}

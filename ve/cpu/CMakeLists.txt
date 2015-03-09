@@ -85,6 +85,11 @@ if (HAS_STRICT_ALIASING)
     set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -fstrict-aliasing")
 endif()
 
+check_c_compiler_flag(-fopenmp-simd HAS_OPENMP_SIMD)
+if (HAS_OPENMP_SIMD)
+    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -fopenmp-simd")
+endif()
+
 check_c_compiler_flag(-march=native HAS_MARCH_NATIVE)
 if (HAS_MARCH_NATIVE)
     set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -march=native")

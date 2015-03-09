@@ -418,6 +418,7 @@ string Walker::generate_source(void)
         
         if ((kernel_.iterspace().meta().layout & CONT_COMPATIBLE)>0) {
             subjects["WALKER_STEP_LD"]  = step_fwd(rank-1);
+            subjects["PRAGMA_SIMD"]     = "#pragma omp simd";
             plaid = "ewise.1d";
         } else {
             switch(rank) {

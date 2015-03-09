@@ -53,6 +53,7 @@
                 {{WALKER_STEP_OUTER}}
             }
 
+            {{PRAGMA_SIMD}}
             for (int64_t iidx=0; iidx < chunksize; iidx++) { // Execute array-operations
                 {{OPERATIONS}}
 
