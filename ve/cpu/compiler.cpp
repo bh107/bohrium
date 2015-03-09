@@ -9,31 +9,30 @@ namespace cpu {
 
 const char Compiler::TAG[] = "Compiler";
 
-/**
- * compile() forks and executes a system process, the process along with
- * arguments must be provided as argument at time of construction.
- * The process must be able to consume sourcecode via stdin and produce
- * a shared object file.
- * The compiled shared-object is then loaded and made available for execute().
- *
- * Examples:
- *
- *  Compiler tcc("tcc -O2 -march=core2 -fPIC -x c -shared");
- *  Compiler gcc("gcc -O2 -march=core2 -fPIC -x c -shared");
- *  Compiler clang("clang -O2 -march=core2 -fPIC -x c -shared");
- *
- */
-Compiler::Compiler(string process_str) : process_str(process_str) {}
+Compiler::Compiler(string cmd, string inc, string lib, string flg, string ext) : cmd_(cmd), inc_(inc), lib_(lib), flg_(flg), ext_(ext) {}
 
-Compiler::~Compiler()
-{
-}
+Compiler::~Compiler() {}
 
 string Compiler::text()
 {
     stringstream ss;
-    ss << "Compiler(\"" << process_str << "\")";
+    ss << "Compiler(\"" << process_str("OBJ", "SRC") << "\")";
     ss << endl;
+
+    return ss.str();
+}
+
+string Compiler::process_str(string object_abspath, string source_abspath)
+{
+    stringstream ss;
+
+    ss           << cmd_;
+    ss << " "    << inc_; 
+    ss << " "    << flg_;
+    ss << " "    << ext_;
+    ss << " "    << source_abspath;
+    ss << " "    << lib_;
+    ss << " -o " << object_abspath;
 
     return ss.str();
 }
@@ -45,15 +44,7 @@ string Compiler::text()
  */
 bool Compiler::compile(string object_abspath, const char* sourcecode, size_t source_len)
 {
-    //
-    // Constuct the compiler command
-    stringstream ss_cmd;
-    ss_cmd << process_str;
-    ss_cmd << " - ";
-    ss_cmd << " -o ";
-    ss_cmd << object_abspath;
-
-    string cmd = ss_cmd.str();
+    string cmd = process_str(object_abspath, " - ");
 
     // Execute the process
     FILE *cmd_stdin = NULL;                     // Handle for library-file
@@ -75,15 +66,7 @@ bool Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
  */
 bool Compiler::compile(string object_abspath, string src_abspath)
 {
-    //
-    // Constuct the compiler command
-    stringstream ss_cmd;
-    ss_cmd << process_str;
-    ss_cmd << " " << src_abspath;
-    ss_cmd << " -o ";
-    ss_cmd << object_abspath;
-
-    string cmd = ss_cmd.str();
+    string cmd = process_str(object_abspath, src_abspath);
 
     // Execute the process
     FILE *cmd_stdin = NULL;                     // Handle for library-file

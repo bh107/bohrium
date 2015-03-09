@@ -19,6 +19,10 @@ const char Engine::TAG[] = "Engine";
 
 Engine::Engine(
     const string compiler_cmd,
+    const string compiler_inc,
+    const string compiler_lib,
+    const string compiler_flg,
+    const string compiler_ext,
     const string template_directory,
     const string kernel_directory,
     const string object_directory,
@@ -42,7 +46,7 @@ Engine::Engine(
     dump_rep(dump_rep),
     storage(object_directory, kernel_directory),
     plaid_(template_directory),
-    compiler(compiler_cmd),
+    compiler(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext),
     thread_control(binding, mthreads),
     exec_count(0)
 {

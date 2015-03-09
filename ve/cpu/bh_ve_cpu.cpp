@@ -93,6 +93,10 @@ bh_error bh_ve_cpu_init(const char *name)
     bh_intp dump_rep = 0;
 
     char* compiler_cmd;   // cpu Arguments
+    char* compiler_inc;   // cpu Arguments
+    char* compiler_lib;   // cpu Arguments
+    char* compiler_flg;   // cpu Arguments
+    char* compiler_ext;   // cpu Arguments
     char* kernel_path;
     char* object_path;
     char* template_path;
@@ -198,7 +202,11 @@ bh_error bh_ve_cpu_init(const char *name)
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
     bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");
     bh_path_option(     template_path,  "BH_VE_CPU_TEMPLATE_PATH", "template_path");
-    bh_string_option(   compiler_cmd,   "BH_VE_CPU_COMPILER",      "compiler_cmd");
+    bh_string_option(   compiler_cmd,   "BH_VE_CPU_COMPILER_CMD",      "compiler_cmd");
+    bh_string_option(   compiler_inc,   "BH_VE_CPU_COMPILER_INC",      "compiler_inc");
+    bh_string_option(   compiler_lib,   "BH_VE_CPU_COMPILER_LIB",      "compiler_lib");
+    bh_string_option(   compiler_flg,   "BH_VE_CPU_COMPILER_FLG",      "compiler_flg");
+    bh_string_option(   compiler_ext,   "BH_VE_CPU_COMPILER_EXT",      "compiler_ext");
 
     if (!jit_enabled) {
         jit_preload     = 1;
@@ -216,6 +224,10 @@ bh_error bh_ve_cpu_init(const char *name)
     // VROOM VROOM VROOOOOOMMMM!!! VROOOOM!!
     engine = new bohrium::engine::cpu::Engine(
         string(compiler_cmd),
+        string(compiler_inc),
+        string(compiler_lib),
+        string(compiler_flg),
+        string(compiler_ext),
         string(template_path),
         string(kernel_path),
         string(object_path),

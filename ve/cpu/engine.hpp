@@ -24,6 +24,10 @@ class Engine {
 public:
     Engine(
         const std::string compiler_cmd,
+        const std::string compiler_inc,
+        const std::string compiler_lib,
+        const std::string compiler_flg,
+        const std::string compiler_ext,
         const std::string template_directory,
         const std::string kernel_directory,
         const std::string object_directory,
