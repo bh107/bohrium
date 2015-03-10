@@ -46,16 +46,36 @@ bool Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
 {
     string cmd = process_str(object_abspath, " - ");
 
-    // Execute the process
-    FILE *cmd_stdin = NULL;                     // Handle for library-file
-    cmd_stdin = popen(cmd.c_str(), "w");        // Execute the command
+    FILE* cmd_stdin = popen(cmd.c_str(), "w");  // Open process and get stdin stream
     if (!cmd_stdin) {
-        std::cout << "Err: Could not execute process! ["<< cmd <<"]" << std::endl;
+        perror("popen()");
+        fprintf(stderr, "popen() failed for: [%s]", sourcecode);
+        pclose(cmd_stdin);
         return false;
     }
-    fwrite(sourcecode, 1, source_len, cmd_stdin);   // Write sourcecode to stdin
-    fflush(cmd_stdin);
+                                                // Write / pipe to stdin
+    int write_res = fwrite(sourcecode, sizeof(char), source_len, cmd_stdin);
+    if (write_res < (int)source_len) {
+        perror("fwrite()");
+        fprintf(stderr, "fwrite() failed in file %s at line # %d\n", __FILE__, __LINE__-5);
+        pclose(cmd_stdin);
+        return false;
+    }
+
+    int flush_res = fflush(cmd_stdin);          // Flush stdin
+    if (EOF == flush_res) {
+        perror("fflush()");
+        fprintf(stderr, "fflush() failed in file %s at line # %d\n", __FILE__, __LINE__-5);
+        pclose(cmd_stdin);
+        return false;
+    }
+
     int exit_code = (pclose(cmd_stdin)/256);
+    if (0!=exit_code) {
+        perror("pclose()");
+        fprintf(stderr, "pclose() failed.\n");
+    }
+    
     return (exit_code==0);
 }
 
@@ -75,6 +95,7 @@ bool Compiler::compile(string object_abspath, string src_abspath)
         std::cout << "Err: Could not execute process! ["<< cmd <<"]" << std::endl;
         return false;
     }
+
     fflush(cmd_stdin);
     int exit_code = (pclose(cmd_stdin)/256);
     return (exit_code==0);
