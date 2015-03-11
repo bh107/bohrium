@@ -185,6 +185,10 @@ std::string _crealf(std::string right);
 std::string _cimagf(std::string right);
 std::string _cimag(std::string right);
 
+// OpenMP stuff
+
+std::string _omp_reduction_oper(OPERATOR oper);
+
 class Operand
 {
 public:
@@ -280,7 +284,7 @@ public:
     Walker(Plaid& plaid, Kernel& kernel);
 
     std::string generate_source(void);
-    std::string oper_neutral_element(OPERATOR oper);
+    std::string oper_neutral_element(OPERATOR oper, ETYPE etype);
 
     std::string simd_pragma(void);
     

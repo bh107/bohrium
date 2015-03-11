@@ -74,16 +74,16 @@
             //
             // Do the reduction over the axis dimension
             //
-            {{ETYPE}} state = *{{OPD_IN1}}_current;
-            for(int64_t k=1; k<iterspace->shape[axis]; ++k) {
-                //
-                // Walk to the next element input-element along the axis dimension
-                {{OPD_IN1}}_current += {{OPD_IN1}}_stride[axis];
-
+            {{ETYPE}} state = {{NEUTRAL_ELEMENT}};
+            for(int64_t k=0; k<iterspace->shape[axis]; ++k) {
                 //
                 // Apply the operator
                 //
-                state += *{{OPD_IN1}}_current;
+                state = state {{OMP_REDUCTION_OPER}} *({{OPD_IN1}}_current);
+
+                //
+                // Walk to the next element input-element along the axis dimension
+                {{OPD_IN1}}_current += {{OPD_IN1}}_stride[axis];
             }
             // Write the accumulation output
             *{{OPD_OUT}}_current = state;

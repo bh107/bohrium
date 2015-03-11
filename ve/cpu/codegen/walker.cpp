@@ -528,7 +528,7 @@ string Walker::generate_source(void)
         const uint32_t rank = in1->meta().ndim;
         // Note: end of crappy code...
 
-        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper);
+        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
         subjects["ATYPE"]           = in2->etype();
         subjects["ETYPE"]           = out->etype();
         subjects["OPD_OUT"]         = out->name();
@@ -538,6 +538,7 @@ string Walker::generate_source(void)
         if ((kernel_.omask() & REDUCE)>0) {
             subjects["PAR_OPERATIONS"]  = reduce_par_operations();
             subjects["SEQ_OPERATIONS"]  = reduce_seq_operations();
+            subjects["OMP_REDUCTION_OPER"] = _omp_reduction_oper(tac->oper);
             switch(rank) {
                 case 1:
                     subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
