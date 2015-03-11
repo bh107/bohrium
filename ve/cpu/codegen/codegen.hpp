@@ -281,6 +281,8 @@ public:
 
     std::string generate_source(void);
     std::string oper_neutral_element(OPERATOR oper);
+
+    std::string simd_pragma(void);
     
 private:
     std::string declare_operands(void);
