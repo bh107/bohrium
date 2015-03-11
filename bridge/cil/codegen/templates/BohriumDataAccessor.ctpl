@@ -126,8 +126,6 @@ namespace NumCIL.Bohrium
 
         public void Allocate()
         {
-            Sync();
-
             if (m_array.IsAllocated)
             {
                 if (m_data == null)
@@ -137,20 +135,23 @@ namespace NumCIL.Bohrium
                     //In this case, data resides in C land, 
                     // so we copy it back to CIL and free it in C land
                     m_data = new ${bh_atype}[m_size];
-                    var ptr = m_array.Data;
-                    
-                    if (ptr != IntPtr.Zero) 
-                        Utility.WritePointerToArray(ptr, m_data);
-                    else
-                        Console.WriteLine("Array appears to be uninitialized ....");
+
+                    using (var t = PInvoke.bh_multi_array_${bh_ctype}_new_empty(1, new long[] { m_size }))
+                    {
+                        ((IMultiArray)t).SetData(PinnedArrayTracker.CreatePinnedArray(m_data));
+                        PInvoke.bh_multi_array_${bh_ctype}_identity_${bh_ctype}(t, m_array);
+                        t.Sync();
+                    }
 
                     m_array.Dispose();
+                    PinnedArrayTracker.Release();
+                    m_dirty = false;
                 }
                 else
                 {
                     //Data resides in CIL so detach the data and release the array
                     //Console.WriteLine("Release data in C land");
-
+                    Sync();
                     m_array.Data = IntPtr.Zero;
                     m_array.Dispose();
                 }
@@ -158,6 +159,7 @@ namespace NumCIL.Bohrium
             else
             {
                 //Console.WriteLine("Accessed array that was never in any operation");
+                Sync();
                 if (m_data == null)
                     m_data = new ${bh_atype}[m_size];
             }

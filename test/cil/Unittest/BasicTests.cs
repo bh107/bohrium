@@ -186,7 +186,7 @@ namespace UnitTest
 
 			var r = Generate.Random(2000);
 			var rmin = Min.Aggregate(r);
-			var rmax = Min.Aggregate(r);
+			var rmax = Max.Aggregate(r);
 			var ravg = Add.Aggregate(r) / r.DataAccessor.Length;
 
 			if (rmin < 0 || rmax > 1.0)
