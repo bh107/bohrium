@@ -315,6 +315,12 @@ private:
     std::string step_fwd(uint32_t dim, uint64_t oidx);
     std::string step_fwd(uint32_t dim);
 
+
+    std::string step_fwd_outer(uint64_t glb_idx);
+    std::string step_fwd_outer(void);
+    std::string step_fwd_inner(uint64_t glb_idx);
+    std::string step_fwd_inner(void);
+
     std::string reduce_par_operations(void);
     std::string reduce_seq_operations(void);
     

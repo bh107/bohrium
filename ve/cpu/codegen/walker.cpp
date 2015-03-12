@@ -316,6 +316,85 @@ string Walker::ewise_declare_stepsizes(uint32_t rank)
     return ss.str();
 }
 
+string Walker::step_fwd_outer(uint64_t glb_idx)
+{
+    stringstream ss;
+
+    Operand& operand = kernel_.operand_glb(glb_idx);
+    switch(operand.meta().layout) {
+        case SPARSE:
+        case STRIDED:
+            ss <<
+            _add_assign(
+                operand.walker(),
+                _mul("coord", _index(operand.stride(), "dim"))
+            ) << _end(operand.layout());
+            break;
+        case CONTIGUOUS:
+            ss <<
+            _add_assign(
+                operand.walker(),
+                _mul("coord", _index("weight", "dim"))
+            ) << _end(operand.layout());
+            break;
+        default:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+    }
+ 
+    return ss.str();
+}
+
+string Walker::step_fwd_outer(void)
+{
+    stringstream ss;
+
+    for(kernel_operand_iter oit=kernel_.operands_begin();
+        oit != kernel_.operands_end();
+        ++oit) {
+        ss << step_fwd_outer(oit->first);
+    }
+    return ss.str();
+}
+
+string Walker::step_fwd_inner(uint64_t glb_idx)
+{
+    stringstream ss;
+
+    Operand& operand = kernel_.operand_glb(glb_idx);
+    switch(operand.meta().layout) {
+        case SPARSE:
+        case STRIDED:
+            ss
+            << _add_assign(
+                operand.walker(),
+                operand.stepsize(operand.meta().ndim-1)
+            ) << _end(operand.layout());
+            break;
+        case CONTIGUOUS:
+            ss <<
+            _inc(operand.walker()) << _end(operand.layout());
+            break;
+        default:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+    }
+
+    return ss.str();
+}
+
+string Walker::step_fwd_inner(void)
+{
+    stringstream ss;
+
+    for(kernel_operand_iter oit=kernel_.operands_begin();
+        oit != kernel_.operands_end();
+        ++oit) {
+        ss << step_fwd_inner(oit->first);
+    }
+    return ss.str();
+}
+
 string Walker::step_fwd(uint32_t dim, uint64_t oidx)
 {
     stringstream ss;
@@ -442,29 +521,18 @@ string Walker::generate_source(void)
         subjects["OPERATIONS"]          = ewise_operations();
         
         if ((kernel_.iterspace().meta().layout & CONT_COMPATIBLE)>0) {
-            subjects["WALKER_STEP_LD"]  = step_fwd(rank-1);
+            subjects["WALKER_STEP_LD"]  = step_fwd_inner();
             subjects["PRAGMA_SIMD"]     = "#pragma omp simd";
             plaid = "ewise.1d";
         } else {
             switch(rank) {
                 case 1:     // 1D specialization
-                    subjects["WALKER_STEP_LD"]  = step_fwd(0);
+                    subjects["WALKER_STEP_LD"]  = step_fwd_inner();
                     plaid = "ewise.1d";
                     break;
-                case 2:     // 2D specialization
-                    subjects["WALKER_STEP_LD"]  = step_fwd(1);
-                    subjects["WALKER_STEP_SLD"] = step_fwd(0);
-                    plaid = "ewise.2d";
-                    break;
-                case 3:     // 3D specialization
-                    subjects["WALKER_STEP_LD"]  = step_fwd(2);
-                    subjects["WALKER_STEP_SLD"] = step_fwd(1);
-                    subjects["WALKER_STEP_TLD"] = step_fwd(0);
-                    plaid = "ewise.3d";
-                    break;
-                default:    // ND
-                    subjects["WALKER_STEP_OUTER"]   = step_fwd(0);
-                    subjects["WALKER_STEP_INNER"]   = step_fwd(rank-1);
+                default:    // ND generic
+                    subjects["WALKER_STEP_OUTER"]   = step_fwd_outer();
+                    subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
                     plaid = "ewise.nd";
                     break;
             }
