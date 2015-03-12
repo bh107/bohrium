@@ -536,9 +536,25 @@ string Walker::generate_source(void)
         subjects["OPD_IN2"]         = in2->name();
 
         if ((kernel_.omask() & REDUCE)>0) {
-            subjects["PAR_OPERATIONS"]  = reduce_par_operations();
-            subjects["SEQ_OPERATIONS"]  = reduce_seq_operations();
-            subjects["OMP_REDUCTION_OPER"] = _omp_reduction_oper(tac->oper);
+            subjects["PAR_OPERATIONS"] = _assign(
+                "accu",
+                oper(tac->oper, in1->meta().etype, "accu", in1->walker_val())
+            )+_end();
+
+            switch(tac->oper) {
+                case MAXIMUM:
+                case MINIMUM:
+                    subjects["REDUCE_SYNC"] = "#pragma omp critical";
+                    break;
+                default:
+                    subjects["REDUCE_SYNC"] = "#pragma omp atomic";
+                    break;
+            }
+            subjects["REDUCE_COMBINATOR"] = _assign(
+                out->walker_val(),
+                oper(tac->oper, in1->meta().etype, out->walker_val(), "accu")
+            )+_end();
+            
             switch(rank) {
                 case 1:
                     subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);

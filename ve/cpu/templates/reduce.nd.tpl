@@ -50,9 +50,9 @@
         //
         // Compute offset based on coordinate
         //
-        {{ETYPE}}* {{OPD_OUT}}_current = {{OPD_OUT}}_first;
+        {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
         for (int64_t j=0; j<=last_dim; ++j) {           
-            {{OPD_OUT}}_current += coord[j] * {{OPD_OUT}}_stride[j];
+            {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_stride[j];
         }
 
         //
@@ -62,34 +62,34 @@
 
             //
             // Walk over the input
-            {{ETYPE}} *{{OPD_IN1}}_current = {{OPD_IN1}}_first;
+            {{ETYPE}} *{{OPD_IN1}} = {{OPD_IN1}}_first;
             // Increment the input-offset based on every but the axis dimension
             for(int64_t s=0; s<iterspace->ndim-1; ++s) {
-                {{OPD_IN1}}_current += coord[s] * stride[s];
+                {{OPD_IN1}} += coord[s] * stride[s];
             }
-            {{OPD_IN1}}_current += j*stride[last_dim];
+            {{OPD_IN1}} += j*stride[last_dim];
             // Non-axis offset ready
             //
             
             //
             // Do the reduction over the axis dimension
             //
-            {{ETYPE}} state = {{NEUTRAL_ELEMENT}};
+            {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
             for(int64_t k=0; k<iterspace->shape[axis]; ++k) {
                 //
                 // Apply the operator
                 //
-                state = state {{OMP_REDUCTION_OPER}} *({{OPD_IN1}}_current);
+                {{PAR_OPERATIONS}}
 
                 //
                 // Walk to the next element input-element along the axis dimension
-                {{OPD_IN1}}_current += {{OPD_IN1}}_stride[axis];
+                {{OPD_IN1}} += {{OPD_IN1}}_stride[axis];
             }
             // Write the accumulation output
-            *{{OPD_OUT}}_current = state;
+            *{{OPD_OUT}} = accu;
 
             // Now increment the output
-            {{OPD_OUT}}_current += {{OPD_OUT}}_stride[last_dim];
+            {{OPD_OUT}} += {{OPD_OUT}}_stride[last_dim];
         }
         cur_e += shape_ld;
 
