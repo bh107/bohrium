@@ -6,6 +6,8 @@ BH_PYTHON=python
 #TEST_EXCLUDE=--exclude-test=test_gauss_20x20
 TEST_EXCLUDE=
 DUMPSRC=1
+CC=/home/safl/intel/bin/icc
+CXX=/home/safl/intel/bin/icpc
 
 BENCHMARK_BUILD=-DBRIDGE_CIL=OFF -DBRIDGE_NUMCIL=OFF -DFILTER_FUSEPRINTER=OFF -DFILTER_PPRINT=OFF -DFILTER_PRICER=OFF -DFUSER_GENTLE=OFF -DFUSER_GREEDY=OFF -DFUSER_OPTIMAL=OFF -DFUSER_SINGLETON=OFF -DVEM_CLUSTER=OFF -DVEM_PROXY=OFF -DVE_GPU=OFF -DTEST_CIL=OFF -DBENCHMARK_CIL=OFF -DCMAKE_BUILD_TYPE=Release
 
@@ -99,23 +101,23 @@ purge_install: purge_cpu purge_all clean gen install
 # "Install the cpu-engine
 install:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) && make $(PAR_LVL) && make install
+	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(ROOT) && make $(PAR_LVL) && make install
 
 install_debug:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) $(DEBUG_BUILD) && make $(PAR_LVL) && make install
+	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(ROOT) $(DEBUG_BUILD) && make $(PAR_LVL) && make install
 
 install_profiling:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) $(PROFILE_BUILD) && make $(PAR_LVL) && make install
+	cd $(BDIR) &&  CC=$(CC) CXX=$(CXX) cmake $(ROOT) $(PROFILE_BUILD) && make $(PAR_LVL) && make install
 
 install_dev:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) $(DEV_BUILD) && make $(PAR_LVL) && make install
+	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(ROOT) $(DEV_BUILD) && make $(PAR_LVL) && make install
 
 install_benchmark:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake $(ROOT) $(BENCHMARK_BUILD) && make $(PAR_LVL) && make install
+	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(ROOT) $(BENCHMARK_BUILD) && make $(PAR_LVL) && make install
 
 #
 # Clean up the build-files
