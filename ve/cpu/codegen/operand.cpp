@@ -78,6 +78,20 @@ string Operand::stridevar(uint32_t dim)
     return ss.str();
 }
 
+string Operand::stride_inner(void)
+{
+    stringstream ss;
+    ss << name() << "_stride_inner";
+    return ss.str();
+}
+
+string Operand::outer_offset(void)
+{
+    stringstream ss;
+    ss << name() << "_outer_offset";
+    return ss.str();
+}
+
 string Operand::walker(void)
 {
     stringstream ss;

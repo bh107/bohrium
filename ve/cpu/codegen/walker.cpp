@@ -256,6 +256,72 @@ string Walker::declare_stridesizes(void)
     return ss.str();
 }
 
+string Walker::declare_stride_inner(uint64_t oidx)
+{
+    stringstream ss;
+    Operand& operand = kernel_.operand_glb(oidx);
+    switch(operand.meta().layout) {
+        case SPARSE:
+        case STRIDED:
+            ss << _declare_init(
+                _const(_int64()),
+                operand.stride_inner(),
+                _index(operand.stride(), "last_dim")
+            )
+            << _end(operand.layout());
+            break;
+        default:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+    }
+    return ss.str();
+}
+
+string Walker::declare_stride_inner(void)
+{
+    stringstream ss;
+
+    for(kernel_operand_iter oit=kernel_.operands_begin();
+        oit != kernel_.operands_end();
+        ++oit) {
+        ss << declare_stride_inner(oit->first);
+    }
+    return ss.str();
+}
+
+string Walker::declare_outer_offset(uint64_t oidx)
+{
+    stringstream ss;
+    Operand& operand = kernel_.operand_glb(oidx);
+    switch(operand.meta().layout) {
+        case SPARSE:
+        case STRIDED:
+        case CONTIGUOUS:
+            ss << _declare_init(
+                _int64(),
+                operand.outer_offset(),
+                "0" 
+            )
+            << _end(operand.layout());
+            break;
+        default:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+    }
+    return ss.str();
+}
+
+string Walker::declare_outer_offset(void)
+{
+    stringstream ss;
+    for(kernel_operand_iter oit=kernel_.operands_begin();
+        oit != kernel_.operands_end();
+        ++oit) {
+        ss << declare_outer_offset(oit->first);
+    }
+    return ss.str();
+}
+
 string Walker::ewise_declare_stepsizes(uint32_t rank)
 {
     stringstream ss;
@@ -324,17 +390,11 @@ string Walker::step_fwd_outer(uint64_t glb_idx)
     switch(operand.meta().layout) {
         case SPARSE:
         case STRIDED:
-            ss <<
-            _add_assign(
-                operand.walker(),
-                _mul("coord", _index(operand.stride(), "dim"))
-            ) << _end(operand.layout());
-            break;
         case CONTIGUOUS:
             ss <<
             _add_assign(
                 operand.walker(),
-                _mul("coord", _index("weight", "dim"))
+                _mul("coord", _index(operand.stride(), "dim"))
             ) << _end(operand.layout());
             break;
         default:
@@ -368,7 +428,7 @@ string Walker::step_fwd_inner(uint64_t glb_idx)
             ss
             << _add_assign(
                 operand.walker(),
-                operand.stepsize(operand.meta().ndim-1)
+                operand.stride_inner()
             ) << _end(operand.layout());
             break;
         case CONTIGUOUS:
@@ -516,26 +576,23 @@ string Walker::generate_source(void)
     if ((kernel_.omask() & EWISE)>0) {  // Element-wise operations
 
         const uint32_t rank = kernel_.iterspace().meta().ndim;
-        subjects["WALKER_STEPSIZE"]     = ewise_declare_stepsizes(rank);
-        subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
+        subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
+        subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
         subjects["OPERATIONS"]          = ewise_operations();
         
-        if ((kernel_.iterspace().meta().layout & CONT_COMPATIBLE)>0) {
-            subjects["WALKER_STEP_LD"]  = step_fwd_inner();
-            subjects["PRAGMA_SIMD"]     = "#pragma omp simd";
+        if ((1==rank) or ((kernel_.iterspace().meta().layout & CONT_COMPATIBLE)>0)) {
             plaid = "ewise.1d";
-        } else {
-            switch(rank) {
-                case 1:     // 1D specialization
-                    subjects["WALKER_STEP_LD"]  = step_fwd_inner();
-                    plaid = "ewise.1d";
-                    break;
-                default:    // ND generic
-                    subjects["WALKER_STEP_OUTER"]   = step_fwd_outer();
-                    subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
-                    plaid = "ewise.nd";
-                    break;
+            subjects["WALKER_OFFSET"] = ewise_assign_offset(rank);
+            if ((kernel_.iterspace().meta().layout & CONT_COMPATIBLE)==0) {
+                subjects["WALKER_INNER_DIM"] = _declare_init(
+                    _const(_int64()),
+                    "last_dim",
+                    _sub(kernel_.iterspace().ndim(), "1")
+                ) + _end();
             }
+        } else {
+            plaid = "ewise.nd";
+            subjects["WALKER_STEP_OUTER"]   = step_fwd_outer();
         }
     } else if ((kernel_.omask() & (REDUCE|SCAN))>0) {   // Reductions
 

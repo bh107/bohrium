@@ -25,9 +25,6 @@
     {{WALKER_DECLARATION}}
     {{WALKER_STRIDES}}
 
-    const int mthreads = omp_get_max_threads();
-    const int64_t nworkers = nelements > mthreads ? mthreads : 1;
-
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 

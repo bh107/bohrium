@@ -35,29 +35,36 @@
             work = work_split;
             work_offset = tid * work + work_spill;
         }
-        work_end = work_offset+work;
+        work_end = work_offset + work;
 
         if (work) {
-        // Stepsize
-        {{WALKER_STEPSIZE}}
+        // Walker STRIDE_INNER - begin
+        {{WALKER_STRIDE_INNER}}
+        // Walker STRIDE_INNER - end
+
         const int64_t eidx_begin = work_offset*chunksize;
         const int64_t eidx_end   = work_end*chunksize;
         for(int64_t eidx=eidx_begin; eidx<eidx_end; eidx+=chunksize) {
-            // Operand declaration(s)
+            // Walker declaration(s) - begin
             {{WALKER_DECLARATION}}
-            
-            // Walker step outer dimensions
-            for (int64_t dim=0; dim < last_dim; ++dim) {    // offset from coord
+            // Walker declaration(s) - end
+
+            // Walker step OUTER / operand offset - begin
+            for (int64_t dim=0; dim < last_dim; ++dim) {
                 const int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
                 {{WALKER_STEP_OUTER}}
             }
+            // Walker step OUTER / operand offset - end
 
             {{PRAGMA_SIMD}}
-            for (int64_t iidx=0; iidx < chunksize; iidx++) { // Execute array-operations
+            for (int64_t iidx=0; iidx < chunksize; iidx++) {
+                // Apply operator(s) on operands - begin
                 {{OPERATIONS}}
+                // Apply operator(s) on operands - end
 
-                // Walker step innermost dimension
+                // Walker step INNER - begin
                 {{WALKER_STEP_INNER}}
+                // Walker step INNER - end
             }
         }}
         // TODO: Handle write-out of non-temp and non-const scalars.

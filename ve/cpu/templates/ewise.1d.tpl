@@ -6,6 +6,7 @@
 //
 //  * TODO: Vectorization, alias/restrict
 {
+    {{WALKER_INNER_DIM}}
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = iterspace->nelem > mthreads ? mthreads : 1;
     const int64_t work_split= iterspace->nelem / nworkers;
@@ -13,7 +14,7 @@
 
     #pragma omp parallel num_threads(nworkers)
     {
-        const int tid      = omp_get_thread_num();
+        const int tid = omp_get_thread_num();
 
         int64_t work=0, work_offset=0, work_end=0;
         if (tid < work_spill) {
@@ -23,23 +24,30 @@
             work = work_split;
             work_offset = tid * work + work_spill;
         }
-        work_end = work_offset+work;
+        work_end = work_offset + work;
 
         if (work) {
-        // Operand declaration(s)
+        // Walker STRIDE_INNER - begin
+        {{WALKER_STRIDE_INNER}}
+        // Walker STRIDE_INNER - end
+        
+        // Walker declaration(s) - begin
         {{WALKER_DECLARATION}}
-        // Operand offsets(s)
+        // Walker declaration(s) - end
+
+        // Walker offset(s) - begin
         {{WALKER_OFFSET}}
-        // Stepsize
-        {{WALKER_STEPSIZE}}
+        // Walker offset(s) - end
 
         {{PRAGMA_SIMD}}
         for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
-            // Apply operator(s)
+            // Apply operator(s) on operands - begin
             {{OPERATIONS}}
+            // Apply operator(s) on operands - end
             
-            // Increment operands
-            {{WALKER_STEP_LD}}
+            // Walker step INNER - begin
+            {{WALKER_STEP_INNER}}
+            // Walker step INNER - end
         }}
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
