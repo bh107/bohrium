@@ -6,8 +6,8 @@ BH_PYTHON=python
 TEST_EXCLUDE=--exclude-test=test_reduce_prod --exclude-test=test_reduce_bitwise --exclude-test=test_reduce_bool
 
 DUMPSRC=1
-CC=/home/safl/intel/bin/icc
-CXX=/home/safl/intel/bin/icpc
+#CC=/home/safl/intel/bin/icc
+#CXX=/home/safl/intel/bin/icpc
 
 BENCHMARK_BUILD=-DBRIDGE_CIL=OFF -DBRIDGE_NUMCIL=OFF -DFILTER_FUSEPRINTER=OFF -DFILTER_PPRINT=OFF -DFILTER_PRICER=OFF -DFUSER_GENTLE=OFF -DFUSER_GREEDY=OFF -DFUSER_OPTIMAL=OFF -DFUSER_SINGLETON=OFF -DVEM_CLUSTER=OFF -DVEM_PROXY=OFF -DVE_GPU=OFF -DTEST_CIL=OFF -DBENCHMARK_CIL=OFF -DCMAKE_BUILD_TYPE=Release
 

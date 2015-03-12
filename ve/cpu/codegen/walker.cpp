@@ -404,25 +404,6 @@ string Walker::ewise_operations(void)
     return ss.str();
 }
 
-string Walker::reduce_par_operations(void)
-{
-    stringstream ss;
-    
-    for(kernel_tac_iter tit=kernel_.tacs_begin();
-        tit!=kernel_.tacs_end();
-        ++tit) {
-        tac_t& tac = **tit;
-        ETYPE etype = kernel_.operand_glb(tac.out).meta().etype;
-        string in1 = kernel_.operand_glb(tac.in1).walker_val();
-
-        ss << _assign(
-            "accu",
-            oper(tac.oper, etype, "accu", in1)
-        ) << _end();
-    }
-    return ss.str();
-}
-
 string Walker::scan_operations(void)
 {
     stringstream ss;
@@ -441,24 +422,6 @@ string Walker::scan_operations(void)
         ss << _assign(
             kernel_.operand_glb(tac.out).walker_val(),
             "accu"
-        ) << _end();
-    }
-    return ss.str();
-}
-
-string Walker::reduce_seq_operations(void)
-{
-    stringstream ss;
-    
-    for(kernel_tac_iter tit=kernel_.tacs_begin();
-        tit!=kernel_.tacs_end();
-        ++tit) {
-        tac_t& tac = **tit;
-        ETYPE etype = kernel_.operand_glb(tac.out).meta().etype;
-
-        ss << _assign(
-            "accu",
-            oper(tac.oper, etype, "accu", "partials[pidx]")
         ) << _end();
     }
     return ss.str();
@@ -536,7 +499,7 @@ string Walker::generate_source(void)
         subjects["OPD_IN2"]         = in2->name();
 
         if ((kernel_.omask() & REDUCE)>0) {
-            subjects["PAR_OPERATIONS"] = _assign(
+            subjects["REDUCE_OPER"] = _assign(
                 "accu",
                 oper(tac->oper, in1->meta().etype, "accu", in1->walker_val())
             )+_end();
@@ -550,7 +513,7 @@ string Walker::generate_source(void)
                     subjects["REDUCE_SYNC"] = "#pragma omp atomic";
                     break;
             }
-            subjects["REDUCE_COMBINATOR"] = _assign(
+            subjects["REDUCE_OPER_COMBINE"] = _assign(
                 out->walker_val(),
                 oper(tac->oper, in1->meta().etype, out->walker_val(), "accu")
             )+_end();

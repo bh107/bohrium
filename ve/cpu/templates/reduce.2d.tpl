@@ -15,7 +15,7 @@
                                  {{OPD_IN1}}_stride[other_axis] *other_idx;
         {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
         for(int64_t axis_idx=0; axis_idx<iterspace->shape[axis]; ++axis_idx) { // Accumulate
-            {{PAR_OPERATIONS}}
+            {{REDUCE_OPER}}
             {{OPD_IN1}} += {{OPD_IN1}}_stride[axis];
         }
         *({{OPD_OUT}}_first + {{OPD_OUT}}_stride[0]*other_idx) = accu;

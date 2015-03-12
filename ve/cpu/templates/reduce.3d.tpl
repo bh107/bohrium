@@ -33,7 +33,7 @@
 
             {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
             for(int64_t axis_idx=0; axis_idx<iterspace->shape[axis]; ++axis_idx) {
-                {{PAR_OPERATIONS}}
+                {{REDUCE_OPER}}
                 {{OPD_IN1}} += {{OPD_IN1}}_stride[axis];
             }
             // todo: need another step function, stride-step

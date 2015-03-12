@@ -79,7 +79,7 @@
                 //
                 // Apply the operator
                 //
-                {{PAR_OPERATIONS}}
+                {{REDUCE_OPER}}
 
                 //
                 // Walk to the next element input-element along the axis dimension

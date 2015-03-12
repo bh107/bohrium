@@ -40,10 +40,10 @@
             {{WALKER_STEP_LD}}
 
             // Apply operator(s)
-            {{PAR_OPERATIONS}}
+            {{REDUCE_OPER}}
         }
         {{REDUCE_SYNC}}
-        {{REDUCE_COMBINATOR}}
+        {{REDUCE_OPER_COMBINE}}
         }
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
