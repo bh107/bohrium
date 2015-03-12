@@ -4,20 +4,47 @@
 //  * REDUCE on 1D strided and contiguous arrays.
 //
 {
-    const {{ATYPE}} axis = *{{OPD_IN2}}_first;
+    const int mthreads = omp_get_max_threads();
+    const int64_t nworkers = iterspace->nelem > mthreads ? mthreads : 1;
+    const int64_t work_split= iterspace->nelem / nworkers;
+    const int64_t work_spill= iterspace->nelem % nworkers;
 
-    const int64_t nelements   = iterspace->shape[axis];
-    const int mthreads        = omp_get_max_threads();
-    const int64_t nworkers    = nelements > mthreads ? mthreads : 1;
+    *({{OPD_OUT}}_first) = {{NEUTRAL_ELEMENT}};
 
-    {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
-    #pragma omp parallel for reduction(+:accu) num_threads(nworkers)
-    for(int64_t eidx=0; eidx<iterspace->shape[axis]; ++eidx) {
-        {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first + {{OPD_IN1}}_stride[axis]*eidx;
+    #pragma omp parallel num_threads(nworkers)
+    {
+        const int tid = omp_get_thread_num();
 
-        {{PAR_OPERATIONS}}
+        int64_t work=0, work_offset=0, work_end=0;
+        if (tid < work_spill) {
+            work = work_split + 1;
+            work_offset = tid * work;
+        } else {
+            work = work_split;
+            work_offset = tid * work + work_spill;
+        }
+        work_end = work_offset+work;
+
+        if (work) {
+        // Operand declaration(s)
+        {{WALKER_DECLARATION}}
+        // Operand offsets(s)
+        {{WALKER_OFFSET}}
+        // Stepsize
+        {{WALKER_STEPSIZE}}
+
+        {{ETYPE}} accu = *({{OPD_IN1}});
+        {{PRAGMA_SIMD}}
+        for (int64_t eidx = work_offset+1; eidx<work_end; ++eidx) {
+            // Increment operands
+            {{WALKER_STEP_LD}}
+
+            // Apply operator(s)
+            {{PAR_OPERATIONS}}
+        }
+        {{REDUCE_SYNC}}
+        {{REDUCE_COMBINATOR}}
+        }
     }
-    *{{OPD_OUT}}_first = accu;
-
+    // TODO: Handle write-out of non-temp and non-const scalars.
 }
-

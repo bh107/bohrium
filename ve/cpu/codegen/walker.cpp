@@ -12,6 +12,68 @@ namespace codegen{
 
 Walker::Walker(Plaid& plaid, Kernel& kernel) : plaid_(plaid), kernel_(kernel) {}
 
+string Walker::simd_pragma(void)
+{
+    stringstream ss;
+    for(kernel_operand_iter oit=kernel_.operands_begin();
+        oit != kernel_.operands_end();
+        ++oit) {
+        Operand& operand = oit->second;
+        bool restrictable = kernel_.base_refcount(oit->first)==1;
+        switch(operand.meta().layout) {
+            case STRIDED:       
+            case SPARSE:
+            case CONTIGUOUS:
+                if (restrictable) {
+                    ss
+                    << _declare_init(
+                        _restrict(_ptr(operand.etype())),
+                        operand.walker(),
+                        operand.first()
+                    );
+                } else {
+                    ss
+                    << _declare_init(
+                        _ptr(operand.etype()),
+                        operand.walker(),
+                        operand.first()
+                    );
+                }
+                break;
+
+            case SCALAR:
+                ss
+                 << _declare_init(
+                    operand.etype(),
+                    operand.walker(),
+                    _deref(operand.first())
+                );
+                break;
+            case SCALAR_CONST:
+                ss
+                << _declare_init(
+                    _const(operand.etype()),
+                    operand.walker(),
+                    _deref(operand.first())
+                );
+
+                break;
+            case SCALAR_TEMP:
+                ss
+                << _declare(
+                    operand.etype(),
+                    operand.walker()
+                );
+                break;
+
+            default:
+                break;
+        }
+    }
+    
+    return ss.str();
+}
+
 string Walker::declare_operands(void)
 {
     stringstream ss;
@@ -466,7 +528,7 @@ string Walker::generate_source(void)
         const uint32_t rank = in1->meta().ndim;
         // Note: end of crappy code...
 
-        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper);
+        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
         subjects["ATYPE"]           = in2->etype();
         subjects["ETYPE"]           = out->etype();
         subjects["OPD_OUT"]         = out->name();
@@ -474,8 +536,25 @@ string Walker::generate_source(void)
         subjects["OPD_IN2"]         = in2->name();
 
         if ((kernel_.omask() & REDUCE)>0) {
-            subjects["PAR_OPERATIONS"]  = reduce_par_operations();
-            subjects["SEQ_OPERATIONS"]  = reduce_seq_operations();
+            subjects["PAR_OPERATIONS"] = _assign(
+                "accu",
+                oper(tac->oper, in1->meta().etype, "accu", in1->walker_val())
+            )+_end();
+
+            switch(tac->oper) {
+                case MAXIMUM:
+                case MINIMUM:
+                    subjects["REDUCE_SYNC"] = "#pragma omp critical";
+                    break;
+                default:
+                    subjects["REDUCE_SYNC"] = "#pragma omp atomic";
+                    break;
+            }
+            subjects["REDUCE_COMBINATOR"] = _assign(
+                out->walker_val(),
+                oper(tac->oper, in1->meta().etype, out->walker_val(), "accu")
+            )+_end();
+            
             switch(rank) {
                 case 1:
                     subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);

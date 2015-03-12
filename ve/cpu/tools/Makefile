@@ -3,8 +3,8 @@ CPU=$(ROOT)/ve/cpu
 BDIR=$(CPU)/bdir
 PAR_LVL=-j4
 BH_PYTHON=python
-#TEST_EXCLUDE=--exclude-test=test_gauss_20x20
-TEST_EXCLUDE=
+TEST_EXCLUDE=--exclude-test=test_reduce_prod --exclude-test=test_reduce_bitwise --exclude-test=test_reduce_bool
+
 DUMPSRC=1
 CC=/home/safl/intel/bin/icc
 CXX=/home/safl/intel/bin/icpc

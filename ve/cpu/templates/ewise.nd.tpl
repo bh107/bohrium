@@ -10,8 +10,8 @@
     const int64_t last_dim  = iterspace->ndim-1;
 
     int64_t weight[CPU_MAXDIM]; // Helper for step-calculation
-    int acc = 1;
-    for(int idx=last_dim; idx >=0; --idx) {
+    int64_t acc = 1;
+    for(int64_t idx=last_dim; idx >=0; --idx) {
         weight[idx] = acc;
         acc *= iterspace->shape[idx];
     }
@@ -26,7 +26,6 @@
     #pragma omp parallel num_threads(nworkers)
     {
         const int tid      = omp_get_thread_num();
-        const int nthreads = omp_get_num_threads();
 
         int64_t work=0, work_offset=0, work_end=0;
         if (tid < work_spill) {
