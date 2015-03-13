@@ -143,7 +143,7 @@ string Plaid::fill(string name, map<string, string>& subjects)
 
 unsigned int Plaid::indentlevel(string text, unsigned int index)
 {
-    for(unsigned int idx=index; idx>=0; --idx) {
+    for(int idx=index; idx>=0; --idx) {
         char token = text[idx];
         if ('\n' == token) {
             return (index-idx-1);
