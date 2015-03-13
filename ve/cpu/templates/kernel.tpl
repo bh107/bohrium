@@ -1,3 +1,4 @@
+{{LICENSE}}
 #ifndef BH_CPU_KERNEL_LIBS
 #define BH_CPU_KERNEL_LIBS
 #include <assert.h>

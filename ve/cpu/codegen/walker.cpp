@@ -624,53 +624,42 @@ string Walker::generate_source(void)
         subjects["OPD_IN2"]         = in2->name();
 
         if ((kernel_.omask() & REDUCE)>0) {
+            switch(rank) {
+                case 1:
+                    plaid = "reduce.1d";
+
+                    subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
+                    subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
+                    subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
+
+                    switch(tac->oper) {
+                        case MAXIMUM:
+                        case MINIMUM:
+                            subjects["REDUCE_SYNC"] = "#pragma omp critical";
+                            break;
+                        default:
+                            subjects["REDUCE_SYNC"] = "#pragma omp atomic";
+                            break;
+                    }
+                    break;
+
+                default:
+                    plaid = "reduce.nd";
+
+                    subjects["WALKER_STRIDES"]  = declare_stridesizes();
+                    break;
+            }
+
             subjects["REDUCE_OPER"] = _assign(
                 "accu",
                 oper(tac->oper, in1->meta().etype, "accu", in1->walker_val())
             )+_end();
 
-            switch(tac->oper) {
-                case MAXIMUM:
-                case MINIMUM:
-                    subjects["REDUCE_SYNC"] = "#pragma omp critical";
-                    break;
-                default:
-                    subjects["REDUCE_SYNC"] = "#pragma omp atomic";
-                    break;
-            }
             subjects["REDUCE_OPER_COMBINE"] = _assign(
                 out->walker_val(),
                 oper(tac->oper, in1->meta().etype, out->walker_val(), "accu")
             )+_end();
-            
-            switch(rank) {
-                case 1:
-                    subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
-                    subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
-                    subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
-                    plaid = "reduce.1d";
-                    break;
-                case 2:
-                    subjects["WALKER_STRIDES"]  = declare_stridesizes();
-                    subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
-                    subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
-                    subjects["WALKER_STEP_SL"]  = step_fwd(1, tac->in1);
 
-                    plaid = "reduce.2d";
-                    break;
-                case 3:
-                    subjects["WALKER_STRIDES"]  = declare_stridesizes();
-                    subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
-                    subjects["WALKER_STEP_SL"]  = step_fwd(1, tac->in1);
-                    subjects["WALKER_STEP_TL"]  = step_fwd(2, tac->in1);
-
-                    plaid = "reduce.3d";
-                    break;
-                default:
-                    subjects["WALKER_STRIDES"]  = declare_stridesizes();
-                    plaid = "reduce.nd";
-                    break;
-            }
         } else {
 
             subjects["PAR_OPERATIONS"]  = scan_operations();

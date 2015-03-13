@@ -1,105 +1,111 @@
-// Reduction operation of a strided n-dimensional array where n>1
-// TODO: openmp
-//       dimension-based optimizations
-//       loop collapsing...
+//
+// Codegen template is used for:
+//
+//	* REDUCE_PARTIAL on arrays of any LAYOUT and rank > 1.
+//
+//	Partitions work into 1D reductions over the axis.
+//	Distribites work staticly/evenly among threads.
+//
 {
-    const {{ATYPE}} axis = *{{OPD_IN2}}_first;
+    {{ATYPE}} axis = *{{OPD_IN2}}_first;
 
-    int64_t out_shape[CPU_MAXDIM];
-
-    int64_t nelements = 1;
-    int yaya = 0;
-    for(int k=0; k<iterspace->ndim; ++k) {
-        if (k!=axis) {
-            nelements *= iterspace->shape[k];
-            out_shape[yaya] = iterspace->shape[k];
-            yaya++;
-        }
-    }
-
-    const int64_t last_dim  = iterspace->ndim-2;
-    const int64_t shape_ld  = out_shape[last_dim];
-    const int64_t last_e    = nelements-1;
-
-    // Operand declaration(s)
-    {{WALKER_DECLARATION}}
-    {{WALKER_STRIDES}}
-
-    int64_t coord[CPU_MAXDIM];
-    memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
-
-    // Create a stride-structure for the input without the axis dimension
-    int64_t stride[CPU_MAXDIM];
-    for(int i=0,t=0; i<iterspace->ndim; ++i) {
-        if (i==axis) {  // Skip the axis dimension
+    int64_t weight[CPU_MAXDIM]; // Helper for step-calculation
+    int64_t acc = 1;
+    weight[axis] = acc;
+    for(int64_t idx=0; idx<iterspace->ndim; ++idx) {
+        if(idx==axis) {
             continue;
         }
-        stride[t] = {{OPD_IN1}}_stride[i];
-        t++;
+        acc *= iterspace->shape[idx];
+        weight[idx] = acc;
     }
 
-    //
-    //  Walk over the output
-    //
-    int64_t cur_e = 0;
-    while (cur_e <= last_e) {
+    const int mthreads          = omp_get_max_threads();
+    const int64_t chunksize     = iterspace->shape[axis];
+    const int64_t nchunks       = iterspace->nelem / chunksize;
+    const int64_t nworkers      = nchunks > mthreads ? mthreads : 1;
+    const int64_t work_split    = nchunks / nworkers;
+    const int64_t work_spill    = nchunks % nworkers;
+    
+    #pragma omp parallel num_threads(nworkers)
+    {
+        const int tid = omp_get_thread_num();
 
-        //
-        // Compute offset based on coordinate
-        //
-        {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
-        for (int64_t j=0; j<=last_dim; ++j) {           
-            {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_stride[j];
+        int64_t work=0, work_offset=0, work_end=0;
+        if (tid < work_spill) {
+            work = work_split + 1;
+            work_offset = tid * work;
+        } else {
+            work = work_split;
+            work_offset = tid * work + work_spill;
+        }
+        work_end = work_offset + work;
+
+        /*
+        printf(
+            "tid=%d, axis=%ld, nchunks=%ld, chunksize=%ld, work_offset=%ld, work_end=%ld\n",
+            tid, axis, nchunks, chunksize, work_offset, work_end
+        );*/
+
+        if (work) {
+        // Walker STRIDE_INNER - begin
+        const uint64_t axis_stride = {{OPD_IN1}}_stride[axis];
+        // Walker STRIDE_INNER - end
+
+        const int64_t eidx_begin = work_offset*chunksize;
+        const int64_t eidx_end   = work_end*chunksize;
+        int64_t coord[CPU_MAXDIM] = {0};
+        for(int64_t eidx=0; eidx<eidx_begin; eidx+=chunksize) {
+            for(int64_t dim=iterspace->ndim-1; dim>=0; --dim) {
+                if (dim==axis) {
+                    continue;
+                }
+                coord[dim] = (coord[dim]+1)% iterspace->shape[dim];
+                //printf("coord[%ld]=%ld\n", dim, coord[dim]);
+            }
         }
 
-        //
-        // Iterate over "last" / "innermost" dimension
-        //
-        for (int64_t j=0; j<shape_ld; ++j) {
+        for(int64_t eidx=eidx_begin; eidx<eidx_end; eidx+=chunksize) {
+            // Walker declaration(s) - begin
+            {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first;
+            {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
+            // Walker declaration(s) - end
 
-            //
-            // Walk over the input
-            {{ETYPE}} *{{OPD_IN1}} = {{OPD_IN1}}_first;
-            // Increment the input-offset based on every but the axis dimension
-            for(int64_t s=0; s<iterspace->ndim-1; ++s) {
-                {{OPD_IN1}} += coord[s] * stride[s];
+            // Walker step non-axis / operand offset - begin
+            int64_t froyo = 0;
+            for(int64_t dim=iterspace->ndim-1; dim>=0; --dim) {
+                if (dim==axis) {
+                    continue;
+                }
+                //const int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
+                /*
+                printf(
+                    "eidx=%ld, dim=%ld, coord = %ld, weight=%ld, shape=%ld\n", 
+                    eidx, dim, coord, weight[dim], iterspace->shape[dim]
+                );*/
+                {{OPD_IN1}} += coord[dim] * {{OPD_IN1}}_stride[dim];
+                {{OPD_OUT}} += coord[dim] * {{OPD_OUT}}_stride[froyo];
+                froyo++;
+
+                coord[dim] = (coord[dim]+1)% iterspace->shape[dim];
             }
-            {{OPD_IN1}} += j*stride[last_dim];
-            // Non-axis offset ready
-            //
-            
-            //
-            // Do the reduction over the axis dimension
-            //
+            // Walker step non-axis / operand offset - end
+
             {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
-            for(int64_t k=0; k<iterspace->shape[axis]; ++k) {
-                //
-                // Apply the operator
-                //
+            {{PRAGMA_SIMD}}
+            for (int64_t aidx=0; aidx < chunksize; aidx++) {
+                // Apply operator(s) on operands - begin
                 {{REDUCE_OPER}}
+                // Apply operator(s) on operands - end
 
-                //
-                // Walk to the next element input-element along the axis dimension
-                {{OPD_IN1}} += {{OPD_IN1}}_stride[axis];
+                // Walker step INNER - begin
+                {{OPD_IN1}} += axis_stride;
+                // Walker step INNER - end
             }
-            // Write the accumulation output
             *{{OPD_OUT}} = accu;
-
-            // Now increment the output
-            {{OPD_OUT}} += {{OPD_OUT}}_stride[last_dim];
-        }
-        cur_e += shape_ld;
-
-        // 
-        // coord[last_dim] is never used, only all the other coord[dim!=last_dim]
-        for (int64_t j = last_dim-1; j >= 0; --j) {         // Increment coordinates for the remaining dimensions
-            coord[j]++;
-            if (coord[j] < out_shape[j]) {       // Still within this dimension
-                break;
-            } else {            // Reached the end of this dimension
-                coord[j] = 0;   // Reset coordinate
-            }                   // Loop then continues to increment the next dimension
-        }
+            //*{{OPD_OUT}} = 1;
+            printf("jazz = %f\n", accu);
+        }}
     }
 }
 

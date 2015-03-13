@@ -50,6 +50,5 @@
             // Walker step INNER - end
         }}
     }
-    // TODO: Handle write-out of non-temp and non-const scalars.
 }
 

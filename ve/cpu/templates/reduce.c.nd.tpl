@@ -1,7 +1,7 @@
 //
 // Codegen template is used for:
 //
-//	* MAP|ZIP|GENERATE|FLOOD on STRIDED arrays of any dimension/rank.
+//	* REDUCE_COMPLETE on arrays of any LAYOUT and rank > 1.
 //
 //	Partitions work into chunks of size equal to the inner-most dimension.
 //	Distribites work staticly/evenly among threads.
@@ -67,6 +67,7 @@
                 // Walker step INNER - end
             }
         }}
+        // TODO: Handle write-out of non-temp and non-const scalars.
     }
 }
 

@@ -1,5 +1,5 @@
 /*
-This file is part of Bohrium and copyright (c) 2012 the Bohrium
+This file is part of Bohrium and copyright (c) 2015 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
