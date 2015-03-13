@@ -10,8 +10,8 @@
     const int64_t last_dim  = iterspace->ndim-1;
 
     int64_t weight[CPU_MAXDIM]; // Helper for step-calculation
-    int acc = 1;
-    for(int idx=last_dim; idx >=0; --idx) {
+    int64_t acc = 1;
+    for(int64_t idx=last_dim; idx >=0; --idx) {
         weight[idx] = acc;
         acc *= iterspace->shape[idx];
     }
@@ -26,7 +26,6 @@
     #pragma omp parallel num_threads(nworkers)
     {
         const int tid      = omp_get_thread_num();
-        const int nthreads = omp_get_num_threads();
 
         int64_t work=0, work_offset=0, work_end=0;
         if (tid < work_spill) {
@@ -41,8 +40,9 @@
         if (work) {
         // Stepsize
         {{WALKER_STEPSIZE}}
-
-        for(int64_t eidx=(work_offset*chunksize); eidx<(work_end*chunksize); eidx+=chunksize) {
+        const int64_t eidx_begin = work_offset*chunksize;
+        const int64_t eidx_end   = work_end*chunksize;
+        for(int64_t eidx=eidx_begin; eidx<eidx_end; eidx+=chunksize) {
             // Operand declaration(s)
             {{WALKER_DECLARATION}}
             
@@ -52,6 +52,7 @@
                 {{WALKER_STEP_OUTER}}
             }
 
+            {{PRAGMA_SIMD}}
             for (int64_t iidx=0; iidx < chunksize; iidx++) { // Execute array-operations
                 {{OPERATIONS}}
 

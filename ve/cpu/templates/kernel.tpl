@@ -4,9 +4,11 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <complex.h>
+#include <limits.h>
+#include <stdint.h>
+#include <float.h>
 #include <math.h>
 #include <Random123/philox.h>
 #include <tac.h>

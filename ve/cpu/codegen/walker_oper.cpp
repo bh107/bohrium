@@ -13,15 +13,48 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-string Walker::oper_neutral_element(OPERATOR oper)
+string Walker::oper_neutral_element(OPERATOR oper, ETYPE etype)
 {
     switch(oper) {
-        case ADD:
-            return "0";
-        case MULTIPLY:
-            return "1";
-        default:
-            return "UNKNOWN_NEUTRAL";
+        case ADD:               return "0";
+        case MULTIPLY:          return "1";
+        case MAXIMUM:
+            switch(etype) {
+                case BOOL:      return "0";
+                case INT8:      return "INT8_MIN";
+                case INT16:     return "INT16_MIN";
+                case INT32:     return "INT32_MIN";
+                case INT64:     return "INT64_MIN";
+                case UINT8:     return "UINT8_MIN";
+                case UINT16:    return "UINT16_MIN";
+                case UINT32:    return "UINT32_MIN";
+                case UINT64:    return "UINT64_MIN";
+                case FLOAT32:   return "FLT_MIN";
+                case FLOAT64:   return "DBL_MIN";
+                default:        return "UNKNOWN_NEUTRAL_FOR_MAXIMUM";
+            }
+        case MINIMUM:
+            switch(etype) {
+                case BOOL:      return "1";
+                case INT8:      return "INT8_MAX";
+                case INT16:     return "INT16_MAX";
+                case INT32:     return "INT32_MAX";
+                case INT64:     return "INT64_MAX";
+                case UINT8:     return "UINT8_MAX";
+                case UINT16:    return "UINT16_MAX";
+                case UINT32:    return "UINT32_MAX";
+                case UINT64:    return "UINT64_MAX";
+                case FLOAT32:   return "FLT_MAX";
+                case FLOAT64:   return "DBL_MAX";
+                default:        return "UNKNOWN_NEUTRAL_FOR_MINIMUM";
+            }
+        case LOGICAL_AND:       return "1";
+        case LOGICAL_OR:        return "0";
+        case LOGICAL_XOR:       return "0";
+        case BITWISE_AND:       return "1";
+        case BITWISE_OR:        return "0";
+        case BITWISE_XOR:       return "0";
+        default:                return "UNKNOWN_NEUTRAL";
     }
 }
 

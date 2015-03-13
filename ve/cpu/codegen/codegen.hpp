@@ -27,6 +27,7 @@ std::string _float_complex(void);
 std::string _double_complex(void);
 
 // Variable declaration, access and modifiers
+std::string _restrict(std::string object);
 std::string _ref(std::string object);
 std::string _deref(std::string object);
 std::string _index(std::string object, int64_t idx);
@@ -184,6 +185,10 @@ std::string _crealf(std::string right);
 std::string _cimagf(std::string right);
 std::string _cimag(std::string right);
 
+// OpenMP stuff
+
+std::string _omp_reduction_oper(OPERATOR oper);
+
 class Operand
 {
 public:
@@ -246,6 +251,8 @@ public:
     kernel_operand_iter operands_begin(void);
     kernel_operand_iter operands_end(void);
 
+    uint64_t base_refcount(uint64_t gidx);
+
     uint32_t omask(void);
 
     uint64_t ntacs(void);
@@ -277,7 +284,9 @@ public:
     Walker(Plaid& plaid, Kernel& kernel);
 
     std::string generate_source(void);
-    std::string oper_neutral_element(OPERATOR oper);
+    std::string oper_neutral_element(OPERATOR oper, ETYPE etype);
+
+    std::string simd_pragma(void);
     
 private:
     std::string declare_operands(void);

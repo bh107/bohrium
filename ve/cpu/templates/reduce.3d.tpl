@@ -31,11 +31,10 @@
                           outer_idx* {{OPD_IN1}}_stride[outer_axis] +\
                           inner_idx* {{OPD_IN1}}_stride[inner_axis];
 
-            //{{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
-            {{ETYPE}} accu = *{{OPD_IN1}};
-            for(int64_t axis_idx=1; axis_idx<iterspace->shape[axis]; ++axis_idx) {
+            {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
+            for(int64_t axis_idx=0; axis_idx<iterspace->shape[axis]; ++axis_idx) {
+                {{REDUCE_OPER}}
                 {{OPD_IN1}} += {{OPD_IN1}}_stride[axis];
-                {{PAR_OPERATIONS}}
             }
             // todo: need another step function, stride-step
             *({{OPD_OUT}}_first + outer_idx*{{OPD_OUT}}_stride[OUTER] + inner_idx*{{OPD_OUT}}_stride[INNER]) = accu;

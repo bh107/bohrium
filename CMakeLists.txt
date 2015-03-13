@@ -81,13 +81,6 @@ add_subdirectory(test)
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
-# Select the approriate compiler string
-if (APPLE)
-    set(DISABLE_LINUX_COMPILER "#")
-else()
-    set(DISABLE_OSX_COMPILER "#")
-endif()
-
 #Install the config file, which depends on global or local installation
 configure_file(config.ini.in config.ini)
 string(REGEX MATCH "^$ENV{HOME}" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})

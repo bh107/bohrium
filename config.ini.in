@@ -85,10 +85,13 @@ children = cpu
 #
 [cpu]
 type = ve
-${DISABLE_LINUX_COMPILER}compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include -lm ${VE_CPU_JIT_FLAGS} -fPIC -std=c99 -x c -shared - -o "
-# Interlagos optimizations
-#${DISABLE_LINUX_COMPILER}compiler_cmd="gcc -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include -lm -Ofast -march=bdver1 -mprefer-avx128 -funroll-all-loops -fprefetch-loop-arrays --param prefetch-latency=300  -fno-tree-pre -ftree-vectorize  -fopenmp -fPIC -std=c99 -x c -shared - -o "
-${DISABLE_OSX_COMPILER}compiler_cmd="${CMAKE_INSTALL_PREFIX}/var/bohrium/scripts/osx_compile.sh -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include -o "
+compiler_cmd="${VE_CPU_COMPILER_CMD}"
+compiler_inc="${VE_CPU_COMPILER_INC}"
+compiler_lib="${VE_CPU_COMPILER_LIB}"
+# Interlagos specifics
+#compiler_flg="-march=bdver1 -mprefer-avx128 -funroll-all-loops -fprefetch-loop-arrays --param prefetch-latency=300 -fno-tree-pre -ftree-vectorize "
+compiler_flg="${VE_CPU_COMPILER_FLG}"
+compiler_ext="${VE_CPU_COMPILER_EXT}"
 object_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/objects
 kernel_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/kernels
 template_path=${CMAKE_INSTALL_PREFIX}/share/bohrium/templates

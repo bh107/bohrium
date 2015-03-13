@@ -68,6 +68,13 @@ string _double_complex(void)
     return "double complex";
 }
 
+string _restrict(string object)
+{
+    stringstream ss;
+    ss << object << " restrict";
+    return ss.str();
+}
+
 string _ref(string object)
 {
     stringstream ss;
@@ -923,5 +930,26 @@ string _cimag(string right)
     ss << "cimag(" << right << ")";
     return ss.str();
 }
+
+//
+// OpenMP stuff
+//
+string _omp_reduction_oper(OPERATOR oper)
+{
+    switch(oper) {
+        case ADD:           return "+";
+        case MULTIPLY:      return "*";
+        case MAXIMUM:       return "UNSUPPORTED_OMP_REDUCE_OPER_MAXIMUM";
+        case MINIMUM:       return "UNSUPPORTED_OMP_REDUCE_OPER_MINIMUM";
+        case LOGICAL_AND:   return "&&";
+        case LOGICAL_OR:    return "||";
+        case LOGICAL_XOR:   return "UNSUPPORTED_OMP_REDUCE_OPER_LOGICAL_XOR";
+        case BITWISE_AND:   return "&";
+        case BITWISE_OR:    return "|";
+        case BITWISE_XOR:   return "^";
+        default:            return "UNSUPPORTED_OMP_REDUCE_OPER";
+    }
+}
+
 
 }}}}

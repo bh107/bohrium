@@ -14,7 +14,6 @@
     #pragma omp parallel num_threads(nworkers)
     {
         const int tid      = omp_get_thread_num();
-        const int nthreads = omp_get_num_threads();
 
         int64_t work=0, work_offset=0, work_end=0;
         if (tid < work_spill) {
@@ -34,6 +33,7 @@
         // Stepsize
         {{WALKER_STEPSIZE}}
 
+        {{PRAGMA_SIMD}}
         for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
             // Apply operator(s)
             {{OPERATIONS}}

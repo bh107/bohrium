@@ -7,6 +7,8 @@ using namespace std;
 namespace bohrium{
 namespace core {
 
+const uint32_t Timevault::width = 140;
+
 Timevault::Timevault() {}
 
 Timevault& Timevault::instance()
@@ -54,9 +56,9 @@ void Timevault::store(time_t elapsed)
     store("default", elapsed);
 }
 
-void Timevault::store(string identifier, time_t elapsed)
+void Timevault::store(string ident, time_t elapsed)
 {
-    _elapsed.insert(pair<string, time_t>(identifier, elapsed));
+    _elapsed.insert(pair<string, time_t>(ident, elapsed));
 }
 
 void Timevault::clear(void)
@@ -85,7 +87,7 @@ string Timevault::format_row(string identifier, time_t elapsed, int samples)
     stringstream ss;
     string sep = " | ";
 
-    ss << setw(52)  << identifier << sep;
+    ss << setw(width-1)  << identifier << sep;
     ss << setw(7)   << samples << sep;
     ss << setw(10)  << format(elapsed) << sep;
     ss << setw(10)  << format(elapsed/(float)samples);
@@ -97,7 +99,7 @@ string Timevault::format_line(char fill, char sep)
 {
     stringstream line;
 
-    line << sep << setw(53) << setfill(fill) << sep;
+    line << sep << setw(width) << setfill(fill) << sep;
     line << setw(10) << setfill(fill) << sep;
     line << setw(13) << setfill(fill) << sep;
     line << setw(13) << setfill(fill) << sep;
@@ -119,7 +121,7 @@ string Timevault::text(bool detailed)
     size_t samples_total = 0;
 
     header << endl;
-    header << "  Identifier" << setw(42) << "|";
+    header << "  Identifier" << setw(width-11) << "|";
     header << " Samples " << "|";
     header << "  Elapsed   " << "|";
     header << "  Average " << endl;

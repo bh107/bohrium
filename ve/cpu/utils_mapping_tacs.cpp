@@ -959,6 +959,9 @@ void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
                     fprintf(stderr, "}\n");
                 }
         }
+
+        // Transform / optimize tacs
+        tac_transform(tacs[idx], symbol_table);
     }
 }
 

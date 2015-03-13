@@ -23,7 +23,6 @@ if (VE_CPU_DEBUGGING)
     add_definitions( -DDEBUGGING )
 endif()
 
-
 file(GLOB SRC codegen/*.cpp *.cpp thirdparty/*.cpp)
 
 add_library(bh_ve_cpu SHARED ${SRC})
@@ -39,6 +38,11 @@ include_directories("./")
 set(LIBS ${LIBS})
 target_link_libraries(bh_ve_cpu ${LIBS})
 
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    target_link_libraries(bh_ve_cpu ${Boost_LIBRARIES})
+endif()
+
 #Install all kernal templates
 install(DIRECTORY templates COMPONENT bohrium DESTINATION share/bohrium FILES_MATCHING PATTERN "*.tpl")
 
@@ -52,49 +56,57 @@ file(MAKE_DIRECTORY scripts)
 install(DIRECTORY kernels DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
 install(DIRECTORY objects DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
 
+#
+#   Multi-core stuff
+#
+find_package(OpenMP COMPONENTS bohrium)
+
+#
+#   Compiler-flags for JIT-compilation
+#
 if (APPLE)
     install(
         FILES scripts/osx_compile.sh
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
         DESTINATION var/bohrium/scripts
     )
-endif()
-#install(DIRECTORY scripts DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
+    set(VE_CPU_COMPILER_CMD "${CMAKE_INSTALL_PREFIX}/var/bohrium/scripts/osx_compile.sh -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include " PARENT_SCOPE)
+    set(VE_CPU_COMPILER_INC "" PARENT_SCOPE)
+    set(VE_CPU_COMPILER_LIB "" PARENT_SCOPE)
+    set(VE_CPU_COMPILER_EXT "" PARENT_SCOPE)
+    set(VE_CPU_COMPILER_FLG "" PARENT_SCOPE)
 
-if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-    target_link_libraries(bh_ve_cpu ${Boost_LIBRARIES})
-endif()
+else()
 
-#
-#   Multi-core stuff
-#
-find_package(OpenMP COMPONENTS bohrium)
-#set_package_properties(OpenMP PROPERTIES DESCRIPTION "OpenMP parallel library and compiler directives" URL "www.openmp.org")
-#set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it for multi-core parallelization.")
+    set(VE_CPU_COMPILER_CMD "${CMAKE_C_COMPILER}" PARENT_SCOPE)
+    set(VE_CPU_COMPILER_INC "-I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include" PARENT_SCOPE)
+    set(VE_CPU_COMPILER_LIB "-lm" PARENT_SCOPE)
+    set(VE_CPU_COMPILER_EXT "-fPIC -shared -x c -std=c99" PARENT_SCOPE)
 
-#
-#   Compiler-flags for JIT-compilation
-#
-check_c_compiler_flag(-O3 HAS_O3)
-if (HAS_O3)
-    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -O3")
-endif()
+    #   VE_CPU_COMPILER_FLG is set below, checking for a bunch of stuff 
+    check_c_compiler_flag(-O3 HAS_O3)
+    if (HAS_O3)
+        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -O3")
+    endif()
+    check_c_compiler_flag(-fstrict-aliasing HAS_STRICT_ALIASING)
+    if (HAS_STRICT_ALIASING)
+        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -fstrict-aliasing")
+    endif()
+    check_c_compiler_flag(-fopenmp-simd HAS_OPENMP_SIMD)
+    if (HAS_OPENMP_SIMD)
+        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -fopenmp-simd")
+    endif()
+    check_c_compiler_flag(-march=native HAS_MARCH_NATIVE)
+    if (HAS_MARCH_NATIVE)
+        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -march=native")
+    endif()
 
-check_c_compiler_flag(-fstrict-aliasing HAS_STRICT_ALIASING)
-if (HAS_STRICT_ALIASING)
-    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -fstrict-aliasing")
-endif()
+    if(OPENMP_FOUND)
+        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} ${OpenMP_C_FLAGS}")
+    endif()
+    set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG}" PARENT_SCOPE)
 
-check_c_compiler_flag(-march=native HAS_MARCH_NATIVE)
-if (HAS_MARCH_NATIVE)
-    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} -march=native")
 endif()
-
-if(OPENMP_FOUND)
-    set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS} ${OpenMP_C_FLAGS}")
-endif()
-set(VE_CPU_JIT_FLAGS "${VE_CPU_JIT_FLAGS}" PARENT_SCOPE)
 #
 #   The above are used by config.ini.in
 #
@@ -106,13 +118,13 @@ if(OPENMP_FOUND)
 
     find_package(HWLOC)
     set_package_properties(HWLOC PROPERTIES DESCRIPTION "hardware locality (hwloc)" URL "http://www.open-mpi.org/projects/hwloc/")
-    set_package_properties(HWLOC PROPERTIES TYPE REQUIRED PURPOSE "VE-CPU use it to control thread affinity.")
+    set_package_properties(HWLOC PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it to control thread affinity.")
 
     if(HWLOC_FOUND)
         include_directories(${HWLOC_INCLUDE_DIR})
         target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
+        add_definitions(-DVE_CPU_BIND)
     endif()
-
 else()
     if(APPLE)
         if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
