@@ -25,6 +25,7 @@ class Bohrium < Formula
   depends_on "swig" => :build
   depends_on "Python" => :build
   depends_on "boost" => [:build,  "universal"]
+  depends_on "numpy" => :build
   depends_on "cheetah" => [:python, "Cheetah.Template", :build]
 
   head do

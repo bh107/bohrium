@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 if (APPLE)
     # Build multi-arch OSX binaries
     set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
-
-    # Skip any user-supplied python installs
-    set(PYTHON_EXECUTABLE "/usr/bin/python" CACHE STRING "Sets the python path to the Apple supplied Python, not any user-installed versions")
 endif()
 
 #We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
