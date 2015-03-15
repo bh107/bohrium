@@ -9,20 +9,36 @@
 {
     {{ATYPE}} axis = *{{OPD_IN2}}_first;
 
-    int64_t weight[CPU_MAXDIM]; // Helper for step-calculation
-    int64_t acc = 1;
-    weight[axis] = acc;
-    for(int64_t idx=0; idx<iterspace->ndim; ++idx) {
-        if(idx==axis) {
+    int64_t shape_axis = iterspace->shape[axis];
+    //
+    // Construct an iteration-space that does not include the axis-dimension
+    int64_t shape[CPU_MAXDIM] = {0};
+    for(int64_t dim=0, outer_dim = 0; dim < iterspace->ndim; ++dim) {
+        if (dim == axis) {
             continue;
         }
-        acc *= iterspace->shape[idx];
-        weight[idx] = acc;
+        shape[outer_dim] = iterspace->shape[dim];
+        ++outer_dim;
+    }
+    int64_t ndim = iterspace->ndim-1;
+    int64_t last_dim = ndim-1;
+    int64_t nelements = 1;
+    for(int64_t dim=0; dim<ndim; ++dim) {
+        nelements *= shape[dim];
+    }
+    // Now only the strides a needed
+    //
+    // Compute the weight
+    int64_t weight[CPU_MAXDIM];
+    int64_t acc = 1;
+    for(int64_t dim=last_dim; dim >=0; --dim) {
+        weight[dim] = acc;
+        acc *= shape[dim];
     }
 
     const int mthreads          = omp_get_max_threads();
-    const int64_t chunksize     = iterspace->shape[axis];
-    const int64_t nchunks       = iterspace->nelem / chunksize;
+    const int64_t chunksize     = shape[last_dim];
+    const int64_t nchunks       = nelements / chunksize;
     const int64_t nworkers      = nchunks > mthreads ? mthreads : 1;
     const int64_t work_split    = nchunks / nworkers;
     const int64_t work_spill    = nchunks % nworkers;
@@ -41,12 +57,6 @@
         }
         work_end = work_offset + work;
 
-        /*
-        printf(
-            "tid=%d, axis=%ld, nchunks=%ld, chunksize=%ld, work_offset=%ld, work_end=%ld\n",
-            tid, axis, nchunks, chunksize, work_offset, work_end
-        );*/
-
         if (work) {
         // Walker STRIDE_INNER - begin
         const uint64_t axis_stride = {{OPD_IN1}}_stride[axis];
@@ -54,46 +64,28 @@
 
         const int64_t eidx_begin = work_offset*chunksize;
         const int64_t eidx_end   = work_end*chunksize;
-        int64_t coord[CPU_MAXDIM] = {0};
-        for(int64_t eidx=0; eidx<eidx_begin; eidx+=chunksize) {
-            for(int64_t dim=iterspace->ndim-1; dim>=0; --dim) {
-                if (dim==axis) {
-                    continue;
-                }
-                coord[dim] = (coord[dim]+1)% iterspace->shape[dim];
-                //printf("coord[%ld]=%ld\n", dim, coord[dim]);
-            }
-        }
-
-        for(int64_t eidx=eidx_begin; eidx<eidx_end; eidx+=chunksize) {
+        for(int64_t eidx=eidx_begin; eidx<eidx_end; ++eidx) {
             // Walker declaration(s) - begin
             {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first;
             {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
             // Walker declaration(s) - end
 
             // Walker step non-axis / operand offset - begin
-            int64_t froyo = 0;
-            for(int64_t dim=iterspace->ndim-1; dim>=0; --dim) {
+            for(int64_t dim=0, other_dim=0; dim<iterspace->ndim; ++dim) {
                 if (dim==axis) {
                     continue;
                 }
-                //const int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
-                /*
-                printf(
-                    "eidx=%ld, dim=%ld, coord = %ld, weight=%ld, shape=%ld\n", 
-                    eidx, dim, coord, weight[dim], iterspace->shape[dim]
-                );*/
-                {{OPD_IN1}} += coord[dim] * {{OPD_IN1}}_stride[dim];
-                {{OPD_OUT}} += coord[dim] * {{OPD_OUT}}_stride[froyo];
-                froyo++;
+                const int64_t coord = (eidx / weight[other_dim]) % shape[other_dim];
 
-                coord[dim] = (coord[dim]+1)% iterspace->shape[dim];
+                {{OPD_IN1}} += coord * {{OPD_IN1}}_stride[dim];
+                {{OPD_OUT}} += coord * {{OPD_OUT}}_stride[other_dim];
+                ++other_dim;
             }
             // Walker step non-axis / operand offset - end
 
             {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
             {{PRAGMA_SIMD}}
-            for (int64_t aidx=0; aidx < chunksize; aidx++) {
+            for (int64_t aidx=0; aidx < shape_axis; aidx++) {
                 // Apply operator(s) on operands - begin
                 {{REDUCE_OPER}}
                 // Apply operator(s) on operands - end
@@ -103,8 +95,6 @@
                 // Walker step INNER - end
             }
             *{{OPD_OUT}} = accu;
-            //*{{OPD_OUT}} = 1;
-            printf("jazz = %f\n", accu);
         }}
     }
 }

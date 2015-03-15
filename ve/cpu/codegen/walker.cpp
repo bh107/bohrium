@@ -626,7 +626,7 @@ string Walker::generate_source(void)
         if ((kernel_.omask() & REDUCE)>0) {
             switch(rank) {
                 case 1:
-                    plaid = "reduce.1d";
+                    plaid = "reduce.c.1d";
 
                     subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
                     subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
@@ -644,7 +644,7 @@ string Walker::generate_source(void)
                     break;
 
                 default:
-                    plaid = "reduce.nd";
+                    plaid = "reduce.p.nd";
 
                     subjects["WALKER_STRIDES"]  = declare_stridesizes();
                     break;

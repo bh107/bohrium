@@ -1,7 +1,7 @@
 //
 // Codegen template is used for:
 //
-//	* REDUCE_COMPLETE on arrays of any LAYOUT and rank > 1.
+//	* REDUCE_COMPLETE on ND arrays (N > 1) of any LAYOUT.
 //
 //	Partitions work into chunks of size equal to the inner-most dimension.
 //	Distribites work staticly/evenly among threads.

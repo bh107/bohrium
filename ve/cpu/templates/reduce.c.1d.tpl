@@ -1,7 +1,8 @@
 //
 // Codegen template is used for:
 //
-//  * REDUCE COMPLETE on 1D arrays of any LAYOUT.
+//  * REDUCE COMPLETE on ND arrays of CONTIGUOUS LAYOUT.
+//  * REDUCE COMPLETE on 1D arrays of ANY LAYOUT.
 //
 {
     const int mthreads = omp_get_max_threads();
