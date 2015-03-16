@@ -207,7 +207,9 @@ public:
     std::string shape(void);
     std::string stride(void);
     std::string stridevar(uint32_t dim);
+    std::string stride_inner(void);
     std::string stepsize(uint32_t dim);
+    std::string outer_offset(void);
 
     operand_t& meta(void);
     uint64_t local_id(void);
@@ -305,6 +307,8 @@ private:
     //
     std::string ewise_operations(void);
 
+    std::string declare_outer_offset(uint64_t oidx);
+    std::string declare_outer_offset(void);
     std::string declare_stridesize(uint64_t oidx);
     std::string declare_stridesizes(void);
 
@@ -314,6 +318,16 @@ private:
     std::string ewise_assign_offset(uint32_t rank, uint64_t oidx);
     std::string step_fwd(uint32_t dim, uint64_t oidx);
     std::string step_fwd(uint32_t dim);
+
+
+    std::string step_fwd_outer(uint64_t glb_idx);
+    std::string step_fwd_outer(void);
+
+    std::string step_fwd_inner(uint64_t glb_idx);
+    std::string step_fwd_inner(void);
+
+    std::string declare_stride_inner(uint64_t oidx);
+    std::string declare_stride_inner(void);
 
     std::string reduce_par_operations(void);
     std::string reduce_seq_operations(void);

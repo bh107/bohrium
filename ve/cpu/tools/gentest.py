@@ -35,13 +35,19 @@ def test_ones(n):
     
     return ((b+c)*b)/c
 
-def test_reduce(n):
+def prod(items):
+    acc = 1
+    for i in items:
+        acc *= i
+    return acc
+
+def test_reduce(shape):
     #a = np.ones(1000).reshape(10,10,10)[:,:,::2]
-    a = np.ones(900, dtype=np.float32).reshape(9,10,10)
+    a = np.ones(prod(shape), dtype=np.float32).reshape(*shape)
     return np.add.reduce(a, axis=0) 
     #return np.add.reduce(b) 
 
 if __name__ == "__main__":
-    print(test_reduce(900))
+    print(test_reduce((3,4,5)))
     #print(test_range(20))
     #print(test_random(20))

@@ -1,7 +1,7 @@
 //
 // Codegen template is used for:
 //
-//	* MAP|ZIP|GENERATE|FLOOD on STRIDED arrays of any dimension/rank.
+//	* REDUCE_COMPLETE on ND arrays (N > 1) of any LAYOUT.
 //
 //	Partitions work into chunks of size equal to the inner-most dimension.
 //	Distribites work staticly/evenly among threads.
@@ -25,7 +25,7 @@
     
     #pragma omp parallel num_threads(nworkers)
     {
-        const int tid = omp_get_thread_num();
+        const int tid      = omp_get_thread_num();
 
         int64_t work=0, work_offset=0, work_end=0;
         if (tid < work_spill) {
@@ -67,6 +67,7 @@
                 // Walker step INNER - end
             }
         }}
+        // TODO: Handle write-out of non-temp and non-const scalars.
     }
 }
 

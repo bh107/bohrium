@@ -3,10 +3,6 @@
 {
     {{ATYPE}} axis = *{{OPD_IN1}}_first;
 
-    const int64_t nelements = iterspace->shape[axis];
-    const int mthreads = omp_get_max_threads();
-    const int64_t nworkers = nelements > mthreads ? mthreads : 1;
-
     {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first;
     {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
 

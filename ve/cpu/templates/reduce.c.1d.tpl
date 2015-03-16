@@ -1,7 +1,8 @@
 //
 // Codegen template is used for:
 //
-//  * REDUCE on 1D strided and contiguous arrays.
+//  * REDUCE COMPLETE on ND arrays of CONTIGUOUS LAYOUT.
+//  * REDUCE COMPLETE on 1D arrays of ANY LAYOUT.
 //
 {
     const int mthreads = omp_get_max_threads();
@@ -46,5 +47,4 @@
         {{REDUCE_OPER_COMBINE}}
         }
     }
-    // TODO: Handle write-out of non-temp and non-const scalars.
 }

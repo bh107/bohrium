@@ -144,11 +144,14 @@ string Kernel::unpack_arguments(void)
                     _access_ptr(_index(args(), id), "stride")
                 )
                 << _end();
-            case CONTIGUOUS:    // "first" = operand_t->data + operand_t->start
-                // If there are reductions in the kernel we also want strides
-                // for contiguous arrays.
-                if ((operand.meta().layout == CONTIGUOUS) && \
-                   ((omask() & (REDUCE|SCAN)) > 0)) {
+            case CONTIGUOUS:    
+                //  If the iterspace is non-contiguous then we also want
+                //  strides for the CONTIGUOUS arrays for computing the OUTER offset
+                //  or for reduction and scans.
+                if (((((iterspace().meta().layout & (STRIDED|SPARSE))>0) and \
+                    (operand.meta().layout == CONTIGUOUS)                and \
+                    (iterspace().meta().ndim > 1)))                      or  \
+                    ((omask() & (SCAN|REDUCE))>0)) {
                     ss << _declare_init(
                         _ptr_const(_int64()),
                         operand.stride(),
@@ -156,6 +159,7 @@ string Kernel::unpack_arguments(void)
                     )
                     << _end();
                 }
+                // "OPD_first" = operand_t->data + operand_t->start
                 ss
                 << _declare_init(
                     _ptr_const(operand.etype()),
