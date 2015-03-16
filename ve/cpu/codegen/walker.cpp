@@ -524,21 +524,41 @@ string Walker::ewise_operations(void)
         ETYPE etype = kernel_.operand_glb(tac.out).meta().etype;
 
         string out = "ERROR", in1 = "ERROR", in2 = "ERROR";
-        switch(core::tac_noperands(tac)) {
-            case 3:
-                in2 = kernel_.operand_glb(tac.in2).walker_val();
-            case 2:
-                in1 = kernel_.operand_glb(tac.in1).walker_val();
-            case 1:
-                out = kernel_.operand_glb(tac.out).walker_val();
+        switch(tac.op) {
+            case MAP:
+            case ZIP:
+            case GENERATE:
+                switch(core::tac_noperands(tac)) {
+                    case 3:
+                        in2 = kernel_.operand_glb(tac.in2).walker_val();
+                    case 2:
+                        in1 = kernel_.operand_glb(tac.in1).walker_val();
+                    case 1:
+                        out = kernel_.operand_glb(tac.out).walker_val();
+                    default:
+                        break;
+                }
+                ss << _assign(
+                    out,
+                    oper(tac.oper, etype, in1, in2)
+                ) << _end(oper_description(tac));
+                break;
+
+            case REDUCE:
+                ss << _assign(
+                    "accu",
+                    oper(
+                        tac.oper,
+                        kernel_.operand_glb(tac.in1).meta().etype,
+                        "accu",
+                        kernel_.operand_glb(tac.in1).walker_val()
+                    )
+                ) << end("// REDUCTION");
+                break;
             default:
+                ss << "UNSUPPORTED_OPERATION["<< operation_text(tac.op) <<"]_AT_EMITTER_STAGE";
                 break;
         }
-
-        ss << _assign(
-            out,
-            oper(tac.oper, etype, in1, in2)
-        ) << _end(oper_description(tac));
     }
     return ss.str();
 }

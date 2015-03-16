@@ -4,13 +4,14 @@
 //	* MAP|ZIP|GENERATE|FLOOD on 1D strided arrays.
 //	* MAP|ZIP|GENERATE|FLOOD on contigous arrays of any dimension/rank.
 //
-//  * TODO: Vectorization, alias/restrict
 {
     {{WALKER_INNER_DIM}}
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = iterspace->nelem > mthreads ? mthreads : 1;
     const int64_t work_split= iterspace->nelem / nworkers;
     const int64_t work_spill= iterspace->nelem % nworkers;
+
+
 
     #pragma omp parallel num_threads(nworkers)
     {
@@ -39,16 +40,22 @@
         {{WALKER_OFFSET}}
         // Walker offset(s) - end
 
+
+
+
+
         {{PRAGMA_SIMD}}
         for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
             // Apply operator(s) on operands - begin
             {{OPERATIONS}}
             // Apply operator(s) on operands - end
-            
+
             // Walker step INNER - begin
             {{WALKER_STEP_INNER}}
             // Walker step INNER - end
-        }}
+        }
+
+
+		}
     }
 }
-

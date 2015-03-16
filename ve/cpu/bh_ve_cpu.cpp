@@ -198,6 +198,19 @@ bh_error bh_ve_cpu_init(const char *name)
         setenv("BH_FUSE_MODEL", "SAME_SHAPE_RANGE_RANDOM", 1);
     }
 
+	/*
+    env = getenv("BH_FUSE_MODEL");
+    if (env != NULL) {
+        string e(env);
+        if (not boost::iequals(e, string("same_shape_generate_1dreduce"))) {
+            cerr << "VE-CPU: Warning! unsupported fuse model: '" << e;
+            cerr << "', it may not work." << endl;
+        }
+    }
+    else{
+        setenv("BH_FUSE_MODEL", "SAME_SHAPE_GENERATE_1DREDUCE", 1);
+    }*/
+
     // Configuration
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
     bh_path_option(     object_path,    "BH_VE_CPU_OBJECT_PATH",   "object_path");

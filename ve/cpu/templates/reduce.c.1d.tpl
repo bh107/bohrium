@@ -5,6 +5,7 @@
 //  * REDUCE COMPLETE on 1D arrays of ANY LAYOUT.
 //
 {
+
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = iterspace->nelem > mthreads ? mthreads : 1;
     const int64_t work_split= iterspace->nelem / nworkers;
@@ -24,24 +25,34 @@
             work = work_split;
             work_offset = tid * work + work_spill;
         }
-        work_end = work_offset+work;
+        work_end = work_offset + work;
 
         if (work) {
-        // Operand declaration(s)
+
+
+
+
+        // Walker declaration(s) - begin
         {{WALKER_DECLARATION}}
-        // Operand offsets(s)
+        // Walker declaration(s) - end
+
+        // Walker offset(s) - begin
         {{WALKER_OFFSET}}
+        // Walker offset(s) - end
+
         // Stepsize
         {{WALKER_STEPSIZE}}
 
-        {{ETYPE}} accu = *({{OPD_IN1}});
+        {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
         {{PRAGMA_SIMD}}
-        for (int64_t eidx = work_offset+1; eidx<work_end; ++eidx) {
-            // Increment operands
-            {{WALKER_STEP_LD}}
-
-            // Apply operator(s)
+        for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
+            // Apply operator(s) on operands - begin
             {{REDUCE_OPER}}
+            // Apply operator(s) on operands - end
+
+            // Walker step INNER - begin
+            {{WALKER_STEP_LD}}
+            // Walker step INNER - end
         }
         {{REDUCE_SYNC}}
         {{REDUCE_OPER_COMBINE}}

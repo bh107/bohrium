@@ -36,6 +36,7 @@ def test_ones(n):
     return ((b+c)*b)/c
 
 def prod(items):
+    print items
     acc = 1
     for i in items:
         acc *= i
@@ -48,6 +49,6 @@ def test_reduce(shape):
     #return np.add.reduce(b) 
 
 if __name__ == "__main__":
-    print(test_reduce((3,4,5)))
+    print(test_reduce((10,)))
     #print(test_range(20))
     #print(test_random(20))
