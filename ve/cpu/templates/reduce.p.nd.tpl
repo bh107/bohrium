@@ -87,7 +87,7 @@
             {{PRAGMA_SIMD}}
             for (int64_t aidx=0; aidx < shape_axis; aidx++) {
                 // Apply operator(s) on operands - begin
-                {{REDUCE_OPER}}
+                {{OPERATIONS}}
                 // Apply operator(s) on operands - end
 
                 // Walker step INNER - begin

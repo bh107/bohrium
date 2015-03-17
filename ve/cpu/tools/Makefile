@@ -95,7 +95,7 @@ purge_all: purge_cpu
 #
 reset_krn: purge_krn install
 reset_cpu: purge_cpu install
-purge_install: purge_cpu purge_all clean gen install
+purge_install: purge_all clean gen install_dev
 
 #
 # "Install the cpu-engine

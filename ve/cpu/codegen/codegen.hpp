@@ -189,6 +189,10 @@ std::string _cimag(std::string right);
 
 std::string _omp_reduction_oper(OPERATOR oper);
 
+std::string _omp_critical(std::string expr);
+std::string _omp_atomic(std::string expr);
+
+
 class Operand
 {
 public:
@@ -296,6 +300,7 @@ private:
 
     // Construct the operator source for the tac.oper
     std::string oper(OPERATOR oper, ETYPE etype, std::string in1, std::string in2);
+    std::string synced_oper(OPERATOR oper, ETYPE etype, std::string out, std::string in1, std::string in2);
 
     /**
      *  Generate a comment describing the tac-operation.

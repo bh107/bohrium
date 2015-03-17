@@ -553,7 +553,7 @@ string Walker::ewise_operations(void)
                         "accu",
                         kernel_.operand_glb(tac.in1).walker_val()
                     )
-                ) << end("// REDUCTION");
+                ) << _end("// REDUCTION");
                 break;
             default:
                 ss << "UNSUPPORTED_OPERATION["<< operation_text(tac.op) <<"]_AT_EMITTER_STAGE";
@@ -596,12 +596,12 @@ string Walker::generate_source(void)
     if ((kernel_.omask() & EWISE)>0) {  // Element-wise operations
 
         const uint32_t rank = kernel_.iterspace().meta().ndim;
+        subjects["OPERATIONS"]          = ewise_operations();
         subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
         subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
-        subjects["OPERATIONS"]          = ewise_operations();
         
         if ((1==rank) or ((kernel_.iterspace().meta().layout & CONT_COMPATIBLE)>0)) {
-            plaid = "ewise.1d";
+            plaid = "walker.flattened";
             subjects["WALKER_OFFSET"] = ewise_assign_offset(rank);
             if ((kernel_.iterspace().meta().layout & CONT_COMPATIBLE)==0) {
                 subjects["WALKER_INNER_DIM"] = _declare_init(
@@ -635,51 +635,60 @@ string Walker::generate_source(void)
 
         const uint32_t rank = in1->meta().ndim;
         // Note: end of crappy code...
-
-        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
-        subjects["ATYPE"]           = in2->etype();
-        subjects["ETYPE"]           = out->etype();
         subjects["OPD_OUT"]         = out->name();
         subjects["OPD_IN1"]         = in1->name();
         subjects["OPD_IN2"]         = in2->name();
 
+        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
+        subjects["ETYPE"] = out->etype();
+        subjects["ATYPE"] = in2->etype();
+
         if ((kernel_.omask() & REDUCE)>0) {
+
             switch(rank) {
                 case 1:
-                    plaid = "reduce.c.1d";
+                    plaid = "walker.flattened";
 
-                    subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
+                    subjects["OPERATIONS"] = ewise_operations();
+
+                    subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
                     subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
-                    subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
+                    subjects["WALKER_STEP_INNER"]  = step_fwd(0, tac->in1);
 
-                    switch(tac->oper) {
-                        case MAXIMUM:
-                        case MINIMUM:
-                            subjects["REDUCE_SYNC"] = "#pragma omp critical";
-                            break;
-                        default:
-                            subjects["REDUCE_SYNC"] = "#pragma omp atomic";
-                            break;
-                    }
+                    // Initialize the accumulator 
+                    subjects["ACCU_OPD_INIT"] = _line(_assign(
+                        _deref(out->first()),
+                        oper_neutral_element(tac->oper, in1->meta().etype)
+                    ));
+                    // Declare local accumulator var
+                    subjects["ACCU_LOCAL_DECLARE"] = _line(_declare_init(
+                        in1->etype(),
+                        "accu",
+                        oper_neutral_element(tac->oper, in1->meta().etype)
+                    ));
+
+                    // Syncronize accumulator and local accumulator var
+                    subjects["ACCU_OPD_SYNC"] = _line(synced_oper(
+                        tac->oper,
+                        in1->meta().etype,
+                        _deref(out->first()),
+                        _deref(out->first()),
+                        "accu"
+                    ));
+
                     break;
 
                 default:
                     plaid = "reduce.p.nd";
 
                     subjects["WALKER_STRIDES"]  = declare_stridesizes();
+                    subjects["OPERATIONS"] = _assign(
+                        "accu",
+                        oper(tac->oper, in1->meta().etype, "accu", in1->walker_val())
+                    )+_end();
+
                     break;
             }
-
-            subjects["REDUCE_OPER"] = _assign(
-                "accu",
-                oper(tac->oper, in1->meta().etype, "accu", in1->walker_val())
-            )+_end();
-
-            subjects["REDUCE_OPER_COMBINE"] = _assign(
-                out->walker_val(),
-                oper(tac->oper, in1->meta().etype, out->walker_val(), "accu")
-            )+_end();
-
         } else {
 
             subjects["PAR_OPERATIONS"]  = scan_operations();

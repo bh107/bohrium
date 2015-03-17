@@ -3,6 +3,8 @@
 //
 //  * REDUCE COMPLETE on ND arrays of CONTIGUOUS LAYOUT.
 //  * REDUCE COMPLETE on 1D arrays of ANY LAYOUT.
+//	* MAP|ZIP|GENERATE on 1D strided arrays.
+//	* MAP|ZIP|GENERATE on ND array of CONTIGUOUS LAYOUT.
 //
 {
     const int mthreads = omp_get_max_threads();
@@ -37,9 +39,9 @@
         {{WALKER_OFFSET}}
         // Walker offset(s) - end
 
-        // Stride of innermoster dimension - begin
+        // Stride of innermost dimension - begin
         {{WALKER_STRIDE_INNER}}
-        // Stride of innermoster dimension - end
+        // Stride of innermost dimension - end
 
 		{{ACCU_LOCAL_DECLARE}}
         {{PRAGMA_SIMD}}

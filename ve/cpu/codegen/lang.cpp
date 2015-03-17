@@ -951,5 +951,20 @@ string _omp_reduction_oper(OPERATOR oper)
     }
 }
 
+string _omp_critical(string expr)
+{
+    stringstream ss;
+    ss << "#pragma omp critical" << endl;
+    ss << expr;
+    return ss.str();
+}
+
+string _omp_atomic(string expr)
+{
+    stringstream ss;
+    ss << "#pragma omp atomic" << endl;
+    ss << expr;
+    return ss.str();
+}
 
 }}}}

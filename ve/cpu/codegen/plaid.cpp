@@ -23,15 +23,14 @@ enum states {
 };
 
 Plaid::Plaid(string template_directory) : template_directory_(template_directory) {
-    add_from_file("license",    "license.tpl");
-    add_from_file("kernel",     "kernel.tpl");
-    add_from_file("ewise.1d",   "ewise.1d.tpl");
-    add_from_file("ewise.nd",   "ewise.nd.tpl");
-    add_from_file("reduce.c.1d","reduce.c.1d.tpl");
-    add_from_file("reduce.c.nd","reduce.c.nd.tpl");
-    add_from_file("reduce.p.nd","reduce.p.nd.tpl");
-    add_from_file("scan.1d",    "scan.1d.tpl");
-    add_from_file("scan.nd",    "scan.nd.tpl");
+    add_from_file("license", "license.tpl");
+    add_from_file("kernel", "kernel.tpl");
+    add_from_file("walker.flattened", "walker.flattened.tpl");
+    add_from_file("ewise.nd", "ewise.nd.tpl");
+    add_from_file("reduce.c.nd", "reduce.c.nd.tpl");
+    add_from_file("reduce.p.nd", "reduce.p.nd.tpl");
+    add_from_file("scan.1d", "scan.1d.tpl");
+    add_from_file("scan.nd", "scan.nd.tpl");
 }
 
 string Plaid::text(void)
