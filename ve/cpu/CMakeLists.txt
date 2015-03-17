@@ -111,7 +111,24 @@ endif()
 #   The above are used by config.ini.in
 #
 
+# Check that the compiler supports OMP ATOMIC the way the engine uses it.
 if(OPENMP_FOUND)
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    check_c_source_compiles( "
+	#include <omp.h>
+	int main(void){
+		int acc = 0;
+		int i;
+		for(i=0; i<10; i++) {
+		    #pragma omp atomic
+		    acc = acc + 1;
+		}
+		return 0;
+	}" OPENMP_ATOMIC_FOUND)
+
+endif()
+
+if(OPENMP_FOUND AND OPENMP_ATOMIC_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
