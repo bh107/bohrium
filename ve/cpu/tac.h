@@ -125,8 +125,9 @@ typedef enum LAYOUT {
     SCALAR_CONST = 2,
     SCALAR_TEMP = 4,
     CONTIGUOUS = 8,
-    STRIDED    = 16,
-    SPARSE     = 32
+    CONSECUTIVE = 16,
+    STRIDED    = 32,
+    SPARSE     = 64
 } LAYOUT;   // Uses a single byte
 
 typedef struct tac {
@@ -160,8 +161,8 @@ typedef struct iterspace {
 } iterspace_t;
 
 #define SCALAR_LAYOUT   ( SCALAR | SCALAR_CONST | SCALAR_TEMP )
-#define ARRAY_LAYOUT    ( CONTIGUOUS | STRIDED | SPARSE )
-#define CONT_COMPATIBLE ( SCALAR | SCALAR_CONST | SCALAR_TEMP | CONTIGUOUS )
+#define ARRAY_LAYOUT    ( CONTIGUOUS | CONSECUTIVE | STRIDED | SPARSE )
+#define FLATTENABLE     ( SCALAR | SCALAR_CONST | SCALAR_TEMP | CONTIGUOUS | CONSECUTIVE )
 
 #define EWISE           ( MAP | ZIP | GENERATE )
 #define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE | SCAN )

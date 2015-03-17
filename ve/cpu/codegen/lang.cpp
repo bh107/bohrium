@@ -967,4 +967,11 @@ string _omp_atomic(string expr)
     return ss.str();
 }
 
+string _beef(string info)
+{
+    stringstream ss;
+    ss << "-{[ HERE IS A BEEF: " << info << " ]}-";
+    return ss.str();
+}
+
 }}}}

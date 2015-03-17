@@ -8,7 +8,7 @@
 
     {{ETYPE}} accu = ({{ETYPE}}){{NEUTRAL_ELEMENT}};
     for(int64_t j=0; j<iterspace->shape[axis]; ++j) {
-        {{PAR_OPERATIONS}}
+        {{OPERATIONS}}
        
         {{OPD_IN1}} += {{OPD_IN1}}_stride[axis]; 
         {{OPD_OUT}} += {{OPD_OUT}}_stride[axis]; 

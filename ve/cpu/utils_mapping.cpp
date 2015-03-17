@@ -187,6 +187,8 @@ string layout_text(LAYOUT layout)
             return "SCALAR_TEMP";
         case CONTIGUOUS:
             return "CONTIGUOUS";
+        case CONSECUTIVE:
+            return "CONSECUTIVE";
         case STRIDED:
             return "STRIDED";
         case SPARSE:
@@ -199,17 +201,19 @@ string layout_text_shand(LAYOUT layout)
 {
     switch(layout) {
         case SCALAR:
-            return "I";
+            return "SCLR";
         case SCALAR_CONST:
-            return "K";
+            return "CNST";
         case SCALAR_TEMP:
-            return "T";
+            return "TEMP";
         case CONTIGUOUS:
-            return "C";
+            return "CONT";
+        case CONSECUTIVE:
+            return "CONS";
         case STRIDED:
-            return "S";
+            return "STRD";
         case SPARSE:
-            return "P";
+            return "SPRS";
     }
     return "_ERR-LAYOUT-SH_";
 }

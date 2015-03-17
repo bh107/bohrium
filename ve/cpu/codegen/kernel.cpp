@@ -144,6 +144,14 @@ string Kernel::unpack_arguments(void)
                     _access_ptr(_index(args(), id), "stride")
                 )
                 << _end();
+            case CONSECUTIVE:
+                ss
+                << _declare_init(
+                    _const(_int64()),
+                    operand.stride_inner(),
+                    _index(_access_ptr(_index(args(), id), "stride"), _sub(iterspace().ndim(), "1"))
+                )
+                << _end();
             case CONTIGUOUS:    
                 //  If the iterspace is non-contiguous then we also want
                 //  strides for the CONTIGUOUS arrays for computing the OUTER offset
@@ -191,7 +199,9 @@ string Kernel::unpack_arguments(void)
                 << _assert_not_null(operand.first()) << _end();
                 break;
             case SCALAR_TEMP:   // Data pointer is never used.
+                break;
             default:
+                ss << _beef("Unimplemented LAYOUT!");
                 break;
         }
         ss << endl;

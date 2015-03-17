@@ -104,18 +104,17 @@ string Operand::walker_val(void)
     stringstream ss;
     LAYOUT operand_layout = meta().layout;
     switch(operand_layout) {
+        case SPARSE:
+        case STRIDED:
+        case CONSECUTIVE:
+        case CONTIGUOUS:
+            ss << _deref(walker());
+            break;
+
         case SCALAR:
         case SCALAR_CONST:
         case SCALAR_TEMP:
             ss << walker();
-            break;
-
-        case CONTIGUOUS:
-        case STRIDED:
-        case SPARSE:
-            ss << _deref(walker());
-            break;
-        default:    // TOOD: Throw an exception here...
             break;
     }
     return ss.str();

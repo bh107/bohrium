@@ -48,7 +48,22 @@ def test_reduce(shape):
     return np.add.reduce(a, axis=0) 
     #return np.add.reduce(b) 
 
+def test_consecutive(shape):
+    a = np.ones(shape)
+    print "JEP"
+    print a.T + 1
+    print "TJEP"
+    #print "NOPE"
+    #print a[::,::,::4,::2] + 1
+    #print "NOPE"
+    #print a[::,::2,::4,::2] + 1
+    #print "NOPE"
+    #print a[::2,:,:,:] + 1
+    #b = np.ones(shape[-1])
+    #return a + b
+
 if __name__ == "__main__":
-    print(test_reduce((10,)))
+    print test_reduce((10,))
+    #print(test_consecutive((24,12)))
     #print(test_range(20))
     #print(test_random(20))

@@ -138,11 +138,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         table_[arg_idx].shape    = instr.operand[operand_idx].shape;
         table_[arg_idx].stride   = instr.operand[operand_idx].stride;
 
-        if (contiguous(table_[arg_idx])) {
-            table_[arg_idx].layout = CONTIGUOUS;
-        } else {
-            table_[arg_idx].layout = STRIDED;
-        }
+        table_[arg_idx].layout   = determine_layout(table_[arg_idx]);
         table_[arg_idx].base     = instr.operand[operand_idx].base;
     }
 

@@ -38,7 +38,7 @@
         //
         {{ETYPE}} accu = ({{ETYPE}}){{NEUTRAL_ELEMENT}};
         for (int64_t j = 0; j<shape_axis; ++j) {
-            {{PAR_OPERATIONS}}
+            {{OPERATIONS}}
             
             // Update the output
             *{{OPD_OUT}} = accu;

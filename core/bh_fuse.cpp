@@ -222,21 +222,16 @@ static bool fuse_same_shape_range_random(const bh_instruction *a, const bh_instr
 
 static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_instruction *b)
 {
-    printf("fuse_same_shape_generate_1dreduce testing...\n");
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
-        printf("fuse_same_shape_generate_1dreduce - passed.\n");
         return true;
 
     if(bh_opcode_is_accumulate(a->opcode) or bh_opcode_is_accumulate(b->opcode)) {
-        printf("giving up accumulate...\n");
         return false;
     }
     if(bh_opcode_is_reduction(a->opcode) and (a->operand[1].ndim > 1)) {
-        printf("giving up rank > 1...\n");
         return false;
     }
     if(bh_opcode_is_reduction(b->opcode) and (b->operand[1].ndim > 1)) {
-        printf("giving up rank > 1...\n");
         return false;
     }
 
@@ -249,7 +244,6 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
 
     // a is element-wise, b is element-wise
     if (bh_opcode_is_elementwise(a->opcode) and bh_opcode_is_elementwise(b->opcode)) {
-        printf("testing 2x ewise...\n");
         const bh_intp *aout_shape = a->operand[0].shape;
         const bh_intp aout_ndim = a->operand[0].ndim;
         for(int oidx=1; oidx<a_nop; ++oidx) {
@@ -257,12 +251,10 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
                 continue;
             }
             if(aout_ndim != a->operand[oidx].ndim) {
-                printf("giving up...\n");
                 return false;
             }
             for(bh_intp dim=0; dim<aout_ndim; ++dim) {
                 if(a->operand[oidx].shape[dim] != aout_shape[dim]) {
-                    printf("giving up...\n");
                     return false;
                 }
             }
@@ -272,19 +264,15 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
                 continue;
             }
             if(aout_ndim != b->operand[oidx].ndim) {
-                printf("giving up...\n");
                 return false;
             }
             for(bh_intp dim=0; dim<aout_ndim; ++dim) {
                 if(b->operand[oidx].shape[dim] != aout_shape[dim]) {
-                    printf("giving up...\n");
                     return false;
                 }
             }
         }
-    // a is element-wise, b is reduction
     } else if (bh_opcode_is_elementwise(a->opcode) and not bh_opcode_is_elementwise(b->opcode)) {
-        printf("testing a ewise, b reduce...\n");
         const bh_intp *bin1_shape = b->operand[1].shape;
         const bh_intp bin1_ndim = b->operand[1].ndim;
         for(int oidx=0; oidx<a_nop; ++oidx) {
@@ -292,19 +280,15 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
                 continue;
             }
             if(bin1_ndim != a->operand[oidx].ndim) {
-                printf("giving up...\n");
                 return false;
             }
             for(bh_intp dim=0; dim<bin1_ndim; ++dim) {
                 if(a->operand[oidx].shape[dim] != bin1_shape[dim]) {
-                    printf("giving up...\n");
                     return false;
                 }
             }
         }
-    // a is reduction, b is element-wise
     } else if (not bh_opcode_is_elementwise(a->opcode) and bh_opcode_is_elementwise(b->opcode)) {
-        printf("testing a reduction, b ewise...\n");
         const bh_intp *ain1_shape = a->operand[1].shape;
         const bh_intp ain1_ndim = a->operand[1].ndim;
         for(int oidx=0; oidx<b_nop; ++oidx) {
@@ -312,28 +296,20 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
                 continue;
             }
             if(ain1_ndim != b->operand[oidx].ndim) {
-                printf("giving up...\n");
                 return false;
             }
             for(bh_intp dim=0; dim<ain1_ndim; ++dim) {
                 if(b->operand[oidx].shape[dim] != ain1_shape[dim]) {
-                    printf("giving up...\n");
                     return false;
                 }
             }
         }
-    // a is reduction, b is reduction
     } else {
-        printf("Got two reductions...\n");
         return false;
     }
     
     bool broad_res = fuse_broadest(a, b);
-    if (not broad_res) {
-        printf("Failed on fuse broadest...\n");
-    }
 
-    printf("fuse_same_shape_generate_1dreduce - passed.\n");
     return fuse_broadest(a, b);
 }
 

@@ -192,6 +192,7 @@ std::string _omp_reduction_oper(OPERATOR oper);
 std::string _omp_critical(std::string expr);
 std::string _omp_atomic(std::string expr);
 
+std::string _beef(std::string info);
 
 class Operand
 {
@@ -310,7 +311,12 @@ private:
     //
     //  map / zip / flood / generate
     //
-    std::string ewise_operations(void);
+
+    /**
+     * Construct an ordered sequence of applications of operators.
+     * also note use of operands for outer/inner.
+     */
+    std::string operations(void);
 
     std::string declare_outer_offset(uint64_t oidx);
     std::string declare_outer_offset(void);
@@ -334,13 +340,12 @@ private:
     std::string declare_stride_inner(uint64_t oidx);
     std::string declare_stride_inner(void);
 
-    std::string reduce_par_operations(void);
-    std::string reduce_seq_operations(void);
-    
-    std::string scan_operations(void);
-
     Plaid& plaid_;
     Kernel& kernel_;
+
+    std::set<uint64_t> inner_opds_; // Set of global ids for inner operands
+    std::set<uint64_t> outer_opds_; // Set of global ids for outer operands
+
 };
 
 
