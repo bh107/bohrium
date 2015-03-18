@@ -186,6 +186,7 @@ bh_error bh_ve_cpu_init(const char *name)
         }
     }
 
+	/*
     env = getenv("BH_FUSE_MODEL");
     if (env != NULL) {
         string e(env);
@@ -197,8 +198,8 @@ bh_error bh_ve_cpu_init(const char *name)
     else{
         setenv("BH_FUSE_MODEL", "SAME_SHAPE_RANGE_RANDOM", 1);
     }
+    */
 
-	/*
     env = getenv("BH_FUSE_MODEL");
     if (env != NULL) {
         string e(env);
@@ -210,7 +211,6 @@ bh_error bh_ve_cpu_init(const char *name)
     else{
         setenv("BH_FUSE_MODEL", "SAME_SHAPE_GENERATE_1DREDUCE", 1);
     }
-    */
 
     // Configuration
     bh_path_option(     kernel_path,    "BH_VE_CPU_KERNEL_PATH",   "kernel_path");
