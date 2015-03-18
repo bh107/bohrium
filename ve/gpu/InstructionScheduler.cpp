@@ -35,7 +35,7 @@ InstructionScheduler::InstructionScheduler()
 
 bh_error InstructionScheduler::schedule(bh_ir* bhir)
 {
-    for (bh_intp i = 0; i < bhir->instr_list.size(); ++i)
+    for (size_t i = 0; i < bhir->instr_list.size(); ++i)
     {
         bh_instruction* inst = &(bhir->instr_list[i]);
         if (inst->opcode != BH_NONE)

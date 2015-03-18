@@ -61,6 +61,14 @@ static bool fuse_broadest(const bh_instruction *a, const bh_instruction *b)
     return true;
 }
 
+static bool fuse_no_xsweep(const bh_instruction *a, const bh_instruction *b)
+{
+    return (fuse_broadest(a,b) &&
+            not (bh_opcode_is_sweep(a->opcode) &&  bh_opcode_is_sweep(b->opcode) &&
+                 a->operand[1].ndim == b->operand[1].ndim &&
+                 a->constant.value.int64 != b->constant.value.int64));
+}
+
 static bool fuse_same_shape(const bh_instruction *a, const bh_instruction *b)
 {
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
@@ -273,6 +281,9 @@ void fuse_model_text(FuseModel fuse_model, string &output)
         case BROADEST:
             output = "broadest";
             break;
+        case NO_XSWEEP:
+            output = "no_xsweep";
+            break;
         case SAME_SHAPE:
             output = "same_shape";
             break;
@@ -306,6 +317,8 @@ bool check_fusible(const bh_instruction *a, const bh_instruction *b)
             return check_fusible(a, b);
         case BROADEST:
             return fuse_broadest(a,b);
+        case NO_XSWEEP:
+            return fuse_no_xsweep(a,b);
         case SAME_SHAPE:
             return fuse_same_shape(a,b);
         case SAME_SHAPE_RANGE:

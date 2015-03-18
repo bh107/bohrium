@@ -30,6 +30,14 @@ ResourceManager* resourceManager;
 
 bh_error bh_ve_gpu_init(const char *name)
 {
+    // defined in core/bh_fuse.cpp
+    if (getenv("BH_FUSE_MODEL") != NULL) {
+        std::cerr << "VE-GPU: Warning! fuse model not set by the GPU-VE: '" << std::endl;
+    }
+    else{
+        setenv("BH_FUSE_MODEL", "BROADEST", 1);
+    }
+
     bh_error err;
     if((err = bh_component_init(&component, name)) != BH_SUCCESS)
         return err;
@@ -59,6 +67,7 @@ bh_error bh_ve_gpu_init(const char *name)
 
 bh_error bh_ve_gpu_execute(bh_ir* bhir)
 {
+
     bh_error ret_val = BH_ERROR;
     try
     { 

@@ -44,6 +44,12 @@ enum FuseModel
  * thus accepts broadcast, reduction, extension methods, etc. */
     BROADEST,
 
+/* Same as broadest, but does not allow two sweep operations 
+ * (reduce or scan) on the same input unless the sweep dimension is 
+ * the same  
+ */
+    NO_XSWEEP,
+
 /* A very simple mode that only fuses same shaped arrays thus no
  * broadcast, reduction, extension methods, etc. */
     SAME_SHAPE,

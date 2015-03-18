@@ -83,7 +83,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             ArrayRange orange = output.equal_range(ba);
             for (ArrayMap::iterator oit = orange.first ; oit != orange.second; ++oit)
             {
-                if (bh_view_identical(&views[oit->second], &inst->operand[op]))
+                if (bh_view_same(&views[oit->second], &inst->operand[op]))
                 {
                     // Same view so we use the ID for it
                     opids[op] = oit->second;
@@ -98,7 +98,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             ArrayRange irange = input.equal_range(ba);
             for (ArrayMap::iterator iit = irange.first ; iit != irange.second; ++iit)
             {
-                if (bh_view_identical(&views[iit->second], &inst->operand[op]))
+                if (bh_view_same(&views[iit->second], &inst->operand[op]))
                 {
                     // Same view so we use the same ID for it
                     opids[op] =  iit->second;
@@ -124,7 +124,7 @@ void InstructionBatch::add(bh_instruction* inst, const std::vector<KernelParamet
             for (; i >= 0; --i)
             {   //catch when same view is used twice within oparation and doesn't allready have an id
                 if (inst->operand[op].base == inst->operand[i].base && 
-                    bh_view_identical(&inst->operand[op], &inst->operand[i]))
+                    bh_view_same(&inst->operand[op], &inst->operand[i]))
                 {
                     opids[op] = opids[i];
                     if (op > 0 && i > 0) // both input: no need to load twice
