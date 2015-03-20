@@ -12,68 +12,6 @@ namespace codegen{
 
 Walker::Walker(Plaid& plaid, Kernel& kernel) : plaid_(plaid), kernel_(kernel) {}
 
-string Walker::simd_pragma(void)
-{
-    stringstream ss;
-    for(kernel_operand_iter oit=kernel_.operands_begin();
-        oit != kernel_.operands_end();
-        ++oit) {
-        Operand& operand = oit->second;
-        bool restrictable = kernel_.base_refcount(oit->first)==1;
-        switch(operand.meta().layout) {
-            case STRIDED:       
-            case SPARSE:
-            case CONTIGUOUS:
-                if (restrictable) {
-                    ss
-                    << _declare_init(
-                        _restrict(_ptr(operand.etype())),
-                        operand.walker(),
-                        operand.first()
-                    );
-                } else {
-                    ss
-                    << _declare_init(
-                        _ptr(operand.etype()),
-                        operand.walker(),
-                        operand.first()
-                    );
-                }
-                break;
-
-            case CONSECUTIVE:
-                ss << _beef("SIMD PRAGMA not implemented for CONSECUTIVE LAYOUT");
-                break;
-            case SCALAR:
-                ss
-                 << _declare_init(
-                    operand.etype(),
-                    operand.walker(),
-                    _deref(operand.first())
-                );
-                break;
-            case SCALAR_CONST:
-                ss
-                << _declare_init(
-                    _const(operand.etype()),
-                    operand.walker(),
-                    _deref(operand.first())
-                );
-
-                break;
-            case SCALAR_TEMP:
-                ss
-                << _declare(
-                    operand.etype(),
-                    operand.walker()
-                );
-                break;
-        }
-    }
-    
-    return ss.str();
-}
-
 string Walker::declare_operands(void)
 {
     stringstream ss;
@@ -88,6 +26,7 @@ string Walker::declare_operands(void)
             case SPARSE:
             case CONTIGUOUS:
             case CONSECUTIVE:
+            case SCALAR:
                 if (restrictable) {
                     ss
                     << _declare_init(
@@ -105,14 +44,6 @@ string Walker::declare_operands(void)
                 }
                 break;
 
-            case SCALAR:
-                ss
-                 << _declare_init(
-                    operand.etype(),
-                    operand.walker(),
-                    _deref(operand.first())
-                );
-                break;
             case SCALAR_CONST:
                 ss
                 << _declare_init(
@@ -122,7 +53,7 @@ string Walker::declare_operands(void)
                 );
 
                 break;
-            case SCALAR_TEMP:
+            case CONTRACTABLE:
                 ss
                 << _declare(
                     operand.etype(),
@@ -141,15 +72,15 @@ string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
     LAYOUT ispace_layout = kernel_.iterspace().meta().layout;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
-        case STRIDED:       
         case SPARSE:
+        case STRIDED:       
             switch(rank) {
                 case 3:
                 case 2:
                 case 1:
                     ss << _add_assign(
                         operand.walker(),
-                        _mul("work_offset", _index(operand.stride(), 0))
+                        _mul("work_offset", _index(operand.strides(), 0))
                     )
                     << _end();
                     break;
@@ -163,7 +94,7 @@ string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
             // CONT COMPATIBLE iteration construct
             // or specialized
             // STRIDED construct for rank=1
-            if (((ispace_layout & FLATTENABLE)>0) or (rank==1)) {
+            if (((ispace_layout & COLLAPSIBLE)>0) or (rank==1)) {
                 ss << _add_assign(
                     operand.walker(),
                     _mul("work_offset", operand.stride_inner())
@@ -176,11 +107,12 @@ string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
                 ) << _end();
             }
             break;
+
         case CONTIGUOUS:
             // CONT COMPATIBLE iteration construct
             // or specialized
             // STRIDED construct for rank=1
-            if (((ispace_layout & FLATTENABLE)>0) or (rank==1)) {
+            if (((ispace_layout & COLLAPSIBLE)>0) or (rank==1)) {
                 ss << _add_assign(
                     operand.walker(),
                     "work_offset"
@@ -196,7 +128,7 @@ string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
 
         case SCALAR:
         case SCALAR_CONST:
-        case SCALAR_TEMP:
+        case CONTRACTABLE:
             break;
     }
     return ss.str();
@@ -214,71 +146,6 @@ string Walker::ewise_assign_offset(uint32_t rank)
     return ss.str();
 }
 
-string Walker::declare_stridesize(uint64_t oidx)
-{
-    stringstream ss;
-    Operand& operand = kernel_.operand_glb(oidx);
-    const uint32_t rank = operand.meta().ndim;
-    switch(operand.meta().layout) {
-        case SPARSE:
-        case STRIDED:
-            switch(rank) {
-                case 3:
-                    ss << _declare_init(
-                        _const(_uint64()),
-                        operand.stridevar(rank-3),
-                        _index(operand.stride(), rank-3)
-                    )
-                    << _end();
-                case 2:
-                    ss << _declare_init(
-                        _const(_uint64()),
-                        operand.stridevar(rank-2),
-                        _index(operand.stride(), rank-2)
-                    )
-                    << _end();
-                case 1:
-                    ss << _declare_init(
-                        _const(_uint64()),
-                        operand.stridevar(rank-1),
-                        _index(operand.stride(), rank-1)
-                    )
-                    << _end(operand.layout());
-                    break;
-
-                default:    // ND only declare stride of the innermost
-                    ss << _declare_init(
-                        _const(_uint64()),
-                        operand.stridevar(rank-1),
-                        _index(operand.stride(), "last_dim")
-                    )
-                    << _end(operand.layout());
-                    break;
-            }
-            break;
-        case CONSECUTIVE:
-        case CONTIGUOUS:
-        case SCALAR:
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-            ss << "// " << operand.name() << " " << operand.layout() << endl;
-            break;
-    }
-    return ss.str();
-}
-
-string Walker::declare_stridesizes(void)
-{
-    stringstream ss;
-
-    for(kernel_operand_iter oit=kernel_.operands_begin();
-        oit != kernel_.operands_end();
-        ++oit) {
-        ss << declare_stridesize(oit->first);
-    }
-    return ss.str();
-}
-
 string Walker::declare_stride_inner(uint64_t oidx)
 {
     stringstream ss;
@@ -286,18 +153,19 @@ string Walker::declare_stride_inner(uint64_t oidx)
     switch(operand.meta().layout) {
         case SPARSE:
         case STRIDED:
+        case CONSECUTIVE:
             ss << _declare_init(
                 _const(_int64()),
                 operand.stride_inner(),
-                _index(operand.stride(), "last_dim")
+                _index(operand.strides(), "inner_dim")
             )
             << _end(operand.layout());
             break;
-        case CONSECUTIVE:
+
         case CONTIGUOUS:
-        case SCALAR:
-        case SCALAR_TEMP:
+        case CONTRACTABLE:
         case SCALAR_CONST:
+        case SCALAR:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
@@ -316,102 +184,6 @@ string Walker::declare_stride_inner(void)
     return ss.str();
 }
 
-string Walker::declare_outer_offset(uint64_t oidx)
-{
-    stringstream ss;
-    Operand& operand = kernel_.operand_glb(oidx);
-    switch(operand.meta().layout) {
-        case SPARSE:
-        case STRIDED:
-        case CONTIGUOUS:
-        case CONSECUTIVE:
-            ss << _declare_init(
-                _int64(),
-                operand.outer_offset(),
-                "0" 
-            )
-            << _end(operand.layout());
-            break;
-        case SCALAR:
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-            ss << "// " << operand.name() << " " << operand.layout() << endl;
-            break;
-    }
-    return ss.str();
-}
-
-string Walker::declare_outer_offset(void)
-{
-    stringstream ss;
-    for(kernel_operand_iter oit=kernel_.operands_begin();
-        oit != kernel_.operands_end();
-        ++oit) {
-        ss << declare_outer_offset(oit->first);
-    }
-    return ss.str();
-}
-
-string Walker::ewise_declare_stepsizes(uint32_t rank)
-{
-    stringstream ss;
-    Iterspace& iterspace = kernel_.iterspace();
-
-    for(kernel_operand_iter oit=kernel_.operands_begin();
-        oit != kernel_.operands_end();
-        ++oit) {
-        Operand& operand = oit->second;
-        switch(operand.meta().layout) {
-            case SPARSE:
-            case STRIDED:
-                switch(rank) {
-                    case 3:
-                        ss << _declare_init(
-                            _const(_uint64()),
-                            operand.stepsize(rank-3),
-                            _sub(
-                                _index(operand.stride(), rank-3),
-                                _mul(iterspace.shape(rank-2), _index(operand.stride(), rank-2))
-                            )
-                        )
-                        << _end();
-                    case 2:
-                        ss << _declare_init(
-                            _const(_uint64()),
-                            operand.stepsize(rank-2),
-                            _sub(
-                                _index(operand.stride(), rank-2),
-                                _mul(iterspace.shape(rank-1), _index(operand.stride(), rank-1))
-                            )
-                        )
-                        << _end();
-                    case 1:
-                        ss << _declare_init(
-                            _const(_uint64()),
-                            operand.stepsize(rank-1),
-                            _index(operand.stride(), rank-1)
-                        )
-                        << _end(operand.layout());
-                        break;
-
-                    default:    // ND only declare stepsize of the innermost
-                        ss << _declare_init(
-                            _const(_uint64()),
-                            operand.stepsize(rank-1),
-                            _index(operand.stride(), "last_dim")
-                        )
-                        << _end(operand.layout());
-                        break;
-                }
-                break;
-            default:
-                ss << "// " << operand.name() << " " << operand.layout() << endl;
-                break;
-        }
-    }
-    return ss.str();
-}
-
 string Walker::step_fwd_outer(uint64_t glb_idx)
 {
     stringstream ss;
@@ -425,10 +197,13 @@ string Walker::step_fwd_outer(uint64_t glb_idx)
             ss <<
             _add_assign(
                 operand.walker(),
-                _mul("coord", _index(operand.stride(), "dim"))
+                _mul("coord", _index(operand.strides(), "dim"))
             ) << _end(operand.layout());
             break;
-        default:
+
+        case SCALAR:        // No stepping for these
+        case CONTRACTABLE:
+        case SCALAR_CONST:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
@@ -464,9 +239,10 @@ string Walker::step_fwd_inner(uint64_t glb_idx)
             ss <<
             _inc(operand.walker()) << _end(operand.layout());
             break;
-        case SCALAR:        // There is no stepping for constants
+
+        case SCALAR:        
         case SCALAR_CONST:
-        case SCALAR_TEMP:
+        case CONTRACTABLE:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
@@ -479,65 +255,6 @@ string Walker::step_fwd_inner(void)
     stringstream ss;
     for(set<uint64_t>::iterator it=inner_opds_.begin(); it!=inner_opds_.end(); it++) {
         ss << step_fwd_inner(*it);
-    }
-    return ss.str();
-}
-
-string Walker::step_fwd(uint32_t dim, uint64_t oidx)
-{
-    stringstream ss;
-
-    Operand& operand = kernel_.operand_glb(oidx);
-
-    const int64_t rank = operand.meta().ndim;
-    const int64_t last_dim = rank-1;
-    const bool innermost = (last_dim == dim);
-    switch(operand.meta().layout) {
-        case SPARSE:
-        case STRIDED:
-        case CONSECUTIVE:
-            if ((rank > 3) and (!innermost)) {          // ND-outer
-                ss
-                << _add_assign(
-                    operand.walker(),
-                    _mul("coord", _index(operand.stride(), "dim"))
-                ) << _end(operand.layout());
-            } else {                                    // ND-inner, 1D, 2D, and 3D.
-                ss
-                << _add_assign(
-                    operand.walker(),
-                    operand.stepsize(dim)
-                ) << _end(operand.layout());
-            } 
-            break;
-
-        case CONTIGUOUS:
-            if ((rank > 3) and (!innermost)) {          // ND-outer
-                ss
-                << _add_assign(
-                    operand.walker(),
-                    _mul("coord", _index("weight", "dim"))
-                ) << _end(operand.layout());
-            } else if (innermost) {                     // ND-inner, 1D, 2D, and 3D.
-                ss
-                << _inc(operand.walker()) << _end(operand.layout());
-            }
-            break;
-        default:
-            ss << "// " << operand.name() << " " << operand.layout() << endl;
-            break;
-    }
-    return ss.str();
-}
-
-string Walker::step_fwd(uint32_t dim)
-{
-    stringstream ss;
-
-    for(kernel_operand_iter oit=kernel_.operands_begin();
-        oit != kernel_.operands_end();
-        ++oit) {
-        ss << step_fwd(dim, oit->first);
     }
     return ss.str();
 }
@@ -602,7 +319,8 @@ string Walker::operations(void)
             case SCAN:
                 inner_opds_.insert(tac.in1);
                 outer_opds_.insert(tac.in1);
-
+                
+                inner_opds_.insert(tac.out);
                 outer_opds_.insert(tac.out);
 
                 in1 = kernel_.operand_glb(tac.in1).walker_val();
@@ -649,27 +367,36 @@ string Walker::generate_source(void)
         out = &kernel_.operand_glb(tac->out);
         in1 = &kernel_.operand_glb(tac->in1);
         in2 = &kernel_.operand_glb(tac->in2);
+
+        subjects["OPD_OUT"] = out->name();
+        subjects["OPD_IN1"] = in1->name();
+        subjects["OPD_IN2"] = in2->name();
+
+        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
+        subjects["ETYPE"] = out->etype();
+        subjects["ATYPE"] = in2->etype();
     }
     // Note: end of crappy code used by reductions / scan
 
-    // MAP | ZIP | GENERATE on FLATTENABLE LAYOUT of any RANK
+    subjects["OPERATIONS"] = operations();
+
+    // MAP | ZIP | GENERATE on COLLAPSIBLE LAYOUT of any RANK
     // and
-    // REDUCE on FLATTENABLE LAYOUT with RANK == 1
-    if (((kernel_.iterspace().meta().layout & FLATTENABLE)>0) \
+    // REDUCE on COLLAPSIBLE LAYOUT with RANK == 1
+    if (((kernel_.iterspace().meta().layout & COLLAPSIBLE)>0) \
         and ((kernel_.omask() & SCAN)==0)                     \
         and (not((rank>1) and ((kernel_.omask() & REDUCE)>0)))) {
         
-        plaid = "walker.flattened";
+        plaid = "walker.collapsed";
 
-        subjects["OPERATIONS"]          = operations();
+        subjects["WALKER_INNER_DIM"]    = _declare_init(
+            _const(_int64()),
+            "inner_dim",
+            _sub(kernel_.iterspace().ndim(), "1")
+        ) + _end();
         subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
         subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
         subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
-        subjects["WALKER_INNER_DIM"]    = _declare_init(
-            _const(_int64()),
-            "last_dim",
-            _sub(kernel_.iterspace().ndim(), "1")
-        ) + _end();
 
         // Reduction specfics
         if ((kernel_.omask() & REDUCE)>0) {
@@ -699,62 +426,42 @@ string Walker::generate_source(void)
 
         // MAP | ZIP
         if ((kernel_.omask() & REDUCE)==0) {
-            plaid = "ewise.nd";
+            plaid = "walker.inner";
 
-            subjects["OPERATIONS"]          = operations();
-            subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
-            subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
-            subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
             subjects["WALKER_INNER_DIM"]    = _declare_init(
                 _const(_int64()),
-                "last_dim",
+                "inner_dim",
                 _sub(kernel_.iterspace().ndim(), "1")
             ) + _end();
-            subjects["WALKER_STEP_OUTER"]   = step_fwd_outer();
+            subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
+            subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
+
+            subjects["WALKER_STEP_OUTER"] = step_fwd_outer();
+            subjects["WALKER_STEP_INNER"] = step_fwd_inner();
 
         // REDUCE
         } else {
-            plaid = "reduce.p.nd";
-
-            // Note: end of crappy code...
-            subjects["OPD_OUT"]         = out->name();
-            subjects["OPD_IN1"]         = in1->name();
-            subjects["OPD_IN2"]         = in2->name();
-
-            subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
-            subjects["ETYPE"] = out->etype();
-            subjects["ATYPE"] = in2->etype();
-
-            subjects["WALKER_STRIDES"]  = declare_stridesizes();
-            subjects["OPERATIONS"] = _assign(
-                "accu",
-                oper(tac->oper, in1->meta().etype, "accu", in1->walker_val())
-            )+_end();
+            plaid = "walker.axis";
         }
 
     // SCAN on STRIDED LAYOUT of any RANK
     } else {
-
-        subjects["OPD_OUT"]         = out->name();
-        subjects["OPD_IN1"]         = in1->name();
-        subjects["OPD_IN2"]         = in2->name();
-
-        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
-        subjects["ETYPE"] = out->etype();
-        subjects["ATYPE"] = in2->etype();
-
-        subjects["OPERATIONS"]  = operations();
         switch(rank) {
             case 1:
-                subjects["WALKER_STEPSIZE"] = ewise_declare_stepsizes(rank);
-                subjects["WALKER_OFFSET"]   = ewise_assign_offset(rank, tac->in1);
-                subjects["WALKER_STEP_LD"]  = step_fwd(0, tac->in1);
                 plaid = "scan.1d";
-                break;
-            default:
-                subjects["WALKER_STRIDES"]  = declare_stridesizes();
-                plaid = "scan.nd";
 
+                subjects["WALKER_INNER_DIM"]    = _declare_init(
+                    _const(_int64()),
+                    "inner_dim",
+                    _sub(kernel_.iterspace().ndim(), "1")
+                ) + _end();
+                subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
+                subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
+
+                break;
+
+            default:
+                plaid = "scan.nd";
                 break;
         }
     }

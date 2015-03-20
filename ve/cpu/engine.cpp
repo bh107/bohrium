@@ -141,8 +141,8 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             //
             // We start by creating a symbol for the block and updating the
             // iteration space
-            block.symbolize();
             block.update_iterspace();
+            block.symbolize();
 
             //
             // JIT-compile the block if enabled
@@ -219,7 +219,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     bh_error res = BH_SUCCESS;
 
     //
-    // Turn temps into scalars
+    // Turn temps into scalars aka array-contraction
+    /*
     const std::vector<const bh_base*>& temps = krnl.temp_list();
     for(std::vector<const bh_base*>::const_iterator tmp_it = temps.begin();
         tmp_it != temps.end();
@@ -229,21 +230,20 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
             operand_idx < block.noperands();
             ++operand_idx) {
             if (block.operand(operand_idx).base == *tmp_it) {
-                symbol_table.turn_scalar_temp(block.local_to_global(operand_idx));
+                symbol_table.turn_contractable(block.local_to_global(operand_idx));
             }
         }
     }
+    */
 
     //
     // The operands might have been modified at this point, so we need to create a new symbol.
     // and update the iteration-space
+    block.update_iterspace();                           // update iterspace
     if (!block.symbolize()) {                           // update block-symbol
         fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
         return BH_ERROR;
     }
-    block.update_iterspace();                           // update iterspace
-
-    iterspace_t& iterspace = block.iterspace();   // retrieve iterspace
 
     //
     // JIT-compile the block if enabled
@@ -299,7 +299,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
         tac_t& tac = block.tac(i);
         operand_t& operand = symbol_table[tac.out];
 
-        if (((tac.op & ARRAY_OPS)>0) && (operand.layout!= SCALAR_TEMP)) {
+        if (((tac.op & ARRAY_OPS)>0) and \
+            ((operand.layout & (SCALAR_CONST|CONTRACTABLE))==0)) {
             res = bh_vcache_malloc_base(operand.base);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
@@ -314,6 +315,8 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     // 
     DEBUG(TAG, "EXECUTING "<< block.text());
     TIMER_START
+
+    iterspace_t& iterspace = block.iterspace();   // retrieve iterspace
     storage.funcs[block.symbol()](block.operands(), &iterspace);
     TIMER_STOP(block.text_compact())
 
@@ -324,7 +327,7 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
         tac_t& tac = block.tac(i);
         operand_t& operand = symbol_table[tac.out];
 
-        if (tac.oper == FREE) {
+        if (FREE == tac.oper) {
             res = bh_vcache_free_base(operand.base);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
@@ -348,21 +351,19 @@ bh_error Engine::execute(bh_ir* bhir)
     vector<tac_t> program(program_size);                // Program
     SymbolTable symbol_table(program_size*6+2);         // SymbolTable
     
-    
     instrs_to_tacs(*bhir, program, symbol_table);       // Map instructions to 
                                                         // tac and symbol_table.
 
     Block block(symbol_table, program);                 // Construct a block
 
     //
-    //  Map kernels to blocks one at a time and execute them.
+    //  Map bh_kernels to Blocks one at a time and execute them.
     for(krnl_iter krnl = bhir->kernel_list.begin();
         krnl != bhir->kernel_list.end();
         ++krnl) {
 
-        block.clear();
-        block.compose(*krnl);
-
+        block.clear();                                  // Reset the block
+        block.compose(*krnl);                           // Compose it based on kernel
                 
         if (jit_fusion && \
             (block.narray_tacs() > 1)) {                // FUSE_MODE
@@ -375,15 +376,13 @@ bh_error Engine::execute(bh_ir* bhir)
             DEBUG(TAG, "FUSE END");
         
         } else {                                        // SIJ_MODE
-
             DEBUG(TAG, "SIJ START");
             for(std::vector<uint64_t>::iterator idx_it = krnl->instr_indexes.begin();
                 idx_it != krnl->instr_indexes.end();
                 ++idx_it) {
 
-                // Compose the block
-                block.clear();
-                block.compose(*idx_it, *idx_it);
+                block.clear();                          // Reset the block
+                block.compose(*idx_it, *idx_it);        // Compose based on one instruction
 
                 // Generate/Load code and execute it
                 res = sij_mode(symbol_table, program, block);

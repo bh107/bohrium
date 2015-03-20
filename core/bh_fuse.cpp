@@ -237,14 +237,12 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
        (b->opcode != BH_RANGE and b->opcode != BH_RANDOM \
         and not bh_opcode_is_elementwise(b->opcode)      \
         and not bh_opcode_is_reduction(b->opcode))) {
-        printf("Invalid instruction\n");
         return false;
     }
 
     if ((bh_opcode_is_reduction(a->opcode) and (a->operand[1].ndim>1))\
         or                                                          \
         (bh_opcode_is_reduction(b->opcode) and (b->operand[1].ndim>1))) {
-        printf("Invalid rank of reduction.\n");
         return false;
     }
 
@@ -254,23 +252,31 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
     const int b_nop = bh_operands(b->opcode);
     // a is reduction, b is reduction
     if (bh_opcode_is_reduction(a->opcode) and bh_opcode_is_reduction(b->opcode)) {
-        printf("Two reductions.\n");
         return false;
     // a is NOT reduction, b is reduction
     } else if (not bh_opcode_is_reduction(a->opcode) and bh_opcode_is_reduction(b->opcode)) {
         const bh_intp *red_shape = b->operand[1].shape;
-        const bh_intp red_ndim = b->operand[1].ndim;
+        const bh_intp red_ndim   = b->operand[1].ndim;
+
+        // check that a does not depend on reduce-result of b
+        for(int oidx=0; oidx<a_nop; ++oidx) {
+            if(bh_is_constant(&a->operand[oidx])) {
+                continue;
+            }
+            if (a->operand[oidx].base == b->operand[0].base) {
+                return false;
+            }
+        }
+
         for(int oidx=0; oidx<a_nop; ++oidx) {
             if(bh_is_constant(&a->operand[oidx]) or is_scalar(&a->operand[oidx])) {
                 continue;
             }
             if(red_ndim != a->operand[oidx].ndim) {
-                printf("invalid ndim, b is reduction..\n");
                 return false;
             }
             for(bh_intp dim=0; dim<red_ndim; ++dim) {
                 if(a->operand[oidx].shape[dim] != red_shape[dim]) {
-                    printf("invalid shape, b is reduction..\n");
                     return false;
                 }
             }
@@ -278,18 +284,27 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
     // a is reduction, b is NOT reduction
     } else if (bh_opcode_is_reduction(a->opcode) and not bh_opcode_is_reduction(b->opcode)) {
         const bh_intp *red_shape = a->operand[1].shape;
-        const bh_intp red_ndim = a->operand[1].ndim;
+        const bh_intp red_ndim   = a->operand[1].ndim;
+
+        // check that b does not depend on reduce-result of a
+        for(int oidx=0; oidx<b_nop; ++oidx) {
+            if(bh_is_constant(&a->operand[oidx])) {
+                continue;
+            }
+            if (b->operand[oidx].base == a->operand[0].base) {
+                return false;
+            }
+        }
+
         for(int oidx=0; oidx<b_nop; ++oidx) {
             if(bh_is_constant(&b->operand[oidx]) or is_scalar(&b->operand[oidx])) {
                 continue;
             }
             if(red_ndim != b->operand[oidx].ndim) {
-                printf("invalid ndim, a is reduction..\n");
                 return false;
             }
             for(bh_intp dim=0; dim<red_ndim; ++dim) {
                 if(b->operand[oidx].shape[dim] != red_shape[dim]) {
-                    printf("invalid shape, a is reduction..\n");
                     return false;
                 }
             }
@@ -298,51 +313,23 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
     } else {
         const bh_intp *shape = a->operand[0].shape;
         const bh_intp ndim = a->operand[0].ndim;
-        for(int i=1; i<a_nop; ++i)
-        {
-            if(bh_is_constant(&a->operand[i]) or is_scalar(&a->operand[i])) {
-                continue;
-            }
-            if(ndim != a->operand[i].ndim) {
-                printf("invalid ndim, a vs a.\n");
-                return false;
-            }
-            if ((ndim == 1) and ((a->operand[i].shape[0]==1) or shape[0] == 1)) {
-                continue;
-            }
-            for(bh_intp j=0; j<ndim; ++j)
-            {
-                if(a->operand[i].shape[j] != shape[j]) {
-                    printf("invalid shape, a vs a.\n");
+
+        if (not is_scalar(&a->operand[0])) {
+            for(int i=0; i<b_nop; ++i) {
+                if (bh_is_constant(&b->operand[i]) or is_scalar(&b->operand[i]))
+                    continue;
+                if (ndim != b->operand[i].ndim) {
                     return false;
                 }
-            }
-        }
-        for(int i=0; i<b_nop; ++i) {
-            if(bh_is_constant(&b->operand[i]) or is_scalar(&b->operand[i])) {
-                continue;
-            }
-            if(ndim != b->operand[i].ndim) {
-                printf("invalid ndim, a vs b.\n");
-                return false;
-            }
-            if ((ndim == 1) and ((b->operand[i].shape[0]==1) or (shape[0] == 1))) {
-                continue;
-            }
-            for(bh_intp j=0; j<ndim; ++j) {
-                if(b->operand[i].shape[j] != shape[j]) {
-                    printf("invalid shape, a vs b. {{\n");
-                    bh_pprint_instr(a);
-                    bh_pprint_instr(b);
-                    printf("}}}\n");
-                    return false;
+                for (bh_intp j=0; j<ndim; ++j) {
+                    if(b->operand[i].shape[j] != shape[j]) {
+                        return false;
+                    }
                 }
             }
         }
     }
     
-    bool broad_res = fuse_broadest(a, b);
-
     return fuse_broadest(a, b);
 }
 

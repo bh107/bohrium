@@ -11,17 +11,20 @@ const char TAG[] = "Utils";
 void tac_transform(tac_t& tac, SymbolTable& symbol_table)
 {
     switch(tac.op) {
-        case MAP:
-            switch(tac.oper) {
-                case IDENTITY:
-                    if(tac.out == tac.in1) {
-                        tac.op = NOOP;
-                    }
-                    break;
-                default:
-                    break;
+        case REDUCE:
+            if (symbol_table[tac.in1].layout == SCALAR) {
+                tac.op = MAP;
+                tac.oper = IDENTITY;
             }
             break;
+
+        case SCAN:
+            if (symbol_table[tac.in1].layout == SCALAR) {
+                tac.op = MAP;
+                tac.oper = IDENTITY;
+            }
+            break;
+
         case ZIP:
             switch(tac.oper) {
                 case POWER:
@@ -34,6 +37,19 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
                     break;
             }
             break;
+
+        case MAP:
+            switch(tac.oper) {
+                case IDENTITY:
+                    if(tac.out == tac.in1) {
+                        tac.op = NOOP;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            break;
+
         default:
             break;
     }
@@ -223,20 +239,22 @@ LAYOUT determine_layout(const operand_t& arg)
     // CONTIGUOUS:  stride[dim] == stride[dim+1]*shape[dim+1] and stride[inner] == 1
     bool consecutive = true;    
     int64_t weight = arg.stride[inner_dim];
+    int64_t nelements = 1;
     for(int dim=inner_dim; dim>=0; --dim) {
         if (arg.stride[dim] != weight) {
             consecutive = false;
         }
+        nelements *= arg.shape[dim];
         weight = arg.shape[dim]*arg.stride[dim];
     }
 
-    if (consecutive) {
-        if (arg.stride[inner_dim] == 1) {
-            return CONTIGUOUS;
-        } else {
-            return CONSECUTIVE;
-        }
-    }  else {
+    if (nelements == 1) {
+        return SCALAR;
+    } else if (consecutive and arg.stride[inner_dim] == 1) {
+        return CONTIGUOUS;
+    } else if (consecutive and arg.stride[inner_dim] > 1) {
+        return CONSECUTIVE;
+    } else {
         return STRIDED;
     }
 }

@@ -3,8 +3,7 @@ CPU=$(ROOT)/ve/cpu
 BDIR=$(CPU)/bdir
 PAR_LVL=-j4
 BH_PYTHON=python
-TEST_EXCLUDE=--exclude-test=test_reduce_prod --exclude-test=test_reduce_bitwise --exclude-test=test_reduce_bool
-
+TEST_EXCLUDE=--exclude-test=test_reduce_prod --exclude-test=test_reduce_bitwise --exclude-test=test_reduce_bool --exclude-test=test_gauss --exclude-test=test_gauss_20x20 --exclude-test=test_sor
 DUMPSRC=1
 #CC=/home/safl/intel/bin/icc
 #CXX=/home/safl/intel/bin/icpc
@@ -99,23 +98,23 @@ purge_install: purge_all clean gen install_dev
 
 #
 # "Install the cpu-engine
-install:
+install: purge_ko
 	mkdir -p $(BDIR)
 	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(ROOT) && make $(PAR_LVL) && make install
 
-install_debug:
+install_debug: purge_ko
 	mkdir -p $(BDIR)
 	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(ROOT) $(DEBUG_BUILD) && make $(PAR_LVL) && make install
 
-install_profiling:
+install_profiling: purge_ko
 	mkdir -p $(BDIR)
 	cd $(BDIR) &&  CC=$(CC) CXX=$(CXX) cmake $(ROOT) $(PROFILE_BUILD) && make $(PAR_LVL) && make install
 
-install_dev:
+install_dev: purge_ko
 	mkdir -p $(BDIR)
 	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(ROOT) $(DEV_BUILD) && make $(PAR_LVL) && make install
 
-install_benchmark:
+install_benchmark: purge_ko
 	mkdir -p $(BDIR)
 	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(ROOT) $(BENCHMARK_BUILD) && make $(PAR_LVL) && make install
 

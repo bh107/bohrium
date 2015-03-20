@@ -1,10 +1,6 @@
 //
-// Codegen template is used for:
-//
-//  * REDUCE COMPLETE on ND arrays of CONTIGUOUS LAYOUT.
-//  * REDUCE COMPLETE on 1D arrays of ANY LAYOUT.
-//	* MAP|ZIP|GENERATE on 1D strided arrays.
-//	* MAP|ZIP|GENERATE on ND array of CONTIGUOUS LAYOUT.
+//	* MAP|ZIP|GENERATE|REDUCE_C on 1D arrays with STRIDED     LAYOUT.
+//	* MAP|ZIP|GENERATE|REDUCE_C on ND arrays with COLLAPSIBLE LAYOUT.
 //
 {
     const int mthreads = omp_get_max_threads();
@@ -35,13 +31,13 @@
         {{WALKER_DECLARATION}}
         // Walker declaration(s) - end
 
-        // Walker offset(s) - begin
-        {{WALKER_OFFSET}}
-        // Walker offset(s) - end
-
         // Stride of innermost dimension - begin
         {{WALKER_STRIDE_INNER}}
         // Stride of innermost dimension - end
+
+        // Walker offset(s) - begin
+        {{WALKER_OFFSET}}
+        // Walker offset(s) - end
 
 		{{ACCU_LOCAL_DECLARE}}
         {{PRAGMA_SIMD}}

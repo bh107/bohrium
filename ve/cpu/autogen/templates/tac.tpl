@@ -84,9 +84,9 @@ typedef struct iterspace {
     int64_t nelem;  // The number of elements in the iteration space
 } iterspace_t;
 
-#define SCALAR_LAYOUT   ( SCALAR | SCALAR_CONST | SCALAR_TEMP )
+#define SCALAR_LAYOUT   ( SCALAR | SCALAR_CONST | CONTRACTABLE )
 #define ARRAY_LAYOUT    ( CONTIGUOUS | CONSECUTIVE | STRIDED | SPARSE )
-#define FLATTENABLE     ( SCALAR | SCALAR_CONST | SCALAR_TEMP | CONTIGUOUS | CONSECUTIVE )
+#define COLLAPSIBLE     ( SCALAR | SCALAR_CONST | CONTRACTABLE | CONTIGUOUS | CONSECUTIVE )
 
 #define EWISE           ( MAP | ZIP | GENERATE )
 #define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE | SCAN )

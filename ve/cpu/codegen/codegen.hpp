@@ -43,6 +43,7 @@ std::string _const_ptr(std::string object);
 
 std::string _assert_not_null(std::string object);
 std::string _assign(std::string lvalue, std::string rvalue);
+std::string _comment(std::string comment);
 std::string _end(void);
 std::string _end(std::string comment);
 std::string _line(std::string object);
@@ -201,20 +202,20 @@ public:
     Operand(operand_t* operand, uint32_t local_id);
 
     std::string name(void);
-    
-    std::string walker(void);
-    std::string walker_val(void);
 
     std::string first(void);
     std::string layout(void);
     std::string etype(void);
     std::string ndim(void);
     std::string shape(void);
-    std::string stride(void);
-    std::string stridevar(uint32_t dim);
+
+    std::string strides(void);
     std::string stride_inner(void);
-    std::string stepsize(uint32_t dim);
-    std::string outer_offset(void);
+    std::string stride_axis(void);
+
+    std::string accu(void);
+    std::string walker(void);
+    std::string walker_val(void);
 
     operand_t& meta(void);
     uint64_t local_id(void);
@@ -292,8 +293,6 @@ public:
 
     std::string generate_source(void);
     std::string oper_neutral_element(OPERATOR oper, ETYPE etype);
-
-    std::string simd_pragma(void);
     
 private:
     std::string declare_operands(void);
@@ -318,27 +317,24 @@ private:
      */
     std::string operations(void);
 
+    std::string declare_stride_inner(uint64_t oidx);
+    std::string declare_stride_inner(void);
+
     std::string declare_outer_offset(uint64_t oidx);
     std::string declare_outer_offset(void);
-    std::string declare_stridesize(uint64_t oidx);
-    std::string declare_stridesizes(void);
 
     // Ewise walker -- innards
-    std::string ewise_declare_stepsizes(uint32_t rank);
     std::string ewise_assign_offset(uint32_t rank);
     std::string ewise_assign_offset(uint32_t rank, uint64_t oidx);
+
     std::string step_fwd(uint32_t dim, uint64_t oidx);
     std::string step_fwd(uint32_t dim);
-
 
     std::string step_fwd_outer(uint64_t glb_idx);
     std::string step_fwd_outer(void);
 
     std::string step_fwd_inner(uint64_t glb_idx);
     std::string step_fwd_inner(void);
-
-    std::string declare_stride_inner(uint64_t oidx);
-    std::string declare_stride_inner(void);
 
     Plaid& plaid_;
     Kernel& kernel_;

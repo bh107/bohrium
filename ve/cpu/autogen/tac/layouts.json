@@ -1,7 +1,7 @@
 [
-    {"id": 1,   "name": "SCALAR",       "shorthand": "SCLR"},
-    {"id": 2,   "name": "SCALAR_CONST", "shorthand": "CNST"},
-    {"id": 4,   "name": "SCALAR_TEMP",  "shorthand": "TEMP"},
+    {"id": 1,   "name": "SCALAR_CONST", "shorthand": "CNST"},
+    {"id": 2,   "name": "CONTRACTABLE", "shorthand": "TEMP"},
+    {"id": 4,   "name": "SCALAR",       "shorthand": "SCLR"},
     {"id": 8,   "name": "CONTIGUOUS",   "shorthand": "CONT"},
     {"id": 16,  "name": "CONSECUTIVE",  "shorthand": "CONS"},
     {"id": 32,  "name": "STRIDED",      "shorthand": "STRD"},

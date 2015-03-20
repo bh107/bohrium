@@ -194,6 +194,13 @@ string _cast(string type, string object)
     return ss.str();
 }
 
+string _comment(string comment)
+{
+    stringstream ss;
+    ss << "// " << comment;
+    return ss.str();
+}
+
 string _end(void)
 {
     stringstream ss;

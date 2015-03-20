@@ -32,49 +32,33 @@ string Operand::first(void)
     return ss.str();
 }
 
-string Operand::stepsize(uint32_t dim)
+string Operand::layout(void) {
+    return layout_text(meta().layout);    
+}
+
+string Operand::etype(void)
+{
+    return etype_to_ctype_text(meta().etype);
+}
+
+string Operand::ndim(void)
 {
     stringstream ss;
-    ss << name() << "_stepsize";
-    switch(meta().ndim -1 - dim) {
-        case 2:
-            ss << "_tld";
-            break;
-        case 1:
-            ss << "_sld";
-            break;
-        case 0:
-            ss << "_ld";
-            break;
-
-        default:
-            ss << "__ND stepsize is not constant but variable__";
-            break;
-    }
-
+    ss << name() << "_ndim";
     return ss.str();
 }
 
-string Operand::stridevar(uint32_t dim)
+string Operand::shape(void)
 {
     stringstream ss;
-    ss << name() << "_stride";
-    switch(meta().ndim -1 - dim) {
-        case 2:
-            ss << "_tld";
-            break;
-        case 1:
-            ss << "_sld";
-            break;
-        case 0:
-            ss << "_ld";
-            break;
+    ss << name() << "_shape";
+    return ss.str();
+}
 
-        default:
-            ss << "__ND stepsize is not constant but variable__";
-            break;
-    }
-
+string Operand::strides(void)
+{
+    stringstream ss;
+    ss << name() << "_strides";
     return ss.str();
 }
 
@@ -85,10 +69,17 @@ string Operand::stride_inner(void)
     return ss.str();
 }
 
-string Operand::outer_offset(void)
+string Operand::stride_axis(void)
 {
     stringstream ss;
-    ss << name() << "_outer_offset";
+    ss << name() << "_stride_axis";
+    return ss.str();
+}
+
+string Operand::accu(void)
+{
+    stringstream ss;
+    ss << name() << "_accu";
     return ss.str();
 }
 
@@ -108,56 +99,26 @@ string Operand::walker_val(void)
         case STRIDED:
         case CONSECUTIVE:
         case CONTIGUOUS:
+        case SCALAR:
             ss << _deref(walker());
             break;
 
-        case SCALAR:
+        case CONTRACTABLE:
         case SCALAR_CONST:
-        case SCALAR_TEMP:
             ss << walker();
             break;
     }
     return ss.str();
 }
 
-string Operand::ndim(void)
+operand_t& Operand::meta(void)
 {
-    stringstream ss;
-    ss << name() << "_ndim";
-    return ss.str();
-}
-
-string Operand::shape(void)
-{
-    stringstream ss;
-    ss << name() << "_shape";
-    return ss.str();
-}
-
-string Operand::stride(void)
-{
-    stringstream ss;
-    ss << name() << "_stride";
-    return ss.str();
-}
-
-string Operand::layout(void) {
-    return layout_text(meta().layout);    
-}
-
-string Operand::etype(void)
-{
-    return etype_to_ctype_text(meta().etype);
+    return *operand_;
 }
 
 uint64_t Operand::local_id(void)
 {
     return local_id_;
-}
-
-operand_t& Operand::meta(void)
-{
-    return *operand_;
 }
 
 }}}}

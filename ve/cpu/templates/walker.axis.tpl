@@ -7,21 +7,21 @@
 //	Distribites work staticly/evenly among threads.
 //
 {
-    {{ATYPE}} axis = *{{OPD_IN2}}_first;
+    int64_t axis_dim = *{{OPD_IN2}}_first;
+    int64_t axis_shape = iterspace->shape[axis_dim];
 
-    int64_t shape_axis = iterspace->shape[axis];
     //
     // Construct an iteration-space that does not include the axis-dimension
     int64_t shape[CPU_MAXDIM] = {0};
     for(int64_t dim=0, outer_dim = 0; dim < iterspace->ndim; ++dim) {
-        if (dim == axis) {
+        if (dim == axis_dim) {
             continue;
         }
         shape[outer_dim] = iterspace->shape[dim];
         ++outer_dim;
     }
     int64_t ndim = iterspace->ndim-1;
-    int64_t last_dim = ndim-1;
+    int64_t inner_dim = ndim-1;
     int64_t nelements = 1;
     for(int64_t dim=0; dim<ndim; ++dim) {
         nelements *= shape[dim];
@@ -31,13 +31,13 @@
     // Compute the weight
     int64_t weight[CPU_MAXDIM];
     int64_t acc = 1;
-    for(int64_t dim=last_dim; dim >=0; --dim) {
+    for(int64_t dim=inner_dim; dim >=0; --dim) {
         weight[dim] = acc;
         acc *= shape[dim];
     }
 
     const int mthreads          = omp_get_max_threads();
-    const int64_t chunksize     = shape[last_dim];
+    const int64_t chunksize     = shape[inner_dim];
     const int64_t nchunks       = nelements / chunksize;
     const int64_t nworkers      = nchunks > mthreads ? mthreads : 1;
     const int64_t work_split    = nchunks / nworkers;
@@ -59,7 +59,7 @@
 
         if (work) {
         // Walker STRIDE_INNER - begin
-        const uint64_t axis_stride = {{OPD_IN1}}_stride[axis];
+        const uint64_t axis_stride = {{OPD_IN1}}_strides[axis_dim];
         // Walker STRIDE_INNER - end
 
         const int64_t eidx_begin = work_offset*chunksize;
@@ -72,20 +72,20 @@
 
             // Walker step non-axis / operand offset - begin
             for(int64_t dim=0, other_dim=0; dim<iterspace->ndim; ++dim) {
-                if (dim==axis) {
+                if (dim==axis_dim) {
                     continue;
                 }
                 const int64_t coord = (eidx / weight[other_dim]) % shape[other_dim];
 
-                {{OPD_IN1}} += coord * {{OPD_IN1}}_stride[dim];
-                {{OPD_OUT}} += coord * {{OPD_OUT}}_stride[other_dim];
+                {{OPD_IN1}} += coord * {{OPD_IN1}}_strides[dim];
+                {{OPD_OUT}} += coord * {{OPD_OUT}}_strides[other_dim];
                 ++other_dim;
             }
             // Walker step non-axis / operand offset - end
 
             {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
             {{PRAGMA_SIMD}}
-            for (int64_t aidx=0; aidx < shape_axis; aidx++) {
+            for (int64_t aidx=0; aidx < axis_shape; aidx++) {
                 // Apply operator(s) on operands - begin
                 {{OPERATIONS}}
                 // Apply operator(s) on operands - end

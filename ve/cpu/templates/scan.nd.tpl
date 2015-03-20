@@ -13,6 +13,8 @@
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
+    int64_t* const {{OPD_IN1}}_stride = args[2]->stride;
+    int64_t* const {{OPD_OUT}}_stride = args[1]->stride;
     int64_t {{OPD_IN1}}_stride_axis = {{OPD_OUT}}_stride[axis];
     int64_t {{OPD_OUT}}_stride_axis = {{OPD_OUT}}_stride[axis];
 
@@ -39,9 +41,6 @@
         {{ETYPE}} accu = ({{ETYPE}}){{NEUTRAL_ELEMENT}};
         for (int64_t j = 0; j<shape_axis; ++j) {
             {{OPERATIONS}}
-            
-            // Update the output
-            *{{OPD_OUT}} = accu;
             
             {{OPD_OUT}} += {{OPD_OUT}}_stride_axis;
             {{OPD_IN1}} += {{OPD_IN1}}_stride_axis;
