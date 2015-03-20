@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 #include <map>
+#include <set>
 #include <boost/serialization/vector.hpp>
 
 #include "bh_type.h"
@@ -88,21 +89,31 @@ protected:
 */
 class bh_ir_kernel
 {
+private:
+    // List of input and output to this kernel.
+    // NB: system instruction (e.g. BH_DISCARD) is
+    // never part of kernel input or output
+    std::set<int> inputs;
+    std::set<int> outputs;
+
+    // List of temporary base-arrays in this kernel.
+    std::vector<const bh_base*> temps;
+    
+    // List of unique views used in this kernel 
+    std::vector<bh_view> views;
+
+    /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
+    bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
+
+    /* Help function that checks if the 'view' is already known by this kernel */
+    int get_view_id(const bh_view &view) const;
+
 public:
     // The program representation that the kernel is subset of
     bh_ir *bhir;
 
     // Topologically ordered list of instruction indexes
     std::vector<uint64_t> instr_indexes;
-
-    //List of input and output to this kernel.
-    //NB: system instruction (e.g. BH_DISCARD) is
-    //never part of kernel input or output
-    std::vector<bh_view> inputs;
-    std::vector<bh_view> outputs;
-
-    //Lets of temporary base-arrays in this kernel.
-    std::vector<const bh_base*> temps;
 
     /* Clear this kernel of all instructions */
     void clear()
@@ -120,10 +131,10 @@ public:
     bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {};
 
     /* Returns a list of inputs to this kernel (read-only) */
-    const std::vector<bh_view>& input_list() const {return inputs;};
+    std::vector<bh_view> input_list() const;
 
     /* Returns a list of outputs from this kernel (read-only) */
-    const std::vector<bh_view>& output_list() const {return outputs;};
+    std::vector<bh_view> output_list() const;
 
     /* Returns a list of temporary base-arrays in this kernel (read-only) */
     const std::vector<const bh_base*>& temp_list() const {return temps;};

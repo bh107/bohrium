@@ -95,23 +95,26 @@ void bh_ir::pprint_kernel_list() const
     }
 }
 
-/* Help function that checks if 'b' exist in kernel 'k' */
-static bool aligned_view_exist(const bh_view &v, const vector<bh_view> &views)
+/* Help function that checks if the 'view' is already known by this kernel */
+int bh_ir_kernel::get_view_id(const bh_view &view) const
 {
-    BOOST_FOREACH(const bh_view &i, views)
+    if (bh_is_constant(&view))
+        return -1;
+    size_t i;
+    for (i = 0; i < views.size(); ++i)
     {
-        if(bh_view_aligned(&v, &i))
-            return true;
+        if(bh_view_aligned(&view, &(views[i])))
+            return i;
     }
-    return false;
+    return -1;
 };
 
-/* Help function that checks if 'b' is opcode'ed in kernel 'k' */
-bool is_base_opcodeed(const bh_ir_kernel &k, const bh_base *b, bh_opcode opcode)
+/* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
+bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const
 {
-    BOOST_FOREACH(uint64_t idx, k.instr_indexes)
+    BOOST_FOREACH(uint64_t idx, instr_indexes)
     {
-        const bh_instruction &instr = k.bhir->instr_list[idx];
+        const bh_instruction &instr = bhir->instr_list[idx];
         if(instr.opcode == opcode and instr.operand[0].base == b)
             return true;
     }
@@ -120,65 +123,83 @@ bool is_base_opcodeed(const bh_ir_kernel &k, const bh_base *b, bh_opcode opcode)
 
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
-
+    
     const bh_instruction& instr = bhir->instr_list[instr_idx];
+    const int nop = bh_operands(instr.opcode);
+    
     if(instr.opcode == BH_DISCARD)
     {
         //When discarding we might have to remove arrays from 'outputs' and add
         //them to 'temps' (if the discared array isn't synchronized)
         const bh_base *base = instr.operand[0].base;
-        if(not is_base_opcodeed(*this, base, BH_SYNC))
+        if(not is_base_used_by_opcode(base, BH_SYNC))
         {
-            for(vector<bh_view>::iterator it=outputs.begin(); it != outputs.end(); ++it)
+            for(int vid: outputs)
             {
-                if(base == it->base)
+                if(base == views[vid].base)
                 {
-                    outputs.erase(it);
-
+                    outputs.erase(vid);
                     //If the discarded array isn't in 'inputs' (and not in 'outputs')
-                    //than it is a temp array
-                    if(not aligned_view_exist(*it, inputs))
-                       temps.push_back(base);
+                    //then it is a temp array
+                    if(inputs.find(vid) == inputs.end())
+                        temps.push_back(base);
                     break;
                 }
             }
         }
     }
+    
     else if(instr.opcode != BH_FREE)
     {
         //Add the output of the instruction to 'outputs'
-        if(not aligned_view_exist(instr.operand[0], outputs))
-            outputs.push_back(instr.operand[0]);
-
+        int viewid = get_view_id(instr.operand[0]);
+        if (viewid < 0)
+        {
+            viewid  = views.size();
+            views.push_back(instr.operand[0]);
+        }
+        outputs.insert(viewid);
+        
         //Add the inputs of the instruction to 'inputs'
-        const int nop = bh_operands(instr.opcode);
         for(int i=1; i<nop; ++i)
         {
             const bh_view &v = instr.operand[i];
             if(bh_is_constant(&v))
                 continue;
-
-            //If 'v' is in 'inputs' already we can continue
-            if(aligned_view_exist(v, inputs))
-                continue;
-
-            //Additionally, we shouldn't add 'v' to 'inputs' if it is
-            //the output of an existing instruction.
-            bool local_source = false;
-            BOOST_FOREACH(uint64_t idx, instr_indexes)
+            
+            viewid = get_view_id(instr.operand[i]);
+            //If 'v' is a new view we register it, and add it to inputs
+            if(viewid < 0)
             {
-                if(bh_view_aligned(&v, &bhir->instr_list[idx].operand[0]))
-                {
-                    local_source = true;
-                    break;
-                }
+                viewid  = views.size();
+                views.push_back(instr.operand[i]);
+                inputs.insert(viewid);
             }
-            if(!local_source)
-                inputs.push_back(v);
         }
     }
+    
     instr_indexes.push_back(instr_idx);
-};
+}
+
+/* Returns a list of inputs to this kernel (read-only) */
+std::vector<bh_view> bh_ir_kernel::input_list() const
+{
+    std::vector<bh_view> res;
+    for(size_t vid: inputs)
+        res.push_back(views[vid]);
+    return res;
+ 
+}
+
+/* Returns a list of outputs from this kernel (read-only) */
+std::vector<bh_view> bh_ir_kernel::output_list() const
+{
+    std::vector<bh_view> res;
+    for(size_t vid: outputs)
+        res.push_back(views[vid]);
+    return res;
+}
+
 
 /* Determines whether all instructions in 'this' kernel
  * are system opcodes (e.g. BH_DISCARD, BH_FREE, etc.)
@@ -259,32 +280,30 @@ bool bh_ir_kernel::fusible_gently(const bh_ir_kernel &other) const
     if(not fusible(other))
         return false;
 
-    //Make sure 'b' depend on 'a'
-    const bh_ir_kernel *a = this;
-    const bh_ir_kernel *b = &other;
-    if(this->dependency(other) == 1)
-    {
-        a = &other;
-        b = this;
-    }
+    // if this kernel depends on the other
+    if(dependency(other) == 1)
+        return other.fusible_gently(*this);
 
-    if(b->input_list().size() > 0)
+    for (bh_view iv: other.input_list())
     {
-        BOOST_FOREACH(const bh_view &v, a->input_list())
+        int vid = get_view_id(iv);
+        if (vid > 0)
         {
-            if(not aligned_view_exist(v, b->input_list()))
+            if (inputs.find(vid) != inputs.end() || outputs.find(vid) != outputs.end())
                 return false;
         }
     }
 
-    if(b->input_list().size() > 0 or b->output_list().size() > 0)
+    for (bh_view ov: other.output_list())
     {
-        BOOST_FOREACH(const bh_view &v, a->output_list())
+        int vid = get_view_id(ov);
+        if (vid > 0)
         {
-            if(not(aligned_view_exist(v, b->output_list()) or aligned_view_exist(v, b->input_list())))
+            if (outputs.find(vid) != outputs.end())
                 return false;
         }
     }
+
     return true;
 }
 
@@ -435,4 +454,3 @@ int64_t bh_ir_kernel::merge_cost_savings(const bh_ir_kernel &other) const
     }
     return price_drop;
 }
-
