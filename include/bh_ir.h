@@ -105,9 +105,6 @@ private:
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
 
-    /* Help function that checks if the 'view' is already known by this kernel */
-    int get_view_id(const bh_view &view) const;
-
 public:
     // The program representation that the kernel is subset of
     bh_ir *bhir;
@@ -130,11 +127,20 @@ public:
     /* Kernel constructor, takes the bhir as constructor */
     bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {};
 
-    /* Returns a list of inputs to this kernel (read-only) */
+    /* Get id of a given view
+     * id's are based on the order in which instructions are added to the kernel 
+     * -1 is ruturned for constands and unknown views 
+     */
+    int get_view_id(const bh_view &view) const;
+
+    /* Returns a list of inputs to this kernel */
     std::vector<bh_view> input_list() const;
 
-    /* Returns a list of outputs from this kernel (read-only) */
+    /* Returns a list of outputs from this kernel */
     std::vector<bh_view> output_list() const;
+
+    /* Return a list of the unique bh_base's that are input or output from this kernel */
+    std::vector<const bh_base*> parameter_list() const;
 
     /* Returns a list of temporary base-arrays in this kernel (read-only) */
     const std::vector<const bh_base*>& temp_list() const {return temps;};

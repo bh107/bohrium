@@ -200,6 +200,26 @@ std::vector<bh_view> bh_ir_kernel::output_list() const
     return res;
 }
 
+std::vector<const bh_base*> bh_ir_kernel::parameter_list() const
+{
+    std::set<int> view_ids;
+    for (int vid: outputs)
+        view_ids.insert(vid);
+    for (int vid: inputs)
+        view_ids.insert(vid);
+    std::set<bh_base*> included;
+    std::vector<const bh_base*> res;
+    for (int vid: view_ids)
+    {
+        bh_base* const base = views[vid].base;
+        if (included.find(base) == included.end())
+        {
+            included.insert(base);
+            res.push_back(base);
+        }
+    }
+    return res;
+}
 
 /* Determines whether all instructions in 'this' kernel
  * are system opcodes (e.g. BH_DISCARD, BH_FREE, etc.)

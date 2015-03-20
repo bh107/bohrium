@@ -558,16 +558,22 @@ void pprint(const GraphDW &dag, const char filename[])
             BOOST_FOREACH(const bh_view &i, graph[v].input_list())
             {
                 bh_sprint_view(&i, buf);
-                out << buf << "\\l";
+                out << graph[v].get_view_id(i) << ":" << buf << "\\l";
             }
             out << "Output views: \\l";
             BOOST_FOREACH(const bh_view &i, graph[v].output_list())
             {
                 bh_sprint_view(&i, buf);
-                out << buf << "\\l";
+                out << graph[v].get_view_id(i) << ":" << buf << "\\l";
             }
             out << "Temp base-arrays: \\l";
             BOOST_FOREACH(const bh_base *i, graph[v].temp_list())
+            {
+                bh_sprint_base(i, buf);
+                out << buf << "\\l";
+            }
+            out << "Parameter base-arrays: \\l";
+            BOOST_FOREACH(const bh_base *i, graph[v].parameter_list())
             {
                 bh_sprint_base(i, buf);
                 out << buf << "\\l";
