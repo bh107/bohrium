@@ -220,7 +220,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
 
     //
     // Turn temps into scalars aka array-contraction
-    /*
     const std::vector<const bh_base*>& temps = krnl.temp_list();
     for(std::vector<const bh_base*>::const_iterator tmp_it = temps.begin();
         tmp_it != temps.end();
@@ -234,7 +233,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
             }
         }
     }
-    */
 
     //
     // The operands might have been modified at this point, so we need to create a new symbol.
