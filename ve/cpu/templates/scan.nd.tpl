@@ -38,7 +38,7 @@
         //
         // Iterate over axis dimension
         //
-        {{ETYPE}} accu = ({{ETYPE}}){{NEUTRAL_ELEMENT}};
+        {{ACCU_LOCAL_DECLARE}}
         for (int64_t j = 0; j<shape_axis; ++j) {
             {{OPERATIONS}}
             

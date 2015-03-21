@@ -316,6 +316,7 @@ private:
      * also note use of operands for outer/inner.
      */
     std::string operations(void);
+    std::string write_expanded_scalars(void);
 
     std::string declare_stride_inner(uint64_t oidx);
     std::string declare_stride_inner(void);

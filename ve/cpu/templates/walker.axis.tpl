@@ -83,7 +83,7 @@
             }
             // Walker step non-axis / operand offset - end
 
-            {{ETYPE}} accu = {{NEUTRAL_ELEMENT}};
+            {{ACCU_LOCAL_DECLARE}}
             {{PRAGMA_SIMD}}
             for (int64_t aidx=0; aidx < axis_shape; aidx++) {
                 // Apply operator(s) on operands - begin
@@ -94,8 +94,12 @@
                 {{OPD_IN1}} += axis_stride;
                 // Walker step INNER - end
             }
-            *{{OPD_OUT}} = accu;
-        }}
+            *{{OPD_OUT}} = {{OPD_OUT}}_accu;
+        }
+        if (0==tid) {   // Write EXPANDED scalars back to memory.
+            {{WRITE_EXPANDED_SCALARS}}
+        }
+        }
     }
 }
 

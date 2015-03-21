@@ -7,7 +7,7 @@
     {{WALKER_STRIDE_INNER}}
     // Walker STRIDE_INNER - end
 
-    {{ETYPE}} accu = ({{ETYPE}}){{NEUTRAL_ELEMENT}};
+    {{ACCU_LOCAL_DECLARE}}
     for(int64_t j=0; j<iterspace->shape[0]; ++j) {
         {{OPERATIONS}}
        

@@ -93,19 +93,22 @@ string Operand::walker(void)
 string Operand::walker_val(void)
 {
     stringstream ss;
-    LAYOUT operand_layout = meta().layout;
-    switch(operand_layout) {
-        case SPARSE:
-        case STRIDED:
+
+    switch(meta().layout) {
+        case SCALAR_CONST:
+        case SCALAR:
+        case CONTRACTABLE:
+            ss << walker();
+            break;
+
         case CONSECUTIVE:
         case CONTIGUOUS:
-        case SCALAR:
+        case STRIDED:
             ss << _deref(walker());
             break;
 
-        case CONTRACTABLE:
-        case SCALAR_CONST:
-            ss << walker();
+        case SPARSE:
+            ss << _beef("Non-implemented LAYOUT.");
             break;
     }
     return ss.str();

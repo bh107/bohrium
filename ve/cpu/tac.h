@@ -122,8 +122,8 @@ typedef enum ETYPE {
 
 typedef enum LAYOUT {
     SCALAR_CONST = 1,
-    CONTRACTABLE = 2,
-    SCALAR     = 4,
+    SCALAR     = 2,
+    CONTRACTABLE = 4,
     CONTIGUOUS = 8,
     CONSECUTIVE = 16,
     STRIDED    = 32,

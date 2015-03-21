@@ -51,6 +51,9 @@
             // Walker step INNER - end
         }
         {{ACCU_OPD_SYNC}}
+        if (0==tid) {
+            {{WRITE_EXPANDED_SCALARS}}
+        }
         }
     }
 }

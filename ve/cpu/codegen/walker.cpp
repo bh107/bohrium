@@ -22,11 +22,35 @@ string Walker::declare_operands(void)
         Operand& operand = oit->second;
         bool restrictable = kernel_.base_refcount(oit->first)==1;
         switch(operand.meta().layout) {
-            case STRIDED:       
-            case SPARSE:
+            case SCALAR_CONST:
+                ss
+                << _declare_init(
+                    _const(operand.etype()),
+                    operand.walker(),
+                    _deref(operand.first())
+                );
+                break;
+
+            case SCALAR:
+                ss
+                << _declare_init(
+                    operand.etype(),
+                    operand.walker(),
+                    _deref(operand.first())
+                );
+                break;
+
+            case CONTRACTABLE:
+                ss
+                << _declare(
+                    operand.etype(),
+                    operand.walker()
+                );
+                break;
+
             case CONTIGUOUS:
             case CONSECUTIVE:
-            case SCALAR:
+            case STRIDED:
                 if (restrictable) {
                     ss
                     << _declare_init(
@@ -44,22 +68,10 @@ string Walker::declare_operands(void)
                 }
                 break;
 
-            case SCALAR_CONST:
-                ss
-                << _declare_init(
-                    _const(operand.etype()),
-                    operand.walker(),
-                    _deref(operand.first())
-                );
-
-                break;
-            case CONTRACTABLE:
-                ss
-                << _declare(
-                    operand.etype(),
-                    operand.walker()
-                );
-                break;
+            case SPARSE:
+				ss
+				<< _beef("Unimplemented LAYOUT.");
+				break;
         }
         ss << _end(operand.layout());
     }
@@ -72,21 +84,26 @@ string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
     LAYOUT ispace_layout = kernel_.iterspace().meta().layout;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
-        case SPARSE:
-        case STRIDED:       
-            switch(rank) {
-                case 3:
-                case 2:
-                case 1:
-                    ss << _add_assign(
-                        operand.walker(),
-                        _mul("work_offset", _index(operand.strides(), 0))
-                    )
-                    << _end();
-                    break;
-                default:
-                    // TODO: implement ND-case
-                    break;
+        case SCALAR_CONST:
+        case SCALAR:
+        case CONTRACTABLE:
+            break;
+        
+        case CONTIGUOUS:
+            // CONT COMPATIBLE iteration construct
+            // or specialized
+            // STRIDED construct for rank=1
+            if (((ispace_layout & COLLAPSIBLE)>0) or (rank==1)) {
+                ss << _add_assign(
+                    operand.walker(),
+                    "work_offset"
+                ) << _end();
+            // STRIDED iteration construct with rank>1
+            } else {
+                ss << _add_assign(
+                    operand.walker(),
+                    _mul("work_offset", _index("weight", 0))
+                ) << _end();
             }
             break;
 
@@ -108,27 +125,25 @@ string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
             }
             break;
 
-        case CONTIGUOUS:
-            // CONT COMPATIBLE iteration construct
-            // or specialized
-            // STRIDED construct for rank=1
-            if (((ispace_layout & COLLAPSIBLE)>0) or (rank==1)) {
-                ss << _add_assign(
-                    operand.walker(),
-                    "work_offset"
-                ) << _end();
-            // STRIDED iteration construct with rank>1
-            } else {
-                ss << _add_assign(
-                    operand.walker(),
-                    _mul("work_offset", _index("weight", 0))
-                ) << _end();
+        case STRIDED:       
+            switch(rank) {
+                case 3:
+                case 2:
+                case 1:
+                    ss << _add_assign(
+                        operand.walker(),
+                        _mul("work_offset", _index(operand.strides(), 0))
+                    )
+                    << _end();
+                    break;
+                default:
+                    // TODO: implement ND-case
+                    break;
             }
             break;
 
-        case SCALAR:
-        case SCALAR_CONST:
-        case CONTRACTABLE:
+        case SPARSE:
+            ss << _beef("Non-implemented LAYOUT.");
             break;
     }
     return ss.str();
@@ -151,9 +166,15 @@ string Walker::declare_stride_inner(uint64_t oidx)
     stringstream ss;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
-        case SPARSE:
-        case STRIDED:
+        case SCALAR_CONST:
+        case SCALAR:
+        case CONTRACTABLE:
+        case CONTIGUOUS:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+
         case CONSECUTIVE:
+        case STRIDED:
             ss << _declare_init(
                 _const(_int64()),
                 operand.stride_inner(),
@@ -162,12 +183,9 @@ string Walker::declare_stride_inner(uint64_t oidx)
             << _end(operand.layout());
             break;
 
-        case CONTIGUOUS:
-        case CONTRACTABLE:
-        case SCALAR_CONST:
-        case SCALAR:
-            ss << "// " << operand.name() << " " << operand.layout() << endl;
-            break;
+        case SPARSE:
+            ss << _beef("Non-implemented LAYOUT.");
+			break;
     }
     return ss.str();
 }
@@ -226,7 +244,12 @@ string Walker::step_fwd_inner(uint64_t glb_idx)
 
     Operand& operand = kernel_.operand_glb(glb_idx);
     switch(operand.meta().layout) {
-        case SPARSE:
+        case SCALAR_CONST:
+        case SCALAR:        
+        case CONTRACTABLE:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+
         case STRIDED:
         case CONSECUTIVE:
             ss
@@ -235,15 +258,14 @@ string Walker::step_fwd_inner(uint64_t glb_idx)
                 operand.stride_inner()
             ) << _end(operand.layout());
             break;
+
         case CONTIGUOUS:
             ss <<
             _inc(operand.walker()) << _end(operand.layout());
             break;
 
-        case SCALAR:        
-        case SCALAR_CONST:
-        case CONTRACTABLE:
-            ss << "// " << operand.name() << " " << operand.layout() << endl;
+        case SPARSE:
+            ss << _beef("Non-implemented layout.");
             break;
     }
 
@@ -306,11 +328,11 @@ string Walker::operations(void)
                 outer_opds_.insert(tac.out);
 
                 ss << _assign(
-                    "accu",
+                    kernel_.operand_glb(tac.out).accu(),
                     oper(
                         tac.oper,
-                        kernel_.operand_glb(tac.in1).meta().etype,
-                        "accu",
+                        kernel_.operand_glb(tac.out).meta().etype,
+                        kernel_.operand_glb(tac.out).accu(),
                         kernel_.operand_glb(tac.in1).walker_val()
                     )
                 ) << _end();
@@ -326,12 +348,12 @@ string Walker::operations(void)
                 in1 = kernel_.operand_glb(tac.in1).walker_val();
 
                 ss << _assign(
-                    "accu",
-                    oper(tac.oper, etype, "accu", in1)
+                    kernel_.operand_glb(tac.out).accu(),
+                    oper(tac.oper, etype, kernel_.operand_glb(tac.out).accu(), in1)
                 ) << _end();
                 ss << _assign(
                     kernel_.operand_glb(tac.out).walker_val(),
-                    "accu"
+                    kernel_.operand_glb(tac.out).accu()
                 ) << _end();
                 break;
 
@@ -343,6 +365,31 @@ string Walker::operations(void)
     return ss.str();
 }
 
+string Walker::write_expanded_scalars(void)
+{
+    stringstream ss;
+    set<uint64_t> written;
+
+    for(kernel_tac_iter tit=kernel_.tacs_begin();
+        tit!=kernel_.tacs_end();
+        ++tit) {
+        tac_t& tac = **tit;
+
+        Operand& opd = kernel_.operand_glb(tac.out);
+        if (((tac.op & (MAP|ZIP|GENERATE))>0) and \
+            ((opd.meta().layout & SCALAR)>0) and \
+            (written.find(tac.out)==written.end())) {
+            ss << _line(_assign(
+                _deref(opd.first()),
+                opd.walker_val()
+            ));
+            written.insert(tac.out);
+        }
+    }
+
+    return ss.str();
+}
+
 string Walker::generate_source(void)
 {
     std::map<string, string> subjects;
@@ -350,6 +397,7 @@ string Walker::generate_source(void)
 
     const uint32_t rank = kernel_.iterspace().meta().ndim;
     subjects["WALKER_DECLARATION"]  = declare_operands();
+    subjects["WRITE_EXPANDED_SCALARS"] = write_expanded_scalars();
 
     // Note: start of crappy code used by reductions / scan.
     tac_t* tac = NULL;
@@ -375,6 +423,12 @@ string Walker::generate_source(void)
         subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
         subjects["ETYPE"] = out->etype();
         subjects["ATYPE"] = in2->etype();
+        // Declare local accumulator var
+        subjects["ACCU_LOCAL_DECLARE"] = _line(_declare_init(
+            in1->etype(),
+            out->accu(),
+            oper_neutral_element(tac->oper, in1->meta().etype)
+        ));
     }
     // Note: end of crappy code used by reductions / scan
 
@@ -405,19 +459,13 @@ string Walker::generate_source(void)
                 _deref(out->first()),
                 oper_neutral_element(tac->oper, in1->meta().etype)
             ));
-            // Declare local accumulator var
-            subjects["ACCU_LOCAL_DECLARE"] = _line(_declare_init(
-                in1->etype(),
-                "accu",
-                oper_neutral_element(tac->oper, in1->meta().etype)
-            ));
             // Syncronize accumulator and local accumulator var
             subjects["ACCU_OPD_SYNC"] = _line(synced_oper(
                 tac->oper,
                 in1->meta().etype,
                 _deref(out->first()),
                 _deref(out->first()),
-                "accu"
+                out->accu()
             ));
         }
 

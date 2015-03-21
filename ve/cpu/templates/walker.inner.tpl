@@ -66,6 +66,9 @@
                 {{WALKER_STEP_INNER}}
                 // Walker step INNER - end
             }
+            if (0==tid) {   // Write EXPANDED scalars back to memory.
+                {{WRITE_EXPANDED_SCALARS}}
+            }
         }}
     }
 }
