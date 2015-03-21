@@ -269,7 +269,7 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
         }
 
         for(int oidx=0; oidx<a_nop; ++oidx) {
-            if(bh_is_constant(&a->operand[oidx]) or is_scalar(&a->operand[oidx])) {
+            if(bh_is_constant(&a->operand[oidx])) {
                 continue;
             }
             if(red_ndim != a->operand[oidx].ndim) {
@@ -297,7 +297,7 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
         }
 
         for(int oidx=0; oidx<b_nop; ++oidx) {
-            if(bh_is_constant(&b->operand[oidx]) or is_scalar(&b->operand[oidx])) {
+            if(bh_is_constant(&b->operand[oidx])) {
                 continue;
             }
             if(red_ndim != b->operand[oidx].ndim) {
@@ -316,7 +316,7 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
 
         if (not is_scalar(&a->operand[0])) {
             for(int i=0; i<b_nop; ++i) {
-                if (bh_is_constant(&b->operand[i]) or is_scalar(&b->operand[i]))
+                if (bh_is_constant(&b->operand[i]))
                     continue;
                 if (ndim != b->operand[i].ndim) {
                     return false;
