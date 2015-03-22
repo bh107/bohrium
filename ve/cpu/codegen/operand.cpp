@@ -95,6 +95,7 @@ string Operand::walker_val(void)
     stringstream ss;
 
     switch(meta().layout) {
+        case SCALAR_TEMP:
         case SCALAR_CONST:
         case SCALAR:
         case CONTRACTABLE:

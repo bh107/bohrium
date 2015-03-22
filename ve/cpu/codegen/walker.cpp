@@ -40,6 +40,7 @@ string Walker::declare_operands(void)
                 );
                 break;
 
+            case SCALAR_TEMP:
             case CONTRACTABLE:
                 ss
                 << _declare(
@@ -84,6 +85,7 @@ string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
     LAYOUT ispace_layout = kernel_.iterspace().meta().layout;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
+        case SCALAR_TEMP:
         case SCALAR_CONST:
         case SCALAR:
         case CONTRACTABLE:
@@ -166,6 +168,7 @@ string Walker::declare_stride_inner(uint64_t oidx)
     stringstream ss;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
+        case SCALAR_TEMP:
         case SCALAR_CONST:
         case SCALAR:
         case CONTRACTABLE:
@@ -219,9 +222,10 @@ string Walker::step_fwd_outer(uint64_t glb_idx)
             ) << _end(operand.layout());
             break;
 
+        case SCALAR_TEMP:
+        case SCALAR_CONST:
         case SCALAR:        // No stepping for these
         case CONTRACTABLE:
-        case SCALAR_CONST:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
@@ -244,6 +248,7 @@ string Walker::step_fwd_inner(uint64_t glb_idx)
 
     Operand& operand = kernel_.operand_glb(glb_idx);
     switch(operand.meta().layout) {
+        case SCALAR_TEMP:
         case SCALAR_CONST:
         case SCALAR:        
         case CONTRACTABLE:
@@ -396,8 +401,9 @@ string Walker::generate_source(void)
     string plaid;
 
     const uint32_t rank = kernel_.iterspace().meta().ndim;
-    subjects["WALKER_DECLARATION"]  = declare_operands();
-    subjects["WRITE_EXPANDED_SCALARS"] = write_expanded_scalars();
+    subjects["WALKER_DECLARATION"]      = declare_operands();
+    subjects["OPERATIONS"]              = operations();
+    subjects["WRITE_EXPANDED_SCALARS"]  = write_expanded_scalars();
 
     // Note: start of crappy code used by reductions / scan.
     tac_t* tac = NULL;
@@ -432,12 +438,16 @@ string Walker::generate_source(void)
     }
     // Note: end of crappy code used by reductions / scan
 
-    subjects["OPERATIONS"] = operations();
+
+    //
+    // MAP | ZIP | GENERATE on SCALAR LAYOUT of any rank
+    if ((kernel_.iterspace().meta().layout & SCALAR)>0) {
+        plaid = "walker.scalar";
 
     // MAP | ZIP | GENERATE on COLLAPSIBLE LAYOUT of any RANK
     // and
     // REDUCE on COLLAPSIBLE LAYOUT with RANK == 1
-    if (((kernel_.iterspace().meta().layout & COLLAPSIBLE)>0) \
+    } else if (((kernel_.iterspace().meta().layout & COLLAPSIBLE)>0) \
         and ((kernel_.omask() & SCAN)==0)                     \
         and (not((rank>1) and ((kernel_.omask() & REDUCE)>0)))) {
         

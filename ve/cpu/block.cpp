@@ -30,7 +30,7 @@ void Block::clear(void)
 
     omask_ = 0;
 
-    iterspace_.layout = SCALAR_CONST; // iteraton space
+    iterspace_.layout = SCALAR_TEMP; // iteraton space
     iterspace_.ndim = 0;
     iterspace_.shape = NULL;
     iterspace_.nelem = 0;
@@ -316,7 +316,7 @@ void Block::update_iterspace(void)
                 case 3:
                     if (globals_[tac.in2].layout > iterspace_.layout) {
                         iterspace_.layout = globals_[tac.in2].layout;
-                        if (iterspace_.layout > SCALAR_CONST) {
+                        if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.in2].ndim;
                             iterspace_.shape = globals_[tac.in2].shape;
                         }
@@ -324,7 +324,7 @@ void Block::update_iterspace(void)
                 case 2:
                     if (globals_[tac.in1].layout > iterspace_.layout) {
                         iterspace_.layout = globals_[tac.in1].layout;
-                        if (iterspace_.layout > SCALAR_CONST) {
+                        if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.in1].ndim;
                             iterspace_.shape = globals_[tac.in1].shape;
                         }
@@ -332,7 +332,7 @@ void Block::update_iterspace(void)
                 case 1:
                     if (globals_[tac.out].layout > iterspace_.layout) {
                         iterspace_.layout = globals_[tac.out].layout;
-                        if (iterspace_.layout > SCALAR_CONST) {
+                        if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.out].ndim;
                             iterspace_.shape = globals_[tac.out].shape;
                         }

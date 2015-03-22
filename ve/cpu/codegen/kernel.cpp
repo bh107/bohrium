@@ -177,6 +177,7 @@ string Kernel::unpack_arguments(void)
                 << _assert_not_null(operand.first()) << _end();
                 break;
 
+            case SCALAR_TEMP:
             case CONTRACTABLE:  // Data pointer is never used.
                 ss << _comment("No unpacking needed.") << endl;
                 break;

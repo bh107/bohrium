@@ -163,7 +163,11 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
 void SymbolTable::turn_contractable(size_t symbol_idx)
 {
     operand_t& operand = table_[symbol_idx];
-    operand.layout = CONTRACTABLE;
+    if (operand.layout == SCALAR) {
+        operand.layout = SCALAR_TEMP;
+    } else {
+        operand.layout = CONTRACTABLE;
+    }
 
     // If data is already allocated for operand then we do no lower nelem
     // since the nelem is needed by victim-cache to store it... it is important that nelem

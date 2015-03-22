@@ -181,6 +181,8 @@ string layout_text(LAYOUT layout)
     switch(layout) {
         case SCALAR_CONST:
             return "SCALAR_CONST";
+        case SCALAR_TEMP:
+            return "SCALAR_TEMP";
         case SCALAR:
             return "SCALAR";
         case CONTRACTABLE:
@@ -202,10 +204,12 @@ string layout_text_shand(LAYOUT layout)
     switch(layout) {
         case SCALAR_CONST:
             return "CNST";
+        case SCALAR_TEMP:
+            return "TMPS";
         case SCALAR:
             return "SCLR";
         case CONTRACTABLE:
-            return "TEMP";
+            return "TMPA";
         case CONTIGUOUS:
             return "CONT";
         case CONSECUTIVE:

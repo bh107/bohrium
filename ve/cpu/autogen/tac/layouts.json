@@ -1,9 +1,11 @@
 [
     {"id": 1,   "name": "SCALAR_CONST", "shorthand": "CNST"},
-    {"id": 2,   "name": "SCALAR",       "shorthand": "SCLR"},
-    {"id": 4,   "name": "CONTRACTABLE", "shorthand": "TEMP"},
-    {"id": 8,   "name": "CONTIGUOUS",   "shorthand": "CONT"},
-    {"id": 16,  "name": "CONSECUTIVE",  "shorthand": "CONS"},
-    {"id": 32,  "name": "STRIDED",      "shorthand": "STRD"},
-    {"id": 64,  "name": "SPARSE",       "shorthand": "SPRS"}
+    {"id": 2,   "name": "SCALAR_TEMP",  "shorthand": "TMPS"},
+    {"id": 4,   "name": "SCALAR",       "shorthand": "SCLR"},
+
+    {"id": 8,   "name": "CONTRACTABLE", "shorthand": "TMPA"},
+    {"id": 16,  "name": "CONTIGUOUS",   "shorthand": "CONT"},
+    {"id": 32,  "name": "CONSECUTIVE",  "shorthand": "CONS"},
+    {"id": 64,  "name": "STRIDED",      "shorthand": "STRD"},
+    {"id": 128, "name": "SPARSE",       "shorthand": "SPRS"}
 ]

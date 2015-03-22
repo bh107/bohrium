@@ -25,6 +25,7 @@ enum states {
 Plaid::Plaid(string template_directory) : template_directory_(template_directory) {
     add_from_file("license",            "license.tpl");
     add_from_file("kernel",             "kernel.tpl");
+    add_from_file("walker.scalar",      "walker.scalar.tpl");
     add_from_file("walker.collapsed",   "walker.collapsed.tpl");
     add_from_file("walker.inner",       "walker.inner.tpl");
     add_from_file("walker.axis",        "walker.axis.tpl");
