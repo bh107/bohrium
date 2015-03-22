@@ -262,7 +262,7 @@ bh_error Engine::execute(bh_ir* bhir)
             (block.narray_tacs() > 1)) {                // FUSE_MODE
 
             DEBUG(TAG, "FUSE START");
-            res = execute_kernel(symbol_table, program, block, *krnl, jit_fusion);
+            res = execute_block(symbol_table, program, block, *krnl, jit_fusion);
             if (BH_SUCCESS != res) {
                 return res;
             }
@@ -278,7 +278,7 @@ bh_error Engine::execute(bh_ir* bhir)
                 block.update_iterspace();               // update iterspace
 
                 // Generate/Load code and execute it
-                res = execute_kernel(symbol_table, program, block, *krnl, jit_fusion);
+                res = execute_block(symbol_table, program, block, *krnl, jit_fusion);
                 if (BH_SUCCESS != res) {
                     return res;
                 }
