@@ -422,7 +422,7 @@ string Walker::operations(void)
         tac_t& tac = **tit;
         ETYPE etype = kernel_.operand_glb(tac.out).meta().etype;
 
-        string out = "ERROR", in1 = "ERROR", in2 = "ERROR";
+        string out = "ERROR_OUT", in1 = "ERROR_IN1", in2 = "ERROR_IN2";
         switch(tac.op) {
             case MAP:
             case ZIP:

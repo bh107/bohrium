@@ -13,7 +13,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
     switch(tac.op) {
         case REDUCE:
             if (symbol_table[tac.in1].layout == SCALAR) {
-                tac.op = MAP;
+                tac.op   = MAP;
                 tac.oper = IDENTITY;
             }
             break;

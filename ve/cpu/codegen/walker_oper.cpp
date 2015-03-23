@@ -52,6 +52,18 @@ string Walker::oper_neutral_element(OPERATOR oper, ETYPE etype)
         case LOGICAL_OR:        return "0";
         case LOGICAL_XOR:       return "0";
         case BITWISE_AND:       return "1";
+            switch(etype) {
+                case BOOL:      return "1";
+                case INT8:      return "-1";
+                case INT16:     return "-1";
+                case INT32:     return "-1";
+                case INT64:     return "-1";
+                case UINT8:     return "UINT8_MAX";
+                case UINT16:    return "UINT16_MAX";
+                case UINT32:    return "UINT32_MAX";
+                case UINT64:    return "UINT64_MAX";
+                default:        return "UNKNOWN_NEUTRAL_FOR_BITWISE_AND_OF_GIVEN_TYPE";
+            }
         case BITWISE_OR:        return "0";
         case BITWISE_XOR:       return "0";
         default:                return "UNKNOWN_NEUTRAL_FOR_OPERATOR";
@@ -264,6 +276,9 @@ string Walker::synced_oper(OPERATOR operation, ETYPE etype, string out, string i
     switch(operation) {
         case MAXIMUM:
         case MINIMUM:
+        case LOGICAL_AND:
+        case LOGICAL_OR:
+        case LOGICAL_XOR:
             ss << _omp_critical(_assign(out, oper(operation, etype, in1, in2)));
             break;
         default:
