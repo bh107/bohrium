@@ -71,14 +71,9 @@ public:
     size_t map_operand(bh_instruction& instr, size_t operand_idx);
 
     /**
-     *  Turn an array operand into a scalar.
+     *  Turn an array operand into a contractable array.
      */
-    void turn_scalar(size_t operand_idx);
-
-    /**
-     *  Turn an array operand into a temporary scalar.
-     */
-    void turn_scalar_temp(size_t operand_idx);
+    void turn_contractable(size_t operand_idx);
 
     /**
      *  Reset refcounted / temp information and operands.

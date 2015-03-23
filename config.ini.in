@@ -90,6 +90,7 @@ compiler_inc="${VE_CPU_COMPILER_INC}"
 compiler_lib="${VE_CPU_COMPILER_LIB}"
 # Interlagos specifics
 #compiler_flg="-march=bdver1 -mprefer-avx128 -funroll-all-loops -fprefetch-loop-arrays --param prefetch-latency=300 -fno-tree-pre -ftree-vectorize "
+# Auto-vectorizer "--param vect-max-version-for-alias-checks=100"
 compiler_flg="${VE_CPU_COMPILER_FLG}"
 compiler_ext="${VE_CPU_COMPILER_EXT}"
 object_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/objects

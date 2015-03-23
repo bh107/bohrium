@@ -7,17 +7,17 @@
 //	Distribites work staticly/evenly among threads.
 //
 {
-    const int64_t last_dim  = iterspace->ndim-1;
+    const int64_t inner_dim  = iterspace->ndim-1;
 
     int64_t weight[CPU_MAXDIM]; // Helper for step-calculation
     int64_t acc = 1;
-    for(int64_t idx=last_dim; idx >=0; --idx) {
+    for(int64_t idx=inner_dim; idx >=0; --idx) {
         weight[idx] = acc;
         acc *= iterspace->shape[idx];
     }
 
     const int mthreads          = omp_get_max_threads();
-    const int64_t chunksize     = iterspace->shape[last_dim];
+    const int64_t chunksize     = iterspace->shape[inner_dim];
     const int64_t nchunks       = iterspace->nelem / chunksize;
     const int64_t nworkers      = nchunks > mthreads ? mthreads : 1;
     const int64_t work_split    = nchunks / nworkers;
@@ -50,7 +50,7 @@
             // Walker declaration(s) - end
 
             // Walker step OUTER / operand offset - begin
-            for (int64_t dim=0; dim < last_dim; ++dim) {
+            for (int64_t dim=0; dim < inner_dim; ++dim) {
                 const int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
                 {{WALKER_STEP_OUTER}}
             }
@@ -65,6 +65,9 @@
                 // Walker step INNER - begin
                 {{WALKER_STEP_INNER}}
                 // Walker step INNER - end
+            }
+            if (0==tid) {   // Write EXPANDED scalars back to memory.
+                {{WRITE_EXPANDED_SCALARS}}
             }
         }}
     }

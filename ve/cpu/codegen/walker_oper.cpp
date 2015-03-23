@@ -31,7 +31,7 @@ string Walker::oper_neutral_element(OPERATOR oper, ETYPE etype)
                 case UINT64:    return "UINT64_MIN";
                 case FLOAT32:   return "FLT_MIN";
                 case FLOAT64:   return "DBL_MIN";
-                default:        return "UNKNOWN_NEUTRAL_FOR_MAXIMUM";
+                default:        return "UNKNOWN_NEUTRAL_FOR_MAXIMUM_OF_GIVEN_TYPE";
             }
         case MINIMUM:
             switch(etype) {
@@ -46,7 +46,7 @@ string Walker::oper_neutral_element(OPERATOR oper, ETYPE etype)
                 case UINT64:    return "UINT64_MAX";
                 case FLOAT32:   return "FLT_MAX";
                 case FLOAT64:   return "DBL_MAX";
-                default:        return "UNKNOWN_NEUTRAL_FOR_MINIMUM";
+                default:        return "UNKNOWN_NEUTRAL_FOR_MINIMUM_OF_GIVEN_TYPE";
             }
         case LOGICAL_AND:       return "1";
         case LOGICAL_OR:        return "0";
@@ -54,7 +54,7 @@ string Walker::oper_neutral_element(OPERATOR oper, ETYPE etype)
         case BITWISE_AND:       return "1";
         case BITWISE_OR:        return "0";
         case BITWISE_XOR:       return "0";
-        default:                return "UNKNOWN_NEUTRAL";
+        default:                return "UNKNOWN_NEUTRAL_FOR_OPERATOR";
     }
 }
 
@@ -256,6 +256,21 @@ string Walker::oper(OPERATOR oper, ETYPE etype, string in1, string in2)
         default:                    return "NOT_IMPLEMENTED_YET";
     }
     return "NO NO< NO NO NO NO NONO NO NO NO NOTHERES NO LIMITS";
+}
+
+string Walker::synced_oper(OPERATOR operation, ETYPE etype, string out, string in1, string in2)
+{
+    stringstream ss;
+    switch(operation) {
+        case MAXIMUM:
+        case MINIMUM:
+            ss << _omp_critical(_assign(out, oper(operation, etype, in1, in2)));
+            break;
+        default:
+            ss << _omp_atomic(_assign(out, oper(operation, etype, in1, in2)));
+            break;
+    }
+    return ss.str();
 }
 
 }}}}

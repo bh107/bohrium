@@ -1,17 +1,19 @@
 //
 // Scan operation on one-dimensional arrays with strided access.
 {
-    {{ATYPE}} axis = *{{OPD_IN1}}_first;
+    {{WALKER_INNER_DIM}}
+    {{WALKER_DECLARATION}}
+    // Walker STRIDE_INNER - begin
+    {{WALKER_STRIDE_INNER}}
+    // Walker STRIDE_INNER - end
 
-    {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first;
-    {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
-
-    {{ETYPE}} accu = ({{ETYPE}}){{NEUTRAL_ELEMENT}};
-    for(int64_t j=0; j<iterspace->shape[axis]; ++j) {
-        {{PAR_OPERATIONS}}
+    {{ACCU_LOCAL_DECLARE}}
+    for(int64_t j=0; j<iterspace->shape[0]; ++j) {
+        {{OPERATIONS}}
        
-        {{OPD_IN1}} += {{OPD_IN1}}_stride[axis]; 
-        {{OPD_OUT}} += {{OPD_OUT}}_stride[axis]; 
+        // Walker step INNER - begin
+        {{WALKER_STEP_INNER}}
+        // Walker step INNER - end
     }
 
     // TODO: Handle write-out of non-temp and non-const scalars.

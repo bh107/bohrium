@@ -11,17 +11,20 @@ const char TAG[] = "Utils";
 void tac_transform(tac_t& tac, SymbolTable& symbol_table)
 {
     switch(tac.op) {
-        case MAP:
-            switch(tac.oper) {
-                case IDENTITY:
-                    if(tac.out == tac.in1) {
-                        tac.op = NOOP;
-                    }
-                    break;
-                default:
-                    break;
+        case REDUCE:
+            if (symbol_table[tac.in1].layout == SCALAR) {
+                tac.op = MAP;
+                tac.oper = IDENTITY;
             }
             break;
+
+        case SCAN:
+            if (symbol_table[tac.in1].layout == SCALAR) {
+                tac.op = MAP;
+                tac.oper = IDENTITY;
+            }
+            break;
+
         case ZIP:
             switch(tac.oper) {
                 case POWER:
@@ -34,6 +37,19 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
                     break;
             }
             break;
+
+        case MAP:
+            switch(tac.oper) {
+                case IDENTITY:
+                    if(tac.out == tac.in1) {
+                        tac.op = NOOP;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            break;
+
         default:
             break;
     }
@@ -155,14 +171,92 @@ bool compatible(const operand_t& one, const operand_t& other)
 
 bool contiguous(const operand_t& arg)
 {
-    int64_t shape = 1;
-    for(int ldim=arg.ndim-1; ldim>=0; --ldim) {
-        if (arg.stride[ldim] != shape) {
+    int64_t weight = 1;
+    for(int dim=arg.ndim-1; dim>=0; --dim) {
+        if (arg.stride[dim] != weight) {
             return false;
         }
-        shape *= arg.shape[ldim];
+        weight *= arg.shape[dim];
     }
     return true;
+}
+
+string operand_access_text(const operand_t& arg)
+{
+    /// Hmmm this is not entirely correct...
+    // I forgot the simple thing:
+    // A dim is strided when: stride[dim] != stride[dim+1]*shape[dim+1]
+    bool is_strided[16] = {0};
+    bool is_broadcast[16] = {0};
+    int64_t stride_multipliers[16] = {0};
+
+    int64_t weight = 1;
+    int64_t n_strided_dims = 0;
+    int64_t n_broadcast_dims = 0;
+    for(int dim=arg.ndim-1; dim>=0; --dim) {
+        if (arg.stride[dim] != weight) {
+            is_strided[dim] = true;
+            ++n_strided_dims;
+            if(arg.stride[dim]) {
+                int64_t stride_multiplier = max((int64_t)1, arg.stride[dim] / weight);
+                stride_multipliers[dim] = stride_multiplier;
+                weight *= stride_multiplier*arg.shape[dim];
+            } else {
+                stride_multipliers[dim] = 0;
+                is_broadcast[dim] = true;
+            }
+        } else {
+            stride_multipliers[dim] = 1;
+            weight *= arg.shape[dim];
+        }
+    }
+
+    stringstream ss, ss_strides, ss_broadcast, ss_multipliers;
+    ss_strides << boolalpha;
+    ss_broadcast << boolalpha;
+    for(int dim=0; dim<arg.ndim; ++dim) {
+        ss_strides << is_strided[dim];
+        ss_broadcast << is_broadcast[dim];
+        ss_multipliers << stride_multipliers[dim];
+        if (dim!=arg.ndim-1) {
+            ss_strides << ", ";
+            ss_broadcast << ", ";
+            ss_multipliers << ", ";
+        }
+    }
+    ss << "Operand = "<< operand_text(arg) << endl;
+    ss << "Multipliers        = " << ss_multipliers.str() << endl;
+    ss << "Broadcoast dims(" << n_broadcast_dims << ") = " << ss_broadcast.str() << endl;
+    ss << "Strided dims(" << n_strided_dims << ")    = " << ss_strides.str() << endl;
+    return ss.str();
+}
+
+LAYOUT determine_layout(const operand_t& arg)
+{
+    const int64_t inner_dim = arg.ndim-1;
+    
+    // CONSECUTIVE: stride[dim] == stride[dim+1]*shape[dim+1]
+    // CONTIGUOUS:  stride[dim] == stride[dim+1]*shape[dim+1] and stride[inner] == 1
+    bool consecutive = true;    
+    int64_t weight = arg.stride[inner_dim];
+    int64_t nelements = 1;
+    for(int dim=inner_dim; dim>=0; --dim) {
+        if (arg.stride[dim] != weight) {
+            consecutive = false;
+        }
+        nelements *= arg.shape[dim];
+        weight = arg.shape[dim]*arg.stride[dim];
+    }
+
+    if (nelements == 1) {
+        return SCALAR;
+    } else if (consecutive and arg.stride[inner_dim] == 1) {
+        return CONTIGUOUS;
+    } else if (consecutive and arg.stride[inner_dim] > 1) {
+        return CONSECUTIVE;
+    } else {
+        return STRIDED;
+    }
 }
 
 std::string iterspace_text(const iterspace_t& iterspace)
@@ -216,7 +310,7 @@ std::string operand_text(const operand_t& operand)
         }
     }
     ss << ") ";
-    ss << "}" << endl;
+    ss << "}";
 
     return ss.str();
 }

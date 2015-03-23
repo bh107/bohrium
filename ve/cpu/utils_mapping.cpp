@@ -179,14 +179,18 @@ string etype_to_ctype_text(ETYPE etype)
 string layout_text(LAYOUT layout)
 {
     switch(layout) {
-        case SCALAR:
-            return "SCALAR";
         case SCALAR_CONST:
             return "SCALAR_CONST";
         case SCALAR_TEMP:
             return "SCALAR_TEMP";
+        case SCALAR:
+            return "SCALAR";
+        case CONTRACTABLE:
+            return "CONTRACTABLE";
         case CONTIGUOUS:
             return "CONTIGUOUS";
+        case CONSECUTIVE:
+            return "CONSECUTIVE";
         case STRIDED:
             return "STRIDED";
         case SPARSE:
@@ -198,18 +202,22 @@ string layout_text(LAYOUT layout)
 string layout_text_shand(LAYOUT layout)
 {
     switch(layout) {
-        case SCALAR:
-            return "I";
         case SCALAR_CONST:
-            return "K";
+            return "CNST";
         case SCALAR_TEMP:
-            return "T";
+            return "TMPS";
+        case SCALAR:
+            return "SCLR";
+        case CONTRACTABLE:
+            return "TMPA";
         case CONTIGUOUS:
-            return "C";
+            return "CONT";
+        case CONSECUTIVE:
+            return "CONS";
         case STRIDED:
-            return "S";
+            return "STRD";
         case SPARSE:
-            return "P";
+            return "SPRS";
     }
     return "_ERR-LAYOUT-SH_";
 }
