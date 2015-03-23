@@ -11,13 +11,17 @@ def test_gauss(np,bohrium, shape):
 
     return a
 
+def test_reduce(np, bohrium, shape):
+
+    return np.add.reduce(np.arange(0, shape[0]*shape[1]).reshape(shape),1)
+
 if __name__ == "__main__":
 
     print("NUMPY")
     import numpy as np
-    print test_gauss(np, False, (4,4))
+    print test_reduce(np, False, (10, 10))
 
     print("BOHRIUM")
     import bohrium as np
-    print test_gauss(np, True, (4,4))
+    print test_reduce(np, True, (10, 10))
 
