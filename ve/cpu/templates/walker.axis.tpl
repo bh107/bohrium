@@ -1,13 +1,10 @@
 //
-// Codegen template is used for:
-//
 //	* REDUCE_PARTIAL on arrays of any LAYOUT and rank > 1.
 //
 //	Partitions work into 1D reductions over the axis.
-//	Distribites work staticly/evenly among threads.
 //
 {
-    int64_t axis_dim = *{{OPD_IN2}}_first;
+    {{WALKER_AXIS_DIM}}
     int64_t axis_shape = iterspace->shape[axis_dim];
 
     //
@@ -58,16 +55,15 @@
         work_end = work_offset + work;
 
         if (work) {
-        // Walker STRIDE_INNER - begin
-        const uint64_t axis_stride = {{OPD_IN1}}_strides[axis_dim];
-        // Walker STRIDE_INNER - end
+        // Walker STRIDE_AXIS - begin
+        {{WALKER_STRIDE_AXIS}}
+        // Walker STRIDE_AXIS - end
 
         const int64_t eidx_begin = work_offset*chunksize;
         const int64_t eidx_end   = work_end*chunksize;
         for(int64_t eidx=eidx_begin; eidx<eidx_end; ++eidx) {
             // Walker declaration(s) - begin
-            {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first;
-            {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
+            {{WALKER_DECLARATION}}
             // Walker declaration(s) - end
 
             // Walker step non-axis / operand offset - begin
@@ -77,8 +73,7 @@
                 }
                 const int64_t coord = (eidx / weight[other_dim]) % shape[other_dim];
 
-                {{OPD_IN1}} += coord * {{OPD_IN1}}_strides[dim];
-                {{OPD_OUT}} += coord * {{OPD_OUT}}_strides[other_dim];
+                {{WALKER_STEP_OTHER}}
                 ++other_dim;
             }
             // Walker step non-axis / operand offset - end
@@ -91,10 +86,11 @@
                 // Apply operator(s) on operands - end
 
                 // Walker step INNER - begin
-                {{OPD_IN1}} += axis_stride;
+                {{WALKER_STEP_AXIS}}
                 // Walker step INNER - end
             }
-            *{{OPD_OUT}} = {{OPD_OUT}}_accu;
+            //*{{OPD_OUT}} = {{OPD_OUT}}_accu;
+            {{ACCU_LOCAL_WRITEBACK}}
         }
         if (0==tid) {   // Write EXPANDED scalars back to memory.
             {{WRITE_EXPANDED_SCALARS}}

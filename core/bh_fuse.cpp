@@ -240,12 +240,6 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
         return false;
     }
 
-    if ((bh_opcode_is_reduction(a->opcode) and (a->operand[1].ndim>1))\
-        or                                                          \
-        (bh_opcode_is_reduction(b->opcode) and (b->operand[1].ndim>1))) {
-        return false;
-    }
-
     //  Check that the output of instruction "a" has the shape
     //  shape as all other operands.
     const int a_nop = bh_operands(a->opcode);

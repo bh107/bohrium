@@ -321,21 +321,23 @@ private:
     std::string declare_stride_inner(uint64_t oidx);
     std::string declare_stride_inner(void);
 
-    std::string declare_outer_offset(uint64_t oidx);
-    std::string declare_outer_offset(void);
-
-    // Ewise walker -- innards
-    std::string ewise_assign_offset(uint32_t rank);
-    std::string ewise_assign_offset(uint32_t rank, uint64_t oidx);
-
-    std::string step_fwd(uint32_t dim, uint64_t oidx);
-    std::string step_fwd(uint32_t dim);
+    std::string declare_stride_axis(uint64_t oidx);
+    std::string declare_stride_axis(void);
+    
+    std::string assign_collapsed_offset(uint32_t rank);
+    std::string assign_collapsed_offset(uint32_t rank, uint64_t oidx);
 
     std::string step_fwd_outer(uint64_t glb_idx);
     std::string step_fwd_outer(void);
 
     std::string step_fwd_inner(uint64_t glb_idx);
     std::string step_fwd_inner(void);
+
+    std::string step_fwd_other(uint64_t glb_idx, std::string dimvar);
+    std::string step_fwd_other(void);
+
+    std::string step_fwd_axis(uint64_t glb_idx);
+    std::string step_fwd_axis(void);
 
     Plaid& plaid_;
     Kernel& kernel_;

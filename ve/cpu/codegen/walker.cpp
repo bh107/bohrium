@@ -79,7 +79,7 @@ string Walker::declare_operands(void)
     return ss.str();
 }
 
-string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
+string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
 {
     stringstream ss;
     LAYOUT ispace_layout = kernel_.iterspace().meta().layout;
@@ -151,13 +151,13 @@ string Walker::ewise_assign_offset(uint32_t rank, uint64_t oidx)
     return ss.str();
 }
 
-string Walker::ewise_assign_offset(uint32_t rank)
+string Walker::assign_collapsed_offset(uint32_t rank)
 {
     stringstream ss;
     for(kernel_operand_iter oit=kernel_.operands_begin();
         oit != kernel_.operands_end();
         ++oit) {
-        ss << ewise_assign_offset(rank, oit->first);
+        ss << assign_collapsed_offset(rank, oit->first);
         
     }
     return ss.str();
@@ -201,6 +201,48 @@ string Walker::declare_stride_inner(void)
         oit != kernel_.operands_end();
         ++oit) {
         ss << declare_stride_inner(oit->first);
+    }
+    return ss.str();
+}
+
+string Walker::declare_stride_axis(uint64_t oidx)
+{
+    stringstream ss;
+    Operand& operand = kernel_.operand_glb(oidx);
+    switch(operand.meta().layout) {
+        case SCALAR_TEMP:
+        case SCALAR_CONST:
+        case SCALAR:
+        case CONTRACTABLE:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+
+        case CONTIGUOUS:
+        case CONSECUTIVE:
+        case STRIDED:
+            ss << _declare_init(
+                _const(_int64()),
+                operand.stride_axis(),
+                _index(operand.strides(), "axis_dim")
+            )
+            << _end(operand.layout());
+            break;
+
+        case SPARSE:
+            ss << _beef("Non-implemented LAYOUT.");
+			break;
+    }
+    return ss.str();
+}
+
+string Walker::declare_stride_axis(void)
+{
+    stringstream ss;
+
+    for(kernel_operand_iter oit=kernel_.operands_begin();
+        oit != kernel_.operands_end();
+        ++oit) {
+        ss << declare_stride_axis(oit->first);
     }
     return ss.str();
 }
@@ -282,6 +324,90 @@ string Walker::step_fwd_inner(void)
     stringstream ss;
     for(set<uint64_t>::iterator it=inner_opds_.begin(); it!=inner_opds_.end(); it++) {
         ss << step_fwd_inner(*it);
+    }
+    return ss.str();
+}
+
+string Walker::step_fwd_other(uint64_t glb_idx, string dimvar)
+{
+    stringstream ss;
+
+    Operand& operand = kernel_.operand_glb(glb_idx);
+    switch(operand.meta().layout) {
+        case SPARSE:
+        case STRIDED:
+        case CONTIGUOUS:
+        case CONSECUTIVE:
+            ss <<
+            _add_assign(
+                operand.walker(),
+                _mul("coord", _index(operand.strides(), dimvar))
+            ) << _end(operand.layout());
+            break;
+
+        case SCALAR_TEMP:
+        case SCALAR_CONST:
+        case SCALAR:        // No stepping for these
+        case CONTRACTABLE:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+    }
+ 
+    return ss.str();
+}
+
+string Walker::step_fwd_other(void)
+{
+    stringstream ss;
+    for(set<uint64_t>::iterator it=inner_opds_.begin(); it!=inner_opds_.end(); it++) {
+        ss << step_fwd_other(*it, "dim");
+    }
+
+    set<uint64_t> others;
+    set_difference(outer_opds_.begin(), outer_opds_.end(), inner_opds_.begin(), inner_opds_.end(), inserter(others, others.end()));
+
+    for(set<uint64_t>::iterator it=others.begin(); it!=others.end(); it++) {
+        ss << step_fwd_other(*it, "other_dim");
+    }
+    return ss.str();
+}
+
+string Walker::step_fwd_axis(uint64_t glb_idx)
+{
+    stringstream ss;
+
+    Operand& operand = kernel_.operand_glb(glb_idx);
+    switch(operand.meta().layout) {
+        case SCALAR_TEMP:
+        case SCALAR_CONST:
+        case SCALAR:        
+        case CONTRACTABLE:
+            ss << "// " << operand.name() << " " << operand.layout() << endl;
+            break;
+
+        case STRIDED:
+        case CONSECUTIVE:
+        case CONTIGUOUS:
+            ss
+            << _add_assign(
+                operand.walker(),
+                operand.stride_axis()
+            ) << _end(operand.layout());
+            break;
+
+        case SPARSE:
+            ss << _beef("Non-implemented layout.");
+            break;
+    }
+
+    return ss.str();
+}
+
+string Walker::step_fwd_axis(void)
+{
+    stringstream ss;
+    for(set<uint64_t>::iterator it=inner_opds_.begin(); it!=inner_opds_.end(); it++) {
+        ss << step_fwd_axis(*it);
     }
     return ss.str();
 }
@@ -450,7 +576,6 @@ string Walker::generate_source(void)
     } else if (((kernel_.iterspace().meta().layout & COLLAPSIBLE)>0) \
         and ((kernel_.omask() & SCAN)==0)                     \
         and (not((rank>1) and ((kernel_.omask() & REDUCE)>0)))) {
-        
         plaid = "walker.collapsed";
 
         subjects["WALKER_INNER_DIM"]    = _declare_init(
@@ -458,9 +583,9 @@ string Walker::generate_source(void)
             "inner_dim",
             _sub(kernel_.iterspace().ndim(), "1")
         ) + _end();
+        subjects["WALKER_OFFSET"]       = assign_collapsed_offset(rank);
         subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
         subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
-        subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
 
         // Reduction specfics
         if ((kernel_.omask() & REDUCE)>0) {
@@ -492,14 +617,32 @@ string Walker::generate_source(void)
                 _sub(kernel_.iterspace().ndim(), "1")
             ) + _end();
             subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
-            subjects["WALKER_OFFSET"]       = ewise_assign_offset(rank);
-
             subjects["WALKER_STEP_OUTER"] = step_fwd_outer();
             subjects["WALKER_STEP_INNER"] = step_fwd_inner();
 
         // REDUCE
         } else {
             plaid = "walker.axis";
+
+            subjects["WALKER_AXIS_DIM"] = _line(_declare_init(
+                _const(_int64()),
+                "axis_dim",
+                _deref(in2->first())
+            ));
+            subjects["WALKER_STRIDE_AXIS"]  = declare_stride_axis();
+            subjects["WALKER_STEP_OTHER"]   = step_fwd_other();
+            subjects["WALKER_STEP_AXIS"]    = step_fwd_axis();
+            if (out->meta().layout == SCALAR) {
+                subjects["ACCU_LOCAL_WRITEBACK"]= _line(_assign(
+                    _deref(out->first()),
+                    out->accu()
+                ));
+            } else {
+                subjects["ACCU_LOCAL_WRITEBACK"]= _line(_assign(
+                    out->walker_val(),
+                    out->accu()
+                ));
+            }
         }
 
     // SCAN on STRIDED LAYOUT of any RANK
