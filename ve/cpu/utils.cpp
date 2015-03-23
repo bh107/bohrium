@@ -1,3 +1,4 @@
+#include <iomanip>
 #include "utils.hpp"
 #include "thirdparty/MurmurHash3.h"
 
@@ -6,6 +7,37 @@ namespace bohrium{
 namespace core{
 
 const char TAG[] = "Utils";
+
+void tac_transform(tac_t& tac, SymbolTable& symbol_table)
+{
+    switch(tac.op) {
+        case MAP:
+            switch(tac.oper) {
+                case IDENTITY:
+                    if(tac.out == tac.in1) {
+                        tac.op = NOOP;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case ZIP:
+            switch(tac.oper) {
+                case POWER:
+                    break;
+                case MULTIPLY:
+                    break;
+                case DIVIDE:
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+}
 
 std::string string_format(const std::string fmt_str, ...) {
     int size = 100;
@@ -133,6 +165,30 @@ bool contiguous(const operand_t& arg)
     return true;
 }
 
+std::string iterspace_text(const iterspace_t& iterspace)
+{
+    stringstream ss;
+    ss << setw(12);
+    ss << setfill('-');
+    ss << core::layout_text(iterspace.layout) << "_";
+    ss << iterspace.ndim << "D_";
+
+    stringstream ss_shape;
+    for(int64_t dim=0; dim <iterspace.ndim; ++dim) {
+        ss_shape << iterspace.shape[dim];
+        if (dim!=iterspace.ndim-1) {
+            ss_shape << "x";
+        }
+    }
+    ss << left;
+    ss << setw(20);
+    ss << ss_shape.str();
+    ss << "_";
+    ss << iterspace.nelem;
+    
+    return ss.str();
+}
+
 std::string operand_text(const operand_t& operand)
 {
     stringstream ss;
@@ -162,6 +218,50 @@ std::string operand_text(const operand_t& operand)
     ss << ") ";
     ss << "}" << endl;
 
+    return ss.str();
+}
+
+std::string omask_aop_text(uint32_t omask)
+{
+    stringstream ss;
+    std::vector<std::string> entries;
+    for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
+        if ((((omask&op)>0) and ((op&ARRAY_OPS)>0))) {
+            entries.push_back(operation_text((OPERATION)op));
+        }
+    }
+    for(std::vector<std::string>::iterator eit=entries.begin();
+        eit!=entries.end();
+        ++eit) {
+        ss << *eit;
+        eit++;
+        if (eit!=entries.end()) {
+            ss << "|";
+        }
+        eit--;
+    }
+    return ss.str();
+}
+
+std::string omask_text(uint32_t omask)
+{
+    stringstream ss;
+    std::vector<std::string> entries;
+    for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
+        if((omask&op)>0) {
+            entries.push_back(operation_text((OPERATION)op));
+        }
+    }
+    for(std::vector<std::string>::iterator eit=entries.begin();
+        eit!=entries.end();
+        ++eit) {
+        ss << *eit;
+        eit++;
+        if (eit!=entries.end()) {
+            ss << " | ";
+        }
+        eit--;
+    }
     return ss.str();
 }
 
@@ -195,9 +295,21 @@ string hash_text(std::string text)
     uint32_t seed = 4200;
 
     MurmurHash3_x86_128(text.c_str(), text.length(), seed, &hash);
+    ss << std::hex;
+    ss << std::setw(8);
+    ss << std::setfill('0');
     ss << hash[0];
+    ss << "_";
+    ss << std::setw(8);
+    ss << std::setfill('0');
     ss << hash[1];
+    ss << "_";
+    ss << std::setw(8);
+    ss << std::setfill('0');
     ss << hash[2];
+    ss << "_";
+    ss << std::setw(8);
+    ss << std::setfill('0');
     ss << hash[3];
     
     return ss.str();

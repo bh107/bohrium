@@ -22,16 +22,34 @@ enum states {
     PLACE
 };
 
-Plaid::Plaid(void) {}
+Plaid::Plaid(string template_directory) : template_directory_(template_directory) {
+    add_from_file("license",    "license.tpl");
+    add_from_file("kernel",     "kernel.tpl");
+    add_from_file("ewise.1d",   "ewise.1d.tpl");
+    add_from_file("ewise.nd",   "ewise.nd.tpl");
+    add_from_file("reduce.c.1d","reduce.c.1d.tpl");
+    add_from_file("reduce.c.nd","reduce.c.nd.tpl");
+    add_from_file("reduce.p.nd","reduce.p.nd.tpl");
+    add_from_file("scan.1d",    "scan.1d.tpl");
+    add_from_file("scan.nd",    "scan.nd.tpl");
+}
+
+string Plaid::text(void)
+{
+    return "";
+}
 
 void Plaid::add_from_string(string name, string tmpl)
 {
     templates_[name] = tmpl;
 }
 
-void Plaid::add_from_file(string name, string filepath)
+void Plaid::add_from_file(string name, string filename)
 {
-    ifstream ifs(filepath.c_str());
+    stringstream ss;
+    ss << template_directory_ << "/" << filename;
+    string abspath = ss.str();
+    ifstream ifs(abspath.c_str());
     
     string content(
         (istreambuf_iterator<char>(ifs)),
@@ -123,7 +141,7 @@ string Plaid::fill(string name, map<string, string>& subjects)
 
 unsigned int Plaid::indentlevel(string text, unsigned int index)
 {
-    for(unsigned int idx=index; idx>=0; --idx) {
+    for(int idx=index; idx>=0; --idx) {
         char token = text[idx];
         if ('\n' == token) {
             return (index-idx-1);

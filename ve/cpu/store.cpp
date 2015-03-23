@@ -27,6 +27,8 @@ Store::Store(const string object_directory, const string kernel_directory)
     uid[6] = 0;
 
     this->uid = string(uid);
+
+    //cout << "Storage " << this->uid << endl;
 }
 
 Store::~Store()
@@ -51,7 +53,7 @@ string Store::get_uid(void)
     return this->uid;
 }
 
-string Store::obj_filename(string symbol)
+string Store::obj_filename(const string symbol)
 {
     return  this->kernel_prefix     +\
             symbol                  +\
@@ -60,14 +62,14 @@ string Store::obj_filename(string symbol)
             ".so";
 }
 
-string Store::obj_abspath(string symbol)
+string Store::obj_abspath(const string symbol)
 {
     return  this->object_directory  +\
             "/"                     +\
             this->obj_filename(symbol);
 }
 
-string Store::src_filename(string symbol)
+string Store::src_filename(const string symbol)
 {
     return  this->kernel_prefix     +\
             symbol                  +\
@@ -76,7 +78,7 @@ string Store::src_filename(string symbol)
             ".c";
 }
 
-string Store::src_abspath(string symbol)
+string Store::src_abspath(const string symbol)
 {
     return  this->kernel_directory  +\
             "/"                     +\
@@ -86,7 +88,7 @@ string Store::src_abspath(string symbol)
 /**
  *  Check that the given symbol has an object ready.
  */
-bool Store::symbol_ready(string symbol)
+bool Store::symbol_ready(const string symbol)
 {
     return funcs.count(symbol) > 0;
 }
@@ -194,7 +196,7 @@ size_t Store::preload(void)
     //
     // This is the part that actually loads them...
     // This could be postponed...
-    map<string, string>::iterator it;    // Iterator
+    map<const string, const string>::iterator it;    // Iterator
     for(it=libraries.begin(); (it != libraries.end()) && res; ++it) {
         res = load(it->first, it->second);
         nloaded += res;
@@ -203,7 +205,7 @@ size_t Store::preload(void)
     return nloaded;
 }
 
-void Store::add_symbol(string symbol, string library)
+void Store::add_symbol(const string symbol, const string library)
 {
     libraries.insert(pair<string, string>(symbol, library));
 }
@@ -211,32 +213,26 @@ void Store::add_symbol(string symbol, string library)
 /**
  *  Load a single symbol from library symbol into func-storage.
  */
-bool Store::load(string symbol)
+bool Store::load(const string symbol)
 {
     return load(symbol, libraries[symbol]);
 }
 
-bool Store::load(string symbol, string library)
+bool Store::load(const string symbol, const string library)
 {
     char *error_msg = NULL;             // Buffer for dlopen errors
-    int errnum = 0;
     
     string library_abspath = this->object_directory+"/"+library;
 
+    dlerror();                          // Clear any existing error then,
     if (0==handles.count(library)) {    // Open library
-        handles[library] = dlopen(
-            library_abspath.c_str(),
-            RTLD_NOW
-        );
-        errnum = errno;
-    }
-    if (!handles[library]) {            // Check that it opened
-        core::error(
-            errnum,
-            "Store::load(...,...) : dlopen(filename='%s', RTLF_NOW).\n",
-            library_abspath.c_str()
-        );
-        return false;
+        void* lib_handle = dlopen(library_abspath.c_str(), RTLD_NOW);
+        if (NULL==lib_handle) {
+            error_msg = dlerror();
+            fprintf(stderr, "dlopen(..., RTLD_NOW) failed, dlerror() msg: [%s]\n", error_msg);
+            return false; 
+        }
+        handles[library] = lib_handle;
     }
 
     dlerror();                          // Clear any existing error then,
@@ -246,13 +242,13 @@ bool Store::load(string symbol, string library)
     );
     error_msg = dlerror();
     if (error_msg) {
-        core::error(
-            error_msg,
+        perror("dlsym()");
+        fprintf(
+            stderr,
             "dlsym( handle='%s', symbol='%s' )\n",
             library.c_str(),
             symbol.c_str()
         );
-        //free(error_msg); TODO: This should not be freed!?
         return false;
     }
     return true;

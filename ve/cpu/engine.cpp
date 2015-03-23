@@ -1,5 +1,4 @@
 #include "engine.hpp"
-#include "symbol_table.hpp"
 #include "timevault.hpp"
 
 #include <algorithm>
@@ -20,6 +19,10 @@ const char Engine::TAG[] = "Engine";
 
 Engine::Engine(
     const string compiler_cmd,
+    const string compiler_inc,
+    const string compiler_lib,
+    const string compiler_flg,
+    const string compiler_ext,
     const string template_directory,
     const string kernel_directory,
     const string object_directory,
@@ -42,8 +45,8 @@ Engine::Engine(
     jit_dumpsrc(jit_dumpsrc),
     dump_rep(dump_rep),
     storage(object_directory, kernel_directory),
-    specializer(template_directory),
-    compiler(compiler_cmd),
+    plaid_(template_directory),
+    compiler(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext),
     thread_control(binding, mthreads),
     exec_count(0)
 {
@@ -76,7 +79,7 @@ string Engine::text()
     ss << "}" << endl;
     
     ss << "Attributes {" << endl;
-    ss << "  " << specializer.text();    
+    ss << "  " << plaid_.text();    
     ss << "  " << compiler.text();
     ss << "}" << endl;
 
@@ -85,7 +88,6 @@ string Engine::text()
 
 bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Block& block)
 {
-    TIMER_START
     bh_error res = BH_SUCCESS;
 
     tac_t& tac = block.tac(0);
@@ -147,20 +149,27 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             if (jit_enabled && \
                 (!storage.symbol_ready(block.symbol()))) {   
                                                             // Specialize sourcecode
-                string sourcecode = specializer.specialize(symbol_table, block);
+                string sourcecode = codegen::Kernel(plaid_, block).generate_source();
+                bool compile_res;
                 if (jit_dumpsrc==1) {                       // Dump sourcecode to file
                     core::write_file(
                         storage.src_abspath(block.symbol()),
                         sourcecode.c_str(), 
                         sourcecode.size()
                     );
+                    // Send to compiler
+                    compile_res = compiler.compile(
+                        storage.obj_abspath(block.symbol()), 
+                        storage.src_abspath(block.symbol())
+                    );
+                } else {
+                    // Send to compiler
+                    compile_res = compiler.compile(
+                        storage.obj_abspath(block.symbol()), 
+                        sourcecode.c_str(), 
+                        sourcecode.size()
+                    );
                 }
-                // Send to compiler
-                bool compile_res = compiler.compile(
-                    storage.obj_abspath(block.symbol()), 
-                    sourcecode.c_str(), 
-                    sourcecode.size()
-                );
                 if (!compile_res) {
                     fprintf(stderr, "Engine::sij_mode(...) == Compilation failed.\n");
                     return BH_ERROR;
@@ -192,11 +201,13 @@ bh_error Engine::sij_mode(SymbolTable& symbol_table, vector<tac_t>& program, Blo
             // Execute block handling array operations.
             // 
             DEBUG(TAG, "EXECUTING " << block.text());
+
+            TIMER_START
             storage.funcs[block.symbol()](block.operands(), &block.iterspace());
+            TIMER_STOP(block.text_compact())
 
             break;
     }
-    TIMER_STOP("S: " + block.symbol())
     return BH_SUCCESS;
 }
 
@@ -206,7 +217,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
                             bh_ir_kernel& krnl)
 {
     bh_error res = BH_SUCCESS;
-    TIMER_START
 
     //
     // Turn temps into scalars
@@ -241,20 +251,27 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     if (jit_enabled && \
         (!storage.symbol_ready(block.symbol()))) {   
         // Specialize and dump sourcecode to file
-        string sourcecode = specializer.specialize(symbol_table, block, iterspace.layout);
+        string sourcecode = codegen::Kernel(plaid_, block).generate_source();
+        bool compile_res;
         if (jit_dumpsrc==1) {
             core::write_file(
                 storage.src_abspath(block.symbol()),
                 sourcecode.c_str(), 
                 sourcecode.size()
             );
+            // Send to compiler
+            compile_res = compiler.compile(
+                storage.obj_abspath(block.symbol()),
+                storage.src_abspath(block.symbol())
+            );
+        } else {
+            // Send to compiler
+            compile_res = compiler.compile(
+                storage.obj_abspath(block.symbol()),
+                sourcecode.c_str(), 
+                sourcecode.size()
+            );
         }
-        // Send to compiler
-        bool compile_res = compiler.compile(
-            storage.obj_abspath(block.symbol()),
-            sourcecode.c_str(), 
-            sourcecode.size()
-        );
         if (!compile_res) {
             fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
 
@@ -296,7 +313,9 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
     // Execute block handling array operations.
     // 
     DEBUG(TAG, "EXECUTING "<< block.text());
+    TIMER_START
     storage.funcs[block.symbol()](block.operands(), &iterspace);
+    TIMER_STOP(block.text_compact())
 
     //
     // De-Allocate memory for operand(s)
@@ -314,7 +333,6 @@ bh_error Engine::fuse_mode(SymbolTable& symbol_table,
             }
         }
     }
-    TIMER_STOP("F: " + block.symbol())
     return BH_SUCCESS;
 }
 

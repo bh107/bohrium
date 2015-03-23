@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-#if defined(_OPENMP)
+#if defined(VE_CPU_BIND)
 #include <omp.h>
 #include <hwloc.h>
 #else
@@ -66,7 +66,7 @@ size_t ThreadControl::get_mthreads(void)
     return mthreads_;
 }
 
-#if defined(_OPENMP)
+#if defined(VE_CPU_BIND)
 size_t ThreadControl::bind_threads(thread_binding binding)
 {
     binding_ = binding;
@@ -115,14 +115,18 @@ size_t ThreadControl::bind_threads(thread_binding binding)
 
     hwloc_topology_destroy(topo);               // Cleanup
 
-
     return error;                               // EXIT
 }
 #else
 size_t ThreadControl::bind_threads(thread_binding binding)
 {
-    printf("!!! WARN: You are running in NON-PARALLEL fall-back mode!!!\n"
-           "!!! Compile and use Bohrium with an OpenMP capable compiler!!!\n");
+    if (BIND_TO_NONE!=binding) {
+        printf("!! Trying to bind but compiled without required library  !!\n"
+               "!!            Install hwloc and re-compile               !!\n"
+               "!!                          OR                           !!\n"
+               "!! Disable binding by setting ENV_VAR: BH_VE_CPU_BIND=0  !!\n"
+        );
+    }
     return 0;
 }
 #endif

@@ -1,4 +1,5 @@
 #include "block.hpp"
+#include <iomanip>
 
 using namespace std;
 using namespace boost;
@@ -9,7 +10,7 @@ namespace core{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& globals, vector<tac_t>& program)
-: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_("")
+: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_(""), omask_(0)
 {}
 
 Block::~Block()
@@ -25,6 +26,9 @@ void Block::clear(void)
 {                               // Reset the current state of the block
     tacs_.clear();              // tacs
     array_tacs_.clear();        // array_tacs
+    base_refs_.clear();
+
+    omask_ = 0;
 
     iterspace_.layout = SCALAR; // iteraton space
     iterspace_.ndim = 0;
@@ -56,6 +60,7 @@ void Block::compose(bh_ir_kernel& krnl)
         tac_t& tac = program_[*idx_it];
 
         tacs_.push_back(&tac);              // <-- All tacs
+        omask_ |= tac.op;                   // Update omask
 
         if ((tac.op & (ARRAY_OPS))>0) { 
             array_tacs_.push_back(&tac);    // <-- Only array operations
@@ -86,6 +91,7 @@ void Block::compose(size_t prg_begin, size_t prg_end)
         tac_t& tac = program_[prg_idx];
 
         tacs_.push_back(&tac);              // <-- All tacs
+        omask_ |= tac.op;                   // Update omask
 
         if ((tac.op & (ARRAY_OPS))>0) { 
             array_tacs_.push_back(&tac);    // <-- Only array operations
@@ -133,6 +139,9 @@ size_t Block::localize(size_t global_idx)
     global_to_local_.insert(pair<size_t,size_t>(global_idx, local_idx));
     local_to_global_.insert(pair<size_t,size_t>(local_idx, global_idx));
 
+    // Maintain references to bases within the block.
+    base_refs_[operands_[local_idx]->base].insert(global_idx);
+
     return local_idx;
 }
 
@@ -146,6 +155,13 @@ bool Block::symbolize(void)
         operands_ss << "~" << i;
         operands_ss << core::layout_text_shand(operands_[i]->layout);
         operands_ss << core::etype_text_shand(operands_[i]->etype);
+
+        // Let the "Restrictable" flag be part of the symbol.
+        if (base_refs_[operands_[i]->base].size()==1) {
+            operands_ss << "R";
+        } else {
+            operands_ss << "A";
+        }
     }
 
     //
@@ -204,6 +220,11 @@ bool Block::symbolize(void)
     return true;
 }
 
+size_t Block::base_refcount(bh_base* base)
+{
+    return base_refs_[base].size();
+}
+
 operand_t& Block::operand(size_t local_idx)
 {
     return *operands_[local_idx];
@@ -237,6 +258,11 @@ tac_t& Block::tac(size_t idx) const
 tac_t& Block::array_tac(size_t idx) const
 {
     return *array_tacs_[idx];
+}
+
+uint32_t Block::omask(void)
+{
+    return omask_;
 }
 
 size_t Block::ntacs(void) const
@@ -329,6 +355,30 @@ string Block::dot(void) const
     return ss.str();
 }
 
+std::string Block::text_compact(void)
+{
+    stringstream ss;
+    ss << setfill('0');
+    ss << setw(3);
+    ss << narray_tacs();
+    ss << ",";
+    ss << setfill(' ');
+    ss << setw(36);
+    ss << symbol();
+    ss << ", ";
+    ss << left;
+    ss << setw(36);
+    ss << setfill('-');
+    ss << omask_aop_text(omask());
+    ss << ", ";
+    ss << left;
+    ss << setfill('-');
+    ss << setw(57);
+    ss << iterspace_text(iterspace());
+
+    return ss.str();
+}
+
 std::string Block::text(void)
 {
     stringstream ss;
@@ -348,6 +398,21 @@ std::string Block::text(void)
         ss << operand_text(opr);
     }
     ss << "}" << endl;
+
+    ss << "BASE_REFS {" << endl;
+    for(std::map<bh_base*, std::set<uint64_t> >::iterator it=base_refs_.begin();
+        it!=base_refs_.end();
+        ++it) {
+        std::set<uint64_t>& op_bases = it->second;
+        ss << " " << it->first << " = ";
+        for(std::set<uint64_t>::iterator oit=op_bases.begin();
+            oit != op_bases.end();
+            oit++) {
+            ss << *oit << ", ";
+        }
+        ss << endl;
+    }
+    ss << "}";
 
     ss << "ITERSPACE {" << endl;
     ss << " LAYOUT = " << layout_text(iterspace_.layout) << "," << endl;

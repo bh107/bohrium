@@ -22,8 +22,60 @@ class test_reduce(numpytest):
                 self.axis = -axis
                 yield (a,v)
 
-    def test_reduce(self,a):
+    def test_reduce_add(self,a):
         cmd = "res = np.add.reduce(a[0],axis=%d)"%self.axis
+        exec(cmd)
+        return (res,cmd)
+
+    def test_reduce_mul(self,a):
+        cmd = "res = np.multiply.reduce(a[0],axis=%d)"%self.axis
+        exec(cmd)
+        return (res,cmd)
+
+    def test_reduce_min(self,a):
+        cmd = "res = np.minimum.reduce(a[0],axis=%d)"%self.axis
+        exec(cmd)
+        return (res,cmd)
+
+    def test_reduce_max(self,a):
+        cmd = "res = np.maximum.reduce(a[0],axis=%d)"%self.axis
+        exec(cmd)
+        return (res,cmd)
+
+class test_reduce_bitwise(numpytest):
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+
+    def init(self):
+        for v in gen_views(4,10,6):
+            a = {}
+            self.axis = 0
+            exec(v)
+            exec("a[0] = numpy.array(a[0], dtype=np.uint32)")
+            yield (a,v)
+            for axis in range(1,a[0].ndim):
+                exec(v)
+                self.axis = axis
+                yield (a,v)
+            for axis in range(1,a[0].ndim):
+                exec(v)
+                self.axis = -axis
+                yield (a,v)
+
+    def test_reduce_bitwise_and(self,a):
+        print a
+        cmd = "res = np.bitwise_and.reduce(a[0],axis=%d)"%self.axis
+        exec(cmd)
+        return (res,cmd)
+
+    def test_reduce_bitwise_or(self,a):
+        cmd = "res = np.bitwise_or.reduce(a[0],axis=%d)"%self.axis
+        exec(cmd)
+        return (res,cmd)
+
+    def test_reduce_bitwise_xor(self,a):
+        cmd = "res = np.bitwise_xor.reduce(a[0],axis=%d)"%self.axis
         exec(cmd)
         return (res,cmd)
 
@@ -53,6 +105,22 @@ class test_reduce_bool(numpytest):
         exec(cmd)
         return (res,cmd)
 
+    def test_logical_or(self,a):
+        cmd = "res = np.logical_or.reduce(a[0],axis=%d)"%self.axis
+        exec(cmd)
+        return (res,cmd)
+
+    def test_logical_and(self,a):
+        cmd = "res = np.logical_and.reduce(a[0],axis=%d)"%self.axis
+        exec(cmd)
+        return (res,cmd)
+
+    def test_logical_xor(self,a):
+        cmd = "res = np.logical_xor.reduce(a[0],axis=%d)"%self.axis
+        exec(cmd)
+        return (res,cmd)
+
+
 class test_reduce_sum(numpytest):
     def __init__(self):
         numpytest.__init__(self)
@@ -72,6 +140,28 @@ class test_reduce_sum(numpytest):
 
     def test_sum(self,a):
         cmd = "res = a[0].sum()"
+        exec(cmd)
+        return (res,cmd)
+
+class test_reduce_prod(numpytest):
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+
+    def init(self):
+        for v in gen_views(4,10,6):
+            a = {}
+            self.axis = 0
+            exec(v)
+            yield (a,v)
+
+    def test_mul_reduce(self,a):
+        cmd = "res = np.prod(a[0])"
+        exec(cmd)
+        return (res,cmd)
+
+    def test_prod(self,a):
+        cmd = "res = a[0].prod()"
         exec(cmd)
         return (res,cmd)
 

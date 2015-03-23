@@ -27,15 +27,15 @@ typedef void (*func)(operand_t** args, iterspace_t* iterspace);
 
 //
 //  Retrieve a function pointer for the symbol (SYMBOL -> func)
-typedef std::map<std::string, func> func_storage;
+typedef std::map<const std::string, func> func_storage;
 
 //
 //  Retrieve the library handle for a library (LIBRARY -> handle)
-typedef std::map<std::string, void*> handle_storage;
+typedef std::map<const std::string, void*> handle_storage;
 
 //
 //  In which library is the symbol stored (SYMBOL -> LIBRARY)
-typedef std::map<std::string, std::string> symbol_library_map;
+typedef std::map<const std::string, const std::string> symbol_library_map;
 
 class Store {
 public:
@@ -45,20 +45,20 @@ public:
     ~Store();
     std::string text();
 
-    void add_symbol(std::string symbol, std::string library);
+    void add_symbol(const std::string symbol, const std::string library);
 
-    bool symbol_ready(std::string symbol);
-    bool load(std::string symbol);
-    bool load(std::string symbol, std::string library);
+    bool symbol_ready(const std::string symbol);
+    bool load(const std::string symbol);
+    bool load(const std::string symbol, const std::string library);
     size_t preload();
 
     std::string get_uid(void);
 
-    std::string obj_filename(std::string symbol);
-    std::string src_filename(std::string symbol);
+    std::string obj_filename(const std::string symbol);
+    std::string src_filename(const std::string symbol);
 
-    std::string obj_abspath(std::string symbol);
-    std::string src_abspath(std::string symbol);
+    std::string obj_abspath(const std::string symbol);
+    std::string src_abspath(const std::string symbol);
 
 private:
     handle_storage handles;

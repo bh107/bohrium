@@ -52,9 +52,6 @@ Global
 		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Release|x64.Build.0 = Release|Any CPU
 		{D05DEC71-C122-45A5-8DD7-F64CD19486FE}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = UnitTest\UnitTest.csproj
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection

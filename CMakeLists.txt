@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 if (APPLE)
     # Build multi-arch OSX binaries
     set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
-
-    # Skip any user-supplied python installs
-    set(PYTHON_EXECUTABLE "/usr/bin/python" CACHE STRING "Sets the python path to the Apple supplied Python, not any user-installed versions")
 endif()
 
 #We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
@@ -80,13 +77,6 @@ add_subdirectory(test)
 
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
         DESTINATION share/bohrium/include COMPONENT bohrium)
-
-# Select the approriate compiler string
-if (APPLE)
-    set(DISABLE_LINUX_COMPILER "#")
-else()
-    set(DISABLE_OSX_COMPILER "#")
-endif()
 
 #Install the config file, which depends on global or local installation
 configure_file(config.ini.in config.ini)

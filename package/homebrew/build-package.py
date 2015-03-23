@@ -25,6 +25,7 @@ class Bohrium < Formula
   depends_on "swig" => :build
   depends_on "Python" => :build
   depends_on "boost" => [:build,  "universal"]
+  depends_on "numpy" => :build
   depends_on "cheetah" => [:python, "Cheetah.Template", :build]
 
   head do
@@ -37,7 +38,11 @@ class Bohrium < Formula
     end
 
     # Set the python-path to also pick up the Brew-installed items, as pip will install there
-    ENV["PYTHONPATH"] = ENV["PYTHONPATH"] + ":/usr/local/lib/python2.7/site-packages/"
+    if ENV["PYTHONPATH"] == nil
+      ENV["PYTHONPATH"] = "/usr/local/lib/python2.7/site-packages/"
+    else
+      ENV["PYTHONPATH"] = ENV["PYTHONPATH"] + ":/usr/local/lib/python2.7/site-packages/"
+    end
     system "cmake", ".", *std_cmake_args
     system "make", "install"
     system "touch", "#{prefix}/var/bohrium/objects/.empty"

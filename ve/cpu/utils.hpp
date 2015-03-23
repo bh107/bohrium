@@ -30,6 +30,10 @@ namespace core {
 // Self-explanatory function returning the textual representation of 
 // TAC enums; useful for pretty-printing.
 //
+
+std::string iterspace_text(const iterspace_t& iterspace);
+std::string omask_text(uint32_t omask);
+std::string omask_aop_text(uint32_t omask);
 std::string operation_text(OPERATION op);
 std::string operator_text(OPERATOR op);
 std::string operand_text(const operand_t& operand);
@@ -55,6 +59,30 @@ ETYPE bhtype_to_etype(bh_type bhtype);
 std::string tac_text(const tac_t& tac);
 
 int tac_noperands(const tac_t& tac);
+
+/**
+ *  Transforms the given tac to a NOOP or an equivalent tac,
+ *  which should be cheaper compute. 
+ *
+ *  # Silly stuff like
+ *
+ *  IDENTITY a, a   -> NOOP
+ *
+ *  # Operators with scalar neutral element
+ * 
+ *  ADD a, a, 0     -> NOOP
+ *  MUL b, b, 1     -> NOOP
+ *  DIV a, a, 1     -> NOOP
+
+ *  ADD a, b, 0     -> IDENTITY a, b
+ *  MUL a, b, 1     -> IDENTITY a, b
+ *  MUL a, b, 0     -> IDENTITY a, 0
+ *
+ *  # Specialization
+ *
+ *  POW a, a, 2     -> MUL a, a, a
+ */
+void tac_transform(tac_t& tac, SymbolTable& symbol_table);
 
 /**
  *  Map bh_ir->instr_list (bh_instruction) to tac_t with entries in symbol_table.
