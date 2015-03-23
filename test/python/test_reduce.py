@@ -48,11 +48,10 @@ class test_reduce_bitwise(numpytest):
         self.config['maxerror'] = 0.00001
 
     def init(self):
-        for v in gen_views(4,10,6):
+        for v in gen_views(4,10,6, dtype="np.uint32"):
             a = {}
             self.axis = 0
             exec(v)
-            exec("a[0] = numpy.array(a[0], dtype=np.uint32)")
             yield (a,v)
             for axis in range(1,a[0].ndim):
                 exec(v)
@@ -64,7 +63,6 @@ class test_reduce_bitwise(numpytest):
                 yield (a,v)
 
     def test_reduce_bitwise_and(self,a):
-        print a
         cmd = "res = np.bitwise_and.reduce(a[0],axis=%d)"%self.axis
         exec(cmd)
         return (res,cmd)
@@ -85,11 +83,10 @@ class test_reduce_bool(numpytest):
         self.config['maxerror'] = 0.00001
 
     def init(self):
-        for v in gen_views(4,10,6):
+        for v in gen_views(4,10,6,dtype="np.bool"):
             a = {}
             self.axis = 0
             exec(v)
-            exec("a[0] = numpy.array(a[0], dtype=np.bool)")
             yield (a,v)
             for axis in range(1,a[0].ndim):
                 exec(v)
