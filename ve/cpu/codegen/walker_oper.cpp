@@ -279,10 +279,18 @@ string Walker::synced_oper(OPERATOR operation, ETYPE etype, string out, string i
         case LOGICAL_AND:
         case LOGICAL_OR:
         case LOGICAL_XOR:
-            ss << _omp_critical(_assign(out, oper(operation, etype, in1, in2)));
+            ss << _omp_critical(_assign(out, oper(operation, etype, in1, in2)), "accusync");
             break;
         default:
-            ss << _omp_atomic(_assign(out, oper(operation, etype, in1, in2)));
+            switch(etype) {
+                case COMPLEX64:
+                case COMPLEX128:
+                    ss << _omp_critical(_assign(out, oper(operation, etype, in1, in2)), "accusync");
+                    break;
+                default:
+                    ss << _omp_atomic(_assign(out, oper(operation, etype, in1, in2)));
+                    break;
+            }
             break;
     }
     return ss.str();

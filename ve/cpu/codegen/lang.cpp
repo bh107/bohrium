@@ -962,7 +962,19 @@ string _omp_critical(string expr)
 {
     stringstream ss;
     ss << "#pragma omp critical" << endl;
-    ss << expr;
+    ss << "{" << endl;
+    ss << expr << ";" << endl;
+    ss << "}" << endl;
+    return ss.str();
+}
+
+string _omp_critical(string expr, string name)
+{
+    stringstream ss;
+    ss << "#pragma omp critical(" << name << ")" << endl;
+    ss << "{" << endl;
+    ss << expr << ";" << endl;
+    ss << "}" << endl;
     return ss.str();
 }
 
