@@ -106,7 +106,7 @@ void filter(bh_ir &bhir)
 
             first = &instr;
 
-            printf("Beginning the chain...\n");
+            //printf("Beginning the chain...\n");
 
         // A potential continuation of the chain
         } else if ( (reduce_output != NULL) and \
@@ -155,20 +155,20 @@ void filter(bh_ir &bhir)
 
             if (is_continuation and is_scalar) {            // End of the chain
 
-                printf("Ending the chain and REWRITE as COMPLETE REDUCE\n");
+                //printf("Ending the chain and REWRITE as COMPLETE REDUCE\n");
                 last = &instr;
 
                 rewrite_chain(links, first, last);
 
             } else if (is_continuation and not is_scalar) { // Continuation
-                printf("Continuing the chain...\n");
+                //printf("Continuing the chain...\n");
                 links.push_back(&instr);
             } else {                                        // Break the chain.
-                printf("Break the chain.\n");
+                //printf("Break the chain.\n");
             }
 
             if (not is_continuation or is_scalar) {         // Reset the search
-                printf("Resetting search.\n");
+                //printf("Resetting search.\n");
                 reduce_output = NULL;
                 reduce_opcode = BH_NONE;
                 links.clear();
@@ -179,7 +179,7 @@ void filter(bh_ir &bhir)
             reduce_output = NULL;
             reduce_opcode = BH_NONE;
             links.clear();
-            printf("Breaking the chain...\n");
+            //printf("Breaking the chain...\n");
         }
     }
 }
