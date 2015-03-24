@@ -5,10 +5,10 @@ if util.Benchmark().bohrium:
 else:
     import numpy as np
 
-def model(N, dtype=np.float32):
+def model(N, B):
     """Construct pseudo-data representing price samples?"""
 
-    S = np.array(np.random.random([N]), dtype=dtype)
+    S = B.random_array((N,))
     S = S*4.0-2.0 + 60.0 # Price is between 58-62
 
     return S
@@ -62,7 +62,7 @@ def main():
     if B.inputfn:
         S = B.load_array()
     else:
-        S = model(N, dtype=B.dtype)              # Construct pseudo-data
+        S = model(N, B)              # Construct pseudo-data
 
     if B.dumpinput:
         B.dump_arrays("black_scholes", {'input': S})

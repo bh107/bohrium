@@ -17,8 +17,8 @@ except ImportError:
 def numpy_flush():
     return
 
-def numpy_array(ary, bohrium=False):
-    return np.array(ary)
+def numpy_array(ary, bohrium=False, dtype=np.float64):
+    return np.array(ary, dtype=dtype)
 
 try:
     import bohrium as bh
@@ -54,16 +54,6 @@ class Benchmark:
         self.__elapsed  = 0.0           # The quantity measured
         self.__script   = sys.argv[0]   # The script being run
 
-        # Just for reference... these are the options parsed from cmd-line.
-        options = [
-            'size',         'dtype',
-            'inputfn',      'dumpinput',
-            'outputfn'
-            'target',      'bohrium',
-            'no_extmethods',
-            'visualize',    'verbose',
-        ]
-
         # Construct argument parser
         p = argparse.ArgumentParser(description='Benchmark runner for npbackend.')
 
@@ -81,9 +71,13 @@ class Benchmark:
                        help     = "Tell the the script which primitive type to use."
                                   " (default: %(default)s)"
         )
-
-        p.add_argument('--inputfn',
-                       help = "Input file to use as data."
+        g1 = p.add_mutually_exclusive_group()
+        g1.add_argument('--inputfn',
+                       help = "Input file to use as data. When not set, random data is used."
+        )
+        g1.add_argument('--seed',
+                        default = 42,
+                        help = "The seed to use when using random data."
         )
         p.add_argument('--dumpinput',
                        default  = False,
@@ -138,6 +132,11 @@ class Benchmark:
         self.dumpinput  = args.dumpinput
         self.inputfn    = args.inputfn
         self.outputfn   = args.outputfn
+        self.seed       = args.seed
+        np.random.seed(self.seed)
+
+        if len(self.size) == 0:
+            raise argparse.ArgumentTypeError('Size must be specified e.g. --size=100*10*1')
 
         # Unify the options: 'target' and 'bohrium'
         if args.bohrium:
@@ -225,6 +224,13 @@ class Benchmark:
                 '*'.join([str(s) for s in self.size]),
                 self.__elapsed
         ))
+    def random_array(self, shape, dtype=None):
+        if dtype is None:
+            dtype = self.dtype
+        if issubclass(np.dtype(dtype).type, np.integer):
+            return toarray(np.random.randint(shape), dtype=dtype, bohrium=self.bohrium)
+        else:
+            return toarray(np.random.random(shape), dtype=dtype, bohrium=self.bohrium)
 
 def main():
     B = Benchmark()
