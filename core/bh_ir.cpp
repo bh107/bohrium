@@ -152,14 +152,17 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     else if(instr.opcode != BH_FREE)
     {
         //Add the output of the instruction to 'outputs'
-        int viewid = get_view_id(instr.operand[0]);
-        if (viewid < 0)
         {
-            viewid  = views.size();
-            views.push_back(instr.operand[0]);
+            const bh_view &v = instr.operand[0];
+            int viewid = get_view_id(v);
+            if (viewid < 0)
+            {
+                viewid  = views.size();
+                views.push_back(v);
+            }
+            outputs.insert(viewid);
+            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
-        outputs.insert(viewid);
-        
         //Add the inputs of the instruction to 'inputs'
         for(int i=1; i<nop; ++i)
         {
@@ -167,12 +170,13 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             if(bh_is_constant(&v))
                 continue;
             
-            viewid = get_view_id(instr.operand[i]);
+            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
+            int viewid = get_view_id(v);
             //If 'v' is a new view we register it, and add it to inputs
             if(viewid < 0)
             {
                 viewid  = views.size();
-                views.push_back(instr.operand[i]);
+                views.push_back(v);
                 inputs.insert(viewid);
             }
         }

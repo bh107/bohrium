@@ -554,7 +554,20 @@ void pprint(const GraphDW &dag, const char filename[])
             char buf[1024*10];
             out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
             out << " bytes\\n";
-            out << "Input views: \\l";
+            out << "Shapes: ";
+            for (const std::vector<bh_index> &shape: graph[v].get_shapes())
+            {
+                out << "[";
+                for (auto i = shape.cbegin();;)
+                {
+                    out << *i;
+                    if (++i == shape.cend())
+                        break;
+                    out << ", ";
+                }
+                out << "]  ";
+            }
+            out << "\\lInput views: \\l";
             BOOST_FOREACH(const bh_view &i, graph[v].input_list())
             {
                 bh_sprint_view(&i, buf);

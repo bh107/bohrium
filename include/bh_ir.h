@@ -102,6 +102,9 @@ private:
     // List of unique views used in this kernel 
     std::vector<bh_view> views;
 
+    // Shapes used in this kernel
+    std::set<std::vector<bh_index> > shapes;
+
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
 
@@ -144,6 +147,8 @@ public:
 
     /* Returns a list of temporary base-arrays in this kernel (read-only) */
     const std::vector<const bh_base*>& temp_list() const {return temps;};
+
+    const std::set<std::vector<bh_index> >& get_shapes()const {return shapes;};
 
     /* Add an instruction to the kernel
      *
