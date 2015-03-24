@@ -88,7 +88,7 @@ def sign(x):
     if x>0: return 1
     return 0
 
-def random_system(x_max, y_max, z_max, n, b):
+def random_system(x_max, y_max, z_max, n, b, B):
     """Generate a galaxy of random bodies"""
 
     solarsystem = {'m':np.empty(n), 'x':np.empty(n), 'y':np.empty(n),'z':np.empty(n),\
@@ -101,11 +101,11 @@ def random_system(x_max, y_max, z_max, n, b):
     solarsystem['vy'][0]= 0
     solarsystem['vz'][0]= 0
     for i in xrange(1,n):
-        px, py,pz = np.random.random(), np.random.random(), np.random.random()*.01
-        dist = (1.0/np.sqrt(px*px+py*py+pz*pz))-(.8-np.random.random()*.1)
-        px = x_max*px*dist*sign(.5-np.random.random())
-        py = y_max*py*dist*sign(.5-np.random.random())
-        pz = z_max*pz*dist*sign(.5-np.random.random())
+        px, py,pz = B.random_array((1,)), B.random_array((1,)), B.random_array((1,))*.01
+        dist = (1.0/np.sqrt(px*px+py*py+pz*pz))-(.8-B.random_array((1,))*.1)
+        px = x_max*px*dist*sign(.5-B.random_array((1,)))
+        py = y_max*py*dist*sign(.5-B.random_array((1,)))
+        pz = z_max*pz*dist*sign(.5-B.random_array((1,)))
         solarsystem['x'][i], solarsystem['y'][i], solarsystem['z'][i] = px, py, pz
         magv = circlev(px,py, pz)
 
@@ -115,16 +115,16 @@ def random_system(x_max, y_max, z_max, n, b):
         vy   = sign(px)*np.sin(thetav)*magv
         vz   = 0
         solarsystem['vx'][i], solarsystem['vy'][i], solarsystem['vz'][i] = vx, vy, vz
-        solarsystem['m'][i] = np.random.random()*solarmass*10+1e20;
+        solarsystem['m'][i] = B.random_array((1,))*solarmass*10+1e20;
 
     astoroids = {'m':np.empty(b), 'x':np.empty(b), 'y':np.empty(b),'z':np.empty(b),\
                  'vx':np.empty(b), 'vy':np.empty(b),'vz':np.empty(b)}
     for i in xrange(b):
-        px, py,pz = np.random.random(), np.random.random(), np.random.random()*.01
-        dist = (1.0/np.sqrt(px*px+py*py+pz*pz))-(np.random.random()*.1)
-        px = x_max*px*dist*sign(.5-np.random.random())
-        py = y_max*py*dist*sign(.5-np.random.random())
-        pz = z_max*pz*dist*sign(.5-np.random.random())
+        px, py,pz = B.random_array((1,)), B.random_array((1,)), B.random_array((1,))*.01
+        dist = (1.0/np.sqrt(px*px+py*py+pz*pz))-(B.random_array((1,))*.1)
+        px = x_max*px*dist*sign(.5-B.random_array((1,)))
+        py = y_max*py*dist*sign(.5-B.random_array((1,)))
+        pz = z_max*pz*dist*sign(.5-B.random_array((1,)))
         astoroids['x'][i], astoroids['y'][i], astoroids['z'][i] = px, py, pz
         magv = circlev(px,py, pz)
 
@@ -135,7 +135,7 @@ def random_system(x_max, y_max, z_max, n, b):
         vz   = 0
         astoroids['vx'][i], astoroids['vy'][i], astoroids['vz'][i] = vx, vy, vz
 
-        astoroids['m'][i] = np.random.random()*solarmass*10+1e14;
+        astoroids['m'][i] = B.random_array((1,))*solarmass*10+1e14;
 
     return solarsystem, astoroids
 
@@ -211,7 +211,7 @@ def main():
     dt = 1e12
 
     print("INITIALIZING SYSTEM")
-    solarsystem, astoroids = random_system(x_max, y_max, z_max, num_planets, num_asteroids)
+    solarsystem, astoroids = random_system(x_max, y_max, z_max, num_planets, num_asteroids, B)
     if B.verbose:
         P3 = gfx_init(x_max, y_max, z_max)
     print("I WILL START NOW")

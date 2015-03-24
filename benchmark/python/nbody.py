@@ -91,14 +91,14 @@ def diagonal(ary, offset=0):
     return ary_diag
 
 
-def random_galaxy(N, dtype=np.float64):
+def random_galaxy(N, B, dtype=np.float64):
     """Generate a galaxy of random bodies"""
 
     galaxy = {            # We let all bodies stand still initially
-        'm':    (np.array(np.random.random(N), dtype=dtype) + dtype(10)) * dtype(m_sol/10),
-        'x':    (np.array(np.random.random(N), dtype=dtype) - dtype(0.5)) * dtype(r_ly/100),
-        'y':    (np.array(np.random.random(N), dtype=dtype) - dtype(0.5)) * dtype(r_ly/100),
-        'z':    (np.array(np.random.random(N), dtype=dtype) - dtype(0.5)) * dtype(r_ly/100),
+        'm':    (B.random_array((N,), dtype=dtype) + dtype(10)) * dtype(m_sol/10),
+        'x':    (B.random_array((N,), dtype=dtype) - dtype(0.5)) * dtype(r_ly/100),
+        'y':    (B.random_array((N,), dtype=dtype) - dtype(0.5)) * dtype(r_ly/100),
+        'z':    (B.random_array((N,), dtype=dtype) - dtype(0.5)) * dtype(r_ly/100),
         'vx':   np.zeros(N, dtype=dtype),
         'vy':   np.zeros(N, dtype=dtype),
         'vz':   np.zeros(N, dtype=dtype)
@@ -165,7 +165,7 @@ def main():
     if B.inputfn:
         galaxy = B.load_arrays(B.inputfn)
     else:
-        galaxy = random_galaxy(N, B.dtype)
+        galaxy = random_galaxy(N, B, B.dtype)
 
     if B.dumpinput:
         B.dump_arrays("nbody", galaxy)
