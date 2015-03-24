@@ -194,6 +194,13 @@ string _cast(string type, string object)
     return ss.str();
 }
 
+string _comment(string comment)
+{
+    stringstream ss;
+    ss << "// " << comment;
+    return ss.str();
+}
+
 string _end(void)
 {
     stringstream ss;
@@ -951,5 +958,27 @@ string _omp_reduction_oper(OPERATOR oper)
     }
 }
 
+string _omp_critical(string expr)
+{
+    stringstream ss;
+    ss << "#pragma omp critical" << endl;
+    ss << expr;
+    return ss.str();
+}
+
+string _omp_atomic(string expr)
+{
+    stringstream ss;
+    ss << "#pragma omp atomic" << endl;
+    ss << expr;
+    return ss.str();
+}
+
+string _beef(string info)
+{
+    stringstream ss;
+    ss << "-{[ HERE IS A BEEF: " << info << " ]}-";
+    return ss.str();
+}
 
 }}}}

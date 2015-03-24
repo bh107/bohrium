@@ -32,93 +32,13 @@ string Operand::first(void)
     return ss.str();
 }
 
-string Operand::stepsize(uint32_t dim)
-{
-    stringstream ss;
-    ss << name() << "_stepsize";
-    switch(meta().ndim -1 - dim) {
-        case 2:
-            ss << "_tld";
-            break;
-        case 1:
-            ss << "_sld";
-            break;
-        case 0:
-            ss << "_ld";
-            break;
-
-        default:
-            ss << "__ND stepsize is not constant but variable__";
-            break;
-    }
-
-    return ss.str();
+string Operand::layout(void) {
+    return layout_text(meta().layout);    
 }
 
-string Operand::stridevar(uint32_t dim)
+string Operand::etype(void)
 {
-    stringstream ss;
-    ss << name() << "_stride";
-    switch(meta().ndim -1 - dim) {
-        case 2:
-            ss << "_tld";
-            break;
-        case 1:
-            ss << "_sld";
-            break;
-        case 0:
-            ss << "_ld";
-            break;
-
-        default:
-            ss << "__ND stepsize is not constant but variable__";
-            break;
-    }
-
-    return ss.str();
-}
-
-string Operand::stride_inner(void)
-{
-    stringstream ss;
-    ss << name() << "_stride_inner";
-    return ss.str();
-}
-
-string Operand::outer_offset(void)
-{
-    stringstream ss;
-    ss << name() << "_outer_offset";
-    return ss.str();
-}
-
-string Operand::walker(void)
-{
-    stringstream ss;
-    ss << name();
-    return ss.str();
-}
-
-string Operand::walker_val(void)
-{
-    stringstream ss;
-    LAYOUT operand_layout = meta().layout;
-    switch(operand_layout) {
-        case SCALAR:
-        case SCALAR_CONST:
-        case SCALAR_TEMP:
-            ss << walker();
-            break;
-
-        case CONTIGUOUS:
-        case STRIDED:
-        case SPARSE:
-            ss << _deref(walker());
-            break;
-        default:    // TOOD: Throw an exception here...
-            break;
-    }
-    return ss.str();
+    return etype_to_ctype_text(meta().etype);
 }
 
 string Operand::ndim(void)
@@ -135,30 +55,74 @@ string Operand::shape(void)
     return ss.str();
 }
 
-string Operand::stride(void)
+string Operand::strides(void)
 {
     stringstream ss;
-    ss << name() << "_stride";
+    ss << name() << "_strides";
     return ss.str();
 }
 
-string Operand::layout(void) {
-    return layout_text(meta().layout);    
+string Operand::stride_inner(void)
+{
+    stringstream ss;
+    ss << name() << "_stride_inner";
+    return ss.str();
 }
 
-string Operand::etype(void)
+string Operand::stride_axis(void)
 {
-    return etype_to_ctype_text(meta().etype);
+    stringstream ss;
+    ss << name() << "_stride_axis";
+    return ss.str();
 }
 
-uint64_t Operand::local_id(void)
+string Operand::accu(void)
 {
-    return local_id_;
+    stringstream ss;
+    ss << name() << "_accu";
+    return ss.str();
+}
+
+string Operand::walker(void)
+{
+    stringstream ss;
+    ss << name();
+    return ss.str();
+}
+
+string Operand::walker_val(void)
+{
+    stringstream ss;
+
+    switch(meta().layout) {
+        case SCALAR_TEMP:
+        case SCALAR_CONST:
+        case SCALAR:
+        case CONTRACTABLE:
+            ss << walker();
+            break;
+
+        case CONSECUTIVE:
+        case CONTIGUOUS:
+        case STRIDED:
+            ss << _deref(walker());
+            break;
+
+        case SPARSE:
+            ss << _beef("Non-implemented LAYOUT.");
+            break;
+    }
+    return ss.str();
 }
 
 operand_t& Operand::meta(void)
 {
     return *operand_;
+}
+
+uint64_t Operand::local_id(void)
+{
+    return local_id_;
 }
 
 }}}}

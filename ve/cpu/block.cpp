@@ -30,7 +30,7 @@ void Block::clear(void)
 
     omask_ = 0;
 
-    iterspace_.layout = SCALAR; // iteraton space
+    iterspace_.layout = SCALAR_TEMP; // iteraton space
     iterspace_.ndim = 0;
     iterspace_.shape = NULL;
     iterspace_.nelem = 0;
@@ -301,20 +301,22 @@ void Block::update_iterspace(void)
         tac_t& tac = this->tac(tac_idx);
         if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
-        } else if ((tac.op & (REDUCE))>0) {     // Reductions are weird
-            if (globals_[tac.in1].layout > iterspace_.layout) {
+        }
+        if ((tac.op & REDUCE)>0) {     // Reductions are weird
+            if (globals_[tac.in1].layout >= iterspace_.layout) {
                 iterspace_.layout = globals_[tac.in1].layout;
-                if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
-                    iterspace_.ndim  = globals_[tac.in1].ndim;
-                    iterspace_.shape = globals_[tac.in1].shape;
-                }
+                iterspace_.ndim  = globals_[tac.in1].ndim;
+                iterspace_.shape = globals_[tac.in1].shape;
+            }
+            if (globals_[tac.out].layout > iterspace_.layout) {
+                iterspace_.layout = globals_[tac.out].layout;
             }
         } else {
-            switch(tac_noperands(tac)) {        // Ewise are common-case
+            switch(tac_noperands(tac)) {
                 case 3:
                     if (globals_[tac.in2].layout > iterspace_.layout) {
                         iterspace_.layout = globals_[tac.in2].layout;
-                        if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                        if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.in2].ndim;
                             iterspace_.shape = globals_[tac.in2].shape;
                         }
@@ -322,7 +324,7 @@ void Block::update_iterspace(void)
                 case 2:
                     if (globals_[tac.in1].layout > iterspace_.layout) {
                         iterspace_.layout = globals_[tac.in1].layout;
-                        if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                        if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.in1].ndim;
                             iterspace_.shape = globals_[tac.in1].shape;
                         }
@@ -330,7 +332,7 @@ void Block::update_iterspace(void)
                 case 1:
                     if (globals_[tac.out].layout > iterspace_.layout) {
                         iterspace_.layout = globals_[tac.out].layout;
-                        if ((iterspace_.layout & (ARRAY_LAYOUT))>0) {
+                        if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.out].ndim;
                             iterspace_.shape = globals_[tac.out].shape;
                         }
@@ -382,11 +384,11 @@ std::string Block::text_compact(void)
 std::string Block::text(void)
 {
     stringstream ss;
-    ss << "BLOCK [" << endl;
+    ss << "BLOCK [" << symbol() << endl;
     
     ss << "TACS (" << ntacs() << ") {" << endl;
     for(uint64_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
-        ss << tac_text(tac(tac_idx)) << endl;
+        ss << " " << tac_text(tac(tac_idx)) << endl;
     }
     ss << "}" << endl;
 
@@ -396,6 +398,7 @@ std::string Block::text(void)
         ss << " loc_idx(" << opr_idx << ")";
         ss << " gbl_idx(" << local_to_global(opr_idx) << ") = ";
         ss << operand_text(opr);
+        ss << endl;
     }
     ss << "}" << endl;
 
@@ -412,7 +415,7 @@ std::string Block::text(void)
         }
         ss << endl;
     }
-    ss << "}";
+    ss << "}" << endl;
 
     ss << "ITERSPACE {" << endl;
     ss << " LAYOUT = " << layout_text(iterspace_.layout) << "," << endl;

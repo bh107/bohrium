@@ -293,41 +293,31 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
     return true;
 }
 
-/* Determines whether it is legal to fuse with the kernel without
- * changing 'this' kernel's dependencies.
+/* Determines whether the in-/output of 'this' kernel is a subset of 'other'
  *
  * @other  The other kernel
  * @return The boolean answer
  */
-bool bh_ir_kernel::fusible_gently(const bh_ir_kernel &other) const
+bool bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other) const
 {
-    if(not fusible(other))
+    
+    if(inputs.size() > other.input_list().size())
+        return false;
+    if(outputs.size() > other.output_list().size())
         return false;
 
-    // if this kernel depends on the other
-    if(dependency(other) == 1)
-        return other.fusible_gently(*this);
-
-    for (bh_view iv: other.input_list())
+    for (const bh_view& iv: other.input_list())
     {
         int vid = get_view_id(iv);
-        if (vid > 0)
-        {
-            if (inputs.find(vid) != inputs.end() || outputs.find(vid) != outputs.end())
-                return false;
-        }
+        if (vid < 0 || inputs.find(vid) == inputs.end())
+            return false;
     }
-
-    for (bh_view ov: other.output_list())
+    for (const bh_view& iv: other.output_list())
     {
-        int vid = get_view_id(ov);
-        if (vid > 0)
-        {
-            if (outputs.find(vid) != outputs.end())
-                return false;
-        }
+        int vid = get_view_id(iv);
+        if (vid < 0 || outputs.find(vid) == outputs.end())
+            return false;
     }
-
     return true;
 }
 

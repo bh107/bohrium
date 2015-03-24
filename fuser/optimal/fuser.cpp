@@ -417,7 +417,7 @@ void do_fusion(bh_ir &bhir, FuseCache &cache)
 //        cout << endl << "Starting new round." << endl;
         GraphDW dag;
         from_kernels(kernel_list, dag);
-        fuse_gentle(dag);
+        fuse_gently(dag);
         dag.transitive_reduction();
         assert(dag_validate(dag.bglD()));
 

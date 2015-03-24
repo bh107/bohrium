@@ -1,53 +1,27 @@
 #!/usr/bin/env python
 import sys
 
-if len(sys.argv) > 1:
-    import bohrium as np
-else:
-    import numpy as np
+def test_gauss(np,bohrium, shape):
+    a = np.arange(5, shape[0]*shape[1]+5,dtype=np.float32).reshape(shape)
+    for c in xrange(1, a.shape[0]):
+        a[c:,c-1:] = a[c:,c-1:] - (a[c:,c-1]/a[c-1,c-1:c])[:,None] * a[c-1,c-1:]
+        if bohrium:
+            np.flush(a)
+    a /= np.diagonal(a)[:,None]
 
-def test_range(n):
-    a = np.arange(1,n+1)
-    b = a
-    c = a
-    r = ((b+c)*b)/c
-    return r
+    return a
 
-def test_range(n):
-    a = np.arange(1,n+1)
-    b = a[::2]
-    c = a[::2]
-    r = ((b+c)*b)/c
-    return r
+def test_reduce(np, bohrium, shape):
 
-def test_random(n):
-    a = np.random.random(n)
-    b = a
-    c = a
-    r = ((b+c)*b)/c
-    return r
-
-def test_ones(n):
-    a = np.ones((n,n,n,n),dtype=np.float32)
-    #a = np.ones((n, n,n))
-    b = a[::2]
-    c = a[::2]
-    
-    return ((b+c)*b)/c
-
-def prod(items):
-    acc = 1
-    for i in items:
-        acc *= i
-    return acc
-
-def test_reduce(shape):
-    #a = np.ones(1000).reshape(10,10,10)[:,:,::2]
-    a = np.ones(prod(shape), dtype=np.float32).reshape(*shape)
-    return np.add.reduce(a, axis=0) 
-    #return np.add.reduce(b) 
+    return np.add.reduce(np.arange(0, shape[0]*shape[1]).reshape(shape),1)
 
 if __name__ == "__main__":
-    print(test_reduce((3,4,5)))
-    #print(test_range(20))
-    #print(test_random(20))
+
+    print("NUMPY")
+    import numpy as np
+    print test_reduce(np, False, (10, 10))
+
+    print("BOHRIUM")
+    import bohrium as np
+    print test_reduce(np, True, (10, 10))
+

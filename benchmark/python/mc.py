@@ -25,6 +25,9 @@ def main():
     R = montecarlo_pi(N, I)
     B.stop()
     B.pprint()
+    if B.verbose:
+        print(R)
+
 
 if __name__ == "__main__":
     main()

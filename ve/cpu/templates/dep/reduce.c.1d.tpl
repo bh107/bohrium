@@ -10,7 +10,8 @@
     const int64_t work_split= iterspace->nelem / nworkers;
     const int64_t work_spill= iterspace->nelem % nworkers;
 
-    *({{OPD_OUT}}_first) = {{NEUTRAL_ELEMENT}};
+    {{WALKER_INNER_DIM}}
+	{{ACCU_OPD_INIT}}
 
     #pragma omp parallel num_threads(nworkers)
     {
@@ -24,27 +25,34 @@
             work = work_split;
             work_offset = tid * work + work_spill;
         }
-        work_end = work_offset+work;
+        work_end = work_offset + work;
 
         if (work) {
-        // Operand declaration(s)
+
+        // Walker declaration(s) - begin
         {{WALKER_DECLARATION}}
-        // Operand offsets(s)
+        // Walker declaration(s) - end
+
+        // Walker offset(s) - begin
         {{WALKER_OFFSET}}
-        // Stepsize
-        {{WALKER_STEPSIZE}}
+        // Walker offset(s) - end
 
-        {{ETYPE}} accu = *({{OPD_IN1}});
+        // Stride of innermoster dimension - begin
+        {{WALKER_STRIDE_INNER}}
+        // Stride of innermoster dimension - end
+
+		{{ACCU_LOCAL_DECLARE}}
         {{PRAGMA_SIMD}}
-        for (int64_t eidx = work_offset+1; eidx<work_end; ++eidx) {
-            // Increment operands
-            {{WALKER_STEP_LD}}
+        for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
+            // Apply operator(s) on operands - begin
+            {{OPERATIONS}}
+            // Apply operator(s) on operands - end
 
-            // Apply operator(s)
-            {{REDUCE_OPER}}
+            // Walker step INNER - begin
+            {{WALKER_STEP_INNER}}
+            // Walker step INNER - end
         }
-        {{REDUCE_SYNC}}
-        {{REDUCE_OPER_COMBINE}}
+        {{ACCU_OPD_SYNC}}
         }
     }
 }

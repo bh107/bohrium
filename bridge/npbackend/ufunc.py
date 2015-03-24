@@ -294,8 +294,8 @@ class Ufunc(object):
         else:
             axis = list(axis)#We reduce multiple dimensions
 
-        #When reducting booleans we count the number of True values
-        if dtype_equal(ary, np.bool):
+        #When reducting booleans numerically, we count the number of True values
+        if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
             ary = array_create.array(ary, dtype=np.uint64)
 
         #Check for out of bounds and convert negative axis values

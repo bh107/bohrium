@@ -63,6 +63,9 @@ enum FuseModel
 /* Like same shape but includes random */
     SAME_SHAPE_RANGE_RANDOM,
 
+/* Like same shape but includes random, range, and reduction to scalar */
+    SAME_SHAPE_GENERATE_1DREDUCE,
+
 /* The number of models in this enum */
     NUM_OF_MODELS
 };
