@@ -716,131 +716,131 @@ void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = ADD;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_BITWISE_AND_REDUCE:
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = BITWISE_AND;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_BITWISE_OR_REDUCE:
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = BITWISE_OR;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_BITWISE_XOR_REDUCE:
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = BITWISE_XOR;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_LOGICAL_AND_REDUCE:
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = LOGICAL_AND;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_LOGICAL_OR_REDUCE:
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = LOGICAL_OR;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_LOGICAL_XOR_REDUCE:
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = LOGICAL_XOR;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_MAXIMUM_REDUCE:
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = MAXIMUM;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_MINIMUM_REDUCE:
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = MINIMUM;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_MULTIPLY_REDUCE:
                 in1 = symbol_table.map_operand(instr, 1);
                 in2 = symbol_table.map_operand(instr, 2);
 
-                tacs[idx].op    = REDUCE;  // TAC
+                tacs[idx].op    = REDUCE_PARTIAL;  // TAC
                 tacs[idx].oper  = MULTIPLY;
                 tacs[idx].ext   = NULL;
                 tacs[idx].out   = out;
                 tacs[idx].in1   = in1;
                 tacs[idx].in2   = in2;
             
-                omask |= REDUCE;    // Operationmask
+                omask |= REDUCE_PARTIAL;    // Operationmask
                 break;
             case BH_ADD_ACCUMULATE:
                 in1 = symbol_table.map_operand(instr, 1);

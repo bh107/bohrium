@@ -452,7 +452,7 @@ string Walker::operations(void)
                 ) << _end(oper_description(tac));
                 break;
 
-            case REDUCE:
+            case REDUCE_PARTIAL:
                 inner_opds_.insert(tac.in1);
 
                 outer_opds_.insert(tac.in1);
@@ -539,7 +539,7 @@ string Walker::generate_source(void)
     for(kernel_tac_iter tit=kernel_.tacs_begin();
         tit != kernel_.tacs_end();
         ++tit) {
-        if ((((*tit)->op) & (REDUCE|SCAN))>0) {
+        if ((((*tit)->op) & (REDUCE_PARTIAL|SCAN))>0) {
             tac = *tit;
         }
     }
@@ -575,7 +575,7 @@ string Walker::generate_source(void)
     // REDUCE on COLLAPSIBLE LAYOUT with RANK == 1
     } else if (((kernel_.iterspace().meta().layout & COLLAPSIBLE)>0) \
         and ((kernel_.omask() & SCAN)==0)                     \
-        and (not((rank>1) and ((kernel_.omask() & REDUCE)>0)))) {
+        and (not((rank>1) and ((kernel_.omask() & REDUCE_PARTIAL)>0)))) {
         plaid = "walker.collapsed";
 
         subjects["WALKER_INNER_DIM"]    = _declare_init(
@@ -588,7 +588,7 @@ string Walker::generate_source(void)
         subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
 
         // Reduction specfics
-        if ((kernel_.omask() & REDUCE)>0) {
+        if ((kernel_.omask() & REDUCE_PARTIAL)>0) {
             // Initialize the accumulator 
             subjects["ACCU_OPD_INIT"] = _line(_assign(
                 _deref(out->first()),
@@ -608,7 +608,7 @@ string Walker::generate_source(void)
     } else if ((kernel_.omask() & SCAN) == 0) {
 
         // MAP | ZIP
-        if ((kernel_.omask() & REDUCE)==0) {
+        if ((kernel_.omask() & REDUCE_PARTIAL)==0) {
             plaid = "walker.inner";
 
             subjects["WALKER_INNER_DIM"]    = _declare_init(
@@ -620,7 +620,7 @@ string Walker::generate_source(void)
             subjects["WALKER_STEP_OUTER"] = step_fwd_outer();
             subjects["WALKER_STEP_INNER"] = step_fwd_inner();
 
-        // REDUCE
+        // REDUCE PARTIAL
         } else {
             plaid = "walker.axis";
 

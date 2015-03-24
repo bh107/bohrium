@@ -89,9 +89,8 @@ typedef struct iterspace {
 #define COLLAPSIBLE     ( SCALAR | SCALAR_CONST | CONTRACTABLE | CONTIGUOUS | CONSECUTIVE )
 
 #define EWISE           ( MAP | ZIP | GENERATE )
-#define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE | SCAN )
+#define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE_COMPLETE | REDUCE_PARTIAL | SCAN )
 #define NBUILTIN_OPS    %echo $len($ops)-1
 #define NBUILTIN_OPERS  %echo $len($opers)-1
-#define NON_FUSABLE     ( REDUCE | SCAN | EXTENSION )
 
 #endif

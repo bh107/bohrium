@@ -34,7 +34,21 @@
 
 {
     "id": 4,
-    "name": "REDUCE",
+    "name": "REDUCE_COMPLETE",
+    "layouts": [
+        "SCK", "SSK", "SCK", "SSK"
+    ],
+    "operators": [
+        "ADD", "MULTIPLY",
+        "MINIMUM", "MAXIMUM", 
+        "LOGICAL_AND", "LOGICAL_OR", "LOGICAL_XOR",
+        "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR"
+    ]
+},
+
+{
+    "id": 8,
+    "name": "REDUCE_PARTIAL",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK"
     ],
@@ -47,7 +61,7 @@
 },
 
 {
-    "id": 8,
+    "id": 16,
     "name": "SCAN",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK"
@@ -58,7 +72,7 @@
 },
 
 {
-    "id": 16,
+    "id": 32,
     "name": "GENERATE",
     "layouts": [
         "K", "CKK", ""
@@ -69,7 +83,7 @@
 },
 
 {
-    "id": 32,
+    "id": 64,
     "name": "SYSTEM",
     "layouts": ["C", "S"],
     "operators": [
@@ -78,7 +92,7 @@
 },
 
 {
-    "id": 64,
+    "id": 128,
     "name": "EXTENSION",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK",
@@ -89,7 +103,7 @@
 },
 
 {
-    "id": 128,
+    "id": 256,
     "name": "NOOP",
     "layouts": [""],
     "operators": [""]

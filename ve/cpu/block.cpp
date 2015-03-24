@@ -182,7 +182,7 @@ bool Block::symbolize(void)
         tacs << core::operation_text(tac.op);
         tacs << "-" << core::operator_text(tac.oper);
         tacs << "-";
-        size_t ndim = (tac.op == REDUCE) ? globals_[tac.in1].ndim : globals_[tac.out].ndim;
+        size_t ndim = ((tac.op & (REDUCE_COMPLETE|REDUCE_PARTIAL))>0) ? globals_[tac.in1].ndim : globals_[tac.out].ndim;
         if (ndim <= 3) {
             tacs << ndim;
         } else {
@@ -302,7 +302,7 @@ void Block::update_iterspace(void)
         if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
-        if ((tac.op & REDUCE)>0) {     // Reductions are weird
+        if ((tac.op & (REDUCE_COMPLETE|REDUCE_PARTIAL))>0) {     // Reductions are weird
             if (globals_[tac.in1].layout >= iterspace_.layout) {
                 iterspace_.layout = globals_[tac.in1].layout;
                 iterspace_.ndim  = globals_[tac.in1].ndim;

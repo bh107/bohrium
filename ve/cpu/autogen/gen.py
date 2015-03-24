@@ -21,7 +21,7 @@ class BohriumTemplate(Template):
 
         return '' if cur_id == last_id else ','
 
-def forward_everything(opcodes, ops, opers, types, layouts, cexprs):
+def forward_everything(opcodes, ops, opers, types, layouts):
     """This is for those functions that do not need some sort of mangling, they just want it all."""
 
     return {
@@ -29,17 +29,16 @@ def forward_everything(opcodes, ops, opers, types, layouts, cexprs):
         'ops':      ops,
         'opers':    opers,
         'types':    types,
-        'layouts':  layouts,
-        'cexprs':    cexprs
+        'layouts':  layouts
     }
 
-def utils_mapping(opcodes, ops, opers, types, layouts, cexprs):
-    return forward_everything(opcodes, ops, opers, types, layouts, cexprs)
+def utils_mapping(opcodes, ops, opers, types, layouts):
+    return forward_everything(opcodes, ops, opers, types, layouts)
 
-def tac(opcodes, ops, opers, types, layouts, cexprs):
-    return forward_everything(opcodes, ops, opers, types, layouts, cexprs)
+def tac(opcodes, ops, opers, types, layouts):
+    return forward_everything(opcodes, ops, opers, types, layouts)
 
-def instrs_to_tacs(opcodes, ops, opers, types, layouts, cexprs):
+def instrs_to_tacs(opcodes, ops, opers, types, layouts):
     """Construct the data need to create a map from bh_instruction to tac_t."""
 
     ewise_u     = []
@@ -60,7 +59,7 @@ def instrs_to_tacs(opcodes, ops, opers, types, layouts, cexprs):
         else:
             if 'REDUCE' in opcode:
                 operator = '_'.join(opcode.split('_')[1:-1])
-                reductions.append([opcode, 'REDUCE', operator, 2])
+                reductions.append([opcode, 'REDUCE_PARTIAL', operator, 2])
             elif 'ACCUMULATE' in opcode:
                 operator = '_'.join(opcode.split('_')[1:-1])
                 scans.append([opcode, 'SCAN', operator, 2])
@@ -101,7 +100,6 @@ def main(self):
     opers   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'operators')))
     types   = json.load(open("%s%s%s.json" % (prefix, os.sep, 'types')))
     layouts = json.load(open("%s%s%s.json" % (prefix, os.sep, 'layouts')))
-    cexprs  = json.load(open("%s%s%s.json" % (prefix, os.sep, 'cexpressions')))
 
     # Map template names to mapping-functons and fill out the template
     for fn in glob.glob('templates/*.tpl'):
@@ -109,7 +107,7 @@ def main(self):
         if fn in self.__dict__:
             template = BohriumTemplate(
                 file = "%s%s%s.tpl" % ("templates", os.sep, fn),
-                searchList=globals()[fn](opcodes, ops, opers, types, layouts, cexprs)
+                searchList=globals()[fn](opcodes, ops, opers, types, layouts)
             )
             with open('output/%s.cpp' % fn, 'w') as fd:
                 fd.write(str(template))

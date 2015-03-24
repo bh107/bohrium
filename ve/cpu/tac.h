@@ -29,12 +29,13 @@ typedef struct
 typedef enum OPERATION {
     MAP        = 1,
     ZIP        = 2,
-    REDUCE     = 4,
-    SCAN       = 8,
-    GENERATE   = 16,
-    SYSTEM     = 32,
-    EXTENSION  = 64,
-    NOOP       = 128
+    REDUCE_COMPLETE = 4,
+    REDUCE_PARTIAL = 8,
+    SCAN       = 16,
+    GENERATE   = 32,
+    SYSTEM     = 64,
+    EXTENSION  = 128,
+    NOOP       = 256
 } OPERATION;
 
 typedef enum OPERATOR {
@@ -166,9 +167,8 @@ typedef struct iterspace {
 #define COLLAPSIBLE     ( SCALAR | SCALAR_CONST | CONTRACTABLE | CONTIGUOUS | CONSECUTIVE )
 
 #define EWISE           ( MAP | ZIP | GENERATE )
-#define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE | SCAN )
-#define NBUILTIN_OPS    7
+#define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE_COMPLETE | REDUCE_PARTIAL | SCAN )
+#define NBUILTIN_OPS    8
 #define NBUILTIN_OPERS  62
-#define NON_FUSABLE     ( REDUCE | SCAN | EXTENSION )
 
 #endif
