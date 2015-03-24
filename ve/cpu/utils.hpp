@@ -37,6 +37,7 @@ std::string omask_aop_text(uint32_t omask);
 std::string operation_text(OPERATION op);
 std::string operator_text(OPERATOR op);
 std::string operand_text(const operand_t& operand);
+std::string operand_access_text(const operand_t& operand);
 
 std::string etype_text(ETYPE etype);
 std::string etype_text_shand(ETYPE etype);
@@ -98,6 +99,11 @@ void instrs_to_tacs(bh_ir& bhir,
  *  @returns True when the layout is contiguous, false othervise.
  */
 bool contiguous(const operand_t& arg);
+
+/**
+ *  Determine LAYOUT of the given operand by inspecting the stride/shape.
+ */
+LAYOUT determine_layout(const operand_t& arg);
 
 /**
  *  Determines whether two operand have compatible meta-data.

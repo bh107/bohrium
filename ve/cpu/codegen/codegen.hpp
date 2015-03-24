@@ -43,6 +43,7 @@ std::string _const_ptr(std::string object);
 
 std::string _assert_not_null(std::string object);
 std::string _assign(std::string lvalue, std::string rvalue);
+std::string _comment(std::string comment);
 std::string _end(void);
 std::string _end(std::string comment);
 std::string _line(std::string object);
@@ -189,6 +190,11 @@ std::string _cimag(std::string right);
 
 std::string _omp_reduction_oper(OPERATOR oper);
 
+std::string _omp_critical(std::string expr);
+std::string _omp_atomic(std::string expr);
+
+std::string _beef(std::string info);
+
 class Operand
 {
 public:
@@ -196,20 +202,20 @@ public:
     Operand(operand_t* operand, uint32_t local_id);
 
     std::string name(void);
-    
-    std::string walker(void);
-    std::string walker_val(void);
 
     std::string first(void);
     std::string layout(void);
     std::string etype(void);
     std::string ndim(void);
     std::string shape(void);
-    std::string stride(void);
-    std::string stridevar(uint32_t dim);
+
+    std::string strides(void);
     std::string stride_inner(void);
-    std::string stepsize(uint32_t dim);
-    std::string outer_offset(void);
+    std::string stride_axis(void);
+
+    std::string accu(void);
+    std::string walker(void);
+    std::string walker_val(void);
 
     operand_t& meta(void);
     uint64_t local_id(void);
@@ -287,8 +293,6 @@ public:
 
     std::string generate_source(void);
     std::string oper_neutral_element(OPERATOR oper, ETYPE etype);
-
-    std::string simd_pragma(void);
     
 private:
     std::string declare_operands(void);
@@ -296,6 +300,7 @@ private:
 
     // Construct the operator source for the tac.oper
     std::string oper(OPERATOR oper, ETYPE etype, std::string in1, std::string in2);
+    std::string synced_oper(OPERATOR oper, ETYPE etype, std::string out, std::string in1, std::string in2);
 
     /**
      *  Generate a comment describing the tac-operation.
@@ -305,20 +310,22 @@ private:
     //
     //  map / zip / flood / generate
     //
-    std::string ewise_operations(void);
 
-    std::string declare_outer_offset(uint64_t oidx);
-    std::string declare_outer_offset(void);
-    std::string declare_stridesize(uint64_t oidx);
-    std::string declare_stridesizes(void);
+    /**
+     * Construct an ordered sequence of applications of operators.
+     * also note use of operands for outer/inner.
+     */
+    std::string operations(void);
+    std::string write_expanded_scalars(void);
 
-    // Ewise walker -- innards
-    std::string ewise_declare_stepsizes(uint32_t rank);
-    std::string ewise_assign_offset(uint32_t rank);
-    std::string ewise_assign_offset(uint32_t rank, uint64_t oidx);
-    std::string step_fwd(uint32_t dim, uint64_t oidx);
-    std::string step_fwd(uint32_t dim);
+    std::string declare_stride_inner(uint64_t oidx);
+    std::string declare_stride_inner(void);
 
+    std::string declare_stride_axis(uint64_t oidx);
+    std::string declare_stride_axis(void);
+    
+    std::string assign_collapsed_offset(uint32_t rank);
+    std::string assign_collapsed_offset(uint32_t rank, uint64_t oidx);
 
     std::string step_fwd_outer(uint64_t glb_idx);
     std::string step_fwd_outer(void);
@@ -326,16 +333,18 @@ private:
     std::string step_fwd_inner(uint64_t glb_idx);
     std::string step_fwd_inner(void);
 
-    std::string declare_stride_inner(uint64_t oidx);
-    std::string declare_stride_inner(void);
+    std::string step_fwd_other(uint64_t glb_idx, std::string dimvar);
+    std::string step_fwd_other(void);
 
-    std::string reduce_par_operations(void);
-    std::string reduce_seq_operations(void);
-    
-    std::string scan_operations(void);
+    std::string step_fwd_axis(uint64_t glb_idx);
+    std::string step_fwd_axis(void);
 
     Plaid& plaid_;
     Kernel& kernel_;
+
+    std::set<uint64_t> inner_opds_; // Set of global ids for inner operands
+    std::set<uint64_t> outer_opds_; // Set of global ids for outer operands
+
 };
 
 

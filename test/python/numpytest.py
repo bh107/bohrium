@@ -71,10 +71,10 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
                     else:
                         break
 
-def gen_views(max_ndim, max_dim, iters=0, min_ndim=1):
+def gen_views(max_ndim, max_dim, iters=0, min_ndim=1, dtype="np.float32"):
     for shape in gen_shapes(max_ndim, max_dim, iters, min_ndim):
         #Base array
-        cmd = "a[0] = self.array(%s,np.float32);"%(shape)
+        cmd = "a[0] = self.array(%s,%s);"%(shape, dtype)
         yield cmd
         #Views with offset per dimension
         for d in xrange(len(shape)):

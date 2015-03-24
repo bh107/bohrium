@@ -248,42 +248,30 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
     return true;
 }
 
-/* Determines whether it is legal to fuse with the kernel without
- * changing 'this' kernel's dependencies.
+/* Determines whether the in-/output of 'this' kernel is a subset of 'other'
  *
  * @other  The other kernel
  * @return The boolean answer
  */
-bool bh_ir_kernel::fusible_gently(const bh_ir_kernel &other) const
+bool bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other) const
 {
-    if(not fusible(other))
-        return false;
-
-    //Make sure 'b' depend on 'a'
     const bh_ir_kernel *a = this;
     const bh_ir_kernel *b = &other;
-    if(this->dependency(other) == 1)
-    {
-        a = &other;
-        b = this;
-    }
 
-    if(b->input_list().size() > 0)
-    {
-        BOOST_FOREACH(const bh_view &v, a->input_list())
-        {
-            if(not aligned_view_exist(v, b->input_list()))
-                return false;
-        }
-    }
+    if(a->input_list().size() > b->input_list().size())
+        return false;
+    if(a->output_list().size() > b->output_list().size())
+        return false;
 
-    if(b->input_list().size() > 0 or b->output_list().size() > 0)
+    BOOST_FOREACH(const bh_view &v, a->input_list())
     {
-        BOOST_FOREACH(const bh_view &v, a->output_list())
-        {
-            if(not(aligned_view_exist(v, b->output_list()) or aligned_view_exist(v, b->input_list())))
-                return false;
-        }
+        if(not aligned_view_exist(v, b->input_list()))
+            return false;
+    }
+    BOOST_FOREACH(const bh_view &v, a->output_list())
+    {
+        if(not aligned_view_exist(v, b->output_list()))
+            return false;
     }
     return true;
 }

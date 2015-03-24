@@ -133,33 +133,20 @@ string Kernel::unpack_arguments(void)
     for(kernel_operand_iter oit=operands_begin(); oit != operands_end(); ++oit) {
         Operand& operand = oit->second;
         uint64_t id = operand.local_id();
+        ss << endl;
         ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
         switch(operand.meta().layout) {
             case STRIDED:       
-            case SPARSE:        // ndim, shape, stride
+            case CONSECUTIVE:
+            case CONTIGUOUS:    
+            case SCALAR:
                 ss
                 << _declare_init(
                     _ptr_const(_int64()),
-                    operand.stride(),
+                    operand.strides(),
                     _access_ptr(_index(args(), id), "stride")
                 )
                 << _end();
-            case CONTIGUOUS:    
-                //  If the iterspace is non-contiguous then we also want
-                //  strides for the CONTIGUOUS arrays for computing the OUTER offset
-                //  or for reduction and scans.
-                if (((((iterspace().meta().layout & (STRIDED|SPARSE))>0) and \
-                    (operand.meta().layout == CONTIGUOUS)                and \
-                    (iterspace().meta().ndim > 1)))                      or  \
-                    ((omask() & (SCAN|REDUCE))>0)) {
-                    ss << _declare_init(
-                        _ptr_const(_int64()),
-                        operand.stride(),
-                        _access_ptr(_index(args(), id), "stride")
-                    )
-                    << _end();
-                }
-                // "OPD_first" = operand_t->data + operand_t->start
                 ss
                 << _declare_init(
                     _ptr_const(operand.etype()),
@@ -177,7 +164,6 @@ string Kernel::unpack_arguments(void)
                 << _end();
                 break;
 
-            case SCALAR:
             case SCALAR_CONST:  // "first" = operand_t->data
                 ss << _declare_init(
                     _ptr_const(operand.etype()),
@@ -190,12 +176,16 @@ string Kernel::unpack_arguments(void)
                 << _end() 
                 << _assert_not_null(operand.first()) << _end();
                 break;
-            case SCALAR_TEMP:   // Data pointer is never used.
-            default:
+
+            case SCALAR_TEMP:
+            case CONTRACTABLE:  // Data pointer is never used.
+                ss << _comment("No unpacking needed.") << endl;
+                break;
+
+            case SPARSE:
+                ss << _beef("Unpacking not implemented for LAYOUT!");
                 break;
         }
-        ss << endl;
-
     }
     return ss.str();
 }

@@ -105,10 +105,10 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
     size_t arg_idx = ++(nsymbols_); // Candidate arg_idx if not reused
 
     if (bh_is_constant(&instr.operand[operand_idx])) {  // Constants
-        if (BH_R123 != instr.constant.type) {           // Regular
+        if (BH_R123 != instr.constant.type) {           // Regular constants
             table_[arg_idx].const_data   = &(instr.constant.value);
             table_[arg_idx].etype        = bhtype_to_etype(instr.constant.type);
-        } else {                                        // "Special"
+        } else {                                        // "Special" for BH_R123
             table_[arg_idx].etype        = UINT64;
             if (1 == operand_idx) {
                 table_[arg_idx].const_data  = &(instr.constant.value.r123.start);
@@ -138,11 +138,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         table_[arg_idx].shape    = instr.operand[operand_idx].shape;
         table_[arg_idx].stride   = instr.operand[operand_idx].stride;
 
-        if (contiguous(table_[arg_idx])) {
-            table_[arg_idx].layout = CONTIGUOUS;
-        } else {
-            table_[arg_idx].layout = STRIDED;
-        }
+        table_[arg_idx].layout   = determine_layout(table_[arg_idx]);
         table_[arg_idx].base     = instr.operand[operand_idx].base;
     }
 
@@ -164,40 +160,23 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
     return arg_idx;
 }
 
-void SymbolTable::turn_scalar(size_t symbol_idx)
+void SymbolTable::turn_contractable(size_t symbol_idx)
 {
     operand_t& operand = table_[symbol_idx];
-    operand.layout = SCALAR;
-
-    //
-    // TODO: Hmm in order for this to have effect the victim-cache allocation
-    //       needs to be changed... updating the bh_instruction might not be a good idea...
-    //       since this only works when the operations are fused... ahh just use malloc_op instead...
-    //
+    if (operand.layout == SCALAR) {
+        operand.layout = SCALAR_TEMP;
+    } else {
+        operand.layout = CONTRACTABLE;
+    }
 
     // If data is already allocated for operand then we do no lower nelem
     // since the nelem is needed by victim-cache to store it... it is important that nelem
     // correctly reflects the amount of elements for which storage is allocated.
+    /*
     if (NULL == *operand.data) {
         operand.nelem = 1;
     }
-
-    //
-    // Hmm consider: should be modify the strides?
-    //
-}
-
-void SymbolTable::turn_scalar_temp(size_t symbol_idx)
-{
-    operand_t& operand = table_[symbol_idx];
-    operand.layout = SCALAR_TEMP;
-
-    // If data is already allocated for operand then we do no lower nelem
-    // since the nelem is needed by victim-cache to store it... it is important that nelem
-    // correctly reflects the amount of elements for which storage is allocated.
-    if (NULL == *operand.data) {
-        operand.nelem = 1;
-    }
+    */
 }
 
 operand_t* SymbolTable::operands(void)

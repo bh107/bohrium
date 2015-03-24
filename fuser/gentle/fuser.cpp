@@ -37,7 +37,7 @@ static void do_fusion(bh_ir &bhir)
     using namespace bohrium::dag;
     GraphDW dag;
     from_bhir(bhir, dag);
-    fuse_gentle(dag);
+    fuse_gently(dag);
     fill_kernel_list(dag.bglD(), bhir.kernel_list);
 }
 
