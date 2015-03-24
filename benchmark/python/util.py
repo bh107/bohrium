@@ -1,5 +1,4 @@
 from __future__ import print_function
-#!/usr/bin/python
 import argparse
 import pprint
 import pickle
@@ -7,8 +6,27 @@ import time
 import sys
 import re
 
-import bohrium as bh
 import numpy as np
+
+#In order to support runs without bohrium installed, we need some import hacks
+try:
+    import numpy_force as np
+except ImportError:
+    import numpy as np
+
+def numpy_flush():
+    return
+
+def numpy_array(ary, bohrium=False):
+    return np.array(ary)
+
+try:
+    import bohrium as bh
+    toarray = bh.array
+    flush = bh.flush
+except ImportError:
+    toarray = numpy_array
+    flush = numpy_flush
 
 def t_or_f(arg):
     """Helper function to parse "True/true/TrUe/False..." as bools."""
@@ -116,7 +134,7 @@ class Benchmark:
         # Conveniently expose options to the user
         #
         self.size       = [int(i) for i in args.size.split("*")] if args.size else []
-        self.dtype      = eval("bh.%s" % args.dtype)
+        self.dtype      = eval("np.%s" % args.dtype)
         self.dumpinput  = args.dumpinput
         self.inputfn    = args.inputfn
         self.outputfn   = args.outputfn
@@ -143,17 +161,17 @@ class Benchmark:
         self.args   = args
 
     def start(self):
-        bh.flush()
+        flush()
         self.__elapsed = time.time()
 
     def stop(self):
-        bh.flush()
+        flush()
         self.__elapsed = time.time() - self.__elapsed
 
     def tofile(self, filename, arrays):
 
         for k in arrays:
-            arrays[k] = bh.array(arrays[k], bohrium=False)
+            arrays[k] = toarray(arrays[k], bohrium=False)
         np.savez(filename, **arrays)
 
     def dump_arrays(self, prefix, arrays):
@@ -186,7 +204,7 @@ class Benchmark:
 
         arrays  = {}            # Make sure arrays are in the correct space
         for k in npz:
-            arrays[k] = bh.array(npz[k], bohrium=self.bohrium)
+            arrays[k] = toarray(npz[k], bohrium=self.bohrium)
 
         del npz                # We no longer need these
 
