@@ -25,6 +25,44 @@ using namespace std;
 typedef vector<bh_instruction> ilist;
 typedef ilist::iterator ilist_iter;
 
+/*
+    The implementation currently only detects chains of reductions as produced by
+    np.sum(), it does not detect chains created by np.add.reduce(np.add.reduce()).
+    This could and should be remedied.
+
+    With the input::
+
+    "np.sum(np.ones((10,10,10)))" produces::
+
+    ADD_REDUCE(t1, a)
+    ADD_REDUCE(t2, t1)
+    ADD_REDUCE(s, t2)
+    BH_FREE(t2)
+    BH_DISCARD(t2)
+    BH_FREE(t1)
+    BH_DISCARD(t1)
+    BH_FREE(a)
+    BH_DISCARD(a)
+
+    Which the implementation handles.
+
+    np.add.reduce(np.add.reduce(np.add.reduce(np.ones((10,10,10))))) produces::
+
+    ADD_REDUCE(t1, a)
+    BH_FREE(a)
+    BH_DISCARD(a)
+    ADD_REDUCE(t2, t1)
+    BH_FREE(t1)
+    BH_DISCARD(t1)
+    ADD_REDUCE(s, t2)
+    BH_FREE(t2)
+    BH_DISCARD(t2)
+
+    There are other permutations of reduce-chains that are not detected.
+    However, the above is sufficient to start using/implementing/testing
+    complete reductions.
+*/
+
 void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* first, bh_instruction* last)
 {
     // Rewrite the first reduction as a "COMPLETE" REDUCE.
