@@ -22,6 +22,8 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op   = MAP;
                 tac.oper = IDENTITY;
+            } else if (symbol_table[tac.out].layout == SCALAR) {
+                tac.op = REDUCE_COMPLETE;
             }
             break;
 

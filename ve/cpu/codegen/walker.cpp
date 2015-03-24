@@ -452,6 +452,7 @@ string Walker::operations(void)
                 ) << _end(oper_description(tac));
                 break;
 
+            case REDUCE_COMPLETE:
             case REDUCE_PARTIAL:
                 inner_opds_.insert(tac.in1);
 
@@ -526,56 +527,70 @@ string Walker::generate_source(void)
     std::map<string, string> subjects;
     string plaid;
 
+    if ((kernel_.omask() & ARRAY_OPS)==0) { // There must be at lest one array operation
+        throw runtime_error("No array operations!");
+    }
+    if (kernel_.omask() & EXTENSION) {      // Extensions are not allowed.
+        throw runtime_error("EXTENSION in kernel");
+    }
+
+    // These are used by all kernels.
     const uint32_t rank = kernel_.iterspace().meta().ndim;
     subjects["WALKER_DECLARATION"]      = declare_operands();
     subjects["OPERATIONS"]              = operations();
     subjects["WRITE_EXPANDED_SCALARS"]  = write_expanded_scalars();
 
-    // Note: start of crappy code used by reductions / scan.
+    // Kernel contains nothing but operations on SCALARs
+    if ((kernel_.iterspace().meta().layout & SCALAR)>0) {
+        // A couple of sanitization checks
+        if ((kernel_.omask() & ACCUMULATION)>0) {
+            throw runtime_error("Accumulation in SCALAR kernel.");
+        }
+        plaid = "walker.scalar";
+        return plaid_.fill(plaid, subjects);
+    }
+
+    // Note: start of crappy code used by reduction.
     tac_t* tac = NULL;
     Operand* out = NULL;
     Operand* in1 = NULL;
     Operand* in2 = NULL;
-    for(kernel_tac_iter tit=kernel_.tacs_begin();
-        tit != kernel_.tacs_end();
-        ++tit) {
-        if ((((*tit)->op) & (REDUCE_PARTIAL|SCAN))>0) {
-            tac = *tit;
+    if ((kernel_.omask() & ACCUMULATION)>0) {
+        for(kernel_tac_iter tit=kernel_.tacs_begin();
+            tit != kernel_.tacs_end();
+            ++tit) {
+            if ((((*tit)->op) & (ACCUMULATION))>0) {
+                tac = *tit;
+            }
         }
-    }
-    if (tac) {
-        out = &kernel_.operand_glb(tac->out);
-        in1 = &kernel_.operand_glb(tac->in1);
-        in2 = &kernel_.operand_glb(tac->in2);
+        if (tac) {
+            out = &kernel_.operand_glb(tac->out);
+            in1 = &kernel_.operand_glb(tac->in1);
+            in2 = &kernel_.operand_glb(tac->in2);
 
-        subjects["OPD_OUT"] = out->name();
-        subjects["OPD_IN1"] = in1->name();
-        subjects["OPD_IN2"] = in2->name();
+            subjects["OPD_OUT"] = out->name();
+            subjects["OPD_IN1"] = in1->name();
+            subjects["OPD_IN2"] = in2->name();
 
-        subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
-        subjects["ETYPE"] = out->etype();
-        subjects["ATYPE"] = in2->etype();
-        // Declare local accumulator var
-        subjects["ACCU_LOCAL_DECLARE"] = _line(_declare_init(
-            in1->etype(),
-            out->accu(),
-            oper_neutral_element(tac->oper, in1->meta().etype)
-        ));
+            subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
+            subjects["ETYPE"] = out->etype();
+            subjects["ATYPE"] = in2->etype();
+            // Declare local accumulator var
+            subjects["ACCU_LOCAL_DECLARE"] = _line(_declare_init(
+                in1->etype(),
+                out->accu(),
+                oper_neutral_element(tac->oper, in1->meta().etype)
+            ));
+        }
     }
     // Note: end of crappy code used by reductions / scan
 
-
-    //
-    // MAP | ZIP | GENERATE on SCALAR LAYOUT of any rank
-    if ((kernel_.iterspace().meta().layout & SCALAR)>0) {
-        plaid = "walker.scalar";
-
-    // MAP | ZIP | GENERATE on COLLAPSIBLE LAYOUT of any RANK
+    // MAP | ZIP | GENERATE | REDUCE_COMPLETE on COLLAPSIBLE LAYOUT of any RANK
     // and
-    // REDUCE on COLLAPSIBLE LAYOUT with RANK == 1
-    } else if (((kernel_.iterspace().meta().layout & COLLAPSIBLE)>0) \
-        and ((kernel_.omask() & SCAN)==0)                     \
-        and (not((rank>1) and ((kernel_.omask() & REDUCE_PARTIAL)>0)))) {
+    // REDUCE_PARTIAL on with RANK == 1
+    if (((kernel_.iterspace().meta().layout & COLLAPSIBLE)>0)       \
+    and ((kernel_.omask() & SCAN)==0)                               \
+    and (not((rank>1) and ((kernel_.omask() & REDUCE_PARTIAL)>0)))) {
         plaid = "walker.collapsed";
 
         subjects["WALKER_INNER_DIM"]    = _declare_init(
@@ -588,7 +603,7 @@ string Walker::generate_source(void)
         subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
 
         // Reduction specfics
-        if ((kernel_.omask() & REDUCE_PARTIAL)>0) {
+        if ((kernel_.omask() & REDUCTION)>0) {
             // Initialize the accumulator 
             subjects["ACCU_OPD_INIT"] = _line(_assign(
                 _deref(out->first()),
@@ -605,10 +620,11 @@ string Walker::generate_source(void)
         }
 
     // MAP | ZIP | REDUCE on STRIDED LAYOUT and RANK > 1
-    } else if ((kernel_.omask() & SCAN) == 0) {
+    } else if ((kernel_.omask() & (EWISE|REDUCTION))>0) {
 
-        // MAP | ZIP
-        if ((kernel_.omask() & REDUCE_PARTIAL)==0) {
+        // MAP | ZIP | REDUCE_COMPLETE and NOT REDUCE_PARTIAL
+        if (((kernel_.omask() & (EWISE|REDUCE_COMPLETE))>0) and \
+            ((kernel_.omask() & REDUCE_PARTIAL) == 0)) {
             plaid = "walker.inner";
 
             subjects["WALKER_INNER_DIM"]    = _declare_init(
@@ -620,8 +636,26 @@ string Walker::generate_source(void)
             subjects["WALKER_STEP_OUTER"] = step_fwd_outer();
             subjects["WALKER_STEP_INNER"] = step_fwd_inner();
 
-        // REDUCE PARTIAL
-        } else {
+            // Reduction specfics
+            if ((kernel_.omask() & REDUCE_COMPLETE)>0) {
+                // Initialize the accumulator 
+                subjects["ACCU_OPD_INIT"] = _line(_assign(
+                    _deref(out->first()),
+                    oper_neutral_element(tac->oper, in1->meta().etype)
+                ));
+                // Syncronize accumulator and local accumulator var
+                subjects["ACCU_OPD_SYNC"] = _line(synced_oper(
+                    tac->oper,
+                    in1->meta().etype,
+                    _deref(out->first()),
+                    _deref(out->first()),
+                    out->accu()
+                ));
+            }
+
+        // MAP | ZIP | REDUCE_PARTIAL and NOT REDUCE_COMPLETE
+        } else if (((kernel_.omask() & (EWISE|REDUCE_PARTIAL))>0) and \
+            ((kernel_.omask() & REDUCE_COMPLETE) == 0)) {
             plaid = "walker.axis";
 
             subjects["WALKER_AXIS_DIM"] = _line(_declare_init(
@@ -632,17 +666,23 @@ string Walker::generate_source(void)
             subjects["WALKER_STRIDE_AXIS"]  = declare_stride_axis();
             subjects["WALKER_STEP_OTHER"]   = step_fwd_other();
             subjects["WALKER_STEP_AXIS"]    = step_fwd_axis();
-            if (out->meta().layout == SCALAR) {
-                subjects["ACCU_LOCAL_WRITEBACK"]= _line(_assign(
-                    _deref(out->first()),
-                    out->accu()
-                ));
-            } else {
-                subjects["ACCU_LOCAL_WRITEBACK"]= _line(_assign(
-                    out->walker_val(),
-                    out->accu()
-                ));
+
+            // Reduction specfics
+            if ((kernel_.omask() & REDUCE_PARTIAL)>0) {
+                if (out->meta().layout == SCALAR) {
+                    subjects["ACCU_LOCAL_WRITEBACK"]= _line(_assign(
+                        _deref(out->first()),
+                        out->accu()
+                    ));
+                } else {
+                    subjects["ACCU_LOCAL_WRITEBACK"]= _line(_assign(
+                        out->walker_val(),
+                        out->accu()
+                    ));
+                }
             }
+        } else {
+            throw runtime_error("Unexpected omask.");
         }
 
     // SCAN on STRIDED LAYOUT of any RANK
