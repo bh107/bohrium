@@ -59,6 +59,11 @@ ETYPE bhtype_to_etype(bh_type bhtype);
  */
 std::string tac_text(const tac_t& tac);
 
+/**
+ * Returns a textual representation of a tac including operand info.
+ */
+std::string tac_text(const tac_t& tac, SymbolTable& symbol_table);
+
 int tac_noperands(const tac_t& tac);
 
 /**
