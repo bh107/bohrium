@@ -83,7 +83,7 @@ children = cpu
 [complete_reduction]
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_complete_reduction${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = topological
+children = node
 
 #
 # Engines

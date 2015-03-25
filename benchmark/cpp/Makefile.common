@@ -7,7 +7,7 @@ BENCHMARKS = black_scholes
 
 CXX=g++
 DEBUG=-g
-CXXFLAGS=-Wall -Wextra -pedantic -O3 -std=c++0x -Wno-variadic-macros $(DEBUG)
+CXXFLAGS=-Wall -Wextra -pedantic -O3 -std=c++11 -Wno-variadic-macros $(DEBUG)
 INCLUDE=-L/home/safl/.local/lib
 INCLUDE+=-I$(ROOT)/include 
 INCLUDE+=-I$(ROOT)/bridge/cpp

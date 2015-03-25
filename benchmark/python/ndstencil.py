@@ -54,7 +54,7 @@ def main():
     if B.inputfn:
         world = B.load_array()
     else:
-        world = np.array(np.random.random(shape(D, size)), dtype=B.dtype)
+        world = np.array(B.random_array(shape(D, size)), dtype=B.dtype)
 
     stencil = [world[s] for s in [map((lambda se : slice(se[0],se[1])),i)
                                   for i in it.product([(0,-2),(1,-1),(2,None)],

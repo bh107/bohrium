@@ -1,5 +1,4 @@
 from __future__ import print_function
-#!/usr/bin/python
 import argparse
 import pprint
 import pickle
@@ -7,8 +6,27 @@ import time
 import sys
 import re
 
-import bohrium as bh
 import numpy as np
+
+#In order to support runs without bohrium installed, we need some import hacks
+try:
+    import numpy_force as np
+except ImportError:
+    import numpy as np
+
+def numpy_flush():
+    return
+
+def numpy_array(ary, bohrium=False, dtype=np.float64):
+    return np.array(ary, dtype=dtype)
+
+try:
+    import bohrium as bh
+    toarray = bh.array
+    flush = bh.flush
+except ImportError:
+    toarray = numpy_array
+    flush = numpy_flush
 
 def t_or_f(arg):
     """Helper function to parse "True/true/TrUe/False..." as bools."""
@@ -36,16 +54,6 @@ class Benchmark:
         self.__elapsed  = 0.0           # The quantity measured
         self.__script   = sys.argv[0]   # The script being run
 
-        # Just for reference... these are the options parsed from cmd-line.
-        options = [
-            'size',         'dtype',
-            'inputfn',      'dumpinput',
-            'outputfn'
-            'target',      'bohrium',
-            'no_extmethods',
-            'visualize',    'verbose',
-        ]
-
         # Construct argument parser
         p = argparse.ArgumentParser(description='Benchmark runner for npbackend.')
 
@@ -63,9 +71,13 @@ class Benchmark:
                        help     = "Tell the the script which primitive type to use."
                                   " (default: %(default)s)"
         )
-
-        p.add_argument('--inputfn',
-                       help = "Input file to use as data."
+        g1 = p.add_mutually_exclusive_group()
+        g1.add_argument('--inputfn',
+                       help = "Input file to use as data. When not set, random data is used."
+        )
+        g1.add_argument('--seed',
+                        default = 42,
+                        help = "The seed to use when using random data."
         )
         p.add_argument('--dumpinput',
                        default  = False,
@@ -116,10 +128,15 @@ class Benchmark:
         # Conveniently expose options to the user
         #
         self.size       = [int(i) for i in args.size.split("*")] if args.size else []
-        self.dtype      = eval("bh.%s" % args.dtype)
+        self.dtype      = eval("np.%s" % args.dtype)
         self.dumpinput  = args.dumpinput
         self.inputfn    = args.inputfn
         self.outputfn   = args.outputfn
+        self.seed       = args.seed
+        np.random.seed(self.seed)
+
+        if len(self.size) == 0:
+            raise argparse.ArgumentTypeError('Size must be specified e.g. --size=100*10*1')
 
         # Unify the options: 'target' and 'bohrium'
         if args.bohrium:
@@ -143,17 +160,17 @@ class Benchmark:
         self.args   = args
 
     def start(self):
-        bh.flush()
+        flush()
         self.__elapsed = time.time()
 
     def stop(self):
-        bh.flush()
+        flush()
         self.__elapsed = time.time() - self.__elapsed
 
     def tofile(self, filename, arrays):
 
         for k in arrays:
-            arrays[k] = bh.array(arrays[k], bohrium=False)
+            arrays[k] = toarray(arrays[k], bohrium=False)
         np.savez(filename, **arrays)
 
     def dump_arrays(self, prefix, arrays):
@@ -186,7 +203,7 @@ class Benchmark:
 
         arrays  = {}            # Make sure arrays are in the correct space
         for k in npz:
-            arrays[k] = bh.array(npz[k], bohrium=self.bohrium)
+            arrays[k] = toarray(npz[k], bohrium=self.bohrium)
 
         del npz                # We no longer need these
 
@@ -207,6 +224,13 @@ class Benchmark:
                 '*'.join([str(s) for s in self.size]),
                 self.__elapsed
         ))
+    def random_array(self, shape, dtype=None):
+        if dtype is None:
+            dtype = self.dtype
+        if issubclass(np.dtype(dtype).type, np.integer):
+            return toarray(np.random.randint(shape), dtype=dtype, bohrium=self.bohrium)
+        else:
+            return toarray(np.random.random(shape), dtype=dtype, bohrium=self.bohrium)
 
 def main():
     B = Benchmark()
