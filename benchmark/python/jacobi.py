@@ -23,7 +23,7 @@ def jacobi(data):
 
     while residual>(10**-2) * (active.shape[0]**2):
         update    = (4*sum(g) + sum(d))*fak
-        residual  = np.add.reduce(np.add.reduce(abs(update-active)))
+        residual  = np.sum(abs(update-active))
         active[:] = update
 
     return data

@@ -120,7 +120,7 @@ def main():
 
     B.start()
     M = simulate(M, I, visualize=B.visualize)
-    R = np.add.reduce(np.add.reduce(M))
+    R = np.sum(M)
     B.stop()
     B.pprint()
     if B.outputfn:

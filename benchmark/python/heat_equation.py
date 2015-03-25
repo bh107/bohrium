@@ -34,7 +34,7 @@ def solve(grid, epsilon=0.005, max_iterations=None, visualize=False):
     while delta > epsilon:
         iteration += 1
         work = 0.2*(center+north+east+west+south)
-        delta = np.add.reduce(np.add.reduce(np.absolute(work-center)))
+        delta = np.sum(np.absolute(work-center))
         center[:] = work
         if max_iterations != None and max_iterations <= iteration:
             break

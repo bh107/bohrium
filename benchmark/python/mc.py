@@ -11,7 +11,7 @@ def solve(N):
     x = bh.random.random((N,), dtype=B.dtype, bohrium=B.bohrium)
     y = bh.random.random((N,), dtype=B.dtype, bohrium=B.bohrium)
     z = np.sqrt(x**2 + y**2) <= 1.0
-    return np.add.reduce(z) * 4.0 / N
+    return np.sum(z) * 4.0 / N
 
 def montecarlo_pi(N, I):
     acc=0.0
@@ -28,7 +28,6 @@ def main():
     B.pprint()
     if B.verbose:
         print(R)
-
 
 if __name__ == "__main__":
     main()
