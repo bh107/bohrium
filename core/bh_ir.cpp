@@ -167,14 +167,14 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     const bh_instruction& instr = bhir->instr_list[instr_idx];
     switch (instr.opcode) { 
     case BH_SYNC:
-        sync.insert(*instr.operand[0].base);
+        syncs.insert(instr.operand[0].base);
         break;
     case  BH_DISCARD:
     {
         //When discarding we might have to remove arrays from 'outputs' and add
         //them to 'temps' (if the discared array isn't synchronized)
-        const bh_base& base = *instr.operand[0].base;
-        if(sync.find(base) != sync.end())
+        bh_base* base = instr.operand[0].base;
+        if(syncs.find(base) == syncs.end())
         {
             auto range = output_map.equal_range(base);
             for (auto it = range.first; it != range.second; ++it)
@@ -201,7 +201,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             std::pair<bool,bh_view> vid = views.insert(v);
             if (vid.first) // If we have not seen the view before add it to inputs
             {
-                input_map.insert(std::make_pair(*vid.second.base,vid.second));
+                input_map.insert(std::make_pair(vid.second.base,vid.second));
                 input_set.insert(vid.second);
             }
             shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
@@ -210,7 +210,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         {
             const bh_view &v = instr.operand[0];
             bh_view vid = views.insert(v).second;
-            output_map.insert(std::make_pair(*vid.base,vid));
+            output_map.insert(std::make_pair(vid.base,vid));
             output_set.insert(vid);
             shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }

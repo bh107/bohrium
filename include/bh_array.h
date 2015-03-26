@@ -44,24 +44,6 @@ struct bh_base
 
     /// The number of elements in the array
     bh_index      nelem;
-
-    bool operator<(const bh_base& other) const
-    {
-        if (data < other.data) return true; 
-        if (other.data < data) return false; 
-        if (type < other.type) return true; 
-        if (other.type < type) return false; 
-        if (nelem < other.nelem) return true; 
-        if (other.nelem < nelem) return false;
-        return false;
-    }
-    bool operator==(const bh_base& other) const
-    {
-        if (data == other.data && 
-            type == other.type && 
-            nelem == other.nelem) return true; 
-        return false;
-    }
 };
 #endif
 

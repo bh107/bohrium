@@ -580,9 +580,9 @@ void pprint(const GraphDW &dag, const char filename[])
                 out << graph[v].get_view_id(i) << ":" << buf << "\\l";
             }
             out << "Temp base-arrays: \\l";
-            BOOST_FOREACH(const bh_base i, graph[v].get_temps())
+            BOOST_FOREACH(bh_base* i, graph[v].get_temps())
             {
-                bh_sprint_base(&i, buf);
+                bh_sprint_base(i, buf);
                 out << buf << "\\l";
             }
             /* out << "Parameter base-arrays: \\l"; */

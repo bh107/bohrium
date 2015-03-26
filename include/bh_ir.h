@@ -91,10 +91,10 @@ class bh_ir_kernel
 {
 private:
     // Set of temporary base-arrays in this kernel.
-    std::set<bh_base> temps;
+    std::set<bh_base*> temps;
 
     // Set of base-arrays that are synced by this kernel.
-    std::set<bh_base> sync;
+    std::set<bh_base*> syncs;
     
     // List of unique views used in this kernel
     class view_set
@@ -117,10 +117,10 @@ private:
     // List of input and output to this kernel.
     // NB: system instruction (e.g. BH_DISCARD) is
     // never part of kernel input or output
-    std::multimap<bh_base,bh_view> output_map;
-    std::set<bh_view>              output_set;
-    std::multimap<bh_base,bh_view> input_map;
-    std::set<bh_view>              input_set;
+    std::multimap<bh_base*,bh_view> output_map;
+    std::set<bh_view>               output_set;
+    std::multimap<bh_base*,bh_view> input_map;
+    std::set<bh_view>               input_set;
 
 
     // Shapes used in this kernel
@@ -145,12 +145,12 @@ public:
     /* Kernel constructor, takes the bhir as constructor */
     bh_ir_kernel(bh_ir &bhir);
 
-    const std::multimap<bh_base,bh_view>& get_output_map() const {return output_map;}
-    const std::multimap<bh_base,bh_view>& get_input_map() const {return input_map;}
+    const std::multimap<bh_base*,bh_view>& get_output_map() const {return output_map;}
+    const std::multimap<bh_base*,bh_view>& get_input_map() const {return input_map;}
     const std::set<bh_view>& get_output_set() const {return output_set;}
     const std::set<bh_view>& get_input_set() const {return input_set;}
 
-    const std::set<bh_base>& get_temps() const {return temps;}
+    const std::set<bh_base*>& get_temps() const {return temps;}
 
     /* Return a list of the unique bh_base's that are input or output from this kernel */
     //std::vector<bh_base> parameter_list() const;
