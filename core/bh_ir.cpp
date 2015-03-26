@@ -95,19 +95,59 @@ void bh_ir::pprint_kernel_list() const
     }
 }
 
-/* Help function that checks if the 'view' is already known by this kernel */
-int bh_ir_kernel::get_view_id(const bh_view &view) const
+/* Default constructor NB: the 'bhir' pointer is NULL in this case! */
+bh_ir_kernel::bh_ir_kernel():bhir(NULL) {}
+
+/* Kernel constructor, takes the bhir as constructor */
+bh_ir_kernel::bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {}
+
+/* Clear this kernel of all instructions */
+void bh_ir_kernel::clear()
 {
-    if (bh_is_constant(&view))
-        return -1;
-    size_t i;
-    for (i = 0; i < views.size(); ++i)
+    instr_indexes.clear();
+    input_set.clear();
+    output_set.clear();
+    input_map.clear();
+    output_map.clear();
+    temps.clear();
+    views.clear();
+}
+
+void bh_ir_kernel::view_set::clear()
+{
+    maxid = 0;
+    views.clear();
+}
+
+std::pair<bool,bh_view> bh_ir_kernel::view_set::insert(const bh_view &v)
+{
+    if (bh_is_constant(&v))
+        throw bh_ir_kernel::view_exception(-1);
+    
+    bh_view sv = bh_view_simplify(&v);
+    auto it = views.find(sv);
+    if (it == views.end())
     {
-        if(bh_view_aligned(&view, &(views[i])))
-            return i;
+        views.insert(std::make_pair(sv,maxid++));
+        return std::make_pair(true,sv);
+        
+    } else {  
+        return  std::make_pair(false,sv);
     }
-    return -1;
-};
+}
+
+size_t bh_ir_kernel::view_set::operator[] (const bh_view &v) const
+{
+    auto it = views.find(bh_view_simplify(&v));
+    if (it == views.end())
+        throw bh_ir_kernel::view_exception(-1);
+    return it->second;
+}
+
+size_t bh_ir_kernel::get_view_id(const bh_view v) const
+{
+    return views[v];
+}
 
 /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
 bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const
@@ -125,104 +165,58 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
     
     const bh_instruction& instr = bhir->instr_list[instr_idx];
-    const int nop = bh_operands(instr.opcode);
-    
-    if(instr.opcode == BH_DISCARD)
+    switch (instr.opcode) { 
+    case BH_SYNC:
+        sync.insert(*instr.operand[0].base);
+        break;
+    case  BH_DISCARD:
     {
         //When discarding we might have to remove arrays from 'outputs' and add
         //them to 'temps' (if the discared array isn't synchronized)
-        const bh_base *base = instr.operand[0].base;
-        if(not is_base_used_by_opcode(base, BH_SYNC))
+        const bh_base& base = *instr.operand[0].base;
+        if(sync.find(base) != sync.end())
         {
-            for(int vid: outputs)
-            {
-                if(base == views[vid].base)
-                {
-                    outputs.erase(vid);
-                    //If the discarded array isn't in 'inputs' (and not in 'outputs')
-                    //then it is a temp array
-                    if(inputs.find(vid) == inputs.end())
-                        temps.push_back(base);
-                    break;
-                }
-            }
+            auto range = output_map.equal_range(base);
+            for (auto it = range.first; it != range.second; ++it)
+                output_set.erase(it->second);
+            output_map.erase(base);
+            //If the discarded array isn't in 'inputs' (and not in 'outputs')
+            //then it is a temp array
+            if(input_map.find(base) == input_map.end())
+                temps.insert(base);
         }
     }
-    
-    else if(instr.opcode != BH_FREE)
+        break;
+    case BH_FREE:
+        break;
+    default:
     {
-        //Add the output of the instruction to 'outputs'
-        {
-            const bh_view &v = instr.operand[0];
-            int viewid = get_view_id(v);
-            if (viewid < 0)
-            {
-                viewid  = views.size();
-                views.push_back(v);
-            }
-            outputs.insert(viewid);
-            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
-        }
+        const int nop = bh_operands(instr.opcode);
         //Add the inputs of the instruction to 'inputs'
         for(int i=1; i<nop; ++i)
         {
             const bh_view &v = instr.operand[i];
             if(bh_is_constant(&v))
                 continue;
-            
-            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
-            int viewid = get_view_id(v);
-            //If 'v' is a new view we register it, and add it to inputs
-            if(viewid < 0)
+            std::pair<bool,bh_view> vid = views.insert(v);
+            if (vid.first) // If we have not seen the view before add it to inputs
             {
-                viewid  = views.size();
-                views.push_back(v);
-                inputs.insert(viewid);
+                input_map.insert(std::make_pair(*vid.second.base,vid.second));
+                input_set.insert(vid.second);
             }
+            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
-    }
-    
-    instr_indexes.push_back(instr_idx);
-}
-
-/* Returns a list of inputs to this kernel (read-only) */
-std::vector<bh_view> bh_ir_kernel::input_list() const
-{
-    std::vector<bh_view> res;
-    for(size_t vid: inputs)
-        res.push_back(views[vid]);
-    return res;
- 
-}
-
-/* Returns a list of outputs from this kernel (read-only) */
-std::vector<bh_view> bh_ir_kernel::output_list() const
-{
-    std::vector<bh_view> res;
-    for(size_t vid: outputs)
-        res.push_back(views[vid]);
-    return res;
-}
-
-std::vector<const bh_base*> bh_ir_kernel::parameter_list() const
-{
-    std::set<int> view_ids;
-    for (int vid: outputs)
-        view_ids.insert(vid);
-    for (int vid: inputs)
-        view_ids.insert(vid);
-    std::set<bh_base*> included;
-    std::vector<const bh_base*> res;
-    for (int vid: view_ids)
-    {
-        bh_base* const base = views[vid].base;
-        if (included.find(base) == included.end())
+        //Add the output of the instruction to 'outputs'
         {
-            included.insert(base);
-            res.push_back(base);
+            const bh_view &v = instr.operand[0];
+            bh_view vid = views.insert(v).second;
+            output_map.insert(std::make_pair(*vid.base,vid));
+            output_set.insert(vid);
+            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
     }
-    return res;
+    }
+    instr_indexes.push_back(instr_idx);
 }
 
 /* Determines whether all instructions in 'this' kernel
@@ -300,22 +294,21 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
  */
 bool bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other) const
 {
-    
-    if(inputs.size() > other.input_list().size())
+    const std::set<bh_view>& other_input_set = other.get_input_set();
+    if(input_set.size() > other_input_set.size())
         return false;
-    if(outputs.size() > other.output_list().size())
+    const std::set<bh_view>& other_output_set = other.get_output_set();
+    if(output_set.size() > other_output_set.size())
         return false;
 
-    for (const bh_view& iv: other.input_list())
+    for (const bh_view& iv: other_input_set)
     {
-        int vid = get_view_id(iv);
-        if (vid < 0 || inputs.find(vid) == inputs.end())
+        if (input_set.find(iv) == input_set.end())
             return false;
     }
-    for (const bh_view& iv: other.output_list())
+    for (const bh_view& ov: other_output_set)
     {
-        int vid = get_view_id(iv);
-        if (vid < 0 || outputs.find(vid) == outputs.end())
+        if (output_set.find(ov) == output_set.end())
             return false;
     }
     return true;
@@ -394,11 +387,11 @@ inline static uint64_t cost_of_view(const bh_view &v)
 uint64_t bh_ir_kernel::cost() const
 {
     uint64_t sum = 0;
-    BOOST_FOREACH(const bh_view &v, input_list())
+    BOOST_FOREACH(const bh_view &v, input_set)
     {
         sum += cost_of_view(v);
     }
-    BOOST_FOREACH(const bh_view &v, output_list())
+    BOOST_FOREACH(const bh_view &v, output_set)
     {
         sum += cost_of_view(v);
     }
@@ -440,21 +433,21 @@ int64_t bh_ir_kernel::merge_cost_savings(const bh_ir_kernel &other) const
     int64_t price_drop = 0;
 
     //Subtract inputs in 'a' that comes from 'b' or is already an input in 'b'
-    BOOST_FOREACH(const bh_view &i, a->input_list())
+    BOOST_FOREACH(const bh_view &i, a->get_input_set())
     {
-        BOOST_FOREACH(const bh_view &o, b->output_list())
+        BOOST_FOREACH(const bh_view &o, b->get_output_set())
         {
             if(bh_view_aligned(&i, &o))
                 price_drop += cost_of_view(i);
         }
-        BOOST_FOREACH(const bh_view &o, b->input_list())
+        BOOST_FOREACH(const bh_view &o, b->get_input_set())
         {
             if(bh_view_aligned(&i, &o))
                 price_drop += cost_of_view(i);
         }
     }
     //Subtract outputs from 'b' that are discared in 'a'
-    BOOST_FOREACH(const bh_view &o, b->output_list())
+    BOOST_FOREACH(const bh_view &o, b->get_output_set())
     {
         BOOST_FOREACH(uint64_t a_instr_idx, a->instr_indexes)
         {

@@ -70,11 +70,11 @@ struct bh_view
     /// Pointer to the base array.
     bh_base*      base;
 
-    /// Number of dimentions
-    bh_intp       ndim;
-
     /// Index of the start element
     bh_index      start;
+
+    /// Number of dimentions
+    bh_intp       ndim;
 
     /// Number of elements in each dimention
     bh_index      shape[BH_MAXDIM];
@@ -86,10 +86,10 @@ struct bh_view
     {
         if (base < other.base) return true; 
         if (other.base < base) return false; 
-        if (ndim < other.ndim) return true; 
-        if (other.ndim < ndim) return false; 
         if (start < other.start) return true; 
         if (other.start < start) return false;
+        if (ndim < other.ndim) return true; 
+        if (other.ndim < ndim) return false; 
         for (bh_intp i = 0; i < ndim; ++i)
         {
             if (shape[i] < other.shape[i]) return true;

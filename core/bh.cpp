@@ -332,20 +332,7 @@ bool bh_view_same(const bh_view *a, const bh_view *b)
 {
     if(bh_is_constant(a) || bh_is_constant(b))
         return false;
-    if(a->base != b->base)
-        return false;
-    if(a->ndim != b->ndim)
-        return false;
-    if(a->start != b->start)
-        return false;
-    for(bh_intp i = 0; i < a->ndim; ++i)
-    {
-        if(a->shape[i] != b->shape[i])
-            return false;
-        if(a->stride[i] != b->stride[i])
-            return false;
-    }
-    return true;
+    return *a == *b;
 }
 
 /* Determines whether two views are aligned and points
@@ -361,7 +348,7 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
         return true;
     bh_view sa = bh_view_simplify(a);
     bh_view sb = bh_view_simplify(b);
-    return bh_view_same(&sa, &sb);
+    return sa == sb;
 }
 
 /* Determines whether two views are aligned, points

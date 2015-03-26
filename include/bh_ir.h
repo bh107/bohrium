@@ -90,17 +90,38 @@ protected:
 class bh_ir_kernel
 {
 private:
+    // Set of temporary base-arrays in this kernel.
+    std::set<bh_base> temps;
+
+    // Set of base-arrays that are synced by this kernel.
+    std::set<bh_base> sync;
+    
+    // List of unique views used in this kernel
+    class view_set
+    {
+    private:
+        size_t maxid;
+        std::map<bh_view,size_t> views;
+    public:
+        view_set(): maxid(0) {};
+        void clear();
+        std::pair<bool,bh_view> insert(const bh_view &v);
+        size_t operator[] (const bh_view &v) const; 
+    } views;
+    struct view_exception 
+    {
+        int code;
+        view_exception(int c) : code(c) {};
+    };
+
     // List of input and output to this kernel.
     // NB: system instruction (e.g. BH_DISCARD) is
     // never part of kernel input or output
-    std::set<int> inputs;
-    std::set<int> outputs;
+    std::multimap<bh_base,bh_view> output_map;
+    std::set<bh_view>              output_set;
+    std::multimap<bh_base,bh_view> input_map;
+    std::set<bh_view>              input_set;
 
-    // List of temporary base-arrays in this kernel.
-    std::vector<const bh_base*> temps;
-    
-    // List of unique views used in this kernel 
-    std::vector<bh_view> views;
 
     // Shapes used in this kernel
     std::set<std::vector<bh_index> > shapes;
@@ -116,39 +137,27 @@ public:
     std::vector<uint64_t> instr_indexes;
 
     /* Clear this kernel of all instructions */
-    void clear()
-    {
-        instr_indexes.clear();
-        inputs.clear();
-        outputs.clear();
-        temps.clear();
-    }
+    void clear();
 
     /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
-    bh_ir_kernel():bhir(NULL){};
+    bh_ir_kernel();
 
     /* Kernel constructor, takes the bhir as constructor */
-    bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {};
+    bh_ir_kernel(bh_ir &bhir);
 
-    /* Get id of a given view
-     * id's are based on the order in which instructions are added to the kernel 
-     * -1 is ruturned for constands and unknown views 
-     */
-    int get_view_id(const bh_view &view) const;
+    const std::multimap<bh_base,bh_view>& get_output_map() const {return output_map;}
+    const std::multimap<bh_base,bh_view>& get_input_map() const {return input_map;}
+    const std::set<bh_view>& get_output_set() const {return output_set;}
+    const std::set<bh_view>& get_input_set() const {return input_set;}
 
-    /* Returns a list of inputs to this kernel */
-    std::vector<bh_view> input_list() const;
-
-    /* Returns a list of outputs from this kernel */
-    std::vector<bh_view> output_list() const;
+    const std::set<bh_base>& get_temps() const {return temps;}
 
     /* Return a list of the unique bh_base's that are input or output from this kernel */
-    std::vector<const bh_base*> parameter_list() const;
-
-    /* Returns a list of temporary base-arrays in this kernel (read-only) */
-    const std::vector<const bh_base*>& temp_list() const {return temps;};
+    //std::vector<bh_base> parameter_list() const;
 
     const std::set<std::vector<bh_index> >& get_shapes()const {return shapes;};
+
+    size_t get_view_id(const bh_view v) const;
 
     /* Add an instruction to the kernel
      *

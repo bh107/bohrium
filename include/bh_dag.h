@@ -568,30 +568,30 @@ void pprint(const GraphDW &dag, const char filename[])
                 out << "]  ";
             }
             out << "\\lInput views: \\l";
-            BOOST_FOREACH(const bh_view &i, graph[v].input_list())
+            BOOST_FOREACH(const bh_view &i, graph[v].get_input_set())
             {
                 bh_sprint_view(&i, buf);
                 out << graph[v].get_view_id(i) << ":" << buf << "\\l";
             }
             out << "Output views: \\l";
-            BOOST_FOREACH(const bh_view &i, graph[v].output_list())
+            BOOST_FOREACH(const bh_view &i, graph[v].get_output_set())
             {
                 bh_sprint_view(&i, buf);
                 out << graph[v].get_view_id(i) << ":" << buf << "\\l";
             }
             out << "Temp base-arrays: \\l";
-            BOOST_FOREACH(const bh_base *i, graph[v].temp_list())
+            BOOST_FOREACH(const bh_base i, graph[v].get_temps())
             {
-                bh_sprint_base(i, buf);
+                bh_sprint_base(&i, buf);
                 out << buf << "\\l";
             }
-            out << "Parameter base-arrays: \\l";
-            BOOST_FOREACH(const bh_base *i, graph[v].parameter_list())
-            {
-                bh_sprint_base(i, buf);
-                out << buf << "\\l";
-            }
-            out << "Instruction list: \\l";
+            /* out << "Parameter base-arrays: \\l"; */
+            /* BOOST_FOREACH(const bh_base *i, graph[v].parameter_list()) */
+            /* { */
+            /*     bh_sprint_base(i, buf); */
+            /*     out << buf << "\\l"; */
+            /* } */
+            /* out << "Instruction list: \\l"; */
             BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes)
             {
                 const bh_instruction &instr = graph[v].bhir->instr_list[idx];
