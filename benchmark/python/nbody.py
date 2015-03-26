@@ -177,7 +177,7 @@ def main():
 
     B.pprint()
     if B.outputfn:
-        B.tofile(B.outputfn, galaxy)
+        B.tofile(B.outputfn, {'res':R})
 
 if __name__ == "__main__":
     main()

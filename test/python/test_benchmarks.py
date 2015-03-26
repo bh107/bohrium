@@ -275,7 +275,6 @@ Cannot test: nbody.py
 Cannot run this since it breaks due to a futureWarning.
 """
 
-"""
 class test_nbody(BenchHelper, numpytest):
 
     def __init__(self):
@@ -291,7 +290,6 @@ class test_nbody(BenchHelper, numpytest):
 
     def test_nbody(self, pseudo_arrays):
         return self.run(pseudo_arrays)
-"""
 
 """
 See test_ndstencil.py for testing for ndstencil.py
