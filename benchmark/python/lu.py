@@ -13,7 +13,7 @@ def main():
     if B.inputfn:
         a = B.load_array()
     else:
-        a = np.array(np.random.random((N,N)), dtype=B.dtype)
+        a = B.random_array((N,N), dtype=B.dtype)
 
     if B.dumpinput:
         B.dump_arrays("lu", {'input': a})

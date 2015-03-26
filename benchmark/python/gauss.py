@@ -13,7 +13,7 @@ def main():
     if B.inputfn:
         S = B.load_array()
     else:
-        S = np.array(np.random.random((N, N)), dtype=B.dtype)
+        S = B.random_array((N, N))
 
     if B.dumpinput:
         B.dump_arrays("gauss", {'input':S})
@@ -22,7 +22,7 @@ def main():
     R = la.gauss(S)
     if util.Benchmark().bohrium:
         R.copy2numpy()
-    
+
     B.stop()
 
     B.pprint()
