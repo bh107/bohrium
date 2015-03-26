@@ -80,7 +80,7 @@ def main():
 
     B.start()
     ft = solve(ft,max_iterations=I)
-    R = np.sum(ft[0] + ft[1] + ft[2] + ft[3])
+    R = ft[0] + ft[1] + ft[2] + ft[3]
     B.stop()
 
     B.pprint()

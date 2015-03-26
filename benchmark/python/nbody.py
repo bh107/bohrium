@@ -172,7 +172,7 @@ def main():
 
     B.start()
     simulate(galaxy, I, visualize=B.visualize)
-    R = np.sum(galaxy['x'] + galaxy['y'] + galaxy['z'])
+    R = galaxy['x'] + galaxy['y'] + galaxy['z']
     B.stop()
 
     B.pprint()
