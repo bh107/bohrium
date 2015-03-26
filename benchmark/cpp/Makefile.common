@@ -6,7 +6,7 @@ BENCHMARKS = $(subst .cpp,, $(subst src/,,$(BENCH_SRC)))
 BENCHMARKS = black_scholes
 
 CXX=g++
-DEBUG=-g
+DEBUG=
 CXXFLAGS=-Wall -Wextra -pedantic -O3 -std=c++11 -Wno-variadic-macros $(DEBUG)
 INCLUDE=-L/home/safl/.local/lib
 INCLUDE+=-I$(ROOT)/include 
