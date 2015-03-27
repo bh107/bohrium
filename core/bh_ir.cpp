@@ -95,12 +95,6 @@ void bh_ir::pprint_kernel_list() const
     }
 }
 
-/* Default constructor NB: the 'bhir' pointer is NULL in this case! */
-bh_ir_kernel::bh_ir_kernel():bhir(NULL) {}
-
-/* Kernel constructor, takes the bhir as constructor */
-bh_ir_kernel::bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {}
-
 /* Clear this kernel of all instructions */
 void bh_ir_kernel::clear()
 {
@@ -142,11 +136,6 @@ size_t bh_ir_kernel::view_set::operator[] (const bh_view &v) const
     if (it == views.end())
         throw bh_ir_kernel::view_exception(-1);
     return it->second;
-}
-
-size_t bh_ir_kernel::get_view_id(const bh_view v) const
-{
-    return views[v];
 }
 
 /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */

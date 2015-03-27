@@ -128,8 +128,14 @@ private:
 
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
-
+    
 public:
+    /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
+    bh_ir_kernel():bhir(NULL) {}
+
+    /* Kernel constructor, takes the bhir as constructor */
+    bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {}
+
     // The program representation that the kernel is subset of
     bh_ir *bhir;
 
@@ -138,12 +144,6 @@ public:
 
     /* Clear this kernel of all instructions */
     void clear();
-
-    /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
-    bh_ir_kernel();
-
-    /* Kernel constructor, takes the bhir as constructor */
-    bh_ir_kernel(bh_ir &bhir);
 
     const std::multimap<bh_base*,bh_view>& get_output_map() const {return output_map;}
     const std::multimap<bh_base*,bh_view>& get_input_map() const {return input_map;}
@@ -157,7 +157,7 @@ public:
 
     const std::set<std::vector<bh_index> >& get_shapes()const {return shapes;};
 
-    size_t get_view_id(const bh_view v) const;
+    size_t get_view_id(const bh_view v) const {return views[v];}
 
     /* Add an instruction to the kernel
      *
