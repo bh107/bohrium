@@ -125,7 +125,10 @@ private:
 
     // Shapes used in this kernel
     std::set<std::vector<bh_index> > shapes;
-
+    
+    // sweep (reduce and accumulate) dimensions 
+    std::set<bh_int64> sweep_dims;
+        
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
     

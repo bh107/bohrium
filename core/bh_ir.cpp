@@ -203,6 +203,10 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             output_set.insert(vid);
             shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
+        if (bh_opcode_is_sweep(instr.opcode))
+        {
+            sweep_dims.insert(instr.constant.value.int64);
+        }
     }
     }
     instr_indexes.push_back(instr_idx);
