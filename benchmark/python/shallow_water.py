@@ -120,11 +120,10 @@ def main():
 
     B.start()
     M = simulate(M, I, visualize=B.visualize)
-    R = np.sum(M)
     B.stop()
     B.pprint()
     if B.outputfn:
-        B.tofile(B.outputfn, {'res': R})
+        B.tofile(B.outputfn, {'res': M})
 
 if __name__ == "__main__":
     main()
