@@ -5,6 +5,34 @@ The following explains how to get going on Mac OSX. You need some extra packages
 
 You need to install the `Xcode Developer Tools <https://developer.apple.com/xcode/>`_ package, which is found in the App Store.
 
+Simple install with Homebrew
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Start by `installing Homebrew as explained on their website <http://brew.sh/>`:
+
+  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+Then install Bohrium:
+
+  brew install https://bitbucket.org/bohrium/bohrium/raw/HEAD/package/homebrew/bohrium.rb
+
+You may be asked to install various Python items, this is the easy way to get them:
+
+  sudo easy_install pip
+  sudo pip install cheetah cython
+
+On some installs the NumPy package is not picked up by Homebrew, you can get it installed with:
+
+  brew install https://github.com/homebrew/homebrew-python/blob/master/numpy.rb
+
+If you want to use the bleeding edge code, straight out of the source-code repository, add the HEAD flag:
+
+  brew install --HEAD https://bitbucket.org/bohrium/bohrium/raw/HEAD/package/homebrew/bohrium.rb
+
+
+Manual install with other package systems
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Start with installing pip and then the required Python packages::
 
   sudo easy_install pip
