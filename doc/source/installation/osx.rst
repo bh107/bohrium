@@ -14,7 +14,7 @@ Start by `installing Homebrew as explained on their website <http://brew.sh/>`:
 
 Then install Bohrium:
 
-  brew install https://bitbucket.org/bohrium/bohrium/raw/HEAD/package/homebrew/bohrium.rb
+  brew install https://raw.githubusercontent.com/bh107/bohrium/master/package/homebrew/bohrium.rb
 
 You may be asked to install various Python items, this is the easy way to get them:
 
@@ -27,7 +27,7 @@ On some installs the NumPy package is not picked up by Homebrew, you can get it 
 
 If you want to use the bleeding edge code, straight out of the source-code repository, add the HEAD flag:
 
-  brew install --HEAD https://bitbucket.org/bohrium/bohrium/raw/HEAD/package/homebrew/bohrium.rb
+  brew install --HEAD https://raw.githubusercontent.com/bh107/bohrium/master/package/homebrew/bohrium.rb
 
 
 Manual install with other package systems
