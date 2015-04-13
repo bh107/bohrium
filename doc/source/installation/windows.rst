@@ -65,19 +65,21 @@ Download and install the following prerequisites, in order:
  * Cython
  * NumPy
 
-Python, Cmake, Visual Studio and Visual C++ for Python 2.7 are no-fuss installation install-wizards.
-Boost, SWIG, and HWLOC follow, requires a couple of manual changes.
-Cheetah, Cython, and NumPy should be installed as the last thing via ``pip``.
+`Python`, `Cmake`, `Visual Studio` and `Visual C++ for Python 2.7` are no-fuss installation install-wizards.
 
-Boost, download and install boost to ``C:\boost``, it is around 200MB and consumes about 3GB once installed. After the installation-wizard has run, set the following env-var::
+`Boost`, `SWIG`, and `HWLOC` require a couple of manual steps.
+
+`Cheetah`, `Cython`, and `NumPy` should be installed via ``pip`` after installing everything else.
+
+`Boost`, download and install boost to ``C:\boost``, it is around 200MB and consumes about 3GB once installed. After the installation-wizard has run, set the following env-var::
 
   SET BOOST_LIBRARYDIR=C:\boost\lib64-msvc-12.0
 
-SWIG, unpack the archive and expend ``%PATH%`` to include it::
+`SWIG`, unpack the archive and expend ``%PATH%`` to include it::
 
   SET PATH=%PATH%;C:\swig
 
-HWLOC, currently Visual Studio does not have sufficient support for OpenMP so getting HWLOC installed is not relevant until the OpenMP issue is resolved.
+`HWLOC`, currently Visual Studio does not have sufficient support for OpenMP so getting HWLOC installed is not relevant until the OpenMP issue is resolved.
 
 Cheetah, Cython, NumPy, install these packages via pip::
 
