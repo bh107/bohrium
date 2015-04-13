@@ -19,6 +19,7 @@ You also need the `Microsoft Visual C++ 2010 Runtime <http://www.microsoft.com/e
 
 Building from source
 ~~~~~~~~~~~~~~~~~~~
+
 You need to install either `Microsoft Visual C++ 2010 <http://msdn.microsoft.com/en-us/library/vstudio/60k1461a(v=vs.100).aspx>`_ or `Microsoft Visual C++ Express 2010 <https://www.microsoft.com/visualstudio/eng/products/visual-studio-express-products>`_.
 
 You also need `Python 2.7 <http://www.python.org/download/>`_ installed to run the build script.
@@ -43,3 +44,42 @@ You can then use the binaries from the locations, or build a package::
 
 
 If you had 7zip installed, you should now have a file called Bohrium.zip, otherwise you can access the files from the Bohrium-release folder.
+
+
+Building latest version from source (does not work)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These are notes of trying to get the latest Bohrium version running on Windwos 7 64-bit.
+It did not succeed, first build-issue is the use "sys/mman.h" which is Linux specific.
+
+Download and install the following prerequisites, in order:
+
+ * Python 2.7 (https://www.python.org/downloads/)
+ * CMake (http://www.cmake.org/)
+ * Visual Studio (https://www.visualstudio.com/)
+ * Visual C++ for Python 2.7 (http://aka.ms/vcpython27)
+ * Boost (http://www.boost.org/)
+ * SWIG (http://www.swig.org/download.html)
+ * HWLOC (http://www.open-mpi.org/software/hwloc/v1.10/)
+ * Cheetah
+ * Cython
+ * NumPy
+
+Python, Cmake, Visual Studio and Visual C++ for Python 2.7 are no-fuss installation via .msi packages. Notes on Boost, SWIG, and HWLOC follow.
+
+Boost, download and install boost to ``C:\boost``, it is around 200MB and consumes about 3GB once installed. After the installation-wizard has run, set the following env-var::
+
+  SET BOOST_LIBRARYDIR=C:\boost\lib64-msvc-12.0
+
+SWIG, unpack the archive and expend ``%PATH%`` to include it::
+
+  SET PATH=%PATH%;C:\swig
+
+HWLOC, currently Visual Studio does not have sufficient support for OpenMP so getting HWLOC installed is not relevant until the OpenMP issue is resolved.
+
+Cheetah, Cython, NumPy, install these packages via pip::
+
+  pip install cython cheetah numpy
+
+With these things in place it is possible to start the Build of Bohrium.
+However, as noted, it does not build due to various portability issues.
