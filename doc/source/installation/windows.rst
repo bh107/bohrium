@@ -1,7 +1,7 @@
 Windows
 -------
 
-.. warning:: The newest version of Bohrium (v0.2) does not support Windows. Bohrium on Windows only supports the much older version 0.1. We are working on a new windows version but for now, we do not requirement using Bohrium on windows.
+.. warning:: The newest version of Bohrium (v0.2) does not support Windows. Bohrium on Windows only supports the much older version 0.1. We are working on a new windows version but for now, we do not recommend using Bohrium on windows.
 
 The follow explains how to get Bohrium installed on Windows. Note that only 64bit Windows is supported by the Bohrium binaries (the NumCIL binaries are 32bit and 64bit compatible).
 

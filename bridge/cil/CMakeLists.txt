@@ -49,6 +49,7 @@ if(MONO_FOUND AND PYTHONINTERP_FOUND)
   )
 
   install(FILES ${target_file} DESTINATION lib/mono COMPONENT bohrium-numcil)
+  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.Bohrium.dll)")  
 
 else()
   message("Cannot build NumCIL.Bohrium as Mono, xbuild or Python is missing")
