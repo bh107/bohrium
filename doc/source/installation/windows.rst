@@ -75,13 +75,19 @@ Download and install the following prerequisites, in order:
 
   SET BOOST_LIBRARYDIR=C:\boost\lib64-msvc-12.0
 
-`SWIG`, unpack the archive and expend ``%PATH%`` to include it::
+`SWIG`, unpack the archive and extend ``%PATH%`` to include it::
 
   SET PATH=%PATH%;C:\swig
 
+Execute::
+
+  swig
+
+To verify that it is available.
+
 `HWLOC`, currently Visual Studio does not have sufficient support for OpenMP so getting HWLOC installed is not relevant until the OpenMP issue is resolved.
 
-Cheetah, Cython, NumPy, install these packages via pip::
+`Cheetah`, `Cython`, and `NumPy` install these via pip::
 
   pip install cython cheetah numpy
 
