@@ -54,18 +54,20 @@ It did not succeed, first build-issue is the use "sys/mman.h" which is Linux spe
 
 Download and install the following prerequisites, in order:
 
- * Python 2.7 (https://www.python.org/downloads/)
- * CMake (http://www.cmake.org/)
- * Visual Studio (https://www.visualstudio.com/)
- * Visual C++ for Python 2.7 (http://aka.ms/vcpython27)
- * Boost (http://www.boost.org/)
- * SWIG (http://www.swig.org/download.html)
- * HWLOC (http://www.open-mpi.org/software/hwloc/v1.10/)
+ * Python 2.7.9 - https://www.python.org/downloads/
+ * CMake - Windows (Win32 Installer) v3.2.1 - http://www.cmake.org/download/
+ * Visual Studio - https://www.visualstudio.com/
+ * Visual C++ for Python 2.7 - http://www.microsoft.com/en-us/download/details.aspx?id=44266
+ * Boost - Prebuilt windows binaries v1.57 msvc-12-64 - http://sourceforge.net/projects/boost/files/boost-binaries/1.57.0/boost_1_57_0-msvc-12.0-64.exe/download
+ * SWIG - swigwin v3.0.5 - http://www.swig.org/download.html
+ * HWLOC - Win64 build v1.10.1 - http://www.open-mpi.org/software/hwloc/v1.10/
  * Cheetah
  * Cython
  * NumPy
 
-Python, Cmake, Visual Studio and Visual C++ for Python 2.7 are no-fuss installation via .msi packages. Notes on Boost, SWIG, and HWLOC follow.
+Python, Cmake, Visual Studio and Visual C++ for Python 2.7 are no-fuss installation install-wizards.
+Boost, SWIG, and HWLOC follow, requires a couple of manual changes.
+Cheetah, Cython, and NumPy should be installed as the last thing via ``pip``.
 
 Boost, download and install boost to ``C:\boost``, it is around 200MB and consumes about 3GB once installed. After the installation-wizard has run, set the following env-var::
 
