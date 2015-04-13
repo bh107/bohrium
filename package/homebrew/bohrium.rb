@@ -2,10 +2,10 @@ require "formula"
 
 class Bohrium < Formula
   homepage "http://bh107.org/"
-  head "https://bitbucket.org/bohrium/bohrium.git"
-  url "https://bitbucket.org/bohrium/bohrium/get/f695301b133e809c728b5dff5c3c6cb64ca08d03.zip"
-  version "v0.2-1854-gf695301"
-  sha1 "6dfdd6bf6f6abab400456c05dd7ae0e7a0f42d14"
+  head "https://github.com/bh107/bohrium.git"
+  url "https://codeload.github.com/bh107/bohrium/zip/177d8d7c4178ac58568c3d79da8096d235a43bf2"
+  version "v0.2-1889-g177d8d7"
+  sha1 "51c6242aade09bcdcc63d451a9ea9e0b2934b3bc"
 
   depends_on "cmake" => :build
   depends_on "mono" => :build
@@ -17,7 +17,7 @@ class Bohrium < Formula
   depends_on "cheetah" => [:python, "Cheetah.Template", :build]
 
   head do
-    url "https://bitbucket.org/bohrium/bohrium.git"
+    url "https://github.com/bh107/bohrium.git"
   end
 
   def install
