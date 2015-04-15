@@ -188,11 +188,19 @@ class BenchHelper:
             self.script, dtype, target, self.uuid
         )
 
-        bench_dir = join(os.path.dirname(os.path.realpath(__file__)),"..","..","benchmark","python")
+        benchmarks_dir, err = subprocess.Popen(           # Execute the benchmark
+            ['bp-info', '--benchmarks'],
+            stdout  = subprocess.PIPE,
+            stderr  = subprocess.PIPE,
+        ).communicate()
+
+
+        sys_exec = [sys.executable, "-m", "bohrium"] if target else [sys.executable]
+        benchmark_path = os.sep.join([benchmarks_dir.strip(), self.script, "python_numpy", self.script+ ".py"])
+
         # Setup command
-        cmd = [
-            sys.executable, #The current Python interpreter
-            join(bench_dir,"%s.py"%self.script),
+        cmd = sys_exec + [
+            benchmark_path,
             '--size='       +self.sizetxt,
             '--dtype='      +str(dtype),
             '--target='    +target,
@@ -218,7 +226,7 @@ class BenchHelper:
         p = subprocess.Popen(           # Execute the benchmark
             cmd,
             stdout  = subprocess.PIPE,
-            stderr  = subprocess.PIPE
+            stderr  = subprocess.PIPE,
         )
         out, err = p.communicate()
         if 'elapsed-time' not in out:

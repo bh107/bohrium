@@ -73,7 +73,6 @@ add_subdirectory(bridge/c)
 add_subdirectory(bridge/npbackend)
 add_subdirectory(bridge/NumCIL)
 add_subdirectory(bridge/cil)
-add_subdirectory(benchmark)
 add_subdirectory(test)
 
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
