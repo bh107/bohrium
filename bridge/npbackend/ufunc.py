@@ -445,7 +445,18 @@ class Negative(Ufunc):
             out[...] = -1 * ary
             return out
 
-UFUNCS = [Negative({'name':'negative'})]    # Expose via UFUNCS
+class Sign(Ufunc):
+    def __call__(self, ary, out=None):
+        if out is None:
+            return (ary < 0)*ary.dtype.type(-1) + (ary>0)*ary.dtype.type(1)
+        else:
+            out[...] = (ary < 0)*ary.dtype.type(-1) + (ary>0)*ary.dtype.type(1)
+            return out
+
+UFUNCS = [
+    Negative({'name':'negative'}),
+    Sign({'name':'sign'})
+]    # Expose via UFUNCS
 for op in _info.op.itervalues():
     UFUNCS.append(Ufunc(op))
 
