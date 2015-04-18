@@ -193,10 +193,10 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     // 
     if (block.narray_tacs() > 0) {
         DEBUG(TAG, "EXECUTING "<< block.text());
-        TIMER_START
+        //TIMER_START
         iterspace_t& iterspace = block.iterspace();   // retrieve iterspace
         storage.funcs[block.symbol()](block.operands(), &iterspace);
-        TIMER_STOP(block.text_compact())
+        //TIMER_STOP(block.text_compact())
     }
 
     //
@@ -221,6 +221,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
 
 bh_error Engine::execute(bh_ir* bhir)
 {
+    TIMER_START
     exec_count++;
     DEBUG(TAG, "EXEC #" << exec_count);
     bh_error res = BH_SUCCESS;
@@ -286,7 +287,7 @@ bh_error Engine::execute(bh_ir* bhir)
             DEBUG(TAG, "SIJ END");
         }
     }
-
+    TIMER_STOP("EXECUTE")
     return res;
 }
 
