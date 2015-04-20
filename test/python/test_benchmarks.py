@@ -54,7 +54,7 @@ class test_gameoflife(BenchHelper, numpytest):
         # Benchmark parameters
         self.script     = "gameoflife"
         self.dtypes     = [bh.float64]
-        self.sizetxt    = "10*10*50"
+        self.sizetxt    = "10*10*50*1"
         self.inputfn    = "gameoflife_input-{0}-12*12.npz"
 
     def test_gameoflife(self, pseudo_arrays):
@@ -108,23 +108,21 @@ class test_heat_equation(BenchHelper, numpytest):
     def test_heat_equation(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
-""" Segfaults so we cannot test it.
 class test_jacobi(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
-        self.size = 2
+        self.config['maxerror'] = 0.001
+        self.size = 20
 
         # Benchmark parameters
         self.script     = "jacobi"
         self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "2"
+        self.sizetxt    = "1000*10"
         self.inputfn    = None
 
     def test_jacobi(self, pseudo_arrays):
         return self.run(pseudo_arrays)
-"""
 
 class test_jacobi_fixed(BenchHelper, numpytest):
 
@@ -142,7 +140,8 @@ class test_jacobi_fixed(BenchHelper, numpytest):
     def test_jacobi_fixed(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
-class test_jacobi_solve(BenchHelper, numpytest):
+
+class test_heat_equation(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
@@ -150,15 +149,15 @@ class test_jacobi_solve(BenchHelper, numpytest):
         self.size = 20
 
         # Benchmark parameters
-        self.script     = "jacobi_solve"
+        self.script     = "heat_equation"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "1000*1000*10"
         self.inputfn    = None
 
-    def test_jacobi_solve(self, pseudo_arrays):
+    def test_heat_equation(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
-class test_jacobi_stencil(BenchHelper, numpytest):
+class test_heat_equation_fixed(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
@@ -166,12 +165,12 @@ class test_jacobi_stencil(BenchHelper, numpytest):
         self.size = 20
 
         # Benchmark parameters
-        self.script     = "jacobi_stencil"
+        self.script     = "heat_equation_fixed"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "1000*1000*10"
         self.inputfn    = None
 
-    def test_jacobi_stencil(self, pseudo_arrays):
+    def test_heat_equation_fixed(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 """
@@ -180,7 +179,7 @@ Cannot test: k_nearest_neighbor.py
 It needs to have main() implemented.
 """
 
-class test_knn_naive1(BenchHelper, numpytest):
+class test_knn_naive(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
@@ -188,12 +187,12 @@ class test_knn_naive1(BenchHelper, numpytest):
         self.size=10000
 
         # Benchmark parameters
-        self.script     = "knn_naive1"
+        self.script     = "knn_naive"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "10000*100*3"
         self.inputfn    = None
 
-    def test_knn_naive1(self, pseudo_arrays):
+    def test_knn_naive(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 """
