@@ -21,6 +21,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include <string.h>
 #include <assert.h>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <boost/algorithm/string.hpp>
 
 #ifdef _WIN32
 
@@ -230,7 +234,7 @@ bh_error bh_component_init(bh_component *self, const char* name)
             env = syspath2;
             fclose(fp);
         }
-    }    
+    }
     // We could not find the configuration file anywhere
     if(env == NULL)
     {
@@ -380,6 +384,22 @@ bh_error bh_component_extmethod(const bh_component *self,
     return BH_EXTMETHOD_NOT_SUPPORTED;
 }
 
+/* Look up a key in the environment
+ * Private function
+ *
+ * @component The component.
+ * @key       The key to lookup in the config file
+ * @return    The value if found, otherwise NULL
+ */
+static char *lookup_env(const bh_component *component, const char* key)
+{
+    using namespace std;
+    stringstream ss;
+    ss << "BH_" << component->name << "_" << key;
+    string s = boost::to_upper_copy(ss.str());
+    return getenv(s.c_str());
+}
+
 /* Look up a key in the config file
  *
  * @component The component.
@@ -388,6 +408,10 @@ bh_error bh_component_extmethod(const bh_component *self,
  */
 char* bh_component_config_lookup(const bh_component *component, const char* key)
 {
+    char *env = lookup_env(component, key);
+    if(env != NULL)
+        return env;
+
     char dictkey[BH_COMPONENT_NAME_SIZE];
     snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
     return iniparser_getstring(component->config, dictkey, NULL);

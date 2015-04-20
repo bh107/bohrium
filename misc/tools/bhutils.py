@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 import ConfigParser
 import json
+import glob
 import os
+from os.path import join as pjoin, expanduser
+import argparse
+import shutil
 
 def print_timings(times):
     _, start = times[0]
@@ -98,7 +102,7 @@ def load_config(path=None):
         if os.path.exists(potential_path):
             path = potential_path
 
-        potential_path = os.sep.join([os.path.expanduser("~"), '.bohrium',
+        potential_path = os.sep.join([expanduser("~"), '.bohrium',
                                       'config.ini'])
         if os.path.exists(potential_path):
             path = potential_path
@@ -110,14 +114,14 @@ def load_config(path=None):
     if not path:                            # If none are found raise exception
         raise e("No config-file provided or found.")
 
-    p = ConfigParser.ConfigParser()         # Try and parse it
+    p = ConfigParser.SafeConfigParser()         # Try and parse it
     p.read(path)
 
     return p
 
 def import_bohrium():
     """Import/Load Bohrium with source-dumping enabled."""
-    
+
     os.environ['BH_VE_CPU_JIT_ENABLED']     = "1"
     os.environ['BH_VE_CPU_JIT_PRELOAD']     = "1"
     os.environ['BH_VE_CPU_JIT_OPTIMIZE']    = "0"
@@ -130,3 +134,77 @@ def import_bohrium():
 
     return (np, flush)
 
+def cmd_clean(args):
+    conf = load_config()
+
+    #Clean CPU's JIT cache
+    try:
+        s = conf.get("cpu", "object_path")
+        files = glob.glob(pjoin(s, "*.so"))
+        print "rm %s"%pjoin(s, "*.so")
+        for f in files:
+            os.remove(f)
+    except ConfigParser.NoOptionError:
+        pass
+
+    #Clean the cache of all fusers
+    for sec in conf.sections():
+        try:
+            if conf.get(sec, "type") == "fuser":
+                s = conf.get(sec, "cache_path")
+                print "rm -R %s"%s
+                shutil.rmtree(s)
+        except ConfigParser.NoOptionError:
+            pass
+        except OSError:
+            pass
+
+    #Clean the nvidia cache
+    try:
+        shutil.rmtree(pjoin(expanduser("~"), ".nv"))
+        print "rm -R ~/.nv"
+    except OSError:
+        pass
+
+def cmd_info(args):
+    print "The Bohrium Execution Stack:"
+    conf = load_config()
+    comp = conf.get("bridge", "children")
+    try:
+        while True:
+            print comp
+            comp = conf.get(comp, "children")
+    except ConfigParser.NoOptionError:
+        pass
+
+def main():
+
+    def parser_bohrium_src(parser, path):
+        """Check that 'path' points to the Bohrium source dir"""
+        path = os.path.expanduser(path)
+        if os.path.isdir(path):
+            return os.path.abspath(path)
+        else:
+            parser.error("The path %s does not exist!"%path)
+
+    parser = argparse.ArgumentParser(description='Set of utility functions for Bohrium.')
+#    parser.add_argument(
+#        'bohrium_src',
+#        help='Path to the Bohrium source-code.',
+#        type=lambda x: parser_bohrium_src(parser, x)
+#    )
+
+    subparsers = parser.add_subparsers()
+    parser_clean = subparsers.add_parser('clean', help='Cleanup of cache files such as the fuse and JIT cache.')
+    parser_clean.set_defaults(func=cmd_clean)
+
+    parser_info = subparsers.add_parser('info', help='Print Info.')
+    parser_info.set_defaults(func=cmd_info)
+
+    #Parse the args and call the relevant cmd_*() function
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
