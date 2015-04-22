@@ -127,7 +127,7 @@ private:
     std::set<std::vector<bh_index> > shapes;
     
     // sweep (reduce and accumulate) dimensions 
-    std::set<bh_int64> sweep_dims;
+    std::map<bh_intp, bh_int64> sweeps;
         
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
@@ -152,13 +152,14 @@ public:
     const std::multimap<bh_base*,bh_view>& get_input_map() const {return input_map;}
     const std::set<bh_view>& get_output_set() const {return output_set;}
     const std::set<bh_view>& get_input_set() const {return input_set;}
-
     const std::set<bh_base*>& get_temps() const {return temps;}
 
     /* Return a list of the unique bh_base's that are input or output from this kernel */
     //std::vector<bh_base> parameter_list() const;
 
     const std::set<std::vector<bh_index> >& get_shapes()const {return shapes;};
+
+    const std::map<bh_intp, bh_int64>& get_sweeps()const {return sweeps;};
 
     size_t get_view_id(const bh_view v) const {return views[v];}
 

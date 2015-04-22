@@ -567,6 +567,11 @@ void pprint(const GraphDW &dag, const char filename[])
                 }
                 out << "]  ";
             }
+            out << "\\lSweeps: ";
+            for (const std::pair<bh_intp, bh_int64> &sweep: graph[v].get_sweeps())
+            {
+                out << "(" << sweep.first << ", " << sweep.second << ")  ";
+            }
             out << "\\lInput views: \\l";
             BOOST_FOREACH(const bh_view &i, graph[v].get_input_set())
             {

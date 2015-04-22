@@ -205,7 +205,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         }
         if (bh_opcode_is_sweep(instr.opcode))
         {
-            sweep_dims.insert(instr.constant.value.int64);
+            sweeps[instr.operand[1].ndim] = instr.constant.value.int64;
         }
     }
     }
