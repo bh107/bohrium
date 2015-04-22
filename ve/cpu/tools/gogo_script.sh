@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+HOSTNAME=`hostname`
+
+TASKSET="taskset -c 0"
+BINDING=1
+DUMPSRC=1
+THREADS=1
+SCRIPT=~/bohrium/benchmark/python/black_scholes.py
+#SCRIPT=locate.py
+#SIZE=10000*10000*10
+SIZE=5000000*10
+
+echo "NumPy"
+BH_VE_CPU_JIT_FUSION=0 OMP_NUM_THREADS=$THREADS BH_VE_CPU_BIND=$BINDING BH_VE_CPU_JIT_DUMPSRC=$DUMPSRC $TASKSET python $SCRIPT --size=$SIZE --bohrium=False > $HOSTNAME.np.txt
+
+echo "Fusion"
+echo "STARTING..." >> $HOSTNAME.fused.txt
+for THREADS in 1 2 4 8 16 32
+do
+BH_VE_CPU_JIT_FUSION=1 OMP_NUM_THREADS=$THREADS BH_VE_CPU_BIND=$BINDING BH_VE_CPU_JIT_DUMPSRC=$DUMPSRC $TASKSET python $SCRIPT --size=$SIZE --bohrium=True >> $HOSTNAME.fused.txt
+done
+
+echo "SIJ"
+echo "STARTING..." >> $HOSTNAME.sij.txt
+for THREADS in 1 2 4 8 16 32
+do
+BH_VE_CPU_JIT_FUSION=0 OMP_NUM_THREADS=$THREADS BH_VE_CPU_BIND=$BINDING BH_VE_CPU_JIT_DUMPSRC=$DUMPSRC $TASKSET python $SCRIPT --size=$SIZE --bohrium=True >> $HOSTNAME.sij.txt
+done

@@ -47,6 +47,8 @@ if(MONO_FOUND)
   )
 
   install(FILES ${numcil_binaries} DESTINATION lib/mono COMPONENT bohrium-numcil)
+  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.dll)")  
+  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.Unsafe.dll)")  
 
 else()
   message("Cannot build NumCIL as Mono or xbuild is missing")

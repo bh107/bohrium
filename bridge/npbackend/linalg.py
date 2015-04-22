@@ -251,4 +251,9 @@ def norm(x, ord=None, axis=None):
     if axis != None:
         raise NotImplementedError("Unsupported value of param ord=%s" % axis)
 
-    return np.sqrt(np.sum(x*x))
+    r = np.sum(x*x)
+    if issubclass(np.dtype(r.dtype).type, np.integer):
+        r_f32 = np.empty(r.shape, dtype=np.float32)
+        r_f32[:] = r
+        r = r_f32
+    return np.sqrt(r)

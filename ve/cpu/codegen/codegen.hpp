@@ -190,7 +190,10 @@ std::string _cimag(std::string right);
 
 std::string _omp_reduction_oper(OPERATOR oper);
 
+// Anonymous critical section
 std::string _omp_critical(std::string expr);
+// Named critical section
+std::string _omp_critical(std::string expr, std::string name);
 std::string _omp_atomic(std::string expr);
 
 std::string _beef(std::string info);

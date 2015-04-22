@@ -11,10 +11,19 @@ const char TAG[] = "Utils";
 void tac_transform(tac_t& tac, SymbolTable& symbol_table)
 {
     switch(tac.op) {
-        case REDUCE:
+        case REDUCE_COMPLETE:
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op   = MAP;
                 tac.oper = IDENTITY;
+            }
+            break;
+
+        case REDUCE_PARTIAL:
+            if (symbol_table[tac.in1].layout == SCALAR) {
+                tac.op   = MAP;
+                tac.oper = IDENTITY;
+            } else if (symbol_table[tac.out].layout == SCALAR) {
+                tac.op = REDUCE_COMPLETE;
             }
             break;
 
@@ -371,6 +380,34 @@ std::string tac_text(const tac_t& tac)
     return ss.str();
 }
 
+string tac_text(const tac_t& tac, SymbolTable& symbol_table)
+{
+    std::stringstream ss;
+    ss << "{ op("<< operation_text(tac.op) << "(" << tac.op << ")),";
+    ss << " oper(" << operator_text(tac.oper) << "(" << tac.oper << ")),";
+    switch(tac_noperands(tac)) {
+        case 3:
+            ss << endl;
+            ss << " in2("  << tac.in2 << ") = ";
+            ss << operand_text(symbol_table[tac.in2]);
+            ss << ")";
+        case 2:
+            ss << endl;
+            ss << " in1("  << tac.in1 << ") = ";
+            ss << operand_text(symbol_table[tac.in1]);
+            ss << ")";
+        case 1:
+            ss << endl;
+            ss << " out("  << tac.out << ") = ";
+            ss << operand_text(symbol_table[tac.out]);
+            ss << ")";
+            break;
+    }
+    ss << endl;
+    ss << " }";
+    return ss.str();
+}
+
 uint32_t hash(std::string text)
 {
     uint32_t seed = 4200;
@@ -418,8 +455,11 @@ int tac_noperands(const tac_t& tac)
             return 3;
         case SCAN:
             return 3;
-        case REDUCE:
+        case REDUCE_COMPLETE:
             return 3;
+        case REDUCE_PARTIAL:
+            return 3;
+
         case GENERATE:
             switch(tac.oper) {
                 case FLOOD:

@@ -33,7 +33,8 @@ string operation_text(OPERATION op)
     switch(op) {
         case MAP:   return "MAP";
         case ZIP:   return "ZIP";
-        case REDUCE:   return "REDUCE";
+        case REDUCE_COMPLETE:   return "REDUCE_COMPLETE";
+        case REDUCE_PARTIAL:   return "REDUCE_PARTIAL";
         case SCAN:   return "SCAN";
         case GENERATE:   return "GENERATE";
         case SYSTEM:   return "SYSTEM";
@@ -203,21 +204,21 @@ string layout_text_shand(LAYOUT layout)
 {
     switch(layout) {
         case SCALAR_CONST:
-            return "CNST";
+            return "SCST";
         case SCALAR_TEMP:
-            return "TMPS";
+            return "STMP";
         case SCALAR:
             return "SCLR";
         case CONTRACTABLE:
-            return "TMPA";
+            return "ATMP";
         case CONTIGUOUS:
-            return "CONT";
+            return "ACOT";
         case CONSECUTIVE:
-            return "CONS";
+            return "ACOS";
         case STRIDED:
-            return "STRD";
+            return "ASTR";
         case SPARSE:
-            return "SPRS";
+            return "ASPS";
     }
     return "_ERR-LAYOUT-SH_";
 }

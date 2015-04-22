@@ -3,7 +3,7 @@ Linux
 
 The following instruct you on how to get going on the Ubuntu Linux distribution. There should however only be slight differences to other distributions such as which command to execute to install software packages.
 
-Install From Debian Package
+Install From Ubuntu Package
 ---------------------------
 
 To install Bohrium on Ubuntu simply add the nightly build repository to your system::
@@ -85,9 +85,9 @@ When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so`
 Install From Source Package
 ---------------------------
 
-Visit https://bitbucket.org/bohrium/bohrium/downloads and download a specific tarball release or the whole repository. Then build and install Bohrium as described in the following subsections.
+Visit https://github.com/bh107/bohrium/downloads and download a specific tarball release or the whole repository. Then build and install Bohrium as described in the following subsections.
 
-.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download: https://bitbucket.org/bohrium/bohrium/get/master.tgz.
+.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download: https://github.com/bh107/bohrium/get/master.tgz.
 
 Python / NumPy
 ~~~~~~~~~~~~~~
@@ -102,7 +102,7 @@ And some additional packages::
 
 Build and install::
 
-  wget https://bitbucket.org/bohrium/bohrium/get/master.tgz
+  wget https://github.com/bh107/bohrium/get/master.tgz
   tar -xzf master.tgz
   cd bohrium-bohrium-<hash>
   mkdir build

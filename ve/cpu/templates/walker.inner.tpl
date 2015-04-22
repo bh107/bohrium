@@ -1,10 +1,9 @@
 //
-// Codegen template is used for:
+//	Walks the iteration-space using outer/inner loop constructs.
 //
-//	* MAP|ZIP|GENERATE|FLOOD on STRIDED arrays of any dimension/rank.
+//	* MAP|ZIP|GENERATE|REDUCE_COMPLETE on STRIDED arrays of any dimension/rank.
 //
 //	Partitions work into chunks of size equal to the inner-most dimension.
-//	Distribites work staticly/evenly among threads.
 //
 {
     const int64_t inner_dim  = iterspace->ndim-1;
@@ -22,7 +21,10 @@
     const int64_t nworkers      = nchunks > mthreads ? mthreads : 1;
     const int64_t work_split    = nchunks / nworkers;
     const int64_t work_spill    = nchunks % nworkers;
-    
+   
+    // Initialize accumulated operand
+    {{ACCU_OPD_INIT}}
+ 
     #pragma omp parallel num_threads(nworkers)
     {
         const int tid = omp_get_thread_num();
@@ -42,6 +44,11 @@
         {{WALKER_STRIDE_INNER}}
         // Walker STRIDE_INNER - end
 
+        // Accumulator DECLARE - begin
+        {{ACCU_LOCAL_DECLARE}}
+        // Accumulator DECLARE - end        
+
+        // Iteration space
         const int64_t eidx_begin = work_offset*chunksize;
         const int64_t eidx_end   = work_end*chunksize;
         for(int64_t eidx=eidx_begin; eidx<eidx_end; eidx+=chunksize) {
@@ -66,10 +73,16 @@
                 {{WALKER_STEP_INNER}}
                 // Walker step INNER - end
             }
-            if (0==tid) {   // Write EXPANDED scalars back to memory.
+			// Write EXPANDED scalars back to memory - begin
+            if (0==tid) {
                 {{WRITE_EXPANDED_SCALARS}}
             }
-        }}
+			// Write EXPANDED scalars back to memory - end
+        }
+        // Accumulator SYNC - begin
+        {{ACCU_OPD_SYNC}}
+        // Accumulator SYNC - end
+        }
     }
 }
 

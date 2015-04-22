@@ -15,7 +15,7 @@ require "formula"
 
 class Bohrium < Formula
   homepage "http://bh107.org/"
-  head "https://bitbucket.org/bohrium/bohrium.git"
+  head "https://github.com/bh107/bohrium.git"
   url "%s"
   version "%s"
   sha1 "%s"
@@ -26,11 +26,11 @@ class Bohrium < Formula
   depends_on "Python" => :build
   depends_on "boost" => [:build,  "universal"]
   depends_on "numpy" => :build
-  depends_on "cython" => [:python, :build]
+  depends_on "cython" => [:python, "cython", :build]
   depends_on "cheetah" => [:python, "Cheetah.Template", :build]
 
   head do
-    url "https://bitbucket.org/bohrium/bohrium.git"
+    url "https://github.com/bh107/bohrium.git"
   end
 
   def install
@@ -80,7 +80,7 @@ def main(args):
     bh_version = bash_cmd("git describe --tags --long --match *v[0-9]* ", cwd=SRC).strip()
     bh_commit = bash_cmd("git rev-parse HEAD", cwd=SRC).strip()
 
-    zip_url = "https://bitbucket.org/bohrium/bohrium/get/%s.zip" % bh_commit
+    zip_url = "https://codeload.github.com/bh107/bohrium/zip/%s" % bh_commit
 
     # Get the source
     bash_cmd("curl ""%s"" -o ""%s/%s.zip"""%(zip_url, args.output, bh_version), cwd=SRC)

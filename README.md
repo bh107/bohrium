@@ -1,7 +1,7 @@
 Welcome!
 ========
 
-[![Build Status](https://drone.io/bitbucket.org/bohrium/bohrium/status.png)](https://drone.io/bitbucket.org/bohrium/bohrium/latest)
+[![Build Status](https://travis-ci.org/bh107/bohrium.svg?branch=master)](https://travis-ci.org/bh107/bohrium)
 
 Bohrium provides a runtime environment for efficiently executing vectorized applications using your favorourite programming languange Python/NumPy, C#, F# on Linux, Windows and MacOSX.
 

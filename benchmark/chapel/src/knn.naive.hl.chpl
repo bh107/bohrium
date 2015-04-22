@@ -1,6 +1,0 @@
-module Knn {
-    
-    proc main() {
-        
-    }
-}

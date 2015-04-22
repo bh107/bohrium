@@ -9,6 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>NumCIL.Bohrium</RootNamespace>
     <AssemblyName>NumCIL.Bohrium</AssemblyName>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\keypair.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
