@@ -23,7 +23,6 @@ extern "C" {
 %set $elementwise = $data[0]
 %set $reduction = $data[1]
 %set $accumulate = $data[2]
-%set $types = $data[3]
 
 // Copy methods
 
@@ -93,20 +92,8 @@ DLLEXPORT void bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op1_type
 DLLEXPORT void bh_multi_array_${op2_type[2]}_${opname}(bh_multi_array_${op1_type[2]}_p out,
                                     const bh_multi_array_${op2_type[2]}_p in,
                                     ${op3_type[1]} axis);
-
 %end for
 %end for
-
-// Sign functions
-
-%for $ctype, $bh_atype, $bh_ctype, $bh_enum in $types
-%if $bh_atype != "bh_complex64" and $bh_atype != "bh_complex128" and $bh_atype != "bh_uint8" and $bh_atype != "bh_uint16" and $bh_atype != "bh_uint32" and $bh_atype != "bh_uint64" and $bh_atype != "bh_bool"
-DLLEXPORT void bh_multi_array_${bh_ctype}_sign(bh_multi_array_${bh_ctype}_p self, 
-                                    bh_multi_array_${bh_ctype}_p out);
-                                    
-%end if
-%end for
-
 
 #ifdef __cplusplus
 }

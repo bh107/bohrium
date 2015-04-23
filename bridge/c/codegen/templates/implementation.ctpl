@@ -11,7 +11,6 @@ directiveStartToken = %
 %set $elementwise = $data[0]
 %set $reduction = $data[1]
 %set $accumulate = $data[2]
-%set $types = $data[3]
 
 using namespace bxx;
 

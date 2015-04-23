@@ -299,20 +299,4 @@ int bh_multi_array_extmethod_${bh_ctype}_${bh_ctype2}_${bh_ctype3}(const char *n
         %end for
     %end for
 
-%if $bh_atype != "bh_complex64" and $bh_atype != "bh_complex128" and $bh_atype != "bh_uint8" and $bh_atype != "bh_uint16" and $bh_atype != "bh_uint32" and $bh_atype != "bh_uint64" and $bh_atype != "bh_bool"
-
-// Sign
-void bh_multi_array_${bh_ctype}_sign(bh_multi_array_${bh_ctype}_p self, bh_multi_array_${bh_ctype}_p out) {
-
-    multi_array<${ctype}> *o = (multi_array<${ctype}> *) out;
-    multi_array<${ctype}> *s = (multi_array<${ctype}> *) self;
-
-    multi_array<${ctype}> t0 = ((s < 0) * ((${bh_atype})-1));
-    multi_array<${ctype}> t1 = ((s > 0) * ((${bh_atype})1));
-
-    bh_add(*o, t0, t1);
-}
-
-%end if
-
 %end for
