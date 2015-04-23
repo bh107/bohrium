@@ -85,9 +85,9 @@ When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so`
 Install From Source Package
 ---------------------------
 
-Visit https://bitbucket.org/bohrium/bohrium/downloads and download a specific tarball release or the whole repository. Then build and install Bohrium as described in the following subsections.
+Visit https://github.com/bh107/bohrium/downloads and download a specific tarball release or the whole repository. Then build and install Bohrium as described in the following subsections.
 
-.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download: https://bitbucket.org/bohrium/bohrium/get/master.tgz.
+.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download: https://github.com/bh107/bohrium/get/master.tgz.
 
 Python / NumPy
 ~~~~~~~~~~~~~~
@@ -102,7 +102,7 @@ And some additional packages::
 
 Build and install::
 
-  wget https://bitbucket.org/bohrium/bohrium/get/master.tgz
+  wget https://github.com/bh107/bohrium/get/master.tgz
   tar -xzf master.tgz
   cd bohrium-bohrium-<hash>
   mkdir build
