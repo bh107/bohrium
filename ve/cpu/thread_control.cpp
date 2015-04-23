@@ -1,6 +1,6 @@
 #include "thread_control.hpp"
-
 #include <stdlib.h>
+#include <sstream>
 
 #if defined(VE_CPU_BIND)
 #include <omp.h>
@@ -19,8 +19,8 @@ namespace cpu{
 
 const char ThreadControl::TAG[] = "ThreadControl";
 
-ThreadControl::ThreadControl(thread_binding binding, size_t mthreads)
-    : binding_(binding), mthreads_(mthreads)
+ThreadControl::ThreadControl(thread_binding binding, size_t thread_limit)
+    : binding_(binding), thread_limit_(thread_limit)
 {
     char* env;
 
@@ -32,8 +32,8 @@ ThreadControl::ThreadControl(thread_binding binding, size_t mthreads)
     // experiment :)
     //
     env = getenv("OMP_NUM_THREADS");
-    if ((NULL != env) or (0 == mthreads_)) {
-        mthreads_ = omp_get_max_threads(); 
+    if ((NULL != env) or (0 == thread_limit_)) {
+        thread_limit_ = omp_get_max_threads(); 
     }
 
     // If GOMP_CPU_AFFINITY is used we let the compiler handle affinity
@@ -53,7 +53,12 @@ ThreadControl::~ThreadControl(void)
 
 string ThreadControl::text(void)
 {
-    return "Textual representation of thread-control is not implemented";
+    stringstream ss;
+    ss << "ThreadControl {" << endl;
+    ss << "  binding = " << get_binding() << "," << endl;
+    ss << "  thread_limit = " << get_thread_limit() << endl;
+    ss << "}";
+    return ss.str();
 }
 
 thread_binding ThreadControl::get_binding(void)
@@ -61,9 +66,9 @@ thread_binding ThreadControl::get_binding(void)
     return binding_;
 }
 
-size_t ThreadControl::get_mthreads(void)
+size_t ThreadControl::get_thread_limit(void)
 {
-    return mthreads_;
+    return thread_limit_;
 }
 
 #if defined(VE_CPU_BIND)

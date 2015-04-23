@@ -16,9 +16,14 @@ Compiler::~Compiler() {}
 string Compiler::text()
 {
     stringstream ss;
-    ss << "Compiler(\"" << process_str("OBJ", "SRC") << "\")";
-    ss << endl;
-
+    ss << "Compiler {" << endl;
+    ss << "  cmd = '" << cmd_ << "'," << endl;
+    ss << "  inc = '" << inc_ << "'," << endl;
+    ss << "  lib = '" << lib_ << "'," << endl;
+    ss << "  flg = '" << flg_ << "'," << endl;
+    ss << "  ext = '" << ext_ << "'," << endl;
+    ss << "  process_str = '" << process_str("OBJ", "SRC") << "'" << endl;
+    ss << "}";
     return ss.str();
 }
 
