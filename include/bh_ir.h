@@ -93,6 +93,12 @@ private:
     // Set of temporary base-arrays in this kernel.
     std::set<bh_base*> temps;
 
+    // Set of base-arrays that are freed and not in temps i.e. created elsewhere
+    std::set<bh_base*> frees;
+
+    // Set of base-arrays that are discarded and not in temps i.e. created elsewhere
+    std::set<bh_base*> discards;
+
     // Set of base-arrays that are synced by this kernel.
     std::set<bh_base*> syncs;
     
@@ -153,6 +159,8 @@ public:
     const std::set<bh_view>& get_output_set() const {return output_set;}
     const std::set<bh_view>& get_input_set() const {return input_set;}
     const std::set<bh_base*>& get_temps() const {return temps;}
+    const std::set<bh_base*>& get_frees() const {return frees;}
+    const std::set<bh_base*>& get_discards() const {return discards;}
 
     /* Return a list of the unique bh_base's that are input or output from this kernel */
     //std::vector<bh_base> parameter_list() const;

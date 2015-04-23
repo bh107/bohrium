@@ -590,6 +590,18 @@ void pprint(const GraphDW &dag, const char filename[])
                 bh_sprint_base(i, buf);
                 out << buf << "\\l";
             }
+            out << "Free base-arrays: \\l";
+            BOOST_FOREACH(bh_base* i, graph[v].get_frees())
+            {
+                bh_sprint_base(i, buf);
+                out << buf << "\\l";
+            }
+            out << "Discard base-arrays: \\l";
+            BOOST_FOREACH(bh_base* i, graph[v].get_discards())
+            {
+                bh_sprint_base(i, buf);
+                out << buf << "\\l";
+            }
             /* out << "Parameter base-arrays: \\l"; */
             /* BOOST_FOREACH(const bh_base *i, graph[v].parameter_list()) */
             /* { */

@@ -160,24 +160,41 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         break;
     case  BH_DISCARD:
     {
+        bool temp = false;
         //When discarding we might have to remove arrays from 'outputs' and add
         //them to 'temps' (if the discared array isn't synchronized)
         bh_base* base = instr.operand[0].base;
         if(syncs.find(base) == syncs.end())
         {
             auto range = output_map.equal_range(base);
+            if (range.first != range.second)
+                temp = true;
             for (auto it = range.first; it != range.second; ++it)
                 output_set.erase(it->second);
             output_map.erase(base);
             //If the discarded array isn't in 'inputs' (and not in 'outputs')
             //then it is a temp array
-            if(input_map.find(base) == input_map.end())
+            if(temp && input_map.find(base) == input_map.end())
+            {
                 temps.insert(base);
+                frees.erase(base);
+            }
+            else
+                temp = false;
+
         }
+        if (!temp) // It is a discard of an array created elsewhere 
+            discards.insert(base);
     }
-        break;
+    break;
     case BH_FREE:
-        break;
+    {
+        bh_base* base = instr.operand[0].base;
+        if (temps.find(base) == temps.end())
+            // It is a free of an array created elsewhere 
+            frees.insert(base);
+    }
+    break;
     default:
     {
         const int nop = bh_operands(instr.opcode);
