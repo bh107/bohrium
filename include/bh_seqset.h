@@ -59,15 +59,15 @@ public:
         return it->second;
     }
 
-    /* std::map<size_t, typename T>::iterator begin() */
-    /* { */
-    /*     return _rmap.begin(); */
-    /* } */
+    typename std::map<size_t, T>::const_iterator cbegin() const
+    {
+        return _rmap.cbegin();
+    }
     
-    /* std::map<size_t, typename T>::iterator end() */
-    /* { */
-    /*     return _rmap.end(); */
-    /* } */
+    typename std::map<size_t, T>::const_iterator cend() const
+    {
+        return _rmap.cend();
+    }
     
 };
 
