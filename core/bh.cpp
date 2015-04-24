@@ -276,26 +276,26 @@ inline int gcd(int a, int b)
  * @view The view
  * @return The simplified view
  */
-bh_view bh_view_simplify(const bh_view *view)
+bh_view bh_view_simplify(const bh_view& view)
 {
     bh_view res;
-    res.base = view->base;
+    res.base = view.base;
     res.ndim = 0;
-    res.start = view->start;
-    res.shape[0] = view->shape[0];
-    res.stride[0] = view->stride[0];
-    for (bh_intp i = 1; i < view->ndim; ++i)
+    res.start = view.start;
+    res.shape[0] = view.shape[0];
+    res.stride[0] = view.stride[0];
+    for (bh_intp i = 1; i < view.ndim; ++i)
     {
-        if (view->shape[i] == 1)
+        if (view.shape[i] == 1)
             continue;
-        if (view->shape[i]*view->stride[i] == res.stride[res.ndim])
+        if (view.shape[i]*view.stride[i] == res.stride[res.ndim])
         {
-            res.shape[res.ndim] *= view->shape[i];
-            res.stride[res.ndim] = view->stride[i];
+            res.shape[res.ndim] *= view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
         } else {
             ++res.ndim;
-            res.shape[res.ndim]  = view->shape[i];
-            res.stride[res.ndim] = view->stride[i];
+            res.shape[res.ndim]  = view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
         }
     }
     if (res.shape[res.ndim] > 1)
@@ -346,8 +346,8 @@ bool bh_view_aligned(const bh_view *a, const bh_view *b)
 {
     if(bh_is_constant(a) || bh_is_constant(b))
         return true;
-    bh_view sa = bh_view_simplify(a);
-    bh_view sb = bh_view_simplify(b);
+    bh_view sa = bh_view_simplify(*a);
+    bh_view sb = bh_view_simplify(*b);
     return sa == sb;
 }
 

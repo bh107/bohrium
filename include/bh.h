@@ -278,7 +278,7 @@ DLLEXPORT void bh_flag_constant(bh_view* o);
  * @view The view
  * @return The simplified view
  */
-DLLEXPORT bh_view bh_view_simplify(const bh_view *view);
+DLLEXPORT bh_view bh_view_simplify(const bh_view &view);
 
 /* Determines whether two views have same shape.
  *

@@ -105,37 +105,7 @@ void bh_ir_kernel::clear()
     output_map.clear();
     temps.clear();
     views.clear();
-}
-
-void bh_ir_kernel::view_set::clear()
-{
-    maxid = 0;
-    views.clear();
-}
-
-std::pair<bool,bh_view> bh_ir_kernel::view_set::insert(const bh_view &v)
-{
-    if (bh_is_constant(&v))
-        throw bh_ir_kernel::view_exception(-1);
-    
-    bh_view sv = bh_view_simplify(&v);
-    auto it = views.find(sv);
-    if (it == views.end())
-    {
-        views.insert(std::make_pair(sv,maxid++));
-        return std::make_pair(true,sv);
-        
-    } else {  
-        return  std::make_pair(false,sv);
-    }
-}
-
-size_t bh_ir_kernel::view_set::operator[] (const bh_view &v) const
-{
-    auto it = views.find(bh_view_simplify(&v));
-    if (it == views.end())
-        throw bh_ir_kernel::view_exception(-1);
-    return it->second;
+    parameters.clear();
 }
 
 /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
@@ -204,20 +174,22 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             const bh_view &v = instr.operand[i];
             if(bh_is_constant(&v))
                 continue;
-            std::pair<bool,bh_view> vid = views.insert(v);
-            if (vid.first) // If we have not seen the view before add it to inputs
+            bh_view sv = bh_view_simplify(v);
+            std::pair<size_t,bool> vid = views.insert(sv);
+            if (vid.second) // If we have not seen the view before add it to inputs
             {
-                input_map.insert(std::make_pair(vid.second.base,vid.second));
-                input_set.insert(vid.second);
+                input_map.insert(std::make_pair(sv.base,sv));
+                input_set.insert(sv);
             }
             shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
         //Add the output of the instruction to 'outputs'
         {
             const bh_view &v = instr.operand[0];
-            bh_view vid = views.insert(v).second;
-            output_map.insert(std::make_pair(vid.base,vid));
-            output_set.insert(vid);
+            bh_view sv = bh_view_simplify(v);
+            views.insert(sv);
+            output_map.insert(std::make_pair(sv.base,sv));
+            output_set.insert(sv);
             shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
         if (bh_opcode_is_sweep(instr.opcode))

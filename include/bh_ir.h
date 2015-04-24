@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "bh_type.h"
 #include "bh_error.h"
+#include "bh_seqset.h"
 
 // Forward declaration of class boost::serialization::access
 namespace boost {namespace serialization {class access;}}
@@ -102,23 +103,8 @@ private:
     // Set of base-arrays that are synced by this kernel.
     std::set<bh_base*> syncs;
     
-    // List of unique views used in this kernel
-    class view_set
-    {
-    private:
-        size_t maxid;
-        std::map<bh_view,size_t> views;
-    public:
-        view_set(): maxid(0) {};
-        void clear();
-        std::pair<bool,bh_view> insert(const bh_view &v);
-        size_t operator[] (const bh_view &v) const; 
-    } views;
-    struct view_exception 
-    {
-        int code;
-        view_exception(int c) : code(c) {};
-    };
+    seqset<bh_view> views;
+    seqset<bh_base*> parameters;
 
     // List of input and output to this kernel.
     // NB: system instruction (e.g. BH_DISCARD) is
@@ -127,7 +113,6 @@ private:
     std::set<bh_view>               output_set;
     std::multimap<bh_base*,bh_view> input_map;
     std::set<bh_view>               input_set;
-
 
     // Shapes used in this kernel
     std::set<std::vector<bh_index> > shapes;
@@ -161,9 +146,6 @@ public:
     const std::set<bh_base*>& get_temps() const {return temps;}
     const std::set<bh_base*>& get_frees() const {return frees;}
     const std::set<bh_base*>& get_discards() const {return discards;}
-
-    /* Return a list of the unique bh_base's that are input or output from this kernel */
-    //std::vector<bh_base> parameter_list() const;
 
     const std::set<std::vector<bh_index> >& get_shapes()const {return shapes;};
 
