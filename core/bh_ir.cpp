@@ -148,6 +148,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             {
                 temps.insert(base);
                 frees.erase(base);
+                parameters.erase(base);
             }
             else
                 temp = false;
@@ -180,6 +181,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             {
                 input_map.insert(std::make_pair(sv.base,sv));
                 input_set.insert(sv);
+                parameters.insert(sv.base);
             }
             shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
@@ -190,6 +192,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             views.insert(sv);
             output_map.insert(std::make_pair(sv.base,sv));
             output_set.insert(sv);
+            parameters.insert(sv.base);
             shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
         if (bh_opcode_is_sweep(instr.opcode))

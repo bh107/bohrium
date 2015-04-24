@@ -103,7 +103,10 @@ private:
     // Set of base-arrays that are synced by this kernel.
     std::set<bh_base*> syncs;
     
+    // Sequence set of views used in this kernel
     seqset<bh_view> views;
+
+    // Sequence set of base arrays used for input and output
     seqset<bh_base*> parameters;
 
     // List of input and output to this kernel.
@@ -146,6 +149,7 @@ public:
     const std::set<bh_base*>& get_temps() const {return temps;}
     const std::set<bh_base*>& get_frees() const {return frees;}
     const std::set<bh_base*>& get_discards() const {return discards;}
+    const seqset<bh_base*>& get_parameters() const {return parameters;}
 
     const std::set<std::vector<bh_index> >& get_shapes()const {return shapes;};
 

@@ -43,7 +43,7 @@ public:
         auto it = _map.find(v);
         if (it != _map.end())
         {
-            _rmap.erase(it.second);
+            _rmap.erase(it->second);
             _map.erase(it);
             return 1;
         } else
@@ -59,12 +59,12 @@ public:
         return it->second;
     }
 
-    typename std::map<size_t, T>::const_iterator cbegin() const
+    typename std::map<size_t, T>::const_iterator begin() const
     {
         return _rmap.cbegin();
     }
     
-    typename std::map<size_t, T>::const_iterator cend() const
+    typename std::map<size_t, T>::const_iterator end() const 
     {
         return _rmap.cend();
     }

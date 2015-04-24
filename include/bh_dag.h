@@ -584,31 +584,30 @@ void pprint(const GraphDW &dag, const char filename[])
                 bh_sprint_view(&i, buf);
                 out << graph[v].get_view_id(i) << ":" << buf << "\\l";
             }
+            out << "Parameters: \\l";
+            for (const std::pair<size_t,bh_base*>& p: graph[v].get_parameters())
+            {
+                bh_sprint_base(p.second, buf);
+                out << "[" << p.first << "]" << buf << "\\l";
+            }
             out << "Temp base-arrays: \\l";
-            BOOST_FOREACH(bh_base* i, graph[v].get_temps())
+            BOOST_FOREACH(const bh_base* i, graph[v].get_temps())
             {
                 bh_sprint_base(i, buf);
                 out << buf << "\\l";
             }
             out << "Free base-arrays: \\l";
-            BOOST_FOREACH(bh_base* i, graph[v].get_frees())
+            BOOST_FOREACH(const bh_base* i, graph[v].get_frees())
             {
                 bh_sprint_base(i, buf);
                 out << buf << "\\l";
             }
             out << "Discard base-arrays: \\l";
-            BOOST_FOREACH(bh_base* i, graph[v].get_discards())
+            BOOST_FOREACH(const bh_base* i, graph[v].get_discards())
             {
                 bh_sprint_base(i, buf);
                 out << buf << "\\l";
             }
-            /* out << "Parameter base-arrays: \\l"; */
-            /* BOOST_FOREACH(const bh_base *i, graph[v].parameter_list()) */
-            /* { */
-            /*     bh_sprint_base(i, buf); */
-            /*     out << buf << "\\l"; */
-            /* } */
-            /* out << "Instruction list: \\l"; */
             BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes)
             {
                 const bh_instruction &instr = graph[v].bhir->instr_list[idx];
