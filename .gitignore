@@ -81,3 +81,6 @@ benchmark/CIL/Csharp/reactiondiffusion/obj
 bridge/NumCIL/NumCIL.Unsafe/ApplyBinary.cs
 bridge/NumCIL/NumCIL.Unsafe/ApplyNullary.cs
 bridge/NumCIL/NumCIL.Unsafe/ApplyUnary.cs
+bridge/NumCIL/NumCIL/UFunc/TypedApplyBinary.cs
+bridge/NumCIL/NumCIL/UFunc/TypedApplyNullary.cs
+bridge/NumCIL/NumCIL/UFunc/TypedApplyUnary.cs

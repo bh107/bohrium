@@ -82,8 +82,6 @@ foreach(string fulltypename in new string[] {"Ta", "System.SByte", "System.Byte"
 	if ((fulltypename == "System.Single" || fulltypename == "System.Double") && (opname == "And" || opname == "Or" || opname == "Xor"))
 		continue;
 
-	//string opstruct = string.Format("new NumCIL.{0}.{1}()", typename, opname);
-	//string opparamttype = "NumCIL.Generic.Operators.I" + opname;
 	string opparamttype = string.Format("NumCIL.{0}.{1}", typename, opname);
 	string fulltypename_out = fulltypename;
 
@@ -103,7 +101,6 @@ foreach(string fulltypename in new string[] {"Ta", "System.SByte", "System.Byte"
 			continue;
 
 		fulltypename_out = "Tb";
-		//opstruct = "opparam";
 		opparamttype = "C";
 	}
 	else if (fulltypename == "Ta")
