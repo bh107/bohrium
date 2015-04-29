@@ -57,7 +57,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
 	if (opname == "Not" && typename != "Boolean")
 		continue;
 
-	if (typename == "Boolean" && !(opname == "Not" || convertOps.Any(x => x == opname)))
+	if (typename == "Boolean" && !(opname == "Not" || opname == "C" || convertOps.Any(x => x == opname)))
 		continue;
 
 	if ((opname == "Abs" || opname == "Sign") && nctype.StartsWith("U"))

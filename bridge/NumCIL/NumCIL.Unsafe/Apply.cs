@@ -90,7 +90,7 @@ namespace NumCIL.Unsafe
 			if (!_resolvedMethods.TryGetValue(key, out f))
 			{
 				var n = typeof(Apply).GetMethod("UFunc_Op_Inner_Unary_Scalar_Flush_" + typeof(Ta).Name + "_TypedImpl", 
-					System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static,
+					System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
 					null,
 					new Type[] {
 					op.GetType(),
@@ -251,6 +251,80 @@ namespace NumCIL.Unsafe
 				f.Invoke(null, new object[] { op, in1, scalar, @out });
 				return true;
 			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Attempts to use a typed version of the Binary call, 
+		/// to avoid dependency on the JIT being able to inline struct methods
+		/// </summary>
+		/// <typeparam name="C">The type of operation to perform</typeparam>
+		/// <param name="op">The operation instance</param>
+		/// <param name="in1">The left-hand-side input argument</param>
+		/// <param name="in2">The right-hand-side input argument</param>
+		/// <param name="out">The output target</param>
+		internal static bool UFunc_Reduce_Inner_Flush_Typed<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
+		{
+			System.Reflection.MethodInfo f;
+			var key = typeof(T).FullName + "#" + op.GetType().FullName + "#RED";
+			if (!_resolvedMethods.TryGetValue(key, out f))
+			{
+				var n = typeof(Reduce).GetMethod("UFunc_Reduce_Inner_Flush_" + typeof(T).Name + "_TypedImpl", 
+					System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
+					null,
+					new Type[] {
+					op.GetType(),
+					axis.GetType(),
+					in1.GetType(),
+					@out.GetType()
+				}, null);
+
+				_resolvedMethods[key] = f = n == null ? null : n.MakeGenericMethod(new Type[] { op.GetType() });
+			}
+
+			if (f != null)
+			{
+				f.Invoke(null, new object[] { op, axis, in1, @out });
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Attempts to use a typed version of the Binary call, 
+		/// to avoid dependency on the JIT being able to inline struct methods
+		/// </summary>
+		/// <typeparam name="C">The type of operation to perform</typeparam>
+		/// <param name="op">The operation instance</param>
+		/// <param name="in1">The left-hand-side input argument</param>
+		/// <param name="in2">The right-hand-side input argument</param>
+		/// <param name="out">The output target</param>
+		internal static bool UFunc_Aggregate_Entry_Typed<T, C>(C op, NdArray<T> in1, out T @out)
+		{
+			System.Reflection.MethodInfo f;
+			var key = typeof(T).FullName + "#" + op.GetType().FullName + "#AGR";
+			if (!_resolvedMethods.TryGetValue(key, out f))
+			{
+				var n = typeof(Aggregate).GetMethod("Aggregate_Entry_" + typeof(T).Name + "_TypedImpl", 
+					System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
+					null,
+					new Type[] {
+					op.GetType(),
+					in1.GetType()
+				}, null);
+
+				_resolvedMethods[key] = f = n == null ? null : n.MakeGenericMethod(new Type[] { op.GetType() });
+			}
+
+			if (f != null)
+			{
+				@out = (T)f.Invoke(null, new object[] { op, in1 });
+				return true;
+			}
+			else
+				@out = default(T);
 
 			return false;
 		}

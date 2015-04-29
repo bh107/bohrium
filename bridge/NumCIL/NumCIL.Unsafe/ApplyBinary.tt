@@ -58,7 +58,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
 	string typename_out = typename;
 
 
-	if (typename == "Boolean" && opname != "And" && opname != "Or" && opname != "Xor")
+	if (typename == "Boolean" && opname != "And" && opname != "Or" && opname != "Xor" && opname != "C")
 		continue;
 		
 	if ((typename == "Single" || typename == "Double") && (opname == "And" || opname == "Or" || opname == "Xor"))

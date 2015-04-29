@@ -1,5 +1,8 @@
-﻿<#@ template debug="false" hostspecific="false" language="C#" #>
-<#@ output extension=".cs" #>
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
 #region Copyright
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
@@ -32,7 +35,33 @@ namespace NumCIL.Unsafe
 {
     internal static class Aggregate
     {
-<# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) { #>
+<# 
+var opnames = new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "Max", "Pow", "And", "Or", "Xor"};
+
+foreach(string opname in new string[] {"C"}.Union(opnames))
+foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double", "Boolean"}) { 
+
+	var nctype = typename;
+	if (nctype == "SByte")
+		nctype = "Int8";
+	else if (nctype == "Byte")
+		nctype = "UInt8";
+	else if (nctype == "Single")
+		nctype = "Float";
+
+	string structname = opname == "C" ? "C" : string.Format("NumCIL.{0}.{1}", nctype, opname);
+	string methodextra = opname == "C" ? "" : "_TypedImpl";
+	string outbyref = opname == "C" ? "ref " : "";
+
+
+	if (typename == "Boolean" && opname != "And" && opname != "Or" && opname != "Xor")
+		continue;
+		
+	if ((typename == "Single" || typename == "Double") && (opname == "And" || opname == "Or" || opname == "Xor"))
+		continue;
+
+
+#>
         /// <summary>
         /// Calculates the scalar result of applying the binary operation to all elements
         /// </summary>
@@ -40,10 +69,24 @@ namespace NumCIL.Unsafe
         /// <param name="op">The operation to perform</param>
         /// <param name="in1">The array to aggregate</param>
         /// <returns>A scalar value that is the result of aggregating all elements</returns>
-        private static System.<#=typename#> Aggregate_Entry_<#=typename#><C>(C op, NdArray<System.<#=typename#>> in1)
+        private static System.<#=typename#> Aggregate_Entry_<#=typename#><#=methodextra#><C>(<#=structname#> op, NdArray<System.<#=typename#>> in1)
             where C : struct, IBinaryOp<System.<#=typename#>>
         {
             System.<#=typename#> result;
+
+<# 
+	if (opname == "C")
+	{
+#>
+			if (Apply.UFunc_Aggregate_Entry_Typed<System.<#=typename#>, <#=structname#>>(op, in1, out result))
+				return result;
+
+#if DEBUG
+			Console.WriteLine("Generic Aggregate method <#=structname#> for <#=typename#>, with op = {0}, T = {1}", op.GetType(), typeof(System.<#=typename#>));
+#endif
+<# 
+	} 
+#>
             unsafe
             {
                 using (var f1 = new Pinner(in1.DataAccessor))
