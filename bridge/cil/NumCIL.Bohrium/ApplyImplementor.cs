@@ -21,7 +21,12 @@ namespace NumCIL.Bohrium
 {    
     public class ApplyImplementor : UFunc.IApplyHandler
     {
-        public static Action<Type, Type[]> DEBUG_FALLBACK = (a, b) => Console.WriteLine("*** Unhandled op {0} for types [ {1} ]", a.FullName,string.Join(",", b.Select(n => n.ToString())));
+        public static Action<Type, Type[]> DEBUG_FALLBACK = (a, b) => 
+#if DEBUG
+			Console.WriteLine("*** Unhandled op {0} for types [ {1} ]", a.FullName,string.Join(",", b.Select(n => n.ToString())));
+#else
+			{ };
+#endif
         
         private static Dictionary<Type, object> _implementors = new Dictionary<Type, object>();
         
