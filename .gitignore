@@ -33,7 +33,6 @@ doc/source/users/pythonnumpygen
 */CIL/*/bin/*
 */CIL/*/obj/*
 bridge/NumCIL/NumCIL.Unsafe/Aggregate.cs
-bridge/NumCIL/NumCIL.Unsafe/Apply.cs
 bridge/NumCIL/NumCIL.Unsafe/Copy.cs
 bridge/NumCIL/NumCIL.Unsafe/CreateAccessor.cs
 bridge/NumCIL/NumCIL.Unsafe/Pinner.cs
@@ -79,3 +78,6 @@ benchmark/CIL/Csharp/reationdiffusion/bin
 benchmark/CIL/Csharp/reationdiffusion/obj
 benchmark/CIL/Csharp/reactiondiffusion/bin
 benchmark/CIL/Csharp/reactiondiffusion/obj
+bridge/NumCIL/NumCIL.Unsafe/ApplyBinary.cs
+bridge/NumCIL/NumCIL.Unsafe/ApplyNullary.cs
+bridge/NumCIL/NumCIL.Unsafe/ApplyUnary.cs

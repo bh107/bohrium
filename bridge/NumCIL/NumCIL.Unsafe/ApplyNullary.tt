@@ -1,0 +1,186 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+#region Copyright
+/*
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with Bohrium. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NumCIL.Generic;
+using System.Runtime.InteropServices;
+
+namespace NumCIL.Unsafe
+{
+    internal static partial class Apply
+    {
+<# 
+
+foreach(string opname in new string[] {"C", "RandomGeneratorOp", "RangeGeneratorOp"}) 
+foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) { 
+
+	var nctype = typename;
+	if (nctype == "SByte")
+		nctype = "Int8";
+	else if (nctype == "Byte")
+		nctype = "UInt8";
+	else if (nctype == "Single")
+		nctype = "Float";
+
+	string structname = opname == "C" ? "C" : string.Format("NumCIL.Generic.{0}{1}", opname, nctype);
+	string methodextra = opname == "C" ? "" : "_TypedImpl";
+	string typename_out = typename;
+
+
+	if (opname == "RangeGeneratorOp")
+		structname = string.Format("NumCIL.Generic.RangeGeneratorOp<System.{0}, NumCIL.Generic.NumberConverter{1}>", typename, nctype);
+
+#>
+        /// <summary>
+        /// Unsafe implementation of applying a floating point nullary operation
+        /// </summary>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="out">The output target</param>
+        internal static void UFunc_Op_Inner_Nullary_Flush_<#=typename#><#=methodextra#><C>(<#=structname#> op, NdArray<System.<#=typename#>> @out)
+            where C : INullaryOp<System.<#=typename#>>
+        {
+<# 
+	if (opname == "C")
+	{
+#>
+			if (UFunc_Op_Inner_Nullary_Flush_Typed<System.<#=typename#>, C>(op, @out))
+				return;
+
+#if DEBUG
+			Console.WriteLine("Generic Nullary method <#=structname#> for <#=typename#>, with op = {0}, Ta = {1}", op.GetType(), typeof(System.<#=typename#>));
+#endif
+<# 
+	} 
+#>
+            unsafe
+            {
+                using (var f = new Pinner(@out.DataAccessor))
+                {
+                    var d = (System.<#=typename#>*)f.ptr;
+
+                    if (@out.Shape.Dimensions.Length == 1)
+                    {
+                        long totalOps = @out.Shape.Dimensions[0].Length;
+                        long ix = @out.Shape.Offset;
+                        long stride = @out.Shape.Dimensions[0].Stride;
+
+                        for (long i = 0; i < totalOps; i++)
+                        {
+                            d[ix] = op.Op();
+                            ix += stride;
+                        }
+                    }
+                    else if (@out.Shape.Dimensions.Length == 2)
+                    {
+                        long opsOuter = @out.Shape.Dimensions[0].Length;
+                        long opsInner = @out.Shape.Dimensions[1].Length;
+
+                        long ix = @out.Shape.Offset;
+                        long outerStride = @out.Shape.Dimensions[0].Stride;
+                        long innerStride = @out.Shape.Dimensions[1].Stride;
+
+                        outerStride -= innerStride * @out.Shape.Dimensions[1].Length;
+
+                        for (long i = 0; i < opsOuter; i++)
+                        {
+                            for (long j = 0; j < opsInner; j++)
+                            {
+                                d[ix] = op.Op();
+                                ix += innerStride;
+                            }
+
+                            ix += outerStride;
+                        }
+                    }
+                    else
+                    {
+                        long n = @out.Shape.Dimensions.LongLength - 3;
+                        long[] limits = @out.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                        long[] counters = new long[limits.LongLength];
+
+                        long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                        long dimIndex0 = 0 + limits.LongLength;
+                        long dimIndex1 = 1 + limits.LongLength;
+                        long dimIndex2 = 2 + limits.LongLength;
+
+                        long opsOuter = @out.Shape.Dimensions[dimIndex0].Length;
+                        long opsInner = @out.Shape.Dimensions[dimIndex1].Length;
+                        long opsInnerInner = @out.Shape.Dimensions[dimIndex2].Length;
+
+                        long outerStride = @out.Shape.Dimensions[dimIndex0].Stride;
+                        long innerStride = @out.Shape.Dimensions[dimIndex1].Stride;
+                        long innerInnerStride = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                        outerStride -= innerStride * @out.Shape.Dimensions[dimIndex1].Length;
+                        innerStride -= innerInnerStride * @out.Shape.Dimensions[dimIndex2].Length;
+
+                        for (long outer = 0; outer < totalOps; outer++)
+                        {
+                            //Get the array offset for the first element in the outer dimension
+                            long ix = @out.Shape[counters];
+
+                            for (long i = 0; i < opsOuter; i++)
+                            {
+                                for (long j = 0; j < opsInner; j++)
+                                {
+                                    for (long k = 0; k < opsInnerInner; k++)
+                                    {
+                                        d[ix] = op.Op();
+                                        ix += innerInnerStride;
+                                    }
+
+                                    ix += innerStride;
+                                }
+
+                                ix += outerStride;
+                            }
+
+                            if (counters.LongLength > 0)
+                            {
+                                //Basically a ripple carry adder
+                                long p = counters.LongLength - 1;
+                                while (++counters[p] == limits[p] && p > 0)
+                                {
+                                    counters[p] = 0;
+                                    p--;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+<# } #>
+	}
+}
+
+
