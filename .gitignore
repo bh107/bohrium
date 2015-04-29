@@ -84,3 +84,5 @@ bridge/NumCIL/NumCIL.Unsafe/ApplyUnary.cs
 bridge/NumCIL/NumCIL/UFunc/TypedApplyBinary.cs
 bridge/NumCIL/NumCIL/UFunc/TypedApplyNullary.cs
 bridge/NumCIL/NumCIL/UFunc/TypedApplyUnary.cs
+bridge/NumCIL/NumCIL/UFunc/TypedAggregate.cs
+bridge/NumCIL/NumCIL/UFunc/TypedReduce.cs

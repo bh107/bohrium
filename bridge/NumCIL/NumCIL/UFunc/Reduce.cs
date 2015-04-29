@@ -161,128 +161,44 @@ namespace NumCIL
             return (NdArray<T>)gm.Invoke(null, new object[] { op, in1, axis, @out });
         }
 
-        /// <summary>
-        /// Actually executes a reduce operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IBinaryOp{0}"/> on each element in the given dimension.
-        /// This implementation is optimized for use with up to 2 dimensions, but works for any size dimension.
-        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
-        /// </summary>
-        /// <typeparam name="T">The type of data to operate on</typeparam>
-        /// <typeparam name="C">The type of operation to reduce with</typeparam>
-        /// <param name="op">The instance of the operation to reduce with</param>
-        /// <param name="in1">The input argument</param>
-        /// <param name="axis">The axis to reduce</param>
-        /// <param name="out">The output target</param>
-        /// <returns>The output target</returns>
-        private static NdArray<T> UFunc_Reduce_Inner_Flush<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
-            where C : struct, IBinaryOp<T>
-        {
-            if (UnsafeAPI.UFunc_Reduce_Inner_Flush_Unsafe<T, C>(op, axis, in1, @out))
-                return @out;
+		/// <summary>
+		/// Attempts to use a typed version of the Reduce call, 
+		/// to avoid dependency on the JIT being able to inline struct methods
+		/// </summary>
+		/// <typeparam name="T">The type of data to operate on</typeparam>
+		/// <typeparam name="C">The type of operation to reduce with</typeparam>
+		/// <param name="op">The instance of the operation to reduce with</param>
+		/// <param name="in1">The input argument</param>
+		/// <param name="axis">The axis to reduce</param>
+		/// <param name="out">The output target</param>
+		/// <returns>The output target</returns>		
+		private static bool UFunc_Reduce_Inner_Flush_Typed<T, C>(C op, long axis, NdArray<T> in1, NdArray<T> @out)
+		{
+			System.Reflection.MethodInfo f;
+			var key = typeof(T).FullName + "#" + op.GetType().FullName + "#RED";
+			if (!_resolvedMethods.TryGetValue(key, out f))
+			{
+				var n = typeof(UFunc).GetMethod("UFunc_Reduce_Inner_Flush", 
+					System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
+					null,
+					new Type[] {
+					op.GetType(),
+					axis.GetType(),
+					in1.GetType(),
+					@out.GetType()
+				}, null);
 
-            if (axis < 0)
-                axis = in1.Shape.Dimensions.LongLength - axis;
+				_resolvedMethods[key] = f = n == null ? null : n.MakeGenericMethod(new Type[] { typeof(T), op.GetType() });
+			}
 
-            //Basic case, just return a reduced array
-            if (in1.Shape.Dimensions[axis].Length == 1 && in1.Shape.Dimensions.LongLength > 1)
-            {
-                //TODO: If both in and out use the same array, just return a reshaped in
-                long j = 0;
-                var sizes = in1.Shape.Dimensions.Where(x => j++ != axis).ToArray();
-                UFunc_Op_Inner_Unary_Flush<T, CopyOp<T>>(new CopyOp<T>(), in1.Reshape(new Shape(sizes, in1.Shape.Offset)), @out);
-            }
-            else
-            {
-                T[] d = in1.AsArray();
-                T[] vd = @out.AsArray();
+			if (f != null)
+			{
+				f.Invoke(null, new object[] { op, axis, in1, @out });
+				return true;
+			}
 
-                //Simple case, reduce 1D array to scalar value
-                if (axis == 0 && in1.Shape.Dimensions.LongLength == 1)
-                {
-                    long stride = in1.Shape.Dimensions[0].Stride;
-                    long ix = in1.Shape.Offset;
-                    long limit = (stride * in1.Shape.Dimensions[0].Length) + ix;
-
-                    T value = d[ix];
-
-                    for (long i = ix + stride; i < limit; i += stride)
-                        value = op.Op(value, d[i]);
-
-                    vd[@out.Shape.Offset] = value;
-                }
-                //Simple case, reduce 2D array to 1D
-                else if (axis == 0 && in1.Shape.Dimensions.LongLength == 2)
-                {
-                    long strideInner = in1.Shape.Dimensions[1].Stride;
-                    long strideOuter = in1.Shape.Dimensions[0].Stride;
-
-                    long ix = in1.Shape.Offset;
-                    long ox = @out.Shape.Offset;
-                    long strideRes = @out.Shape.Dimensions[0].Stride;
-
-                    long outerCount = in1.Shape.Dimensions[0].Length;
-
-                    for (long i = 0; i < in1.Shape.Dimensions[1].Length; i++)
-                    {
-                        T value = d[ix];
-
-                        long nx = ix;
-                        for (long j = 1; j < outerCount; j++)
-                        {
-                            nx += strideOuter;
-                            value = op.Op(value, d[nx]);
-                        }
-
-                        vd[ox] = value;
-                        ox += strideRes;
-
-                        ix += strideInner;
-                    }
-                }
-                //Simple case, reduce 2D array to 1D
-                else if (axis == 1 && in1.Shape.Dimensions.LongLength == 2)
-                {
-                    long strideInner = in1.Shape.Dimensions[1].Stride;
-                    long strideOuter = in1.Shape.Dimensions[0].Stride;
-
-                    long ix = in1.Shape.Offset;
-                    long limitInner = strideInner * in1.Shape.Dimensions[1].Length;
-
-                    long ox = @out.Shape.Offset;
-                    long strideRes = @out.Shape.Dimensions[0].Stride;
-
-                    for (long i = 0; i < in1.Shape.Dimensions[0].Length; i++)
-                    {
-                        T value = d[ix];
-
-                        for (long j = strideInner; j < limitInner; j += strideInner)
-                            value = op.Op(value, d[j + ix]);
-
-                        vd[ox] = value;
-                        ox += strideRes;
-
-                        ix += strideOuter;
-                    }
-                }                
-                //General case
-                else
-                {
-                    long size = in1.Shape.Dimensions[axis].Length;
-                    NdArray<T> vl = @out.Subview(Range.NewAxis, axis);
-
-                    //Initially we just copy the value
-                    UFunc_Op_Inner_Unary_Flush<T, CopyOp<T>>(new CopyOp<T>(), in1.Subview(Range.El(0), axis), vl);
-                    
-                    //If there is more than one element in the dimension to reduce, apply the operation accumulatively
-                    for (long j = 1; j < size; j++)
-                    {
-                        //Select the new dimension
-                        //Apply the operation
-                        UFunc_Op_Inner_Binary_Flush<T, C>(op, vl, in1.Subview(Range.El(j), axis), vl);
-                    }
-                }
-            }
-            return @out;
-        }
+			return false;
+		}
 
     }
 }

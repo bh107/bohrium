@@ -78,6 +78,12 @@
     <Compile Include="UFunc\TypedApplyBinary.cs">
       <DependentUpon>TypedApplyBinary.tt</DependentUpon>
     </Compile>
+    <Compile Include="UFunc\TypedReduce.cs">
+      <DependentUpon>TypedReduce.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UFunc\TypedAggregate.cs">
+      <DependentUpon>TypedAggregate.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="TypedArrays.tt">
@@ -95,6 +101,14 @@
     <None Include="UFunc\TypedApplyNullary.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>TypedApplyNullary.cs</LastGenOutput>
+    </None>
+    <None Include="UFunc\TypedReduce.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TypedReduce.cs</LastGenOutput>
+    </None>
+    <None Include="UFunc\TypedAggregate.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TypedAggregate.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
