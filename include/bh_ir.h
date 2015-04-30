@@ -151,9 +151,11 @@ public:
     const std::set<bh_base*>& get_discards() const {return discards;}
     const seqset<bh_base*>& get_parameters() const {return parameters;}
 
-    const std::set<std::vector<bh_index> >& get_shapes()const {return shapes;};
+    const std::set<std::vector<bh_index> >& get_shapes() const {return shapes;}
 
-    const std::map<bh_intp, bh_int64>& get_sweeps()const {return sweeps;};
+    const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
+
+    bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
 
     size_t get_view_id(const bh_view v) const {return views[v];}
 

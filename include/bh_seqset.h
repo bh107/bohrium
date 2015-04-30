@@ -68,7 +68,11 @@ public:
     {
         return _rmap.cend();
     }
-    
+
+    size_t size() const
+    {
+        return _map.size();
+    }
 };
 
 
