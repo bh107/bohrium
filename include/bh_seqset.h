@@ -59,6 +59,15 @@ public:
         return it->second;
     }
 
+    // Get the id of an object
+    const T &v operator[] (size_t id) const 
+    {
+        auto it = _rmap.find(id);
+        if (it == _rmap.end())
+            throw std::out_of_range("Object unknown");
+        return it->second;
+    }
+
     typename std::map<size_t, T>::const_iterator begin() const
     {
         return _rmap.cbegin();
