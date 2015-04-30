@@ -59,8 +59,8 @@ public:
         return it->second;
     }
 
-    // Get the id of an object
-    const T &v operator[] (size_t id) const 
+    // Get an object given the id
+    const T& operator[] (size_t id) const 
     {
         auto it = _rmap.find(id);
         if (it == _rmap.end())

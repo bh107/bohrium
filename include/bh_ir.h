@@ -158,7 +158,7 @@ public:
     bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
 
     size_t get_view_id(const bh_view& v) const {return views[v];}
-    size_t get_view(size_t id) const {return views[id];}
+    const bh_view& get_view(size_t id) const {return views[id];}
 
     /* Add an instruction to the kernel
      *
