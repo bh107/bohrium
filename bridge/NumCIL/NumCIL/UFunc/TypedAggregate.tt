@@ -60,11 +60,11 @@ foreach(string fulltypename in new string[] {"T", "System.SByte", "System.Byte",
 			break;
 		case "System.Numerics.Complex":
 			typename = "Complex128";
-			mathlib = "T";
+			mathlib = "System.Numerics.Complex";
 			break;
 		case "NumCIL.Complex64.DataType":
 			typename = "Complex64";
-			mathlib = "T";
+			mathlib = "NumCIL.Complex64.DataType";
 			break;
 		default:
 			if (typename.StartsWith("System."))
@@ -94,6 +94,43 @@ foreach(string fulltypename in new string[] {"T", "System.SByte", "System.Byte",
 	{
 		continue;
 	}
+
+	string opcode_template = "({0})op.Op({1}, {2})";
+
+	if (opname == "Add")
+		opcode_template = "({0})({1} + {2})";
+	else if (opname == "Sub") 
+		opcode_template = "({0})({1} - {2})";
+	else if (opname == "Mul") 
+		opcode_template = "({0})({1} * {2})";
+	else if (opname == "Div") 
+		opcode_template = "({0})({1} / {2})";
+	else if (opname == "Mod") 
+		opcode_template = "({0})({1} % {2})";
+	else if (opname == "Min") 
+		opcode_template = "({0})Math.Min({1}, {2})";
+	else if (opname == "Max") 
+		opcode_template = "({0})Math.Max({1}, {2})";
+	else if (opname == "Pow") 
+		opcode_template = "({0})" + mathlib + ".Pow({1}, {2})";
+	else if (opname == "And") 
+		opcode_template = "({0})({1} & {2})";
+	else if (opname == "Or") 
+		opcode_template = "({0})({1} | {2})";
+	else if (opname == "Xor") 
+		opcode_template = "({0})({1} ^ {2})";
+	else if (opname == "Equal") 
+		opcode_template = "({0})({1} == {2})";
+	else if (opname == "NotEqual") 
+		opcode_template = "({0})({1} != {2})";
+	else if (opname == "GreaterThan") 
+		opcode_template = "({0})({1} > {2})";
+	else if (opname == "GreaterThanOrEqual") 
+		opcode_template = "({0})({1} >= {2})";
+	else if (opname == "LessThan") 
+		opcode_template = "({0})({1} < {2})";
+	else if (opname == "LessThanOrEqual") 
+		opcode_template = "({0})({1} <= {2})";
 
 #>
         /// <summary>
@@ -137,7 +174,7 @@ foreach(string fulltypename in new string[] {"T", "System.SByte", "System.Byte",
 
                 for (long i = 1; i < totalOps; i++)
                 {
-                    result = op.Op(result, d1[ix1]);
+                    result = <#=string.Format(opcode_template, fulltypename, "result", "d1[ix1]")#>;
                     ix1 += stride1;
                 }
             }
@@ -158,7 +195,7 @@ foreach(string fulltypename in new string[] {"T", "System.SByte", "System.Byte",
                 {
                     for (long j = (i == 0 ? 1 : 0); j < opsInner; j++)
                     {
-                        result = op.Op(result, d1[ix1]);
+                        result = <#=string.Format(opcode_template, fulltypename, "result", "d1[ix1]")#>;
                         ix1 += innerStride1;
                     }
 
@@ -205,7 +242,7 @@ foreach(string fulltypename in new string[] {"T", "System.SByte", "System.Byte",
                         {
                             for (long k = (first ? 1 : 0); k < opsInnerInner; k++)
                             {
-                                result = op.Op(result, d1[ix1]);
+                                result = <#=string.Format(opcode_template, fulltypename, "result", "d1[ix1]")#>;
                                 ix1 += innerInnerStride1;
                             }
                             first = false;

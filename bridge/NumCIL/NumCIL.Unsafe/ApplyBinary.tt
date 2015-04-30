@@ -74,6 +74,47 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
 		typename_out = "Boolean";
 	}
 
+	string opcode_template = "(System.{0})op.Op({1}, {2})";
+
+	if (opname == "Add")
+		opcode_template = "(System.{0})({1} + {2})";
+	else if (opname == "Sub") 
+		opcode_template = "(System.{0})({1} - {2})";
+	else if (opname == "Mul") 
+		opcode_template = "(System.{0})({1} * {2})";
+	else if (opname == "Div") 
+		opcode_template = "(System.{0})({1} / {2})";
+	else if (opname == "Mod") 
+		opcode_template = "(System.{0})({1} % {2})";
+	else if (opname == "Min") 
+		opcode_template = "(System.{0})Math.Min({1}, {2})";
+	else if (opname == "Max") 
+		opcode_template = "(System.{0})Math.Max({1}, {2})";
+	else if (opname == "Pow") 
+		opcode_template = "(System.{0})Math.Pow({1}, {2})";
+	else if (opname == "And") 
+		opcode_template = "(System.{0})({1} & {2})";
+	else if (opname == "Or") 
+		opcode_template = "(System.{0})({1} | {2})";
+	else if (opname == "Xor") 
+		opcode_template = "(System.{0})({1} ^ {2})";
+	else if (opname == "Equal") 
+		opcode_template = "(System.{0})({1} == {2})";
+	else if (opname == "NotEqual") 
+		opcode_template = "(System.{0})({1} != {2})";
+	else if (opname == "GreaterThan") 
+		opcode_template = "(System.{0})({1} > {2})";
+	else if (opname == "GreaterThanOrEqual") 
+		opcode_template = "(System.{0})({1} >= {2})";
+	else if (opname == "LessThan") 
+		opcode_template = "(System.{0})({1} < {2})";
+	else if (opname == "LessThanOrEqual") 
+		opcode_template = "(System.{0})({1} <= {2})";
+
+	string opcode_sa = string.Format(opcode_template, typename_out, "scalar", "d2[ix2]");
+	string opcode_as = string.Format(opcode_template, typename_out, "d1[ix1]", "scalar");
+
+
 #>
         /// <summary>
         /// Unsafe implementation of applying a binary operation
@@ -93,9 +134,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
 			if (UFunc_Op_Inner_Binary_Flush_Typed<System.<#=typename#>, System.<#=typename_out#>, C>(op, in1, in2, @out))
 				return;
 
-#if DEBUG
 			Console.WriteLine("Generic Binary method <#=structname#> for <#=typename#>, with op = {0}, Ta = {1}, Tb = {2}", op.GetType(), typeof(System.<#=typename#>), typeof(System.<#=typename_out#>));
-#endif
 <# 
 	} 
 #>
@@ -126,7 +165,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                             //Best case, all are equal, just keep a single counter
                             for (long i = 0; i < totalOps; i++)
                             {
-                                d3[ix1] = op.Op(d1[ix1], d2[ix1]);
+                                d3[ix1] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix1]")#>;
                                 ix1 += stride1;
                             }
                         }
@@ -135,7 +174,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                             for (long i = 0; i < totalOps; i++)
                             {
                                 //We need all three counters
-                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                 ix1 += stride1;
                                 ix2 += stride2;
                                 ix3 += stride3;
@@ -172,19 +211,19 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                         {
                             for (long j = 0; j < fulls; j++)
                             {
-                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                 ix1 += innerStride1;
                                 ix2 += innerStride2;
                                 ix3 += innerStride3;
-                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                 ix1 += innerStride1;
                                 ix2 += innerStride2;
                                 ix3 += innerStride3;
-                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                 ix1 += innerStride1;
                                 ix2 += innerStride2;
                                 ix3 += innerStride3;
-                                d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                 ix1 += innerStride1;
                                 ix2 += innerStride2;
                                 ix3 += innerStride3;
@@ -193,31 +232,31 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                             switch (remainder)
                             {
                                 case 1:
-                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                     ix1 += innerStride1;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
                                     break;
                                 case 2:
-                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                     ix1 += innerStride1;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
-                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                     ix1 += innerStride1;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
                                     break;
                                 case 3:
-                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                     ix1 += innerStride1;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
-                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                     ix1 += innerStride1;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
-                                    d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                     ix1 += innerStride1;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
@@ -280,7 +319,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                                 {
                                     for (long k = 0; k < opsInnerInner; k++)
                                     {
-                                        d3[ix3] = op.Op(d1[ix1], d2[ix2]);
+                                        d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "d2[ix2]")#>;
                                         ix1 += innerInnerStride1;
                                         ix2 += innerInnerStride2;
                                         ix3 += innerInnerStride3;
@@ -358,7 +397,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                             //Best case, all are equal, just keep a single counter
                             for (long i = 0; i < totalOps; i++)
                             {
-                                d3[ix2] = op.Op(scalar, d2[ix2]);
+                                d3[ix2] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                 ix2 += stride2;
                             }
                         }
@@ -367,7 +406,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                             for (long i = 0; i < totalOps; i++)
                             {
                                 //We need both counters
-                                d3[ix3] = op.Op(scalar, d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                 ix2 += stride2;
                                 ix3 += stride3;
                             }
@@ -399,16 +438,16 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                         {
                             for (long j = 0; j < fulls; j++)
                             {
-                                d3[ix3] = op.Op(scalar, d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                 ix2 += innerStride2;
                                 ix3 += innerStride3;
-                                d3[ix3] = op.Op(scalar, d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                 ix2 += innerStride2;
                                 ix3 += innerStride3;
-                                d3[ix3] = op.Op(scalar, d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                 ix2 += innerStride2;
                                 ix3 += innerStride3;
-                                d3[ix3] = op.Op(scalar, d2[ix2]);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                 ix2 += innerStride2;
                                 ix3 += innerStride3;
                             }
@@ -416,26 +455,26 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                             switch (remainder)
                             {
                                 case 1:
-                                    d3[ix3] = op.Op(scalar, d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
                                     break;
                                 case 2:
-                                    d3[ix3] = op.Op(scalar, d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
-                                    d3[ix3] = op.Op(scalar, d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
                                     break;
                                 case 3:
-                                    d3[ix3] = op.Op(scalar, d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
-                                    d3[ix3] = op.Op(scalar, d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
-                                    d3[ix3] = op.Op(scalar, d2[ix2]);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                     ix2 += innerStride2;
                                     ix3 += innerStride3;
                                     break;
@@ -490,7 +529,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                                 {
                                     for (long k = 0; k < opsInnerInner; k++)
                                     {
-                                        d3[ix3] = op.Op(scalar, d2[ix2]);
+                                        d3[ix3] = <#=string.Format(opcode_template, typename_out, "scalar", "d2[ix2]")#>;
                                         ix2 += innerInnerStride2;
                                         ix3 += innerInnerStride3;
                                     }
@@ -567,7 +606,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                             //Best case, both are equal, just keep a single counter
                             for (long i = 0; i < totalOps; i++)
                             {
-                                d3[ix1] = op.Op(d1[ix1], scalar);
+                                d3[ix1] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                 ix1 += stride1;
                             }
                         }
@@ -576,7 +615,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                             for (long i = 0; i < totalOps; i++)
                             {
                                 //We need both counters
-                                d3[ix3] = op.Op(d1[ix1], scalar);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                 ix1 += stride1;
                                 ix3 += stride3;
                             }
@@ -608,16 +647,16 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                         {
                             for (long j = 0; j < fulls; j++)
                             {
-                                d3[ix3] = op.Op(d1[ix1], scalar);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                 ix1 += innerStride1;
                                 ix3 += innerStride3;
-                                d3[ix3] = op.Op(d1[ix1], scalar);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                 ix1 += innerStride1;
                                 ix3 += innerStride3;
-                                d3[ix3] = op.Op(d1[ix1], scalar);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                 ix1 += innerStride1;
                                 ix3 += innerStride3;
-                                d3[ix3] = op.Op(d1[ix1], scalar);
+                                d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                 ix1 += innerStride1;
                                 ix3 += innerStride3;
                             }
@@ -625,26 +664,26 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                             switch (remainder)
                             {
                                 case 1:
-                                    d3[ix3] = op.Op(d1[ix1], scalar);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                     ix1 += innerStride1;
                                     ix3 += innerStride3;
                                     break;
                                 case 2:
-                                    d3[ix3] = op.Op(d1[ix1], scalar);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                     ix1 += innerStride1;
                                     ix3 += innerStride3;
-                                    d3[ix3] = op.Op(d1[ix1], scalar);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                     ix1 += innerStride1;
                                     ix3 += innerStride3;
                                     break;
                                 case 3:
-                                    d3[ix3] = op.Op(d1[ix1], scalar);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                     ix1 += innerStride1;
                                     ix3 += innerStride3;
-                                    d3[ix3] = op.Op(d1[ix1], scalar);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                     ix1 += innerStride1;
                                     ix3 += innerStride3;
-                                    d3[ix3] = op.Op(d1[ix1], scalar);
+                                    d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                     ix1 += innerStride1;
                                     ix3 += innerStride3;
                                     break;
@@ -699,7 +738,7 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
                                 {
                                     for (long k = 0; k < opsInnerInner; k++)
                                     {
-                                        d3[ix3] = op.Op(d1[ix1], scalar);
+                                        d3[ix3] = <#=string.Format(opcode_template, typename_out, "d1[ix1]", "scalar")#>;
                                         ix1 += innerInnerStride1;
                                         ix3 += innerInnerStride3;
                                     }
