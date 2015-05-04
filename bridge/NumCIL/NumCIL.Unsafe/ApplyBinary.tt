@@ -134,7 +134,9 @@ foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "In
 			if (UFunc_Op_Inner_Binary_Flush_Typed<System.<#=typename#>, System.<#=typename_out#>, C>(op, in1, in2, @out))
 				return;
 
+#if DEBUG
 			Console.WriteLine("Generic Binary method <#=structname#> for <#=typename#>, with op = {0}, Ta = {1}, Tb = {2}", op.GetType(), typeof(System.<#=typename#>), typeof(System.<#=typename_out#>));
+#endif
 <# 
 	} 
 #>
