@@ -34,7 +34,6 @@ If not, see <http://www.gnu.org/licenses/>.
 bool bh_visualize_initialized = false;
 bh_error bh_visualizer(bh_instruction *instr, void* arg)
 {
-    fprintf(stderr, "Called bh_visualizer\n");
     bh_view *subject   = &instr->operand[0];
 
     bh_float32 *args;
@@ -51,7 +50,7 @@ bh_error bh_visualizer(bh_instruction *instr, void* arg)
         }
     }
     if (subject->base->data == NULL) {
-        printf("You are trying to visualize non-existing data.\n");
+        fprintf(stderr, "You are trying to visualize non-existing data.\n");
         return BH_ERROR;
     }
 
