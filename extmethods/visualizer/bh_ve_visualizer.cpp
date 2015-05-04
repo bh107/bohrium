@@ -59,7 +59,7 @@ static bh_error inspect(bh_instruction *instr)
     return BH_SUCCESS;
 }
 
-{
+/*
     // Convert BhIR to the instruction list 'batch'
     bh_ir_map_instr(bhir, &bhir->dag_list[0], &inspect);
 
@@ -127,7 +127,7 @@ static bh_error inspect(bh_instruction *instr)
         bh_ir_destroy(&new_bhir);
     }
     batch.clear();
-}
+*/
 
 bh_error bh_ve_visualizer_execute(bh_ir* bhir)
 {

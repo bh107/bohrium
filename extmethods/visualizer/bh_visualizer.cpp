@@ -34,17 +34,15 @@ If not, see <http://www.gnu.org/licenses/>.
 bool bh_visualize_initialized = false;
 bh_error bh_visualizer(bh_instruction *instr, void* arg)
 {
+    fprintf(stderr, "Called bh_visualizer\n");
     bh_view *subject   = &instr->operand[0];
-    bh_float64 *args  = (bh_float64*) instr->operand[1].base->data;
+
+    bh_float64 *args;
+    bh_data_get(&(instr->operand[1]), (void**) &args);
+    
     assert(args != NULL);
     assert(instr->operand[1].base->nelem == 5);
     assert(instr->operand[1].base->type == BH_FLOAT64);
-
-    bh_int32 cm    = args[0];
-    bh_bool flat   = args[1];
-    bh_bool cube   = args[2];
-    bh_float32 min = args[3];
-    bh_float32 max = args[4];
 
     for(bh_intp i=0; i<subject->ndim; ++i) {
         if(subject->shape[i] < 16) {
@@ -52,27 +50,39 @@ bh_error bh_visualizer(bh_instruction *instr, void* arg)
            return BH_ERROR;
         }
     }
-
-    if (bh_data_malloc(subject->base) != BH_SUCCESS) {    // Make sure that the arrays memory are allocated.
-        return BH_OUT_OF_MEMORY;
+    if (subject->base->data == NULL) {
+        printf("You are trying to visualize non-existing data.\n");
+        return BH_ERROR;
     }
+
+    bh_int32 cm    = args[0];
+    bh_bool flat   = args[1];
+    bh_bool cube   = args[2];
+    bh_float32 min = args[3];
+    bh_float32 max = args[4];
+
     if (!bh_visualize_initialized) {
         if (subject->ndim == 3) {
             Visualizer::getInstance().setValues(
-                subject, subject->shape[0],
-                subject->shape[1], subject->shape[2],
+                subject,
+                subject->shape[0],
+                subject->shape[1],
+                subject->shape[2],
                 cm, flat, cube, min, max
             );
         } else {
             Visualizer::getInstance().setValues(
                 subject,
-                subject->shape[0], subject->shape[1],
-                1, cm, flat, cube, min, max
+                subject->shape[0],
+                subject->shape[1],
+                1,
+                cm, flat, cube, min, max
             );
         }
         bh_visualize_initialized = true;
     }
 
     Visualizer::getInstance().run(subject);
+    
     return BH_SUCCESS;
 }
