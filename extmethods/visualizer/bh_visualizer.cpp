@@ -37,12 +37,12 @@ bh_error bh_visualizer(bh_instruction *instr, void* arg)
     fprintf(stderr, "Called bh_visualizer\n");
     bh_view *subject   = &instr->operand[0];
 
-    bh_float64 *args;
+    bh_float32 *args;
     bh_data_get(&(instr->operand[1]), (void**) &args);
     
     assert(args != NULL);
     assert(instr->operand[1].base->nelem == 5);
-    assert(instr->operand[1].base->type == BH_FLOAT64);
+    assert(instr->operand[1].base->type == BH_FLOAT32);
 
     for(bh_intp i=0; i<subject->ndim; ++i) {
         if(subject->shape[i] < 16) {

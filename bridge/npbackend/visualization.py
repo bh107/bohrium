@@ -13,13 +13,14 @@ def plot_surface(ary, mode, colormap, lowerbound, upperbound):
 
     ranks = [2, 3]
     modes = ["2d", "3d"]
+    types = [np.float32]
 
     if not (ary.ndim == 2 or ary.ndim == 3):
         raise ValueError("Unsupported array-rank, must be one of %s" % ranks)
     if mode not in modes:
         raise ValueError("Unsupported mode, must be one of %s" % modes)
-    if not ndarray.check(ary):
-        raise ValueError("Input-array must be a Bohrium array")
+    if ary.dtype not in types:
+        raise TypeError("Unsupported array-type, must be on of %s" % types)
 
     if mode == "2d":
         flat = True
@@ -34,12 +35,15 @@ def plot_surface(ary, mode, colormap, lowerbound, upperbound):
     else:
         raise ValueError("Unsupported mode '%s' " % mode)
 
+    if ndarray.check(ary):                          # Must be a Bohrium array
+        ary = array_create.array(ary)
+
     args = array_create.array([                     # Construct arguments
-            float(colormap),
-            float(flat),
-            float(cube),
-            float(lowerbound),
-            float(upperbound)
+            np.float32(colormap),
+            np.float32(flat),
+            np.float32(cube),
+            np.float32(lowerbound),
+            np.float32(upperbound)
         ],
         bohrium=True
     )
