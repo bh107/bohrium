@@ -12,7 +12,7 @@ if(MONO_FOUND)
 
   # Enumerate over all .tt files and apply T4 to them
   SET(numcil_tt_outputs)
-  FILE(GLOB files NumCIL/*.tt NumCIL.Unsafe/*.tt)
+  FILE(GLOB files NumCIL/*.tt NumCIL/UFunc/*.tt NumCIL.Unsafe/*.tt)
 
   FOREACH(file ${files})
     SET(src ${file})

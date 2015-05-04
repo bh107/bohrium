@@ -114,127 +114,43 @@ namespace NumCIL
             }
         }
 
-        /// <summary>
-        /// Calculates the scalar result of applying the binary operation to all elements
-        /// </summary>
-        /// <typeparam name="T">The value to operate on</typeparam>
-        /// <typeparam name="C">The operation to perform</typeparam>
-        /// <param name="op">The operation to perform</param>
-        /// <param name="in1">The array to aggregate</param>
-        /// <returns>A scalar value that is the result of aggregating all elements</returns>
-        internal static T UFunc_Aggregate_Inner_Flush<T, C>(C op, NdArray<T> in1)
-            where C : struct, IBinaryOp<T>
-        {
-            T result;
-            if (UnsafeAPI.Aggregate_Entry_Unsafe<T, C>(op, in1, out result))
-                return result;
+		/// <summary>
+		/// Attempts to use a typed version of the Aggregate call, 
+		/// to avoid dependency on the JIT being able to inline struct methods
+		/// </summary>
+		/// <typeparam name="T">The type of data to operate on</typeparam>
+		/// <typeparam name="C">The type of operation to reduce with</typeparam>
+		/// <param name="op">The instance of the operation to reduce with</param>
+		/// <param name="in1">The input argument</param>
+		/// <param name="axis">The axis to reduce</param>
+		/// <param name="out">The output target</param>
+		/// <returns>The output target</returns>		
+		private static bool UFunc_Aggregate_Inner_Flush_Typed<T, C>(C op, NdArray<T> in1, out T @out)
+		{
+			System.Reflection.MethodInfo f;
+			var key = typeof(T).FullName + "#" + op.GetType().FullName + "#AGR";
+			if (!_resolvedMethods.TryGetValue(key, out f))
+			{
+				var n = typeof(UFunc).GetMethod("UFunc_Aggregate_Inner_Flush", 
+					System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
+					null,
+					new Type[] {
+					op.GetType(),
+					in1.GetType()
+				}, null);
 
-            T[] d1 = in1.AsArray();
+				_resolvedMethods[key] = f = n == null ? null : n.MakeGenericMethod(new Type[] { typeof(T), op.GetType() });
+			}
 
-            if (in1.Shape.Dimensions.Length == 1)
-            {
-                long totalOps = in1.Shape.Dimensions[0].Length;
-                long ix1 = in1.Shape.Offset;
-                long stride1 = in1.Shape.Dimensions[0].Stride;
+			if (f != null)
+			{
+				@out = (T)f.Invoke(null, new object[] { op, in1 });
+				return true;
+			}
+			else
+				@out = default(T);
 
-                result = d1[ix1];
-                ix1 += stride1;
-
-                for (long i = 1; i < totalOps; i++)
-                {
-                    result = op.Op(result, d1[ix1]);
-                    ix1 += stride1;
-                }
-            }
-            else if (in1.Shape.Dimensions.Length == 2)
-            {
-                long opsOuter = in1.Shape.Dimensions[0].Length;
-                long opsInner = in1.Shape.Dimensions[1].Length;
-
-                long ix1 = in1.Shape.Offset;
-                long outerStride1 = in1.Shape.Dimensions[0].Stride;
-                long innerStride1 = in1.Shape.Dimensions[1].Stride;
-                outerStride1 -= innerStride1 * in1.Shape.Dimensions[1].Length;
-
-                result = d1[ix1];
-                ix1 += innerStride1;
-
-                for (long i = 0; i < opsOuter; i++)
-                {
-                    for (long j = (i == 0 ? 1 : 0); j < opsInner; j++)
-                    {
-                        result = op.Op(result, d1[ix1]);
-                        ix1 += innerStride1;
-                    }
-
-                    ix1 += outerStride1;
-                }
-            }
-            else
-            {
-                long n = in1.Shape.Dimensions.LongLength - 3;
-                long[] limits = in1.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
-                long[] counters = new long[limits.LongLength];
-
-                long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
-
-                //This chunck of variables are used to prevent repeated calculations of offsets
-                long dimIndex0 = 0 + limits.LongLength;
-                long dimIndex1 = 1 + limits.LongLength;
-                long dimIndex2 = 2 + limits.LongLength;
-
-                long opsOuter = in1.Shape.Dimensions[0 + limits.LongLength].Length;
-                long opsInner = in1.Shape.Dimensions[1 + limits.LongLength].Length;
-                long opsInnerInner = in1.Shape.Dimensions[2 + limits.LongLength].Length;
-
-                long outerStride1 = in1.Shape.Dimensions[dimIndex0].Stride;
-                long innerStride1 = in1.Shape.Dimensions[dimIndex1].Stride;
-                long innerInnerStride1 = in1.Shape.Dimensions[dimIndex2].Stride;
-
-                outerStride1 -= innerStride1 * in1.Shape.Dimensions[dimIndex1].Length;
-                innerStride1 -= innerInnerStride1 * in1.Shape.Dimensions[dimIndex2].Length;
-
-                result = d1[in1.Shape[counters]];
-                bool first = true;
-
-                for (long outer = 0; outer < totalOps; outer++)
-                {
-                    //Get the array offset for the first element in the outer dimension
-                    long ix1 = in1.Shape[counters];
-                    if (first)
-                        ix1 += innerInnerStride1;
-
-                    for (long i = 0; i < opsOuter; i++)
-                    {
-                        for (long j = 0; j < opsInner; j++)
-                        {
-                            for (long k = (first ? 1 : 0); k < opsInnerInner; k++)
-                            {
-                                result = op.Op(result, d1[ix1]);
-                                ix1 += innerInnerStride1;
-                            }
-                            first = false;
-
-                            ix1 += innerStride1;
-                        }
-
-                        ix1 += outerStride1;
-                    }
-
-                    if (counters.LongLength > 0)
-                    {
-                        //Basically a ripple carry adder
-                        long p = counters.LongLength - 1;
-                        while (++counters[p] == limits[p] && p > 0)
-                        {
-                            counters[p] = 0;
-                            p--;
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
+			return false;
+		}
     }
 }

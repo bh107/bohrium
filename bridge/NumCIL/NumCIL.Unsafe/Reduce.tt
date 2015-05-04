@@ -1,5 +1,8 @@
-﻿<#@ template debug="false" hostspecific="false" language="C#" #>
-<#@ output extension=".cs" #>
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
 #region Copyright
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
@@ -33,7 +36,69 @@ namespace NumCIL.Unsafe
 {
     internal static class Reduce
     {
-<# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) { #>
+<# 
+var opnames = new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "Max", "Pow", "And", "Or", "Xor"};
+
+foreach(string opname in new string[] {"C"}.Union(opnames))
+foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double", "Boolean"}) { 
+
+	var nctype = typename;
+	if (nctype == "SByte")
+		nctype = "Int8";
+	else if (nctype == "Byte")
+		nctype = "UInt8";
+	else if (nctype == "Single")
+		nctype = "Float";
+
+	string structname = opname == "C" ? "C" : string.Format("NumCIL.{0}.{1}", nctype, opname);
+	string methodextra = opname == "C" ? "" : "_TypedImpl";
+	string outbyref = opname == "C" ? "ref " : "";
+
+	if (typename == "Boolean" && opname != "And" && opname != "Or" && opname != "Xor")
+		continue;
+		
+	if ((typename == "Single" || typename == "Double") && (opname == "And" || opname == "Or" || opname == "Xor"))
+		continue;
+
+	string opcode_template = "(System.{0})op.Op({1}, {2})";
+
+	if (opname == "Add")
+		opcode_template = "(System.{0})({1} + {2})";
+	else if (opname == "Sub") 
+		opcode_template = "(System.{0})({1} - {2})";
+	else if (opname == "Mul") 
+		opcode_template = "(System.{0})({1} * {2})";
+	else if (opname == "Div") 
+		opcode_template = "(System.{0})({1} / {2})";
+	else if (opname == "Mod") 
+		opcode_template = "(System.{0})({1} % {2})";
+	else if (opname == "Min") 
+		opcode_template = "(System.{0})Math.Min({1}, {2})";
+	else if (opname == "Max") 
+		opcode_template = "(System.{0})Math.Max({1}, {2})";
+	else if (opname == "Pow") 
+		opcode_template = "(System.{0})Math.Pow({1}, {2})";
+	else if (opname == "And") 
+		opcode_template = "(System.{0})({1} & {2})";
+	else if (opname == "Or") 
+		opcode_template = "(System.{0})({1} | {2})";
+	else if (opname == "Xor") 
+		opcode_template = "(System.{0})({1} ^ {2})";
+	else if (opname == "Equal") 
+		opcode_template = "(System.{0})({1} == {2})";
+	else if (opname == "NotEqual") 
+		opcode_template = "(System.{0})({1} != {2})";
+	else if (opname == "GreaterThan") 
+		opcode_template = "(System.{0})({1} > {2})";
+	else if (opname == "GreaterThanOrEqual") 
+		opcode_template = "(System.{0})({1} >= {2})";
+	else if (opname == "LessThan") 
+		opcode_template = "(System.{0})({1} < {2})";
+	else if (opname == "LessThanOrEqual") 
+		opcode_template = "(System.{0})({1} <= {2})";
+
+
+#>
         /// <summary>
         /// Unsafe implementation of the reduce operation
         /// </summary>
@@ -43,9 +108,22 @@ namespace NumCIL.Unsafe
         /// <param name="axis">The axis to reduce</param>
         /// <param name="out">The output target</param>
         /// <returns>The output target</returns>
-        private static NdArray<System.<#=typename#>> UFunc_Reduce_Inner_Flush_<#=typename#><C>(C op, long axis, NdArray<System.<#=typename#>> in1, NdArray<System.<#=typename#>> @out)
+        private static NdArray<System.<#=typename#>> UFunc_Reduce_Inner_Flush_<#=typename#><#=methodextra#><C>(<#=structname#> op, long axis, NdArray<System.<#=typename#>> in1, NdArray<System.<#=typename#>> @out)
             where C : struct, IBinaryOp<System.<#=typename#>>
         {
+<# 
+	if (opname == "C")
+	{
+#>
+			if (Apply.UFunc_Reduce_Inner_Flush_Typed<System.<#=typename#>, <#=structname#>>(op, axis, in1, @out))
+				return @out;
+
+#if DEBUG
+			Console.WriteLine("Generic Reduce method <#=structname#> for <#=typename#>, with op = {0}, T = {1}", op.GetType(), typeof(System.<#=typename#>));
+#endif
+<# 
+	} 
+#>
             if (axis < 0)
                 axis = in1.Shape.Dimensions.LongLength - axis;
 
@@ -77,7 +155,7 @@ namespace NumCIL.Unsafe
                             System.<#=typename#> value = d[ix];
 
                             for (long i = ix + stride; i < limit; i += stride)
-                                value = op.Op(value, d[i]);
+                                value = <#=string.Format(opcode_template, typename, "value", "d[i]")#>;
 
                             vd[@out.Shape.Offset] = value;
                         }
@@ -101,7 +179,7 @@ namespace NumCIL.Unsafe
                                 for (long j = 1; j < outerCount; j++)
                                 {
                                     nx += strideOuter;
-                                    value = op.Op(value, d[nx]);
+                                    value = <#=string.Format(opcode_template, typename, "value", "d[nx]")#>;
                                 }
 
                                 vd[ox] = value;
@@ -127,7 +205,7 @@ namespace NumCIL.Unsafe
                                 System.<#=typename#> value = d[ix];
 
                                 for (long j = strideInner; j < limitInner; j += strideInner)
-                                    value = op.Op(value, d[j + ix]);
+                                    value = <#=string.Format(opcode_template, typename, "value", "d[j + ix]")#>;
 
                                 vd[ox] = value;
                                 ox += strideRes;
@@ -149,7 +227,7 @@ namespace NumCIL.Unsafe
                             {
                                 //Select the new dimension
                                 //Apply the operation
-                                Apply.UFunc_Op_Inner_Binary_Flush_<#=typename#><C>(op, vl, in1.Subview(Range.El(j), axis), ref vl);
+                                Apply.UFunc_Op_Inner_Binary_Flush_<#=typename#><<#=structname#>>(op, vl, in1.Subview(Range.El(j), axis), ref vl);
                             }
                         }
                     }

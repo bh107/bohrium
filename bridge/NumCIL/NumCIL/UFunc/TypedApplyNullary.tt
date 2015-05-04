@@ -70,8 +70,6 @@ foreach(string fulltypename in new string[] {"T", "System.SByte", "System.Byte",
 	}
 
 
-	//string opstruct = string.Format("new NumCIL.Generic.{0}{1}()", opname, typename);
-	//string opparamttype = string.Format("NumCIL.Generic.I{0}<{1}>", opname, fulltypename);
 	string opparamttype = string.Format("NumCIL.Generic.{0}{1}", opname, typename);
 
 	if (opname == "RangeGeneratorOp")
@@ -84,7 +82,6 @@ foreach(string fulltypename in new string[] {"T", "System.SByte", "System.Byte",
 		if (fulltypename != "T")
 			continue;
 
-		//opstruct = "opparam";
 		opparamttype = "C";
 	}
 	else if (fulltypename == "T")

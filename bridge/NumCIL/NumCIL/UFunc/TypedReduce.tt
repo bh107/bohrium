@@ -1,0 +1,280 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+#region Copyright
+/*
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with Bohrium. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NumCIL.Generic;
+
+namespace NumCIL
+{
+    /// <summary>
+    /// Universal function implementations (elementwise operations)
+    /// </summary>
+    public partial class UFunc
+    {
+<#
+
+var opnames = new string[] {"Add", "Sub", "Mul", "Div", "Mod", "Min", "Max", "Pow", "And", "Or", "Xor"};
+
+foreach(string opname in new string[] {"C"}.Union(opnames))
+foreach(string fulltypename in new string[] {"T", "System.SByte", "System.Byte", "System.Int16", "System.UInt16", "System.Int32", "System.UInt32", "System.Int64", "System.UInt64", "System.Single", "System.Double", "System.Boolean", "System.Numerics.Complex", "NumCIL.Complex64.DataType"})
+{
+	string typename = fulltypename;
+	string mathlib = "Math";
+
+	switch (typename)
+	{
+		case "System.Single":
+			typename = "Float";
+			break;
+		case "System.SByte":
+			typename = "Int8";
+			break;
+		case "System.Byte":
+			typename = "UInt8";
+			break;
+		case "System.Numerics.Complex":
+			typename = "Complex128";
+			mathlib = "System.Numerics.Complex";
+			break;
+		case "NumCIL.Complex64.DataType":
+			typename = "Complex64";
+			mathlib = "NumCIL.Complex64.DataType";
+			break;
+		default:
+			if (typename.StartsWith("System."))
+				typename = typename.Substring("System.".Length);
+			break;
+	}
+
+	if (typename.StartsWith("Complex") && (opname == "Mod" || opname == "Min" || opname == "Max" || opname == "And" || opname == "Or" || opname == "Xor"))
+		continue;
+
+	if (fulltypename == "System.Boolean" && opname != "And" && opname != "Or" && opname != "Xor")
+		continue;
+		
+	if ((fulltypename == "System.Single" || fulltypename == "System.Double") && (opname == "And" || opname == "Or" || opname == "Xor"))
+		continue;
+
+	string opparamttype = string.Format("NumCIL.{0}.{1}", typename, opname);
+
+	if (opname == "C")
+	{
+		if (fulltypename != "T")
+			continue;
+
+		opparamttype = "C";
+	}
+	else if (fulltypename == "T")
+	{
+		continue;
+	}
+
+	string opcode_template = "({0})op.Op({1}, {2})";
+
+	if (opname == "Add")
+		opcode_template = "({0})({1} + {2})";
+	else if (opname == "Sub") 
+		opcode_template = "({0})({1} - {2})";
+	else if (opname == "Mul") 
+		opcode_template = "({0})({1} * {2})";
+	else if (opname == "Div") 
+		opcode_template = "({0})({1} / {2})";
+	else if (opname == "Mod") 
+		opcode_template = "({0})({1} % {2})";
+	else if (opname == "Min") 
+		opcode_template = "({0})Math.Min({1}, {2})";
+	else if (opname == "Max") 
+		opcode_template = "({0})Math.Max({1}, {2})";
+	else if (opname == "Pow") 
+		opcode_template = "({0})" + mathlib + ".Pow({1}, {2})";
+	else if (opname == "And") 
+		opcode_template = "({0})({1} & {2})";
+	else if (opname == "Or") 
+		opcode_template = "({0})({1} | {2})";
+	else if (opname == "Xor") 
+		opcode_template = "({0})({1} ^ {2})";
+	else if (opname == "Equal") 
+		opcode_template = "({0})({1} == {2})";
+	else if (opname == "NotEqual") 
+		opcode_template = "({0})({1} != {2})";
+	else if (opname == "GreaterThan") 
+		opcode_template = "({0})({1} > {2})";
+	else if (opname == "GreaterThanOrEqual") 
+		opcode_template = "({0})({1} >= {2})";
+	else if (opname == "LessThan") 
+		opcode_template = "({0})({1} < {2})";
+	else if (opname == "LessThanOrEqual") 
+		opcode_template = "({0})({1} <= {2})";
+
+
+#>
+        /// <summary>
+        /// Actually executes a reduce operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IBinaryOp{0}"/> on each element in the given dimension.
+        /// This implementation is optimized for use with up to 2 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
+        /// </summary>
+        /// <typeparam name="T">The type of data to operate on</typeparam>
+        /// <typeparam name="C">The type of operation to reduce with</typeparam>
+        /// <param name="op">The instance of the operation to reduce with</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="axis">The axis to reduce</param>
+        /// <param name="out">The output target</param>
+        /// <returns>The output target</returns>
+        private static NdArray<<#=fulltypename#>> UFunc_Reduce_Inner_Flush<T, C>(<#=opparamttype#> op, long axis, NdArray<<#=fulltypename#>> in1, NdArray<<#=fulltypename#>> @out)
+            where C : struct, IBinaryOp<<#=fulltypename#>>
+        {
+            if (UnsafeAPI.UFunc_Reduce_Inner_Flush_Unsafe<<#=fulltypename#>, <#=opparamttype#>>(op, axis, in1, @out))
+                return @out;
+<# 
+	if (opname == "C")
+	{
+#>
+
+			if (UFunc_Reduce_Inner_Flush_Typed<T, C>(op, axis, in1, @out))
+				return @out;
+#if DEBUG
+			Console.WriteLine("Generic Reduce method <#=opparamttype#> for <#=fulltypename#>, with op = {0}, T = {1}", op.GetType(), typeof(T));
+#endif
+<# 
+	} 
+
+#>
+            if (axis < 0)
+                axis = in1.Shape.Dimensions.LongLength - axis;
+
+            //Basic case, just return a reduced array
+            if (in1.Shape.Dimensions[axis].Length == 1 && in1.Shape.Dimensions.LongLength > 1)
+            {
+                //TODO: If both in and out use the same array, just return a reshaped in
+                long j = 0;
+                var sizes = in1.Shape.Dimensions.Where(x => j++ != axis).ToArray();
+                UFunc_Op_Inner_Unary_Flush<<#=fulltypename#>, CopyOp<<#=fulltypename#>>>(new CopyOp<<#=fulltypename#>>(), in1.Reshape(new Shape(sizes, in1.Shape.Offset)), @out);
+            }
+            else
+            {
+                var d = in1.AsArray();
+                var vd = @out.AsArray();
+
+                //Simple case, reduce 1D array to scalar value
+                if (axis == 0 && in1.Shape.Dimensions.LongLength == 1)
+                {
+                    long stride = in1.Shape.Dimensions[0].Stride;
+                    long ix = in1.Shape.Offset;
+                    long limit = (stride * in1.Shape.Dimensions[0].Length) + ix;
+
+                    var value = d[ix];
+
+                    for (long i = ix + stride; i < limit; i += stride)
+                        value = <#=string.Format(opcode_template, fulltypename, "value", "d[i]")#>;
+
+                    vd[@out.Shape.Offset] = value;
+                }
+                //Simple case, reduce 2D array to 1D
+                else if (axis == 0 && in1.Shape.Dimensions.LongLength == 2)
+                {
+                    long strideInner = in1.Shape.Dimensions[1].Stride;
+                    long strideOuter = in1.Shape.Dimensions[0].Stride;
+
+                    long ix = in1.Shape.Offset;
+                    long ox = @out.Shape.Offset;
+                    long strideRes = @out.Shape.Dimensions[0].Stride;
+
+                    long outerCount = in1.Shape.Dimensions[0].Length;
+
+                    for (long i = 0; i < in1.Shape.Dimensions[1].Length; i++)
+                    {
+                        var value = d[ix];
+
+                        long nx = ix;
+                        for (long j = 1; j < outerCount; j++)
+                        {
+                            nx += strideOuter;
+                            value = <#=string.Format(opcode_template, fulltypename, "value", "d[nx]")#>;
+                        }
+
+                        vd[ox] = value;
+                        ox += strideRes;
+
+                        ix += strideInner;
+                    }
+                }
+                //Simple case, reduce 2D array to 1D
+                else if (axis == 1 && in1.Shape.Dimensions.LongLength == 2)
+                {
+                    long strideInner = in1.Shape.Dimensions[1].Stride;
+                    long strideOuter = in1.Shape.Dimensions[0].Stride;
+
+                    long ix = in1.Shape.Offset;
+                    long limitInner = strideInner * in1.Shape.Dimensions[1].Length;
+
+                    long ox = @out.Shape.Offset;
+                    long strideRes = @out.Shape.Dimensions[0].Stride;
+
+                    for (long i = 0; i < in1.Shape.Dimensions[0].Length; i++)
+                    {
+                        var value = d[ix];
+
+                        for (long j = strideInner; j < limitInner; j += strideInner)
+                            value = <#=string.Format(opcode_template, fulltypename, "value", "d[j + ix]")#>;
+
+                        vd[ox] = value;
+                        ox += strideRes;
+
+                        ix += strideOuter;
+                    }
+                }                
+                //General case
+                else
+                {
+                    long size = in1.Shape.Dimensions[axis].Length;
+                    var vl = @out.Subview(Range.NewAxis, axis);
+
+                    //Initially we just copy the value
+                    UFunc_Op_Inner_Unary_Flush<<#=fulltypename#>, CopyOp<<#=fulltypename#>>>(new CopyOp<<#=fulltypename#>>(), in1.Subview(Range.El(0), axis), vl);
+                    
+                    //If there is more than one element in the dimension to reduce, apply the operation accumulatively
+                    for (long j = 1; j < size; j++)
+                    {
+                        //Select the new dimension
+                        //Apply the operation
+                        UFunc_Op_Inner_Binary_Flush<<#=fulltypename#>, <#=opparamttype#>>(op, vl, in1.Subview(Range.El(j), axis), vl);
+                    }
+                }
+            }
+            return @out;
+        }
+<#
+}
+#>
+
+    }
+}
+

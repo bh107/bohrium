@@ -30,6 +30,9 @@ namespace NumCIL
 {
     public static partial class UFunc
     {
+		/// <summary>
+		/// Lookup table for generic methods that have been created and are ready for use
+		/// </summary>
 		private static Dictionary<string, System.Reflection.MethodInfo> _resolvedMethods = new Dictionary<string, System.Reflection.MethodInfo>();
 
 		/// <summary>
