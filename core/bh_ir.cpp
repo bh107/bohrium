@@ -174,7 +174,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         {
             const bh_view &v = instr.operand[i];
             if(bh_is_constant(&v))
-                continue;
+                constants.push_back(instr.constant);
             bh_view sv = bh_view_simplify(v);
             std::pair<size_t,bool> vid = views.insert(sv);
             if (vid.second) // If we have not seen the view before add it to inputs

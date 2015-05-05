@@ -122,6 +122,9 @@ private:
     
     // sweep (reduce and accumulate) dimensions 
     std::map<bh_intp, bh_int64> sweeps;
+
+    // list of constants used in this kernel in topological order
+    std::vector<bh_constant> constants;
         
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
