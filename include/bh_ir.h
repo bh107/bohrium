@@ -153,6 +153,7 @@ public:
     const std::set<bh_base*>& get_frees() const {return frees;}
     const std::set<bh_base*>& get_discards() const {return discards;}
     const seqset<bh_base*>& get_parameters() const {return parameters;}
+    const std::vector<bh_constant>& get_constants() const {return constants;}
 
     const std::set<std::vector<bh_index> >& get_shapes() const {return shapes;}
 
