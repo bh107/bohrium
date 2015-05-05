@@ -183,7 +183,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
                 input_set.insert(sv);
                 parameters.insert(sv.base);
             }
-            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
+            shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
         }
         //Add the output of the instruction to 'outputs'
         {
@@ -193,7 +193,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             output_map.insert(std::make_pair(sv.base,sv));
             output_set.insert(sv);
             parameters.insert(sv.base);
-            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
+            shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
         }
         if (bh_opcode_is_sweep(instr.opcode))
         {
