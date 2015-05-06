@@ -26,8 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <boost/serialization/vector.hpp>
 
-#include "bh_type.h"
-#include "bh_error.h"
+#include "bh.h"
 #include "bh_seqset.h"
 
 // Forward declaration of class boost::serialization::access
@@ -161,7 +160,7 @@ public:
 
     bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
 
-    size_t get_view_id(const bh_view& v) const {return views[v];}
+    size_t get_view_id(const bh_view& v) const;
     const bh_view& get_view(size_t id) const {return views[id];}
 
     /* Add an instruction to the kernel

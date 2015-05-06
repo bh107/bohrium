@@ -108,6 +108,11 @@ void bh_ir_kernel::clear()
     parameters.clear();
 }
 
+size_t bh_ir_kernel::get_view_id(const bh_view& v) const 
+{
+    return views[bh_view_simplify(v)];
+}
+
 /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
 bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const
 {
@@ -182,21 +187,21 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             std::pair<size_t,bool> vid = views.insert(sv);
             if (vid.second) // If we have not seen the view before add it to inputs
             {
-                input_map.insert(std::make_pair(sv.base,sv));
-                input_set.insert(sv);
-                parameters.insert(sv.base);
+                input_map.insert(std::make_pair(v.base,v));
+                input_set.insert(v);
+                parameters.insert(v.base);
             }
-            shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
+            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
         //Add the output of the instruction to 'outputs'
         {
             const bh_view &v = instr.operand[0];
             bh_view sv = bh_view_simplify(v);
             views.insert(sv);
-            output_map.insert(std::make_pair(sv.base,sv));
-            output_set.insert(sv);
-            parameters.insert(sv.base);
-            shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
+            output_map.insert(std::make_pair(v.base,v));
+            output_set.insert(v);
+            parameters.insert(v.base);
+            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
         }
         if (bh_opcode_is_sweep(instr.opcode))
         {
