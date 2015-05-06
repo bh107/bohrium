@@ -28,67 +28,70 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
-#include "Reduce.hpp"
+#include "StringHasher.hpp"
+#include "GenerateSourceCode.hpp"
 
-InstructionScheduler::InstructionScheduler()
-    : batch(NULL) {}
-
-bh_error InstructionScheduler::schedule(bh_ir* bhir)
+bh_error InstructionScheduler::schedule(const bh_ir* bhir)
 {
-    for (size_t i = 0; i < bhir->instr_list.size(); ++i)
+    for (const bh_ir_kernel& kernel: bhir->kernel_list)
     {
-        bh_instruction* inst = &(bhir->instr_list[i]);
-        if (inst->opcode != BH_NONE)
-        {
-#ifdef DEBUG
-            bh_pprint_instr(inst);
-#endif
-			bh_error res;
-
-            switch (inst->opcode)
+        if (kernel.get_output_set().size() > 0)
+        {    
+            SourceKernelCall sourceKernel = generateKernel(kernel);
+            for (bh_base* base: kernel.get_discards())
             {
-            case BH_SYNC:
-                sync(inst->operand[0].base);
-                res = BH_SUCCESS;
-                break;
-            case BH_DISCARD:
-                discard(inst->operand[0].base);
-                res = BH_SUCCESS;
-                break;
-            case BH_FREE:
-                bh_data_free(inst->operand[0].base);
-                res = BH_SUCCESS;
-                break;
-            case BH_ADD_REDUCE:
-            case BH_MULTIPLY_REDUCE:
-            case BH_MINIMUM_REDUCE:
-            case BH_MAXIMUM_REDUCE:
-            case BH_LOGICAL_AND_REDUCE:
-            case BH_BITWISE_AND_REDUCE:
-            case BH_LOGICAL_OR_REDUCE:
-            case BH_BITWISE_OR_REDUCE:
-            case BH_LOGICAL_XOR_REDUCE:
-            case BH_BITWISE_XOR_REDUCE:
-            case BH_ADD_ACCUMULATE:
-            case BH_MULTIPLY_ACCUMULATE:
-                res = reduce(inst);
-                break;
-            default:
-                if (inst->opcode <= BH_MAX_OPCODE_ID)
-                    res = ufunc(inst);
-                else
-                    res = extmethod(inst);
+                // We may recieve discard for arrays I don't own
+                ArrayMap::iterator it = arrayMap.find(base);
+                if  (it == arrayMap.end())
+                    continue;
+                sourceKernel.addDiscard(it->second);
+                arrayMap.erase(it);
             }
-
-            if (res != BH_SUCCESS)
+            compileAndRun(sourceKernel);
+        } else {
+            if (kernel.get_discards().size() > 0)
             {
-            	return res;
+                kernelMutex.lock();
+                if (!callQueue.empty())
+                {
+                    for (bh_base* base: kernel.get_discards())
+                    {
+                        // We may recieve discard for arrays I don't own
+                        ArrayMap::iterator it = arrayMap.find(base);
+                        if  (it == arrayMap.end())
+                            continue;
+                        callQueue.back().second.addDiscard(it->second);
+                        arrayMap.erase(it);
+                    }
+                    kernelMutex.unlock();  
+                } else {
+                    kernelMutex.unlock();
+                    for (bh_base* base: kernel.get_discards())
+                    {
+                        // We may recieve discard for arrays I don't own
+                        ArrayMap::iterator it = arrayMap.find(base);
+                        if  (it == arrayMap.end())
+                            continue;
+                        delete it->second;
+                        arrayMap.erase(it);
+                    }
+                }
             }
         }
+        for (bh_base* base: kernel.get_syncs())
+        {
+            ArrayMap::iterator it = arrayMap.find(base);
+            if  (it == arrayMap.end())
+                continue;
+            while (!callQueue.empty())
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            it->second->sync();
+        }
+        for (bh_base* base: kernel.get_frees())
+        {
+            bh_data_free(base);
+        }
     }
-
-    /* End of batch cleanup */
-    executeBatch();
     return BH_SUCCESS;
 }
 
@@ -156,45 +159,6 @@ void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
     }        
 }
 
-void InstructionScheduler::executeBatch()
-{
-    if (batch)
-    {
-        try {
-            SourceKernelCall sourceKernel = batch->generateKernel();
-            sourceKernel.setDiscard(discardSet);
-            compileAndRun(sourceKernel);
-        }
-        catch(BatchException be) 
-        {
-            if (!discardSet.empty())
-            {
-                kernelMutex.lock();
-                if (!callQueue.empty())
-                {
-                    SourceKernelCall& sourceKernel = callQueue.back().second;
-                    for (BaseArray *ba: discardSet)
-                    {
-                        sourceKernel.addDiscard(ba);
-                    }
-                    kernelMutex.unlock();  
-                }
-                else {
-                    kernelMutex.unlock();  
-                    for (BaseArray *ba: discardSet)
-                    {
-                        delete ba;
-                    }
-                }
-            }
-        }
-        discardSet.clear();
-        delete batch;
-        batch = 0;
-    }
-}
-
-
 void InstructionScheduler::build(KernelID kernelID, const std::string source)
 {
 
@@ -222,141 +186,6 @@ void InstructionScheduler::build(KernelID kernelID, const std::string source)
     kernelMutex.unlock(); 
 }
 
-void InstructionScheduler::sync(bh_base* base)
-{
-    //TODO postpone sync
-    // We may recieve sync for arrays I don't own
-    ArrayMap::iterator it = arrayMap.find(base);
-    if  (it == arrayMap.end())
-    {
-        return;
-    }
-    if (batch && batch->write(it->second))
-    {
-        executeBatch();
-    }
-    while (!callQueue.empty())
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    it->second->sync();
-}
-
-void InstructionScheduler::discard(bh_base* base)
-{
-    // We may recieve discard for arrays I don't own
-    ArrayMap::iterator it = arrayMap.find(base);
-    if  (it == arrayMap.end())
-    {
-        return;
-    }
-    if (batch && !batch->discard(it->second))
-    {
-        discardSet.insert(it->second);
-    }
-    else
-    {
-        kernelMutex.lock();
-        if (!callQueue.empty())
-        {
-            callQueue.back().second.addDiscard(it->second);
-            kernelMutex.unlock();  
-        }
-        else {
-            kernelMutex.unlock();  
-            delete it->second;
-        }
-    }
-    arrayMap.erase(it);
-}
-
-std::vector<KernelParameter*> InstructionScheduler::getKernelParameters(bh_instruction* inst)
-{
-    bh_intp nops = bh_operands(inst->opcode);
-    assert(nops > 0);
-    std::vector<KernelParameter*> operands(nops);
-    for (int i = 0; i < nops; ++i)
-    {
-        if (bh_is_constant(&(inst->operand[i])))
-        {
-            operands[i] = new Scalar(inst->constant);
-            continue;
-        }
-        bh_base* base = inst->operand[i].base;
-        if (!resourceManager->float64support() && base->type == BH_FLOAT64)
-        {
-            throw BH_TYPE_NOT_SUPPORTED;
-        }
-        // Is it a new base array we haven't heard of before?
-        ArrayMap::iterator it = arrayMap.find(base);
-        if (it == arrayMap.end())
-        {
-            // Then create it
-            BaseArray* ba =  new BaseArray(base, resourceManager);
-            arrayMap[base] = ba;
-            operands[i] = ba;
-        }
-        else
-        {
-            operands[i] = it->second;
-        }
-    }
-    return operands;
-}
-
-bh_error InstructionScheduler::ufunc(bh_instruction* inst)
-{
-    try {
-        std::vector<KernelParameter*> operands = getKernelParameters(inst);
-        if (batch)
-        {
-            try {
-                batch->add(inst, operands);
-            }
-            catch (BatchException& be)
-            {
-                executeBatch();
-                batch = new InstructionBatch(inst, operands);
-            }
-        } else {
-            batch = new InstructionBatch(inst, operands);
-        }
-        return BH_SUCCESS;
-    }
-    catch (bh_error e)
-    {
-        return e;
-    }
-}
-
-bh_error InstructionScheduler::reduce(bh_instruction* inst)
-{
-    if(inst->operand[1].ndim < 2)
-    {
-        // TODO these two syncs are a hack. Are we sure this is correct?????
-        sync(inst->operand[1].base);
-        sync(inst->operand[0].base);
-
-        bh_ir bhir = bh_ir( 1, inst);
-        return resourceManager->childExecute(&bhir);
-    }
-    std::vector<KernelParameter*> operands = getKernelParameters(inst);
-    if (batch && (batch->access(static_cast<BaseArray*>(operands[0])) ||
-                  batch->write(static_cast<BaseArray*>(operands[1]))))
-    {
-        executeBatch();
-    }
-    try {
-        SourceKernelCall sourceKernel = Reduce::generateKernel(inst, operands);
-        compileAndRun(sourceKernel);
-    }
-    catch (bh_error e)
-    {
-        return e;
-    }
-    return BH_SUCCESS;
-}
-
 void InstructionScheduler::registerFunction(bh_opcode opcode, bh_extmethod_impl extmethod_impl)
 {
     if(functionMap.find(opcode) != functionMap.end())
@@ -374,33 +203,284 @@ bh_error InstructionScheduler::extmethod(bh_instruction* inst)
     {
         return BH_EXTMETHOD_NOT_SUPPORTED;
     }
+    return BH_EXTMETHOD_NOT_SUPPORTED;
+}
 
-    try {
-        UserFuncArg userFuncArg;
-        userFuncArg.resourceManager = resourceManager;
-        userFuncArg.operands = getKernelParameters(inst);
+SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel)
+{
+#ifdef BH_TIMING
+    resourceManager->batchBuild->add({createTime, bh::Timer<>::stamp()}); 
+    bh_uint64 start = bh::Timer<>::stamp();
+#endif
+    std::vector<KernelParameter*> sizeParameters;
+    std::stringstream defines;
+    std::stringstream functionDeclaration;
+    
+    functionDeclaration << "(";
+    assert(kernel.get_parameters().size() > 0);
 
-        // If the instruction batch accesses any of the output operands it need to be executed first
-        BaseArray* ba = dynamic_cast<BaseArray*>(userFuncArg.operands[0]);
-        if (batch &&  ba && batch->access(ba))
+    // Get the GPU kernel parameters and include en function decleration
+    Kernel::Parameters kernelParameters;
+    for (auto kpit = kernel.get_parameters().begin(); kpit != kernel.get_parameters().end(); ++kpit)
+    {
+        bh_base* base = kpit->second;
+        // Is it a new base array we haven't heard of before?
+        ArrayMap::iterator it = arrayMap.find(base);
+        BaseArray* ba;
+        if (it == arrayMap.end())
         {
-            executeBatch();
+            // Then create it
+            ba =  new BaseArray(base, resourceManager);
+            arrayMap[base] = ba;
+
+        } else {
+            ba = it->second;
         }
-        // If the instruction batch writes to any of the input operands it need to be executed first
-        for (int i = 1; i < bh_operands(inst->opcode); ++i)
+        kernelParameters.push_back(std::make_pair(ba, kernel.is_output(base)));
+        functionDeclaration << "\n\t" << (kpit==kernel.get_parameters().begin()?"  ":", ") << 
+            *ba << " a" << kpit->first;
+
+    }
+    // Add constants to function declaration
+    const std::vector<bh_constant> constants = kernel.get_constants();  
+    for (size_t i = 0; i < constants.size(); ++i)
+    {
+        Scalar* s = new Scalar(constants[i]);
+        kernelParameters.push_back(std::make_pair(s, false));
+        functionDeclaration << "\n\t, " << *s << " c" << i;
+    }
+
+    functionDeclaration << "\n#ifndef FIXED_SIZE";
+
+    // Find kernel shape
+    std::vector<bh_index> shape;
+    for (const std::vector<bh_index>& s: kernel.get_shapes())
+        if (s.size() > shape.size())
+            shape = s;
+    // Add shape parameters
+    for (size_t i = 0; i < shape.size(); ++i)
+    {
+        std::stringstream ss;
+        ss << "ds" << shape.size() -(i+1);
+        Scalar* s = new Scalar(shape[i]);
+        (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+        sizeParameters.push_back(s);
+        functionDeclaration << "\n\t, " << *s << " " << ss.str();
+    }
+    
+    // Get all unique view ids for input \union output
+    std::map<size_t, bh_view> ioviews;
+    for (const bh_view& v: kernel.get_output_set())
+        ioviews[kernel.get_view_id(v)] = v;
+    for (const bh_view& v: kernel.get_input_set())
+        ioviews[kernel.get_view_id(v)] = v;
+    // Add view info to parameters
+    for (const std::pair<size_t, bh_view>& viewp: ioviews)
+    {
+        size_t id = viewp.first;
+        const bh_view& view = viewp.second;
         {
-            BaseArray* ba = dynamic_cast<BaseArray*>(userFuncArg.operands[i]);
-            if (batch && ba && batch->write(ba))
+            std::stringstream ss;
+            ss << "v" << id << "s0";
+            Scalar* s = new Scalar(view.start);
+            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+            sizeParameters.push_back(s);
+            functionDeclaration << "\n\t, " << *s << " " << ss.str();
+        }
+        bh_intp vndim = view.ndim;
+        for (bh_intp d = 0; d < vndim; ++d)
+        {
+            std::stringstream ss;
+            ss << "v" << id << "s" << vndim-d;
+            Scalar* s = new Scalar(view.stride[d]);
+            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+            sizeParameters.push_back(s);
+            functionDeclaration << "\n\t, " << *s << " " << ss.str();
+        }
+    }
+    functionDeclaration << "\n#endif\n)\n";
+
+    // Calculate the GPU kernel shape
+    std::vector<size_t> rkernelShape(shape.begin(),shape.end());
+    const std::map<bh_intp, bh_int64>& sweeps = kernel.get_sweeps();
+    for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
+    {
+        assert(rit->first == (bh_intp)rkernelShape.size());
+        rkernelShape.erase(rkernelShape.begin()+rit->second);
+        shape[rit->second] = 0;
+    }
+    while (rkernelShape.size() > 3)
+        rkernelShape.erase(rkernelShape.begin());
+    std::vector<size_t> kernelShape(rkernelShape.rbegin(),rkernelShape.rend());
+    
+    bool float64 = false;
+    bool complex = false;
+    bool integer = false;
+    bool random = false;
+    std::string functionBody = generateFunctionBody(kernel, kernelShape.size(), float64, complex, integer, random);
+
+    size_t functionID = string_hasher(functionBody);
+    size_t literalID = string_hasher(defines.str());
+
+    if (!resourceManager->float64support() && float64)
+    {
+        throw BH_TYPE_NOT_SUPPORTED;
+    }
+
+
+    std::stringstream source;
+    if (float64)
+        source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+    if (complex)
+        source << "#include <ocl_complex.h>\n";
+    if (integer)
+        source << "#include <ocl_integer.h>\n";
+    if (random)
+        source << "#include <ocl_random.h>\n";
+    std::vector<size_t> localShape = resourceManager->localShape(kernelShape);
+    while (localShape.size() < 3)
+        localShape.push_back(1);
+    source << "#ifdef FIXED_SIZE\n" << defines.str() << "#endif\n" << 
+        "__kernel __attribute__((work_group_size_hint(" << localShape[0] <<  ", " << localShape[1] <<  ", " << 
+        localShape[2]  << "))) void\n#ifndef FIXED_SIZE\nkernel" << std::hex << functionID <<
+        "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() << 
+        "\n" << functionBody;
+    
+#ifdef BH_TIMING
+    resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
+#endif
+    return SourceKernelCall(KernelID(functionID, literalID), kernelShape,source.str(),
+                            sizeParameters, kernelParameters);
+    
+}
+
+std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
+                                                       bool& float64, bool& complex, bool& integer, bool& random)
+{
+    std::stringstream source;
+    source << "{\n";
+    generateGIDSource(kdims, source);
+    std::stringstream indentss;
+    indentss << "\t";
+    std::set<size_t> initiated_view;
+    size_t dims = kdims; 
+    size_t const_id = 0;
+    // Generate code for instruction list
+    std::vector<std::string> operands;
+    std::vector<OCLtype> types;
+    for (uint64_t idx: kernel.instr_indexes)
+    {
+        bh_instruction& instr = kernel.bhir->instr_list[idx];
+        switch (instr.opcode)
+        {
+        case BH_DISCARD:
+        case BH_FREE:
+        case BH_SYNC:
+        case BH_NONE:
+            continue;
+        }
+        const int nop = bh_operands(instr.opcode);
+        operands.emplace_back("v");       // placeholder for output
+        types.push_back(OCL_UNKNOWN); // placeholder for output
+        // Load input parameters
+        for(int i=1; i<nop; ++i)
+        {
+            const bh_view& view = instr.operand[i];
+            if (!bh_is_constant(&view))
             {
-                executeBatch();
+                while (view.ndim < (bh_intp)dims)
+                {
+                    ++dims;
+                    source << indentss.str() << "for (int ids" << dims << " = 0; ids" << dims << " < ds" << 
+                        dims << "; ++ids" << dims << ")\n" << indentss.str() << "{\n";
+                    indentss << "\t";
+                    
+                }
+                // Is this a new view? 
+                size_t vid = kernel.get_view_id(view);
+                bh_base* base = view.base;
+                OCLtype type = oclType(base->type);
+                if (initiated_view.find(vid) == initiated_view.end())
+                {
+                    source << indentss.str() << oclTypeStr(type) << " v" << vid << " = a" <<
+                        kernel.get_parameters()[base] << "[";
+                    generateOffsetSource(dims, vid, source);
+                    source << "];\n";
+                    initiated_view.insert(vid);
+                }
+                operands.emplace_back("v");
+                operands.back() += std::to_string(vid);
+                types.push_back(type);
+            } else { // constant 
+                operands.emplace_back("c");
+                operands.back() += std::to_string(const_id++);
+                types.push_back(oclType(instr.constant.type));
             }
         }
-
-        // Execute the extension method
-        return fit->second(inst, &userFuncArg);
+        // Is the output a new view?
+        const bh_view& view = instr.operand[0];
+        size_t vid = kernel.get_view_id(view);
+        bh_base* base = view.base;
+        OCLtype type = oclType(base->type);
+        if (initiated_view.find(vid) == initiated_view.end())
+        {
+            source << indentss.str() << oclTypeStr(type) << " v" << vid << ";\n";
+            initiated_view.insert(vid);
+        }
+        operands.front() += std::to_string(vid);
+        types.front() = type;
+        // generate source code for the instruction
+        // HACK to make BH_INVERT on BH_BOOL work correctly TODO Fix!
+        if (instr.opcode == BH_INVERT && (instr.operand[1].base ? 
+                                          instr.operand[1].base->type : 
+                                          instr.constant.type) == BH_BOOL)
+            generateInstructionSource(BH_LOGICAL_NOT, types, operands, indentss.str(), source);
+        else
+            generateInstructionSource(instr.opcode, types, operands, indentss.str(), source);
+        if (kernel.is_output(base))
+        { // Save output parameters
+            source << indentss.str() << "a" << kernel.get_parameters()[base] << "[";
+            generateOffsetSource(view.ndim, vid, source);
+            source << "] = " <<  operands.front() << ";\n";
+        }
+        for (OCLtype type: types)
+        {
+            switch (type)
+            {
+            case OCL_FLOAT64:
+                float64 = true;
+                break;
+            case OCL_COMPLEX64:
+                complex = true;
+                break;
+            case OCL_COMPLEX128:
+                float64 = true;
+                complex = true;
+                break;
+            case OCL_R123:
+                random = true;
+                break;
+            case OCL_INT8:
+            case OCL_INT16:
+            case OCL_INT32:
+            case OCL_INT64:
+            case OCL_UINT8:
+            case OCL_UINT16:
+            case OCL_UINT32:
+            case OCL_UINT64:
+                if (instr.opcode == BH_POWER)
+                    integer = true;
+                break;
+            default:
+                break;
+            }
+        }
+        operands.clear();
+        types.clear();
     }
-    catch (bh_error e)
-    {
-        return e;
-    }
+    size_t pos = 1;
+    while (dims > kdims)
+        source << indentss.str().substr(pos++) << "}\n";
+    source << "}\n";
+    return source.str();
 }
