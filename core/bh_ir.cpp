@@ -174,7 +174,10 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         {
             const bh_view &v = instr.operand[i];
             if(bh_is_constant(&v))
+            {
                 constants.push_back(instr.constant);
+                continue;
+            }
             bh_view sv = bh_view_simplify(v);
             std::pair<size_t,bool> vid = views.insert(sv);
             if (vid.second) // If we have not seen the view before add it to inputs
@@ -365,6 +368,7 @@ int bh_ir_kernel::dependency(const bh_ir_kernel &other) const
 /* Returns the cost of a bh_view */
 inline static uint64_t cost_of_view(const bh_view &v)
 {
+    assert (!bh_is_constant(&v));
     return bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
 }
 
