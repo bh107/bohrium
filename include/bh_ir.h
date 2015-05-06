@@ -151,6 +151,7 @@ public:
     const std::set<bh_base*>& get_temps() const {return temps;}
     const std::set<bh_base*>& get_frees() const {return frees;}
     const std::set<bh_base*>& get_discards() const {return discards;}
+    const std::set<bh_base*>& get_syncs() const {return syncs;}
     const seqset<bh_base*>& get_parameters() const {return parameters;}
     const std::vector<bh_constant>& get_constants() const {return constants;}
 
