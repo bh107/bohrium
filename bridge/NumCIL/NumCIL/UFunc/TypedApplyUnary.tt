@@ -1,0 +1,517 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+#region Copyright
+/*
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with Bohrium. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NumCIL.Generic;
+
+namespace NumCIL
+{
+    public static partial class UFunc
+    {
+<#
+
+var typenames = new string[] { "System.SByte", "System.Byte", "System.Int16", "System.UInt16", "System.Int32", "System.UInt32", "System.Int64", "System.UInt64", "System.Single", "System.Double", "System.Boolean", "System.Numerics.Complex", "NumCIL.Complex64.DataType"};
+var convertOps = new string[] { "ToUInt8", "ToInt8", "ToInt16", "ToUInt16", "ToInt32", "ToUInt32", "ToInt64", "ToUInt64", "ToFloat", "ToDouble", "ToComplex128", "ToComplex64"};
+var opnames = new string[] {"C", "Ceiling", "Floor", "Round", "Sqrt", "Exp", "Abs", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Log", "Log10", "Invert", "Not", "Sign", "Copy", "Real", "Imaginary"};
+
+foreach(string opname in opnames.Union(convertOps))
+foreach(string fulltypename in new string[] {"Ta"}.Union(typenames))
+{
+
+	string typename = fulltypename;
+	string mathlib = "Math";
+
+	switch (typename)
+	{
+		case "System.Single":
+			typename = "Float";
+			break;
+		case "System.SByte":
+			typename = "Int8";
+			break;
+		case "System.Byte":
+			typename = "UInt8";
+			break;
+		case "System.Numerics.Complex":
+			typename = "Complex128";
+			mathlib = "System.Numerics.Complex";
+			break;
+		case "NumCIL.Complex64.DataType":
+			typename = "Complex64";
+			mathlib = "NumCIL.Complex64.DataType";
+			break;
+		default:
+			if (typename.StartsWith("System."))
+				typename = typename.Substring("System.".Length);
+			break;
+	}
+
+
+	if (opname == "Not" && fulltypename != "System.Boolean")
+		continue;
+
+	if (fulltypename == "System.Boolean" && !(opname == "Not" || convertOps.Any(x => x == opname)))
+		continue;
+
+	if ((opname == "Ceiling" || opname == "Floor" || opname == "Round" || opname == "Not" || opname == "Invert" || opname == "Sign") && typename.StartsWith("Complex"))
+		continue;
+
+	if ((opname == "Abs" || opname == "Sign") && typename.StartsWith("U"))
+		continue;
+
+	if ((opname == "Round" || opname == "Ceiling" || opname == "Floor") && (typename.StartsWith("U") || typename.StartsWith("I")))
+		continue;
+
+	if ((fulltypename == "System.Single" || fulltypename == "System.Double") && (opname == "Not" || opname == "Invert"))
+		continue;
+
+	if (opname == "To" + typename)
+		continue;
+
+	string opparamttype = string.Format("NumCIL.{0}.{1}", typename, opname);
+	string fulltypename_out = fulltypename;
+
+	if (opname == "Copy")
+	{
+		opparamttype = string.Format("NumCIL.CopyOp<{0}>", fulltypename);
+	}
+
+	if (opname == "Real" || opname == "Imaginary")
+	{
+		if (typename == "Complex64")
+			fulltypename_out = "System.Single";
+		else if (typename == "Complex128")
+			fulltypename_out = "System.Double";
+		else
+			continue;
+	}
+
+	if (convertOps.Any(x => x == opname))
+	{
+		var tn = opname.Substring("To".Length);
+		if (tn == "Float")
+			fulltypename_out = "System.Single";
+		else if (tn == "Int8")
+			fulltypename_out = "System.SByte";
+		else if (tn == "UInt8")
+			fulltypename_out = "System.Byte";
+		else if (tn == "Complex128")
+			fulltypename_out = "System.Numerics.Complex";
+		else if (tn == "Complex64")
+			fulltypename_out = "NumCIL.Complex64.DataType";
+		else
+			fulltypename_out = "System." + tn;
+
+		if (tn.StartsWith("Complex"))
+		{
+			if (fulltypename == "System.Boolean")
+				continue;
+
+			opparamttype = string.Format("NumCIL.{0}.ToComplex", tn);
+		}
+		else
+		{
+			if (typename.StartsWith("Complex"))
+				continue;
+
+			if (fulltypename == "System.Boolean")
+				opparamttype = string.Format("NumCIL.Boolean.{1}", tn, opname);
+			else
+				opparamttype = string.Format("NumCIL.{0}.{1}", tn, opname);
+		}
+
+	}
+
+	if (opname == "C")
+	{
+		if (fulltypename != "Ta")
+			continue;
+
+		fulltypename_out = "Tb";
+		opparamttype = "C";
+	}
+	else if (fulltypename == "Ta")
+	{
+		continue;
+	}
+
+
+	string opcode_template = "op.Op({1})";
+
+	if (convertOps.Any(x => x == opname) || opname == "Copy")
+		opcode_template = "({0})({1})";
+
+
+	if (opname == "Ceiling")
+		opcode_template = "({0})(" + mathlib + ".Ceiling({1}))";
+	else if (opname == "Floor")
+		opcode_template = "({0})(" + mathlib + ".Floor({1}))";
+	else if (opname == "Round")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Sqrt")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Exp")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Abs")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Sin")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Cos")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Tan")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Asin")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Acos")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Atan")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Sinh")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Cosh")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Tanh")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Log")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Log10")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Invert")
+		opcode_template = "({0})(~({1}))";
+	else if (opname == "Not")
+		opcode_template = "({0})(!({1}))";
+	else if (opname == "Sign")
+		opcode_template = "({0})(" + mathlib + "." + opname + "({1}))";
+	else if (opname == "Real")
+		opcode_template = "({0})(({1}.Real))";
+	else if (opname == "Imaginary")
+		opcode_template = "({0})(({1}.Imaginary))";
+
+
+	string opcode_a = string.Format(opcode_template, fulltypename_out, "d1[ix1]" + (fulltypename == "System.Boolean" && fulltypename_out != "System.Boolean" ? " ? 1 : 0 " : ""));
+	string opcode_s = string.Format(opcode_template, fulltypename_out, "scalar" + (fulltypename == "System.Boolean" && fulltypename_out != "System.Boolean" ? " ? 1 : 0 " : ""));
+#>
+        /// <summary>
+        /// Actually executes a unary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IUnaryOp{0}"/> or <see cref="T:NumCIL.IUnaryConvOp{0}"/> on each element.
+        /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
+        /// </summary>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to generate</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="in1">The input argument</param>
+        /// <param name="out">The output target</param>
+        private static void UFunc_Op_Inner_UnaryConv_Flush<Ta, Tb, C>(<#=opparamttype#> op, NdArray<<#=fulltypename#>> in1, NdArray<<#=fulltypename_out#>> @out)
+            where C : IUnaryConvOp<<#=fulltypename#>, <#=fulltypename_out#>>
+        {
+<# 
+	if (opname == "C")
+	{
+#>
+			if (UFunc_Op_Inner_UnaryConv_Flush_Typed<Ta, Tb, C>(op, in1, @out))
+				return;
+
+#if DEBUG
+			Console.WriteLine("Generic Unary method <#=opparamttype#> for <#=fulltypename#>, with op = {0}, Ta = {1}, Tb = {2}", op.GetType(), typeof(Ta), typeof(Tb));
+#endif
+<# 
+	} 
+#>
+            if (in1.DataAccessor.Length == 1 && in1.DataAccessor.GetType() == typeof(DefaultAccessor<Ta>))
+            {
+                UFunc_Op_Inner_UnaryConv_Flush_Scalar<Ta, Tb, C>(op, in1.DataAccessor[0], @out);
+                return;
+            }
+
+            var d1 = in1.AsArray();
+            var d2 = @out.AsArray();
+
+            if (@out.Shape.Dimensions.Length == 1)
+            {
+                long totalOps = @out.Shape.Dimensions[0].Length;
+
+                long ix1 = in1.Shape.Offset;
+                long ix2 = @out.Shape.Offset;
+
+                long stride1 = in1.Shape.Dimensions[0].Stride;
+                long stride2 = @out.Shape.Dimensions[0].Stride;
+
+
+                if (stride1 == stride2 && ix1 == ix2)
+                {
+                    //Best case, all are equal, just keep a single counter
+                    for (long i = 0; i < totalOps; i++)
+                    {
+                        d2[ix1] = <#=opcode_a#>;
+                        ix1 += stride1;
+                    }
+                }
+                else
+                {
+                    for (long i = 0; i < totalOps; i++)
+                    {
+                        d2[ix2] = <#=opcode_a#>;
+                        ix1 += stride1;
+                        ix2 += stride2;
+                    }
+                }
+            }
+            else if (@out.Shape.Dimensions.Length == 2)
+            {
+                long opsOuter = @out.Shape.Dimensions[0].Length;
+                long opsInner = @out.Shape.Dimensions[1].Length;
+
+                long ix1 = in1.Shape.Offset;
+                long ix2 = @out.Shape.Offset;
+
+                long outerStride1 = in1.Shape.Dimensions[0].Stride;
+                long outerStride2 = @out.Shape.Dimensions[0].Stride;
+
+                long innerStride1 = in1.Shape.Dimensions[1].Stride;
+                long innerStride2 = @out.Shape.Dimensions[1].Stride;
+
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[1].Length;
+                outerStride2 -= innerStride2 * @out.Shape.Dimensions[1].Length;
+
+                for (long i = 0; i < opsOuter; i++)
+                {
+                    for (long j = 0; j < opsInner; j++)
+                    {
+                        d2[ix2] = <#=opcode_a#>;
+                        ix1 += innerStride1;
+                        ix2 += innerStride2;
+                    }
+
+                    ix1 += outerStride1;
+                    ix2 += outerStride2;
+                }
+            }
+            else
+            {
+                long n = in1.Shape.Dimensions.LongLength - 3;
+                long[] limits = in1.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                long[] counters = new long[limits.LongLength];
+
+                long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                //This chunck of variables are used to prevent repeated calculations of offsets
+                long dimIndex0 = 0 + limits.LongLength;
+                long dimIndex1 = 1 + limits.LongLength;
+                long dimIndex2 = 2 + limits.LongLength;
+
+                long opsOuter = @out.Shape.Dimensions[0 + limits.LongLength].Length;
+                long opsInner = @out.Shape.Dimensions[1 + limits.LongLength].Length;
+                long opsInnerInner = @out.Shape.Dimensions[2 + limits.LongLength].Length;
+
+                long outerStride1 = in1.Shape.Dimensions[dimIndex0].Stride;
+                long outerStride3 = @out.Shape.Dimensions[dimIndex0].Stride;
+
+                long innerStride1 = in1.Shape.Dimensions[dimIndex1].Stride;
+                long innerStride3 = @out.Shape.Dimensions[dimIndex1].Stride;
+
+                long innerInnerStride1 = in1.Shape.Dimensions[dimIndex2].Stride;
+                long innerInnerStride3 = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                outerStride1 -= innerStride1 * in1.Shape.Dimensions[dimIndex1].Length;
+                outerStride3 -= innerStride3 * @out.Shape.Dimensions[dimIndex1].Length;
+
+                innerStride1 -= innerInnerStride1 * in1.Shape.Dimensions[dimIndex2].Length;
+                innerStride3 -= innerInnerStride3 * @out.Shape.Dimensions[dimIndex2].Length;
+
+                for (long outer = 0; outer < totalOps; outer++)
+                {
+                    //Get the array offset for the first element in the outer dimension
+                    long ix1 = in1.Shape[counters];
+                    long ix3 = @out.Shape[counters];
+
+
+                    for (long i = 0; i < opsOuter; i++)
+                    {
+                        for (long j = 0; j < opsInner; j++)
+                        {
+                            for (long k = 0; k < opsInnerInner; k++)
+                            {
+                                d2[ix3] = <#=opcode_a#>;
+                                ix1 += innerInnerStride1;
+                                ix3 += innerInnerStride3;
+                            }
+
+                            ix1 += innerStride1;
+                            ix3 += innerStride3;
+                        }
+
+                        ix1 += outerStride1;
+                        ix3 += outerStride3;
+                    }
+
+                    if (counters.LongLength > 0)
+                    {
+                        //Basically a ripple carry adder
+                        long p = counters.LongLength - 1;
+                        while (++counters[p] == limits[p] && p > 0)
+                        {
+                            counters[p] = 0;
+                            p--;
+                        }
+                    }
+                }
+            }
+        }
+
+		/// <summary>
+        /// Actually executes a unary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.IUnaryOp{0}"/> or <see cref="T:NumCIL.IUnaryConvOp{0}"/> on each element.
+        /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
+        /// </summary>
+        /// <typeparam name="Ta">The type of input data to operate on</typeparam>
+        /// <typeparam name="Tb">The type of output data to generate</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="scalar">The input scalar</param>
+        /// <param name="out">The output target</param>
+        private static void UFunc_Op_Inner_UnaryConv_Flush_Scalar<Ta, Tb, C>(<#=opparamttype#> op, <#=fulltypename#> scalar, NdArray<<#=fulltypename_out#>> @out)
+            where C : IUnaryConvOp<<#=fulltypename#>, <#=fulltypename_out#>>
+        {
+<# 
+	if (opname == "C")
+	{
+#>
+			if (UFunc_Op_Inner_UnaryConv_Flush_Scalar_Typed<Ta, Tb, C>(op, scalar, @out))
+				return;
+
+#if DEBUG
+			Console.WriteLine("Generic Unary SCL method <#=opparamttype#> for <#=fulltypename#>, with op = {0}, Ta = {1}, Tb = {2}", op.GetType(), typeof(Ta), typeof(Tb));
+#endif
+<# 
+	} 
+#>
+            var d2 = @out.AsArray();
+
+            if (@out.Shape.Dimensions.Length == 1)
+            {
+                long totalOps = @out.Shape.Dimensions[0].Length;
+                long ix2 = @out.Shape.Offset;
+                long stride2 = @out.Shape.Dimensions[0].Stride;
+
+                for (long i = 0; i < totalOps; i++)
+                {
+                    d2[ix2] = <#=opcode_s#>;
+                    ix2 += stride2;
+                }
+            }
+            else if (@out.Shape.Dimensions.Length == 2)
+            {
+                long opsOuter = @out.Shape.Dimensions[0].Length;
+                long opsInner = @out.Shape.Dimensions[1].Length;
+
+                long ix2 = @out.Shape.Offset;
+                long outerStride2 = @out.Shape.Dimensions[0].Stride;
+                long innerStride2 = @out.Shape.Dimensions[1].Stride;
+
+                outerStride2 -= innerStride2 * @out.Shape.Dimensions[1].Length;
+
+                for (long i = 0; i < opsOuter; i++)
+                {
+                    for (long j = 0; j < opsInner; j++)
+                    {
+                        d2[ix2] = <#=opcode_s#>;
+                        ix2 += innerStride2;
+                    }
+
+                    ix2 += outerStride2;
+                }
+            }
+            else
+            {
+                long n = @out.Shape.Dimensions.LongLength - 3;
+                long[] limits = @out.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                long[] counters = new long[limits.LongLength];
+
+                long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                //This chunck of variables are used to prevent repeated calculations of offsets
+                long dimIndex0 = 0 + limits.LongLength;
+                long dimIndex1 = 1 + limits.LongLength;
+                long dimIndex2 = 2 + limits.LongLength;
+
+                long opsOuter = @out.Shape.Dimensions[0 + limits.LongLength].Length;
+                long opsInner = @out.Shape.Dimensions[1 + limits.LongLength].Length;
+                long opsInnerInner = @out.Shape.Dimensions[2 + limits.LongLength].Length;
+
+                long outerStride3 = @out.Shape.Dimensions[dimIndex0].Stride;
+                long innerStride3 = @out.Shape.Dimensions[dimIndex1].Stride;
+                long innerInnerStride3 = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                outerStride3 -= innerStride3 * @out.Shape.Dimensions[dimIndex1].Length;
+                innerStride3 -= innerInnerStride3 * @out.Shape.Dimensions[dimIndex2].Length;
+
+                for (long outer = 0; outer < totalOps; outer++)
+                {
+                    //Get the array offset for the first element in the outer dimension
+                    long ix3 = @out.Shape[counters];
+
+                    for (long i = 0; i < opsOuter; i++)
+                    {
+                        for (long j = 0; j < opsInner; j++)
+                        {
+                            for (long k = 0; k < opsInnerInner; k++)
+                            {
+                                d2[ix3] = <#=opcode_s#>;
+                                ix3 += innerInnerStride3;
+                            }
+
+                            ix3 += innerStride3;
+                        }
+
+                        ix3 += outerStride3;
+                    }
+
+                    if (counters.LongLength > 0)
+                    {
+                        //Basically a ripple carry adder
+                        long p = counters.LongLength - 1;
+                        while (++counters[p] == limits[p] && p > 0)
+                        {
+                            counters[p] = 0;
+                            p--;
+                        }
+                    }
+                }
+            }
+        }
+
+<#
+}
+#>
+
+    }
+}

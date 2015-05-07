@@ -1,0 +1,216 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+#region Copyright
+/*
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as 
+published by the Free Software Foundation, either version 3 
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the 
+GNU Lesser General Public License along with Bohrium. 
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NumCIL.Generic;
+
+namespace NumCIL
+{
+    public static partial class UFunc
+    {
+<#
+foreach(string opname in new string[] {"C", "RandomGeneratorOp", "RangeGeneratorOp"}) 
+foreach(string fulltypename in new string[] {"T", "System.SByte", "System.Byte", "System.Int16", "System.UInt16", "System.Int32", "System.UInt32", "System.Int64", "System.UInt64", "System.Single", "System.Double", "System.Boolean", "System.Numerics.Complex", "NumCIL.Complex64.DataType"})
+{
+
+	string typename = fulltypename;
+	string mathlib = "Math";
+
+	switch (typename)
+	{
+		case "System.Single":
+			typename = "Float";
+			break;
+		case "System.SByte":
+			typename = "Int8";
+			break;
+		case "System.Byte":
+			typename = "UInt8";
+			break;
+		case "System.Numerics.Complex":
+			typename = "Complex128";
+			mathlib = "T";
+			break;
+		case "NumCIL.Complex64.DataType":
+			typename = "Complex64";
+			mathlib = "T";
+			break;
+		default:
+			if (typename.StartsWith("System."))
+				typename = typename.Substring("System.".Length);
+			break;
+	}
+
+
+	string opparamttype = string.Format("NumCIL.Generic.{0}{1}", opname, typename);
+
+	if (opname == "RangeGeneratorOp")
+	{
+		opparamttype = string.Format("NumCIL.Generic.RangeGeneratorOp<{0}, NumCIL.Generic.NumberConverter{1}>", fulltypename, typename);
+	}
+
+	if (opname == "C")
+	{
+		if (fulltypename != "T")
+			continue;
+
+		opparamttype = "C";
+	}
+	else if (fulltypename == "T")
+	{
+		continue;
+	}
+
+#>
+        /// <summary>
+        /// Actually executes a nullary operation in CIL by retrieving the data and executing the <see cref="T:NumCIL.INullaryOp{0}"/> or <see cref="T:NumCIL.IUnaryConvOp{0}"/> on each element.
+        /// This implementation is optimized for use with up to 4 dimensions, but works for any size dimension.
+        /// This method is optimized for 64bit processors, using the .Net 4.0 runtime.
+        /// </summary>
+        /// <typeparam name="T">The type of data to generat</typeparam>
+        /// <typeparam name="C">The type of operation to perform</typeparam>
+        /// <param name="op">The operation instance</param>
+        /// <param name="out">The output target</param>
+        private static void UFunc_Op_Inner_Nullary_Impl_Flush<T, C>(<#=opparamttype#> op, NdArray<<#=fulltypename#>> @out)
+            where C : struct, INullaryOp<<#=fulltypename#>>
+        {
+<# 
+	if (opname == "C")
+	{
+#>
+			if (UFunc_Op_Inner_Nullary_Impl_Flush_Typed<T, C>(op, @out))
+				return;
+
+#if DEBUG
+			Console.WriteLine("Generic Nullary method <#=opparamttype#> for <#=fulltypename#>, with op = {0}, T = {1}", op.GetType(), typeof(T));
+#endif
+<# 
+	} 
+#>
+
+            var d = @out.AsArray();
+
+            if (@out.Shape.Dimensions.Length == 1)
+            {
+                long totalOps = @out.Shape.Dimensions[0].Length;
+                long ix = @out.Shape.Offset;
+                long stride = @out.Shape.Dimensions[0].Stride;
+
+                for (long i = 0; i < totalOps; i++)
+                {
+                    d[ix] = op.Op();
+                    ix += stride;
+                }
+            }
+            else if (@out.Shape.Dimensions.Length == 2)
+            {
+                long opsOuter = @out.Shape.Dimensions[0].Length;
+                long opsInner = @out.Shape.Dimensions[1].Length;
+
+                long ix = @out.Shape.Offset;
+                long outerStride = @out.Shape.Dimensions[0].Stride;
+                long innerStride = @out.Shape.Dimensions[1].Stride;
+
+                outerStride -= innerStride * @out.Shape.Dimensions[1].Length;
+
+                for (long i = 0; i < opsOuter; i++)
+                {
+                    for (long j = 0; j < opsInner; j++)
+                    {
+                        d[ix] = op.Op();
+                        ix += innerStride;
+                    }
+
+                    ix += outerStride;
+                }
+            }
+            else
+            {
+                long n = @out.Shape.Dimensions.LongLength - 3;
+                long[] limits = @out.Shape.Dimensions.Where(x => n-- > 0).Select(x => x.Length).ToArray();
+                long[] counters = new long[limits.LongLength];
+
+                long totalOps = limits.LongLength == 0 ? 1 : limits.Aggregate<long>((a, b) => a * b);
+
+                long dimIndex0 = 0 + limits.LongLength;
+                long dimIndex1 = 1 + limits.LongLength;
+                long dimIndex2 = 2 + limits.LongLength;
+
+                long opsOuter = @out.Shape.Dimensions[dimIndex0].Length;
+                long opsInner = @out.Shape.Dimensions[dimIndex1].Length;
+                long opsInnerInner = @out.Shape.Dimensions[dimIndex2].Length;
+
+                long outerStride = @out.Shape.Dimensions[dimIndex0].Stride;
+                long innerStride = @out.Shape.Dimensions[dimIndex1].Stride;
+                long innerInnerStride = @out.Shape.Dimensions[dimIndex2].Stride;
+
+                outerStride -= innerStride * @out.Shape.Dimensions[dimIndex1].Length;
+                innerStride -= innerInnerStride * @out.Shape.Dimensions[dimIndex2].Length;
+
+                for (long outer = 0; outer < totalOps; outer++)
+                {
+                    //Get the array offset for the first element in the outer dimension
+                    long ix = @out.Shape[counters];
+
+                    for (long i = 0; i < opsOuter; i++)
+                    {
+                        for (long j = 0; j < opsInner; j++)
+                        {
+                            for (long k = 0; k < opsInnerInner; k++)
+                            {
+                                d[ix] = op.Op();
+                                ix += innerInnerStride;
+                            }
+
+                            ix += innerStride;
+                        }
+
+                        ix += outerStride;
+                    }
+
+                    if (counters.LongLength > 0)
+                    {
+                        //Basically a ripple carry adder
+                        long p = counters.LongLength - 1;
+                        while (++counters[p] == limits[p] && p > 0)
+                        {
+                            counters[p] = 0;
+                            p--;
+                        }
+                    }
+                }
+            }
+        }
+<#
+}
+#>
+	}
+}

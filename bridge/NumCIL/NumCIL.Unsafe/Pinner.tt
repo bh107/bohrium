@@ -39,7 +39,7 @@ namespace NumCIL.Unsafe
         private GCHandle m_handle;
         public readonly void* ptr = null;
 
-<# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double"}) { #>
+<# foreach(string typename in new string[] {"SByte", "Byte", "Int16", "UInt16", "Int32", "UInt32", "Int64", "UInt64", "Single", "Double", "Boolean"}) { #>
         public Pinner(IDataAccessor<System.<#=typename#>> i)
         {
             if (i is IUnmanagedDataAccessor<System.<#=typename#>>)

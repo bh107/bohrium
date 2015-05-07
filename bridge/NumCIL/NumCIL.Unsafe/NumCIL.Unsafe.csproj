@@ -49,11 +49,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Aggregate.tt</DependentUpon>
     </Compile>
-    <Compile Include="Apply.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Apply.tt</DependentUpon>
-    </Compile>
     <Compile Include="Copy.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -77,6 +72,16 @@
     </Compile>
     <Compile Include="UnmanagedAccessor.cs" />
     <Compile Include="Utility.cs" />
+    <Compile Include="ApplyUnary.cs">
+      <DependentUpon>ApplyUnary.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ApplyNullary.cs">
+      <DependentUpon>ApplyNullary.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ApplyBinary.cs">
+      <DependentUpon>ApplyBinary.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Apply.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NumCIL\NumCIL.csproj">
@@ -91,10 +96,6 @@
     <None Include="Aggregate.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Aggregate.cs</LastGenOutput>
-    </None>
-    <None Include="Apply.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Apply.cs</LastGenOutput>
     </None>
     <None Include="Copy.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -111,6 +112,18 @@
     <None Include="Reduce.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Reduce.cs</LastGenOutput>
+    </None>
+    <None Include="ApplyBinary.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ApplyBinary.cs</LastGenOutput>
+    </None>
+    <None Include="ApplyUnary.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ApplyUnary.cs</LastGenOutput>
+    </None>
+    <None Include="ApplyNullary.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ApplyNullary.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -69,11 +69,46 @@
     <Compile Include="Utility.cs" />
     <Compile Include="UFunc\ApplyManager.cs" />
     <Compile Include="UFunc\ApplyInterfaces.cs" />
+    <Compile Include="UFunc\TypedApplyUnary.cs">
+      <DependentUpon>TypedApplyUnary.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UFunc\TypedApplyNullary.cs">
+      <DependentUpon>TypedApplyNullary.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UFunc\TypedApplyBinary.cs">
+      <DependentUpon>TypedApplyBinary.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UFunc\TypedReduce.cs">
+      <DependentUpon>TypedReduce.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UFunc\TypedAggregate.cs">
+      <DependentUpon>TypedAggregate.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="TypedArrays.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>TypedArrays.cs</LastGenOutput>
+    </None>
+    <None Include="UFunc\TypedApplyBinary.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TypedApplyBinary.cs</LastGenOutput>
+    </None>
+    <None Include="UFunc\TypedApplyUnary.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TypedApplyUnary.cs</LastGenOutput>
+    </None>
+    <None Include="UFunc\TypedApplyNullary.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TypedApplyNullary.cs</LastGenOutput>
+    </None>
+    <None Include="UFunc\TypedReduce.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TypedReduce.cs</LastGenOutput>
+    </None>
+    <None Include="UFunc\TypedAggregate.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TypedAggregate.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
