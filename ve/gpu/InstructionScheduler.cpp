@@ -38,22 +38,30 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
         if (kernel.get_output_set().size() > 0)
         {    
             SourceKernelCall sourceKernel = generateKernel(kernel);
-            for (bh_base* base: kernel.get_discards())
-            {
-                // We may recieve discard for arrays I don't own
-                ArrayMap::iterator it = arrayMap.find(base);
-                if  (it == arrayMap.end())
-                    continue;
-                sourceKernel.addDiscard(it->second);
-                arrayMap.erase(it);
+            if (kernel.get_syncs().size() > 0)
+            { // There are syncs in this kernel so we postpone the discards
+                compileAndRun(sourceKernel);
+                sync(kernel.get_syncs());
+                discard(kernel.get_discards()); // After sync the queue is empty so we just discard
+            } else { // No syncs: so we simply attach the discards to the kernel 
+                for (bh_base* base: kernel.get_discards())
+                {
+                    // We may recieve discard for arrays I don't own
+                    ArrayMap::iterator it = arrayMap.find(base);
+                    if  (it == arrayMap.end())
+                        continue;
+                    sourceKernel.addDiscard(it->second);
+                    arrayMap.erase(it);
+                }
+                compileAndRun(sourceKernel);
             }
-            compileAndRun(sourceKernel);
-        } else {
+        } else { // Kernel with out computations
+            sync(kernel.get_syncs());
             if (kernel.get_discards().size() > 0)
             {
                 kernelMutex.lock();
-                if (!callQueue.empty())
-                {
+                if (!callQueue.empty()) 
+                { // attach the discards to the last kernel in the call queue
                     for (bh_base* base: kernel.get_discards())
                     {
                         // We may recieve discard for arrays I don't own
@@ -64,28 +72,11 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
                         arrayMap.erase(it);
                     }
                     kernelMutex.unlock();  
-                } else {
+                } else { // Call queue empty. So we just discard
                     kernelMutex.unlock();
-                    for (bh_base* base: kernel.get_discards())
-                    {
-                        // We may recieve discard for arrays I don't own
-                        ArrayMap::iterator it = arrayMap.find(base);
-                        if  (it == arrayMap.end())
-                            continue;
-                        delete it->second;
-                        arrayMap.erase(it);
-                    }
+                    discard(kernel.get_discards());
                 }
             }
-        }
-        for (bh_base* base: kernel.get_syncs())
-        {
-            ArrayMap::iterator it = arrayMap.find(base);
-            if  (it == arrayMap.end())
-                continue;
-            while (!callQueue.empty())
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            it->second->sync();
         }
         for (bh_base* base: kernel.get_frees())
         {
@@ -93,6 +84,32 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
         }
     }
     return BH_SUCCESS;
+}
+
+void InstructionScheduler::sync(const std::set<bh_base*>& arrays)
+{
+    for (bh_base* base: arrays)
+    {
+        ArrayMap::iterator it = arrayMap.find(base);
+        if  (it == arrayMap.end())
+            continue;
+        while (!callQueue.empty())
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        it->second->sync();
+    }
+}
+
+void InstructionScheduler::discard(const std::set<bh_base*>& arrays)
+{
+    for (bh_base* base: arrays)
+    {
+        // We may recieve discard for arrays I don't own
+        ArrayMap::iterator it = arrayMap.find(base);
+        if  (it == arrayMap.end())
+            continue;
+        delete it->second;
+        arrayMap.erase(it);
+    }
 }
 
 void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)

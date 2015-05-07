@@ -54,6 +54,8 @@ private:
     SourceKernelCall generateKernel(const bh_ir_kernel& kernel);
     std::string generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
                                      bool& float64, bool& complex, bool& integer, bool& random);
+    void sync(const std::set<bh_base*>& arrays);
+    void discard(const std::set<bh_base*>& arrays);
 public:
     InstructionScheduler() {}
     void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);
