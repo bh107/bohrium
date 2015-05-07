@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <map>
 #include <bh.h>
+#define BH_TIMING_SUM
 #include <bh_timing.hpp>
 #include "OCLtype.h"
 
@@ -53,8 +54,6 @@ private:
     std::string compilerOptions;
 
 public:
-#ifdef BH_TIMING
-    bh::Timer<>* batchBuild;
     bh::Timer<>* codeGen;
     bh::Timer<>* kernelGen;
     bh::Timer<bh::timing4,1000000000>* bufferWrite;
@@ -62,7 +61,6 @@ public:
     bh::Timer<bh::timing4,1000000000>* kernelExec;
     ~ResourceManager();
     static void CL_CALLBACK eventProfiler(cl::Event event, cl_int eventStatus, void* total);
-#endif
     ResourceManager(bh_component* _component);
     cl::Buffer* createBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.

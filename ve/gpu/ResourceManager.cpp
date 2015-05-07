@@ -117,12 +117,11 @@ ResourceManager::ResourceManager(bh_component* _component)
         devices = context.getInfo<CL_CONTEXT_DEVICES>();
         for(std::vector<cl::Device>::iterator dit = devices.begin(); dit != devices.end(); ++dit)        
         {
-            commandQueues.push_back(cl::CommandQueue(context,*dit,
-                                                     CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE
-#ifdef BH_TIMING
-                                                     | CL_QUEUE_PROFILING_ENABLE
-#endif
-                                        ));
+            cl_command_queue_properties properties = CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
+            if (_timing)
+                properties |=  CL_QUEUE_PROFILING_ENABLE;
+            
+            commandQueues.push_back(cl::CommandQueue(context,*dit,properties));
             if (dit == devices.begin())
             {
                 maxWorkGroupSize = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
@@ -151,27 +150,27 @@ ResourceManager::ResourceManager(bh_component* _component)
     }
     registerExtensions(extensions);
 
-#ifdef BH_TIMING
-    batchBuild = new bh::Timer<>("[GPU] Batch building");
-    codeGen = new bh::Timer<>("[GPU] Code generation");
-    kernelGen = new bh::Timer<>("[GPU] Kernel generation");
-    bufferWrite = new bh::Timer<bh::timing4,1000000000>("[GPU] Writing buffers");
-    bufferRead = new bh::Timer<bh::timing4,1000000000>("[GPU] Reading buffers");
-    kernelExec = new bh::Timer<bh::timing4,1000000000>("[GPU] Kernel execution");
-#endif
+    if (_timing)
+    {
+        codeGen = new bh::Timer<>("[GPU] Code generation");
+        kernelGen = new bh::Timer<>("[GPU] Kernel generation");
+        bufferWrite = new bh::Timer<bh::timing4,1000000000>("[GPU] Writing buffers");
+        bufferRead = new bh::Timer<bh::timing4,1000000000>("[GPU] Reading buffers");
+        kernelExec = new bh::Timer<bh::timing4,1000000000>("[GPU] Kernel execution");
+    }
 }
 
-#ifdef BH_TIMING
 ResourceManager::~ResourceManager()
 {
-    delete batchBuild;
-    delete codeGen;
-    delete kernelGen;
-    delete bufferWrite;
-    delete bufferRead;
-    delete kernelExec;
+    if (_timing)
+    {
+        delete codeGen;
+        delete kernelGen;
+        delete bufferWrite;
+        delete bufferRead;
+        delete kernelExec;
+    }
 }
-#endif
 
 void ResourceManager::registerExtensions(std::vector<std::string> extensions)
 {
@@ -192,23 +191,15 @@ void ResourceManager::readBuffer(const cl::Buffer& buffer,
 {
     size_t size = buffer.getInfo<CL_MEM_SIZE>();
     std::vector<cl::Event> readerWaitFor(1,waitFor);
-#ifdef BH_TIMING
     cl::Event event;
-#endif
     try {
         commandQueues[device].enqueueReadBuffer(buffer, CL_TRUE, 0, size, hostPtr, &readerWaitFor, 
-#ifdef BH_TIMING
-                                                &event
-#else
-                                                NULL
-#endif
-            );
+        (_timing?&event:NULL));
     } catch (cl::Error e) {
         std::cerr << "[VE-GPU] Could not enqueueReadBuffer: \"" << e.err() << "\"" << std::endl;
     }
-#ifdef BH_TIMING
-    event.setCallback(CL_COMPLETE, &eventProfiler, bufferRead);
-#endif
+    if (_timing)
+        event.setCallback(CL_COMPLETE, &eventProfiler, bufferRead);
 }
 
 cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
@@ -224,9 +215,8 @@ cl::Event ResourceManager::enqueueWriteBuffer(const cl::Buffer& buffer,
         std::cerr << "[VE-GPU] Could not enqueueWriteBuffer: \"" << e.what() << "\"" << std::endl;
         throw e;
     }
-#ifdef BH_TIMING
-    event.setCallback(CL_COMPLETE, &eventProfiler, bufferWrite);
-#endif
+    if (_timing)
+        event.setCallback(CL_COMPLETE, &eventProfiler, bufferWrite);
     return event;
 }
 
@@ -262,9 +252,11 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
                                                        const std::vector<std::string>& kernelNames,
                                                        const std::string& options)
 {
-#ifdef BH_TIMING
-    bh_uint64 start = bh::Timer<>::stamp(); 
-#endif
+
+    bh_uint64 start;
+    if (_timing)
+        start = bh::Timer<>::stamp(); 
+
     std::string compilerOptions(this->compilerOptions);
     compilerOptions += std::string(" ") + options;
     if (_printSource)
@@ -298,9 +290,8 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
                 e.err() << std::endl;  
         }
     }
-#ifdef BH_TIMING
-    kernelGen->add({start, bh::Timer<>::stamp()});
-#endif
+    if (_timing)
+        kernelGen->add({start, bh::Timer<>::stamp()});
     return kernels;
 }
 
@@ -319,9 +310,8 @@ cl::Event ResourceManager::enqueueNDRangeKernel(const cl::Kernel& kernel,
         std::cerr << "ERROR: " << err.what() << "(" << err.err() << ")" << std::endl;
         throw err;
     }
-#ifdef BH_TIMING
+    if (_timing)
     event.setCallback(CL_COMPLETE, &eventProfiler, kernelExec);
-#endif
     return event;
 }
 
@@ -340,7 +330,6 @@ std::vector<size_t> ResourceManager::localShape(const std::vector<size_t>& globa
     }
 }
 
-#ifdef BH_TIMING
 void CL_CALLBACK ResourceManager::eventProfiler(cl::Event event, cl_int eventStatus, void* timer)
 {
     assert(eventStatus == CL_COMPLETE);
@@ -349,7 +338,6 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl::Event event, cl_int eventSta
                 event.getProfilingInfo<CL_PROFILING_COMMAND_START>(),
                 event.getProfilingInfo<CL_PROFILING_COMMAND_END>()});
 }
-#endif
 
 bh_error ResourceManager::childExecute(bh_ir* bhir)
 {

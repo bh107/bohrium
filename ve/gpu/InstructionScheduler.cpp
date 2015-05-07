@@ -225,10 +225,10 @@ bh_error InstructionScheduler::extmethod(bh_instruction* inst)
 
 SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel)
 {
-#ifdef BH_TIMING
-    resourceManager->batchBuild->add({createTime, bh::Timer<>::stamp()}); 
-    bh_uint64 start = bh::Timer<>::stamp();
-#endif
+    bh_uint64 start;
+    if (resourceManager->timing())
+        start = bh::Timer<>::stamp();
+
     std::vector<KernelParameter*> sizeParameters;
     std::stringstream defines;
     std::stringstream functionDeclaration;
@@ -363,9 +363,9 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
         "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() << 
         "\n" << functionBody;
     
-#ifdef BH_TIMING
-    resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
-#endif
+    if (resourceManager->timing())
+        resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
+
     return SourceKernelCall(KernelID(functionID, literalID), kernelShape,source.str(),
                             sizeParameters, kernelParameters);
     
