@@ -100,6 +100,10 @@ And some additional packages::
 
   sudo apt-get install python-numpy swig python-cheetah cmake libboost-serialization-dev libboost-thread-dev cython libhwloc-dev
 
+Packages for visualization::
+
+  sudo apt-get install freeglut3 freeglut3-dev libxmu-dev libxi-dev
+
 Build and install::
 
   wget https://github.com/bh107/bohrium/get/master.tgz

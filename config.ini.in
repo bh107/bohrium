@@ -6,11 +6,6 @@ children = node
 # Managers
 #
 
-[visualizer]
-type = ve
-children = node
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
-
 [proxy]
 type = vem
 port = 4200
