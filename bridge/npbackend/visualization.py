@@ -19,8 +19,9 @@ def plot_surface(ary, mode, colormap, lowerbound, upperbound):
         raise ValueError("Unsupported array-rank, must be one of %s" % ranks)
     if mode not in modes:
         raise ValueError("Unsupported mode, must be one of %s" % modes)
+
     if ary.dtype not in types:
-        raise TypeError("Unsupported array-type, must be on of %s" % types)
+        ary = array_create.array(ary, bohrium=True, dtype=np.float32)
 
     if mode == "2d":
         flat = True
