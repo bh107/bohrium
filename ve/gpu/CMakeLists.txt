@@ -14,8 +14,6 @@ set_package_properties(OpenGL PROPERTIES DESCRIPTION "Open Graphics Library" URL
 set_package_properties(OpenGL PROPERTIES TYPE RECOMMENDED PURPOSE "Required by OpenCL/GPU-VE.")
 
 if(OPENCL_FOUND AND OPENGL_FOUND)
-#    add_definitions("-DBH_TIMING_SUM")
-#    add_definitions("-DDEBUG")
 
     include_directories(../../include)
 

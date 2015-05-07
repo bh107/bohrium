@@ -122,5 +122,6 @@ kernel = both
 # compile = {[async],sync}
 compile = async
 children = cpu
-
-
+verbose = false
+timing = false
+print_source = false

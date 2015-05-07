@@ -339,7 +339,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     size_t functionID = string_hasher(functionBody);
     size_t literalID = string_hasher(defines.str());
 
-    if (!resourceManager->float64support() && float64)
+    if (!resourceManager->float64() && float64)
     {
         throw BH_TYPE_NOT_SUPPORTED;
     }

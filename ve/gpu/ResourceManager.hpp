@@ -37,15 +37,18 @@ private:
     std::vector<cl::CommandQueue> commandQueues;
     size_t maxWorkGroupSize;
     cl_uint maxWorkItemDims;
-    OCLtype intpType_;
     std::vector<size_t> maxWorkItemSizes;
     std::vector<size_t> localShape1D;
     std::vector<size_t> localShape2D;
     std::vector<size_t> localShape3D;
-    bool float64;
+    OCLtype _intpType;
+    bool _float64;
     bool _fixedSizeKernel;
     bool _dynamicSizeKernel;
     bool _asyncCompile;
+    bool _verbose;
+    bool _printSource;
+    bool _timing; 
     void registerExtensions(std::vector<std::string> extensions);
     std::string compilerOptions;
 
@@ -90,12 +93,15 @@ public:
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
-    bool float64support() const;
-    bool fixedSizeKernel() const;
-    bool dynamicSizeKernel() const;
-    bool asyncCompile() const;
     bh_error childExecute(bh_ir* bhir);
-    OCLtype intpType();
+    OCLtype intpType() const { return _intpType; }
+    bool float64() const { return _float64; }
+    bool fixedSizeKernel() const { return _fixedSizeKernel; }
+    bool dynamicSizeKernel() const { return _dynamicSizeKernel; }
+    bool asyncCompile() const { return _asyncCompile; }
+    bool verbose() const { return _verbose; }
+    bool timing() const { return _timing; }
+    bool printSource() const { return _printSource; }
 };
 
 #endif

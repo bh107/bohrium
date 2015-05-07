@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <stdexcept>
 #include "GenerateSourceCode.hpp"
+#include "bh_ve_gpu.h"
 
 void generateGIDSource(size_t ndim, std::ostream& source)
 {
@@ -142,9 +143,8 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = " << parameters[1] << ".s1;\n";
             break;
         default:
-#ifdef DEBUG
-            std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
-#endif
+            if (resourceManager->verbose())
+                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
             throw std::runtime_error("Instruction not supported.");
         }
     }
@@ -329,9 +329,8 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = random("  << parameters[1] << ", gidx);\n";
             break;
         default:
-#ifdef DEBUG
-            std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
-#endif
+            if (resourceManager->verbose())
+                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
             throw std::runtime_error("Instruction not supported.");
         }
     }
