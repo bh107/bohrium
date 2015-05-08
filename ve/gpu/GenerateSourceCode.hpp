@@ -27,7 +27,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "OCLtype.h"
 
 void generateGIDSource(size_t ndim, std::ostream& source);
-void generateOffsetSource(size_t ndim, unsigned int id, std::ostream& source);
+void generateOffsetSource(size_t cdims, size_t kdims, unsigned int id, std::ostream& source, size_t skip=0);
+void generateIndexSource(size_t cdims, size_t kdims, size_t id, std::ostream& source, size_t skip=0);
+void generateSaveSource(size_t aid, size_t vid, std::ostream& source);
+void generateLoadSource(size_t aid, size_t vid, OCLtype type, std::ostream& source);
 void generateInstructionSource(const bh_opcode opcode,
                                const std::vector<OCLtype>& type, 
                                const std::vector<std::string>& parameters,

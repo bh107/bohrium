@@ -27,35 +27,56 @@ void generateGIDSource(size_t ndim, std::ostream& source)
 {
     assert(ndim > 0);    
     source << "\tconst size_t gidx = get_global_id(0);\n";
-    source << "\tif (gidx >= ds0)\n\t\treturn;\n";
+    source << "\tif (gidx >= ds1)\n\t\treturn;\n";
     if (ndim > 1)
     {
         source << "\tconst size_t gidy = get_global_id(1);\n";
-        source << "\tif (gidy >= ds1)\n\t\treturn;\n";
+        source << "\tif (gidy >= ds2)\n\t\treturn;\n";
     }
     if (ndim > 2)
     {
         source << "\tconst size_t gidz = get_global_id(2);\n";
-        source << "\tif (gidz >= ds2)\n\t\treturn;\n";
+        source << "\tif (gidz >= ds3)\n\t\treturn;\n";
     }
 }
 
-void generateOffsetSource(size_t ndim, unsigned int id, std::ostream& source)
+void generateOffsetSource(size_t cdims, size_t kdims, size_t id, std::ostream& source, size_t skip)
 {
-    assert(ndim > 0);
-    for (size_t d = ndim-1; d > 2; --d)
+    assert(kdims > 0);
+    assert(cdims >=kdims );
+    for (size_t d = cdims; d > kdims; --d)
     {
-        source << "ids" << d << "*v" << id << "s" << d+1 << " + ";
+        if (d != skip)
+            source << "ids" << d << "*v" << id << "s" << d+1 << " + ";
     }
-    if (ndim > 2)
+    if (kdims > 2 && skip != 3)
     {
         source << "gidz*v" << id << "s3 + ";
     }
-    if (ndim > 1)
+    if (kdims > 1 && skip != 2)
     {
         source << "gidy*v" << id << "s2 + ";
     }
-    source << "gidx*v" << id << "s1 + v" << id << "s0";
+    if (skip != 1)
+        source << "gidx*v" << id << "s1 + ";
+    source << "v" << id << "s0";
+}
+
+void generateIndexSource(size_t cdims, size_t kdims, size_t id, std::ostream& source ,size_t skip)
+{
+    source << "size_t v" << id << "idx = ";
+    generateOffsetSource(cdims, kdims, id, source,skip);
+    source << ";\n";
+} 
+
+void generateSaveSource(size_t aid, size_t vid, std::ostream& source)
+{
+    source << "a" << aid << "[v" << vid << "idx] = v" << vid << ";\n";
+}
+
+void generateLoadSource(size_t aid, size_t vid, OCLtype type, std::ostream& source)
+{
+    source << oclTypeStr(type) << " v" << vid <<  " = a" << aid << "[v" << vid << "idx];\n";
 }
 
 #define TYPE ((type[1] == OCL_COMPLEX64) ? "float" : "double")
@@ -153,12 +174,16 @@ void generateInstructionSource(const bh_opcode opcode,
         switch(opcode)
         {
         case BH_ADD:
+        case BH_ADD_REDUCE:
+        case BH_ADD_ACCUMULATE:    
             source << indent << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
             break;
         case BH_SUBTRACT:
             source << indent << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
             break;
         case BH_MULTIPLY:
+        case BH_MULTIPLY_REDUCE:
+        case BH_MULTIPLY_ACCUMULATE:
             source << indent << parameters[0] << " = " << parameters[1] << " * " << parameters[2] << ";\n";
             break;
         case BH_DIVIDE:
@@ -248,24 +273,30 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = atanh(" << parameters[1] << ");\n";
             break;
         case BH_BITWISE_AND:
+        case BH_BITWISE_AND_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
             break;
         case BH_BITWISE_OR:
+        case BH_BITWISE_OR_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
             break;
         case BH_BITWISE_XOR:
+        case BH_BITWISE_XOR_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " ^ " << parameters[2] << ";\n";
             break;
         case BH_LOGICAL_NOT:
             source << indent << parameters[0] << " = !" << parameters[1] << ";\n";
             break;
         case BH_LOGICAL_AND:
+        case BH_LOGICAL_AND_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " && " << parameters[2] << ";\n";
             break;
         case BH_LOGICAL_OR:
+        case BH_LOGICAL_OR_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " || " << parameters[2] << ";\n";
             break;
         case BH_LOGICAL_XOR:
+        case BH_LOGICAL_XOR_REDUCE:
             source << indent << parameters[0] << " = !" << parameters[1] << " != !" << parameters[2] << ";\n";
             break;
         case BH_INVERT:
@@ -296,9 +327,11 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = " << parameters[1] << " == " << parameters[2] << ";\n";
             break;
         case BH_MAXIMUM:
+        case BH_MAXIMUM_REDUCE:
             source << indent << parameters[0] << " = max(" << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         case BH_MINIMUM:
+        case BH_MINIMUM_REDUCE:
             source << indent << parameters[0] << " = min(" << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         case BH_IDENTITY:

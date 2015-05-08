@@ -56,6 +56,14 @@ private:
                                      bool& float64, bool& complex, bool& integer, bool& random);
     void sync(const std::set<bh_base*>& arrays);
     void discard(const std::set<bh_base*>& arrays);
+    void endDim(std::stringstream& source, 
+                std::stringstream& indentss, 
+                std::vector<std::string>& beforesource, 
+                std::set<bh_view>& save,
+                size_t dims,
+                size_t kdims,
+                const bh_ir_kernel& kernel);
+
 public:
     InstructionScheduler() {}
     void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);

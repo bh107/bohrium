@@ -160,6 +160,8 @@ public:
     const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
 
     bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
+    bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}
+    bool is_input(const bh_view& view) const {return input_set.find(view) != input_set.end();}
 
     size_t get_view_id(const bh_view& v) const;
     const bh_view& get_view(size_t id) const {return views[id];}

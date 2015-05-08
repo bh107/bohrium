@@ -278,7 +278,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     for (size_t i = 0; i < shape.size(); ++i)
     {
         std::stringstream ss;
-        ss << "ds" << shape.size() -(i+1);
+        ss << "ds" << shape.size() -i;
         Scalar* s = new Scalar(shape[i]);
         (defines << "#define " << ss.str() << " " <<= *s) << "\n";
         sizeParameters.push_back(s);
@@ -374,7 +374,8 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
 std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
                                                        bool& float64, bool& complex, bool& integer, bool& random)
 {
-    std::stringstream source;
+    std::stringstream source; // The active code block (dimension)
+    std::vector<std::string> beforesource; // opening code blosks of lower dimensions 
     source << "{\n";
     generateGIDSource(kdims, source);
     std::stringstream indentss;
@@ -385,6 +386,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     // Generate code for instruction list
     std::vector<std::string> operands;
     std::vector<OCLtype> types;
+    std::set<bh_view> save; // Views that need saving
     for (uint64_t idx: kernel.instr_indexes)
     {
         bh_instruction& instr = kernel.bhir->instr_list[idx];
@@ -397,6 +399,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
             continue;
         }
         const int nop = bh_operands(instr.opcode);
+        const bool sweep = bh_opcode_is_sweep(instr.opcode);
         operands.emplace_back("v");       // placeholder for output
         types.push_back(OCL_UNKNOWN); // placeholder for output
         // Load input parameters
@@ -405,29 +408,59 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
             const bh_view& view = instr.operand[i];
             if (!bh_is_constant(&view))
             {
-                while (view.ndim < (bh_intp)dims)
+                while (view.ndim > (bh_intp)dims)
                 {
+                    beforesource.emplace_back(source.str());
+                    source.str("");
                     ++dims;
                     source << indentss.str() << "for (int ids" << dims << " = 0; ids" << dims << " < ds" << 
                         dims << "; ++ids" << dims << ")\n" << indentss.str() << "{\n";
                     indentss << "\t";
                     
                 }
-                // Is this a new view? 
+                while (view.ndim < (bh_intp)dims)
+                {
+                    endDim(source, indentss, beforesource, save, dims, kdims, kernel);
+                    --dims;
+                    assert(dims > 0);
+                }
                 size_t vid = kernel.get_view_id(view);
                 bh_base* base = view.base;
                 OCLtype type = oclType(base->type);
+                // Is this a new view? 
                 if (initiated_view.find(vid) == initiated_view.end())
                 {
-                    source << indentss.str() << oclTypeStr(type) << " v" << vid << " = a" <<
-                        kernel.get_parameters()[base] << "[";
-                    generateOffsetSource(dims, vid, source);
-                    source << "];\n";
+                    if (dims > kdims)
+                    {
+                        std::stringstream mysource;
+                        mysource << beforesource.back();
+                        mysource << indentss.str().substr(1);
+                        if (sweep)
+                            generateIndexSource(dims, kdims, vid, mysource, instr.constant.value.int64);
+                        else
+                            generateIndexSource(dims, kdims, vid, mysource, dims);
+                        beforesource.back() = mysource.str();
+                        source << indentss.str() << "v" << vid << "idx += v" << vid << "s" << 
+                            (sweep?instr.constant.value.int64:dims) << ";\n";
+                    } else {
+                        source << indentss.str();
+                        generateIndexSource(dims, kdims, vid, source);
+                    }
+                    source << indentss.str();
+                    generateLoadSource(kernel.get_parameters()[base], vid, type, source);
                     initiated_view.insert(vid);
                 }
                 operands.emplace_back("v");
-                operands.back() += std::to_string(vid);
                 types.push_back(type);
+                if (!sweep)
+                {
+                    operands.back() += std::to_string(vid);
+                } else {
+                    operands.emplace_back("v");
+                    operands.back() += std::to_string(vid);
+                    types.push_back(type);
+                    break; // skip the constant
+                }
             } else { // constant 
                 operands.emplace_back("c");
                 operands.back() += std::to_string(const_id++);
@@ -441,7 +474,17 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         OCLtype type = oclType(base->type);
         if (initiated_view.find(vid) == initiated_view.end())
         {
-            source << indentss.str() << oclTypeStr(type) << " v" << vid << ";\n";
+            if (sweep)
+            {
+                std::stringstream mysource;
+                mysource << beforesource.back();
+                mysource << indentss.str().substr(1) << oclTypeStr(type) << " v" << vid << ";\n";
+                beforesource.back() = mysource.str();
+                operands[1] += std::to_string(vid);
+                types[1] = type;
+            } else {
+                source << indentss.str() << oclTypeStr(type) << " v" << vid << ";\n";
+            }            
             initiated_view.insert(vid);
         }
         operands.front() += std::to_string(vid);
@@ -454,12 +497,10 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
             generateInstructionSource(BH_LOGICAL_NOT, types, operands, indentss.str(), source);
         else
             generateInstructionSource(instr.opcode, types, operands, indentss.str(), source);
-        if (kernel.is_output(base))
-        { // Save output parameters
-            source << indentss.str() << "a" << kernel.get_parameters()[base] << "[";
-            generateOffsetSource(view.ndim, vid, source);
-            source << "] = " <<  operands.front() << ";\n";
-        }
+        // TODO reduction output?
+        // What if there are more operations 
+        if (kernel.is_output(view))
+            save.insert(view);
         for (OCLtype type: types)
         {
             switch (type)
@@ -495,9 +536,51 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         operands.clear();
         types.clear();
     }
-    size_t pos = 1;
-    while (dims > kdims)
-        source << indentss.str().substr(pos++) << "}\n";
-    source << "}\n";
+    while (dims >= kdims)
+    {
+        assert(dims>0);
+        assert(kdims>0);
+        endDim(source, indentss, beforesource, save, dims, kdims, kernel);
+        --dims;
+    }
+    //source << "}\n";
     return source.str();
+}
+
+void InstructionScheduler::endDim(std::stringstream& source, 
+                                  std::stringstream& indentss, 
+                                  std::vector<std::string>& beforesource, 
+                                  std::set<bh_view>& save,
+                                  size_t dims,
+                                  size_t kdims,
+                                  const bh_ir_kernel& kernel)
+{
+    std::stringstream mysource;
+    if (!beforesource.empty())
+    {
+        mysource << beforesource.back();
+        beforesource.pop_back();
+        mysource << source.str();
+        source.str("");
+        source << mysource.str();
+    }
+    for (auto it = save.begin(); it != save.end();)
+    {
+        if (it->ndim == (bh_intp)dims)
+        {
+            size_t vid = kernel.get_view_id(*it);
+            if (!kernel.is_input(*it))
+            {
+                source << indentss.str();
+                generateIndexSource(dims, kdims,vid, source);
+            }
+            size_t aid = kernel.get_parameters()[it->base];
+            source << indentss.str();
+            generateSaveSource(aid, vid, source);
+            save.erase(it++);
+        } else
+            ++it;
+    }
+    indentss.str(indentss.str().substr(1));
+    source << indentss.str() << "}\n";
 }
