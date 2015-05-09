@@ -334,7 +334,11 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
         {
             std::stringstream ss;
             ss << "v" << id << "s" << d;
-            Scalar* s = new Scalar(view.stride[dimOrder[d-1]]);
+            Scalar* s;
+            if (vndim == (bh_intp)dimOrder.size())
+                s = new Scalar(view.stride[dimOrder[d-1]]);
+            else
+                s = new Scalar(view.stride[vndim-d]);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
             sizeParameters.push_back(s);
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
