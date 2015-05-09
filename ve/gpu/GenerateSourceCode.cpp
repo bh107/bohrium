@@ -40,32 +40,29 @@ void generateGIDSource(size_t ndim, std::ostream& source)
     }
 }
 
-void generateOffsetSource(size_t cdims, size_t kdims, size_t id, std::ostream& source, size_t skip)
+void generateOffsetSource(size_t cdims, size_t kdims, size_t id, std::ostream& source)
 {
     assert(kdims > 0);
     assert(cdims >=kdims );
     for (size_t d = cdims; d > kdims; --d)
     {
-        if (d != skip)
-            source << "ids" << d << "*v" << id << "s" << d+1 << " + ";
+        source << "ids" << d << "*v" << id << "s" << d+1 << " + ";
     }
-    if (kdims > 2 && skip != 3)
+    if (kdims > 2)
     {
         source << "gidz*v" << id << "s3 + ";
     }
-    if (kdims > 1 && skip != 2)
+    if (kdims > 1)
     {
         source << "gidy*v" << id << "s2 + ";
     }
-    if (skip != 1)
-        source << "gidx*v" << id << "s1 + ";
-    source << "v" << id << "s0";
+    source << "gidx*v" << id << "s1 + v" << id << "s0";
 }
 
-void generateIndexSource(size_t cdims, size_t kdims, size_t id, std::ostream& source ,size_t skip)
+void generateIndexSource(size_t cdims, size_t kdims, size_t id, std::ostream& source)
 {
     source << "size_t v" << id << "idx = ";
-    generateOffsetSource(cdims, kdims, id, source,skip);
+    generateOffsetSource(cdims, kdims, id, source);
     source << ";\n";
 } 
 

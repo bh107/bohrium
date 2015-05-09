@@ -274,12 +274,37 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     for (const std::vector<bh_index>& s: kernel.get_shapes())
         if (s.size() > shape.size())
             shape = s;
+
+    // Find dimension order
+    std::vector<size_t> dimOrder(shape.size(),0);
+    {
+        std::set<size_t> used;
+        auto dimOrderIt = dimOrder.rbegin();
+        const std::map<bh_intp, bh_int64>& sweeps = kernel.get_sweeps();
+        for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
+        {
+            size_t d =  shape.size() - rit->first + rit->second;
+            *dimOrderIt++ = d;
+            used.insert(d);
+        }
+        for (size_t i = 0; i < shape.size(); ++i)
+        {
+            if (used.find(i)==used.end())
+                *dimOrderIt++ = i;
+        }
+    }
+    std::cout << "dimOrder["  << dimOrder[0]; 
+    for (size_t i = 1; i < dimOrder.size(); ++i)
+        std::cout << ", "  << dimOrder[i];
+    std::cout << "]" << std::endl;
+
+
     // Add shape parameters
-    for (size_t i = 0; i < shape.size(); ++i)
+    for (size_t d =  shape.size(); d > 0; --d)
     {
         std::stringstream ss;
-        ss << "ds" << shape.size() -i;
-        Scalar* s = new Scalar(shape[i]);
+        ss << "ds" << d;
+        Scalar* s = new Scalar(shape[dimOrder[d-1]]);
         (defines << "#define " << ss.str() << " " <<= *s) << "\n";
         sizeParameters.push_back(s);
         functionDeclaration << "\n\t, " << *s << " " << ss.str();
@@ -305,11 +330,11 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
         }
         bh_intp vndim = view.ndim;
-        for (bh_intp d = 0; d < vndim; ++d)
+        for (bh_intp d = vndim; d > 0; --d)
         {
             std::stringstream ss;
-            ss << "v" << id << "s" << vndim-d;
-            Scalar* s = new Scalar(view.stride[d]);
+            ss << "v" << id << "s" << d;
+            Scalar* s = new Scalar(view.stride[dimOrder[d-1]]);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
             sizeParameters.push_back(s);
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
@@ -435,19 +460,16 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                         std::stringstream mysource;
                         mysource << beforesource.back();
                         mysource << indentss.str().substr(1);
-                        if (sweep)
-                            generateIndexSource(dims, kdims, vid, mysource, instr.constant.value.int64);
-                        else
-                            generateIndexSource(dims, kdims, vid, mysource, dims);
+                        generateIndexSource(dims-1, kdims, vid, mysource);
                         beforesource.back() = mysource.str();
-                        source << indentss.str() << "v" << vid << "idx += v" << vid << "s" << 
-                            (sweep?instr.constant.value.int64:dims) << ";\n";
                     } else {
                         source << indentss.str();
                         generateIndexSource(dims, kdims, vid, source);
                     }
                     source << indentss.str();
                     generateLoadSource(kernel.get_parameters()[base], vid, type, source);
+                    if (dims > kdims)
+                        source << indentss.str() << "v" << vid << "idx += v" << vid << "s" << dims << ";\n";
                     initiated_view.insert(vid);
                 }
                 operands.emplace_back("v");
