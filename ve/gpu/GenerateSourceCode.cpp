@@ -76,6 +76,144 @@ void generateLoadSource(size_t aid, size_t vid, OCLtype type, std::ostream& sour
     source << oclTypeStr(type) << " v" << vid <<  " = a" << aid << "[v" << vid << "idx];\n";
 }
 
+void generateNeutral(bh_opcode opcode,OCLtype type, std::ostream& source)
+{
+    switch (type)
+    {
+    case OCL_COMPLEX64:
+        source << "(float2)(0.0f, ";
+        break;
+    case OCL_COMPLEX128:
+        source << "(double2)(0.0, ";
+        break;
+    default:
+        break;
+    }
+    switch (opcode)
+    {
+    case BH_ADD_ACCUMULATE:
+    case BH_ADD_REDUCE:
+    case BH_LOGICAL_OR_REDUCE:
+    case BH_BITWISE_OR_REDUCE:
+        source << "0";
+        break;
+    case BH_MULTIPLY_ACCUMULATE:
+    case BH_MULTIPLY_REDUCE:
+    case BH_LOGICAL_AND_REDUCE:
+    case BH_LOGICAL_XOR_REDUCE:
+        source << "1";
+        break;
+    case BH_BITWISE_AND_REDUCE:
+    case BH_BITWISE_XOR_REDUCE:
+        source << "~0";
+        break;
+    case BH_MINIMUM_REDUCE:
+        switch (type)
+        {
+        case OCL_INT8:
+            source << "CHAR_MAX";
+            break;
+        case OCL_INT16:
+            source << "SHRT_MAX";
+                break;
+        case OCL_INT32:
+            source << "INT_MAX";
+                break;
+        case OCL_INT64:
+            source << "LONG_MAX";
+                break;
+        case OCL_UINT8:
+            source << "UCHAR_MAX";
+            break;
+        case OCL_UINT16:
+            source << "USHRT_MAX";
+            break;
+        case OCL_UINT32:
+            source << "UINT_MAX";
+            break;
+        case OCL_UINT64:
+            source << "ULONG_MAX";
+            break;
+        case OCL_FLOAT32:
+            source << "FLT_MAX";
+            break;
+        case OCL_FLOAT64:
+            source << "DBL_MAX";
+            break;
+        default:
+            assert(false);
+        }
+        return;
+    case BH_MAXIMUM_REDUCE:
+        switch (type)
+        {
+        case OCL_INT8:
+            source << "CHAR_MIN";
+            break;
+        case OCL_INT16:
+            source << "SHRT_MIN";
+            break;
+        case OCL_INT32:
+            source << "INT_MIN";
+            break;
+        case OCL_INT64:
+            source << "LONG_MIN";
+            break;
+        case OCL_UINT8:
+            source << "0";
+            break;
+        case OCL_UINT16:
+            source << "0";
+            break;
+        case OCL_UINT32:
+            source << "0";
+            break;
+        case OCL_UINT64:
+            source << "0";
+            break;
+        case OCL_FLOAT32:
+            source << "FLT_MIN";
+            break;
+        case OCL_FLOAT64:
+            source << "DBL_MIN";
+            break;
+        default:
+            assert(false);
+        }
+        return;
+    default:
+        assert(false);
+    }
+    switch (type)
+    {
+    case OCL_INT64:
+        source << "l";
+        break;
+    case OCL_UINT8:
+    case OCL_UINT16:
+    case OCL_UINT32:
+        source << "u";
+        break;
+    case OCL_UINT64:
+        source << "ul";
+        break;
+    case OCL_FLOAT32:
+        source << ".0f";
+        break;
+    case OCL_FLOAT64:
+        source << ".0";
+        break;
+    case OCL_COMPLEX64:
+        source << ".0f)";
+        break;
+    case OCL_COMPLEX128:
+        source << ".0)";
+        break;
+    default:
+        break;
+    }    
+}
+
 #define TYPE ((type[1] == OCL_COMPLEX64) ? "float" : "double")
 void generateInstructionSource(const bh_opcode opcode,
                                const std::vector<OCLtype>& type,

@@ -500,7 +500,9 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
             {
                 std::stringstream mysource;
                 mysource << beforesource.back();
-                mysource << indentss.str().substr(1) << oclTypeStr(type) << " v" << vid << ";\n";
+                mysource << indentss.str().substr(1) << oclTypeStr(type) << " v" << vid << " = ";
+                generateNeutral(instr.opcode,type,mysource);
+                mysource << ";\n";
                 beforesource.back() = mysource.str();
                 operands[1] += std::to_string(vid);
                 types[1] = type;

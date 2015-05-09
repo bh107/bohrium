@@ -31,6 +31,7 @@ void generateOffsetSource(size_t cdims, size_t kdims, unsigned int id, std::ostr
 void generateIndexSource(size_t cdims, size_t kdims, size_t id, std::ostream& source);
 void generateSaveSource(size_t aid, size_t vid, std::ostream& source);
 void generateLoadSource(size_t aid, size_t vid, OCLtype type, std::ostream& source);
+void generateNeutral(bh_opcode opcode,OCLtype type, std::ostream& source);
 void generateInstructionSource(const bh_opcode opcode,
                                const std::vector<OCLtype>& type, 
                                const std::vector<std::string>& parameters,
