@@ -593,6 +593,12 @@ void InstructionScheduler::endDim(std::stringstream& source,
 std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::map<bh_intp, 
                                                                      bh_int64>& sweeps, size_t ndim)
 {
+    /* First generate "basic" dimension orders:
+     * [0]
+     * [1,0]
+     * [2,1,0]
+     * ...
+     */
     std::vector<std::vector<size_t> > dimOrders;
     for (int d = 0; d < (int)ndim; ++d)
     {
@@ -602,6 +608,10 @@ std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::
             dimOrders[d].push_back(i);
         }
     }
+    /* Rearrange the orders according to sweeps by moving the indicated 
+     * dimension last in the given dimensionality and doing the same for 
+     * higher dimensions - skipping the highest (first) dimensions.
+     */
     for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
     {
         int s = rit->second;
