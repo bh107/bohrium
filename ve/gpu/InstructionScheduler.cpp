@@ -276,32 +276,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
             shape = s;
 
     // Find dimension order
-    std::map<size_t,std::vector<size_t> > dimOrders;
-    {
-        size_t sane = 0;
-        std::vector<std::set<size_t> > used;
-        std::vector<std::vector<size_t>::reverse_iterator> dimOrderIt;
-        const std::map<bh_intp, bh_int64>& sweeps = kernel.get_sweeps();
-        for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
-        {
-            size_t dim = rit->first;
-            if (dim != shape.size() - sane++)
-                throw std::runtime_error("Reduction not in outermost dimension");
-            dimOrders[dim] = std::vector<size_t>(dim,0);
-            dimOrderIt.push_back(dimOrders[dim].rbegin());
-            used.push_back(std::set<size_t>());
-            for (size_t i = 0; i < dimOrderIt.size(); ++i)
-            {
-                size_t sd =  shape.size() - i - rit->first + rit->second;
-                *dimOrderIt[i]++ = sd;
-                used[i].insert(sd);
-            }
-        }
-        for (size_t sd = 0; sd < shape.size(); ++sd)
-            for (size_t i = 0; i < dimOrderIt.size(); ++i)
-                if (used[i].find(sd) == used[i].end() && dimOrderIt[i] != dimOrders[shape.size()-i].rend())
-                    *dimOrderIt[i]++ = sd;
-    }
+    std::map<size_t,std::vector<size_t> > dimOrders = getDimOrders(kernel.get_sweeps(), shape.size());
     for (const std::pair<size_t,std::vector<size_t> >& dimOrder: dimOrders)
     {
         std::cout << "dimOrder{" << dimOrder.first << "}["  << dimOrder.second[0]; 
@@ -622,4 +597,33 @@ void InstructionScheduler::endDim(std::stringstream& source,
     }
     indentss.str(indentss.str().substr(1));
     source << indentss.str() << "}\n";
+}
+
+std::map<size_t,std::vector<size_t> > InstructionScheduler::getDimOrders(const std::map<bh_intp, 
+                                                                         bh_int64>& sweeps, size_t ndim)
+{
+    size_t sane = 0;
+    std::map<size_t,std::vector<size_t> > dimOrders;
+    std::vector<std::set<size_t> > used;
+    std::vector<std::vector<size_t>::reverse_iterator> dimOrderIt;
+    for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
+    {
+        size_t dim = rit->first;
+        if (dim != ndim - sane++)
+            throw std::runtime_error("Reduction not in outermost dimension");
+        dimOrders[dim] = std::vector<size_t>(dim,0);
+        dimOrderIt.push_back(dimOrders[dim].rbegin());
+        used.push_back(std::set<size_t>());
+        for (size_t i = 0; i < dimOrderIt.size(); ++i)
+        {
+            size_t sd = ndim - i - rit->first + rit->second;
+            *dimOrderIt[i]++ = sd;
+            used[i].insert(sd);
+        }
+    }
+    for (size_t sd = 0; sd < ndim; ++sd)
+        for (size_t i = 0; i < dimOrderIt.size(); ++i)
+            if (used[i].find(sd) == used[i].end() && dimOrderIt[i] != dimOrders[ndim-i].rend())
+                *dimOrderIt[i]++ = sd;
+    return dimOrders;
 }
