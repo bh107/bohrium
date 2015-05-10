@@ -46,7 +46,7 @@ void generateOffsetSource(size_t cdims, size_t kdims, size_t id, std::ostream& s
     assert(cdims >=kdims );
     for (size_t d = cdims; d > kdims; --d)
     {
-        source << "ids" << d << "*v" << id << "s" << d+1 << " + ";
+        source << "ids" << d << "*v" << id << "s" << d << " + ";
     }
     if (kdims > 2)
     {

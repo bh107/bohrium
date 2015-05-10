@@ -276,26 +276,22 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
             shape = s;
 
     // Find dimension order
-    std::map<size_t,std::vector<size_t> > dimOrders = getDimOrders(kernel.get_sweeps(), shape.size());
-    for (const std::pair<size_t,std::vector<size_t> >& dimOrder: dimOrders)
+    std::vector<std::vector<size_t> > dimOrders = genDimOrders(kernel.get_sweeps(), shape.size());
+    std::cout << "dimOrders: {";
+    for (const std::vector<size_t>& dimOrder: dimOrders)
     {
-        std::cout << "dimOrder{" << dimOrder.first << "}["  << dimOrder.second[0]; 
-        for (size_t i = 1; i < dimOrder.second.size(); ++i)
-            std::cout << ", "  << dimOrder.second[i];
-        std::cout << "]" << std::endl;
+        std::cout << " ["  << dimOrder[0];
+        for (int i = 1; i < (int)dimOrder.size();++i) 
+            std::cout << ", "  << dimOrder[i];
+        std::cout << "] ";
     }
-
+    std::cout << "}" << std::endl;
     // Add shape parameters
-    auto doit = dimOrders.find(shape.size());
     for (size_t d = shape.size(); d > 0; --d)
     {
         std::stringstream ss;
         ss << "ds" << d;
-        Scalar* s;
-        if (doit == dimOrders.end())
-            s = new Scalar(shape[shape.size()-d]);
-        else
-            s = new Scalar(shape[doit->second[d-1]]);
+        Scalar* s = new Scalar(shape[dimOrders[shape.size()-1][d-1]]);
         (defines << "#define " << ss.str() << " " <<= *s) << "\n";
         sizeParameters.push_back(s);
         functionDeclaration << "\n\t, " << *s << " " << ss.str();
@@ -312,25 +308,20 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     {
         size_t id = viewp.first;
         const bh_view& view = viewp.second;
-        {
-            std::stringstream ss;
-            ss << "v" << id << "s0";
-            Scalar* s = new Scalar(view.start);
-            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
-            sizeParameters.push_back(s);
-            functionDeclaration << "\n\t, " << *s << " " << ss.str();
-        }
         bh_intp vndim = view.ndim;
-        auto doit = dimOrders.find((size_t)vndim);
         for (bh_intp d = vndim; d > 0; --d)
         {
             std::stringstream ss;
             ss << "v" << id << "s" << d;
-            Scalar* s;
-            if (doit == dimOrders.end())
-                s = new Scalar(view.stride[vndim-d]);
-            else
-                s = new Scalar(view.stride[doit->second[d-1]]);
+            Scalar* s = new Scalar(view.stride[dimOrders[vndim-1][d-1]]);
+            (defines << "#define " << ss.str() << " " <<= *s) << "\n";
+            sizeParameters.push_back(s);
+            functionDeclaration << "\n\t, " << *s << " " << ss.str();
+        }
+        {
+            std::stringstream ss;
+            ss << "v" << id << "s0";
+            Scalar* s = new Scalar(view.start);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
             sizeParameters.push_back(s);
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
@@ -599,31 +590,31 @@ void InstructionScheduler::endDim(std::stringstream& source,
     source << indentss.str() << "}\n";
 }
 
-std::map<size_t,std::vector<size_t> > InstructionScheduler::getDimOrders(const std::map<bh_intp, 
-                                                                         bh_int64>& sweeps, size_t ndim)
+std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::map<bh_intp, 
+                                                                     bh_int64>& sweeps, size_t ndim)
 {
-    size_t sane = 0;
-    std::map<size_t,std::vector<size_t> > dimOrders;
-    std::vector<std::set<size_t> > used;
-    std::vector<std::vector<size_t>::reverse_iterator> dimOrderIt;
-    for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
+    std::vector<std::vector<size_t> > dimOrders;
+    for (int d = 0; d < (int)ndim; ++d)
     {
-        size_t dim = rit->first;
-        if (dim != ndim - sane++)
-            throw std::runtime_error("Reduction not in outermost dimension");
-        dimOrders[dim] = std::vector<size_t>(dim,0);
-        dimOrderIt.push_back(dimOrders[dim].rbegin());
-        used.push_back(std::set<size_t>());
-        for (size_t i = 0; i < dimOrderIt.size(); ++i)
+        dimOrders.push_back(std::vector<size_t>());
+        for (int i = d; i >= 0; --i)
         {
-            size_t sd = ndim - i - rit->first + rit->second;
-            *dimOrderIt[i]++ = sd;
-            used[i].insert(sd);
+            dimOrders[d].push_back(i);
         }
     }
-    for (size_t sd = 0; sd < ndim; ++sd)
-        for (size_t i = 0; i < dimOrderIt.size(); ++i)
-            if (used[i].find(sd) == used[i].end() && dimOrderIt[i] != dimOrders[ndim-i].rend())
-                *dimOrderIt[i]++ = sd;
+    for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
+    {
+        int s = rit->second;
+        for (int d = rit->first - 1; d < (int)ndim; ++d)
+        {
+            int i = d-s++;
+            size_t t = dimOrders[d][i];
+            for (; i < d; ++i)
+            {
+                dimOrders[d][i] = dimOrders[d][i+1];
+            }
+            dimOrders[d][i] = t;
+        }
+    }
     return dimOrders;
 }

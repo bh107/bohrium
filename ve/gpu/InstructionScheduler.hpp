@@ -63,7 +63,7 @@ private:
                 size_t dims,
                 size_t kdims,
                 const bh_ir_kernel& kernel);
-    std::map<size_t,std::vector<size_t> > getDimOrders(const std::map<bh_intp, bh_int64>& sweeps, size_t ndim);
+    std::vector<std::vector<size_t> > genDimOrders(const std::map<bh_intp, bh_int64>& sweeps, size_t ndim);
 public:
     InstructionScheduler() {}
     void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);
