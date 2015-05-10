@@ -278,13 +278,15 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     // Find dimension order
     std::map<size_t,std::vector<size_t> > dimOrders;
     {
+        size_t sane = 0;
         std::vector<std::set<size_t> > used;
         std::vector<std::vector<size_t>::reverse_iterator> dimOrderIt;
-        //auto dimOrderIt = dimOrder.rbegin();
         const std::map<bh_intp, bh_int64>& sweeps = kernel.get_sweeps();
         for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
         {
             size_t dim = rit->first;
+            if (dim != shape.size() - sane++)
+                throw std::runtime_error("Reduction not in outermost dimension");
             dimOrders[dim] = std::vector<size_t>(dim,0);
             dimOrderIt.push_back(dimOrders[dim].rbegin());
             used.push_back(std::set<size_t>());
@@ -297,7 +299,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
         }
         for (size_t sd = 0; sd < shape.size(); ++sd)
             for (size_t i = 0; i < dimOrderIt.size(); ++i)
-                if (used[i].find(sd)==used[i].end())
+                if (used[i].find(sd) == used[i].end() && dimOrderIt[i] != dimOrders[shape.size()-i].rend())
                     *dimOrderIt[i]++ = sd;
     }
     for (const std::pair<size_t,std::vector<size_t> >& dimOrder: dimOrders)
