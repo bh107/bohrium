@@ -18,48 +18,47 @@ typedef std::vector<bh_ir_kernel>::iterator krnl_iter;
 const char Engine::TAG[] = "Engine";
 
 Engine::Engine(
+    const thread_binding binding,
+    const size_t thread_limit,
+    const size_t vcache_size,
+    const bool preload,
+    const bool jit_enabled,
+    const bool jit_dumpsrc,
+    const bool jit_fusion,
+    const bool jit_contraction,
     const string compiler_cmd,
     const string compiler_inc,
     const string compiler_lib,
     const string compiler_flg,
     const string compiler_ext,
-    const string template_directory,
-    const string kernel_directory,
     const string object_directory,
-    const size_t vcache_size,
-    const bool preload,
-    const bool jit_enabled,
-    const bool jit_fusion,
-    const bool jit_dumpsrc,
-    const bool dump_rep,
-    const thread_binding binding,
-    const size_t mthreads)
-: compiler_cmd(compiler_cmd),
-    template_directory(template_directory),
-    kernel_directory(kernel_directory),
-    object_directory(object_directory),
-    vcache_size(vcache_size),
-    preload(preload),
-    jit_enabled(jit_enabled),
-    jit_fusion(jit_fusion),
-    jit_dumpsrc(jit_dumpsrc),
-    dump_rep(dump_rep),
-    storage(object_directory, kernel_directory),
+    const string template_directory,
+    const string kernel_directory
+    )
+:   vcache_size_(vcache_size),
+    preload_(preload),
+    jit_enabled_(jit_enabled),
+    jit_fusion_(jit_fusion),
+    jit_contraction_(jit_contraction),
+    jit_dumpsrc_(jit_dumpsrc),
+    storage_(object_directory, kernel_directory),
     plaid_(template_directory),
-    compiler(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext),
-    thread_control(binding, mthreads),
+    compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext),
+    thread_control_(binding, thread_limit),
     exec_count(0)
 {
     bh_vcache_init(vcache_size);    // Victim cache
-    if (preload) {
-        storage.preload();
+    if (preload_) {                 // Object storage
+        storage_.preload();
     }
-    thread_control.bind_threads();
+    thread_control_.bind_threads(); // Thread control
+
+    DEBUG(TAG, text());             // Print the engine configuration
 }
 
 Engine::~Engine()
 {   
-    if (vcache_size>0) {    // De-allocate the malloc-cache
+    if (vcache_size_>0) {    // De-allocate the malloc-cache
         bh_vcache_clear();
         bh_vcache_delete();
     }
@@ -68,20 +67,19 @@ Engine::~Engine()
 string Engine::text()
 {
     stringstream ss;
-    ss << "ENVIRONMENT {" << endl;
-    ss << "  BH_CORE_VCACHE_SIZE="      << this->vcache_size  << endl;
-    ss << "  BH_VE_CPU_PRELOAD="        << this->preload      << endl;    
-    ss << "  BH_VE_CPU_JIT_ENABLED="    << this->jit_enabled  << endl;    
-    ss << "  BH_VE_CPU_JIT_FUSION="     << this->jit_fusion   << endl;
-    ss << "  BH_VE_CPU_JIT_DUMPSRC="    << this->jit_dumpsrc  << endl;
-    ss << "  BH_VE_CPU_BIND="           << this->thread_control.get_binding() << endl;
-    ss << "  BH_VE_CPU_MTHREADS="       << this->thread_control.get_mthreads() << endl;
+    ss << "Engine {" << endl;
+    ss << "  vcache_size = "       << this->vcache_size_ << endl;
+    ss << "  preload = "           << this->preload_ << endl;    
+    ss << "  jit_enabled = "       << this->jit_enabled_ << endl;    
+    ss << "  jit_dumpsrc = "       << this->jit_dumpsrc_ << endl;
+    ss << "  jit_fusion = "        << this->jit_fusion_ << endl;
+    ss << "  jit_contraction = "   << this->jit_contraction_ << endl;
     ss << "}" << endl;
     
-    ss << "Attributes {" << endl;
-    ss << "  " << plaid_.text();    
-    ss << "  " << compiler.text();
-    ss << "}" << endl;
+    ss << thread_control_.text() << endl;
+    ss << storage_.text() << endl;
+    ss << compiler_.text() << endl;
+    ss << plaid_.text() << endl;
 
     return ss.str();    
 }
@@ -89,17 +87,16 @@ string Engine::text()
 bh_error Engine::execute_block(SymbolTable& symbol_table,
                             std::vector<tac_t>& program,
                             Block& block,
-                            bh_ir_kernel& krnl,
-                            bool contract_arrays
+                            bh_ir_kernel& krnl
                             )
 {
     bh_error res = BH_SUCCESS;
 
-    bool consider_jit = jit_enabled and (block.narray_tacs() > 0);
+    bool consider_jit = jit_enabled_ and (block.narray_tacs() > 0);
 
     //
     // Turn temps into scalars aka array-contraction
-    if (consider_jit and contract_arrays) {
+    if (consider_jit and jit_contraction_) {
         const std::vector<const bh_base*>& temps = krnl.temp_list();
         for(std::vector<const bh_base*>::const_iterator tmp_it = temps.begin();
             tmp_it != temps.end();
@@ -127,25 +124,25 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     // JIT-compile the block if enabled
     //
     if (consider_jit && \
-        (!storage.symbol_ready(block.symbol()))) {   
+        (!storage_.symbol_ready(block.symbol()))) {   
         // Specialize and dump sourcecode to file
         string sourcecode = codegen::Kernel(plaid_, block).generate_source();
         bool compile_res;
-        if (jit_dumpsrc==1) {
+        if (jit_dumpsrc_==1) {
             core::write_file(
-                storage.src_abspath(block.symbol()),
+                storage_.src_abspath(block.symbol()),
                 sourcecode.c_str(), 
                 sourcecode.size()
             );
-            // Send to compiler
-            compile_res = compiler.compile(
-                storage.obj_abspath(block.symbol()),
-                storage.src_abspath(block.symbol())
+            // Send to compiler_
+            compile_res = compiler_.compile(
+                storage_.obj_abspath(block.symbol()),
+                storage_.src_abspath(block.symbol())
             );
         } else {
             // Send to compiler
-            compile_res = compiler.compile(
-                storage.obj_abspath(block.symbol()),
+            compile_res = compiler_.compile(
+                storage_.obj_abspath(block.symbol()),
                 sourcecode.c_str(), 
                 sourcecode.size()
             );
@@ -156,15 +153,15 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
             return BH_ERROR;
         }
         // Inform storage
-        storage.add_symbol(block.symbol(), storage.obj_filename(block.symbol()));
+        storage_.add_symbol(block.symbol(), storage_.obj_filename(block.symbol()));
     }
 
     //
     // Load the compiled code
     //
     if ((block.narray_tacs() > 0) && \
-        (!storage.symbol_ready(block.symbol())) && \
-        (!storage.load(block.symbol()))) {// Need but cannot load
+        (!storage_.symbol_ready(block.symbol())) && \
+        (!storage_.load(block.symbol()))) {// Need but cannot load
 
         fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
         return BH_ERROR;
@@ -195,7 +192,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         DEBUG(TAG, "EXECUTING "<< block.text());
         //TIMER_START
         iterspace_t& iterspace = block.iterspace();   // retrieve iterspace
-        storage.funcs[block.symbol()](block.operands(), &iterspace);
+        storage_.funcs[block.symbol()](block.operands(), &iterspace);
         //TIMER_STOP(block.text_compact())
     }
 
@@ -250,8 +247,8 @@ bh_error Engine::execute(bh_ir* bhir)
         if ((block.omask() & EXTENSION)>0) {
             tac_t& tac = block.tac(0);
             map<bh_opcode,bh_extmethod_impl>::iterator ext;
-            ext = extensions.find(static_cast<bh_instruction*>(tac.ext)->opcode);
-            if (ext != extensions.end()) {
+            ext = extensions_.find(static_cast<bh_instruction*>(tac.ext)->opcode);
+            if (ext != extensions_.end()) {
                 bh_extmethod_impl extmethod = ext->second;
                 res = extmethod(static_cast<bh_instruction*>(tac.ext), NULL);
                 if (BH_SUCCESS != res) {
@@ -259,11 +256,11 @@ bh_error Engine::execute(bh_ir* bhir)
                     return res;
                 }
             }
-        } else if (jit_fusion && \
+        } else if (jit_fusion_ && \
             (block.narray_tacs() > 1)) {                // FUSE_MODE
 
             DEBUG(TAG, "FUSE START");
-            res = execute_block(symbol_table, program, block, *krnl, jit_fusion);
+            res = execute_block(symbol_table, program, block, *krnl);
             if (BH_SUCCESS != res) {
                 return res;
             }
@@ -279,7 +276,7 @@ bh_error Engine::execute(bh_ir* bhir)
                 block.update_iterspace();               // update iterspace
 
                 // Generate/Load code and execute it
-                res = execute_block(symbol_table, program, block, *krnl, jit_fusion);
+                res = execute_block(symbol_table, program, block, *krnl);
                 if (BH_SUCCESS != res) {
                     return res;
                 }
@@ -299,11 +296,11 @@ bh_error Engine::register_extension(bh_component& instance, const char* name, bh
         return err;
     }
 
-    if (extensions.find(opcode) != extensions.end()) {
+    if (extensions_.find(opcode) != extensions_.end()) {
         fprintf(stderr, "[CPU-VE] Warning, multiple registrations of the same"
                "extension method '%s' (opcode: %d)\n", name, (int)opcode);
     }
-    extensions[opcode] = extmethod;
+    extensions_[opcode] = extmethod;
 
     return BH_SUCCESS;
 }

@@ -35,7 +35,11 @@ Plaid::Plaid(string template_directory) : template_directory_(template_directory
 
 string Plaid::text(void)
 {
-    return "";
+    stringstream ss;
+    ss << "Plaid {" << endl;
+    ss << "  template_path = '" << template_directory_ << "'" << endl;
+    ss << "}";
+    return ss.str();
 }
 
 void Plaid::add_from_string(string name, string tmpl)

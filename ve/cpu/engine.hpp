@@ -23,23 +23,23 @@ namespace cpu {
 class Engine {
 public:
     Engine(
+        const thread_binding binding,
+        const size_t thread_limit,
+        const size_t vcache_size,
+        const bool preload,
+        const bool jit_enabled,
+        const bool jit_dumpsrc,
+        const bool jit_fusion,
+        const bool jit_contraction,
         const std::string compiler_cmd,
         const std::string compiler_inc,
         const std::string compiler_lib,
         const std::string compiler_flg,
         const std::string compiler_ext,
-        const std::string template_directory,
-        const std::string kernel_directory,
         const std::string object_directory,
-        const size_t vcache_size,
-        const bool preload,
-        const bool jit_enabled,
-        const bool jit_fusion,
-        const bool jit_dumpsrc,
-        const bool dump_rep,
-        const thread_binding binding,
-        const size_t mthreads
-        );
+        const std::string template_directory,
+        const std::string kernel_directory
+    );
 
     ~Engine();
 
@@ -59,29 +59,23 @@ private:
         core::SymbolTable& symbol_table,
         std::vector<tac_t>& program,
         core::Block& block,
-        bh_ir_kernel& krnl,
-        bool contract_arrays
+        bh_ir_kernel& krnl
     );
 
-    std::string compiler_cmd,
-                template_directory,
-                kernel_directory,
-                object_directory;
+    size_t vcache_size_;
 
-    size_t vcache_size;
-
-    bool preload,
-         jit_enabled,
-         jit_fusion,
-         jit_dumpsrc,
-         dump_rep;
+    bool preload_,
+         jit_enabled_,
+         jit_fusion_,
+         jit_contraction_,
+         jit_dumpsrc_;
     
-    Store           storage;
+    Store           storage_;
     codegen::Plaid  plaid_;
-    Compiler        compiler;
-    ThreadControl   thread_control;
+    Compiler        compiler_;
+    ThreadControl   thread_control_;
 
-    std::map<bh_opcode, bh_extmethod_impl> extensions;
+    std::map<bh_opcode, bh_extmethod_impl> extensions_;
 
     static const char TAG[];
     size_t exec_count;
