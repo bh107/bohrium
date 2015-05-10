@@ -276,35 +276,49 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
             shape = s;
 
     // Find dimension order
-    std::vector<size_t> dimOrder(shape.size(),0);
+    std::map<size_t,std::vector<size_t> > dimOrders;
     {
-        std::set<size_t> used;
-        auto dimOrderIt = dimOrder.rbegin();
+        std::vector<std::set<size_t> > used;
+        std::vector<std::vector<size_t>::reverse_iterator> dimOrderIt;
+        //auto dimOrderIt = dimOrder.rbegin();
         const std::map<bh_intp, bh_int64>& sweeps = kernel.get_sweeps();
         for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
         {
-            size_t d =  shape.size() - rit->first + rit->second;
-            *dimOrderIt++ = d;
-            used.insert(d);
+            size_t dim = rit->first;
+            dimOrders[dim] = std::vector<size_t>(dim,0);
+            dimOrderIt.push_back(dimOrders[dim].rbegin());
+            used.push_back(std::set<size_t>());
+            for (size_t i = 0; i < dimOrderIt.size(); ++i)
+            {
+                size_t sd =  shape.size() - i - rit->first + rit->second;
+                *dimOrderIt[i]++ = sd;
+                used[i].insert(sd);
+            }
         }
-        for (size_t i = 0; i < shape.size(); ++i)
-        {
-            if (used.find(i)==used.end())
-                *dimOrderIt++ = i;
-        }
+        for (size_t sd = 0; sd < shape.size(); ++sd)
+            for (size_t i = 0; i < dimOrderIt.size(); ++i)
+                if (used[i].find(sd)==used[i].end())
+                    *dimOrderIt[i]++ = sd;
     }
-    std::cout << "dimOrder["  << dimOrder[0]; 
-    for (size_t i = 1; i < dimOrder.size(); ++i)
-        std::cout << ", "  << dimOrder[i];
-    std::cout << "]" << std::endl;
-
+    for (const std::pair<size_t,std::vector<size_t> >& dimOrder: dimOrders)
+    {
+        std::cout << "dimOrder{" << dimOrder.first << "}["  << dimOrder.second[0]; 
+        for (size_t i = 1; i < dimOrder.second.size(); ++i)
+            std::cout << ", "  << dimOrder.second[i];
+        std::cout << "]" << std::endl;
+    }
 
     // Add shape parameters
-    for (size_t d =  shape.size(); d > 0; --d)
+    auto doit = dimOrders.find(shape.size());
+    for (size_t d = shape.size(); d > 0; --d)
     {
         std::stringstream ss;
         ss << "ds" << d;
-        Scalar* s = new Scalar(shape[dimOrder[d-1]]);
+        Scalar* s;
+        if (doit == dimOrders.end())
+            s = new Scalar(shape[shape.size()-d]);
+        else
+            s = new Scalar(shape[doit->second[d-1]]);
         (defines << "#define " << ss.str() << " " <<= *s) << "\n";
         sizeParameters.push_back(s);
         functionDeclaration << "\n\t, " << *s << " " << ss.str();
@@ -330,15 +344,16 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
         }
         bh_intp vndim = view.ndim;
+        auto doit = dimOrders.find((size_t)vndim);
         for (bh_intp d = vndim; d > 0; --d)
         {
             std::stringstream ss;
             ss << "v" << id << "s" << d;
             Scalar* s;
-            if (vndim == (bh_intp)dimOrder.size())
-                s = new Scalar(view.stride[dimOrder[d-1]]);
-            else
+            if (doit == dimOrders.end())
                 s = new Scalar(view.stride[vndim-d]);
+            else
+                s = new Scalar(view.stride[doit->second[d-1]]);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
             sizeParameters.push_back(s);
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
@@ -364,16 +379,12 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     bool integer = false;
     bool random = false;
     std::string functionBody = generateFunctionBody(kernel, kernelShape.size(), float64, complex, integer, random);
-
     size_t functionID = string_hasher(functionBody);
     size_t literalID = string_hasher(defines.str());
-
     if (!resourceManager->float64() && float64)
     {
         throw BH_TYPE_NOT_SUPPORTED;
     }
-
-
     std::stringstream source;
     if (float64)
         source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
@@ -391,10 +402,8 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
         localShape[2]  << "))) void\n#ifndef FIXED_SIZE\nkernel" << std::hex << functionID <<
         "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() << 
         "\n" << functionBody;
-    
     if (resourceManager->timing())
         resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
-
     return SourceKernelCall(KernelID(functionID, literalID), kernelShape,source.str(),
                             sizeParameters, kernelParameters);
     
