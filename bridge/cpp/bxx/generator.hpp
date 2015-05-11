@@ -116,21 +116,6 @@ multi_array<T>& randu(const Dimensions&... shape)
 //
 
 /**
- *  Create a range of values defined as [0, nelem[
- */
-template <typename T>
-multi_array<T>& range(uint64_t nelem)
-{
-    multi_array<T>* result = new multi_array<T>(nelem);
-    result->link();
-
-    bh_range(*result);
-
-    result->setTemp(true);
-    return *result;
-}
-
-/**
  *  Create a range of values defined as the [start, end[
  *  Each element in the range is seperated by 'skip'.
  */
@@ -155,15 +140,29 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
         nelem = (start-adj_end+1)/abs(skip);
     }
 
+    multi_array<uint32_t>* base_range = new multi_array<uint32_t>(nelem);
+    base_range->link();
+
     multi_array<T>* result = new multi_array<T>(nelem);
     result->link();
 
-    bh_range(*result);
-    bh_multiply(*result, *result, (T)skip);
-    bh_add(*result, *result, (T)start);
-
+    bh_range(*base_range);
+    bh_multiply(*base_range, *base_range, (uint32_t)skip);
+    bh_add(*base_range, *base_range, (uint32_t)start);
+    base_range->setTemp(true);
+    bh_identity(*result, *base_range);
+   
     result->setTemp(true);
     return *result;
+}
+
+/**
+ *  Create a range of values defined as [0, nelem[
+ */
+template <typename T>
+multi_array<T>& range(uint64_t nelem)
+{
+    return range<T>((int64_t)0, (int64_t)nelem, (int64_t)1);
 }
 
 }
