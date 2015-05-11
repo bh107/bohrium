@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP_EXTENSIONS
 namespace bxx {
 
-bh_ext_visualizer(multi_array<float> ary, multi_array<float> args)
+void bh_ext_visualizer(multi_array<float> ary, multi_array<float> args)
 {
     Runtime::enqueue_extension(
         "visualizer",

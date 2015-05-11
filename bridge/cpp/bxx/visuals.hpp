@@ -21,6 +21,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BOHRIUM_BRIDGE_CPP_VISUALS
 namespace bxx {
 
+/**
+    Do a surface plot of given array.
+
+    @param mode 0 = 2D, 1 = 3D.
+    @param colormap ?
+    @param lowerbound
+    @param upperbound
+*/
 template <typename T>
 inline void plot_surface(multi_array<T>& ary, unsigned int mode, int colormap, float lowerbound, float upperbound)
 {
@@ -47,6 +55,14 @@ inline void plot_surface(multi_array<T>& ary, unsigned int mode, int colormap, f
         }
     }
     // Construct argument array for extension
+    multi_array<float> args;
+    args = ones<float>(5);
+
+    args[0] = (float)colormap;
+    args[1] = (float)flat;
+    args[2] = (float)cube;
+    args[3] = (float)lowerbound;
+    args[4] = (float)upperbound;
 
     // Call the visualizer extension
     bh_ext_visualizer(ary, args);
