@@ -355,10 +355,12 @@ private:
 #include "runtime.broadcast.hpp"    // Operand broadcasting
 #include "runtime.typechecker.hpp"  // Array operations - typechecker
 #include "runtime.operations.hpp"   // Array operations
+#include "runtime.extensions.hpp"   // Extensions
 
 #include "reduction.hpp"    // DSEL Reduction
 #include "scan.hpp"         // DSEL Scan operation
 #include "generator.hpp"    // DSEL Generators 
+#include "visuals.hpp"      // DSEL Visualization
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
 #include "sugar.hpp"        // DSEL Additional sugar...

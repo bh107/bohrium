@@ -17,13 +17,15 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BOHRIUM_BRIDGE_CPP_EXTENSIONS
-#define __BOHRIUM_BRIDGE_CPP_EXTENSIONS
+#ifndef __BOHRIUM_BRIDGE_CPP_RUNTIME_EXTENSIONS
+#define __BOHRIUM_BRIDGE_CPP_RUNTIME_EXTENSIONS
+
 namespace bxx {
 
-void bh_ext_visualizer(multi_array<float> ary, multi_array<float> args)
+template <typename T>
+void bh_ext_visualizer(multi_array<T>& ary, multi_array<T>& args)
 {
-    Runtime::enqueue_extension(
+    Runtime::instance().enqueue_extension(
         "visualizer",
         ary,
         args,
@@ -37,7 +39,7 @@ multi_array<T>& matmul(multi_array<T>& res, multi_array<T>& lhs, multi_array<T>&
         throw std::runtime_error("Incompatible shapes of output and input.");
     }
 
-    Runtime::enqueue_extension("matmul", res, lhs, rhs);
+    Runtime::instance().enqueue_extension("matmul", res, lhs, rhs);
 
     return res;
 }

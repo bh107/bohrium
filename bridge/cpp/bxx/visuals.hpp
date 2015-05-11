@@ -19,6 +19,8 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __BOHRIUM_BRIDGE_CPP_VISUALS
 #define __BOHRIUM_BRIDGE_CPP_VISUALS
+#include <stdexcept>
+
 namespace bxx {
 
 /**
@@ -32,12 +34,12 @@ namespace bxx {
 template <typename T>
 inline void plot_surface(multi_array<T>& ary, unsigned int mode, int colormap, float lowerbound, float upperbound)
 {
-    unsigned int ary.getRank();
+    unsigned int rank = ary.getRank();
     if ((rank < 2) || (rank > 3)) {
-        throw std::out_of_range_error("Surface-plotting is only supported for rank 2 and 3.");
+        throw std::out_of_range("Surface-plotting is only supported for rank 2 and 3.");
     }
     if (mode > 1) {
-        throw std::out_of_range_error("Unsupported mode, use 0 or 1.");
+        throw std::out_of_range("Unsupported mode, use 0 or 1.");
     }
     // Convert the array if not float32.
 
@@ -65,7 +67,7 @@ inline void plot_surface(multi_array<T>& ary, unsigned int mode, int colormap, f
     args[4] = (float)upperbound;
 
     // Call the visualizer extension
-    bh_ext_visualizer(ary, args);
+    bh_ext_visualizer(as<float>(ary), args);
 }
 
 }
