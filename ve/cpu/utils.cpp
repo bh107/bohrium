@@ -38,7 +38,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             switch(tac.oper) {
                 case POWER:
                     if (((symbol_table[tac.in2].layout & (SCALAR_LAYOUT))>0) && \
-                        (2.0 == (**((double**)(symbol_table[tac.in2].data))))) {
+                        (equivalent_scalar(symbol_table[tac.in2], 2.0))) {
                         tac.oper = MULTIPLY;
                         tac.in2 = tac.in1;
                     }
@@ -159,6 +159,39 @@ bool equivalent(const operand_t& one, const operand_t& other)
         }
     }
     return true;
+}
+
+bool equivalent_scalar(const operand_t& arg, double value)
+{
+    switch(arg.etype) {
+        case BOOL:
+            return (double)(*(unsigned char*)(*(arg.data))) == value;
+        case INT8:
+            return (double)(*(int8_t*)(*(arg.data))) == value;
+        case INT16:
+            return (double)(*(int16_t*)(*(arg.data))) == value;
+        case INT32:
+            return (double)(*(int32_t*)(*(arg.data))) == value;
+        case INT64:
+            return (double)(*(int64_t*)(*(arg.data))) == value;
+        case UINT8:
+            return (double)(*(uint8_t*)(*(arg.data))) == value;
+        case UINT16:
+            return (double)(*(uint16_t*)(*(arg.data))) == value;
+        case UINT32:
+            return (double)(*(uint32_t*)(*(arg.data))) == value;
+        case UINT64:
+            return (double)(*(uint64_t*)(*(arg.data))) == value;
+        case FLOAT32:
+            return (double)(*(float*)(*(arg.data))) == value;
+        case FLOAT64:
+            return (double)(*(double*)(*(arg.data))) == value;
+        case COMPLEX64:
+        case COMPLEX128:
+        case PAIRLL:
+        default:
+            return false;
+    }
 }
 
 bool compatible(const operand_t& one, const operand_t& other)
