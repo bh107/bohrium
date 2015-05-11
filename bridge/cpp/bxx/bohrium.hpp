@@ -89,35 +89,31 @@ enum scannable {
 //
 // Slicing
 //
-class slice_range {
+class Slice {
 public:
-    slice_range();
-    slice_range(int begin, int end, size_t stride);
+    Slice();
+    Slice(int begin, int end, size_t step);
 
-    int begin, end;
-    size_t stride;
+    int begin;
+    int end;
+    size_t step;
     bool inclusive_end;
 };
 
-template <typename T>
-class slice {
-public:
-    slice(multi_array<T>& op);
+inline Slice::Slice() : begin(0), end(-1), step(1)
+{}
 
-    slice& operator[](int rhs);
-    slice& operator[](slice_range& rhs);
-    multi_array<T>& operator=(T rhs);
+inline Slice::Slice(int begin, int end, size_t step)
+    : begin(begin), end(end), step(step), inclusive_end(false)
+{}
 
-    // Create a actual view of the slice
-    bxx::multi_array<T>& view();
+inline Slice& _(int begin, int end, size_t step)
+{
+    Slice* le_range = (new Slice(begin, end, step));
+    le_range->inclusive_end = (0==end);
 
-private:
-    multi_array<T>* op;                 // The op getting sliced
-
-    int dims;                           // The amount of dims covered by the slice
-    slice_range ranges[BH_MAXDIM];      // The ranges...
-
-};
+    return *le_range;
+}
 
 //
 // The Abstraction
@@ -161,12 +157,11 @@ public:
     // Definitions are provided in:
     //
     // - multi_array.hpp for those implemented by hand ([], ++, --, ostream<< ).
-    // - slicing.hpp: Auxilary behavior of the [] operator.
     // - operators.hpp: defined code-generator.
     //
                                                     // Slicing / explicit view
-    slice<T>& operator[](int rhs);                  // Select a single element / dimension
-    slice<T>& operator[](slice_range& rhs);         // Select a range (begin, end, stride)
+    multi_array<T>& operator[](int rhs);            // Select a single element / dimension
+    multi_array<T>& operator[](Slice& rhs);         // Select a range (begin, end, step)
 
     multi_array& operator()(const T& n);            // Update
     multi_array& operator()(multi_array<T>& rhs);
@@ -178,8 +173,6 @@ public:
 
     template <typename In>
     multi_array<T>& operator=(multi_array<In>& rhs);// Initialization / assignment.
-
-    multi_array& operator=(slice<T>& rhs );         // Initialization / assignment.
 
     multi_array& operator+=(const T& rhs);          // Compound assignment / increment
     multi_array& operator+=(multi_array& rhs);
@@ -232,8 +225,12 @@ public:
     bool allocated() const;                 // Determine if the array is intitialized and data for it is allocated
     void sync();
 
+    int getSliceDim(void);
+    void setSliceDim(int dim);
+
 protected:
     bool temp_;
+    int slicing_dim_;
 
 private:
     void reset_meta();						// Helper, shared among constructors
@@ -347,8 +344,7 @@ private:
 
 }
 
-#include "multi_array.hpp"  // Operand definition.
-#include "slicing.hpp"      // Operand slicing / explicit views / aliases
+#include "multi_array.hpp"          // Operand definition.
 
 #include "runtime.hpp"              // Communication with Bohrium runtime
 #include "runtime.broadcast.hpp"    // Operand broadcasting
