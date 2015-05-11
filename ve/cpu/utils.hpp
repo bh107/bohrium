@@ -111,6 +111,11 @@ bool contiguous(const operand_t& arg);
 LAYOUT determine_layout(const operand_t& arg);
 
 /**
+ *  Check is scalar operand has value equivalent to the given scalar value.
+ */
+bool equivalent_scalar(const operand_t& arg, double value);
+
+/**
  *  Determines whether two operand have compatible meta-data.
  *
  *  This function serves the same purpose as bh_view_identical, 
