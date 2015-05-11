@@ -37,6 +37,11 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
         case ZIP:
             switch(tac.oper) {
                 case POWER:
+                    if (((symbol_table[tac.in2].layout & (SCALAR_LAYOUT))>0) && \
+                        (2.0 == (**((double**)(symbol_table[tac.in2].data))))) {
+                        tac.oper = MULTIPLY;
+                        tac.in2 = tac.in1;
+                    }
                     break;
                 case MULTIPLY:
                     break;
