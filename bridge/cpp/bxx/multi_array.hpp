@@ -382,7 +382,6 @@ multi_array<T>& multi_array<T>::operator[](Slice& slice) {
     //      Here two anonymous arrays are created.
     //
     if (this->getTemp()) {
-        std::cout << "Deleting sliced temp" << std::endl;
         delete this;
     }
     
