@@ -35,7 +35,7 @@ bh_error bh_ve_gpu_init(const char *name)
         std::cerr << "VE-GPU: Warning! fuse model not set by the GPU-VE: '" << std::endl;
     }
     else{
-        setenv("BH_FUSE_MODEL", "BROADEST", 1);
+        setenv("BH_FUSE_MODEL", "NO_XSWEEP_SCALAR_SEPERATE", 1);
     }
 
     bh_error err;

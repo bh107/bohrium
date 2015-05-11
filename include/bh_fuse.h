@@ -50,6 +50,11 @@ enum FuseModel
  */
     NO_XSWEEP,
 
+/* combines broadest and no_xsweep with ensuring that operations producing 
+ * scalars are in seperate kernels
+ */
+    NO_XSWEEP_SCALAR_SEPERATE,
+
 /* A very simple mode that only fuses same shaped arrays thus no
  * broadcast, reduction, extension methods, etc. */
     SAME_SHAPE,

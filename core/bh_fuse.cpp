@@ -61,12 +61,25 @@ static bool fuse_broadest(const bh_instruction *a, const bh_instruction *b)
     return true;
 }
 
+/* Does not allow two sweep operations of the same dimensionality but different
+ * sweep dimensions to be put in the same kernel.
+ */
 static bool fuse_no_xsweep(const bh_instruction *a, const bh_instruction *b)
 {
     return (fuse_broadest(a,b) &&
             not (bh_opcode_is_sweep(a->opcode) &&  bh_opcode_is_sweep(b->opcode) &&
                  a->operand[1].ndim == b->operand[1].ndim &&
                  a->constant.value.int64 != b->constant.value.int64));
+}
+
+/* combines no_xsweep with 
+ * 
+ */
+static bool fuse_no_xsweep_scalar_seperate(const bh_instruction *a, const bh_instruction *b)
+{
+    return (fuse_no_xsweep(a,b) &&
+            ((bh_is_scalar(&a->operand[0]) && bh_is_scalar(&b->operand[0])) ||
+             (!bh_is_scalar(&a->operand[0]) && !bh_is_scalar(&b->operand[0]))));
 }
 
 static bool fuse_same_shape(const bh_instruction *a, const bh_instruction *b)
@@ -391,6 +404,9 @@ void fuse_model_text(FuseModel fuse_model, string &output)
         case NO_XSWEEP:
             output = "no_xsweep";
             break;
+        case NO_XSWEEP_SCALAR_SEPERATE:
+            output = "no_xsweep_scalar_seperate";
+            break;
         case SAME_SHAPE:
             output = "same_shape";
             break;
@@ -429,6 +445,8 @@ bool check_fusible(const bh_instruction *a, const bh_instruction *b)
             return fuse_broadest(a,b);
         case NO_XSWEEP:
             return fuse_no_xsweep(a,b);
+        case NO_XSWEEP_SCALAR_SEPERATE:
+            return fuse_no_xsweep_scalar_seperate(a,b);
         case SAME_SHAPE:
             return fuse_same_shape(a,b);
         case SAME_SHAPE_RANGE:
