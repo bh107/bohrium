@@ -163,6 +163,8 @@ public:
     bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}
     bool is_input(const bh_view& view) const {return input_set.find(view) != input_set.end();}
 
+    bool is_scalar() const {return shapes.begin()->size() == 1 && shapes.begin()->front() == 1;}
+    
     size_t get_view_id(const bh_view& v) const;
     const bh_view& get_view(size_t id) const {return views[id];}
 

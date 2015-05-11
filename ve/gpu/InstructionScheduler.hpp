@@ -51,6 +51,7 @@ private:
     void compileAndRun(SourceKernelCall sourceKernel);
     void build(KernelID id, const std::string source);
     bh_error extmethod(bh_instruction* inst);
+    bh_error call_child(const bh_ir_kernel& kernel);
     SourceKernelCall generateKernel(const bh_ir_kernel& kernel);
     std::string generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
                                      bool& float64, bool& complex, bool& integer, bool& random);

@@ -37,6 +37,13 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
     {
         if (kernel.get_output_set().size() > 0)
         {    
+            if (kernel.is_scalar())
+            {
+                bh_error err = call_child(kernel);
+                if (err != BH_SUCCESS)
+                    return err;
+                continue;
+            }
             SourceKernelCall sourceKernel = generateKernel(kernel);
             if (kernel.get_syncs().size() > 0)
             { // There are syncs in this kernel so we postpone the discards
@@ -85,6 +92,7 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
     }
     return BH_SUCCESS;
 }
+
 
 void InstructionScheduler::sync(const std::set<bh_base*>& arrays)
 {
@@ -221,6 +229,16 @@ bh_error InstructionScheduler::extmethod(bh_instruction* inst)
         return BH_EXTMETHOD_NOT_SUPPORTED;
     }
     return BH_EXTMETHOD_NOT_SUPPORTED;
+}
+
+bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
+{
+    // sync operands
+    sync(kernel.get_parameters().set());
+    std::cerr << "Call to child VE not implemented" << std::endl;
+    return BH_ERROR;
+    //bh_ir bhir = bh_ir( 1, inst);
+    //return resourceManager->childExecute(&bhir);
 }
 
 SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel)

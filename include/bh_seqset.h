@@ -82,6 +82,14 @@ public:
     {
         return _map.size();
     }
+    
+    std::set<T> set() const
+    {
+        std::set<T> res;
+        for (const std::pair<T,size_t>& p: _map)
+            res.insert(p.first);
+        return res;
+    }
 };
 
 
