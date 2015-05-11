@@ -115,6 +115,11 @@ inline Slice& _(int begin, int end, size_t step)
     return *le_range;
 }
 
+inline Slice& _(int begin, int end)
+{
+    return _(begin, end, 1);
+}
+
 //
 // The Abstraction
 //
