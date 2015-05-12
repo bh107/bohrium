@@ -46,11 +46,12 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
                 case MULTIPLY:
                     if ((symbol_table[tac.in2].layout & (SCALAR_LAYOUT))>0) {
                         if (get_scalar(symbol_table[tac.in2]) == 0.0) {
+                            tac.op = MAP;
                             tac.oper = IDENTITY;
-                            set_scalar(symbol_table[tac.in2], 0);
+                            set_scalar(symbol_table[tac.in1], 0);
                             tac.in2 = 0;
-                            
                         } else if (get_scalar(symbol_table[tac.in2]) == 1.0) {
+                            tac.op = MAP;
                             tac.oper = IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
@@ -60,6 +61,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
                 case DIVIDE:
                     if ((symbol_table[tac.in2].layout & (SCALAR_LAYOUT))>0) {
                         if (get_scalar(symbol_table[tac.in2]) == 1.0) {
+                            tac.op = MAP;
                             tac.oper = IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
