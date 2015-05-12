@@ -154,17 +154,17 @@ public:
     const std::set<bh_base*>& get_syncs() const {return syncs;}
     const seqset<bh_base*>& get_parameters() const {return parameters;}
     const std::vector<bh_constant>& get_constants() const {return constants;}
-
     const std::set<std::vector<bh_index> >& get_shapes() const {return shapes;}
-
     const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
 
     bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
     bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}
     bool is_input(const bh_view& view) const {return input_set.find(view) != input_set.end();}
-
     bool is_scalar() const {return shapes.begin()->size() == 1 && shapes.begin()->front() == 1;}
-    
+
+    // Returns the shape with the highest dimensionality        
+    std::vector<bh_index> shape() const;
+
     size_t get_view_id(const bh_view& v) const;
     const bh_view& get_view(size_t id) const {return views[id];}
 

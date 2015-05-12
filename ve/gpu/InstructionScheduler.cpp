@@ -287,11 +287,8 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
 
     functionDeclaration << "\n#ifndef FIXED_SIZE";
 
-    // Find kernel shape
-    std::vector<bh_index> shape;
-    for (const std::vector<bh_index>& s: kernel.get_shapes())
-        if (s.size() > shape.size())
-            shape = s;
+    // get kernel shape
+    std::vector<bh_index> shape = kernel.shape();
 
     // Find dimension order
     std::vector<std::vector<size_t> > dimOrders = genDimOrders(kernel.get_sweeps(), shape.size());
@@ -325,7 +322,9 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     for (const std::pair<size_t, bh_view>& viewp: ioviews)
     {
         size_t id = viewp.first;
-        const bh_view& view = viewp.second;
+        bh_view view = viewp.second;
+        if (view.ndim > (bh_intp)shape.size())
+            view = bh_view_simplify(view,shape);
         bh_intp vndim = view.ndim;
         for (bh_intp d = vndim; d > 0; --d)
         {
@@ -364,7 +363,8 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     bool complex = false;
     bool integer = false;
     bool random = false;
-    std::string functionBody = generateFunctionBody(kernel, kernelShape.size(), float64, complex, integer, random);
+    std::string functionBody = generateFunctionBody(kernel, kernelShape.size(), 
+                                                    shape, float64, complex, integer, random);
     size_t functionID = string_hasher(functionBody);
     size_t literalID = string_hasher(defines.str());
     if (!resourceManager->float64() && float64)
@@ -396,6 +396,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
 }
 
 std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
+                                                       const std::vector<bh_index>& shape,
                                                        bool& float64, bool& complex, bool& integer, bool& random)
 {
     std::stringstream source; // The active code block (dimension)
@@ -429,9 +430,12 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         // Load input parameters
         for(int i=1; i<nop; ++i)
         {
-            const bh_view& view = instr.operand[i];
+            bh_view view = instr.operand[i];
             if (!bh_is_constant(&view))
             {
+                size_t vid = kernel.get_view_id(view);
+                if (view.ndim > (bh_intp)shape.size())
+                    view = bh_view_simplify(view,shape);
                 while (view.ndim > (bh_intp)dims)
                 {
                     beforesource.emplace_back(source.str());
@@ -448,7 +452,6 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                     --dims;
                     assert(dims > 0);
                 }
-                size_t vid = kernel.get_view_id(view);
                 bh_base* base = view.base;
                 OCLtype type = oclType(base->type);
                 // Is this a new view? 
@@ -489,8 +492,10 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
             }
         }
         // Is the output a new view?
-        const bh_view& view = instr.operand[0];
+        bh_view view = instr.operand[0];
         size_t vid = kernel.get_view_id(view);
+        if (view.ndim > (bh_intp)shape.size())
+            view = bh_view_simplify(view,shape);
         bh_base* base = view.base;
         OCLtype type = oclType(base->type);
         if (initiated_view.find(vid) == initiated_view.end())
@@ -522,7 +527,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
             generateInstructionSource(instr.opcode, types, operands, indentss.str(), source);
         // TODO reduction output?
         // What if there are more operations 
-        if (kernel.is_output(view))
+        if (kernel.is_output(instr.operand[0]))
             save.insert(view);
         for (OCLtype type: types)
         {

@@ -125,6 +125,16 @@ bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) co
     return false;
 }
 
+// Returns the shape with the highest dimensionality
+std::vector<bh_index> bh_ir_kernel::shape() const
+{
+    std::vector<bh_index> res;
+    for (const std::vector<bh_index>& s: shapes)
+        if (s.size() > res.size())
+            res = s;
+    return res;
+}
+
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
     
@@ -191,7 +201,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
                 input_set.insert(v);
                 parameters.insert(v.base);
             }
-            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
+            shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
         }
         //Add the output of the instruction to 'outputs'
         {
@@ -201,7 +211,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             output_map.insert(std::make_pair(v.base,v));
             output_set.insert(v);
             parameters.insert(v.base);
-            shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
+            shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
         }
         if (bh_opcode_is_sweep(instr.opcode))
         {
