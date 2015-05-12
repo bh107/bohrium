@@ -627,7 +627,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False,\
         step = (stop-start)/float((num-1))
     else:
         step = (stop-start)/float(num)
-    y = arange(start, stop, step, dtype=dtype)
+    y = range(num, dtype=dtype) * step + start
     if retstep:
         return y, step
     else:
