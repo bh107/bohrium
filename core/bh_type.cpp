@@ -22,10 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include <stdbool.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* Byte size for type
  *
  * @type   Type code
@@ -111,7 +107,3 @@ const char* bh_type_text(bh_type type)
         return "Unknown type";
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
