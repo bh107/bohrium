@@ -40,7 +40,7 @@ void multi_array<T>::reset_meta(void) {
 }
 
 template <typename T>           // Default constructor - rank 0
-multi_array<T>::multi_array() : temp_(false)
+multi_array<T>::multi_array() : temp_(false), slicing_dim_(-1)
 {
     reset_meta();
 }
@@ -49,7 +49,7 @@ multi_array<T>::multi_array() : temp_(false)
 // C-Bridge constructors - START
 //
 template <typename T>           // Plain shaped constructor
-multi_array<T>::multi_array(const uint64_t rank, const int64_t* sizes) : temp_(false)
+multi_array<T>::multi_array(const uint64_t rank, const int64_t* sizes) : temp_(false), slicing_dim_(-1)
 {
     meta.base       = NULL;
     meta.ndim       = rank;
@@ -64,7 +64,7 @@ multi_array<T>::multi_array(const uint64_t rank, const int64_t* sizes) : temp_(f
 }
 
 template <typename T>           // base/view constructor
-multi_array<T>::multi_array(bh_base* base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride) : temp_(false)
+multi_array<T>::multi_array(bh_base* base, uint64_t rank, const int64_t start, const int64_t* shape, const int64_t* stride) : temp_(false), slicing_dim_(-1)
 {
     Runtime::instance().ref_count[base] += 1;
     meta.ndim   = rank;
@@ -93,7 +93,7 @@ multi_array<T>::multi_array(bh_base* base, uint64_t rank, const int64_t start, c
 */
 
 template <typename T>           // Copy constructor same element type
-multi_array<T>::multi_array(const multi_array<T>& operand) : temp_(false)
+multi_array<T>::multi_array(const multi_array<T>& operand) : temp_(false), slicing_dim_(-1)
 {
     //std::cout << "Copy constructor, same type." << std::endl;
     meta = operand.meta;
@@ -109,7 +109,7 @@ multi_array<T>::multi_array(const multi_array<T>& operand) : temp_(false)
 
 template <typename T>           // Copy constructor different element type
 template <typename OtherT>
-multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp_(false)
+multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp_(false), slicing_dim_(-1)
 {
     //std::cout << "Copy constructor, different type." << std::endl;
     meta.base   = NULL;
@@ -127,7 +127,7 @@ multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp_(false)
 
 template <typename T>
 template <typename ...Dimensions>       // Variadic constructor
-multi_array<T>::multi_array(Dimensions... shape) : temp_(false)
+multi_array<T>::multi_array(Dimensions... shape) : temp_(false), slicing_dim_(-1)
 {
     meta.base   = NULL;
     meta.ndim   = sizeof...(Dimensions);
@@ -321,19 +321,79 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
 // Slicing
 //
 template <typename T>
-slice<T>& multi_array<T>::operator[](int rhs) {
-    if (!initialized()) {
-        throw std::runtime_error("Err: cannot slice an uninitialized operand.");
-    }
-    return (*(new slice<T>(*this)))[rhs];
+int multi_array<T>::getSliceDim(void)
+{
+    return slicing_dim_;
 }
 
 template <typename T>
-slice<T>& multi_array<T>::operator[](slice_range& rhs) {
+void multi_array<T>::setSliceDim(int dim)
+{
+    slicing_dim_ = dim;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::operator[](Slice slice) {
+
+    if (!initialized()) {
+        throw std::runtime_error("Slicing uninitialized operand.");
+    }
+
+    int dim     = this->getSliceDim() + 1;  // The dimension the slice applies to
+    int ndim    = this->meta.ndim;          // Maximum dimension index
+
+    if (dim >= ndim) {
+        throw std::runtime_error("Slicing exceeds dimensions.");
+    }
+
+    int stride  = this->meta.stride[dim];
+    int shape   = this->meta.shape[dim];
+    int start   = this->meta.start;
+
+    slice.begin = (slice.begin < 0) ? (shape+slice.begin) : slice.begin;
+    slice.end   = (slice.end < 0) ? (shape+slice.end) : slice.end;
+
+    // TODO: Validate slice
+
+    // Create the sliced operand
+    multi_array<T>* sliced_array = &Runtime::instance().temp_view(*this);
+
+    sliced_array->meta.start        = start + (stride * slice.begin);
+    sliced_array->meta.stride[dim]  = stride * slice.step;
+    sliced_array->meta.shape[dim]   = 1 + (((slice.end - slice.begin)) / slice.step);
+
+    if ((ndim-1) == dim) {      // Last dimension is sliced
+        sliced_array->setSliceDim(-1);
+    } else {                    // Non-sliced dimensions remain
+        sliced_array->setSliceDim(dim);
+    }
+
+    //
+    // Note: This makes my skin crawl... but I am doing it anyway...
+    //
+    //      But the thing is... "this" is an anonymous / temporary array
+    //      there are no lexical references to it. It is only being used
+    //      as an anonymous expression.
+    //
+    //      Such as: w = v[3][3]
+    //      Here the result of v[3] is deleted when calling v[3][3]
+    //      Or such as:
+    //      ones<float>(10,10)[3][3]
+    //      Here two anonymous arrays are created.
+    //
+    if (this->getTemp()) {
+        delete this;
+    }
+    
+    return *sliced_array;
+}
+
+template <typename T>
+multi_array<T>& multi_array<T>::operator[](int index) {
     if (!initialized()) {
         throw std::runtime_error("Err: cannot slice an uninitialized operand.");
     }
-    return (*(new slice<T>(*this)))[rhs];
+    return this->operator[](_(index, index, 1));
 }
 
 //
@@ -355,7 +415,16 @@ multi_array<T>& multi_array<T>::operator=(const T& rhs)
     }
     
     bh_identity(*this, rhs);
-    return *this;
+
+    //
+    //  Note: this makes my skin crawl once more... we need to de-allocate
+    //          anonymous views since it will never never be referenced again.
+    //
+    if (this->getTemp()) {      // Delete temps
+        delete this;            // The deletion will decrement the ref-count
+    }
+
+    return *this;   // This might be very bad...
 }
 
 template <typename T>
@@ -471,35 +540,6 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
     if (rhs.getTemp()) {        // Delete temps
         delete &rhs;            // The deletion will decrement the ref-count
     }
-
-    return *this;
-}
-
-/**
- *  Aliasing via slicing
- *
- *  Construct a view based on a slice.
- *  Such as:
- *
- *  center = grid[_(1,-1,1)][_(1,-1,1)];
- */
-template <typename T>
-multi_array<T>& multi_array<T>::operator=(slice<T>& rhs)
-{
-    if (linked()) {
-        Runtime::instance().ref_count[meta.base] -= 1;       // Decrement ref-count
-        if (0==Runtime::instance().ref_count[meta.base]) {   // De-allocate it
-            bh_free(*this);                             // Send BH_FREE to Bohrium
-            bh_discard(*this);                          // Send BH_DISCARD to Bohrium
-            Runtime::instance().trash(meta.base);            // Queue the bh_base for de-allocation
-            Runtime::instance().ref_count.erase(meta.base);  // Remove from ref-count
-        }
-        unlink();
-    }
-
-    multi_array<T>* vv = &rhs.view();
-    this->meta = vv->meta;
-    delete vv;
 
     return *this;
 }

@@ -111,6 +111,20 @@ bool contiguous(const operand_t& arg);
 LAYOUT determine_layout(const operand_t& arg);
 
 /**
+ *  Return the first element that arg.data points to.
+ *
+ *  NOTE: Type is converted but overflows are not handled.
+ */
+double get_scalar(const operand_t& arg);
+
+/**
+ *  Set the first element that arg.data points to.
+ *  
+ *  NOTE: Type is converted but overflows are not handled.
+ */
+void set_scalar(const operand_t& arg, double value);
+
+/**
  *  Determines whether two operand have compatible meta-data.
  *
  *  This function serves the same purpose as bh_view_identical, 

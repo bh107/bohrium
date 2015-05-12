@@ -10,21 +10,12 @@ directiveStartToken = %
 
 using namespace bxx;
 
-// Common slice range
-struct bh_slice_range {
-    slice_range me;
-};
-
-
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $data
 
 // $bh_enum
 
 struct bh_multi_array_${bh_ctype} {
     multi_array<${bh_atype}> me;
-};
-struct bh_slice_range_${bh_ctype} {
-    slice<${bh_atype}> me;
 };
 
 %end for

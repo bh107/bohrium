@@ -26,10 +26,6 @@ DLLEXPORT void bh_runtime_flush(void);
 // Shutdown Bohrium
 DLLEXPORT void bh_runtime_shutdown(void);
 
-// Common slice range
-struct bh_slice_range;
-typedef struct bh_slice_range* bh_slice_range_p;
-
 // Common type forward definition
 #ifndef __BH_ARRAY_H
 struct bh_base;
@@ -47,11 +43,9 @@ typedef bh_view* bh_view_p;
 
 // Forward definitions
 struct bh_multi_array_${bh_ctype};
-struct bh_slice_${bh_ctype};
 
 // Shorthand pointer defs
 typedef struct bh_multi_array_${bh_ctype}* bh_multi_array_${bh_ctype}_p;
-typedef struct bh_slice_range_${bh_ctype}* bh_slice_range_${bh_ctype}_p;
 
 // Marks the data as externally allocated
 DLLEXPORT void bh_multi_array_${bh_ctype}_set_external(const bh_multi_array_${bh_ctype}_p self, bh_bool value);
