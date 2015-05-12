@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_H
 #define __BH_H
 
+#include <cstddef>
 #include "bh_error.h"
 #include "bh_debug.h"
 #include "bh_opcode.h"
@@ -35,16 +36,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_memory.h"
 #include "bh_ir.h"
 #include "bh_mem_signal.h"
-
-#ifdef __cplusplus
-/* C++ includes go here */
-#include <cstddef>
-extern "C" {
-#else
-/* plain C includes go here */
-#include <stddef.h>
-#include <stdbool.h>
-#endif
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) >= (b) ? (a) : (b))
@@ -280,6 +271,14 @@ DLLEXPORT void bh_flag_constant(bh_view* o);
  */
 DLLEXPORT bh_view bh_view_simplify(const bh_view &view);
 
+/* Simplifies the given view down to the given shape.
+ * If that is not possible an std::invalid_argument exception is thrown 
+ *
+ * @view The view
+ * @return The simplified view
+ */
+DLLEXPORT bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape);
+
 /* Determines whether two views have same shape.
  *
  * @a The first view
@@ -344,10 +343,6 @@ DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction
  * @return The boolean answer
  */
 DLLEXPORT bool bh_opcode_is_sweep(bh_opcode opcode);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
 

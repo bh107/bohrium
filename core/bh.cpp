@@ -303,6 +303,52 @@ bh_view bh_view_simplify(const bh_view& view)
     return res;
 }
 
+/* Simplifies the given view down to the given shape.
+ * If that is not possible an std::invalid_argument exception is thrown 
+ *
+ * @view The view
+ * @return The simplified view
+ */
+bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape)
+{
+    if (view.ndim < (bh_intp)shape.size())
+        throw std::invalid_argument("Can not simplify to more dimensions");
+    bh_view res;
+    res.base = view.base;
+    res.ndim = 0;
+    res.start = view.start;
+    res.shape[0] = view.shape[0];
+    res.stride[0] = view.stride[0];
+    for (bh_intp i = 1; i < view.ndim; ++i)
+    {
+        if (view.shape[i] > shape[i])
+            throw std::invalid_argument("Can not simplify to lower dimension size");
+        if (view.shape[i] == shape[i])
+        {
+            ++res.ndim;
+            res.shape[res.ndim]  = view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
+            continue;
+        }
+        if (view.shape[i] == 1)
+            continue;
+        if (view.shape[i]*view.stride[i] == res.stride[res.ndim])
+        {
+            res.shape[res.ndim] *= view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
+        } else {
+            ++res.ndim;
+            res.shape[res.ndim]  = view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
+        }
+    }
+    if (res.shape[res.ndim] > 1)
+        ++res.ndim;
+    if (res.ndim != (bh_intp)shape.size())
+        throw std::invalid_argument("Can not simplify to given shape");
+    return res;
+}
+
 /* Determines whether two views have same shape.
  *
  * @a The first view
