@@ -321,12 +321,11 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
     res.stride[0] = view.stride[0];
     for (bh_intp i = 1; i < view.ndim; ++i)
     {
-        if (view.shape[i] > shape[i])
+        if (view.shape[i-1] > shape[res.ndim])
             throw std::invalid_argument("Can not simplify to lower dimension size");
-        if (view.shape[i] == shape[i])
+        if (view.shape[i-1] == shape[res.ndim])
         {
-            ++res.ndim;
-            res.shape[res.ndim]  = view.shape[i];
+            res.shape[++res.ndim]  = view.shape[i];
             res.stride[res.ndim] = view.stride[i];
             continue;
         }
@@ -337,8 +336,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
             res.shape[res.ndim] *= view.shape[i];
             res.stride[res.ndim] = view.stride[i];
         } else {
-            ++res.ndim;
-            res.shape[res.ndim]  = view.shape[i];
+            res.shape[++res.ndim]  = view.shape[i];
             res.stride[res.ndim] = view.stride[i];
         }
     }
