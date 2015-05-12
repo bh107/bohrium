@@ -15,6 +15,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op   = MAP;
                 tac.oper = IDENTITY;
+                goto transform_identity;
             }
             break;
 
@@ -22,6 +23,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op   = MAP;
                 tac.oper = IDENTITY;
+                goto transform_identity;
             } else if (symbol_table[tac.out].layout == SCALAR) {
                 tac.op = REDUCE_COMPLETE;
             }
@@ -31,16 +33,20 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op = MAP;
                 tac.oper = IDENTITY;
+                goto transform_identity;
             }
             break;
 
         case ZIP:
             switch(tac.oper) {
-                case POWER:
+                case ADD:
                     if (((symbol_table[tac.in2].layout & (SCALAR_LAYOUT))>0) && \
-                        (get_scalar(symbol_table[tac.in2]) == 2.0)) {
-                        tac.oper = MULTIPLY;
-                        tac.in2 = tac.in1;
+                        (get_scalar(symbol_table[tac.in2]) == 0.0)) {
+                        tac.op = MAP;
+                        tac.oper = IDENTITY;
+                        // tac.in1 = same as before
+                        tac.in2 = 0;
+                        goto transform_identity;
                     }
                     break;
                 case MULTIPLY:
@@ -55,6 +61,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
                             tac.oper = IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
+                            goto transform_identity;
                         }
                     }
                     break;
@@ -65,7 +72,16 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
                             tac.oper = IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
+                            goto transform_identity;
                         }
+                    }
+                    break;
+
+                case POWER:
+                    if (((symbol_table[tac.in2].layout & (SCALAR_LAYOUT))>0) && \
+                        (get_scalar(symbol_table[tac.in2]) == 2.0)) {
+                        tac.oper = MULTIPLY;
+                        tac.in2 = tac.in1;
                     }
                     break;
                 default:
@@ -76,6 +92,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
         case MAP:
             switch(tac.oper) {
                 case IDENTITY:
+                    transform_identity:
                     if (tac.out == tac.in1) {
                         tac.op = NOOP;
                     }
@@ -212,6 +229,10 @@ double get_scalar(const operand_t& arg)
         case COMPLEX128:
         case PAIRLL:
         default:
+            throw invalid_argument(
+                "Cannot get scalar-value of operand with "
+                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+            );
             return 0.0;
     }
 }
@@ -252,10 +273,15 @@ void set_scalar(const operand_t& arg, double value)
         case FLOAT64:
             (*(double*)(*(arg.data))) = (double)value;
             break;
+
         case COMPLEX64:
         case COMPLEX128:
         case PAIRLL:
         default:
+            throw invalid_argument(
+                "Cannot set value of operand with "
+                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+            );
             break;
     }
 }
