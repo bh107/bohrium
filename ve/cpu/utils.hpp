@@ -111,9 +111,18 @@ bool contiguous(const operand_t& arg);
 LAYOUT determine_layout(const operand_t& arg);
 
 /**
- *  Check is scalar operand has value equivalent to the given scalar value.
+ *  Return the first element that arg.data points to.
+ *
+ *  NOTE: Type is converted but overflows are not handled.
  */
-bool equivalent_scalar(const operand_t& arg, double value);
+double get_scalar(const operand_t& arg);
+
+/**
+ *  Set the first element that arg.data points to.
+ *  
+ *  NOTE: Type is converted but overflows are not handled.
+ */
+void set_scalar(const operand_t& arg, double value);
 
 /**
  *  Determines whether two operand have compatible meta-data.
