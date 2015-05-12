@@ -57,6 +57,11 @@ bh_index bh_nelements(bh_intp ndim,
     return res;
 }
 
+bh_index bh_nelements(const bh_view& view)
+{
+    return bh_nelements(view.ndim,view.shape);
+}
+
 /* Size of the base array in bytes
  *
  * @base    The base in question

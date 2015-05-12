@@ -61,7 +61,8 @@ bh_index bh_nelements_nbcast(const bh_view *view);
  * @return   Number of element operations
  */
 DLLEXPORT bh_index bh_nelements(bh_intp ndim,
-                            const bh_index shape[]);
+                                const bh_index shape[]);
+DLLEXPORT bh_index bh_nelements(const bh_view& view);
 
 /* Size of the base array in bytes
  *

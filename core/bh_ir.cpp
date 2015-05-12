@@ -125,12 +125,12 @@ bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) co
     return false;
 }
 
-// Returns the shape with the highest dimensionality
+// Returns the shape with the highest dimensionality and lexicagraphicaly last (ie largest) 
 std::vector<bh_index> bh_ir_kernel::shape() const
 {
     std::vector<bh_index> res;
     for (const std::vector<bh_index>& s: shapes)
-        if (s.size() > res.size())
+        if (s.size() >= res.size())
             res = s;
     return res;
 }
@@ -201,7 +201,13 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
                 input_set.insert(v);
                 parameters.insert(v.base);
             }
-            shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
+            if (bh_opcode_is_sweep(instr.opcode))
+            {  /* TODO: We can simplify except in sweep dimension      *
+                *       How will than influence additionel reductions? */ 
+                shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
+            } else {
+                shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
+            }
         }
         //Add the output of the instruction to 'outputs'
         {
