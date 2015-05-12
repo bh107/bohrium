@@ -97,27 +97,41 @@ public:
     int begin;
     int end;
     size_t step;
-    bool inclusive_end;
 };
 
-inline Slice::Slice() : begin(0), end(-1), step(1)
-{}
+inline Slice::Slice() : begin(0), end(-1), step(1) {}
 
 inline Slice::Slice(int begin, int end, size_t step)
-    : begin(begin), end(end), step(step), inclusive_end(false)
-{}
+    : begin(begin), end(end), step(step) {}
 
-inline Slice& _(int begin, int end, size_t step)
+inline Slice _(int begin, int end, size_t step)
 {
-    Slice* le_range = (new Slice(begin, end, step));
-    le_range->inclusive_end = (0==end);
-
-    return *le_range;
+    return Slice(begin, end, step);
 }
 
-inline Slice& _(int begin, int end)
+inline Slice _(int begin, int end)
 {
     return _(begin, end, 1);
+}
+
+inline Slice _SI(int begin, int end, size_t step)
+{
+    return _(begin, end, step);
+}
+
+inline Slice _SI(int begin, int end)
+{
+    return _(begin, end, 1);
+}
+
+inline Slice _SE(int begin, int end, size_t step)
+{
+    return _(begin, end-1, step);
+}
+
+inline Slice _SE(int begin, int end)
+{
+    return _(begin, end-1, 1);
 }
 
 //
@@ -166,7 +180,7 @@ public:
     //
                                                     // Slicing / explicit view
     multi_array<T>& operator[](int rhs);            // Select a single element / dimension
-    multi_array<T>& operator[](Slice& rhs);         // Select a range (begin, end, step)
+    multi_array<T>& operator[](Slice rhs);          // Select a range (begin, end, step)
 
     multi_array& operator()(const T& n);            // Update
     multi_array& operator()(multi_array<T>& rhs);

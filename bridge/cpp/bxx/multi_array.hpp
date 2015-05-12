@@ -333,7 +333,7 @@ void multi_array<T>::setSliceDim(int dim)
 }
 
 template <typename T>
-multi_array<T>& multi_array<T>::operator[](Slice& slice) {
+multi_array<T>& multi_array<T>::operator[](Slice slice) {
 
     if (!initialized()) {
         throw std::runtime_error("Slicing uninitialized operand.");
