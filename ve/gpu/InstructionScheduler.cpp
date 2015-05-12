@@ -235,10 +235,15 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
 {
     // sync operands
     sync(kernel.get_parameters().set());
-    std::cerr << "Call to child VE not implemented" << std::endl;
-    return BH_ERROR;
-    //bh_ir bhir = bh_ir( 1, inst);
-    //return resourceManager->childExecute(&bhir);
+    for (uint64_t idx: kernel.instr_indexes)
+    {
+        bh_instruction* instr = &kernel.bhir->instr_list[idx];
+        bh_ir bhir = bh_ir( 1, instr);
+        bh_error err = resourceManager->childExecute(&bhir);
+        if (err != BH_SUCCESS)
+            return err;
+    }
+    return BH_SUCCESS;
 }
 
 SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel)
@@ -353,7 +358,6 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     {
         assert(rit->first == (bh_intp)rkernelShape.size());
         rkernelShape.erase(rkernelShape.begin()+rit->second);
-        shape[rit->second] = 0;
     }
     while (rkernelShape.size() > 3)
         rkernelShape.erase(rkernelShape.begin());
@@ -364,7 +368,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     bool integer = false;
     bool random = false;
     std::string functionBody = generateFunctionBody(kernel, kernelShape.size(), 
-                                                    shape, float64, complex, integer, random);
+                                                    shape, dimOrders, float64, complex, integer, random);
     size_t functionID = string_hasher(functionBody);
     size_t literalID = string_hasher(defines.str());
     if (!resourceManager->float64() && float64)
@@ -397,6 +401,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
 
 std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
                                                        const std::vector<bh_index>& shape,
+                                                       const std::vector<std::vector<size_t> >& dimOrders,
                                                        bool& float64, bool& complex, bool& integer, bool& random)
 {
     std::stringstream source; // The active code block (dimension)
@@ -406,7 +411,10 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     std::stringstream indentss;
     indentss << "\t";
     std::set<size_t> initiated_view;
-    size_t dims = kdims; 
+    size_t dims = kdims;   // "Active" dimensions 
+    bh_index elements = 1; // Number of elements in active dimensionality
+    for (size_t d = 1; d <= dims; ++d)
+        elements *= shape[shape.size()-d];
     size_t const_id = 0;
     // Generate code for instruction list
     std::vector<std::string> operands;
@@ -436,22 +444,24 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 size_t vid = kernel.get_view_id(view);
                 if (view.ndim > (bh_intp)shape.size())
                     view = bh_view_simplify(view,shape);
-                while (view.ndim > (bh_intp)dims)
+                bh_index myelements = bh_nelements(view);
+                while (myelements > elements)
                 {
+                    elements *= shape[shape.size()-(++dims)];
                     beforesource.emplace_back(source.str());
                     source.str("");
-                    ++dims;
                     source << indentss.str() << "for (int ids" << dims << " = 0; ids" << dims << " < ds" << 
                         dims << "; ++ids" << dims << ")\n" << indentss.str() << "{\n";
                     indentss << "\t";
                     
                 }
-                while (view.ndim < (bh_intp)dims)
+                while (myelements < elements)
                 {
+                    elements /= shape[shape.size()-(dims--)];
                     endDim(source, indentss, beforesource, save, dims, kdims, kernel);
-                    --dims;
                     assert(dims > 0);
                 }
+                assert (myelements == elements);
                 bh_base* base = view.base;
                 OCLtype type = oclType(base->type);
                 // Is this a new view? 
@@ -496,6 +506,18 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         size_t vid = kernel.get_view_id(view);
         if (view.ndim > (bh_intp)shape.size())
             view = bh_view_simplify(view,shape);
+        bh_index myelements = bh_nelements(view);
+        while (myelements > elements)
+        {
+            elements *= shape[shape.size()-(++dims)];
+            beforesource.emplace_back(source.str());
+            source.str("");
+            source << indentss.str() << "for (int ids" << dims << " = 0; ids" << dims << " < ds" << 
+                dims << "; ++ids" << dims << ")\n" << indentss.str() << "{\n";
+            indentss << "\t";
+            
+        }
+        assert (myelements <= elements);
         bh_base* base = view.base;
         OCLtype type = oclType(base->type);
         if (initiated_view.find(vid) == initiated_view.end())
@@ -517,6 +539,12 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         }
         operands.front() += std::to_string(vid);
         types.front() = type;
+        if (instr.opcode == BH_RANGE || instr.opcode == BH_RANDOM)
+        {
+            std::stringstream mysource;
+            generateElementNumber(kdims, dimOrders[dims-1], mysource);
+            operands.emplace_back(mysource.str());
+        }
         // generate source code for the instruction
         // HACK to make BH_INVERT on BH_BOOL work correctly TODO Fix!
         if (instr.opcode == BH_INVERT && (instr.operand[1].base ? 

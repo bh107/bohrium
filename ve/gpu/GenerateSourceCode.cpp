@@ -76,6 +76,38 @@ void generateLoadSource(size_t aid, size_t vid, OCLtype type, std::ostream& sour
     source << oclTypeStr(type) << " v" << vid <<  " = a" << aid << "[v" << vid << "idx];\n";
 }
 
+void generateElementNumber(size_t kdims, const std::vector<size_t>& dimOrder, std::ostream& source)
+{
+    assert(kdims > 0);
+    size_t cdims = dimOrder.size();
+    assert(cdims >=kdims );
+    for (size_t d = cdims; d > kdims; --d)
+    {
+        source << "ids" << d;
+        if (dimOrder[cdims-d])
+            source << "*ds" << dimOrder[cdims-d];
+        source << " + ";
+    }
+    if (kdims > 2)
+    {
+        source << "gidz";
+        if (dimOrder[cdims-3])
+            source << "*ds" << dimOrder[cdims-3];
+        source << " + ";
+    }
+    if (kdims > 1)
+    {
+        source << "gidy";
+        if (dimOrder[cdims-2])
+            source << "*ds" << dimOrder[cdims-2];
+        source << " + ";
+    }
+    source << "gidx";
+    if (dimOrder[cdims-1])
+        source << "*ds" << dimOrder[cdims-1];
+
+} 
+
 void generateNeutral(bh_opcode opcode,OCLtype type, std::ostream& source)
 {
     switch (type)
@@ -221,7 +253,6 @@ void generateInstructionSource(const bh_opcode opcode,
                                const std::string& indent,
                                std::ostream& source)
 {
-    assert(parameters.size() == (size_t)bh_operands(opcode));
     if (isComplex(type[0]) || (type.size()>1 && isComplex(type[1])))
     {
 
@@ -491,10 +522,10 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = isinf(" << parameters[1] << ");\n";
             break;
         case BH_RANGE:
-            source << indent << parameters[0] << " = gidx;\n";
+            source << indent << parameters[0] << " = " << parameters[1] << ";\n";
             break;
         case BH_RANDOM:
-            source << indent << parameters[0] << " = random("  << parameters[1] << ", gidx);\n";
+            source << indent << parameters[0] << " = random("  << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         default:
             if (resourceManager->verbose())

@@ -55,6 +55,7 @@ private:
     SourceKernelCall generateKernel(const bh_ir_kernel& kernel);
     std::string generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
                                      const std::vector<bh_index>& shape,    
+                                     const std::vector<std::vector<size_t> >& dimOrders,
                                      bool& float64, bool& complex, bool& integer, bool& random);
     void sync(const std::set<bh_base*>& arrays);
     void discard(const std::set<bh_base*>& arrays);
