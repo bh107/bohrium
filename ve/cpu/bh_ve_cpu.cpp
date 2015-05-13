@@ -42,63 +42,6 @@ static bh_component myself;
 // This is where the actual engine implementation is
 static bohrium::engine::cpu::Engine* engine = NULL;
 
-/**
- *  Grab an option from ENV or config-file and convert it to
- *  and integer within the range [min, max].
- *
- *
- *
- */
-bh_error bh_int_option(bh_intp* option, const char* option_name, int min, int max)
-{
-    char* raw = bh_component_config_lookup(&myself, option_name);
-    if (!raw) {
-        fprintf(stderr, "parameter(%s) is missing.\n", option_name);
-        return BH_ERROR;
-    }
-    *option = (bh_intp)atoi(raw);
-    if ((*option < min) || (*option > max)) {
-        fprintf(
-            stderr,
-            "%s should be within range [%d,%d].\n",
-            option_name, min, max
-        );
-        return BH_ERROR;
-    }
-    return BH_SUCCESS;
-}
-
-bh_error bh_string_option(char*& option, const char* option_name)
-{
-    option = bh_component_config_lookup(&myself, option_name);
-    if (!option) {
-        fprintf(stderr, "%s is missing.\n", option_name);
-        return BH_ERROR;
-    }
-    return BH_SUCCESS;
-}
-
-bh_error bh_path_option(char*& option, const char* option_name)
-{
-    option = bh_component_config_lookup(&myself, option_name);
-
-    if (!option) {
-        fprintf(stderr, "Path is not set; option (%s).\n", option_name);
-        return BH_ERROR;
-    }
-    if (0 != access(option, F_OK)) {
-        if (ENOENT == errno) {
-            fprintf(stderr, "Path does not exist; path (%s).\n", option);
-        } else if (ENOTDIR == errno) {
-            fprintf(stderr, "Path is not a directory; path (%s).\n", option);
-        } else {
-            fprintf(stderr, "Path is broken somehow; path (%s).\n", option);
-        }
-        return BH_ERROR;
-    }
-    return BH_SUCCESS;
-}
-
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
 {
@@ -142,20 +85,20 @@ bh_error bh_ve_cpu_init(const char *name)
     char* template_path = NULL;
     char* kernel_path = NULL;
 
-    if ((BH_SUCCESS!=bh_int_option(&bind, "bind", 0, 2))                        or \
-        (BH_SUCCESS!=bh_int_option(&thread_limit, "thread_limit", 0, 2048))     or \
-        (BH_SUCCESS!=bh_int_option(&vcache_size, "vcache_size", 0, 100))        or \
-        (BH_SUCCESS!=bh_int_option(&preload, "preload", 0, 1))                  or \
-        (BH_SUCCESS!=bh_int_option(&jit_level, "jit_level", 0, 3))              or \
-        (BH_SUCCESS!=bh_int_option(&jit_dumpsrc, "jit_dumpsrc", 0, 1))          or \
-        (BH_SUCCESS!=bh_string_option(compiler_cmd, "compiler_cmd"))            or \
-        (BH_SUCCESS!=bh_string_option(compiler_inc, "compiler_inc"))            or \
-        (BH_SUCCESS!=bh_string_option(compiler_lib, "compiler_lib"))            or \
-        (BH_SUCCESS!=bh_string_option(compiler_flg, "compiler_flg"))            or \
-        (BH_SUCCESS!=bh_string_option(compiler_ext, "compiler_ext"))            or \
-        (BH_SUCCESS!=bh_path_option(object_path, "object_path"))                or \
-        (BH_SUCCESS!=bh_path_option(kernel_path, "kernel_path"))                or \
-        (BH_SUCCESS!=bh_path_option(template_path, "template_path"))) {
+    if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "bind", 0, 2, &bind))                      or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "thread_limit", 0, 2048, &thread_limit))   or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "vcache_size", 0, 100, &vcache_size))      or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "preload", 0, 1, &preload))                or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_level", 0, 3, &jit_level))            or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_dumpsrc", 0, 1, &jit_dumpsrc))        or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_cmd", &compiler_cmd))         or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_inc", &compiler_inc))         or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_lib", &compiler_lib))         or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_flg", &compiler_flg))         or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_ext", &compiler_ext))         or \
+        (BH_SUCCESS!=bh_component_config_path_option(&myself, "object_path", &object_path))             or \
+        (BH_SUCCESS!=bh_component_config_path_option(&myself, "kernel_path", &kernel_path))             or \
+        (BH_SUCCESS!=bh_component_config_path_option(&myself, "template_path", &template_path))) {
         return BH_ERROR;
     }
 
