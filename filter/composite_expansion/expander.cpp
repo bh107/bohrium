@@ -27,7 +27,11 @@ namespace composite {
 
 const char Expander::TAG[] = "Expander";
 
-Expander::Expander() {}
+Expander::Expander(void) {}
+
+Expander::~Expander(void) {
+    // TODO: De-allocate bh_base pointers.
+}
 
 int expand_matmul(bh_ir& bhir, int idx)
 {
@@ -36,6 +40,7 @@ int expand_matmul(bh_ir& bhir, int idx)
 
 int expand_sign(bh_ir& bhir, int idx)
 {
+    bh_instruction& composite = bhir.instr_list[idx];
     return 0;
 }
 

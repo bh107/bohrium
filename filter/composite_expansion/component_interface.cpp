@@ -69,8 +69,10 @@ bh_error bh_filter_composite_expansion_shutdown(void)
 
 bh_error bh_filter_composite_expansion_execute(bh_ir* bhir)
 {
-    expander->expand(*bhir);
-    return child->execute(bhir); // Execute the filtered bhir
+    expander->expand(*bhir);                // Expand composites
+    bh_error res = child->execute(bhir);    // Send the bhir down the stack
+    expander->gc();                         // Run garbage collection
+    return res;                             // Forward result from stack
 }
 
 bh_error bh_filter_composite_expansion_extmethod(const char *name, bh_opcode opcode)
