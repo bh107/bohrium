@@ -26,6 +26,19 @@ public:
     void expand(bh_ir& bhir);
 
     /**
+     *  Collect garbage, that is de-allocate an amount of bh_base.
+     *
+     *  Make sure that BH_FREE and BH_DISCARD has been sent down the stack.
+     *
+     *  It seems likely that re-use would be an idea so default
+     *  strategy should probably be to keep some amount for re-use
+     *  and de-allocate above some threshold.
+     *
+     *  Upon deconstruction everything should of course be de-allocated.
+     */
+    int gc(void);
+
+    /**
      *  Expand BH_SIGN at the given idx into the sequence:
      *
      *      BH_SIGN OUT, IN
@@ -48,19 +61,6 @@ public:
      *  Returns the number of additional instructions used.
      */
     int expand_matmul(bh_ir& bhir, int idx);
-
-    /**
-     *  Collect garbage, that is de-allocate an amount of bh_base.
-     *
-     *  Make sure that BH_FREE and BH_DISCARD has been sent down the stack.
-     *
-     *  It seems likely that re-use would be an idea so default
-     *  strategy should probably be to keep some amount for re-use
-     *  and de-allocate above some threshold.
-     *
-     *  Upon deconstruction everything should of course be de-allocated.
-     */
-    int gc(void);
 
 private:
 

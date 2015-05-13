@@ -27,21 +27,9 @@ namespace composite {
 
 const char Expander::TAG[] = "Expander";
 
-Expander::Expander(void) {}
-
-Expander::~Expander(void) {
-    // TODO: De-allocate bh_base pointers.
-}
-
-int expand_matmul(bh_ir& bhir, int idx)
+Expander::Expander(void)
 {
-    return 0;
-}
 
-int expand_sign(bh_ir& bhir, int idx)
-{
-    bh_instruction& composite = bhir.instr_list[idx];
-    return 0;
 }
 
 void Expander::expand(bh_ir& bhir)
@@ -67,6 +55,20 @@ void Expander::expand(bh_ir& bhir)
             default:
                 break;
         }
+    }
+}
+
+int Expander::gc()
+{
+    return 0;
+}
+
+Expander::~Expander(void)
+{
+    for(std::vector<bh_base*>::iterator it=bases_.begin();  // Deallocate bases
+        it!=bases_.end();
+        ++it) {
+        delete *it;
     }
 }
 
