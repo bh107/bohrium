@@ -52,6 +52,8 @@ def instrs_to_tacs(opcodes, ops, opers, types, layouts):
 
     for o in opcodes:
         opcode = o['opcode']
+        if o["composite"]:  # TODO: Specialize composite codes.
+            continue
 
         if o['system_opcode']:
             system.append([opcode, 'SYSTEM', opcode.replace('BH_',''), 0])
