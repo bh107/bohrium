@@ -12,7 +12,7 @@ public:
     /**
      *  Construct the expander.
      */
-    Expander(void);
+    Expander(size_t threshold);
 
     /**
      *  Tear down the expander.
@@ -36,7 +36,7 @@ public:
      *
      *  Upon deconstruction everything should of course be de-allocated.
      */
-    int gc(void);
+    size_t gc(void);
 
     /**
      *  Expand BH_SIGN at the given idx into the sequence:
@@ -66,6 +66,8 @@ private:
 
     static const char TAG[];
     std::vector<bh_base*> bases_;
+    size_t gc_threshold_;
+    
 };
 
 }}}

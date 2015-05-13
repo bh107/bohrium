@@ -42,16 +42,18 @@ bh_error bh_filter_composite_expansion_init(const char* name)
     }
 
     if (myself.nchildren != 1) {    // For now, we have one child exactly
-        fprintf(stderr, "[validate-FILTER] Unexpected number of children, must be 1");
+        fprintf(stderr, "[FILTER-composite_expansion] Only a single child is supported.");
         return BH_ERROR;
     }
     
-    child = &myself.children[0];    // Let us initiate the child.
+    child = &myself.children[0];    // Initiate child
     if ((err = child->init(child->name)) != 0) {
         return err;
     }
 
-    expander = new bohrium::filter::composite::Expander();
+    // TODO: Grab the configuration
+
+    expander = new bohrium::filter::composite::Expander(0);
 
     return BH_SUCCESS;
 }
@@ -71,8 +73,8 @@ bh_error bh_filter_composite_expansion_execute(bh_ir* bhir)
 {
     expander->expand(*bhir);                // Expand composites
     bh_error res = child->execute(bhir);    // Send the bhir down the stack
-    expander->gc();                         // Run garbage collection
-    return res;                             // Forward result from stack
+    expander->gc();                         // Collect garbage
+    return res;                             // Send result up the stack
 }
 
 bh_error bh_filter_composite_expansion_extmethod(const char *name, bh_opcode opcode)

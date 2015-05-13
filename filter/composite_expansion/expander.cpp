@@ -27,7 +27,7 @@ namespace composite {
 
 const char Expander::TAG[] = "Expander";
 
-Expander::Expander(void)
+Expander::Expander(size_t threshold) : gc_threshold_(threshold)
 {
 
 }
@@ -58,17 +58,27 @@ void Expander::expand(bh_ir& bhir)
     }
 }
 
-int Expander::gc()
+size_t Expander::gc()
 {
-    return 0;
+    size_t collected = 0;
+    size_t size = bases_.size();
+
+    if ((gc_threshold_) and (size>gc_threshold_)) {
+        for(size_t limit = size-gc_threshold_;
+            collected < limit;
+            ++collected) {
+            delete bases_.back();
+            bases_.pop_back();
+        }
+    }
+    return collected;
 }
 
 Expander::~Expander(void)
 {
-    for(std::vector<bh_base*>::iterator it=bases_.begin();  // Deallocate bases
-        it!=bases_.end();
-        ++it) {
-        delete *it;
+    while(bases_.size()>0) {
+        delete bases_.back();
+        bases_.pop_back();
     }
 }
 
