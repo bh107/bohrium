@@ -27,10 +27,8 @@ namespace composite {
 
 const char Expander::TAG[] = "Expander";
 
-Expander::Expander(size_t threshold) : gc_threshold_(threshold)
-{
-
-}
+Expander::Expander(size_t threshold, int matmul, int sign)
+    : gc_threshold_(threshold), matmul_(matmul), sign_(sign) {}
 
 void Expander::expand(bh_ir& bhir)
 {

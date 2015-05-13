@@ -12,7 +12,7 @@ public:
     /**
      *  Construct the expander.
      */
-    Expander(size_t threshold);
+    Expander(size_t threshold, int matmul, int sign);
 
     /**
      *  Tear down the expander.
@@ -39,6 +39,13 @@ public:
     size_t gc(void);
 
     /**
+     *  Expand matmul at the given idx in the bhir instruction list.
+     *
+     *  Returns the number of additional instructions used.
+     */
+    int expand_matmul(bh_ir& bhir, int idx);
+
+    /**
      *  Expand BH_SIGN at the given idx into the sequence:
      *
      *      BH_SIGN OUT, IN
@@ -55,18 +62,13 @@ public:
      */
     int expand_sign(bh_ir& bhir, int idx);
 
-    /**
-     *  Expand matmul at the given idx in the bhir instruction list.
-     *
-     *  Returns the number of additional instructions used.
-     */
-    int expand_matmul(bh_ir& bhir, int idx);
-
 private:
 
     static const char TAG[];
     std::vector<bh_base*> bases_;
     size_t gc_threshold_;
+    int matmul_;
+    int sign_;
     
 };
 

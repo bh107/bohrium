@@ -25,7 +25,7 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-int expand_sign(bh_ir& bhir, int idx)
+int Expander::expand_sign(bh_ir& bhir, int idx)
 {
     bh_instruction& composite = bhir.instr_list[idx];
     return 0;

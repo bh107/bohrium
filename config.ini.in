@@ -1,6 +1,6 @@
 [bridge]
 type = bridge
-children = node
+children = composite_expansion
 
 #
 # Managers
@@ -79,6 +79,14 @@ children = cpu
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_complete_reduction${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
+
+[composite_expansion]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_composite_expansion${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = node
+gc_threshold = 0
+expand_matmul = 1
+expand_sign = 1
 
 #
 # Engines

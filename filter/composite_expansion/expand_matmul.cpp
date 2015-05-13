@@ -25,7 +25,7 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-int expand_matmul(bh_ir& bhir, int idx)
+int Expander::expand_matmul(bh_ir& bhir, int idx)
 {
     return 0;
 }
