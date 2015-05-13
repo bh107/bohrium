@@ -59,12 +59,16 @@ private:
                                      bool& float64, bool& complex, bool& integer, bool& random);
     void sync(const std::set<bh_base*>& arrays);
     void discard(const std::set<bh_base*>& arrays);
+    void beginDim(std::stringstream& source, 
+                  std::stringstream& indentss, 
+                  std::vector<std::string>& beforesource, 
+                  const size_t dims);
     void endDim(std::stringstream& source, 
                 std::stringstream& indentss, 
                 std::vector<std::string>& beforesource, 
                 std::set<bh_view>& save,
-                size_t dims,
-                size_t kdims,
+                const size_t dims,
+                const size_t kdims,
                 const bh_ir_kernel& kernel);
     std::vector<std::vector<size_t> > genDimOrders(const std::map<bh_intp, bh_int64>& sweeps, size_t ndim);
 public:

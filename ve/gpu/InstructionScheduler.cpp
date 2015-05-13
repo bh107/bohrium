@@ -448,12 +448,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 while (myelements > elements)
                 {
                     elements *= shape[shape.size()-(++dims)];
-                    beforesource.emplace_back(source.str());
-                    source.str("");
-                    source << indentss.str() << "for (int ids" << dims << " = 0; ids" << dims << " < ds" << 
-                        dims << "; ++ids" << dims << ")\n" << indentss.str() << "{\n";
-                    indentss << "\t";
-                    
+                    beginDim(source, indentss, beforesource, dims);
                 }
                 while (myelements < elements)
                 {
@@ -510,12 +505,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         while (myelements > elements)
         {
             elements *= shape[shape.size()-(++dims)];
-            beforesource.emplace_back(source.str());
-            source.str("");
-            source << indentss.str() << "for (int ids" << dims << " = 0; ids" << dims << " < ds" << 
-                dims << "; ++ids" << dims << ")\n" << indentss.str() << "{\n";
-            indentss << "\t";
-            
+            beginDim(source, indentss, beforesource, dims);
         }
         assert (myelements <= elements);
         bh_base* base = view.base;
@@ -603,12 +593,24 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     return source.str();
 }
 
+void InstructionScheduler::beginDim(std::stringstream& source, 
+                                    std::stringstream& indentss, 
+                                    std::vector<std::string>& beforesource, 
+                                    const size_t dims)
+{
+    beforesource.emplace_back(source.str());
+    source.str("");
+    source << indentss.str() << "for (int ids" << dims << " = 0; ids" << dims << " < ds" << 
+        dims << "; ++ids" << dims << ")\n" << indentss.str() << "{\n";
+    indentss << "\t";
+}
+
 void InstructionScheduler::endDim(std::stringstream& source, 
                                   std::stringstream& indentss, 
                                   std::vector<std::string>& beforesource, 
                                   std::set<bh_view>& save,
-                                  size_t dims,
-                                  size_t kdims,
+                                  const size_t dims,
+                                  const size_t kdims,
                                   const bh_ir_kernel& kernel)
 {
     std::stringstream mysource;
