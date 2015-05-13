@@ -23,46 +23,39 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "GenerateSourceCode.hpp"
 #include "bh_ve_gpu.h"
 
-void generateGIDSource(size_t ndim, std::ostream& source)
-{
-    assert(ndim > 0);    
-    source << "\tconst size_t gidx = get_global_id(0);\n";
-    source << "\tif (gidx >= ds1)\n\t\treturn;\n";
-    if (ndim > 1)
-    {
-        source << "\tconst size_t gidy = get_global_id(1);\n";
-        source << "\tif (gidy >= ds2)\n\t\treturn;\n";
-    }
-    if (ndim > 2)
-    {
-        source << "\tconst size_t gidz = get_global_id(2);\n";
-        source << "\tif (gidz >= ds3)\n\t\treturn;\n";
-    }
-}
-
-void generateOffsetSource(size_t cdims, size_t kdims, size_t id, std::ostream& source)
+void generateGIDSource(size_t kdims, std::ostream& source)
 {
     assert(kdims > 0);
-    assert(cdims >=kdims );
-    for (size_t d = cdims; d > kdims; --d)
+    assert(kdims <= 3);
+    for (size_t d = 1; d <= kdims; ++d)
     {
-        source << "ids" << d << "*v" << id << "s" << d << " + ";
+        source << "\tconst size_t idd" << d << " = get_global_id(" << d-1 << ");\n";
+        source << "\tif (idd" << d << " >= ds" << d << ")\n\t\treturn;\n";
     }
-    if (kdims > 2)
-    {
-        source << "gidz*v" << id << "s3 + ";
-    }
-    if (kdims > 1)
-    {
-        source << "gidy*v" << id << "s2 + ";
-    }
-    source << "gidx*v" << id << "s1 + v" << id << "s0";
 }
 
-void generateIndexSource(size_t cdims, size_t kdims, size_t id, std::ostream& source)
+void generateOffsetSource(size_t cdims, bh_index vdims, size_t id, std::ostream& source)
+{
+    assert(vdims > 0);
+    assert(cdims > 0);
+    source << "(";
+    for (bh_index d = cdims; d > vdims; --d)
+    {
+        source << "idd" << d << "*ds" << d-1 << "+";
+    }
+    bh_index dims = MIN((bh_index)cdims,vdims);
+    source << "idd" << dims << ")*v" << id << "s" << dims << " + ";
+    for (bh_index d = dims-1; d > 0; --d)
+    {
+        source << "idd" << d << "*v" << id << "s" << d << " + ";
+    }
+    source << "v" << id << "s0";
+}
+
+void generateIndexSource(size_t cdims, bh_index vdims, size_t id, std::ostream& source)
 {
     source << "size_t v" << id << "idx = ";
-    generateOffsetSource(cdims, kdims, id, source);
+    generateOffsetSource(cdims, vdims, id, source);
     source << ";\n";
 } 
 
@@ -76,36 +69,18 @@ void generateLoadSource(size_t aid, size_t vid, OCLtype type, std::ostream& sour
     source << oclTypeStr(type) << " v" << vid <<  " = a" << aid << "[v" << vid << "idx];\n";
 }
 
-void generateElementNumber(size_t kdims, const std::vector<size_t>& dimOrder, std::ostream& source)
+void generateElementNumber(const std::vector<size_t>& dimOrder, std::ostream& source)
 {
-    assert(kdims > 0);
     size_t cdims = dimOrder.size();
-    assert(cdims >=kdims );
-    for (size_t d = cdims; d > kdims; --d)
+    assert(cdims > 0);
+    for (size_t d = cdims; d > 0; --d)
     {
-        source << "ids" << d;
+        source << "idd" << d;
         if (dimOrder[cdims-d])
             source << "*ds" << dimOrder[cdims-d];
-        source << " + ";
+        if (d > 1)
+            source << " + ";
     }
-    if (kdims > 2)
-    {
-        source << "gidz";
-        if (dimOrder[cdims-3])
-            source << "*ds" << dimOrder[cdims-3];
-        source << " + ";
-    }
-    if (kdims > 1)
-    {
-        source << "gidy";
-        if (dimOrder[cdims-2])
-            source << "*ds" << dimOrder[cdims-2];
-        source << " + ";
-    }
-    source << "gidx";
-    if (dimOrder[cdims-1])
-        source << "*ds" << dimOrder[cdims-1];
-
 } 
 
 void generateNeutral(bh_opcode opcode,OCLtype type, std::ostream& source)

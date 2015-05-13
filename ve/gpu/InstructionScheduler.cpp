@@ -413,8 +413,8 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     std::set<size_t> initiated_view;
     size_t dims = kdims;   // "Active" dimensions 
     bh_index elements = 1; // Number of elements in active dimensionality
-    for (size_t d = 1; d <= dims; ++d)
-        elements *= shape[shape.size()-d];
+    for (size_t d = 0; d < dims; ++d)
+        elements *= shape[dimOrders[shape.size()-1][d]];
     size_t const_id = 0;
     // Generate code for instruction list
     std::vector<std::string> operands;
@@ -444,19 +444,19 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 size_t vid = kernel.get_view_id(view);
                 if (view.ndim > (bh_intp)shape.size())
                     view = bh_view_simplify(view,shape);
-                bh_index myelements = bh_nelements(view);
-                while (myelements > elements)
+                bh_index viewElements = bh_nelements(view);
+                while (viewElements > elements)
                 {
-                    elements *= shape[shape.size()-(++dims)];
+                    elements *= shape[dimOrders[shape.size()-1][dims++]];
                     beginDim(source, indentss, beforesource, dims);
                 }
-                while (myelements < elements)
+                while (viewElements < elements)
                 {
-                    elements /= shape[shape.size()-(dims--)];
-                    endDim(source, indentss, beforesource, save, dims, kdims, kernel);
+                    endDim(source, indentss, beforesource, save, dims, elements, kernel);
+                    elements /= shape[dimOrders[shape.size()-1][--dims]];
                     assert(dims > 0);
                 }
-                assert (myelements == elements);
+                assert (viewElements == elements);
                 bh_base* base = view.base;
                 OCLtype type = oclType(base->type);
                 // Is this a new view? 
@@ -467,11 +467,11 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                         std::stringstream mysource;
                         mysource << beforesource.back();
                         mysource << indentss.str().substr(1);
-                        generateIndexSource(dims-1, kdims, vid, mysource);
+                        generateIndexSource(dims-1, view.ndim, vid, mysource);
                         beforesource.back() = mysource.str();
                     } else {
                         source << indentss.str();
-                        generateIndexSource(dims, kdims, vid, source);
+                        generateIndexSource(dims, view.ndim, vid, source);
                     }
                     source << indentss.str();
                     generateLoadSource(kernel.get_parameters()[base], vid, type, source);
@@ -501,13 +501,13 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         size_t vid = kernel.get_view_id(view);
         if (view.ndim > (bh_intp)shape.size())
             view = bh_view_simplify(view,shape);
-        bh_index myelements = bh_nelements(view);
-        while (myelements > elements)
+        bh_index viewElements = bh_nelements(view);
+        while (viewElements > elements)
         {
-            elements *= shape[shape.size()-(++dims)];
+            elements *= shape[dimOrders[shape.size()-1][dims++]];
             beginDim(source, indentss, beforesource, dims);
         }
-        assert (myelements <= elements);
+        assert (viewElements <= elements);
         bh_base* base = view.base;
         OCLtype type = oclType(base->type);
         if (initiated_view.find(vid) == initiated_view.end())
@@ -532,7 +532,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         if (instr.opcode == BH_RANGE || instr.opcode == BH_RANDOM)
         {
             std::stringstream mysource;
-            generateElementNumber(kdims, dimOrders[dims-1], mysource);
+            generateElementNumber(dimOrders[dims-1], mysource);
             operands.emplace_back(mysource.str());
         }
         // generate source code for the instruction
@@ -543,8 +543,6 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
             generateInstructionSource(BH_LOGICAL_NOT, types, operands, indentss.str(), source);
         else
             generateInstructionSource(instr.opcode, types, operands, indentss.str(), source);
-        // TODO reduction output?
-        // What if there are more operations 
         if (kernel.is_output(instr.operand[0]))
             save.insert(view);
         for (OCLtype type: types)
@@ -586,10 +584,9 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     {
         assert(dims>0);
         assert(kdims>0);
-        endDim(source, indentss, beforesource, save, dims, kdims, kernel);
-        --dims;
+        endDim(source, indentss, beforesource, save, dims, elements, kernel);
+        elements /= shape[dimOrders[shape.size()-1][--dims]];
     }
-    //source << "}\n";
     return source.str();
 }
 
@@ -600,8 +597,8 @@ void InstructionScheduler::beginDim(std::stringstream& source,
 {
     beforesource.emplace_back(source.str());
     source.str("");
-    source << indentss.str() << "for (int ids" << dims << " = 0; ids" << dims << " < ds" << 
-        dims << "; ++ids" << dims << ")\n" << indentss.str() << "{\n";
+    source << indentss.str() << "for (int idd" << dims << " = 0; idd" << dims << " < ds" << 
+        dims << "; ++idd" << dims << ")\n" << indentss.str() << "{\n";
     indentss << "\t";
 }
 
@@ -610,7 +607,7 @@ void InstructionScheduler::endDim(std::stringstream& source,
                                   std::vector<std::string>& beforesource, 
                                   std::set<bh_view>& save,
                                   const size_t dims,
-                                  const size_t kdims,
+                                  const bh_index elements,
                                   const bh_ir_kernel& kernel)
 {
     std::stringstream mysource;
@@ -624,15 +621,17 @@ void InstructionScheduler::endDim(std::stringstream& source,
     }
     for (auto it = save.begin(); it != save.end();)
     {
-        if (it->ndim == (bh_intp)dims)
+        const bh_view& view = *it;
+        bh_index viewElements = bh_nelements(view);
+        if (viewElements == elements)
         {
-            size_t vid = kernel.get_view_id(*it);
-            if (!kernel.is_input(*it))
+            size_t vid = kernel.get_view_id(view);
+            if (!kernel.is_input(view))
             {
                 source << indentss.str();
-                generateIndexSource(dims, kdims,vid, source);
+                generateIndexSource(dims, view.ndim, vid, source);
             }
-            size_t aid = kernel.get_parameters()[it->base];
+            size_t aid = kernel.get_parameters()[view.base];
             source << indentss.str();
             generateSaveSource(aid, vid, source);
             save.erase(it++);

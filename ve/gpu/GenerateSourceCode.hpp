@@ -26,12 +26,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh.h>
 #include "OCLtype.h"
 
-void generateGIDSource(size_t ndim, std::ostream& source);
-void generateOffsetSource(size_t cdims, size_t kdims, unsigned int id, std::ostream& source);
-void generateIndexSource(size_t cdims, size_t kdims, size_t id, std::ostream& source);
+void generateGIDSource(size_t kdims, std::ostream& source);
+void generateOffsetSource(size_t cdims, bh_index vdims, size_t id, std::ostream& source);
+void generateIndexSource(size_t cdims, bh_index vdims, size_t id, std::ostream& source);
 void generateSaveSource(size_t aid, size_t vid, std::ostream& source);
 void generateLoadSource(size_t aid, size_t vid, OCLtype type, std::ostream& source);
-void generateElementNumber(size_t kdims, const std::vector<size_t>& dimOrder, std::ostream& source);
+void generateElementNumber(const std::vector<size_t>& dimOrder, std::ostream& source);
 void generateNeutral(bh_opcode opcode,OCLtype type, std::ostream& source);
 void generateInstructionSource(const bh_opcode opcode,
                                const std::vector<OCLtype>& type, 

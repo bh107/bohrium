@@ -68,7 +68,7 @@ private:
                 std::vector<std::string>& beforesource, 
                 std::set<bh_view>& save,
                 const size_t dims,
-                const size_t kdims,
+                const bh_index elements,
                 const bh_ir_kernel& kernel);
     std::vector<std::vector<size_t> > genDimOrders(const std::map<bh_intp, bh_int64>& sweeps, size_t ndim);
 public:
