@@ -29,9 +29,40 @@ const char Expander::TAG[] = "Expander";
 
 Expander::Expander() {}
 
+int expand_matmul(bh_ir& bhir, int idx)
+{
+    return 0;
+}
+
+int expand_sign(bh_ir& bhir, int idx)
+{
+    return 0;
+}
+
 void Expander::expand(bh_ir& bhir)
 {
-    
+    int end = bhir.instr_list.size();
+    for(int idx=0; idx<end; ++idx) {
+        bh_instruction& instr = bhir.instr_list[idx];
+        int increase = 0;
+        switch(instr.opcode) {
+
+            case BH_MATMUL:
+                end += expand_matmul(bhir, idx);
+                end += increase;
+                idx += increase;
+                break;
+
+            case BH_SIGN:
+                increase = expand_sign(bhir, idx);
+                end += increase;
+                idx += increase;
+                break;
+
+            default:
+                break;
+        }
+    }
 }
 
 }}}
