@@ -63,7 +63,6 @@ bh_error bh_filter_composite_expansion_init(const char* name)
                                                             expand_matmul,
                                                             expand_sign);
     } catch (std::bad_alloc& ba) {
-        expander == NULL;
         fprintf(stderr, "Failed constructing Expander due to allocation error.\n");
     }
     if (NULL == expander) {

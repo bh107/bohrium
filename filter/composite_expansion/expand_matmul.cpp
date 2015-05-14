@@ -67,18 +67,9 @@ int Expander::expand_matmul(bh_ir& bhir, int pc)
 
                                                     // Expand sequence
     inject(bhir, ++pc, BH_MULTIPLY, c_3d, a_3d, b_3d);
-    bh_instruction reduce;
-    reduce.opcode = BH_ADD_REDUCE;
-    reduce.operand[0] = out;
-    reduce.operand[1] = c_3d;
-    bh_flag_constant(&reduce.operand[2]);
-    reduce.constant.type = BH_INT64;
-    reduce.constant.value.int64 = (int64_t)1;
-    
-    bhir.instr_list.insert(bhir.instr_list.begin()+(++pc), reduce);
+    inject(bhir, ++pc, BH_ADD_REDUCE, out, c_3d, (int64_t)2, BH_INT64);
     inject(bhir, ++pc, BH_FREE, c_3d);
     inject(bhir, ++pc, BH_DISCARD, c_3d);
-    //inject(bhir, ++pc, BH_ADD_REDUCE, out, c_3d, -1);
 
     return pc-start_pc;
 }

@@ -6,7 +6,8 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, float value);
+template <typename T>
+inline void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, T value);
 
 class Expander
 {
@@ -51,11 +52,28 @@ public:
     /**
      *  Inject an instruction.
      */
-    void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2);
-    void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, double in2);
-    void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1);
-    void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, double);
+
+    // System instruction
     void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out);
+
+    // Unary instruction
+    void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1);
+
+    // Unary with constants
+    template <typename T>
+    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1, bh_type const_type);
+    template <typename T>
+    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1);
+
+
+    // Binary instruction
+    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2);
+    // Binary with constants
+    template <typename T>
+    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2, bh_type const_type);
+
+    template <typename T>
+    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2);
 
     /**
      *  Expand matmul at the given pc in the bhir instruction list.
@@ -125,6 +143,100 @@ private:
     int sign_;
     
 };
+
+void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2)
+{
+    bh_instruction instr;
+    instr.opcode = opcode;
+    instr.operand[0] = out;
+    instr.operand[1] = in1;
+    instr.operand[2] = in2;
+    bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
+}
+
+template <typename T>
+inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2, bh_type const_type)
+{
+    bh_instruction instr;
+    instr.opcode = opcode;
+    instr.operand[0] = out;
+    instr.operand[1] = in1;
+    bh_set_constant(instr, 2, const_type, in2);
+    bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
+}
+
+template <typename T>
+inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2)
+{
+    Expander::inject(bhir, pc, opcode, out, in1, in2, in1.base->type);
+}
+
+template <typename T>
+inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1, bh_type const_type)
+{
+    bh_instruction instr;
+    instr.opcode = opcode;
+    instr.operand[0] = out;
+    bh_set_constant(instr, 1, const_type, in1);
+    bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
+}
+
+template <typename T>
+inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1)
+{
+    Expander::inject(bhir, pc, opcode, out, in1, out.base->type);
+}
+
+template <typename T>
+inline void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, T value)
+{
+    bh_flag_constant(&instr.operand[opr_idx]);
+    instr.constant.type = type;
+
+    switch(type) {
+        case BH_BOOL:
+            instr.constant.value.bool8 = (bh_bool)value;
+            break;
+        case BH_INT8:
+            instr.constant.value.int8 = (bh_int8)value;
+            break;
+        case BH_INT16:
+            instr.constant.value.int16 = (bh_int16)value;
+            break;
+        case BH_INT32:
+            instr.constant.value.int32 = (bh_int32)value;
+            break;
+        case BH_INT64:
+            instr.constant.value.int64 = (bh_int64)value;
+            break;
+        case BH_UINT8:
+            instr.constant.value.uint8 = (bh_uint8)value;
+            break;
+        case BH_UINT16:
+            instr.constant.value.uint16 = (bh_uint16)value;
+            break;
+        case BH_UINT32:
+            instr.constant.value.uint32 = (bh_uint32)value;
+            break;
+        case BH_UINT64:
+            instr.constant.value.uint64 = (bh_uint64)value;
+            break;
+        case BH_FLOAT32:
+            instr.constant.value.float32 = (bh_float32)value;
+            break;
+        case BH_FLOAT64:
+            instr.constant.value.float64 = (bh_float64)value;
+            break;
+
+        case BH_COMPLEX64:
+        case BH_COMPLEX128:
+        case BH_R123:
+        case BH_UNKNOWN:
+        default:
+            fprintf(stderr, "set_constant unsupported for given type.");
+            break;
+    }
+}
 
 }}}
 #endif
