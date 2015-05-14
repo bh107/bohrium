@@ -57,10 +57,20 @@ bh_error bh_filter_composite_expansion_init(const char* name)
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "expand_sign", 0, 1, &expand_sign))) {
         return BH_ERROR;
     }
-                                    // Construct the expander
-    expander = new bohrium::filter::composite::Expander(0, expand_matmul, expand_sign);
-
-    return BH_SUCCESS;
+                                    
+    try {                           // Construct the expander
+        expander = new bohrium::filter::composite::Expander(gc_threshold,
+                                                            expand_matmul,
+                                                            expand_sign);
+    } catch (std::bad_alloc& ba) {
+        expander == NULL;
+        fprintf(stderr, "Failed constructing Expander due to allocation error.\n");
+    }
+    if (NULL == expander) {
+        return BH_ERROR;
+    } else {
+        return BH_SUCCESS;
+    }
 }
 
 bh_error bh_filter_composite_expansion_shutdown(void)
