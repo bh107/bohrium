@@ -126,11 +126,11 @@ bh_base* Expander::make_base(bh_type type, bh_index nelem)
 {
     bh_base* base = NULL;
     try {
-        bh_base* base = new bh_base;
+        base = new bh_base;
     } catch (std::bad_alloc& ba) {
         base = NULL;
         fprintf(stderr, "Expander::make_base(...) bh_base allocation failed.\n");
-        throw;
+        throw std::runtime_error("Expander::make_base(...) bh_base allocation failed.\n");
     }
     
     base->type = type;
