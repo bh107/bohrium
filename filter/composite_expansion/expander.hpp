@@ -64,22 +64,53 @@ public:
     int expand_matmul(bh_ir& bhir, int pc);
 
     /**
-     *  Expand BH_SIGN at the given pc into the sequence:
+     *  Expand BH_SIGN at the given PC into the sequence:
      *
-     *      BH_SIGN OUT, IN
+     *      BH_SIGN OUT, IN1 (When IN1.type != COMPLEX):
      *
-     *      LESS T1, IN, 0
-     *      GREATER T2, IN, 0
-     *      SUBTRACT T3, T1, T2
+     *      LESS T1_BOOL, IN1, 0
+     *      IDENTITY T1, T1_BOOL
+     *      FREE T1_BOOL
+     *      DISCARD T1_BOOL
+     * 
+     *      GREATER T2_BOOL, IN1, 0
+     *      IDENTITY T2, T2_BOOL
+     *      FREE T2_BOOL
+     *      DISCARD T2_BOOL
+     *
+     *      SUBTRACT OUT, T2, T1
+     *      FREE T1
+     *      DISCARD T1
+     *      FREE T2
+     *      DISCARD T2
+     *
+     *                          ||| OR |||
+     *
+     *      BH_SIGN OUT, IN1 (When IN1.type == COMPLEX):
+     *
+     *      REAL IN1_R, IN1
+     *
+     *      LESS T1_BOOL, IN1_R, 0
+     *      IDENTITY T1, T1_BOOL
+     *      FREE T1_BOOL
+     *      DISCARD T1_BOOL
+     * 
+     *      GREATER T2_BOOL, IN1_R, 0
+     *      IDENTITY T2, T2_BOOL
+     *      FREE T2_BOOL
+     *      DISCARD T2_BOOL
+     *
+     *      FREE IN1_R
+     *      DISCARD IN1_R
+     *
+     *      SUBTRACT T3, T2, T1
      *      IDENTITY OUT, T3
      *      FREE T1
      *      DISCARD T1
      *      FREE T2
      *      DISCARD T2
-     *      FREE T3
-     *      DISCARD T3
      *
-     *  Returns the number of additional instructions used (9).
+     *  Returns the number of instructions used (12 or 17).
      */
     int expand_sign(bh_ir& bhir, int pc);
 
