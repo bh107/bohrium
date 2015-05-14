@@ -27,27 +27,77 @@ namespace composite {
 
 const char Expander::TAG[] = "Expander";
 
+void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, float value)
+{
+    bh_flag_constant(&instr.operand[opr_idx]);
+    instr.constant.type = type;
+
+    switch(type) {
+        case BH_BOOL:
+            instr.constant.value.bool8 = (bh_bool)value;
+            break;
+        case BH_INT8:
+            instr.constant.value.int8 = (bh_int8)value;
+            break;
+        case BH_INT16:
+            instr.constant.value.int16 = (bh_int16)value;
+            break;
+        case BH_INT32:
+            instr.constant.value.int32 = (bh_int32)value;
+            break;
+        case BH_INT64:
+            instr.constant.value.int64 = (bh_int64)value;
+            break;
+        case BH_UINT8:
+            instr.constant.value.uint8 = (bh_uint8)value;
+            break;
+        case BH_UINT16:
+            instr.constant.value.uint16 = (bh_uint16)value;
+            break;
+        case BH_UINT32:
+            instr.constant.value.uint32 = (bh_uint32)value;
+            break;
+        case BH_UINT64:
+            instr.constant.value.uint64 = (bh_uint64)value;
+            break;
+        case BH_FLOAT32:
+            instr.constant.value.float32 = (bh_float32)value;
+            break;
+        case BH_FLOAT64:
+            instr.constant.value.float64 = (bh_float64)value;
+            break;
+
+        case BH_COMPLEX64:
+        case BH_COMPLEX128:
+        case BH_R123:
+        case BH_UNKNOWN:
+        default:
+            fprintf(stderr, "set_constant unsupported for given type.");
+            break;
+    }
+}
+
 Expander::Expander(size_t threshold, int matmul, int sign)
     : gc_threshold_(threshold), matmul_(matmul), sign_(sign) {}
 
 void Expander::expand(bh_ir& bhir)
 {
     int end = bhir.instr_list.size();
-    for(int idx=0; idx<end; ++idx) {
-        bh_instruction& instr = bhir.instr_list[idx];
+    for(int pc=0; pc<end; ++pc) {
+        bh_instruction& instr = bhir.instr_list[pc];
         int increase = 0;
         switch(instr.opcode) {
 
             case BH_MATMUL:
-                end += expand_matmul(bhir, idx);
+                end += expand_matmul(bhir, pc);
                 end += increase;
-                idx += increase;
+                pc += increase;
                 break;
 
             case BH_SIGN:
-                increase = expand_sign(bhir, idx);
+                increase = expand_sign(bhir, pc);
                 end += increase;
-                idx += increase;
+                pc += increase;
                 break;
 
             default:
@@ -56,7 +106,7 @@ void Expander::expand(bh_ir& bhir)
     }
 }
 
-size_t Expander::gc()
+size_t Expander::gc(void)
 {
     size_t collected = 0;
     size_t size = bases_.size();
@@ -70,6 +120,64 @@ size_t Expander::gc()
         }
     }
     return collected;
+}
+
+bh_base* Expander::make_base(bh_type type, bh_index nelem)
+{
+    bh_base* base = new bh_base;
+    base->type = type;
+    base->nelem = nelem;
+    base->data = NULL;
+
+    bases_.push_back(base);
+
+    return base;
+}
+
+void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2)
+{
+    bh_instruction instr;
+    instr.opcode = opcode;
+    instr.operand[0] = out;
+    instr.operand[1] = in1;
+    instr.operand[2] = in2;
+    bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
+}
+
+void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, double in2)
+{
+    bh_instruction instr;
+    instr.opcode = opcode;
+    instr.operand[0] = out;
+    instr.operand[1] = in1;
+    bh_set_constant(instr, 2, in1.base->type, in2);
+    bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
+}
+
+void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1)
+{
+    bh_instruction instr;
+    instr.opcode = opcode;
+    instr.operand[0] = out;
+    instr.operand[1] = in1;
+    bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
+}
+
+void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, double in1)
+{
+    bh_instruction instr;
+    instr.opcode = opcode;
+    instr.operand[0] = out;
+    bh_set_constant(instr, 1, out.base->type, in1);
+    bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
+}
+
+void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out)
+{
+    bh_instruction instr;
+    instr.opcode = opcode;
+    instr.operand[0] = out;
+    bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }
 
 Expander::~Expander(void)

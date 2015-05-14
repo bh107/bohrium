@@ -25,10 +25,38 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-int Expander::expand_sign(bh_ir& bhir, int idx)
+int Expander::expand_sign(bh_ir& bhir, int pc)
 {
-    bh_instruction& composite = bhir.instr_list[idx];
-    return 0;
+    int start_pc = pc;
+    bh_instruction& composite = bhir.instr_list[pc];
+    composite.opcode = BH_NONE; // Easy choice... no re-use just NOOP it.
+
+    bh_view result  = composite.operand[0];         // Grab operands
+    bh_view input   = composite.operand[1];
+
+    bh_view t1 = result;                            // Construct temps
+    t1.base = make_base(BH_BOOL, result.base->nelem);
+    bh_view t2 = result;
+    t2.base = make_base(BH_BOOL, result.base->nelem);
+    bh_view t3 = result;
+    t3.base = make_base(BH_INT8, result.base->nelem);
+    bh_view t4 = result;
+    t4.base = make_base(BH_BOOL, result.base->nelem);
+    bh_view t5 = result;
+    t5.base = make_base(BH_BOOL, result.base->nelem);
+
+    inject(bhir, ++pc, BH_LESS, t1, input, 0.0);    // Expand sequence
+    inject(bhir, ++pc, BH_GREATER, t2, input, 0.0);
+    inject(bhir, ++pc, BH_SUBTRACT, t3, t1, t2);
+    inject(bhir, ++pc, BH_IDENTITY, result, t3);
+    inject(bhir, ++pc, BH_FREE, t1);
+    inject(bhir, ++pc, BH_DISCARD, t1);
+    inject(bhir, ++pc, BH_FREE, t2);
+    inject(bhir, ++pc, BH_DISCARD, t2);
+    inject(bhir, ++pc, BH_FREE, t3);
+    inject(bhir, ++pc, BH_DISCARD, t3);
+
+    return pc-start_pc;
 }
 
 }}}
