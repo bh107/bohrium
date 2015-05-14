@@ -84,7 +84,7 @@ children = node
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_composite_expansion${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
-gc_threshold = 0
+gc_threshold = 400
 expand_matmul = 1
 expand_sign = 1
 
