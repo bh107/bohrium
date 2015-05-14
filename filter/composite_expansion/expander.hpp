@@ -67,49 +67,50 @@ public:
     /**
      *  Expand BH_SIGN at the given PC into the sequence:
      *
-     *      BH_SIGN OUT, IN1 (When IN1.type != COMPLEX):
+     *          BH_SIGN OUT, IN1 (When IN1.type != COMPLEX):
      *
-     *      LESS T1_BOOL, IN1, 0
-     *      IDENTITY T1, T1_BOOL
-     *      FREE T1_BOOL
-     *      DISCARD T1_BOOL
-     * 
-     *      GREATER T2_BOOL, IN1, 0
-     *      IDENTITY T2, T2_BOOL
-     *      FREE T2_BOOL
-     *      DISCARD T2_BOOL
+     *  LESS, t1_bool, input, 0.0
+     *  IDENTITY, t1, t1_bool
+     *  FREE, t1_bool
+     *  DISCARD, t1_bool
+     *  
+     *  GREATER, t2_bool, input, 0.0
+     *  IDENTITY, t2, t2_bool
+     *  FREE, t2_bool
+     *  DISCARD, t2_bool
+     *  
+     *  SUBTRACT, out, t2, t1
+     *  FREE, t1
+     *  DISCARD, t1
+     *  FREE, t2
+     *  DISCARD, t2
+     *  
+     *          BH_SIGN OUT, IN1 (When IN1.type == COMPLEX):
      *
-     *      SUBTRACT OUT, T2, T1
-     *      FREE T1
-     *      DISCARD T1
-     *      FREE T2
-     *      DISCARD T2
+     *  REAL, input_r, input
      *
-     *                          ||| OR |||
+     *  LESS, t1_bool, input_r, 0.0
+     *  IDENTITY, t1, t1_bool
+     *  FREE, t1_bool
+     *  DISCARD, t1_bool
      *
-     *      BH_SIGN OUT, IN1 (When IN1.type == COMPLEX):
+     *  GREATER, t2_bool, input_r, 0.0
+     *  FREE, input_r
+     *  DISCARD, input_r
      *
-     *      REAL IN1_R, IN1
+     *  IDENTITY, t2, t2_bool
+     *  FREE, t2_bool
+     *  DISCARD, t2_bool
      *
-     *      LESS T1_BOOL, IN1_R, 0
-     *      IDENTITY T1, T1_BOOL
-     *      FREE T1_BOOL
-     *      DISCARD T1_BOOL
-     * 
-     *      GREATER T2_BOOL, IN1_R, 0
-     *      IDENTITY T2, T2_BOOL
-     *      FREE T2_BOOL
-     *      DISCARD T2_BOOL
+     *  SUBTRACT, t3, t2, t1
+     *  FREE, t1
+     *  DISCARD, t1
+     *  FREE, t2
+     *  DISCARD, t2
      *
-     *      FREE IN1_R
-     *      DISCARD IN1_R
-     *
-     *      SUBTRACT T3, T2, T1
-     *      IDENTITY OUT, T3
-     *      FREE T1
-     *      DISCARD T1
-     *      FREE T2
-     *      DISCARD T2
+     *  IDENTITY, out, t3
+     *  FREE, t3
+     *  DISCARD, t3
      *
      *  Returns the number of instructions used (12 or 17).
      */
