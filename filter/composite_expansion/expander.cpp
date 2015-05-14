@@ -141,6 +141,13 @@ bh_base* Expander::make_base(bh_type type, bh_index nelem)
     return base;
 }
 
+bh_view Expander::make_temp(bh_view& meta, bh_type type, bh_index nelem)
+{
+    bh_view view = meta;
+    view.base = make_base(type, nelem);
+    return view;
+}
+
 void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2)
 {
     bh_instruction instr;

@@ -46,6 +46,7 @@ public:
      * @return Pointer to the created base.
      */
     bh_base* make_base(bh_type type, bh_index nelem);
+    bh_view make_temp(bh_view& meta, bh_type type, bh_index nelem);
 
     /**
      *  Inject an instruction.
