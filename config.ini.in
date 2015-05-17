@@ -58,7 +58,7 @@ children = cpu
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 #
-# Filters
+# Filters - Helpers / Tools
 #
 [pprint]
 type = filter
@@ -75,10 +75,14 @@ type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pricer${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 
-[complete_reduction]
+#
+# Filters - Bytecode transformers
+#
+[composite_contraction]
 type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_complete_reduction${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_composite_contraction${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
+contract_reduction = 1
 
 [composite_expansion]
 type = filter
