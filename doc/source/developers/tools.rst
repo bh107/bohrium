@@ -22,6 +22,13 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   sudo make install
   sudo ln -s /opt/python/bin/python /usr/bin/dython
 
+  export CV=0.22
+  cd /tmp/
+  wget http://cython.org/release/Cython-$CV.tar.gz
+  tar -xzf Cython-$CV.tar.gz
+  cd Cython-$CV
+  sudo dython setup.py install
+
   export NV=1.8.2
   cd /tmp/
   wget http://optimate.dl.sourceforge.net/project/numpy/NumPy/$NV/numpy-$NV.tar.gz
