@@ -37,7 +37,7 @@ Build and install Bohrium::
   cd <bohrium path>
   mkdir build
   cd build
-  cmake -DPYTHON_EXECUTABLE=dython -DPY_SCRIPT=python
+  cmake ../ -DPYTHON_EXECUTABLE=dython -DPY_SCRIPT=python
   make install
 
 Most Used Commands
