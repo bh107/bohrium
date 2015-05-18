@@ -28,6 +28,13 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   tar -xzf Cython-$CV.tar.gz
   cd Cython-$CV
   sudo dython setup.py install
+  
+  export CTV=2.4.4
+  cd /tmp/
+  wget https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$CTV.tar.gz
+  tar -xzf Cheetah-$CTV.tar.gz
+  cd Cheetah-$CTV.tar.gz
+  sudo dython setup.py install
 
   export NV=1.8.2
   cd /tmp/
