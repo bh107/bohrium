@@ -13,6 +13,7 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   sudo apt-get install zlib1g-dev valgrind
   export PV=2.7.3
   sudo mkdir /opt/python
+  
   cd /tmp
   wget http://www.python.org/ftp/python/$PV/Python-$PV.tgz
   tar -xzf Python-$PV.tgz
