@@ -13,6 +13,7 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   sudo apt-get install zlib1g-dev valgrind
   export PV=2.7.3
   sudo mkdir /opt/python
+  
   cd /tmp
   wget http://www.python.org/ftp/python/$PV/Python-$PV.tgz
   tar -xzf Python-$PV.tgz
@@ -21,11 +22,26 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   sudo make install
   sudo ln -s /opt/python/bin/python /usr/bin/dython
 
+  export CV=0.22
+  cd /tmp/
+  wget http://cython.org/release/Cython-$CV.tar.gz
+  tar -xzf Cython-$CV.tar.gz
+  cd Cython-$CV
+  sudo dython setup.py install
+  
+  export CTV=2.4.4
+  cd /tmp/
+  wget https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$CTV.tar.gz
+  tar -xzf Cheetah-$CTV.tar.gz
+  cd Cheetah-$CTV
+  sudo dython setup.py install
+
   export NV=1.8.2
+  cd /tmp/
   wget http://optimate.dl.sourceforge.net/project/numpy/NumPy/$NV/numpy-$NV.tar.gz
   tar -xzf numpy-$NV.tar.gz
   cd numpy-$NV
-  dython install
+  sudo dython setup.py install
 
 Build Bohrium with custom Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,7 +51,7 @@ Build and install Bohrium::
   cd <bohrium path>
   mkdir build
   cd build
-  cmake -DPYTHON_EXECUTABLE=dython -DPY_SCRIPT=python
+  cmake ../ -DPYTHON_EXECUTABLE=/usr/bin/dython -DPY_SCRIPT=python
   make install
 
 Most Used Commands

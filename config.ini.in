@@ -1,3 +1,47 @@
+#
+# Stack configuration
+#
+[stack]
+type = stack
+stack = node
+node = topological
+topological = cpu
+
+#
+# Other stack configurations (for reference, experiments, testing, etc.)
+#
+# Rename one of "stack-configurations" below to "stack" to use it and comment out the
+# one named "stack" above.
+#
+[stack_gpu]
+type = stack
+stack = node
+node = topological
+topological = gpu
+gpu = cpu
+
+[stack_pprint]
+type = stack
+stack = node
+node = topological
+topological = fuseprinter
+fuseprinter = pricer
+pricer = cpu
+
+[stack_cpu]
+type = stack
+stack = complete_reduction
+complete_reduction = topological
+topological = node
+node = cpu
+
+#
+# Component configuration
+#
+
+#
+# Bridges
+#
 [bridge]
 type = bridge
 children = composite_expansion

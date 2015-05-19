@@ -58,6 +58,15 @@ char _expand_buffer[PATH_MAX];
 
 #endif
 
+// Check whether the given component exists.
+static int component_exists(dictionary *dict, const char *name)
+{
+    char tmp[BH_COMPONENT_NAME_SIZE];
+    snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:type", name);
+    char *s = iniparser_getstring(dict, tmp, NULL);
+    return (NULL != s);
+}
+
 //Return the component type of the component named 'name'
 static bh_component_type get_type(dictionary *dict, const char *name)
 {
@@ -82,6 +91,8 @@ static bh_component_type get_type(dictionary *dict, const char *name)
             return BH_FILTER;
         if(!strcasecmp(s, "fuser"))
             return BH_FUSER;
+        if(!strcasecmp(s, "stack"))
+            return BH_STACK;
     }
     fprintf(stderr,"In section \"%s\" type is unknown: \"%s\" \n", name, s);
     return BH_COMPONENT_ERROR;
@@ -124,28 +135,94 @@ static void *get_dlsym(void *handle, const char *name,
     return ret;
 }
 
-/* Initilize the component object
+/* Initilize children of the given component
  *
- * @self   The component object to initilize
- * @name   The name of the component. If NULL "bridge" will be used.
+ * @self   The component of which children will be initialized
+ * @from_stack Whether children should be read from stack or from component.children.
  * @return Error codes (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_component_init(bh_component *self, const char* name)
+bh_error bh_component_children_init(bh_component *self, int from_stack)
+{
+    char tmp[BH_COMPONENT_NAME_SIZE];
+    if (from_stack) {
+        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "stack:%s",self->name);
+    } else {
+        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:children",self->name);
+    }
+    char *children_str = iniparser_getstring(self->config, tmp, NULL);
+    if(children_str == NULL)
+        return BH_SUCCESS;//No children -- we are finished
+
+    //Handle one child at a time.
+    char *child_str = strtok(children_str,",");
+    self->nchildren = 0;
+    while(child_str != NULL)
+    {
+        bh_component_iface *child = &self->children[self->nchildren];
+        bh_component_type child_type = get_type(self->config,child_str);
+        if(child_type == BH_COMPONENT_ERROR)
+            return BH_ERROR;
+
+        //Save the child name.
+        strncpy(child->name, child_str, BH_COMPONENT_NAME_SIZE);
+
+        if(!iniparser_find_entry(self->config,child_str))
+        {
+            fprintf(stderr,"Reference \"%s\" is not declared.\n",child_str);
+            return BH_ERROR;
+        }
+        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl", child_str);
+        char *impl = iniparser_getstring(self->config, tmp, NULL);
+        if(impl == NULL)
+        {
+            fprintf(stderr,"in section \"%s\" impl is not set.\n",child_str);
+    	    return BH_ERROR;
+        }
+        void *lib_handle = dlopen(impl, RTLD_NOW);
+        if(lib_handle == NULL)
+        {
+            fprintf(stderr, "Error in [%s:impl]: %s\n", child_str, dlerror());
+    	    return BH_ERROR;
+        }
+
+        child->init = (bh_init)get_dlsym(lib_handle, child_str, child_type, "init");
+        if(child->init == NULL)
+            return BH_ERROR;
+
+        child->shutdown = (bh_shutdown)get_dlsym(lib_handle, child_str, child_type, "shutdown");
+        if(child->shutdown == NULL)
+            return BH_ERROR;
+
+        child->execute = (bh_execute)get_dlsym(lib_handle, child_str, child_type, "execute");
+        if(child->execute == NULL)
+            return BH_ERROR;
+
+        child->extmethod = (bh_extmethod)get_dlsym(lib_handle, child_str, child_type, "extmethod");
+        if(child->extmethod == NULL)
+            return BH_ERROR;
+
+        if(++self->nchildren > BH_COMPONENT_MAX_CHILDS)
+        {
+            fprintf(stderr,"Number of children of %s is greater "
+                           "than BH_COMPONENT_MAX_CHILDS.\n",self->name);
+            return BH_ERROR;
+        }
+        //Go to next child
+        child_str = strtok(NULL,",");
+    }
+    return BH_SUCCESS;
+}
+
+/** 
+ * Find configuration file
+ *
+ */
+bh_error bh_component_config_find(bh_component *self)
 {
     const char* homepath = HOME_INI_PATH;
     const char* syspath1 = SYSTEM_INI_PATH_1;
     const char* syspath2 = SYSTEM_INI_PATH_2;
-
-    //Clear memory so we do not have any random pointers
-    memset(self, 0, sizeof(bh_component));
-
-    //Assign component name, default to "bridge"
-    if(name == NULL) {
-        strcpy(self->name, "bridge");
-    } else {
-        strcpy(self->name, name);
-    }
-
+   
     //
     // Find the configuration file
     //
@@ -254,78 +331,43 @@ bh_error bh_component_init(bh_component *self, const char* name)
         fprintf(stderr, "Error: Bohrium could not read the config file.\n");
         return BH_ERROR;
     }
+    return BH_SUCCESS;
+}
 
-    // Assign the type of the component
-    if((self->type = get_type(self->config, self->name)) == BH_COMPONENT_ERROR)
-        return BH_ERROR;
-
-    //
-    //  Retrieves the interface for each child
-    //
-
-    char tmp[BH_COMPONENT_NAME_SIZE];
-    snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:children",self->name);
-    char *children_str = iniparser_getstring(self->config, tmp, NULL);
-    if(children_str == NULL)
-        return BH_SUCCESS;//No children -- we are finished
-
-    //Handle one child at a time.
-    char *child_str = strtok(children_str,",");
-    self->nchildren = 0;
-    while(child_str != NULL)
-    {
-        bh_component_iface *child = &self->children[self->nchildren];
-        bh_component_type child_type = get_type(self->config,child_str);
-        if(child_type == BH_COMPONENT_ERROR)
-            return BH_ERROR;
-
-        //Save the child name.
-        strncpy(child->name, child_str, BH_COMPONENT_NAME_SIZE);
-
-        if(!iniparser_find_entry(self->config,child_str))
-        {
-            fprintf(stderr,"Reference \"%s\" is not declared.\n",child_str);
-            return BH_ERROR;
-        }
-        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl", child_str);
-        char *impl = iniparser_getstring(self->config, tmp, NULL);
-        if(impl == NULL)
-        {
-            fprintf(stderr,"in section \"%s\" impl is not set.\n",child_str);
-	    return BH_ERROR;
-        }
-        void *lib_handle = dlopen(impl, RTLD_NOW);
-        if(lib_handle == NULL)
-        {
-            fprintf(stderr, "Error in [%s:impl]: %s\n", child_str, dlerror());
-	    return BH_ERROR;
-        }
-
-        child->init = (bh_init)get_dlsym(lib_handle, child_str, child_type, "init");
-        if(child->init == NULL)
-            return BH_ERROR;
-
-        child->shutdown = (bh_shutdown)get_dlsym(lib_handle, child_str, child_type, "shutdown");
-        if(child->shutdown == NULL)
-            return BH_ERROR;
-
-        child->execute = (bh_execute)get_dlsym(lib_handle, child_str, child_type, "execute");
-        if(child->execute == NULL)
-            return BH_ERROR;
-
-        child->extmethod = (bh_extmethod)get_dlsym(lib_handle, child_str, child_type, "extmethod");
-        if(child->extmethod == NULL)
-            return BH_ERROR;
-
-        if(++self->nchildren > BH_COMPONENT_MAX_CHILDS)
-        {
-            fprintf(stderr,"Number of children of %s is greater "
-                           "than BH_COMPONENT_MAX_CHILDS.\n",self->name);
-            return BH_ERROR;
-        }
-        //Go to next child
-        child_str = strtok(NULL,",");
+/* Initilize the component object
+ *
+ * @self   The component object to initilize
+ * @name   The name of the component. If NULL "bridge" will be used.
+ * @return Error codes (BH_SUCCESS, BH_ERROR)
+ */
+bh_error bh_component_init(bh_component *self, const char* name)
+{
+    memset(self, 0, sizeof(bh_component));  // Clear component-memory
+                                                    // Find configuration-file
+    bh_error found_config = bh_component_config_find(self);
+    if (BH_SUCCESS != found_config) {
+        return found_config;
     }
+
+    int from_stack = component_exists(self->config, "stack");
+
+    if (name == NULL) {                                 // Assign name
+        if (from_stack) {
+            strcpy(self->name, "stack");
+        } else {
+            strcpy(self->name, "bridge");
+        }
+    } else {
+        strcpy(self->name, name);
+    }
+    
+    self->type = get_type(self->config, self->name);    // Assign type
+    if (BH_COMPONENT_ERROR == self->type) {
+        return BH_ERROR;
+    }
+
+    bh_component_children_init(self, from_stack);       // Initialize children
+    
     return BH_SUCCESS;
 }
 

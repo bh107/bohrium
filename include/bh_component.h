@@ -104,6 +104,7 @@ typedef enum
     BH_VE,
     BH_FILTER,
     BH_FUSER,
+    BH_STACK,
     BH_COMPONENT_ERROR
 }bh_component_type;
 
