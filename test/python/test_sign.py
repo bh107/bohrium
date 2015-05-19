@@ -69,19 +69,19 @@ class test_csign_mixed(numpytest):
 
     def init(self):
         self.config['maxerror'] = 0.00001
+        self.config['warn_on_err'] = "Bohrium should implement sign(0)=0, sign(z)=z/|z|. NumPy does something else."
 
         signs = []
-        for x in xrange(-1,1):
-            for y in xrange(-1,1):
+        for x in xrange(-1,2):
+            for y in xrange(-1,2):
                 exec("z = %d+%dj"% (x,y))
-                signs.append([z]*10)
+                signs.append(z)
 
         for dtype in TYPES.COMPLEX:
-            for sign in signs:
-                a = {}
-                cmd = "a[0] = self.asarray(%s, dtype=%s);" % (sign, dtype)
-                exec(cmd)
-                yield (a, cmd) 
+            a = {}
+            cmd = "a[0] = self.asarray(%s, dtype=%s);" % (signs, dtype)
+            exec(cmd)
+            yield (a, cmd) 
 
     def test_sign(self,a):
         cmd = "res = np.sign(a[0])"
