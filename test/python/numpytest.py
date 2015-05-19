@@ -363,10 +363,19 @@ if __name__ == "__main__":
                             rtol = cls_inst.config['maxerror']
                             atol = rtol * 0.1
                             if not np.allclose(res1, res2, rtol=rtol, atol=atol):
-                                print(_C.FAIL + "[Error] %s"%(name) + _C.ENDC)
-                                print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
-                                print(_C.OKGREEN + str(res1) + _C.ENDC)
-                                print(_C.FAIL + str(res2) + _C.ENDC)
-                                sys.exit (1)
 
+                                if 'warn_on_err' in cls_inst.config:
+                                    print(_C.WARNING + "[Warning] %s"%(name) + _C.ENDC)
+                                    print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
+                                    print(_C.OKGREEN + str(res1) + _C.ENDC)
+                                    print(_C.FAIL + str(res2) + _C.ENDC)
+                                    print(_C.WARNING + str(cls_inst.config['warn_on_err']) + _C.ENDC)
+                                    print(_C.OKBLUE + str("Manual verification is needed.") + _C.ENDC)
+                                else:
+                                    print(_C.FAIL + "[Error] %s"%(name) + _C.ENDC)
+                                    print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
+                                    print(_C.OKGREEN + str(res1) + _C.ENDC)
+                                    print(_C.FAIL + str(res2) + _C.ENDC)
+                                    sys.exit (1)
+                                    
     print("*"*24, "Finish", "*"*24)
