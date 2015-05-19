@@ -1,28 +1,31 @@
 #
 # Stack configuration
 #
-[stack]
+[stack_default]
 type = stack
-stack = node
+stack_default = node
 node = topological
 topological = cpu
 
 #
 # Other stack configurations (for reference, experiments, testing, etc.)
 #
-# Rename one of "stack-configurations" below to "stack" to use it and comment out the
-# one named "stack" above.
+# Use the BH_STACK env-var to choose another stack configuration.
+#
+# Such as BH_STACK="stack_gpu"
+# or
+# modify the default stack configuration above ("stack_default").
 #
 [stack_gpu]
 type = stack
-stack = node
+stack_gpu = node
 node = topological
 topological = gpu
 gpu = cpu
 
 [stack_pprint]
 type = stack
-stack = node
+stack_pprint = node
 node = topological
 topological = fuseprinter
 fuseprinter = pricer
@@ -30,7 +33,7 @@ pricer = cpu
 
 [stack_cpu]
 type = stack
-stack = complete_reduction
+stack_cpu = complete_reduction
 complete_reduction = topological
 topological = node
 node = cpu
