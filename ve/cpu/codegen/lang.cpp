@@ -187,6 +187,13 @@ string _declare_init(string type, string variable, string expr)
     return ss.str(); 
 }
 
+string _parens(string expr)
+{
+    stringstream ss;
+    ss << "(" << expr << ")";
+    return ss.str();
+}
+
 string _cast(string type, string object)
 {
     stringstream ss;

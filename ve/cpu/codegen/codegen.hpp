@@ -48,6 +48,7 @@ std::string _end(void);
 std::string _end(std::string comment);
 std::string _line(std::string object);
 
+std::string _parens(std::string expr);
 std::string _cast(std::string type, std::string object);
 
 std::string _declare(std::string type, std::string variable);
