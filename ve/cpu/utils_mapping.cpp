@@ -97,6 +97,7 @@ string operator_text(OPERATOR oper)
         case REAL: return "REAL";
         case RINT: return "RINT";
         case SIN: return "SIN";
+        case SIGN: return "SIGN";
         case SINH: return "SINH";
         case SQRT: return "SQRT";
         case TAN: return "TAN";

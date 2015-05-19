@@ -313,6 +313,20 @@ string _abs(string right)
     return ss.str();
 }
 
+string _cabs(string right)
+{
+    stringstream ss;
+    ss << "cabs(" << right << ")";
+    return ss.str();
+}
+
+string _cabsf(string right)
+{
+    stringstream ss;
+    ss << "cabsf(" << right << ")";
+    return ss.str();
+}
+
 string _gt(string left, string right)
 {
     stringstream ss;
