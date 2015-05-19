@@ -138,16 +138,16 @@ static void *get_dlsym(void *handle, const char *name,
 /* Initilize children of the given component
  *
  * @self   The component of which children will be initialized
- * @from_stack Whether children should be read from stack or from component.children.
+ * @stack  The stack configuration to use, if NULL use children-chaining.
  * @return Error codes (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_component_children_init(bh_component *self, int from_stack)
+static bh_error component_children_init(bh_component *self, char* stack)
 {
     char tmp[BH_COMPONENT_NAME_SIZE];
-    if (from_stack) {
-        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "stack:%s",self->name);
+    if (stack) {
+        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:%s", stack, self->name);
     } else {
-        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:children",self->name);
+        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:children", self->name);
     }
     char *children_str = iniparser_getstring(self->config, tmp, NULL);
     if(children_str == NULL)
@@ -343,17 +343,31 @@ bh_error bh_component_config_find(bh_component *self)
 bh_error bh_component_init(bh_component *self, const char* name)
 {
     memset(self, 0, sizeof(bh_component));  // Clear component-memory
-                                                    // Find configuration-file
+                                            // Find configuration-file
     bh_error found_config = bh_component_config_find(self);
     if (BH_SUCCESS != found_config) {
         return found_config;
     }
 
-    int from_stack = component_exists(self->config, "stack");
+    char* stack = getenv("BH_STACK");       // Get the stack from environment
+    int default_stack = 0;
+    if (NULL == stack) {                    // Default to "stack_default"
+        stack = (char*)"stack_default";
+        default_stack = 1;
+    }
+    
+    int stack_exists = component_exists(self->config, stack);
+    if ((!default_stack) && (!stack_exists)) {
+        fprintf(stderr, "The requested stack configuration(%s) does not exist,"
+                        " falling back to children-chaining.\n", stack);
+    }
+    if (!stack_exists) {
+        stack = NULL;
+    }
 
     if (name == NULL) {                                 // Assign name
-        if (from_stack) {
-            strcpy(self->name, "stack");
+        if (stack) {
+            strcpy(self->name, stack);
         } else {
             strcpy(self->name, "bridge");
         }
@@ -366,9 +380,7 @@ bh_error bh_component_init(bh_component *self, const char* name)
         return BH_ERROR;
     }
 
-    bh_component_children_init(self, from_stack);       // Initialize children
-    
-    return BH_SUCCESS;
+    return component_children_init(self, stack);   // Initialize children
 }
 
 /* Destroyes the component object.
