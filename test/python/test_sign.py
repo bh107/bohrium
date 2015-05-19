@@ -24,7 +24,7 @@ class test_csign_neg(numpytest):
 
         for dtype in TYPES.COMPLEX:
             a = {}
-            cmd = "a[0] = self.arange(-10, 1, 1, dtype=%s);" % dtype
+            cmd = "a[0] = self.arange(-10, 0, 1, dtype=%s);" % dtype
             exec(cmd)
             yield (a, cmd)
 
