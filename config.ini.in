@@ -3,9 +3,10 @@
 #
 [stack_default]
 type = stack
-stack_default = node
-node = topological
-topological = cpu
+stack_default = composite_expansion
+composite_expansion = topological
+topological = node
+node = cpu
 
 #
 # Other stack configurations (for reference, experiments, testing, etc.)
@@ -18,23 +19,26 @@ topological = cpu
 #
 [stack_gpu]
 type = stack
-stack_gpu = node
-node = topological
-topological = gpu
+stack_default = composite_expansion
+composite_expansion = topological
+topological = node
+node = gpu
 gpu = cpu
 
-[stack_pprint]
+[stack_fuseprinter]
 type = stack
-stack_pprint = node
-node = topological
-topological = fuseprinter
-fuseprinter = pricer
-pricer = cpu
+stack_default = composite_expansion
+composite_expansion = topological
+topological = pricer
+pricer = fuseprinter
+fuseprinter = node
+node = cpu
 
 [stack_cpu]
 type = stack
-stack_cpu = complete_reduction
-complete_reduction = topological
+stack_cpu = composite_contraction
+composite_contraction = composite_expansion
+composite_expansion = topological
 topological = node
 node = cpu
 

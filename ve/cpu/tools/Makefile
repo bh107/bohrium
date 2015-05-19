@@ -149,19 +149,19 @@ prep_sij: prep
 #
 # Benchmarks
 gauss_sij: prep_sij
-	BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
+	BH_CPU_JIT_LEVEL=1 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
 gauss_fsd: prep_fsd
-	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
+	BH_CPU_JIT_LEVEL=3 BH_VE_CPU_JIT_DUMPSRC=1 BH_VE_CPU_DUMPREP=1 python -m bohrium.examples.gauss --size=4*4 --bohrium=True
 
 #
 # Tests
 gentest:
-	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=1 python -m bohrium gentest.py
+	BH_CPU_JIT_LEVEL=3 BH_VE_CPU_JIT_DUMPSRC=1 python -m bohrium gentest.py
 	
 test:
-	BH_VE_CPU_JIT_FUSION=1 BH_VE_CPU_JIT_DUMPSRC=$(DUMPSRC) $(BH_PYTHON) $(ROOT)/test/python/numpytest.py $(TEST_EXCLUDE)
-	BH_VE_CPU_JIT_FUSION=0 BH_VE_CPU_JIT_DUMPSRC=$(DUMPSRC) $(BH_PYTHON) $(ROOT)/test/python/numpytest.py $(TEST_EXCLUDE)
+	BH_CPU_JIT_LEVEL=3 BH_VE_CPU_JIT_DUMPSRC=$(DUMPSRC) $(BH_PYTHON) $(ROOT)/test/python/numpytest.py $(TEST_EXCLUDE)
+	BH_CPU_JIT_LEVEL=1 BH_VE_CPU_JIT_DUMPSRC=$(DUMPSRC) $(BH_PYTHON) $(ROOT)/test/python/numpytest.py $(TEST_EXCLUDE)
 
 graphs:
 	python ./create_svg.py ./ /tmp/
