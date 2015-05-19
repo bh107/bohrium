@@ -100,7 +100,12 @@ string Walker::oper_description(tac_t tac)
 string Walker::oper(OPERATOR oper, ETYPE etype, string in1, string in2)
 {
     switch(oper) {
-        case ABSOLUTE:              return _abs(in1);
+        case ABSOLUTE:
+            switch(etype) {
+                case COMPLEX128:    return _cabs(in1);
+                case COMPLEX64:     return _cabsf(in1);
+                default:            return _abs(in1);
+            }
         case ADD:                   return _add(in1, in2);
         case ARCCOS:            
             switch(etype) {
