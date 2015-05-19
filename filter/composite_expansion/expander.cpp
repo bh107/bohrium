@@ -39,15 +39,19 @@ void Expander::expand(bh_ir& bhir)
         switch(instr.opcode) {
 
             case BH_MATMUL:
-                end += expand_matmul(bhir, pc);
-                end += increase;
-                pc += increase;
+                if (matmul_) {
+                    end += expand_matmul(bhir, pc);
+                    end += increase;
+                    pc += increase;
+                }
                 break;
 
             case BH_SIGN:
-                increase = expand_sign(bhir, pc);
-                end += increase;
-                pc += increase;
+                if (sign_) {
+                    increase = expand_sign(bhir, pc);
+                    end += increase;
+                    pc += increase;
+                }
                 break;
 
             default:
