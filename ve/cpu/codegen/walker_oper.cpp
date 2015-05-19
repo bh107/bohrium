@@ -247,7 +247,10 @@ string Walker::oper(OPERATOR oper, ETYPE etype, string in1, string in2)
             switch(etype) {
                 case COMPLEX128:    return _div(in1, _cabs(in1));
                 case COMPLEX64:     return _div(in1, _cabsf(in1));
-                default:            return _sub(_gt(in1, "0"), _lt(in1, "0"));
+                default:            return _sub(
+                                            _parens(_gt(in1, "0")),
+                                            _parens(_lt(in1, "0"))
+                                           );
             }
 
         case SINH:
