@@ -23,10 +23,14 @@ from functools import reduce
 class TYPES:
     NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
     ALL_INT      = NORMAL_INT + ['np.int8','np.int16','np.uint8','np.uint16']
+    SIGNED_INT   = ['np.int8', 'np.int16', 'np.int32','np.int64']
+    UNSIGNED_INT = list(set(ALL_INT) - set(SIGNED_INT))
+    COMPLEX      = ['np.complex64', 'np.complex128']
     NORMAL_FLOAT = ['np.float32','np.float64']
     ALL_FLOAT    = NORMAL_FLOAT #+ ['np.float16'] float16 is only supported by the GPU
+    ALL_SIGNED   = SIGNED_INT + ALL_FLOAT + COMPLEX
     NORMAL       = NORMAL_INT + NORMAL_FLOAT
-    ALL          = ALL_INT + ALL_FLOAT
+    ALL          = ALL_INT + ALL_FLOAT + COMPLEX
 
 class _C:
     HEADER = '\033[95m'
@@ -121,6 +125,19 @@ class numpytest:
 
     def init(self):
         pass
+
+    def asarray(self, data, dtype):
+        return np.asarray(data, dtype=dtype)
+
+    def ones(self, shape, dtype):
+        return np.asarray(shape, dtype=dtype)
+
+    def zeros(self, shape, dtype):
+        return np.zeros(shape, dtype=dtype)
+
+    def arange(self, begin, end, step, dtype):
+        return np.arange(begin, end, step, dtype=dtype)
+
     def array(self,dims,dtype,high=False):
         try:
             total = reduce(mul,dims)
