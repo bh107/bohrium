@@ -17,8 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BH_FILTER_COMPOSITE_EXPANSION_H
-#define __BH_FILTER_COMPOSITE_EXPANSION_H
+#ifndef __BH_FILTER_BCEXP_H
+#define __BH_FILTER_BCEXP_H
 
 #include <bh.h>
 
@@ -27,16 +27,16 @@ extern "C" {
 #endif
 
 /* Component interface: init (see bh_component.h) */
-DLLEXPORT bh_error bh_filter_composite_expansion_init(const char* name);
+DLLEXPORT bh_error bh_filter_bcexp_init(const char* name);
 
 /* Component interface: execute (see bh_component.h) */
-DLLEXPORT bh_error bh_filter_composite_expansion_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_filter_bcexp_execute(bh_ir* bhir);
 
 /* Component interface: shutdown (see bh_component.h) */
-DLLEXPORT bh_error bh_filter_composite_expansion_shutdown(void);
+DLLEXPORT bh_error bh_filter_bcexp_shutdown(void);
 
 /* Component interface: extmethod (see bh_component.h) */
-DLLEXPORT bh_error bh_filter_composite_expansion_extmethod(const char *name, bh_opcode opcode);
+DLLEXPORT bh_error bh_filter_bcexp_extmethod(const char *name, bh_opcode opcode);
 
 #ifdef __cplusplus
 }

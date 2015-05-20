@@ -2,6 +2,7 @@
 import numpy as np
 import bohrium as bh
 
+"""
 def thesign(z):
     bh.flush()
     x = np.real(z)
@@ -24,6 +25,20 @@ def thesign(z):
     bh.flush()
 
     return out 
+"""
+
+def thesign(z):
+    bh.flush()
+    z_abs = np.absolute(z)
+    z_zero = (z==0)
+    divisor = z_abs + z_zero
+    del z_abs
+    del z_zero
+    sign = z / divisor
+    del divisor
+    bh.flush()
+
+    return sign
 
 def sign_is(z):
     bh.flush()

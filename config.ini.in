@@ -3,9 +3,9 @@
 #
 [stack_default]
 type = stack
-stack_default = composite_expansion
-composite_expansion = composite_contraction
-composite_contraction = topological
+stack_default = bcexp
+bcexp = bccon
+bccon = topological
 topological = node
 node = cpu
 
@@ -20,16 +20,16 @@ node = cpu
 #
 [stack_gpu]
 type = stack
-stack_gpu = composite_expansion
-composite_expansion = topological
+stack_gpu = bcexp
+bcexp = topological
 topological = node
 node = gpu
 gpu = cpu
 
 [stack_fuseprinter]
 type = stack
-stack_fuseprinter = composite_expansion
-composite_expansion = topological
+stack_fuseprinter = bcexp
+bcexp = topological
 topological = pricer
 pricer = fuseprinter
 fuseprinter = node
@@ -44,7 +44,7 @@ node = cpu
 #
 [bridge]
 type = bridge
-children = composite_expansion
+children = bcexp
 
 #
 # Managers
@@ -122,19 +122,19 @@ children = cpu
 #
 # Filters - Bytecode transformers
 #
-[composite_contraction]
+[bccon]
 type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_composite_contraction${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
-contract_reduction = 1
+reduction = 1
 
-[composite_expansion]
+[bcexp]
 type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_composite_expansion${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
 gc_threshold = 400
-expand_matmul = 1
-expand_sign = 1
+matmul = 1
+sign = 1
 
 #
 # Engines

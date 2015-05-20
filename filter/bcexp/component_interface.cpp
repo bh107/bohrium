@@ -34,7 +34,7 @@ static bohrium::filter::composite::Expander* expander = NULL;
 // Component interface init/execute/shutdown
 //
 
-bh_error bh_filter_composite_expansion_init(const char* name)
+bh_error bh_filter_bcexp_init(const char* name)
 {
     bh_error err;                   // Initialize myself
     if ((err = bh_component_init(&myself, name)) != BH_SUCCESS) {
@@ -42,7 +42,7 @@ bh_error bh_filter_composite_expansion_init(const char* name)
     }
 
     if (myself.nchildren != 1) {    // For now only one child is supported
-        fprintf(stderr, "[FILTER-composite_expansion] Only a single child is supported.");
+        fprintf(stderr, "[FILTER-bcexp] Only a single child is supported.");
         return BH_ERROR;
     }
     
@@ -51,17 +51,17 @@ bh_error bh_filter_composite_expansion_init(const char* name)
         return err;
     }
 
-    bh_intp gc_threshold, expand_sign, expand_matmul;
+    bh_intp gc_threshold, sign, matmul;
     if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "gc_threshold", 0, 2000, &gc_threshold)) or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "expand_matmul", 0, 1, &expand_matmul)) or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "expand_sign", 0, 1, &expand_sign))) {
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "matmul", 0, 1, &matmul)) or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "sign", 0, 1, &sign))) {
         return BH_ERROR;
     }
                                     
     try {                           // Construct the expander
         expander = new bohrium::filter::composite::Expander(gc_threshold,
-                                                            expand_matmul,
-                                                            expand_sign);
+                                                            matmul,
+                                                            sign);
     } catch (std::bad_alloc& ba) {
         fprintf(stderr, "Failed constructing Expander due to allocation error.\n");
     }
@@ -72,7 +72,7 @@ bh_error bh_filter_composite_expansion_init(const char* name)
     }
 }
 
-bh_error bh_filter_composite_expansion_shutdown(void)
+bh_error bh_filter_bcexp_shutdown(void)
 {
     bh_error err = child->shutdown();
     bh_component_destroy(&myself);
@@ -83,12 +83,12 @@ bh_error bh_filter_composite_expansion_shutdown(void)
     return err;
 }
 
-bh_error bh_filter_composite_expansion_extmethod(const char *name, bh_opcode opcode)
+bh_error bh_filter_bcexp_extmethod(const char *name, bh_opcode opcode)
 {
     return child->extmethod(name, opcode);
 }
 
-bh_error bh_filter_composite_expansion_execute(bh_ir* bhir)
+bh_error bh_filter_bcexp_execute(bh_ir* bhir)
 {
     expander->expand(*bhir);                // Expand composites
     bh_error res = child->execute(bhir);    // Send the bhir down the stack
