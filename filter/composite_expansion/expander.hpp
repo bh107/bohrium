@@ -227,9 +227,14 @@ inline void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, T 
         case BH_FLOAT64:
             instr.constant.value.float64 = (bh_float64)value;
             break;
-
         case BH_COMPLEX64:
+            instr.constant.value.complex64.real = (float)value;
+            instr.constant.value.complex64.imag = (float)0.0;
+            break;
         case BH_COMPLEX128:
+            instr.constant.value.complex128.real = (double)value;
+            instr.constant.value.complex128.imag = (double)0.0;
+            break;
         case BH_R123:
         case BH_UNKNOWN:
         default:
