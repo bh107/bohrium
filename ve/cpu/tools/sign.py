@@ -49,7 +49,7 @@ def sign_is(z):
     return out
 
 z = np.asarray([0+1j,0-1j,0+0j,1+0j,1+1j,1-1j,0,1+0j,-1+1j,-1-1j,-1+0j], dtype=np.complex64)
-print(thesign(z))
+#print(thesign(z))
 #print(sign_is(z))
 print(np.sign(z))
 #print(np.sign(w))
