@@ -4,7 +4,8 @@
 [stack_default]
 type = stack
 stack_default = composite_expansion
-composite_expansion = topological
+composite_expansion = composite_contraction
+composite_contraction = topological
 topological = node
 node = cpu
 
@@ -32,14 +33,6 @@ composite_expansion = topological
 topological = pricer
 pricer = fuseprinter
 fuseprinter = node
-node = cpu
-
-[stack_cpu]
-type = stack
-stack_cpu = composite_contraction
-composite_contraction = composite_expansion
-composite_expansion = topological
-topological = node
 node = cpu
 
 #

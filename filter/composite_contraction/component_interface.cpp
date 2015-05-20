@@ -31,6 +31,8 @@ static bh_component myself; // Myself
 //Function pointers to our child.
 static bh_component_iface *child;
 
+static bh_intp contract_reduction_;
+
 //
 // Component interface init/execute/shutdown
 //
@@ -44,7 +46,7 @@ bh_error bh_filter_composite_contraction_init(const char* name)
 
     //For now, we have one child exactly
     if (myself.nchildren != 1) {
-        fprintf(stderr, "[validate-FILTER] Unexpected number of children, must be 1");
+        fprintf(stderr, "[contract_reduction-FILTER] Unexpected number of children, must be 1");
         return BH_ERROR;
     }
 
@@ -52,6 +54,11 @@ bh_error bh_filter_composite_contraction_init(const char* name)
     child = &myself.children[0];
     if ((err = child->init(child->name)) != 0) {
         return err;
+    }
+
+    bh_intp gc_threshold, expand_sign, expand_matmul;
+    if (BH_SUCCESS!=bh_component_config_int_option(&myself, "contract_reduction", 0, 1, &contract_reduction_)) {
+        return BH_ERROR;
     }
 
     return BH_SUCCESS;
@@ -71,6 +78,8 @@ bh_error bh_filter_composite_contraction_extmethod(const char *name, bh_opcode o
 
 bh_error bh_filter_composite_contraction_execute(bh_ir* bhir)
 {
-    filter(*bhir);                  // Run the filter
+    if (contract_reduction_) {
+        filter(*bhir);              // Run the filter
+    }
     return child->execute(bhir);    // Execute the filtered bhir
 }

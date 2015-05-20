@@ -98,7 +98,7 @@ void filter(bh_ir &bhir)
         bh_instruction& instr = bhir.instr_list[pc];
 
         // Look for the "first" reduction in a chain of reductions
-        if (bh_opcode_is_reduction(instr.opcode)) {
+        if (bh_opcode_is_reduction(instr.opcode) and (instr.operand[0].base->nelem > 1)) {
 
             reduce_opcode = instr.opcode;
             bases.insert(instr.operand[0].base);
