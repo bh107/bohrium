@@ -43,38 +43,36 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
         meta.stride[dim] = nelements;
         nelements *= meta.shape[dim];
     }
-                                                            // NON-COMPLEX input-type
-    if (!((input_type == BH_COMPLEX64) || (input_type == BH_COMPLEX128))) {
-                                                            // Construct temps
-        bh_view t1_bool = make_temp(meta, BH_BOOL, nelements);
-        bh_view t1      = make_temp(meta, input_type, nelements);
-        bh_view t2_bool = make_temp(meta, BH_BOOL, nelements);
-        bh_view t2      = make_temp(meta, input_type, nelements);
+    if (!((input_type == BH_COMPLEX64) || \
+          (input_type == BH_COMPLEX128))) { // For non-complex: sign(x) = (x>0)-(x<0)
+                                                            
+        bh_view lss     = make_temp(meta, input_type, nelements);// Temps
+        bh_view gtr     = make_temp(meta, input_type, nelements);
+        bh_view t_bool  = make_temp(meta, BH_BOOL, nelements);  
+
+        inject(bhir, ++pc, BH_GREATER, t_bool, input, 0.0);    // Sequence
+        inject(bhir, ++pc, BH_IDENTITY, lss, t_bool);
+        inject(bhir, ++pc, BH_FREE, t_bool);
+        inject(bhir, ++pc, BH_DISCARD, t_bool);
         
-        inject(bhir, ++pc, BH_LESS, t1_bool, input, 0.0);   // Expand sequence
-        inject(bhir, ++pc, BH_IDENTITY, t1, t1_bool);
-        inject(bhir, ++pc, BH_FREE, t1_bool);
-        inject(bhir, ++pc, BH_DISCARD, t1_bool);
+        inject(bhir, ++pc, BH_LESS, t_bool, input, 0.0);       
+        inject(bhir, ++pc, BH_IDENTITY, gtr, t_bool);
+        inject(bhir, ++pc, BH_FREE, t_bool);
+        inject(bhir, ++pc, BH_DISCARD, t_bool);
 
-        inject(bhir, ++pc, BH_GREATER, t2_bool, input, 0.0);
-        inject(bhir, ++pc, BH_IDENTITY, t2, t2_bool);
-        inject(bhir, ++pc, BH_FREE, t2_bool);
-        inject(bhir, ++pc, BH_DISCARD, t2_bool);
-
-        inject(bhir, ++pc, BH_SUBTRACT, out, t2, t1);
-        inject(bhir, ++pc, BH_FREE, t1);
-        inject(bhir, ++pc, BH_DISCARD, t1);
-        inject(bhir, ++pc, BH_FREE, t2);
-        inject(bhir, ++pc, BH_DISCARD, t2);
-    } else {                                                // COMPLEX input-type
-
-                                                            // Construct temps
-        bh_view z_abs = make_temp(meta, input_type, nelements);
+        inject(bhir, ++pc, BH_SUBTRACT, out, lss, gtr);
+        inject(bhir, ++pc, BH_FREE, lss);
+        inject(bhir, ++pc, BH_DISCARD, lss);
+        inject(bhir, ++pc, BH_FREE, gtr);
+        inject(bhir, ++pc, BH_DISCARD, gtr);
+    } else {                                // For complex: sign(0) = 0, sign(z) = z/|z|
+                                            // General form: sign(z) = z/(|z|+(z==0))
+        bh_view z_abs = make_temp(meta, input_type, nelements); // Temps
         bh_view z_zero_bool = make_temp(meta, BH_BOOL, nelements);
         bh_view z_zero = make_temp(meta, input_type, nelements);
         bh_view divisor = make_temp(meta, input_type, nelements);
         
-        inject(bhir, ++pc, BH_ABSOLUTE, z_abs, input);
+        inject(bhir, ++pc, BH_ABSOLUTE, z_abs, input);          // Sequence
         inject(bhir, ++pc, BH_EQUAL, z_zero_bool, input, 0.0, input_type);
         inject(bhir, ++pc, BH_IDENTITY, z_zero, z_zero_bool);
         inject(bhir, ++pc, BH_FREE, z_zero_bool);
