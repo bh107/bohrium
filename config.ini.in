@@ -20,7 +20,7 @@ node = cpu
 #
 [stack_gpu]
 type = stack
-stack_default = composite_expansion
+stack_gpu = composite_expansion
 composite_expansion = topological
 topological = node
 node = gpu
@@ -28,7 +28,7 @@ gpu = cpu
 
 [stack_fuseprinter]
 type = stack
-stack_default = composite_expansion
+stack_fuseprinter = composite_expansion
 composite_expansion = topological
 topological = pricer
 pricer = fuseprinter
