@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <stdio.h>
+#include <set>
 
 using namespace std;
 
@@ -84,102 +85,90 @@ void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* first, bh_ins
 
 void filter(bh_ir &bhir)
 {
-    bh_base* reduce_output = NULL;
     bh_opcode reduce_opcode = BH_NONE;
     bh_instruction* first;
     bh_instruction* last;
 
+    std::set<bh_base*> bases;
+
     vector<bh_instruction*> links;  // Instructions in the chain that are not,
                                     // the first and the last reduction.
 
-    for(ilist_iter it = bhir.instr_list.begin();
-        it!=bhir.instr_list.end();
-        ++it) {
-        bh_instruction& instr = *it;
+    for(size_t pc=0; pc<bhir.instr_list.size(); ++pc) {
+        bh_instruction& instr = bhir.instr_list[pc];
 
-        // Find the "first" reduction in a reduction chain.
-        if ((reduce_output == NULL) and \
-            (bh_opcode_is_reduction(instr.opcode))) {
+        // Look for the "first" reduction in a chain of reductions
+        if (bh_opcode_is_reduction(instr.opcode)) {
 
-            reduce_output = instr.operand[0].base;
             reduce_opcode = instr.opcode;
+            bases.insert(instr.operand[0].base);
 
             first = &instr;
+            last = NULL;
 
             //printf("Beginning the chain...\n");
+            //bh_pprint_instr(&instr);
 
-        // A potential continuation of the chain
-        } else if ( (reduce_output != NULL) and \
-                    (reduce_opcode == instr.opcode) and \
-                    (reduce_output == instr.operand[1].base)) {
+            for(size_t pc_chain=pc+1; pc_chain<bhir.instr_list.size(); ++pc_chain) {
 
-            bool other_use=false, gets_freed=false, gets_discarded=false;
-            for(ilist_iter rit(it+1); rit!=bhir.instr_list.end(); ++rit) {
-                bh_instruction& other_instr = *rit;
-                switch(other_instr.opcode) {
-                    case BH_FREE:
-                        if (other_instr.operand[0].base == reduce_output) {
-                            gets_freed = true;
-                            links.push_back(&other_instr);
-                        }
-                        break;
-                    case BH_DISCARD:
-                        if (other_instr.operand[0].base == reduce_output) {
-                            gets_discarded = true;
+                bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
-                            links.push_back(&other_instr);
-                        }
-                        break;
-                    default:
-                        for(int oidx=0; oidx<bh_operands(other_instr.opcode); ++oidx) {
-                            if (bh_is_constant(&other_instr.operand[oidx])) {
-                                continue;
-                            }
-                            if (other_instr.operand[oidx].base == reduce_output) {
-                                other_use = true;
-                            }
-                        }
-                        break;
+                bool other_use=false;                   // Check for other use
+                for(int oidx=0; oidx<bh_operands(other_instr.opcode); ++oidx) {
+                    if (bh_is_constant(&other_instr.operand[oidx])) {
+                        continue;
+                    }
+                    if (bases.find(other_instr.operand[oidx].base) != bases.end()) {
+                        other_use = true;
+                    }
                 }
-                // Can stop looking further if it gets used by something else
-                // or if it gets freed and discarded.
-                if (other_use or (gets_freed and gets_discarded)) {
-                    break;
+                if (!other_use) {                       // Ignore it
+                    //printf("IGNORING\n");
+                    //bh_pprint_instr(&other_instr);
+                    continue;
                 }
-            }
             
-            bool is_continuation = gets_freed and gets_discarded and not other_use;
-            bool is_scalar = (instr.operand[0].ndim == 1) and (instr.operand[0].shape[0] == 1);
+                int gets_freed = other_instr.opcode == BH_FREE;
+                int gets_discarded = other_instr.opcode == BH_DISCARD;
+                int gets_reduced = other_instr.opcode == reduce_opcode;
+                bool is_continuation = gets_freed or gets_discarded or gets_reduced;
+                bool scalar_output = (other_instr.operand[0].base->nelem == 1);
 
-            reduce_output = instr.operand[0].base;
+                if (not is_continuation) {              // Chain is broken
+                    //printf("CHAIN BROKEN BY: \n");
+                    //bh_pprint_instr(&other_instr);
 
-            if (is_continuation and is_scalar) {            // End of the chain
+                    reduce_opcode = BH_NONE;            // Reset the search
+                    first = NULL;
+                    last = NULL;
+                    links.clear();
+                    bases.clear();
+                }
+            
+                if (scalar_output) {                    // End of the chain
+                    //printf("Ending the chain and REWRITE as COMPLETE REDUCE\n");
+                    //bh_pprint_instr(&other_instr);
 
-                //printf("Ending the chain and REWRITE as COMPLETE REDUCE\n");
-                last = &instr;
+                    last = &other_instr;
+                } else {                                // Continuation
+                    //printf("Continuing the chain...\n");
+                    //bh_pprint_instr(&other_instr);
 
+                    links.push_back(&other_instr);
+                    if (other_instr.opcode == reduce_opcode) {    // Update reduce_output
+                        bases.insert(other_instr.operand[0].base);
+                    }
+                }
+            }
+
+            if (first and last) {                       // Rewrite the chain
                 rewrite_chain(links, first, last);
-
-            } else if (is_continuation and not is_scalar) { // Continuation
-                //printf("Continuing the chain...\n");
-                links.push_back(&instr);
-            } else {                                        // Break the chain.
-                //printf("Break the chain.\n");
             }
-
-            if (not is_continuation or is_scalar) {         // Reset the search
-                //printf("Resetting search.\n");
-                reduce_output = NULL;
-                reduce_opcode = BH_NONE;
-                links.clear();
-            }
-
-        // A break
-        } else if (reduce_output != NULL) {
-            reduce_output = NULL;
-            reduce_opcode = BH_NONE;
+            reduce_opcode = BH_NONE;                    // Reset the search
+            first = NULL;
+            last = NULL;
             links.clear();
-            //printf("Breaking the chain...\n");
+            bases.clear();
         }
     }
 }
