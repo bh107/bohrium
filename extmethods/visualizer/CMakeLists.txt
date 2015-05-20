@@ -4,31 +4,37 @@ if(NOT EXT_VISUALIZER)
     return()
 endif()
 
-# freeglut3 freeglut3-dev libxmu-dev libxi-dev
+# Ubuntu packages: freeglut3 freeglut3-dev libxmu-dev libxi-dev
 
-#########################################################
-# FIND GLUT
-#########################################################
 find_package(GLUT REQUIRED)
+if(NOT GLUT_FOUND)
+    message(FATAL_ERROR "GLUT not found! Set EXT_VISUALIZER=OFF or install GLUT.")
+endif()
+
+find_package(OpenGL REQUIRED)
+if(NOT OPENGL_FOUND)
+    message(FATAL_ERROR "OPENGL not found! Set EXT_VISUALIZER=OFF or install GLUT.")
+endif()
+
+if(GLUT_Xi_LIBRARY MATCHES "NOTFOUND")
+    message(FATAL_ERROR "libxi not found! Set EXT_VISUALIZER=OFF or install libxi.")
+endif()
+
+if(GLUT_Xmu_LIBRARY MATCHES "NOTFOUND")
+    message(FATAL_ERROR "libxmu not found! Set EXT_VISUALIZER=OFF or install libxmu.")
+endif()
+
+# Dependencies are met
+
+include_directories(../../include)
+
 include_directories(${GLUT_INCLUDE_DIRS})
 link_directories(${GLUT_LIBRARY_DIRS})
 add_definitions(${GLUT_DEFINITIONS})
-if(NOT GLUT_FOUND)
-    message(ERROR " GLUT not found!")
-endif(NOT GLUT_FOUND)
 
-#########################################################
-# FIND OPENGL
-#########################################################
-find_package(OpenGL REQUIRED)
 include_directories(${OpenGL_INCLUDE_DIRS})
 link_directories(${OpenGL_LIBRARY_DIRS})
 add_definitions(${OpenGL_DEFINITIONS})
-if(NOT OPENGL_FOUND)
-    message(ERROR " OPENGL not found!")
-endif(NOT OPENGL_FOUND)
-
-include_directories(../../include)
 
 file(GLOB SRC *.cpp)
 
