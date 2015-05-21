@@ -563,12 +563,22 @@ multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
     unpack_shape(result->meta.shape, 0, shape...);
     result->meta.ndim = dims;
 
-    for(int64_t i=dims-1; 0 <= i; --i) {        // Fix the stride
+    for (int64_t i=dims-1; 0 <= i; --i) {       // Fix the stride
         result->meta.stride[i] = stride;
         stride *= result->meta.shape[i];
     }
 
-    // TODO: Verify that the number of elements match
+    if (stride!=(int64_t)rhs.len()) {           // Check that reshape is valid
+        std::stringstream ss;
+        ss << "Reshaping failed nelements mismath ";
+        ss << stride << " != " << rhs.len();
+        ss << std::endl;
+        throw std::runtime_error(ss.str());
+    }
+
+    if (rhs.getTemp()) {
+        delete &rhs;
+    }
 
     return *result;
 }
