@@ -116,9 +116,13 @@ private:
     std::multimap<bh_base*,bh_view> input_map;
     std::set<bh_view>               input_set;
 
-    // Shapes used in this kernel
-    std::set<std::vector<bh_index> > shapes;
-    
+    // Shape of the kernel i.e. The simplest shape cooresponding to the operations with the most elements
+    // while being valid for all views 
+    std::vector<bh_index> shape;
+    size_t elements; // #-elements contained in shape
+
+    bool scalar; // Indicate whether there is a scalar output from the kernel or not
+
     // sweep (reduce and accumulate) dimensions 
     std::map<bh_intp, bh_int64> sweeps;
 
@@ -127,13 +131,13 @@ private:
         
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
-    
+    void update_shape(const bh_view& full, const bh_view& simple);
 public:
     /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
-    bh_ir_kernel():bhir(NULL) {}
+    bh_ir_kernel();
 
     /* Kernel constructor, takes the bhir as constructor */
-    bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {}
+    bh_ir_kernel(bh_ir &bhir);
 
     // The program representation that the kernel is subset of
     bh_ir *bhir;
@@ -154,17 +158,14 @@ public:
     const std::set<bh_base*>& get_syncs() const {return syncs;}
     const seqset<bh_base*>& get_parameters() const {return parameters;}
     const std::vector<bh_constant>& get_constants() const {return constants;}
-    const std::set<std::vector<bh_index> >& get_shapes() const {return shapes;}
     const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
+    const std::vector<bh_index>& get_shape() const {return shape;}
 
     bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
     bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}
     bool is_input(const bh_view& view) const {return input_set.find(view) != input_set.end();}
-    bool is_scalar() const {return shapes.begin()->size() == 0 || 
-            (shapes.begin()->size() == 1 && shapes.begin()->front() == 1);}
+    bool is_scalar() const { return scalar;}
 
-    // Returns the shape with the highest dimensionality        
-    std::vector<bh_index> shape() const;
 
     size_t get_view_id(const bh_view& v) const;
     const bh_view& get_view(size_t id) const {return views[id];}

@@ -95,6 +95,19 @@ void bh_ir::pprint_kernel_list() const
     }
 }
 
+bh_ir_kernel::bh_ir_kernel()
+    : elements(0)
+    , scalar(false) 
+    , bhir(NULL)
+{}
+    
+bh_ir_kernel::bh_ir_kernel(bh_ir &bhir) 
+    : elements(0)
+    , scalar(false) 
+    , bhir(&bhir) 
+{}
+
+
 /* Clear this kernel of all instructions */
 void bh_ir_kernel::clear()
 {
@@ -106,6 +119,9 @@ void bh_ir_kernel::clear()
     temps.clear();
     views.clear();
     parameters.clear();
+    shape.clear();
+    elements = 0;
+    scalar = false;
 }
 
 size_t bh_ir_kernel::get_view_id(const bh_view& v) const 
@@ -123,16 +139,6 @@ bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) co
             return true;
     }
     return false;
-}
-
-// Returns the shape with the highest dimensionality and lexicagraphicaly last (ie largest) 
-std::vector<bh_index> bh_ir_kernel::shape() const
-{
-    std::vector<bh_index> res;
-    for (const std::vector<bh_index>& s: shapes)
-        if (s.size() >= res.size())
-            res = s;
-    return res;
 }
 
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
@@ -201,13 +207,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
                 input_set.insert(v);
                 parameters.insert(v.base);
             }
-            if (bh_opcode_is_sweep(instr.opcode))
-            {  /* TODO: We can simplify except in sweep dimension      *
-                *       How will than influence additionel reductions? */ 
-                shapes.insert(std::vector<bh_index>(v.shape,v.shape+v.ndim));
-            } else {
-                shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
-            }
+            update_shape(v, sv);
         }
         //Add the output of the instruction to 'outputs'
         {
@@ -217,7 +217,9 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             output_map.insert(std::make_pair(v.base,v));
             output_set.insert(v);
             parameters.insert(v.base);
-            shapes.insert(std::vector<bh_index>(sv.shape,sv.shape+sv.ndim));
+            update_shape(v, sv);
+            if (bh_is_scalar(&v))
+                scalar = true;
         }
         if (bh_opcode_is_sweep(instr.opcode))
         {
@@ -226,6 +228,27 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     }
     }
     instr_indexes.push_back(instr_idx);
+}
+
+void bh_ir_kernel::update_shape(const bh_view& full, const bh_view& simple)
+{
+    size_t ve = bh_nelements(simple);
+    if (ve > elements)
+    {
+        elements = ve;
+        shape = std::vector<bh_index>(simple.shape,simple.shape+simple.ndim);
+    } else if (ve == elements)
+    {
+        try {
+            bh_view_simplify(full, shape);
+        } catch (std::invalid_argument e)
+        {
+            if (full.ndim <= (bh_intp)shape.size())
+                throw std::runtime_error("Failed to find common shape for kernel");
+            // TODO: Is it possible to find a simpler shape?
+            shape = std::vector<bh_index>(full.shape,full.shape+full.ndim);
+        }
+    }
 }
 
 /* Determines whether all instructions in 'this' kernel

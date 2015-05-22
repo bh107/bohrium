@@ -554,19 +554,11 @@ void pprint(const GraphDW &dag, const char filename[])
             char buf[1024*10];
             out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
             out << " bytes\\n";
-            out << "Shapes: ";
-            for (const std::vector<bh_index> &shape: graph[v].get_shapes())
-            {
-                out << "[";
-                for (auto i = shape.cbegin();;)
-                {
-                    out << *i;
-                    if (++i == shape.cend())
-                        break;
-                    out << ", ";
-                }
-                out << "]  ";
-            }
+            out << "Shape: ";
+            const std::vector<bh_index>& shape = graph[v].get_shape();
+            for (size_t i = 0; i < shape.size(); ++i)
+                out << (i?", ":"[") << shape[i];
+            out << "]  ";
             out << "\\lSweeps: ";
             for (const std::pair<bh_intp, bh_int64> &sweep: graph[v].get_sweeps())
             {

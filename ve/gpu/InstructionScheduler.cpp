@@ -293,20 +293,10 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     functionDeclaration << "\n#ifndef FIXED_SIZE";
 
     // get kernel shape
-    std::vector<bh_index> shape = kernel.shape();
+    const std::vector<bh_index>& shape = kernel.get_shape();
 
     // Find dimension order
     std::vector<std::vector<size_t> > dimOrders = genDimOrders(kernel.get_sweeps(), shape.size());
-    std::cout << "dimOrders: {";
-    for (const std::vector<size_t>& dimOrder: dimOrders)
-    {
-        std::cout << " ["  << dimOrder[0];
-        for (int i = 1; i < (int)dimOrder.size();++i) 
-            std::cout << ", "  << dimOrder[i];
-        std::cout << "] ";
-    }
-    std::cout << "}" << std::endl;
-    // Add shape parameters
     for (size_t d = shape.size(); d > 0; --d)
     {
         std::stringstream ss;
