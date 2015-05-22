@@ -10,7 +10,7 @@ namespace cpu {
 const char Store::TAG[] = "Store";
 
 Store::Store(const string object_directory, const string kernel_directory) 
-: object_directory(object_directory), kernel_directory(kernel_directory), kernel_prefix("KRN_"), library_prefix("LIB_")
+: object_directory_(object_directory), kernel_directory_(kernel_directory), kernel_prefix_("KRN_"), library_prefix_("LIB_")
 {
     //
     // Create an identifier with low collision...
@@ -26,14 +26,12 @@ Store::Store(const string object_directory, const string kernel_directory)
     }
     uid[6] = 0;
 
-    this->uid = string(uid);
-
-    //cout << "Storage " << this->uid << endl;
+    this->uid_ = string(uid);
 }
 
 Store::~Store()
 {
-    for(handle_storage::iterator it=handles.begin(); it!=handles.end(); ++it) {
+    for(handle_storage::iterator it=handles_.begin(); it!=handles_.end(); ++it) {
         dlclose(it->second);
     }
 }
@@ -41,7 +39,11 @@ Store::~Store()
 string Store::text(void)
 {
     stringstream ss;
-    ss << "Store(\"" << object_directory << "\") : uid(" << this->uid << ");" << endl;
+    ss << "Store {" << endl;
+    ss << "  uid = " << this->uid_ << "," << endl;
+    ss << "  object_directory = '" << object_directory_ << "'," << endl;
+    ss << "  kernel_directory = '" << kernel_directory_ << "'" << endl;
+    ss << "}";
     return ss.str();
 }
 
@@ -50,37 +52,37 @@ string Store::text(void)
  */
 string Store::get_uid(void)
 {
-    return this->uid;
+    return this->uid_;
 }
 
 string Store::obj_filename(const string symbol)
 {
-    return  this->kernel_prefix     +\
+    return  this->kernel_prefix_     +\
             symbol                  +\
             "_"                     +\
-            this->uid               +\
+            this->uid_               +\
             ".so";
 }
 
 string Store::obj_abspath(const string symbol)
 {
-    return  this->object_directory  +\
+    return  this->object_directory_  +\
             "/"                     +\
             this->obj_filename(symbol);
 }
 
 string Store::src_filename(const string symbol)
 {
-    return  this->kernel_prefix     +\
+    return  this->kernel_prefix_     +\
             symbol                  +\
             "_"                     +\
-            this->uid               +\
+            this->uid_              +\
             ".c";
 }
 
 string Store::src_abspath(const string symbol)
 {
-    return  this->kernel_directory  +\
+    return  this->kernel_directory_  +\
             "/"                     +\
             this->src_filename(symbol);
 }
@@ -95,7 +97,7 @@ bool Store::symbol_ready(const string symbol)
 
 /**
  *  Construct a mapping of all symbols and from where they can be loaded.
- *  Populates compiler->libraries
+ *  Populates compiler->libraries_
  */
 size_t Store::preload(void)
 {
@@ -118,7 +120,7 @@ size_t Store::preload(void)
     //
     //  LIB_[a-z0-9]+_xxxxxx.so
     //
-    if ((dir = opendir(object_directory.c_str())) != NULL) {
+    if ((dir = opendir(object_directory_.c_str())) != NULL) {
         while ((ent = readdir (dir)) != NULL) {     // Go over dir-entries
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
@@ -139,12 +141,12 @@ size_t Store::preload(void)
                 //
                 // Construct the absolute path to the file since we need
                 // to open and read it.
-                string index_fn = object_directory  +\
+                string index_fn = object_directory_  +\
                                   "/"               +\
                                   filename;
                 ifstream symbol_file(index_fn.c_str(), ifstream::in);
                 for(string symbol; getline(symbol_file, symbol) && res;) {
-                    if (0==libraries.count(symbol)) {
+                    if (0==libraries_.count(symbol)) {
                         add_symbol(symbol, library);
                     }
                 }
@@ -162,7 +164,7 @@ size_t Store::preload(void)
     //
     //  KRN_[\d+]_XXXXXX.so
     //
-    if ((dir = opendir (object_directory.c_str())) != NULL) {
+    if ((dir = opendir (object_directory_.c_str())) != NULL) {
         while((ent = readdir(dir)) != NULL) {
             size_t fn_len = strlen(ent->d_name);
             if (fn_len<14) {
@@ -173,17 +175,17 @@ size_t Store::preload(void)
            
             // Must begin with "KRN_" 
             // Must end with ".so"
-            if ((0==filename.compare(0, this->kernel_prefix.length(), this->kernel_prefix)) && \
+            if ((0==filename.compare(0, this->kernel_prefix_.length(), this->kernel_prefix_)) && \
                 (0==filename.compare(fn_len-3, 3, ".so"))) {
 
                 // Extract the symbol "KRN_(d+)_xxxxxx.so"
                 symbol.assign(
                     filename,
-                    this->kernel_prefix.length(),
-                    fn_len-10-this->kernel_prefix.length()
+                    this->kernel_prefix_.length(),
+                    fn_len-10-this->kernel_prefix_.length()
                 );
 
-                if (0==libraries.count(symbol)) {
+                if (0==libraries_.count(symbol)) {
                     add_symbol(symbol, filename);
                 }
             }
@@ -197,7 +199,7 @@ size_t Store::preload(void)
     // This is the part that actually loads them...
     // This could be postponed...
     map<const string, const string>::iterator it;    // Iterator
-    for(it=libraries.begin(); (it != libraries.end()) && res; ++it) {
+    for(it=libraries_.begin(); (it != libraries_.end()) && res; ++it) {
         res = load(it->first, it->second);
         nloaded += res;
     }
@@ -207,7 +209,7 @@ size_t Store::preload(void)
 
 void Store::add_symbol(const string symbol, const string library)
 {
-    libraries.insert(pair<string, string>(symbol, library));
+    libraries_.insert(pair<string, string>(symbol, library));
 }
 
 /**
@@ -215,30 +217,30 @@ void Store::add_symbol(const string symbol, const string library)
  */
 bool Store::load(const string symbol)
 {
-    return load(symbol, libraries[symbol]);
+    return load(symbol, libraries_[symbol]);
 }
 
 bool Store::load(const string symbol, const string library)
 {
     char *error_msg = NULL;             // Buffer for dlopen errors
     
-    string library_abspath = this->object_directory+"/"+library;
+    string library_abspath = this->object_directory_+"/"+library;
 
     dlerror();                          // Clear any existing error then,
-    if (0==handles.count(library)) {    // Open library
+    if (0==handles_.count(library)) {    // Open library
         void* lib_handle = dlopen(library_abspath.c_str(), RTLD_NOW);
         if (NULL==lib_handle) {
             error_msg = dlerror();
             fprintf(stderr, "dlopen(..., RTLD_NOW) failed, dlerror() msg: [%s]\n", error_msg);
             return false; 
         }
-        handles[library] = lib_handle;
+        handles_[library] = lib_handle;
     }
 
     dlerror();                          // Clear any existing error then,
     funcs[symbol] = (func)dlsym(        // Load symbol/function
-        handles[library],
-        (kernel_prefix+symbol).c_str()
+        handles_[library],
+        (kernel_prefix_+symbol).c_str()
     );
     error_msg = dlerror();
     if (error_msg) {

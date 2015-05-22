@@ -1,3 +1,50 @@
+#
+# Stack configuration
+#
+[stack_default]
+type = stack
+stack_default = node
+node = topological
+topological = cpu
+
+#
+# Other stack configurations (for reference, experiments, testing, etc.)
+#
+# Use the BH_STACK env-var to choose another stack configuration.
+#
+# Such as BH_STACK="stack_gpu"
+# or
+# modify the default stack configuration above ("stack_default").
+#
+[stack_gpu]
+type = stack
+stack_gpu = node
+node = topological
+topological = gpu
+gpu = cpu
+
+[stack_pprint]
+type = stack
+stack_pprint = node
+node = topological
+topological = fuseprinter
+fuseprinter = pricer
+pricer = cpu
+
+[stack_cpu]
+type = stack
+stack_cpu = complete_reduction
+complete_reduction = topological
+topological = node
+node = cpu
+
+#
+# Component configuration
+#
+
+#
+# Bridges
+#
 [bridge]
 type = bridge
 children = node
@@ -5,11 +52,6 @@ children = node
 #
 # Managers
 #
-
-[visualizer]
-type = ve
-children = node
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 [proxy]
 type = vem
@@ -90,19 +132,24 @@ children = node
 #
 [cpu]
 type = ve
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
+libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
+bind = 1
+thread_limit = 0
+vcache_size = 10
+preload = 1
+jit_level = 1
+jit_dumpsrc = 0
 compiler_cmd="${VE_CPU_COMPILER_CMD}"
 compiler_inc="${VE_CPU_COMPILER_INC}"
 compiler_lib="${VE_CPU_COMPILER_LIB}"
 # Interlagos specifics
 #compiler_flg="-march=bdver1 -mprefer-avx128 -funroll-all-loops -fprefetch-loop-arrays --param prefetch-latency=300 -fno-tree-pre -ftree-vectorize "
-# Auto-vectorizer "--param vect-max-version-for-alias-checks=100"
 compiler_flg="${VE_CPU_COMPILER_FLG}"
 compiler_ext="${VE_CPU_COMPILER_EXT}"
 object_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/objects
-kernel_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/kernels
 template_path=${CMAKE_INSTALL_PREFIX}/share/bohrium/templates
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
-libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
+kernel_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/kernels
 
 [gpu]
 type = ve

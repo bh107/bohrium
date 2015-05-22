@@ -61,13 +61,13 @@ public:
     std::string src_abspath(const std::string symbol);
 
 private:
-    handle_storage handles;
-    symbol_library_map libraries;
-    std::string object_directory;
-    std::string kernel_directory;
-    std::string uid;
-    std::string kernel_prefix;
-    std::string library_prefix;
+    handle_storage handles_;
+    symbol_library_map libraries_;
+    std::string object_directory_;
+    std::string kernel_directory_;
+    std::string uid_;
+    std::string kernel_prefix_;
+    std::string library_prefix_;
 
     static const char TAG[];
 };

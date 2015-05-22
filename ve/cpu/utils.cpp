@@ -15,6 +15,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op   = MAP;
                 tac.oper = IDENTITY;
+                goto transform_identity;
             }
             break;
 
@@ -22,6 +23,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op   = MAP;
                 tac.oper = IDENTITY;
+                goto transform_identity;
             } else if (symbol_table[tac.out].layout == SCALAR) {
                 tac.op = REDUCE_COMPLETE;
             }
@@ -31,16 +33,57 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op = MAP;
                 tac.oper = IDENTITY;
+                goto transform_identity;
             }
             break;
 
         case ZIP:
             switch(tac.oper) {
-                case POWER:
+                case ADD:
+                    if (((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) && \
+                        (get_scalar(symbol_table[tac.in2]) == 0.0)) {
+                        tac.op = MAP;
+                        tac.oper = IDENTITY;
+                        // tac.in1 = same as before
+                        tac.in2 = 0;
+                        goto transform_identity;
+                    }
                     break;
                 case MULTIPLY:
+                    if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
+                        if (get_scalar(symbol_table[tac.in2]) == 0.0) {
+                            tac.op = MAP;
+                            tac.oper = IDENTITY;
+                            tac.in1 = tac.in2;
+                            set_scalar(symbol_table[tac.in1], 0);
+                            tac.in2 = 0;
+                        } else if (get_scalar(symbol_table[tac.in2]) == 1.0) {
+                            tac.op = MAP;
+                            tac.oper = IDENTITY;
+                            // tac.in1 = same as before
+                            tac.in2 = 0;
+                            goto transform_identity;
+                        }
+                    }
                     break;
                 case DIVIDE:
+                    if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
+                        if (get_scalar(symbol_table[tac.in2]) == 1.0) {
+                            tac.op = MAP;
+                            tac.oper = IDENTITY;
+                            // tac.in1 = same as before
+                            tac.in2 = 0;
+                            goto transform_identity;
+                        }
+                    }
+                    break;
+
+                case POWER:
+                    if (((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) && \
+                        (get_scalar(symbol_table[tac.in2]) == 2.0)) {
+                        tac.oper = MULTIPLY;
+                        tac.in2 = tac.in1;
+                    }
                     break;
                 default:
                     break;
@@ -50,7 +93,8 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
         case MAP:
             switch(tac.oper) {
                 case IDENTITY:
-                    if(tac.out == tac.in1) {
+                    transform_identity:
+                    if (tac.out == tac.in1) {
                         tac.op = NOOP;
                     }
                     break;
@@ -154,6 +198,93 @@ bool equivalent(const operand_t& one, const operand_t& other)
         }
     }
     return true;
+}
+
+double get_scalar(const operand_t& arg)
+{
+    switch(arg.etype) {
+        case BOOL:
+            return (double)(*(unsigned char*)(*(arg.data)));
+        case INT8:
+            return (double)(*(int8_t*)(*(arg.data)));
+        case INT16:
+            return (double)(*(int16_t*)(*(arg.data)));
+        case INT32:
+            return (double)(*(int32_t*)(*(arg.data)));
+        case INT64:
+            return (double)(*(int64_t*)(*(arg.data)));
+        case UINT8:
+            return (double)(*(uint8_t*)(*(arg.data)));
+        case UINT16:
+            return (double)(*(uint16_t*)(*(arg.data)));
+        case UINT32:
+            return (double)(*(uint32_t*)(*(arg.data)));
+        case UINT64:
+            return (double)(*(uint64_t*)(*(arg.data)));
+        case FLOAT32:
+            return (double)(*(float*)(*(arg.data)));
+        case FLOAT64:
+            return (double)(*(double*)(*(arg.data)));
+
+        case COMPLEX64:
+        case COMPLEX128:
+        case PAIRLL:
+        default:
+            throw invalid_argument(
+                "Cannot get scalar-value of operand with "
+                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+            );
+            return 0.0;
+    }
+}
+
+void set_scalar(const operand_t& arg, double value)
+{
+    switch(arg.etype) {
+        case BOOL:
+            (*(unsigned char*)(*(arg.data))) = (unsigned char)value;
+            break;
+        case INT8:
+            (*(int8_t*)(*(arg.data))) = (int8_t)value;
+            break;
+        case INT16:
+            (*(int16_t*)(*(arg.data))) = (int16_t)value;
+            break;
+        case INT32:
+            (*(int32_t*)(*(arg.data))) = (int32_t)value;
+            break;
+        case INT64:
+            (*(int64_t*)(*(arg.data))) = (int64_t)value;
+            break;
+        case UINT8:
+            (*(uint8_t*)(*(arg.data))) = (uint8_t)value;
+            break;
+        case UINT16:
+            (*(uint16_t*)(*(arg.data))) = (uint16_t)value;
+            break;
+        case UINT32:
+            (*(uint32_t*)(*(arg.data))) = (uint32_t)value;
+            break;
+        case UINT64:
+            (*(uint64_t*)(*(arg.data))) = (uint64_t)value;
+            break;
+        case FLOAT32:
+            (*(float*)(*(arg.data))) = (float)value;
+            break;
+        case FLOAT64:
+            (*(double*)(*(arg.data))) = (double)value;
+            break;
+
+        case COMPLEX64:
+        case COMPLEX128:
+        case PAIRLL:
+        default:
+            throw invalid_argument(
+                "Cannot set value of operand with "
+                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+            );
+            break;
+    }
 }
 
 bool compatible(const operand_t& one, const operand_t& other)

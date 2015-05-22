@@ -14,7 +14,7 @@ typedef enum {
 
 class ThreadControl {
 public:
-    ThreadControl(thread_binding binding, size_t mthreads);
+    ThreadControl(thread_binding binding, size_t thread_limit);
 
     /**
      *  Bind OpenMP threads to CORESs or PUs (HWLOC terminology).
@@ -30,7 +30,7 @@ public:
     size_t bind_threads();
 
     thread_binding get_binding(void);
-    size_t get_mthreads(void);
+    size_t get_thread_limit(void);
 
     ~ThreadControl(void);
 
@@ -40,7 +40,7 @@ private:
     ThreadControl();
 
     thread_binding binding_;
-    size_t mthreads_;
+    size_t thread_limit_;
     static const char TAG[];
 };
 

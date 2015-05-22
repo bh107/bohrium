@@ -187,8 +187,7 @@ inline
 multi_array<T>& Runtime::view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
-    // TODO: Increment ref-count
-    //       investigate when view is used.
+
     operand->meta.base = base.meta.base;
     Runtime::instance().ref_count[operand->meta.base] += 1;
 
@@ -203,7 +202,7 @@ inline
 multi_array<T>& Runtime::temp_view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
-    // TODO: increment ref-count
+    
     operand->meta.base = base.meta.base;
     operand->setTemp(true);
     Runtime::instance().ref_count[operand->meta.base] += 1;

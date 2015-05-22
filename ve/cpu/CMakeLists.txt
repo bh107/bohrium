@@ -96,6 +96,10 @@ else()
     if (HAS_MARCH_NATIVE)
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -march=native")
     endif()
+    check_c_compiler_flag("--param vect-max-version-for-alias-checks=100" HAS_PARAM_VECTMAX)
+    if (HAS_PARAM_VECTMAX)
+        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} --param vect-max-version-for-alias-checks=100")
+    endif()
 
     # Check that the compiler supports OMP ATOMIC the way the engine uses it.
     if(OPENMP_FOUND)
