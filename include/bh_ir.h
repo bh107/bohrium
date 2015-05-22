@@ -160,7 +160,8 @@ public:
     bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
     bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}
     bool is_input(const bh_view& view) const {return input_set.find(view) != input_set.end();}
-    bool is_scalar() const {return shapes.begin()->size() == 1 && shapes.begin()->front() == 1;}
+    bool is_scalar() const {return shapes.begin()->size() == 0 || 
+            (shapes.begin()->size() == 1 && shapes.begin()->front() == 1);}
 
     // Returns the shape with the highest dimensionality        
     std::vector<bh_index> shape() const;
