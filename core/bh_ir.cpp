@@ -48,6 +48,14 @@ bh_ir::bh_ir(bh_intp ninstr, const bh_instruction instr_list[])
     bh_ir::instr_list = vector<bh_instruction>(instr_list, &instr_list[ninstr]);
 }
 
+bh_ir::bh_ir(const bh_instruction& instr)
+{
+    instr_list.push_back(instr);
+    bh_ir_kernel kernel(*this);
+    kernel.add_instr(0);
+    kernel_list.push_back(kernel);
+}
+
 /* Creates a BhIR from a serialized BhIR.
 *
 * @bhir The BhIr serialized as a char array or vector

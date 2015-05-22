@@ -48,6 +48,10 @@ public:
      */
     bh_ir(bh_intp ninstr, const bh_instruction instr_list[]);
 
+    // Special constructor for 1 instruction
+    // Used by the GPU to send instructions to the CPU
+    bh_ir(const bh_instruction& instr);
+
     /* Constructs a BhIR from a serialized BhIR.
     *
     * @bhir The BhIR serialized as a char array

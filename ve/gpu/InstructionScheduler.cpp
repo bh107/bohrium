@@ -235,10 +235,15 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
 {
     // sync operands
     sync(kernel.get_parameters().set());
+    // discard outputs
+    std::set<bh_base*> output;
+    for (const bh_view& view: kernel.get_output_set())
+        output.insert(view.base);
+    discard(output);
     for (uint64_t idx: kernel.instr_indexes)
     {
-        bh_instruction* instr = &kernel.bhir->instr_list[idx];
-        bh_ir bhir = bh_ir( 1, instr);
+        bh_instruction instr = kernel.bhir->instr_list[idx];
+        bh_ir bhir = bh_ir(instr);
         bh_error err = resourceManager->childExecute(&bhir);
         if (err != BH_SUCCESS)
             return err;
