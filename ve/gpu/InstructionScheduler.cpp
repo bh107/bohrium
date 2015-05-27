@@ -440,12 +440,14 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 if (view.ndim > (bh_intp)shape.size())
                     view = bh_view_simplify(view,shape);
                 bh_index viewElements = bh_nelements(view);
-                while (viewElements > elements)
+                // TODO: Take care of dimensions of size 1 by removing them
+                while (viewElements > elements || view.ndim > (bh_intp)dims)
                 {
                     elements *= shape[dimOrders[shape.size()-1][dims++]];
                     beginDim(source, indentss, beforesource, dims);
                 }
-                while (viewElements < elements)
+                // TODO: Take care of dimensions of size 1 by removing them
+                while (viewElements < elements || view.ndim < (bh_intp)dims)
                 {
                     endDim(source, indentss, beforesource, save, dims, elements, kernel);
                     elements /= shape[dimOrders[shape.size()-1][--dims]];
@@ -497,7 +499,8 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         if (view.ndim > (bh_intp)shape.size())
             view = bh_view_simplify(view,shape);
         bh_index viewElements = bh_nelements(view);
-        while (viewElements > elements)
+        // TODO: Take care of dimensions of size 1 by removing them
+        while (viewElements > elements  || view.ndim > (bh_intp)dims)
         {
             elements *= shape[dimOrders[shape.size()-1][dims++]];
             beginDim(source, indentss, beforesource, dims);
