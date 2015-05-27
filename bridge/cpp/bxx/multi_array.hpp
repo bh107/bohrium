@@ -520,25 +520,33 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
     if ((linked()) && (meta.base == rhs.getBase())) {  // Self-aliasing is a NOOP
+        //std::cout << "Self-aliasing..." << std::endl;
         return *this;
     }
 
-    if (linked()) {
-        Runtime::instance().ref_count[meta.base] -= 1;       // Decrement ref-count
-        if (0==Runtime::instance().ref_count[meta.base]) {   // De-allocate it
-            bh_free(*this);                             // Send BH_FREE to Bohrium
-            bh_discard(*this);                          // Send BH_DISCARD to Bohrium
-            Runtime::instance().trash(meta.base);            // Queue the bh_base for de-allocation
-            Runtime::instance().ref_count.erase(meta.base);  // Remove from ref-count
+    if (getTemp()) {                                            // Assign to view
+        bh_identity(*this, rhs);
+    } else {                                                    // Aliasing
+        //std::cout << "Aliasing..." << std::endl;
+        if (linked()) {                         
+            //std::cout << "Unlinking..." << std::endl;
+            Runtime::instance().ref_count[meta.base] -= 1;      // Decrement ref-count
+            if (0==Runtime::instance().ref_count[meta.base]) {  // De-allocate it
+                bh_free(*this);                                 // Send BH_FREE to Bohrium
+                bh_discard(*this);                              // Send BH_DISCARD to Bohrium
+                Runtime::instance().trash(meta.base);           // Queue the bh_base for de-allocation
+                Runtime::instance().ref_count.erase(meta.base); // Remove from ref-count
+            }
+            unlink();
         }
-        unlink();
-    }
 
-    meta = rhs.meta;            // Create the alias
-    Runtime::instance().ref_count[meta.base] +=1;
+        meta = rhs.meta;            // Create the alias
+        Runtime::instance().ref_count[meta.base] +=1;
 
-    if (rhs.getTemp()) {        // Delete temps
-        delete &rhs;            // The deletion will decrement the ref-count
+        if (rhs.getTemp()) {        // Delete temps
+            //std::cout << "Deleting RHS" << std::endl;
+            delete &rhs;            // The deletion will decrement the ref-count
+        }
     }
 
     return *this;

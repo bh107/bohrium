@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __BOHRIUM_BRIDGE_CPP_GENERATOR
 #define __BOHRIUM_BRIDGE_CPP_GENERATOR
+#include <limits>
 
 namespace bxx {
 
@@ -74,38 +75,34 @@ multi_array<T>& zeros(const Dimensions&... shape)
 
 //
 // Sugar
+
 template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
 {
-    // Generate some random numbers
-    multi_array<uint64_t>*  rand_result = new multi_array<uint64_t>(shape...);
-    rand_result->setTemp(true);
+    int64_t nelements = nelements_shape(shape...);
+                                                            // Generate numbers
+    multi_array<uint64_t>* rand_result = new multi_array<uint64_t>(nelements);
     rand_result->link();
-
     bh_random(*rand_result, (uint64_t)0, (uint64_t)time(NULL));
-
-    // Convert them to the requested type
-    multi_array<T>* result = new multi_array<T>(shape...);
-    result->setTemp(true);
+    rand_result->setTemp(true);
+    
+    multi_array<T>* result = new multi_array<T>(nelements); // Convert their type
     result->link();
-
     bh_identity(*result, *rand_result);
+    result->setTemp(true);
 
-    // Return them to the user
-    return *result;
+    return view_as(*result, shape...);                      // Reshape them
 }
 
 template <typename T, typename ...Dimensions>
 multi_array<T>& randu(const Dimensions&... shape)
 {
-    multi_array<uint64_t>* rand_result = &random<uint64_t>(shape...);
+    multi_array<T>* result = &random<T>(shape...);  // Generate numbers
 
-    multi_array<T>* result = new multi_array<T>(shape...);
-    result->link();
-
-    bh_identity(*result, *rand_result);
-    bh_divide(*result, *result, (T)sizeof(T));
-
+    result->setTemp(false);                         // Map them to [0,1]
+    bh_divide(*result,
+              *result,
+              (T)std::numeric_limits<uint64_t>::max());
     result->setTemp(true);
 
     return *result;

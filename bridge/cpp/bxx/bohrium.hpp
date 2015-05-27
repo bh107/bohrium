@@ -60,6 +60,17 @@ int64_t unpack_shape(int64_t *shape, size_t index, size_t arg, Args... args)
     return 1;
 }
 
+inline int64_t nelements_shape(size_t arg)
+{
+    return arg;
+}
+
+template <typename ...Args>
+int64_t nelements_shape(size_t arg, Args... args)
+{
+    return arg*nelements_shape(args...);
+}
+
 //
 // Extensions
 //
