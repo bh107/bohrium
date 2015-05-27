@@ -240,22 +240,11 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
 
 void bh_ir_kernel::update_shape(const bh_view& full, const bh_view& simple)
 {
-    size_t ve = bh_nelements(simple);
-    if (ve > elements)
+    size_t ve = bh_nelements(full);
+    if (ve >= elements && full.ndim > (bh_intp)shape.size())
     {
         elements = ve;
-        shape = std::vector<bh_index>(simple.shape,simple.shape+simple.ndim);
-    } else if (ve == elements)
-    {
-        try {
-            bh_view_simplify(full, shape);
-        } catch (std::invalid_argument e)
-        {
-            if (full.ndim <= (bh_intp)shape.size())
-                throw std::runtime_error("Failed to find common shape for kernel");
-            // TODO: Is it possible to find a simpler shape?
-            shape = std::vector<bh_index>(full.shape,full.shape+full.ndim);
-        }
+        shape = std::vector<bh_index>(full.shape,full.shape+full.ndim);
     }
 }
 
