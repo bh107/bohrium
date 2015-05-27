@@ -102,16 +102,16 @@ void generateNeutral(bh_opcode opcode,OCLtype type, std::ostream& source)
     case BH_ADD_REDUCE:
     case BH_LOGICAL_OR_REDUCE:
     case BH_BITWISE_OR_REDUCE:
+    case BH_LOGICAL_XOR_REDUCE:
+    case BH_BITWISE_XOR_REDUCE:
         source << "0";
         break;
     case BH_MULTIPLY_ACCUMULATE:
     case BH_MULTIPLY_REDUCE:
     case BH_LOGICAL_AND_REDUCE:
-    case BH_LOGICAL_XOR_REDUCE:
         source << "1";
         break;
     case BH_BITWISE_AND_REDUCE:
-    case BH_BITWISE_XOR_REDUCE:
         source << "~0";
         break;
     case BH_MINIMUM_REDUCE:
