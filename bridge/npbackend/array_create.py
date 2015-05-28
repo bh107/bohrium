@@ -124,7 +124,8 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
             ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', \
                                                 'OWNDATA'])
             ret = empty(ary.shape, dtype=ary.dtype)
-            ret._data_fill(ary)
+            if ret.size > 0:
+                ret._data_fill(ary)
             return ret
     else:
         if ndarray.check(ary):
