@@ -20,6 +20,7 @@ from .summations import sum, prod, max, min
 from . import import_external
 from numpy_force import dtype
 asarray = array
+asanyarray = array
 
 # Expose all ufuncs
 for f in UFUNCS:
@@ -40,7 +41,17 @@ numpy_interface = [
     "numpy.lib.stride_tricks.as_strided",
     "numpy.newaxis",
     "numpy.pi",
-    "numpy.transpose"
+    "numpy.transpose",
+    "numpy.ma",
+    "numpy.__version__",
+    "numpy.eye",
+    "numpy.bool_",
+    "numpy.object_",
+    "numpy.string_",
+    "numpy.float_",
+    "numpy.inf",
+    "numpy.nan",
+    "numpy.e",
 ]
 
 for i in import_external.api(numpy_interface):
