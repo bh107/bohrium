@@ -660,19 +660,21 @@ std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::
     }
     /* Rearrange the orders according to sweeps by moving the indicated 
      * dimension first in the given dimensionality and doing the same for 
-     * higher dimensions - skipping the highest (first) dimensions.
+     * esponding dimensions in higher dimensionality - skipping the highest 
+     * (first) dimensions.
      */
     for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
     { 
         bh_int64 s = rit->second;
+        bh_int64 o = 0;
         for (bh_intp d = rit->first - 1; d < (int)ndim; ++d)
         {
-            size_t t = dimOrders[d][s];
+            size_t t = dimOrders[d][s+o];
             for (bh_int64 i = s; i > 0; --i)
             {
-                dimOrders[d][i] = dimOrders[d][i-1];
+                dimOrders[d][i+o] = dimOrders[d][i+o-1];
             }
-            dimOrders[d][0] = t;
+            dimOrders[d][o++] = t;
         }
     }
     std::cout << "dimOrders: {";
