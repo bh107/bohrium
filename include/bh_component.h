@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_INTERFACE_H
 #define __BH_INTERFACE_H
 
-
 #include <bh_type.h>
 #include <bh_instruction.h>
 #include <bh_opcode.h>
@@ -29,7 +28,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_iniparser.h>
 #include <bh_win.h>
 #include <bh_ir.h>
-
 
 #ifdef __cplusplus
 extern "C" {
