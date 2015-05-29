@@ -302,11 +302,11 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
 
     // Find dimension order
     std::vector<std::vector<size_t> > dimOrders = genDimOrders(kernel.get_sweeps(), shape.size());
-    for (size_t d = shape.size(); d > 0; --d)
+    for (size_t d = 0; d < shape.size(); ++d)
     {
         std::stringstream ss;
-        ss << "ds" << d;
-        Scalar* s = new Scalar(shape[dimOrders[shape.size()-1][d-1]]);
+        ss << "ds" << shape.size()-d;
+        Scalar* s = new Scalar(shape[dimOrders[shape.size()-1][d]]);
         (defines << "#define " << ss.str() << " " <<= *s) << "\n";
         sizeParameters.push_back(s);
         functionDeclaration << "\n\t, " << *s << " " << ss.str();
@@ -326,11 +326,11 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
         if (view.ndim > (bh_intp)shape.size())
             view = bh_view_simplify(view,shape);
         bh_intp vndim = view.ndim;
-        for (bh_intp d = vndim; d > 0; --d)
+        for (bh_intp d = 0; d < vndim; ++d)
         {
             std::stringstream ss;
-            ss << "v" << id << "s" << d;
-            Scalar* s = new Scalar(view.stride[dimOrders[vndim-1][d-1]]);
+            ss << "v" << id << "s" << vndim-d;
+            Scalar* s = new Scalar(view.stride[dimOrders[vndim-1][d]]);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
             sizeParameters.push_back(s);
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
@@ -408,7 +408,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     std::set<size_t> initiated_view;
     size_t dims = kdims;   // "Active" dimensions 
     bh_index elements = 1; // Number of elements in active dimensionality
-    for (size_t d = 0; d < dims; ++d)
+    for (size_t d = shape.size()-1; d >= shape.size()-dims; --d)
         elements *= shape[dimOrders[shape.size()-1][d]];
     size_t const_id = 0;
     // Generate code for instruction list
@@ -443,14 +443,14 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 // TODO: Take care of dimensions of size 1 by removing them
                 while (viewElements > elements || view.ndim > (bh_intp)dims)
                 {
-                    elements *= shape[dimOrders[shape.size()-1][dims++]];
+                    elements *= shape[dimOrders[shape.size()-1][shape.size()-(++dims)]];
                     beginDim(source, indentss, beforesource, dims);
                 }
                 // TODO: Take care of dimensions of size 1 by removing them
                 while (viewElements < elements || view.ndim < (bh_intp)dims)
                 {
                     endDim(source, indentss, beforesource, save, dims, elements, kernel);
-                    elements /= shape[dimOrders[shape.size()-1][--dims]];
+                    elements /= shape[dimOrders[shape.size()-1][shape.size()-(dims--)]];
                     assert(dims > 0);
                 }
                 assert (viewElements == elements);
@@ -502,7 +502,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         // TODO: Take care of dimensions of size 1 by removing them
         while (viewElements > elements  || view.ndim > (bh_intp)dims)
         {
-            elements *= shape[dimOrders[shape.size()-1][dims++]];
+            elements *= shape[dimOrders[shape.size()-1][shape.size()-(++dims)]];
             beginDim(source, indentss, beforesource, dims);
         }
         assert (viewElements <= elements);
@@ -583,7 +583,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         assert(dims>0);
         assert(kdims>0);
         endDim(source, indentss, beforesource, save, dims, elements, kernel);
-        elements /= shape[dimOrders[shape.size()-1][--dims]];
+        elements /= shape[dimOrders[shape.size()-1][shape.size()-(dims--)]];
     }
     return source.str();
 }
@@ -641,40 +641,48 @@ void InstructionScheduler::endDim(std::stringstream& source,
 }
 
 std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::map<bh_intp, 
-                                                                     bh_int64>& sweeps, size_t ndim)
+                                                                     bh_int64>& sweeps, const size_t ndim)
 {
     /* First generate "basic" dimension orders:
      * [0]
-     * [1,0]
-     * [2,1,0]
+     * [0,1]
+     * [0,1,2] -> [z,y,x]
      * ...
      */
     std::vector<std::vector<size_t> > dimOrders;
-    for (int d = 0; d < (int)ndim; ++d)
+    for (size_t d = 0; d < ndim; ++d)
     {
         dimOrders.push_back(std::vector<size_t>());
-        for (int i = d; i >= 0; --i)
+        for (size_t i = 0; i < d+1; ++i)
         {
             dimOrders[d].push_back(i);
         }
     }
     /* Rearrange the orders according to sweeps by moving the indicated 
-     * dimension last in the given dimensionality and doing the same for 
+     * dimension first in the given dimensionality and doing the same for 
      * higher dimensions - skipping the highest (first) dimensions.
      */
     for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
-    {
-        int s = rit->second;
-        for (int d = rit->first - 1; d < (int)ndim; ++d)
+    { 
+        bh_int64 s = rit->second;
+        for (bh_intp d = rit->first - 1; d < (int)ndim; ++d)
         {
-            int i = d-s++;
-            size_t t = dimOrders[d][i];
-            for (; i < d; ++i)
+            size_t t = dimOrders[d][s];
+            for (bh_int64 i = s; i > 0; --i)
             {
-                dimOrders[d][i] = dimOrders[d][i+1];
+                dimOrders[d][i] = dimOrders[d][i-1];
             }
-            dimOrders[d][i] = t;
+            dimOrders[d][0] = t;
         }
     }
+    std::cout << "dimOrders: {";
+    for (const std::vector<size_t>& dimOrder: dimOrders)
+    {
+        std::cout << " ["  << dimOrder[0];
+        for (int i = 1; i < (int)dimOrder.size();++i) 
+            std::cout << ", "  << dimOrder[i];
+        std::cout << "] ";
+    }
+    std::cout << "}" << std::endl;
     return dimOrders;
 }

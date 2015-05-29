@@ -70,7 +70,7 @@ private:
                 const size_t dims,
                 const bh_index elements,
                 const bh_ir_kernel& kernel);
-    std::vector<std::vector<size_t> > genDimOrders(const std::map<bh_intp, bh_int64>& sweeps, size_t ndim);
+    std::vector<std::vector<size_t> > genDimOrders(const std::map<bh_intp, bh_int64>& sweeps, const size_t ndim);
 public:
     InstructionScheduler() {}
     void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);
