@@ -408,7 +408,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     std::set<size_t> initiated_view;
     size_t dims = kdims;   // "Active" dimensions 
     bh_index elements = 1; // Number of elements in active dimensionality
-    for (size_t d = shape.size()-1; d >= shape.size()-dims; --d)
+    for (int d = shape.size()-1; d >= (int)shape.size()-(int)dims; --d)
         elements *= shape[dimOrders[shape.size()-1][d]];
     size_t const_id = 0;
     // Generate code for instruction list
@@ -677,7 +677,7 @@ std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::
             dimOrders[d][o++] = t;
         }
     }
-    std::cout << "dimOrders: {";
+/*    std::cout << "dimOrders: {";
     for (const std::vector<size_t>& dimOrder: dimOrders)
     {
         std::cout << " ["  << dimOrder[0];
@@ -685,6 +685,6 @@ std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::
             std::cout << ", "  << dimOrder[i];
         std::cout << "] ";
     }
-    std::cout << "}" << std::endl;
+    std::cout << "}" << std::endl;*/
     return dimOrders;
 }
