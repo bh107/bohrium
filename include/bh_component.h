@@ -105,15 +105,12 @@ typedef enum
 /* The component object */
 typedef struct
 {
-    //Name of the component
-    char name[BH_COMPONENT_NAME_SIZE];
-    //The ini-config dictionary
-    dictionary *config;
-    //The component type
-    bh_component_type type;
-    //Number of children
-    bh_intp nchildren;
-    //The interface of the children of this component
+    char name[BH_COMPONENT_NAME_SIZE];  // Name of the component
+    char iname[BH_COMPONENT_NAME_SIZE]; // Name of the instance
+    dictionary *config;                 // The ini-config dictionary
+    bh_component_type type;             // The component type
+    bh_intp nchildren;                  // Number of children
+    // The interface of the children of this component
     bh_component_iface children[BH_COMPONENT_MAX_CHILDS];
 } bh_component;
 
