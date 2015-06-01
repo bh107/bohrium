@@ -81,10 +81,9 @@ typedef bh_error (*bh_extmethod_impl)(bh_instruction *instr, void* arg);
 /* The interface functions of a component */
 typedef struct
 {
-    char name[BH_COMPONENT_NAME_SIZE];  // Name of the component
-    char iname[BH_COMPONENT_NAME_SIZE]; // Name of the instance
-    void *lib_handle;                   // Handle for the dynamic linked library.
-    bh_init       init;                 // The interface function pointers
+    char name[BH_COMPONENT_NAME_SIZE];      // Name of the component
+    void *lib_handle;                       // Handle for the dynamic linked library.
+    bh_init       init;                     // The interface function pointers
     bh_shutdown   shutdown;
     bh_execute    execute;
     bh_extmethod  extmethod;
@@ -105,11 +104,10 @@ typedef enum
 /* The component object */
 typedef struct
 {
-    char name[BH_COMPONENT_NAME_SIZE];  // Name of the component
-    char iname[BH_COMPONENT_NAME_SIZE]; // Name of the instance
-    dictionary *config;                 // The ini-config dictionary
-    bh_component_type type;             // The component type
-    bh_intp nchildren;                  // Number of children
+    char name[BH_COMPONENT_NAME_SIZE];      // Name of the component
+    dictionary *config;                     // The ini-config dictionary
+    bh_component_type type;                 // The component type
+    bh_intp nchildren;                      // Number of children
     // The interface of the children of this component
     bh_component_iface children[BH_COMPONENT_MAX_CHILDS];
 } bh_component;

@@ -42,7 +42,9 @@ bh_error bh_filter_bcexp_init(const char* name)
     }
 
     if (myself.nchildren != 1) {    // For now only one child is supported
-        fprintf(stderr, "[FILTER-bcexp] Only a single child is supported.");
+        fprintf(stderr,
+                "[FILTER-bcexp] Only a single child is supported, has %ld.",
+                myself.nchildren);
         return BH_ERROR;
     }
     
