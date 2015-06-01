@@ -419,6 +419,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     std::vector<std::string> operands;
     std::vector<OCLtype> types;
     std::set<bh_view> save; // Views that need saving
+    std::map<size_t,size_t> incr_idx; // View indexes which need incrementing <view_id, dims> 
     for (uint64_t idx: kernel.instr_indexes)
     {
         bh_instruction& instr = kernel.bhir->instr_list[idx];
@@ -453,7 +454,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 // TODO: Take care of dimensions of size 1 by removing them
                 while (viewElements < elements || view.ndim < (bh_intp)dims)
                 {
-                    endDim(source, indentss, beforesource, save, dims, elements, kernel);
+                    endDim(source, indentss, beforesource, save, incr_idx, dims, elements, kernel);
                     elements /= shape[dimOrders[shape.size()-1][shape.size()-(dims--)]];
                     assert(dims > 0);
                 }
@@ -470,14 +471,13 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                         mysource << indentss.str().substr(1);
                         generateIndexSource(dims-1, view.ndim, vid, mysource);
                         beforesource.back() = mysource.str();
+                        incr_idx[vid] = dims;
                     } else {
                         source << indentss.str();
                         generateIndexSource(dims, view.ndim, vid, source);
                     }
                     source << indentss.str();
                     generateLoadSource(kernel.get_parameters()[base], vid, type, source);
-                    if (dims > kdims)
-                        source << indentss.str() << "v" << vid << "idx += v" << vid << "s" << dims << ";\n";
                     initiated_view.insert(vid);
                 }
                 operands.emplace_back("v");
@@ -586,7 +586,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     {
         assert(dims>0);
         assert(kdims>0);
-        endDim(source, indentss, beforesource, save, dims, elements, kernel);
+        endDim(source, indentss, beforesource, save, incr_idx, dims, elements, kernel);
         elements /= shape[dimOrders[shape.size()-1][shape.size()-(dims--)]];
     }
     return source.str();
@@ -608,6 +608,7 @@ void InstructionScheduler::endDim(std::stringstream& source,
                                   std::stringstream& indentss, 
                                   std::vector<std::string>& beforesource, 
                                   std::set<bh_view>& save,
+                                  std::map<size_t,size_t>& incr_idx,
                                   const size_t dims,
                                   const bh_index elements,
                                   const bh_ir_kernel& kernel)
@@ -640,6 +641,17 @@ void InstructionScheduler::endDim(std::stringstream& source,
         } else
             ++it;
     }
+    for (auto it = incr_idx.begin(); it != incr_idx.end();)
+    {
+        if (it->second == dims)
+        {
+            size_t vid = it->first;
+            source << indentss.str() << "v" << vid << "idx += v" << vid << "s" << dims << ";\n";
+            incr_idx.erase(it++);
+        } else
+            ++it;
+    }
+
     indentss.str(indentss.str().substr(1));
     source << indentss.str() << "}\n";
 }

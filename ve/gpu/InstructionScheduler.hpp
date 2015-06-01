@@ -67,6 +67,7 @@ private:
                 std::stringstream& indentss, 
                 std::vector<std::string>& beforesource, 
                 std::set<bh_view>& save,
+                std::map<size_t,size_t>& incr_idx,
                 const size_t dims,
                 const bh_index elements,
                 const bh_ir_kernel& kernel);
