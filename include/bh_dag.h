@@ -166,8 +166,6 @@ public:
      * Vertex 'b' is cleared rather than removed thus existing vertex
      * and edge pointers are still valid after the merge.
      *
-     * NB: invalidates all existing edge iterators.
-     *
      * @a  The first vertex
      * @b  The second vertex
      */
@@ -176,10 +174,13 @@ public:
         using namespace std;
         using namespace boost;
 
+        //Append the instructions of 'b' to 'a'
         BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
         {
             _bglD[a].add_instr(idx);
         }
+
+        //Add edges of 'b' to 'a'
         BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglD))
         {
             if(a != v)
@@ -718,39 +719,50 @@ void fuse_gently(GraphDW &dag)
     using namespace std;
     using namespace boost;
 
-    bool not_finished = true;
-    while(not_finished)
+    const GraphD &d = dag.bglD();
+    set<EdgeD> dep_edges(edges(d).first, edges(d).second);
+    /*
+    char t[1024];
+    sprintf(t, "tmp-%ld.dot", num_vertices(d));
+    cout << t << endl;
+    pprint(dag, t);
+    */
+
+    while(not dep_edges.empty())
     {
-        dag.transitive_reduction();
-        const GraphD &d = dag.bglD();
-        not_finished = false;
-        BOOST_FOREACH(const EdgeD &e, edges(d))
+        //Lets find a "single ending" edge
+        set<EdgeD>::iterator it=dep_edges.begin();
+        for(; it != dep_edges.end(); ++it)
         {
-            const Vertex &src = source(e, d);
-            const Vertex &dst = target(e, d);
-            if(dependency_subset(d, src, dst))
+            Vertex src = source(*it, d);
+            Vertex dst = target(*it, d);
+            if(in_degree(src, d) == 0 and out_degree(src, d) == 1 \
+               and d[src].input_and_output_subset_of(d[dst]))
             {
-                if(d[src].fusible(d[dst]) and d[src].input_and_output_subset_of(d[dst]))
-                {
-                    dag.merge_vertices(src, dst);
-                    not_finished = true;
-                    break;
-                }
+                break;
             }
-            if(dependency_subset(d, dst, src))
+            else if(in_degree(dst, d) == 1 and out_degree(dst, d) == 0 \
+               and d[dst].input_and_output_subset_of(d[src]))
             {
-                if(d[dst].fusible(d[src]) and d[dst].input_and_output_subset_of(d[src]))
-                {
-                    dag.merge_vertices(src, dst);
-                    not_finished = true;
-                    break;
-                }
+                break;
             }
         }
+        if(it == dep_edges.end())
+            break;//No single ending edge found
+
+        //Lets extract the single ending edge
+        EdgeD e = *it;
+        dep_edges.erase(it);
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+
+        //And merge them if able
+        if(d[src].fusible(d[dst]))
+            dag.merge_vertices(src, dst);
+
+        //Note that 'dep_edges' is maintained since the extracted edge 'e'
+        //is the only edge removed by the merge
     }
-    //Note: since we call transitive_reduction() in each iteration,
-    //the merge will never introduce cyclic dependencies.
-    assert(not cycles(dag.bglD()));
     dag.remove_cleared_vertices();
 }
 
