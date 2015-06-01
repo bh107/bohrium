@@ -621,6 +621,7 @@ bool Visualizer::toggleFullscreen(void)
         glutReshapeWindow(800, 800);
         glutPositionWindow(0, 0);
     }
+    return fullscreen;
 }
 
 // When a key is hit
