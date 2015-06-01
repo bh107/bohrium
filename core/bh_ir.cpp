@@ -228,6 +228,9 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             update_shape(v, sv);
             if (bh_is_scalar(&v))
                 scalar = true;
+            // For now we treat a 1D accumulate like a 1D reduce i.e. the kernel is a scalar kernel
+            if (bh_opcode_is_accumulate(instr.opcode) && sv.ndim == 1)
+                scalar = true;
         }
         if (bh_opcode_is_sweep(instr.opcode))
         {
