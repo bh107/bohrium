@@ -454,7 +454,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 // TODO: Take care of dimensions of size 1 by removing them
                 while (viewElements < elements || view.ndim < (bh_intp)dims)
                 {
-                    endDim(source, indentss, beforesource, save, incr_idx, dims, elements, kernel);
+                    endDim(source, indentss, beforesource, save, incr_idx, dims, kdims, elements, kernel);
                     elements /= shape[dimOrders[shape.size()-1][shape.size()-(dims--)]];
                     assert(dims > 0);
                 }
@@ -586,7 +586,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     {
         assert(dims>0);
         assert(kdims>0);
-        endDim(source, indentss, beforesource, save, incr_idx, dims, elements, kernel);
+        endDim(source, indentss, beforesource, save, incr_idx, dims, kdims, elements, kernel);
         elements /= shape[dimOrders[shape.size()-1][shape.size()-(dims--)]];
     }
     return source.str();
@@ -610,6 +610,7 @@ void InstructionScheduler::endDim(std::stringstream& source,
                                   std::set<bh_view>& save,
                                   std::map<size_t,size_t>& incr_idx,
                                   const size_t dims,
+                                  const size_t kdims,
                                   const bh_index elements,
                                   const bh_ir_kernel& kernel)
 {
@@ -618,21 +619,25 @@ void InstructionScheduler::endDim(std::stringstream& source,
     {
         mysource << beforesource.back();
         beforesource.pop_back();
-        mysource << source.str();
-        source.str("");
-        source << mysource.str();
     }
     for (auto it = save.begin(); it != save.end();)
     {
         const bh_view& view = *it;
         bh_index viewElements = bh_nelements(view);
-        if (viewElements == elements)
+        if (viewElements == elements && view.ndim == (bh_intp)dims)
         {
             size_t vid = kernel.get_view_id(view);
             if (!kernel.is_input(view))
             {
-                source << indentss.str();
-                generateIndexSource(dims, view.ndim, vid, source);
+                if (dims > kdims)
+                {
+                    mysource << indentss.str().substr(1);
+                    generateIndexSource(dims-1, view.ndim, vid, mysource);
+                    incr_idx[vid] = dims;
+                } else {
+                    source << indentss.str();
+                    generateIndexSource(dims, view.ndim, vid, source);
+                }
             }
             size_t aid = kernel.get_parameters()[view.base];
             source << indentss.str();
@@ -641,6 +646,9 @@ void InstructionScheduler::endDim(std::stringstream& source,
         } else
             ++it;
     }
+    mysource << source.str();
+    source.str("");
+    source << mysource.str();
     for (auto it = incr_idx.begin(); it != incr_idx.end();)
     {
         if (it->second == dims)
