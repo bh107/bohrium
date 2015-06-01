@@ -130,8 +130,6 @@ public:
     }
 
     /* Clear the vertex without actually removing it.
-     * NB: invalidates all existing edge iterators
-     *     but NOT pointers to neither vertices nor edges.
      *
      * @v  The Vertex
      */
@@ -207,41 +205,16 @@ public:
         }
         clear_vertex(b);
 
-        vector<EdgeW> edges2remove;
+        //Update the edge weights of 'a'
         BOOST_FOREACH(const EdgeW &e, out_edges(a, _bglW))
         {
             Vertex v1 = source(e, _bglW);
             Vertex v2 = target(e, _bglW);
-            if(path_exist(v1, v2, _bglD, false))
-            {
-                int64_t cost = _bglD[v2].merge_cost_savings(_bglD[v1]);
-                if(cost >= 0)
-                    _bglW[e].value = cost;
-                else
-                    edges2remove.push_back(e);
-            }
-            else if(path_exist(v2, v1, _bglD, false))
-            {
-                int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
-                if(cost >= 0)
-                    _bglW[e].value = cost;
-                else
-                    edges2remove.push_back(e);
-            }
+            int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
+            if(cost > 0)
+                _bglW[e].value = cost;
             else
-            {
-                int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
-                if(cost > 0)
-                    _bglW[e].value = cost;
-                else
-                    edges2remove.push_back(e);
-            }
-        }
-        //In order not to invalidate the 'out_edges' iterator, we have
-        //to delay the edge removals to this point.
-        BOOST_FOREACH(const EdgeW &e, edges2remove)
-        {
-            remove_edge(e, _bglW);
+                remove_edge(e, _bglW);
         }
 
         //TODO: for now we run some unittests
@@ -266,7 +239,6 @@ public:
     }
 
     /* Transitive reduce the 'dag', i.e. remove all redundant edges,
-     * NB: invalidates all existing edge iterators.
      *
      * Complexity: O(E * (E + V))
      *
