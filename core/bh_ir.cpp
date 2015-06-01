@@ -105,14 +105,14 @@ void bh_ir::pprint_kernel_list() const
 
 bh_ir_kernel::bh_ir_kernel()
     : elements(0)
-    , scalar(false) 
+    , scalar(false)
     , bhir(NULL)
 {}
-    
-bh_ir_kernel::bh_ir_kernel(bh_ir &bhir) 
+
+bh_ir_kernel::bh_ir_kernel(bh_ir &bhir)
     : elements(0)
-    , scalar(false) 
-    , bhir(&bhir) 
+    , scalar(false)
+    , bhir(&bhir)
 {}
 
 
@@ -132,7 +132,7 @@ void bh_ir_kernel::clear()
     scalar = false;
 }
 
-size_t bh_ir_kernel::get_view_id(const bh_view& v) const 
+size_t bh_ir_kernel::get_view_id(const bh_view& v) const
 {
     return views[bh_view_simplify(v)];
 }
@@ -151,9 +151,9 @@ bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) co
 
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
-    
+
     const bh_instruction& instr = bhir->instr_list[instr_idx];
-    switch (instr.opcode) { 
+    switch (instr.opcode) {
     case BH_SYNC:
         syncs.insert(instr.operand[0].base);
         break;
@@ -183,7 +183,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
                 temp = false;
 
         }
-        if (!temp) // It is a discard of an array created elsewhere 
+        if (!temp) // It is a discard of an array created elsewhere
             discards.insert(base);
     }
     break;
@@ -191,7 +191,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     {
         bh_base* base = instr.operand[0].base;
         if (temps.find(base) == temps.end())
-            // It is a free of an array created elsewhere 
+            // It is a free of an array created elsewhere
             frees.insert(base);
     }
     break;
@@ -330,14 +330,14 @@ bool bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other) const
     if(output_set.size() > other_output_set.size())
         return false;
 
-    for (const bh_view& iv: other_input_set)
+    for (const bh_view& iv: input_set)
     {
-        if (input_set.find(iv) == input_set.end())
+        if (other_input_set.find(iv) == other_input_set.end())
             return false;
     }
-    for (const bh_view& ov: other_output_set)
+    for (const bh_view& ov: output_set)
     {
-        if (output_set.find(ov) == output_set.end())
+        if (other_output_set.find(ov) == other_output_set.end())
             return false;
     }
     return true;
