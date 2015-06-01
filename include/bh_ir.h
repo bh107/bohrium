@@ -164,6 +164,7 @@ public:
     const std::vector<bh_constant>& get_constants() const {return constants;}
     const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
     const std::vector<bh_index>& get_shape() const {return shape;}
+    size_t get_elements() const {return elements;}
 
     bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
     bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}

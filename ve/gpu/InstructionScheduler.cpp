@@ -35,7 +35,7 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
 {
     for (const bh_ir_kernel& kernel: bhir->kernel_list)
     {
-        if (kernel.get_output_set().size() > 0)
+        if (kernel.get_output_set().size() > 0 && kernel.get_elements() > 0)
         {    
             if (kernel.is_scalar())
             {
@@ -299,6 +299,10 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
 
     // get kernel shape
     const std::vector<bh_index>& shape = kernel.get_shape();
+/*    std::cout << "shape: [" << shape[0];
+    for (int i = 1; i < (int)shape.size();++i) 
+        std::cout << ", "  << shape[i];
+    std::cout << "]" << std::endl;*/
 
     // Find dimension order
     std::vector<std::vector<size_t> > dimOrders = genDimOrders(kernel.get_sweeps(), shape.size());
@@ -685,6 +689,6 @@ std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::
             std::cout << ", "  << dimOrder[i];
         std::cout << "] ";
     }
-    std::cout << "}" << std::endl;*/
+    std::cout << "}" << std::endl; */
     return dimOrders;
 }
