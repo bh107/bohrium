@@ -207,15 +207,26 @@ public:
         clear_vertex(b);
 
         //Update the edge weights of 'a'
-        BOOST_FOREACH(const EdgeW &e, out_edges(a, _bglW))
+        //Note that the 'out_edge_iterator' is invalidated if it points
+        //to 'e' and 'e' is removed thus we cannot use BOOST_FOREACH.
         {
-            Vertex v1 = source(e, _bglW);
-            Vertex v2 = target(e, _bglW);
-            int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
-            if(cost > 0)
-                _bglW[e].value = cost;
-            else
-                remove_edge(e, _bglW);
+            graph_traits<GraphW>::out_edge_iterator it, end;
+            tie(it, end) = out_edges(a, _bglW);
+            while(it != end)
+            {
+                Vertex v1 = source(*it, _bglW);
+                Vertex v2 = target(*it, _bglW);
+                int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
+                if(cost > 0)
+                {
+                    _bglW[*it++].value = cost;
+                }
+                else
+                {
+                    EdgeW e = *it++;
+                    remove_edge(e, _bglW);
+                }
+            }
         }
 
         //TODO: for now we run some unittests
