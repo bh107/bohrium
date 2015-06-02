@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_INTERFACE_H
 #define __BH_INTERFACE_H
 
-
 #include <bh_type.h>
 #include <bh_instruction.h>
 #include <bh_opcode.h>
@@ -29,7 +28,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_iniparser.h>
 #include <bh_win.h>
 #include <bh_ir.h>
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,21 +78,16 @@ typedef bh_error (*bh_extmethod)(const char *name, bh_opcode opcode);
  */
 typedef bh_error (*bh_extmethod_impl)(bh_instruction *instr, void* arg);
 
-
 /* The interface functions of a component */
 typedef struct
 {
-    //Name of the component
-    char name[BH_COMPONENT_NAME_SIZE];
-    //Handle for the dynamic linked library.
-    void *lib_handle;
-    //The interface function pointers
-    bh_init       init;
+    char name[BH_COMPONENT_NAME_SIZE];      // Name of the component
+    void *lib_handle;                       // Handle for the dynamic linked library.
+    bh_init       init;                     // The interface function pointers
     bh_shutdown   shutdown;
     bh_execute    execute;
     bh_extmethod  extmethod;
-}bh_component_iface;
-
+} bh_component_iface;
 
 /* Codes for known component types */
 typedef enum
@@ -106,23 +99,18 @@ typedef enum
     BH_FUSER,
     BH_STACK,
     BH_COMPONENT_ERROR
-}bh_component_type;
-
+} bh_component_type;
 
 /* The component object */
 typedef struct
 {
-    //Name of the component
-    char name[BH_COMPONENT_NAME_SIZE];
-    //The ini-config dictionary
-    dictionary *config;
-    //The component type
-    bh_component_type type;
-    //Number of children
-    bh_intp nchildren;
-    //The interface of the children of this component
+    char name[BH_COMPONENT_NAME_SIZE];      // Name of the component
+    dictionary *config;                     // The ini-config dictionary
+    bh_component_type type;                 // The component type
+    bh_intp nchildren;                      // Number of children
+    // The interface of the children of this component
     bh_component_iface children[BH_COMPONENT_MAX_CHILDS];
-}bh_component;
+} bh_component;
 
 /* Initilize the component object
  *
