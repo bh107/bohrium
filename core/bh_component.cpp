@@ -98,6 +98,40 @@ static bh_component_type get_type(dictionary *dict, const char *name)
     return BH_COMPONENT_ERROR;
 }
 
+/**
+ *  Extract component symbol from the given string.
+ *  
+ *  Expects a string like: "anythinglibbh_componenttype_COMPONENTNAME.anything"
+ *
+ *  No error-checking in this thing...
+ *
+ */
+static void extract_symbol_from_path(const char* path, char* symbol)
+{
+    const char* prefix = "libbh_";                  // Component prefix
+    int prefix_len = strlen(prefix);
+
+    const char* filename = strstr(path, prefix);    // Filename
+    filename += prefix_len;                         // Skip the prefix
+
+    const char* sep = "_";
+    int sep_len = strlen(sep);
+    const char* name = strstr(filename, sep);
+    name += sep_len;                                // Skip the seperator
+    int name_len = strlen(name);
+
+    strncpy(symbol, name, name_len);                // Copy the symbol
+                                                            
+    for(int i=0;                                    // Terminate at extension
+        (symbol[i]!='\0') || (i>=(name_len-1));
+        ++i) { 
+        if (symbol[i] == '.') {                              
+            *(symbol+i) = '\0';
+            break;
+        }
+    }
+}
+
 static void *get_dlsym(void *handle, const char *name,
                        bh_component_type type, const char *fun)
 {
@@ -129,10 +163,90 @@ static void *get_dlsym(void *handle, const char *name,
         fprintf(stderr, "Failed to load %s() from %s (%s).\n"
                         "Make sure to define all four interface functions, eg. the NODE-VEM "
                         "must define: bh_vem_node_init(), bh_vem_node_shutdown(), "
-                        "bh_vem_node_reg_func(), and bh_vem_node_execute().\n", fun, name, err);
+                        "bh_vem_node_extmethod(), and bh_vem_node_execute().\n",
+                        fun, name, err);
         return NULL;
     }
     return ret;
+}
+
+/**
+ *  Dynamically load component interface.
+ *
+ */
+static bh_error component_dl_iface(dictionary* config, bh_component_iface* comp)
+{
+    if (!iniparser_find_entry(config, comp->name)) {        // Check for config-entry
+        fprintf(stderr,
+                "component_dl_iface: Failed retrieving config section for '%s'.\n",
+                comp->name);
+        return BH_ERROR;
+    }
+
+    char impl_inikey[BH_COMPONENT_NAME_SIZE+5];             // Get path to shared-object
+    snprintf(impl_inikey, BH_COMPONENT_NAME_SIZE+5, "%s:impl", comp->name); 
+    char *impl = iniparser_getstring(config, impl_inikey, NULL);
+    if (impl == NULL) {
+        fprintf(stderr,
+                "component_dl_iface: Failed retrieving 'impl' for component '%s'\n",
+                comp->name);
+        return BH_ERROR;
+    }
+
+    bh_component_type comp_type = get_type(config, comp->name);
+    if (comp_type == BH_COMPONENT_ERROR) {
+        fprintf(stderr,
+                "component_dl_iface: Failed getting type of component(%s).\n",
+                comp->name);
+    }
+
+    char symbol[BH_COMPONENT_NAME_SIZE];
+    extract_symbol_from_path(impl, symbol);                 // Get the component "symbol"
+
+    //
+    // Load component-interface functions
+    //
+
+    void *lib_handle = dlopen(impl, RTLD_NOW);              // Open the library
+    if (lib_handle == NULL) {
+        fprintf(stderr,
+                "component_dl_iface: Error in [%s:impl]: %s\n",
+                comp->name,
+                dlerror());
+        return BH_ERROR;
+    }
+    comp->lib_handle = lib_handle;                          // Store library handle
+
+    // Grab component interface symbols init, shutdown, execute, extmethod
+    comp->init = (bh_init)get_dlsym(lib_handle, symbol, comp_type, "init");
+    if (comp->init == NULL) {
+        fprintf(stderr,
+                "component_dl_iface: Failed retrieving iface-init for %s.",
+                comp->name);
+        return BH_ERROR;
+    }
+    comp->shutdown = (bh_shutdown)get_dlsym(lib_handle, symbol, comp_type, "shutdown");
+    if (comp->shutdown == NULL) {
+        fprintf(stderr,
+                "component_dl_iface: Failed retrieving iface-shutdown for %s.",
+                comp->name);
+        return BH_ERROR;
+    }
+    comp->execute = (bh_execute)get_dlsym(lib_handle, symbol, comp_type, "execute");
+    if (comp->execute == NULL) {
+        fprintf(stderr,
+                "component_dl_iface: Failed retrieving iface-execute for %s.",
+                comp->name);
+        return BH_ERROR;
+    }
+    comp->extmethod = (bh_extmethod)get_dlsym(lib_handle, symbol, comp_type, "extmethod");
+    if (comp->extmethod == NULL) {
+        fprintf(stderr,
+                "component_dl_iface: Failed retrieving iface-extmethod for %s.",
+                comp->name);
+        return BH_ERROR;
+    }
+    return BH_SUCCESS;
 }
 
 /* Initilize children of the given component
@@ -143,72 +257,35 @@ static void *get_dlsym(void *handle, const char *name,
  */
 static bh_error component_children_init(bh_component *self, char* stack)
 {
-    char tmp[BH_COMPONENT_NAME_SIZE];
-    if (stack) {
-        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:%s", stack, self->name);
-    } else {
-        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:children", self->name);
-    }
-    char *children_str = iniparser_getstring(self->config, tmp, NULL);
-    if(children_str == NULL)
-        return BH_SUCCESS;//No children -- we are finished
-
-    //Handle one child at a time.
-    char *child_str = strtok(children_str,",");
     self->nchildren = 0;
-    while(child_str != NULL)
-    {
-        bh_component_iface *child = &self->children[self->nchildren];
-        bh_component_type child_type = get_type(self->config,child_str);
-        if(child_type == BH_COMPONENT_ERROR)
-            return BH_ERROR;
 
-        //Save the child name.
-        strncpy(child->name, child_str, BH_COMPONENT_NAME_SIZE);
+    char child_inikey[BH_COMPONENT_NAME_SIZE];  // Where to look for children
+    if (stack) {
+        snprintf(child_inikey, BH_COMPONENT_NAME_SIZE, "%s:%s", stack, self->name);
+    } else {
+        snprintf(child_inikey, BH_COMPONENT_NAME_SIZE, "%s:children", self->name);
+    }
 
-        if(!iniparser_find_entry(self->config,child_str))
-        {
-            fprintf(stderr,"Reference \"%s\" is not declared.\n",child_str);
-            return BH_ERROR;
-        }
-        snprintf(tmp, BH_COMPONENT_NAME_SIZE, "%s:impl", child_str);
-        char *impl = iniparser_getstring(self->config, tmp, NULL);
-        if(impl == NULL)
-        {
-            fprintf(stderr,"in section \"%s\" impl is not set.\n",child_str);
-    	    return BH_ERROR;
-        }
-        void *lib_handle = dlopen(impl, RTLD_NOW);
-        if(lib_handle == NULL)
-        {
-            fprintf(stderr, "Error in [%s:impl]: %s\n", child_str, dlerror());
-    	    return BH_ERROR;
-        }
+    char *children_str = iniparser_getstring(self->config, child_inikey, NULL);
+    if (children_str == NULL) {                 // No children -- we are finished
+        return BH_SUCCESS;
+    }
 
-        child->init = (bh_init)get_dlsym(lib_handle, child_str, child_type, "init");
-        if(child->init == NULL)
-            return BH_ERROR;
+    char *child_name = strtok(children_str, ",");
+    while(child_name != NULL) {
+        bh_component_iface *child = &self->children[self->nchildren];   // Grab child
+        strncpy(child->name, child_name, BH_COMPONENT_NAME_SIZE);       // Store name
+        component_dl_iface(self->config, child);                        // Load interface
 
-        child->shutdown = (bh_shutdown)get_dlsym(lib_handle, child_str, child_type, "shutdown");
-        if(child->shutdown == NULL)
-            return BH_ERROR;
-
-        child->execute = (bh_execute)get_dlsym(lib_handle, child_str, child_type, "execute");
-        if(child->execute == NULL)
-            return BH_ERROR;
-
-        child->extmethod = (bh_extmethod)get_dlsym(lib_handle, child_str, child_type, "extmethod");
-        if(child->extmethod == NULL)
-            return BH_ERROR;
-
-        if(++self->nchildren > BH_COMPONENT_MAX_CHILDS)
-        {
-            fprintf(stderr,"Number of children of %s is greater "
-                           "than BH_COMPONENT_MAX_CHILDS.\n",self->name);
+        ++(self->nchildren);                                            // Increment count
+        if (self->nchildren > BH_COMPONENT_MAX_CHILDS) {
+            fprintf(stderr,
+                    "Number of children of %s is greater "
+                    "than BH_COMPONENT_MAX_CHILDS.\n", self->name);
             return BH_ERROR;
         }
-        //Go to next child
-        child_str = strtok(NULL,",");
+
+        child_name = strtok(NULL, ",");                                 // Go to next child
     }
     return BH_SUCCESS;
 }
@@ -365,7 +442,7 @@ bh_error bh_component_init(bh_component *self, const char* name)
         stack = NULL;
     }
 
-    if (name == NULL) {                                 // Assign name
+    if (name == NULL) {                                 // Store component name
         if (stack) {
             strcpy(self->name, stack);
         } else {
@@ -375,12 +452,12 @@ bh_error bh_component_init(bh_component *self, const char* name)
         strcpy(self->name, name);
     }
     
-    self->type = get_type(self->config, self->name);    // Assign type
+    self->type = get_type(self->config, self->name);    // Store type
     if (BH_COMPONENT_ERROR == self->type) {
         return BH_ERROR;
     }
 
-    return component_children_init(self, stack);   // Initialize children
+    return component_children_init(self, stack);        // Initialize children
 }
 
 /* Destroyes the component object.

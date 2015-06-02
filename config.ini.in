@@ -3,8 +3,8 @@
 #
 [stack_default]
 type = stack
-stack_default = bcexp
-bcexp = bccon
+stack_default = bcexp_cpu
+bcexp_cpu = bccon
 bccon = topological
 topological = node
 node = cpu
@@ -135,6 +135,14 @@ children = node
 gc_threshold = 400
 matmul = 1
 sign = 1
+
+[bcexp_cpu]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = node
+gc_threshold = 400
+matmul = 1
+sign = 0
 
 #
 # Engines
