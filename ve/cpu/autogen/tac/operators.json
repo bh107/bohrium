@@ -50,20 +50,21 @@
     {"id": 49, "name": "REAL",          "nop": 2, "types": []},
     {"id": 50, "name": "RINT",          "nop": 2, "types": []},
     {"id": 51, "name": "SIN",           "nop": 2, "types": []},
-    {"id": 52, "name": "SINH",          "nop": 2, "types": []},
-    {"id": 53, "name": "SQRT",          "nop": 2, "types": []},
-    {"id": 54, "name": "TAN",           "nop": 2, "types": []},
-    {"id": 55, "name": "TANH",          "nop": 2, "types": []},
-    {"id": 56, "name": "TRUNC",         "nop": 2, "types": []},
+    {"id": 52, "name": "SIGN",          "nop": 2, "types": []},
+    {"id": 53, "name": "SINH",          "nop": 2, "types": []},
+    {"id": 54, "name": "SQRT",          "nop": 2, "types": []},
+    {"id": 55, "name": "TAN",           "nop": 2, "types": []},
+    {"id": 56, "name": "TANH",          "nop": 2, "types": []},
+    {"id": 57, "name": "TRUNC",         "nop": 2, "types": []},
 
-    {"id": 57, "name": "DISCARD",   "nop": 1, "types": []},
-    {"id": 58, "name": "FREE",      "nop": 1, "types": []},
-    {"id": 59, "name": "SYNC",      "nop": 1, "types": []},
-    {"id": 60, "name": "NONE",      "nop": 0, "types": []},
+    {"id": 58, "name": "DISCARD",   "nop": 1, "types": []},
+    {"id": 59, "name": "FREE",      "nop": 1, "types": []},
+    {"id": 60, "name": "SYNC",      "nop": 1, "types": []},
+    {"id": 61, "name": "NONE",      "nop": 0, "types": []},
 
-    {"id": 61, "name": "FLOOD",     "nop": 1, "types": []},
-    {"id": 62, "name": "RANDOM",    "nop": 2, "types": []},
-    {"id": 63, "name": "RANGE",     "nop": 0, "types": []},
+    {"id": 62, "name": "FLOOD",     "nop": 1, "types": []},
+    {"id": 63, "name": "RANDOM",    "nop": 2, "types": []},
+    {"id": 64, "name": "RANGE",     "nop": 0, "types": []},
 
-    {"id": 64, "name": "EXTENSION_OPERATOR","nop": 0, "types": []}
+    {"id": 65, "name": "EXTENSION_OPERATOR","nop": 0, "types": []}
 ]

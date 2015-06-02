@@ -618,6 +618,24 @@ inline multi_array<T>& atan2 (const T lhs, multi_array<T>& rhs)
     return bh_arctan2 (lhs, rhs);
 }
 
+template <typename T>
+inline multi_array<T>& matmul (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_matmul (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<T>& matmul (multi_array<T>& lhs, const T rhs)
+{
+    return bh_matmul (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<T>& matmul (const T lhs, multi_array<T>& rhs)
+{
+    return bh_matmul (lhs, rhs);
+}
+
 
 
 template <typename T>
@@ -1067,6 +1085,14 @@ inline
 multi_array<T>& rint (multi_array<T>& rhs)
 {
     return bh_rint (rhs);
+}
+
+
+template <typename T>
+inline
+multi_array<T>& sign (multi_array<T>& rhs)
+{
+    return bh_sign (rhs);
 }
 
 

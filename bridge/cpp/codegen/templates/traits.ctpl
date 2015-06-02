@@ -9,7 +9,7 @@ directiveStartToken = %
 
 #ifndef __BOHRIUM_BRIDGE_CPP_TRAITS
 #define __BOHRIUM_BRIDGE_CPP_TRAITS
-#include "bh.h"
+#include <bh.h>
 
 namespace bxx {
 

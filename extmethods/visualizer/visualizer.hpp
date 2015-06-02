@@ -26,6 +26,7 @@ class Visualizer
     bool flat;
     bool cubes;
     bool pause;
+    bool fullscreen;
     float r, theta, phi;
     float dx;
     float dy;
@@ -46,6 +47,8 @@ class Visualizer
     void updateNormals();
     void updateColors();
     float interpolateColor(float value, const float (* rgb)[3]);
+    
+    bool toggleFullscreen(void);
 
     void updateArray3D();
     void updateArray2D();

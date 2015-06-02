@@ -187,6 +187,13 @@ string _declare_init(string type, string variable, string expr)
     return ss.str(); 
 }
 
+string _parens(string expr)
+{
+    stringstream ss;
+    ss << "(" << expr << ")";
+    return ss.str();
+}
+
 string _cast(string type, string object)
 {
     stringstream ss;
@@ -310,6 +317,20 @@ string _abs(string right)
 {
     stringstream ss;
     ss << right << " < 0.0 ? -" << right << ": " << right;
+    return ss.str();
+}
+
+string _cabs(string right)
+{
+    stringstream ss;
+    ss << "cabs(" << right << ")";
+    return ss.str();
+}
+
+string _cabsf(string right)
+{
+    stringstream ss;
+    ss << "cabsf(" << right << ")";
     return ss.str();
 }
 

@@ -49,9 +49,13 @@ def instrs_to_tacs(opcodes, ops, opers, types, layouts):
     system      = []
 
     huh = []
-
     for o in opcodes:
         opcode = o['opcode']
+        if o["composite"]:
+            tac_name = opcode.replace("BH_", '')
+            if not [tac for tac in opers if tac['name'] == tac_name]:
+                print "Non-specialized composite: %s" % opcode
+                continue
 
         if o['system_opcode']:
             system.append([opcode, 'SYSTEM', opcode.replace('BH_',''), 0])

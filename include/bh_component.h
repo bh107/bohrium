@@ -165,6 +165,50 @@ DLLEXPORT int bh_component_config_lookup_int(const bh_component *component,
 DLLEXPORT double bh_component_config_lookup_double(const bh_component *component,
                                                    const char* key, double notfound);
 
+/**
+ *  Grab an int-valued configuration option for the given component.
+ *  The int-value option must be within the range [min, max].
+ *
+ *  @param component The component to grab the configuration option for.
+ *  @param option_name Name of configuration option.
+ *  @param min Lower bound on the integer.
+ *  @param max Upper bound on the integer.
+ *  @param option Pointer to store the option in.
+ *
+ *  @return BH_ERROR if is not within bounds, does not exists etc. BH_SUCCESS othervise.
+ */
+DLLEXPORT bh_error bh_component_config_int_option(const bh_component* component,
+                                                  const char* option_name,
+                                                  int min,
+                                                  int max,
+                                                  bh_intp* option);
+
+/**
+ *  Grabs a string-valued configuration option for the given component.
+ *
+ *  @param component The component to grab the configuration option for.
+ *  @param option_name Name of configuration option.
+ *  @param option Pointer to store the option in.
+ *
+ *  @return BH_ERROR if option does not exists. BH_SUCCESS othervise.
+ */
+DLLEXPORT bh_error bh_component_config_string_option(const bh_component* component,
+                                                     const char* option_name,
+                                                     char** option);
+
+/**
+ *  Grabs a string-valued "path to directory" configuration option for the given component.
+ *
+ *  @param component The component to grab the configuration option for.
+ *  @param option_name Name of configuration option.
+ *  @param option Pointer to store the option in.
+ *
+ *  @return BH_ERROR if the path is not a valid directory does not exists etc. BH_SUCCESS othervise.
+ */
+DLLEXPORT bh_error bh_component_config_path_option(const bh_component* component,
+                                                   const char* option_name,
+                                                   char** option);
+
 #ifdef __cplusplus
 }
 #endif

@@ -3,9 +3,11 @@
 #
 [stack_default]
 type = stack
-stack_default = node
-node = topological
-topological = cpu
+stack_default = bcexp
+bcexp = bccon
+bccon = topological
+topological = node
+node = cpu
 
 #
 # Other stack configurations (for reference, experiments, testing, etc.)
@@ -18,24 +20,19 @@ topological = cpu
 #
 [stack_gpu]
 type = stack
-stack_gpu = node
-node = topological
-topological = gpu
+stack_gpu = bcexp
+bcexp = topological
+topological = node
+node = gpu
 gpu = cpu
 
-[stack_pprint]
+[stack_fuseprinter]
 type = stack
-stack_pprint = node
-node = topological
-topological = fuseprinter
-fuseprinter = pricer
-pricer = cpu
-
-[stack_cpu]
-type = stack
-stack_cpu = complete_reduction
-complete_reduction = topological
-topological = node
+stack_fuseprinter = bcexp
+bcexp = topological
+topological = pricer
+pricer = fuseprinter
+fuseprinter = node
 node = cpu
 
 #
@@ -47,7 +44,7 @@ node = cpu
 #
 [bridge]
 type = bridge
-children = node
+children = bcexp
 
 #
 # Managers
@@ -105,7 +102,7 @@ children = cpu
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 
 #
-# Filters
+# Filters - Helpers / Tools
 #
 [pprint]
 type = filter
@@ -122,10 +119,22 @@ type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pricer${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 
-[complete_reduction]
+#
+# Filters - Bytecode transformers
+#
+[bccon]
 type = filter
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_complete_reduction${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
+reduction = 1
+
+[bcexp]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = node
+gc_threshold = 400
+matmul = 1
+sign = 1
 
 #
 # Engines

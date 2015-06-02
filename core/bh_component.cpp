@@ -515,3 +515,61 @@ double bh_component_config_lookup_double(const bh_component *component,
     snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
     return iniparser_getdouble(component->config, dictkey, notfound);
 }
+
+bh_error bh_component_config_int_option(const bh_component* component,
+                                        const char* option_name,
+                                        int min,
+                                        int max,
+                                        bh_intp* option)
+{
+    char* raw = bh_component_config_lookup(component, option_name);
+    if (!raw) {
+        fprintf(stderr, "parameter(%s) is missing.\n", option_name);
+        return BH_ERROR;
+    }
+    *option = (bh_intp)atoi(raw);
+    if ((*option < min) || (*option > max)) {
+        fprintf(
+            stderr,
+            "%s should be within range [%d,%d].\n",
+            option_name, min, max
+        );
+        return BH_ERROR;
+    }
+    return BH_SUCCESS;
+}
+
+bh_error bh_component_config_string_option(const bh_component* component,
+                                           const char* option_name,
+                                           char** option)
+{
+    *option = bh_component_config_lookup(component, option_name);
+    if (!option) {
+        fprintf(stderr, "%s is missing.\n", option_name);
+        return BH_ERROR;
+    }
+    return BH_SUCCESS;
+}
+
+bh_error bh_component_config_path_option(const bh_component* component,
+                                         const char* option_name,
+                                         char** option)
+{
+    *option = bh_component_config_lookup(component, option_name);
+
+    if (!option) {
+        fprintf(stderr, "Path is not set; option (%s).\n", option_name);
+        return BH_ERROR;
+    }
+    if (0 != access(*option, F_OK)) {
+        if (ENOENT == errno) {
+            fprintf(stderr, "Path does not exist; path (%s).\n", *option);
+        } else if (ENOTDIR == errno) {
+            fprintf(stderr, "Path is not a directory; path (%s).\n", *option);
+        } else {
+            fprintf(stderr, "Path is broken somehow; path (%s).\n", *option);
+        }
+        return BH_ERROR;
+    }
+    return BH_SUCCESS;
+}

@@ -341,6 +341,18 @@ void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
             
                 omask |= MAP;    // Operationmask
                 break;
+            case BH_SIGN:
+                in1 = symbol_table.map_operand(instr, 1);
+
+                tacs[idx].op    = MAP;  // TAC
+                tacs[idx].oper  = SIGN;
+                tacs[idx].ext   = NULL;
+                tacs[idx].out   = out;
+                tacs[idx].in1   = in1;
+                tacs[idx].in2   = in2;
+            
+                omask |= MAP;    // Operationmask
+                break;
             case BH_SIN:
                 in1 = symbol_table.map_operand(instr, 1);
 

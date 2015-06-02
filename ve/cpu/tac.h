@@ -89,19 +89,20 @@ typedef enum OPERATOR {
     REAL            = 49,
     RINT            = 50,
     SIN             = 51,
-    SINH            = 52,
-    SQRT            = 53,
-    TAN             = 54,
-    TANH            = 55,
-    TRUNC           = 56,
-    DISCARD         = 57,
-    FREE            = 58,
-    SYNC            = 59,
-    NONE            = 60,
-    FLOOD           = 61,
-    RANDOM          = 62,
-    RANGE           = 63,
-    EXTENSION_OPERATOR = 64
+    SIGN            = 52,
+    SINH            = 53,
+    SQRT            = 54,
+    TAN             = 55,
+    TANH            = 56,
+    TRUNC           = 57,
+    DISCARD         = 58,
+    FREE            = 59,
+    SYNC            = 60,
+    NONE            = 61,
+    FLOOD           = 62,
+    RANDOM          = 63,
+    RANGE           = 64,
+    EXTENSION_OPERATOR = 65
 } OPERATOR;
 
 typedef enum ETYPE {
@@ -171,6 +172,6 @@ typedef struct iterspace {
 #define ACCUMULATION    ( REDUCE_COMPLETE | REDUCE_PARTIAL | SCAN )
 #define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE_COMPLETE | REDUCE_PARTIAL | SCAN )
 #define NBUILTIN_OPS    8
-#define NBUILTIN_OPERS  62
+#define NBUILTIN_OPERS  63
 
 #endif

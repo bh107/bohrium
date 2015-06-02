@@ -22,7 +22,7 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
             self.name = op['name']
             self.nops = op['nop']
 
-            if self.name in ["identity"]:
+            if self.name in ["identity", "sign"]:
                 continue
             for t in op['type_sig']:
                 a = {}

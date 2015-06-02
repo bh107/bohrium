@@ -520,25 +520,33 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
     if ((linked()) && (meta.base == rhs.getBase())) {  // Self-aliasing is a NOOP
+        //std::cout << "Self-aliasing..." << std::endl;
         return *this;
     }
 
-    if (linked()) {
-        Runtime::instance().ref_count[meta.base] -= 1;       // Decrement ref-count
-        if (0==Runtime::instance().ref_count[meta.base]) {   // De-allocate it
-            bh_free(*this);                             // Send BH_FREE to Bohrium
-            bh_discard(*this);                          // Send BH_DISCARD to Bohrium
-            Runtime::instance().trash(meta.base);            // Queue the bh_base for de-allocation
-            Runtime::instance().ref_count.erase(meta.base);  // Remove from ref-count
+    if (getTemp()) {                                            // Assign to view
+        bh_identity(*this, rhs);
+    } else {                                                    // Aliasing
+        //std::cout << "Aliasing..." << std::endl;
+        if (linked()) {                         
+            //std::cout << "Unlinking..." << std::endl;
+            Runtime::instance().ref_count[meta.base] -= 1;      // Decrement ref-count
+            if (0==Runtime::instance().ref_count[meta.base]) {  // De-allocate it
+                bh_free(*this);                                 // Send BH_FREE to Bohrium
+                bh_discard(*this);                              // Send BH_DISCARD to Bohrium
+                Runtime::instance().trash(meta.base);           // Queue the bh_base for de-allocation
+                Runtime::instance().ref_count.erase(meta.base); // Remove from ref-count
+            }
+            unlink();
         }
-        unlink();
-    }
 
-    meta = rhs.meta;            // Create the alias
-    Runtime::instance().ref_count[meta.base] +=1;
+        meta = rhs.meta;            // Create the alias
+        Runtime::instance().ref_count[meta.base] +=1;
 
-    if (rhs.getTemp()) {        // Delete temps
-        delete &rhs;            // The deletion will decrement the ref-count
+        if (rhs.getTemp()) {        // Delete temps
+            //std::cout << "Deleting RHS" << std::endl;
+            delete &rhs;            // The deletion will decrement the ref-count
+        }
     }
 
     return *this;
@@ -563,12 +571,22 @@ multi_array<T>& view_as(multi_array<T>& rhs, Dimensions... shape)
     unpack_shape(result->meta.shape, 0, shape...);
     result->meta.ndim = dims;
 
-    for(int64_t i=dims-1; 0 <= i; --i) {        // Fix the stride
+    for (int64_t i=dims-1; 0 <= i; --i) {       // Fix the stride
         result->meta.stride[i] = stride;
         stride *= result->meta.shape[i];
     }
 
-    // TODO: Verify that the number of elements match
+    if (stride!=(int64_t)rhs.len()) {           // Check that reshape is valid
+        std::stringstream ss;
+        ss << "Reshaping failed nelements mismath ";
+        ss << stride << " != " << rhs.len();
+        ss << std::endl;
+        throw std::runtime_error(ss.str());
+    }
+
+    if (rhs.getTemp()) {
+        delete &rhs;
+    }
 
     return *result;
 }

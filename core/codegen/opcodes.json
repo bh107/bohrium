@@ -39,6 +39,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -83,6 +84,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -127,6 +129,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -170,6 +173,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -213,6 +217,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -227,6 +232,8 @@
             [ "BH_BOOL", "BH_BOOL" ],
             [ "BH_FLOAT32", "BH_FLOAT32" ],
             [ "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ],
             [ "BH_INT16", "BH_INT16" ],
             [ "BH_INT32", "BH_INT32" ],
             [ "BH_INT64", "BH_INT64" ],
@@ -245,6 +252,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -287,6 +295,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -329,6 +338,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -371,6 +381,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -413,6 +424,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -457,6 +469,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -501,6 +514,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -533,6 +547,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -565,6 +580,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -597,6 +613,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -619,6 +636,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -661,6 +679,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -703,6 +722,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -743,6 +763,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -783,6 +804,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -823,6 +845,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -853,6 +876,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -892,6 +916,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -931,6 +956,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -956,6 +982,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -981,6 +1008,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1006,6 +1034,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1031,6 +1060,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1056,6 +1086,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1081,6 +1112,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1104,6 +1136,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1127,6 +1160,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1150,6 +1184,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1173,6 +1208,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1196,6 +1232,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1219,6 +1256,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1252,6 +1290,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1277,6 +1316,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1300,6 +1340,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1323,6 +1364,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1348,6 +1390,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1371,6 +1414,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1396,6 +1440,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1419,6 +1464,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1444,6 +1490,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1467,6 +1514,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1490,6 +1538,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1513,6 +1562,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1536,6 +1586,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1577,6 +1628,7 @@
             [ "S", "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1600,6 +1652,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1623,6 +1676,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1791,6 +1845,7 @@
             [ "S", "S" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1809,6 +1864,7 @@
             [ "S" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": true
@@ -1827,6 +1883,7 @@
             [ "S" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": true
@@ -1845,6 +1902,7 @@
             [ "S" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": true
@@ -1862,6 +1920,7 @@
 
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": true
@@ -1893,6 +1952,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -1925,6 +1985,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -1955,6 +2016,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -1985,6 +2047,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2005,6 +2068,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2033,6 +2097,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2053,6 +2118,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2081,6 +2147,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2101,6 +2168,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2129,6 +2197,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2146,6 +2215,7 @@
             [ "L", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -2164,6 +2234,7 @@
             [ "C" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -2187,6 +2258,7 @@
             [ "S", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -2210,6 +2282,7 @@
             [ "S", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -2242,6 +2315,7 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    true,
     "system_opcode": false
@@ -2274,8 +2348,70 @@
             [ "S", "S", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_SIGN",
+    "doc":  "Computes the SIGN of elements. -1 = negative, 1=positive. 0 = 0.",
+    "code": "sign(a)",
+    "id":   "75",
+    "nop":   2,
+    "types": [
+        [ "BH_COMPLEX128",  "BH_COMPLEX128"],
+        [ "BH_COMPLEX64",   "BH_COMPLEX64"],
+        [ "BH_FLOAT32",     "BH_FLOAT32"],
+        [ "BH_FLOAT64",     "BH_FLOAT64"],
+        [ "BH_INT16",       "BH_INT16"],
+        [ "BH_INT32",       "BH_INT32"],
+        [ "BH_INT64",       "BH_INT64"],
+        [ "BH_INT8",        "BH_INT8"]
+    ],
+    "layout": [
+        [ "C", "C", "C" ],
+        [ "C", "S", "C" ],
+        [ "C", "C", "S" ],
+        [ "C", "S", "S" ]
+    ],
+    "elementwise":   true,
+    "composite":     true,
+    "reduction":     false,
+    "accumulate":    false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_MATMUL",
+    "doc":  "Matrix multiplication C = A x B",
+    "code": "matmul(A,B)",
+    "id":   "76",
+    "nop":   3,
+    "types": [
+        [ "BH_BOOL"      , "BH_BOOL"      , "BH_BOOL"       ],
+        [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_COMPLEX128" ],
+        [ "BH_COMPLEX64" , "BH_COMPLEX64" , "BH_COMPLEX64"  ],
+        [ "BH_FLOAT32"   , "BH_FLOAT32"   , "BH_FLOAT32"    ],
+        [ "BH_FLOAT64"   , "BH_FLOAT64"   , "BH_FLOAT64"    ],
+        [ "BH_INT16"     , "BH_INT16"     , "BH_INT16"      ],
+        [ "BH_INT32"     , "BH_INT32"     , "BH_INT32"      ],
+        [ "BH_INT64"     , "BH_INT64"     , "BH_INT64"      ],
+        [ "BH_INT8"      , "BH_INT8"      , "BH_INT8"       ],
+        [ "BH_UINT16"    , "BH_UINT16"    , "BH_UINT16"     ],
+        [ "BH_UINT32"    , "BH_UINT32"    , "BH_UINT32"     ],
+        [ "BH_UINT64"    , "BH_UINT64"    , "BH_UINT64"     ],
+        [ "BH_UINT8"     , "BH_UINT8"     , "BH_UINT8"      ]
+    ],
+    "layout": [
+        [ "C", "C", "C" ],
+        [ "C", "S", "C" ],
+        [ "C", "C", "S" ],
+        [ "C", "S", "S" ]
+    ],
+    "elementwise":   false,
+    "composite":     true,
+    "reduction":     false,
+    "accumulate":    false,
     "system_opcode": false
 }
 
