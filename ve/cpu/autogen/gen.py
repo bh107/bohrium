@@ -42,7 +42,8 @@ def instrs_to_tacs(opcodes, ops, opers, types, layouts):
     """Construct the data need to create a map from bh_instruction to tac_t."""
 
     ewise_u     = []
-    ewise_b     = []    
+    ewise_b     = []
+    index       = []
     scans       = []
     reductions  = []
     generators  = []
@@ -71,6 +72,8 @@ def instrs_to_tacs(opcodes, ops, opers, types, layouts):
                 generators.append([opcode, 'GENERATE', 'RANDOM', 2])
             elif 'RANGE' in opcode:
                 generators.append([opcode, 'GENERATE', 'RANGE', 0])
+            elif 'GATHER' in opcode or 'SCATTER' in opcode:
+                index.append([opcode, 'INDEX', opcode.replace('BH_',''), 3])
             else:
                 operator = '_'.join(opcode.split('_')[1:])
                 if o['nop'] == 3:
@@ -89,6 +92,7 @@ def instrs_to_tacs(opcodes, ops, opers, types, layouts):
         sorted(reductions)      +\
         sorted(scans)           +\
         sorted(generators)      +\
+        sorted(index)           +\
         sorted(system)
     }]
 

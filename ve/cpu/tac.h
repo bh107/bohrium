@@ -32,10 +32,11 @@ typedef enum OPERATION {
     REDUCE_COMPLETE = 4,
     REDUCE_PARTIAL = 8,
     SCAN       = 16,
-    GENERATE   = 32,
-    SYSTEM     = 64,
-    EXTENSION  = 128,
-    NOOP       = 256
+    INDEX      = 32,
+    GENERATE   = 64,
+    SYSTEM     = 128,
+    EXTENSION  = 256,
+    NOOP       = 512
 } OPERATION;
 
 typedef enum OPERATOR {
@@ -95,14 +96,16 @@ typedef enum OPERATOR {
     TAN             = 55,
     TANH            = 56,
     TRUNC           = 57,
-    DISCARD         = 58,
-    FREE            = 59,
-    SYNC            = 60,
-    NONE            = 61,
-    FLOOD           = 62,
-    RANDOM          = 63,
-    RANGE           = 64,
-    EXTENSION_OPERATOR = 65
+    GATHER          = 58,
+    SCATTER         = 59,
+    DISCARD         = 60,
+    FREE            = 61,
+    SYNC            = 62,
+    NONE            = 63,
+    FLOOD           = 64,
+    RANDOM          = 65,
+    RANGE           = 66,
+    EXTENSION_OPERATOR = 67
 } OPERATOR;
 
 typedef enum ETYPE {
@@ -171,7 +174,7 @@ typedef struct iterspace {
 #define REDUCTION       ( REDUCE_COMPLETE | REDUCE_PARTIAL )
 #define ACCUMULATION    ( REDUCE_COMPLETE | REDUCE_PARTIAL | SCAN )
 #define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE_COMPLETE | REDUCE_PARTIAL | SCAN )
-#define NBUILTIN_OPS    8
-#define NBUILTIN_OPERS  63
+#define NBUILTIN_OPS    9
+#define NBUILTIN_OPERS  65
 
 #endif

@@ -603,6 +603,8 @@ int tac_noperands(const tac_t& tac)
                     throw runtime_error("noperands does not know how many operands are used.");
                     return 0;
             }
+        case INDEX:
+            return 3;
         case SYSTEM:
             switch(tac.oper) {
                 case DISCARD:

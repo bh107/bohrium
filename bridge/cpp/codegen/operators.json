@@ -201,6 +201,12 @@
 ["rint",    "BH_RINT",  "sugar.unary",      true],
 ["bh_rint", "BH_RINT",  "runtime.unary",    true],
 
+["scatter",     "BH_SCATTER",  "sugar.binary",      true],
+["bh_scatter",  "BH_SCATTER",  "runtime.binary",    true],
+["gather",      "BH_GATHER",  "sugar.binary",      true],
+["bh_gather",   "BH_GATHER",  "runtime.binary",    true],
+
+
 ["bh_add_reduce",           "BH_ADD_REDUCE",            "runtime.reduce", true],
 ["bh_multiply_reduce",      "BH_MULTIPLY_REDUCE",       "runtime.reduce", true],
 ["bh_minimum_reduce",       "BH_MINIMUM_REDUCE",        "runtime.reduce", true],

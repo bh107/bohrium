@@ -619,6 +619,42 @@ inline multi_array<T>& atan2 (const T lhs, multi_array<T>& rhs)
 }
 
 template <typename T>
+inline multi_array<T>& scatter (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_scatter (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<T>& scatter (multi_array<T>& lhs, const T rhs)
+{
+    return bh_scatter (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<T>& scatter (const T lhs, multi_array<T>& rhs)
+{
+    return bh_scatter (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<T>& gather (multi_array<T>& lhs, multi_array<T>& rhs)
+{
+    return bh_gather (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<T>& gather (multi_array<T>& lhs, const T rhs)
+{
+    return bh_gather (lhs, rhs);
+}
+
+template <typename T>
+inline multi_array<T>& gather (const T lhs, multi_array<T>& rhs)
+{
+    return bh_gather (lhs, rhs);
+}
+
+template <typename T>
 inline multi_array<T>& matmul (multi_array<T>& lhs, multi_array<T>& rhs)
 {
     return bh_matmul (lhs, rhs);

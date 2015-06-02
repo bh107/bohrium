@@ -2413,6 +2413,66 @@
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
+},
+{
+    "opcode": "BH_GATHER",
+    "doc":  "Gather elements from IN selected by INDEX into OUT. IN.shape == INDEX.shape.",
+    "code": "gather(OUT, IN, INDEX)",
+    "id":   "77",
+    "nop":   3,
+    "types": [
+        [ "BH_BOOL"      , "BH_BOOL"      , "BH_UINT64"],
+        [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_UINT64"],
+        [ "BH_COMPLEX64" , "BH_COMPLEX64" , "BH_UINT64"],
+        [ "BH_FLOAT32"   , "BH_FLOAT32"   , "BH_UINT64"],
+        [ "BH_FLOAT64"   , "BH_FLOAT64"   , "BH_UINT64"],
+        [ "BH_INT16"     , "BH_INT16"     , "BH_UINT64"],
+        [ "BH_INT32"     , "BH_INT32"     , "BH_UINT64"],
+        [ "BH_INT64"     , "BH_INT64"     , "BH_UINT64"],
+        [ "BH_INT8"      , "BH_INT8"      , "BH_UINT64"],
+        [ "BH_UINT16"    , "BH_UINT16"    , "BH_UINT64"],
+        [ "BH_UINT32"    , "BH_UINT32"    , "BH_UINT64"],
+        [ "BH_UINT64"    , "BH_UINT64"    , "BH_UINT64"],
+        [ "BH_UINT8"     , "BH_UINT8"     , "BH_UINT64"]
+    ],
+    "layout": [
+        [ "C", "C", "C" ]
+    ],
+    "elementwise":   false,
+    "composite":     false,
+    "reduction":     false,
+    "accumulate":    false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_SCATTER",
+    "doc":  "Scatter all elements of IN into OUT selected by INDEX. OUT.shape == INDEX.shape.",
+    "code": "scatter(OUT, IN, INDEX)",
+    "id":   "78",
+    "nop":   3,
+    "types": [
+        [ "BH_BOOL"      , "BH_BOOL"      , "BH_UINT64"],
+        [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_UINT64"],
+        [ "BH_COMPLEX64" , "BH_COMPLEX64" , "BH_UINT64"],
+        [ "BH_FLOAT32"   , "BH_FLOAT32"   , "BH_UINT64"],
+        [ "BH_FLOAT64"   , "BH_FLOAT64"   , "BH_UINT64"],
+        [ "BH_INT16"     , "BH_INT16"     , "BH_UINT64"],
+        [ "BH_INT32"     , "BH_INT32"     , "BH_UINT64"],
+        [ "BH_INT64"     , "BH_INT64"     , "BH_UINT64"],
+        [ "BH_INT8"      , "BH_INT8"      , "BH_UINT64"],
+        [ "BH_UINT16"    , "BH_UINT16"    , "BH_UINT64"],
+        [ "BH_UINT32"    , "BH_UINT32"    , "BH_UINT64"],
+        [ "BH_UINT64"    , "BH_UINT64"    , "BH_UINT64"],
+        [ "BH_UINT8"     , "BH_UINT8"     , "BH_UINT64"]
+    ],
+    "layout": [
+        [ "C", "C", "C" ]
+    ],
+    "elementwise":   false,
+    "composite":     false,
+    "reduction":     false,
+    "accumulate":    false,
+    "system_opcode": false
 }
 
 ]
