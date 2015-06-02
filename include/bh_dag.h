@@ -24,18 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/foreach.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/topological_sort.hpp>
-#include <boost/graph/breadth_first_search.hpp>
-#include <boost/graph/graphviz.hpp>
-#include <iterator>
-#include <iostream>
-#include <fstream>
 #include <vector>
-#include <map>
 #include <set>
-#include <stdexcept>
 #include <bh.h>
-#include "bh_fuse.h"
 
 namespace bohrium {
 namespace dag {
@@ -229,25 +220,27 @@ public:
             }
         }
 
-        //TODO: for now we run some unittests
-        BOOST_FOREACH(const EdgeW &e, edges(_bglW))
-        {
-            if(not _bglD[source(e, _bglW)].fusible(_bglD[target(e, _bglW)]))
+        //Lets run some unittests
+        #ifndef NDEBUG
+            BOOST_FOREACH(const EdgeW &e, edges(_bglW))
             {
-                cout << "non fusible weight edge!: " << e << endl;
+                if(not _bglD[source(e, _bglW)].fusible(_bglD[target(e, _bglW)]))
+                {
+                    cout << "non fusible weight edge!: " << e << endl;
+                    assert(1 == 2);
+                }
+            }
+            if(not _bglD[a].fusible())
+            {
+                cout << "kernel merge " << a << " " << b << endl;
                 assert(1 == 2);
             }
-        }
-        if(not _bglD[a].fusible())
-        {
-            cout << "kernel merge " << a << " " << b << endl;
-            assert(1 == 2);
-        }
-        if(cycles(_bglD))
-        {
-            cout << "kernel merge " << a << " " << b << endl;
-            assert(1 == 2);
-        }
+            if(cycles(_bglD))
+            {
+                cout << "kernel merge " << a << " " << b << endl;
+                assert(1 == 2);
+            }
+        #endif
     }
 
     /* Transitive reduce the 'dag', i.e. remove all redundant edges,

@@ -312,57 +312,6 @@ bool dag_validate(const GraphD &dag)
     return true;
 }
 
-bool dependency_subset(const GraphD &dag, Vertex sub, Vertex super)
-{
-
-    //The sub-vertex should have equal or less in- and out-degree.
-    if(in_degree(sub,dag) > in_degree(super,dag))
-        return false;
-    if(out_degree(sub,dag) > out_degree(super,dag))
-        return false;
-
-    //Check that all adjacent vertices of 'sub' is also adjacent to 'super'
-    BOOST_FOREACH(Vertex v1, adjacent_vertices(sub,dag))
-    {
-        if(v1 == super)
-            continue;
-        bool found = false;
-        BOOST_FOREACH(Vertex v2, adjacent_vertices(super,dag))
-        {
-            if(v2 == sub)
-                continue;
-            if(v1 == v2)
-            {
-                found = true;
-                break;
-            }
-        }
-        if(not found)
-            return false;
-    }
-    //Check that all inverse adjacent vertices of 'sub' is also inverse
-    //adjacent to 'super'
-    BOOST_FOREACH(Vertex v1, inv_adjacent_vertices(sub,dag))
-    {
-        if(v1 == super)
-            continue;
-        bool found = false;
-        BOOST_FOREACH(Vertex v2, inv_adjacent_vertices(super,dag))
-        {
-            if(v2 == sub)
-                continue;
-            if(v1 == v2)
-            {
-                found = true;
-                break;
-            }
-        }
-        if(not found)
-            return false;
-    }
-    return true;
-}
-
 void fuse_gently(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();

@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/graph/connected_components.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/thread.hpp>
+#include <boost/lexical_cast.hpp>
 #include <vector>
 #include <map>
 #include <iterator>
