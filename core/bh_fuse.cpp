@@ -77,9 +77,11 @@ static bool fuse_no_xsweep(const bh_instruction *a, const bh_instruction *b)
  */
 static bool fuse_no_xsweep_scalar_seperate(const bh_instruction *a, const bh_instruction *b)
 {
+#define __scalar(i) (bh_is_scalar(&(i)->operand[0]) || \
+                     (bh_opcode_is_accumulate((i)->opcode) && (i)->operand[0].ndim == 1))
     return (fuse_no_xsweep(a,b) &&
-            ((bh_is_scalar(&a->operand[0]) && bh_is_scalar(&b->operand[0])) ||
-             (!bh_is_scalar(&a->operand[0]) && !bh_is_scalar(&b->operand[0]))));
+            ((__scalar(a) && __scalar(b)) ||
+             (!__scalar(a) && !__scalar(b))));
 }
 
 static bool fuse_same_shape(const bh_instruction *a, const bh_instruction *b)
