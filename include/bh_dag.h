@@ -309,24 +309,7 @@ public:
  *
  * Throw logic_error() if the kernel_list wihtin 'bhir' isn't empty
  */
-void from_bhir(bh_ir &bhir, GraphDW &dag)
-{
-    using namespace std;
-    using namespace boost;
-    assert(num_vertices(dag.bglD()) == 0);
-
-    if(bhir.kernel_list.size() != 0)
-    {
-        throw logic_error("The kernel_list is not empty!");
-    }
-    //Build a singleton DAG
-    for(uint64_t idx=0; idx<bhir.instr_list.size(); ++idx)
-    {
-        bh_ir_kernel k(bhir);
-        k.add_instr(idx);
-        dag.add_vertex(k);
-    }
-}
+void from_bhir(bh_ir &bhir, GraphDW &dag);
 
 /* Creates a new DAG based on a kernel list where each vertex is a kernel.
  * NB: the 'kernels' must not be deallocated or moved before 'dag'.
@@ -336,18 +319,7 @@ void from_bhir(bh_ir &bhir, GraphDW &dag)
  * @kernels The kernel list
  * @dag     The output dag
  */
-void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
-{
-    using namespace std;
-    using namespace boost;
-    assert(num_vertices(dag.bglD()) == 0);
-
-    BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
-    {
-        if(kernel.instr_indexes.size() > 0)
-            dag.add_vertex(kernel);
-    }
-}
+void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag);
 
 /* Fills the kernel list based on the DAG where each vertex is a kernel.
  *
@@ -356,20 +328,7 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
  * @dag     The dag
  * @kernels The kernel list output
  */
-void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
-{
-    using namespace std;
-    using namespace boost;
-    assert(kernel_list.size() == 0);
-
-    vector<Vertex> topological_order;
-    topological_sort(dag, back_inserter(topological_order));
-    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
-    {
-        if(dag[v].instr_indexes.size() > 0)
-            kernel_list.push_back(dag[v]);
-    }
-}
+void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list);
 
 /* Determines whether there exist a path from 'a' to 'b'
  *
@@ -381,47 +340,7 @@ void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
  * @long_path  Whether to accept path of length one
  * @return     True if there is a path
  */
-bool path_exist(Vertex a, Vertex b, const GraphD &dag,
-                bool long_path=false)
-{
-    using namespace std;
-    using namespace boost;
-
-    struct path_visitor:default_bfs_visitor
-    {
-        const Vertex dst;
-        path_visitor(Vertex b):dst(b){};
-
-        void examine_edge(EdgeD e, const GraphD &g) const
-        {
-            if(target(e,g) == dst)
-                throw runtime_error("");
-        }
-    };
-    struct long_visitor:default_bfs_visitor
-    {
-        const Vertex src, dst;
-        long_visitor(Vertex a, Vertex b):src(a),dst(b){};
-
-        void examine_edge(EdgeD e, const GraphD &g) const
-        {
-            if(source(e,g) != src and target(e,g) == dst)
-                throw runtime_error("");
-        }
-    };
-    try
-    {
-        if(long_path)
-            breadth_first_search(dag, a, visitor(long_visitor(a,b)));
-        else
-            breadth_first_search(dag, a, visitor(path_visitor(b)));
-    }
-    catch (const runtime_error &e)
-    {
-        return true;
-    }
-    return false;
-}
+bool path_exist(Vertex a, Vertex b, const GraphD &dag, bool long_path=false);
 
 /* Determines whether there are cycles in the Graph
  *
@@ -430,23 +349,7 @@ bool path_exist(Vertex a, Vertex b, const GraphD &dag,
  * @g       The digraph
  * @return  True if there are cycles in the digraph, else false
  */
-bool cycles(const GraphD &g)
-{
-    using namespace std;
-    using namespace boost;
-    try
-    {
-        //TODO: topological sort is an efficient method for finding cycles,
-        //but we should avoid allocating a vector
-        vector<Vertex> topological_order;
-        topological_sort(g, back_inserter(topological_order));
-        return false;
-    }
-    catch (const not_a_dag &e)
-    {
-        return true;
-    }
-}
+bool cycles(const GraphD &g);
 
 /* Determines the cost of the DAG.
  *
@@ -455,18 +358,7 @@ bool cycles(const GraphD &g)
  * @dag     The DAG
  * @return  The cost
  */
-uint64_t dag_cost(const GraphD &dag)
-{
-    using namespace std;
-    using namespace boost;
-
-    uint64_t cost = 0;
-    BOOST_FOREACH(const Vertex &v, vertices(dag))
-    {
-        cost += dag[v].cost();
-    }
-    return cost;
-}
+uint64_t dag_cost(const GraphD &dag);
 
 /* Sort the weights in descending order
  *
@@ -474,19 +366,7 @@ uint64_t dag_cost(const GraphD &dag)
  *
  * @edges  The input/output edge list
  */
-void sort_weights(const GraphW &dag, std::vector<EdgeW> &edges)
-{
-    struct wcmp
-    {
-        const GraphW &graph;
-        wcmp(const GraphW &d): graph(d){}
-        bool operator() (const EdgeW &e1, const EdgeW &e2)
-        {
-            return (graph[e1].value > graph[e2].value);
-        }
-    };
-    sort(edges.begin(), edges.end(), wcmp(dag));
-}
+void sort_weights(const GraphW &dag, std::vector<EdgeW> &edges);
 
 /* Writes the DOT file of a DAG
  *
@@ -495,227 +375,14 @@ void sort_weights(const GraphW &dag, std::vector<EdgeW> &edges)
  * @dag       The DAG to write
  * @filename  The name of DOT file
  */
-void pprint(const GraphDW &dag, const char filename[])
-{
-    using namespace std;
-    using namespace boost;
-    //Lets create a graph with both vertical and horizontal edges
-    GraphD new_dag(dag.bglD());
-    map<pair<Vertex, Vertex>, pair<int64_t, bool> > weights;
-
-    BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
-    {
-        Vertex src = source(e, dag.bglW());
-        Vertex dst = target(e, dag.bglW());
-        bool exist = edge(src,dst,new_dag).second or edge(dst,src,new_dag).second;
-        if(not exist)
-            add_edge(src, dst, new_dag);
-
-        //Save an edge map of weights and if it is directed
-        weights[make_pair(src,dst)] = make_pair(dag.bglW()[e].value, exist);
-    }
-
-    //We define a graph and a kernel writer for graphviz
-    struct graph_writer
-    {
-        const GraphD &graph;
-        graph_writer(const GraphD &g) : graph(g) {};
-        void operator()(std::ostream& out) const
-        {
-            out << "labelloc=\"t\";" << endl;
-            out << "label=\"DAG with a total cost of " << dag_cost(graph);
-            out << " bytes\";" << endl;
-            out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
-            out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
-        }
-    };
-    struct kernel_writer
-    {
-        const GraphD &graph;
-        kernel_writer(const GraphD &g) : graph(g) {};
-        void operator()(std::ostream& out, const Vertex& v) const
-        {
-            char buf[1024*10];
-            out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
-            out << " bytes\\n";
-            out << "Shape: ";
-            const std::vector<bh_index>& shape = graph[v].get_shape();
-            for (size_t i = 0; i < shape.size(); ++i)
-                out << (i?", ":"[") << shape[i];
-            out << "]  ";
-            out << "\\lSweeps: ";
-            for (const std::pair<bh_intp, bh_int64> &sweep: graph[v].get_sweeps())
-            {
-                out << "(" << sweep.first << ", " << sweep.second << ")  ";
-            }
-            out << "\\lInput views: \\l";
-            BOOST_FOREACH(const bh_view &i, graph[v].get_input_set())
-            {
-                bh_sprint_view(&i, buf);
-                out << graph[v].get_view_id(i) << ":" << buf << "\\l";
-            }
-            out << "Output views: \\l";
-            BOOST_FOREACH(const bh_view &i, graph[v].get_output_set())
-            {
-                bh_sprint_view(&i, buf);
-                out << graph[v].get_view_id(i) << ":" << buf << "\\l";
-            }
-            out << "Parameters: \\l";
-            for (const std::pair<size_t,bh_base*>& p: graph[v].get_parameters())
-            {
-                bh_sprint_base(p.second, buf);
-                out << "[" << p.first << "]" << buf << "\\l";
-            }
-            out << "Temp base-arrays: \\l";
-            BOOST_FOREACH(const bh_base* i, graph[v].get_temps())
-            {
-                bh_sprint_base(i, buf);
-                out << buf << "\\l";
-            }
-            out << "Free base-arrays: \\l";
-            BOOST_FOREACH(const bh_base* i, graph[v].get_frees())
-            {
-                bh_sprint_base(i, buf);
-                out << buf << "\\l";
-            }
-            out << "Discard base-arrays: \\l";
-            BOOST_FOREACH(const bh_base* i, graph[v].get_discards())
-            {
-                bh_sprint_base(i, buf);
-                out << buf << "\\l";
-            }
-            BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes)
-            {
-                const bh_instruction &instr = graph[v].bhir->instr_list[idx];
-                out << "[" << idx << "] ";
-                bh_sprint_instr(&instr, buf, "\\l");
-                out << buf << "\\l";
-            }
-            out << "\"]";
-        }
-    };
-    struct edge_writer
-    {
-        const GraphD &graph;
-        const map<pair<Vertex, Vertex>, pair<int64_t, bool> > &wmap;
-        edge_writer(const GraphD &g, const map<pair<Vertex, Vertex>, pair<int64_t, bool> > &w) : graph(g), wmap(w) {};
-        void operator()(std::ostream& out, const EdgeD& e) const
-        {
-            Vertex src = source(e, graph);
-            Vertex dst = target(e, graph);
-            int64_t c = -1;
-            bool directed = true;
-            map<pair<Vertex, Vertex>, pair<int64_t, bool> >::const_iterator it = wmap.find(make_pair(src,dst));
-            if(it != wmap.end())
-                tie(c,directed) = (*it).second;
-
-            out << "[label=\" ";
-            if(c == -1)
-                out << "N/A\" color=red";
-            else
-                out << c << " bytes\"";
-            if(not directed)
-                out << " dir=none color=green constraint=false";
-            out << "]";
-        }
-    };
-    ofstream file;
-    file.open(filename);
-    write_graphviz(file, new_dag, kernel_writer(new_dag),
-                   edge_writer(new_dag, weights), graph_writer(new_dag));
-    file.close();
-}
+void pprint(const GraphDW &dag, const char filename[]);
 
 /* Check that the 'dag' is valid
  *
  * @dag     The dag in question
  * @return  The bool answer
  */
-bool dag_validate(const GraphD &dag)
-{
-    using namespace std;
-    using namespace boost;
-    BOOST_FOREACH(Vertex v1, vertices(dag))
-    {
-        BOOST_FOREACH(Vertex v2, vertices(dag))
-        {
-            if(v1 != v2)
-            {
-                const int dep = dag[v1].dependency(dag[v2]);
-                if(dep == 1)//'v1' depend on 'v2'
-                {
-                    if(not path_exist(v2, v1, dag, false))
-                    {
-                        cout << "not path between " << v1 << " and " << v2 << endl;
-                        pprint(dag, "validate-fail.dot");
-                        return false;
-                    }
-                }
-            }
-        }
-    }
-    return true;
-}
-
-/* Determines whether the dependencies of 'sub' is a subset of 'super'
- *
- * @dag    The dependency DAG
- * @sub    The vertex with the dependency subset
- * @super  The vertex with the dependency superset
- * @return The boolean answer
- */
-bool dependency_subset(const GraphD &dag, Vertex sub, Vertex super)
-{
-    using namespace std;
-    using namespace boost;
-
-    //The sub-vertex should have equal or less in- and out-degree.
-    if(in_degree(sub,dag) > in_degree(super,dag))
-        return false;
-    if(out_degree(sub,dag) > out_degree(super,dag))
-        return false;
-
-    //Check that all adjacent vertices of 'sub' is also adjacent to 'super'
-    BOOST_FOREACH(Vertex v1, adjacent_vertices(sub,dag))
-    {
-        if(v1 == super)
-            continue;
-        bool found = false;
-        BOOST_FOREACH(Vertex v2, adjacent_vertices(super,dag))
-        {
-            if(v2 == sub)
-                continue;
-            if(v1 == v2)
-            {
-                found = true;
-                break;
-            }
-        }
-        if(not found)
-            return false;
-    }
-    //Check that all inverse adjacent vertices of 'sub' is also inverse
-    //adjacent to 'super'
-    BOOST_FOREACH(Vertex v1, inv_adjacent_vertices(sub,dag))
-    {
-        if(v1 == super)
-            continue;
-        bool found = false;
-        BOOST_FOREACH(Vertex v2, inv_adjacent_vertices(super,dag))
-        {
-            if(v2 == sub)
-                continue;
-            if(v1 == v2)
-            {
-                found = true;
-                break;
-            }
-        }
-        if(not found)
-            return false;
-    }
-    return true;
-}
+bool dag_validate(const GraphD &dag);
 
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings
@@ -725,57 +392,7 @@ bool dependency_subset(const GraphD &dag, Vertex sub, Vertex super)
  *
  * @dag The DAG to fuse
  */
-void fuse_gently(GraphDW &dag)
-{
-    using namespace std;
-    using namespace boost;
-
-    const GraphD &d = dag.bglD();
-    set<EdgeD> dep_edges(edges(d).first, edges(d).second);
-    /*
-    char t[1024];
-    sprintf(t, "tmp-%ld.dot", num_vertices(d));
-    cout << t << endl;
-    pprint(dag, t);
-    */
-
-    while(not dep_edges.empty())
-    {
-        //Lets find a "single ending" edge
-        set<EdgeD>::iterator it=dep_edges.begin();
-        for(; it != dep_edges.end(); ++it)
-        {
-            Vertex src = source(*it, d);
-            Vertex dst = target(*it, d);
-            if(in_degree(src, d) == 0 and out_degree(src, d) == 1 \
-               and d[src].input_and_output_subset_of(d[dst]))
-            {
-                break;
-            }
-            else if(in_degree(dst, d) == 1 and out_degree(dst, d) == 0 \
-               and d[dst].input_and_output_subset_of(d[src]))
-            {
-                break;
-            }
-        }
-        if(it == dep_edges.end())
-            break;//No single ending edge found
-
-        //Lets extract the single ending edge
-        EdgeD e = *it;
-        dep_edges.erase(it);
-        Vertex src = source(e, d);
-        Vertex dst = target(e, d);
-
-        //And merge them if able
-        if(d[src].fusible(d[dst]))
-            dag.merge_vertices(src, dst);
-
-        //Note that 'dep_edges' is maintained since the extracted edge 'e'
-        //is the only edge removed by the merge
-    }
-    dag.remove_cleared_vertices();
-}
+void fuse_gently(GraphDW &dag);
 
 /* Fuse vertices in the graph greedily, which is a non-optimal
  * algorithm that fuses the most costly edges in the DAG first.
@@ -787,60 +404,7 @@ void fuse_gently(GraphDW &dag)
  * @dag      The DAG to fuse
  * @ignores  List of edges not to merge
  */
-void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores=NULL)
-{
-    using namespace std;
-    using namespace boost;
-
-    //Help function to find and sort the weight edges.
-    struct
-    {
-        void operator()(const GraphDW &g, vector<EdgeW> &edge_list,
-                        const set<Vertex> *ignores)
-        {
-            if(ignores == NULL)
-            {
-                BOOST_FOREACH(const EdgeW &e, edges(g.bglW()))
-                {
-                    edge_list.push_back(e);
-                }
-            }
-            else
-            {
-                BOOST_FOREACH(const EdgeW &e, edges(g.bglW()))
-                {
-                    if(ignores->find(source(e, g.bglW())) == ignores->end() and
-                       ignores->find(target(e, g.bglW())) == ignores->end())
-                        edge_list.push_back(e);
-                }
-            }
-            sort_weights(g.bglW(), edge_list);
-        }
-    }get_sorted_edges;
-
-    vector<EdgeW> sorted;
-    while(true)
-    {
-        dag.transitive_reduction();
-        sorted.clear();
-        get_sorted_edges(dag, sorted, ignores);
-
-        if(sorted.size() == 0)
-            break;//No more fusible edges left
-
-        EdgeW &e = sorted[0];
-        Vertex a = source(e, dag.bglW());
-        Vertex b = target(e, dag.bglW());
-        if(path_exist(a, b, dag.bglD(), false))
-            dag.merge_vertices(a, b);
-        else
-            dag.merge_vertices(b, a);
-
-        //Note: since we call transitive_reduction() in each iteration,
-        //the merge will never introduce cyclic dependencies.
-        assert(not cycles(dag.bglD()));
-    }
-}
+void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores=NULL);
 
 }} //namespace bohrium::dag
 
