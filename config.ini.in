@@ -21,8 +21,8 @@ node = cpu
 [stack_gpu]
 type = stack
 stack_gpu = bcexp
-bcexp = topological
-topological = node
+bcexp = greedy
+greedy = node
 node = gpu
 gpu = cpu
 
