@@ -174,6 +174,13 @@ class BenchHelper:
         This function is used as a means to control til --dtype argument
         passed to the benchmark script and provide a uuid for benchmark output.
         """
+        #Lets make sure that benchpress is installed
+        try:
+            subprocess.call(['bp-info', '--benchmarks'])
+        except OSError:
+            print("ERROR: benchpress not install -- skipping test.")
+            raise StopIteration()
+
         self.uuid = str(uuid.uuid4())
         for dtype in self.dtypes:
             yield ({0:bh.empty(self.size, bohrium=False, dtype=dtype)},
@@ -210,7 +217,6 @@ class BenchHelper:
             stdout  = subprocess.PIPE,
             stderr  = subprocess.PIPE,
         ).communicate()
-
 
         sys_exec = [sys.executable, "-m", "bohrium"] if target else [sys.executable]
         benchmark_path = os.sep.join([benchmarks_dir.strip(), self.script, "python_numpy", self.script+ ".py"])
@@ -377,5 +383,5 @@ if __name__ == "__main__":
                                     print(_C.OKGREEN + str(res1) + _C.ENDC)
                                     print(_C.FAIL + str(res2) + _C.ENDC)
                                     sys.exit (1)
-                                    
+
     print("*"*24, "Finish", "*"*24)
