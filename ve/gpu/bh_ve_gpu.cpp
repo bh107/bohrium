@@ -31,16 +31,24 @@ ResourceManager* resourceManager;
 bh_error bh_ve_gpu_init(const char *name)
 {
     // defined in core/bh_fuse.cpp
-    if (getenv("BH_FUSE_MODEL") != NULL) {
-        std::cerr << "VE-GPU: Warning! fuse model not set by the GPU-VE: '" << std::endl;
+    std::string preferedFuseModel("NO_XSWEEP_SCALAR_SEPERATE");
+    char* fm = getenv("BH_FUSE_MODEL");
+    if (fm != NULL) {
+        std::string fuseModel(fm);
+        if (preferedFuseModel.compare(fuseModel) != 0)
+            std::cerr << "[GPU-VE] Warning! fuse model not set by the GPU-VE: '" <<
+                fuseModel << std::endl;
     }
     else{
-        setenv("BH_FUSE_MODEL", "NO_XSWEEP_SCALAR_SEPERATE", 1);
+        setenv("BH_FUSE_MODEL", preferedFuseModel.c_str(), 1);
     }
 
     bh_error err;
     if((err = bh_component_init(&component, name)) != BH_SUCCESS)
+    {
+        std::cerr << "[GPU-VE] Failed initializing component" << std::endl;
         return err;
+    }
     try {
         resourceManager = new ResourceManager(&component);
         instructionScheduler = new InstructionScheduler();
@@ -53,7 +61,7 @@ bh_error bh_ve_gpu_init(const char *name)
     
     if (component.nchildren < 1)
     {
-        std::cerr << "[GPU-VE] Warning: No children given. Some operations may nop be supported." << std::endl;
+        std::cerr << "[GPU-VE] Warning: No children given. Some operations may not be supported." << std::endl;
     }
     for (int i = 0; i < component.nchildren; ++i)
     {

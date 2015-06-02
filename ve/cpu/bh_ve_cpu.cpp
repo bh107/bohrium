@@ -106,8 +106,8 @@ bh_error bh_ve_cpu_init(const char *name)
     if (env != NULL) {
         string e(env);
         if (not boost::iequals(e, string("same_shape_generate_1dreduce"))) {
-            fprintf(stderr, "[CPU-VE] Warning! unsupported fuse model: '"
-                            "', it may not work.\n");
+            fprintf(stderr, "[CPU-VE] Warning! unsupported fuse model: '%s"
+                    "', it may not work.\n",env);
         }
     } else {
         setenv("BH_FUSE_MODEL", "SAME_SHAPE_GENERATE_1DREDUCE", 1);
@@ -120,7 +120,7 @@ bh_error bh_ve_cpu_init(const char *name)
         fprintf(stderr, "[CPU-VE] Unexpected number of children, must be 0\n");
         return BH_ERROR;
     }
-
+    
     //
     //  Get engine parameters
     //
