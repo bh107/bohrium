@@ -164,6 +164,7 @@ public:
     {
         using namespace std;
         using namespace boost;
+        assert(_bglD[a].fusible(_bglD[b]));
 
         //Append the instructions of 'b' to 'a'
         BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
