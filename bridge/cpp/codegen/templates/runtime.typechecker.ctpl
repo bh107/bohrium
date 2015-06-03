@@ -104,7 +104,7 @@ void Runtime::typecheck(void)
 //
 //  Allowed types.
 //
-%for $op, $opcode, $optype, $opcount, $typesigs in $data
+%for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 %for $typesig in $typesigs
 
 %if $opcount == 3
