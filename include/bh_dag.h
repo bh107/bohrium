@@ -291,8 +291,8 @@ public:
     }
 };
 
-/* Creates a new DAG based on a bhir that consist of single
- * instruction kernels.
+/* Creates a new DAG based on a bhir that consist of gently fused
+ * instructions.
  * NB: the 'bhir' must not be deallocated or moved before 'dag'
  *
  * Complexity: O(n^2) where 'n' is the number of instructions

@@ -40,6 +40,25 @@ using namespace boost;
 namespace bohrium {
 namespace dag {
 
+//Help function to check if 'base' is accessed in 'kernel'
+static bool base_in_kernel(const bh_ir &bhir, const bh_ir_kernel &kernel,
+                           const bh_base *base)
+{
+    for(uint64_t instr_idx: kernel.instr_indexes)
+    {
+        const bh_instruction &instr = bhir.instr_list[instr_idx];
+        for(int i=0; i < bh_operands(instr.opcode); ++i)
+        {
+            if(bh_is_constant(&instr.operand[i]))
+                continue;
+            if(instr.operand[i].base == base)
+                return true;
+        }
+    }
+    return false;
+}
+
+
 void from_bhir(bh_ir &bhir, GraphDW &dag)
 {
     assert(num_vertices(dag.bglD()) == 0);
@@ -48,12 +67,31 @@ void from_bhir(bh_ir &bhir, GraphDW &dag)
     {
         throw logic_error("The kernel_list is not empty!");
     }
-    //Build a singleton DAG
-    for(uint64_t idx=0; idx<bhir.instr_list.size(); ++idx)
+
+    uint64_t idx=0;
+    while(idx < bhir.instr_list.size())
     {
-        bh_ir_kernel k(bhir);
-        k.add_instr(idx);
-        dag.add_vertex(k);
+        //Start new kernel
+        bh_ir_kernel kernel(bhir);
+        kernel.add_instr(idx);
+
+        //Add gentle fusible instructions to the kernel
+        for(idx=idx+1; idx < bhir.instr_list.size(); ++idx)
+        {
+            const bh_instruction &instr = bhir.instr_list[idx];
+
+            //The new instruction must be system, only access one array, and
+            //be equal to at least one array already in 'kernel'
+            if(bh_opcode_is_system(instr.opcode) and \
+               bh_operands(instr.opcode) == 1 and \
+               base_in_kernel(bhir, kernel, instr.operand[0].base))
+            {
+                kernel.add_instr(idx);
+            }
+            else
+                break;
+        }
+        dag.add_vertex(kernel);
     }
 }
 
