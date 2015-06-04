@@ -371,13 +371,17 @@ int bh_ir_kernel::dependency(uint64_t instr_idx) const
             {
                 assert(ret == 0 or ret == 1);//Check for cyclic dependency
                 ret = 1;
-                //TODO: return 'ret' here, but for now we check all instructions
+                #ifdef NDEBUG
+                    return ret; //We only check all instructions when in debug mode
+                #endif
             }
             else
             {
                 assert(ret == 0 or ret == -1);//Check for cyclic dependency
                 ret = -1;
-                //TODO: return 'ret' here, but for now we check all instructions
+                #ifdef NDEBUG
+                    return ret; //We only check all instructions when in debug mode
+                #endif
             }
         }
     }
