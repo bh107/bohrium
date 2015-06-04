@@ -328,13 +328,13 @@ void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
  *
  * Complexity: O(E + V)
  *
- * @a          The first vertex
- * @b          The second vertex
- * @dag        The DAG
- * @long_path  Whether to accept path of length one
- * @return     True if there is a path
+ * @a               The first vertex
+ * @b               The second vertex
+ * @dag             The DAG
+ * @only_long_path  Only accept path of length greater than one
+ * @return          True if there is a path
  */
-bool path_exist(Vertex a, Vertex b, const GraphD &dag, bool long_path=false);
+bool path_exist(Vertex a, Vertex b, const GraphD &dag, bool only_long_path=false);
 
 /* Determines whether there are cycles in the Graph
  *

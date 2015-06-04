@@ -121,7 +121,7 @@ void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
     }
 }
 
-bool path_exist(Vertex a, Vertex b, const GraphD &dag, bool long_path)
+bool path_exist(Vertex a, Vertex b, const GraphD &dag, bool only_long_path)
 {
     struct path_visitor:default_bfs_visitor
     {
@@ -147,7 +147,7 @@ bool path_exist(Vertex a, Vertex b, const GraphD &dag, bool long_path)
     };
     try
     {
-        if(long_path)
+        if(only_long_path)
             breadth_first_search(dag, a, visitor(long_visitor(a,b)));
         else
             breadth_first_search(dag, a, visitor(path_visitor(b)));
