@@ -293,8 +293,13 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << "CSQRT(" << parameters[0] << ", " << parameters[1] << ")\n";
             break;
         case BH_IDENTITY:
-            if (isComplex(type[1]))
+            if (type[0] == type[1])
                 source << indent << parameters[0] << " = " << parameters[1] << ";\n";
+            else if (isComplex(type[1]))
+            {
+                source << indent << parameters[0] << ".s0 = " << parameters[1] << ".s0;\n";
+                source << indent << parameters[0] << ".s1 = " << parameters[1] << ".s1;\n";
+            }
             else
                 source << indent << parameters[0] << ".s0 = " << parameters[1] << ";\n";
             break;
