@@ -423,7 +423,6 @@ bool dag_validate(const GraphDW &dag)
     //Check for cycles
     if(cycles(d))
         goto fail;
-
     //Check precedence constraints
     BOOST_FOREACH(Vertex v1, vertices(d))
     {
@@ -444,7 +443,6 @@ bool dag_validate(const GraphDW &dag)
             }
         }
     }
-
     //Check transitivity
     BOOST_FOREACH(EdgeD e, edges(d))
     {
@@ -466,6 +464,35 @@ bool dag_validate(const GraphDW &dag)
             cout << "Transitivity check: weight edge " << e \
                  << " is redundant!" << endl;
             goto fail;
+        }
+    }
+    //Check for weight edge inconsistency
+    BOOST_FOREACH(EdgeD e, edges(d))
+    {
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+        int64_t cost = d[src].merge_cost_savings(d[dst]);
+        if(cost != -1)//Is fusible
+        {
+            EdgeW we;
+            bool we_exist;
+            tie(we, we_exist) = edge(src,dst,w);
+            if(we_exist)
+            {
+                if(w[we].value != cost)
+                {
+                    cout << "Weight check: weight of edge " << we \
+                         << " is inconsistent with merge_cost_savings()!" << endl;
+                    goto fail;
+                }
+            }
+            else
+            {
+                cout << "Weight check: vertex " << src << " and " << dst \
+                     << " is fusible and has a dependency edge but "\
+                        "has no weight edge!" << endl;
+                goto fail;
+            }
         }
     }
     return true;
