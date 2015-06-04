@@ -337,9 +337,12 @@ void pprint(const GraphDW &dag, const char filename[])
 bool dag_validate(const GraphDW &dag)
 {
     const GraphD &d = dag.bglD();
+    const GraphW &w = dag.bglW();
+    //Check for cycles
     if(cycles(d))
         goto fail;
 
+    //Check precedence constraints
     BOOST_FOREACH(Vertex v1, vertices(d))
     {
         BOOST_FOREACH(Vertex v2, vertices(d))
@@ -349,13 +352,38 @@ bool dag_validate(const GraphDW &dag)
                 const int dep = d[v1].dependency(d[v2]);
                 if(dep == 1)//'v1' depend on 'v2'
                 {
-                    if(not path_exist(v2, v1, d, false))
+                    if(not path_exist(v2, v1, d))
                     {
-                        cout << "not path between " << v1 << " and " << v2 << endl;
+                        cout << "Precedence check: not path between " << v1 \
+                             << " and " << v2 << endl;
                         goto fail;
                     }
                 }
             }
+        }
+    }
+
+    //Check transitivity
+    BOOST_FOREACH(EdgeD e, edges(d))
+    {
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+        if(path_exist(src, dst, d, true))
+        {
+            cout << "Transitivity check: dependency edge " << e \
+                 << " is redundant!" << endl;
+            goto fail;
+        }
+    }
+    BOOST_FOREACH(EdgeW e, edges(w))
+    {
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+        if(path_exist(src, dst, d, true))
+        {
+            cout << "Transitivity check: weight edge " << e \
+                 << " is redundant!" << endl;
+            goto fail;
         }
     }
     return true;
