@@ -40,7 +40,89 @@ using namespace boost;
 namespace bohrium {
 namespace dag {
 
-//Help function to check if 'base' is accessed in 'kernel'
+void GraphDW::merge_vertices(Vertex a, Vertex b)
+{
+    assert(_bglD[a].fusible(_bglD[b]));
+
+    //Append the instructions of 'b' to 'a'
+    BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
+    {
+        _bglD[a].add_instr(idx);
+    }
+
+    //Add edges of 'b' to 'a'
+    BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglD))
+    {
+        if(a != v)
+        {
+            add_edge(a, v, _bglD);
+            add_edge(a, v, _bglW);
+        }
+    }
+    BOOST_FOREACH(const Vertex &v, inv_adjacent_vertices(b, _bglD))
+    {
+        if(a != v)
+        {
+            add_edge(v, a, _bglD);
+            add_edge(a, v, _bglW);
+        }
+    }
+    BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglW))
+    {
+        if(a != v)
+        {
+            add_edge(a, v, _bglW);
+        }
+    }
+    clear_vertex(b);
+
+    //Update the edge weights of 'a'
+    //Note that the 'out_edge_iterator' is invalidated if it points
+    //to 'e' and 'e' is removed thus we cannot use BOOST_FOREACH.
+    {
+        graph_traits<GraphW>::out_edge_iterator it, end;
+        tie(it, end) = out_edges(a, _bglW);
+        while(it != end)
+        {
+            Vertex v1 = source(*it, _bglW);
+            Vertex v2 = target(*it, _bglW);
+            int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
+            if(cost > 0)
+            {
+                _bglW[*it++].value = cost;
+            }
+            else
+            {
+                EdgeW e = *it++;
+                remove_edge(e, _bglW);
+            }
+        }
+    }
+
+    //Lets run some unittests
+    #ifndef NDEBUG
+        BOOST_FOREACH(const EdgeW &e, edges(_bglW))
+        {
+            if(not _bglD[source(e, _bglW)].fusible(_bglD[target(e, _bglW)]))
+            {
+                cout << "non fusible weight edge!: " << e << endl;
+                assert(1 == 2);
+            }
+        }
+        if(not _bglD[a].fusible())
+        {
+            cout << "kernel merge " << a << " " << b << endl;
+            assert(1 == 2);
+        }
+        if(cycles(_bglD))
+        {
+            cout << "kernel merge " << a << " " << b << endl;
+            assert(1 == 2);
+        }
+    #endif
+}
+
+//Help function to check if 'base' is accessed by 'kernel'
 static bool base_in_kernel(const bh_ir &bhir, const bh_ir_kernel &kernel,
                            const bh_base *base)
 {
