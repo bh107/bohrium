@@ -204,7 +204,7 @@ void pprint(const GraphDW &dag, const char filename[])
             const std::vector<bh_index>& shape = graph[v].get_shape();
             for (size_t i = 0; i < shape.size(); ++i)
                 out << (i?", ":"[") << shape[i];
-            out << "]  ";
+            out << "]      scalar: " <<  (graph[v].is_scalar()?"true":"false");
             out << "\\lSweeps: ";
             for (const std::pair<bh_intp, bh_int64> &sweep: graph[v].get_sweeps())
             {
