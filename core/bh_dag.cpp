@@ -303,17 +303,22 @@ void pprint(const GraphDW &dag, const char filename[])
         {
             Vertex src = source(e, graph);
             Vertex dst = target(e, graph);
-            int64_t c = -1;
+            int64_t cost = graph[src].merge_cost_savings(graph[dst]);
+            int64_t weight = -1;
             bool directed = true;
-            map<pair<Vertex, Vertex>, pair<int64_t, bool> >::const_iterator it = wmap.find(make_pair(src,dst));
+            auto it = wmap.find(make_pair(src,dst));
             if(it != wmap.end())
-                tie(c,directed) = (*it).second;
-
+            {
+                tie(weight,directed) = (*it).second;
+                assert(cost == weight);
+            }
             out << "[label=\" ";
-            if(c == -1)
+            if(cost == -1)
                 out << "N/A\" color=red";
+            else if(weight != -1)
+                out << weight << " bytes\"";
             else
-                out << c << " bytes\"";
+                out << "\"";
             if(not directed)
                 out << " dir=none color=green constraint=false";
             out << "]";
