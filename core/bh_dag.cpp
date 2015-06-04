@@ -93,6 +93,7 @@ void from_bhir(bh_ir &bhir, GraphDW &dag)
         }
         dag.add_vertex(kernel);
     }
+    assert(dag_validate(dag));
 }
 
 void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
@@ -104,6 +105,7 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
         if(kernel.instr_indexes.size() > 0)
             dag.add_vertex(kernel);
     }
+    assert(dag_validate(dag));
 }
 
 void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
@@ -331,32 +333,40 @@ void pprint(const GraphDW &dag, const char filename[])
     file.close();
 }
 
-bool dag_validate(const GraphD &dag)
+
+bool dag_validate(const GraphDW &dag)
 {
-    BOOST_FOREACH(Vertex v1, vertices(dag))
+    const GraphD &d = dag.bglD();
+    if(cycles(d))
+        goto fail;
+
+    BOOST_FOREACH(Vertex v1, vertices(d))
     {
-        BOOST_FOREACH(Vertex v2, vertices(dag))
+        BOOST_FOREACH(Vertex v2, vertices(d))
         {
             if(v1 != v2)
             {
-                const int dep = dag[v1].dependency(dag[v2]);
+                const int dep = d[v1].dependency(d[v2]);
                 if(dep == 1)//'v1' depend on 'v2'
                 {
-                    if(not path_exist(v2, v1, dag, false))
+                    if(not path_exist(v2, v1, d, false))
                     {
                         cout << "not path between " << v1 << " and " << v2 << endl;
-                        pprint(dag, "validate-fail.dot");
-                        return false;
+                        goto fail;
                     }
                 }
             }
         }
     }
     return true;
+fail:
+    pprint(d, "validate-fail.dot");
+    return false;
 }
 
 void fuse_gently(GraphDW &dag)
 {
+    assert(dag_validate(dag));
     const GraphD &d = dag.bglD();
     set<EdgeD> dep_edges(edges(d).first, edges(d).second);
     /*
@@ -406,6 +416,7 @@ void fuse_gently(GraphDW &dag)
 
 void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores)
 {
+    assert(dag_validate(dag));
     //Help function to find and sort the weight edges.
     struct
     {

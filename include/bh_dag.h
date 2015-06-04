@@ -376,7 +376,7 @@ void pprint(const GraphDW &dag, const char filename[]);
  * @dag     The dag in question
  * @return  The bool answer
  */
-bool dag_validate(const GraphD &dag);
+bool dag_validate(const GraphDW &dag);
 
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings
