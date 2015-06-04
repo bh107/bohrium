@@ -489,6 +489,39 @@ string Walker::operations(void)
                 ) << _end();
                 break;
 
+            case INDEX:
+                switch(tac.oper) {
+                    case GATHER:
+                        inner_opds_.insert(tac.out);
+                        inner_opds_.insert(tac.in2);
+                        out = kernel_.operand_glb(tac.out).walker_val();
+                        in1 = kernel_.operand_glb(tac.in1).first();
+                        in2 = kernel_.operand_glb(tac.in2).walker_val();
+
+                        ss << _assign(
+                            out,
+                            _deref(_add(in1, in2))
+                        ) << _end();
+                        break;
+
+                    case SCATTER:
+                        inner_opds_.insert(tac.in1);
+                        inner_opds_.insert(tac.in2);
+                        out = kernel_.operand_glb(tac.out).first();
+                        in1 = kernel_.operand_glb(tac.in1).walker_val();
+                        in2 = kernel_.operand_glb(tac.in2).walker_val();
+
+                        ss << _assign(
+                            _deref(_add(out, in2)),
+                            in1
+                        ) << _end();
+                        break;
+                    default:
+                        ss << "UNSUPPORTED_INDEX_OPERATION";
+                        break;
+                }
+                break;
+
             default:
                 ss << "UNSUPPORTED_OPERATION["<< operation_text(tac.op) <<"]_AT_EMITTER_STAGE";
                 break;
