@@ -391,7 +391,7 @@ void pprint(const GraphDW &dag, const char filename[])
 }
 
 
-bool dag_validate(const GraphDW &dag)
+bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
 {
     const GraphD &d = dag.bglD();
     const GraphW &w = dag.bglW();
@@ -448,26 +448,29 @@ bool dag_validate(const GraphDW &dag)
         }
     }
     //Check transitivity
-    BOOST_FOREACH(EdgeD e, edges(d))
+    if(not transitivity_allowed)
     {
-        Vertex src = source(e, d);
-        Vertex dst = target(e, d);
-        if(path_exist(src, dst, d, true))
+        BOOST_FOREACH(EdgeD e, edges(d))
         {
-            cout << "Transitivity check: dependency edge " << e \
-                 << " is redundant!" << endl;
-            goto fail;
+            Vertex src = source(e, d);
+            Vertex dst = target(e, d);
+            if(path_exist(src, dst, d, true))
+            {
+                cout << "Transitivity check: dependency edge " << e \
+                     << " is redundant!" << endl;
+                goto fail;
+            }
         }
-    }
-    BOOST_FOREACH(EdgeW e, edges(w))
-    {
-        Vertex src = source(e, d);
-        Vertex dst = target(e, d);
-        if(path_exist(src, dst, d, true))
+        BOOST_FOREACH(EdgeW e, edges(w))
         {
-            cout << "Transitivity check: weight edge " << e \
-                 << " is redundant!" << endl;
-            goto fail;
+            Vertex src = source(e, d);
+            Vertex dst = target(e, d);
+            if(path_exist(src, dst, d, true))
+            {
+                cout << "Transitivity check: weight edge " << e \
+                     << " is redundant!" << endl;
+                goto fail;
+            }
         }
     }
     return true;
