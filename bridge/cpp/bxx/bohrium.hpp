@@ -385,6 +385,7 @@ private:
 #include "reduction.hpp"    // DSEL Reduction
 #include "scan.hpp"         // DSEL Scan operation
 #include "generator.hpp"    // DSEL Generators 
+#include "mapping.hpp"      // DSEL Gather / Scatter
 #include "visuals.hpp"      // DSEL Visualization
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.

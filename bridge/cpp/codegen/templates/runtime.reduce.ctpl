@@ -4,7 +4,7 @@ directiveStartToken = %
 #end compiler-settings
 %slurp
 
-%for $op, $opcode, $optype, $opcount, $typesigs in $data
+%for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 
 //
 // Reduction with explicitly provided result array

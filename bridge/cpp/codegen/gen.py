@@ -76,11 +76,17 @@ def main():
     op_map = []
     
     datasets = {}
-    for name, opcode, t, mapped in (x for x in operators if x[3]):
-        code = [x for x in opcodes if x['opcode'] == opcode ]
+    for name, opcode, mapper, mapped in (x for x in operators if x[3]):
+        bytecode = [x for x in opcodes if x['opcode'] == opcode]
+        if not bytecode:
+            print "skipping %s" % opcode
+            continue
+        bytecode = bytecode[0]
 
-        typesigs = [x["types"] for x in opcodes if x['opcode'] == opcode]
-        typesigs = typesigs[0] if typesigs else []
+        typesigs = bytecode["types"]
+
+        layouts = bytecode["layout"]
+        broadcast = bytecode["elementwise"]
         
         new_typesigs = []
         for ttt in typesigs:
@@ -93,30 +99,30 @@ def main():
         if opcode_base == "CUSTOM":
             opcode  = opcode_base
             nop     = int(nop)
-        elif code:
-            nop = code[0]["nop"]
+        elif bytecode:
+            nop = bytecode["nop"]
         else:
             print "The Bohrium opcodes no longer include [ %s ]." % opcode
             continue
         
-        foo = (name, opcode, t, nop, typesigs)
+        if mapper not in datasets:
+            datasets[mapper] = []
+
+        foo = (name, opcode, mapper, nop, typesigs, layouts, broadcast)
+        datasets[mapper].append(foo)
         op_map.append(foo)
-        if t in datasets:
-            datasets[t].append(foo)
-        else:
-            datasets[t] = [foo]
     op_map.sort()
 
     # Generate data for generation of type-checker.
     enums = set()
     checker = []
     for op in op_map:
-        fun, enum, template, nop, typesigs = op        
+        fun, enum, template, nop, typesigs, layouts, broadcast = op        
 
         if enum == "BH_RANDOM":
             nop = 3
             typesigs = [(u'uint64_t', u'uint64_t', u'uint64_t')]
-            op = (fun, enum, template, nop, typesigs)
+            op = (fun, enum, template, nop, typesigs, layouts, broadcast)
 
         if enum not in enums:
             checker.append(op)
@@ -125,13 +131,13 @@ def main():
     gens = [
         ('traits.ctpl',     'traits.hpp',    types),
 
-        ('operators.header.ctpl',   'operators.hpp', datasets['sugar.binary']),
+        ('sugar.header.ctpl',       'operators.hpp', datasets['sugar.binary']),
         ('sugar.int.binary.ctpl',   'operators.hpp', datasets['sugar.int.binary']),
         ('sugar.binary.ctpl',       'operators.hpp', datasets['sugar.binary']),
         ('sugar.binary.bool.ctpl',  'operators.hpp', datasets['sugar.binary.bool']),
         ('sugar.unary.ctpl',        'operators.hpp', datasets['sugar.unary']),
         ('sugar.unary.bool.ctpl',   'operators.hpp', datasets['sugar.unary.bool']),
-        ('operators.footer.ctpl',   'operators.hpp', datasets['sugar.unary']),
+        ('sugar.footer.ctpl',       'operators.hpp', datasets['sugar.unary']),
 
         ('runtime.typechecker.ctpl', 'runtime.typechecker.hpp', checker),
 

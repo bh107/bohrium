@@ -904,6 +904,32 @@ void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
             
                 omask |= GENERATE;    // Operationmask
                 break;
+            case BH_GATHER:
+                in1 = symbol_table.map_operand(instr, 1);
+                in2 = symbol_table.map_operand(instr, 2);
+
+                tacs[idx].op    = INDEX;  // TAC
+                tacs[idx].oper  = GATHER;
+                tacs[idx].ext   = NULL;
+                tacs[idx].out   = out;
+                tacs[idx].in1   = in1;
+                tacs[idx].in2   = in2;
+            
+                omask |= INDEX;    // Operationmask
+                break;
+            case BH_SCATTER:
+                in1 = symbol_table.map_operand(instr, 1);
+                in2 = symbol_table.map_operand(instr, 2);
+
+                tacs[idx].op    = INDEX;  // TAC
+                tacs[idx].oper  = SCATTER;
+                tacs[idx].ext   = NULL;
+                tacs[idx].out   = out;
+                tacs[idx].in1   = in1;
+                tacs[idx].in2   = in2;
+            
+                omask |= INDEX;    // Operationmask
+                break;
             case BH_DISCARD:
 
                 tacs[idx].op    = SYSTEM;  // TAC
