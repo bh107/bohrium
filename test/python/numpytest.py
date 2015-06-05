@@ -254,8 +254,6 @@ class BenchHelper:
         out, err = p.communicate()
         if 'elapsed-time' not in out:
             raise Exception("Benchmark error [stdout:%s,stderr:%s]" % (out, err))
-        if err and not re.match("\[[0-9]+ refs\]", err): #We accept the Python object count
-            raise Exception("Benchmark error[%s]" % err)
 
         if not os.path.exists(outputfn):
             raise Exception('Benchmark did not produce the output: %s' % outputfn)
