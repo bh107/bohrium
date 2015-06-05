@@ -345,5 +345,20 @@ DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction
  */
 DLLEXPORT bool bh_opcode_is_sweep(bh_opcode opcode);
 
+template<typename E>
+std::ostream& operator<<(std::ostream& out, const std::vector<E>& v) 
+{
+    out << "[";
+    for (typename std::vector<E>::const_iterator i = v.cbegin();;)
+    {
+        out << *i;
+        if (++i == v.cend())
+            break;
+        out << ", ";
+    }
+    out << "]";
+    return out;
+}
+
 #endif
 
