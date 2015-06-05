@@ -54,3 +54,15 @@ void bh_destroy_base(bh_base**  base)
     free(b);
     b = NULL;
 }
+
+std::ostream& operator<<(std::ostream& out, const bh_view& v) 
+{
+    out << "{base: " << v.base << ", start: " << v.start << ", ndim: " << v.ndim << " shape: [" << v.shape[0];
+    for (int i = 1; i < v.ndim; ++i)
+        out << ", " << v.shape[i];
+    out << "], stride: [" << v.stride[0];
+    for (int i = 1; i < v.ndim; ++i)
+        out << ", " << v.stride[i];
+    out << "] }";
+    return out;
+}

@@ -23,12 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <algorithm>
 #include <stdbool.h>
+#include <iostream>
 #include "bh_type.h"
 #include "bh_win.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define BH_MAXDIM (16)
 
@@ -114,9 +111,7 @@ DLLEXPORT bh_error bh_create_base(bh_type    type,
  */
 DLLEXPORT void bh_destroy_base(bh_base**  base);
 
-#ifdef __cplusplus
-}
-#endif
+DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_view& v);
 
 #endif
 
