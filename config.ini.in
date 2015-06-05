@@ -128,6 +128,7 @@ children = cpu
 [dimclean]
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_dimclean${CMAKE_SHARED_LIBRARY_SUFFIX}
+timing = false
 children = bcexp
 
 [bccon]
