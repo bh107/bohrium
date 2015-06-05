@@ -160,88 +160,7 @@ public:
      * @a  The first vertex
      * @b  The second vertex
      */
-    void merge_vertices(Vertex a, Vertex b)
-    {
-        using namespace std;
-        using namespace boost;
-
-        //Append the instructions of 'b' to 'a'
-        BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
-        {
-            _bglD[a].add_instr(idx);
-        }
-
-        //Add edges of 'b' to 'a'
-        BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglD))
-        {
-            if(a != v)
-            {
-                add_edge(a, v, _bglD);
-                add_edge(a, v, _bglW);
-            }
-        }
-        BOOST_FOREACH(const Vertex &v, inv_adjacent_vertices(b, _bglD))
-        {
-            if(a != v)
-            {
-                add_edge(v, a, _bglD);
-                add_edge(a, v, _bglW);
-            }
-        }
-        BOOST_FOREACH(const Vertex &v, adjacent_vertices(b, _bglW))
-        {
-            if(a != v)
-            {
-                add_edge(a, v, _bglW);
-            }
-        }
-        clear_vertex(b);
-
-        //Update the edge weights of 'a'
-        //Note that the 'out_edge_iterator' is invalidated if it points
-        //to 'e' and 'e' is removed thus we cannot use BOOST_FOREACH.
-        {
-            graph_traits<GraphW>::out_edge_iterator it, end;
-            tie(it, end) = out_edges(a, _bglW);
-            while(it != end)
-            {
-                Vertex v1 = source(*it, _bglW);
-                Vertex v2 = target(*it, _bglW);
-                int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
-                if(cost > 0)
-                {
-                    _bglW[*it++].value = cost;
-                }
-                else
-                {
-                    EdgeW e = *it++;
-                    remove_edge(e, _bglW);
-                }
-            }
-        }
-
-        //Lets run some unittests
-        #ifndef NDEBUG
-            BOOST_FOREACH(const EdgeW &e, edges(_bglW))
-            {
-                if(not _bglD[source(e, _bglW)].fusible(_bglD[target(e, _bglW)]))
-                {
-                    cout << "non fusible weight edge!: " << e << endl;
-                    assert(1 == 2);
-                }
-            }
-            if(not _bglD[a].fusible())
-            {
-                cout << "kernel merge " << a << " " << b << endl;
-                assert(1 == 2);
-            }
-            if(cycles(_bglD))
-            {
-                cout << "kernel merge " << a << " " << b << endl;
-                assert(1 == 2);
-            }
-        #endif
-    }
+    void merge_vertices(Vertex a, Vertex b);
 
     /* Transitive reduce the 'dag', i.e. remove all redundant edges,
      *
@@ -251,48 +170,11 @@ public:
      * @b   The second vertex
      * @dag The DAG
      */
-    void transitive_reduction()
-    {
-        using namespace std;
-        using namespace boost;
-
-        //Remove redundant dependency edges
-        {
-            vector<EdgeD> removals;
-            BOOST_FOREACH(EdgeD e, edges(_bglD))
-            {
-                if(path_exist(source(e,_bglD), target(e,_bglD), _bglD, true))
-                    removals.push_back(e);
-            }
-            BOOST_FOREACH(EdgeD e, removals)
-            {
-                remove_edge(e, _bglD);
-            }
-        }
-        //Remove redundant weight edges
-        {
-            vector<EdgeW> removals;
-            BOOST_FOREACH(EdgeW e, edges(_bglW))
-            {
-                Vertex a = source(e, _bglW);
-                Vertex b = target(e, _bglW);
-                if(edge(a, b, _bglD).second or edge(b, a, _bglD).second)
-                    continue;//'a' and 'b' are adjacent in the DAG
-
-                //Remove the edge if 'a' and 'b' are connected in the DAG
-                if(path_exist(a, b, _bglD, true) or path_exist(b, a, _bglD, true))
-                    removals.push_back(e);
-            }
-            BOOST_FOREACH(EdgeW e, removals)
-            {
-                remove_edge(e, _bglW);
-            }
-        }
-    }
+    void transitive_reduction();
 };
 
-/* Creates a new DAG based on a bhir that consist of single
- * instruction kernels.
+/* Creates a new DAG based on a bhir that consist of gently fused
+ * instructions.
  * NB: the 'bhir' must not be deallocated or moved before 'dag'
  *
  * Complexity: O(n^2) where 'n' is the number of instructions
@@ -327,13 +209,13 @@ void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
  *
  * Complexity: O(E + V)
  *
- * @a          The first vertex
- * @b          The second vertex
- * @dag        The DAG
- * @long_path  Whether to accept path of length one
- * @return     True if there is a path
+ * @a               The first vertex
+ * @b               The second vertex
+ * @dag             The DAG
+ * @only_long_path  Only accept path of length greater than one
+ * @return          True if there is a path
  */
-bool path_exist(Vertex a, Vertex b, const GraphD &dag, bool long_path=false);
+bool path_exist(Vertex a, Vertex b, const GraphD &dag, bool only_long_path=false);
 
 /* Determines whether there are cycles in the Graph
  *
@@ -372,10 +254,11 @@ void pprint(const GraphDW &dag, const char filename[]);
 
 /* Check that the 'dag' is valid
  *
- * @dag     The dag in question
- * @return  The bool answer
+ * @dag                   The dag in question
+ * @transitivity_allowed  Is transitive edges allowed in the dag?
+ * @return                The bool answer
  */
-bool dag_validate(const GraphD &dag);
+bool dag_validate(const GraphDW &dag, bool transitivity_allowed=true);
 
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings
@@ -397,7 +280,8 @@ void fuse_gently(GraphDW &dag);
  * @dag      The DAG to fuse
  * @ignores  List of edges not to merge
  */
-void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores=NULL);
+void fuse_greedy(GraphDW &dag);
+void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores);
 
 }} //namespace bohrium::dag
 
