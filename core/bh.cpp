@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sstream>
 
 /* Number of non-broadcasted elements in a given view
  *
@@ -49,6 +50,7 @@ bh_index bh_nelements_nbcast(const bh_view *view)
 bh_index bh_nelements(bh_intp ndim,
                       const bh_index shape[])
 {
+    assert (ndim > 0);
     bh_index res = 1;
     for (int i = 0; i < ndim; ++i)
     {
@@ -239,7 +241,7 @@ bh_view *bh_inst_operands(bh_instruction *instruction)
  */
 bool bh_is_scalar(const bh_view* view)
 {
-    return bh_base_array(view)->nelem == 1;
+    return bh_nelements(*view) == 1;
 }
 
 /* Determines whether the operand is a constant
@@ -288,12 +290,18 @@ bh_view bh_view_simplify(const bh_view& view)
     res.ndim = 0;
     res.start = view.start;
     bh_intp i = 0;
-    while (view.shape[i] == 1 && i < view.ndim)
+    while (view.shape[i] == 1 && i < view.ndim-1)
         ++i;
     res.shape[0] = view.shape[i];
     res.stride[0] = view.stride[i];
     for (++i; i < view.ndim; ++i)
     {
+        if (view.shape[i] == 0)
+        {
+            res.ndim = 1;
+            res.shape[0] = 0;
+            return res;
+        }
         if (view.shape[i] == 1)
             continue;
         if (view.shape[i]*view.stride[i] == res.stride[res.ndim])
@@ -306,7 +314,7 @@ bh_view bh_view_simplify(const bh_view& view)
             res.stride[res.ndim] = view.stride[i];
         }
     }
-    if (res.shape[res.ndim] > 1)
+    if (res.ndim == 0 || res.shape[res.ndim] > 1)
         ++res.ndim;
     return res;
 }
@@ -319,21 +327,54 @@ bh_view bh_view_simplify(const bh_view& view)
  */
 bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape)
 {
+    assert(false); // TODO: complete rewrite under the assumption the cleandim has been run
     if (view.ndim < (bh_intp)shape.size())
-        throw std::invalid_argument("Can not simplify to more dimensions");
+    {
+        std::stringstream ss; 
+        ss << "Can not simplify to more dimensions: ";
+        ss << "shape: " << shape << " view: " << view;
+        throw std::invalid_argument(ss.str());
+    }
     bh_view res;
     res.base = view.base;
     res.ndim = 0;
     res.start = view.start;
     bh_intp i = 0;
-    while (view.shape[i] == 1 && i < view.ndim)
+    while (view.shape[i] == 1 && i < view.ndim-1)
         ++i;
     res.shape[0] = view.shape[i];
     res.stride[0] = view.stride[i];
     for (++i; i < view.ndim; ++i)
     {
+        if (shape[res.ndim] == 0)
+        {
+            if (view.shape[i] != 0)
+            {
+                continue;
+            } else {
+                res.shape[res.ndim++] = 0;
+                return res;
+            }
+        }
+        if ((bh_intp)shape.size() == res.ndim)
+        {
+            if (view.shape[i] == 1)
+            {
+                continue;
+            } else {
+                std::stringstream ss; 
+                ss << "Can not remove trailing dimensions of size > 1: ";
+                ss << "shape: " << shape << " view: " << view;
+                throw std::invalid_argument(ss.str());
+            }
+        }
         if (view.shape[i-1] > shape[res.ndim])
-            throw std::invalid_argument("Can not simplify to lower dimension size");
+        {
+            std::stringstream ss; 
+            ss << "Can not simplify to lower dimension size: ";
+            ss << "shape: " << shape << " view: " << view;
+            throw std::invalid_argument(ss.str());
+        }
         if (view.shape[i-1] == shape[res.ndim])
         {
             res.shape[++res.ndim]  = view.shape[i];
@@ -351,10 +392,16 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
             res.stride[res.ndim] = view.stride[i];
         }
     }
-    if (res.shape[res.ndim] > 1)
+    if (res.ndim == 0 || res.shape[res.ndim] > 1)
         ++res.ndim;
     if (res.ndim != (bh_intp)shape.size())
-        throw std::invalid_argument("Can not simplify to given shape");
+    {
+        std::stringstream ss; 
+        ss << "Can not simplify to given shape: ";
+        ss << "shape: " << shape << " view: " << view;
+        throw std::invalid_argument(ss.str());
+    }
+
     return res;
 }
 
