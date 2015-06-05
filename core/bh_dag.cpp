@@ -87,7 +87,7 @@ void GraphDW::merge_vertices(Vertex a, Vertex b)
             Vertex v1 = source(*it, _bglW);
             Vertex v2 = target(*it, _bglW);
             int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
-            if(cost > 0)
+            if(cost >= 0)
             {
                 _bglW[*it++].value = cost;
             }
@@ -98,28 +98,7 @@ void GraphDW::merge_vertices(Vertex a, Vertex b)
             }
         }
     }
-
-    //Lets run some unittests
-    #ifndef NDEBUG
-        BOOST_FOREACH(const EdgeW &e, edges(_bglW))
-        {
-            if(not _bglD[source(e, _bglW)].fusible(_bglD[target(e, _bglW)]))
-            {
-                cout << "non fusible weight edge!: " << e << endl;
-                assert(1 == 2);
-            }
-        }
-        if(not _bglD[a].fusible())
-        {
-            cout << "kernel merge " << a << " " << b << endl;
-            assert(1 == 2);
-        }
-        if(cycles(_bglD))
-        {
-            cout << "kernel merge " << a << " " << b << endl;
-            assert(1 == 2);
-        }
-    #endif
+    assert(dag_validate(*this));
 }
 
 //Help function to check if 'base' is accessed by 'kernel'
@@ -497,6 +476,7 @@ bool dag_validate(const GraphDW &dag)
     }
     return true;
 fail:
+    cout << "writing validate-fail.dot" << endl;
     pprint(d, "validate-fail.dot");
     return false;
 }
