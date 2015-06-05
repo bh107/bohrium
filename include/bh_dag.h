@@ -170,44 +170,7 @@ public:
      * @b   The second vertex
      * @dag The DAG
      */
-    void transitive_reduction()
-    {
-        using namespace std;
-        using namespace boost;
-
-        //Remove redundant dependency edges
-        {
-            vector<EdgeD> removals;
-            BOOST_FOREACH(EdgeD e, edges(_bglD))
-            {
-                if(path_exist(source(e,_bglD), target(e,_bglD), _bglD, true))
-                    removals.push_back(e);
-            }
-            BOOST_FOREACH(EdgeD e, removals)
-            {
-                remove_edge(e, _bglD);
-            }
-        }
-        //Remove redundant weight edges
-        {
-            vector<EdgeW> removals;
-            BOOST_FOREACH(EdgeW e, edges(_bglW))
-            {
-                Vertex a = source(e, _bglW);
-                Vertex b = target(e, _bglW);
-                if(edge(a, b, _bglD).second or edge(b, a, _bglD).second)
-                    continue;//'a' and 'b' are adjacent in the DAG
-
-                //Remove the edge if 'a' and 'b' are connected in the DAG
-                if(path_exist(a, b, _bglD, true) or path_exist(b, a, _bglD, true))
-                    removals.push_back(e);
-            }
-            BOOST_FOREACH(EdgeW e, removals)
-            {
-                remove_edge(e, _bglW);
-            }
-        }
-    }
+    void transitive_reduction();
 };
 
 /* Creates a new DAG based on a bhir that consist of gently fused

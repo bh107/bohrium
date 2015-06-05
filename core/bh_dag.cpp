@@ -97,6 +97,43 @@ void GraphDW::merge_vertices(Vertex a, Vertex b)
     assert(dag_validate(*this));
 }
 
+void GraphDW::transitive_reduction()
+{
+    //Remove redundant dependency edges
+    {
+        vector<EdgeD> removals;
+        BOOST_FOREACH(EdgeD e, edges(_bglD))
+        {
+            if(path_exist(source(e,_bglD), target(e,_bglD), _bglD, true))
+                removals.push_back(e);
+        }
+        BOOST_FOREACH(EdgeD e, removals)
+        {
+            remove_edge(e, _bglD);
+        }
+    }
+    //Remove redundant weight edges
+    {
+        vector<EdgeW> removals;
+        BOOST_FOREACH(EdgeW e, edges(_bglW))
+        {
+            Vertex a = source(e, _bglW);
+            Vertex b = target(e, _bglW);
+            if(edge(a, b, _bglD).second or edge(b, a, _bglD).second)
+                continue;//'a' and 'b' are adjacent in the DAG
+
+            //Remove the edge if 'a' and 'b' are connected in the DAG
+            if(path_exist(a, b, _bglD, true) or path_exist(b, a, _bglD, true))
+                removals.push_back(e);
+        }
+        BOOST_FOREACH(EdgeW e, removals)
+        {
+            remove_edge(e, _bglW);
+        }
+    }
+    assert(dag_validate(*this,false));
+}
+
 //Help function to check if 'base' is accessed by 'kernel'
 static bool base_in_kernel(const bh_ir &bhir, const bh_ir_kernel &kernel,
                            const bh_base *base)
@@ -482,7 +519,6 @@ fail:
 
 void fuse_gently(GraphDW &dag)
 {
-    assert(dag_validate(dag));
     const GraphD &d = dag.bglD();
     set<EdgeD> dep_edges(edges(d).first, edges(d).second);
     /*
@@ -528,11 +564,11 @@ void fuse_gently(GraphDW &dag)
         //is the only edge removed by the merge
     }
     dag.remove_cleared_vertices();
+    assert(dag_validate(dag));
 }
 
 void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores)
 {
-    assert(dag_validate(dag));
     //Help function to find and sort the weight edges.
     struct
     {
@@ -581,6 +617,7 @@ void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores)
         //the merge will never introduce cyclic dependencies.
         assert(not cycles(dag.bglD()));
     }
+    assert(dag_validate(dag));
 }
 
 }} //namespace bohrium::dag
