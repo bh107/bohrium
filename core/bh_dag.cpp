@@ -84,18 +84,14 @@ void GraphDW::merge_vertices(Vertex a, Vertex b)
         tie(it, end) = out_edges(a, _bglW);
         while(it != end)
         {
-            Vertex v1 = source(*it, _bglW);
-            Vertex v2 = target(*it, _bglW);
+            EdgeW e = *it++;
+            Vertex v1 = source(e, _bglW);
+            Vertex v2 = target(e, _bglW);
             int64_t cost = _bglD[v1].merge_cost_savings(_bglD[v2]);
             if(cost >= 0)
-            {
-                _bglW[*it++].value = cost;
-            }
+                _bglW[e].value = cost;
             else
-            {
-                EdgeW e = *it++;
                 remove_edge(e, _bglW);
-            }
         }
     }
     assert(dag_validate(*this));
@@ -422,29 +418,6 @@ bool dag_validate(const GraphDW &dag)
             }
         }
     }
-    //Check transitivity
-    BOOST_FOREACH(EdgeD e, edges(d))
-    {
-        Vertex src = source(e, d);
-        Vertex dst = target(e, d);
-        if(path_exist(src, dst, d, true))
-        {
-            cout << "Transitivity check: dependency edge " << e \
-                 << " is redundant!" << endl;
-            goto fail;
-        }
-    }
-    BOOST_FOREACH(EdgeW e, edges(w))
-    {
-        Vertex src = source(e, d);
-        Vertex dst = target(e, d);
-        if(path_exist(src, dst, d, true))
-        {
-            cout << "Transitivity check: weight edge " << e \
-                 << " is redundant!" << endl;
-            goto fail;
-        }
-    }
     //Check for weight edge inconsistency
     BOOST_FOREACH(EdgeD e, edges(d))
     {
@@ -474,10 +447,33 @@ bool dag_validate(const GraphDW &dag)
             }
         }
     }
+    //Check transitivity
+    BOOST_FOREACH(EdgeD e, edges(d))
+    {
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+        if(path_exist(src, dst, d, true))
+        {
+            cout << "Transitivity check: dependency edge " << e \
+                 << " is redundant!" << endl;
+            goto fail;
+        }
+    }
+    BOOST_FOREACH(EdgeW e, edges(w))
+    {
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+        if(path_exist(src, dst, d, true))
+        {
+            cout << "Transitivity check: weight edge " << e \
+                 << " is redundant!" << endl;
+            goto fail;
+        }
+    }
     return true;
 fail:
     cout << "writing validate-fail.dot" << endl;
-    pprint(d, "validate-fail.dot");
+    pprint(dag, "validate-fail.dot");
     return false;
 }
 
