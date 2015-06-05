@@ -280,7 +280,8 @@ void fuse_gently(GraphDW &dag);
  * @dag      The DAG to fuse
  * @ignores  List of edges not to merge
  */
-void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores=NULL);
+void fuse_greedy(GraphDW &dag);
+void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores);
 
 }} //namespace bohrium::dag
 

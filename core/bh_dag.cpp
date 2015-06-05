@@ -567,6 +567,35 @@ void fuse_gently(GraphDW &dag)
     assert(dag_validate(dag));
 }
 
+void fuse_greedy(GraphDW &dag)
+{
+    const GraphD &d = dag.bglD();
+    const GraphW &w = dag.bglW();
+    dag.transitive_reduction();
+    while(num_edges(w) > 0)
+    {
+        //Lets find the greatest weight edge.
+        EdgeW greatest = *edges(w).first;
+        BOOST_FOREACH(EdgeW e, edges(w))
+        {
+            if(w[e].value > w[greatest].value)
+                greatest = e;
+        }
+        //And merge over the edge
+        Vertex v1 = source(greatest, w);
+        Vertex v2 = target(greatest, w);
+        if(d[v1].dependency(d[v2]) == 1)//'v1' depend on 'v2'
+            dag.merge_vertices(v2, v1);
+        else
+            dag.merge_vertices(v1, v2);
+        //The transitive reduction guaranties that we can merge
+        //over all weight edges without introducing cycles.
+        dag.transitive_reduction();
+    }
+    dag.remove_cleared_vertices();
+    assert(dag_validate(dag));
+}
+
 void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores)
 {
     //Help function to find and sort the weight edges.
