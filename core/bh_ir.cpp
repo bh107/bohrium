@@ -154,6 +154,8 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
 
     const bh_instruction& instr = bhir->instr_list[instr_idx];
     switch (instr.opcode) {
+    case BH_NONE:
+        break;
     case BH_SYNC:
         syncs.insert(instr.operand[0].base);
         break;
@@ -197,6 +199,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     break;
     default:
     {
+        bool sweep = bh_opcode_is_sweep(instr.opcode);
         const int nop = bh_operands(instr.opcode);
         //Add the inputs of the instruction to 'inputs'
         for(int i=1; i<nop; ++i)
@@ -204,7 +207,8 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             const bh_view &v = instr.operand[i];
             if(bh_is_constant(&v))
             {
-                constants.push_back(instr.constant);
+                if (!sweep)
+                    constants.push_back(instr.constant);
                 continue;
             }
             bh_view sv = bh_view_simplify(v);
@@ -215,7 +219,8 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
                 input_set.insert(v);
                 parameters.insert(v.base);
             }
-            update_shape(v, sv);
+            if (v.ndim > (bh_intp)shape.size())
+                shape = std::vector<bh_index>(v.shape,v.shape+v.ndim);
         }
         //Add the output of the instruction to 'outputs'
         {
@@ -225,30 +230,21 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             output_map.insert(std::make_pair(v.base,v));
             output_set.insert(v);
             parameters.insert(v.base);
-            update_shape(v, sv);
+            if (v.ndim > (bh_intp)shape.size())
+                shape = std::vector<bh_index>(v.shape,v.shape+v.ndim);
             if (bh_is_scalar(&v))
                 scalar = true;
             // For now we treat a 1D accumulate like a 1D reduce i.e. the kernel is a scalar kernel
             if (bh_opcode_is_accumulate(instr.opcode) && sv.ndim == 1)
                 scalar = true;
         }
-        if (bh_opcode_is_sweep(instr.opcode))
+        if (sweep)
         {
             sweeps[instr.operand[1].ndim] = instr.constant.value.int64;
         }
     }
     }
     instr_indexes.push_back(instr_idx);
-}
-
-void bh_ir_kernel::update_shape(const bh_view& full, const bh_view& simple)
-{
-    size_t ve = bh_nelements(full);
-    if (ve >= elements && full.ndim > (bh_intp)shape.size())
-    {
-        elements = ve;
-        shape = std::vector<bh_index>(full.shape,full.shape+full.ndim);
-    }
 }
 
 /* Determines whether all instructions in 'this' kernel
