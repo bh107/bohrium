@@ -3,7 +3,8 @@
 #
 [stack_default]
 type = stack
-stack_default = bcexp_cpu
+stack_default = dimclean
+dimclean = bcexp_cpu
 bcexp_cpu = bccon
 bccon = topological
 topological = node
@@ -20,7 +21,8 @@ node = cpu
 #
 [stack_gpu]
 type = stack
-stack_gpu = bcexp
+stack_gpu = dimclean
+dimclean = bcexp
 bcexp = greedy
 greedy = node
 node = gpu
@@ -28,7 +30,8 @@ gpu = cpu
 
 [stack_fuseprinter]
 type = stack
-stack_fuseprinter = bcexp
+stack_fuseprinter = dimclean
+dimclean = bcexp
 bcexp = topological
 topological = pricer
 pricer = fuseprinter
@@ -44,7 +47,7 @@ node = cpu
 #
 [bridge]
 type = bridge
-children = bcexp
+children = dimclean
 
 #
 # Managers
@@ -122,6 +125,11 @@ children = cpu
 #
 # Filters - Bytecode transformers
 #
+[dimclean]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_dimclean${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = bcexp
+
 [bccon]
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
