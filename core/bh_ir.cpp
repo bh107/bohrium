@@ -104,14 +104,12 @@ void bh_ir::pprint_kernel_list() const
 }
 
 bh_ir_kernel::bh_ir_kernel()
-    : elements(0)
-    , scalar(false)
+    : scalar(false)
     , bhir(NULL)
 {}
 
 bh_ir_kernel::bh_ir_kernel(bh_ir &bhir)
-    : elements(0)
-    , scalar(false)
+    : scalar(false)
     , bhir(&bhir)
 {}
 
@@ -130,7 +128,6 @@ void bh_ir_kernel::clear()
     discards.clear();
     parameters.clear();
     shape.clear();
-    elements = 0;
     scalar = false;
 }
 
