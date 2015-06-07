@@ -292,6 +292,9 @@ void generateInstructionSource(const bh_opcode opcode,
         case BH_SQRT:
             source << indent << "CSQRT(" << parameters[0] << ", " << parameters[1] << ")\n";
             break;
+        case BH_ABSOLUTE:
+            source << indent << "CABS(" << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
         case BH_IDENTITY:
             if (type[0] == type[1])
                 source << indent << parameters[0] << " = " << parameters[1] << ";\n";
