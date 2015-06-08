@@ -62,7 +62,7 @@ typedef struct
     int mmap_allocated;
 }BhArray;
 
-//Help function that returns number of bytes in 'ary' 
+//Help function that returns number of bytes in 'ary'
 //BUT minimum 'itemsize', which mimic the behavior of NumPy
 static int64_t ary_nbytes(const BhArray *ary)
 {
@@ -523,6 +523,12 @@ BhArray_reshape(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+BhArray_flatten(PyObject *self, PyObject *args)
+{
+    return method2function("flatten", self, args);
+}
+
+static PyObject *
 BhArray_sum(PyObject *self, PyObject *args)
 {
     return method2function("sum", self, args);
@@ -546,6 +552,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"reshape", BhArray_reshape, METH_VARARGS, "a.reshape(shape)\n\nReturns an array"
                                                "containing the same data with a new shape.\n\n"
                                                "Refer to `bohrium.reshape` for full documentation."},
+    {"flatten", BhArray_flatten, METH_VARARGS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"ravel", BhArray_flatten, METH_VARARGS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
     {"sum", BhArray_sum, METH_VARARGS, "a.sum(axis=None, dtype=None, out=None)\n\n"
                                        "Return the sum of the array elements over the given axis.\n\n"
                                        "Refer to `bohrium.sum` for full documentation."},
