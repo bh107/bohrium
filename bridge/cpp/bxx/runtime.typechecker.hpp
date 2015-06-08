@@ -118,12 +118,12 @@ void Runtime::typecheck<BH_ABSOLUTE, double, double>(void) { }
 
 template <>
 inline
-void Runtime::typecheck<BH_ABSOLUTE, std::complex<float> , std::complex<float> >(void) { }
+void Runtime::typecheck<BH_ABSOLUTE, float, std::complex<float> >(void) { }
 
 
 template <>
 inline
-void Runtime::typecheck<BH_ABSOLUTE, std::complex<double> , std::complex<double> >(void) { }
+void Runtime::typecheck<BH_ABSOLUTE, double, std::complex<double> >(void) { }
 
 
 template <>
