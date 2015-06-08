@@ -37,36 +37,20 @@ class View(interface.View):
             self.dtype
         ))
 
-def views2bhc(views):
-    """returns the bhc objects in the 'views' but don't touch scalars"""
-
-    singleton = not (hasattr(views, "__iter__") or
-                     hasattr(views, "__getitem__"))
-    if singleton:
-        views = (views,)
-    ret = []
-    for view in views:
-        if not numpy.isscalar(view):
-            view = view.bhc_obj
-        ret.append(view)
-    if singleton:
-        ret = ret[0]
-    return ret
-
 def bhc_exec(func, *args):
     """execute the 'func' with the bhc objects in 'args'"""
 
     args = list(args)
     for i in xrange(len(args)):
         if isinstance(args[i], View):
-            args[i] = views2bhc(args[i])
+            args[i] = args[i].bhc_obj
     return func(*args)
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     """Retrieves the data pointer from Bohrium Runtime."""
 
     dtype = dtype_name(ary)
-    ary = views2bhc(ary)
+    ary = ary.bhc_obj
     exec("bhc.bh_multi_array_%s_sync(ary)" % dtype)
     exec("bhc.bh_multi_array_%s_discard(ary)" % dtype)
     exec("bhc.bh_runtime_flush()")
