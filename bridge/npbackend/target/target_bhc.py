@@ -6,19 +6,25 @@ import numpy
 from .. import bhc
 from .._util import dtype_name
 from . import interface
+import functools
+import operator
 
 class Base(interface.Base):
     """base array handle"""
 
     def __init__(self, size, dtype, bhc_obj=None):
         super(Base, self).__init__(size, dtype)
+        if size == 0:
+            return
 
         if bhc_obj is None:
             func = eval("bhc.bh_multi_array_%s_new_empty" % dtype_name(dtype))
-            bhc_obj = bhc_exec(func, 1, (size,))
+            bhc_obj = _bhc_exec(func, 1, (size,))
         self.bhc_obj = bhc_obj
 
     def __del__(self):
+        if self.size == 0:
+            return
         exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)" %
              dtype_name(self.dtype)
         )
@@ -28,45 +34,36 @@ class View(interface.View):
 
     def __init__(self, ndim, start, shape, strides, base):
         super(View, self).__init__(ndim, start, shape, strides, base)
+        self.size = functools.reduce(operator.mul, shape, 1)
+        if self.size == 0:
+            return
         dtype = dtype_name(self.dtype)
         func = eval("bhc.bh_multi_array_%s_new_view" % dtype)
         self.bhc_obj = func(base.bhc_obj, ndim, start, shape, strides)
 
     def __del__(self):
+        if self.size == 0:
+            return
         exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)" % dtype_name(
             self.dtype
         ))
 
-def views2bhc(views):
-    """returns the bhc objects in the 'views' but don't touch scalars"""
-
-    singleton = not (hasattr(views, "__iter__") or
-                     hasattr(views, "__getitem__"))
-    if singleton:
-        views = (views,)
-    ret = []
-    for view in views:
-        if not numpy.isscalar(view):
-            view = view.bhc_obj
-        ret.append(view)
-    if singleton:
-        ret = ret[0]
-    return ret
-
-def bhc_exec(func, *args):
+def _bhc_exec(func, *args):
     """execute the 'func' with the bhc objects in 'args'"""
 
     args = list(args)
     for i in xrange(len(args)):
         if isinstance(args[i], View):
-            args[i] = views2bhc(args[i])
+            args[i] = args[i].bhc_obj
     return func(*args)
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     """Retrieves the data pointer from Bohrium Runtime."""
+    if ary.size == 0 or ary.base.size == 0:
+        return 0
 
     dtype = dtype_name(ary)
-    ary = views2bhc(ary)
+    ary = ary.bhc_obj
     exec("bhc.bh_multi_array_%s_sync(ary)" % dtype)
     exec("bhc.bh_multi_array_%s_discard(ary)" % dtype)
     exec("bhc.bh_runtime_flush()")
@@ -110,6 +107,9 @@ def ufunc(op, *args):
                 scalar_str = "_scalar" + ("_rhs" if len(args) > 2 else "")
         elif i > 0:
             in_dtype = arg.dtype#overwrite with a non-scalar input
+            #Do nothing on zero-sized arguments
+            if arg.size == 0 or arg.base.size == 0:
+                return
 
     if op.info['name'] == "identity":#Identity is a special case
         cmd = "bhc.bh_multi_array_%s_identity_%s" % (
@@ -121,7 +121,7 @@ def ufunc(op, *args):
             dtype_name(in_dtype), op.info['name']
         )
     cmd += scalar_str
-    bhc_exec(eval(cmd), *args)
+    _bhc_exec(eval(cmd), *args)
 
 def reduce(op, out, ary, axis):
     """
@@ -129,11 +129,13 @@ def reduce(op, out, ary, axis):
 
     :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
     """
+    if ary.size == 0 or ary.base.size == 0:
+        return
 
     func = eval("bhc.bh_multi_array_%s_%s_reduce" % (
         dtype_name(ary), op.info['name']
     ))
-    bhc_exec(func, out, ary, axis)
+    _bhc_exec(func, out, ary, axis)
 
 def accumulate(op, out, ary, axis):
     """
@@ -145,11 +147,13 @@ def accumulate(op, out, ary, axis):
     :in2 ?:
     :rtype: None
     """
+    if ary.size == 0 or ary.base.size == 0:
+        return
 
     func = eval("bhc.bh_multi_array_%s_%s_accumulate" % (
         dtype_name(ary), op.info['name'])
     )
-    bhc_exec(func, out, ary, axis)
+    _bhc_exec(func, out, ary, axis)
 
 def extmethod(name, out, in1, in2):
     """
@@ -162,13 +166,15 @@ def extmethod(name, out, in1, in2):
     :in2 ?:
     :rtype: None
     """
+    if out.size == 0 or out.base.size == 0:
+        return
 
     func = eval("bhc.bh_multi_array_extmethod_%s_%s_%s" % (
         dtype_name(out),
         dtype_name(in1),
         dtype_name(in2)
     ))
-    ret = bhc_exec(func, name, out, in1, in2)
+    ret = _bhc_exec(func, name, out, in1, in2)
 
     if ret != 0:
         raise NotImplementedError("The current runtime system does not support "
@@ -183,10 +189,12 @@ def range(size, dtype):
     :rtype: None
     """
 
-    func = eval("bhc.bh_multi_array_%s_new_range" % dtype_name(dtype))
-    bhc_obj = bhc_exec(func, size)
+    if size > 0:
+        func = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(dtype))
+        bhc_obj = _bhc_exec(func, size)
+    else:
+        bhc_obj = None
     base = Base(size, dtype, bhc_obj)
-
     return View(1, 0, (size,), (dtype.itemsize,), base)
 
 def random123(size, start_index, key):
@@ -196,9 +204,11 @@ def random123(size, start_index, key):
     """
 
     dtype = numpy.dtype("uint64")
-    func = eval("bhc.bh_multi_array_uint64_new_random123")
-    bhc_obj = bhc_exec(func, size, start_index, key)
+    if size > 0:
+        func = eval("bhc.bh_multi_array_uint64_new_random123")
+        bhc_obj = _bhc_exec(func, size, start_index, key)
+    else:
+        bhc_obj = None
     base = Base(size, dtype, bhc_obj)
-
     return View(1, 0, (size,), (dtype.itemsize,), base)
 

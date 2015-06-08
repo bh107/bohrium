@@ -66,13 +66,20 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
         inject(bhir, ++pc, BH_FREE, gtr);
         inject(bhir, ++pc, BH_DISCARD, gtr);
     } else {                                // For complex: sign(0) = 0, sign(z) = z/|z|
+
+        bh_type float_type = (input_type == BH_COMPLEX64) ? BH_FLOAT32 : BH_FLOAT64;
                                             // General form: sign(z) = z/(|z|+(z==0))
-        bh_view z_abs = make_temp(meta, input_type, nelements); // Temps
+        bh_view f_abs = make_temp(meta, float_type, nelements); // Temps
+        bh_view z_abs = make_temp(meta, input_type, nelements);
         bh_view z_zero_bool = make_temp(meta, BH_BOOL, nelements);
         bh_view z_zero = make_temp(meta, input_type, nelements);
         bh_view divisor = make_temp(meta, input_type, nelements);
         
-        inject(bhir, ++pc, BH_ABSOLUTE, z_abs, input);          // Sequence
+        inject(bhir, ++pc, BH_ABSOLUTE, f_abs, input);          // Sequence
+        inject(bhir, ++pc, BH_IDENTITY, z_abs, f_abs);
+        inject(bhir, ++pc, BH_FREE, f_abs);
+        inject(bhir, ++pc, BH_DISCARD, f_abs);
+
         inject(bhir, ++pc, BH_EQUAL, z_zero_bool, input, 0.0, input_type);
         inject(bhir, ++pc, BH_IDENTITY, z_zero, z_zero_bool);
         inject(bhir, ++pc, BH_FREE, z_zero_bool);

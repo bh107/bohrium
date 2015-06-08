@@ -420,7 +420,12 @@ string Walker::operations(void)
         tit!=kernel_.tacs_end();
         ++tit) {
         tac_t& tac = **tit;
-        ETYPE etype = kernel_.operand_glb(tac.out).meta().etype;
+        ETYPE etype;
+        if (ABSOLUTE == tac.oper) {
+            etype = kernel_.operand_glb(tac.in1).meta().etype;
+        } else {
+            etype = kernel_.operand_glb(tac.out).meta().etype;
+        }
 
         string out = "ERROR_OUT", in1 = "ERROR_IN1", in2 = "ERROR_IN2";
         switch(tac.op) {
