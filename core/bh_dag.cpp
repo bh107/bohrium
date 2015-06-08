@@ -380,6 +380,12 @@ void pprint(const GraphDW &dag, const char filename[])
                 bh_sprint_base(i, buf);
                 out << buf << "\\l";
             }
+            out << "Sync base-arrays: \\l";
+            BOOST_FOREACH(const bh_base* i, graph[v].get_syncs())
+            {
+                bh_sprint_base(i, buf);
+                out << buf << "\\l";
+            }
             BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes)
             {
                 const bh_instruction &instr = graph[v].bhir->instr_list[idx];
