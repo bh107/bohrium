@@ -19,9 +19,9 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
 #include <bh.h>
-#include "interface.h"
 #define BH_TIMING_SUM
 #include <bh_timing.hpp>
+#include "interface.h"
 #include "filter.h"
 
 //
@@ -70,7 +70,6 @@ bh_error bh_filter_dimclean_shutdown(void)
 {
     bh_error err = child->shutdown();
     bh_component_destroy(&myself);
-
     if (timing)
         bh_timer_finalize(exec_timing);
     return err;
@@ -84,7 +83,6 @@ bh_error bh_filter_dimclean_execute(bh_ir* bhir)
     filter(*bhir);        // Run the filter
     if (timing)
         bh_timer_add(exec_timing, start, bh_timer_stamp());
-
     return child->execute(bhir); // Execute the filtered bhir
 }
 
