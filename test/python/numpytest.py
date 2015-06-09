@@ -176,9 +176,15 @@ class BenchHelper:
         """
         #Lets make sure that benchpress is installed
         try:
-            subprocess.call(['bp-info', '--benchmarks'])
+            p = subprocess.Popen(
+                ['bp-info', '--benchmarks'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            out, err = p.communicate()
+            rc = p.returncode
         except OSError:
-            print("ERROR: benchpress not install -- skipping test.")
+            print("ERROR: benchpress is not installed -- skipping test.")
             raise StopIteration()
 
         self.uuid = str(uuid.uuid4())
