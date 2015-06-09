@@ -46,8 +46,9 @@ struct InstrHash: public std::string
  * (aka instruction list) */
 struct BatchHash
 {
-    uint64_t base_id_count;
-    std::map<const bh_base*, uint64_t> base2id;
+    // Sequence set of views used in this batch
+    seqset<bh_view> views;
+
     uint64_t _hash;
 
     /* Construct a BatchHash instant based on the instruction list */
