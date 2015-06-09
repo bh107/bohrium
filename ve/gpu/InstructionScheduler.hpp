@@ -39,7 +39,6 @@ private:
     typedef std::map<KernelID, Kernel> KernelMap;
     typedef std::pair<KernelID, SourceKernelCall> KernelCall;
     typedef std::deque<KernelCall> CallQueue;
-    typedef std::map<size_t, BaseArray*> ViewList;
 
     std::mutex kernelMutex;
     std::map<size_t,size_t> knownKernelID;
