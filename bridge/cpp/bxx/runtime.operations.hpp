@@ -159,8 +159,10 @@ multi_array<TL>& bh_add (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -171,8 +173,10 @@ multi_array<TL>& bh_add (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -183,8 +187,10 @@ multi_array<TL>& bh_add (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ADD, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -316,8 +322,10 @@ multi_array<TL>& bh_subtract (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -328,8 +336,10 @@ multi_array<TL>& bh_subtract (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -340,8 +350,10 @@ multi_array<TL>& bh_subtract (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_SUBTRACT, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -473,8 +485,10 @@ multi_array<TL>& bh_multiply (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -485,8 +499,10 @@ multi_array<TL>& bh_multiply (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -497,8 +513,10 @@ multi_array<TL>& bh_multiply (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -630,8 +648,10 @@ multi_array<TL>& bh_divide (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -642,8 +662,10 @@ multi_array<TL>& bh_divide (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -654,8 +676,10 @@ multi_array<TL>& bh_divide (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_DIVIDE, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -787,8 +811,10 @@ multi_array<TL>& bh_mod (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -799,8 +825,10 @@ multi_array<TL>& bh_mod (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -811,8 +839,10 @@ multi_array<TL>& bh_mod (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MOD, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -944,8 +974,10 @@ multi_array<TL>& bh_bitwise_and (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -956,8 +988,10 @@ multi_array<TL>& bh_bitwise_and (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -968,8 +1002,10 @@ multi_array<TL>& bh_bitwise_and (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1101,8 +1137,10 @@ multi_array<TL>& bh_bitwise_or (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1113,8 +1151,10 @@ multi_array<TL>& bh_bitwise_or (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1125,8 +1165,10 @@ multi_array<TL>& bh_bitwise_or (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1258,8 +1300,10 @@ multi_array<TL>& bh_bitwise_xor (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1270,8 +1314,10 @@ multi_array<TL>& bh_bitwise_xor (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1282,8 +1328,10 @@ multi_array<TL>& bh_bitwise_xor (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1415,8 +1463,10 @@ multi_array<TL>& bh_left_shift (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1427,8 +1477,10 @@ multi_array<TL>& bh_left_shift (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1439,8 +1491,10 @@ multi_array<TL>& bh_left_shift (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LEFT_SHIFT, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1572,8 +1626,10 @@ multi_array<TL>& bh_right_shift (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1584,8 +1640,10 @@ multi_array<TL>& bh_right_shift (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1596,8 +1654,10 @@ multi_array<TL>& bh_right_shift (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_RIGHT_SHIFT, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1729,8 +1789,10 @@ multi_array<TL>& bh_logical_and (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1741,8 +1803,10 @@ multi_array<TL>& bh_logical_and (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1753,8 +1817,10 @@ multi_array<TL>& bh_logical_and (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1886,8 +1952,10 @@ multi_array<TL>& bh_logical_or (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1898,8 +1966,10 @@ multi_array<TL>& bh_logical_or (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -1910,8 +1980,10 @@ multi_array<TL>& bh_logical_or (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2043,8 +2115,10 @@ multi_array<TL>& bh_logical_xor (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2055,8 +2129,10 @@ multi_array<TL>& bh_logical_xor (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2067,8 +2143,10 @@ multi_array<TL>& bh_logical_xor (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2200,8 +2278,10 @@ multi_array<TL>& bh_power (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2212,8 +2292,10 @@ multi_array<TL>& bh_power (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2224,8 +2306,10 @@ multi_array<TL>& bh_power (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_POWER, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2357,8 +2441,10 @@ multi_array<TL>& bh_maximum (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2369,8 +2455,10 @@ multi_array<TL>& bh_maximum (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2381,8 +2469,10 @@ multi_array<TL>& bh_maximum (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2514,8 +2604,10 @@ multi_array<TL>& bh_minimum (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2526,8 +2618,10 @@ multi_array<TL>& bh_minimum (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2538,8 +2632,10 @@ multi_array<TL>& bh_minimum (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2671,8 +2767,10 @@ multi_array<TL>& bh_arctan2 (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2683,8 +2781,10 @@ multi_array<TL>& bh_arctan2 (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2695,8 +2795,10 @@ multi_array<TL>& bh_arctan2 (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTAN2, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2737,8 +2839,10 @@ multi_array<TL>& bh_scatter (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_SCATTER, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2781,8 +2885,10 @@ multi_array<TL>& bh_gather (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_GATHER, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2847,8 +2953,10 @@ multi_array<TL>& bh_matmul (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MATMUL, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2859,8 +2967,10 @@ multi_array<TL>& bh_matmul (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MATMUL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -2871,8 +2981,10 @@ multi_array<TL>& bh_matmul (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MATMUL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3006,8 +3118,10 @@ multi_array<bool>& bh_equal (multi_array<T> &lhs, multi_array<T> &rhs)
     // Construct output / result array
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3018,8 +3132,10 @@ multi_array<bool>& bh_equal (multi_array<T>& lhs, const T rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3030,8 +3146,10 @@ multi_array<bool>& bh_equal (const T lhs, multi_array<T>& rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_EQUAL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3163,8 +3281,10 @@ multi_array<bool>& bh_not_equal (multi_array<T> &lhs, multi_array<T> &rhs)
     // Construct output / result array
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3175,8 +3295,10 @@ multi_array<bool>& bh_not_equal (multi_array<T>& lhs, const T rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3187,8 +3309,10 @@ multi_array<bool>& bh_not_equal (const T lhs, multi_array<T>& rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_NOT_EQUAL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3320,8 +3444,10 @@ multi_array<bool>& bh_greater (multi_array<T> &lhs, multi_array<T> &rhs)
     // Construct output / result array
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3332,8 +3458,10 @@ multi_array<bool>& bh_greater (multi_array<T>& lhs, const T rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3344,8 +3472,10 @@ multi_array<bool>& bh_greater (const T lhs, multi_array<T>& rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3477,8 +3607,10 @@ multi_array<bool>& bh_greater_equal (multi_array<T> &lhs, multi_array<T> &rhs)
     // Construct output / result array
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3489,8 +3621,10 @@ multi_array<bool>& bh_greater_equal (multi_array<T>& lhs, const T rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3501,8 +3635,10 @@ multi_array<bool>& bh_greater_equal (const T lhs, multi_array<T>& rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_GREATER_EQUAL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3634,8 +3770,10 @@ multi_array<bool>& bh_less (multi_array<T> &lhs, multi_array<T> &rhs)
     // Construct output / result array
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3646,8 +3784,10 @@ multi_array<bool>& bh_less (multi_array<T>& lhs, const T rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3658,8 +3798,10 @@ multi_array<bool>& bh_less (const T lhs, multi_array<T>& rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3791,8 +3933,10 @@ multi_array<bool>& bh_less_equal (multi_array<T> &lhs, multi_array<T> &rhs)
     // Construct output / result array
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3803,8 +3947,10 @@ multi_array<bool>& bh_less_equal (multi_array<T>& lhs, const T rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3815,8 +3961,10 @@ multi_array<bool>& bh_less_equal (const T lhs, multi_array<T>& rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LESS_EQUAL, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3883,8 +4031,10 @@ multi_array<T>& bh_identity (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -3949,8 +4099,10 @@ multi_array<T>& bh_logical_not (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_NOT, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4015,8 +4167,10 @@ multi_array<T>& bh_invert (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_INVERT, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4081,8 +4235,10 @@ multi_array<T>& bh_imag (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_IMAG, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4147,8 +4303,10 @@ multi_array<T>& bh_real (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_REAL, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4213,8 +4371,10 @@ multi_array<T>& bh_absolute (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ABSOLUTE, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4279,8 +4439,10 @@ multi_array<T>& bh_sin (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_SIN, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4345,8 +4507,10 @@ multi_array<T>& bh_cos (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_COS, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4411,8 +4575,10 @@ multi_array<T>& bh_tan (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_TAN, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4477,8 +4643,10 @@ multi_array<T>& bh_sinh (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_SINH, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4543,8 +4711,10 @@ multi_array<T>& bh_cosh (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_COSH, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4609,8 +4779,10 @@ multi_array<T>& bh_tanh (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_TANH, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4675,8 +4847,10 @@ multi_array<T>& bh_arcsin (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCSIN, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4741,8 +4915,10 @@ multi_array<T>& bh_arccos (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOS, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4807,8 +4983,10 @@ multi_array<T>& bh_arctan (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTAN, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4873,8 +5051,10 @@ multi_array<T>& bh_arcsinh (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCSINH, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -4939,8 +5119,10 @@ multi_array<T>& bh_arccosh (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCCOSH, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5005,8 +5187,10 @@ multi_array<T>& bh_arctanh (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ARCTANH, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5071,8 +5255,10 @@ multi_array<T>& bh_exp (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5137,8 +5323,10 @@ multi_array<T>& bh_exp2 (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_EXP2, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5203,8 +5391,10 @@ multi_array<T>& bh_expm1 (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_EXPM1, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5269,8 +5459,10 @@ multi_array<T>& bh_log (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5335,8 +5527,10 @@ multi_array<T>& bh_log2 (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG2, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5401,8 +5595,10 @@ multi_array<T>& bh_log10 (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG10, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5467,8 +5663,10 @@ multi_array<T>& bh_log1p (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOG1P, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5533,8 +5731,10 @@ multi_array<T>& bh_sqrt (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_SQRT, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5599,8 +5799,10 @@ multi_array<T>& bh_ceil (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_CEIL, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5665,8 +5867,10 @@ multi_array<T>& bh_trunc (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_TRUNC, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5731,8 +5935,10 @@ multi_array<T>& bh_floor (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_FLOOR, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5797,8 +6003,10 @@ multi_array<T>& bh_rint (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_RINT, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5863,8 +6071,10 @@ multi_array<T>& bh_sign (multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_SIGN, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5931,8 +6141,10 @@ multi_array<bool>& bh_isnan (multi_array<T>& rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ISNAN, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -5997,8 +6209,10 @@ multi_array<bool>& bh_isinf (multi_array<T>& rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ISINF, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 
@@ -6087,8 +6301,10 @@ multi_array<T>& bh_add_accumulate (multi_array<T> &lhs, int64_t rhs)
     // Construct result array
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ADD_ACCUMULATE, *result, lhs, rhs);
+    result->setTemp(true);
 
     return *result;
 }
@@ -6130,8 +6346,10 @@ multi_array<T>& bh_multiply_accumulate (multi_array<T> &lhs, int64_t rhs)
     // Construct result array
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY_ACCUMULATE, *result, lhs, rhs);
+    result->setTemp(true);
 
     return *result;
 }
@@ -6195,9 +6413,10 @@ multi_array<T>& bh_add_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_ADD_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -6258,9 +6477,10 @@ multi_array<T>& bh_multiply_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MULTIPLY_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -6321,9 +6541,10 @@ multi_array<T>& bh_minimum_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MINIMUM_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -6384,9 +6605,10 @@ multi_array<T>& bh_maximum_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_MAXIMUM_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -6447,9 +6669,10 @@ multi_array<T>& bh_logical_and_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_AND_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -6510,9 +6733,10 @@ multi_array<T>& bh_logical_or_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_OR_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -6573,9 +6797,10 @@ multi_array<T>& bh_logical_xor_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_LOGICAL_XOR_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -6636,9 +6861,10 @@ multi_array<T>& bh_bitwise_and_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_AND_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -6699,9 +6925,10 @@ multi_array<T>& bh_bitwise_or_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_OR_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -6762,9 +6989,10 @@ multi_array<T>& bh_bitwise_xor_reduce (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR_REDUCE, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 

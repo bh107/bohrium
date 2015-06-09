@@ -148,8 +148,10 @@ multi_array<TL>& $op (multi_array<TL> &lhs, multi_array<TR> &rhs)
     // Construct output / result array
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, *left, *right);
+    result->setTemp(true);
     return *result;
 }
 %end if
@@ -162,8 +164,10 @@ multi_array<TL>& $op (multi_array<TL>& lhs, const TR rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 %end if
@@ -176,8 +180,10 @@ multi_array<TL>& $op (const TL lhs, multi_array<TR>& rhs)
 
     multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+    result->setTemp(true);
     return *result;
 }
 %end if

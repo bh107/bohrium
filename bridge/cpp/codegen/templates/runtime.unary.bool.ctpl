@@ -73,8 +73,10 @@ multi_array<bool>& $op (multi_array<T>& rhs)
 
     multi_array<bool>* result = &Runtime::instance().temp<bool, T>(rhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, rhs);
+    result->setTemp(true);
     return *result;
 }
 %end if

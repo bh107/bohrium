@@ -210,9 +210,9 @@ multi_array<T>& Runtime::temp_view(multi_array<T>& base)
     return *operand;
 }
 
-template <typename Out, typename In1, typename In2>
+template <typename TO, typename TL, typename TR>
 inline
-void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, multi_array<In2>& op2)
+void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, multi_array<TR>& op2)
 {
     bh_instruction* instr;
 
@@ -224,13 +224,14 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>&
     instr->operand[1] = op1.meta;
     instr->operand[2] = op2.meta;
 
+    if ((!identical(op0, op1)) && op0.getTemp()) { delete &op0; }
     if (op1.getTemp()) { delete &op1; }
     if (op2.getTemp()) { delete &op2; }
 }
 
-template <typename Out, typename In1, typename In2>
+template <typename TO, typename TL, typename TR>
 inline
-void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, const In2 op2)
+void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, const TR op2)
 {
     bh_instruction* instr;
 
@@ -243,12 +244,13 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>&
     instr->operand[2].base = NULL;
     assign_const_type(&instr->constant, op2);
 
+    if ((!identical(op0, op1)) && op0.getTemp()) { delete &op0; }
     if (op1.getTemp()) { delete &op1; }
 }
 
-template <typename Out, typename In1, typename In2>
+template <typename TO, typename TL, typename TR>
 inline
-void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, const In1 op1, multi_array<In2>& op2)
+void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, const TL op1, multi_array<TR>& op2)
 {
     bh_instruction* instr;
 
@@ -261,12 +263,13 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, const In1 op1, mu
     instr->operand[2] = op2.meta;
     assign_const_type( &instr->constant, op1 );
 
+    if ((!identical(op0, op2)) && op0.getTemp()) { delete &op0; }
     if (op2.getTemp()) { delete &op2; }
 }
 
-template <typename Out, typename In1>
+template <typename TO, typename TI>
 inline
-void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1)
+void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TI>& op1)
 {
     bh_instruction* instr;
 
@@ -278,12 +281,13 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>&
     instr->operand[1] = op1.meta;
     instr->operand[2].base = NULL;
 
+    if ((!identical(op0, op1)) && op0.getTemp()) { delete &op0; }
     if (op1.getTemp()) { delete &op1; }
 }
 
-template <typename Out, typename In1>
+template <typename TO, typename TI>
 inline
-void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, const In1 op1)
+void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, const TI op1)
 {
     bh_instruction* instr;
 
@@ -295,11 +299,13 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0, const In1 op1)
     instr->operand[1].base = NULL;
     instr->operand[2].base = NULL;
     assign_const_type(&instr->constant, op1);
+
+    if (op0.getTemp()) { delete &op0; }
 }
 
-template <typename Out>
+template <typename TO>
 inline
-void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0)
+void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0)
 {
     bh_instruction* instr;
 
@@ -310,14 +316,16 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<Out>& op0)
     instr->operand[0] = op0.meta;
     instr->operand[1].base = NULL;
     instr->operand[2].base = NULL;
+
+    if (op0.getTemp()) { delete &op0; }
 }
 
 //
 //  This function should only be used by random to encode the degenerate bh_r123 type.
 //
-template <typename T>
+template <typename TO>
 inline
-void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const uint64_t op1, const uint64_t op2)
+void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, const uint64_t op1, const uint64_t op2)
 {
     bh_instruction* instr;
 
@@ -334,12 +342,12 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<T>& op0, const uint64_t op1,
     instr->constant.value.r123.key   = op2;
 }
 
-template <typename Ret, typename In1, typename In2>
+template <typename T1, typename T2, typename T3>
 inline
 void Runtime::enqueue_extension(const std::string& name,
-                                multi_array<Ret>& op0,
-                                multi_array<In1>& op1,
-                                multi_array<In2>& op2)
+                                multi_array<T1>& op0,
+                                multi_array<T2>& op1,
+                                multi_array<T3>& op2)
 {
     bh_instruction* instr;
     bh_opcode opcode;
@@ -364,6 +372,7 @@ void Runtime::enqueue_extension(const std::string& name,
     instr->operand[1] = op1.meta;
     instr->operand[2] = op2.meta;
 
+    if (op0.getTemp()) { delete &op0; }
     if (op1.getTemp()) { delete &op1; }
     if (op2.getTemp()) { delete &op2; }
 }
@@ -371,6 +380,8 @@ void Runtime::enqueue_extension(const std::string& name,
 template <typename T>
 T scalar(multi_array<T>& op)
 {
+    bool is_temp = op.getTemp();
+    op.setTemp(false);
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, op);
     Runtime::instance().flush();
 
@@ -380,7 +391,7 @@ T scalar(multi_array<T>& op)
 
     T value = *data;
 
-    if (op.getTemp()) { // If it was a temp you will never see it again
+    if (is_temp) {      // If it was a temp you will never see it again
         delete &op;     // so you better clean it up!
         Runtime::instance().flush();
     }

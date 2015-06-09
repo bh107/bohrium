@@ -267,6 +267,13 @@ private:
 
 };
 
+template <typename TL, typename TR>
+inline
+bool identical(multi_array<TL>& left, multi_array<TR>& right)
+{
+    return static_cast<void*>(&left) == static_cast<void*>(&right);
+}
+
 /**
  *  Encapsulation of communication with Bohrium runtime.
  *  Implemented as a Singleton.
@@ -282,29 +289,29 @@ public:
     //
     //  Lazy evaluation through instruction queue
     //
-    template <typename Out, typename In1, typename In2>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, multi_array<In2>& op2);
+    template <typename TO, typename TL, typename TR>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, multi_array<TR>& op2);
     
-    template <typename Out, typename In1, typename In2>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, const In2 op2);
-    
-    template <typename Out, typename In1, typename In2>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const In1 op1, multi_array<In2>& op2);
+    template <typename TO, typename TL, typename TR>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, const TR op2);
 
-    template <typename Out, typename In>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In>& op1);
+    template <typename TO, typename TL, typename TR>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, const TL op1, multi_array<TR>& op2);
 
-    template <typename Out, typename In>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const In op1);
+    template <typename TO, typename TI>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TI>& op1);
 
-    template <typename Out>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0);
+    template <typename TO, typename TI>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, const TI op1);
 
-    template <typename Out>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const uint64_t op1, const uint64_t op2);
+    template <typename TO>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0);
 
-    template <typename Ret, typename In1, typename In2>
-    void enqueue_extension(const std::string& name, multi_array<Ret>& op0, multi_array<In1>& op2, multi_array<In2>& op3);
+    template <typename TO>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, const uint64_t op1, const uint64_t op2);
+
+    template <typename T1, typename T2, typename T3>
+    void enqueue_extension(const std::string& name, multi_array<T1>& op0, multi_array<T2>& op2, multi_array<T3>& op3);
 
     size_t flush();
     size_t get_queue_size();

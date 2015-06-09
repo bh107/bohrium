@@ -42,8 +42,10 @@ multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
     // Construct result array
     multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
     result->link();
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
+    result->setTemp(true);
 
     return *result;
 }
