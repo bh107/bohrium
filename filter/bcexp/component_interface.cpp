@@ -18,6 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
+#define BH_TIMING_SUM
+#include <bh_timing.hpp>
 #include "component_interface.h"
 #include "expander.hpp"
 
@@ -27,6 +29,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 static bh_component myself;         // Myself
 static bh_component_iface *child;   // My child
+
+//The timing ID for the filter
+static bh_intp exec_timing;
+static int timing;
 
 static bohrium::filter::composite::Expander* expander = NULL;
 
@@ -48,6 +54,10 @@ bh_error bh_filter_bcexp_init(const char* name)
         return BH_ERROR;
     }
     
+    timing = bh_component_config_lookup_bool(&myself, "timing", 0);
+    if (timing)
+        exec_timing = bh_timer_new("[BC-Exp] Execution");
+
     child = &myself.children[0];    // Initiate child
     if ((err = child->init(child->name)) != 0) {
         return err;
@@ -82,6 +92,9 @@ bh_error bh_filter_bcexp_shutdown(void)
     delete expander;
     expander = NULL;
 
+    if (timing)
+        bh_timer_finalize(exec_timing);
+
     return err;
 }
 
@@ -92,9 +105,18 @@ bh_error bh_filter_bcexp_extmethod(const char *name, bh_opcode opcode)
 
 bh_error bh_filter_bcexp_execute(bh_ir* bhir)
 {
+    bh_uint64 start;
+    if (timing)
+        start = bh_timer_stamp();
     expander->expand(*bhir);                // Expand composites
+    if (timing)
+        bh_timer_add(exec_timing, start, bh_timer_stamp());
     bh_error res = child->execute(bhir);    // Send the bhir down the stack
+    if (timing)
+        start = bh_timer_stamp();
     expander->gc();                         // Collect garbage
+    if (timing)
+        bh_timer_add(exec_timing, start, bh_timer_stamp());
     return res;                             // Send result up the stack
 }
 
