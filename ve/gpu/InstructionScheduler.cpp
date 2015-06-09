@@ -233,6 +233,8 @@ bh_error InstructionScheduler::extmethod(bh_instruction* inst)
 
 bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
 {
+    // Sync the the synsc before running kernel
+    sync(kernel.get_syncs());
     // sync operands
     sync(kernel.get_parameters().set());
     // discard outputs
@@ -240,6 +242,7 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
     for (const bh_view& view: kernel.get_output_set())
         output.insert(view.base);
     discard(output);
+    // Run instructions in the kernel one at a time 
     for (uint64_t idx: kernel.instr_indexes)
     {
         bh_instruction instr = kernel.bhir->instr_list[idx];
@@ -248,6 +251,9 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
         if (err != BH_SUCCESS)
             return err;
     }
+    // Discard the discards
+    discard(kernel.get_discards());
+    // Frees have been freed by child 
     return BH_SUCCESS;
 }
 
