@@ -314,7 +314,8 @@ void generateInstructionSource(const bh_opcode opcode,
             break;
         default:
             if (resourceManager->verbose())
-                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
+                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode << 
+                    ") not supported for complex operations." << std::endl;
             throw std::runtime_error("Instruction not supported.");
         }
     }
@@ -512,7 +513,8 @@ void generateInstructionSource(const bh_opcode opcode,
             break;
         default:
             if (resourceManager->verbose())
-                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
+                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode << 
+                    ") not supported for non complex operations." << std::endl;
             throw std::runtime_error("Instruction not supported.");
         }
     }
