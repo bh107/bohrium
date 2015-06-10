@@ -64,6 +64,7 @@ basics: basics_compile basics_run
 purge_ko:
 	rm -f ~/.local/var/bohrium/kernels/*
 	rm -f ~/.local/var/bohrium/objects/*
+	rm -f ~/.local/var/bohrium/fuse_cache/*
 
 purge_krn:
 	rm -rf ~/.local/share/bohrium/templates/*
