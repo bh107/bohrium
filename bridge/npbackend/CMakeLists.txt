@@ -25,7 +25,7 @@ if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND CYTHON_FOUND AND NUMPY_
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS bhc
     )
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib DESTINATION . COMPONENT bohrium)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} DESTINATION . COMPONENT bohrium)
 else()
     if (NOT NUMPY_INCLUDE_DIRS)
         message(STATUS "The Python/NumPy bridge cannot be built, because the numpy headers are missing")
