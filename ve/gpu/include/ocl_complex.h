@@ -3,6 +3,7 @@
  */
 #define logmaxfloat  log(FLT_MAX)
 #define logmaxdouble log(DBL_MAX)
+#define CABS(r,a)   r = hypot(a.s0, a.s1);
 #define CADD(r,a,b) r = a + b;
 #define CSUB(r,a,b) r = a - b;
 #define CMUL(r,a,b) r.s0 = a.s0*b.s0 - a.s1*b.s1;               \

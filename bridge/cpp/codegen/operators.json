@@ -1,40 +1,40 @@
 [
-["=",           "BH_IDENTITY",  "sugar.int.unary",  false],
-["bh_identity", "BH_IDENTITY",  "runtime.unary",    true],
+["=",               "BH_IDENTITY",  "sugar.int.unary",  false],
+["bh_identity",     "BH_IDENTITY",  "runtime.unary",    true],
+    
+["[]",              "CUSTOM_2",      "operator.int", false],
+["()",              "CUSTOM_2",      "operator.int", false],
+["->",              "CUSTOM_2",      "operator.int", false],
+    
+["++",              "CUSTOM_2",      "operator.ext.prefix",  true],
+["++",              "CUSTOM_2",      "operator.ext.postfix", true],
+["--",              "CUSTOM_2",      "operator.ext.prefix",  true],
+["--",              "CUSTOM_2",      "operator.ext.postfix", true],
 
-["[]", "CUSTOM_2",      "operator.int", false],
-["()", "CUSTOM_2",      "operator.int", false],
-["->", "CUSTOM_2",      "operator.int", false],
-
-["++", "CUSTOM_2",      "operator.ext.prefix",  true],
-["++", "CUSTOM_2",      "operator.ext.postfix", true],
-["--", "CUSTOM_2",      "operator.ext.prefix",  true],
-["--", "CUSTOM_2",      "operator.ext.postfix", true],
-
-["add",         "BH_ADD",   "sugar.binary",     true],
-["operator+",   "BH_ADD",   "sugar.binary",     true],
-["operator+=",  "BH_ADD",   "sugar.int.binary", true],
-["bh_add",      "BH_ADD",   "runtime.binary",   true],
-
-["subtract",    "BH_SUBTRACT",  "sugar.binary",     true],
-["operator-",   "BH_SUBTRACT",  "sugar.binary",     true],
-["operator-=",  "BH_SUBTRACT",  "sugar.int.binary", true],
-["bh_subtract", "BH_SUBTRACT",  "runtime.binary",   true],
-
-["mul",         "BH_MULTIPLY",  "sugar.binary",     true],
-["operator*",   "BH_MULTIPLY",  "sugar.binary",     true],
-["operator*=",  "BH_MULTIPLY",  "sugar.int.binary", true],
-["bh_multiply", "BH_MULTIPLY",  "runtime.binary",   true],
-
-["div",         "BH_DIVIDE",    "sugar.binary",     true],
-["operator/",   "BH_DIVIDE",    "sugar.binary",     true],
-["operator/=",  "BH_DIVIDE",    "sugar.int.binary", true],
-["bh_divide",   "BH_DIVIDE",    "runtime.binary",   true],
-
-["mod",         "BH_MOD",   "sugar.binary",     true],
-["operator%",   "BH_MOD",   "sugar.binary",     true],
-["operator%=",  "BH_MOD",   "sugar.int.binary", true],
-["bh_mod",      "BH_MOD",   "runtime.binary",   true],
+["add",             "BH_ADD",   "sugar.binary",     true],
+["operator+",       "BH_ADD",   "sugar.binary",     true],
+["operator+=",      "BH_ADD",   "sugar.int.binary", true],
+["bh_add",          "BH_ADD",   "runtime.binary",   true],
+    
+["subtract",        "BH_SUBTRACT",  "sugar.binary",     true],
+["operator-",       "BH_SUBTRACT",  "sugar.binary",     true],
+["operator-=",      "BH_SUBTRACT",  "sugar.int.binary", true],
+["bh_subtract",     "BH_SUBTRACT",  "runtime.binary",   true],
+    
+["mul",             "BH_MULTIPLY",  "sugar.binary",     true],
+["operator*",       "BH_MULTIPLY",  "sugar.binary",     true],
+["operator*=",      "BH_MULTIPLY",  "sugar.int.binary", true],
+["bh_multiply",     "BH_MULTIPLY",  "runtime.binary",   true],
+    
+["div",             "BH_DIVIDE",    "sugar.binary",     true],
+["operator/",       "BH_DIVIDE",    "sugar.binary",     true],
+["operator/=",      "BH_DIVIDE",    "sugar.int.binary", true],
+["bh_divide",       "BH_DIVIDE",    "runtime.binary",   true],
+    
+["mod",             "BH_MOD",   "sugar.binary",     true],
+["operator%",       "BH_MOD",   "sugar.binary",     true],
+["operator%=",      "BH_MOD",   "sugar.int.binary", true],
+["bh_mod",          "BH_MOD",   "runtime.binary",   true],
 
 ["bitwise_and",     "BH_BITWISE_AND",   "sugar.binary",     true],
 ["operator&",       "BH_BITWISE_AND",   "sugar.binary",     true],
@@ -59,29 +59,29 @@
 ["operator>>=",     "BH_RIGHT_SHIFT",   "sugar.int.binary", false],
 ["bh_right_shift",  "BH_RIGHT_SHIFT",   "runtime.binary",   true],
 
-["eq",          "BH_EQUAL", "sugar.binary.bool",     true],
-["operator==",  "BH_EQUAL", "sugar.binary.bool",     true],
-["bh_equal",    "BH_EQUAL", "runtime.binary.bool",   true],
+["eq",              "BH_EQUAL", "sugar.binary.bool",     true],
+["operator==",      "BH_EQUAL", "sugar.binary.bool",     true],
+["bh_equal",        "BH_EQUAL", "runtime.binary.bool",   true],
 
 ["neq",             "BH_NOT_EQUAL", "sugar.binary.bool",     true],
 ["operator!=",      "BH_NOT_EQUAL", "sugar.binary.bool",     true],
 ["bh_not_equal",    "BH_NOT_EQUAL", "runtime.binary.bool",   true],
 
-["gt",          "BH_GREATER",   "sugar.binary.bool",     true],
-["operator>",   "BH_GREATER",   "sugar.binary.bool",     true],
-["bh_greater",  "BH_GREATER",   "runtime.binary.bool",   true],
+["gt",              "BH_GREATER",   "sugar.binary.bool",     true],
+["operator>",       "BH_GREATER",   "sugar.binary.bool",     true],
+["bh_greater",      "BH_GREATER",   "runtime.binary.bool",   true],
 
 ["gteq",            "BH_GREATER_EQUAL",  "sugar.binary.bool",    true],
 ["operator>=",      "BH_GREATER_EQUAL",  "sugar.binary.bool",    true],
-["bh_greater_equal",   "BH_GREATER_EQUAL",  "runtime.binary.bool",  true],
+["bh_greater_equal","BH_GREATER_EQUAL",  "runtime.binary.bool",  true],
 
-["lt",          "BH_LESS",  "sugar.binary.bool",     true],
-["operator<",   "BH_LESS",  "sugar.binary.bool",     true],
-["bh_less",     "BH_LESS",  "runtime.binary.bool",   true],
+["lt",              "BH_LESS",  "sugar.binary.bool",     true],
+["operator<",       "BH_LESS",  "sugar.binary.bool",     true],
+["bh_less",         "BH_LESS",  "runtime.binary.bool",   true],
 
-["lteq",        "BH_LESS_EQUAL",    "sugar.binary.bool",     true],
-["operator<=",  "BH_LESS_EQUAL",    "sugar.binary.bool",     true],
-["bh_less_equal",  "BH_LESS_EQUAL",    "runtime.binary.bool",   true],
+["lteq",            "BH_LESS_EQUAL",    "sugar.binary.bool",     true],
+["operator<=",      "BH_LESS_EQUAL",    "sugar.binary.bool",     true],
+["bh_less_equal",   "BH_LESS_EQUAL",    "runtime.binary.bool",   true],
 
 ["logical_and",     "BH_LOGICAL_AND",   "sugar.binary",     true],
 ["operator&&",      "BH_LOGICAL_AND",   "sugar.binary",     true],
@@ -98,108 +98,113 @@
 ["operator!",       "BH_LOGICAL_NOT",  "sugar.unary",   true],
 ["bh_logical_not",  "BH_LOGICAL_NOT",  "runtime.unary", true],
 
-["invert",      "BH_INVERT",    "sugar.unary",      true],
-["operator~",   "BH_INVERT",    "sugar.unary",      true],
-["bh_invert",   "BH_INVERT",    "runtime.unary",    true],
+["invert",          "BH_INVERT",    "sugar.unary",      true],
+["operator~",       "BH_INVERT",    "sugar.unary",      true],
+["bh_invert",       "BH_INVERT",    "runtime.unary",    true],
 
-["imag",    "BH_IMAG", "sugar.unary",   false],
-["bh_imag", "BH_IMAG", "runtime.unary", true],
+["imag",            "BH_IMAG", "sugar.unary",   false],
+["bh_imag",         "BH_IMAG", "runtime.unary", true],
 
-["real",    "BH_REAL", "sugar.unary",   false],
-["bh_real", "BH_REAL", "runtime.unary", true],
+["real",            "BH_REAL", "sugar.unary",   false],
+["bh_real",         "BH_REAL", "runtime.unary", true],
 
-["pow",     "BH_POWER",     "sugar.binary",     true],
-["bh_power","BH_POWER",     "runtime.binary",   true],
+["pow",             "BH_POWER",     "sugar.binary",     true],
+["bh_power",        "BH_POWER",     "runtime.binary",   true],
 
-["abs",         "BH_ABSOLUTE",  "sugar.unary",      true],
-["bh_absolute", "BH_ABSOLUTE",  "runtime.unary",    true],
+["abs",             "BH_ABSOLUTE",  "sugar.unary",      true],
+["bh_absolute",     "BH_ABSOLUTE",  "runtime.unary",    true],
 
-["maximum",     "BH_MAXIMUM",   "sugar.binary",     true],
-["bh_maximum",  "BH_MAXIMUM",   "runtime.binary",   true],
+["maximum",         "BH_MAXIMUM",   "sugar.binary",     true],
+["bh_maximum",      "BH_MAXIMUM",   "runtime.binary",   true],
 
-["minimum",     "BH_MINIMUM",   "sugar.binary",     true],
-["bh_minimum",  "BH_MINIMUM",   "runtime.binary",   true],
+["minimum",         "BH_MINIMUM",   "sugar.binary",     true],
+["bh_minimum",      "BH_MINIMUM",   "runtime.binary",   true],
 
-["sin",     "BH_SIN",       "sugar.unary",      true],
-["bh_sin",  "BH_SIN",       "runtime.unary",    true],
+["sin",             "BH_SIN",       "sugar.unary",      true],
+["bh_sin",          "BH_SIN",       "runtime.unary",    true],
 
-["cos",     "BH_COS",       "sugar.unary",      true],
-["bh_cos",  "BH_COS",       "runtime.unary",    true],
+["cos",             "BH_COS",       "sugar.unary",      true],
+["bh_cos",          "BH_COS",       "runtime.unary",    true],
 
-["tan",     "BH_TAN",       "sugar.unary",      true],
-["bh_tan",  "BH_TAN",       "runtime.unary",    true],
+["tan",             "BH_TAN",       "sugar.unary",      true],
+["bh_tan",          "BH_TAN",       "runtime.unary",    true],
 
-["sinh",    "BH_SINH",      "sugar.unary",      true],
-["bh_sinh", "BH_SINH",      "runtime.unary",    true],
+["sinh",            "BH_SINH",      "sugar.unary",      true],
+["bh_sinh",         "BH_SINH",      "runtime.unary",    true],
 
-["cosh",    "BH_COSH",      "sugar.unary",      true],
-["bh_cosh", "BH_COSH",      "runtime.unary",    true],
+["cosh",            "BH_COSH",      "sugar.unary",      true],
+["bh_cosh",         "BH_COSH",      "runtime.unary",    true],
 
-["tanh",    "BH_TANH",      "sugar.unary",      true],
-["bh_tanh", "BH_TANH",      "runtime.unary",    true],
+["tanh",            "BH_TANH",      "sugar.unary",      true],
+["bh_tanh",         "BH_TANH",      "runtime.unary",    true],
 
-["asin",        "BH_ARCSIN",    "sugar.unary",      true],
-["bh_arcsin",   "BH_ARCSIN",    "runtime.unary",    true],
+["asin",            "BH_ARCSIN",    "sugar.unary",      true],
+["bh_arcsin",       "BH_ARCSIN",    "runtime.unary",    true],
 
-["acos",        "BH_ARCCOS",    "sugar.unary",      true],
-["bh_arccos",   "BH_ARCCOS",    "runtime.unary",    true],
+["acos",            "BH_ARCCOS",    "sugar.unary",      true],
+["bh_arccos",       "BH_ARCCOS",    "runtime.unary",    true],
 
-["atan",        "BH_ARCTAN",    "sugar.unary",      true],
-["bh_arctan",   "BH_ARCTAN",    "runtime.unary",    true],
+["atan",            "BH_ARCTAN",    "sugar.unary",      true],
+["bh_arctan",       "BH_ARCTAN",    "runtime.unary",    true],
 
-["atan2",       "BH_ARCTAN2",   "sugar.binary",      true],
-["bh_arctan2",  "BH_ARCTAN2",   "runtime.binary",    true],
+["atan2",           "BH_ARCTAN2",   "sugar.binary",      true],
+["bh_arctan2",      "BH_ARCTAN2",   "runtime.binary",    true],
 
-["asinh",       "BH_ARCSINH",   "sugar.unary",      true],
-["bh_arcsinh",  "BH_ARCSINH",   "runtime.unary",    true],
+["asinh",           "BH_ARCSINH",   "sugar.unary",      true],
+["bh_arcsinh",      "BH_ARCSINH",   "runtime.unary",    true],
 
-["acosh",       "BH_ARCCOSH",   "sugar.unary",      true],
-["bh_arccosh",  "BH_ARCCOSH",   "runtime.unary",    true],
+["acosh",           "BH_ARCCOSH",   "sugar.unary",      true],
+["bh_arccosh",      "BH_ARCCOSH",   "runtime.unary",    true],
 
-["atanh",       "BH_ARCTANH",   "sugar.unary",      true],
-["bh_arctanh",  "BH_ARCTANH",   "runtime.unary",    true],
+["atanh",           "BH_ARCTANH",   "sugar.unary",      true],
+["bh_arctanh",      "BH_ARCTANH",   "runtime.unary",    true],
 
-["exp",     "BH_EXP",       "sugar.unary",      true],
-["bh_exp",  "BH_EXP",       "runtime.unary",    true],
+["exp",             "BH_EXP",       "sugar.unary",      true],
+["bh_exp",          "BH_EXP",       "runtime.unary",    true],
+        
+["exp2",            "BH_EXP2",      "sugar.unary",      true],
+["bh_exp2",         "BH_EXP2",      "runtime.unary",    true],
+        
+["expm1",           "BH_EXPM1",     "sugar.unary",      true],
+["bh_expm1",        "BH_EXPM1",     "runtime.unary",    true],
+        
+["isnan",           "BH_ISNAN", "sugar.unary.bool",     true],
+["bh_isnan",        "BH_ISNAN", "runtime.unary.bool",   true],
+        
+["isinf",           "BH_ISINF", "sugar.unary.bool",     true],
+["bh_isinf",        "BH_ISINF", "runtime.unary.bool",   true],
+        
+["log",             "BH_LOG",   "sugar.unary",      true],
+["bh_log",          "BH_LOG",   "runtime.unary",    true],
+        
+["log2",            "BH_LOG2",  "sugar.unary",      true],
+["bh_log2",         "BH_LOG2",  "runtime.unary",    true],
+        
+["log10",           "BH_LOG10", "sugar.unary",      true],
+["bh_log10",        "BH_LOG10", "runtime.unary",    true],
+        
+["log1p",           "BH_LOG1P", "sugar.unary",      true],
+["bh_log1p",        "BH_LOG1P", "runtime.unary",    true],
+        
+["sqrt",            "BH_SQRT",  "sugar.unary",      true],
+["bh_sqrt",         "BH_SQRT",  "runtime.unary",    true],
+        
+["ceil",            "BH_CEIL",  "sugar.unary",      true],
+["bh_ceil",         "BH_CEIL",  "runtime.unary",    true],
 
-["exp2",    "BH_EXP2",      "sugar.unary",      true],
-["bh_exp2", "BH_EXP2",      "runtime.unary",    true],
+["trunc",           "BH_TRUNC", "sugar.unary",      true],
+["bh_trunc",        "BH_TRUNC", "runtime.unary",    true],
 
-["expm1",   "BH_EXPM1",     "sugar.unary",      true],
-["bh_expm1","BH_EXPM1",     "runtime.unary",    true],
+["floor",           "BH_FLOOR", "sugar.unary",      true],
+["bh_floor",        "BH_FLOOR", "runtime.unary",    true],
 
-["isnan",   "BH_ISNAN", "sugar.unary.bool",     true],
-["bh_isnan","BH_ISNAN", "runtime.unary.bool",   true],
+["rint",            "BH_RINT",  "sugar.unary",      true],
+["bh_rint",         "BH_RINT",  "runtime.unary",    true],
 
-["isinf",   "BH_ISINF", "sugar.unary.bool",     true],
-["bh_isinf","BH_ISINF", "runtime.unary.bool",   true],
-
-["log",     "BH_LOG",   "sugar.unary",      true],
-["bh_log",  "BH_LOG",   "runtime.unary",    true],
-
-["log2",    "BH_LOG2",  "sugar.unary",      true],
-["bh_log2", "BH_LOG2",  "runtime.unary",    true],
-
-["log10",   "BH_LOG10", "sugar.unary",      true],
-["bh_log10","BH_LOG10", "runtime.unary",    true],
-
-["log1p",   "BH_LOG1P", "sugar.unary",      true],
-["bh_log1p","BH_LOG1P", "runtime.unary",    true],
-
-["sqrt",    "BH_SQRT",  "sugar.unary",      true],
-["bh_sqrt", "BH_SQRT",  "runtime.unary",    true],
-
-["ceil",    "BH_CEIL",  "sugar.unary",      true],
-["bh_ceil", "BH_CEIL",  "runtime.unary",    true],
-
-["trunc",   "BH_TRUNC", "sugar.unary",      true],
-["bh_trunc","BH_TRUNC", "runtime.unary",    true],
-
-["floor",   "BH_FLOOR", "sugar.unary",      true],
-["bh_floor","BH_FLOOR", "runtime.unary",    true],
-
-["rint",    "BH_RINT",  "sugar.unary",      true],
-["bh_rint", "BH_RINT",  "runtime.unary",    true],
+["bh_scatter",      "BH_SCATTER",   "runtime.binary",   true],
+["scatter",         "BH_SCATTER",   "sugar.binary",     false],
+["bh_gather",       "BH_GATHER",    "runtime.binary",   true],
+["gather",          "BH_GATHER",    "sugar.binary",     false],
 
 ["bh_add_reduce",           "BH_ADD_REDUCE",            "runtime.reduce", true],
 ["bh_multiply_reduce",      "BH_MULTIPLY_REDUCE",       "runtime.reduce", true],
@@ -218,6 +223,12 @@
 ["bh_range",    "BH_RANGE",     "runtime.zero", true],
 
 ["bh_random",   "BH_RANDOM",    "runtime.random", true],
+
+["sign",        "BH_SIGN",      "sugar.unary",   true],
+["bh_sign",     "BH_SIGN",      "runtime.unary", true],
+
+["matmul",      "BH_MATMUL",    "sugar.binary",   true],
+["bh_matmul",   "BH_MATMUL",    "runtime.binary", true],
 
 ["bh_free",     "BH_FREE",      "runtime.zero", true],
 ["bh_sync",     "BH_SYNC",      "runtime.zero", true],

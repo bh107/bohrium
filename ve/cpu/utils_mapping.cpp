@@ -36,6 +36,7 @@ string operation_text(OPERATION op)
         case REDUCE_COMPLETE:   return "REDUCE_COMPLETE";
         case REDUCE_PARTIAL:   return "REDUCE_PARTIAL";
         case SCAN:   return "SCAN";
+        case INDEX:   return "INDEX";
         case GENERATE:   return "GENERATE";
         case SYSTEM:   return "SYSTEM";
         case EXTENSION:   return "EXTENSION";
@@ -97,11 +98,14 @@ string operator_text(OPERATOR oper)
         case REAL: return "REAL";
         case RINT: return "RINT";
         case SIN: return "SIN";
+        case SIGN: return "SIGN";
         case SINH: return "SINH";
         case SQRT: return "SQRT";
         case TAN: return "TAN";
         case TANH: return "TANH";
         case TRUNC: return "TRUNC";
+        case GATHER: return "GATHER";
+        case SCATTER: return "SCATTER";
         case DISCARD: return "DISCARD";
         case FREE: return "FREE";
         case SYNC: return "SYNC";

@@ -21,40 +21,204 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <stdexcept>
 #include "GenerateSourceCode.hpp"
+#include "bh_ve_gpu.h"
 
-void generateGIDSource(size_t ndim, std::ostream& source)
+void generateGIDSource(size_t kdims, std::ostream& source)
 {
-    assert(ndim > 0);    
-    source << "\tconst size_t gidx = get_global_id(0);\n";
-    source << "\tif (gidx >= ds0)\n\t\treturn;\n";
-    if (ndim > 1)
+    assert(kdims > 0);
+    assert(kdims <= 3);
+    for (size_t d = 1; d <= kdims; ++d)
     {
-        source << "\tconst size_t gidy = get_global_id(1);\n";
-        source << "\tif (gidy >= ds1)\n\t\treturn;\n";
-    }
-    if (ndim > 2)
-    {
-        source << "\tconst size_t gidz = get_global_id(2);\n";
-        source << "\tif (gidz >= ds2)\n\t\treturn;\n";
+        source << "\tconst size_t idd" << d << " = get_global_id(" << d-1 << ");\n";
+        source << "\tif (idd" << d << " >= ds" << d << ")\n\t\treturn;\n";
     }
 }
 
-void generateOffsetSource(size_t ndim, unsigned int id, std::ostream& source)
+void generateOffsetSource(size_t cdims, bh_index vdims, size_t id, std::ostream& source)
 {
-    assert(ndim > 0);
-    for (size_t d = ndim-1; d > 2; --d)
+    assert(vdims > 0);
+    assert(cdims > 0);
+    source << "(";
+    for (bh_index d = cdims; d > vdims; --d)
     {
-        source << "ids" << d << "*v" << id << "s" << d+1 << " + ";
+        source << "idd" << d << "*ds" << d-1 << "+";
     }
-    if (ndim > 2)
+    bh_index dims = MIN((bh_index)cdims,vdims);
+    source << "idd" << dims << ")*v" << id << "s" << dims << " + ";
+    for (bh_index d = dims-1; d > 0; --d)
     {
-        source << "gidz*v" << id << "s3 + ";
+        source << "idd" << d << "*v" << id << "s" << d << " + ";
     }
-    if (ndim > 1)
+    source << "v" << id << "s0";
+}
+
+void generateIndexSource(size_t cdims, bh_index vdims, size_t id, std::ostream& source)
+{
+    source << "size_t v" << id << "idx = ";
+    generateOffsetSource(cdims, vdims, id, source);
+    source << ";\n";
+} 
+
+void generateSaveSource(size_t aid, size_t vid, std::ostream& source)
+{
+    source << "a" << aid << "[v" << vid << "idx] = v" << vid << ";\n";
+}
+
+void generateLoadSource(size_t aid, size_t vid, OCLtype type, std::ostream& source)
+{
+    source << oclTypeStr(type) << " v" << vid <<  " = a" << aid << "[v" << vid << "idx];\n";
+}
+
+void generateElementNumber(const std::vector<size_t>& dimOrder, std::ostream& source)
+{
+    size_t cdims = dimOrder.size();
+    assert(cdims > 0);
+    for (size_t d = cdims; d > 0; --d)
     {
-        source << "gidy*v" << id << "s2 + ";
+        source << "idd" << d;
+        if (dimOrder[cdims-d])
+            source << "*ds" << dimOrder[cdims-d];
+        if (d > 1)
+            source << " + ";
     }
-    source << "gidx*v" << id << "s1 + v" << id << "s0";
+} 
+
+void generateNeutral(bh_opcode opcode,OCLtype type, std::ostream& source)
+{
+    switch (type)
+    {
+    case OCL_COMPLEX64:
+        source << "(float2)(0.0f, ";
+        break;
+    case OCL_COMPLEX128:
+        source << "(double2)(0.0, ";
+        break;
+    default:
+        break;
+    }
+    switch (opcode)
+    {
+    case BH_ADD_ACCUMULATE:
+    case BH_ADD_REDUCE:
+    case BH_LOGICAL_OR_REDUCE:
+    case BH_BITWISE_OR_REDUCE:
+    case BH_LOGICAL_XOR_REDUCE:
+    case BH_BITWISE_XOR_REDUCE:
+        source << "0";
+        break;
+    case BH_MULTIPLY_ACCUMULATE:
+    case BH_MULTIPLY_REDUCE:
+    case BH_LOGICAL_AND_REDUCE:
+        source << "1";
+        break;
+    case BH_BITWISE_AND_REDUCE:
+        source << "~0";
+        break;
+    case BH_MINIMUM_REDUCE:
+        switch (type)
+        {
+        case OCL_INT8:
+            source << "CHAR_MAX";
+            break;
+        case OCL_INT16:
+            source << "SHRT_MAX";
+                break;
+        case OCL_INT32:
+            source << "INT_MAX";
+                break;
+        case OCL_INT64:
+            source << "LONG_MAX";
+                break;
+        case OCL_UINT8:
+            source << "UCHAR_MAX";
+            break;
+        case OCL_UINT16:
+            source << "USHRT_MAX";
+            break;
+        case OCL_UINT32:
+            source << "UINT_MAX";
+            break;
+        case OCL_UINT64:
+            source << "ULONG_MAX";
+            break;
+        case OCL_FLOAT32:
+            source << "FLT_MAX";
+            break;
+        case OCL_FLOAT64:
+            source << "DBL_MAX";
+            break;
+        default:
+            assert(false);
+        }
+        return;
+    case BH_MAXIMUM_REDUCE:
+        switch (type)
+        {
+        case OCL_INT8:
+            source << "CHAR_MIN";
+            break;
+        case OCL_INT16:
+            source << "SHRT_MIN";
+            break;
+        case OCL_INT32:
+            source << "INT_MIN";
+            break;
+        case OCL_INT64:
+            source << "LONG_MIN";
+            break;
+        case OCL_UINT8:
+            source << "0";
+            break;
+        case OCL_UINT16:
+            source << "0";
+            break;
+        case OCL_UINT32:
+            source << "0";
+            break;
+        case OCL_UINT64:
+            source << "0";
+            break;
+        case OCL_FLOAT32:
+            source << "FLT_MIN";
+            break;
+        case OCL_FLOAT64:
+            source << "DBL_MIN";
+            break;
+        default:
+            assert(false);
+        }
+        return;
+    default:
+        assert(false);
+    }
+    switch (type)
+    {
+    case OCL_INT64:
+        source << "l";
+        break;
+    case OCL_UINT8:
+    case OCL_UINT16:
+    case OCL_UINT32:
+        source << "u";
+        break;
+    case OCL_UINT64:
+        source << "ul";
+        break;
+    case OCL_FLOAT32:
+        source << ".0f";
+        break;
+    case OCL_FLOAT64:
+        source << ".0";
+        break;
+    case OCL_COMPLEX64:
+        source << ".0f)";
+        break;
+    case OCL_COMPLEX128:
+        source << ".0)";
+        break;
+    default:
+        break;
+    }    
 }
 
 #define TYPE ((type[1] == OCL_COMPLEX64) ? "float" : "double")
@@ -64,7 +228,6 @@ void generateInstructionSource(const bh_opcode opcode,
                                const std::string& indent,
                                std::ostream& source)
 {
-    assert(parameters.size() == (size_t)bh_operands(opcode));
     if (isComplex(type[0]) || (type.size()>1 && isComplex(type[1])))
     {
 
@@ -129,9 +292,17 @@ void generateInstructionSource(const bh_opcode opcode,
         case BH_SQRT:
             source << indent << "CSQRT(" << parameters[0] << ", " << parameters[1] << ")\n";
             break;
+        case BH_ABSOLUTE:
+            source << indent << "CABS(" << parameters[0] << ", " << parameters[1] << ")\n";
+            break;
         case BH_IDENTITY:
-            if (isComplex(type[1]))
+            if (type[0] == type[1])
                 source << indent << parameters[0] << " = " << parameters[1] << ";\n";
+            else if (isComplex(type[1]))
+            {
+                source << indent << parameters[0] << ".s0 = " << parameters[1] << ".s0;\n";
+                source << indent << parameters[0] << ".s1 = " << parameters[1] << ".s1;\n";
+            }
             else
                 source << indent << parameters[0] << ".s0 = " << parameters[1] << ";\n";
             break;
@@ -142,9 +313,9 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = " << parameters[1] << ".s1;\n";
             break;
         default:
-#ifdef DEBUG
-            std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
-#endif
+            if (resourceManager->verbose())
+                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode << 
+                    ") not supported for complex operations." << std::endl;
             throw std::runtime_error("Instruction not supported.");
         }
     }
@@ -153,12 +324,16 @@ void generateInstructionSource(const bh_opcode opcode,
         switch(opcode)
         {
         case BH_ADD:
+        case BH_ADD_REDUCE:
+        case BH_ADD_ACCUMULATE:    
             source << indent << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
             break;
         case BH_SUBTRACT:
             source << indent << parameters[0] << " = " << parameters[1] << " - " << parameters[2] << ";\n";
             break;
         case BH_MULTIPLY:
+        case BH_MULTIPLY_REDUCE:
+        case BH_MULTIPLY_ACCUMULATE:
             source << indent << parameters[0] << " = " << parameters[1] << " * " << parameters[2] << ";\n";
             break;
         case BH_DIVIDE:
@@ -248,24 +423,30 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = atanh(" << parameters[1] << ");\n";
             break;
         case BH_BITWISE_AND:
+        case BH_BITWISE_AND_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " & " << parameters[2] << ";\n";
             break;
         case BH_BITWISE_OR:
+        case BH_BITWISE_OR_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " | " << parameters[2] << ";\n";
             break;
         case BH_BITWISE_XOR:
+        case BH_BITWISE_XOR_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " ^ " << parameters[2] << ";\n";
             break;
         case BH_LOGICAL_NOT:
             source << indent << parameters[0] << " = !" << parameters[1] << ";\n";
             break;
         case BH_LOGICAL_AND:
+        case BH_LOGICAL_AND_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " && " << parameters[2] << ";\n";
             break;
         case BH_LOGICAL_OR:
+        case BH_LOGICAL_OR_REDUCE:
             source << indent << parameters[0] << " = " << parameters[1] << " || " << parameters[2] << ";\n";
             break;
         case BH_LOGICAL_XOR:
+        case BH_LOGICAL_XOR_REDUCE:
             source << indent << parameters[0] << " = !" << parameters[1] << " != !" << parameters[2] << ";\n";
             break;
         case BH_INVERT:
@@ -296,9 +477,11 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = " << parameters[1] << " == " << parameters[2] << ";\n";
             break;
         case BH_MAXIMUM:
+        case BH_MAXIMUM_REDUCE:
             source << indent << parameters[0] << " = max(" << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         case BH_MINIMUM:
+        case BH_MINIMUM_REDUCE:
             source << indent << parameters[0] << " = min(" << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         case BH_IDENTITY:
@@ -323,15 +506,15 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = isinf(" << parameters[1] << ");\n";
             break;
         case BH_RANGE:
-            source << indent << parameters[0] << " = gidx;\n";
+            source << indent << parameters[0] << " = " << parameters[1] << ";\n";
             break;
         case BH_RANDOM:
-            source << indent << parameters[0] << " = random("  << parameters[1] << ", gidx);\n";
+            source << indent << parameters[0] << " = random("  << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         default:
-#ifdef DEBUG
-            std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" not supported." << std::endl;
-#endif
+            if (resourceManager->verbose())
+                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode << 
+                    ") not supported for non complex operations." << std::endl;
             throw std::runtime_error("Instruction not supported.");
         }
     }

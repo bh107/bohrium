@@ -27,7 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <deque>
 #include <mutex>
 #include <bh.h>
-#include "InstructionBatch.hpp"
 #include "ResourceManager.hpp"
 #include "SourceKernelCall.hpp"
 
@@ -40,29 +39,44 @@ private:
     typedef std::map<KernelID, Kernel> KernelMap;
     typedef std::pair<KernelID, SourceKernelCall> KernelCall;
     typedef std::deque<KernelCall> CallQueue;
+
     std::mutex kernelMutex;
     std::map<size_t,size_t> knownKernelID;
     KernelMap kernelMap;
     CallQueue callQueue;
 
-    InstructionBatch* batch;
     ArrayMap arrayMap;
     FunctionMap functionMap;
-    std::set<BaseArray*> discardSet;
-    void sync(bh_base* base);
-    void discard(bh_base* base);
     void compileAndRun(SourceKernelCall sourceKernel);
-    void executeBatch();
     void build(KernelID id, const std::string source);
-    std::vector<KernelParameter*> getKernelParameters(bh_instruction* inst);
-    bh_error ufunc(bh_instruction* inst);
-    bh_error reduce(bh_instruction* inst);
-    bh_error accumulate(bh_instruction* inst);
     bh_error extmethod(bh_instruction* inst);
+    bh_error call_child(const bh_ir_kernel& kernel);
+    SourceKernelCall generateKernel(const bh_ir_kernel& kernel);
+    std::string generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
+                                     const std::vector<bh_index>& shape,    
+                                     const std::vector<std::vector<size_t> >& dimOrders,
+                                     bool& float64, bool& complex, bool& integer, bool& random);
+    void sync(const std::set<bh_base*>& arrays);
+    void discard(const std::set<bh_base*>& arrays);
+    void beginDim(std::stringstream& source, 
+                  std::stringstream& indentss, 
+                  std::vector<std::string>& beforesource, 
+                  const size_t dims);
+    void endDim(std::stringstream& source, 
+                std::stringstream& indentss, 
+                std::vector<std::string>& beforesource, 
+                std::set<bh_view>& save,
+                std::map<size_t,size_t>& incr_idx,
+                const std::vector<bh_index>& shape,
+                const size_t dims,
+                const size_t kdims,
+                const bh_index elements,
+                const bh_ir_kernel& kernel);
+    std::vector<std::vector<size_t> > genDimOrders(const std::map<bh_intp, bh_int64>& sweeps, const size_t ndim);
 public:
-    InstructionScheduler();
+    InstructionScheduler() {}
     void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);
-    bh_error schedule(bh_ir* bhir);
+    bh_error schedule(const bh_ir* bhir);
 };
 
 #endif

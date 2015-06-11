@@ -17,20 +17,19 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BH_FILTER_COMPLETE_REDUCTION_H
-#define __BH_FILTER_COMPLETE_REDUCTION_H
+#ifndef __BH_FILTER_BCCON_H
+#define __BH_FILTER_BCCON_H
 
 #include <bh.h>
-#include "filter.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DLLEXPORT bh_error bh_filter_complete_reduction_init(const char* name);
-DLLEXPORT bh_error bh_filter_complete_reduction_execute(bh_ir* bhir);
-DLLEXPORT bh_error bh_filter_complete_reduction_shutdown(void);
-DLLEXPORT bh_error bh_filter_complete_reduction_extmethod(const char *name, bh_opcode opcode);
+DLLEXPORT bh_error bh_filter_bccon_init(const char* name);
+DLLEXPORT bh_error bh_filter_bccon_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_filter_bccon_shutdown(void);
+DLLEXPORT bh_error bh_filter_bccon_extmethod(const char *name, bh_opcode opcode);
 
 #ifdef __cplusplus
 }

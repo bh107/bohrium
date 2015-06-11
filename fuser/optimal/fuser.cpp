@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/graph/connected_components.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/thread.hpp>
+#include <boost/lexical_cast.hpp>
 #include <vector>
 #include <map>
 #include <iterator>
@@ -419,7 +420,7 @@ void do_fusion(bh_ir &bhir, FuseCache &cache)
         from_kernels(kernel_list, dag);
         fuse_gently(dag);
         dag.transitive_reduction();
-        assert(dag_validate(dag.bglD()));
+        assert(dag_validate(dag));
 
         vector<set<Vertex> > component2vertices;
         {

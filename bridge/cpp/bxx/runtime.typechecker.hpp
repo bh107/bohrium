@@ -118,6 +118,16 @@ void Runtime::typecheck<BH_ABSOLUTE, double, double>(void) { }
 
 template <>
 inline
+void Runtime::typecheck<BH_ABSOLUTE, float, std::complex<float> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ABSOLUTE, double, std::complex<double> >(void) { }
+
+
+template <>
+inline
 void Runtime::typecheck<BH_ABSOLUTE, int16_t, int16_t>(void) { }
 
 
@@ -909,6 +919,71 @@ void Runtime::typecheck<BH_FLOOR, float, float>(void) { }
 template <>
 inline
 void Runtime::typecheck<BH_FLOOR, double, double>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, bool, bool, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, std::complex<double> , std::complex<double> , uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, std::complex<float> , std::complex<float> , uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, float, float, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, double, double, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, int16_t, int16_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, int32_t, int32_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, int64_t, int64_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, int8_t, int8_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, uint16_t, uint16_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, uint32_t, uint32_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, uint64_t, uint64_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_GATHER, uint8_t, uint8_t, uint64_t>(void) { }
 
 
 template <>
@@ -2078,6 +2153,71 @@ void Runtime::typecheck<BH_LOGICAL_XOR_REDUCE, bool, bool, int64_t>(void) { }
 
 template <>
 inline
+void Runtime::typecheck<BH_MATMUL, bool, bool, bool>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, std::complex<double> , std::complex<double> , std::complex<double> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, std::complex<float> , std::complex<float> , std::complex<float> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, float, float, float>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, double, double, double>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, int16_t, int16_t, int16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, int32_t, int32_t, int32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, int64_t, int64_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, int8_t, int8_t, int8_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, uint16_t, uint16_t, uint16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, uint32_t, uint32_t, uint32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, uint64_t, uint64_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_MATMUL, uint8_t, uint8_t, uint8_t>(void) { }
+
+
+template <>
+inline
 void Runtime::typecheck<BH_MAXIMUM, bool, bool, bool>(void) { }
 
 
@@ -2743,6 +2883,111 @@ void Runtime::typecheck<BH_RINT, double, double>(void) { }
 
 template <>
 inline
+void Runtime::typecheck<BH_SCATTER, bool, bool, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, std::complex<double> , std::complex<double> , uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, std::complex<float> , std::complex<float> , uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, float, float, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, double, double, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, int16_t, int16_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, int32_t, int32_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, int64_t, int64_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, int8_t, int8_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, uint16_t, uint16_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, uint32_t, uint32_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, uint64_t, uint64_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SCATTER, uint8_t, uint8_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SIGN, std::complex<double> , std::complex<double> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SIGN, std::complex<float> , std::complex<float> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SIGN, float, float>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SIGN, double, double>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SIGN, int16_t, int16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SIGN, int32_t, int32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SIGN, int64_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SIGN, int8_t, int8_t>(void) { }
+
+
+template <>
+inline
 void Runtime::typecheck<BH_SIN, std::complex<double> , std::complex<double> >(void) { }
 
 
@@ -2798,17 +3043,7 @@ void Runtime::typecheck<BH_SQRT, float, float>(void) { }
 
 template <>
 inline
-void Runtime::typecheck<BH_SQRT, float, int32_t>(void) { }
-
-
-template <>
-inline
 void Runtime::typecheck<BH_SQRT, double, double>(void) { }
-
-
-template <>
-inline
-void Runtime::typecheck<BH_SQRT, double, int64_t>(void) { }
 
 
 template <>

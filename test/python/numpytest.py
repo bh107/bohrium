@@ -23,10 +23,14 @@ from functools import reduce
 class TYPES:
     NORMAL_INT   = ['np.int32','np.int64','np.uint32','np.uint64']
     ALL_INT      = NORMAL_INT + ['np.int8','np.int16','np.uint8','np.uint16']
+    SIGNED_INT   = ['np.int8', 'np.int16', 'np.int32','np.int64']
+    UNSIGNED_INT = list(set(ALL_INT) - set(SIGNED_INT))
+    COMPLEX      = ['np.complex64', 'np.complex128']
     NORMAL_FLOAT = ['np.float32','np.float64']
     ALL_FLOAT    = NORMAL_FLOAT #+ ['np.float16'] float16 is only supported by the GPU
+    ALL_SIGNED   = SIGNED_INT + ALL_FLOAT + COMPLEX
     NORMAL       = NORMAL_INT + NORMAL_FLOAT
-    ALL          = ALL_INT + ALL_FLOAT
+    ALL          = ALL_INT + ALL_FLOAT + COMPLEX
 
 class _C:
     HEADER = '\033[95m'
@@ -121,6 +125,19 @@ class numpytest:
 
     def init(self):
         pass
+
+    def asarray(self, data, dtype):
+        return np.asarray(data, dtype=dtype)
+
+    def ones(self, shape, dtype):
+        return np.asarray(shape, dtype=dtype)
+
+    def zeros(self, shape, dtype):
+        return np.zeros(shape, dtype=dtype)
+
+    def arange(self, begin, end, step, dtype):
+        return np.arange(begin, end, step, dtype=dtype)
+
     def array(self,dims,dtype,high=False):
         try:
             total = reduce(mul,dims)
@@ -157,6 +174,13 @@ class BenchHelper:
         This function is used as a means to control til --dtype argument
         passed to the benchmark script and provide a uuid for benchmark output.
         """
+        #Lets make sure that benchpress is installed
+        try:
+            subprocess.call(['bp-info', '--benchmarks'])
+        except OSError:
+            print("ERROR: benchpress not install -- skipping test.")
+            raise StopIteration()
+
         self.uuid = str(uuid.uuid4())
         for dtype in self.dtypes:
             yield ({0:bh.empty(self.size, bohrium=False, dtype=dtype)},
@@ -194,7 +218,6 @@ class BenchHelper:
             stderr  = subprocess.PIPE,
         ).communicate()
 
-
         sys_exec = [sys.executable, "-m", "bohrium"] if target else [sys.executable]
         benchmark_path = os.sep.join([benchmarks_dir.strip(), self.script, "python_numpy", self.script+ ".py"])
 
@@ -231,8 +254,6 @@ class BenchHelper:
         out, err = p.communicate()
         if 'elapsed-time' not in out:
             raise Exception("Benchmark error [stdout:%s,stderr:%s]" % (out, err))
-        if err and not re.match("\[[0-9]+ refs\]", err): #We accept the Python object count
-            raise Exception("Benchmark error[%s]" % err)
 
         if not os.path.exists(outputfn):
             raise Exception('Benchmark did not produce the output: %s' % outputfn)
@@ -346,10 +367,19 @@ if __name__ == "__main__":
                             rtol = cls_inst.config['maxerror']
                             atol = rtol * 0.1
                             if not np.allclose(res1, res2, rtol=rtol, atol=atol):
-                                print(_C.FAIL + "[Error] %s"%(name) + _C.ENDC)
-                                print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
-                                print(_C.OKGREEN + str(res1) + _C.ENDC)
-                                print(_C.FAIL + str(res2) + _C.ENDC)
-                                sys.exit (1)
+
+                                if 'warn_on_err' in cls_inst.config:
+                                    print(_C.WARNING + "[Warning] %s"%(name) + _C.ENDC)
+                                    print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
+                                    print(_C.OKGREEN + str(res1) + _C.ENDC)
+                                    print(_C.FAIL + str(res2) + _C.ENDC)
+                                    print(_C.WARNING + str(cls_inst.config['warn_on_err']) + _C.ENDC)
+                                    print(_C.OKBLUE + str("Manual verification is needed.") + _C.ENDC)
+                                else:
+                                    print(_C.FAIL + "[Error] %s"%(name) + _C.ENDC)
+                                    print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
+                                    print(_C.OKGREEN + str(res1) + _C.ENDC)
+                                    print(_C.FAIL + str(res2) + _C.ENDC)
+                                    sys.exit (1)
 
     print("*"*24, "Finish", "*"*24)

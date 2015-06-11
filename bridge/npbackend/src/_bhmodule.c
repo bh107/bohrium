@@ -62,6 +62,17 @@ typedef struct
     int mmap_allocated;
 }BhArray;
 
+//Help function that returns number of bytes in 'ary'
+//BUT minimum 'itemsize', which mimic the behavior of NumPy
+static int64_t ary_nbytes(const BhArray *ary)
+{
+    int64_t size = PyArray_NBYTES((PyArrayObject*)ary);
+    if(size == 0)
+        return PyArray_ITEMSIZE((PyArrayObject*)ary);
+    else
+        return size;
+}
+
 //Help function to retrieve the Bohrium-C data pointer
 //Return -1 on error
 static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify, void **out_data)
@@ -174,7 +185,7 @@ static int _mremap_data(void *dst, void *src, npy_intp size)
 #endif
 }
 
-void mem_access_callbackk(void *id, void *addr)
+void mem_access_callback(void *id, void *addr)
 {
     PyObject *ary = (PyObject *) id;
 //    printf("mem_access_callback() - ary: %p, addr: %p\n", ary, addr);
@@ -193,7 +204,7 @@ void mem_access_callbackk(void *id, void *addr)
 static int _mprotect_np_part(BhArray *ary)
 {
     //Finally we memory protect the NumPy data
-    if(mprotect(ary->base.data, PyArray_NBYTES((PyArrayObject*)ary), PROT_NONE) == -1)
+    if(mprotect(ary->base.data, ary_nbytes(ary), PROT_NONE) == -1)
     {
         int errsv = errno;//mprotect() sets the errno.
         PyErr_Format(PyExc_RuntimeError,"Error - could not protect a data"
@@ -202,7 +213,7 @@ static int _mprotect_np_part(BhArray *ary)
         return -1;
     }
     bh_mem_signal_attach(ary, ary->base.data,
-                  PyArray_NBYTES((PyArrayObject*)ary), mem_access_callbackk);
+                  ary_nbytes(ary), mem_access_callback);
     return 0;
 }
 
@@ -219,7 +230,7 @@ static int _protected_malloc(BhArray *ary)
     //Allocate page-size aligned memory.
     //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
     //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-    void *addr = mmap(0, PyArray_NBYTES((PyArrayObject*)ary), PROT_NONE,
+    void *addr = mmap(0, ary_nbytes(ary), PROT_NONE,
                       MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     if(addr == MAP_FAILED)
     {
@@ -235,7 +246,7 @@ static int _protected_malloc(BhArray *ary)
     ary->base.data = addr;
 
     bh_mem_signal_attach(ary, ary->base.data,
-                  PyArray_NBYTES((PyArrayObject*)ary), mem_access_callbackk);
+                  ary_nbytes(ary), mem_access_callback);
     return 0;
 }
 
@@ -307,8 +318,7 @@ BhArray_dealloc(BhArray* self)
 
     if(self->mmap_allocated)
     {
-        if(_munmap(PyArray_DATA((PyArrayObject*)self),
-                   PyArray_NBYTES((PyArrayObject*)self)) == -1)
+        if(_munmap(PyArray_DATA((PyArrayObject*)self), ary_nbytes(self)) == -1)
             PyErr_Print();
 
         bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)self));
@@ -354,14 +364,14 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     if(d != NULL)
     {
         if(_mremap_data(PyArray_DATA((PyArrayObject*)base), d,
-                        PyArray_NBYTES((PyArrayObject*)base)) != 0)
+                        ary_nbytes((BhArray*)base)) != 0)
             return NULL;
             Py_DECREF(base);
     }
     else
     {
         if(_munprotect(PyArray_DATA((PyArrayObject*)base),
-                       PyArray_NBYTES((PyArrayObject*)base)) != 0)
+                       ary_nbytes((BhArray*)base)) != 0)
             return NULL;
             Py_DECREF(base);
     }
@@ -401,7 +411,7 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
     //Then we unprotect the NumPy memory part
     bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)base));
     if(_munprotect(PyArray_DATA((PyArrayObject*)base),
-                   PyArray_NBYTES((PyArrayObject*)base)) != 0)
+                   ary_nbytes((BhArray*)base)) != 0)
         return NULL;
 
     //And sets the bhc data from the NumPy part of 'base'
@@ -513,6 +523,12 @@ BhArray_reshape(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+BhArray_flatten(PyObject *self, PyObject *args)
+{
+    return method2function("flatten", self, args);
+}
+
+static PyObject *
 BhArray_sum(PyObject *self, PyObject *args)
 {
     return method2function("sum", self, args);
@@ -536,6 +552,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"reshape", BhArray_reshape, METH_VARARGS, "a.reshape(shape)\n\nReturns an array"
                                                "containing the same data with a new shape.\n\n"
                                                "Refer to `bohrium.reshape` for full documentation."},
+    {"flatten", BhArray_flatten, METH_VARARGS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"ravel", BhArray_flatten, METH_VARARGS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
     {"sum", BhArray_sum, METH_VARARGS, "a.sum(axis=None, dtype=None, out=None)\n\n"
                                        "Return the sum of the array elements over the given axis.\n\n"
                                        "Refer to `bohrium.sum` for full documentation."},

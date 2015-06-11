@@ -97,15 +97,12 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     //
     // Turn temps into scalars aka array-contraction
     if (consider_jit and jit_contraction_) {
-        const std::vector<const bh_base*>& temps = krnl.temp_list();
-        for(std::vector<const bh_base*>::const_iterator tmp_it = temps.begin();
-            tmp_it != temps.end();
-            ++tmp_it) {
-
+        for (bh_base* base: krnl.get_temps())
+        {
             for(size_t operand_idx = 0;
                 operand_idx < block.noperands();
                 ++operand_idx) {
-                if (block.operand(operand_idx).base == *tmp_it) {
+                if (block.operand(operand_idx).base == base) {
                     symbol_table.turn_contractable(block.local_to_global(operand_idx));
                 }
             }

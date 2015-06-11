@@ -73,6 +73,18 @@
 
 {
     "id": 32,
+    "name": "INDEX",
+    "layouts": [
+        "CCC", "CCS", "CSC", "CSS",
+        "SSS", "SSC", "SCS", "SCC"
+    ],
+    "operators": [
+        "GATHER", "SCATTER"
+    ]
+},
+
+{
+    "id": 64,
     "name": "GENERATE",
     "layouts": [
         "K", "CKK", ""
@@ -83,7 +95,7 @@
 },
 
 {
-    "id": 64,
+    "id": 128,
     "name": "SYSTEM",
     "layouts": ["C", "S"],
     "operators": [
@@ -92,7 +104,7 @@
 },
 
 {
-    "id": 128,
+    "id": 256,
     "name": "EXTENSION",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK",
@@ -103,7 +115,7 @@
 },
 
 {
-    "id": 256,
+    "id": 512,
     "name": "NOOP",
     "layouts": [""],
     "operators": [""]

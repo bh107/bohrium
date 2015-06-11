@@ -4,22 +4,22 @@ directiveStartToken = %
 #end compiler-settings
 %slurp
 
-%for $op, $opcode, $optype, $opcount, $typesigs in $data
+%for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 
-template <typename T>
-inline multi_array<T>& $op (multi_array<T>& lhs, multi_array<T>& rhs)
+template <typename TL, typename TR>
+inline multi_array<TL>& $op (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
     return $opcode.lower() (lhs, rhs);
 }
 
-template <typename T>
-inline multi_array<T>& $op (multi_array<T>& lhs, const T rhs)
+template <typename TL, typename TR>
+inline multi_array<TL>& $op (multi_array<TL>& lhs, const TR rhs)
 {
     return $opcode.lower() (lhs, rhs);
 }
 
-template <typename T>
-inline multi_array<T>& $op (const T lhs, multi_array<T>& rhs)
+template <typename TL, typename TR>
+inline multi_array<TL>& $op (const TL lhs, multi_array<TR>& rhs)
 {
     return $opcode.lower() (lhs, rhs);
 }

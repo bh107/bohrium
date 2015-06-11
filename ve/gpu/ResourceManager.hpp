@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <map>
 #include <bh.h>
+#define BH_TIMING_SUM
 #include <bh_timing.hpp>
 #include "OCLtype.h"
 
@@ -37,21 +38,22 @@ private:
     std::vector<cl::CommandQueue> commandQueues;
     size_t maxWorkGroupSize;
     cl_uint maxWorkItemDims;
-    OCLtype intpType_;
     std::vector<size_t> maxWorkItemSizes;
     std::vector<size_t> localShape1D;
     std::vector<size_t> localShape2D;
     std::vector<size_t> localShape3D;
-    bool float64;
+    OCLtype _intpType;
+    bool _float64;
     bool _fixedSizeKernel;
     bool _dynamicSizeKernel;
     bool _asyncCompile;
+    bool _verbose;
+    bool _printSource;
+    bool _timing; 
     void registerExtensions(std::vector<std::string> extensions);
     std::string compilerOptions;
 
 public:
-#ifdef BH_TIMING
-    bh::Timer<>* batchBuild;
     bh::Timer<>* codeGen;
     bh::Timer<>* kernelGen;
     bh::Timer<bh::timing4,1000000000>* bufferWrite;
@@ -59,7 +61,6 @@ public:
     bh::Timer<bh::timing4,1000000000>* kernelExec;
     ~ResourceManager();
     static void CL_CALLBACK eventProfiler(cl::Event event, cl_int eventStatus, void* total);
-#endif
     ResourceManager(bh_component* _component);
     cl::Buffer* createBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.
@@ -90,12 +91,15 @@ public:
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
-    bool float64support() const;
-    bool fixedSizeKernel() const;
-    bool dynamicSizeKernel() const;
-    bool asyncCompile() const;
     bh_error childExecute(bh_ir* bhir);
-    OCLtype intpType();
+    OCLtype intpType() const { return _intpType; }
+    bool float64() const { return _float64; }
+    bool fixedSizeKernel() const { return _fixedSizeKernel; }
+    bool dynamicSizeKernel() const { return _dynamicSizeKernel; }
+    bool asyncCompile() const { return _asyncCompile; }
+    bool verbose() const { return _verbose; }
+    bool timing() const { return _timing; }
+    bool printSource() const { return _printSource; }
 };
 
 #endif

@@ -32,10 +32,11 @@ typedef enum OPERATION {
     REDUCE_COMPLETE = 4,
     REDUCE_PARTIAL = 8,
     SCAN       = 16,
-    GENERATE   = 32,
-    SYSTEM     = 64,
-    EXTENSION  = 128,
-    NOOP       = 256
+    INDEX      = 32,
+    GENERATE   = 64,
+    SYSTEM     = 128,
+    EXTENSION  = 256,
+    NOOP       = 512
 } OPERATION;
 
 typedef enum OPERATOR {
@@ -89,19 +90,22 @@ typedef enum OPERATOR {
     REAL            = 49,
     RINT            = 50,
     SIN             = 51,
-    SINH            = 52,
-    SQRT            = 53,
-    TAN             = 54,
-    TANH            = 55,
-    TRUNC           = 56,
-    DISCARD         = 57,
-    FREE            = 58,
-    SYNC            = 59,
-    NONE            = 60,
-    FLOOD           = 61,
-    RANDOM          = 62,
-    RANGE           = 63,
-    EXTENSION_OPERATOR = 64
+    SIGN            = 52,
+    SINH            = 53,
+    SQRT            = 54,
+    TAN             = 55,
+    TANH            = 56,
+    TRUNC           = 57,
+    GATHER          = 58,
+    SCATTER         = 59,
+    DISCARD         = 60,
+    FREE            = 61,
+    SYNC            = 62,
+    NONE            = 63,
+    FLOOD           = 64,
+    RANDOM          = 65,
+    RANGE           = 66,
+    EXTENSION_OPERATOR = 67
 } OPERATOR;
 
 typedef enum ETYPE {
@@ -169,8 +173,8 @@ typedef struct iterspace {
 #define EWISE           ( MAP | ZIP | GENERATE )
 #define REDUCTION       ( REDUCE_COMPLETE | REDUCE_PARTIAL )
 #define ACCUMULATION    ( REDUCE_COMPLETE | REDUCE_PARTIAL | SCAN )
-#define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE_COMPLETE | REDUCE_PARTIAL | SCAN )
-#define NBUILTIN_OPS    8
-#define NBUILTIN_OPERS  62
+#define ARRAY_OPS       ( MAP | ZIP | GENERATE | REDUCE_COMPLETE | REDUCE_PARTIAL | SCAN | INDEX )
+#define NBUILTIN_OPS    9
+#define NBUILTIN_OPERS  65
 
 #endif

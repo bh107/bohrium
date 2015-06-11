@@ -39,40 +39,24 @@ using namespace boost::filesystem;
 
 namespace bohrium {
 
-    //Constructor of the InstrHash class
+    // Constructor of the InstrHash class
     InstrHash::InstrHash(BatchHash &batch, const bh_instruction &instr)
     {
-        BOOST_FOREACH(const bh_view &view, instr.operand)
-        {
-            if(bh_is_constant(&view))//We ignore constants
+        int noperands = bh_operands(instr.opcode);
+        for(int oidx=0; oidx<noperands; ++oidx) {
+            const bh_view& view = instr.operand[oidx];
+            if (bh_is_constant(&view))  // Ignore constants
                 continue;
-
-            //Hash the base array pointer
-            uint64_t base_id;
-            map<const bh_base*, uint64_t>::iterator it = batch.base2id.find(view.base);
-            if(it != batch.base2id.end())
-            {
-                base_id = it->second;
-            }
-            else
-            {
-                base_id = batch.base_id_count++;
-                batch.base2id.insert(make_pair(view.base, base_id));
-            }
-            this->append((char*)&base_id, sizeof(base_id));
-
-            //Hash ndim and start
-            this->append((char*)&view.ndim, sizeof(view.ndim));
-            this->append((char*)&view.start, sizeof(view.start));
-
-            //Hash shape and stride
-            this->append((char*)view.shape, sizeof(bh_index)*view.ndim);
-            this->append((char*)view.stride, sizeof(bh_index)*view.ndim);
+            std::pair<size_t,bool> vid = batch.views.insert(view);
+            size_t id = vid.first;
+            this->append((char*)&id, sizeof(id));
         }
+        const size_t sep = SIZE_MAX;
+        this->append((char*)&sep, sizeof(sep)); // Instruction seperator symbol
     }
 
     //Constructor of the BatchHash class
-    BatchHash::BatchHash(const vector<bh_instruction> &instr_list):base_id_count(0)
+    BatchHash::BatchHash(const vector<bh_instruction> &instr_list)
     {
         string data;
         BOOST_FOREACH(const bh_instruction &instr, instr_list)

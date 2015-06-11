@@ -180,23 +180,28 @@ def get_bhc(ary):
         raise ValueError("Bohrium arrays must be aligned, writeable, and in machine byte-order")
     if not dtype_equal(ary, base):
         raise ValueError("Bohrium base and view must have same data type")
-    if not base.ctypes.data <= ary.ctypes.data < base.ctypes.data + base.nbytes:
-        raise ValueError("The view must point to data within the base array")
 
-    # Lets make sure that 'ary' has a Bohrium-C base array
-    if base.bhc_ary is None:
-        base._data_np2bhc()
+    if 0 in ary.shape:#Lets use a dummy strides and offset for zero-sized views
+        strides = [0]*ary.ndim
+        offset = 0
+    else:
+        if not base.ctypes.data <= ary.ctypes.data < base.ctypes.data + base.nbytes:
+            raise ValueError("The view must point to data within the base array")
 
-    offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
-    if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
-        raise TypeError("The view offset must be element aligned")
-    if not 0 <= offset < base.size:
-        raise TypeError("The view offset is greater than the total number of elements in the base!")
-    strides = []
-    for stride in ary.strides:
-        strides.append(stride / base.itemsize)
-        if stride % base.itemsize != 0:
-            raise TypeError("The strides must be element aligned")
+        # Lets make sure that 'ary' has a Bohrium-C base array
+        if base.bhc_ary is None:
+            base._data_np2bhc()
+
+        offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
+        if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
+            raise TypeError("The view offset must be element aligned")
+        if not 0 <= offset < base.size:
+            raise TypeError("The view offset is greater than the total number of elements in the base!")
+        strides = []
+        for stride in ary.strides:
+            strides.append(stride / base.itemsize)
+            if stride % base.itemsize != 0:
+                raise TypeError("The strides must be element aligned")
 
     ndim = ary.ndim if ary.ndim > 0 else 1
     shape = ary.shape if len(ary.shape) > 0 else (1,)

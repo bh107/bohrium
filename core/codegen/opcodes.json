@@ -21,24 +21,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+            [ "A", "A", "A" ],
+            [ "A", "A", "K" ],
+            [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -65,24 +53,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+            [ "A", "A", "A" ],
+            [ "A", "A", "K" ],
+            [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -109,24 +85,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -152,24 +116,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -195,24 +147,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -227,6 +167,8 @@
             [ "BH_BOOL", "BH_BOOL" ],
             [ "BH_FLOAT32", "BH_FLOAT32" ],
             [ "BH_FLOAT64", "BH_FLOAT64" ],
+            [ "BH_FLOAT32", "BH_COMPLEX64" ],
+            [ "BH_FLOAT64", "BH_COMPLEX128" ],
             [ "BH_INT16", "BH_INT16" ],
             [ "BH_INT32", "BH_INT32" ],
             [ "BH_INT64", "BH_INT64" ],
@@ -237,14 +179,11 @@
             [ "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -269,24 +208,12 @@
             [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -311,24 +238,12 @@
             [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -353,24 +268,12 @@
             [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -395,24 +298,12 @@
             [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -439,24 +330,12 @@
             [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -483,24 +362,12 @@
             [ "BH_BOOL", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -515,24 +382,12 @@
             [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -547,24 +402,12 @@
             [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -579,24 +422,12 @@
             [ "BH_BOOL", "BH_BOOL", "BH_BOOL" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -611,14 +442,11 @@
             [ "BH_BOOL", "BH_BOOL" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -643,24 +471,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -685,24 +501,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -725,24 +529,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -765,24 +557,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -805,24 +585,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -845,14 +613,11 @@
             [ "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -874,24 +639,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -913,24 +666,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -948,14 +689,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -973,14 +711,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -998,14 +733,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1023,14 +755,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1048,14 +777,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1073,14 +799,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1096,14 +819,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1119,14 +839,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1142,14 +859,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1165,14 +879,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1188,14 +899,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1211,14 +919,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1234,24 +939,12 @@
             [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1269,14 +962,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1292,14 +982,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1315,14 +1002,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1340,14 +1024,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1363,14 +1044,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1388,14 +1066,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1411,14 +1086,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1436,14 +1108,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1459,14 +1128,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1482,14 +1148,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1505,14 +1168,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1528,14 +1188,11 @@
             [ "BH_FLOAT64", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1559,24 +1216,12 @@
             [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C", "C" ],
-            [ "C", "C", "K" ],
-            [ "C", "C", "S" ],
-            [ "C", "K", "C" ],
-            [ "C", "K", "S" ],
-            [ "C", "S", "C" ],
-            [ "C", "S", "K" ],
-            [ "C", "S", "S" ],
-            [ "S", "C", "C" ],
-            [ "S", "C", "K" ],
-            [ "S", "C", "S" ],
-            [ "S", "K", "C" ],
-            [ "S", "K", "S" ],
-            [ "S", "S", "C" ],
-            [ "S", "S", "K" ],
-            [ "S", "S", "S" ]
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1592,14 +1237,11 @@
             [ "BH_BOOL", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1615,14 +1257,11 @@
             [ "BH_BOOL", "BH_FLOAT64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1783,14 +1422,11 @@
             [ "BH_UINT8", "BH_UINT8" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "K" ],
-            [ "C", "S" ],
-            [ "S", "C" ],
-            [ "S", "K" ],
-            [ "S", "S" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -1805,10 +1441,10 @@
 
     ],
     "layout": [
-            [ "C" ],
-            [ "S" ]
+            [ "A" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": true
@@ -1823,10 +1459,10 @@
 
     ],
     "layout": [
-            [ "C" ],
-            [ "S" ]
+            [ "A" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": true
@@ -1841,10 +1477,10 @@
 
     ],
     "layout": [
-            [ "C" ],
-            [ "S" ]
+            [ "A" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": true
@@ -1862,6 +1498,7 @@
 
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": true
@@ -1887,12 +1524,10 @@
             [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -1919,12 +1554,10 @@
             [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -1949,12 +1582,10 @@
             [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -1979,12 +1610,10 @@
             [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -1999,12 +1628,10 @@
             [ "BH_BOOL", "BH_BOOL", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2027,12 +1654,10 @@
             [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2047,12 +1672,10 @@
             [ "BH_BOOL", "BH_BOOL", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2075,12 +1698,10 @@
             [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2095,12 +1716,10 @@
             [ "BH_BOOL", "BH_BOOL", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2123,12 +1742,10 @@
             [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     true,
     "accumulate":    false,
     "system_opcode": false
@@ -2143,9 +1760,10 @@
             [ "BH_UINT64", "BH_R123" ]
     ],
     "layout": [
-            [ "L", "K" ]
+            [ "1D", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -2161,9 +1779,10 @@
             [ "BH_UINT64" ]
     ],
     "layout": [
-            [ "C" ]
+            [ "1D" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -2179,14 +1798,11 @@
             [ "BH_FLOAT32", "BH_COMPLEX64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "S" ],
-            [ "C", "K" ],
-            [ "S", "C" ],
-            [ "S", "S" ],
-            [ "S", "K" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -2202,14 +1818,11 @@
             [ "BH_FLOAT32", "BH_COMPLEX64" ]
     ],
     "layout": [
-            [ "C", "C" ],
-            [ "C", "S" ],
-            [ "C", "K" ],
-            [ "S", "C" ],
-            [ "S", "S" ],
-            [ "S", "K" ]
+             [ "A", "A" ],
+             [ "A", "K" ]
     ],
     "elementwise":   true,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
@@ -2236,12 +1849,10 @@
             [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    true,
     "system_opcode": false
@@ -2268,14 +1879,130 @@
             [ "BH_UINT8", "BH_UINT8", "BH_INT64" ]
     ],
     "layout": [
-            [ "C", "C", "K" ],
-            [ "C", "S", "K" ],
-            [ "S", "C", "K" ],
-            [ "S", "S", "K" ]
+             [ "A", "A", "K" ]
     ],
     "elementwise":   false,
+    "composite":     false,
     "reduction":     false,
     "accumulate":    true,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_SIGN",
+    "doc":  "Computes the SIGN of elements. -1 = negative, 1=positive. 0 = 0.",
+    "code": "sign(a)",
+    "id":   "75",
+    "nop":   2,
+    "types": [
+        [ "BH_COMPLEX128",  "BH_COMPLEX128"],
+        [ "BH_COMPLEX64",   "BH_COMPLEX64"],
+        [ "BH_FLOAT32",     "BH_FLOAT32"],
+        [ "BH_FLOAT64",     "BH_FLOAT64"],
+        [ "BH_INT16",       "BH_INT16"],
+        [ "BH_INT32",       "BH_INT32"],
+        [ "BH_INT64",       "BH_INT64"],
+        [ "BH_INT8",        "BH_INT8"]
+    ],
+    "layout": [
+             [ "A", "A" ],
+             [ "A", "K" ]
+    ],
+    "elementwise":   true,
+    "composite":     true,
+    "reduction":     false,
+    "accumulate":    false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_MATMUL",
+    "doc":  "Matrix multiplication C = A x B",
+    "code": "matmul(A,B)",
+    "id":   "76",
+    "nop":   3,
+    "types": [
+        [ "BH_BOOL"      , "BH_BOOL"      , "BH_BOOL"       ],
+        [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_COMPLEX128" ],
+        [ "BH_COMPLEX64" , "BH_COMPLEX64" , "BH_COMPLEX64"  ],
+        [ "BH_FLOAT32"   , "BH_FLOAT32"   , "BH_FLOAT32"    ],
+        [ "BH_FLOAT64"   , "BH_FLOAT64"   , "BH_FLOAT64"    ],
+        [ "BH_INT16"     , "BH_INT16"     , "BH_INT16"      ],
+        [ "BH_INT32"     , "BH_INT32"     , "BH_INT32"      ],
+        [ "BH_INT64"     , "BH_INT64"     , "BH_INT64"      ],
+        [ "BH_INT8"      , "BH_INT8"      , "BH_INT8"       ],
+        [ "BH_UINT16"    , "BH_UINT16"    , "BH_UINT16"     ],
+        [ "BH_UINT32"    , "BH_UINT32"    , "BH_UINT32"     ],
+        [ "BH_UINT64"    , "BH_UINT64"    , "BH_UINT64"     ],
+        [ "BH_UINT8"     , "BH_UINT8"     , "BH_UINT8"      ]
+    ],
+    "layout": [
+             [ "A", "A", "A" ],
+             [ "A", "A", "K" ],
+             [ "A", "K", "A" ]
+    ],
+    "elementwise":   false,
+    "composite":     true,
+    "reduction":     false,
+    "accumulate":    false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_GATHER",
+    "doc":  "Gather elements from IN selected by INDEX into OUT. IN.shape == INDEX.shape.",
+    "code": "gather(OUT, IN, INDEX)",
+    "id":   "77",
+    "nop":   3,
+    "types": [
+        [ "BH_BOOL"      , "BH_BOOL"      , "BH_UINT64"],
+        [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_UINT64"],
+        [ "BH_COMPLEX64" , "BH_COMPLEX64" , "BH_UINT64"],
+        [ "BH_FLOAT32"   , "BH_FLOAT32"   , "BH_UINT64"],
+        [ "BH_FLOAT64"   , "BH_FLOAT64"   , "BH_UINT64"],
+        [ "BH_INT16"     , "BH_INT16"     , "BH_UINT64"],
+        [ "BH_INT32"     , "BH_INT32"     , "BH_UINT64"],
+        [ "BH_INT64"     , "BH_INT64"     , "BH_UINT64"],
+        [ "BH_INT8"      , "BH_INT8"      , "BH_UINT64"],
+        [ "BH_UINT16"    , "BH_UINT16"    , "BH_UINT64"],
+        [ "BH_UINT32"    , "BH_UINT32"    , "BH_UINT64"],
+        [ "BH_UINT64"    , "BH_UINT64"    , "BH_UINT64"],
+        [ "BH_UINT8"     , "BH_UINT8"     , "BH_UINT64"]
+    ],
+    "layout": [
+        [ "A", "A", "A" ]
+    ],
+    "elementwise":   false,
+    "composite":     false,
+    "reduction":     false,
+    "accumulate":    false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_SCATTER",
+    "doc":  "Scatter all elements of IN into OUT selected by INDEX. OUT.shape == INDEX.shape.",
+    "code": "scatter(OUT, IN, INDEX)",
+    "id":   "78",
+    "nop":   3,
+    "types": [
+        [ "BH_BOOL"      , "BH_BOOL"      , "BH_UINT64"],
+        [ "BH_COMPLEX128", "BH_COMPLEX128", "BH_UINT64"],
+        [ "BH_COMPLEX64" , "BH_COMPLEX64" , "BH_UINT64"],
+        [ "BH_FLOAT32"   , "BH_FLOAT32"   , "BH_UINT64"],
+        [ "BH_FLOAT64"   , "BH_FLOAT64"   , "BH_UINT64"],
+        [ "BH_INT16"     , "BH_INT16"     , "BH_UINT64"],
+        [ "BH_INT32"     , "BH_INT32"     , "BH_UINT64"],
+        [ "BH_INT64"     , "BH_INT64"     , "BH_UINT64"],
+        [ "BH_INT8"      , "BH_INT8"      , "BH_UINT64"],
+        [ "BH_UINT16"    , "BH_UINT16"    , "BH_UINT64"],
+        [ "BH_UINT32"    , "BH_UINT32"    , "BH_UINT64"],
+        [ "BH_UINT64"    , "BH_UINT64"    , "BH_UINT64"],
+        [ "BH_UINT8"     , "BH_UINT8"     , "BH_UINT64"]
+    ],
+    "layout": [
+        [ "A", "A", "A" ]
+    ],
+    "elementwise":   false,
+    "composite":     false,
+    "reduction":     false,
+    "accumulate":    false,
     "system_opcode": false
 }
 

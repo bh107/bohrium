@@ -80,6 +80,7 @@ def sor_compute(full):
       red2 *= 0.2
       diff -= red2
       delta += np.add.reduce(np.add.reduce(diff))
+      np.flush()
     return cells
 
 

@@ -66,7 +66,8 @@ Visualizer& Visualizer::getInstance()
     static Visualizer self;
     return self;
 }
-Visualizer::Visualizer():valid(false)
+
+Visualizer::Visualizer() : fullscreen(false), valid(false)
 {
 
 }
@@ -193,8 +194,8 @@ void Visualizer::initOpenGL()
     /* Initialize OpenGL */
     glutInit(&myargc, myargv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(500, 500);
-    glutInitWindowPosition (100, 100); 
+    glutInitWindowSize(800, 800);
+    glutInitWindowPosition (0, 0); 
     glutCreateWindow("Bohrium Visualizer");
     // Ensures that exiting the pause mode, glutLeaveMainLoop will not kill the application
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
@@ -610,6 +611,19 @@ void Visualizer::updateCamera()
   cameraPos.y = r*sin(phi);
   cameraPos.z = r*cos(phi)*cos(theta);
 }
+
+bool Visualizer::toggleFullscreen(void)
+{
+    fullscreen = !fullscreen;
+    if (fullscreen){
+        glutFullScreen();
+    } else { 
+        glutReshapeWindow(800, 800);
+        glutPositionWindow(0, 0);
+    }
+    return fullscreen;
+}
+
 // When a key is hit
 void Visualizer::keyHit(unsigned char key, int x, int y)
 {
@@ -662,6 +676,10 @@ void Visualizer::keyHit(unsigned char key, int x, int y)
           pause = true;
       }
       break;
+    case 'f':
+        toggleFullscreen();
+        break;
+        
 
   }
 }

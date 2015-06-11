@@ -48,6 +48,7 @@ std::string _end(void);
 std::string _end(std::string comment);
 std::string _line(std::string object);
 
+std::string _parens(std::string expr);
 std::string _cast(std::string type, std::string object);
 
 std::string _declare(std::string type, std::string variable);
@@ -71,6 +72,8 @@ std::string _pow(std::string left, std::string right);
 std::string _cpow(std::string left, std::string right);
 std::string _cpowf(std::string left, std::string right);
 std::string _abs(std::string right);
+std::string _cabs(std::string right);
+std::string _cabsf(std::string right);
 
 std::string _max(std::string left, std::string right);
 std::string _min(std::string left, std::string right);
