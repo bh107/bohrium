@@ -616,6 +616,9 @@ multi_array<T>& multi_array<T>::operator()(const T& value) {
     return *this;
 }
 
+//
+// Data movement
+//
 template <typename T>
 multi_array<T>& multi_array<T>::operator()(const void* data) {
 
@@ -636,6 +639,18 @@ multi_array<T>& multi_array<T>::operator()(const void* data) {
     memcpy(meta.base->data, data, nbytes);
 
     return *this;
+}
+
+template <typename T>
+T* multi_array<T>::data_export(void)
+{
+    return bh_data_export(*this, Export::NONE);
+}
+
+template <typename T>
+void multi_array<T>::data_import(T* data)
+{
+    bh_data_import(*this, data);
 }
 
 //

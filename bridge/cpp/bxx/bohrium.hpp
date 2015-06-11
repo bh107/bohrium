@@ -36,11 +36,23 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DEBUG_PRINT(...) do{ } while ( false )
 #endif
 
+#define is_aligned(POINTER, BYTE_COUNT) \
+    (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
+
 namespace bxx {
 
 const double PI_D = 3.141592653589793238462;
 const float  PI_F = 3.14159265358979f;
 const float  PI   = 3.14159265358979f;
+
+struct Export {
+    enum Option {
+        NONE        = 0x00,
+        RELEASED    = 0x01,
+        WO_ALLOC    = 0x02,
+        WO_ZEROING  = 0x04
+    };
+};
 
 template <typename T>   // Forward declaration
 class multi_array;
@@ -196,7 +208,13 @@ public:
     multi_array& operator()(const T& n);            // Update
     multi_array& operator()(multi_array<T>& rhs);
 
+    //
+    // Data movement
+    //
     multi_array& operator()(const void* data);      // Update / copy from a void pointer
+
+    T* data_export(void);
+    void data_import(T* data);
 
     multi_array& operator=(const T& rhs);           // Initialization / assignment.
     multi_array& operator=(multi_array<T>& rhs);    // Initialization / assignment.
@@ -393,6 +411,7 @@ private:
 #include "scan.hpp"         // DSEL Scan operation
 #include "generator.hpp"    // DSEL Generators 
 #include "mapping.hpp"      // DSEL Gather / Scatter
+#include "movement.hpp"     // DSEL Export / import data from arrays
 #include "visuals.hpp"      // DSEL Visualization
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.
