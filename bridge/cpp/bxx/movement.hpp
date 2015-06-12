@@ -86,7 +86,7 @@ void bh_data_import(multi_array<T>& op, T* data)
     // Importing "foreign" data.
     //
     if(!is_aligned(data, 16) ) {                    // Ensure alignment
-        std::cerr << "Importing unaligned data. This will hurt NUMA." << std::endl;
+        std::cout << "Importing unaligned data, regressing to copy." << std::endl;
         size_t nbytes = (base->nelem) * bh_type_size(base->type);
         if (!op.allocated()) {                      // Allocate aligned
             base->data = bh_memory_malloc(nbytes);
