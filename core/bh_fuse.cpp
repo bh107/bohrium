@@ -61,6 +61,29 @@ static bool fuse_broadest(const bh_instruction *a, const bh_instruction *b)
     return true;
 }
 
+/* Does not allow two sweep operations of the same dimensionality but different
+ * sweep dimensions to be put in the same kernel.
+ */
+static bool fuse_no_xsweep(const bh_instruction *a, const bh_instruction *b)
+{
+    return (fuse_broadest(a,b) &&
+            not (bh_opcode_is_sweep(a->opcode) &&  bh_opcode_is_sweep(b->opcode) &&
+                 a->operand[1].ndim == b->operand[1].ndim &&
+                 a->constant.value.int64 != b->constant.value.int64));
+}
+
+/* combines no_xsweep with 
+ * 
+ */
+static bool fuse_no_xsweep_scalar_seperate(const bh_instruction *a, const bh_instruction *b)
+{
+#define __scalar(i) (bh_is_scalar(&(i)->operand[0]) || \
+                     (bh_opcode_is_accumulate((i)->opcode) && (i)->operand[0].ndim == 1))
+    return (fuse_no_xsweep(a,b) &&
+            ((__scalar(a) && __scalar(b)) ||
+             (!__scalar(a) && !__scalar(b))));
+}
+
 static bool fuse_same_shape(const bh_instruction *a, const bh_instruction *b)
 {
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
@@ -380,6 +403,12 @@ void fuse_model_text(FuseModel fuse_model, string &output)
         case BROADEST:
             output = "broadest";
             break;
+        case NO_XSWEEP:
+            output = "no_xsweep";
+            break;
+        case NO_XSWEEP_SCALAR_SEPERATE:
+            output = "no_xsweep_scalar_seperate";
+            break;
         case SAME_SHAPE:
             output = "same_shape";
             break;
@@ -416,6 +445,10 @@ bool check_fusible(const bh_instruction *a, const bh_instruction *b)
             return check_fusible(a, b);
         case BROADEST:
             return fuse_broadest(a,b);
+        case NO_XSWEEP:
+            return fuse_no_xsweep(a,b);
+        case NO_XSWEEP_SCALAR_SEPERATE:
+            return fuse_no_xsweep_scalar_seperate(a,b);
         case SAME_SHAPE:
             return fuse_same_shape(a,b);
         case SAME_SHAPE_RANGE:

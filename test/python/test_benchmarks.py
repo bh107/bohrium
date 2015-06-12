@@ -92,22 +92,6 @@ class test_gauss_20x20(BenchHelper, numpytest):
     def test_gauss_20x20(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
-class test_heat_equation(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
-        self.size = 1000
-
-        # Benchmark parameters
-        self.script     = "heat_equation"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "1000*1000*10"
-        self.inputfn    = None
-
-    def test_heat_equation(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
-
 class test_jacobi(BenchHelper, numpytest):
 
     def __init__(self):

@@ -23,10 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* Mapping of bohrium data types to C data types */
 typedef unsigned char bh_bool;
 typedef int8_t        bh_int8;
@@ -93,9 +89,5 @@ typedef struct
     bh_constant_value value;
     bh_type type;
 } bh_constant;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

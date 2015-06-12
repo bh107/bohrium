@@ -17,32 +17,22 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef __BH_FILTER_PRICER_H
+#define __BH_FILTER_PRICER_H
+
 #include <bh.h>
-#include <stdio.h>
-#include <bh_dag.h>
-#include <boost/foreach.hpp>
 
-using namespace std;
-using namespace boost;
-using namespace bohrium::dag;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-static int64_t sum=0;
-void filter(const bh_ir &bhir)
-{
-    if(bhir.kernel_list.size() == 0)
-        return;
+DLLEXPORT bh_error bh_filter_dimclean_init(const char* name);
+DLLEXPORT bh_error bh_filter_dimclean_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_filter_dimclean_shutdown(void);
+DLLEXPORT bh_error bh_filter_dimclean_extmethod(const char *name, bh_opcode opcode);
 
-    GraphDW dag;
-    from_kernels(bhir.kernel_list, dag);
-    sum += dag_cost(dag.bglD());
-    if(not dag_validate(dag))
-    {
-        cerr << "[PRICER-FILTER] Invalid BhIR! " << endl;
-
-    }
+#ifdef __cplusplus
 }
+#endif
 
-void shutdown()
-{
-    cout << "[PRICER-FILTER] total cost: " << sum << endl;
-}
+#endif

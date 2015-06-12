@@ -23,10 +23,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 #include <map>
+#include <set>
 #include <boost/serialization/vector.hpp>
 
-#include "bh_type.h"
-#include "bh_error.h"
+#include "bh.h"
+#include "bh_seqset.h"
 
 // Forward declaration of class boost::serialization::access
 namespace boost {namespace serialization {class access;}}
@@ -46,6 +47,10 @@ public:
      * @instr_list  The instruction list
      */
     bh_ir(bh_intp ninstr, const bh_instruction instr_list[]);
+
+    // Special constructor for 1 instruction
+    // Used by the GPU to send instructions to the CPU
+    bh_ir(const bh_instruction& instr);
 
     /* Constructs a BhIR from a serialized BhIR.
     *
@@ -88,45 +93,85 @@ protected:
 */
 class bh_ir_kernel
 {
+private:
+    // Set of temporary base-arrays in this kernel.
+    std::set<bh_base*> temps;
+
+    // Set of base-arrays that are freed and not in temps i.e. created elsewhere
+    std::set<bh_base*> frees;
+
+    // Set of base-arrays that are discarded and not in temps i.e. created elsewhere
+    std::set<bh_base*> discards;
+
+    // Set of base-arrays that are synced by this kernel.
+    std::set<bh_base*> syncs;
+    
+    // Sequence set of views used in this kernel
+    seqset<bh_view> views;
+
+    // Sequence set of base arrays used for input and output
+    seqset<bh_base*> parameters;
+
+    // List of input and output to this kernel.
+    // NB: system instruction (e.g. BH_DISCARD) is
+    // never part of kernel input or output
+    std::multimap<bh_base*,bh_view> output_map;
+    std::set<bh_view>               output_set;
+    std::multimap<bh_base*,bh_view> input_map;
+    std::set<bh_view>               input_set;
+
+    // Shape of the kernel i.e. The simplest shape cooresponding to the operations with the most elements
+    // while being valid for all views 
+    std::vector<bh_index> shape;
+
+    bool scalar; // Indicate whether there is a scalar output from the kernel or not
+
+    // sweep (reduce and accumulate) dimensions 
+    std::map<bh_intp, bh_int64> sweeps;
+
+    // list of constants used in this kernel in topological order
+    std::vector<bh_constant> constants;
+        
+    /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
+    bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
+
 public:
+    /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
+    bh_ir_kernel();
+
+    /* Kernel constructor, takes the bhir as constructor */
+    bh_ir_kernel(bh_ir &bhir);
+
     // The program representation that the kernel is subset of
     bh_ir *bhir;
 
     // Topologically ordered list of instruction indexes
     std::vector<uint64_t> instr_indexes;
 
-    //List of input and output to this kernel.
-    //NB: system instruction (e.g. BH_DISCARD) is
-    //never part of kernel input or output
-    std::vector<bh_view> inputs;
-    std::vector<bh_view> outputs;
-
-    //Lets of temporary base-arrays in this kernel.
-    std::vector<const bh_base*> temps;
-
     /* Clear this kernel of all instructions */
-    void clear()
-    {
-        instr_indexes.clear();
-        inputs.clear();
-        outputs.clear();
-        temps.clear();
-    }
+    void clear();
 
-    /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
-    bh_ir_kernel():bhir(NULL){};
+    const std::multimap<bh_base*,bh_view>& get_output_map() const {return output_map;}
+    const std::multimap<bh_base*,bh_view>& get_input_map() const {return input_map;}
+    const std::set<bh_view>& get_output_set() const {return output_set;}
+    const std::set<bh_view>& get_input_set() const {return input_set;}
+    const std::set<bh_base*>& get_temps() const {return temps;}
+    const std::set<bh_base*>& get_frees() const {return frees;}
+    const std::set<bh_base*>& get_discards() const {return discards;}
+    const std::set<bh_base*>& get_syncs() const {return syncs;}
+    const seqset<bh_base*>& get_parameters() const {return parameters;}
+    const std::vector<bh_constant>& get_constants() const {return constants;}
+    const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
+    const std::vector<bh_index>& get_shape() const {return shape;}
 
-    /* Kernel constructor, takes the bhir as constructor */
-    bh_ir_kernel(bh_ir &bhir) : bhir(&bhir) {};
+    bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
+    bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}
+    bool is_input(const bh_view& view) const {return input_set.find(view) != input_set.end();}
+    bool is_scalar() const { return scalar;}
 
-    /* Returns a list of inputs to this kernel (read-only) */
-    const std::vector<bh_view>& input_list() const {return inputs;};
 
-    /* Returns a list of outputs from this kernel (read-only) */
-    const std::vector<bh_view>& output_list() const {return outputs;};
-
-    /* Returns a list of temporary base-arrays in this kernel (read-only) */
-    const std::vector<const bh_base*>& temp_list() const {return temps;};
+    size_t get_view_id(const bh_view& v) const;
+    const bh_view& get_view(size_t id) const {return views[id];}
 
     /* Add an instruction to the kernel
      *

@@ -3,7 +3,8 @@
 #
 [stack_default]
 type = stack
-stack_default = bcexp_cpu
+stack_default = dimclean
+dimclean = bcexp_cpu
 bcexp_cpu = bccon
 bccon = topological
 topological = node
@@ -20,15 +21,17 @@ node = cpu
 #
 [stack_gpu]
 type = stack
-stack_gpu = bcexp
-bcexp = topological
-topological = node
+stack_gpu = dimclean
+dimclean = bcexp
+bcexp = greedy
+greedy = node
 node = gpu
 gpu = cpu
 
 [stack_fuseprinter]
 type = stack
-stack_fuseprinter = bcexp
+stack_fuseprinter = dimclean
+dimclean = bcexp
 bcexp = topological
 topological = pricer
 pricer = fuseprinter
@@ -44,7 +47,7 @@ node = cpu
 #
 [bridge]
 type = bridge
-children = bcexp
+children = dimclean
 
 #
 # Managers
@@ -76,30 +79,35 @@ type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_singleton${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
 
 [topological]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_topological${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
 
 [gentle]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_gentle${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
 
 [greedy]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_greedy${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
 
 [optimal]
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_optimal${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
 
 #
 # Filters - Helpers / Tools
@@ -122,11 +130,18 @@ children = cpu
 #
 # Filters - Bytecode transformers
 #
+[dimclean]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_dimclean${CMAKE_SHARED_LIBRARY_SUFFIX}
+timing = false
+children = bcexp
+
 [bccon]
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
 reduction = 1
+timing = false
 
 [bcexp]
 type = filter
@@ -135,6 +150,7 @@ children = node
 gc_threshold = 400
 matmul = 1
 sign = 1
+timing = false
 
 [bcexp_cpu]
 type = filter
@@ -143,6 +159,7 @@ children = node
 gc_threshold = 400
 matmul = 1
 sign = 0
+timing = false
 
 #
 # Engines
@@ -186,5 +203,6 @@ kernel = both
 # compile = {[async],sync}
 compile = async
 children = cpu
-
-
+verbose = false
+timing = false
+print_source = false

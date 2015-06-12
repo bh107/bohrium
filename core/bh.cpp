@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sstream>
 
 /* Number of non-broadcasted elements in a given view
  *
@@ -49,12 +50,18 @@ bh_index bh_nelements_nbcast(const bh_view *view)
 bh_index bh_nelements(bh_intp ndim,
                       const bh_index shape[])
 {
+    assert (ndim > 0);
     bh_index res = 1;
     for (int i = 0; i < ndim; ++i)
     {
         res *= shape[i];
     }
     return res;
+}
+
+bh_index bh_nelements(const bh_view& view)
+{
+    return bh_nelements(view.ndim,view.shape);
 }
 
 /* Size of the base array in bytes
@@ -234,7 +241,7 @@ bh_view *bh_inst_operands(bh_instruction *instruction)
  */
 bool bh_is_scalar(const bh_view* view)
 {
-    return bh_base_array(view)->nelem == 1;
+    return bh_nelements(*view) == 1;
 }
 
 /* Determines whether the operand is a constant
@@ -268,6 +275,204 @@ inline int gcd(int a, int b)
         c = a % b;
     }
     return b;
+}
+
+/* Returns the simplest view (fewest dimensions) that access 
+ * the same elements in the same pattern
+ *
+ * @view The view
+ * @return The simplified view
+ */
+bh_view bh_view_simplify(const bh_view& view)
+{
+    bh_view res;
+    res.base = view.base;
+    res.ndim = 0;
+    res.start = view.start;
+    bh_intp i = 0;
+    while (view.shape[i] == 1 && i < view.ndim-1)
+        ++i;
+    res.shape[0] = view.shape[i];
+    res.stride[0] = view.stride[i];
+    for (++i; i < view.ndim; ++i)
+    {
+        if (view.shape[i] == 0)
+        {
+            res.ndim = 1;
+            res.shape[0] = 0;
+            return res;
+        }
+        if (view.shape[i] == 1)
+            continue;
+        if (view.shape[i]*view.stride[i] == res.stride[res.ndim])
+        {
+            res.shape[res.ndim] *= view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
+        } else {
+            ++res.ndim;
+            res.shape[res.ndim]  = view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
+        }
+    }
+    if (res.ndim == 0 || res.shape[res.ndim] > 1)
+        ++res.ndim;
+    return res;
+}
+
+/* Simplifies the given view down to the given shape.
+ * If that is not possible an std::invalid_argument exception is thrown 
+ *
+ * @view The view
+ * @return The simplified view
+ */
+bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape)
+{
+    assert(false); // TODO: complete rewrite under the assumption the cleandim has been run
+    if (view.ndim < (bh_intp)shape.size())
+    {
+        std::stringstream ss; 
+        ss << "Can not simplify to more dimensions: ";
+        ss << "shape: " << shape << " view: " << view;
+        throw std::invalid_argument(ss.str());
+    }
+    bh_view res;
+    res.base = view.base;
+    res.ndim = 0;
+    res.start = view.start;
+    bh_intp i = 0;
+    while (view.shape[i] == 1 && i < view.ndim-1)
+        ++i;
+    res.shape[0] = view.shape[i];
+    res.stride[0] = view.stride[i];
+    for (++i; i < view.ndim; ++i)
+    {
+        if (shape[res.ndim] == 0)
+        {
+            if (view.shape[i] != 0)
+            {
+                continue;
+            } else {
+                res.shape[res.ndim++] = 0;
+                return res;
+            }
+        }
+        if ((bh_intp)shape.size() == res.ndim)
+        {
+            if (view.shape[i] == 1)
+            {
+                continue;
+            } else {
+                std::stringstream ss; 
+                ss << "Can not remove trailing dimensions of size > 1: ";
+                ss << "shape: " << shape << " view: " << view;
+                throw std::invalid_argument(ss.str());
+            }
+        }
+        if (view.shape[i-1] > shape[res.ndim])
+        {
+            std::stringstream ss; 
+            ss << "Can not simplify to lower dimension size: ";
+            ss << "shape: " << shape << " view: " << view;
+            throw std::invalid_argument(ss.str());
+        }
+        if (view.shape[i-1] == shape[res.ndim])
+        {
+            res.shape[++res.ndim]  = view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
+            continue;
+        }
+        if (view.shape[i] == 1)
+            continue;
+        if (view.shape[i]*view.stride[i] == res.stride[res.ndim])
+        {
+            res.shape[res.ndim] *= view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
+        } else {
+            res.shape[++res.ndim]  = view.shape[i];
+            res.stride[res.ndim] = view.stride[i];
+        }
+    }
+    if (res.ndim == 0 || res.shape[res.ndim] > 1)
+        ++res.ndim;
+    if (res.ndim != (bh_intp)shape.size())
+    {
+        std::stringstream ss; 
+        ss << "Can not simplify to given shape: ";
+        ss << "shape: " << shape << " view: " << view;
+        throw std::invalid_argument(ss.str());
+    }
+
+    return res;
+}
+
+/* Determines whether two views have same shape.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+bool bh_view_same_shape(const bh_view *a, const bh_view *b)
+{
+    if(a->ndim != b->ndim)
+        return false;
+    for(int i=0; i<a->ndim; ++i)
+    {
+        if(a->shape[i] != b->shape[i])
+            return false;
+    }
+    return true;
+}
+
+/* Determines whether two views are identical and points
+ * to the same base array.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+bool bh_view_same(const bh_view *a, const bh_view *b)
+{
+    if(bh_is_constant(a) || bh_is_constant(b))
+        return false;
+    return *a == *b;
+}
+
+/* Determines whether two views are aligned and points
+ * to the same base array.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+bool bh_view_aligned(const bh_view *a, const bh_view *b)
+{
+    if(bh_is_constant(a) || bh_is_constant(b))
+        return true;
+    bh_view sa = bh_view_simplify(*a);
+    bh_view sb = bh_view_simplify(*b);
+    return sa == sb;
+}
+
+/* Determines whether two views are aligned, points
+ * to the same base array, and have same shape.
+ *
+ * @a The first view
+ * @b The second view
+ * @return The boolean answer
+ */
+bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b)
+{
+    if(a->ndim != b->ndim)
+        return false;
+    if(not bh_view_aligned(a, b))
+        return false;
+
+    for(int i=0; i<a->ndim; ++i)
+    {
+        if(a->shape[i] != b->shape[i])
+            return false;
+    }
+    return true;
 }
 
 /* Determines whether two views access some of the same data points
@@ -309,122 +514,6 @@ bool bh_view_disjoint(const bh_view *a, const bh_view *b)
     return false;
 }
 
-/* Determines whether two views are identical and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_view_identical(const bh_view *a, const bh_view *b)
-{
-    int i;
-    if(bh_is_constant(a) || bh_is_constant(b))
-        return false;
-    if(a->base != b->base)
-        return false;
-    if(a->ndim != b->ndim)
-        return false;
-    if(a->start != b->start)
-        return false;
-    for(i=0; i<a->ndim; ++i)
-    {
-        if(a->shape[i] != b->shape[i])
-            return false;
-        if(a->stride[i] != b->stride[i])
-            return false;
-    }
-    return true;
-}
-
-/* Determines whether two views are aligned and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_view_aligned(const bh_view *a, const bh_view *b)
-{
-    if(bh_is_constant(a) || bh_is_constant(b))
-        return false;
-    if(a->base != b->base)
-        return false;
-    if(a->start != b->start)
-        return false;
-
-    // Check that the "real" number of dimensions are the same
-    // Stride == 0 and shape == 1 are NOT "real"
-    int a_ndim = 0;
-    for(int i=0; i<a->ndim; ++i)
-        if(a->stride[i] != 0 && a->shape[i] != 1)
-            ++a_ndim;
-    int b_ndim = 0;
-    for(int i=0; i<b->ndim; ++i)
-        if(b->stride[i] != 0  && b->shape[i] != 1)
-            ++b_ndim;
-    if(a_ndim != b_ndim)
-        return false;
-
-    // Check that shape and stride for all "real" dimensions are the same
-    int ia=0, ib=0;
-    for(int i=0; i<a_ndim; ++i) // we know: (a_ndim == b_ndim)
-    {
-        // skip "virtual dimensions in both views
-        while(a->stride[ia] == 0 || a->shape[ia] == 1)
-            ++ia;
-        while(b->stride[ib] == 0 || b->shape[ib] == 1 )
-            ++ib;
-
-        // If we are done with eather view the other may only contain
-        // virtual dimensions
-        if (ia >= a->ndim)
-        {
-            while (ib < b->ndim)
-                if (b->stride[ib] != 0 || b->shape[ib] != 1 )
-                    return false;
-            return true;
-        }
-        if (ib >= b->ndim)
-        {
-            while (ia < a->ndim)
-                if (a->stride[ia] != 0 || a->shape[ia] != 1 )
-                    return false;
-            return true;
-        }
-
-        // We are at a real dimension both have so we check it
-        if(a->shape[ia] != b->shape[ib])
-            return false;
-        if(a->stride[ia] != b->stride[ib])
-            return false;
-    }
-    // If we have not failed yet all is good
-    return true;
-}
-
-/* Determines whether two views are aligned, points
- * to the same base array, and have same shape.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b)
-{
-    if(a->ndim != b->ndim)
-        return false;
-    if(not bh_view_aligned(a, b))
-        return false;
-
-    for(int i=0; i<a->ndim; ++i)
-    {
-        if(a->shape[i] != b->shape[i])
-            return false;
-    }
-    return true;
-}
-
 /* Determines whether instruction 'a' depends on instruction 'b',
  * which is true when:
  *      'b' writes to an array that 'a' access
@@ -450,4 +539,15 @@ bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
             return true;
     }
     return false;
+}
+
+/* Determines whether the opcode is a sweep opcode 
+ * i.e. either a reduction or an accumulate
+ *
+ * @opcode
+ * @return The boolean answer
+ */
+bool bh_opcode_is_sweep(bh_opcode opcode)
+{
+    return (bh_opcode_is_reduction(opcode) || bh_opcode_is_accumulate(opcode));
 }
