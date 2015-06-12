@@ -63,7 +63,6 @@ add_subdirectory(fuser/topological)
 add_subdirectory(fuser/gentle)
 add_subdirectory(fuser/optimal)
 add_subdirectory(fuser/greedy)
-add_subdirectory(extmethods/matmul)
 
 #The other modules
 add_subdirectory(vem/cluster)

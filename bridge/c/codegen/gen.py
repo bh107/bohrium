@@ -86,7 +86,7 @@ def main():
         for ttt in op['types']:
             sig = [map_type(typesig,types) for typesig in ttt]
             typesigs.append(sig)
-        if op['elementwise']:
+        if op['elementwise'] or op['composite']:
             op_elementwise.append((cpp_name, bh_name, c_name, nop, typesigs))
         elif op['reduction']:
             op_reduction.append((cpp_name, bh_name, c_name, nop, typesigs))
