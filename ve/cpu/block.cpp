@@ -385,8 +385,7 @@ std::string Block::text(void)
 {
     stringstream ss;
     ss << "BLOCK [" << symbol() << endl;
-    
-    ss << "TACS (" << ntacs() << ") {" << endl;
+    ss << "TACS " << "omask(" << omask() << "), ntacs(" << ntacs() << ") {" << endl;
     for(uint64_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
         ss << " " << tac_text(tac(tac_idx)) << endl;
     }
