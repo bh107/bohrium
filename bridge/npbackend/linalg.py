@@ -10,6 +10,7 @@ import numpy_force.linalg as la
 import numpy_force as numpy
 from . import ndarray
 from . import ufunc
+from . import target
 from . import array_create
 from ._util import dtype_equal
 
@@ -157,14 +158,15 @@ def matmul(a,b):
         raise ValueError("Input must be of same type")
     if a.ndim != 2 and b.ndim != 2:
         raise ValueError("Input must be 2-D.")
-    if ndarray.check(a) or ndarray.check(b):
-        a = array_create.array(a)
-        b = array_create.array(b)
-        c = np.empty((a.shape[0],b.shape[1]),dtype=a.dtype)
-        ufunc.extmethod("matmul",c,a,b)
-        return c
-    else:
-    	return numpy.dot(a,b)
+
+    if not(ndarray.check(a) or ndarray.check(b)):
+    	return numpy.dot(a, b)
+
+    a = array_create.array(a)
+    b = array_create.array(b)
+    c = np.empty((a.shape[0], b.shape[1]), dtype=a.dtype)
+    target.matmul(ufunc.get_bhc(c), ufunc.get_bhc(a), ufunc.get_bhc(b))
+    return c
 
 def dot(a,b, no_matmul=False):
     """

@@ -155,6 +155,19 @@ def accumulate(op, out, ary, axis):
     )
     _bhc_exec(func, out, ary, axis)
 
+def matmul(out, in1, in2):
+    """
+    Perform matrix multiplication of 'in1' and 'in2' and store it in 'out'.
+
+    :out ?:
+    :in1 ?:
+    :in2 ?:
+    :rtype: None
+    """
+
+    func = eval("bhc.bh_multi_array_%s_matmul" % dtype_name(out))
+    _bhc_exec(func, out, in1, in2)
+
 def extmethod(name, out, in1, in2):
     """
 
@@ -211,4 +224,5 @@ def random123(size, start_index, key):
         bhc_obj = None
     base = Base(size, dtype, bhc_obj)
     return View(1, 0, (size,), (dtype.itemsize,), base)
+
 

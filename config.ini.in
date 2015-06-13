@@ -3,8 +3,7 @@
 #
 [stack_default]
 type = stack
-stack_default = dimclean
-dimclean = bcexp_cpu
+stack_default = bcexp_cpu
 bcexp_cpu = bccon
 bccon = topological
 topological = node
@@ -85,7 +84,7 @@ timing = false
 type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_topological${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = cpu
-cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+#cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 timing = false
 
 [gentle]
@@ -167,7 +166,7 @@ timing = false
 [cpu]
 type = ve
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
-libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_matmul${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
+libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
 bind = 1
 thread_limit = 0
 vcache_size = 10
