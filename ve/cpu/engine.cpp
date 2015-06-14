@@ -117,14 +117,14 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         return BH_ERROR;
     }
 
-    DEBUG(TAG, "EXECUTING "<< block.text());
+    DEBUG(TAG, "EXECUTING "<< block.symbol());
 
     //
     // JIT-compile the block if enabled
     //
     if (consider_jit && \
         (!storage_.symbol_ready(block.symbol()))) {   
-        DEBUG(TAG, "JITTING");
+        DEBUG(TAG, "JITTING " << block.text());
         // Specialize and dump sourcecode to file
         string sourcecode = codegen::Kernel(plaid_, block).generate_source();
         bool compile_res;
