@@ -15,6 +15,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op   = MAP;
                 tac.oper = IDENTITY;
+                tac.in2  = 0;
                 goto transform_identity;
             }
             break;
@@ -23,6 +24,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             if (symbol_table[tac.in1].layout == SCALAR) {
                 tac.op   = MAP;
                 tac.oper = IDENTITY;
+                tac.in2  = 0;
                 goto transform_identity;
             } else if (symbol_table[tac.out].layout == SCALAR) {
                 tac.op = REDUCE_COMPLETE;
@@ -31,8 +33,9 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
 
         case SCAN:
             if (symbol_table[tac.in1].layout == SCALAR) {
-                tac.op = MAP;
+                tac.op   = MAP;
                 tac.oper = IDENTITY;
+                tac.in2  = 0;
                 goto transform_identity;
             }
             break;
