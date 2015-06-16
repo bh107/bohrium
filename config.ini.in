@@ -3,8 +3,7 @@
 #
 [stack_default]
 type = stack
-stack_default = dimclean
-dimclean = bcexp_cpu
+stack_default = bcexp_cpu
 bcexp_cpu = bccon
 bccon = topological
 topological = node

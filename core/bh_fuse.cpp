@@ -305,7 +305,7 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
 
         // check that b does not depend on reduce-result of a
         for(int oidx=0; oidx<b_nop; ++oidx) {
-            if(bh_is_constant(&a->operand[oidx])) {
+            if(bh_is_constant(&b->operand[oidx])) {
                 continue;
             }
             if (b->operand[oidx].base == a->operand[0].base) {
