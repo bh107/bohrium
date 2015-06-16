@@ -472,6 +472,11 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                         mysource << beforesource.back();
                         mysource << indentss.str().substr(1);
                         generateIndexSource(dims-1, view.ndim, vid, mysource);
+                        if (view.ndim < (bh_intp)dims) // We are folding a view into higher dimension
+                        { // TODO We need a more rubust solution for this 
+                            mysource << indentss.str().substr(1) << "const int v" << vid << "s" << dims << 
+                                " = v" << vid << "s" << dims-1 << "*ds" << dims-1 << ";\n";
+                        }
                         beforesource.back() = mysource.str();
                         incr_idx[vid] = dims;
                     } else {
@@ -504,7 +509,6 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         size_t vid = kernel.get_view_id(view);
         assert (view.ndim <= (bh_intp)shape.size());
         bh_index viewElements = bh_nelements(view);
-        // TODO: Take care of dimensions of size 1 by removing them
         while (viewElements > elements)
         {
             elements *= shape[dimOrders[shape.size()-1][shape.size()-(++dims)]];
@@ -636,6 +640,11 @@ void InstructionScheduler::endDim(std::stringstream& source,
                 {
                     mysource << indentss.str().substr(1);
                     generateIndexSource(dims-1, view.ndim, vid, mysource);
+                    if (view.ndim < (bh_intp)dims) // We are folding a view into higher dimension
+                    { // TODO We need a more rubust solution for this 
+                        mysource << indentss.str().substr(1) << "const int v" << vid << "s" << dims << 
+                            " = v" << vid << "s" << dims-1 << "*ds" << dims-1 << ";\n";
+                    }
                     incr_idx[vid] = dims;
                 } else {
                     source << indentss.str();

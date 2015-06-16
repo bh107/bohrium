@@ -7,7 +7,7 @@ endif()
 set(Mono_FIND_QUIETLY 1)
 find_package(Mono)
 
-if(MONO_FOUND AND PYTHONINTERP_FOUND)
+if(BRIDGE_CIL AND MONO_FOUND AND PYTHONINTERP_FOUND)
 
   # Determine names of output .cs files based on .ctpl input names
   FILE(GLOB files codegen/templates/*.ctpl)
@@ -51,6 +51,4 @@ if(MONO_FOUND AND PYTHONINTERP_FOUND)
   install(FILES ${target_file} DESTINATION lib/mono COMPONENT bohrium-numcil)
   install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.Bohrium.dll)")  
 
-else()
-  message("Cannot build NumCIL.Bohrium as Mono, xbuild or Python is missing")
 endif()

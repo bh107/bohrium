@@ -51,6 +51,8 @@ namespace bohrium {
             size_t id = vid.first;
             this->append((char*)&id, sizeof(id));
         }
+        const size_t sep = SIZE_MAX;
+        this->append((char*)&sep, sizeof(sep)); // Instruction seperator symbol
     }
 
     //Constructor of the BatchHash class

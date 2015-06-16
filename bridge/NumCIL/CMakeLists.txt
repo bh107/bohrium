@@ -8,7 +8,7 @@ find_package(Mono)
 set_package_properties(Mono PROPERTIES DESCRIPTION "An open source implementation the CLR" URL "www.mono-project.com")
 set_package_properties(Mono PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the NumCIL package")
 
-if(MONO_FOUND)
+if(BRIDGE_NUMCIL AND MONO_FOUND)
 
   # Enumerate over all .tt files and apply T4 to them
   SET(numcil_tt_outputs)
@@ -50,6 +50,4 @@ if(MONO_FOUND)
   install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.dll)")  
   install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.Unsafe.dll)")  
 
-else()
-  message("Cannot build NumCIL as Mono or xbuild is missing")
 endif()
