@@ -606,7 +606,7 @@ void InstructionScheduler::beginDim(std::stringstream& source,
     source.str("");
     source << indentss.str() << "for (int idd" << dims << " = 0; idd" << dims << " < ds" << 
         dims << "; ++idd" << dims << ")\n" << indentss.str() << "{\n";
-    indentss << "\t";
+    indentss << '\t';
 }
 
 void InstructionScheduler::endDim(std::stringstream& source, 
@@ -671,8 +671,9 @@ void InstructionScheduler::endDim(std::stringstream& source,
         } else
             ++it;
     }
-
-    indentss.str(indentss.str().substr(1));
+    std::string tmp = indentss.str().substr(1); 
+    indentss.str("");
+    indentss << tmp;
     source << indentss.str() << "}\n";
 }
 
