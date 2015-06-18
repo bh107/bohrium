@@ -43,6 +43,9 @@ namespace bohrium {
     InstrHash::InstrHash(BatchHash &batch, const bh_instruction &instr)
     {
         int noperands = bh_operands(instr.opcode);
+        this->append("OPC");
+        this->append(lexical_cast<string>(instr.opcode));
+        this->append("_");
         for(int oidx=0; oidx<noperands; ++oidx) {
             const bh_view& view = instr.operand[oidx];
             if (bh_is_constant(&view))  // Ignore constants
