@@ -32,6 +32,13 @@ Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block), iters
     }
 }
 
+string Kernel::text(void)
+{
+    stringstream ss;
+    ss << block_.text() << endl;
+    return ss.str();
+}
+
 void Kernel::add_operand(uint64_t global_idx)
 {
     uint64_t local_idx = block_.global_to_local(global_idx);

@@ -117,11 +117,14 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         return BH_ERROR;
     }
 
+    DEBUG(TAG, "EXECUTING "<< block.symbol());
+
     //
     // JIT-compile the block if enabled
     //
     if (consider_jit && \
         (!storage_.symbol_ready(block.symbol()))) {   
+        DEBUG(TAG, "JITTING " << block.text());
         // Specialize and dump sourcecode to file
         string sourcecode = codegen::Kernel(plaid_, block).generate_source();
         bool compile_res;
@@ -186,7 +189,6 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     // Execute block handling array operations.
     // 
     if (block.narray_tacs() > 0) {
-        DEBUG(TAG, "EXECUTING "<< block.text());
         //TIMER_START
         iterspace_t& iterspace = block.iterspace();   // retrieve iterspace
         storage_.funcs[block.symbol()](block.operands(), &iterspace);

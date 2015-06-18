@@ -37,7 +37,7 @@ int Expander::expand_matmul(bh_ir& bhir, int pc)
 
     int n = a.shape[0];                             // Grab the shape
     int m = a.shape[1];
-    int k = b.shape[0];
+    int k = b.shape[1];
                                                     // Construct intermediary operands
     bh_view a_3d = a;                               // Needs broadcast
     bh_view b_3d = b;                               // Needs transposition + broadcast

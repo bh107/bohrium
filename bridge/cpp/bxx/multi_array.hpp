@@ -151,12 +151,13 @@ multi_array<T>::~multi_array()
     if (linked()) {
         Runtime::instance().ref_count[meta.base] -= 1;       // Decrement ref-count
         if (0==Runtime::instance().ref_count[meta.base]) {   // De-allocate it
-
+            this->setTemp(false);
             // Send BH_FREE to Bohrium, unless the data is allocated externally
-            if (Runtime::instance().ext_allocated.count(meta.base) == 1)
+            if (Runtime::instance().ext_allocated.count(meta.base) == 1) {
                 Runtime::instance().ext_allocated.erase(meta.base);
-            else
-                bh_free(*this);                             
+            } else {
+                bh_free(*this);
+            }
             
             bh_discard(*this);                               // Send BH_DISCARD to Bohrium
             Runtime::instance().trash(meta.base);            // Queue the bh_base for de-allocation
@@ -417,12 +418,8 @@ multi_array<T>& multi_array<T>::operator=(const T& rhs)
     bh_identity(*this, rhs);
 
     //
-    //  Note: this makes my skin crawl once more... we need to de-allocate
-    //          anonymous views since it will never never be referenced again.
+    //  Note: bh_identity will delete "*this" if it is a temp.
     //
-    if (this->getTemp()) {      // Delete temps
-        delete this;            // The deletion will decrement the ref-count
-    }
 
     return *this;   // This might be very bad...
 }
@@ -619,6 +616,9 @@ multi_array<T>& multi_array<T>::operator()(const T& value) {
     return *this;
 }
 
+//
+// Data movement
+//
 template <typename T>
 multi_array<T>& multi_array<T>::operator()(const void* data) {
 
@@ -641,6 +641,18 @@ multi_array<T>& multi_array<T>::operator()(const void* data) {
     return *this;
 }
 
+template <typename T>
+T* multi_array<T>::data_export(void)
+{
+    return bh_data_export(*this, Export::NONE);
+}
+
+template <typename T>
+void multi_array<T>::data_import(T* data)
+{
+    bh_data_import(*this, data);
+}
+
 //
 // Typecasting
 //
@@ -649,8 +661,10 @@ multi_array<T>& as(multi_array<FromT>& rhs)
 {
     multi_array<T>* result = &Runtime::instance().temp<T>(rhs);
     result->link();
+    result->setTemp(false);
     
     bh_identity(*result, rhs);
+    result->setTemp(true);
 
     return *result;
 }
@@ -666,8 +680,10 @@ multi_array<T>& copy(multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp<T>(rhs);
     result->link();
+    result->setTemp(false);
 
     bh_identity(*result, rhs);
+    result->setTemp(true);
 
     return *result;
 }

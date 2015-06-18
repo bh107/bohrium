@@ -566,9 +566,11 @@ string Walker::generate_source(void)
     string plaid;
 
     if ((kernel_.omask() & ARRAY_OPS)==0) { // There must be at lest one array operation
+        cerr << kernel_.text() << endl;
         throw runtime_error("No array operations!");
     }
     if (kernel_.omask() & EXTENSION) {      // Extensions are not allowed.
+        cerr << kernel_.text() << endl;
         throw runtime_error("EXTENSION in kernel");
     }
 
@@ -582,6 +584,7 @@ string Walker::generate_source(void)
     if ((kernel_.iterspace().meta().layout & SCALAR)>0) {
         // A couple of sanitization checks
         if ((kernel_.omask() & ACCUMULATION)>0) {
+            cerr << kernel_.text() << endl;
             throw runtime_error("Accumulation in SCALAR kernel.");
         }
         plaid = "walker.scalar";
@@ -720,6 +723,7 @@ string Walker::generate_source(void)
                 }
             }
         } else {
+            cerr << kernel_.text() << endl;
             throw runtime_error("Unexpected omask.");
         }
 

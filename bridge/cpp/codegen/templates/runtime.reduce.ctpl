@@ -62,9 +62,10 @@ multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
         }
     }
     result->link();                         // Bind the base
+    result->setTemp(false);
 
     Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
-
+    result->setTemp(true);
     return *result;
 }
 

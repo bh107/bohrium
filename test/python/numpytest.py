@@ -176,9 +176,15 @@ class BenchHelper:
         """
         #Lets make sure that benchpress is installed
         try:
-            subprocess.call(['bp-info', '--benchmarks'])
+            p = subprocess.Popen(
+                ['bp-info', '--benchmarks'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            out, err = p.communicate()
+            rc = p.returncode
         except OSError:
-            print("ERROR: benchpress not install -- skipping test.")
+            print("ERROR: benchpress is not installed -- skipping test.")
             raise StopIteration()
 
         self.uuid = str(uuid.uuid4())
@@ -254,9 +260,16 @@ class BenchHelper:
         out, err = p.communicate()
         if 'elapsed-time' not in out:
             raise Exception("Benchmark error [stdout:%s,stderr:%s]" % (out, err))
+        if err and not re.match("\[[0-9]+ refs\]", err): #We accept the Python object count
+            raise Exception("Benchmark error[%s]" % err)
 
         if not os.path.exists(outputfn):
-            raise Exception('Benchmark did not produce the output: %s' % outputfn)
+            raise Exception('Benchmark did not produce any output, expected: %s' % outputfn)
+
+        if err and not re.match("\[[0-9]+ refs\]", err): #We accept the Python object count
+            err_chunked = ", ".join(err.split("\n"))
+            print(_C.OKBLUE + "[CMD] %s" % " ".join(cmd) + _C.ENDC)
+            print(_C.WARNING + "[Warning] The CMD above wrote the following to stderr: [%s]" % err_chunked + _C.ENDC)
 
         npzs    = np.load(outputfn)     # Load the result from disk
         res     = {}

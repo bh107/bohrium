@@ -36,11 +36,23 @@ If not, see <http://www.gnu.org/licenses/>.
 #define DEBUG_PRINT(...) do{ } while ( false )
 #endif
 
+#define is_aligned(POINTER, BYTE_COUNT) \
+    (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
+
 namespace bxx {
 
 const double PI_D = 3.141592653589793238462;
 const float  PI_F = 3.14159265358979f;
 const float  PI   = 3.14159265358979f;
+
+struct Export {
+    enum Option {
+        NONE        = 0x00,
+        RELEASED    = 0x01,
+        WO_ALLOC    = 0x02,
+        WO_ZEROING  = 0x04
+    };
+};
 
 template <typename T>   // Forward declaration
 class multi_array;
@@ -196,7 +208,13 @@ public:
     multi_array& operator()(const T& n);            // Update
     multi_array& operator()(multi_array<T>& rhs);
 
+    //
+    // Data movement
+    //
     multi_array& operator()(const void* data);      // Update / copy from a void pointer
+
+    T* data_export(void);
+    void data_import(T* data);
 
     multi_array& operator=(const T& rhs);           // Initialization / assignment.
     multi_array& operator=(multi_array<T>& rhs);    // Initialization / assignment.
@@ -267,6 +285,13 @@ private:
 
 };
 
+template <typename TL, typename TR>
+inline
+bool identical(multi_array<TL>& left, multi_array<TR>& right)
+{
+    return static_cast<void*>(&left) == static_cast<void*>(&right);
+}
+
 /**
  *  Encapsulation of communication with Bohrium runtime.
  *  Implemented as a Singleton.
@@ -282,29 +307,29 @@ public:
     //
     //  Lazy evaluation through instruction queue
     //
-    template <typename Out, typename In1, typename In2>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, multi_array<In2>& op2);
+    template <typename TO, typename TL, typename TR>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, multi_array<TR>& op2);
     
-    template <typename Out, typename In1, typename In2>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In1>& op1, const In2 op2);
-    
-    template <typename Out, typename In1, typename In2>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const In1 op1, multi_array<In2>& op2);
+    template <typename TO, typename TL, typename TR>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, const TR op2);
 
-    template <typename Out, typename In>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, multi_array<In>& op1);
+    template <typename TO, typename TL, typename TR>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, const TL op1, multi_array<TR>& op2);
 
-    template <typename Out, typename In>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const In op1);
+    template <typename TO, typename TI>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TI>& op1);
 
-    template <typename Out>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0);
+    template <typename TO, typename TI>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, const TI op1);
 
-    template <typename Out>
-    void enqueue(bh_opcode opcode, multi_array<Out>& op0, const uint64_t op1, const uint64_t op2);
+    template <typename TO>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0);
 
-    template <typename Ret, typename In1, typename In2>
-    void enqueue_extension(const std::string& name, multi_array<Ret>& op0, multi_array<In1>& op2, multi_array<In2>& op3);
+    template <typename TO>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, const uint64_t op1, const uint64_t op2);
+
+    template <typename T1, typename T2, typename T3>
+    void enqueue_extension(const std::string& name, multi_array<T1>& op0, multi_array<T2>& op2, multi_array<T3>& op3);
 
     size_t flush();
     size_t get_queue_size();
@@ -386,6 +411,7 @@ private:
 #include "scan.hpp"         // DSEL Scan operation
 #include "generator.hpp"    // DSEL Generators 
 #include "mapping.hpp"      // DSEL Gather / Scatter
+#include "movement.hpp"     // DSEL Export / import data from arrays
 #include "visuals.hpp"      // DSEL Visualization
 
 #include "operators.hpp"    // DSEL Operations via operator-overloads.

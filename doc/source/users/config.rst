@@ -11,33 +11,200 @@ At runtime Bohrium will search through the following prioritized list in order t
 * The system-wide config ``/etc/bohrium/config.ini`` (Windows: %PROGRAMFILES%\bohrium\config.ini)
 
 
-The default configuration file looks like this::
+The default configuration file looks similar to the config below::
 
-    [bridge]
-    type = bridge
-    children = node
+  #
+  # Stack configuration
+  #
+  [stack_default]
+  type = stack
+  stack_default = bcexp_cpu
+  bcexp_cpu = bccon
+  bccon = topological
+  topological = node
+  node = cpu
 
-    [node]
-    type = vem
-    impl = /opt/bohrium/libbh_vem_node.so
-    children = gpu
+  #
+  # Other stack configurations (for reference, experiments, testing, etc.)
+  #
+  # Use the BH_STACK env-var to choose another stack configuration.
+  #
+  # Such as BH_STACK="stack_gpu"
+  # or
+  # modify the default stack configuration above ("stack_default").
+  #
+  [stack_gpu]
+  type = stack
+  stack_gpu = bcexp
+  bcexp = topological
+  topological = node
+  node = gpu
+  gpu = cpu
 
-    [gpu]
-    type = ve
-    ocldir = /opt/bohrium/lib/ocl_source
-    impl = /opt/bohrium/libbh_ve_gpu.so
-    children = cpu
+  [stack_fuseprinter]
+  type = stack
+  stack_fuseprinter = bcexp
+  bcexp = topological
+  topological = pricer
+  pricer = fuseprinter
+  fuseprinter = node
+  node = cpu
 
-    [cpu]
-    type = ve
-    compiler_cmd="gcc -I/opt/bohrium/cpu/include -lm -O3 -march=native -fopenmp -fPIC -std=c99 -x c -shared - -o "
-    object_path=/opt/bohrium/cpu/objects
-    kernel_path=/opt/bohrium/cpu/kernels
-    template_path=/opt/bohrium/cpu/templates
-    impl = /opt/bohrium/libbh_ve_cpu.so
-    libs = /opt/bohrium/libbh_matmul.so
+  #
+  # Component configuration
+  #
 
-The configuration file consists of a number of components marked with square brackets. For example ``[bridge]``, ``[node]`` and ``[cpu]`` are all components available for the runtime system.
+  #
+  # Bridges
+  #
+  [bridge]
+  type = bridge
+  children = bcexp
+
+  #
+  # Managers
+  #
+
+  [proxy]
+  type = vem
+  port = 4200
+  impl = /opt/bohrium/lib/libbh_vem_proxy.so
+  children = node
+
+  [cluster]
+  type = vem
+  children = node
+  impl = /opt/bohrium/lib/libbh_vem_cluster.so
+
+  [node]
+  type = vem
+  children = topological
+  impl = /opt/bohrium/lib/libbh_vem_node.so
+  timing = false
+
+  #
+  # Fusers
+  #
+
+  [singleton]
+  type = fuser
+  impl = /opt/bohrium/lib/libbh_fuser_singleton.so
+  children = cpu
+  cache_path=/opt/bohrium/var/bohrium/fuse_cache
+
+  [topological]
+  type = fuser
+  impl = /opt/bohrium/lib/libbh_fuser_topological.so
+  children = cpu
+  #cache_path=/opt/bohrium/var/bohrium/fuse_cache
+
+  [gentle]
+  type = fuser
+  impl = /opt/bohrium/lib/libbh_fuser_gentle.so
+  children = cpu
+  cache_path=/opt/bohrium/var/bohrium/fuse_cache
+
+  [greedy]
+  type = fuser
+  impl = /opt/bohrium/lib/libbh_fuser_greedy.so
+  children = cpu
+  cache_path=/opt/bohrium/var/bohrium/fuse_cache
+
+  [optimal]
+  type = fuser
+  impl = /opt/bohrium/lib/libbh_fuser_optimal.so
+  children = cpu
+  cache_path=/opt/bohrium/var/bohrium/fuse_cache
+
+  #
+  # Filters - Helpers / Tools
+  #
+  [pprint]
+  type = filter
+  impl = /opt/bohrium/lib/libbh_filter_pprint.so
+  children = cpu
+
+  [fuseprinter]
+  type = filter
+  impl = /opt/bohrium/lib/libbh_filter_fuseprinter.so
+  children = pricer
+
+  [pricer]
+  type = filter
+  impl = /opt/bohrium/lib/libbh_filter_pricer.so
+  children = cpu
+
+  #
+  # Filters - Bytecode transformers
+  #
+  [bccon]
+  type = filter
+  impl = /opt/bohrium/lib/libbh_filter_bccon.so
+  children = node
+  reduction = 1
+
+  [bcexp]
+  type = filter
+  impl = /opt/bohrium/lib/libbh_filter_bcexp.so
+  children = node
+  gc_threshold = 400
+  matmul = 1
+  sign = 1
+
+  [bcexp_cpu]
+  type = filter
+  impl = /opt/bohrium/lib/libbh_filter_bcexp.so
+  children = node
+  gc_threshold = 400
+  matmul = 1
+  sign = 0
+
+  #
+  # Engines
+  #
+  [cpu]
+  type = ve
+  impl = /opt/bohrium/lib/libbh_ve_cpu.so
+  libs = /opt/bohrium/lib/libbh_visualizer.so,/opt/bohrium/lib/libbh_fftw.so
+  bind = 1
+  thread_limit = 0
+  vcache_size = 10
+  preload = 1
+  jit_level = 1
+  jit_dumpsrc = 0
+  compiler_cmd="/usr/bin/cc"
+  compiler_inc="-I/home/safl/.local/include -I/home/safl/.local/include/bohrium -I/home/safl/.local/share/bohrium/include"
+  compiler_lib="-lm"
+  # Interlagos specifics
+  #compiler_flg="-march=bdver1 -mprefer-avx128 -funroll-all-loops -fprefetch-loop-arrays --param prefetch-latency=300 -fno-tree-pre -ftree-vectorize "
+  compiler_flg=" -O3 -fstrict-aliasing -march=native --param vect-max-version-for-alias-checks=100 -fopenmp-simd -fopenmp"
+  compiler_ext="-fPIC -shared -x c -std=c99"
+  object_path=/opt/bohrium/var/bohrium/objects
+  template_path=/opt/bohrium/share/bohrium/templates
+  kernel_path=/opt/bohrium/var/bohrium/kernels
+
+  [gpu]
+  type = ve
+  impl = /opt/bohrium/lib/libbh_ve_gpu.so
+  libs = /opt/bohrium/lib/libbh_ve_gpu.so
+  include = /opt/bohrium/share/bohrium/include
+  # Aditional options (string) given to the opencl compiler. See documentation for clBuildProgram
+  #compiler_options = "-cl-opt-disable"
+  work_goup_size_1dx = 128
+  work_goup_size_2dx = 32
+  work_goup_size_2dy = 4
+  work_goup_size_3dx = 32
+  work_goup_size_3dy = 2
+  work_goup_size_3dz = 2
+  # kernel = {[both],fixed,dynamic}
+  kernel = both
+  # compile = {[async],sync}
+  compile = async
+  children = cpu
+
+The configuration file consists of two things: ``components`` and orchestration of components in ``stacks``.
+
+Components marked with square brackets. For example ``[bridge]``, ``[node]`` and ``[cpu]`` are all components available for the runtime system.
 
 Each component has a number of attributes that defines the component:
 
@@ -49,18 +216,16 @@ Each component has a number of attributes that defines the component:
 
 Additionally, a component may have attributes that are specific for the component. For example the ``compiler_cmd`` attributes is only relevant for the CPU component.
 
+The ``stacks`` define different default sane configurations of the runtime environment and one can switch between them using the environment var ``BH_STACK``.
+
 Environment Variables
 ---------------------
 
-The various engines can be manipulated by environment variables, the following
-modify the behavior of the CPU vector engine::
+The configuration of a component can be overwritten with environment vars using the naming convention ``BH_[COMPONENT]_[OPTION]``, below are a couple of examples controlling the behavior of the CPU vector engine::
 
-  BH_CORE_VCACHE_SIZE -- 0=Disabled, N=Size of victim cache in terms of bytes.
-  # The following are binary with the convention: 0=Disabled, 1=Enabled.
-  BH_VE_CPU_JIT_ENABLED -- Enable JIT-compiler in CPU engine.
-  BH_VE_CPU_JIT_PRELOAD -- Preload objects into the engine.
-  BH_VE_CPU_JIT_FUSION    -- Enable loop-fusion in JIT-compiler.
-  BH_VE_CPU_JIT_OPTIMIZE  -- Enable value-based optimizations in JIT-compiler.
-  BH_VE_CPU_JIT_DUMPSRC   -- Dump the sourcecode generated by the JIT-compiler.
+  BH_CPU_PRELOAD      -- Preload objects into the engine, 0=Disabled, 1=Enabled.
+  BH_CPU_JIT_DUMPSRC  -- Dump codegen source, 0=Disabled, 1=Enabled 
+  BH_CPU_JIT_LEVEL    -- 1=Single-Instruction JIT, 2=Fusion, 3=Fusion+Contraction
+  BH_VCACHE_SIZE      -- Size of victim cache in number of entries.
 
 Experiment with values to obtain optimimal results.
