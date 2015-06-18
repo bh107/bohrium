@@ -42,20 +42,27 @@ namespace bohrium {
     // Constructor of the InstrHash class
     InstrHash::InstrHash(BatchHash &batch, const bh_instruction &instr)
     {
+        /* The Instruction hash consists of the following fields:
+         * <opcode> (<operant-id> <ndim> <shape>)[1] <sweep-dim>[2] <seperator>
+         * 1: for each operand
+         * 2: if the operation is a sweep operation
+         */
         int noperands = bh_operands(instr.opcode);
-        this->append("OPC");
-        this->append(lexical_cast<string>(instr.opcode));
-        this->append("_");
+        this->append((char*)&instr.opcode, sizeof(instr.opcode));               // <opcode>
         for(int oidx=0; oidx<noperands; ++oidx) {
             const bh_view& view = instr.operand[oidx];
-            if (bh_is_constant(&view))  // Ignore constants
-                continue;
+            if (bh_is_constant(&view))
+                continue;  // Ignore constants
             std::pair<size_t,bool> vid = batch.views.insert(view);
             size_t id = vid.first;
-            this->append((char*)&id, sizeof(id));
+            this->append((char*)&id, sizeof(id));                               // <operant-id>
+            this->append((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
+            this->append((char*)&view.shape, sizeof(bh_index)*view.ndim);       // <shape>
         }
+        if (bh_opcode_is_sweep(instr.opcode))
+            this->append((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
         const size_t sep = SIZE_MAX;
-        this->append((char*)&sep, sizeof(sep)); // Instruction seperator symbol
+        this->append((char*)&sep, sizeof(sep));                                 // <separator>
     }
 
     //Constructor of the BatchHash class
