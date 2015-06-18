@@ -268,6 +268,7 @@ public:
     uint64_t base_refcount(uint64_t gidx);
 
     uint32_t omask(void);
+    std::string text(void);
 
     uint64_t ntacs(void);
     tac_t& tac(uint64_t tidx);
