@@ -259,7 +259,7 @@ class BenchHelper:
         )
         out, err = p.communicate()
         if 'elapsed-time' not in out:
-            raise Exception("Benchmark error [stdout:%s,stderr:%s]" % (out, err))
+            raise Exception("Cannot find elapsed time got stdout(%s) stderr(%s)]" % (out, err))
 
         if not os.path.exists(outputfn):
             raise Exception('Benchmark did not produce any output, expected: %s' % outputfn)
