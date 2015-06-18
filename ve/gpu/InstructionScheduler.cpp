@@ -677,8 +677,8 @@ void InstructionScheduler::endDim(std::stringstream& source,
     source << indentss.str() << "}\n";
 }
 
-std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::map<bh_intp, 
-                                                                     bh_int64>& sweeps, const size_t ndim)
+std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::map<bh_intp, bh_int64>& sweeps, 
+                                                                     const size_t ndim)
 {
     /* First generate "basic" dimension orders:
      * [0]

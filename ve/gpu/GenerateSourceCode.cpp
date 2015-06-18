@@ -234,6 +234,8 @@ void generateInstructionSource(const bh_opcode opcode,
         switch(opcode)
         {
         case BH_ADD:
+        case BH_ADD_REDUCE:
+        case BH_ADD_ACCUMULATE:
             source << indent << "CADD(" << parameters[0] << ", " << parameters[1] << ", " << 
                 parameters[2] << ")\n";
             break;
@@ -242,6 +244,8 @@ void generateInstructionSource(const bh_opcode opcode,
                 parameters[2] << ")\n";
             break;
         case BH_MULTIPLY:
+        case BH_MULTIPLY_REDUCE:
+        case BH_MULTIPLY_ACCUMULATE:
             source << indent << "CMUL(" << parameters[0] << ", " << parameters[1] << ", " << 
                 parameters[2] << ")\n";
             break;
