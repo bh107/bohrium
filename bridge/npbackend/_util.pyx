@@ -87,9 +87,7 @@ def type_sig(op_name, inputs):
         if dtype == sig[1]:
             return (np.dtype(sig[0]), np.dtype(sig[1]))
 
-    raise TypeError("Cannot determine the correct signature (%s:%s)" % (
-        op_name, dtype
-    ))
+    raise TypeError("The ufunc bohrium.%s() does not support input data type: %s."%(op_name, dtype))
 
 @atexit.register
 def shutdown():
