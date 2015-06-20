@@ -58,12 +58,12 @@ private:
                                      bool& float64, bool& complex, bool& integer, bool& random);
     void sync(const std::set<bh_base*>& arrays);
     void discard(const std::set<bh_base*>& arrays);
-    void beginDim(std::stringstream& source, 
-                  std::stringstream& indentss, 
+    void beginDim(std::ostringstream& source, 
+                  std::ostringstream& indentss, 
                   std::vector<std::string>& beforesource, 
                   const size_t dims);
-    void endDim(std::stringstream& source, 
-                std::stringstream& indentss, 
+    void endDim(std::ostringstream& source, 
+                std::ostringstream& indentss, 
                 std::vector<std::string>& beforesource, 
                 std::set<bh_view>& save,
                 std::map<size_t,size_t>& incr_idx,
