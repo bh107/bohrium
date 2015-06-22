@@ -50,9 +50,9 @@ private:
     bool _verbose;
     bool _printSource;
     bool _timing; 
-    void registerExtensions(std::vector<std::string> extensions);
     std::string compilerOptions;
-
+    void registerExtensions(const std::vector<std::string>& extensions);
+    bool setContext(const std::vector<cl::Platform>& platforms, cl_device_type device_type);
 public:
     bh::Timer<>* codeGen;
     bh::Timer<>* kernelGen;
