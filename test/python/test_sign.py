@@ -1,6 +1,14 @@
 import bohrium as np
 from numpytest import numpytest, TYPES
 
+sign_str="""
+def sign(a):
+    s = np.absolute(a) 
+    s += s == 0
+    return a/s
+np.sign = sign
+"""
+
 class test_sign(numpytest):
 
     def init(self):
@@ -69,8 +77,6 @@ class test_csign_mixed(numpytest):
 
     def init(self):
         self.config['maxerror'] = 0.00001
-        self.config['warn_on_err'] = "Bohrium should implement sign(0)=0, sign(z)=z/|z|. NumPy does something else."
-
         signs = []
         for x in xrange(-1,2):
             for y in xrange(-1,2):
@@ -84,6 +90,6 @@ class test_csign_mixed(numpytest):
             yield (a, cmd) 
 
     def test_sign(self,a):
-        cmd = "res = np.sign(a[0])"
+        cmd = sign_str+"res = np.sign(a[0])"
         exec(cmd)
         return (res, cmd)
