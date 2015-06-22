@@ -20,9 +20,9 @@ node = cpu
 #
 [stack_gpu]
 type = stack
-stack_gpu = dimclean
-dimclean = bcexp
-bcexp = greedy
+stack_gpu = bcexp
+bcexp = dimclean
+dimclean = greedy
 greedy = node
 node = gpu
 gpu = cpu
@@ -46,7 +46,7 @@ node = cpu
 #
 [bridge]
 type = bridge
-children = dimclean
+children = bcexp
 
 #
 # Managers
@@ -133,7 +133,7 @@ children = cpu
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_dimclean${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = false
-children = bcexp
+children = node
 
 [bccon]
 type = filter
@@ -145,7 +145,7 @@ timing = false
 [bcexp]
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = node
+children = dimclean
 gc_threshold = 400
 matmul = 1
 sign = 1
