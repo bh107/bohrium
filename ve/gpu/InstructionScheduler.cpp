@@ -317,9 +317,13 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     std::vector<std::vector<size_t> > dimOrders = genDimOrders(kernel.get_sweeps(), shape.size());
     for (size_t d = 0; d < shape.size(); ++d)
     {
+        bh_index dsi = shape[dimOrders[shape.size()-1][d]];
+        if (dsi < 2)
+            throw std::runtime_error("Dimensions of size < 2 not supported."
+                                     " Please ensure that the dimclean is used correctly");
         std::ostringstream ss;
         ss << "ds" << shape.size()-d;
-        Scalar* s = new Scalar(shape[dimOrders[shape.size()-1][d]]);
+        Scalar* s = new Scalar(dsi);
         (defines << "#define " << ss.str() << " " <<= *s) << "\n";
         sizeParameters.push_back(s);
         functionDeclaration << "\n\t, " << *s << " " << ss.str();
