@@ -526,48 +526,43 @@ fail:
 void fuse_gently(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();
-    set<EdgeD> dep_edges(edges(d).first, edges(d).second);
-    /*
-    char t[1024];
-    sprintf(t, "tmp-%ld.dot", num_vertices(d));
-    cout << t << endl;
-    pprint(dag, t);
-    */
-
-    while(not dep_edges.empty())
+    set<Vertex> vs(vertices(d).first, vertices(d).second);
+    while(not vs.empty())
     {
-        //Lets find a "single ending" edge
-        set<EdgeD>::iterator it=dep_edges.begin();
-        for(; it != dep_edges.end(); ++it)
+        //Lets find and merge a "single ending" vertex
+        set<Vertex>::iterator it=vs.begin();
+        for(; it != vs.end(); ++it)
         {
-            Vertex src = source(*it, d);
-            Vertex dst = target(*it, d);
-            if(in_degree(src, d) == 0 and out_degree(src, d) == 1 \
-               and d[src].input_and_output_subset_of(d[dst]))
+            if(in_degree(*it, d) == 0 and out_degree(*it, d) == 1)
             {
-                break;
+                auto adj = adjacent_vertices(*it, d);
+                Vertex v = *adj.first;
+                if(d[*it].input_and_output_subset_of(d[v]))
+                {
+                    if(d[*it].fusible(d[v]))
+                        dag.merge_vertices(v, *it);
+                    vs.erase(it);
+                    break;
+                }
             }
-            else if(in_degree(dst, d) == 1 and out_degree(dst, d) == 0 \
-               and d[dst].input_and_output_subset_of(d[src]))
+            if(in_degree(*it, d) == 1 and out_degree(*it, d) == 0)
             {
-                break;
+                auto adj = inv_adjacent_vertices(*it, d);
+                Vertex v = *adj.first;
+                if(d[*it].input_and_output_subset_of(d[v]))
+                {
+                    if(d[*it].fusible(d[v]))
+                        dag.merge_vertices(v, *it);
+                    vs.erase(it);
+                    break;
+                }
             }
         }
-        if(it == dep_edges.end())
-            break;//No single ending edge found
+        if(it == vs.end())
+            break;//No single ending vertex found
 
-        //Lets extract the single ending edge
-        EdgeD e = *it;
-        dep_edges.erase(it);
-        Vertex src = source(e, d);
-        Vertex dst = target(e, d);
-
-        //And merge them if able
-        if(d[src].fusible(d[dst]))
-            dag.merge_vertices(src, dst);
-
-        //Note that 'dep_edges' is maintained since the extracted edge 'e'
-        //is the only edge removed by the merge
+        //Note that 'vs' is maintained since the extracted vertex '*it'
+        //is the only vertex removed by the merge
     }
     dag.remove_cleared_vertices();
     assert(dag_validate(dag));
@@ -577,7 +572,6 @@ void fuse_greedy(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();
     const GraphW &w = dag.bglW();
-    dag.transitive_reduction();
     while(num_edges(w) > 0)
     {
         //Lets find the greatest weight edge.
@@ -587,16 +581,20 @@ void fuse_greedy(GraphDW &dag)
             if(w[e].value > w[greatest].value)
                 greatest = e;
         }
-        //And merge over the edge
         Vertex v1 = source(greatest, w);
         Vertex v2 = target(greatest, w);
-        if(d[v1].dependency(d[v2]) == 1)//'v1' depend on 'v2'
-            dag.merge_vertices(v2, v1);
-        else
-            dag.merge_vertices(v1, v2);
-        //The transitive reduction guaranties that we can merge
-        //over all weight edges without introducing cycles.
-        dag.transitive_reduction();
+        //And either remove it, if it is transitive
+        if(path_exist(v1, v2, d, true) or path_exist(v2, v1, d, true))
+        {
+            dag.remove_edges(v1, v2);
+        }
+        else//Or merge it away
+        {
+            if(d[v1].dependency(d[v2]) == 1)//'v1' depend on 'v2'
+                dag.merge_vertices(v2, v1);
+            else
+                dag.merge_vertices(v1, v2);
+        }
     }
     dag.remove_cleared_vertices();
     assert(dag_validate(dag));
