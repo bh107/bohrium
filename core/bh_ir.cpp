@@ -124,6 +124,7 @@ void bh_ir_kernel::clear()
     output_map.clear();
     temps.clear();
     views.clear();
+    syncs.clear();
     frees.clear();
     discards.clear();
     parameters.clear();
