@@ -561,7 +561,7 @@ void fuse_gently(GraphDW &dag)
         if(it == vs.end())
             break;//No single ending vertex found
 
-        //Note that 'vs' is maintained since the extracted vertex
+        //Note that 'vs' is maintained since the extracted vertex '*it'
         //is the only vertex removed by the merge
     }
     dag.remove_cleared_vertices();
@@ -572,7 +572,6 @@ void fuse_greedy(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();
     const GraphW &w = dag.bglW();
-    dag.transitive_reduction();
     while(num_edges(w) > 0)
     {
         //Lets find the greatest weight edge.
@@ -582,16 +581,20 @@ void fuse_greedy(GraphDW &dag)
             if(w[e].value > w[greatest].value)
                 greatest = e;
         }
-        //And merge over the edge
         Vertex v1 = source(greatest, w);
         Vertex v2 = target(greatest, w);
-        if(d[v1].dependency(d[v2]) == 1)//'v1' depend on 'v2'
-            dag.merge_vertices(v2, v1);
-        else
-            dag.merge_vertices(v1, v2);
-        //The transitive reduction guaranties that we can merge
-        //over all weight edges without introducing cycles.
-        dag.transitive_reduction();
+        //And either remove it, if it is transitive
+        if(path_exist(v1, v2, d, true) or path_exist(v2, v1, d, true))
+        {
+            dag.remove_edges(v1, v2);
+        }
+        else//Or merge it away
+        {
+            if(d[v1].dependency(d[v2]) == 1)//'v1' depend on 'v2'
+                dag.merge_vertices(v2, v1);
+            else
+                dag.merge_vertices(v1, v2);
+        }
     }
     dag.remove_cleared_vertices();
     assert(dag_validate(dag));
