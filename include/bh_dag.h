@@ -120,6 +120,30 @@ public:
         _bglW = GraphW(boost::num_vertices(dag));
     }
 
+    /* Removes both weight and dependency edge that connect v1 and v2
+     *
+     * @v1  Vertex
+     * @v2  Vertex
+     */
+    void remove_edges(Vertex v1, Vertex v2)
+    {
+        {
+            auto e = edge(v1, v2, _bglD);
+            if(e.second)
+                boost::remove_edge(e.first, _bglD);
+        }
+        {
+            auto e = edge(v2, v1, _bglD);
+            if(e.second)
+                boost::remove_edge(e.first, _bglD);
+        }
+        {
+            auto e = edge(v1, v2, _bglW);
+            if(e.second)
+                boost::remove_edge(e.first, _bglW);
+        }
+    }
+
     /* Clear the vertex without actually removing it.
      *
      * @v  The Vertex
