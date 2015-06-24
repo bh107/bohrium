@@ -164,14 +164,12 @@ public:
 
     /* Construct a new FuseCache instant
      *
-     * @file_dir_path  The Path to the directory of the fuse cache files
-     *                 Set to NULL to disable reading and writing files
-     * @fuser_name     The name of the fuser (e.g. topological)
+     * @component  The component handle 
      */
-    FuseCache(const char *file_dir_path, std::string fuser_name): dir_path(file_dir_path),
-                                                                  fuser_name(fuser_name)
+    FuseCache(const bh_component &component)
     {
-        load_from_files();
+        dir_path = bh_component_config_lookup(&component, "cache_path");
+        fuser_name = component.name;
     }
 
     /* Insert a 'kernel_list' into the fuse cache
