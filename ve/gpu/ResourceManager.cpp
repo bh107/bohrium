@@ -45,7 +45,7 @@ ResourceManager::ResourceManager(bh_component* _component)
     _verbose = bh_component_config_lookup_bool(component, "verbose", 0);
     _timing = bh_component_config_lookup_bool(component, "timing", 0);
     _printSource = bh_component_config_lookup_bool(component, "print_source", 0);
-
+    bool forceCPU  = bh_component_config_lookup_bool(component, "force_cpu", 0);
     char* dir = bh_component_config_lookup(component, "include");
     if (dir == NULL)
         compilerOptions = std::string("-I/opt/bohrium/gpu/include");
@@ -97,7 +97,7 @@ ResourceManager::ResourceManager(bh_component* _component)
 
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
-    if (!setContext(platforms,CL_DEVICE_TYPE_GPU))
+    if (forceCPU || !setContext(platforms,CL_DEVICE_TYPE_GPU))
     {
         if (!setContext(platforms,CL_DEVICE_TYPE_CPU))
             throw std::runtime_error("Could not find valid OpenCL platform.");
