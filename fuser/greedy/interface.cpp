@@ -69,7 +69,7 @@ bh_error bh_fuser_greedy_init(const char* name)
     if((err = child->init(child->name)) != 0)
         return err;
 
-    fuse_cache = FuseCache(bh_component_config_lookup(&myself, "cache_path"), myself.name);
+    fuse_cache = FuseCache(myself);
 
     return BH_SUCCESS;
 }

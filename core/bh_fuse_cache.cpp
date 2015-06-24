@@ -90,7 +90,7 @@ namespace bohrium {
     {
         assert(kernel_list.size() == 0);
         CacheMap::const_iterator it = cache.find(batch.hash());
-        if(it == cache.end())
+        if(deactivated or it == cache.end())
         {
             return false;
         }
@@ -103,6 +103,8 @@ namespace bohrium {
 
     void FuseCache::write_to_files() const
     {
+        if(deactivated)
+            return;
         if(dir_path == NULL)
         {
             cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "\

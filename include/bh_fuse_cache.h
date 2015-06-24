@@ -157,6 +157,9 @@ class FuseCache
     //The name of the current fuser component
     std::string fuser_name;
 
+    //Whether the cache is disabled or not
+    bool deactivated;
+
 public:
 
     /* The vector class needs a default constructor */
@@ -164,14 +167,13 @@ public:
 
     /* Construct a new FuseCache instant
      *
-     * @file_dir_path  The Path to the directory of the fuse cache files
-     *                 Set to NULL to disable reading and writing files
-     * @fuser_name     The name of the fuser (e.g. topological)
+     * @component  The component handle
      */
-    FuseCache(const char *file_dir_path, std::string fuser_name): dir_path(file_dir_path),
-                                                                  fuser_name(fuser_name)
+    FuseCache(const bh_component &component)
     {
-        load_from_files();
+        dir_path = bh_component_config_lookup(&component, "cache_path");
+        fuser_name = component.name;
+        deactivated = not bh_component_config_lookup_bool(&component, "fuse_cache", true);
     }
 
     /* Insert a 'kernel_list' into the fuse cache
