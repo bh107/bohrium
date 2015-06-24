@@ -15,5 +15,6 @@ before_install:
 script:
   - mkdir bdir && cd bdir && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 && make install
   - echo $PWD
-  - git clone --depth=1 git@github.com:bh107/benchpress.git ${HOME}/bh107/benchpress && cd ${HOME}/bh107/benchpress && . util/setbpenv.bash && cd ${HOME}/bh107
+  - echo $HOME
+  - git clone --depth=1 git://github.com/bh107/benchpress.git ${HOME}/build/bh107/benchpress && cd ${HOME}/build/bh107/benchpress && . util/setbpenv.bash && cd ${HOME}/build/bh107
   - python bohrium/test/python/numpytest.py
