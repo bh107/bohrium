@@ -280,7 +280,9 @@ class BenchHelper:
         npzs    = np.load(outputfn)     # Load the result from disk
         res     = {}
         for k in npzs:
-            res[k] = npzs[k]
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                res[k] = npzs[k]
         del npzs                        # Delete npz
 
         if os.path.exists(outputfn):    # Delete the result from disk
