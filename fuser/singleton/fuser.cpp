@@ -45,11 +45,11 @@ void fuser(bh_ir &bhir, FuseCache &cache)
     if(bhir.kernel_list.size() != 0)
         throw logic_error("The kernel_list is not empty!");
 
-    BatchHash batch(bhir.instr_list);
-    if(not cache.lookup(batch, bhir, bhir.kernel_list))
+    BatchHash hash(bhir.instr_list);
+    if(not cache.lookup(hash, bhir, bhir.kernel_list))
     {
         do_fusion(bhir);
-        cache.insert(batch, bhir.kernel_list);
+        cache.insert(hash, bhir.kernel_list);
     }
 }
 
