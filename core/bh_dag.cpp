@@ -40,14 +40,20 @@ using namespace boost;
 namespace bohrium {
 namespace dag {
 
-void GraphDW::merge_vertices(Vertex a, Vertex b)
+void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
 {
     assert(_bglD[a].fusible(_bglD[b]));
 
-    //Append the instructions of 'b' to 'a'
-    BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
+    //Merge the two instruction lists
+    if(a_before_b)
     {
-        _bglD[a].add_instr(idx);
+        BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
+            _bglD[a].add_instr(idx);
+    }
+    else
+    {
+        BOOST_FOREACH(uint64_t idx, _bglD[a].instr_indexes)
+            _bglD[b].add_instr(idx);
     }
 
     //Add edges of 'b' to 'a'
@@ -540,7 +546,7 @@ void fuse_gently(GraphDW &dag)
                 if(d[*it].input_and_output_subset_of(d[v]))
                 {
                     if(d[*it].fusible(d[v]))
-                        dag.merge_vertices(v, *it);
+                        dag.merge_vertices(v, *it, false);
                     vs.erase(it);
                     break;
                 }
@@ -552,7 +558,7 @@ void fuse_gently(GraphDW &dag)
                 if(d[*it].input_and_output_subset_of(d[v]))
                 {
                     if(d[*it].fusible(d[v]))
-                        dag.merge_vertices(v, *it);
+                        dag.merge_vertices(v, *it, true);
                     vs.erase(it);
                     break;
                 }
