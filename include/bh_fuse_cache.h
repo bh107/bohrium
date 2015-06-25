@@ -33,15 +33,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bohrium {
 
-//Forward declarations
-struct BatchHash;
-
-/* A class that represets a hash of a single instruction */
-struct InstrHash: public std::string
-{
-    InstrHash(BatchHash &batch, const bh_instruction &instr);
-};
-
 /* A class that represets a hash of a instruction batch
  * (aka instruction list) */
 struct BatchHash

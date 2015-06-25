@@ -39,8 +39,8 @@ using namespace boost::filesystem;
 
 namespace bohrium {
 
-// Constructor of the InstrHash class
-InstrHash::InstrHash(BatchHash &batch, const bh_instruction &instr)
+static void hashOpcodeShapeSweepdim(std::ostream& os, const bh_instruction& instr, 
+                                    seqset<bh_view>& views)
 {
     /* The Instruction hash consists of the following fields:
      * <opcode> (<operant-id> <ndim> <shape>)[1] <sweep-dim>[2] <seperator>
@@ -48,33 +48,57 @@ InstrHash::InstrHash(BatchHash &batch, const bh_instruction &instr)
      * 2: if the operation is a sweep operation
      */
     int noperands = bh_operands(instr.opcode);
-    this->append((char*)&instr.opcode, sizeof(instr.opcode));               // <opcode>
+    os.write((const char*)&instr.opcode, sizeof(instr.opcode));         // <opcode>
     for(int oidx=0; oidx<noperands; ++oidx) {
         const bh_view& view = instr.operand[oidx];
         if (bh_is_constant(&view))
             continue;  // Ignore constants
-        std::pair<size_t,bool> vid = batch.views.insert(view);
+        std::pair<size_t,bool> vid = views.insert(view);
         size_t id = vid.first;
-        this->append((char*)&id, sizeof(id));                               // <operant-id>
-        this->append((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
-        this->append((char*)&view.shape, sizeof(bh_index)*view.ndim);       // <shape>
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+        os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
+        os.write((char*)&view.shape, sizeof(bh_index)*view.ndim);       // <shape>
     }
     if (bh_opcode_is_sweep(instr.opcode))
-        this->append((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
+        os.write((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
     const size_t sep = SIZE_MAX;
-    this->append((char*)&sep, sizeof(sep));                                 // <separator>
+    os.write((char*)&sep, sizeof(sep));                                 // <separator>
+}
+
+typedef void (*InstrHash)(std::ostream& os, const bh_instruction &instr, seqset<bh_view>& views);
+
+static InstrHash getInstrHash(FuseModel fuseModel)
+{
+    switch(fuseModel)
+    {
+        case BROADEST:
+            return  &hashOpcodeShapeSweepdim;
+        case NO_XSWEEP:
+            return  &hashOpcodeShapeSweepdim;
+        case NO_XSWEEP_SCALAR_SEPERATE:
+            return  &hashOpcodeShapeSweepdim;
+        case SAME_SHAPE:
+        case SAME_SHAPE_RANGE:
+        case SAME_SHAPE_RANDOM:
+        case SAME_SHAPE_RANGE_RANDOM:
+        case SAME_SHAPE_GENERATE_1DREDUCE:
+            return &hashOpcodeShapeSweepdim;
+        default:
+            throw runtime_error("Could not find valid hash function for fuse model.");
+    }
 }
 
 //Constructor of the BatchHash class
-BatchHash::BatchHash(const vector<bh_instruction> &instr_list)
+    BatchHash::BatchHash(const vector<bh_instruction> &instr_list)
 {
-    string data;
-    BOOST_FOREACH(const bh_instruction &instr, instr_list)
+    InstrHash hashFn = getInstrHash(fuse_get_selected_model());
+    std::ostringstream data(std::ios_base::ate);
+    for(const bh_instruction& instr: instr_list)
     {
-        data.append(InstrHash(*this, instr));
+        hashFn(data, instr, views);
     }
     boost::hash<string> hasher;
-    _hash = hasher(data);
+    _hash = hasher(data.str());
 }
 
 InstrIndexesList &FuseCache::insert(const BatchHash &batch,
