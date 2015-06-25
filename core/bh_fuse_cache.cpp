@@ -39,11 +39,23 @@ using namespace boost::filesystem;
 
 namespace bohrium {
 
-static void hashOpcodeShapeSweepdim(std::ostream& os, const bh_instruction& instr, 
-                                    seqset<bh_view>& views)
+/* * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS
+ * When designing an instruction hash function REMEMBER:
+ * The hash string should either be of fixed length and all feilds 
+ * contained also be of fixed legth OR unique seperators should be 
+ * used for each variable length field and to seperate instruction 
+ * hashed. The function hashOpcodeIdShapeSweepdim may be used as 
+ * inspiration.
+ */
+
+static const size_t inst_sep = SIZE_MAX;
+static const size_t op_sep   = SIZE_MAX-1;
+
+static void hashOpcodeOpidShapeSweepdim(std::ostream& os, const bh_instruction& instr, 
+                                      seqset<bh_view>& views)
 {
     /* The Instruction hash consists of the following fields:
-     * <opcode> (<operant-id> <ndim> <shape>)[1] <sweep-dim>[2] <seperator>
+     * <opcode> (<operant-id> <ndim> <shape> <op_sep>)[1] <sweep-dim>[2] <inst_sep>
      * 1: for each operand
      * 2: if the operation is a sweep operation
      */
@@ -58,12 +70,88 @@ static void hashOpcodeShapeSweepdim(std::ostream& os, const bh_instruction& inst
         os.write((char*)&id, sizeof(id));                               // <operant-id>
         os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
         os.write((char*)&view.shape, sizeof(bh_index)*view.ndim);       // <shape>
+        os.write((char*)&op_sep, sizeof(op_sep));                       // <op_sep>
     }
     if (bh_opcode_is_sweep(instr.opcode))
         os.write((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
-    const size_t sep = SIZE_MAX;
-    os.write((char*)&sep, sizeof(sep));                                 // <separator>
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
 }
+
+static void hashOpidSweepdim(std::ostream& os, const bh_instruction& instr, seqset<bh_view>& views)
+{
+    /* The Instruction hash consists of the following fields:
+     * (<operant-id>)[1] <op_sep> (<ndim> <sweep-dim>)[2] <seperator>
+     * 1: for each operand
+     * 2: if the operation is a sweep operation
+     */
+    int noperands = bh_operands(instr.opcode);
+    for(int oidx=0; oidx<noperands; ++oidx) {
+        const bh_view& view = instr.operand[oidx];
+        if (bh_is_constant(&view))
+            continue;  // Ignore constants
+        std::pair<size_t,bool> vid = views.insert(view);
+        size_t id = vid.first;
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+    }
+    os.write((char*)&op_sep, sizeof(op_sep));                           // <op_sep>
+    if (bh_opcode_is_sweep(instr.opcode))
+    {
+        const bh_view& view = instr.operand[1];
+        os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
+        os.write((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
+    }
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+}
+
+static void hashScalarOpidSweepdim(std::ostream& os, const bh_instruction& instr, seqset<bh_view>& views)
+{
+    /* The Instruction hash consists of the following fields:
+     * <is_scalar> (<operant-id>)[1] <op_sep> (<ndim> <sweep-dim>)[2] <seperator>
+     * 1: for each operand
+     * 2: if the operation is a sweep operation
+     */
+    bool scalar = (bh_is_scalar(&(instr.operand[0])) ||
+                   (bh_opcode_is_accumulate(instr.opcode) && instr.operand[0].ndim == 1));
+    os.write((char*)&scalar, sizeof(scalar));                           // <op_sep>
+    int noperands = bh_operands(instr.opcode);
+    for(int oidx=0; oidx<noperands; ++oidx) {
+        const bh_view& view = instr.operand[oidx];
+        if (bh_is_constant(&view))
+            continue;  // Ignore constants
+        std::pair<size_t,bool> vid = views.insert(view);
+        size_t id = vid.first;
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+    }
+    os.write((char*)&op_sep, sizeof(op_sep));                           // <op_sep>
+    if (bh_opcode_is_sweep(instr.opcode))
+    {
+        const bh_view& view = instr.operand[1];
+        os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
+        os.write((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
+    }
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+}
+
+static void hashOpid(std::ostream& os, const bh_instruction& instr, seqset<bh_view>& views)
+{
+    /* The Instruction hash consists of the following fields:
+     * (<operant-id>)[1]  <seperator>
+     * 1: for each operand
+     */
+    int noperands = bh_operands(instr.opcode);
+    for(int oidx=0; oidx<noperands; ++oidx) {
+        const bh_view& view = instr.operand[oidx];
+        if (bh_is_constant(&view))
+            continue;  // Ignore constants
+        std::pair<size_t,bool> vid = views.insert(view);
+        size_t id = vid.first;
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+    }
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+}
+
+#define __scalar(i) (bh_is_scalar(&(i)->operand[0]) || \
+                     (bh_opcode_is_accumulate((i)->opcode) && (i)->operand[0].ndim == 1))
 
 typedef void (*InstrHash)(std::ostream& os, const bh_instruction &instr, seqset<bh_view>& views);
 
@@ -72,17 +160,17 @@ static InstrHash getInstrHash(FuseModel fuseModel)
     switch(fuseModel)
     {
         case BROADEST:
-            return  &hashOpcodeShapeSweepdim;
+            return  &hashOpid;
         case NO_XSWEEP:
-            return  &hashOpcodeShapeSweepdim;
+            return  &hashOpidSweepdim;
         case NO_XSWEEP_SCALAR_SEPERATE:
-            return  &hashOpcodeShapeSweepdim;
+            return  &hashScalarOpidSweepdim;
         case SAME_SHAPE:
         case SAME_SHAPE_RANGE:
         case SAME_SHAPE_RANDOM:
         case SAME_SHAPE_RANGE_RANDOM:
         case SAME_SHAPE_GENERATE_1DREDUCE:
-            return &hashOpcodeShapeSweepdim;
+            return &hashOpcodeOpidShapeSweepdim;
         default:
             throw runtime_error("Could not find valid hash function for fuse model.");
     }
