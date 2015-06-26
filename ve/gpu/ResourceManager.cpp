@@ -332,7 +332,7 @@ std::vector<size_t> ResourceManager::localShape(const std::vector<size_t>& globa
     case 3:
         return localShape3D; 
     default:
-        assert (false);
+        throw std::runtime_error("Global shape of more than 3 dimensions not supported.");
     }
 }
 

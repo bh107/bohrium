@@ -61,7 +61,7 @@ OCLtype oclType(bh_type vbtype)
     case BH_R123:
         return OCL_R123;
     default:
-        assert(false);
+        throw std::runtime_error("Unknown bh_type");
     }
 }
 
@@ -84,7 +84,7 @@ const char* oclTypeStr(OCLtype type)
     case OCL_COMPLEX128: return "double2";
     case OCL_R123: return "ulong2";
     case OCL_UNKNOWN: return "void";
-    default: assert(false);
+    default: throw std::runtime_error("Unknown OCLtype");
         
     }
 }
@@ -106,7 +106,7 @@ const char* oclAPItypeStr(OCLtype type)
     case OCL_COMPLEX64: return "cl_float2";
     case OCL_COMPLEX128: return "cl_double2";
     case OCL_R123: return "cl_ulong2";
-    default: assert(false);
+    default: throw std::runtime_error("Unknown OCLtype");
         
     }
 }
@@ -142,7 +142,7 @@ size_t oclSizeOf(OCLtype type)
     case OCL_R123:
         return sizeof(cl_ulong2);
     default:
-        assert(false);
+        throw std::runtime_error("Unknown OCLtype");
     }
 }
 
