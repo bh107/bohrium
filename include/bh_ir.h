@@ -134,6 +134,7 @@ private:
         
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
+    void update_shape(const bh_view &v);
 
 public:
     /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
