@@ -308,7 +308,11 @@ void generateInstructionSource(const bh_opcode opcode,
                 source << indent << parameters[0] << ".s1 = " << parameters[1] << ".s1;\n";
             }
             else
+            {
                 source << indent << parameters[0] << ".s0 = " << parameters[1] << ";\n";
+                source << indent << parameters[0] << ".s1 = 0.0" <<
+                    (type[0] == OCL_COMPLEX64 ? "f":"") << ";\n";
+            }
             break;
         case BH_REAL:
             source << indent << parameters[0] << " = " << parameters[1] << ".s0;\n";

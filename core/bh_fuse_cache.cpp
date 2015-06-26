@@ -39,166 +39,272 @@ using namespace boost::filesystem;
 
 namespace bohrium {
 
-    // Constructor of the InstrHash class
-    InstrHash::InstrHash(BatchHash &batch, const bh_instruction &instr)
-    {
-        /* The Instruction hash consists of the following fields:
-         * <opcode> (<operant-id> <ndim> <shape>)[1] <sweep-dim>[2] <seperator>
-         * 1: for each operand
-         * 2: if the operation is a sweep operation
-         */
-        int noperands = bh_operands(instr.opcode);
-        this->append((char*)&instr.opcode, sizeof(instr.opcode));               // <opcode>
-        for(int oidx=0; oidx<noperands; ++oidx) {
-            const bh_view& view = instr.operand[oidx];
-            if (bh_is_constant(&view))
-                continue;  // Ignore constants
-            std::pair<size_t,bool> vid = batch.views.insert(view);
-            size_t id = vid.first;
-            this->append((char*)&id, sizeof(id));                               // <operant-id>
-            this->append((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
-            this->append((char*)&view.shape, sizeof(bh_index)*view.ndim);       // <shape>
-        }
-        if (bh_opcode_is_sweep(instr.opcode))
-            this->append((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
-        const size_t sep = SIZE_MAX;
-        this->append((char*)&sep, sizeof(sep));                                 // <separator>
-    }
+/* * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS
+ * When designing an instruction hash function REMEMBER:
+ * The hash string should either be of fixed length and all feilds 
+ * contained also be of fixed legth OR unique seperators should be 
+ * used for each variable length field and to seperate instruction 
+ * hashed. The function hashOpcodeIdShapeSweepdim may be used as 
+ * inspiration.
+ */
 
-    //Constructor of the BatchHash class
+static const size_t inst_sep = SIZE_MAX;
+static const size_t op_sep   = SIZE_MAX-1;
+
+static void hashOpcodeOpidShapeSweepdim(std::ostream& os, const bh_instruction& instr, 
+                                      seqset<bh_view>& views)
+{
+    /* The Instruction hash consists of the following fields:
+     * <opcode> (<operant-id> <ndim> <shape> <op_sep>)[1] <sweep-dim>[2] <inst_sep>
+     * 1: for each operand
+     * 2: if the operation is a sweep operation
+     */
+    int noperands = bh_operands(instr.opcode);
+    os.write((const char*)&instr.opcode, sizeof(instr.opcode));         // <opcode>
+    for(int oidx=0; oidx<noperands; ++oidx) {
+        const bh_view& view = instr.operand[oidx];
+        if (bh_is_constant(&view))
+            continue;  // Ignore constants
+        std::pair<size_t,bool> vid = views.insert(view);
+        size_t id = vid.first;
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+        os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
+        os.write((char*)&view.shape, sizeof(bh_index)*view.ndim);       // <shape>
+        os.write((char*)&op_sep, sizeof(op_sep));                       // <op_sep>
+    }
+    if (bh_opcode_is_sweep(instr.opcode))
+        os.write((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+}
+
+static void hashOpidSweepdim(std::ostream& os, const bh_instruction& instr, seqset<bh_view>& views)
+{
+    /* The Instruction hash consists of the following fields:
+     * (<operant-id>)[1] <op_sep> (<ndim> <sweep-dim>)[2] <seperator>
+     * 1: for each operand
+     * 2: if the operation is a sweep operation
+     */
+    int noperands = bh_operands(instr.opcode);
+    for(int oidx=0; oidx<noperands; ++oidx) {
+        const bh_view& view = instr.operand[oidx];
+        if (bh_is_constant(&view))
+            continue;  // Ignore constants
+        std::pair<size_t,bool> vid = views.insert(view);
+        size_t id = vid.first;
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+    }
+    os.write((char*)&op_sep, sizeof(op_sep));                           // <op_sep>
+    if (bh_opcode_is_sweep(instr.opcode))
+    {
+        const bh_view& view = instr.operand[1];
+        os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
+        os.write((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
+    }
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+}
+
+static void hashScalarOpidSweepdim(std::ostream& os, const bh_instruction& instr, seqset<bh_view>& views)
+{
+    /* The Instruction hash consists of the following fields:
+     * <is_scalar> (<operant-id>)[1] <op_sep> (<ndim> <sweep-dim>)[2] <seperator>
+     * 1: for each operand
+     * 2: if the operation is a sweep operation
+     */
+    bool scalar = (bh_is_scalar(&(instr.operand[0])) ||
+                   (bh_opcode_is_accumulate(instr.opcode) && instr.operand[0].ndim == 1));
+    os.write((char*)&scalar, sizeof(scalar));                           // <op_sep>
+    int noperands = bh_operands(instr.opcode);
+    for(int oidx=0; oidx<noperands; ++oidx) {
+        const bh_view& view = instr.operand[oidx];
+        if (bh_is_constant(&view))
+            continue;  // Ignore constants
+        std::pair<size_t,bool> vid = views.insert(view);
+        size_t id = vid.first;
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+    }
+    os.write((char*)&op_sep, sizeof(op_sep));                           // <op_sep>
+    if (bh_opcode_is_sweep(instr.opcode))
+    {
+        const bh_view& view = instr.operand[1];
+        os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
+        os.write((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
+    }
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+}
+
+static void hashOpid(std::ostream& os, const bh_instruction& instr, seqset<bh_view>& views)
+{
+    /* The Instruction hash consists of the following fields:
+     * (<operant-id>)[1]  <seperator>
+     * 1: for each operand
+     */
+    int noperands = bh_operands(instr.opcode);
+    for(int oidx=0; oidx<noperands; ++oidx) {
+        const bh_view& view = instr.operand[oidx];
+        if (bh_is_constant(&view))
+            continue;  // Ignore constants
+        std::pair<size_t,bool> vid = views.insert(view);
+        size_t id = vid.first;
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+    }
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+}
+
+#define __scalar(i) (bh_is_scalar(&(i)->operand[0]) || \
+                     (bh_opcode_is_accumulate((i)->opcode) && (i)->operand[0].ndim == 1))
+
+typedef void (*InstrHash)(std::ostream& os, const bh_instruction &instr, seqset<bh_view>& views);
+
+static InstrHash getInstrHash(FuseModel fuseModel)
+{
+    switch(fuseModel)
+    {
+        case BROADEST:
+            return  &hashOpid;
+        case NO_XSWEEP:
+            return  &hashOpidSweepdim;
+        case NO_XSWEEP_SCALAR_SEPERATE:
+            return  &hashScalarOpidSweepdim;
+        case SAME_SHAPE:
+        case SAME_SHAPE_RANGE:
+        case SAME_SHAPE_RANDOM:
+        case SAME_SHAPE_RANGE_RANDOM:
+        case SAME_SHAPE_GENERATE_1DREDUCE:
+            return &hashOpcodeOpidShapeSweepdim;
+        default:
+            throw runtime_error("Could not find valid hash function for fuse model.");
+    }
+}
+
+//Constructor of the BatchHash class
     BatchHash::BatchHash(const vector<bh_instruction> &instr_list)
+{
+    InstrHash hashFn = getInstrHash(fuse_get_selected_model());
+    std::ostringstream data(std::ios_base::ate);
+    for(const bh_instruction& instr: instr_list)
     {
-        string data;
-        BOOST_FOREACH(const bh_instruction &instr, instr_list)
-        {
-            data.append(InstrHash(*this, instr));
-        }
-        boost::hash<string> hasher;
-        _hash = hasher(data);
+        hashFn(data, instr, views);
     }
+    boost::hash<string> hasher;
+    _hash = hasher(data.str());
+}
 
-    InstrIndexesList &FuseCache::insert(const BatchHash &batch,
-                                        const vector<bh_ir_kernel> &kernel_list)
+InstrIndexesList &FuseCache::insert(const BatchHash &batch,
+                                    const vector<bh_ir_kernel> &kernel_list)
+{
+    cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash(), fuser_name);
+    return cache[batch.hash()];
+}
+
+bool FuseCache::lookup(const BatchHash &batch,
+                       bh_ir &bhir,
+                       vector<bh_ir_kernel> &kernel_list) const
+{
+    assert(kernel_list.size() == 0);
+    CacheMap::const_iterator it = cache.find(batch.hash());
+    if(deactivated or it == cache.end())
     {
-        cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash(), fuser_name);
-        return cache[batch.hash()];
+        return false;
     }
-
-    bool FuseCache::lookup(const BatchHash &batch,
-                           bh_ir &bhir,
-                           vector<bh_ir_kernel> &kernel_list) const
+    else
     {
-        assert(kernel_list.size() == 0);
-        CacheMap::const_iterator it = cache.find(batch.hash());
-        if(it == cache.end())
-        {
-            return false;
-        }
-        else
-        {
-            it->second.fill_kernel_list(bhir, kernel_list);
-          return true;
-        }
+        it->second.fill_kernel_list(bhir, kernel_list);
+        return true;
     }
+}
 
-    void FuseCache::write_to_files() const
+void FuseCache::write_to_files() const
+{
+    if(deactivated)
+        return;
+    if(dir_path == NULL)
     {
-        if(dir_path == NULL)
-        {
-            cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "\
+        cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \
             "the configure file thus no cache files are written to disk!" << endl;
-            return;
-        }
-        path cache_dir(dir_path);
-        if(create_directories(cache_dir))
-        {
-            cout << "[FUSE-CACHE] Creating cache diretory " << cache_dir << endl;
-        #if BOOST_VERSION > 104900
+        return;
+    }
+    path cache_dir(dir_path);
+    if(create_directories(cache_dir))
+    {
+        cout << "[FUSE-CACHE] Creating cache diretory " << cache_dir << endl;
+#if BOOST_VERSION > 104900
             permissions(cache_dir, all_all);
-        #endif
-        }
-
-        path tmp_dir = cache_dir / unique_path();
-        create_directories(tmp_dir);
-        for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
-        {
-            string name;
-            it->second.get_filename(name);
-            path shared_name = cache_dir / name;
-
-            if(exists(shared_name))
-                continue;//No need to overwrite an existing file
-
-            path unique_name = tmp_dir / name;
-            ofstream ofs(unique_name.string().c_str());
-            boost::archive::text_oarchive oa(ofs);
-            oa << it->second;
-            ofs.close();
-        #if BOOST_VERSION > 104900
-            permissions(unique_name, all_all);
-        #endif
-            rename(unique_name, shared_name);
-        }
-        remove(tmp_dir);
+#endif
     }
 
-    void FuseCache::load_from_files()
+    path tmp_dir = cache_dir / unique_path();
+    create_directories(tmp_dir);
+    for(CacheMap::const_iterator it=cache.begin(); it != cache.end(); ++it)
     {
-        if(dir_path == NULL)
-        {
-            cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "\
+        string name;
+        it->second.get_filename(name);
+        path shared_name = cache_dir / name;
+
+        if(exists(shared_name))
+            continue;//No need to overwrite an existing file
+
+        path unique_name = tmp_dir / name;
+        ofstream ofs(unique_name.string().c_str());
+        boost::archive::text_oarchive oa(ofs);
+        oa << it->second;
+        ofs.close();
+#if BOOST_VERSION > 104900
+        permissions(unique_name, all_all);
+#endif
+        rename(unique_name, shared_name);
+    }
+    remove(tmp_dir);
+}
+
+void FuseCache::load_from_files()
+{
+    if(dir_path == NULL)
+    {
+        cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \
             "the configure file thus no cache files are loaded from disk!" << endl;
-            return;
-        }
-        path p(dir_path);
-        if(not (exists(p) and is_directory(p)))
-            return;
+        return;
+    }
+    path p(dir_path);
+    if(not (exists(p) and is_directory(p)))
+        return;
 
-        string fuse_model_name;
-        fuse_model_text(fuse_get_selected_model(), fuse_model_name);
+    string fuse_model_name;
+    fuse_model_text(fuse_get_selected_model(), fuse_model_name);
 
-        //Iterate the 'dir_path' diretory and load each file
-        directory_iterator it(p), eod;
-        BOOST_FOREACH(const path &f, make_pair(it, eod))
+    //Iterate the 'dir_path' diretory and load each file
+    directory_iterator it(p), eod;
+    BOOST_FOREACH(const path &f, make_pair(it, eod))
+    {
+        if(is_regular_file(f))
         {
-            if(is_regular_file(f))
+            int tries = 0;
+            while(1)
             {
-                int tries = 0;
-                while(1)
+                try
                 {
-                    try
+                    ifstream ifs(f.string().c_str());
+                    boost::archive::text_iarchive ia(ifs);
+                    InstrIndexesList t;
+                    ia >> t;
+                    if(iequals(t.fuser_name(), fuser_name) and
+                       iequals(t.fuse_model(), fuse_model_name))
                     {
-                        ifstream ifs(f.string().c_str());
-                        boost::archive::text_iarchive ia(ifs);
-                        InstrIndexesList t;
-                        ia >> t;
-                        if(iequals(t.fuser_name(), fuser_name) and
-                           iequals(t.fuse_model(), fuse_model_name))
-                        {
-                            if(cache.find(t.hash()) != cache.end())
-                            {
-                                if(cache[t.hash()].cost() < t.cost())
-                                {
-                                    cout << "[FUSE-CACHE] ignoring cache file with higher cost" << endl;
-                                    break;
-                                }
-                            }
-                            cache[t.hash()] = t;
-                        }
+                        cache[t.hash()] = t;
                     }
-                    catch(const std::exception &e)
-                    {
-                        if(++tries >= 10)
-                        {
-                            cerr << "[FUSE-CACHE] failed to open file '" << f.string();
-                            cerr << "' (" << tries << " tries): " << e.what() << endl;
-                        }
-                        else
-                            continue;
-                    }
-                    break;
                 }
+                catch(const std::exception &e)
+                {
+                    if(++tries >= 10)
+                    {
+                        cerr << "[FUSE-CACHE] failed to open file '" << f.string();
+                        cerr << "' (" << tries << " tries): " << e.what() << endl;
+                    }
+                    else
+                        continue;
+                }
+                break;
             }
         }
     }
+}
 } //namespace bohrium

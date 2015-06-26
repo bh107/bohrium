@@ -170,11 +170,15 @@ void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
         if (resourceManager->asyncCompile())
         {
             if (resourceManager->fixedSizeKernel())
+            {
                 std::thread(&InstructionScheduler::build, this, sourceKernel.id(), 
                             sourceKernel.source()).detach();
+            }
             if (resourceManager->dynamicSizeKernel())
+            {
                 std::thread(&InstructionScheduler::build, this, KernelID(functionID,0), 
                             sourceKernel.source()).detach();
+            }
         } else {
             if (resourceManager->fixedSizeKernel())
                 build(sourceKernel.id(), sourceKernel.source());
@@ -187,7 +191,7 @@ void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
 void InstructionScheduler::build(KernelID kernelID, const std::string source)
 {
 
-    std::stringstream kname;
+    std::ostringstream kname(std::ios_base::ate);
     kname << "kernel" <<  std::hex << kernelID.first << (kernelID.second==0?"":"_");
     Kernel kernel(source, kname.str(), (kernelID.second==0?"":"-DFIXED_SIZE"));
     kernelMutex.lock();
@@ -264,10 +268,9 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
         start = bh::Timer<>::stamp();
 
     std::vector<KernelParameter*> sizeParameters;
-    std::stringstream defines;
-    std::stringstream functionDeclaration;
+    std::ostringstream defines(std::ios_base::ate);
+    std::ostringstream functionDeclaration("(", std::ios_base::ate);
     
-    functionDeclaration << "(";
     assert(kernel.get_parameters().size() > 0);
 
     // Get the GPU kernel parameters and include en function decleration
@@ -314,9 +317,13 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     std::vector<std::vector<size_t> > dimOrders = genDimOrders(kernel.get_sweeps(), shape.size());
     for (size_t d = 0; d < shape.size(); ++d)
     {
-        std::stringstream ss;
+        bh_index dsi = shape[dimOrders[shape.size()-1][d]];
+        if (dsi < 2)
+            throw std::runtime_error("Dimensions of size < 2 not supported."
+                                     " Please ensure that the dimclean is used correctly");
+        std::ostringstream ss;
         ss << "ds" << shape.size()-d;
-        Scalar* s = new Scalar(shape[dimOrders[shape.size()-1][d]]);
+        Scalar* s = new Scalar(dsi);
         (defines << "#define " << ss.str() << " " <<= *s) << "\n";
         sizeParameters.push_back(s);
         functionDeclaration << "\n\t, " << *s << " " << ss.str();
@@ -337,7 +344,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
         bh_intp vndim = view.ndim;
         for (bh_intp d = 0; d < vndim; ++d)
         {
-            std::stringstream ss;
+            std::ostringstream ss;
             ss << "v" << id << "s" << vndim-d;
             Scalar* s = new Scalar(view.stride[dimOrders[vndim-1][d]]);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
@@ -345,7 +352,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
             functionDeclaration << "\n\t, " << *s << " " << ss.str();
         }
         {
-            std::stringstream ss;
+            std::ostringstream ss;
             ss << "v" << id << "s0";
             Scalar* s = new Scalar(view.start);
             (defines << "#define " << ss.str() << " " <<= *s) << "\n";
@@ -379,7 +386,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     {
         throw BH_TYPE_NOT_SUPPORTED;
     }
-    std::stringstream source;
+    std::ostringstream source(std::ios_base::ate);
     if (float64)
         source << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
     if (complex)
@@ -408,12 +415,10 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                                                        const std::vector<std::vector<size_t> >& dimOrders,
                                                        bool& float64, bool& complex, bool& integer, bool& random)
 {
-    std::stringstream source; // The active code block (dimension)
+    std::ostringstream source("{\n", std::ios_base::ate); // The active code block (dimension)
     std::vector<std::string> beforesource; // opening code blosks of lower dimensions 
-    source << "{\n";
     generateGIDSource(kdims, source);
-    std::stringstream indentss;
-    indentss << "\t";
+    std::ostringstream indentss("\t", std::ios_base::ate);
     std::set<size_t> initiated_view;
     size_t dims = kdims;   // "Active" dimensions 
     bh_index elements = 1; // Number of elements in active dimensionality
@@ -468,8 +473,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 {
                     if (dims > kdims)
                     {
-                        std::stringstream mysource;
-                        mysource << beforesource.back();
+                        std::ostringstream mysource(beforesource.back(), std::ios_base::ate);
                         mysource << indentss.str().substr(1);
                         generateIndexSource(dims-1, view.ndim, vid, mysource);
                         if (view.ndim < (bh_intp)dims) // We are folding a view into higher dimension
@@ -521,8 +525,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         {
             if (sweep)
             {
-                std::stringstream mysource;
-                mysource << beforesource.back();
+                std::ostringstream mysource(beforesource.back(), std::ios_base::ate);
                 mysource << indentss.str().substr(1) << oclTypeStr(type) << " v" << vid << " = ";
                 generateNeutral(instr.opcode,type,mysource);
                 mysource << ";\n";
@@ -538,7 +541,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         types.front() = type;
         if (instr.opcode == BH_RANGE || instr.opcode == BH_RANDOM)
         {
-            std::stringstream mysource;
+            std::ostringstream mysource(std::ios_base::ate);
             generateElementNumber(dimOrders[dims-1], mysource);
             operands.emplace_back(mysource.str());
         }
@@ -597,20 +600,20 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     return source.str();
 }
 
-void InstructionScheduler::beginDim(std::stringstream& source, 
-                                    std::stringstream& indentss, 
+void InstructionScheduler::beginDim(std::ostringstream& source, 
+                                    std::ostringstream& indentss, 
                                     std::vector<std::string>& beforesource, 
                                     const size_t dims)
 {
     beforesource.emplace_back(source.str());
-    source.str("");
-    source << indentss.str() << "for (int idd" << dims << " = 0; idd" << dims << " < ds" << 
+    source.str(indentss.str());
+    source << "for (int idd" << dims << " = 0; idd" << dims << " < ds" << 
         dims << "; ++idd" << dims << ")\n" << indentss.str() << "{\n";
     indentss << '\t';
 }
 
-void InstructionScheduler::endDim(std::stringstream& source, 
-                                  std::stringstream& indentss, 
+void InstructionScheduler::endDim(std::ostringstream& source, 
+                                  std::ostringstream& indentss, 
                                   std::vector<std::string>& beforesource, 
                                   std::set<bh_view>& save,
                                   std::map<size_t,size_t>& incr_idx,
@@ -620,7 +623,7 @@ void InstructionScheduler::endDim(std::stringstream& source,
                                   const bh_index elements,
                                   const bh_ir_kernel& kernel)
 {
-    std::stringstream mysource;
+    std::ostringstream mysource(std::ios_base::ate);
     if (!beforesource.empty())
     {
         mysource << beforesource.back();
@@ -659,8 +662,7 @@ void InstructionScheduler::endDim(std::stringstream& source,
             ++it;
     }
     mysource << source.str();
-    source.str("");
-    source << mysource.str();
+    source.str(mysource.str());
     for (auto it = incr_idx.begin(); it != incr_idx.end();)
     {
         if (it->second == dims)
@@ -671,9 +673,7 @@ void InstructionScheduler::endDim(std::stringstream& source,
         } else
             ++it;
     }
-    std::string tmp = indentss.str().substr(1); 
-    indentss.str("");
-    indentss << tmp;
+    indentss.str(indentss.str().substr(1));
     source << indentss.str() << "}\n";
 }
 

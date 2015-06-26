@@ -31,7 +31,7 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
     bh_instruction& composite = bhir.instr_list[pc];
     composite.opcode = BH_NONE; // Lazy choice... no re-use just NOP it.
 
-    bh_view out     = composite.operand[0];         // Grab operands
+    bh_view output  = composite.operand[0];         // Grab operands
     bh_view input   = composite.operand[1];
 
     bh_type input_type = input.base->type;          // Grab the input-type
@@ -60,7 +60,7 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
         inject(bhir, ++pc, BH_FREE, t_bool);
         inject(bhir, ++pc, BH_DISCARD, t_bool);
 
-        inject(bhir, ++pc, BH_SUBTRACT, out, lss, gtr);
+        inject(bhir, ++pc, BH_SUBTRACT, output, lss, gtr);
         inject(bhir, ++pc, BH_FREE, lss);
         inject(bhir, ++pc, BH_DISCARD, lss);
         inject(bhir, ++pc, BH_FREE, gtr);
@@ -70,30 +70,21 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
         bh_type float_type = (input_type == BH_COMPLEX64) ? BH_FLOAT32 : BH_FLOAT64;
                                             // General form: sign(z) = z/(|z|+(z==0))
         bh_view f_abs = make_temp(meta, float_type, nelements); // Temps
-        bh_view z_abs = make_temp(meta, input_type, nelements);
-        bh_view z_zero_bool = make_temp(meta, BH_BOOL, nelements);
-        bh_view z_zero = make_temp(meta, input_type, nelements);
-        bh_view divisor = make_temp(meta, input_type, nelements);
-        
+        bh_view b_zero = make_temp(meta, BH_BOOL, nelements);
+        bh_view f_zero = make_temp(meta, float_type, nelements);
+
         inject(bhir, ++pc, BH_ABSOLUTE, f_abs, input);          // Sequence
-        inject(bhir, ++pc, BH_IDENTITY, z_abs, f_abs);
+        inject(bhir, ++pc, BH_EQUAL, b_zero, f_abs, 0.0, float_type);
+        inject(bhir, ++pc, BH_IDENTITY, f_zero, b_zero);
+        inject(bhir, ++pc, BH_FREE, b_zero);
+        inject(bhir, ++pc, BH_DISCARD, b_zero);
+        inject(bhir, ++pc, BH_ADD, f_abs, f_abs, f_zero);
+        inject(bhir, ++pc, BH_FREE, f_zero);
+        inject(bhir, ++pc, BH_DISCARD, f_zero);
+        inject(bhir, ++pc, BH_IDENTITY, output, f_abs);
         inject(bhir, ++pc, BH_FREE, f_abs);
         inject(bhir, ++pc, BH_DISCARD, f_abs);
-
-        inject(bhir, ++pc, BH_EQUAL, z_zero_bool, input, 0.0, input_type);
-        inject(bhir, ++pc, BH_IDENTITY, z_zero, z_zero_bool);
-        inject(bhir, ++pc, BH_FREE, z_zero_bool);
-        inject(bhir, ++pc, BH_DISCARD, z_zero_bool);
-
-        inject(bhir, ++pc, BH_ADD, divisor, z_abs, z_zero);
-        inject(bhir, ++pc, BH_FREE, z_zero);
-        inject(bhir, ++pc, BH_DISCARD, z_zero);
-        inject(bhir, ++pc, BH_FREE, z_abs);
-        inject(bhir, ++pc, BH_DISCARD, z_abs);
-
-        inject(bhir, ++pc, BH_DIVIDE, out, input, divisor);
-        inject(bhir, ++pc, BH_FREE, divisor);
-        inject(bhir, ++pc, BH_DISCARD, divisor);
+        inject(bhir, ++pc, BH_DIVIDE, output, input, output);
     }
 
     return pc-start_pc;

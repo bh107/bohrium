@@ -33,15 +33,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bohrium {
 
-//Forward declarations
-struct BatchHash;
-
-/* A class that represets a hash of a single instruction */
-struct InstrHash: public std::string
-{
-    InstrHash(BatchHash &batch, const bh_instruction &instr);
-};
-
 /* A class that represets a hash of a instruction batch
  * (aka instruction list) */
 struct BatchHash
@@ -63,7 +54,6 @@ struct BatchHash
 class InstrIndexesList
 {
     std::vector<std::vector<uint64_t> > instr_indexes_list;
-    uint64_t _cost;
     uint64_t _hash;
     std::string _fuse_model;
     std::string _fuser_name;
@@ -79,12 +69,11 @@ public:
      * @fuser_name   The name of the fuser (e.g. topological)
      */
     InstrIndexesList(const std::vector<bh_ir_kernel> &kernel_list,
-                     uint64_t hash, std::string fuser_name):_cost(0),_hash(hash),_fuser_name(fuser_name)
+                     uint64_t hash, std::string fuser_name):_hash(hash),_fuser_name(fuser_name)
     {
         BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
         {
             instr_indexes_list.push_back(kernel.instr_indexes);
-            _cost += kernel.cost();
         }
         fuse_model_text(fuse_get_selected_model(), _fuse_model);
     }
@@ -107,9 +96,6 @@ public:
         }
     }
 
-    /* Returns the cost value */
-    uint64_t cost() const {return _cost;}
-
     /* Returns the hash value */
     uint64_t hash() const {return _hash;}
 
@@ -123,8 +109,7 @@ public:
     void get_filename(std::string &filename) const
     {
         std::stringstream ss;
-        ss << fuse_model() << "--" << std::hex << hash() << "--";
-        ss << std::dec << cost() << "--" << fuser_name();
+        ss << fuse_model() << "--" << std::hex << hash() << "--" << fuser_name();
         filename = ss.str();
     }
 
@@ -136,7 +121,6 @@ protected:
     void serialize(Archive &ar, const unsigned int version)
     {
         ar & instr_indexes_list;
-        ar & _cost;
         ar & _hash;
         ar & _fuse_model;
         ar & _fuser_name;
@@ -157,6 +141,9 @@ class FuseCache
     //The name of the current fuser component
     std::string fuser_name;
 
+    //Whether the cache is disabled or not
+    bool deactivated;
+
 public:
 
     /* The vector class needs a default constructor */
@@ -164,14 +151,13 @@ public:
 
     /* Construct a new FuseCache instant
      *
-     * @file_dir_path  The Path to the directory of the fuse cache files
-     *                 Set to NULL to disable reading and writing files
-     * @fuser_name     The name of the fuser (e.g. topological)
+     * @component  The component handle
      */
-    FuseCache(const char *file_dir_path, std::string fuser_name): dir_path(file_dir_path),
-                                                                  fuser_name(fuser_name)
+    FuseCache(const bh_component &component)
     {
-        load_from_files();
+        dir_path = bh_component_config_lookup(&component, "cache_path");
+        fuser_name = component.name;
+        deactivated = not bh_component_config_lookup_bool(&component, "fuse_cache", true);
     }
 
     /* Insert a 'kernel_list' into the fuse cache

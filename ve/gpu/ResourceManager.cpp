@@ -45,7 +45,7 @@ ResourceManager::ResourceManager(bh_component* _component)
     _verbose = bh_component_config_lookup_bool(component, "verbose", 0);
     _timing = bh_component_config_lookup_bool(component, "timing", 0);
     _printSource = bh_component_config_lookup_bool(component, "print_source", 0);
-
+    bool forceCPU  = bh_component_config_lookup_bool(component, "force_cpu", 0);
     char* dir = bh_component_config_lookup(component, "include");
     if (dir == NULL)
         compilerOptions = std::string("-I/opt/bohrium/gpu/include");
@@ -97,50 +97,37 @@ ResourceManager::ResourceManager(bh_component* _component)
 
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
-    bool foundPlatform = false;
-    for(std::vector<cl::Platform>::iterator pit = platforms.begin(); pit != platforms.end(); ++pit)        
+    if (forceCPU || !setContext(platforms,CL_DEVICE_TYPE_GPU))
     {
-        try {
-            cl_context_properties props[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(*pit)(),0};
-            context = cl::Context(CL_DEVICE_TYPE_GPU, props);
-            foundPlatform = true;
-            break;
-        } 
-        catch (cl::Error)
-        {
-            foundPlatform = false;
-        }
+        if (!setContext(platforms,CL_DEVICE_TYPE_CPU))
+            throw std::runtime_error("Could not find valid OpenCL platform.");
+        else
+            std::cerr << "[GPU-VE] Unable to find GPU running on CPU. ONLY FOR TESTING PURPOSES'" << std::endl;
     }
     std::vector<std::string> extensions;
-    if (foundPlatform)
+    devices = context.getInfo<CL_CONTEXT_DEVICES>();
+    for(std::vector<cl::Device>::iterator dit = devices.begin(); dit != devices.end(); ++dit)
     {
-        devices = context.getInfo<CL_CONTEXT_DEVICES>();
-        for(std::vector<cl::Device>::iterator dit = devices.begin(); dit != devices.end(); ++dit)        
+        cl_command_queue_properties properties = CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
+        if (_timing)
+            properties |=  CL_QUEUE_PROFILING_ENABLE;
+        commandQueues.push_back(cl::CommandQueue(context,*dit,properties));
+        if (dit == devices.begin())
         {
-            cl_command_queue_properties properties = CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
-            if (_timing)
-                properties |=  CL_QUEUE_PROFILING_ENABLE;
-            
-            commandQueues.push_back(cl::CommandQueue(context,*dit,properties));
-            if (dit == devices.begin())
-            {
-                maxWorkGroupSize = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-                maxWorkItemDims = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
-                maxWorkItemSizes = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES >();
-            }
-            else {
-                size_t mwgs = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-                maxWorkGroupSize = STD_MIN(maxWorkGroupSize,mwgs);
-                cl_uint mwid = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
-                maxWorkItemDims = STD_MIN(maxWorkItemDims,mwid);
-                std::vector<size_t> mwis = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES >();
-                for (cl_uint d = 0; d < maxWorkItemDims; ++d)
-                    maxWorkItemSizes[d] = STD_MIN(maxWorkItemSizes[d],mwis[d]);
-            }
-            extensions.push_back(dit->getInfo<CL_DEVICE_EXTENSIONS>());
+            maxWorkGroupSize = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+            maxWorkItemDims = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
+            maxWorkItemSizes = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES >();
         }
-    } else {
-        throw std::runtime_error("Could not find valid OpenCL platform.");
+        else {
+            size_t mwgs = dit->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+            maxWorkGroupSize = STD_MIN(maxWorkGroupSize,mwgs);
+            cl_uint mwid = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
+            maxWorkItemDims = STD_MIN(maxWorkItemDims,mwid);
+            std::vector<size_t> mwis = dit->getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES >();
+            for (cl_uint d = 0; d < maxWorkItemDims; ++d)
+                maxWorkItemSizes[d] = STD_MIN(maxWorkItemSizes[d],mwis[d]);
+        }
+        extensions.push_back(dit->getInfo<CL_DEVICE_EXTENSIONS>());
     }
     if (devices[0].getInfo<CL_DEVICE_ADDRESS_BITS>() == 64)
     {
@@ -160,6 +147,25 @@ ResourceManager::ResourceManager(bh_component* _component)
     }
 }
 
+bool ResourceManager::setContext(const std::vector<cl::Platform>& platforms, cl_device_type device_type)
+{
+    bool found = false;
+    for(const cl::Platform platform: platforms)
+    {
+        try {
+            cl_context_properties props[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform)(),0};
+            context = cl::Context(device_type, props);
+            found = true;
+            break;
+        }
+        catch (cl::Error)
+        {
+            found = false;
+        }
+    }
+    return found;
+}
+
 ResourceManager::~ResourceManager()
 {
     if (_timing)
@@ -172,7 +178,7 @@ ResourceManager::~ResourceManager()
     }
 }
 
-void ResourceManager::registerExtensions(std::vector<std::string> extensions)
+void ResourceManager::registerExtensions(const std::vector<std::string>& extensions)
 {
     _float64 = extensions[0].find("cl_khr_fp64") != std::string::npos;
     if (_verbose)
