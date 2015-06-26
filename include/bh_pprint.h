@@ -30,6 +30,13 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
+/* Pretty print a constant.
+ *
+ * @constant   The constant in question.
+ * @buf        Output buffer (must have sufficient size)
+ */
+DLLEXPORT void bh_sprint_const(const bh_constant* constant, char buf[] );
+
 /* Pretty print an base.
  *
  * @op      The base in question

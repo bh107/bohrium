@@ -362,6 +362,12 @@ void pprint(const GraphDW &dag, const char filename[])
                 bh_sprint_base(p.second, buf);
                 out << "[" << p.first << "]" << buf << "\\l";
             }
+            out << "Constants: \\l";
+            for (const bh_constant& c: graph[v].get_constants())
+            {
+                bh_sprint_const(&c, buf);
+                out << buf << "\\l";
+            }
             out << "Temp base-arrays: \\l";
             BOOST_FOREACH(const bh_base* i, graph[v].get_temps())
             {
