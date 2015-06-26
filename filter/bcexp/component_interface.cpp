@@ -63,17 +63,19 @@ bh_error bh_filter_bcexp_init(const char* name)
         return err;
     }
 
-    bh_intp gc_threshold, sign, matmul;
+    bh_intp gc_threshold, sign, matmul, powk;
     if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "gc_threshold", 0, 2000, &gc_threshold)) or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "matmul", 0, 1, &matmul)) or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "sign", 0, 1, &sign))) {
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "sign", 0, 1, &sign)) or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "powk", 0, 1, &powk))) {
         return BH_ERROR;
     }
                                     
     try {                           // Construct the expander
         expander = new bohrium::filter::composite::Expander(gc_threshold,
                                                             matmul,
-                                                            sign);
+                                                            sign,
+                                                            powk);
     } catch (std::bad_alloc& ba) {
         fprintf(stderr, "Failed constructing Expander due to allocation error.\n");
     }
