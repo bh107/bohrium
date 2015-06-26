@@ -263,7 +263,7 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
 
 SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel)
 {
-    bh_uint64 start;
+    bh_uint64 start = 0;
     if (resourceManager->timing())
         start = bh::Timer<>::stamp();
 

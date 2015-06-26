@@ -259,7 +259,7 @@ std::vector<cl::Kernel> ResourceManager::createKernels(const std::string& source
                                                        const std::string& options)
 {
 
-    bh_uint64 start;
+    bh_uint64 start = 0;
     if (_timing)
         start = bh::Timer<>::stamp(); 
 

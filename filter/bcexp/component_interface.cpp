@@ -105,7 +105,7 @@ bh_error bh_filter_bcexp_extmethod(const char *name, bh_opcode opcode)
 
 bh_error bh_filter_bcexp_execute(bh_ir* bhir)
 {
-    bh_uint64 start;
+    bh_uint64 start = 0;
     if (timing)
         start = bh_timer_stamp();
     expander->expand(*bhir);                // Expand composites
