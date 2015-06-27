@@ -72,9 +72,6 @@ static bool fuse_no_xsweep(const bh_instruction *a, const bh_instruction *b)
                  a->constant.value.int64 != b->constant.value.int64));
 }
 
-/* combines no_xsweep with 
- * 
- */
 static bool fuse_no_xsweep_scalar_seperate(const bh_instruction *a, const bh_instruction *b)
 {
 #define __scalar(i) (bh_is_scalar(&(i)->operand[0]) || \
@@ -82,6 +79,19 @@ static bool fuse_no_xsweep_scalar_seperate(const bh_instruction *a, const bh_ins
     return (fuse_no_xsweep(a,b) &&
             ((__scalar(a) && __scalar(b)) ||
              (!__scalar(a) && !__scalar(b))));
+}
+
+static bool fuse_no_xsweep_scalar_seperate_shape_match(const bh_instruction *a, const bh_instruction *b)
+{
+    const bh_view va = (bh_opcode_is_sweep(a->opcode) ? a->operand[1] : a->operand[0]);
+    const bh_view vb = (bh_opcode_is_sweep(b->opcode) ? b->operand[1] : b->operand[0]);
+    const bh_intp ndim = MIN(va.ndim,vb.ndim);
+    for (bh_intp i =  0; i < ndim; ++i)
+    {
+        if (va.shape[i] != vb.shape[i])
+            return false;
+    }
+    return fuse_no_xsweep_scalar_seperate(a, b);
 }
 
 static bool fuse_same_shape(const bh_instruction *a, const bh_instruction *b)
@@ -400,32 +410,35 @@ void fuse_model_text(FuseModel fuse_model, string &output)
 {
     switch(fuse_model)
     {
-        case BROADEST:
-            output = "broadest";
-            break;
-        case NO_XSWEEP:
-            output = "no_xsweep";
-            break;
-        case NO_XSWEEP_SCALAR_SEPERATE:
-            output = "no_xsweep_scalar_seperate";
-            break;
-        case SAME_SHAPE:
-            output = "same_shape";
-            break;
-        case SAME_SHAPE_RANGE:
-            output = "same_shape_range";
-            break;
-        case SAME_SHAPE_RANDOM:
-            output = "same_shape_random";
-            break;
-        case SAME_SHAPE_RANGE_RANDOM:
-            output = "same_shape_range_random";
-            break;
-        case SAME_SHAPE_GENERATE_1DREDUCE:
-            output = "same_shape_generate_1dreduce";
-            break;
-        default:
-            output = "unknown";
+    case BROADEST:
+        output = "broadest";
+        break;
+    case NO_XSWEEP:
+        output = "no_xsweep";
+        break;
+    case NO_XSWEEP_SCALAR_SEPERATE:
+        output = "no_xsweep_scalar_seperate";
+        break;
+    case NO_XSWEEP_SCALAR_SEPERATE_SHAPE_MATCH:
+        output = "fuse_no_xsweep_scalar_seperate_shape_match";
+        break;
+    case SAME_SHAPE:
+        output = "same_shape";
+        break;
+    case SAME_SHAPE_RANGE:
+        output = "same_shape_range";
+        break;
+    case SAME_SHAPE_RANDOM:
+        output = "same_shape_random";
+        break;
+    case SAME_SHAPE_RANGE_RANDOM:
+        output = "same_shape_range_random";
+        break;
+    case SAME_SHAPE_GENERATE_1DREDUCE:
+        output = "same_shape_generate_1dreduce";
+        break;
+    default:
+        output = "unknown";
     }
 }
 
@@ -440,27 +453,29 @@ bool check_fusible(const bh_instruction *a, const bh_instruction *b)
 {
     switch(selected_fuse_model)
     {
-        case NUM_OF_MODELS:
-            selected_fuse_model = fuse_get_selected_model();
-            return check_fusible(a, b);
-        case BROADEST:
-            return fuse_broadest(a,b);
-        case NO_XSWEEP:
-            return fuse_no_xsweep(a,b);
-        case NO_XSWEEP_SCALAR_SEPERATE:
-            return fuse_no_xsweep_scalar_seperate(a,b);
-        case SAME_SHAPE:
-            return fuse_same_shape(a,b);
-        case SAME_SHAPE_RANGE:
-            return fuse_same_shape_range(a,b);
-        case SAME_SHAPE_RANDOM:
-            return fuse_same_shape_random(a,b);
-        case SAME_SHAPE_RANGE_RANDOM:
-            return fuse_same_shape_range_random(a,b);
-        case SAME_SHAPE_GENERATE_1DREDUCE:
-            return fuse_same_shape_generate_1dreduce(a,b);
-        default:
-            throw runtime_error("No fuse module is selected!");
+    case NUM_OF_MODELS:
+        selected_fuse_model = fuse_get_selected_model();
+        return check_fusible(a, b);
+    case BROADEST:
+        return fuse_broadest(a,b);
+    case NO_XSWEEP:
+        return fuse_no_xsweep(a,b);
+    case NO_XSWEEP_SCALAR_SEPERATE:
+        return fuse_no_xsweep_scalar_seperate(a,b);
+    case NO_XSWEEP_SCALAR_SEPERATE_SHAPE_MATCH:
+        return fuse_no_xsweep_scalar_seperate_shape_match(a,b);
+    case SAME_SHAPE:
+        return fuse_same_shape(a,b);
+    case SAME_SHAPE_RANGE:
+        return fuse_same_shape_range(a,b);
+    case SAME_SHAPE_RANDOM:
+        return fuse_same_shape_random(a,b);
+    case SAME_SHAPE_RANGE_RANDOM:
+        return fuse_same_shape_range_random(a,b);
+    case SAME_SHAPE_GENERATE_1DREDUCE:
+        return fuse_same_shape_generate_1dreduce(a,b);
+    default:
+        throw runtime_error("No fuse module is selected!");
     }
 }
 
