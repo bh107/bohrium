@@ -420,7 +420,7 @@ void fuse_model_text(FuseModel fuse_model, string &output)
         output = "no_xsweep_scalar_seperate";
         break;
     case NO_XSWEEP_SCALAR_SEPERATE_SHAPE_MATCH:
-        output = "fuse_no_xsweep_scalar_seperate_shape_match";
+        output = "no_xsweep_scalar_seperate_shape_match";
         break;
     case SAME_SHAPE:
         output = "same_shape";

@@ -112,7 +112,39 @@ static void hashScalarOpidSweepdim(std::ostream& os, const bh_instruction& instr
      */
     bool scalar = (bh_is_scalar(&(instr.operand[0])) ||
                    (bh_opcode_is_accumulate(instr.opcode) && instr.operand[0].ndim == 1));
-    os.write((char*)&scalar, sizeof(scalar));                           // <op_sep>
+    os.write((char*)&scalar, sizeof(scalar));                           // <is_scalar>
+    int noperands = bh_operands(instr.opcode);
+    for(int oidx=0; oidx<noperands; ++oidx) {
+        const bh_view& view = instr.operand[oidx];
+        if (bh_is_constant(&view))
+            continue;  // Ignore constants
+        std::pair<size_t,bool> vid = batchHash.views.insert(view);
+        size_t id = vid.first;
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+    }
+    os.write((char*)&op_sep, sizeof(op_sep));                           // <op_sep>
+    if (bh_opcode_is_sweep(instr.opcode))
+    {
+        const bh_view& view = instr.operand[1];
+        os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
+        os.write((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
+    }
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+}
+
+static void hashScalarShapeidOpidSweepdim(std::ostream& os, const bh_instruction& instr, BatchHash& batchHash)
+{
+    /* The Instruction hash consists of the following fields:
+     * <is_scalar> <shape-id> (<operant-id>)[1] <op_sep> (<ndim> <sweep-dim>)[2] <seperator>
+     * 1: for each operand
+     * 2: if the operation is a sweep operation
+     */
+    bool scalar = (bh_is_scalar(&(instr.operand[0])) ||
+                   (bh_opcode_is_accumulate(instr.opcode) && instr.operand[0].ndim == 1));
+    os.write((char*)&scalar, sizeof(scalar));                           // <is_scalar>
+    const bh_view& view = (bh_opcode_is_sweep(instr.opcode) ? instr.operand[1] : instr.operand[0]);
+    std::pair<size_t,bool> sidp = batchHash.shapes.insert(std::vector<bh_index>(view.shape,view.shape+view.ndim));
+    os.write((char*)&sidp.first, sizeof(sidp.first));                   // <shape-id>
     int noperands = bh_operands(instr.opcode);
     for(int oidx=0; oidx<noperands; ++oidx) {
         const bh_view& view = instr.operand[oidx];
@@ -160,13 +192,13 @@ static InstrHash getInstrHash(FuseModel fuseModel)
     switch(fuseModel)
     {
     case BROADEST:
-        return  &hashOpid;
+        return &hashOpid;
     case NO_XSWEEP:
-        return  &hashOpidSweepdim;
+        return &hashOpidSweepdim;
     case NO_XSWEEP_SCALAR_SEPERATE:
-        return  &hashScalarOpidSweepdim;
+        return &hashScalarOpidSweepdim;
     case NO_XSWEEP_SCALAR_SEPERATE_SHAPE_MATCH:
-        return  &hashScalarOpidSweepdim;
+        return &hashScalarShapeidOpidSweepdim;
     case SAME_SHAPE:
     case SAME_SHAPE_RANGE:
     case SAME_SHAPE_RANDOM:
