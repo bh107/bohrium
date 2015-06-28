@@ -402,6 +402,45 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     
 }
 
+static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel, 
+                                            const std::vector<uint64_t>& instr_indexes)
+{
+    bh_intp dims = 0;
+    std::vector<uint64_t> res;
+    std::vector<uint64_t> postpone;
+    for (uint64_t idx: instr_indexes)
+    {
+        bh_instruction& instr = kernel.bhir->instr_list[idx];
+        switch (instr.opcode)
+        {
+        case BH_DISCARD:
+        case BH_FREE:
+        case BH_SYNC:
+        case BH_NONE:
+            continue;
+        }
+        const bh_intp ndim = (bh_opcode_is_sweep(instr.opcode) ? instr.operand[1].ndim : instr.operand[0].ndim);
+        if (ndim >= dims)
+        {
+            dims = ndim;
+            res.push_back(idx);
+        } else {
+            postpone.push_back(idx);
+        }
+    }
+    if (postpone.size())
+    {
+        std::vector<uint64_t> last = getInstIndexes(kernel,postpone);
+        res.insert(res.end(), last.begin(), last.end());
+    }
+    return res;
+}
+
+static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel)
+{
+    return getInstIndexes(kernel, kernel.instr_indexes);
+}
+
 std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
                                                        const std::vector<bh_index>& shape,
                                                        const std::vector<std::vector<size_t> >& dimOrders,
@@ -422,17 +461,9 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     std::vector<OCLtype> types;
     std::set<bh_view> save; // Views that need saving
     std::map<size_t,size_t> incr_idx; // View indexes which need incrementing <view_id, dims> 
-    for (uint64_t idx: kernel.instr_indexes)
+    for (uint64_t idx: getInstIndexes(kernel))
     {
         bh_instruction& instr = kernel.bhir->instr_list[idx];
-        switch (instr.opcode)
-        {
-        case BH_DISCARD:
-        case BH_FREE:
-        case BH_SYNC:
-        case BH_NONE:
-            continue;
-        }
         const int nop = bh_operands(instr.opcode);
         const bool sweep = bh_opcode_is_sweep(instr.opcode);
         operands.emplace_back("v");       // placeholder for output
