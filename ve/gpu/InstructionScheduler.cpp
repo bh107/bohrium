@@ -308,10 +308,6 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
 
     // get kernel shape
     const std::vector<bh_index>& shape = kernel.get_input_shape();
-    // std::cout << "shape: [" << shape[0];
-    // for (int i = 1; i < (int)shape.size();++i) 
-    //     std::cout << ", "  << shape[i];
-    // std::cout << "]" << std::endl;
 
     // Find dimension order
     std::vector<std::vector<size_t> > dimOrders = genDimOrders(kernel.get_sweeps(), shape.size());
@@ -363,16 +359,12 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     functionDeclaration << "\n#endif\n)\n";
 
     // Calculate the GPU kernel shape
-    std::vector<size_t> rkernelShape(shape.begin(),shape.end());
-    const std::map<bh_intp, bh_int64>& sweeps = kernel.get_sweeps();
-    for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
+    const std::vector<bh_index>& rkshape = kernel.get_output_shape();
+    std::vector<size_t> kernelShape;
+    for (int i = rkshape.size()-1; i >= 0 && kernelShape.size() < 3; --i)
     {
-        assert(rit->first == (bh_intp)rkernelShape.size());
-        rkernelShape.erase(rkernelShape.begin()+rit->second);
+        kernelShape.push_back(rkshape[i]);
     }
-    while (rkernelShape.size() > 3)
-        rkernelShape.erase(rkernelShape.begin());
-    std::vector<size_t> kernelShape(rkernelShape.rbegin(),rkernelShape.rend());
     
     bool float64 = false;
     bool complex = false;
