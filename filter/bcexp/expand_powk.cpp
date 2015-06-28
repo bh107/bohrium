@@ -43,7 +43,7 @@ int Expander::expand_powk(bh_ir& bhir, int pc)
 {
     int start_pc = pc;                              
     bh_instruction& instr = bhir.instr_list[pc];    // Grab the BH_POWER instruction
-    int64_t const k = 10;                           // Max exponent "unfolding"
+    int64_t const k = 100;                          // Max exponent "unfolding"
 
     int64_t exponent = bh_get_integer(instr.constant);
 
