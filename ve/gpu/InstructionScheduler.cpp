@@ -307,7 +307,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     functionDeclaration << "\n#ifndef FIXED_SIZE";
 
     // get kernel shape
-    const std::vector<bh_index>& shape = kernel.get_shape();
+    const std::vector<bh_index>& shape = kernel.get_input_shape();
     // std::cout << "shape: [" << shape[0];
     // for (int i = 1; i < (int)shape.size();++i) 
     //     std::cout << ", "  << shape[i];

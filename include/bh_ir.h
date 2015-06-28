@@ -120,9 +120,10 @@ private:
     std::multimap<bh_base*,bh_view> input_map;
     std::set<bh_view>               input_set;
 
-    // Shape of the kernel i.e. The simplest shape cooresponding to the operations with the most elements
-    // while being valid for all views 
-    std::vector<bh_index> shape;
+    // Largest input shape used in the kernel
+    std::vector<bh_index> input_shape;
+    // Smalest output shape used in the kernel
+    std::vector<bh_index> output_shape;
 
     bool scalar; // Indicate whether there is a scalar output from the kernel or not
 
@@ -134,7 +135,6 @@ private:
         
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
-    void update_shape(const bh_view &v);
 
 public:
     /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
@@ -163,7 +163,8 @@ public:
     const seqset<bh_base*>& get_parameters() const {return parameters;}
     const std::vector<bh_constant>& get_constants() const {return constants;}
     const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
-    const std::vector<bh_index>& get_shape() const {return shape;}
+    const std::vector<bh_index>& get_input_shape() const {return input_shape;}
+    const std::vector<bh_index>& get_output_shape() const {return output_shape;}
 
     bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
     bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}

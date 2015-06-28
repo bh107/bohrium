@@ -128,7 +128,8 @@ void bh_ir_kernel::clear()
     frees.clear();
     discards.clear();
     parameters.clear();
-    shape.clear();
+    input_shape.clear();
+    output_shape.clear();
     scalar = false;
 }
 
@@ -147,12 +148,6 @@ bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) co
             return true;
     }
     return false;
-}
-
-void bh_ir_kernel::update_shape(const bh_view &v)
-{
-    if (v.ndim > (bh_intp)shape.size())
-        shape = std::vector<bh_index>(v.shape,v.shape+v.ndim);
 }
 
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
@@ -225,7 +220,8 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
                 input_set.insert(v);
                 parameters.insert(v.base);
             }
-            update_shape(v);
+            if (v.ndim > (bh_intp)input_shape.size())
+                input_shape = std::vector<bh_index>(v.shape,v.shape+v.ndim);
         }
         //Add the output of the instruction to 'outputs'
         {
@@ -235,12 +231,16 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             output_map.insert(std::make_pair(v.base,v));
             output_set.insert(v);
             parameters.insert(v.base);
-            update_shape(v);
+            if (v.ndim < (bh_intp)output_shape.size() || output_shape.size() == 0)
+                output_shape = std::vector<bh_index>(v.shape,v.shape+v.ndim);
+
             if (bh_is_scalar(&v))
                 scalar = true;
             // For now we treat a 1D accumulate like a 1D reduce i.e. the kernel is a scalar kernel
             if (bh_opcode_is_accumulate(instr.opcode) && sv.ndim == 1)
                 scalar = true;
+            if (v.ndim > (bh_intp)input_shape.size())
+                input_shape = std::vector<bh_index>(v.shape,v.shape+v.ndim);
         }
         if (sweep)
         {
