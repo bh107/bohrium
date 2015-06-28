@@ -90,7 +90,7 @@ static bool fuse_no_xsweep_scalar_seperate_shape_match(const bh_instruction *a, 
     const bh_intp ndim = MIN(va.ndim,vb.ndim);
     for (bh_intp i =  1; i <= ndim; ++i)
     { // Check that the inner most dimensions match
-        if (va.shape[va.ndim-i] != vb.shape[va.ndim-i])
+        if (va.shape[va.ndim-i] != vb.shape[vb.ndim-i])
             return false;
     }
     return fuse_no_xsweep_scalar_seperate(a, b);
