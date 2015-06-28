@@ -83,12 +83,14 @@ static bool fuse_no_xsweep_scalar_seperate(const bh_instruction *a, const bh_ins
 
 static bool fuse_no_xsweep_scalar_seperate_shape_match(const bh_instruction *a, const bh_instruction *b)
 {
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
     const bh_view va = (bh_opcode_is_sweep(a->opcode) ? a->operand[1] : a->operand[0]);
     const bh_view vb = (bh_opcode_is_sweep(b->opcode) ? b->operand[1] : b->operand[0]);
     const bh_intp ndim = MIN(va.ndim,vb.ndim);
-    for (bh_intp i =  0; i < ndim; ++i)
-    {
-        if (va.shape[i] != vb.shape[i])
+    for (bh_intp i =  1; i <= ndim; ++i)
+    { // Check that the inner most dimensions match
+        if (va.shape[va.ndim-i] != vb.shape[va.ndim-i])
             return false;
     }
     return fuse_no_xsweep_scalar_seperate(a, b);
