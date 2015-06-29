@@ -444,6 +444,33 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
 {
     const GraphD &d = dag.bglD();
     const GraphW &w = dag.bglW();
+
+    //Check for instruction duplications and vanishings
+    {
+        //Lets find all instructions
+        set<uint64_t> instr_indexes;
+        BOOST_FOREACH(Vertex v, vertices(d))
+        {
+            BOOST_FOREACH(uint64_t v, d[v].instr_indexes)
+            {
+                if(instr_indexes.find(v) != instr_indexes.end())
+                {
+                    cout << "Instruction [" << v << "] is in multiple kernels!" << endl;
+                    goto fail;
+                }
+                instr_indexes.insert(v);
+            }
+        }
+        //And check if all instructions exist
+        for(uint64_t v=0; v<instr_indexes.size(); ++v)
+        {
+            if(instr_indexes.find(v) == instr_indexes.end())
+            {
+                cout << "Instruction [" << v << "] is missing!" << endl;
+                goto fail;
+            }
+        }
+    }
     //Check for cycles
     if(cycles(d))
         goto fail;
