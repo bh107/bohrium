@@ -86,7 +86,7 @@ bh_error bh_fuser_singleton_shutdown(void)
 
 bh_error bh_fuser_singleton_execute(bh_ir* bhir)
 {
-    bh_uint64 start;
+    bh_uint64 start = 0;
     if (timing)
         start = bh_timer_stamp();
     fuser(*bhir, fuse_cache);     // Run the filter

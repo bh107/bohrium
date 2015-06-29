@@ -136,7 +136,7 @@ static bh_error inspect(bh_instruction *instr)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_vem_node_execute(bh_ir* bhir)
 {
-    bh_uint64 start;
+    bh_uint64 start = 0;
     if (timing)
         start = bh_timer_stamp();
 

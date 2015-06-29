@@ -15,7 +15,7 @@ public:
     /**
      *  Construct the expander.
      */
-    Expander(size_t threshold, int matmul, int sign);
+    Expander(size_t threshold, int matmul, int sign, int powk);
 
     /**
      *  Tear down the expander.
@@ -134,6 +134,9 @@ public:
      */
     int expand_sign(bh_ir& bhir, int pc);
 
+
+    int expand_powk(bh_ir& bhir, int pc);
+
 private:
 
     static const char TAG[];
@@ -141,6 +144,7 @@ private:
     size_t gc_threshold_;
     int matmul_;
     int sign_;
+    int powk_;
     
 };
 

@@ -154,6 +154,7 @@ children = dimclean
 gc_threshold = 400
 matmul = 1
 sign = 1
+powk = 1
 timing = false
 
 [bcexp_cpu]
@@ -163,6 +164,7 @@ children = node
 gc_threshold = 400
 matmul = 1
 sign = 0
+powk = 1
 timing = false
 
 #
