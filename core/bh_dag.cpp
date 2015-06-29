@@ -40,14 +40,21 @@ using namespace boost;
 namespace bohrium {
 namespace dag {
 
-void GraphDW::merge_vertices(Vertex a, Vertex b)
+void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
 {
     assert(_bglD[a].fusible(_bglD[b]));
 
-    //Append the instructions of 'b' to 'a'
-    BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
+    //Merge the two instruction lists
+    if(a_before_b)
     {
-        _bglD[a].add_instr(idx);
+        BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
+            _bglD[a].add_instr(idx);
+    }
+    else
+    {
+        BOOST_FOREACH(uint64_t idx, _bglD[a].instr_indexes)
+            _bglD[b].add_instr(idx);
+        _bglD[a] = _bglD[b];//Only 'a' survives
     }
 
     //Add edges of 'b' to 'a'
@@ -448,6 +455,33 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
 {
     const GraphD &d = dag.bglD();
     const GraphW &w = dag.bglW();
+
+    //Check for instruction duplications and vanishings
+    {
+        //Lets find all instructions
+        set<uint64_t> instr_indexes;
+        BOOST_FOREACH(Vertex v, vertices(d))
+        {
+            BOOST_FOREACH(uint64_t v, d[v].instr_indexes)
+            {
+                if(instr_indexes.find(v) != instr_indexes.end())
+                {
+                    cout << "Instruction [" << v << "] is in multiple kernels!" << endl;
+                    goto fail;
+                }
+                instr_indexes.insert(v);
+            }
+        }
+        //And check if all instructions exist
+        for(uint64_t v=0; v<instr_indexes.size(); ++v)
+        {
+            if(instr_indexes.find(v) == instr_indexes.end())
+            {
+                cout << "Instruction [" << v << "] is missing!" << endl;
+                goto fail;
+            }
+        }
+    }
     //Check for cycles
     if(cycles(d))
         goto fail;
@@ -550,7 +584,7 @@ void fuse_gently(GraphDW &dag)
                 if(d[*it].input_and_output_subset_of(d[v]))
                 {
                     if(d[*it].fusible(d[v]))
-                        dag.merge_vertices(v, *it);
+                        dag.merge_vertices(v, *it, false);
                     vs.erase(it);
                     break;
                 }
@@ -562,7 +596,7 @@ void fuse_gently(GraphDW &dag)
                 if(d[*it].input_and_output_subset_of(d[v]))
                 {
                     if(d[*it].fusible(d[v]))
-                        dag.merge_vertices(v, *it);
+                        dag.merge_vertices(v, *it, true);
                     vs.erase(it);
                     break;
                 }

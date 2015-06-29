@@ -177,14 +177,14 @@ public:
         }
     }
 
-    /* Merge vertex 'a' and 'b' by appending 'b's instructions to 'a'.
-     * Vertex 'b' is cleared rather than removed thus existing vertex
-     * and edge pointers are still valid after the merge.
+    /* Merge vertex 'a' and 'b' where 'b' is cleared and 'a' becomes 
+     * the merged vertex.
      *
-     * @a  The first vertex
-     * @b  The second vertex
+     * @a          The surviving vertex
+     * @b          The cleared vertex
+     * @a_before_b Whether to append or prepend the instructions of 'b' to 'a'
      */
-    void merge_vertices(Vertex a, Vertex b);
+    void merge_vertices(Vertex a, Vertex b, bool a_before_b=true);
 
     /* Transitive reduce the 'dag', i.e. remove all redundant edges,
      *

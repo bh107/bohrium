@@ -37,20 +37,9 @@ static void do_fusion(bh_ir &bhir)
         kernel.add_instr(idx);
 
         //Add fusible instructions to the kernel
-        for(idx=idx+1; idx< bhir.instr_list.size(); ++idx)
+        for(idx=idx+1; idx < bhir.instr_list.size(); ++idx)
         {
-            //Check that 'it' is fusible with all instructions 'kernel'
-            bool fusible = true;
-            // TODO: Change needed when changing representation of kernel-instructions
-            BOOST_FOREACH(uint64_t k_idx, kernel.instr_indexes)
-            {
-                if(not bohrium::check_fusible(&bhir.instr_list[idx], &bhir.instr_list[k_idx]))
-                {
-                    fusible = false;
-                    break;
-                }
-            }
-            if(fusible)
+            if(kernel.fusible(idx))
             {
                 kernel.add_instr(idx);
             }
