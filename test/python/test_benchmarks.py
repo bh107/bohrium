@@ -426,7 +426,7 @@ class test_idl_init(BenchHelper, numpytest):
         self.script     = "idl_init"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "16*16"
-        self.inputfn    = "idl_data.txt"
+        self.inputfn    = "idl_input-float64_512*512.npz"
 
     def test_idl_init(self, pseudo_arrays):
         return self.run(pseudo_arrays)
