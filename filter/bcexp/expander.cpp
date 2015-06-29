@@ -27,8 +27,8 @@ namespace composite {
 
 const char Expander::TAG[] = "Expander";
 
-Expander::Expander(size_t threshold, int matmul, int sign)
-    : gc_threshold_(threshold), matmul_(matmul), sign_(sign) {}
+Expander::Expander(size_t threshold, int matmul, int sign, int powk)
+    : gc_threshold_(threshold), matmul_(matmul), sign_(sign), powk_(powk) {}
 
 void Expander::expand(bh_ir& bhir)
 {
@@ -37,6 +37,14 @@ void Expander::expand(bh_ir& bhir)
         bh_instruction& instr = bhir.instr_list[pc];
         int increase = 0;
         switch(instr.opcode) {
+
+            case BH_POWER:
+                if (powk_) {
+                    end += expand_powk(bhir, pc);
+                    end += increase;
+                    pc += increase;
+                }
+                break;
 
             case BH_MATMUL:
                 if (matmul_) {
