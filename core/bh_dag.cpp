@@ -54,6 +54,7 @@ void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
     {
         BOOST_FOREACH(uint64_t idx, _bglD[a].instr_indexes)
             _bglD[b].add_instr(idx);
+        _bglD[a] = _bglD[b];//Only 'a' survives
     }
 
     //Add edges of 'b' to 'a'
