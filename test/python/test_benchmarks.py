@@ -414,3 +414,19 @@ class test_jacobi_module(numpytest):#disabled
         cmd = "res = la.jacobi(a[0],a[1]);"
         exec(cmd)
         return (res,cmd)
+
+class test_idl_init(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 16
+
+        # Benchmark parameters
+        self.script     = "idl_init"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "16*16"
+        self.inputfn    = "idl_data.txt"
+
+    def test_idl_init(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
