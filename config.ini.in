@@ -27,6 +27,14 @@ greedy = node
 node = gpu
 gpu = cpu
 
+[stack_cpu_greedy]
+type = stack
+stack_cpu_greedy = bcexp_cpu
+bcexp_cpu = bccon
+bccon = greedy
+greedy = node
+node = cpu
+
 [stack_fuseprinter]
 type = stack
 stack_fuseprinter = dimclean
