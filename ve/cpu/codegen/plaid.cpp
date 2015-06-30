@@ -66,7 +66,8 @@ string Plaid::fill(string name, map<string, string>& subjects)
     string tmpl = templates_[name];
 
     stringstream place;
-    unsigned int place_open, place_close;
+    unsigned int place_open = 0;
+    unsigned int place_close = 0;
 
     states state = NONE;
     for(unsigned int idx=0; idx<tmpl.size(); ++idx) {
