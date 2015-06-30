@@ -40,6 +40,9 @@ struct BatchHash
     // Sequence set of views used in this batch
     seqset<bh_view> views;
 
+    // Sequence set of shapes used in this batch
+    seqset<std::vector<bh_index> > shapes;
+
     uint64_t _hash;
 
     /* Construct a BatchHash instant based on the instruction list */

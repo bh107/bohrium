@@ -52,7 +52,7 @@ static const size_t inst_sep = SIZE_MAX;
 static const size_t op_sep   = SIZE_MAX-1;
 
 static void hashOpcodeOpidShapeSweepdim(std::ostream& os, const bh_instruction& instr, 
-                                      seqset<bh_view>& views)
+                                        BatchHash& batchHash)
 {
     /* The Instruction hash consists of the following fields:
      * <opcode> (<operant-id> <ndim> <shape> <op_sep>)[1] <sweep-dim>[2] <inst_sep>
@@ -65,7 +65,7 @@ static void hashOpcodeOpidShapeSweepdim(std::ostream& os, const bh_instruction& 
         const bh_view& view = instr.operand[oidx];
         if (bh_is_constant(&view))
             continue;  // Ignore constants
-        std::pair<size_t,bool> vid = views.insert(view);
+        std::pair<size_t,bool> vid = batchHash.views.insert(view);
         size_t id = vid.first;
         os.write((char*)&id, sizeof(id));                               // <operant-id>
         os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
@@ -77,7 +77,7 @@ static void hashOpcodeOpidShapeSweepdim(std::ostream& os, const bh_instruction& 
     os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
 }
 
-static void hashOpidSweepdim(std::ostream& os, const bh_instruction& instr, seqset<bh_view>& views)
+static void hashOpidSweepdim(std::ostream& os, const bh_instruction& instr, BatchHash& batchHash)
 {
     /* The Instruction hash consists of the following fields:
      * (<operant-id>)[1] <op_sep> (<ndim> <sweep-dim>)[2] <seperator>
@@ -89,7 +89,7 @@ static void hashOpidSweepdim(std::ostream& os, const bh_instruction& instr, seqs
         const bh_view& view = instr.operand[oidx];
         if (bh_is_constant(&view))
             continue;  // Ignore constants
-        std::pair<size_t,bool> vid = views.insert(view);
+        std::pair<size_t,bool> vid = batchHash.views.insert(view);
         size_t id = vid.first;
         os.write((char*)&id, sizeof(id));                               // <operant-id>
     }
@@ -103,7 +103,7 @@ static void hashOpidSweepdim(std::ostream& os, const bh_instruction& instr, seqs
     os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
 }
 
-static void hashScalarOpidSweepdim(std::ostream& os, const bh_instruction& instr, seqset<bh_view>& views)
+static void hashScalarOpidSweepdim(std::ostream& os, const bh_instruction& instr, BatchHash& batchHash)
 {
     /* The Instruction hash consists of the following fields:
      * <is_scalar> (<operant-id>)[1] <op_sep> (<ndim> <sweep-dim>)[2] <seperator>
@@ -112,13 +112,13 @@ static void hashScalarOpidSweepdim(std::ostream& os, const bh_instruction& instr
      */
     bool scalar = (bh_is_scalar(&(instr.operand[0])) ||
                    (bh_opcode_is_accumulate(instr.opcode) && instr.operand[0].ndim == 1));
-    os.write((char*)&scalar, sizeof(scalar));                           // <op_sep>
+    os.write((char*)&scalar, sizeof(scalar));                           // <is_scalar>
     int noperands = bh_operands(instr.opcode);
     for(int oidx=0; oidx<noperands; ++oidx) {
         const bh_view& view = instr.operand[oidx];
         if (bh_is_constant(&view))
             continue;  // Ignore constants
-        std::pair<size_t,bool> vid = views.insert(view);
+        std::pair<size_t,bool> vid = batchHash.views.insert(view);
         size_t id = vid.first;
         os.write((char*)&id, sizeof(id));                               // <operant-id>
     }
@@ -132,7 +132,39 @@ static void hashScalarOpidSweepdim(std::ostream& os, const bh_instruction& instr
     os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
 }
 
-static void hashOpid(std::ostream& os, const bh_instruction& instr, seqset<bh_view>& views)
+static void hashScalarShapeidOpidSweepdim(std::ostream& os, const bh_instruction& instr, BatchHash& batchHash)
+{
+    /* The Instruction hash consists of the following fields:
+     * <is_scalar> <shape-id> (<operant-id>)[1] <op_sep> (<ndim> <sweep-dim>)[2] <seperator>
+     * 1: for each operand
+     * 2: if the operation is a sweep operation
+     */
+    bool scalar = (bh_is_scalar(&(instr.operand[0])) ||
+                   (bh_opcode_is_accumulate(instr.opcode) && instr.operand[0].ndim == 1));
+    os.write((char*)&scalar, sizeof(scalar));                           // <is_scalar>
+    const bh_view& view = (bh_opcode_is_sweep(instr.opcode) ? instr.operand[1] : instr.operand[0]);
+    std::pair<size_t,bool> sidp = batchHash.shapes.insert(std::vector<bh_index>(view.shape,view.shape+view.ndim));
+    os.write((char*)&sidp.first, sizeof(sidp.first));                   // <shape-id>
+    int noperands = bh_operands(instr.opcode);
+    for(int oidx=0; oidx<noperands; ++oidx) {
+        const bh_view& view = instr.operand[oidx];
+        if (bh_is_constant(&view))
+            continue;  // Ignore constants
+        std::pair<size_t,bool> vid = batchHash.views.insert(view);
+        size_t id = vid.first;
+        os.write((char*)&id, sizeof(id));                               // <operant-id>
+    }
+    os.write((char*)&op_sep, sizeof(op_sep));                           // <op_sep>
+    if (bh_opcode_is_sweep(instr.opcode))
+    {
+        const bh_view& view = instr.operand[1];
+        os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
+        os.write((char*)&instr.constant.value.int64, sizeof(bh_int64)); // <sweep-dim>
+    }
+    os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+}
+
+static void hashOpid(std::ostream& os, const bh_instruction& instr, BatchHash& batchHash)
 {
     /* The Instruction hash consists of the following fields:
      * (<operant-id>)[1]  <seperator>
@@ -143,7 +175,7 @@ static void hashOpid(std::ostream& os, const bh_instruction& instr, seqset<bh_vi
         const bh_view& view = instr.operand[oidx];
         if (bh_is_constant(&view))
             continue;  // Ignore constants
-        std::pair<size_t,bool> vid = views.insert(view);
+        std::pair<size_t,bool> vid = batchHash.views.insert(view);
         size_t id = vid.first;
         os.write((char*)&id, sizeof(id));                               // <operant-id>
     }
@@ -153,37 +185,39 @@ static void hashOpid(std::ostream& os, const bh_instruction& instr, seqset<bh_vi
 #define __scalar(i) (bh_is_scalar(&(i)->operand[0]) || \
                      (bh_opcode_is_accumulate((i)->opcode) && (i)->operand[0].ndim == 1))
 
-typedef void (*InstrHash)(std::ostream& os, const bh_instruction &instr, seqset<bh_view>& views);
+typedef void (*InstrHash)(std::ostream& os, const bh_instruction &instr, BatchHash& batchHash);
 
 static InstrHash getInstrHash(FuseModel fuseModel)
 {
     switch(fuseModel)
     {
-        case BROADEST:
-            return  &hashOpid;
-        case NO_XSWEEP:
-            return  &hashOpidSweepdim;
-        case NO_XSWEEP_SCALAR_SEPERATE:
-            return  &hashScalarOpidSweepdim;
-        case SAME_SHAPE:
-        case SAME_SHAPE_RANGE:
-        case SAME_SHAPE_RANDOM:
-        case SAME_SHAPE_RANGE_RANDOM:
-        case SAME_SHAPE_GENERATE_1DREDUCE:
-            return &hashOpcodeOpidShapeSweepdim;
-        default:
-            throw runtime_error("Could not find valid hash function for fuse model.");
+    case BROADEST:
+        return &hashOpid;
+    case NO_XSWEEP:
+        return &hashOpidSweepdim;
+    case NO_XSWEEP_SCALAR_SEPERATE:
+        return &hashScalarOpidSweepdim;
+    case NO_XSWEEP_SCALAR_SEPERATE_SHAPE_MATCH:
+        return &hashScalarShapeidOpidSweepdim;
+    case SAME_SHAPE:
+    case SAME_SHAPE_RANGE:
+    case SAME_SHAPE_RANDOM:
+    case SAME_SHAPE_RANGE_RANDOM:
+    case SAME_SHAPE_GENERATE_1DREDUCE:
+        return &hashOpcodeOpidShapeSweepdim;
+    default:
+        throw runtime_error("Could not find valid hash function for fuse model.");
     }
 }
 
 //Constructor of the BatchHash class
-    BatchHash::BatchHash(const vector<bh_instruction> &instr_list)
+BatchHash::BatchHash(const vector<bh_instruction> &instr_list)
 {
     InstrHash hashFn = getInstrHash(fuse_get_selected_model());
     std::ostringstream data(std::ios_base::ate);
     for(const bh_instruction& instr: instr_list)
     {
-        hashFn(data, instr, views);
+        hashFn(data, instr, *this);
     }
     boost::hash<string> hasher;
     _hash = hasher(data.str());

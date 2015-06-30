@@ -307,11 +307,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     functionDeclaration << "\n#ifndef FIXED_SIZE";
 
     // get kernel shape
-    const std::vector<bh_index>& shape = kernel.get_shape();
-    // std::cout << "shape: [" << shape[0];
-    // for (int i = 1; i < (int)shape.size();++i) 
-    //     std::cout << ", "  << shape[i];
-    // std::cout << "]" << std::endl;
+    const std::vector<bh_index>& shape = kernel.get_input_shape();
 
     // Find dimension order
     std::vector<std::vector<size_t> > dimOrders = genDimOrders(kernel.get_sweeps(), shape.size());
@@ -363,16 +359,12 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     functionDeclaration << "\n#endif\n)\n";
 
     // Calculate the GPU kernel shape
-    std::vector<size_t> rkernelShape(shape.begin(),shape.end());
-    const std::map<bh_intp, bh_int64>& sweeps = kernel.get_sweeps();
-    for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
+    const std::vector<bh_index>& rkshape = kernel.get_output_shape();
+    std::vector<size_t> kernelShape;
+    for (int i = rkshape.size()-1; i >= 0 && kernelShape.size() < 3; --i)
     {
-        assert(rit->first == (bh_intp)rkernelShape.size());
-        rkernelShape.erase(rkernelShape.begin()+rit->second);
+        kernelShape.push_back(rkshape[i]);
     }
-    while (rkernelShape.size() > 3)
-        rkernelShape.erase(rkernelShape.begin());
-    std::vector<size_t> kernelShape(rkernelShape.rbegin(),rkernelShape.rend());
     
     bool float64 = false;
     bool complex = false;
@@ -410,6 +402,45 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     
 }
 
+static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel, 
+                                            const std::vector<uint64_t>& instr_indexes)
+{
+    bh_intp dims = 0;
+    std::vector<uint64_t> res;
+    std::vector<uint64_t> postpone;
+    for (uint64_t idx: instr_indexes)
+    {
+        bh_instruction& instr = kernel.bhir->instr_list[idx];
+        switch (instr.opcode)
+        {
+        case BH_DISCARD:
+        case BH_FREE:
+        case BH_SYNC:
+        case BH_NONE:
+            continue;
+        }
+        const bh_intp ndim = (bh_opcode_is_sweep(instr.opcode) ? instr.operand[1].ndim : instr.operand[0].ndim);
+        if (ndim >= dims)
+        {
+            dims = ndim;
+            res.push_back(idx);
+        } else {
+            postpone.push_back(idx);
+        }
+    }
+    if (postpone.size())
+    {
+        std::vector<uint64_t> last = getInstIndexes(kernel,postpone);
+        res.insert(res.end(), last.begin(), last.end());
+    }
+    return res;
+}
+
+static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel)
+{
+    return getInstIndexes(kernel, kernel.instr_indexes);
+}
+
 std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
                                                        const std::vector<bh_index>& shape,
                                                        const std::vector<std::vector<size_t> >& dimOrders,
@@ -430,17 +461,9 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     std::vector<OCLtype> types;
     std::set<bh_view> save; // Views that need saving
     std::map<size_t,size_t> incr_idx; // View indexes which need incrementing <view_id, dims> 
-    for (uint64_t idx: kernel.instr_indexes)
+    for (uint64_t idx: getInstIndexes(kernel))
     {
         bh_instruction& instr = kernel.bhir->instr_list[idx];
-        switch (instr.opcode)
-        {
-        case BH_DISCARD:
-        case BH_FREE:
-        case BH_SYNC:
-        case BH_NONE:
-            continue;
-        }
         const int nop = bh_operands(instr.opcode);
         const bool sweep = bh_opcode_is_sweep(instr.opcode);
         operands.emplace_back("v");       // placeholder for output
