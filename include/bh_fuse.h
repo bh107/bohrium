@@ -55,6 +55,12 @@ enum FuseModel
  */
     NO_XSWEEP_SCALAR_SEPERATE,
 
+/* Combines previous filters with ensuring the the shapes of the two
+ * instructions match up to the lowest dimensionality
+ *
+ */
+    NO_XSWEEP_SCALAR_SEPERATE_SHAPE_MATCH,
+
 /* A very simple mode that only fuses same shaped arrays thus no
  * broadcast, reduction, extension methods, etc. */
     SAME_SHAPE,

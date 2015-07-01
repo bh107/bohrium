@@ -467,9 +467,13 @@ void pprint(const GraphDW &dag, const char filename[])
             out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
             out << " bytes\\n";
             out << "Shape: ";
-            const std::vector<bh_index>& shape = graph[v].get_shape();
-            for (size_t i = 0; i < shape.size(); ++i)
-                out << (i?", ":"[") << shape[i];
+            const std::vector<bh_index>& ishape = graph[v].get_input_shape();
+            for (size_t i = 0; i < ishape.size(); ++i)
+                out << (i?", ":"[") << ishape[i];
+            out << "], ";
+            const std::vector<bh_index>& oshape = graph[v].get_output_shape();
+            for (size_t i = 0; i < oshape.size(); ++i)
+                out << (i?", ":"[") << oshape[i];
             out << "]      scalar: " <<  (graph[v].is_scalar()?"true":"false");
             out << "\\lSweeps: ";
             for (const std::pair<bh_intp, bh_int64> &sweep: graph[v].get_sweeps())
@@ -493,6 +497,12 @@ void pprint(const GraphDW &dag, const char filename[])
             {
                 bh_sprint_base(p.second, buf);
                 out << "[" << p.first << "]" << buf << "\\l";
+            }
+            out << "Constants: \\l";
+            for (const bh_constant& c: graph[v].get_constants())
+            {
+                bh_sprint_const(&c, buf);
+                out << buf << "\\l";
             }
             out << "Temp base-arrays: \\l";
             BOOST_FOREACH(const bh_base* i, graph[v].get_temps())

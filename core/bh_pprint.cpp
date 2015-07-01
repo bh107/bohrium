@@ -27,78 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define PPRINT_BUF_OPSTR_SIZE 512
 #define PPRINT_BUF_SIZE PPRINT_BUF_OPSTR_SIZE*1024
 
-static void bh_sprint_const(const bh_instruction *instr, char buf[] ) {
-
-    switch( instr->constant.type) {
-        case BH_BOOL:
-            sprintf(buf, "[ CONST(%s)=%uc ]", bh_type_text(instr->constant.type),
-                                              instr->constant.value.bool8);
-            break;
-        case BH_INT8:
-            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(instr->constant.type),
-                                             instr->constant.value.int8);
-            break;
-        case BH_INT16:
-            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(instr->constant.type),
-                                             instr->constant.value.int16);
-            break;
-        case BH_INT32:
-            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(instr->constant.type),
-                                             instr->constant.value.int32);
-            break;
-        case BH_INT64:
-            sprintf(buf, "[ CONST(%s)=%lld ]", bh_type_text(instr->constant.type),
-                                 (long long) instr->constant.value.int64);
-            break;
-        case BH_UINT8:
-            sprintf(buf, "[ CONST(%s)=%o ]", bh_type_text(instr->constant.type),
-                                             instr->constant.value.uint8);
-            break;
-        case BH_UINT16:
-            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type),
-                                             instr->constant.value.uint16);
-            break;
-        case BH_UINT32:
-            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(instr->constant.type),
-                                             instr->constant.value.uint32);
-            break;
-        case BH_UINT64:
-            sprintf(buf, "[ CONST(%s)=%llu ]", bh_type_text(instr->constant.type),
-                        (unsigned long long) instr->constant.value.uint64);
-            break;
-        case BH_FLOAT32:
-            sprintf(buf, "[ CONST(%s)=%f ]", bh_type_text(instr->constant.type),
-                                             instr->constant.value.float32);
-            break;
-        case BH_FLOAT64:
-            sprintf(buf, "[ CONST(%s)=%lf ]", bh_type_text(instr->constant.type),
-                                              instr->constant.value.float64);
-            break;
-        case BH_R123:
-            sprintf(buf, "[ CONST(%s)={start=%llu,key=%llu} ]",
-                    bh_type_text(instr->constant.type),
-                    (unsigned long long)instr->constant.value.r123.start,
-                    (unsigned long long)instr->constant.value.r123.key);
-            break;
-        case BH_COMPLEX64:
-            sprintf(buf, "[ CONST(%s)={real=%f,img=%f} ]",
-                    bh_type_text(instr->constant.type),
-                    instr->constant.value.complex64.real,
-                    instr->constant.value.complex64.imag);
-            break;
-        case BH_COMPLEX128:
-            sprintf(buf, "[ CONST(%s)={real=%lf,imag=%lf} ]",
-                    bh_type_text(instr->constant.type),
-                    instr->constant.value.complex128.real,
-                    instr->constant.value.complex128.imag);
-            break;
-        case BH_UNKNOWN:
-            sprintf(buf, "[ CONST(BH_UNKNOWN)=? ]");
-        default:
-            sprintf(buf, "[ CONST(?)=? ]");
-    }
-
-}
 
 
 
@@ -121,7 +49,85 @@ static void bh_sprint_coord( char buf[], const bh_index coord[], bh_index dims )
 /****************** Public functions *********************/
 /*********************************************************/
 
-/* Pretty print an base.
+/* Pretty print a constant.
+ *
+ * @constant   The constant in question.
+ * @buf        Output buffer (must have sufficient size)
+ */
+void bh_sprint_const(const bh_constant* constant, char buf[] ) {
+
+    switch(constant->type) {
+        case BH_BOOL:
+            sprintf(buf, "[ CONST(%s)=%uc ]", bh_type_text(constant->type),
+                                              constant->value.bool8);
+            break;
+        case BH_INT8:
+            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(constant->type),
+                                             constant->value.int8);
+            break;
+        case BH_INT16:
+            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(constant->type),
+                                             constant->value.int16);
+            break;
+        case BH_INT32:
+            sprintf(buf, "[ CONST(%s)=%d ]", bh_type_text(constant->type),
+                                             constant->value.int32);
+            break;
+        case BH_INT64:
+            sprintf(buf, "[ CONST(%s)=%lld ]", bh_type_text(constant->type),
+                                 (long long) constant->value.int64);
+            break;
+        case BH_UINT8:
+            sprintf(buf, "[ CONST(%s)=%o ]", bh_type_text(constant->type),
+                                             constant->value.uint8);
+            break;
+        case BH_UINT16:
+            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(constant->type),
+                                             constant->value.uint16);
+            break;
+        case BH_UINT32:
+            sprintf(buf, "[ CONST(%s)=%u ]", bh_type_text(constant->type),
+                                             constant->value.uint32);
+            break;
+        case BH_UINT64:
+            sprintf(buf, "[ CONST(%s)=%llu ]", bh_type_text(constant->type),
+                        (unsigned long long) constant->value.uint64);
+            break;
+        case BH_FLOAT32:
+            sprintf(buf, "[ CONST(%s)=%f ]", bh_type_text(constant->type),
+                                             constant->value.float32);
+            break;
+        case BH_FLOAT64:
+            sprintf(buf, "[ CONST(%s)=%lf ]", bh_type_text(constant->type),
+                                              constant->value.float64);
+            break;
+        case BH_R123:
+            sprintf(buf, "[ CONST(%s)={start=%llu,key=%llu} ]",
+                    bh_type_text(constant->type),
+                    (unsigned long long)constant->value.r123.start,
+                    (unsigned long long)constant->value.r123.key);
+            break;
+        case BH_COMPLEX64:
+            sprintf(buf, "[ CONST(%s)={real=%f,img=%f} ]",
+                    bh_type_text(constant->type),
+                    constant->value.complex64.real,
+                    constant->value.complex64.imag);
+            break;
+        case BH_COMPLEX128:
+            sprintf(buf, "[ CONST(%s)={real=%lf,imag=%lf} ]",
+                    bh_type_text(constant->type),
+                    constant->value.complex128.real,
+                    constant->value.complex128.imag);
+            break;
+        case BH_UNKNOWN:
+            sprintf(buf, "[ CONST(BH_UNKNOWN)=? ]");
+        default:
+            sprintf(buf, "[ CONST(?)=? ]");
+    }
+
+}
+
+/* Pretty print a base.
  *
  * @op      The base in question
  * @buf     Output buffer (must have sufficient size)
@@ -133,7 +139,7 @@ void bh_sprint_base(const bh_base *base, char buf[])
     );
 }
 
-/* Pretty print an view.
+/* Pretty print a view.
  *
  * @op      The view in question
  * @buf     Output buffer (must have sufficient size)
@@ -194,7 +200,7 @@ void bh_sprint_instr(const bh_instruction *instr, char buf[], const char newline
             bh_sprint_view(&instr->operand[i], op_str );
         else
             //sprintf(op_str, "CONSTANT");
-            bh_sprint_const( instr, op_str );
+            bh_sprint_const(&instr->constant, op_str );
 
         sprintf(tmp, "  OP%d %s%s", i, op_str, newline);
         strcat(buf, tmp);

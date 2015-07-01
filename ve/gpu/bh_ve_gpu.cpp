@@ -31,7 +31,7 @@ ResourceManager* resourceManager;
 bh_error bh_ve_gpu_init(const char *name)
 {
     // defined in core/bh_fuse.cpp
-    std::string preferedFuseModel("NO_XSWEEP_SCALAR_SEPERATE");
+    std::string preferedFuseModel("NO_XSWEEP_SCALAR_SEPERATE_SHAPE_MATCH");
     char* fm = getenv("BH_FUSE_MODEL");
     if (fm != NULL) {
         std::string fuseModel(fm);
