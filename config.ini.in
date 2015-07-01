@@ -27,6 +27,15 @@ greedy = node
 node = gpu
 gpu = cpu
 
+[stack_gpu_topological]
+type = stack
+stack_gpu_topological = bcexp
+bcexp = dimclean
+dimclean = topological
+topological = node
+node = gpu
+gpu = cpu
+
 [stack_gpu_debug]
 type = stack
 stack_gpu_debug = pprint
