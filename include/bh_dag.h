@@ -236,6 +236,15 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag);
  */
 void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list);
 
+/* Split the 'dag' into sub-graphs that may be handle individually
+ *
+ * Complexity: O(E + V)
+ *
+ * @dag     The dag
+ * @kernels The vector of output sub-graphs in topological order
+ */
+void split(const GraphDW &dag, std::vector<GraphDW> &output);
+
 /* Determines whether there exist a path from 'a' to 'b'
  *
  * Complexity: O(E + V)
@@ -290,6 +299,15 @@ void pprint(const GraphDW &dag, const char filename[]);
  * @return                The bool answer
  */
 bool dag_validate(const GraphDW &dag, bool transitivity_allowed=true);
+
+/* Check that the vector of 'dags' is valid
+ *
+ * @bhir                  The BhIR in question
+ * @dags                  The vector of dags in question
+ * @transitivity_allowed  Is transitive edges allowed in the dag?
+ * @return                The bool answer
+ */
+bool dag_validate(const bh_ir &bhir, const std::vector<GraphDW> &dags, bool transitivity_allowed=true);
 
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings
