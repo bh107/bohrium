@@ -51,7 +51,7 @@ namespace bohrium {
 static const size_t inst_sep = SIZE_MAX;
 static const size_t op_sep   = SIZE_MAX-1;
 
-static void hashOpcodeOpidShapeSweepdim(std::ostream& os, const bh_instruction& instr, 
+static void hashOpcodeOpidShapeidSweepdim(std::ostream& os, const bh_instruction& instr, 
                                         BatchHash& batchHash)
 {
     /* The Instruction hash consists of the following fields:
@@ -69,7 +69,8 @@ static void hashOpcodeOpidShapeSweepdim(std::ostream& os, const bh_instruction& 
         size_t id = vid.first;
         os.write((char*)&id, sizeof(id));                               // <operant-id>
         os.write((char*)&view.ndim, sizeof(view.ndim));                 // <ndim>
-        os.write((char*)&view.shape, sizeof(bh_index)*view.ndim);       // <shape>
+        std::pair<size_t,bool> sidp = batchHash.shapes.insert(std::vector<bh_index>(view.shape,view.shape+view.ndim));
+        os.write((char*)&sidp.first, sizeof(sidp.first));                   // <shape-id>
         os.write((char*)&op_sep, sizeof(op_sep));                       // <op_sep>
     }
     if (bh_opcode_is_sweep(instr.opcode))
@@ -204,7 +205,7 @@ static InstrHash getInstrHash(FuseModel fuseModel)
     case SAME_SHAPE_RANDOM:
     case SAME_SHAPE_RANGE_RANDOM:
     case SAME_SHAPE_GENERATE_1DREDUCE:
-        return &hashOpcodeOpidShapeSweepdim;
+        return &hashOpcodeOpidShapeidSweepdim;
     default:
         throw runtime_error("Could not find valid hash function for fuse model.");
     }
