@@ -35,6 +35,8 @@ from . import random123 as random
 
 # TODO: import all numpy functions
 from numpy import meshgrid
+from numpy import rollaxis
+from numpy import swapaxes
 
 # Finally, we import and expose external libraries
 numpy_interface = [
