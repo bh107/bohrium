@@ -23,6 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
 #include <boost/graph/breadth_first_search.hpp>
+#include <boost/graph/connected_components.hpp>
+#include <boost/graph/strong_components.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <iterator>
 #include <iostream>
@@ -39,6 +41,42 @@ using namespace boost;
 
 namespace bohrium {
 namespace dag {
+
+void GraphDW::add_from_subgraph(const set<Vertex> &sub_graph, const GraphDW &dag)
+{
+    const GraphD &d = dag.bglD();
+    const GraphW &w = dag.bglW();
+
+    //Build the vertices of 'this' graph
+    map<Vertex,Vertex> dag2this;//Maps from vertices in 'dag' to vertices in 'this'
+    BOOST_FOREACH(Vertex v, sub_graph)
+    {
+        dag2this[v] = boost::add_vertex(d[v], _bglD);
+        boost::add_vertex(_bglW);
+    }
+    //Add all dependency edges that connects vertices within 'sub_graph'
+    BOOST_FOREACH(EdgeD e, edges(d))
+    {
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+        if(sub_graph.find(src) != sub_graph.end() and
+           sub_graph.find(dst) != sub_graph.end())
+        {
+            boost::add_edge(dag2this[src], dag2this[dst], _bglD);
+        }
+    }
+    //Add all weight edges that connects vertices within 'sub_graph'
+    BOOST_FOREACH(EdgeW e, edges(w))
+    {
+        Vertex src = source(e, w);
+        Vertex dst = target(e, w);
+        if(sub_graph.find(src) != sub_graph.end() and
+           sub_graph.find(dst) != sub_graph.end())
+        {
+            boost::add_edge(dag2this[src], dag2this[dst], w[e], _bglW);
+        }
+    }
+}
 
 void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
 {
@@ -211,14 +249,101 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
 
 void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
 {
-    assert(kernel_list.size() == 0);
-
     vector<Vertex> topological_order;
     topological_sort(dag, back_inserter(topological_order));
     BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
     {
         if(dag[v].instr_indexes.size() > 0)
             kernel_list.push_back(dag[v]);
+    }
+}
+
+void split(const GraphDW &dag, vector<GraphDW> &output)
+{
+    const GraphD &d = dag.bglD();
+
+    //Let's build a component graph
+    typedef adjacency_list<setS, vecS, bidirectionalS, set<Vertex> > GraphComp;
+    GraphComp comp_graph;
+    {
+        vector<Vertex> vertex2component(num_vertices(d));
+        uint64_t num = connected_components(dag.bglW(), &vertex2component[0]);
+        comp_graph = GraphComp(num);
+        BOOST_FOREACH(Vertex v, vertices(d))
+        {
+            comp_graph[vertex2component[v]].insert(v);
+        }
+        BOOST_FOREACH(EdgeD e, edges(d))
+        {
+            Vertex src = vertex2component[source(e, d)];
+            Vertex dst = vertex2component[target(e, d)];
+            if(src != dst)
+                add_edge(src, dst, comp_graph);
+        }
+    }
+
+ //Print found components
+ /*
+    {
+        BOOST_FOREACH(Vertex comp, vertices(comp_graph))
+        {
+            cout << "Component " << comp << ": ";
+            BOOST_FOREACH(Vertex v, comp_graph[comp])
+            {
+                cout << v << ", ";
+            }
+            cout << endl;
+        }
+    }
+*/
+
+    //Merge strongly connected components in the component graph
+    {
+        //We start by finding the strongly connected components
+        vector<Vertex> comp2connected(num_vertices(comp_graph));
+        uint64_t num = strong_components(comp_graph, &comp2connected[0]);
+        vector<set<Vertex> > connected2comp;
+        connected2comp.resize(num);
+        BOOST_FOREACH(Vertex v, vertices(comp_graph))
+        {
+            connected2comp[comp2connected[v]].insert(v);
+        }
+        //And the we merge them
+        BOOST_FOREACH(set<Vertex> &comps, connected2comp)
+        {
+            if(comps.size() > 1)
+            {
+                auto root = comps.begin();
+                auto it=root;
+                for(++it; it != comps.end(); ++it)
+                {
+                    comp_graph[*root].insert(comp_graph[*it].begin(), comp_graph[*it].end());
+                    comp_graph[*it].clear();
+                    BOOST_FOREACH(Vertex v, adjacent_vertices(*it, comp_graph))
+                    {
+                        if(v != *root)
+                            add_edge(*root, v, comp_graph);
+                    }
+                    BOOST_FOREACH(Vertex v, inv_adjacent_vertices(*it, comp_graph))
+                    {
+                        if(v != *root)
+                            add_edge(v, *root, comp_graph);
+                    }
+                    boost::clear_vertex(*it, comp_graph);
+                }
+            }
+        }
+    }
+    //Let's split the 'dag' in topological order
+    vector<Vertex> topological_order;
+    topological_sort(comp_graph, back_inserter(topological_order));
+    BOOST_REVERSE_FOREACH(Vertex v, topological_order)
+    {
+        if(comp_graph[v].size() > 0)
+        {
+            output.resize(output.size()+1);
+            output[output.size()-1].add_from_subgraph(comp_graph[v], dag);
+        }
     }
 }
 
@@ -455,6 +580,11 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
 {
     const GraphD &d = dag.bglD();
     const GraphW &w = dag.bglW();
+    if(num_vertices(d) != num_vertices(w))
+    {
+        cerr << "blgD and bglW has not the same number of vertices!" << endl;
+        goto fail;
+    }
 
     //Check for instruction duplications and vanishings
     {
@@ -470,15 +600,6 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
                     goto fail;
                 }
                 instr_indexes.insert(v);
-            }
-        }
-        //And check if all instructions exist
-        for(uint64_t v=0; v<instr_indexes.size(); ++v)
-        {
-            if(instr_indexes.find(v) == instr_indexes.end())
-            {
-                cout << "Instruction [" << v << "] is missing!" << endl;
-                goto fail;
             }
         }
     }
@@ -564,6 +685,50 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
 fail:
     cout << "writing validate-fail.dot" << endl;
     pprint(dag, "validate-fail.dot");
+    return false;
+}
+
+bool dag_validate(const bh_ir &bhir, const vector<GraphDW> &dags, bool transitivity_allowed)
+{
+    set<uint64_t> instr_indexes;
+    BOOST_FOREACH(const GraphDW &dag, dags)
+    {
+        const GraphD &d = dag.bglD();
+        if(not dag_validate(dag, transitivity_allowed))
+            return false;
+        BOOST_FOREACH(Vertex v, boost::vertices(d))
+        {
+            BOOST_FOREACH(uint64_t idx, d[v].instr_indexes)
+            {
+                if(instr_indexes.find(idx) != instr_indexes.end())
+                {
+                    cout << "Instruction [" << idx << "] is in multiple kernels!" << endl;
+                    goto fail;
+                }
+                instr_indexes.insert(idx);
+            }
+        }
+    }
+    //And check if all instructions exist
+    for(uint64_t idx=0; idx<bhir.instr_list.size(); ++idx)
+    {
+        if(instr_indexes.find(idx) == instr_indexes.end())
+        {
+            cout << "Instruction [" << idx << "] is missing!" << endl;
+            goto fail;
+        }
+    }
+    return true;
+fail:
+    int i=0;
+    cerr << "Dumping dot files:" << endl;
+    BOOST_FOREACH(const GraphDW &dag, dags)
+    {
+        char t[1024];
+        sprintf(t, "validate-fail-%d.dot", i++);
+        cerr << t << endl;
+        pprint(dag, t);
+    }
     return false;
 }
 

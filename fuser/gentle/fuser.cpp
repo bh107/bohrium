@@ -37,8 +37,16 @@ static void do_fusion(bh_ir &bhir)
     using namespace bohrium::dag;
     GraphDW dag;
     from_bhir(bhir, dag);
-    fuse_gently(dag);
-    fill_kernel_list(dag.bglD(), bhir.kernel_list);
+    vector<GraphDW> dags;
+    split(dag, dags);
+    assert(dag_validate(bhir, dags));
+    BOOST_FOREACH(GraphDW &d, dags)
+    {
+        fuse_gently(d);
+    }
+    assert(dag_validate(bhir, dags));
+    BOOST_FOREACH(GraphDW &d, dags)
+        fill_kernel_list(d.bglD(), bhir.kernel_list);
 }
 
 void fuser(bh_ir &bhir, FuseCache &cache)
