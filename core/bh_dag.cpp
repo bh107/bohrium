@@ -40,6 +40,42 @@ using namespace boost;
 namespace bohrium {
 namespace dag {
 
+void GraphDW::add_from_subgraph(const set<Vertex> &sub_graph, const GraphDW &dag)
+{
+    const GraphD &d = dag.bglD();
+    const GraphW &w = dag.bglW();
+
+    //Build the vertices of 'this' graph
+    map<Vertex,Vertex> dag2this;//Maps from vertices in 'dag' to vertices in 'this'
+    BOOST_FOREACH(Vertex v, sub_graph)
+    {
+        dag2this[v] = boost::add_vertex(d[v], _bglD);
+        boost::add_vertex(_bglW);
+    }
+    //Add all dependency edges that connects vertices within 'sub_graph'
+    BOOST_FOREACH(EdgeD e, edges(d))
+    {
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+        if(sub_graph.find(src) != sub_graph.end() and
+           sub_graph.find(dst) != sub_graph.end())
+        {
+            boost::add_edge(dag2this[src], dag2this[dst], _bglD);
+        }
+    }
+    //Add all weight edges that connects vertices within 'sub_graph'
+    BOOST_FOREACH(EdgeW e, edges(w))
+    {
+        Vertex src = source(e, w);
+        Vertex dst = target(e, w);
+        if(sub_graph.find(src) != sub_graph.end() and
+           sub_graph.find(dst) != sub_graph.end())
+        {
+            boost::add_edge(dag2this[src], dag2this[dst], w[e], _bglW);
+        }
+    }
+}
+
 void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
 {
     assert(_bglD[a].fusible(_bglD[b]));

@@ -120,6 +120,13 @@ public:
         _bglW = GraphW(boost::num_vertices(dag));
     }
 
+    /* Add the set of vertices 'sub_graph' to 'this' graph.
+     *
+     * @sub_graph  The set of vertices in 'dag' to add
+     * @dag        The source graph
+     */
+    void add_from_subgraph(const std::set<Vertex> &sub_graph, const GraphDW &dag);
+
     /* Removes both weight and dependency edge that connect v1 and v2
      *
      * @v1  Vertex
@@ -177,7 +184,7 @@ public:
         }
     }
 
-    /* Merge vertex 'a' and 'b' where 'b' is cleared and 'a' becomes 
+    /* Merge vertex 'a' and 'b' where 'b' is cleared and 'a' becomes
      * the merged vertex.
      *
      * @a          The surviving vertex
