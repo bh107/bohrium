@@ -80,8 +80,7 @@ public:
     Vertex add_vertex(const bh_ir_kernel &kernel)
     {
         Vertex d = boost::add_vertex(kernel, _bglD);
-        Vertex w = boost::add_vertex(_bglW);
-        assert(w == d);
+        boost::add_vertex(_bglW);
 
         //Add edges
         BOOST_REVERSE_FOREACH(Vertex v, vertices(_bglD))

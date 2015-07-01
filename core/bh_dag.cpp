@@ -580,6 +580,11 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
 {
     const GraphD &d = dag.bglD();
     const GraphW &w = dag.bglW();
+    if(num_vertices(d) != num_vertices(w))
+    {
+        cerr << "blgD and bglW has not the same number of vertices!" << endl;
+        goto fail;
+    }
 
     //Check for instruction duplications and vanishings
     {
