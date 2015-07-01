@@ -42,10 +42,10 @@ ResourceManager::ResourceManager(bh_component* _component)
     , _asyncCompile(true)
 
 {
-    _verbose = bh_component_config_lookup_bool(component, "verbose", 0);
-    _timing = bh_component_config_lookup_bool(component, "timing", 0);
-    _printSource = bh_component_config_lookup_bool(component, "print_source", 0);
-    bool forceCPU  = bh_component_config_lookup_bool(component, "force_cpu", 0);
+    _verbose = bh_component_config_lookup_bool(component, "verbose", false);
+    _timing = bh_component_config_lookup_bool(component, "timing", false);
+    _printSource = bh_component_config_lookup_bool(component, "print_source", false);
+    bool forceCPU  = bh_component_config_lookup_bool(component, "force_cpu", false);
     char* dir = bh_component_config_lookup(component, "include");
     if (dir == NULL)
         compilerOptions = std::string("-I/opt/bohrium/gpu/include");

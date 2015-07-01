@@ -146,8 +146,8 @@ DLLEXPORT bh_error bh_component_extmethod(const bh_component *self,
  */
 DLLEXPORT char* bh_component_config_lookup(const bh_component *component,
                                            const char* key);
-DLLEXPORT int bh_component_config_lookup_bool(const bh_component *component,
-                                              const char* key, int notfound);
+DLLEXPORT bool bh_component_config_lookup_bool(const bh_component *component,
+                                               const char* key, bool notfound);
 DLLEXPORT int bh_component_config_lookup_int(const bh_component *component,
                                              const char* key, int notfound);
 DLLEXPORT double bh_component_config_lookup_double(const bh_component *component,
