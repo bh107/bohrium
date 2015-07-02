@@ -157,6 +157,21 @@ inline Slice _SE(int begin, int end)
     return _(begin, end-1, 1);
 }
 
+inline Slice _ALL(void)
+{
+    return _(0, -1, 1);
+}
+
+inline Slice _ABF(void)
+{
+    return _(1, -1, 1);
+}
+
+inline Slice _ABL(void)
+{
+    return _(0, -2, 1);
+}
+
 //
 // The Abstraction
 //
