@@ -132,17 +132,18 @@ multi_array<T>& randu(const Dimensions&... shape)
     multi_array<uint64_t>* rand_result = new multi_array<uint64_t>(nelements);
     rand_result->link();
     bh_random(*rand_result, state, key);
-
-    bh_divide(*rand_result,
-              *rand_result,
-              std::numeric_limits<uint64_t>::max());        // Map them to [0,1]
     rand_result->setTemp(true);
-
+    
     multi_array<T>* result = new multi_array<T>(nelements); // Convert their type
     result->link();
     bh_identity(*result, *rand_result);
-    result->setTemp(true);
 
+    bh_divide(
+        *result,
+        *result,
+        (T)std::numeric_limits<uint64_t>::max());           // Map to [0,1]
+
+    result->setTemp(true);
     return view_as(*result, shape...);                      // Reshape them
 }
 
