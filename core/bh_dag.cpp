@@ -809,58 +809,5 @@ void fuse_greedy(GraphDW &dag)
     assert(dag_validate(dag));
 }
 
-void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores)
-{
-    //Help function to find and sort the weight edges.
-    struct
-    {
-        void operator()(const GraphDW &g, vector<EdgeW> &edge_list,
-                        const set<Vertex> *ignores)
-        {
-            if(ignores == NULL)
-            {
-                BOOST_FOREACH(const EdgeW &e, edges(g.bglW()))
-                {
-                    edge_list.push_back(e);
-                }
-            }
-            else
-            {
-                BOOST_FOREACH(const EdgeW &e, edges(g.bglW()))
-                {
-                    if(ignores->find(source(e, g.bglW())) == ignores->end() and
-                       ignores->find(target(e, g.bglW())) == ignores->end())
-                        edge_list.push_back(e);
-                }
-            }
-            sort_weights(g.bglW(), edge_list);
-        }
-    }get_sorted_edges;
-
-    vector<EdgeW> sorted;
-    while(true)
-    {
-        dag.transitive_reduction();
-        sorted.clear();
-        get_sorted_edges(dag, sorted, ignores);
-
-        if(sorted.size() == 0)
-            break;//No more fusible edges left
-
-        EdgeW &e = sorted[0];
-        Vertex a = source(e, dag.bglW());
-        Vertex b = target(e, dag.bglW());
-        if(path_exist(a, b, dag.bglD(), false))
-            dag.merge_vertices(a, b);
-        else
-            dag.merge_vertices(b, a);
-
-        //Note: since we call transitive_reduction() in each iteration,
-        //the merge will never introduce cyclic dependencies.
-        assert(not cycles(dag.bglD()));
-    }
-    assert(dag_validate(dag));
-}
-
 }} //namespace bohrium::dag
 

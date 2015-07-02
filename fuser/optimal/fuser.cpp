@@ -228,15 +228,15 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
 }
 
 /* Find the optimal solution through branch and bound */
-GraphD branch_n_bound(bh_ir &bhir, const GraphDW &dag, const vector<EdgeW> &edges2explore, FuseCache &cache,
-                      const set<Vertex> &ignores, const vector<bool> &init_mask, unsigned int init_offset=0)
+void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explore, FuseCache &cache,
+                      const vector<bool> &init_mask, unsigned int init_offset=0)
 {
     //We use the greedy algorithm to find a good initial guess
     int64_t best_cost;
     GraphD best_dag;
     {
         GraphDW new_dag(dag);
-        fuse_greedy(new_dag, &ignores);
+        fuse_greedy(new_dag);
         best_dag = new_dag.bglD();
         best_cost = dag_cost(best_dag);
     }
@@ -263,7 +263,7 @@ GraphD branch_n_bound(bh_ir &bhir, const GraphDW &dag, const vector<EdgeW> &edge
         int64_t cost;
         tie(cost, fusibility) = fuse_mask(best_cost, edges2explore, dag, mask, bhir, new_dag);
 
-        if(explore_count%1000000 == 0)
+        if(explore_count%10000 == 0)
         {
             #pragma omp critical
             {
@@ -320,18 +320,15 @@ GraphD branch_n_bound(bh_ir &bhir, const GraphDW &dag, const vector<EdgeW> &edge
             tasks.push(m1, i+1);
         }
     }}
-    return best_dag;
+    dag = best_dag;
 }
 
-void get_edges2explore(const GraphDW &dag, const set<Vertex> &vertices2explore,
-                       vector<EdgeW> &edges2explore)
+void get_edges2explore(const GraphDW &dag, vector<EdgeW> &edges2explore)
 {
     //The list of edges that we should try to merge
     BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
     {
-        if(vertices2explore.find(source(e, dag.bglW())) != vertices2explore.end() or
-           vertices2explore.find(target(e, dag.bglW())) != vertices2explore.end())
-            edges2explore.push_back(e);
+        edges2explore.push_back(e);
     }
     sort_weights(dag.bglW(), edges2explore);
     string order;
@@ -358,26 +355,17 @@ void get_edges2explore(const GraphDW &dag, const set<Vertex> &vertices2explore,
             order = "regular";
         }
     }
-    cout << "BH_FUSER_OPTIMAL_ORDER: " << order << endl;
+    //cout << "BH_FUSER_OPTIMAL_ORDER: " << order << endl;
 }
 
 /* Fuse the 'dag' optimally */
-void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2explore,
-                  GraphD &output, FuseCache &cache)
+void fuse_optimal(bh_ir &bhir, GraphDW &dag, FuseCache &cache)
 {
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
-    get_edges2explore(dag, vertices2explore, edges2explore);
+    get_edges2explore(dag, edges2explore);
     if(edges2explore.size() == 0)
         return;
-
-    //We need the set of vertices that the greedy fusion must ignore
-    set<Vertex> ignores;
-    BOOST_FOREACH(Vertex v, vertices(dag.bglD()))
-    {
-        if(vertices2explore.find(v) == vertices2explore.end())
-            ignores.insert(v);
-    }
 
     //Check for a preloaded initial condition
     vector<bool> mask(edges2explore.size(), true);
@@ -402,85 +390,25 @@ void fuse_optimal(bh_ir &bhir, const GraphDW &dag, const set<Vertex> &vertices2e
     }
 
     cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-    output = branch_n_bound(bhir, dag, edges2explore, cache, ignores, mask, preload_offset);
+    branch_n_bound(bhir, dag, edges2explore, cache, mask, preload_offset);
 }
 
 void do_fusion(bh_ir &bhir, FuseCache &cache)
 {
-    vector<bh_ir_kernel> kernel_list;
+    GraphDW dag;
+    from_bhir(bhir, dag);
+    vector<GraphDW> dags;
+    split(dag, dags);
+    assert(dag_validate(bhir, dags));
+    BOOST_FOREACH(GraphDW &d, dags)
     {
-        GraphDW dag;
-        from_bhir(bhir, dag);
-        fill_kernel_list(dag.bglD(), kernel_list);
+        fuse_gently(d);
+        d.transitive_reduction();
+        fuse_optimal(bhir, d, cache);
     }
-    while(true)
-    {
-//        cout << endl << "Starting new round." << endl;
-        GraphDW dag;
-        from_kernels(kernel_list, dag);
-        fuse_gently(dag);
-        dag.transitive_reduction();
-        assert(dag_validate(dag));
-
-        vector<set<Vertex> > component2vertices;
-        {
-            vector<Vertex> vertex2component(num_vertices(dag.bglW()));
-            uint64_t num = connected_components(dag.bglW(), &vertex2component[0]);
-            component2vertices.resize(num);
-            for(Vertex v=0; v<vertex2component.size(); ++v)
-            {
-                component2vertices[vertex2component[v]].insert(v);
-            }
-        }
-
-/*        {
-            uint64_t component_id = 0;
-            BOOST_FOREACH(set<Vertex> &vertices, component2vertices)
-            {
-                cout << "Component " << component_id << ": ";
-                BOOST_FOREACH(Vertex v, vertices)
-                {
-                    cout << v << ", ";
-                }
-                cout << endl;
-                ++component_id;
-            }
-        }
-*/
-
-        //Find the smallest component with more than one vertex
-        uint64_t comp_size=num_vertices(dag.bglW())+1;
-        int comp_id=-1;
-        for(uint64_t i=0; i < component2vertices.size(); ++i)
-        {
-            const uint64_t size = component2vertices[i].size();
-           if(1 < size and size < comp_size)
-           {
-               comp_size = size;
-               comp_id = i;
-           }
-        }
-
-        GraphD output;
-        if(comp_id == -1)
-        {
-//            cout << "Round ended, no more components to fuse" << endl << endl;
-            output = dag.bglD();
-        }
-        else
-        {
-//            cout << "Fusing component: " << comp_id << endl;
-            fuse_optimal(bhir, dag, component2vertices[comp_id], output, cache);
-        }
-        assert(num_vertices(output) > 0);
-        assert(dag_validate(output));
-        kernel_list.clear();
-        fill_kernel_list(output, kernel_list);
-
-        if(comp_id == -1)
-            break;
-    }
-    bhir.kernel_list = kernel_list;
+    assert(dag_validate(bhir, dags));
+    BOOST_FOREACH(GraphDW &d, dags)
+        fill_kernel_list(d.bglD(), bhir.kernel_list);
 }
 
 void fuser(bh_ir &bhir, FuseCache &cache)
