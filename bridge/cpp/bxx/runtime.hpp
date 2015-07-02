@@ -31,7 +31,7 @@ inline Runtime& Runtime::instance()
     return instance;
 }
 
-inline Runtime::Runtime() : extension_count(BH_MAX_OPCODE_ID+1), queue_size(0)
+inline Runtime::Runtime() : global_random_seed_(0), extension_count(BH_MAX_OPCODE_ID+1), queue_size(0)
 {
     bh_error err;
     char err_msg[1000];
@@ -402,6 +402,14 @@ T scalar(multi_array<T>& op)
 inline void Runtime::trash(bh_base *base)
 {
     garbage.push_back(base);
+}
+
+inline uint64_t Runtime::getRandSeed(void) {
+    return global_random_seed_;
+}
+
+inline void Runtime::setRandSeed(uint64_t seed) {
+    global_random_seed_ = seed;
 }
 
 }

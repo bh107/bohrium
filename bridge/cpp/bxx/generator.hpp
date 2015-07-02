@@ -76,14 +76,27 @@ multi_array<T>& zeros(const Dimensions&... shape)
 //
 // Sugar
 
+inline void rand_set_seed(uint64_t seed)
+{
+    Runtime::instance().setRandSeed(seed);
+}
+
+inline uint64_t rand_get_seed(void)
+{
+    return Runtime::instance().getRandSeed();
+}
+
 template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
 {
     int64_t nelements = nelements_shape(shape...);
+    
+    uint64_t key = rand_get_seed();
+    rand_set_seed(key+1);
                                                             // Generate numbers
     multi_array<uint64_t>* rand_result = new multi_array<uint64_t>(nelements);
     rand_result->link();
-    bh_random(*rand_result, (uint64_t)0, (uint64_t)time(NULL));
+    bh_random(*rand_result, (uint64_t)0, key);
     rand_result->setTemp(true);
     
     multi_array<T>* result = new multi_array<T>(nelements); // Convert their type

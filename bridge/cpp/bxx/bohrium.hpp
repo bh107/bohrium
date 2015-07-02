@@ -366,11 +366,16 @@ public:
 
     void trash(bh_base* base);
 
+    uint64_t getRandSeed(void);                 // Get and set the global random seed
+    void setRandSeed(uint64_t);
+
     std::map<bh_base*, size_t> ref_count;       // Count references to bh_base
     std::map<bh_base*, size_t> ext_allocated;   // Lookup register for externally allocated data
 
 private:
-                                                // Bohrium
+    
+    uint64_t    global_random_seed_;
+                                            // Bohrium
     bh_component        bridge;
     bh_component_iface  *runtime;
 
