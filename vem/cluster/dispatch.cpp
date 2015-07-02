@@ -329,7 +329,7 @@ void dispatch_bhir(bh_ir *bhir)
     std::stack<bh_base*> base_darys;
 
     //Pack the array list.
-    for(bh_intp i=0; i<bhir->instr_list.size(); ++i)
+    for(uint64_t i=0; i<bhir->instr_list.size(); ++i)
     {
         const bh_instruction *inst = &bhir->instr_list[i];
         int nop = bh_operands_in_instruction(inst);
