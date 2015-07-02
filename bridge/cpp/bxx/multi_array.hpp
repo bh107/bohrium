@@ -300,16 +300,37 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     bool first = true;
     typename multi_array<T>::iterator it  = rhs.begin();
     typename multi_array<T>::iterator end = rhs.end();
-    stream << "[ ";
-    for(; it != end; it++) {
-        if (!first) {
-            stream  << ", ";
-        } else {
-            first = false;
+
+    if (2 == rhs.getRank()) {
+        int64_t inner = rhs.shape(1);
+        size_t nelements = rhs.len();
+        
+        for(int c=0; it != end; ++c, ++it) {
+            if ((c % inner) == 0) {
+                stream << " [ ";
+            }
+            stream << *it << " ";
+            if (((c+1) % inner) == 0) {
+                stream << "]";
+                if (((int)nelements-1) != c) {
+                    stream << std::endl;
+                }
+            } else {
+                stream << " ";
+            }
         }
-        stream << *it;
+    } else {
+        stream << "[ ";
+        for(; it != end; it++) {
+            if (!first) {
+                stream  << ", ";
+            } else {
+                first = false;
+            }
+            stream << *it;
+        }
+        stream << " ]" << std::endl;
     }
-    stream << " ]" << std::endl;
 
     if (rhs.getTemp()) {    // Cleanup temporary
         delete &rhs;
