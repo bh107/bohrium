@@ -3,8 +3,8 @@ compiler:
   - gcc
   - clang
 env:
-   - BH_STACK="stack_gpu" BH_GPU_VERBOSE=true LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH" BH_EXCLUDE="--exclude-test test_gauss  --exclude-test test_gauss_20x20 --exclude-test test_jacobi --exclude-test test_jacobi_fixed --exclude-test test_idl_init"
-   - BH_STACK="stack_gpu" BH_GPU_VERBOSE=true BH_GPU_COMPILE=sync LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
+   - OMP_NUM_THREADS=1 BH_CPU_BIND=0 BH_STACK="stack_gpu" BH_GPU_VERBOSE=true LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
+   - OMP_NUM_THREADS=1 BH_CPU_BIND=0 BH_STACK="stack_gpu" BH_GPU_VERBOSE=true BH_GPU_COMPILE=sync LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
    - OMP_NUM_THREADS=4 BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=1 LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
    - OMP_NUM_THREADS=4 BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=0 LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
    - OMP_NUM_THREADS=4 BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=1 LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
