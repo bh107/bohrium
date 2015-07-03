@@ -38,6 +38,24 @@ fuseprinter = node
 node = gpu
 gpu = cpu
 
+[stack_cpu_debug_t]
+type = stack
+stack_cpu_debug_t = bcexp_cpu
+bcexp_cpu = bccon
+bccon = topological
+topological = fuseprinter
+fuseprinter = node
+node = cpu
+
+[stack_cpu_debug_g]
+type = stack
+stack_cpu_debug_g = bcexp_cpu
+bcexp_cpu = bccon
+bccon = greedy
+greedy = fuseprinter
+fuseprinter = node
+node = cpu
+
 [stack_cpu_greedy]
 type = stack
 stack_cpu_greedy = bcexp_cpu
@@ -193,12 +211,13 @@ timing = false
 type = ve
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
+timing = 0
 bind = 1
 thread_limit = 0
 vcache_size = 10
 preload = 1
 jit_level = 1
-jit_dumpsrc = 0
+jit_dumpsrc = 1
 compiler_cmd="${VE_CPU_COMPILER_CMD}"
 compiler_inc="${VE_CPU_COMPILER_INC}"
 compiler_lib="${VE_CPU_COMPILER_LIB}"
