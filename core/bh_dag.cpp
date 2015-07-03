@@ -777,6 +777,78 @@ void fuse_gently(GraphDW &dag)
     assert(dag_validate(dag));
 }
 
+bool bases_exist(const GraphD &dag, vector<bh_base*> bases, Vertex ignore)
+{
+    BOOST_FOREACH(Vertex v, boost::vertices(dag))
+    {
+        if(v == ignore)
+            continue;
+        auto par = dag[v].get_parameters().set();
+        BOOST_FOREACH(bh_base *b, bases)
+        {
+            if(par.find(b) != par.end())
+                return true;
+        }
+    }
+    return false;
+}
+
+void fuse_gently2(GraphDW &dag)
+{
+    const GraphD &d = dag.bglD();
+    set<Vertex> vs(vertices(d).first, vertices(d).second);
+    while(not vs.empty())
+    {
+        //Lets find and merge a "single ending" vertex
+        set<Vertex>::iterator it=vs.begin();
+        for(; it != vs.end(); ++it)
+        {
+            /*
+            if(in_degree(*it, d) == 0 and out_degree(*it, d) == 1)
+            {
+                auto adj = adjacent_vertices(*it, d);
+                Vertex v = *adj.first;
+                if(d[*it].input_and_output_subset_of(d[v]))
+                {
+                    if(d[*it].fusible(d[v]))
+                        dag.merge_vertices(v, *it, false);
+                    vs.erase(it);
+                    break;
+                }
+            }*/
+            if(in_degree(*it, d) == 1 and out_degree(*it, d) == 0)
+            {
+                auto adj = inv_adjacent_vertices(*it, d);
+                Vertex v = *adj.first;
+
+                vector<bh_base*> subset_preventers;
+                d[*it].input_and_output_subset_of(d[v], subset_preventers);
+     //           cout << "(" << *it << "," << v << ") subset_preventers: ";
+     //           BOOST_FOREACH(bh_base *b, subset_preventers)
+     //               cout << b << ",";
+     //           cout << endl;
+                if(not bases_exist(d, subset_preventers, *it))
+                {
+      //              cout << "local bases!" << endl;
+                    if(d[*it].fusible(d[v]))
+                        dag.merge_vertices(v, *it, true);
+                    vs.erase(it);
+                    break;
+                }
+            }
+        }
+        //pprint(d, "after.dot");
+        if(it == vs.end())
+            break;//No single ending vertex found
+
+        //Note that 'vs' is maintained since the extracted vertex '*it'
+        //is the only vertex removed by the merge
+    }
+    dag.remove_cleared_vertices();
+    assert(dag_validate(dag));
+}
+
+
 void fuse_greedy(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();

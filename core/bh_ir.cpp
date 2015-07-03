@@ -346,6 +346,27 @@ bool bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other) const
     return true;
 }
 
+/* Determines whether the in-/output of 'this' kernel is a subset of 'other'
+ *
+ * @other  The other kernel
+ * @return The boolean answer
+ */
+void bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other, vector<bh_base*> &subset_preventers) const
+{
+    const std::set<bh_view>& other_input_set  = other.get_input_set();
+    const std::set<bh_view>& other_output_set = other.get_output_set();
+    for (const bh_view& iv: input_set)
+    {
+        if (other_input_set.find(iv) == other_input_set.end() and other_output_set.find(iv) == other_output_set.end())
+            subset_preventers.push_back(iv.base);
+    }
+    for (const bh_view& ov: output_set)
+    {
+        if (other_output_set.find(ov) == other_output_set.end())
+            subset_preventers.push_back(ov.base);
+    }
+}
+
 /* Determines dependency between 'this' kernel and the instruction 'instr',
  * which is true when:
  *      'instr' writes to an array that 'this' access
