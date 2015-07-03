@@ -25,15 +25,23 @@ using namespace std;
 using namespace boost;
 using namespace bohrium::dag;
 
-static int filter_count=0;
+static int filter_count=1;
 void filter(const bh_ir &bhir)
 {
     GraphDW dag;
-    char filename[8000];
-
-    snprintf(filename, 8000, "dag-%d.dot", ++filter_count);
-    printf("fuseprinter: writing dag('%s').\n", filename);
 
     from_kernels(bhir.kernel_list, dag);
+    vector<GraphDW> dags;
+    split(dag, dags);
+    int i=0;
+    BOOST_FOREACH(GraphDW &d, dags)
+    {
+        char filename[8000];
+        snprintf(filename, 8000, "dag-%d-%d.dot", filter_count, ++i);
+        pprint(d, filename);
+    }
+    char filename[8000];
+    snprintf(filename, 8000, "dag-%d.dot", filter_count++);
+    printf("fuseprinter: writing dag('%s').\n", filename);
     pprint(dag, filename);
 }
