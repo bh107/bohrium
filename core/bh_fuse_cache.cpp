@@ -41,17 +41,17 @@ namespace bohrium {
 
 /* * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS * OBS
  * When designing an instruction hash function REMEMBER:
- * The hash string should either be of fixed length and all feilds 
- * contained also be of fixed legth OR unique seperators should be 
- * used for each variable length field and to seperate instruction 
- * hashed. The function hashOpcodeIdShapeSweepdim may be used as 
+ * The hash string should either be of fixed length and all feilds
+ * contained also be of fixed legth OR unique seperators should be
+ * used for each variable length field and to seperate instruction
+ * hashed. The function hashOpcodeIdShapeSweepdim may be used as
  * inspiration.
  */
 
 static const size_t inst_sep = SIZE_MAX;
 static const size_t op_sep   = SIZE_MAX-1;
 
-static void hashOpcodeOpidShapeidSweepdim(std::ostream& os, const bh_instruction& instr, 
+static void hashOpcodeOpidShapeidSweepdim(std::ostream& os, const bh_instruction& instr,
                                         BatchHash& batchHash)
 {
     /* The Instruction hash consists of the following fields:

@@ -116,7 +116,6 @@ public:
         filename = ss.str();
     }
 
-
 protected:
     // Serialization using Boost
     friend class boost::serialization::access;
@@ -161,6 +160,7 @@ public:
         dir_path = bh_component_config_lookup(&component, "cache_path");
         fuser_name = component.name;
         deactivated = not bh_component_config_lookup_bool(&component, "fuse_cache", true);
+        load_from_files();
     }
 
     /* Insert a 'kernel_list' into the fuse cache
@@ -185,7 +185,7 @@ public:
     /* Writes the cache to files */
     void write_to_files() const;
 
-    /* Loads the cache from prevuoisly written files */
+    /* Loads the cache from previously written files */
     void load_from_files();
 };
 
