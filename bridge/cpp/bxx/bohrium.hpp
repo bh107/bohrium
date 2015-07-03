@@ -172,6 +172,11 @@ inline Slice _ABL(void)
     return _(0, -2, 1);
 }
 
+inline Slice _INNER(void)
+{
+    return _(1, -2, 1);
+}
+
 //
 // The Abstraction
 //
