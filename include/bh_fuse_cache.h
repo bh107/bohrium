@@ -160,7 +160,8 @@ public:
         dir_path = bh_component_config_lookup(&component, "cache_path");
         fuser_name = component.name;
         deactivated = not bh_component_config_lookup_bool(&component, "fuse_cache", true);
-        load_from_files();
+        if(not deactivated)
+            load_from_files();
     }
 
     /* Insert a 'kernel_list' into the fuse cache
