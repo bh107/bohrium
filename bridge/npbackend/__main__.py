@@ -3,7 +3,6 @@
 #In this module we implement an "as numpy" hack which makes it possible to
 #utilize Bohrium using the command line argument "python -m bohrium.as_numpy"
 
-from __future__ import print_function
 import sys
 import os
 import numpy
@@ -19,5 +18,5 @@ else:
 if len(sys.argv) > 0:
     execfile(sys.argv[0])
 else:
-    print('ERR: the "-m bohrium" does not support interactive mode');
+    print 'ERR: the "-m bohrium" does not support interactive mode';
 
