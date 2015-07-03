@@ -95,7 +95,6 @@ multi_array<T>::multi_array(bh_base* base, uint64_t rank, const int64_t start, c
 template <typename T>           // Copy constructor same element type
 multi_array<T>::multi_array(const multi_array<T>& operand) : temp_(false), slicing_dim_(-1)
 {
-    //std::cout << "Copy constructor, same type." << std::endl;
     meta = operand.meta;
     meta.base = NULL;
     meta.start = 0;
@@ -111,7 +110,6 @@ template <typename T>           // Copy constructor different element type
 template <typename OtherT>
 multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp_(false), slicing_dim_(-1)
 {
-    //std::cout << "Copy constructor, different type." << std::endl;
     meta.base   = NULL;
     meta.ndim   = operand.meta.ndim;
     meta.start  = 0;
@@ -538,16 +536,13 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
     if ((linked()) && (meta.base == rhs.getBase())) {  // Self-aliasing is a NOOP
-        //std::cout << "Self-aliasing..." << std::endl;
         return *this;
     }
 
     if (getTemp()) {                                            // Assign to view
         bh_identity(*this, rhs);
     } else {                                                    // Aliasing
-        //std::cout << "Aliasing..." << std::endl;
         if (linked()) {                         
-            //std::cout << "Unlinking..." << std::endl;
             Runtime::instance().ref_count[meta.base] -= 1;      // Decrement ref-count
             if (0==Runtime::instance().ref_count[meta.base]) {  // De-allocate it
                 bh_free(*this);                                 // Send BH_FREE to Bohrium
@@ -562,7 +557,6 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
         Runtime::instance().ref_count[meta.base] +=1;
 
         if (rhs.getTemp()) {        // Delete temps
-            //std::cout << "Deleting RHS" << std::endl;
             delete &rhs;            // The deletion will decrement the ref-count
         }
     }
