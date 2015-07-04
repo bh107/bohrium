@@ -77,33 +77,7 @@ public:
      *
      * @kernel  The kernel to bundle with the new vertex
      */
-    Vertex add_vertex(const bh_ir_kernel &kernel)
-    {
-        Vertex d = boost::add_vertex(kernel, _bglD);
-        boost::add_vertex(_bglW);
-
-        //Add edges
-        BOOST_REVERSE_FOREACH(Vertex v, vertices(_bglD))
-        {
-            if(d != v and not path_exist(v, d, _bglD, false))
-            {
-                bool dependency = false;
-                int dep = kernel.dependency(_bglD[v]);
-                if(dep)
-                {
-                    assert(dep == 1);
-                    dependency = true;
-                    boost::add_edge(v, d, _bglD);
-                }
-                int64_t cost = kernel.merge_cost_savings(_bglD[v]);
-                if((cost > 0) or (cost == 0 and dependency))
-                {
-                    boost::add_edge(v, d, EdgeWeight(cost), _bglW);
-                }
-            }
-        }
-        return d;
-    }
+    Vertex add_vertex(const bh_ir_kernel &kernel);
 
     /* The default and the copy constructors */
     GraphDW(){};
