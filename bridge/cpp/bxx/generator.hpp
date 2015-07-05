@@ -201,6 +201,28 @@ multi_array<T>& range(uint64_t nelem)
     return range<T>((int64_t)0, (int64_t)nelem, (int64_t)1);
 }
 
+template <typename T>
+multi_array<T>& linspace(int64_t begin, int64_t end, uint64_t nelements, bool endpoint)
+{
+    T dist = std::abs(begin - end);
+    T skip = endpoint ? dist/(T)(nelements-1) : dist/(T)nelements;
+
+    multi_array<uint32_t>* base_range = new multi_array<uint32_t>(nelements);
+    base_range->link();
+    bh_range(*base_range);
+    base_range->setTemp(true);
+
+    multi_array<T>* result = new multi_array<T>(nelements);
+    result->link();
+
+    bh_identity(*result, *base_range);
+    bh_multiply(*result, *result, skip);
+    bh_add(*result, *result, (T)begin);
+    
+    result->setTemp(true);
+    return *result;
+}
+
 }
 #endif
 
