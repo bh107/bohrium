@@ -29,6 +29,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/algorithm/string/predicate.hpp>
 
 #include <bh.h>
+#define BH_TIMING_SUM
+#include <bh_timing.hpp>
 #include "bh_ve_cpu.h"
 #include "engine.hpp"
 #include "timevault.hpp"
@@ -41,6 +43,10 @@ static bh_component myself;
 //
 // This is where the actual engine implementation is
 static bohrium::engine::cpu::Engine* engine = NULL;
+
+// Timing ID for timing of execute()
+static bh_intp exec_timing;
+static bh_intp timing;
 
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
@@ -85,7 +91,8 @@ bh_error bh_ve_cpu_init(const char *name)
     char* template_path = NULL;
     char* kernel_path = NULL;
 
-    if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "bind", 0, 2, &bind))                      or \
+    if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "timing", 0, 1, &timing))                      or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "bind", 0, 2, &bind))                      or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "thread_limit", 0, 2048, &thread_limit))   or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "vcache_size", 0, 100, &vcache_size))      or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "preload", 0, 1, &preload))                or \
@@ -100,6 +107,11 @@ bh_error bh_ve_cpu_init(const char *name)
         (BH_SUCCESS!=bh_component_config_path_option(&myself, "kernel_path", &kernel_path))             or \
         (BH_SUCCESS!=bh_component_config_path_option(&myself, "template_path", &template_path))) {
         return BH_ERROR;
+    }
+
+    // Initialize execute(...) timer
+    if (timing) {
+        exec_timing = bh_timer_new("[VE-CPU] Execution");
     }
 
     //
@@ -160,7 +172,16 @@ bh_error bh_ve_cpu_init(const char *name)
 /* Component interface: execute (see bh_component.h) */
 bh_error bh_ve_cpu_execute(bh_ir* bhir)
 {
+    bh_uint64 timestamp = 0;
+    if (timing) {
+        timestamp = bh_timer_stamp();
+    }
+
     bh_error res = engine->execute(bhir);
+
+    if (timing) {
+        bh_timer_add(exec_timing, timestamp, bh_timer_stamp());
+    }
 
     return res;
 }
@@ -172,6 +193,10 @@ bh_error bh_ve_cpu_shutdown(void)
 
     delete engine;
     engine = NULL;
+
+    if (timing) {
+        bh_timer_finalize(exec_timing);
+    }
 
     return BH_SUCCESS;
 }

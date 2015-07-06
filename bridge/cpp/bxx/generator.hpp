@@ -76,14 +76,39 @@ multi_array<T>& zeros(const Dimensions&... shape)
 //
 // Sugar
 
+inline void rand_set_seed(uint64_t seed)
+{
+    Runtime::instance().setRandSeed(seed);
+}
+
+inline uint64_t rand_get_seed(void)
+{
+    return Runtime::instance().getRandSeed();
+}
+
+inline void rand_set_state(uint64_t state)
+{
+    Runtime::instance().setRandState(state);
+}
+
+inline uint64_t rand_get_state(void)
+{
+    return Runtime::instance().getRandState();
+}
+
 template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
 {
     int64_t nelements = nelements_shape(shape...);
+    
+    uint64_t state  = rand_get_state();
+    uint64_t key    = rand_get_seed();
+
+    rand_set_state(state+nelements);
                                                             // Generate numbers
     multi_array<uint64_t>* rand_result = new multi_array<uint64_t>(nelements);
     rand_result->link();
-    bh_random(*rand_result, (uint64_t)0, (uint64_t)time(NULL));
+    bh_random(*rand_result, state, key);
     rand_result->setTemp(true);
     
     multi_array<T>* result = new multi_array<T>(nelements); // Convert their type
@@ -97,15 +122,29 @@ multi_array<T>& random(const Dimensions&... shape)
 template <typename T, typename ...Dimensions>
 multi_array<T>& randu(const Dimensions&... shape)
 {
-    multi_array<T>* result = &random<T>(shape...);  // Generate numbers
+    int64_t nelements = nelements_shape(shape...);
+    
+    uint64_t state  = rand_get_state();
+    uint64_t key    = rand_get_seed();
 
-    result->setTemp(false);                         // Map them to [0,1]
-    bh_divide(*result,
-              *result,
-              (T)std::numeric_limits<uint64_t>::max());
+    rand_set_state(state+nelements);
+                                                            // Generate numbers
+    multi_array<uint64_t>* rand_result = new multi_array<uint64_t>(nelements);
+    rand_result->link();
+    bh_random(*rand_result, state, key);
+    rand_result->setTemp(true);
+    
+    multi_array<T>* result = new multi_array<T>(nelements); // Convert their type
+    result->link();
+    bh_identity(*result, *rand_result);
+
+    bh_divide(
+        *result,
+        *result,
+        (T)std::numeric_limits<uint64_t>::max());           // Map to [0,1]
+
     result->setTemp(true);
-
-    return *result;
+    return view_as(*result, shape...);                      // Reshape them
 }
 
 //
