@@ -440,6 +440,7 @@ private:
 #include "scan.hpp"         // DSEL Scan operation
 #include "generator.hpp"    // DSEL Generators 
 #include "mapping.hpp"      // DSEL Gather / Scatter
+#include "grids.hpp"        // DSEL Grid constructors
 #include "movement.hpp"     // DSEL Export / import data from arrays
 #include "visuals.hpp"      // DSEL Visualization
 
