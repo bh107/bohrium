@@ -33,6 +33,22 @@ class test_black_scholes(BenchHelper, numpytest):
     def test_black_scholes(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
+class test_rosenbrock(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size = 100000
+
+        # Benchmark parameters
+        self.script     = "rosenbrock"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "10000*10"
+        self.inputfn    = "rosenbrock_input-{0}-100000.npz"
+
+    def test_rosenbrock(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
 """
 Cannot test:
 
