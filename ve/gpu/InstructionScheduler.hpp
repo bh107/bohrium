@@ -65,7 +65,7 @@ private:
     void endDim(std::ostringstream& source, 
                 std::ostringstream& indentss, 
                 std::vector<std::string>& beforesource, 
-                std::set<bh_view>& save,
+                std::map<size_t,bh_view>& save,
                 std::map<size_t,size_t>& incr_idx,
                 const std::vector<bh_index>& shape,
                 const size_t dims,
