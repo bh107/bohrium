@@ -277,7 +277,7 @@ inline int gcd(int a, int b)
     return b;
 }
 
-/* Returns the simplest view (fewest dimensions) that access 
+/* Returns the simplest view (fewest dimensions) that access
  * the same elements in the same pattern
  *
  * @view The view
@@ -320,7 +320,7 @@ bh_view bh_view_simplify(const bh_view& view)
 }
 
 /* Simplifies the given view down to the given shape.
- * If that is not possible an std::invalid_argument exception is thrown 
+ * If that is not possible an std::invalid_argument exception is thrown
  *
  * @view The view
  * @return The simplified view
@@ -330,7 +330,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
     assert(false); // TODO: complete rewrite under the assumption the cleandim has been run
     if (view.ndim < (bh_intp)shape.size())
     {
-        std::stringstream ss; 
+        std::stringstream ss;
         ss << "Can not simplify to more dimensions: ";
         ss << "shape: " << shape << " view: " << view;
         throw std::invalid_argument(ss.str());
@@ -362,7 +362,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
             {
                 continue;
             } else {
-                std::stringstream ss; 
+                std::stringstream ss;
                 ss << "Can not remove trailing dimensions of size > 1: ";
                 ss << "shape: " << shape << " view: " << view;
                 throw std::invalid_argument(ss.str());
@@ -370,7 +370,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
         }
         if (view.shape[i-1] > shape[res.ndim])
         {
-            std::stringstream ss; 
+            std::stringstream ss;
             ss << "Can not simplify to lower dimension size: ";
             ss << "shape: " << shape << " view: " << view;
             throw std::invalid_argument(ss.str());
@@ -396,7 +396,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
         ++res.ndim;
     if (res.ndim != (bh_intp)shape.size())
     {
-        std::stringstream ss; 
+        std::stringstream ss;
         ss << "Can not simplify to given shape: ";
         ss << "shape: " << shape << " view: " << view;
         throw std::invalid_argument(ss.str());
@@ -527,12 +527,14 @@ bool bh_view_disjoint(const bh_view *a, const bh_view *b)
 bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
 {
     const int a_nop = bh_operands(a->opcode);
+    const int b_nop = bh_operands(b->opcode);
+    if(a_nop == 0 or b_nop == 0)
+        return false;
     for(int i=0; i<a_nop; ++i)
     {
         if(not bh_view_disjoint(&b->operand[0], &a->operand[i]))
             return true;
     }
-    const int b_nop = bh_operands(b->opcode);
     for(int i=0; i<b_nop; ++i)
     {
         if(not bh_view_disjoint(&a->operand[0], &b->operand[i]))
@@ -541,7 +543,7 @@ bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
     return false;
 }
 
-/* Determines whether the opcode is a sweep opcode 
+/* Determines whether the opcode is a sweep opcode
  * i.e. either a reduction or an accumulate
  *
  * @opcode

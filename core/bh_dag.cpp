@@ -42,6 +42,59 @@ using namespace boost;
 namespace bohrium {
 namespace dag {
 
+Vertex GraphDW::add_vertex(const bh_ir_kernel &kernel)
+{
+    Vertex d = boost::add_vertex(kernel, _bglD);
+    boost::add_vertex(_bglW);
+
+    //Let's start by finding all base-arrays accessed by the kernel
+    set<bh_base *> bases;
+    BOOST_FOREACH(uint64_t instr_idx, kernel.instr_indexes)
+    {
+        const bh_instruction &instr = kernel.bhir->instr_list[instr_idx];
+        const int nop = bh_operands(instr.opcode);
+        for(int i=0; i<nop; ++i)
+        {
+            if(bh_is_constant(&instr.operand[i]))
+                continue;
+            bases.insert(instr.operand[i].base);
+        }
+    }
+
+    //Add edges
+    BOOST_FOREACH(bh_base *base, bases)
+    {
+        auto vs = base2vertices.find(base);
+        if(vs == base2vertices.end())//Unknown base-array
+        {
+            base2vertices[base].insert(d);
+            continue;
+        }
+        //Let's check all vertices that access the base-array.
+        BOOST_FOREACH(Vertex v, vs->second)
+        {
+            if(d != v and not path_exist(v, d, _bglD, false))
+            {
+                bool dependency = false;
+                int dep = kernel.dependency(_bglD[v]);
+                if(dep)
+                {
+                    assert(dep == 1);
+                    dependency = true;
+                    boost::add_edge(v, d, _bglD);
+                }
+                int64_t cost = kernel.merge_cost_savings(_bglD[v]);
+                if((cost > 0) or (cost == 0 and dependency))
+                {
+                    boost::add_edge(v, d, EdgeWeight(cost), _bglW);
+                }
+            }
+        }
+        vs->second.insert(d);
+    }
+    return d;
+}
+
 void GraphDW::add_from_subgraph(const set<Vertex> &sub_graph, const GraphDW &dag)
 {
     const GraphD &d = dag.bglD();

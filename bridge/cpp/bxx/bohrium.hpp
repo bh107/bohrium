@@ -157,6 +157,26 @@ inline Slice _SE(int begin, int end)
     return _(begin, end-1, 1);
 }
 
+inline Slice _ALL(void)
+{
+    return _(0, -1, 1);
+}
+
+inline Slice _ABF(void)
+{
+    return _(1, -1, 1);
+}
+
+inline Slice _ABL(void)
+{
+    return _(0, -2, 1);
+}
+
+inline Slice _INNER(void)
+{
+    return _(1, -2, 1);
+}
+
 //
 // The Abstraction
 //
@@ -366,12 +386,21 @@ public:
 
     void trash(bh_base* base);
 
+    uint64_t getRandSeed(void);                 // Get/set the global random seed and state
+    void setRandSeed(uint64_t);
+
+    uint64_t getRandState(void);                
+    void setRandState(uint64_t);
+
     std::map<bh_base*, size_t> ref_count;       // Count references to bh_base
     std::map<bh_base*, size_t> ext_allocated;   // Lookup register for externally allocated data
 
 private:
-                                                // Bohrium
-    bh_component        bridge;
+    
+    uint64_t    global_random_seed_;            // Random state and seed
+    uint64_t    global_random_state_;           // TODO: Should be encapsulated in a "sugar-layer"
+
+    bh_component        bridge;                 // Bohrium
     bh_component_iface  *runtime;
 
     std::map<std::string, bh_opcode> extensions;// Register of extensions
