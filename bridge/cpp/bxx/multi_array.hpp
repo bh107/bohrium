@@ -299,6 +299,7 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     typename multi_array<T>::iterator it  = rhs.begin();
     typename multi_array<T>::iterator end = rhs.end();
 
+    stream << std::scientific;
     if (2 == rhs.getRank()) {
         int64_t inner = rhs.shape(1);
         size_t nelements = rhs.len();
