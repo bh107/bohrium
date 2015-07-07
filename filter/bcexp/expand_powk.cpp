@@ -42,29 +42,29 @@ int64_t bh_get_integer(bh_constant constant)
 int Expander::expand_powk(bh_ir& bhir, int pc)
 {
     int start_pc = pc;                              
-    bh_instruction& instr = bhir.instr_list[pc];    // Grab the BH_POWER instruction
-    int64_t const k = 100;                          // Max exponent "unfolding"
+    bh_instruction& instr = bhir.instr_list[pc];        // Grab the BH_POWER instruction
+    int64_t const k = 100;                              // Max exponent "unfolding"
 
-    int64_t exponent = bh_get_integer(instr.constant);
-
-    if (!bh_is_constant(&instr.operand[2])) {       // Transformation does not apply
+    if (!bh_is_constant(&instr.operand[2])) {           // Transformation does not apply
         return 0;
     }
 
-    if ((exponent < 1) || (exponent > k)) {         // Transformation does not apply
+    int64_t exponent = bh_get_integer(instr.constant);  // Extract the exponent
+
+    if ((exponent < 0) || (exponent > k)) {             // Transformation does not apply
         return 0;
     }
 
     // TODO: Add support for this case by using intermediates.
-    if (instr.operand[0].base == instr.operand[1].base) {
+    if (instr.operand[0].base == instr.operand[1].base) {// Transformation does not apply
         return 0;
     }
 
-    bh_view out = instr.operand[0];                 // Grab operands
+    instr.opcode = BH_NONE;             // Lazy choice... no re-use just NOP it.
+    bh_view out = instr.operand[0];     // Grab operands
     bh_view in1 = instr.operand[1];
 
-    instr.opcode = BH_NONE;                         // Lazy choice... no re-use just NOP it.
-
+    // Transform BH_POWER into BH_MULTIPLY sequences.
     if (exponent == 0) {                                // x^0 = [1,1,...,1]
         inject(bhir, ++pc, BH_IDENTITY, out, 1);
     } else if (exponent == 1) {                         // x^1 = x
@@ -82,13 +82,12 @@ int Expander::expand_powk(bh_ir& bhir, int pc)
         inject(bhir, ++pc, BH_MULTIPLY, out, out, out);
         inject(bhir, ++pc, BH_MULTIPLY, out, out, in1);
     } else {
-        // TODO: Replace this with squaring.
         // Linear unroll.
         inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1); // First multiplication
         for(int exp=2; exp<exponent; ++exp) {           // The remaining
             inject(bhir, ++pc, BH_MULTIPLY, out, out, in1);
         }
-
+        // TODO: Replace this with squaring.
     }
 
     return pc-start_pc;
