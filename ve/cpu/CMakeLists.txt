@@ -101,9 +101,11 @@ else()
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} --param vect-max-version-for-alias-checks=100")
     endif()
 
-    # Check that the compiler supports OMP ATOMIC the way the engine uses it.
+    # Check that the compiler supports OMP ATOMIC
+    # Check that the compiler supports OMP SIMD
     if(OPENMP_FOUND)
         set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        # Check OMP-ATOMIC
         check_c_source_compiles( "
         #include <omp.h>
         int main(void){
@@ -115,14 +117,18 @@ else()
             }
             return 0;
         }" OPENMP_ATOMIC_FOUND)
-        if(OPENMP_ATOMIC_FOUND)
-            check_c_compiler_flag(-fopenmp-simd HAS_OPENMP_SIMD)
-            if (HAS_OPENMP_SIMD)
-                set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -fopenmp-simd")
-            endif()
-            set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} ${OpenMP_C_FLAGS}")
+        
+        # Check OMP-SIMD
+        check_c_compiler_flag(-fopenmp-simd HAS_OPENMP_SIMD)
+        if (HAS_OPENMP_SIMD)
+            set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -fopenmp-simd")
         endif()
+
+        # Set OMP compiler-flag
+        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} ${OpenMP_C_FLAGS}")
     endif()
+
+    # Set JIT compiler flags
     set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG}" PARENT_SCOPE)
 
 endif()
@@ -130,22 +136,37 @@ endif()
 #   The above are used by config.ini.in
 #
 
-
-
-if(OPENMP_FOUND AND OPENMP_ATOMIC_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-
+if(OPENMP_FOUND)
+    # Look for HWLOC
     find_package(HWLOC)
     set_package_properties(HWLOC PROPERTIES DESCRIPTION "hardware locality (hwloc)" URL "http://www.open-mpi.org/projects/hwloc/")
     set_package_properties(HWLOC PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it to control thread affinity.")
 
+    # Tell CPU-engine that it can use HWLOC for thread-control
     if(HWLOC_FOUND)
         include_directories(${HWLOC_INCLUDE_DIR})
         target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
         add_definitions(-DVE_CPU_BIND)
     endif()
+
+    # Tell CPU-engine that it can use the ATOMIC directive
+    if(OPENMP_ATOMIC_FOUND)
+        add_definitions(-DVE_CPU_OMP_ATOMIC)
+    else()
+        message("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        message("!!                                                    !!")
+        message("!!     Compiler does not support OpenMP ATOMIC        !!")
+        message("!!                                                    !!")
+        message("!!     Falling back to OpenMP Critical,               !!")
+        message("!!     this will impact performance negatively.       !!")
+        message("!!                                                    !!")
+        message("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    endif()
+
+    # Assign OpenMP compile-flags
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 else()
     if(APPLE)
         if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
