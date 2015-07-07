@@ -65,9 +65,30 @@ int Expander::expand_powk(bh_ir& bhir, int pc)
 
     instr.opcode = BH_NONE;                         // Lazy choice... no re-use just NOP it.
 
-    inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1); // First multiplication
-    for(int exp=2; exp<exponent; ++exp) {           // The remaining
+    if (exponent == 0) {                                // x^0 = [1,1,...,1]
+        inject(bhir, ++pc, BH_IDENTITY, out, 1);
+    } else if (exponent == 1) {                         // x^1 = x
+        inject(bhir, ++pc, BH_IDENTITY, out, in1);
+    } else if (exponent == 2) {                         // x^2 = x*x
+        inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1);
+    } else if (exponent == 3) {                         // x^3 = x*x*x
+        inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1); 
         inject(bhir, ++pc, BH_MULTIPLY, out, out, in1);
+    } else if (exponent == 4) {                         // x^4 = (x*x)*(x*x)
+        inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1);
+        inject(bhir, ++pc, BH_MULTIPLY, out, out, out);
+    } else if (exponent == 5) {                         // x^5 = (x*x)*(x*x)*x
+        inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1);
+        inject(bhir, ++pc, BH_MULTIPLY, out, out, out);
+        inject(bhir, ++pc, BH_MULTIPLY, out, out, in1);
+    } else {
+        // TODO: Replace this with squaring.
+        // Linear unroll.
+        inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1); // First multiplication
+        for(int exp=2; exp<exponent; ++exp) {           // The remaining
+            inject(bhir, ++pc, BH_MULTIPLY, out, out, in1);
+        }
+
     }
 
     return pc-start_pc;
