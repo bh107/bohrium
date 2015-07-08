@@ -66,10 +66,10 @@ class GraphDW
 protected:
     GraphD _bglD;
     GraphW _bglW;
-    //Map from base-array to the set of vertices that accesses it
-    std::map<bh_base*, std::set<Vertex> > base2vertices;
 
 public:
+    //Map from base-array to the set of vertices that accesses it
+    std::map<bh_base*, std::set<Vertex> > base2vertices;
     const GraphD &bglD() const {return _bglD;}
     const GraphW &bglW() const {return _bglW;}
 
