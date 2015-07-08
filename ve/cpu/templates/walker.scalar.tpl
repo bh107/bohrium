@@ -2,6 +2,8 @@
 //	* MAP|ZIP|GENERATE on SCALAR LAYOUT 
 //
 
+int64_t eidx = 0;
+
 // Walker declaration(s) - begin
 {{WALKER_DECLARATION}}
 // Walker declaration(s) - end
