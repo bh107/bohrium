@@ -616,6 +616,7 @@ string Walker::generate_source(void)
             subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
             subjects["ETYPE"] = out->etype();
             subjects["ATYPE"] = in2->etype();
+
             // Declare local accumulator var
             subjects["ACCU_LOCAL_DECLARE"] = _line(_declare_init(
                 in1->etype(),
@@ -645,19 +646,21 @@ string Walker::generate_source(void)
 
         // Reduction specfics
         if ((kernel_.omask() & REDUCTION)>0) {
-            // Initialize the accumulator 
-            subjects["ACCU_OPD_INIT"] = _line(_assign(
-                _deref(out->first()),
-                oper_neutral_element(tac->oper, in1->meta().etype)
-            ));
-            // Syncronize accumulator and local accumulator var
-            subjects["ACCU_OPD_SYNC"] = _line(synced_oper(
-                tac->oper,
-                in1->meta().etype,
-                _deref(out->first()),
-                _deref(out->first()),
-                out->accu()
-            ));
+            if ((out->meta().layout & (SCALAR|CONTIGUOUS|CONSECUTIVE|STRIDED))>0) {
+                // Initialize the accumulator 
+                subjects["ACCU_OPD_INIT"] = _line(_assign(
+                    _deref(out->first()),
+                    oper_neutral_element(tac->oper, in1->meta().etype)
+                ));
+                // Syncronize accumulator and local accumulator var
+                subjects["ACCU_OPD_SYNC"] = _line(synced_oper(
+                    tac->oper,
+                    in1->meta().etype,
+                    _deref(out->first()),
+                    _deref(out->first()),
+                    out->accu()
+                ));
+            }
         }
 
     // MAP | ZIP | REDUCE on STRIDED LAYOUT and RANK > 1
@@ -679,19 +682,21 @@ string Walker::generate_source(void)
 
             // Reduction specfics
             if ((kernel_.omask() & REDUCE_COMPLETE)>0) {
-                // Initialize the accumulator 
-                subjects["ACCU_OPD_INIT"] = _line(_assign(
-                    _deref(out->first()),
-                    oper_neutral_element(tac->oper, in1->meta().etype)
-                ));
-                // Syncronize accumulator and local accumulator var
-                subjects["ACCU_OPD_SYNC"] = _line(synced_oper(
-                    tac->oper,
-                    in1->meta().etype,
-                    _deref(out->first()),
-                    _deref(out->first()),
-                    out->accu()
-                ));
+                if ((out->meta().layout & (SCALAR|CONTIGUOUS|CONSECUTIVE|STRIDED))>0) {
+                    // Initialize the accumulator 
+                    subjects["ACCU_OPD_INIT"] = _line(_assign(
+                        _deref(out->first()),
+                        oper_neutral_element(tac->oper, in1->meta().etype)
+                    ));
+                    // Syncronize accumulator and local accumulator var
+                    subjects["ACCU_OPD_SYNC"] = _line(synced_oper(
+                        tac->oper,
+                        in1->meta().etype,
+                        _deref(out->first()),
+                        _deref(out->first()),
+                        out->accu()
+                    ));
+                }
             }
 
         // MAP | ZIP | REDUCE_PARTIAL and NOT REDUCE_COMPLETE
