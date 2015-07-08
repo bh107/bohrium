@@ -93,6 +93,13 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
     return BH_SUCCESS;
 }
 
+bool InstructionScheduler::callQueueEmpty()
+{
+    kernelMutex.lock();
+    bool res = callQueue.empty();
+    kernelMutex.unlock();
+    return res;
+}
 
 void InstructionScheduler::sync(const std::set<bh_base*>& arrays)
 {
@@ -101,8 +108,10 @@ void InstructionScheduler::sync(const std::set<bh_base*>& arrays)
         ArrayMap::iterator it = arrayMap.find(base);
         if  (it == arrayMap.end())
             continue;
-        while (!callQueue.empty())
+        while (!callQueueEmpty())
+        {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
         it->second->sync();
     }
 }
@@ -117,6 +126,14 @@ void InstructionScheduler::discard(const std::set<bh_base*>& arrays)
             continue;
         delete it->second;
         arrayMap.erase(it);
+    }
+}
+
+InstructionScheduler::~InstructionScheduler()
+{
+    while (!callQueueEmpty())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
