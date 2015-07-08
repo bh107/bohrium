@@ -168,6 +168,8 @@ bool ResourceManager::setContext(const std::vector<cl::Platform>& platforms, cl_
 
 ResourceManager::~ResourceManager()
 {
+    for (cl::CommandQueue& commandQueue: commandQueues)
+        commandQueue.finish();
     if (_timing)
     {
         delete codeGen;
