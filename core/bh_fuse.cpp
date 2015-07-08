@@ -284,6 +284,12 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
         return false;
     // a is NOT reduction, b is reduction
     } else if (not bh_opcode_is_reduction(a->opcode) and bh_opcode_is_reduction(b->opcode)) {
+
+        if (not is_scalar(&b->operand[0])) {    // Do not fuse partial reductions
+            return false;                       // TODO: Improve CPU-VE code-generation such that
+        }                                       //       performance is not degraded when including
+                                                //       them in kernels.
+
         const bh_intp *red_shape = b->operand[1].shape;
         const bh_intp red_ndim   = b->operand[1].ndim;
 
@@ -312,6 +318,12 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
         }
     // a is reduction, b is NOT reduction
     } else if (bh_opcode_is_reduction(a->opcode) and not bh_opcode_is_reduction(b->opcode)) {
+
+        if (not is_scalar(&a->operand[0])) {    // Do not fuse partial reductions
+            return false;                       // TODO: Improve CPU-VE code-generation such that
+        }                                       //       performance is not degraded when including
+                                                //       them in kernels.
+
         const bh_intp *red_shape = a->operand[1].shape;
         const bh_intp red_ndim   = a->operand[1].ndim;
 
