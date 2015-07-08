@@ -8,8 +8,13 @@
     const int64_t work_split= iterspace->nelem / nworkers;
     const int64_t work_spill= iterspace->nelem % nworkers;
 
+    // Acculumator INNER_DIM - end
     {{WALKER_INNER_DIM}}
+    // Acculumator INNER_DIM - end
+
+    // Acculumator INIT - begin
 	{{ACCU_OPD_INIT}}
+    // Acculumator INIT - end
 
     #pragma omp parallel num_threads(nworkers)
     {
@@ -39,7 +44,9 @@
         {{WALKER_OFFSET}}
         // Walker offset(s) - end
 
+        // Accumulator DECLARE - begin
 		{{ACCU_LOCAL_DECLARE}}
+        // Accumulator DECLARE - end        
         {{PRAGMA_SIMD}}
         for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
             // Apply operator(s) on operands - begin
@@ -50,7 +57,9 @@
             {{WALKER_STEP_INNER}}
             // Walker step INNER - end
         }
+        // Accumulator SYNC - begin
         {{ACCU_OPD_SYNC}}
+        // Accumulator SYNC - end
         if (0==tid) {
             {{WRITE_EXPANDED_SCALARS}}
         }

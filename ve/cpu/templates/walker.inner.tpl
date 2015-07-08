@@ -22,8 +22,9 @@
     const int64_t work_split    = nchunks / nworkers;
     const int64_t work_spill    = nchunks % nworkers;
    
-    // Initialize accumulated operand
+    // Acculumator INIT - begin
     {{ACCU_OPD_INIT}}
+    // Acculumator INIT - end
  
     #pragma omp parallel num_threads(nworkers)
     {

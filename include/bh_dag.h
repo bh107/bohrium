@@ -66,6 +66,8 @@ class GraphDW
 protected:
     GraphD _bglD;
     GraphW _bglW;
+    //Map from base-array to the set of vertices that accesses it
+    std::map<bh_base*, std::set<Vertex> > base2vertices;
 
 public:
     const GraphD &bglD() const {return _bglD;}
@@ -75,7 +77,7 @@ public:
      * Additionally, both dependency and weight edges are
      * added / updated as needed.
      *
-     * @kernel  The kernel to bundle with the new vertex
+ iro Quintana    * @kernel  The kernel to bundle with the new vertex
      */
     Vertex add_vertex(const bh_ir_kernel &kernel);
 

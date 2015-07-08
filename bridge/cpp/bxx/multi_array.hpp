@@ -299,6 +299,7 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     typename multi_array<T>::iterator it  = rhs.begin();
     typename multi_array<T>::iterator end = rhs.end();
 
+    stream << std::scientific;
     if (2 == rhs.getRank()) {
         int64_t inner = rhs.shape(1);
         size_t nelements = rhs.len();
@@ -530,34 +531,61 @@ bool multi_array<T>::allocated() const
 }
 
 //
-//  Aliasing and assignment
+//  Aliasing, assignment and "sliced" update
 //
 template <typename T>
 multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
 {
-    if ((linked()) && (meta.base == rhs.getBase())) {  // Self-aliasing is a NOOP
-        return *this;
-    }
+    if ((linked()) && (meta.base == rhs.getBase())) {
+        //std::cout << "self-aliasing?" << std::endl;
 
-    if (getTemp()) {                                            // Assign to view
-        bh_identity(*this, rhs);
-    } else {                                                    // Aliasing
-        if (linked()) {                         
-            Runtime::instance().ref_count[meta.base] -= 1;      // Decrement ref-count
-            if (0==Runtime::instance().ref_count[meta.base]) {  // De-allocate it
-                bh_free(*this);                                 // Send BH_FREE to Bohrium
-                bh_discard(*this);                              // Send BH_DISCARD to Bohrium
-                Runtime::instance().trash(meta.base);           // Queue the bh_base for de-allocation
-                Runtime::instance().ref_count.erase(meta.base); // Remove from ref-count
-            }
-            unlink();
+        // Both temps referring to the same base, the operands
+        // must by inference be views of the same non-temp-operand.
+        if (getTemp() && rhs.getTemp()) {
+            //std::cout << "Both are temps" << std::endl;
+            bh_identity(*this, rhs);
+        
+        // Neither side is temporary, that is, both are already
+        // aliases for the same base, so this is a NOOP.
+        } else if (!getTemp() && (!rhs.getTemp())) {
+            //std::cout << "Neither are temps" << std::endl;
+        } else if ((!getTemp()) && rhs.getTemp()) {
+            throw std::runtime_error(
+                "Err: Self-aliasing via view/slice, not supported. "
+                "Create another operand instead.\n");
+        } else if ((getTemp()) && (!rhs.getTemp())) {
+            throw std::runtime_error(
+                "Err: Self-aliasing via view/slice, not supported. "
+                "Create another operand instead.\n");
         }
+    } else {
 
-        meta = rhs.meta;            // Create the alias
-        Runtime::instance().ref_count[meta.base] +=1;
+        if (getTemp()) {                                            // Assign to view
+            //std::cout << "assign to view" << std::endl;
+            bh_identity(*this, rhs);
+        } else {                                                    // Aliasing
+            //std::cout << "Aliasing" << std::endl;
+            if (linked()) {                         
+                //std::cout << "Is linked" << std::endl;
+                Runtime::instance().ref_count[meta.base] -= 1;      // Decrement ref-count
+                if (0==Runtime::instance().ref_count[meta.base]) {  // De-allocate it
+                    //std::cout << "deleting it." << std::endl;
+                    bh_free(*this);                                 // Send BH_FREE to Bohrium
+                    bh_discard(*this);                              // Send BH_DISCARD to Bohrium
+                    Runtime::instance().trash(meta.base);           // Queue the bh_base for de-allocation
+                    Runtime::instance().ref_count.erase(meta.base); // Remove from ref-count
+                }
+                unlink();
+            }
 
-        if (rhs.getTemp()) {        // Delete temps
-            delete &rhs;            // The deletion will decrement the ref-count
+            //std::cout << "Creating alias" << std::endl;
+            meta = rhs.meta;            // Create the alias
+            Runtime::instance().ref_count[meta.base] +=1;
+
+            if (rhs.getTemp()) {        // Delete temps
+                //std::cout << "Deleting rhs" << std::endl;
+                delete &rhs;            // The deletion will decrement the ref-count
+            }
         }
     }
 

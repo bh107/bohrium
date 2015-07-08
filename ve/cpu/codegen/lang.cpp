@@ -999,6 +999,7 @@ string _omp_critical(string expr, string name)
     return ss.str();
 }
 
+#ifdef VE_CPU_OMP_ATOMIC
 string _omp_atomic(string expr)
 {
     stringstream ss;
@@ -1006,6 +1007,12 @@ string _omp_atomic(string expr)
     ss << expr;
     return ss.str();
 }
+#else
+string _omp_atomic(string expr)
+{
+    return _omp_critical(expr);
+}
+#endif
 
 string _beef(string info)
 {
