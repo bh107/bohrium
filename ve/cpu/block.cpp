@@ -180,9 +180,26 @@ bool Block::symbolize(void)
         first = false;
 
         tacs << core::operation_text(tac.op);
+
+        size_t ndim = ((tac.op & (REDUCE_COMPLETE|REDUCE_PARTIAL))>0) ? globals_[tac.in1].ndim : globals_[tac.out].ndim;
+
+        //
+        // Adding info of whether the kernel does reduction on the inner-most
+        // dimensions or another "axis" dimension.
+        //
+        if ((tac.op & REDUCE_PARTIAL)>0) {
+            if (*((uint64_t*)globals_[tac.in2].const_data) == (ndim-1)) {
+                tacs << "-INNER";
+            } else {
+                tacs << "-AXIS";
+            }
+        }
+
+        //
+        // Add ndim up to 3
+        //
         tacs << "-" << core::operator_text(tac.oper);
         tacs << "-";
-        size_t ndim = ((tac.op & (REDUCE_COMPLETE|REDUCE_PARTIAL))>0) ? globals_[tac.in1].ndim : globals_[tac.out].ndim;
         if (ndim <= 3) {
             tacs << ndim;
         } else {
@@ -190,6 +207,7 @@ bool Block::symbolize(void)
         }
         tacs << "D";
         
+        // Add operand IDs
         switch(core::tac_noperands(tac)) {
             case 3:
                 tacs << "_" << global_to_local(tac.out);
