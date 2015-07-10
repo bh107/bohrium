@@ -41,7 +41,7 @@ static std::set<bh_base*> allocated_bases;
 //The timing ID for executions
 static bh_intp exec_timing;
 
-static int timing;
+static bool timing;
 
 /* Component interface: init (see bh_component.h) */
 bh_error bh_vem_node_init(const char* name)
@@ -51,7 +51,7 @@ bh_error bh_vem_node_init(const char* name)
     if((err = bh_component_init(&vem_node_myself, name)) != BH_SUCCESS)
         return err;
 
-    timing = bh_component_config_lookup_bool(&vem_node_myself, "timing", 0);
+    timing = bh_component_config_lookup_bool(&vem_node_myself, "timing", false);
     
     //For now, we have one child exactly
     if(vem_node_myself.nchildren != 1)

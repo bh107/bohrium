@@ -35,7 +35,7 @@ static bh_component_iface *child;
 
 //The timing ID for the filter
 static bh_intp exec_timing;
-static int timing;
+static bool timing;
 
 //
 // Component interface init/execute/shutdown
@@ -54,7 +54,7 @@ bh_error bh_filter_dimclean_init(const char* name)
         return BH_ERROR;
     }
 
-    timing = bh_component_config_lookup_bool(&myself, "timing", 0);
+    timing = bh_component_config_lookup_bool(&myself, "timing", false);
     if (timing)
         exec_timing = bh_timer_new("[DimClean] Execution");
 

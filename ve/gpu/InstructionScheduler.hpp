@@ -65,7 +65,7 @@ private:
     void endDim(std::ostringstream& source, 
                 std::ostringstream& indentss, 
                 std::vector<std::string>& beforesource, 
-                std::set<bh_view>& save,
+                std::map<size_t,bh_view>& save,
                 std::map<size_t,size_t>& incr_idx,
                 const std::vector<bh_index>& shape,
                 const size_t dims,
@@ -73,8 +73,10 @@ private:
                 const bh_index elements,
                 const bh_ir_kernel& kernel);
     std::vector<std::vector<size_t> > genDimOrders(const std::map<bh_intp, bh_int64>& sweeps, const size_t ndim);
+    bool callQueueEmpty();
 public:
     InstructionScheduler() {}
+    ~InstructionScheduler();
     void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);
     bh_error schedule(const bh_ir* bhir);
 };

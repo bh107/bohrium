@@ -93,6 +93,13 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
     return BH_SUCCESS;
 }
 
+bool InstructionScheduler::callQueueEmpty()
+{
+    kernelMutex.lock();
+    bool res = callQueue.empty();
+    kernelMutex.unlock();
+    return res;
+}
 
 void InstructionScheduler::sync(const std::set<bh_base*>& arrays)
 {
@@ -101,8 +108,10 @@ void InstructionScheduler::sync(const std::set<bh_base*>& arrays)
         ArrayMap::iterator it = arrayMap.find(base);
         if  (it == arrayMap.end())
             continue;
-        while (!callQueue.empty())
+        while (!callQueueEmpty())
+        {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
         it->second->sync();
     }
 }
@@ -117,6 +126,14 @@ void InstructionScheduler::discard(const std::set<bh_base*>& arrays)
             continue;
         delete it->second;
         arrayMap.erase(it);
+    }
+}
+
+InstructionScheduler::~InstructionScheduler()
+{
+    while (!callQueueEmpty())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
@@ -459,7 +476,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     // Generate code for instruction list
     std::vector<std::string> operands;
     std::vector<OCLtype> types;
-    std::set<bh_view> save; // Views that need saving
+    std::map<size_t, bh_view> save; // Views that need saving <view_id, view>
     std::map<size_t,size_t> incr_idx; // View indexes which need incrementing <view_id, dims> 
     for (uint64_t idx: getInstIndexes(kernel))
     {
@@ -576,8 +593,8 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
             generateInstructionSource(BH_LOGICAL_NOT, types, operands, indentss.str(), source);
         else
             generateInstructionSource(instr.opcode, types, operands, indentss.str(), source);
-        if (kernel.is_output(instr.operand[0]))
-            save.insert(instr.operand[0]);
+        if (kernel.is_output(view))
+            save.insert(std::make_pair(vid,view));
         for (OCLtype type: types)
         {
             switch (type)
@@ -638,7 +655,7 @@ void InstructionScheduler::beginDim(std::ostringstream& source,
 void InstructionScheduler::endDim(std::ostringstream& source, 
                                   std::ostringstream& indentss, 
                                   std::vector<std::string>& beforesource, 
-                                  std::set<bh_view>& save,
+                                  std::map<size_t,bh_view>& save,
                                   std::map<size_t,size_t>& incr_idx,
                                   const std::vector<bh_index>& shape,
                                   const size_t dims,
@@ -654,11 +671,11 @@ void InstructionScheduler::endDim(std::ostringstream& source,
     }
     for (auto it = save.begin(); it != save.end();)
     {
-        bh_view view = *it;
+        size_t vid = it->first;
+        const bh_view& view = it->second;
         bh_index viewElements = bh_nelements(view);
         if (viewElements == elements)
         {
-            size_t vid = kernel.get_view_id(view);
             if (!kernel.is_input(view))
             {
                 assert(view.ndim <= (bh_intp)shape.size());
