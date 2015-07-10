@@ -1,3 +1,4 @@
+sudo: false
 language: c
 compiler:
   - gcc
@@ -15,11 +16,58 @@ env:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get build-dep -qq python-numpy
-  - sudo apt-get install -qq python python-numpy python-cheetah cython swig cmake libboost-all-dev libboost-dev libboost-filesystem-dev libboost-system-dev libboost-serialization-dev libboost-thread-dev libhwloc-dev freeglut3 freeglut3-dev libxmu-dev libxi-dev fglrx fglrx-dev opencl-headers
-script:
-  - df -h
+addons:
+  apt:
+    packages:
+    - libpython-all-dbg
+    - libpython-all-dev
+    - libpython-dbg
+    - libpython2.7-dbg
+    - libpython3-all-dbg
+    - libpython3-all-dev
+    - libpython3-dbg
+    - libpython3-dev
+    - libpython3.4-dbg
+    - libpython3.4-dev
+    - python-all
+    - python-all-dbg
+    - python-all-dev
+    - python-dbg
+    - python-nose
+    - python-sphinx
+    - python2.7-dbg
+    - python3-all
+    - python3-all-dbg
+    - python3-all-dev
+    - python3-dbg
+    - python3-dev
+    - python3-nose
+    - python3-tz
+    - python3.4-dbg
+    - python3.4-dev
+    - sphinx-common
+    - python 
+    - python-numpy
+    - python-cheetah
+    - cython
+    - swig
+    - cmake
+    - libboost-all-dev
+    - libboost-dev
+    - libboost-filesystem-dev
+    - libboost-system-dev
+    - libboost-serialization-dev
+    - libboost-thread-dev
+    - libhwloc-dev
+    - freeglut3
+    - freeglut3-dev
+    - libxmu-dev
+    - libxi-dev
+    - fglrx
+    - fglrx-dev
+    - opencl-headers
+before_script:
   - mkdir bdir && cd bdir && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 && make install
   - BASEDIR=${HOME}/build/bh107 && git clone --depth=1 git://github.com/bh107/benchpress.git ${BASEDIR}/benchpress && cd ${BASEDIR}/benchpress && . util/setbpenv.bash && cd ${BASEDIR}
+script:
   - python bohrium/test/python/numpytest.py $BH_EXCLUDE
-  - df -h
-  - du -h ${HOME}/.local/var
