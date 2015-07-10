@@ -1,4 +1,3 @@
-sudo: false
 language: c
 compiler:
   - gcc
@@ -17,29 +16,10 @@ env:
    - BH_STACK="stack_cpu_greedy" OMP_NUM_THREADS=4 BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=1 LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
    - BH_STACK="stack_cpu_greedy" OMP_NUM_THREADS=4 BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=0 LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
 before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get build-dep -qq python-numpy
   - apt-get -s build-dep python-numpy
-apt:
-  packages:
-    - python
-    - python-numpy
-    - python-cheetah
-    - cython
-    - swig
-    - cmake
-    - libboost-all-dev
-    - libboost-dev
-    - libboost-filesystem-dev
-    - libboost-system-dev
-    - libboost-serialization-dev
-    - libboost-thread-dev
-    - libhwloc-dev
-    - freeglut3
-    - freeglut3-dev
-    - libxmu-dev
-    - libxi-dev
-    - fglrx
-    - fglrx-dev
-    - opencl-headers
+  - sudo apt-get install -qq python python-numpy python-cheetah cython swig cmake libboost-all-dev libboost-dev libboost-filesystem-dev libboost-system-dev libboost-serialization-dev libboost-thread-dev libhwloc-dev freeglut3 freeglut3-dev libxmu-dev libxi-dev fglrx fglrx-dev opencl-headers
 script:
   - df -h
   - mkdir bdir && cd bdir && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 && make install
