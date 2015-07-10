@@ -18,7 +18,6 @@ env:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get build-dep -qq python-numpy
-  - apt-get -s build-dep python-numpy
   - sudo apt-get install -qq python python-numpy python-cheetah cython swig cmake libboost-all-dev libboost-dev libboost-filesystem-dev libboost-system-dev libboost-serialization-dev libboost-thread-dev libhwloc-dev freeglut3 freeglut3-dev libxmu-dev libxi-dev fglrx fglrx-dev opencl-headers
 script:
   - df -h
