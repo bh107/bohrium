@@ -1,5 +1,5 @@
 //
-//	* MAP|ZIP|GENERATE on SCALAR LAYOUT 
+//  Scalar-walker
 //
 
 int64_t eidx = 0;

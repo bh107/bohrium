@@ -189,9 +189,9 @@ bool Block::symbolize(void)
         //
         if ((tac.op & REDUCE_PARTIAL)>0) {
             if (*((uint64_t*)globals_[tac.in2].const_data) == (ndim-1)) {
-                tacs << "-INNER";
+                tacs << "_INNER";
             } else {
-                tacs << "-AXIS";
+                tacs << "_AXIS";
             }
         }
 
