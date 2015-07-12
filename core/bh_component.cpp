@@ -553,14 +553,24 @@ char* bh_component_config_lookup(const bh_component *component, const char* key)
  * @component The component.
  * @key       The key to lookup in the config file
  * @notfound  Value to return in case of error
- * @return    int(bool)
+ * @return    bool
 */
-int bh_component_config_lookup_bool(const bh_component *component,
-                                    const char* key, int notfound)
+bool bh_component_config_lookup_bool(const bh_component *component,
+                                     const char* key, bool notfound)
 {
-    char dictkey[BH_COMPONENT_NAME_SIZE];
-    snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
-    return iniparser_getboolean(component->config, dictkey, notfound);
+    char* val ;
+    bool ret ;
+    val = bh_component_config_lookup(component, key);
+    if (val == NULL)
+        return notfound ;
+    if (val[0]=='y' || val[0]=='Y' || val[0]=='1' || val[0]=='t' || val[0]=='T') {
+        ret = true;
+    } else if (val[0]=='n' || val[0]=='N' || val[0]=='0' || val[0]=='f' || val[0]=='F') {
+        ret = false;
+    } else {
+        ret = notfound ;
+    }
+    return ret;
 }
 
 /*
@@ -573,9 +583,11 @@ int bh_component_config_lookup_bool(const bh_component *component,
 int bh_component_config_lookup_int(const bh_component *component,
                                    const char* key, int notfound)
 {
-    char dictkey[BH_COMPONENT_NAME_SIZE];
-    snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
-    return iniparser_getint(component->config, dictkey, notfound);
+    char* val;
+    val = bh_component_config_lookup(component, key);
+    if (val == NULL)
+        return notfound;
+    return (int)strtol(val, NULL, 0);
 }
 
 /*
@@ -588,9 +600,11 @@ int bh_component_config_lookup_int(const bh_component *component,
 double bh_component_config_lookup_double(const bh_component *component,
                                          const char* key, double notfound)
 {
-    char dictkey[BH_COMPONENT_NAME_SIZE];
-    snprintf(dictkey, BH_COMPONENT_NAME_SIZE, "%s:%s", component->name, key);
-    return iniparser_getdouble(component->config, dictkey, notfound);
+    char* val;
+    val = bh_component_config_lookup(component, key);
+    if (val == NULL)
+        return notfound;
+    return atof(val);
 }
 
 bh_error bh_component_config_int_option(const bh_component* component,
