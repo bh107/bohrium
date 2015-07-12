@@ -94,6 +94,9 @@ protected:
 class bh_ir_kernel
 {
 private:
+    // Set of all base-arrays in this kernel.
+    std::set<bh_base*> bases;
+
     // Set of temporary base-arrays in this kernel.
     std::set<bh_base*> temps;
 
@@ -156,6 +159,7 @@ public:
     const std::multimap<bh_base*,bh_view>& get_input_map() const {return input_map;}
     const std::set<bh_view>& get_output_set() const {return output_set;}
     const std::set<bh_view>& get_input_set() const {return input_set;}
+    const std::set<bh_base*>& get_bases() const {return bases;}
     const std::set<bh_base*>& get_temps() const {return temps;}
     const std::set<bh_base*>& get_frees() const {return frees;}
     const std::set<bh_base*>& get_discards() const {return discards;}

@@ -152,8 +152,13 @@ bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) co
 
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
-
     const bh_instruction& instr = bhir->instr_list[instr_idx];
+    const int nop = bh_operands(instr.opcode);
+    for(int i=0; i<nop; ++i)
+    {
+        if(not bh_is_constant(&instr.operand[i]))
+            bases.insert(instr.operand[i].base);
+    }
     switch (instr.opcode) {
     case BH_NONE:
         break;
@@ -201,7 +206,6 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     default:
     {
         bool sweep = bh_opcode_is_sweep(instr.opcode);
-        const int nop = bh_operands(instr.opcode);
         //Add the inputs of the instruction to 'inputs'
         for(int i=1; i<nop; ++i)
         {

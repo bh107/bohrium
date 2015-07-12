@@ -47,22 +47,8 @@ Vertex GraphDW::add_vertex(const bh_ir_kernel &kernel)
     Vertex d = boost::add_vertex(kernel, _bglD);
     boost::add_vertex(_bglW);
 
-    //Let's start by finding all base-arrays accessed by the kernel
-    set<bh_base *> bases;
-    BOOST_FOREACH(uint64_t instr_idx, kernel.instr_indexes)
-    {
-        const bh_instruction &instr = kernel.bhir->instr_list[instr_idx];
-        const int nop = bh_operands(instr.opcode);
-        for(int i=0; i<nop; ++i)
-        {
-            if(bh_is_constant(&instr.operand[i]))
-                continue;
-            bases.insert(instr.operand[i].base);
-        }
-    }
-
     //Add edges
-    BOOST_FOREACH(bh_base *base, bases)
+    BOOST_FOREACH(bh_base *base, kernel.get_bases())
     {
         auto vs = base2vertices.find(base);
         if(vs == base2vertices.end())//Unknown base-array
