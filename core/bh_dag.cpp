@@ -645,14 +645,14 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
         set<uint64_t> instr_indexes;
         BOOST_FOREACH(Vertex v, vertices(d))
         {
-            BOOST_FOREACH(uint64_t v, d[v].instr_indexes)
+            BOOST_FOREACH(uint64_t i, d[v].instr_indexes)
             {
-                if(instr_indexes.find(v) != instr_indexes.end())
+                if(instr_indexes.find(i) != instr_indexes.end())
                 {
-                    cout << "Instruction [" << v << "] is in multiple kernels!" << endl;
+                    cout << "Instruction [" << i << "] is in multiple kernels!" << endl;
                     goto fail;
                 }
-                instr_indexes.insert(v);
+                instr_indexes.insert(i);
             }
         }
     }
@@ -731,6 +731,34 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
                 cout << "Transitivity check: weight edge " << e \
                      << " is redundant!" << endl;
                 goto fail;
+            }
+        }
+    }
+    //Check the 'base2vertices' map
+    BOOST_FOREACH(Vertex v, vertices(d))
+    {
+        BOOST_FOREACH(uint64_t instr_idx, d[v].instr_indexes)
+        {
+            const bh_instruction &instr = d[v].bhir->instr_list[instr_idx];
+            const int nop = bh_operands(instr.opcode);
+            for(int i=0; i<nop; ++i)
+            {
+                if(bh_is_constant(&instr.operand[i]))
+                    continue;
+                bh_base *base = instr.operand[i].base;
+                if(dag.base2vertices.find(base) == dag.base2vertices.end())
+                {
+                    cout << "Base-array " << base << " in vertex " << v << \
+                        " isn't in the 'base2vertices' map!" << endl;
+                    goto fail;
+                }
+                const set<Vertex> &vs = dag.base2vertices.at(base);
+                if(vs.find(v) == vs.end())
+                {
+                    cout << "Base-array " << base << " in 'base2vertices' does'nt map to Vertex "\
+                         << v << "!" << endl;
+                    goto fail;
+                }
             }
         }
     }
