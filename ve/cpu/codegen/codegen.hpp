@@ -334,6 +334,12 @@ private:
     std::string assign_collapsed_offset(uint32_t rank);
     std::string assign_collapsed_offset(uint32_t rank, uint64_t oidx);
 
+    std::string assign_stride_offset(uint32_t dim);
+    std::string assign_stride_offset(uint32_t dim, uint64_t oidx);
+
+    std::string step_fwd_outer_2D(uint64_t glb_idx);
+    std::string step_fwd_outer_2D(void);
+
     std::string step_fwd_outer(uint64_t glb_idx);
     std::string step_fwd_outer(void);
 
