@@ -919,12 +919,12 @@ string Walker::generate_source(void)
         // Reduction specfics
         if ((kernel_.omask() & REDUCE_PARTIAL)>0) {
             if (out->meta().layout == SCALAR) {
-                subjects["ACCU_LOCAL_WRITEBACK"]= _line(_assign(
+                subjects["ACCU_OPD_SYNC_PARTIAL"]= _line(_assign(
                     _deref(out->first()),
                     out->accu()
                 ));
             } else {
-                subjects["ACCU_LOCAL_WRITEBACK"]= _line(_assign(
+                subjects["ACCU_OPD_SYNC_PARTIAL"]= _line(_assign(
                     out->walker_val(),
                     out->accu()
                 ));

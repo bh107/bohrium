@@ -60,6 +60,10 @@
         {{WALKER_STRIDE_AXIS}}
         // Walker STRIDE_AXIS - end
 
+        // Accumulator DECLARE COMPLETE - begin
+        {{ACCU_LOCAL_DECLARE_COMPLETE}}
+        // Accumulator DECLARE COMPLETE - end        
+
         const int64_t eidx_begin = work_offset*chunksize;
         const int64_t eidx_end   = work_end*chunksize;
         for(int64_t eidx=eidx_begin; eidx<eidx_end; ++eidx) {
@@ -93,13 +97,18 @@
                 {{WALKER_STEP_AXIS}}
                 // Walker step INNER - end
             }
-            // Accumulator SYNC - begin
-            {{ACCU_LOCAL_WRITEBACK}}
-            // Accumulator SYNC - end
+            // Accumulator PARTIAL SYNC - begin
+            {{ACCU_OPD_SYNC_PARTIAL}}
+            // Accumulator PARTIAL SYNC - end
         }
+        // Write EXPANDED scalars back to memory - begin
         if (0==tid) {   // Write EXPANDED scalars back to memory.
             {{WRITE_EXPANDED_SCALARS}}
         }
+        // Write EXPANDED scalars back to memory - end
+        // Accumulator COMPLETE SYNC - begin
+        {{ACCU_OPD_SYNC_COMPLETE}}
+        // Accumulator COMPLETE SYNC - end
         }
     }
 }

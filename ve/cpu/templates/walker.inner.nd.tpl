@@ -48,7 +48,6 @@
         {{ACCU_LOCAL_DECLARE_COMPLETE}}
         // Accumulator DECLARE COMPLETE - end        
 
-        // Iteration space
         const int64_t eidx_begin = work_offset*chunksize;
         const int64_t eidx_end   = work_end*chunksize;
         for(int64_t eidx=eidx_begin; eidx<eidx_end; eidx+=chunksize) {
@@ -61,11 +60,16 @@
                 const int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
                 {{WALKER_STEP_OUTER}}
             }
+
+
+
+
             // Walker step OUTER / operand offset - end
 
             // Accumulator DECLARE PARTIAL - begin
             {{ACCU_LOCAL_DECLARE_PARTIAL}}
             // Accumulator DECLARE PARTIAL - end        
+
             {{PRAGMA_SIMD}}
             for (int64_t iidx=0; iidx < chunksize; iidx++) {
                 // Apply operator(s) on operands - begin
@@ -80,12 +84,12 @@
             {{ACCU_OPD_SYNC_PARTIAL}}
             // Accumulator PARTIAL SYNC - end
 
-			// Write EXPANDED scalars back to memory - begin
-            if (0==tid) {
-                {{WRITE_EXPANDED_SCALARS}}
-            }
-			// Write EXPANDED scalars back to memory - end
         }
+        // Write EXPANDED scalars back to memory - begin
+        if (0==tid) {
+            {{WRITE_EXPANDED_SCALARS}}
+        }
+        // Write EXPANDED scalars back to memory - end
         // Accumulator COMPLETE SYNC - begin
         {{ACCU_OPD_SYNC_COMPLETE}}
         // Accumulator COMPLETE SYNC - end
