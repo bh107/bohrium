@@ -129,7 +129,6 @@ void bh_ir_kernel::clear()
     discards.clear();
     parameters.clear();
     input_shape.clear();
-    output_shape.clear();
     scalar = false;
 }
 
@@ -231,9 +230,6 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             output_map.insert(std::make_pair(v.base,v));
             output_set.insert(v);
             parameters.insert(v.base);
-            if (v.ndim < (bh_intp)output_shape.size() || output_shape.size() == 0)
-                output_shape = std::vector<bh_index>(v.shape,v.shape+v.ndim);
-
             if (bh_is_scalar(&v))
                 scalar = true;
             // For now we treat a 1D accumulate like a 1D reduce i.e. the kernel is a scalar kernel
@@ -249,6 +245,22 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     }
     }
     instr_indexes.push_back(instr_idx);
+}
+
+// Smalest output shape used in the kernel
+std::vector<bh_index> bh_ir_kernel::get_output_shape() const
+{
+    bh_index nelem = INT64_MAX;
+    std::vector<bh_index> res;
+    for (const bh_view& v: output_set)
+    {
+        if (bh_nelements(v) < nelem)
+        {
+            nelem = bh_nelements(v);
+            res = std::vector<bh_index>(v.shape,v.shape+v.ndim);
+        }
+    }
+    return res;
 }
 
 /* Determines whether all instructions in 'this' kernel
