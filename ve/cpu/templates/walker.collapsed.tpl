@@ -1,6 +1,9 @@
 //
-//	* MAP|ZIP|GENERATE|REDUCE_C on 1D arrays with STRIDED     LAYOUT.
-//	* MAP|ZIP|GENERATE|REDUCE_C on ND arrays with COLLAPSIBLE LAYOUT.
+//  Collapsed walker
+//
+//	Flattens the iteration-space and walks it using a single loop construct.
+//	Work is partitioned in the number of elements, regardless of dimension.
+//
 //
 {
     const int mthreads = omp_get_max_threads();
@@ -45,8 +48,10 @@
         // Walker offset(s) - end
 
         // Accumulator DECLARE - begin
-		{{ACCU_LOCAL_DECLARE}}
-        // Accumulator DECLARE - end        
+		{{ACCU_LOCAL_DECLARE_COMPLETE}}
+		{{ACCU_LOCAL_DECLARE_PARTIAL}}
+        // Accumulator DECLARE - end
+
         {{PRAGMA_SIMD}}
         for (int64_t eidx = work_offset; eidx<work_end; ++eidx) {
             // Apply operator(s) on operands - begin
@@ -58,7 +63,8 @@
             // Walker step INNER - end
         }
         // Accumulator SYNC - begin
-        {{ACCU_OPD_SYNC}}
+        {{ACCU_OPD_SYNC_COMPLETE}}
+        {{ACCU_OPD_SYNC_PARTIAL}}
         // Accumulator SYNC - end
         if (0==tid) {
             {{WRITE_EXPANDED_SCALARS}}

@@ -1,8 +1,7 @@
 //
+//  INNER-WALKER
+//
 //	Walks the iteration-space using outer/inner loop constructs.
-//
-//	* MAP|ZIP|GENERATE|REDUCE_COMPLETE on STRIDED arrays of any dimension/rank.
-//
 //	Partitions work into chunks of size equal to the inner-most dimension.
 //
 {
@@ -45,9 +44,9 @@
         {{WALKER_STRIDE_INNER}}
         // Walker STRIDE_INNER - end
 
-        // Accumulator DECLARE - begin
-        {{ACCU_LOCAL_DECLARE}}
-        // Accumulator DECLARE - end        
+        // Accumulator DECLARE COMPLETE - begin
+        {{ACCU_LOCAL_DECLARE_COMPLETE}}
+        // Accumulator DECLARE COMPLETE - end        
 
         // Iteration space
         const int64_t eidx_begin = work_offset*chunksize;
@@ -64,6 +63,9 @@
             }
             // Walker step OUTER / operand offset - end
 
+            // Accumulator DECLARE PARTIAL - begin
+            {{ACCU_LOCAL_DECLARE_PARTIAL}}
+            // Accumulator DECLARE PARTIAL - end        
             {{PRAGMA_SIMD}}
             for (int64_t iidx=0; iidx < chunksize; iidx++) {
                 // Apply operator(s) on operands - begin
@@ -74,15 +76,19 @@
                 {{WALKER_STEP_INNER}}
                 // Walker step INNER - end
             }
+            // Accumulator PARTIAL SYNC - begin
+            {{ACCU_OPD_SYNC_PARTIAL}}
+            // Accumulator PARTIAL SYNC - end
+
 			// Write EXPANDED scalars back to memory - begin
             if (0==tid) {
                 {{WRITE_EXPANDED_SCALARS}}
             }
 			// Write EXPANDED scalars back to memory - end
         }
-        // Accumulator SYNC - begin
-        {{ACCU_OPD_SYNC}}
-        // Accumulator SYNC - end
+        // Accumulator COMPLETE SYNC - begin
+        {{ACCU_OPD_SYNC_COMPLETE}}
+        // Accumulator COMPLETE SYNC - end
         }
     }
 }

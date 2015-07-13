@@ -1,7 +1,8 @@
 //
-//	* REDUCE_PARTIAL on arrays of any LAYOUT and rank > 1.
+//  AXIS-walker
 //
-//	Partitions work into 1D reductions over the axis.
+//	Walks the iteration-space using other/axis loop constructs.
+//	Partitions work into chunks of size equal to the "axis" dimension.
 //
 {
     {{WALKER_AXIS_DIM}}
@@ -78,7 +79,10 @@
             }
             // Walker step non-axis / operand offset - end
 
-            {{ACCU_LOCAL_DECLARE}}
+            // Accumulator DECLARE - begin
+            {{ACCU_LOCAL_DECLARE_PARTIAL}}
+            // Accumulator DECLARE - end
+
             {{PRAGMA_SIMD}}
             for (int64_t aidx=0; aidx < axis_shape; aidx++) {
                 // Apply operator(s) on operands - begin
@@ -89,8 +93,9 @@
                 {{WALKER_STEP_AXIS}}
                 // Walker step INNER - end
             }
-            //*{{OPD_OUT}} = {{OPD_OUT}}_accu;
+            // Accumulator SYNC - begin
             {{ACCU_LOCAL_WRITEBACK}}
+            // Accumulator SYNC - end
         }
         if (0==tid) {   // Write EXPANDED scalars back to memory.
             {{WRITE_EXPANDED_SCALARS}}
