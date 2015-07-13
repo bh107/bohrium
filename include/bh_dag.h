@@ -81,11 +81,10 @@ public:
      */
     Vertex add_vertex(const bh_ir_kernel &kernel);
 
-    /* The default and the copy constructors */
+    /* The default constructor */
     GraphDW(){};
-    GraphDW(const GraphDW &graph):_bglD(graph.bglD()), _bglW(graph.bglW()) {};
 
-    /* Constructor based on a dependency graph. All weights are zero.
+    /* Constructor based on a dependency graph.
      *
      * @dag     The dependency graph
      */
@@ -93,6 +92,13 @@ public:
     {
         _bglD = dag;
         _bglW = GraphW(boost::num_vertices(dag));
+
+        //Update 'base2vertices'
+        BOOST_FOREACH(Vertex v, boost::vertices(_bglD))
+        {
+            BOOST_FOREACH(bh_base *base, _bglD[v].get_bases())
+                base2vertices[base].insert(v);
+        }
     }
 
     /* Add the set of vertices 'sub_graph' to 'this' graph.
@@ -127,6 +133,7 @@ public:
     }
 
     /* Clear the vertex without actually removing it.
+     * NB: the caller must maintain 'base2vertices'
      *
      * @v  The Vertex
      */
@@ -143,6 +150,8 @@ public:
      */
     void remove_cleared_vertices()
     {
+        //For now, we have to deactivate this because of 'base2vertices'
+        return;
         std::vector<Vertex> removes;
         BOOST_FOREACH(Vertex v, boost::vertices(_bglD))
         {

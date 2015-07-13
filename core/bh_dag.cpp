@@ -78,6 +78,7 @@ Vertex GraphDW::add_vertex(const bh_ir_kernel &kernel)
         }
         vs->second.insert(d);
     }
+    assert(dag_validate(*this));
     return d;
 }
 
@@ -88,10 +89,14 @@ void GraphDW::add_from_subgraph(const set<Vertex> &sub_graph, const GraphDW &dag
 
     //Build the vertices of 'this' graph
     map<Vertex,Vertex> dag2this;//Maps from vertices in 'dag' to vertices in 'this'
-    BOOST_FOREACH(Vertex v, sub_graph)
+    BOOST_FOREACH(Vertex v_dag, sub_graph)
     {
-        dag2this[v] = boost::add_vertex(d[v], _bglD);
+        Vertex v_this = boost::add_vertex(d[v_dag], _bglD);
+        dag2this[v_dag] = v_this;
         boost::add_vertex(_bglW);
+
+        BOOST_FOREACH(bh_base *base, d[v_dag].get_bases())
+            base2vertices[base].insert(v_this);
     }
     //Add all dependency edges that connects vertices within 'sub_graph'
     BOOST_FOREACH(EdgeD e, edges(d))
@@ -115,6 +120,7 @@ void GraphDW::add_from_subgraph(const set<Vertex> &sub_graph, const GraphDW &dag
             boost::add_edge(dag2this[src], dag2this[dst], w[e], _bglW);
         }
     }
+    assert(dag_validate(*this));
 }
 
 void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
@@ -132,6 +138,15 @@ void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
         BOOST_FOREACH(uint64_t idx, _bglD[a].instr_indexes)
             _bglD[b].add_instr(idx);
         _bglD[a] = _bglD[b];//Only 'a' survives
+    }
+
+    //Update the 'base2vertices'
+    BOOST_FOREACH(bh_base *base, _bglD[b].get_bases())
+    {
+        base2vertices[base].erase(b);
+        cout << "remove " << base << ":" << b << endl;
+        cout << "insert " << base << ":" << a << endl;
+        base2vertices[base].insert(a);
     }
 
     //Add edges of 'b' to 'a'
@@ -736,6 +751,7 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
                 {
                     cout << "Base-array " << base << " in vertex " << v << \
                         " isn't in the 'base2vertices' map!" << endl;
+                    cout << "size: " << dag.base2vertices.size() << endl;
                     goto fail;
                 }
                 const set<Vertex> &vs = dag.base2vertices.at(base);
