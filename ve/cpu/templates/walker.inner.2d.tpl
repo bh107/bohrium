@@ -43,8 +43,12 @@
         // Walker declaration(s) - end
 
         // Walker STRIDE_OUTER - begin
+        {{WALKER_STRIDE_OUTER}}
+        // Walker STRIDE_OUTER - end
+
+        // Walker STRIDE_OUTER - begin
         {{WALKER_STRIDE_INNER}}
-        // Walker STRIDE_INNER - end
+        // Walker STRIDE_OUTER - end
 
         // Walker offset(s) - begin
         {{WALKER_OFFSET}}
