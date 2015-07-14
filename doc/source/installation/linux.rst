@@ -249,3 +249,126 @@ When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so`
 
 .. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
 
+Installation as non-priviliged user on a system with a dated software-stack 
+===========================================================================
+
+Some clusters have quite dated software stacks, this documents how to install basically everything needed to get Bohrium running from source.
+
+Create some folder for all prerequisites::
+
+  mkdir $HOME/preqs
+
+Set environment vars, you probably want to persist it (.profile, .bashrc, or .bash_aliases)::
+
+  export LD_LIBRARY_PATH="$HOME/.local/:$LD_LIBRARY_PATH"
+  export PATH=$HOME/aux/gcc-4.8.2/bin:$HOME/aux/python2.7/bin:$PATH
+
+Be warned, this is a fairly time-consuming task. Expect 3-4 hours.
+The most time consuming are compiling `gcc` and `boost`.
+
+Do not that the order that you perform the following is quite important,
+you want to get a recent `gcc` before compiling anything else since anything else
+would othervise be compiled with an older `gcc`.
+
+Gcc
+---
+
+Start by installing `gcc 4.8` this probably takes a couple of hours::
+
+  cd $HOME/preqs
+
+  # Download and extract gcc itself
+  wget ftp://ftp.gnu.org/gnu/gcc/gcc-4.8.2/gcc-4.8.2.tar.gz
+  tar xzf gcc-4.8.2.tar.gz
+
+  # Download and unpack dependencies needed by gcc
+  wget http://www.multiprecision.org/mpc/download/mpc-1.0.1.tar.gz
+  tar xfz mpc-1.0.1.tar.gz
+  mv mpc-1.0.1 gcc-4.8.2/mpc
+
+  wget http://www.mpfr.org/mpfr-current/mpfr-3.1.3.tar.gz
+  tar xzf mpfr-3.1.3.tar.gz
+  mv mpfr-3.1.3 gcc-4.8.2/mpfr
+
+  wget https://gmplib.org/download/gmp/gmp-5.1.3.tar.bz2
+  tar -jxf gmp-5.1.3.tar.bz2
+  mv gmp-5.1.3 gcc-4.8.2/gmp
+
+  wget ftp://ftp.irisa.fr/pub/mirrors/gcc.gnu.org/gcc/infrastructure/isl-0.11.1.tar.bz2
+  tar -jxf isl-0.11.1.tar.bz2
+  mv isl-0.11.1 gcc-4.8.2/isl
+
+  wget ftp://ftp.irisa.fr/pub/mirrors/gcc.gnu.org/gcc/infrastructure/cloog-0.18.0.tar.gz
+  tar xfz cloog-0.18.0.tar.gz
+  mv cloog-0.18.0 gcc-4.8.2/cloog
+
+  mkdir $HOME/aux/gcc-4.8.2
+  cd gcc-4.8.2
+  ./configure --prefix=$HOME/aux/gcc-4.8.2
+  make
+  make -k check
+  make install
+
+This is the most time-consuming so go do something else.
+
+Once it is done then verify that it gets called when invoking `gcc`::
+
+  gcc -v
+
+If it does not then check your `$PATH`.
+
+Python
+------
+
+Then install `Python 2.7`::
+
+  cd $HOME/preqs
+  wget https://www.python.org/ftp/python/2.7.10/Python-2.7.10.tgz
+  tar xzf Python-2.7.10.tgz
+  cd Python-2.7.10
+  mkdir -p aux/python2.7
+  ./configure --prefix=$HOME/aux/python2.7
+  make install
+
+And check that it called when invoking `python`::
+
+  python -V
+
+If it does not then check your `$PATH`.
+
+Then bootstrap `python pip`::
+
+  cd $HOME/preqs
+  wget https://bootstrap.pypa.io/get-pip.py
+  python get-pip.py
+
+We will need `pip` later for installing Python packages.
+
+Cmake
+-----
+
+Continue with `cmake`::
+
+  mkdir -p $HOME/aux/cmake
+  cd $HOME/aux/cmake
+  wget http://www.cmake.org/files/v3.3/cmake-3.3.0-rc4-Linux-x86_64.sh
+  chmod +x cmake-3.3.0-rc4-Linux-x86_64.sh
+  ./cmake-3.3.0-rc4-Linux-x86_64.sh
+
+Just follow the wizard.
+
+Boost
+-----
+
+Then install `boost`::
+
+  cd $HOME/install
+  wget http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz/download -O boost.tar.gz
+  tar xzf boost.tar.gz
+  cd boost*
+  mkdir $HOME/aux/boost
+  ./bootstrap.sh --prefix=$HOME/aux/boost
+  ./b2 install
+
+This is the second most time-consuming compile you have to do.
+
