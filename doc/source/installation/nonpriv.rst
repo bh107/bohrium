@@ -4,10 +4,15 @@ Installation as non-priviliged user on a system with a dated software-stack
 Some clusters have quite dated software stacks, this documents how to install basically everything needed to bootstrap something never. This will install:
 
  * gcc 4.8.2
- * Python 2.7.10
+ * python 2.7.10
  * cmake 3.3.0
- * swig 3.0.6
  * boost 1.58
+ * swig 3.0.6
+ * pcre 8.37
+ * htop 1.0.3 (optional)
+ * bash 4.3 (optional)
+ * Python packages via pip: `cheetah`, `cython`, and `numpy`
+ * Benchpress and Bohrium via git
 
 Create some folder for all prerequisites::
 
@@ -15,28 +20,35 @@ Create some folder for all prerequisites::
 
 Set environment vars, you probably want to persist it (.profile, .bashrc, or .bash_aliases)::
 
-  export CPLUS_INCLUDE_PATH=$HOME/aux/boost-1.58.0/include:$CPLUS_INCLUDE_PATH 
-  export CPLUS_INCLUDE_PATH=$HOME/aux/gcc-4.8.2/include:$CPLUS_INCLUDE_PATH    
-  export LD_LIBRARY_PATH=$HOME/aux/boost-1.58.0/lib:$LD_LIBRARY_PATH           
-  export LD_LIBRARY_PATH=$HOME/aux/gcc-4.8.2/lib:$LD_LIBRARY_PATH              
-  export LD_LIBRARY_PATH=$HOME/aux/gcc-4.8.2/lib64:$LD_LIBRARY_PATH            
-  export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH                     
-  export PATH=$HOME/aux/htop-1.0.3/bin:$PATH                                   
-  export PATH=$HOME/aux/cmake-3.3.0/bin:$PATH                                  
-  export PATH=$HOME/aux/python-2.7.10/bin:$PATH                                
-  export PATH=$HOME/aux/gcc-4.8.2/bin:$PATH                                    
-  export PATH=$HOME/aux/benchpress/bin:$PATH                                   
-  export PYTHONPATH=$HOME/aux/benchpress/module:$PYTHONPATH                    
+  export CPLUS_INCLUDE_PATH=$HOME/aux/boost-1.58.0/include:$CPLUS_INCLUDE_PATH
+  export CPLUS_INCLUDE_PATH=$HOME/aux/pcre-8.37/include:$CPLUS_INCLUDE_PATH
+  export CPLUS_INCLUDE_PATH=$HOME/aux/gcc-4.8.2/include:$CPLUS_INCLUDE_PATH
+  export LD_LIBRARY_PATH=$HOME/aux/boost-1.58.0/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$HOME/aux/pcre-8.37/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$HOME/aux/gcc-4.8.2/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$HOME/aux/gcc-4.8.2/lib64:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
+  export PATH=$HOME/aux/htop-1.0.3/bin:$PATH
+  export PATH=$HOME/aux/bash-4.3/bin:$PATH
+  export PATH=$HOME/aux/cmake-3.3.0/bin:$PATH
+  export PATH=$HOME/aux/python-2.7.10/bin:$PATH
+  export PATH=$HOME/aux/gcc-4.8.2/bin:$PATH
+  export PATH=$HOME/aux/benchpress/bin:$PATH
+  export PATH=$HOME/aux/pcre-8.37/bin:$PATH
+  export PATH=$HOME/aux/swig-3.0.6/bin:$PATH
+  export PYTHONPATH=$HOME/aux/benchpress/module:$PYTHONPATH
 
 Be warned, this is a fairly time-consuming task. Expect 3-4 hours.
 The most time consuming are compiling `gcc` and `boost`.
 
-Do not that the order that you perform the following is quite important,
-you want to get a recent `gcc` before compiling anything else since anything else
-would othervise be compiled with an older `gcc`.
+.. note:: 
+  
+  The order that you perform the following is quite important,
+  you want to get a recent `gcc` before compiling anything else since anything else
+  would othervise be compiled with an older `gcc`.
 
-Gcc
----
+gcc 4.8.2
+---------
 
 Start by installing `gcc 4.8` this probably takes a couple of hours::
 
@@ -88,10 +100,10 @@ Once it is done then verify that it gets called when invoking `gcc` and `cc`::
 
 If it does not then check your `$PATH`.
 
-Python
-------
+python 2.7.10
+-------------
 
-Then install `Python 2.7`::
+Then install `python`::
 
   cd $HOME/preqs
   wget https://www.python.org/ftp/python/2.7.10/Python-2.7.10.tgz
@@ -107,7 +119,7 @@ And check that it called when invoking `python`::
 
 If it does not then check your `$PATH`.
 
-Then bootstrap `python pip`::
+Then bootstrap `pip`::
 
   cd $HOME/preqs
   wget https://bootstrap.pypa.io/get-pip.py
@@ -115,8 +127,8 @@ Then bootstrap `python pip`::
 
 We will need `pip` later for installing Python packages.
 
-Cmake
------
+cmake 3.3.0
+-----------
 
 Continue with `cmake`::
 
@@ -128,8 +140,8 @@ Continue with `cmake`::
 
 Just follow the wizard.
 
-boost
------
+boost 1.58.0
+------------
 
 Then install `boost`::
 
@@ -184,7 +196,7 @@ I just like this `htop` over `top` but it is completely optional::
 
 It is just such a nice convenience.
 
-bash (might be optional)
+bash (optional)
 ------------------------
 
 In case even your shell is broken then go for installing bash::
@@ -233,3 +245,5 @@ And now we can get on with installing bohrium::
 Now run numpytest to check that it is operational::
 
   python $HOME/bohrium/test/python/numpytest.py
+
+That only took a day... great.
