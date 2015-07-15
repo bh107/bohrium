@@ -11,4 +11,5 @@ Bohrium supports linux, Mac OSX and Windows.
    linux
    osx
    windows
+   nonpriv
 

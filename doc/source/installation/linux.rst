@@ -326,9 +326,15 @@ Start by installing `gcc 4.8` this probably takes a couple of hours::
 
 This is the most time-consuming so go do something else.
 
-Once it is done then verify that it gets called when invoking `gcc`::
+And quite importantly make sure to link `gcc` to `cc`::
+
+  cd $HOME/aux/gcc-4.8.2/bin
+  ln -s gcc cc
+
+Once it is done then verify that it gets called when invoking `gcc` and `cc`::
 
   gcc -v
+  cc -V
 
 If it does not then check your `$PATH`.
 
