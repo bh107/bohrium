@@ -19,6 +19,48 @@ namespace cpu{
 
 const char ThreadControl::TAG[] = "ThreadControl";
 
+string cpu_text(void)
+{
+    hwloc_topology_t topo;                      // Setup topology
+    hwloc_topology_init(&topo);                 
+    hwloc_topology_load(topo);
+
+    const int nobjts = 2;                       // Search these objects
+    hwloc_obj_type_t objts[nobjts] = { 
+        HWLOC_OBJ_MACHINE, 
+        HWLOC_OBJ_SOCKET, 
+    };
+
+    string model, arch;
+
+    for(int i=0; i<nobjts; ++i) {               // For Architecture and CPUModel
+        hwloc_obj_t obj = hwloc_get_obj_by_type(topo, objts[i], 0); 
+        if (obj) {
+            if (arch.empty()) {
+                const char *str = hwloc_obj_get_info_by_name(obj, "Architecture"); 
+                if (str) {
+                    arch = string(str);
+                }
+            }
+            if (model.empty()) {
+                const char *str = hwloc_obj_get_info_by_name(obj, "CPUModel"); 
+                if (str) {
+                    model = string(str);
+                }
+            }
+        }
+    }
+
+    hwloc_topology_destroy(topo);               // Cleanup
+
+    stringstream ss;                            // Construct the CPU-text
+
+    ss << "[MODEL:" << (model.empty() ? "UNKNOWN" : model);
+    ss << ",ARCH:" << (arch.empty() ? "UNKNOWN" : arch) << "]";
+
+    return ss.str();
+}
+
 ThreadControl::ThreadControl(thread_binding binding, size_t thread_limit)
     : binding_(binding), thread_limit_(thread_limit)
 {
