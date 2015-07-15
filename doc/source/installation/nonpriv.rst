@@ -100,6 +100,19 @@ Once it is done then verify that it gets called when invoking `gcc` and `cc`::
 
 If it does not then check your `$PATH`.
 
+binutils 2.25
+-------------
+
+We need a newer assembler for avx::
+
+  cd $HOME/preqs
+  wget http://ftp.gnu.org/gnu/binutils/binutils-2.25.tar.gz
+  tar xzf binutils-2.25.tar.gz
+  cd binutils-2.25
+  ./configure --prefix=$HOME/aux/binutils-2.25
+  make
+  make install
+
 python 2.7.10
 -------------
 
