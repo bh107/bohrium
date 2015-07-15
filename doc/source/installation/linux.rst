@@ -252,7 +252,12 @@ When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so`
 Installation as non-priviliged user on a system with a dated software-stack 
 ===========================================================================
 
-Some clusters have quite dated software stacks, this documents how to install basically everything needed to get Bohrium running from source.
+Some clusters have quite dated software stacks, this documents how to install basically everything needed to bootstrap something never. This will install:
+
+ * gcc 4.8.2
+ * Python 2.7.10
+ * cmake 3.3.0
+ * boost 1.58
 
 Create some folder for all prerequisites::
 
@@ -260,8 +265,18 @@ Create some folder for all prerequisites::
 
 Set environment vars, you probably want to persist it (.profile, .bashrc, or .bash_aliases)::
 
-  export LD_LIBRARY_PATH="$HOME/.local/:$LD_LIBRARY_PATH"
-  export PATH=$HOME/aux/gcc-4.8.2/bin:$HOME/aux/python2.7/bin:$PATH
+  export CPLUS_INCLUDE_PATH=$HOME/aux/boost-1.58.0/include:$CPLUS_INCLUDE_PATH 
+  export CPLUS_INCLUDE_PATH=$HOME/aux/gcc-4.8.2/include:$CPLUS_INCLUDE_PATH    
+  export LD_LIBRARY_PATH=$HOME/aux/boost-1.58.0/lib:$LD_LIBRARY_PATH           
+  export LD_LIBRARY_PATH=$HOME/aux/gcc-4.8.2/lib:$LD_LIBRARY_PATH              
+  export LD_LIBRARY_PATH=$HOME/aux/gcc-4.8.2/lib64:$LD_LIBRARY_PATH            
+  export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH                     
+  export PATH=$HOME/aux/htop-1.0.3/bin:$PATH                                   
+  export PATH=$HOME/aux/cmake-3.3.0/bin:$PATH                                  
+  export PATH=$HOME/aux/python-2.7.10/bin:$PATH                                
+  export PATH=$HOME/aux/gcc-4.8.2/bin:$PATH                                    
+  export PATH=$HOME/aux/benchpress/bin:$PATH                                   
+  export PYTHONPATH=$HOME/aux/benchpress/module:$PYTHONPATH                    
 
 Be warned, this is a fairly time-consuming task. Expect 3-4 hours.
 The most time consuming are compiling `gcc` and `boost`.
@@ -304,7 +319,7 @@ Start by installing `gcc 4.8` this probably takes a couple of hours::
 
   mkdir $HOME/aux/gcc-4.8.2
   cd gcc-4.8.2
-  ./configure --prefix=$HOME/aux/gcc-4.8.2
+  ./configure --prefix=$HOME/aux/gcc-4.8.2 --enable-languages=c,c++ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-gnu-unique-object --disable-libmudflap --enable-plugin --enable-multiarch --with-tune=generic --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu                                                                                 
   make
   make -k check
   make install
@@ -357,7 +372,7 @@ Continue with `cmake`::
 
 Just follow the wizard.
 
-Boost
+boost
 -----
 
 Then install `boost`::
@@ -368,7 +383,71 @@ Then install `boost`::
   cd boost*
   mkdir $HOME/aux/boost
   ./bootstrap.sh --prefix=$HOME/aux/boost
-  ./b2 install
+  ./b2 --with-serialization --with-filesystem --with-system --with-thread install
 
 This is the second most time-consuming compile you have to do.
+
+swig
+----
+
+Jep....::
+
+  cd $HOME/preqs
+  wget http://prdownloads.sourceforge.net/swig/swig-3.0.6.tar.gz
+  tar xfz swig-3.0.6.tar.gz
+  cd swig-3.0.6
+  ./configure --prefix=$HOME/aux/swig-3.0.6
+  make
+  make install
+
+htop (optional)
+---------------
+
+I just like this `htop` over `top` but it is completely optional::
+
+  cd $HOME/preqs
+  wget http://hisham.hm/htop/releases/1.0.3/htop-1.0.3.tar.gz
+  tar xzf htop-1.0.3.tar.gz
+  ./configure --prefix=$HOME/aux/htop-1.0.3
+  make
+  make install
+
+It is just such a nice convenience.
+
+bash (might be optional)
+------------------------
+
+In case even your shell is broken then go for installing bash::
+
+  cd $HOME/preqs
+  wget http://git.savannah.gnu.org/cgit/bash.git/snapshot/bash-master.tar.gz
+  tar xzf bash-master.tar.gz
+  cd bash-master
+  ./configure --prefix=$HOME/aux/bash-4.3
+  make
+  make install
+
+Python Packages
+---------------
+
+These should now be installable via `pip`::
+
+  pip install cheetah cython numpy
+
+benchpress
+----------
+
+We need this to run testing against benchmarks and to run benchmarks from the benchpress repos::
+
+  cd $HOME/aux
+  git clone https://github.com/bh107/benchpress.git
+
+Verify that you can invoke benchpress::
+
+  bp-info --all
+
+bohrium
+-------
+
+And now for the main attraction!
 
