@@ -19,6 +19,7 @@ namespace cpu{
 
 const char ThreadControl::TAG[] = "ThreadControl";
 
+#if defined(VE_CPU_BIND)
 string cpu_text(void)
 {
     hwloc_topology_t topo;                      // Setup topology
@@ -60,6 +61,12 @@ string cpu_text(void)
 
     return ss.str();
 }
+#else
+string cpu_text(void)
+{
+    return "[MODEL:UNKNOWN,ARCH:UNKNOWN";
+}
+#endif
 
 ThreadControl::ThreadControl(thread_binding binding, size_t thread_limit)
     : binding_(binding), thread_limit_(thread_limit)
