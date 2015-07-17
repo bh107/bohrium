@@ -234,6 +234,8 @@ Without OpenMP clang is not of much use to Bohrium, so we grab the omp-port::
   make -j$(nproc)
   make install
 
+Hmm unfortunately this does not seem to work... or it messes stuff up...
+
 benchpress
 ----------
 
