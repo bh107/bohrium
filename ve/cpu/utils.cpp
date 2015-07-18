@@ -80,14 +80,6 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
                         }
                     }
                     break;
-
-                case POWER:
-                    if (((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) && \
-                        (get_scalar(symbol_table[tac.in2]) == 2.0)) {
-                        tac.oper = MULTIPLY;
-                        tac.in2 = tac.in1;
-                    }
-                    break;
                 default:
                     break;
             }

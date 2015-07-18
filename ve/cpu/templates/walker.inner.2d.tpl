@@ -1,18 +1,12 @@
 //
-//  INNER-WALKER
+//  2D-INNER-WALKER
 //
 //	Walks the iteration-space using outer/inner loop constructs.
 //	Partitions work into chunks of size equal to the inner-most dimension.
 //
 {
     const int64_t inner_dim  = iterspace->ndim-1;
-
-    int64_t weight[CPU_MAXDIM]; // Helper for step-calculation
-    int64_t acc = 1;
-    for(int64_t idx=inner_dim; idx >=0; --idx) {
-        weight[idx] = acc;
-        acc *= iterspace->shape[idx];
-    }
+    const int64_t outer_dim  = iterspace->ndim-2;
 
     const int mthreads          = omp_get_max_threads();
     const int64_t chunksize     = iterspace->shape[inner_dim];
@@ -40,32 +34,35 @@
         work_end = work_offset + work;
 
         if (work) {
-        // Walker STRIDE_INNER - begin
-        {{WALKER_STRIDE_INNER}}
-        // Walker STRIDE_INNER - end
-
         // Accumulator DECLARE COMPLETE - begin
         {{ACCU_LOCAL_DECLARE_COMPLETE}}
         // Accumulator DECLARE COMPLETE - end        
+
+        // Walker declaration(s) - begin
+        {{WALKER_DECLARATION}}
+        // Walker declaration(s) - end
+
+        // Walker STRIDE_OUTER - begin
+        {{WALKER_STRIDE_OUTER}}
+        // Walker STRIDE_OUTER - end
+
+        // Walker STRIDE_OUTER - begin
+        {{WALKER_STRIDE_INNER}}
+        // Walker STRIDE_OUTER - end
+
+        // Walker offset(s) - begin
+        {{WALKER_OFFSET}}
+        // Walker offset(s) - end
 
         // Iteration space
         const int64_t eidx_begin = work_offset*chunksize;
         const int64_t eidx_end   = work_end*chunksize;
         for(int64_t eidx=eidx_begin; eidx<eidx_end; eidx+=chunksize) {
-            // Walker declaration(s) - begin
-            {{WALKER_DECLARATION}}
-            // Walker declaration(s) - end
-
-            // Walker step OUTER / operand offset - begin
-            for (int64_t dim=0; dim < inner_dim; ++dim) {
-                const int64_t coord = (eidx / weight[dim]) % iterspace->shape[dim];
-                {{WALKER_STEP_OUTER}}
-            }
-            // Walker step OUTER / operand offset - end
 
             // Accumulator DECLARE PARTIAL - begin
             {{ACCU_LOCAL_DECLARE_PARTIAL}}
-            // Accumulator DECLARE PARTIAL - end        
+            // Accumulator DECLARE PARTIAL - end
+
             {{PRAGMA_SIMD}}
             for (int64_t iidx=0; iidx < chunksize; iidx++) {
                 // Apply operator(s) on operands - begin
@@ -79,6 +76,10 @@
             // Accumulator PARTIAL SYNC - begin
             {{ACCU_OPD_SYNC_PARTIAL}}
             // Accumulator PARTIAL SYNC - end
+
+            // Walker step OUTER / operand offset - begin
+            {{WALKER_STEP_OUTER}}
+            // Walker step OUTER / operand offset - end
 
 			// Write EXPANDED scalars back to memory - begin
             if (0==tid) {

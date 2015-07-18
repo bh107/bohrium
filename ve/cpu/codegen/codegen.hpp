@@ -217,6 +217,7 @@ public:
 
     std::string strides(void);
     std::string stride_inner(void);
+    std::string stride_outer(void);
     std::string stride_axis(void);
 
     std::string accu(void);
@@ -328,11 +329,20 @@ private:
     std::string declare_stride_inner(uint64_t oidx);
     std::string declare_stride_inner(void);
 
+    std::string declare_stride_outer_2D(uint64_t oidx);
+    std::string declare_stride_outer_2D(void);
+
     std::string declare_stride_axis(uint64_t oidx);
     std::string declare_stride_axis(void);
     
     std::string assign_collapsed_offset(uint32_t rank);
     std::string assign_collapsed_offset(uint32_t rank, uint64_t oidx);
+
+    std::string assign_offset_outer_2D();
+    std::string assign_offset_outer_2D(uint64_t oidx);
+
+    std::string step_fwd_outer_2D(uint64_t glb_idx);
+    std::string step_fwd_outer_2D(void);
 
     std::string step_fwd_outer(uint64_t glb_idx);
     std::string step_fwd_outer(void);
