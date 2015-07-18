@@ -195,6 +195,13 @@ public:
      */
     bool only_system_opcodes() const;
 
+    /* Determines whether all instructions in 'this' kernel
+     * are BH_NONE
+     *
+     * @return The boolean answer
+     */
+    bool is_noop() const;
+
     /* Determines whether the kernel fusible legal
      *
      * @return The boolean answer
