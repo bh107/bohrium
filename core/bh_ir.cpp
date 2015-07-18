@@ -266,6 +266,21 @@ bool bh_ir_kernel::only_system_opcodes() const
     return true;
 }
 
+/* Determines whether all instructions in 'this' kernel
+ * are BH_NONE
+ *
+ * @return The boolean answer
+ */
+bool bh_ir_kernel::is_noop() const
+{
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    {
+        if(bhir->instr_list[this_idx].opcode != BH_NONE)
+            return false;
+    }
+    return true;
+}
+
 /* Determines whether the kernel fusible legal
  *
  * @return The boolean answer
