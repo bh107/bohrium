@@ -47,36 +47,34 @@ Vertex GraphDW::add_vertex(const bh_ir_kernel &kernel)
     Vertex d = boost::add_vertex(kernel, _bglD);
     boost::add_vertex(_bglW);
 
-    //Add edges
+    //Find all vertices that must connect to 'kernel'
+    set<Vertex> connect_vs;
     BOOST_FOREACH(bh_base *base, kernel.get_bases())
     {
-        auto vs = base2vertices.find(base);
-        if(vs == base2vertices.end())//Unknown base-array
+        set<Vertex> &vs = base2vertices[base];
+        connect_vs.insert(vs.begin(), vs.end());
+        vs.insert(d);
+    }
+
+    //Add path to 'kernel'
+    BOOST_REVERSE_FOREACH(Vertex v, connect_vs)
+    {
+        if(d != v and not path_exist(v, d, _bglD, true))
         {
-            base2vertices[base].insert(d);
-            continue;
-        }
-        //Let's check all vertices that access the base-array.
-        BOOST_FOREACH(Vertex v, vs->second)
-        {
-            if(d != v and not path_exist(v, d, _bglD, false))
+            bool dependency = false;
+            int dep = kernel.dependency(_bglD[v]);
+            if(dep)
             {
-                bool dependency = false;
-                int dep = kernel.dependency(_bglD[v]);
-                if(dep)
-                {
-                    assert(dep == 1);
-                    dependency = true;
-                    boost::add_edge(v, d, _bglD);
-                }
-                int64_t cost = kernel.merge_cost_savings(_bglD[v]);
-                if((cost > 0) or (cost == 0 and dependency))
-                {
-                    boost::add_edge(v, d, EdgeWeight(cost), _bglW);
-                }
+                assert(dep == 1);
+                dependency = true;
+                boost::add_edge(v, d, _bglD);
+            }
+            int64_t cost = kernel.merge_cost_savings(_bglD[v]);
+            if((cost > 0) or (cost == 0 and dependency))
+            {
+                boost::add_edge(v, d, EdgeWeight(cost), _bglW);
             }
         }
-        vs->second.insert(d);
     }
     assert(dag_validate(*this));
     return d;
@@ -144,8 +142,6 @@ void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
     BOOST_FOREACH(bh_base *base, _bglD[b].get_bases())
     {
         base2vertices[base].erase(b);
-        cout << "remove " << base << ":" << b << endl;
-        cout << "insert " << base << ":" << a << endl;
         base2vertices[base].insert(a);
     }
 
