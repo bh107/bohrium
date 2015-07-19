@@ -25,10 +25,17 @@ string Operand::name(void)
     return ss.str();
 }
 
-string Operand::first(void)
+string Operand::data(void)
 {
     stringstream ss;
-    ss << name() << "_first";
+    ss << name() << "_data";
+    return ss.str();
+}
+
+string Operand::start(void)
+{
+    stringstream ss;
+    ss << name() << "_start";
     return ss.str();
 }
 

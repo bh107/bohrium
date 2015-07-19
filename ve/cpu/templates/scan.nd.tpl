@@ -4,7 +4,7 @@
 //       loop collapsing...
 {
     const int64_t nelements = iterspace->nelem;
-    {{ATYPE}} axis = *{{OPD_IN2}}_first;
+    {{ATYPE}} axis = *{{OPD_IN2}}_data;
 
     const int64_t last_e      = nelements-1;
     const int64_t shape_axis  = iterspace->shape[axis];
@@ -27,8 +27,8 @@
         //
         // Compute offset based on coordinate
         //
-        {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
-        {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first;
+        {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_data + {{OPD_OUT}}_start;
+        {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_data + {{OPD_IN1}}_start;
 
         for (int64_t j=0; j<ndim; ++j) {           
             {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_stride[j];

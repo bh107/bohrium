@@ -156,32 +156,23 @@ string Kernel::unpack_arguments(void)
                 << _end();
                 ss
                 << _declare_init(
-                    _ptr_const(operand.etype()),
-                    operand.first(),
-                    _add(
-                        _cast(
-                            _ptr(operand.etype()),
-                            _deref(_access_ptr(_index(args(), id), "data"))
-                        ),
-                        _access_ptr(_index(args(), id), "start")
-                    )
+                    _const(_int64()),
+                    operand.start(),
+                    _access_ptr(_index(args(), id), "start")
                 )
-                << _end() 
-                << _assert_not_null(operand.first())
                 << _end();
-                break;
 
-            case SCALAR_CONST:  // "first" = operand_t->data
+            case SCALAR_CONST:
                 ss << _declare_init(
                     _ptr_const(operand.etype()),
-                    operand.first(),
+                    operand.data(),
                     _cast(
                         _ptr(operand.etype()),
                         _deref(_access_ptr(_index(args(), id), "data"))
                     )
                 )
                 << _end() 
-                << _assert_not_null(operand.first()) << _end();
+                << _assert_not_null(operand.data()) << _end();
                 break;
 
             case SCALAR_TEMP:

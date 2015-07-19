@@ -209,7 +209,8 @@ public:
 
     std::string name(void);
 
-    std::string first(void);
+    std::string data(void);
+    std::string start(void);
     std::string layout(void);
     std::string etype(void);
     std::string ndim(void);

@@ -27,7 +27,7 @@ string Walker::declare_operands(void)
                 << _declare_init(
                     _const(operand.etype()),
                     operand.walker(),
-                    _deref(operand.first())
+                    _deref(operand.data())
                 );
                 break;
 
@@ -36,7 +36,7 @@ string Walker::declare_operands(void)
                 << _declare_init(
                     operand.etype(),
                     operand.walker(),
-                    _deref(operand.first())
+                    _deref(_add(operand.data(), operand.start()))
                 );
                 break;
 
@@ -57,14 +57,14 @@ string Walker::declare_operands(void)
                     << _declare_init(
                         _restrict(_ptr(operand.etype())),
                         operand.walker(),
-                        operand.first()
+                        _add(operand.data(), operand.start())
                     );
                 } else {
                     ss
                     << _declare_init(
                         _ptr(operand.etype()),
                         operand.walker(),
-                        operand.first()
+                        _add(operand.data(), operand.start())
                     );
                 }
                 break;
@@ -655,7 +655,10 @@ string Walker::operations(void)
                         inner_opds_.insert(tac.out);
                         inner_opds_.insert(tac.in2);
                         out = kernel_.operand_glb(tac.out).walker_val();
-                        in1 = kernel_.operand_glb(tac.in1).first();
+                        in1 = _add(
+                            kernel_.operand_glb(tac.in1).data(),
+                            kernel_.operand_glb(tac.in1).start()
+                        );
                         in2 = kernel_.operand_glb(tac.in2).walker_val();
 
                         ss << _assign(
@@ -667,7 +670,10 @@ string Walker::operations(void)
                     case SCATTER:
                         inner_opds_.insert(tac.in1);
                         inner_opds_.insert(tac.in2);
-                        out = kernel_.operand_glb(tac.out).first();
+                        out = _add(
+                            kernel_.operand_glb(tac.out).data(),
+                            kernel_.operand_glb(tac.out).start()
+                        );
                         in1 = kernel_.operand_glb(tac.in1).walker_val();
                         in2 = kernel_.operand_glb(tac.in2).walker_val();
 
@@ -705,7 +711,7 @@ string Walker::write_expanded_scalars(void)
             ((opd.meta().layout & SCALAR)>0) and \
             (written.find(tac.out)==written.end())) {
             ss << _line(_assign(
-                _deref(opd.first()),
+                _deref(_add(opd.data(), opd.start())),
                 opd.walker_val()
             ));
             written.insert(tac.out);
@@ -825,7 +831,7 @@ string Walker::generate_source(void)
             if ((out->meta().layout & (SCALAR|CONTIGUOUS|CONSECUTIVE|STRIDED))>0) {
                 // Initialize the accumulator 
                 subjects["ACCU_OPD_INIT"] = _line(_assign(
-                    _deref(out->first()),
+                    _deref(_add(out->data(), out->start())),
                     oper_neutral_element(tac->oper, in1->meta().etype)
                 ));
                 if ((kernel_.omask() & REDUCE_COMPLETE)>0) {
@@ -833,8 +839,8 @@ string Walker::generate_source(void)
                     subjects["ACCU_OPD_SYNC_COMPLETE"] = _line(synced_oper(
                         tac->oper,
                         in1->meta().etype,
-                        _deref(out->first()),
-                        _deref(out->first()),
+                        _deref(_add(out->data(), out->start())),
+                        _deref(_add(out->data(), out->start())),
                         out->accu()
                     ));
                 } else {
@@ -842,8 +848,8 @@ string Walker::generate_source(void)
                     subjects["ACCU_OPD_SYNC_PARTIAL"] = _line(synced_oper(
                         tac->oper,
                         in1->meta().etype,
-                        _deref(out->first()),
-                        _deref(out->first()),
+                        _deref(_add(out->data(), out->start())),
+                        _deref(_add(out->data(), out->start())),
                         out->accu()
                     ));
                 }
@@ -877,7 +883,7 @@ string Walker::generate_source(void)
             ((out->meta().layout & (SCALAR|CONTIGUOUS|CONSECUTIVE|STRIDED))>0)) {
             // Initialize the accumulator 
             subjects["ACCU_OPD_INIT"] = _line(_assign(
-                _deref(out->first()),
+                _deref(_add(out->data(), out->start())),
                 oper_neutral_element(tac->oper, in1->meta().etype)
             ));
 
@@ -891,8 +897,8 @@ string Walker::generate_source(void)
                 subjects["ACCU_OPD_SYNC_COMPLETE"] = _line(synced_oper(
                     tac->oper,
                     in1->meta().etype,
-                    _deref(out->first()),
-                    _deref(out->first()),
+                    _deref(_add(out->data(), out->start())),
+                    _deref(_add(out->data(), out->start())),
                     out->accu()
                 ));
             } else {
@@ -910,7 +916,7 @@ string Walker::generate_source(void)
         subjects["WALKER_AXIS_DIM"] = _line(_declare_init(
             _const(_int64()),
             "axis_dim",
-            _deref(in2->first())
+            _deref(in2->data())
         ));
         subjects["WALKER_STRIDE_AXIS"]  = declare_stride_axis();
         subjects["WALKER_STEP_OTHER"]   = step_fwd_other();
@@ -920,7 +926,7 @@ string Walker::generate_source(void)
         if ((kernel_.omask() & REDUCE_PARTIAL)>0) {
             if (out->meta().layout == SCALAR) {
                 subjects["ACCU_OPD_SYNC_PARTIAL"]= _line(_assign(
-                    _deref(out->first()),
+                    _deref(_add(out->data(), out->start())),
                     out->accu()
                 ));
             } else {
