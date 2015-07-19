@@ -42,7 +42,8 @@ using namespace boost;
 namespace bohrium {
 namespace dag {
 
-Vertex GraphDW::add_vertex(const bh_ir_kernel &kernel)
+Vertex GraphDW::add_vertex(const bh_ir_kernel &kernel,
+                           map<bh_base*, set<Vertex> > &base2vertices)
 {
     Vertex d = boost::add_vertex(kernel, _bglD);
     boost::add_vertex(_bglW);
@@ -92,9 +93,6 @@ void GraphDW::add_from_subgraph(const set<Vertex> &sub_graph, const GraphDW &dag
         Vertex v_this = boost::add_vertex(d[v_dag], _bglD);
         dag2this[v_dag] = v_this;
         boost::add_vertex(_bglW);
-
-        BOOST_FOREACH(bh_base *base, d[v_dag].get_bases())
-            base2vertices[base].insert(v_this);
     }
     //Add all dependency edges that connects vertices within 'sub_graph'
     BOOST_FOREACH(EdgeD e, edges(d))
@@ -136,13 +134,6 @@ void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
         BOOST_FOREACH(uint64_t idx, _bglD[a].instr_indexes)
             _bglD[b].add_instr(idx);
         _bglD[a] = _bglD[b];//Only 'a' survives
-    }
-
-    //Update the 'base2vertices'
-    BOOST_FOREACH(bh_base *base, _bglD[b].get_bases())
-    {
-        base2vertices[base].erase(b);
-        base2vertices[base].insert(a);
     }
 
     //Add edges of 'b' to 'a'
@@ -247,16 +238,15 @@ static bool base_in_kernel(const bh_ir &bhir, const bh_ir_kernel &kernel,
     return false;
 }
 
-
 void from_bhir(bh_ir &bhir, GraphDW &dag)
 {
-    assert(num_vertices(dag.bglD()) == 0);
-
     if(bhir.kernel_list.size() != 0)
     {
         throw logic_error("The kernel_list is not empty!");
     }
 
+    assert(num_vertices(dag.bglD()) == 0);
+    map<bh_base*, set<Vertex> > base2vertices;
     uint64_t idx=0;
     while(idx < bhir.instr_list.size())
     {
@@ -280,7 +270,7 @@ void from_bhir(bh_ir &bhir, GraphDW &dag)
             else
                 break;
         }
-        dag.add_vertex(kernel);
+        dag.add_vertex(kernel, base2vertices);
     }
     assert(dag_validate(dag));
 }
@@ -288,11 +278,12 @@ void from_bhir(bh_ir &bhir, GraphDW &dag)
 void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
 {
     assert(num_vertices(dag.bglD()) == 0);
+    map<bh_base*, set<Vertex> > base2vertices;
 
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
         if(kernel.instr_indexes.size() > 0)
-            dag.add_vertex(kernel);
+            dag.add_vertex(kernel, base2vertices);
     }
     assert(dag_validate(dag));
 }
@@ -731,35 +722,6 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
             }
         }
     }
-    //Check the 'base2vertices' map
-    BOOST_FOREACH(Vertex v, vertices(d))
-    {
-        BOOST_FOREACH(uint64_t instr_idx, d[v].instr_indexes)
-        {
-            const bh_instruction &instr = d[v].bhir->instr_list[instr_idx];
-            const int nop = bh_operands(instr.opcode);
-            for(int i=0; i<nop; ++i)
-            {
-                if(bh_is_constant(&instr.operand[i]))
-                    continue;
-                bh_base *base = instr.operand[i].base;
-                if(dag.base2vertices.find(base) == dag.base2vertices.end())
-                {
-                    cout << "Base-array " << base << " in vertex " << v << \
-                        " isn't in the 'base2vertices' map!" << endl;
-                    cout << "size: " << dag.base2vertices.size() << endl;
-                    goto fail;
-                }
-                const set<Vertex> &vs = dag.base2vertices.at(base);
-                if(vs.find(v) == vs.end())
-                {
-                    cout << "Base-array " << base << " in 'base2vertices' does'nt map to Vertex "\
-                         << v << "!" << endl;
-                    goto fail;
-                }
-            }
-        }
-    }
     return true;
 fail:
     cout << "writing validate-fail.dot" << endl;
@@ -811,68 +773,35 @@ fail:
     return false;
 }
 
-void fuse_gently(GraphDW &dag)
+bool nonfusible_subset(const GraphDW &dag, Vertex a, Vertex b)
 {
     const GraphD &d = dag.bglD();
-    set<Vertex> vs(vertices(d).first, vertices(d).second);
-    while(not vs.empty())
+    const bh_ir_kernel &ka = d[a];
+    const bh_ir_kernel &kb = d[b];
+    set<Vertex> a_nonfusible, b_nonfusible;
+    BOOST_FOREACH(Vertex v, boost::vertices(d))
     {
-        //Lets find and merge a "single ending" vertex
-        set<Vertex>::iterator it=vs.begin();
-        for(; it != vs.end(); ++it)
-        {
-            if(in_degree(*it, d) == 0 and out_degree(*it, d) == 1)
-            {
-                auto adj = adjacent_vertices(*it, d);
-                Vertex v = *adj.first;
-                if(d[*it].input_and_output_subset_of(d[v]))
-                {
-                    if(d[*it].fusible(d[v]))
-                        dag.merge_vertices(v, *it, false);
-                    vs.erase(it);
-                    break;
-                }
-            }
-            if(in_degree(*it, d) == 1 and out_degree(*it, d) == 0)
-            {
-                auto adj = inv_adjacent_vertices(*it, d);
-                Vertex v = *adj.first;
-                if(d[*it].input_and_output_subset_of(d[v]))
-                {
-                    if(d[*it].fusible(d[v]))
-                        dag.merge_vertices(v, *it, true);
-                    vs.erase(it);
-                    break;
-                }
-            }
-        }
-        if(it == vs.end())
-            break;//No single ending vertex found
-
-        //Note that 'vs' is maintained since the extracted vertex '*it'
-        //is the only vertex removed by the merge
+        const bh_ir_kernel &k = d[v];
+        if(not k.fusible(ka))
+            a_nonfusible.insert(v);
+        if(not k.fusible(kb))
+            b_nonfusible.insert(v);
     }
-    dag.remove_cleared_vertices();
-    assert(dag_validate(dag));
-}
 
-bool bases_exist(GraphDW &dag, vector<bh_base*> bases, Vertex ignore)
-{
-    BOOST_FOREACH(bh_base *base, bases)
-    {
-        BOOST_FOREACH(Vertex v, dag.base2vertices.at(base))
-        {
-            if(v != ignore)
-                return true;
-        }
-    }
+    //Check if 'b' is a subset of 'a'
+    if(std::includes(a_nonfusible.begin(), a_nonfusible.end(),
+                     b_nonfusible.begin(), b_nonfusible.end()))
+        return true;
+    //Check if 'a' is a subset of 'b'
+    if(std::includes(b_nonfusible.begin(), b_nonfusible.end(),
+                     a_nonfusible.begin(), a_nonfusible.end()))
+        return true;
     return false;
 }
 
-void fuse_gently2(GraphDW &dag)
+void fuse_gently(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();
-    const GraphW &w = dag.bglW();
     set<EdgeD> es(boost::edges(d).first, boost::edges(d).second);
     while(not es.empty())
     {
@@ -881,25 +810,23 @@ void fuse_gently2(GraphDW &dag)
         {
             Vertex src = source(*it, d);
             Vertex dst = target(*it, d);
-            if(out_degree(src, d) <= 1 and in_degree(dst, d) <= 1 and \
-               out_degree(src, w) <= 1 and in_degree(dst, w) <= 1 )
+
+            if(path_exist(src, dst, d, true))
             {
-                vector<bh_base*> subset_preventers;
-                d[dst].input_and_output_subset_of(d[src], subset_preventers);
-     //           cout << "(" << *it << "," << v << ") subset_preventers: ";
-     //           BOOST_FOREACH(bh_base *b, subset_preventers)
-     //               cout << b << ",";
-     //           cout << endl;
-                if(not bases_exist(dag, subset_preventers, src))
+                dag.remove_edges(src, dst);
+                continue;
+            }
+
+            if(out_degree(src, d) <= 1 and in_degree(dst, d) <= 1)
+            {
+                es.erase(it);
+                if(d[dst].fusible(d[src]) and nonfusible_subset(dag, src, dst))
                 {
-      //              cout << "local bases!" << endl;
                     dag.merge_vertices(src, dst, true);
-                    es.erase(it);
                     break;
                 }
             }
         }
-        //pprint(d, "after.dot");
         if(it == es.end())
             break;//No single ending vertex found
 

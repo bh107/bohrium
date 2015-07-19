@@ -69,7 +69,6 @@ protected:
 
 public:
     //Map from base-array to the set of vertices that accesses it
-    std::map<bh_base*, std::set<Vertex> > base2vertices;
     const GraphD &bglD() const {return _bglD;}
     const GraphW &bglW() const {return _bglW;}
 
@@ -77,9 +76,12 @@ public:
      * Additionally, both dependency and weight edges are
      * added / updated as needed.
      *
- iro Quintana    * @kernel  The kernel to bundle with the new vertex
+     * @base2vertices  In order to improve the build process, this
+     *                 function accepts and maintain a map from base-
+     *                 array to the set of vertices that accesses it
      */
-    Vertex add_vertex(const bh_ir_kernel &kernel);
+    Vertex add_vertex(const bh_ir_kernel &kernel,
+                      std::map<bh_base*,std::set<Vertex> > &base2vertices);
 
     /* The default constructor */
     GraphDW(){};
@@ -92,13 +94,6 @@ public:
     {
         _bglD = dag;
         _bglW = GraphW(boost::num_vertices(dag));
-
-        //Update 'base2vertices'
-        BOOST_FOREACH(Vertex v, boost::vertices(_bglD))
-        {
-            BOOST_FOREACH(bh_base *base, _bglD[v].get_bases())
-                base2vertices[base].insert(v);
-        }
     }
 
     /* Add the set of vertices 'sub_graph' to 'this' graph.
@@ -133,7 +128,6 @@ public:
     }
 
     /* Clear the vertex without actually removing it.
-     * NB: the caller must maintain 'base2vertices'
      *
      * @v  The Vertex
      */
@@ -150,8 +144,6 @@ public:
      */
     void remove_cleared_vertices()
     {
-        //For now, we have to deactivate this because of 'base2vertices'
-        return;
         std::vector<Vertex> removes;
         BOOST_FOREACH(Vertex v, boost::vertices(_bglD))
         {
