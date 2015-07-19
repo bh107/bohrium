@@ -64,7 +64,7 @@ string cpu_text(void)
 #else
 string cpu_text(void)
 {
-    return "[MODEL:UNKNOWN,ARCH:UNKNOWN";
+    return "[MODEL:UNKNOWN,ARCH:UNKNOWN]";
 }
 #endif
 

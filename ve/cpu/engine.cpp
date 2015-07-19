@@ -112,6 +112,16 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         block.update_iterspace();                       // update iterspace
     }
 
+    /*
+    size_t memory_reqs = 0;
+    for(size_t operand_idx=0; operand_idx < block.noperands(); ++operand_idx) {
+        operand_t& operand = block.operand(operand_idx);
+        memory_reqs += operand.nelem;
+        //cout << "local_idx(" << operand_idx << ") nelem(" << operand.nelem << ")" << endl;
+    }
+    cout << "Total amount of elements " << memory_reqs << endl;
+    */
+
     if (!block.symbolize()) {                           // update block-symbol
         fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
         return BH_ERROR;
