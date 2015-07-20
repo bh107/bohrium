@@ -10,7 +10,7 @@ namespace core{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& globals, vector<tac_t>& program)
-: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_(""), omask_(0)
+: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_(""), omask_(0), footprint_nelem_(0), footprint_bytes_(0)
 {}
 
 Block::~Block()
@@ -45,6 +45,9 @@ void Block::clear(void)
 
     symbol_text_    = "";       // textual symbol representation
     symbol_         = "";       // hashed symbol representation
+
+    footprint_nelem_ = 0;
+    footprint_bytes_ = 0;
 }
 
 void Block::compose(bh_ir_kernel& krnl)
@@ -309,10 +312,9 @@ iterspace_t& Block::iterspace(void)
 }
 
 void Block::update_iterspace(void)
-{   
-    // NOTE: This stuff is only valid for SIJ, and FUSION, streaming
-    //       will require another way to determine the iteration space.
-    
+{       
+    std::set<const bh_base*> footprint;
+
     //
     // Determine layout, ndim and shape
     for(size_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
@@ -321,7 +323,7 @@ void Block::update_iterspace(void)
             continue;
         }
         if ((tac.op & (REDUCE_COMPLETE|REDUCE_PARTIAL))>0) {     // Reductions are weird
-            if (globals_[tac.in1].layout >= iterspace_.layout) {
+            if (globals_[tac.in1].layout >= iterspace_.layout) {    // Iterspace
                 iterspace_.layout = globals_[tac.in1].layout;
                 iterspace_.ndim  = globals_[tac.in1].ndim;
                 iterspace_.shape = globals_[tac.in1].shape;
@@ -329,36 +331,63 @@ void Block::update_iterspace(void)
             if (globals_[tac.out].layout > iterspace_.layout) {
                 iterspace_.layout = globals_[tac.out].layout;
             }
+            if ((globals_[tac.out].layout & (DYNALLOC_LAYOUT))>0) {   // Footprint
+                footprint.insert(globals_[tac.out].base);
+            }
+            if ((globals_[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
+                footprint.insert(globals_[tac.in1].base);
+            }
         } else {
             switch(tac_noperands(tac)) {
                 case 3:
-                    if (globals_[tac.in2].layout > iterspace_.layout) {
+                    if (globals_[tac.in2].layout > iterspace_.layout) {     // Iterspace
                         iterspace_.layout = globals_[tac.in2].layout;
                         if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.in2].ndim;
                             iterspace_.shape = globals_[tac.in2].shape;
                         }
                     }
+                    if ((globals_[tac.in2].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
+                        footprint.insert(globals_[tac.in2].base);
+                    }
+
                 case 2:
-                    if (globals_[tac.in1].layout > iterspace_.layout) {
+                    if (globals_[tac.in1].layout > iterspace_.layout) {     // Iterspace
                         iterspace_.layout = globals_[tac.in1].layout;
                         if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.in1].ndim;
                             iterspace_.shape = globals_[tac.in1].shape;
                         }
                     }
+                    if ((globals_[tac.in1].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
+                        footprint.insert(globals_[tac.in1].base);
+                    }
+
                 case 1:
-                    if (globals_[tac.out].layout > iterspace_.layout) {
+                    if (globals_[tac.out].layout > iterspace_.layout) {     // Iterspace
                         iterspace_.layout = globals_[tac.out].layout;
                         if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.out].ndim;
                             iterspace_.shape = globals_[tac.out].shape;
                         }
                     }
+                    if ((globals_[tac.out].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
+                        footprint.insert(globals_[tac.out].base);
+                    }
+
                 default:
                     break;
             }
         }
+    }
+
+    footprint_nelem_ = 0;                       // Compute the footprint
+    footprint_bytes_ = 0;
+    for (std::set<const bh_base*>::iterator it=footprint.begin();
+         it!=footprint.end();
+         ++it) {
+        footprint_nelem_ += (*it)->nelem;
+        footprint_bytes_ += bh_base_size(*it);
     }
 
     if (NULL != iterspace_.shape) {             // Determine number of elements
@@ -367,6 +396,16 @@ void Block::update_iterspace(void)
             iterspace_.nelem *= iterspace_.shape[k];
         }
     }
+}
+
+size_t Block::footprint_nelem(void)
+{
+    return footprint_nelem_;
+}
+
+size_t Block::footprint_bytes(void)
+{
+    return footprint_bytes_;
 }
 
 string Block::dot(void) const

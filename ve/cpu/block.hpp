@@ -154,6 +154,9 @@ public:
      */
     void update_iterspace(void);
 
+    size_t footprint_nelem(void);
+    size_t footprint_bytes(void);
+
     /**
      * Returns a textual representation of the block in dot-format.
      */
@@ -198,6 +201,9 @@ private:
     static const char TAG[];
 
     std::map<bh_base*, std::set<uint64_t>> base_refs_;
+
+    size_t footprint_nelem_;
+    size_t footprint_bytes_;
 
 };
 
