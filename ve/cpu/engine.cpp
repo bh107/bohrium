@@ -185,7 +185,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         operand_t& operand = symbol_table[tac.out];
 
         if (((tac.op & ARRAY_OPS)>0) and \
-            ((operand.layout & (SCALAR_CONST|SCALAR_TEMP|CONTRACTABLE))==0)) {
+            ((operand.layout & (DYNALLOC_LAYOUT))>0)) {
             res = bh_vcache_malloc_base(operand.base);
             if (BH_SUCCESS != res) {
                 fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
