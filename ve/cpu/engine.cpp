@@ -107,22 +107,11 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                 }
             }
         }
-        // The operands might have been modified at this point, 
-        // so we might need to update te the iteration-space
-        block.update_iterspace();                       // update iterspace
     }
 
-    /*
-    size_t memory_reqs = 0;
-    for(size_t operand_idx=0; operand_idx < block.noperands(); ++operand_idx) {
-        operand_t& operand = block.operand(operand_idx);
-        memory_reqs += operand.nelem;
-        //cout << "local_idx(" << operand_idx << ") nelem(" << operand.nelem << ")" << endl;
-    }
-    cout << "Total amount of elements " << memory_reqs << endl;
-    */
+    block.update_iterspace();                       // Update iterspace
 
-    if (!block.symbolize()) {                           // update block-symbol
+    if (!block.symbolize()) {                       // Update block-symbol
         fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
         return BH_ERROR;
     }
@@ -250,7 +239,6 @@ bh_error Engine::execute(bh_ir* bhir)
 
         block.clear();                                  // Reset the block
         block.compose(*krnl);                           // Compose it based on kernel
-        block.update_iterspace();                       // update iterspace
         
         if ((block.omask() & EXTENSION)>0) {
             tac_t& tac = block.tac(0);
@@ -281,7 +269,6 @@ bh_error Engine::execute(bh_ir* bhir)
 
                 block.clear();                          // Reset the block
                 block.compose(*idx_it, *idx_it);        // Compose based on one instruction
-                block.update_iterspace();               // update iterspace
 
                 // Generate/Load code and execute it
                 res = execute_block(symbol_table, program, block, *krnl);
