@@ -817,7 +817,8 @@ void fuse_gently(GraphDW &dag)
                 continue;
             }
 
-            if(out_degree(src, d) <= 1 and in_degree(dst, d) <= 1)
+            if((out_degree(src, d) <= 1 and in_degree(dst, d) <= 1) or//Single binding
+                out_degree(dst, d) == 0 or in_degree(src, d) == 1) //Leaf or root
             {
                 es.erase(it);
                 if(d[dst].fusible(d[src]) and nonfusible_subset(dag, src, dst))
