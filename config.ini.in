@@ -44,7 +44,8 @@ stack_cpu_debug_t = bcexp_cpu
 bcexp_cpu = bccon
 bccon = topological
 topological = fuseprinter
-fuseprinter = node
+fuseprinter = pricer
+pricer = node
 node = cpu
 
 [stack_cpu_debug_g]
@@ -53,7 +54,18 @@ stack_cpu_debug_g = bcexp_cpu
 bcexp_cpu = bccon
 bccon = greedy
 greedy = fuseprinter
-fuseprinter = node
+fuseprinter = pricer
+pricer = node
+node = cpu
+
+[stack_cpu_debug_o]
+type = stack
+stack_cpu_debug_o = bcexp_cpu
+bcexp_cpu = bccon
+bccon = greedy
+greedy = fuseprinter
+fuseprinter = pricer
+pricer = node
 node = cpu
 
 [stack_cpu_greedy]
@@ -62,16 +74,6 @@ stack_cpu_greedy = bcexp_cpu
 bcexp_cpu = bccon
 bccon = greedy
 greedy = node
-node = cpu
-
-[stack_fuseprinter]
-type = stack
-stack_fuseprinter = dimclean
-dimclean = bcexp
-bcexp = topological
-topological = pricer
-pricer = fuseprinter
-fuseprinter = node
 node = cpu
 
 #
