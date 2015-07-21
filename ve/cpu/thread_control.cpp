@@ -1,5 +1,6 @@
 #include "thread_control.hpp"
 #include <stdlib.h>
+#include <iostream>
 #include <sstream>
 
 #if defined(VE_CPU_BIND)
@@ -18,6 +19,50 @@ namespace engine{
 namespace cpu{
 
 const char ThreadControl::TAG[] = "ThreadControl";
+
+#if defined(VE_CPU_BIND)
+string coproc_text(void)
+{
+    hwloc_topology_t topo;                      // Setup topology
+    hwloc_topology_init(&topo);                 
+    hwloc_topology_set_flags(topo, HWLOC_TOPOLOGY_FLAG_IO_DEVICES);
+    hwloc_topology_load(topo);
+
+    const int nobjts = 1;                       // Search these objects
+    hwloc_obj_type_t objts[nobjts] = { 
+        HWLOC_OBJ_OS_DEVICE 
+    };
+
+    string coproc_type;
+
+    for(int i=0; i<nobjts; ++i) {               // For Architecture and CPUModel
+        hwloc_obj_t obj = hwloc_get_obj_by_type(topo, objts[i], 0); 
+        if (obj) {
+            if (coproc_type.empty()) {
+                const char *str = hwloc_obj_get_info_by_name(obj, "CoProcType");
+                if (str) {
+                    coproc_type = string(str);
+                }
+            }
+        }
+    }
+
+    hwloc_topology_destroy(topo);               // Cleanup
+
+    stringstream ss;                            // Construct the CPU-text
+
+    ss << "[COPROC:" << (coproc_type.empty() ? "UNKNOWN" : coproc_type) << "]";
+    cout << ss.str() << endl;
+
+    return ss.str();
+
+}
+#else
+string coproc_text(void)
+{
+    return "[COPROC:UNKNOWN]";
+}
+#endif
 
 #if defined(VE_CPU_BIND)
 string cpu_text(void)

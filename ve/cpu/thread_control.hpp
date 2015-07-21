@@ -13,6 +13,7 @@ typedef enum {
 } thread_binding;
 
 std::string cpu_text(void);
+std::string coproc_text(void);
 
 class ThreadControl {
 public:
