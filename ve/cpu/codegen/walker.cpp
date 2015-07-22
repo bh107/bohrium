@@ -79,6 +79,40 @@ string Walker::declare_operands(void)
     return ss.str();
 }
 
+string Walker::offload(void)
+{
+    stringstream ss;
+
+    ss << "#pragma offload \\" << endl;
+    ss << "    target(mic:0)   \\" << endl;
+    for(kernel_operand_iter oit=kernel_.operands_begin();
+        oit != kernel_.operands_end();
+        ++oit) {
+        Operand& operand = oit->second;
+        switch(operand.meta().layout) {
+            case SCALAR_CONST:
+            case SCALAR:
+            case SCALAR_TEMP:
+            case CONTRACTABLE:
+                break;
+
+            case CONTIGUOUS:
+            case CONSECUTIVE:
+            case STRIDED:
+                ss << "in(" << operand.data() << ":length(" << operand.nelem() << ") "
+                   <<  "alloc_if(0) free_if(0)) \\" << endl;
+                break;
+
+            case SPARSE:
+				ss << _beef("Unimplemented LAYOUT.");
+				break;
+        }
+    }
+    ss << "if(1)";
+    return ss.str();
+}
+
+
 string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
 {
     stringstream ss;
@@ -734,6 +768,9 @@ string Walker::generate_source(void)
         cerr << kernel_.text() << endl;
         throw runtime_error("EXTENSION in kernel");
     }
+
+    // Experimental offload pragma
+    subjects["OFFLOAD"] = offload();
 
     // These are used by all kernels.
     const uint32_t rank = kernel_.iterspace().meta().ndim;

@@ -1,7 +1,5 @@
 // Scan operation of a strided n-dimensional array where n>1
-// TODO: openmp
-//       dimension-based optimizations
-//       loop collapsing...
+{{OFFLOAD}}
 {
     const int64_t nelements = iterspace->nelem;
     {{ATYPE}} axis = *{{OPD_IN2}}_data;

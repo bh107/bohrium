@@ -4,6 +4,7 @@
 //	Walks the iteration-space using outer/inner loop constructs.
 //	Partitions work into chunks of size equal to the inner-most dimension.
 //
+{{OFFLOAD}}
 {
     const int64_t inner_dim  = iterspace->ndim-1;
 

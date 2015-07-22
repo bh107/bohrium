@@ -1,9 +1,10 @@
 //
-//  AXIS-walker
+//  AXIS-walker ND
 //
 //	Walks the iteration-space using other/axis loop constructs.
 //	Partitions work into chunks of size equal to the "axis" dimension.
 //
+{{OFFLOAD}}
 {
     {{WALKER_AXIS_DIM}}
     int64_t axis_shape = iterspace->shape[axis_dim];

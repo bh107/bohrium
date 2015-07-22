@@ -308,6 +308,8 @@ private:
     std::string declare_operands(void);
     std::string declare_operand(uint32_t oidx);
 
+    std::string offload(void);
+
     // Construct the operator source for the tac.oper
     std::string oper(OPERATOR oper, ETYPE etype, std::string in1, std::string in2);
     std::string synced_oper(OPERATOR oper, ETYPE etype, std::string out, std::string in1, std::string in2);

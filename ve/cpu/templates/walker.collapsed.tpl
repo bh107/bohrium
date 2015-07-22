@@ -5,6 +5,7 @@
 //	Work is partitioned in the number of elements, regardless of dimension.
 //
 //
+{{OFFLOAD}}
 {
     const int mthreads = omp_get_max_threads();
     const int64_t nworkers = iterspace->nelem > mthreads ? mthreads : 1;

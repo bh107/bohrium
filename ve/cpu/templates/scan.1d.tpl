@@ -1,5 +1,7 @@
 //
 // Scan operation on one-dimensional arrays with strided access.
+//
+{{OFFLOAD}}
 {
     {{WALKER_INNER_DIM}}
     {{WALKER_DECLARATION}}
