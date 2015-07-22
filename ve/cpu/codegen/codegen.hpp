@@ -210,6 +210,7 @@ public:
     std::string name(void);
 
     std::string data(void);
+    std::string nelem(void);
     std::string start(void);
     std::string layout(void);
     std::string etype(void);

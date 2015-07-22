@@ -161,6 +161,13 @@ string Kernel::unpack_arguments(void)
                     _access_ptr(_index(args(), id), "start")
                 )
                 << _end();
+                ss
+                << _declare_init(
+                    _const(_int64()),
+                    operand.nelem(),
+                    _access_ptr(_index(args(), id), "nelem")
+                )
+                << _end();
 
             case SCALAR_CONST:
                 ss << _declare_init(

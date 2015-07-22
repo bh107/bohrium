@@ -32,6 +32,13 @@ string Operand::data(void)
     return ss.str();
 }
 
+string Operand::nelem(void)
+{
+    stringstream ss;
+    ss << name() << "_nelem";
+    return ss.str();
+}
+
 string Operand::start(void)
 {
     stringstream ss;
