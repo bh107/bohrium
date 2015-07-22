@@ -18,6 +18,10 @@ Accelerator::Accelerator(void) : id_(0), offload_(1), bytes_allocated_(0) {};
 template <typename T>
 void Accelerator::_alloc(operand_t& operand)
 {
+    if (bases_.count(operand.base)!=0) {    //  Operand is already allocated
+        return;
+    }
+
     T* data = (T*)operand.base->data;
     const int nelem = operand.base->nelem;
     bytes_allocated_ += nelem*sizeof(T);
@@ -56,6 +60,10 @@ void Accelerator::alloc(operand_t& operand)
 template <typename T>
 void Accelerator::_free(operand_t& operand)
 {
+    if (bases_.count(operand.base)==0) {    // Not allocated on device
+        return;
+    }
+
     T* data = (T*)operand.base->data;
     const int nelem = operand.base->nelem;
 
