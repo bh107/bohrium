@@ -140,26 +140,26 @@ string Kernel::unpack_iterspace(void)
     stringstream ss;
     ss << _declare_init(
         "LAYOUT",
-        "iterspace_layout",
-        _access_ptr("iterspace", "layout")
+        iterspace().layout(),
+        _access_ptr(iterspace().name(), "layout")
     )
     << _end();
     ss << _declare_init(
         _const(_int64()),
-        "iterspace_ndim",
-        _access_ptr("iterspace", "ndim")
+        iterspace().ndim(),
+        _access_ptr(iterspace().name(), "ndim")
     )
     << _end();
     ss << _declare_init(
         _ptr(_int64()),
-        "iterspace_shape",
-        _access_ptr("iterspace", "shape")
+        iterspace().shape(),
+        _access_ptr(iterspace().name(), "shape")
     )
     << _end();
     ss << _declare_init(
         _const(_int64()),
-        "iterspace_nelem",
-        _access_ptr("iterspace", "nelem")
+        iterspace().nelem(),
+        _access_ptr(iterspace().name(), "nelem")
     )
     << _end();
 

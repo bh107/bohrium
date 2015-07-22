@@ -246,9 +246,12 @@ public:
     Iterspace(iterspace_t& iterspace);
 
     std::string name(void);
+    std::string layout(void);
     std::string ndim(void);
+    std::string shape(void);
     std::string shape(uint32_t dim);
-
+    std::string nelem(void);
+    
     iterspace_t& meta(void);
 private:
     iterspace_t& iterspace_;
