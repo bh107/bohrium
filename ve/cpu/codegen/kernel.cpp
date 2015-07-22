@@ -128,10 +128,42 @@ string Kernel::generate_source(void)
     subjects["OMASK"]           = omask_text(omask());
     subjects["SYMBOL_TEXT"]     = block_.symbol_text();
     subjects["SYMBOL"]          = block_.symbol();
+    subjects["ITERSPACE"]       = unpack_iterspace();
     subjects["ARGUMENTS"]       = unpack_arguments();
     subjects["WALKER"]          = walker.generate_source();
 
     return plaid_.fill("kernel", subjects);
+}
+
+string Kernel::unpack_iterspace(void)
+{
+    stringstream ss;
+    ss << _declare_init(
+        "LAYOUT",
+        "iterspace_layout",
+        _access_ptr("iterspace", "layout")
+    )
+    << _end();
+    ss << _declare_init(
+        _const(_int64()),
+        "iterspace_ndim",
+        _access_ptr("iterspace", "ndim")
+    )
+    << _end();
+    ss << _declare_init(
+        _ptr(_int64()),
+        "iterspace_shape",
+        _access_ptr("iterspace", "shape")
+    )
+    << _end();
+    ss << _declare_init(
+        _const(_int64()),
+        "iterspace_nelem",
+        _access_ptr("iterspace", "nelem")
+    )
+    << _end();
+
+    return ss.str();
 }
 
 string Kernel::unpack_arguments(void)

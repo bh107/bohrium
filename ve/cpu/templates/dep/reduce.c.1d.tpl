@@ -6,9 +6,9 @@
 //
 {
     const int mthreads = omp_get_max_threads();
-    const int64_t nworkers = iterspace->nelem > mthreads ? mthreads : 1;
-    const int64_t work_split= iterspace->nelem / nworkers;
-    const int64_t work_spill= iterspace->nelem % nworkers;
+    const int64_t nworkers = iterspace_nelem > mthreads ? mthreads : 1;
+    const int64_t work_split= iterspace_nelem / nworkers;
+    const int64_t work_spill= iterspace_nelem % nworkers;
 
     {{WALKER_INNER_DIM}}
 	{{ACCU_OPD_INIT}}

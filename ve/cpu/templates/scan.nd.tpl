@@ -1,12 +1,12 @@
 // Scan operation of a strided n-dimensional array where n>1
 {{OFFLOAD}}
 {
-    const int64_t nelements = iterspace->nelem;
+    const int64_t nelements = iterspace_nelem;
     {{ATYPE}} axis = *{{OPD_IN2}}_data;
 
     const int64_t last_e      = nelements-1;
-    const int64_t shape_axis  = iterspace->shape[axis];
-    const int64_t ndim        = iterspace->ndim;
+    const int64_t shape_axis  = iterspace_shape[axis];
+    const int64_t ndim        = iterspace_ndim;
 
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
@@ -51,7 +51,7 @@
                 continue;       // It is calculated within the loop above
             }
             coord[j]++;         // Still within this dimension
-            if (coord[j] < iterspace->shape[j]) {       
+            if (coord[j] < iterspace_shape[j]) {       
                 break;
             } else {            // Reached the end of this dimension
                 coord[j] = 0;   // Reset coordinate

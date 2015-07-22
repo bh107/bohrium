@@ -7,19 +7,19 @@
 {{OFFLOAD}}
 {
     {{WALKER_AXIS_DIM}}
-    int64_t axis_shape = iterspace->shape[axis_dim];
+    int64_t axis_shape = iterspace_shape[axis_dim];
 
     //
     // Construct an iteration-space that does not include the axis-dimension
     int64_t shape[CPU_MAXDIM] = {0};
-    for(int64_t dim=0, outer_dim = 0; dim < iterspace->ndim; ++dim) {
+    for(int64_t dim=0, outer_dim = 0; dim < iterspace_ndim; ++dim) {
         if (dim == axis_dim) {
             continue;
         }
-        shape[outer_dim] = iterspace->shape[dim];
+        shape[outer_dim] = iterspace_shape[dim];
         ++outer_dim;
     }
-    int64_t ndim = iterspace->ndim-1;
+    int64_t ndim = iterspace_ndim-1;
     int64_t inner_dim = ndim-1;
     int64_t nelements = 1;
     for(int64_t dim=0; dim<ndim; ++dim) {
@@ -73,7 +73,7 @@
             // Walker declaration(s) - end
 
             // Walker step non-axis / operand offset - begin
-            for(int64_t dim=0, other_dim=0; dim<iterspace->ndim; ++dim) {
+            for(int64_t dim=0, other_dim=0; dim<iterspace_ndim; ++dim) {
                 if (dim==axis_dim) {
                     continue;
                 }

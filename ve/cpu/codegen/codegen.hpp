@@ -282,6 +282,7 @@ public:
 
 private:
         
+    std::string unpack_iterspace(void);
     std::string unpack_arguments(void);
     
     std::string args(void);

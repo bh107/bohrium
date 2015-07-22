@@ -10,7 +10,7 @@
     // Walker STRIDE_INNER - end
 
     {{ACCU_LOCAL_DECLARE}}
-    for(int64_t j=0; j<iterspace->shape[0]; ++j) {
+    for(int64_t j=0; j<iterspace_shape[0]; ++j) {
         {{OPERATIONS}}
        
         // Walker step INNER - begin

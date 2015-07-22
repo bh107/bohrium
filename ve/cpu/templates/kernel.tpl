@@ -58,6 +58,10 @@ KERNEL-DESCRIPTION {
 void KRN_{{SYMBOL}}(operand_t** args, const iterspace_t* const iterspace)
 {
     //
+    // Iterspace unpacking
+    //
+    {{ITERSPACE}}
+    //
     // Argument unpacking
     //
     {{ARGUMENTS}}
