@@ -13,14 +13,14 @@ namespace cpu{
 
 Accelerator::Accelerator(int id, int offload) : id_(id), offload_(offload), bytes_allocated_(0) {};
 
-Accelerator::Accelerator(void) : id_(0), _offload(1), bytes_allocated_(0) {};
+Accelerator::Accelerator(void) : id_(0), offload_(1), bytes_allocated_(0) {};
 
 template <typename T>
 void Accelerator::_alloc(operand_t& operand)
 {
     T* data = (T*)operand.base->data;
     const int nelem = operand.base->nelem;
-    bytes_allocated += nelem*sizeof(T);
+    bytes_allocated_ += nelem*sizeof(T);
     bases_.insert(operand.base);
 
     #pragma offload_transfer                                    \
@@ -59,7 +59,7 @@ void Accelerator::_free(operand_t& operand)
     T* data = (T*)operand.base->data;
     const int nelem = operand.base->nelem;
 
-    bytes_allocated -= nelem*sizeof(T);
+    bytes_allocated_ -= nelem*sizeof(T);
     bases_.erase(operand.base);
 
     #pragma offload_transfer                                    \
@@ -135,7 +135,7 @@ void Accelerator::_push_alloc(operand_t& operand)
     T* data = (T*)operand.base->data;
     const int nelem = operand.base->nelem;
 
-    bytes_allocated += nelem*sizeof(T);
+    bytes_allocated_ += nelem*sizeof(T);
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
@@ -209,7 +209,7 @@ void Accelerator::_pull_free(operand_t& operand)
     T* data = (T*)operand.base->data;
     const int nelem = operand.base->nelem;
 
-    bytes_allocated -= nelem*sizeof(T);
+    bytes_allocated_ -= nelem*sizeof(T);
     bases_.erase(operand.base);
 
     #pragma offload_transfer                                    \
