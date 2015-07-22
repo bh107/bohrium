@@ -84,7 +84,11 @@ string Walker::offload(void)
     stringstream ss;
 
     ss << "#pragma offload \\" << endl;
-    ss << "    target(mic:0)   \\" << endl;
+    ss << "        target(mic:0)   \\" << endl;
+    ss << "        in(iterspace_layout) \\" << endl;
+    ss << "        in(iterspace_ndim) \\" << endl;
+    ss << "        in(iterspace_shape:length(CPU_MAXDIM)) \\" << endl;
+    ss << "        in(iterspace_nelem) \\" << endl;
     for(kernel_operand_iter oit=kernel_.operands_begin();
         oit != kernel_.operands_end();
         ++oit) {
