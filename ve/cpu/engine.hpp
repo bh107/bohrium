@@ -7,6 +7,7 @@
 #include "block.hpp"
 #include "symbol_table.hpp"
 #include "thread_control.hpp"
+#include "accelerator.hpp"
 #include "store.hpp"
 #include "compiler.hpp"
 #include "plaid.hpp"
@@ -76,6 +77,7 @@ private:
     codegen::Plaid  plaid_;
     Compiler        compiler_;
     ThreadControl   thread_control_;
+    Accelerator     accelerator_;
 
     std::map<bh_opcode, bh_extmethod_impl> extensions_;
 

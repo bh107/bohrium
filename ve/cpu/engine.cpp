@@ -185,6 +185,9 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                                 "called from bh_ve_cpu_execute()\n");
                 return res;
             }
+            if (jit_offload_) {
+                accelerator_.alloc(operand);
+            }
         }
     }
 
@@ -205,13 +208,25 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         tac_t& tac = block.tac(i);
         operand_t& operand = symbol_table[tac.out];
 
-        if (FREE == tac.oper) {
-            res = bh_vcache_free_base(operand.base);
-            if (BH_SUCCESS != res) {
-                fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
-                                "called from bh_ve_cpu_execute)\n");
-                return res;
-            }
+        switch(tac.oper) {
+            case FREE:
+                if (jit_offload_) {
+                    accelerator_.free(operand);
+                }
+                res = bh_vcache_free_base(operand.base);
+                if (BH_SUCCESS != res) {
+                    fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
+                                    "called from bh_ve_cpu_execute)\n");
+                    return res;
+                }
+                break;
+            case SYNC:
+                if (jit_offload_) {
+                    accelerator_.pull(operand);
+                }
+                break;
+            default:
+                break;
         }
     }
 
