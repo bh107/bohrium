@@ -81,6 +81,7 @@ bh_error bh_ve_cpu_init(const char *name)
 
     bh_intp jit_level;
     bh_intp jit_dumpsrc;
+    bh_intp jit_offload;
 
     char* compiler_cmd = NULL;
     char* compiler_inc = NULL;
@@ -99,6 +100,7 @@ bh_error bh_ve_cpu_init(const char *name)
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "preload", 0, 1, &preload))                or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_level", 0, 3, &jit_level))            or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_dumpsrc", 0, 1, &jit_dumpsrc))        or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_offload", 0, 1, &jit_offload))        or \
         (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_cmd", &compiler_cmd))         or \
         (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_inc", &compiler_inc))         or \
         (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_lib", &compiler_lib))         or \
@@ -128,6 +130,7 @@ bh_error bh_ve_cpu_init(const char *name)
             jit_dumpsrc = 0;
             jit_fusion = 0;
             jit_contraction = 0;
+            jit_offload = 0;
             break;
 
         case 3:                     // SIJ + Fusion + Contraction
@@ -179,6 +182,7 @@ bh_error bh_ve_cpu_init(const char *name)
         (bool)jit_dumpsrc,
         (bool)jit_fusion,
         (bool)jit_contraction,
+        (bool)jit_offload,
         string(compiler_cmd),
         string(compiler_inc),
         string(compiler_lib),

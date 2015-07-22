@@ -26,6 +26,7 @@ Engine::Engine(
     const bool jit_dumpsrc,
     const bool jit_fusion,
     const bool jit_contraction,
+    const bool jit_offload,
     const string compiler_cmd,
     const string compiler_inc,
     const string compiler_lib,
@@ -38,13 +39,15 @@ Engine::Engine(
 :   vcache_size_(vcache_size),
     preload_(preload),
     jit_enabled_(jit_enabled),
+    jit_dumpsrc_(jit_dumpsrc),
     jit_fusion_(jit_fusion),
     jit_contraction_(jit_contraction),
-    jit_dumpsrc_(jit_dumpsrc),
+    jit_offload_(jit_offload),
     storage_(object_directory, kernel_directory),
     plaid_(template_directory),
     compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext),
     thread_control_(binding, thread_limit),
+    accelerator_(0, jit_offload),
     exec_count(0)
 {
     bh_vcache_init(vcache_size);    // Victim cache
@@ -68,12 +71,13 @@ string Engine::text()
 {
     stringstream ss;
     ss << "Engine {" << endl;
-    ss << "  vcache_size = "       << this->vcache_size_ << endl;
-    ss << "  preload = "           << this->preload_ << endl;    
-    ss << "  jit_enabled = "       << this->jit_enabled_ << endl;    
-    ss << "  jit_dumpsrc = "       << this->jit_dumpsrc_ << endl;
-    ss << "  jit_fusion = "        << this->jit_fusion_ << endl;
-    ss << "  jit_contraction = "   << this->jit_contraction_ << endl;
+    ss << "  vcache_size = "        << this->vcache_size_ << endl;
+    ss << "  preload = "            << this->preload_ << endl;    
+    ss << "  jit_enabled = "        << this->jit_enabled_ << endl;    
+    ss << "  jit_dumpsrc = "        << this->jit_dumpsrc_ << endl;
+    ss << "  jit_fusion = "         << this->jit_fusion_ << endl;
+    ss << "  jit_contraction = "    << this->jit_contraction_ << endl;
+    ss << "  jit_offload = "        << this->jit_offload_ << endl;
     ss << "}" << endl;
     
     ss << thread_control_.text() << endl;
