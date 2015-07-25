@@ -205,13 +205,13 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         switch(tac_noperands(tac)) {
             case 3:
                 if ((symbol_table[tac.in2].layout & (DYNALLOC_LAYOUT))>0) {
-                    if (accelerator) {
+                    if ((accelerator) && (block.iterspace().layout>SCALAR)) {
                         accelerator->alloc(symbol_table[tac.in2]);
                     }
                 }
             case 2:
                 if ((symbol_table[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
-                    if (accelerator) {
+                    if ((accelerator) && (block.iterspace().layout>SCALAR)) {
                         accelerator->alloc(symbol_table[tac.in1]);
                     }
                 }
@@ -223,7 +223,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                                         "called from bh_ve_cpu_execute()\n");
                         return res;
                     }
-                    if (accelerator) {
+                    if ((accelerator) && (block.iterspace().layout>SCALAR)) {
                         accelerator->alloc(symbol_table[tac.out]);
                     }
                 }
@@ -259,21 +259,21 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         switch(tac.oper) {  
 
             case SYNC:              // Pull buffer from accelerator to host
-                if (accelerator) {
+                if ((accelerator) && (block.iterspace().layout>SCALAR)) {
                     accelerator->pull(operand);
                 }
                 break;
 
             case DISCARD:           // Free buffer on accelerator
-                if (accelerator) {
+                if ((accelerator) && (block.iterspace().layout>SCALAR)) {
                     accelerator->free(operand);
                 }
                 break;
 
             case FREE:              // NOTE: Isn't BH_FREE redundant?
-                if (accelerator) {                          // Free buffer on accelerator
-                    accelerator->free(operand);             // Note: must be done prior to
-                }                                           //       freeing on host.
+                if ((accelerator) && (block.iterspace().layout>SCALAR)) {   // Free buffer on accelerator
+                    accelerator->free(operand);                             // Note: must be done prior to
+                }                                                           //       freeing on host.
 
                 res = bh_vcache_free_base(operand.base);    // Free buffer on host
                 if (BH_SUCCESS != res) {
