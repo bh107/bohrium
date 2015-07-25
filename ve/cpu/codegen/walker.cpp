@@ -99,12 +99,12 @@ string Walker::offload(void)
             case CONTRACTABLE:
                 break;
 
-            case SCALAR:
             case CONTIGUOUS:
             case CONSECUTIVE:
             case STRIDED:
-                ss << "in(" << operand.data() << ":length(" << operand.nelem() << ") "
-                   <<  "alloc_if(0) free_if(0)) \\" << endl;
+                ss << "in(" << operand.strides() << ":length(CPU_MAXDIM) alloc_if(0) free_if(0) \\" << endl;
+            case SCALAR:
+                ss << "in(" << operand.data() << ":length(" << operand.nelem() << ") alloc_if(0) free_if(0)) \\" << endl;
                 break;
 
             case SPARSE:
@@ -957,7 +957,7 @@ string Walker::generate_source(void)
         subjects["WALKER_AXIS_DIM"] = _line(_declare_init(
             _const(_int64()),
             "axis_dim",
-            _deref(in2->data())
+            in2->data()
         ));
         subjects["WALKER_STRIDE_AXIS"]  = declare_stride_axis();
         subjects["WALKER_STEP_OTHER"]   = step_fwd_other();
