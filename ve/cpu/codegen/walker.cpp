@@ -27,7 +27,7 @@ string Walker::declare_operands(void)
                 << _declare_init(
                     _const(operand.etype()),
                     operand.walker(),
-                    _deref(operand.data())
+                    operand.data()
                 );
                 break;
 

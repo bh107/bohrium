@@ -2,7 +2,7 @@
 {{OFFLOAD}}
 {
     const int64_t nelements = iterspace_nelem;
-    {{ATYPE}} axis = *{{OPD_IN2}}_data;
+    {{ATYPE}} axis = {{OPD_IN2}}_data;
 
     const int64_t last_e      = nelements-1;
     const int64_t shape_axis  = iterspace_shape[axis];

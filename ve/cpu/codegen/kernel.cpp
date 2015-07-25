@@ -200,18 +200,31 @@ string Kernel::unpack_arguments(void)
                     _access_ptr(_index(args(), id), "nelem")
                 )
                 << _end();
-
-            case SCALAR_CONST:
-                ss << _declare_init(
-                    _ptr_const(operand.etype()),
+                ss
+                << _declare_init(
+                    _ptr(operand.etype()),
                     operand.data(),
                     _cast(
                         _ptr(operand.etype()),
                         _deref(_access_ptr(_index(args(), id), "data"))
                     )
                 )
-                << _end() 
+                << _end();
+                ss 
                 << _assert_not_null(operand.data()) << _end();
+                break;
+
+            case SCALAR_CONST:
+                ss
+                << _declare_init(
+                    _const(operand.etype()),
+                    operand.data(),
+                    _deref(_cast(
+                        _ptr(operand.etype()),
+                        _deref(_access_ptr(_index(args(), id), "data"))
+                    ))
+                )
+                << _end();
                 break;
 
             case SCALAR_TEMP:
