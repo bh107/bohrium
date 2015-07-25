@@ -81,7 +81,7 @@ else()
     set(VE_CPU_COMPILER_CMD "${CMAKE_C_COMPILER}" PARENT_SCOPE)
     set(VE_CPU_COMPILER_INC "-I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include" PARENT_SCOPE)
     set(VE_CPU_COMPILER_LIB "-lm" PARENT_SCOPE)
-    set(VE_CPU_COMPILER_EXT "-fPIC -shared -x c -std=c99" PARENT_SCOPE)
+    set(VE_CPU_COMPILER_EXT "-fPIC -shared -std=c99" PARENT_SCOPE)
 
     #   VE_CPU_COMPILER_FLG is set below, checking for a bunch of stuff 
     check_c_compiler_flag(-O3 HAS_O3)
@@ -114,6 +114,32 @@ else()
             return 0;
         }" OPENMP_ATOMIC_FOUND)
         
+
+        #
+        # Check for LEO
+        #
+        # This is a backwards check... if the compile succeeds then the compiler
+        # does not support LEO, if it does not compile then the compiler knowns
+        # the offload pragmas.
+        #
+        check_c_source_compiles( "
+        #include <omp.h>
+        int main(void) {
+            int foo = 0;
+            #pragma offload target(mic) in(does_not_exist)
+            {
+                foo += 1;
+            }
+            return foo;
+        }" LEO_COMPILE_CHECK)
+        if (${LEO_COMPILE_CHECK})
+            set(VE_CPU_JIT_OFFLOAD "0")
+        else()
+            set(VE_CPU_JIT_OFFLOAD "1")
+        endif()
+        message("Compile LEO(${LEO_COMPILE_CHECK})")
+        message("Compile VE_CPU_JIT_OFFLOAD(${VE_CPU_JIT_OFFLOAD})")
+
         # Check OMP-SIMD
         check_c_compiler_flag(-fopenmp-simd HAS_OPENMP_SIMD)
         if (HAS_OPENMP_SIMD)
@@ -125,6 +151,7 @@ else()
     endif()
 
     # Set JIT compiler flags
+    set(VE_CPU_JIT_OFFLOAD "${VE_CPU_JIT_OFFLOAD}" PARENT_SCOPE)
     set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG}" PARENT_SCOPE)
 
 endif()

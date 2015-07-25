@@ -218,12 +218,12 @@ vcache_size = 10
 preload = 1
 jit_level = 3
 jit_dumpsrc = 1
-jit_offload = 0
+jit_offload = ${VE_CPU_JIT_OFFLOAD}
 compiler_cmd="${VE_CPU_COMPILER_CMD}"
 compiler_inc="${VE_CPU_COMPILER_INC}"
 compiler_lib="${VE_CPU_COMPILER_LIB}"
 # Interlagos specifics
-#compiler_flg="-march=bdver1 -mprefer-avx128 -funroll-all-loops -fprefetch-loop-arrays --param prefetch-latency=300 -fno-tree-pre -ftree-vectorize "
+#compiler_flg="-mprefer-avx128 -fprefetch-loop-arrays --param prefetch-latency=300 -fno-tree-pre -ftree-vectorize -funroll-all-loops"
 compiler_flg="${VE_CPU_COMPILER_FLG}"
 compiler_ext="${VE_CPU_COMPILER_EXT}"
 object_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/objects
