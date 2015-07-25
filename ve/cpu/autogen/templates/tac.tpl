@@ -19,15 +19,15 @@ typedef struct { uint64_t first, second; } pair_LL;
 #define __BH_BASE
 typedef struct
 {
-    /// The type of data in the array
-    uint64_t       type;
-
-    /// The number of elements in the array
-    uint64_t      nelem;
-
     /// Pointer to the actual data.
     void*   data;
-}bh_base;
+
+    /// The type of data in the array
+    int64_t       type;
+
+    /// The number of elements in the array
+    int64_t      nelem;
+} bh_base;
 #endif
 
 typedef enum OPERATION {
