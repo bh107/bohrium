@@ -102,7 +102,7 @@ string Walker::offload_leo(void)
             case CONTIGUOUS:
             case CONSECUTIVE:
             case STRIDED:
-                ss << "in(" << operand.strides() << ":length(CPU_MAXDIM) alloc_if(0) free_if(0) \\" << endl;
+                ss << "in(" << operand.strides() << ":length(CPU_MAXDIM) alloc_if(0) free_if(0)) \\" << endl;
             case SCALAR:
                 ss << "in(" << operand.data() << ":length(" << operand.nelem() << ") alloc_if(0) free_if(0)) \\" << endl;
                 break;
