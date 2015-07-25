@@ -19,7 +19,7 @@ Accelerator::Accelerator(int id) : id_(id), bytes_allocated_(0) {};
 template <typename T>
 void Accelerator::_alloc(operand_t& operand)
 {
-    DEBUG(TAG, "_alloc bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data ")");
+    DEBUG(TAG, "_alloc bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data << ")");
     if (allocated(operand)) {   //  Operand is already allocated
         DEBUG(TAG, "_alloc skipping");
         return;
@@ -62,7 +62,7 @@ void Accelerator::alloc(operand_t& operand)
 template <typename T>
 void Accelerator::_free(operand_t& operand)
 {
-    DEBUG(TAG, "_free bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data ")");
+    DEBUG(TAG, "_free bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data << ")");
     if (!allocated(operand)) {  // Not allocated on device
         DEBUG(TAG, "_free skipping...");
         return;
@@ -106,7 +106,7 @@ void Accelerator::free(operand_t& operand)
 template <typename T>
 void Accelerator::_push(operand_t& operand)
 {
-    DEBUG(TAG, "_push bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data ")");
+    DEBUG(TAG, "_push bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data << ")");
 
     T* data = (T*)(*operand.data);
     const int nelem = operand.nelem;
@@ -144,7 +144,7 @@ void Accelerator::push(operand_t& operand)
 template <typename T>
 void Accelerator::_push_alloc(operand_t& operand)
 {
-    DEBUG(TAG, "_push_alloc bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data ")");
+    DEBUG(TAG, "_push_alloc bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data << ")");
 
     T* data = (T*)(*operand.data);
     const int nelem = operand.nelem;
@@ -183,7 +183,7 @@ void Accelerator::push_alloc(operand_t& operand)
 template <typename T>
 void Accelerator::_pull(operand_t& operand)
 {
-    DEBUG(TAG, "_pull bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data ")");
+    DEBUG(TAG, "_pull bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data << ")");
 
     if (bases_.count(operand.base)==0) {    // Not allocated on device
         DEBUG(TAG, "_pull skipping");
@@ -225,7 +225,7 @@ void Accelerator::pull(operand_t& operand)
 template <typename T>
 void Accelerator::_pull_free(operand_t& operand)
 {
-    DEBUG(TAG, "_pull_free bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data ")");
+    DEBUG(TAG, "_pull_free bh_base("<< (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ") operand.data(" << operand.data << ")");
     if (bases_.count(operand.base)==0) {    // Not allocated on device
         DEBUG(TAG, "_pull_free skipping...");
         return;
