@@ -101,8 +101,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     //
     // Turn temps into scalars aka array-contraction
     if (consider_jit and jit_contraction_) {
-        for (bh_base* base: krnl.get_temps())
-        {
+        for (bh_base* base: krnl.get_temps()) {
             for(size_t operand_idx = 0;
                 operand_idx < block.noperands();
                 ++operand_idx) {
@@ -123,28 +122,28 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     DEBUG(TAG, "EXECUTING "<< block.symbol());
 
     //
-    // JIT-compile the block if enabled
+    // JIT-compile: generate source and compile code
     //
     if (consider_jit && \
         (!storage_.symbol_ready(block.symbol()))) {   
         DEBUG(TAG, "JITTING " << block.text());
-        // Specialize and dump sourcecode to file
+        
+                                                        // Genereate source
         string sourcecode = codegen::Kernel(plaid_, block).generate_source();
+
         bool compile_res;
-        if (jit_dumpsrc_==1) {
-            core::write_file(
+        if (jit_dumpsrc_==1) {                          // Compile via file
+            core::write_file(                           // Dump to file
                 storage_.src_abspath(block.symbol()),
                 sourcecode.c_str(), 
                 sourcecode.size()
             );
-            // Send to compiler_
-            compile_res = compiler_.compile(
+            compile_res = compiler_.compile(            // Compile
                 storage_.obj_abspath(block.symbol()),
                 storage_.src_abspath(block.symbol())
             );
-        } else {
-            // Send to compiler
-            compile_res = compiler_.compile(
+        } else {                                        // Compile via stdin
+            compile_res = compiler_.compile(            // Compile
                 storage_.obj_abspath(block.symbol()),
                 sourcecode.c_str(), 
                 sourcecode.size()
@@ -155,8 +154,10 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
 
             return BH_ERROR;
         }
-        // Inform storage
-        storage_.add_symbol(block.symbol(), storage_.obj_filename(block.symbol()));
+        storage_.add_symbol(                            // Inform storage
+            block.symbol(),
+            storage_.obj_filename(block.symbol())
+        );
     }
 
     //
@@ -164,35 +165,57 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     //
     if ((block.narray_tacs() > 0) && \
         (!storage_.symbol_ready(block.symbol())) && \
-        (!storage_.load(block.symbol()))) {// Need but cannot load
+        (!storage_.load(block.symbol()))) {             // Need but cannot load
 
         fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
         return BH_ERROR;
     }
 
     //
-    // Allocate memory for output operand(s)
+    // Buffer Management
+    //
+    // - allocate output buffer(s) on host
+    // - allocate output buffer(s) on accelerator
+    // - allocate input buffer(s) on accelerator
+    // - push input buffer(s) to accelerator (TODO)
     //
     for(size_t i=0; i<block.ntacs(); ++i) {
         tac_t& tac = block.tac(i);
-        operand_t& operand = symbol_table[tac.out];
 
-        if (((tac.op & ARRAY_OPS)>0) and \
-            ((operand.layout & (DYNALLOC_LAYOUT))>0)) {
-            res = bh_vcache_malloc_base(operand.base);
-            if (BH_SUCCESS != res) {
-                fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                                "called from bh_ve_cpu_execute()\n");
-                return res;
-            }
-            if (jit_offload_) {
-                accelerator_.alloc(operand);
-            }
+        if (!((tac.op & ARRAY_OPS)>0)) {
+            continue;
+        }
+        switch(tac_noperands(tac)) {
+            case 3:
+                if ((symbol_table[tac.in2].layout & (DYNALLOC_LAYOUT))>0) {
+                    if (jit_offload_) {
+                        accelerator_.alloc(symbol_table[tac.in2]);
+                    }
+                }
+            case 2:
+                if ((symbol_table[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
+                    if (jit_offload_) {
+                        accelerator_.alloc(symbol_table[tac.in1]);
+                    }
+                }
+            case 1:
+                if ((symbol_table[tac.out].layout & (DYNALLOC_LAYOUT))>0) {
+                    res = bh_vcache_malloc_base(symbol_table[tac.out].base);
+                    if (BH_SUCCESS != res) {
+                        fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                                        "called from bh_ve_cpu_execute()\n");
+                        return res;
+                    }
+                    if (jit_offload_) {
+                        accelerator_.alloc(symbol_table[tac.out]);
+                    }
+                }
+                break;
         }
     }
 
     //
-    // Execute block handling array operations.
+    // Execute array operations.
     // 
     if (block.narray_tacs() > 0) {
         TIMER_START
@@ -202,29 +225,43 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     }
 
     //
-    // De-Allocate memory for operand(s)
+    // Buffer Management
+    //
+    // - free buffer(s) on accelerator
+    // - free buffer(s) on host
+    // - pull buffer(s) from accelerator to host
     //
     for(size_t i=0; i<block.ntacs(); ++i) {
         tac_t& tac = block.tac(i);
         operand_t& operand = symbol_table[tac.out];
 
-        switch(tac.oper) {
-            case FREE:
+        switch(tac.oper) {  
+
+            case SYNC:              // Pull buffer from accelerator to host
+                if (jit_offload_) {
+                    accelerator_.pull(operand);
+                }
+                break;
+
+            case DISCARD:           // Free buffer on accelerator
                 if (jit_offload_) {
                     accelerator_.free(operand);
                 }
-                res = bh_vcache_free_base(operand.base);
+                break;
+
+            case FREE:              // NOTE: Isn't BH_FREE redundant?
+                if (jit_offload_) {                         // Free buffer on accelerator
+                    accelerator_.free(operand);             // Note: must be done prior to
+                }                                           //       freeing on host.
+
+                res = bh_vcache_free_base(operand.base);    // Free buffer on host
                 if (BH_SUCCESS != res) {
                     fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
                                     "called from bh_ve_cpu_execute)\n");
                     return res;
                 }
                 break;
-            case SYNC:
-                if (jit_offload_) {
-                    accelerator_.pull(operand);
-                }
-                break;
+
             default:
                 break;
         }
