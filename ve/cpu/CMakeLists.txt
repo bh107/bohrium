@@ -137,8 +137,6 @@ else()
         else()
             set(VE_CPU_JIT_OFFLOAD "1")
         endif()
-        message("Compile LEO(${LEO_COMPILE_CHECK})")
-        message("Compile VE_CPU_JIT_OFFLOAD(${VE_CPU_JIT_OFFLOAD})")
 
         # Check OMP-SIMD
         check_c_compiler_flag(-fopenmp-simd HAS_OPENMP_SIMD)
