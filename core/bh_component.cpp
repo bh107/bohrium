@@ -298,7 +298,7 @@ static bh_error component_children_init(bh_component *self, char* stack)
         }
 
         child_name = strtok(NULL, ",");                                 // Go to next child
-    }
+    }*/
     return BH_SUCCESS;
 }
 
