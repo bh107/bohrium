@@ -15,21 +15,26 @@ Accelerator::Accelerator(int id, int offload) : id_(id), offload_(offload), byte
 
 Accelerator::Accelerator(void) : id_(0), offload_(1), bytes_allocated_(0) {};
 
+bool Accelerator::allocated(operand_t& operand)
+{
+    return bases_.count(operand.base)!=0;
+}
+
 template <typename T>
 void Accelerator::_alloc(operand_t& operand)
 {
-    if (bases_.count(operand.base)!=0) {    //  Operand is already allocated
+    if (allocated(operand)) {   //  Operand is already allocated
         return;
     }
 
-    T* data = (T*)operand.base->data;
-    const int nelem = operand.base->nelem;
+    T* data = (T*)(*operand.data);
+    const int nelem = operand.nelem;
     bytes_allocated_ += nelem*sizeof(T);
     bases_.insert(operand.base);
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
-            nocopy(data:length(nelem) alloc_if(1) free_if(0))   \
+            in(data:length(nelem) alloc_if(1) free_if(0))   \
             if (offload_)                                        
 }
 
@@ -60,12 +65,12 @@ void Accelerator::alloc(operand_t& operand)
 template <typename T>
 void Accelerator::_free(operand_t& operand)
 {
-    if (bases_.count(operand.base)==0) {    // Not allocated on device
+    if (!allocated(operand)) {  // Not allocated on device
         return;
     }
 
-    T* data = (T*)operand.base->data;
-    const int nelem = operand.base->nelem;
+    T* data = (T*)(*operand.data);
+    const int nelem = operand.nelem;
 
     bytes_allocated_ -= nelem*sizeof(T);
     bases_.erase(operand.base);
@@ -103,8 +108,8 @@ void Accelerator::free(operand_t& operand)
 template <typename T>
 void Accelerator::_push(operand_t& operand)
 {
-    T* data = (T*)operand.base->data;
-    const int nelem = operand.base->nelem;
+    T* data = (T*)(*operand.data);
+    const int nelem = operand.nelem;
     bases_.insert(operand.base);
 
     #pragma offload_transfer                                    \
@@ -140,8 +145,8 @@ void Accelerator::push(operand_t& operand)
 template <typename T>
 void Accelerator::_push_alloc(operand_t& operand)
 {
-    T* data = (T*)operand.base->data;
-    const int nelem = operand.base->nelem;
+    T* data = (T*)(*operand.data);
+    const int nelem = operand.nelem;
 
     bytes_allocated_ += nelem*sizeof(T);
 
@@ -178,8 +183,12 @@ void Accelerator::push_alloc(operand_t& operand)
 template <typename T>
 void Accelerator::_pull(operand_t& operand)
 {
-    T* data = (T*)operand.base->data;
-    const int nelem = operand.base->nelem;
+    if (bases_.count(operand.base)==0) {    // Not allocated on device
+        return;
+    }
+
+    T* data = (T*)(*operand.data);
+    const int nelem = operand.nelem;
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
@@ -214,8 +223,12 @@ void Accelerator::pull(operand_t& operand)
 template <typename T>
 void Accelerator::_pull_free(operand_t& operand)
 {
-    T* data = (T*)operand.base->data;
-    const int nelem = operand.base->nelem;
+    if (bases_.count(operand.base)==0) {    // Not allocated on device
+        return;
+    }
+
+    T* data = (T*)(*operand.data);
+    const int nelem = operand.nelem;
 
     bytes_allocated_ -= nelem*sizeof(T);
     bases_.erase(operand.base);

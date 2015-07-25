@@ -13,6 +13,8 @@ public:
     Accelerator(void);
     Accelerator(int id, int offload);
 
+    bool allocated(operand_t& operand);
+
     void alloc(operand_t& operand);
     void free(operand_t& operand);
 
@@ -56,7 +58,7 @@ private:
     int offload_;
 
     size_t bytes_allocated_;
-    std::set<bh_base*> bases_;
+    std::set<const bh_base*> bases_;
     
 };
 
