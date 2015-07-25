@@ -104,6 +104,8 @@ private:
     int id_;
     size_t bytes_allocated_;
     std::set<const bh_base*> bases_;
+
+    static const char TAG[];
 };
 
 }}}
