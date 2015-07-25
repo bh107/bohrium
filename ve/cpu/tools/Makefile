@@ -5,8 +5,8 @@ PAR_LVL=-j$(nproc)
 BH_PYTHON=python
 TEST_EXCLUDE=
 DUMPSRC=1
-#CC=/home/safl/intel/bin/icc
-#CXX=/home/safl/intel/bin/icpc
+#CC=icc
+#CXX=icpc
 
 RELEASE_BUILD=-DCMAKE_BUILD_TYPE=Release
 

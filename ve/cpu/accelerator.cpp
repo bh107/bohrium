@@ -11,14 +11,8 @@ namespace bohrium{
 namespace engine{
 namespace cpu{
 
-Accelerator::Accelerator(int id, int offload) : id_(id), offload_(offload), bytes_allocated_(0) {};
-
-Accelerator::Accelerator(void) : id_(0), offload_(1), bytes_allocated_(0) {};
-
-bool Accelerator::allocated(operand_t& operand)
-{
-    return bases_.count(operand.base)!=0;
-}
+#if defined(VE_CPU_WITH_INTEL_LEO)
+Accelerator::Accelerator(int id) : id_(id), bytes_allocated_(0) {};
 
 template <typename T>
 void Accelerator::_alloc(operand_t& operand)
@@ -34,8 +28,7 @@ void Accelerator::_alloc(operand_t& operand)
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
-            in(data:length(nelem) alloc_if(1) free_if(0))   \
-            if (offload_)                                        
+            in(data:length(nelem) alloc_if(1) free_if(0))
 }
 
 void Accelerator::alloc(operand_t& operand)
@@ -77,8 +70,7 @@ void Accelerator::_free(operand_t& operand)
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
-            nocopy(data:length(nelem) alloc_if(0) free_if(1))   \
-            if (offload_)                                         
+            nocopy(data:length(nelem) alloc_if(0) free_if(1))
 }
 
 void Accelerator::free(operand_t& operand)
@@ -114,8 +106,7 @@ void Accelerator::_push(operand_t& operand)
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
-            in(data:length(nelem) alloc_if(0) free_if(0))       \
-            if (offload_)                                         
+            in(data:length(nelem) alloc_if(0) free_if(0))
 }
 
 void Accelerator::push(operand_t& operand)
@@ -152,8 +143,7 @@ void Accelerator::_push_alloc(operand_t& operand)
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
-            in(data:length(nelem) alloc_if(1) free_if(0))       \
-            if (offload_)
+            in(data:length(nelem) alloc_if(1) free_if(0))
 }
 
 void Accelerator::push_alloc(operand_t& operand)
@@ -192,8 +182,7 @@ void Accelerator::_pull(operand_t& operand)
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
-            out(data:length(nelem) alloc_if(0) free_if(0))      \
-            if (offload_)                                         
+            out(data:length(nelem) alloc_if(0) free_if(0))
 }
 
 void Accelerator::pull(operand_t& operand)
@@ -235,8 +224,7 @@ void Accelerator::_pull_free(operand_t& operand)
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
-            out(data:length(nelem) alloc_if(0) free_if(1))      \
-            if (offload_)                                         
+            out(data:length(nelem) alloc_if(0) free_if(1))
 }
 
 void Accelerator::pull_free(operand_t& operand)
@@ -266,38 +254,52 @@ void Accelerator::pull_free(operand_t& operand)
 int Accelerator::get_max_threads(void)
 {
     int mthreads;                        
-    #pragma offload target(mic:id_) \
-        out(mthreads)               \
-        if (offload_)
+    #pragma offload target(mic:id_) out(mthreads)
     {                                    
         mthreads = omp_get_max_threads();
     }                                    
     return mthreads;                     
 }
 
-int Accelerator::get_id(void)
+#else
+//
+// Fallback when compiled without Language Extensions for Offload (Intel LEO).
+//
+Accelerator::Accelerator(int id) : id_(id), bytes_allocated_(0) {
+    throw runtime_error(
+        "Bohrium was compiled without LEO, offload is not possible.\n"
+        "Disable offloading by setting jit_offload=0 in config."
+    );
+};
+void Accelerator::alloc(operand_t& operand) {}
+void Accelerator::free(operand_t& operand) {}
+void Accelerator::push(operand_t& operand) {}
+void Accelerator::push_alloc(operand_t& operand) {}
+void Accelerator::pull(operand_t& operand) {}
+void Accelerator::pull_free(operand_t& operand) {}
+int Accelerator::get_max_threads(void) { return 1; }
+#endif
+
+int Accelerator::id(void)
 {
     return id_;
 }
 
-void Accelerator::set_id(int id)
+string Accelerator::text(void)
 {
-    id_ = id;
+    stringstream ss;
+    ss << "Accelerator id(" << id_ << ") {}";
+    return ss.str();
 }
 
-int Accelerator::get_offload(void)
+size_t Accelerator::bytes_allocated(void)
 {
-    return offload_;
+    return bytes_allocated_;
 }
 
-void Accelerator::set_offload(int offload)
+bool Accelerator::allocated(operand_t& operand)
 {
-    offload_ = offload;
-}
-
-size_t Accelerator::get_bytes_allocated(void)
-{
-    return offload_;
+    return bases_.count(operand.base)!=0;
 }
 
 }}}

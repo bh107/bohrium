@@ -116,12 +116,10 @@ else()
         
 
         #
-        # Check for LEO
+        # Check for Intel Language Extensions for Offloading (LEO) - BEGIN
         #
-        # This is a backwards check... if the compile succeeds then the compiler
-        # does not support LEO, if it does not compile then the compiler knowns
-        # the offload pragmas.
-        #
+
+        # Check that pragma is not ignored
         check_c_source_compiles( "
         #include <omp.h>
         int main(void) {
@@ -132,11 +130,35 @@ else()
             }
             return foo;
         }" LEO_COMPILE_CHECK)
+
         if (${LEO_COMPILE_CHECK})
-            set(VE_CPU_JIT_OFFLOAD "0")
+            set(WITH_INTEL_LEO "0")
         else()
-            set(VE_CPU_JIT_OFFLOAD "1")
+            # Check that pragma compiles
+            check_c_source_compiles( "
+            #include <stdlib.h>
+            #include <omp.h>
+            int main(void) {
+                int nelem = 10;
+                double* foo = (double*)malloc(nelem*sizeof(double));
+                #pragma offload target(mic) in(foo:length(nelem) alloc_if(1) free_if(1))
+                {
+                    foo += 1;
+                }
+                free(foo);
+                return 0;
+            }" LEO_COMPILE_CHECK_USAGE)
+
+            if (${LEO_COMPILE_CHECK_USAGE})
+                set(WITH_INTEL_LEO "1")
+                add_definitions(-DVE_CPU_WITH_INTEL_LEO)
+            else()
+                set(WITH_INTEL_LEO "0")
+            endif()
         endif()
+        #
+        # Check for Intel Language Extensions for Offloading (LEO) - END
+        #
 
         # Check OMP-SIMD
         check_c_compiler_flag(-fopenmp-simd HAS_OPENMP_SIMD)
@@ -149,7 +171,7 @@ else()
     endif()
 
     # Set JIT compiler flags
-    set(VE_CPU_JIT_OFFLOAD "${VE_CPU_JIT_OFFLOAD}" PARENT_SCOPE)
+    set(WITH_INTEL_LEO "${WITH_INTEL_LEO}" PARENT_SCOPE)
     set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG}" PARENT_SCOPE)
 
 endif()

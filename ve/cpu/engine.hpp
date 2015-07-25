@@ -72,12 +72,14 @@ private:
          jit_fusion_,
          jit_contraction_,
          jit_offload_;
+
+    int jit_offload_devid_;
     
     Store           storage_;
     codegen::Plaid  plaid_;
     Compiler        compiler_;
     ThreadControl   thread_control_;
-    Accelerator     accelerator_;
+    std::vector<Accelerator*>   accelerators_;
 
     std::map<bh_opcode, bh_extmethod_impl> extensions_;
 

@@ -262,7 +262,7 @@ class Kernel
 public:
     Kernel(Plaid& plaid, bohrium::core::Block& block);
     
-    std::string generate_source(void);
+    std::string generate_source(bool offload);
 
     uint64_t noperands(void);
     Operand& operand_glb(uint64_t gidx);
@@ -305,14 +305,14 @@ class Walker
 public:
     Walker(Plaid& plaid, Kernel& kernel);
 
-    std::string generate_source(void);
+    std::string generate_source(bool offload);
     std::string oper_neutral_element(OPERATOR oper, ETYPE etype);
     
 private:
     std::string declare_operands(void);
     std::string declare_operand(uint32_t oidx);
 
-    std::string offload(void);
+    std::string offload_leo(void);
 
     // Construct the operator source for the tac.oper
     std::string oper(OPERATOR oper, ETYPE etype, std::string in1, std::string in2);

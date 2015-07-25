@@ -79,12 +79,12 @@ string Walker::declare_operands(void)
     return ss.str();
 }
 
-string Walker::offload(void)
+string Walker::offload_leo(void)
 {
     stringstream ss;
 
     ss << "#pragma offload \\" << endl;
-    ss << "        target(mic:0)   \\" << endl;
+    ss << "        target(mic:offload_devid)   \\" << endl;
     ss << "        in(iterspace_layout) \\" << endl;
     ss << "        in(iterspace_ndim) \\" << endl;
     ss << "        in(iterspace_shape:length(CPU_MAXDIM)) \\" << endl;
@@ -112,7 +112,7 @@ string Walker::offload(void)
 				break;
         }
     }
-    ss << "if(1)";
+    ss << "if(offload)";
     return ss.str();
 }
 
@@ -759,7 +759,7 @@ string Walker::write_expanded_scalars(void)
     return ss.str();
 }
 
-string Walker::generate_source(void)
+string Walker::generate_source(bool offload)
 {
     std::map<string, string> subjects;
     string plaid;
@@ -774,7 +774,9 @@ string Walker::generate_source(void)
     }
 
     // Experimental offload pragma
-    subjects["OFFLOAD"] = offload();
+    if (offload) {
+        subjects["OFFLOAD"] = offload_leo();
+    }
 
     // These are used by all kernels.
     const uint32_t rank = kernel_.iterspace().meta().ndim;

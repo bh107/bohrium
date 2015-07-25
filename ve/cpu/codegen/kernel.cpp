@@ -110,7 +110,7 @@ kernel_tac_iter Kernel::tacs_end(void)
     return tacs_.end();
 }
 
-string Kernel::generate_source(void)
+string Kernel::generate_source(bool offload)
 {
     std::map<string, string> subjects;
     Walker walker(plaid_, *this);
@@ -130,7 +130,7 @@ string Kernel::generate_source(void)
     subjects["SYMBOL"]          = block_.symbol();
     subjects["ITERSPACE"]       = unpack_iterspace();
     subjects["ARGUMENTS"]       = unpack_arguments();
-    subjects["WALKER"]          = walker.generate_source();
+    subjects["WALKER"]          = walker.generate_source(offload);
 
     return plaid_.fill("kernel", subjects);
 }

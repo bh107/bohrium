@@ -43,11 +43,11 @@ Engine::Engine(
     jit_fusion_(jit_fusion),
     jit_contraction_(jit_contraction),
     jit_offload_(jit_offload),
+    jit_offload_devid_(jit_offload-1),
     storage_(object_directory, kernel_directory),
     plaid_(template_directory),
     compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext),
     thread_control_(binding, thread_limit),
-    accelerator_(0, jit_offload),
     exec_count(0)
 {
     bh_vcache_init(vcache_size);    // Victim cache
@@ -56,14 +56,26 @@ Engine::Engine(
     }
     thread_control_.bind_threads(); // Thread control
 
+    if (jit_offload_) {                         // Add accelerator instance, this is just
+        accelerators_.push_back(                // a single accelerator for now.
+            new Accelerator(jit_offload_devid_) // And defaults to device "0", that is
+        );                                      // the first one available.
+    }
+
     DEBUG(TAG, text());             // Print the engine configuration
 }
 
 Engine::~Engine()
 {   
-    if (vcache_size_>0) {    // De-allocate the malloc-cache
+    if (vcache_size_>0) {   // De-allocate the malloc-cache
         bh_vcache_clear();
         bh_vcache_delete();
+    }
+                            // Free accelerator instances
+    for(std::vector<Accelerator*>::iterator it=accelerators_.begin();
+        it!=accelerators_.end();
+        ++it) {
+        delete *it;
     }
 }
 
@@ -98,6 +110,11 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
 
     bool consider_jit = jit_enabled_ and (block.narray_tacs() > 0);
 
+    Accelerator* accelerator = NULL;    // Grab an accelerator instance
+    if (jit_offload_) {
+        accelerator = accelerators_[0];
+    }
+
     //
     // Turn temps into scalars aka array-contraction
     if (consider_jit and jit_contraction_) {
@@ -129,7 +146,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         DEBUG(TAG, "JITTING " << block.text());
         
                                                         // Genereate source
-        string sourcecode = codegen::Kernel(plaid_, block).generate_source();
+        string sourcecode = codegen::Kernel(plaid_, block).generate_source(jit_offload_);
 
         bool compile_res;
         if (jit_dumpsrc_==1) {                          // Compile via file
@@ -188,14 +205,14 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         switch(tac_noperands(tac)) {
             case 3:
                 if ((symbol_table[tac.in2].layout & (DYNALLOC_LAYOUT))>0) {
-                    if (jit_offload_) {
-                        accelerator_.alloc(symbol_table[tac.in2]);
+                    if (accelerator) {
+                        accelerator->alloc(symbol_table[tac.in2]);
                     }
                 }
             case 2:
                 if ((symbol_table[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
-                    if (jit_offload_) {
-                        accelerator_.alloc(symbol_table[tac.in1]);
+                    if (accelerator) {
+                        accelerator->alloc(symbol_table[tac.in1]);
                     }
                 }
             case 1:
@@ -206,8 +223,8 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                                         "called from bh_ve_cpu_execute()\n");
                         return res;
                     }
-                    if (jit_offload_) {
-                        accelerator_.alloc(symbol_table[tac.out]);
+                    if (accelerator) {
+                        accelerator->alloc(symbol_table[tac.out]);
                     }
                 }
                 break;
@@ -219,8 +236,12 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     // 
     if (block.narray_tacs() > 0) {
         TIMER_START
-        iterspace_t& iterspace = block.iterspace();   // retrieve iterspace
-        storage_.funcs[block.symbol()](block.operands(), &iterspace);
+        iterspace_t& iterspace = block.iterspace(); // Grab iteration space
+        storage_.funcs[block.symbol()](             // Execute kernel function
+            block.operands(),
+            &iterspace,
+            jit_offload_devid_
+        );
         TIMER_STOP(block.text_compact())
     }
 
@@ -238,20 +259,20 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         switch(tac.oper) {  
 
             case SYNC:              // Pull buffer from accelerator to host
-                if (jit_offload_) {
-                    accelerator_.pull(operand);
+                if (accelerator) {
+                    accelerator->pull(operand);
                 }
                 break;
 
             case DISCARD:           // Free buffer on accelerator
-                if (jit_offload_) {
-                    accelerator_.free(operand);
+                if (accelerator) {
+                    accelerator->free(operand);
                 }
                 break;
 
             case FREE:              // NOTE: Isn't BH_FREE redundant?
-                if (jit_offload_) {                         // Free buffer on accelerator
-                    accelerator_.free(operand);             // Note: must be done prior to
+                if (accelerator) {                          // Free buffer on accelerator
+                    accelerator->free(operand);             // Note: must be done prior to
                 }                                           //       freeing on host.
 
                 res = bh_vcache_free_base(operand.base);    // Free buffer on host
