@@ -95,11 +95,11 @@ string Walker::offload(void)
         Operand& operand = oit->second;
         switch(operand.meta().layout) {
             case SCALAR_CONST:
-            case SCALAR:
             case SCALAR_TEMP:
             case CONTRACTABLE:
                 break;
 
+            case SCALAR:
             case CONTIGUOUS:
             case CONSECUTIVE:
             case STRIDED:
