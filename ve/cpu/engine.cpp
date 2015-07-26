@@ -259,19 +259,19 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         switch(tac.oper) {  
 
             case SYNC:              // Pull buffer from accelerator to host
-                if ((accelerator) && (block.iterspace().layout>SCALAR)) {
+                if (accelerator) {
                     accelerator->pull(operand);
                 }
                 break;
 
             case DISCARD:           // Free buffer on accelerator
-                if ((accelerator) && (block.iterspace().layout>SCALAR)) {
+                if (accelerator) {
                     accelerator->free(operand);
                 }
                 break;
 
             case FREE:              // NOTE: Isn't BH_FREE redundant?
-                if ((accelerator) && (block.iterspace().layout>SCALAR)) {   // Free buffer on accelerator
+                if (accelerator) {   // Free buffer on accelerator
                     accelerator->free(operand);                             // Note: must be done prior to
                 }                                                           //       freeing on host.
 

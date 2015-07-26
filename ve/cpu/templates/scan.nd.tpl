@@ -1,5 +1,4 @@
 // Scan operation of a strided n-dimensional array where n>1
-{{OFFLOAD}}
 {
     const int64_t nelements = iterspace_nelem;
     {{ATYPE}} axis = {{OPD_IN2}}_data;
@@ -11,10 +10,8 @@
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
-    int64_t* const {{OPD_IN1}}_stride = args[2]->stride;
-    int64_t* const {{OPD_OUT}}_stride = args[1]->stride;
-    int64_t {{OPD_IN1}}_stride_axis = {{OPD_OUT}}_stride[axis];
-    int64_t {{OPD_OUT}}_stride_axis = {{OPD_OUT}}_stride[axis];
+    int64_t {{OPD_IN1}}_stride_axis = {{OPD_OUT}}_strides[axis];
+    int64_t {{OPD_OUT}}_stride_axis = {{OPD_OUT}}_strides[axis];
 
     //
     //  Walk over the output
@@ -29,8 +26,8 @@
         {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_data + {{OPD_IN1}}_start;
 
         for (int64_t j=0; j<ndim; ++j) {           
-            {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_stride[j];
-            {{OPD_IN1}} += coord[j] * {{OPD_IN1}}_stride[j];
+            {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_strides[j];
+            {{OPD_IN1}} += coord[j] * {{OPD_IN1}}_strides[j];
         }
 
         //
