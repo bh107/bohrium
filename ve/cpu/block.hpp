@@ -25,20 +25,17 @@ public:
     void clear(void);
 
     /**
-     *  Compose the block based based on a subset of program instructions.
+     *  Compose the block based on a single program instruction.
      *
-     *  @param prg_begin Start of the subset.
-     *  @param prg_end End of the subset, to and including prg_end.
+     *  This method is intended for SIJ-mode only.
      */
-    void compose(size_t prg_begin, size_t prg_end);
+    void compose(size_t prg_idx);
 
     /**
-     *  Compose the block based based on a subset of program instructions.
+     *  Compose the block base on every program instruction
+     *  in the given kernel.
      *
-     *  TODO: Document
-     *
-     *  @param prg_begin Start of the subset.
-     *  @param prg_end End of the subset, to and including prg_end.
+     *  @param krnl Bhir kernel
      */
     void compose(bh_ir_kernel& krnl);
 
@@ -178,6 +175,14 @@ public:
 private:
 
     Block();
+
+    /**
+     *  This is a helper for the two public compose methods.
+     *
+     *  Performing what both composition methods needs.
+     *
+     */
+    void _compose(size_t prg_idx);
     
     uint32_t omask_;                            // Operation mask
 

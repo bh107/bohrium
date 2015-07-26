@@ -114,6 +114,21 @@ In case even your shell is broken then go for installing bash::
   make -j$(nproc)
   make install
 
+mosh (optional)
+---------------
+
+sdfdsf::
+
+  cd /tmp/preqs
+  wget https://github.com/google/protobuf/archive/master.zip
+  unzip master.zip
+  cd master
+  ./autogen.sh
+  ./configure --prefix=$HOME/tools/protoc
+  make
+  make check
+  make install
+
 binutils 2.25
 -------------
 

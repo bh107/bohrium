@@ -317,7 +317,7 @@ bh_error Engine::execute(bh_ir* bhir)
         block.clear();                                  // Reset the block
         block.compose(*krnl);                           // Compose it based on kernel
         
-        if ((block.omask() & EXTENSION)>0) {            // Handle extensions
+        if ((block.omask() & EXTENSION)>0) {            // Extension-Instruction-Execute (EIE)
             tac_t& tac = block.tac(0);
             map<bh_opcode,bh_extmethod_impl>::iterator ext;
             ext = extensions_.find(static_cast<bh_instruction*>(tac.ext)->opcode);
@@ -329,29 +329,29 @@ bh_error Engine::execute(bh_ir* bhir)
                     return res;
                 }
             }
-        } else if (jit_fusion_) {                       // FUSE_MODE
-            DEBUG(TAG, "FUSE START");
+        } else if ((jit_fusion_) || 
+                   (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
+            DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
             res = execute_block(symbol_table, program, block, *krnl);
             if (BH_SUCCESS != res) {
                 return res;
             }
-            DEBUG(TAG, "FUSE END");
-        } else {                                        // SIJ_MODE
-            DEBUG(TAG, "SIJ START");
+            DEBUG(TAG, "Muilti-Instruction-Execute END");
+        } else {                                        // Single-Instruction-Execute (SIE)
+            DEBUG(TAG, "Single-Instruction-Execute BEGIN");
             for(std::vector<uint64_t>::iterator idx_it = krnl->instr_indexes.begin();
                 idx_it != krnl->instr_indexes.end();
                 ++idx_it) {
 
                 block.clear();                          // Reset the block
-                block.compose(*idx_it, *idx_it);        // Compose based on one instruction
+                block.compose(*idx_it);                 // Compose based on a single instruction
 
-                // Generate/Load code and execute it
                 res = execute_block(symbol_table, program, block, *krnl);
                 if (BH_SUCCESS != res) {
                     return res;
                 }
             }
-            DEBUG(TAG, "SIJ END");
+            DEBUG(TAG, "Single-Instruction-Execute END");
         }
     }
     return res;

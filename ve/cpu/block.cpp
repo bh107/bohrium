@@ -51,10 +51,31 @@ void Block::clear(void)
     footprint_bytes_ = 0;
 }
 
+void Block::_compose(size_t prg_idx)
+{
+    tac_t& tac = program_[prg_idx];
+
+    tacs_.push_back(&tac);              // <-- All tacs
+    omask_ |= tac.op;                   // Update omask
+
+    if ((tac.op & (ARRAY_OPS))>0) { 
+        array_tacs_.push_back(&tac);    // <-- Only array operations
+    }
+
+    switch(tac_noperands(tac)) {        // Map operands to local-scope
+        case 3:
+            localize(tac.in2);
+        case 2:
+            localize(tac.in1);
+        case 1:
+            localize(tac.out);
+        default:
+            break;
+    }
+}
+
 void Block::compose(bh_ir_kernel& krnl)
 {
-    // An array pointers to operands
-    // Will be handed to the kernel-function.
     buffers_ = new bh_base*[krnl.instr_indexes.size()*3];
     operands_ = new operand_t*[krnl.instr_indexes.size()*3];
 
@@ -62,58 +83,16 @@ void Block::compose(bh_ir_kernel& krnl)
         idx_it != krnl.instr_indexes.end();
         ++idx_it) {
 
-        tac_t& tac = program_[*idx_it];
-
-        tacs_.push_back(&tac);              // <-- All tacs
-        omask_ |= tac.op;                   // Update omask
-
-        if ((tac.op & (ARRAY_OPS))>0) { 
-            array_tacs_.push_back(&tac);    // <-- Only array operations
-        }
-
-        // Map operands to local-scope
-        switch(tac_noperands(tac)) {
-            case 3:
-                localize(tac.in2);
-            case 2:
-                localize(tac.in1);
-            case 1:
-                localize(tac.out);
-            default:
-                break;
-        }
+        _compose(*idx_it);
     }
 }
 
-
-void Block::compose(size_t prg_begin, size_t prg_end)
+void Block::compose(size_t prg_idx)
 {
-    // An array pointers to operands
-    // Will be handed to the kernel-function.
-    operands_ = new operand_t*[(prg_end-prg_begin+1)*3];
-
-    for(size_t prg_idx=prg_begin; prg_idx<=prg_end; ++prg_idx) {
-        tac_t& tac = program_[prg_idx];
-
-        tacs_.push_back(&tac);              // <-- All tacs
-        omask_ |= tac.op;                   // Update omask
-
-        if ((tac.op & (ARRAY_OPS))>0) { 
-            array_tacs_.push_back(&tac);    // <-- Only array operations
-        }
-
-        // Map operands to local-scope
-        switch(tac_noperands(tac)) {
-            case 3:
-                localize(tac.in2);
-            case 2:
-                localize(tac.in1);
-            case 1:
-                localize(tac.out);
-            default:
-                break;
-        }
-    }
+    operands_ = new operand_t*[3];
+    buffers_ = new bh_base*[3];
+    
+    _compose(prg_idx);
 }
 
 size_t Block::localize(size_t global_idx)
