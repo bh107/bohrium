@@ -178,33 +178,36 @@ public:
 private:
 
     Block();
+    
+    uint32_t omask_;                            // Operation mask
 
-    SymbolTable& globals_;          // A reference to the global symbol table
-    std::vector<tac_t>& program_;   // A reference to the entire bytecode program
+    bh_base** buffers_;                         // Buffer references
+    size_t nbuffers_;
 
-    iterspace_t iterspace_;           // The iteration-space of the block
-
-    std::vector<tac_t*> tacs_;      // A subset of the tac-program reprensting the block.
-    std::vector<tac_t*> array_tacs_;// A subset of the tac-program containing only array ops.
-
-    //SymbolTable locals_;             // A symbol table with block-scope
-    operand_t** operands_;
+    operand_t** operands_;                      // Operand references
     size_t noperands_;
+
+    SymbolTable& globals_;                      // A reference to the global symbol table
+
+    std::vector<tac_t>& program_;               // A reference to the entire bytecode program
+
+    iterspace_t iterspace_;                     // The iteration-space of the block
+
+    std::vector<tac_t*> tacs_;                  // A subset of the tac-program representing the block.
+    std::vector<tac_t*> array_tacs_;            // A subset of the tac-program containing only array ops.
+    
     std::map<size_t, size_t> global_to_local_;  // Mapping from global to block-local scope.
     std::map<size_t, size_t> local_to_global_;  // Mapping from global to block-local scope.
 
-    std::string symbol_text_;       // Textual representation of the block
-    std::string symbol_;            // Hash of textual representation
+    std::string symbol_text_;                   // Textual representation of the block
+    std::string symbol_;                        // Hash of textual representation
 
-    uint32_t omask_;
-
-    static const char TAG[];
-
-    std::map<bh_base*, std::set<uint64_t>> base_refs_;
+    std::map<bh_base*, std::set<uint64_t>> buffer_refs_;
 
     size_t footprint_nelem_;
     size_t footprint_bytes_;
-
+    
+    static const char TAG[];
 };
 
 }}
