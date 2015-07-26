@@ -115,8 +115,6 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         accelerator = accelerators_[0];
     }
 
-    block.update_iterspace();                       // Update iterspace
-
     if (!block.symbolize()) {                       // Update block-symbol
         fprintf(stderr, "Engine::execute_block(...) == Failed creating symbol.\n");
         return BH_ERROR;

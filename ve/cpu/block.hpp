@@ -128,28 +128,10 @@ public:
     std::string symbol(void) const;
     std::string symbol_text(void) const;
 
-
     /**
      *  Returns the iteration space of the block.
      */
     iterspace_t& iterspace(void);
-
-    /**
-     *  Update the iteration space of the block.
-     *
-     *  This means determing the "dominating" LAYOUT, ndim, shape,
-     *  and number of elements of an operation within the block.
-     *
-     *  That is choosing the "worst" LAYOUT, highest ndim, and then
-     *  choosing the shape of the operand with chose characteristics.
-     *
-     *  Since this is what will be the upper-bounds used in when
-     *  generating / specializing code, primarily for fusion / contraction.
-     *
-     *  NOTE: This should be done after applying array contraction or 
-     *  any other changes to tacs and operands.
-     */
-    void update_iterspace(void);
 
     size_t footprint_nelem(void);
     size_t footprint_bytes(void);
@@ -171,7 +153,6 @@ public:
 
     uint32_t omask(void);    
 
-
 private:
 
     Block();
@@ -183,6 +164,23 @@ private:
      *
      */
     void _compose(size_t prg_idx);
+
+    /**
+     *  Update the iteration space of the block.
+     *
+     *  This means determing the "dominating" LAYOUT, ndim, shape,
+     *  and number of elements of an operation within the block.
+     *
+     *  That is choosing the "worst" LAYOUT, highest ndim, and then
+     *  choosing the shape of the operand with chose characteristics.
+     *
+     *  Since this is what will be the upper-bounds used in when
+     *  generating / specializing code, primarily for fusion / contraction.
+     *
+     *  NOTE: This should be done after applying array contraction or 
+     *  any other changes to tacs and operands.
+     */
+    void _update_iterspace(void);
     
     uint32_t omask_;                            // Operation mask
 

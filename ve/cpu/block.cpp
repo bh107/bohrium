@@ -86,9 +86,7 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
         _compose(*idx_it);
     }
 
-    //
-    // Turn temps into scalars aka array-contraction
-    if (array_contraction) {
+    if (array_contraction) {    // Turn kernel-temps into scalars aka array-contraction
         for (bh_base* base: krnl.get_temps()) {
             for(size_t operand_idx = 0;
                 operand_idx < noperands();
@@ -99,6 +97,9 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
             }
         }
     }
+
+    _update_iterspace();        // Update the iteration space
+    // TODO: Classify buffers
 }
 
 void Block::compose(size_t prg_idx)
@@ -107,6 +108,8 @@ void Block::compose(size_t prg_idx)
     buffers_ = new bh_base*[3];
     
     _compose(prg_idx);
+    _update_iterspace();        // Update the iteration space
+    // TODO: Classify buffers
 }
 
 size_t Block::localize(size_t global_idx)
@@ -306,7 +309,7 @@ iterspace_t& Block::iterspace(void)
     return iterspace_;
 }
 
-void Block::update_iterspace(void)
+void Block::_update_iterspace(void)
 {       
     std::set<const bh_base*> footprint;
 
