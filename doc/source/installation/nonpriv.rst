@@ -217,7 +217,7 @@ Python Packages
 
 These should now be installable via `pip`::
 
-  pip install cheetah cython numpy
+  pip install cheetah cython 'numpy==1.8.2'
 
 clang 3.5 with OMP
 ------------------
