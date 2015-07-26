@@ -37,7 +37,7 @@ public:
      *
      *  @param krnl Bhir kernel
      */
-    void compose(bh_ir_kernel& krnl);
+    void compose(bh_ir_kernel& krnlm, bool array_contraction);
 
     /**
      *  Return the block-local operand-index corresponding 

@@ -115,28 +115,14 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         accelerator = accelerators_[0];
     }
 
-    //
-    // Turn temps into scalars aka array-contraction
-    if (consider_jit and jit_contraction_) {
-        for (bh_base* base: krnl.get_temps()) {
-            for(size_t operand_idx = 0;
-                operand_idx < block.noperands();
-                ++operand_idx) {
-                if (block.operand(operand_idx).base == base) {
-                    symbol_table.turn_contractable(block.local_to_global(operand_idx));
-                }
-            }
-        }
-    }
-
     block.update_iterspace();                       // Update iterspace
 
     if (!block.symbolize()) {                       // Update block-symbol
-        fprintf(stderr, "Engine::execute(...) == Failed creating symbol.\n");
+        fprintf(stderr, "Engine::execute_block(...) == Failed creating symbol.\n");
         return BH_ERROR;
     }
 
-    DEBUG(TAG, "EXECUTING "<< block.symbol());
+    DEBUG(TAG, "EXECUTING " << block.symbol());
 
     //
     // JIT-compile: generate source and compile code
@@ -144,7 +130,6 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     if (consider_jit && \
         (!storage_.symbol_ready(block.symbol()))) {   
         DEBUG(TAG, "JITTING " << block.text());
-        
                                                         // Genereate source
         string sourcecode = codegen::Kernel(plaid_, block).generate_source(jit_offload_);
 
@@ -315,7 +300,7 @@ bh_error Engine::execute(bh_ir* bhir)
         ++krnl) {
 
         block.clear();                                  // Reset the block
-        block.compose(*krnl);                           // Compose it based on kernel
+        block.compose(*krnl, jit_contraction_);         // Compose it based on kernel
         
         if ((block.omask() & EXTENSION)>0) {            // Extension-Instruction-Execute (EIE)
             tac_t& tac = block.tac(0);

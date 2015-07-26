@@ -74,7 +74,7 @@ void Block::_compose(size_t prg_idx)
     }
 }
 
-void Block::compose(bh_ir_kernel& krnl)
+void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 {
     buffers_ = new bh_base*[krnl.instr_indexes.size()*3];
     operands_ = new operand_t*[krnl.instr_indexes.size()*3];
@@ -84,6 +84,20 @@ void Block::compose(bh_ir_kernel& krnl)
         ++idx_it) {
 
         _compose(*idx_it);
+    }
+
+    //
+    // Turn temps into scalars aka array-contraction
+    if (array_contraction) {
+        for (bh_base* base: krnl.get_temps()) {
+            for(size_t operand_idx = 0;
+                operand_idx < noperands();
+                ++operand_idx) {
+                if (operand(operand_idx).base == base) {
+                    globals_.turn_contractable(local_to_global(operand_idx));
+                }
+            }
+        }
     }
 }
 
