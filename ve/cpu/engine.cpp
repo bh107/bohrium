@@ -317,7 +317,7 @@ bh_error Engine::execute(bh_ir* bhir)
         block.clear();                                  // Reset the block
         block.compose(*krnl);                           // Compose it based on kernel
         
-        if ((block.omask() & EXTENSION)>0) {
+        if ((block.omask() & EXTENSION)>0) {            // Handle extensions
             tac_t& tac = block.tac(0);
             map<bh_opcode,bh_extmethod_impl>::iterator ext;
             ext = extensions_.find(static_cast<bh_instruction*>(tac.ext)->opcode);
@@ -329,9 +329,7 @@ bh_error Engine::execute(bh_ir* bhir)
                     return res;
                 }
             }
-        } else if (jit_fusion_ && \
-            (block.narray_tacs() > 1)) {                // FUSE_MODE
-
+        } else if (jit_fusion_) {                       // FUSE_MODE
             DEBUG(TAG, "FUSE START");
             res = execute_block(symbol_table, program, block, *krnl);
             if (BH_SUCCESS != res) {
