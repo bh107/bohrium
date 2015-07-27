@@ -44,7 +44,6 @@ string SymbolTable::text(string prefix)
         ss << prefix << "  [" << sbl_idx << "]{";
         ss << " layout("    << layout_text(table_[sbl_idx].layout) << "),";
         ss << " nelem("     << table_[sbl_idx].nelem << "),";
-        ss << " data("      << *(table_[sbl_idx].data) << "),";
         ss << " const_data("<< table_[sbl_idx].const_data << "),";
         ss << " etype(" << etype_text(table_[sbl_idx].etype) << "),";
         ss << endl << prefix << "  ";
@@ -118,7 +117,6 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
                 throw runtime_error("THIS SHOULD NEVER HAPPEN!");
             }
         }
-        table_[arg_idx].data         = &table_[arg_idx].const_data;
         table_[arg_idx].nelem        = 1;
         table_[arg_idx].ndim         = 1;
         table_[arg_idx].start        = 0;
@@ -130,7 +128,6 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         table_[arg_idx].base         = NULL;
     } else {
         table_[arg_idx].const_data= NULL;
-        table_[arg_idx].data     = &(bh_base_array(&instr.operand[operand_idx])->data);
         table_[arg_idx].etype    = bhtype_to_etype(bh_base_array(&instr.operand[operand_idx])->type);
         table_[arg_idx].nelem    = bh_base_array(&instr.operand[operand_idx])->nelem;
         table_[arg_idx].ndim     = instr.operand[operand_idx].ndim;

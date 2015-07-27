@@ -23,12 +23,6 @@ string Walker::declare_operands(void)
         bool restrictable = kernel_.base_refcount(oit->first)==1;
         switch(operand.meta().layout) {
             case SCALAR_CONST:
-                ss
-                << _declare_init(
-                    _const(operand.etype()),
-                    operand.walker(),
-                    operand.data()
-                );
                 break;
 
             case SCALAR:
@@ -36,7 +30,7 @@ string Walker::declare_operands(void)
                 << _declare_init(
                     operand.etype(),
                     operand.walker(),
-                    _deref(_add(operand.data(), operand.start()))
+                    _deref(_add(operand.buffer_data(), operand.start()))
                 );
                 break;
 
@@ -57,14 +51,14 @@ string Walker::declare_operands(void)
                     << _declare_init(
                         _restrict(_ptr(operand.etype())),
                         operand.walker(),
-                        _add(operand.data(), operand.start())
+                        _add(operand.buffer_data(), operand.start())
                     );
                 } else {
                     ss
                     << _declare_init(
                         _ptr(operand.etype()),
                         operand.walker(),
-                        _add(operand.data(), operand.start())
+                        _add(operand.buffer_data(), operand.start())
                     );
                 }
                 break;
@@ -104,7 +98,7 @@ string Walker::offload_leo(void)
             case STRIDED:
                 ss << "in(" << operand.strides() << ":length(CPU_MAXDIM) alloc_if(1) free_if(1)) \\" << endl;
             case SCALAR:
-                ss << "in(" << operand.data() << ":length(" << operand.nelem() << ") alloc_if(0) free_if(0)) \\" << endl;
+                ss << "in(" << operand.buffer_data() << ":length(" << operand.buffer_nelem() << ") alloc_if(0) free_if(0)) \\" << endl;
                 break;
 
             case SPARSE:
@@ -694,7 +688,7 @@ string Walker::operations(void)
                         inner_opds_.insert(tac.in2);
                         out = kernel_.operand_glb(tac.out).walker_val();
                         in1 = _add(
-                            kernel_.operand_glb(tac.in1).data(),
+                            kernel_.operand_glb(tac.in1).buffer_data(),
                             kernel_.operand_glb(tac.in1).start()
                         );
                         in2 = kernel_.operand_glb(tac.in2).walker_val();
@@ -709,7 +703,7 @@ string Walker::operations(void)
                         inner_opds_.insert(tac.in1);
                         inner_opds_.insert(tac.in2);
                         out = _add(
-                            kernel_.operand_glb(tac.out).data(),
+                            kernel_.operand_glb(tac.out).buffer_data(),
                             kernel_.operand_glb(tac.out).start()
                         );
                         in1 = kernel_.operand_glb(tac.in1).walker_val();
@@ -749,7 +743,7 @@ string Walker::write_expanded_scalars(void)
             ((opd.meta().layout & SCALAR)>0) and \
             (written.find(tac.out)==written.end())) {
             ss << _line(_assign(
-                _deref(_add(opd.data(), opd.start())),
+                _deref(_add(opd.buffer_data(), opd.start())),
                 opd.walker_val()
             ));
             written.insert(tac.out);
@@ -824,6 +818,9 @@ string Walker::generate_source(bool offload)
             subjects["OPD_IN1"] = in1->name();
             subjects["OPD_IN2"] = in2->name();
 
+            subjects["BUF_OUT"] = out->buffer_name();
+            subjects["BUF_IN1"] = in1->buffer_name();
+
             subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
             subjects["ETYPE"] = out->etype();
             subjects["ATYPE"] = in2->etype();
@@ -874,7 +871,7 @@ string Walker::generate_source(bool offload)
             if ((out->meta().layout & (SCALAR|CONTIGUOUS|CONSECUTIVE|STRIDED))>0) {
                 // Initialize the accumulator 
                 subjects["ACCU_OPD_INIT"] = _line(_assign(
-                    _deref(_add(out->data(), out->start())),
+                    _deref(_add(out->buffer_data(), out->start())),
                     oper_neutral_element(tac->oper, in1->meta().etype)
                 ));
                 if ((kernel_.omask() & REDUCE_COMPLETE)>0) {
@@ -882,8 +879,8 @@ string Walker::generate_source(bool offload)
                     subjects["ACCU_OPD_SYNC_COMPLETE"] = _line(synced_oper(
                         tac->oper,
                         in1->meta().etype,
-                        _deref(_add(out->data(), out->start())),
-                        _deref(_add(out->data(), out->start())),
+                        _deref(_add(out->buffer_data(), out->start())),
+                        _deref(_add(out->buffer_data(), out->start())),
                         out->accu()
                     ));
                 } else {
@@ -891,8 +888,8 @@ string Walker::generate_source(bool offload)
                     subjects["ACCU_OPD_SYNC_PARTIAL"] = _line(synced_oper(
                         tac->oper,
                         in1->meta().etype,
-                        _deref(_add(out->data(), out->start())),
-                        _deref(_add(out->data(), out->start())),
+                        _deref(_add(out->buffer_data(), out->start())),
+                        _deref(_add(out->buffer_data(), out->start())),
                         out->accu()
                     ));
                 }
@@ -926,7 +923,7 @@ string Walker::generate_source(bool offload)
             ((out->meta().layout & (SCALAR|CONTIGUOUS|CONSECUTIVE|STRIDED))>0)) {
             // Initialize the accumulator 
             subjects["ACCU_OPD_INIT"] = _line(_assign(
-                _deref(_add(out->data(), out->start())),
+                _deref(_add(out->buffer_data(), out->start())),
                 oper_neutral_element(tac->oper, in1->meta().etype)
             ));
 
@@ -940,8 +937,8 @@ string Walker::generate_source(bool offload)
                 subjects["ACCU_OPD_SYNC_COMPLETE"] = _line(synced_oper(
                     tac->oper,
                     in1->meta().etype,
-                    _deref(_add(out->data(), out->start())),
-                    _deref(_add(out->data(), out->start())),
+                    _deref(_add(out->buffer_data(), out->start())),
+                    _deref(_add(out->buffer_data(), out->start())),
                     out->accu()
                 ));
             } else {
@@ -959,7 +956,7 @@ string Walker::generate_source(bool offload)
         subjects["WALKER_AXIS_DIM"] = _line(_declare_init(
             _const(_int64()),
             "axis_dim",
-            in2->data()
+            in2->walker()
         ));
         subjects["WALKER_STRIDE_AXIS"]  = declare_stride_axis();
         subjects["WALKER_STEP_OTHER"]   = step_fwd_other();
@@ -969,7 +966,7 @@ string Walker::generate_source(bool offload)
         if ((kernel_.omask() & REDUCE_PARTIAL)>0) {
             if (out->meta().layout == SCALAR) {
                 subjects["ACCU_OPD_SYNC_PARTIAL"]= _line(_assign(
-                    _deref(_add(out->data(), out->start())),
+                    _deref(_add(out->buffer_data(), out->start())),
                     out->accu()
                 ));
             } else {

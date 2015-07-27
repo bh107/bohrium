@@ -11,8 +11,8 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Operand::Operand(void) : operand_(NULL), local_id_(0) {}
-Operand::Operand(operand_t* operand, uint32_t local_id) : operand_(operand), local_id_(local_id) {
+Operand::Operand(void) : local_id_(0), operand_(NULL), buffer_(NULL) {}
+Operand::Operand(operand_t* operand, uint32_t local_id, Buffer* buffer) : local_id_(local_id), operand_(operand), buffer_(buffer) {
     if (NULL == operand_) {
         throw runtime_error("Constructing a NULL operand_, when expecting to have one");
     }
@@ -139,6 +139,59 @@ string Operand::walker_val(void)
 operand_t& Operand::meta(void)
 {
     return *operand_;
+}
+
+string Operand::buffer_name(void)
+{
+    stringstream ss;
+    if (buffer_) {
+        ss << buffer_->name();
+    } else {
+        ss << name();
+    }
+    return ss.str();
+}
+
+string Operand::buffer_data(void)
+{
+    stringstream ss;
+    if (buffer_) {
+        ss << buffer_->data();
+    } else {
+        ss << data();
+    }
+    return ss.str();
+}
+
+string Operand::buffer_nelem(void)
+{
+    stringstream ss;
+    if (buffer_) {
+        ss << buffer_->nelem();
+    } else {
+        ss << "1";
+    }
+    return ss.str();
+}
+
+string Operand::buffer_etype(void)
+{
+    stringstream ss;
+    if (buffer_) {
+        ss << buffer_->etype();
+    } else {
+        ss << etype();
+    }
+    return ss.str();
+}
+
+bh_base* Operand::buffer_meta(void)
+{
+    if (buffer_) {
+        return &buffer_->meta();
+    } else {
+        return NULL;
+    }
 }
 
 uint64_t Operand::local_id(void)

@@ -8,6 +8,93 @@ namespace core{
 
 const char TAG[] = "Utils";
 
+double get_const_value(const operand_t& arg)
+{
+    switch(arg.etype) {
+        case BOOL:
+            return (double)(*(unsigned char*)(arg.const_data));
+        case INT8:
+            return (double)(*(int8_t*)(arg.const_data));
+        case INT16:
+            return (double)(*(int16_t*)(arg.const_data));
+        case INT32:
+            return (double)(*(int32_t*)(arg.const_data));
+        case INT64:
+            return (double)(*(int64_t*)(arg.const_data));
+        case UINT8:
+            return (double)(*(uint8_t*)(arg.const_data));
+        case UINT16:
+            return (double)(*(uint16_t*)(arg.const_data));
+        case UINT32:
+            return (double)(*(uint32_t*)(arg.const_data));
+        case UINT64:
+            return (double)(*(uint64_t*)(arg.const_data));
+        case FLOAT32:
+            return (double)(*(float*)(arg.const_data));
+        case FLOAT64:
+            return (double)(*(double*)(arg.const_data));
+
+        case COMPLEX64:
+        case COMPLEX128:
+        case PAIRLL:
+        default:
+            throw invalid_argument(
+                "Cannot get scalar-value of operand with "
+                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+            );
+            return 0.0;
+    }
+}
+
+void set_const_value(const operand_t& arg, double value)
+{
+    switch(arg.etype) {
+        case BOOL:
+            (*(unsigned char*)(arg.const_data)) = (unsigned char)value;
+            break;
+        case INT8:
+            (*(int8_t*)(arg.const_data)) = (int8_t)value;
+            break;
+        case INT16:
+            (*(int16_t*)(arg.const_data)) = (int16_t)value;
+            break;
+        case INT32:
+            (*(int32_t*)(arg.const_data)) = (int32_t)value;
+            break;
+        case INT64:
+            (*(int64_t*)(arg.const_data)) = (int64_t)value;
+            break;
+        case UINT8:
+            (*(uint8_t*)(arg.const_data)) = (uint8_t)value;
+            break;
+        case UINT16:
+            (*(uint16_t*)(arg.const_data)) = (uint16_t)value;
+            break;
+        case UINT32:
+            (*(uint32_t*)(arg.const_data)) = (uint32_t)value;
+            break;
+        case UINT64:
+            (*(uint64_t*)(arg.const_data)) = (uint64_t)value;
+            break;
+        case FLOAT32:
+            (*(float*)(arg.const_data)) = (float)value;
+            break;
+        case FLOAT64:
+            (*(double*)(arg.const_data)) = (double)value;
+            break;
+
+        case COMPLEX64:
+        case COMPLEX128:
+        case PAIRLL:
+        default:
+            throw invalid_argument(
+                "Cannot set value of operand with "
+                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+            );
+            break;
+    }
+}
+
 void tac_transform(tac_t& tac, SymbolTable& symbol_table)
 {
     switch(tac.op) {
@@ -44,7 +131,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             switch(tac.oper) {
                 case ADD:
                     if (((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) && \
-                        (get_scalar(symbol_table[tac.in2]) == 0.0)) {
+                        (get_const_value(symbol_table[tac.in2]) == 0.0)) {
                         tac.op = MAP;
                         tac.oper = IDENTITY;
                         // tac.in1 = same as before
@@ -54,13 +141,13 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
                     break;
                 case MULTIPLY:
                     if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
-                        if (get_scalar(symbol_table[tac.in2]) == 0.0) {
+                        if (get_const_value(symbol_table[tac.in2]) == 0.0) {
                             tac.op = MAP;
                             tac.oper = IDENTITY;
                             tac.in1 = tac.in2;
-                            set_scalar(symbol_table[tac.in1], 0);
+                            set_const_value(symbol_table[tac.in1], 0);
                             tac.in2 = 0;
-                        } else if (get_scalar(symbol_table[tac.in2]) == 1.0) {
+                        } else if (get_const_value(symbol_table[tac.in2]) == 1.0) {
                             tac.op = MAP;
                             tac.oper = IDENTITY;
                             // tac.in1 = same as before
@@ -71,7 +158,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
                     break;
                 case DIVIDE:
                     if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
-                        if (get_scalar(symbol_table[tac.in2]) == 1.0) {
+                        if (get_const_value(symbol_table[tac.in2]) == 1.0) {
                             tac.op = MAP;
                             tac.oper = IDENTITY;
                             // tac.in1 = same as before
@@ -130,49 +217,37 @@ bool equivalent(const operand_t& one, const operand_t& other)
     if (one.layout != other.layout) {
         return false;
     }
-    if ((one.layout == SCALAR_CONST)    && \
-        (one.etype == other.etype)) {
+    if ((one.layout == SCALAR_CONST) && (one.etype == other.etype)) {
         switch(one.etype) {
             case BOOL:
-                return (*(unsigned char*)(*(one.data))  == \
-                        *(unsigned char*)(*(other.data)));
+                return (*(unsigned char*)(one.const_data)  == *(unsigned char*)(other.const_data));
             case INT8:
-                return (*(int8_t*)(*(one.data)) == \
-                        *(int8_t*)(*(other.data)));
+                return (*(int8_t*)(one.const_data) == *(int8_t*)(other.const_data));
             case INT16:
-                return (*(int16_t*)(*(one.data)) == \
-                        *(int16_t*)(*(other.data)));
+                return (*(int16_t*)(one.const_data) ==  *(int16_t*)(other.const_data));
             case INT32:
-                return (*(int32_t*)(*(one.data)) == \
-                        *(int32_t*)(*(other.data)));
+                return (*(int32_t*)(one.const_data) == *(int32_t*)(other.const_data));
             case INT64:
-                return (*(int64_t*)(*(one.data)) == \
-                        *(int64_t*)(*(other.data)));
+                return (*(int64_t*)(one.const_data) == *(int64_t*)(other.const_data));
             case UINT8:
-                return (*(uint8_t*)(*(one.data)) == \
-                        *(uint8_t*)(*(other.data)));
+                return (*(uint8_t*)(one.const_data) == *(uint8_t*)(other.const_data));
             case UINT16:
-                return (*(uint16_t*)(*(one.data)) == \
-                        *(uint16_t*)(*(other.data)));
+                return (*(uint16_t*)(one.const_data) == *(uint16_t*)(other.const_data));
             case UINT32:
-                return (*(uint32_t*)(*(one.data)) == \
-                        *(uint32_t*)(*(other.data)));
+                return (*(uint32_t*)(one.const_data) == *(uint32_t*)(other.const_data));
             case UINT64:
-                return (*(uint64_t*)(*(one.data)) == \
-                        *(uint64_t*)(*(other.data)));
+                return (*(uint64_t*)(one.const_data) == *(uint64_t*)(other.const_data));
             case FLOAT32:
-                return (*(float*)(*(one.data)) == \
-                        *(float*)(*(other.data)));
+                return (*(float*)(one.const_data) == *(float*)(other.const_data));
             case FLOAT64:
-                return (*(double*)(*(one.data)) == \
-                        *(double*)(*(other.data)));
+                return (*(double*)(one.const_data) == *(double*)(other.const_data));
             case COMPLEX64:
             case COMPLEX128:
             case PAIRLL:
                 return false;
         }
     }
-    if (one.data != other.data) {
+    if (one.base != other.base) {
         return false;
     }
     if (one.ndim != other.ndim) {
@@ -195,92 +270,7 @@ bool equivalent(const operand_t& one, const operand_t& other)
     return true;
 }
 
-double get_scalar(const operand_t& arg)
-{
-    switch(arg.etype) {
-        case BOOL:
-            return (double)(*(unsigned char*)(*(arg.data)));
-        case INT8:
-            return (double)(*(int8_t*)(*(arg.data)));
-        case INT16:
-            return (double)(*(int16_t*)(*(arg.data)));
-        case INT32:
-            return (double)(*(int32_t*)(*(arg.data)));
-        case INT64:
-            return (double)(*(int64_t*)(*(arg.data)));
-        case UINT8:
-            return (double)(*(uint8_t*)(*(arg.data)));
-        case UINT16:
-            return (double)(*(uint16_t*)(*(arg.data)));
-        case UINT32:
-            return (double)(*(uint32_t*)(*(arg.data)));
-        case UINT64:
-            return (double)(*(uint64_t*)(*(arg.data)));
-        case FLOAT32:
-            return (double)(*(float*)(*(arg.data)));
-        case FLOAT64:
-            return (double)(*(double*)(*(arg.data)));
 
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
-        default:
-            throw invalid_argument(
-                "Cannot get scalar-value of operand with "
-                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
-            );
-            return 0.0;
-    }
-}
-
-void set_scalar(const operand_t& arg, double value)
-{
-    switch(arg.etype) {
-        case BOOL:
-            (*(unsigned char*)(*(arg.data))) = (unsigned char)value;
-            break;
-        case INT8:
-            (*(int8_t*)(*(arg.data))) = (int8_t)value;
-            break;
-        case INT16:
-            (*(int16_t*)(*(arg.data))) = (int16_t)value;
-            break;
-        case INT32:
-            (*(int32_t*)(*(arg.data))) = (int32_t)value;
-            break;
-        case INT64:
-            (*(int64_t*)(*(arg.data))) = (int64_t)value;
-            break;
-        case UINT8:
-            (*(uint8_t*)(*(arg.data))) = (uint8_t)value;
-            break;
-        case UINT16:
-            (*(uint16_t*)(*(arg.data))) = (uint16_t)value;
-            break;
-        case UINT32:
-            (*(uint32_t*)(*(arg.data))) = (uint32_t)value;
-            break;
-        case UINT64:
-            (*(uint64_t*)(*(arg.data))) = (uint64_t)value;
-            break;
-        case FLOAT32:
-            (*(float*)(*(arg.data))) = (float)value;
-            break;
-        case FLOAT64:
-            (*(double*)(*(arg.data))) = (double)value;
-            break;
-
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
-        default:
-            throw invalid_argument(
-                "Cannot set value of operand with "
-                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
-            );
-            break;
-    }
-}
 
 bool compatible(const operand_t& one, const operand_t& other)
 {
@@ -424,7 +414,6 @@ std::string operand_text(const operand_t& operand)
     ss << "{";
     ss << " layout("    << core::layout_text(operand.layout) << "),";
     ss << " nelem("     << operand.nelem << "),";
-    ss << " data("      << *(operand.data) << "),";
     ss << " const_data("<< operand.const_data << "),";
     ss << " etype("     << core::etype_text(operand.etype) << "),";
     ss << " ndim("      << operand.ndim << "),";

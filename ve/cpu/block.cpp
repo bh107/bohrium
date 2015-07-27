@@ -15,34 +15,38 @@ Block::Block(SymbolTable& globals, vector<tac_t>& program)
 
 Block::~Block()
 {
-    if (operands_) {
-        delete[] buffers_;
-        delete[] operands_;
-        operands_   = NULL;
-        noperands_  = 0;
-    }
+    clear();
 }
 
 void Block::clear(void)
-{                               // Reset the current state of the block
-    tacs_.clear();              // tacs
-    array_tacs_.clear();        // array_tacs
+{                                   // Reset the current state of the block
+    omask_ = 0;                     // Operation mask
+
+    if (buffers_) {                 // Buffers
+        delete[] buffers_;
+        buffers_ = NULL;
+        nbuffers_ = 0;
+    }
+    buffer_ids_.clear();
+    input_buffers_.clear();
+    output_buffers_.clear();
     buffer_refs_.clear();
-
-    omask_ = 0;
-
-    iterspace_.layout = SCALAR_TEMP; // iteraton space
-    iterspace_.ndim = 0;
-    iterspace_.shape = NULL;
-    iterspace_.nelem = 0;
     
-    if (operands_) {            // operands
+    if (operands_) {                // Operands
         delete[] operands_;
         operands_   = NULL;
         noperands_  = 0;
     }
     global_to_local_.clear();   // global to local operand mapping
     local_to_global_.clear();   // local to global operand mapping
+
+    iterspace_.layout = SCALAR_TEMP;// Iteraton space
+    iterspace_.ndim = 0;
+    iterspace_.shape = NULL;
+    iterspace_.nelem = 0;
+
+    tacs_.clear();                  // tacs
+    array_tacs_.clear();            // array_tacs
 
     symbol_text_    = "";       // textual symbol representation
     symbol_         = "";       // hashed symbol representation
@@ -51,7 +55,7 @@ void Block::clear(void)
     footprint_bytes_ = 0;
 }
 
-void Block::_compose(size_t prg_idx)
+void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 {
     tac_t& tac = program_[prg_idx];
 
@@ -62,13 +66,31 @@ void Block::_compose(size_t prg_idx)
         array_tacs_.push_back(&tac);    // <-- Only array operations
     }
 
-    switch(tac_noperands(tac)) {        // Map operands to local-scope
+    switch(tac_noperands(tac)) {
         case 3:
-            localize(tac.in2);
+            _localize_scope(tac.in2);                   // Localize scope,      in2
+            if ((tac.op & (ARRAY_OPS))>0) {
+                if (array_contraction && (krnl.get_temps().find(globals_[tac.in2].base)!=krnl.get_temps().end())) {
+                    globals_.turn_contractable(tac.in2);    // Mark contractable,   in2
+                }
+                _bufferize(tac.in2);                        // Note down buffer id, in2
+            }
         case 2:
-            localize(tac.in1);
+            _localize_scope(tac.in1);                   // Localize scope,      in1
+            if ((tac.op & (ARRAY_OPS))>0) {
+                if (array_contraction && (krnl.get_temps().find(globals_[tac.in1].base)!=krnl.get_temps().end())) {
+                    globals_.turn_contractable(tac.in1);    // Mark contractable,   in1
+                }
+                _bufferize(tac.in1);                        // Note down buffer id, in1
+            }
         case 1:
-            localize(tac.out);
+            _localize_scope(tac.out);                   // Localize scope,      out
+            if ((tac.op & (ARRAY_OPS))>0) {
+                if (array_contraction && (krnl.get_temps().find(globals_[tac.out].base)!=krnl.get_temps().end())) {
+                    globals_.turn_contractable(tac.out);    // Mark contractable,   out
+                }
+                _bufferize(tac.out);                        // Note down buffer id, out
+            }
         default:
             break;
     }
@@ -83,7 +105,7 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
         idx_it != krnl.instr_indexes.end();
         ++idx_it) {
 
-        _compose(*idx_it);
+        _compose(krnl, array_contraction, *idx_it);
     }
 
     if (array_contraction) {    // Turn kernel-temps into scalars aka array-contraction
@@ -102,17 +124,37 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
     // TODO: Classify buffers
 }
 
-void Block::compose(size_t prg_idx)
+void Block::compose(bh_ir_kernel& krnl, size_t prg_idx)
 {
-    operands_ = new operand_t*[3];
     buffers_ = new bh_base*[3];
+    operands_ = new operand_t*[3];
     
-    _compose(prg_idx);
-    _update_iterspace();        // Update the iteration space
+    _compose(krnl, false, prg_idx);
+    _update_iterspace();                        // Update the iteration space
     // TODO: Classify buffers
 }
 
-size_t Block::localize(size_t global_idx)
+void Block::_bufferize(size_t global_idx)
+{
+    // Maintain references to buffers within the block.
+    if ((globals_[global_idx].layout & (DYNALLOC_LAYOUT))>0) {
+        bh_base* buffer = globals_[global_idx].base;
+
+        std::map<bh_base*, size_t>::iterator buf = buffer_ids_.find(buffer);
+        if (buf == buffer_ids_.end()) {
+            size_t buffer_id = nbuffers_++;
+            buffer_ids_.insert(pair<bh_base*, size_t>(
+                buffer,
+                buffer_id
+            ));
+            buffers_[buffer_id] = buffer;
+        }
+
+        buffer_refs_[buffer].insert(global_idx);
+    }
+} 
+
+size_t Block::_localize_scope(size_t global_idx)
 {
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the index.
@@ -139,9 +181,6 @@ size_t Block::localize(size_t global_idx)
     // Insert entry such that tac operands can be resolved in block-scope.
     global_to_local_.insert(pair<size_t,size_t>(global_idx, local_idx));
     local_to_global_.insert(pair<size_t,size_t>(local_idx, global_idx));
-
-    // Maintain references to bases within the block.
-    buffer_refs_[operands_[local_idx]->base].insert(global_idx);
 
     return local_idx;
 }
@@ -239,6 +278,30 @@ bool Block::symbolize(void)
     return true;
 }
 
+bh_base& Block::buffer(size_t buffer_id)
+{
+    return *buffers_[buffer_id];
+}
+
+size_t Block::resolve_buffer(bh_base* buffer)
+{
+    std::map<bh_base*, size_t>::iterator buf = buffer_ids_.find(buffer);
+    if (buf == buffer_ids_.end()) {
+        // TODO: Raise exception
+    }
+    return buf->second;
+}
+
+bh_base** Block::buffers(void)
+{
+    return buffers_;
+}
+
+size_t Block::nbuffers(void)
+{
+    return nbuffers_;
+}
+
 size_t Block::base_refcount(bh_base* base)
 {
     return buffer_refs_[base].size();
@@ -331,9 +394,11 @@ void Block::_update_iterspace(void)
             }
             if ((globals_[tac.out].layout & (DYNALLOC_LAYOUT))>0) {   // Footprint
                 footprint.insert(globals_[tac.out].base);
+                output_buffers_.insert(globals_[tac.in1].base);
             }
             if ((globals_[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
                 footprint.insert(globals_[tac.in1].base);
+                input_buffers_.insert(globals_[tac.in1].base);
             }
         } else {
             switch(tac_noperands(tac)) {
@@ -347,6 +412,7 @@ void Block::_update_iterspace(void)
                     }
                     if ((globals_[tac.in2].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
                         footprint.insert(globals_[tac.in2].base);
+                        input_buffers_.insert(globals_[tac.in2].base);
                     }
 
                 case 2:
@@ -359,6 +425,7 @@ void Block::_update_iterspace(void)
                     }
                     if ((globals_[tac.in1].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
                         footprint.insert(globals_[tac.in1].base);
+                        input_buffers_.insert(globals_[tac.in1].base);
                     }
 
                 case 1:
@@ -371,6 +438,7 @@ void Block::_update_iterspace(void)
                     }
                     if ((globals_[tac.out].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
                         footprint.insert(globals_[tac.out].base);
+                        output_buffers_.insert(globals_[tac.in1].base);
                     }
 
                 default:

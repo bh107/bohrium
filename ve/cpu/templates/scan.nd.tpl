@@ -1,7 +1,7 @@
 // Scan operation of a strided n-dimensional array where n>1
 {
     const int64_t nelements = iterspace_nelem;
-    {{ATYPE}} axis = {{OPD_IN2}}_data;
+    {{ATYPE}} axis = {{OPD_IN2}};
 
     const int64_t last_e      = nelements-1;
     const int64_t shape_axis  = iterspace_shape[axis];
@@ -22,8 +22,8 @@
         //
         // Compute offset based on coordinate
         //
-        {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_data + {{OPD_OUT}}_start;
-        {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_data + {{OPD_IN1}}_start;
+        {{ETYPE}}* {{OPD_OUT}} = {{BUF_OUT}}_data + {{OPD_OUT}}_start;
+        {{ETYPE}}* {{OPD_IN1}} = {{BUF_IN1}}_data + {{OPD_IN1}}_start;
 
         for (int64_t j=0; j<ndim; ++j) {           
             {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_strides[j];

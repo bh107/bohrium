@@ -42,7 +42,24 @@ string Kernel::text(void)
 void Kernel::add_operand(uint64_t global_idx)
 {
     uint64_t local_idx = block_.global_to_local(global_idx);
-    operands_[global_idx] = Operand(&block_.operand(local_idx), local_idx);
+
+    operand_t& operand = block_.operand(local_idx);
+    
+    Buffer* buffer = NULL;  // Associate a Buffer instance
+    if ((operand.base) && ((operand.layout & DYNALLOC_LAYOUT)>0)) {
+        buffer = new Buffer(operand.base, block_.resolve_buffer(operand.base)); // Fix buffer_id
+    }
+
+    operands_[global_idx] = Operand(
+        &operand,
+        local_idx,
+        buffer
+    );
+}
+
+string Kernel::buffers(void)
+{
+    return "buffers";
 }
 
 string Kernel::args(void)
@@ -128,8 +145,9 @@ string Kernel::generate_source(bool offload)
     subjects["OMASK"]           = omask_text(omask());
     subjects["SYMBOL_TEXT"]     = block_.symbol_text();
     subjects["SYMBOL"]          = block_.symbol();
-    subjects["ITERSPACE"]       = unpack_iterspace();
+    subjects["BUFFERS"]         = unpack_buffers();
     subjects["ARGUMENTS"]       = unpack_arguments();
+    subjects["ITERSPACE"]       = unpack_iterspace();
     subjects["WALKER"]          = walker.generate_source(offload);
 
     return plaid_.fill("kernel", subjects);
@@ -163,6 +181,34 @@ string Kernel::unpack_iterspace(void)
     )
     << _end();
 
+    return ss.str();
+}
+
+string Kernel::unpack_buffers(void)
+{
+    stringstream ss;
+    for(size_t bid=0; bid<block_.nbuffers(); ++bid) {
+        Buffer buffer(&block_.buffer(bid), bid);
+        ss << endl;
+        ss << "// Buffer " << buffer.name() << endl;
+        ss << _declare_init(
+            _ptr(buffer.etype()),
+            buffer.data(),
+            _access_ptr(
+                _index("buffers", bid),
+                "data"
+            )
+        ) << _end();
+        ss << _declare_init(
+            _int64(),
+            buffer.nelem(),
+            _access_ptr(
+                _index("buffers", bid),
+                "nelem"
+            )
+        ) << _end();
+        ss << _assert_not_null(buffer.data()) << _end();
+    }
     return ss.str();
 }
 
@@ -200,28 +246,30 @@ string Kernel::unpack_arguments(void)
                     _access_ptr(_index(args(), id), "nelem")
                 )
                 << _end();
+                /*
                 ss
                 << _declare_init(
                     _ptr(operand.etype()),
                     operand.data(),
                     _cast(
                         _ptr(operand.etype()),
-                        _deref(_access_ptr(_index(args(), id), "data"))
+                        _access_ptr(_access_ptr(_index(args(), id), "base"), "data")
                     )
                 )
-                << _end();
+                << _end();                
                 ss 
                 << _assert_not_null(operand.data()) << _end();
+                */
                 break;
 
             case SCALAR_CONST:
                 ss
                 << _declare_init(
                     _const(operand.etype()),
-                    operand.data(),
+                    operand.walker(),
                     _deref(_cast(
                         _ptr(operand.etype()),
-                        _deref(_access_ptr(_index(args(), id), "data"))
+                        _access_ptr(_index(args(), id), "const_data")
                     ))
                 )
                 << _end();

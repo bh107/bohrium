@@ -221,6 +221,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         TIMER_START
         iterspace_t& iterspace = block.iterspace(); // Grab iteration space
         storage_.funcs[block.symbol()](             // Execute kernel function
+            block.buffers(),
             block.operands(),
             &iterspace,
             jit_offload_devid_
@@ -298,7 +299,7 @@ bh_error Engine::execute(bh_ir* bhir)
         ++krnl) {
 
         block.clear();                                  // Reset the block
-        block.compose(*krnl, jit_contraction_);         // Compose it based on kernel
+        block.compose(*krnl, (bool)jit_contraction_);   // Compose it based on kernel
         
         if ((block.omask() & EXTENSION)>0) {            // Extension-Instruction-Execute (EIE)
             tac_t& tac = block.tac(0);
@@ -327,7 +328,7 @@ bh_error Engine::execute(bh_ir* bhir)
                 ++idx_it) {
 
                 block.clear();                          // Reset the block
-                block.compose(*idx_it);                 // Compose based on a single instruction
+                block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
 
                 res = execute_block(symbol_table, program, block, *krnl);
                 if (BH_SUCCESS != res) {
