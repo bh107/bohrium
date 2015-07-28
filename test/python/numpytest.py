@@ -356,18 +356,19 @@ if __name__ == "__main__":
             #All test classes starts with "test_"
             for cls in [o for o in dir(m) if o.startswith("test_") and \
                         (True if args.test and o in args.test or not args.test else False)]:
-                if cls in args.exclude_test:
+
+                if cls in args.exclude_test:            # Exclude specific test
                     continue
 
                 cls_obj  = getattr(m, cls)
                 cls_inst = cls_obj()
 
-                import inspect
+                import inspect                          # Exclude benchmarks
                 is_benchmark = BenchHelper.__name__ in [c.__name__ for c in inspect.getmro(cls_obj)]
                 if args.exclude_benchmarks and is_benchmark:
                     continue
 
-                #All test methods starts with "test_"
+                # All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     name = "%s/%s/%s"%(f,cls[5:],mth[5:])
                     print("Testing %s"%(name))
@@ -382,8 +383,7 @@ if __name__ == "__main__":
                                 if ary.dtype not in complex_nptypes:
                                     non_complex[index] = ary
                                     index += 1
-                                else:
-                                np_arays = non_complex
+                            np_arays = non_complex
                             
                         bh_arys = []                    # Get Bohrium arrays
                         for a in np_arys.values():
