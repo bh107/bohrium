@@ -27,15 +27,16 @@ void Accelerator::_alloc(operand_t& operand)
 {
     DEBUG(TAG, "_alloc bh_base(" << (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ")");
 
-    if (allocated(operand)) {   //  Operand is already allocated
+    if (allocated(operand)) {                   // Operand is already allocated
         DEBUG(TAG, "_alloc skipping");
         return;
     }
 
-    T* data = (T*)(operand.base->data);
+    T* data = (T*)(operand.base->data);         // Grab the buffer
     const int nelem = operand.nelem;
-    bytes_allocated_ += nelem*sizeof(T);
-    bases_.insert(operand.base);
+
+    bytes_allocated_ += nelem*sizeof(T);        // House-keeping
+    buffers_allocated_.insert(operand.base);
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
@@ -71,7 +72,7 @@ void Accelerator::_free(operand_t& operand)
 {
     DEBUG(TAG, "_free bh_base(" << (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ")");
 
-    if (!allocated(operand)) {  // Not allocated on device
+    if (!allocated(operand)) {              // Not allocated on device
         DEBUG(TAG, "_free skipping...");
         return;
     }
@@ -79,8 +80,9 @@ void Accelerator::_free(operand_t& operand)
     T* data = (T*)(operand.base->data);
     const int nelem = operand.nelem;
 
-    bytes_allocated_ -= nelem*sizeof(T);
-    bases_.erase(operand.base);
+    bytes_allocated_ -= nelem*sizeof(T);    // House-keeping
+    buffers_allocated_.erase(operand.base);
+    buffers_pushed_.erase(operand.base);
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
@@ -115,10 +117,16 @@ template <typename T>
 void Accelerator::_push(operand_t& operand)
 {
     DEBUG(TAG, "_push bh_base(" << (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ")");
-
+    if (pushed(operand)) {                  // Already pushed to device
+        DEBUG(TAG, "_push skipping..");
+    }
+    if (!allocated(operand)) {
+        // TODO: THROW UP
+    }
     T* data = (T*)(operand.base->data);
     const int nelem = operand.nelem;
-    bases_.insert(operand.base);
+
+    buffers_pushed_.insert(operand.base);   // House-keeping
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
@@ -150,50 +158,10 @@ void Accelerator::push(operand_t& operand)
 }
 
 template <typename T>
-void Accelerator::_push_alloc(operand_t& operand)
-{
-    DEBUG(TAG, "_push_alloc bh_base(" << (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ")");
-
-    T* data = (T*)(operand.base->data);
-    const int nelem = operand.nelem;
-
-    bytes_allocated_ += nelem*sizeof(T);
-
-    #pragma offload_transfer                                    \
-            target(mic:id_)                                     \
-            in(data:length(nelem) alloc_if(1) free_if(0))
-}
-
-void Accelerator::push_alloc(operand_t& operand)
-{
-    switch(operand.etype) {
-        case BOOL:      _push_alloc<unsigned char>(operand); break;
-        case INT8:      _push_alloc<int8_t>(operand); break;
-        case INT16:     _push_alloc<int16_t>(operand); break;
-        case INT32:     _push_alloc<int32_t>(operand); break;
-        case INT64:     _push_alloc<int64_t>(operand); break;
-        case UINT8:     _push_alloc<uint8_t>(operand); break;
-        case UINT16:    _push_alloc<uint16_t>(operand); break;
-        case UINT32:    _push_alloc<uint32_t>(operand); break;
-        case UINT64:    _push_alloc<uint64_t>(operand); break;
-        case FLOAT32:   _push_alloc<float>(operand); break;
-        case FLOAT64:   _push_alloc<double>(operand); break;
-
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
-        default:
-            throw runtime_error("Accelerator does not support this etype, yet...");
-            break;
-    }
-}
-
-template <typename T>
 void Accelerator::_pull(operand_t& operand)
 {
     DEBUG(TAG, "_pull bh_base(" << (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ")");
-
-    if (bases_.count(operand.base)==0) {    // Not allocated on device
+    if (buffers_allocated_.count(operand.base)==0) {    // Not allocated on device
         DEBUG(TAG, "_pull skipping");
         return;
     }
@@ -230,51 +198,6 @@ void Accelerator::pull(operand_t& operand)
     }
 }
 
-template <typename T>
-void Accelerator::_pull_free(operand_t& operand)
-{
-    DEBUG(TAG, "_pull_free bh_base(" << (void*)(operand.base) << ") bh_base.data(" << operand.base->data << ")");
-
-    if (bases_.count(operand.base)==0) {    // Not allocated on device
-        DEBUG(TAG, "_pull_free skipping...");
-        return;
-    }
-
-    T* data = (T*)(operand.base->data);
-    const int nelem = operand.nelem;
-
-    bytes_allocated_ -= nelem*sizeof(T);
-    bases_.erase(operand.base);
-
-    #pragma offload_transfer                                    \
-            target(mic:id_)                                     \
-            out(data:length(nelem) alloc_if(0) free_if(1))
-}
-
-void Accelerator::pull_free(operand_t& operand)
-{
-    switch(operand.etype) {
-        case BOOL:      _pull_free<unsigned char>(operand); break;
-        case INT8:      _pull_free<int8_t>(operand); break;
-        case INT16:     _pull_free<int16_t>(operand); break;
-        case INT32:     _pull_free<int32_t>(operand); break;
-        case INT64:     _pull_free<int64_t>(operand); break;
-        case UINT8:     _pull_free<uint8_t>(operand); break;
-        case UINT16:    _pull_free<uint16_t>(operand); break;
-        case UINT32:    _pull_free<uint32_t>(operand); break;
-        case UINT64:    _pull_free<uint64_t>(operand); break;
-        case FLOAT32:   _pull_free<float>(operand); break;
-        case FLOAT64:   _pull_free<double>(operand); break;
-
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
-        default:
-            throw runtime_error("Accelerator does not support this etype, yet...");
-            break;
-    }
-}
-
 int Accelerator::get_max_threads(void)
 {
     int mthreads;                        
@@ -298,9 +221,7 @@ Accelerator::Accelerator(int id) : id_(id), bytes_allocated_(0) {
 void Accelerator::alloc(operand_t& operand) {}
 void Accelerator::free(operand_t& operand) {}
 void Accelerator::push(operand_t& operand) {}
-void Accelerator::push_alloc(operand_t& operand) {}
 void Accelerator::pull(operand_t& operand) {}
-void Accelerator::pull_free(operand_t& operand) {}
 int Accelerator::get_max_threads(void) { return 1; }
 #endif
 
@@ -323,7 +244,12 @@ size_t Accelerator::bytes_allocated(void)
 
 bool Accelerator::allocated(operand_t& operand)
 {
-    return bases_.count(operand.base)!=0;
+    return buffers_allocated_.count(operand.base)!=0;
+}
+
+bool Accelerator::pushed(operand_t& operand)
+{
+    return buffers_pushed_.count(operand.base)!=0;
 }
 
 }}}

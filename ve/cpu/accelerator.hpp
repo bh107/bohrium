@@ -39,6 +39,11 @@ public:
     bool allocated(operand_t& operand);
 
     /**
+     *  Check that operand-buffer has been pushed to the accelerator.
+     */
+    bool pushed(operand_t& operand);
+
+    /**
      *  Allocate operand-buffer on accelerator.
      */
     void alloc(operand_t& operand);
@@ -93,17 +98,13 @@ private:
     void _push(operand_t& operand);
 
     template <typename T>
-    void _push_alloc(operand_t& operand);
-
-    template <typename T>
     void _pull(operand_t& operand);
-
-    template <typename T>
-    void _pull_free(operand_t& operand);
 
     int id_;
     size_t bytes_allocated_;
-    std::set<const bh_base*> bases_;
+    std::set<const bh_base*> buffers_allocated_;
+
+    std::set<const bh_base*> buffers_pushed_;
 
     static const char TAG[];
 };
