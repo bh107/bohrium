@@ -109,7 +109,7 @@ string Walker::offload_leo(void)
         bit != kernel_.buffers_end();
         ++bit) { 
         Buffer& buffer = bit->second;
-        ss << "in(" << buffer.data() << ":length(" << buffer.nelem() << ") alloc_if(0) free_if(0)) \\" << endl;
+        ss << "nocopy(" << buffer.data() << ":length(" << buffer.nelem() << ") alloc_if(0) free_if(0)) \\" << endl;
     }
     ss << "if(offload)";
     return ss.str();
