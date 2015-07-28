@@ -222,13 +222,20 @@ jit_offload = ${WITH_INTEL_LEO}
 compiler_cmd="${VE_CPU_COMPILER_CMD}"
 compiler_inc="${VE_CPU_COMPILER_INC}"
 compiler_lib="${VE_CPU_COMPILER_LIB}"
-# Interlagos specifics
-#compiler_flg="-mprefer-avx128 -fprefetch-loop-arrays --param prefetch-latency=300 -fno-tree-pre -ftree-vectorize -funroll-all-loops"
 compiler_flg="${VE_CPU_COMPILER_FLG}"
 compiler_ext="${VE_CPU_COMPILER_EXT}"
 object_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/objects
 template_path=${CMAKE_INSTALL_PREFIX}/share/bohrium/templates
 kernel_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/kernels
+##
+## Extra flags for JIT-compilation, add manually for experimentation.
+##
+## Interlagos
+## -mprefer-avx128 -fprefetch-loop-arrays --param prefetch-latency=300 -fno-tree-pre -ftree-vectorize -funroll-all-loops
+##
+## Xeon Phi / Intel MIC
+## -offload-attribute-target=mic
+##
 
 [gpu]
 type = ve
