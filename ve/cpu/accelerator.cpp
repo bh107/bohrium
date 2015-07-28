@@ -19,8 +19,41 @@ namespace cpu{
 
 const char Accelerator::TAG[] = "Accelerator";
 
-#if defined(VE_CPU_WITH_INTEL_LEO)
 Accelerator::Accelerator(int id) : id_(id), bytes_allocated_(0) {};
+
+int Accelerator::id(void)
+{
+    return id_;
+}
+
+string Accelerator::text(void)
+{
+    stringstream ss;
+    ss << "Accelerator id(" << id_ << ") {}";
+    return ss.str();
+}
+
+size_t Accelerator::bytes_allocated(void)
+{
+    return bytes_allocated_;
+}
+
+bool Accelerator::allocated(operand_t& operand)
+{
+    return buffers_allocated_.count(operand.base)!=0;
+}
+
+bool Accelerator::pushed(operand_t& operand)
+{
+    return buffers_pushed_.count(operand.base)!=0;
+}
+
+#if defined(VE_CPU_WITH_INTEL_LEO)
+bool Accelerator::offloadable(void)
+{
+    // TODO: Actual checks, such as whether there are devices available.
+    return true;
+}
 
 template <typename T>
 void Accelerator::_alloc(operand_t& operand)
@@ -212,45 +245,16 @@ int Accelerator::get_max_threads(void)
 //
 // Fallback when compiled without Language Extensions for Offload (Intel LEO).
 //
-Accelerator::Accelerator(int id) : id_(id), bytes_allocated_(0) {
-    throw runtime_error(
-        "Bohrium was compiled without LEO, offload is not possible.\n"
-        "Disable offloading by setting jit_offload=0 in config."
-    );
-};
 void Accelerator::alloc(operand_t& operand) {}
 void Accelerator::free(operand_t& operand) {}
 void Accelerator::push(operand_t& operand) {}
 void Accelerator::pull(operand_t& operand) {}
 int Accelerator::get_max_threads(void) { return 1; }
+bool Accelerator::offloadable(void)
+{
+    return false;
+}
 #endif
-
-int Accelerator::id(void)
-{
-    return id_;
-}
-
-string Accelerator::text(void)
-{
-    stringstream ss;
-    ss << "Accelerator id(" << id_ << ") {}";
-    return ss.str();
-}
-
-size_t Accelerator::bytes_allocated(void)
-{
-    return bytes_allocated_;
-}
-
-bool Accelerator::allocated(operand_t& operand)
-{
-    return buffers_allocated_.count(operand.base)!=0;
-}
-
-bool Accelerator::pushed(operand_t& operand)
-{
-    return buffers_pushed_.count(operand.base)!=0;
-}
 
 }}}
 

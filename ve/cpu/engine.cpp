@@ -56,12 +56,16 @@ Engine::Engine(
     }
     thread_control_.bind_threads(); // Thread control
 
-    if (jit_offload_) {                         // Add accelerator instance, this is just
-        accelerators_.push_back(                // a single accelerator for now.
-            new Accelerator(jit_offload_devid_) // And defaults to device "0", that is
-        );                                      // the first one available.
-
-        accelerators_[jit_offload_devid_]->get_max_threads();   // Initialize accelerator
+    if (jit_offload_) {             // Add accelerator instance
+        Accelerator* accelerator = new Accelerator(jit_offload_devid_);
+        if (accelerator->offloadable()) {                           // Verify that it "works"
+            accelerators_.push_back(accelerator);
+            accelerators_[jit_offload_devid_]->get_max_threads();   // Initialize it
+        } else {
+            delete accelerator;                                     // Tear it down
+            jit_offload_ = false;
+            throw runtime_error("Failed initializing accelerator for offload.");
+        }
     }
 
     DEBUG(TAG, text());             // Print the engine configuration

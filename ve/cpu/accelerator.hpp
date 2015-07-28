@@ -29,6 +29,11 @@ public:
     std::string text(void);
 
     /**
+     *  Determine whether the accelerator can be used.
+     */
+    bool offloadable(void);
+
+    /**
      *  Return amount of bytes allocated on accelerator.
      */
     size_t bytes_allocated(void);
