@@ -240,7 +240,7 @@ void Accelerator::_pull_free(operand_t& operand)
         return;
     }
 
-    T* data = (T*)(*operand.base->data);
+    T* data = (T*)(operand.base->data);
     const int nelem = operand.nelem;
 
     bytes_allocated_ -= nelem*sizeof(T);
