@@ -338,6 +338,11 @@ if __name__ == "__main__":
         action='store_true',
         help='Excludes all benchmak tests'
     )
+    parser.add_argument(
+        '--exclude-complex-dtype',
+        action='store_true',
+        help="Exclude tests with arrays of complex dtype"
+    )
     args = parser.parse_args()
     if len(args.file) == 0:
         args.file = os.listdir(os.path.dirname(os.path.abspath(__file__)))
@@ -366,19 +371,30 @@ if __name__ == "__main__":
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     name = "%s/%s/%s"%(f,cls[5:],mth[5:])
                     print("Testing %s"%(name))
-                    for (np_arys,cmd) in getattr(cls_inst,"init")():
-                        #Get Bohrium arrays
-                        bh_arys = []
+                    for (np_arys, cmd) in getattr(cls_inst,"init")():
+
+                        if args.exclude_complex_dtype:  # Exclude complex
+                            complex_nptypes = [eval(dtype) for dtype in TYPES.COMPLEX]
+
+                            index = 0
+                            non_complex = {}
+                            for ary in np_arys.values():                                
+                                if ary.dtype not in complex_nptypes:
+                                    non_complex[index] = ary
+                                    index += 1
+                                else:
+                                np_arays = non_complex
+                            
+                        bh_arys = []                    # Get Bohrium arrays
                         for a in np_arys.values():
                             bh_arys.append(bh.array(a))
-                        #Execute using NumPy
+                                                        # Execute using NumPy
                         (res1,cmd1) = getattr(cls_inst,mth)(np_arys)
                         res1 = res1.copy()
-
-                        #Execute using Bohrium
+                                                        # Execute using Bohrium
                         (res2,cmd2) = getattr(cls_inst,mth)(bh_arys)
                         cmd += cmd1
-                        try:
+                        try:                            # Compare
                             if not np.isscalar(res2):
                                 res2 = res2.copy2numpy()
                         except RuntimeError as error_msg:
