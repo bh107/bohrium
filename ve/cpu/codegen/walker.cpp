@@ -96,15 +96,20 @@ string Walker::offload_leo(void)
             case CONTIGUOUS:
             case CONSECUTIVE:
             case STRIDED:
-                ss << "in(" << operand.strides() << ":length(CPU_MAXDIM) alloc_if(1) free_if(1)) \\" << endl;
             case SCALAR:
-                ss << "in(" << operand.buffer_data() << ":length(" << operand.buffer_nelem() << ") alloc_if(0) free_if(0)) \\" << endl;
+                ss << "in(" << operand.strides() << ":length(CPU_MAXDIM) alloc_if(1) free_if(1)) \\" << endl;
                 break;
 
             case SPARSE:
 				ss << _beef("Unimplemented LAYOUT.");
 				break;
         }
+    }
+    for(kernel_buffer_iter bit=kernel_.buffers_begin();
+        bit != kernel_.buffers_end();
+        ++bit) { 
+        Buffer& buffer = bit->second;
+        ss << "in(" << buffer.data() << ":length(" << buffer.nelem() << ") alloc_if(0) free_if(0)) \\" << endl;
     }
     ss << "if(offload)";
     return ss.str();

@@ -47,7 +47,9 @@ void Kernel::add_operand(uint64_t global_idx)
     
     Buffer* buffer = NULL;  // Associate a Buffer instance
     if ((operand.base) && ((operand.layout & DYNALLOC_LAYOUT)>0)) {
-        buffer = new Buffer(operand.base, block_.resolve_buffer(operand.base)); // Fix buffer_id
+        size_t buffer_id = block_.resolve_buffer(operand.base);
+        buffer = new Buffer(operand.base, buffer_id);
+        buffers_[buffer_id] = *buffer;
     }
 
     operands_[global_idx] = Operand(
@@ -100,6 +102,16 @@ kernel_operand_iter Kernel::operands_begin(void)
 kernel_operand_iter Kernel::operands_end(void)
 {
     return operands_.end();
+}
+
+kernel_buffer_iter Kernel::buffers_begin(void)
+{
+    return buffers_.begin();
+}
+
+kernel_buffer_iter Kernel::buffers_end(void)
+{
+    return buffers_.end();
 }
 
 uint32_t Kernel::omask(void)
@@ -246,20 +258,6 @@ string Kernel::unpack_arguments(void)
                     _access_ptr(_index(args(), id), "nelem")
                 )
                 << _end();
-                /*
-                ss
-                << _declare_init(
-                    _ptr(operand.etype()),
-                    operand.data(),
-                    _cast(
-                        _ptr(operand.etype()),
-                        _access_ptr(_access_ptr(_index(args(), id), "base"), "data")
-                    )
-                )
-                << _end();                
-                ss 
-                << _assert_not_null(operand.data()) << _end();
-                */
                 break;
 
             case SCALAR_CONST:
