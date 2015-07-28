@@ -60,6 +60,8 @@ Engine::Engine(
         accelerators_.push_back(                // a single accelerator for now.
             new Accelerator(jit_offload_devid_) // And defaults to device "0", that is
         );                                      // the first one available.
+
+        accelerators_[jit_offload_devid_]->get_max_threads();   // Initialize accelerator
     }
 
     DEBUG(TAG, text());             // Print the engine configuration

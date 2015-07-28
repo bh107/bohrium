@@ -40,7 +40,7 @@ void Accelerator::_alloc(operand_t& operand)
 
     #pragma offload_transfer                                    \
             target(mic:id_)                                     \
-            in(data:length(nelem) alloc_if(1) free_if(0))
+            nocopy(data:length(nelem) alloc_if(1) free_if(0))
 }
 
 void Accelerator::alloc(operand_t& operand)
