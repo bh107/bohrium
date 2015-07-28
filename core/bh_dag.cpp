@@ -806,24 +806,37 @@ void fuse_gently(GraphDW &dag)
     while(not es.empty())
     {
         set<EdgeD>::iterator it=es.begin();
-        for(; it != es.end(); ++it)
+        while(it != es.end())
         {
             Vertex src = source(*it, d);
             Vertex dst = target(*it, d);
-
+            const set<EdgeD>::iterator cur = it++;
             if(path_exist(src, dst, d, true))
             {
                 dag.remove_edges(src, dst);
-                continue;
+                es.erase(cur);
+                break;
             }
-
-            if((out_degree(src, d) <= 1 and in_degree(dst, d) <= 1) or//Single binding
+            if((out_degree(src, d) == 1 and in_degree(dst, d) == 1) or//Single binding
                 out_degree(dst, d) == 0 or in_degree(src, d) == 0) //Leaf or root
             {
-                es.erase(it);
+                es.erase(cur);
                 if(d[dst].fusible(d[src]) and nonfusible_subset(dag, src, dst))
                 {
-                    dag.merge_vertices(src, dst, true);
+                    //NOw let's update the edge queue 'es' and merge 'src' and 'dst'
+                    BOOST_FOREACH(EdgeD e, in_edges(dst, d))
+                    {
+                        es.erase(e);
+                    }
+                    BOOST_FOREACH(EdgeD e, out_edges(dst, d))
+                    {
+                        es.erase(e);
+                    }
+                    dag.merge_vertices(src, dst);
+                    BOOST_FOREACH(EdgeD e, out_edges(src, d))
+                    {
+                        es.insert(e);
+                    }
                     break;
                 }
             }
