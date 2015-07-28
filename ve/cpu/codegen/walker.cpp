@@ -23,6 +23,7 @@ string Walker::declare_operands(void)
         bool restrictable = kernel_.base_refcount(oit->first)==1;
         switch(operand.meta().layout) {
             case SCALAR_CONST:
+                // Declared as operand.walker() in kernel-argument-unpacking
                 break;
 
             case SCALAR:
@@ -89,6 +90,9 @@ string Walker::offload_leo(void)
         Operand& operand = oit->second;
         switch(operand.meta().layout) {
             case SCALAR_CONST:
+                ss << "in(" << operand.walker() << ") \\" << endl;
+                break;
+
             case SCALAR_TEMP:
             case CONTRACTABLE:
                 break;
@@ -97,6 +101,7 @@ string Walker::offload_leo(void)
             case CONSECUTIVE:
             case STRIDED:
             case SCALAR:
+                ss << "in(" << operand.start() << ") \\" << endl;
                 ss << "in(" << operand.strides() << ":length(CPU_MAXDIM) alloc_if(1) free_if(1)) \\" << endl;
                 break;
 
@@ -109,7 +114,7 @@ string Walker::offload_leo(void)
         bit != kernel_.buffers_end();
         ++bit) { 
         Buffer& buffer = bit->second;
-        ss << "nocopy(" << buffer.data() << ":length(" << buffer.nelem() << ") alloc_if(0) free_if(0)) \\" << endl;
+        ss << "in(" << buffer.data() << ":length(0) alloc_if(0) free_if(0)) \\" << endl;
     }
     ss << "if(offload)";
     return ss.str();

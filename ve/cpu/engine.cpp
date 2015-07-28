@@ -190,14 +190,18 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                 if ((symbol_table[tac.in2].layout & (DYNALLOC_LAYOUT))>0) {
                     if ((accelerator) && (block.iterspace().layout>SCALAR)) {
                         accelerator->alloc(symbol_table[tac.in2]);
-                        accelerator->push(symbol_table[tac.in2]);
+                        if (NULL!=symbol_table[tac.in2].base->data) {
+                            accelerator->push(symbol_table[tac.in2]);
+                        }
                     }
                 }
             case 2:
                 if ((symbol_table[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
                     if ((accelerator) && (block.iterspace().layout>SCALAR)) {
                         accelerator->alloc(symbol_table[tac.in1]);
-                        accelerator->push(symbol_table[tac.in1]);
+                        if (NULL!=symbol_table[tac.in1].base->data) {
+                            accelerator->push(symbol_table[tac.in1]);
+                        }
                     }
                 }
             case 1:

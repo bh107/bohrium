@@ -1,4 +1,5 @@
 // Scan operation of a strided n-dimensional array where n>1
+{{OFFLOAD}}
 {
     const int64_t nelements = iterspace_nelem;
     {{ATYPE}} axis = {{OPD_IN2}};
