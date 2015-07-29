@@ -10,10 +10,10 @@ env:
     - BH_STACK="stack_gpu" BH_GPU_VERBOSE=true BH_GPU_COMPILE=sync BH_EXCLUDE="--exclude-test=test_lbm_3d"
     - BH_STACK="stack_gpu" BH_FUSE_MODEL=NO_XSWEEP_SCALAR_SEPERATE BH_GPU_VERBOSE=true BH_EXCLUDE="--exclude-test=test_lbm_3d --exclude-test test_gauss  --exclude-test test_gauss_20x20 --exclude-test test_jacobi --exclude-test test_jacobi_fixed --exclude-test test_idl_init"
     - BH_STACK="stack_gpu" BH_FUSE_MODEL=NO_XSWEEP_SCALAR_SEPERATE BH_GPU_VERBOSE=true BH_GPU_COMPILE=sync BH_EXCLUDE="--exclude-test=test_lbm_3d"
-    - BH_CPU_JIT_LEVEL=3
-    - BH_CPU_JIT_LEVEL=1
-    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=3
-    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=1
+    - BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=0
+    - BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=0
+    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=0
+    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=0
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get build-dep -qq python-numpy
@@ -22,5 +22,4 @@ script:
   - mkdir bdir && cd bdir && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc) && make install
   - BASEDIR=${HOME}/build/bh107 && git clone --depth=1 git://github.com/bh107/benchpress.git ${BASEDIR}/benchpress && cd ${BASEDIR}/benchpress && . util/setbpenv.bash && cd ${BASEDIR}
   - python bohrium/test/python/numpytest.py $BH_EXCLUDE
-  - BH_BCEXP_SIGN=0 python bohrium/test/python/numpytest.py --file=test_sign.py
   - BH_BCEXP_SIGN=1 python bohrium/test/python/numpytest.py --file=test_sign.py
