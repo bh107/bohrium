@@ -34,9 +34,15 @@ if (HAS_CXX_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
 endif()
 
-check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNUXX0X)
-if (HAS_CXX_GNUXX0X)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ")
+# Bohrium uses some fancy features... sigh...
+check_cxx_compiler_flag(-std=c++11 HAS_CXX_CXX11)
+if (HAS_CXX_CXX11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
+else()
+    check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNUXX0X)
+    if (HAS_CXX_GNUXX0X)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ")
+    endif()
 endif()
 
 #External dependencies
