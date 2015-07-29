@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+include(CheckCXXCompilerFlag)
 
 if (APPLE)
     # Build multi-arch OSX binaries
@@ -28,8 +29,15 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(BENCHMARK_DIR "${CMAKE_SOURCE_DIR}/benchmark")
 message(STATUS "Benchmark-dir: ${BENCHMARKS_DIR}")
 
-#Set global compile flags TODO: support other compilers
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -Wall")
+check_cxx_compiler_flag(-Wall HAS_CXX_WALL)
+if (HAS_CXX_WALL)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
+endif()
+
+check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNUXX0X)
+if (HAS_CXX_GNUXX0X)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ")
+endif()
 
 #External dependencies
 find_package(PythonInterp)
