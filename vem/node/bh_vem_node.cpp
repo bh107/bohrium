@@ -91,7 +91,7 @@ bh_error bh_vem_node_shutdown(void)
             for(std::set<bh_base*>::iterator it=allocated_bases.begin();
                 it != allocated_bases.end(); ++it)
             {
-                fprintf(stderr, "base id: %p\n", *it);
+                fprintf(stderr, "base id: %p\n", (void*)*it);
             }
         }
     }
@@ -126,7 +126,7 @@ static bh_error inspect(bh_instruction *instr)
         bh_base *base = operands[0].base;
         if(allocated_bases.erase(base) != 1)
         {
-            fprintf(stderr, "[NODE-VEM] discarding unknown base array (%p)\n", base);
+            fprintf(stderr, "[NODE-VEM] discarding unknown base array (%p)\n", (void*)base);
             return BH_ERROR;
         }
     }

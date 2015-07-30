@@ -273,7 +273,7 @@ void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explor
                     if(b){cout << "1";}else{cout << "0";}
                 }
                 cout << "] purge count: ";
-                cout << purge_count << " / " << pow(2.0,mask.size());
+                cout << purge_count << " / " << pow(2.0, (int)mask.size());
                 cout << ", cost: " << cost << ", best_cost: " << best_cost;
                 cout << ", fusibility: " << fusibility << endl;
             }
@@ -284,7 +284,7 @@ void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explor
         if(cost >= best_cost)
         {
             #pragma omp critical
-            purge_count += pow(2.0, mask.size()-offset);
+            purge_count += pow(2.0, (int)(mask.size()-offset));
             continue;
         }
         if(fusibility)
@@ -308,7 +308,7 @@ void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explor
                 ss << "new_best_dag-" << filename << ".dot";
                 cout << "write file: " << ss.str() << endl;
                 pprint(best_dag, ss.str().c_str());
-                purge_count += pow(2.0, mask.size()-offset);
+                purge_count += pow(2.0, (int)(mask.size()-offset));
             }
             continue;
         }

@@ -33,7 +33,6 @@ static int      bh_vcache_cur;
 static int bh_vcache_hits = 0;
 static int bh_vcache_miss = 0;
 static int bh_vcache_store = 0;
-static int bh_vcache_flush = 0;
 
 /**
  *  Reset vcache counters
@@ -43,7 +42,6 @@ void bh_vcache_reset_counters() {
     bh_vcache_hits = 0;
     bh_vcache_miss = 0;
     bh_vcache_store = 0;
-    bh_vcache_flush = 0;
 }
 
 /**
@@ -257,7 +255,6 @@ bh_error bh_vcache_malloc(bh_instruction* inst)
             break;
         default:
             return bh_vcache_malloc_op(&inst->operand[0]);
-            break;
     }
     return BH_SUCCESS;
 }
