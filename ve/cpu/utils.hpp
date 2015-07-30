@@ -26,6 +26,9 @@
 namespace bohrium {
 namespace core {
 
+template <typename T>
+std::string to_string(T val);
+
 //
 // Self-explanatory function returning the textual representation of 
 // TAC enums; useful for pretty-printing.

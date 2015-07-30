@@ -8,6 +8,14 @@ namespace core{
 
 const char TAG[] = "Utils";
 
+template <typename T>
+string to_string(T val)
+{
+    stringstream stream;
+    stream << val;
+    return stream.str();
+}
+
 void tac_transform(tac_t& tac, SymbolTable& symbol_table)
 {
     switch(tac.op) {
@@ -229,7 +237,6 @@ double get_scalar(const operand_t& arg)
                 "Cannot get scalar-value of operand with "
                 "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
             );
-            return 0.0;
     }
 }
 
@@ -278,7 +285,6 @@ void set_scalar(const operand_t& arg, double value)
                 "Cannot set value of operand with "
                 "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
             );
-            break;
     }
 }
 
