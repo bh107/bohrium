@@ -55,7 +55,7 @@ if (HAS_CXX_WALL)
 endif()
 
 # Bohrium uses some fancy C++11 and GNU features... sigh...
-check_cxx_compiler_flag(-std=c++11 HAS_CXX_GNU0X)
+check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)
 if (HAS_CXX_GNU0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ")
 else()
