@@ -51,7 +51,7 @@ string Walker::oper_neutral_element(OPERATOR oper, ETYPE etype)
         case LOGICAL_AND:       return "1";
         case LOGICAL_OR:        return "0";
         case LOGICAL_XOR:       return "0";
-        case BITWISE_AND:       return "1";
+        case BITWISE_AND:
             switch(etype) {
                 case BOOL:      return "1";
                 case INT8:      return "-1";

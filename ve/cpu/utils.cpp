@@ -580,7 +580,6 @@ int tac_noperands(const tac_t& tac)
                     return 1;
                 default:
                     throw runtime_error("noperands does not know how many operands are used.");
-                    return 0;
             }
         case INDEX:
             return 3;
@@ -594,9 +593,7 @@ int tac_noperands(const tac_t& tac)
                     return 0;
                 default:
                     throw runtime_error("noperands does not know how many operands are used.");
-                    return 0;
             }
-            break;
         case EXTENSION:
             return 3;
         case NOOP:
