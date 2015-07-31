@@ -472,6 +472,8 @@ void pprint(const GraphDW &dag, const char filename[])
     GraphD new_dag(dag.bglD());
     map<pair<Vertex, Vertex>, pair<int64_t, bool> > weights;
 
+    map<Vertex, set<Vertex> > vertex2nonfusibles = get_vertex2nonfusibles(dag.bglD());
+
     BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
     {
         Vertex src = source(e, dag.bglW());
@@ -488,7 +490,7 @@ void pprint(const GraphDW &dag, const char filename[])
     struct graph_writer
     {
         const GraphD &graph;
-        graph_writer(const GraphD &g) : graph(g) {};
+        graph_writer(const GraphD &g) : graph(g){};
         void operator()(std::ostream& out) const
         {
             out << "labelloc=\"t\";" << endl;
@@ -501,10 +503,11 @@ void pprint(const GraphDW &dag, const char filename[])
     struct kernel_writer
     {
         const GraphD &graph;
-        kernel_writer(const GraphD &g) : graph(g) {};
+        const map<Vertex, set<Vertex> > &v2f;
+        kernel_writer(const GraphD &g, const map<Vertex, set<Vertex> > &v2f) : graph(g), v2f(v2f) {};
         void operator()(std::ostream& out, const Vertex& v) const
         {
-            char buf[1024*10];
+            char buf[1024*100];
             out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
             out << " bytes\\n";
             out << "Shape: ";
@@ -576,6 +579,17 @@ void pprint(const GraphDW &dag, const char filename[])
                 bh_sprint_instr(&instr, buf, "\\l");
                 out << buf << "\\l";
             }
+            out << "Directly nonfusible vertices: [";
+            BOOST_FOREACH(Vertex v2, vertices(graph))
+            {
+                if(v != v2 and not graph[v].fusible(graph[v2]))
+                    out << v2 << " ";
+            }
+            out << "]\\l";
+            out << "nonfusible vertices: [";
+            BOOST_FOREACH(Vertex v2, v2f.at(v))
+                    out << v2 << " ";
+            out << "]\\l";
             out << "\"]";
         }
     };
@@ -611,7 +625,7 @@ void pprint(const GraphDW &dag, const char filename[])
     };
     ofstream file;
     file.open(filename);
-    write_graphviz(file, new_dag, kernel_writer(new_dag),
+    write_graphviz(file, new_dag, kernel_writer(new_dag, vertex2nonfusibles),
                    edge_writer(new_dag, weights), graph_writer(new_dag));
     file.close();
 }
@@ -773,79 +787,150 @@ fail:
     return false;
 }
 
-bool nonfusible_subset(const GraphDW &dag, Vertex a, Vertex b)
+//Help visitor class that records all vertices in a breadth first search
+struct record_bfs_visitor:default_bfs_visitor
+{
+    set<Vertex> &vs;
+    record_bfs_visitor(set<Vertex> &vs):vs(vs){};
+    template<typename V, typename G>
+    void discover_vertex(V v, const G &g)
+    {
+        vs.insert(v);
+    }
+};
+
+//Help function that returns all ascendants of v
+static set<Vertex> ascendants(const GraphD &dag, Vertex v)
+{
+    set<Vertex> output;
+    breadth_first_search(make_reverse_graph(dag), v, visitor(record_bfs_visitor(output)));
+    output.erase(v);
+    return output;
+}
+
+map<Vertex, set<Vertex> > get_vertex2nonfusibles(const GraphD &dag)
+{
+    map<Vertex, set<Vertex> > vertex2nonfusibles;
+    vector<Vertex> topological_order;
+    topological_sort(dag, back_inserter(topological_order));
+
+    //Add inherent nonfusibles
+    BOOST_REVERSE_FOREACH(Vertex v1, topological_order)
+    {
+        set<Vertex> &v1_nonfusibles = vertex2nonfusibles[v1];
+        for(Vertex v2: ascendants(dag, v1))
+        {
+            assert(v1 != v2);
+            set<Vertex> &v2_nonfusibles = vertex2nonfusibles[v2];
+            v1_nonfusibles.insert(v2_nonfusibles.begin(), v2_nonfusibles.end());
+            if(not dag[v1].fusible(dag[v2]))
+            {
+                v1_nonfusibles.insert(v2);
+                auto v2_ascendants = ascendants(dag, v2);
+                v1_nonfusibles.insert(v2_ascendants.begin(), v2_ascendants.end());
+            }
+        }
+    }
+    //Add directly nonfusibles
+    BOOST_FOREACH(Vertex v1, boost::vertices(dag))
+    {
+        BOOST_FOREACH(Vertex v2, boost::vertices(dag))
+        {
+            if(v1 == v2)
+                continue;
+            if(not dag[v1].fusible(dag[v2]))
+                vertex2nonfusibles[v1].insert(v2);
+        }
+    }
+    //Make sure that nonfusibles goes both ways
+    for(auto &v2n: vertex2nonfusibles)
+    {
+        Vertex v = v2n.first;
+        set<Vertex> &nonfusibles = v2n.second;
+        for(Vertex nonfusible: nonfusibles)
+            vertex2nonfusibles[nonfusible].insert(v);
+    }
+    return vertex2nonfusibles;
+}
+
+//Help function that checks is f two vertices a gently fusible
+static bool gently_fusible(const GraphDW &dag, Vertex a, Vertex b)
 {
     const GraphD &d = dag.bglD();
-    const bh_ir_kernel &ka = d[a];
-    const bh_ir_kernel &kb = d[b];
-    set<Vertex> a_nonfusible, b_nonfusible;
+    if(not d[a].fusible(d[b]))
+        return false;
+
+    //Make sure that 'a' comes before 'b'
+    if(path_exist(b, a, d))
+        swap(a,b);
+
+    GraphDW tmp(dag);
+    tmp.merge_vertices(a, b);
+
+    map<Vertex, set<Vertex> > dag_v2f = get_vertex2nonfusibles(dag.bglD());
+    map<Vertex, set<Vertex> > tmp_v2f = get_vertex2nonfusibles(tmp.bglD());
+
     BOOST_FOREACH(Vertex v, boost::vertices(d))
     {
-        const bh_ir_kernel &k = d[v];
-        if(not k.fusible(ka))
-            a_nonfusible.insert(v);
-        if(not k.fusible(kb))
-            b_nonfusible.insert(v);
-    }
+        if(v == b)//We ignore 'b' since it has been removed by the merger
+            continue;
 
-    //Check if 'b' is a subset of 'a'
-    if(std::includes(a_nonfusible.begin(), a_nonfusible.end(),
-                     b_nonfusible.begin(), b_nonfusible.end()))
-        return true;
-    //Check if 'a' is a subset of 'b'
-    if(std::includes(b_nonfusible.begin(), b_nonfusible.end(),
-                     a_nonfusible.begin(), a_nonfusible.end()))
-        return true;
-    return false;
+        set<Vertex> dag_nonfusibles = dag_v2f[v];
+        set<Vertex> tmp_nonfusibles = tmp_v2f[v];
+        dag_nonfusibles.erase(b);
+        tmp_nonfusibles.erase(b);
+        if(dag_nonfusibles.size() != tmp_nonfusibles.size())
+        {
+            return false;
+        }
+        if(not std::equal(dag_nonfusibles.begin(), dag_nonfusibles.end(), tmp_nonfusibles.begin()))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+//Help function to find a gently fusible edge.
+//NB: removes transitive edges from 'dag'
+pair<EdgeD,bool> find_gently_fusible_edge(GraphDW &dag)
+{
+    const GraphD &d = dag.bglD();
+    auto begin = boost::edges(d).first;
+    auto end = boost::edges(d).second;
+    for(auto it=begin; it != end;)
+    {
+        EdgeD e = *it;
+        ++it;
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+        if(path_exist(src, dst, d, true))
+        {
+            dag.remove_edges(src, dst);
+        }
+        else if(gently_fusible(dag, src, dst))
+        {
+            return make_pair(e, true);
+        }
+        assert(dag_validate(dag));
+    }
+    return make_pair(EdgeD(), false);
 }
 
 void fuse_gently(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();
-    set<EdgeD> es(boost::edges(d).first, boost::edges(d).second);
-    while(not es.empty())
+    while(1)
     {
-        set<EdgeD>::iterator it=es.begin();
-        while(it != es.end())
+        bool valid;
+        EdgeD e;
+        tie(e, valid) = find_gently_fusible_edge(dag);
+        if(valid)
         {
-            Vertex src = source(*it, d);
-            Vertex dst = target(*it, d);
-            const set<EdgeD>::iterator cur = it++;
-            if(path_exist(src, dst, d, true))
-            {
-                dag.remove_edges(src, dst);
-                es.erase(cur);
-                break;
-            }
-            if((out_degree(src, d) == 1 and in_degree(dst, d) == 1) or//Single binding
-                out_degree(dst, d) == 0 or in_degree(src, d) == 0) //Leaf or root
-            {
-                es.erase(cur);
-                if(d[dst].fusible(d[src]) and nonfusible_subset(dag, src, dst))
-                {
-                    //NOw let's update the edge queue 'es' and merge 'src' and 'dst'
-                    BOOST_FOREACH(EdgeD e, in_edges(dst, d))
-                    {
-                        es.erase(e);
-                    }
-                    BOOST_FOREACH(EdgeD e, out_edges(dst, d))
-                    {
-                        es.erase(e);
-                    }
-                    dag.merge_vertices(src, dst);
-                    BOOST_FOREACH(EdgeD e, out_edges(src, d))
-                    {
-                        es.insert(e);
-                    }
-                    break;
-                }
-            }
+            dag.merge_vertices(source(e,d), target(e,d));
         }
-        if(it == es.end())
-            break;//No single ending vertex found
-
-        //Note that 'es' is maintained since the extracted vertex '*it'
-        //is the only vertex removed by the merge
+        else
+            break;
     }
     dag.remove_cleared_vertices();
     assert(dag_validate(dag));

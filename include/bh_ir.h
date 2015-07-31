@@ -222,14 +222,6 @@ public:
      */
     bool fusible(const bh_ir_kernel &other) const;
 
-    /* Determines whether the in-/output of 'this' kernel is a subset of 'other'
-     *
-     * @other  The other kernel
-     * @return The boolean answer
-     */
-    bool input_and_output_subset_of(const bh_ir_kernel &other) const;
-    void input_and_output_subset_of(const bh_ir_kernel &other, std::vector<bh_base*> &subset_preventers) const;
-
     /* Determines dependency between this kernel and the instruction 'instr',
      * which is true when:
      *      'instr' writes to an array that 'this' access

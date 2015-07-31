@@ -42,7 +42,6 @@ static void do_fusion(bh_ir &bhir)
     assert(dag_validate(bhir, dags));
     BOOST_FOREACH(GraphDW &d, dags)
     {
-        fuse_gently(d);
         fuse_greedy(d);
     }
     assert(dag_validate(bhir, dags));

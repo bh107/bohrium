@@ -285,6 +285,14 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed=true);
  */
 bool dag_validate(const bh_ir &bhir, const std::vector<GraphDW> &dags, bool transitivity_allowed=true);
 
+
+/* Returns the set of non-fusibles for each vertex in 'dag'
+ *
+ * @dag                   The dag in question
+ * @return                The vertex-to-non-fusibles map
+ */
+std::map<Vertex, std::set<Vertex> > get_vertex2nonfusibles(const GraphD &dag);
+
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings
  * NB: invalidates all existing vertex and edge pointers.

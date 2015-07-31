@@ -338,54 +338,6 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
     return true;
 }
 
-/* Determines whether the in-/output of 'this' kernel is a subset of 'other'
- *
- * @other  The other kernel
- * @return The boolean answer
- */
-bool bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other) const
-{
-    const std::set<bh_view>& other_input_set = other.get_input_set();
-    if(input_set.size() > other_input_set.size())
-        return false;
-    const std::set<bh_view>& other_output_set = other.get_output_set();
-    if(output_set.size() > other_output_set.size())
-        return false;
-
-    for (const bh_view& iv: input_set)
-    {
-        if (other_input_set.find(iv) == other_input_set.end())
-            return false;
-    }
-    for (const bh_view& ov: output_set)
-    {
-        if (other_output_set.find(ov) == other_output_set.end())
-            return false;
-    }
-    return true;
-}
-
-/* Determines whether the in-/output of 'this' kernel is a subset of 'other'
- *
- * @other  The other kernel
- * @return The boolean answer
- */
-void bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other, vector<bh_base*> &subset_preventers) const
-{
-    const std::set<bh_view>& other_input_set  = other.get_input_set();
-    const std::set<bh_view>& other_output_set = other.get_output_set();
-    for (const bh_view& iv: input_set)
-    {
-        if (other_input_set.find(iv) == other_input_set.end() and other_output_set.find(iv) == other_output_set.end())
-            subset_preventers.push_back(iv.base);
-    }
-    for (const bh_view& ov: output_set)
-    {
-        if (other_output_set.find(ov) == other_output_set.end())
-            subset_preventers.push_back(ov.base);
-    }
-}
-
 /* Determines dependency between 'this' kernel and the instruction 'instr',
  * which is true when:
  *      'instr' writes to an array that 'this' access
@@ -447,7 +399,9 @@ int bh_ir_kernel::dependency(const bh_ir_kernel &other) const
         {
             assert(ret == 0 or ret == dep);//Check for cyclic dependency
             ret = dep;
-            //TODO: return 'ret' here, but for now we check all instructions
+            #ifdef NDEBUG
+                return ret; //We only check all instructions when in debug mode
+            #endif
         }
     }
     return ret;
