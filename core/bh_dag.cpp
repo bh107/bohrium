@@ -645,14 +645,14 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
         set<uint64_t> instr_indexes;
         BOOST_FOREACH(Vertex v, vertices(d))
         {
-            BOOST_FOREACH(uint64_t v, d[v].instr_indexes)
+            BOOST_FOREACH(uint64_t v_foo, d[v].instr_indexes)
             {
-                if(instr_indexes.find(v) != instr_indexes.end())
+                if(instr_indexes.find(v_foo) != instr_indexes.end())
                 {
-                    cout << "Instruction [" << v << "] is in multiple kernels!" << endl;
+                    cout << "Instruction [" << v_foo << "] is in multiple kernels!" << endl;
                     goto fail;
                 }
-                instr_indexes.insert(v);
+                instr_indexes.insert(v_foo);
             }
         }
     }
