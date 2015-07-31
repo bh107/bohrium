@@ -212,7 +212,6 @@ Cannot test: lbm_3d.py
 Test breaks due to overflow errors.
 """
 
-"""
 class test_lbm_3d(BenchHelper, numpytest):
 
     def __init__(self):
@@ -222,13 +221,12 @@ class test_lbm_3d(BenchHelper, numpytest):
 
         # Benchmark parameters
         self.script     = "lbm_3d"
-        self.dtypes     = [bh.float64]
-        self.sizetxt    = "3*3*3*10"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "5*5*5*10"
         self.inputfn    = None
 
     def test_lbm_3d(self, pseudo_arrays):
         return self.run(pseudo_arrays)
-"""
 
 class test_lu(BenchHelper, numpytest):
 
