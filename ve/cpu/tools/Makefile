@@ -1,7 +1,7 @@
 ROOT=$(realpath ../../..)
 CPU=$(ROOT)/ve/cpu
 BDIR=/tmp/bhbuild_cpu/
-#PAR_LVL=-j$(nproc)
+PAR_LVL=-j$(nproc)
 BH_PYTHON=python
 TEST_EXCLUDE=
 DUMPSRC=1
@@ -12,13 +12,21 @@ gcc:
 	$(eval CC := gcc)
 	$(eval CXX := g++)
 
+icc:
+	$(eval CC := icc)
+	$(eval CXX := ic)
+
+clang:
+	$(eval CC := clang)
+	$(eval CXX := clang++)
+
 pgi:
 	$(eval CC := pgcc)
 	$(eval CXX := pgc++)
 
-icc:
-	$(eval CC := icc)
-	$(eval CXX := ic)
+path:
+	$(eval CC := pathcc)
+	$(eval CXX := pathCC)
 
 release_on:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DCMAKE_BUILD_TYPE=Release)
@@ -41,7 +49,10 @@ cpu_debug_on:
 cpu_profiling_on:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_PROFILING)
 
-custom_boost:
+custom_boost_154:
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DBOOST_ROOT=$(HOME)/tools/boost-1.54.0 -DBoost_INCLUDE_DIRS=$(HOME)/tools/boost-1.54.0/include -DBoost_LIBRARY_DIRS=$(HOME)/tools/boost-1.54.0/lib -DBoost_NO_SYSTEM_PATHS=ON -DBoost_NO_BOOST_CMAKE=ON )
+
+custom_boost_158:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DBOOST_ROOT=$(HOME)/tools/boost-1.58.0 -DBoost_INCLUDE_DIRS=$(HOME)/tools/boost-1.58.0/include -DBoost_LIBRARY_DIRS=$(HOME)/tools/boost-1.58.0/lib -DBoost_NO_SYSTEM_PATHS=ON -DBoost_NO_BOOST_CMAKE=ON )
 
 #
