@@ -149,11 +149,6 @@ bool compatible(const operand_t& one, const operand_t& other);
 bool equivalent(const operand_t& one, const operand_t& other);
 
 /**
- *  Return a string formatted with "fmt_str"; supporting positional identifiers.
- */
-std::string string_format(const std::string fmt_str, ...);
-
-/**
  *  Write source-code to file.
  *  Filename will be along the lines of: kernel/<symbol>_<UID>.c
  *  NOTE: Does not overwrite existing files.
