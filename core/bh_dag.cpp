@@ -860,6 +860,10 @@ static bool gently_fusible(const GraphDW &dag, Vertex a, Vertex b)
     if(not d[a].fusible(d[b]))
         return false;
 
+    map<Vertex, set<Vertex> > dag_v2f = get_vertex2nonfusibles(dag.bglD());
+    if(dag_v2f[a].size() != dag_v2f[b].size() or not std::equal(dag_v2f[a].begin(), dag_v2f[a].end(), dag_v2f[b].begin()))
+        return false;
+
     //Make sure that 'a' comes before 'b'
     if(path_exist(b, a, d))
         swap(a,b);
@@ -867,7 +871,6 @@ static bool gently_fusible(const GraphDW &dag, Vertex a, Vertex b)
     GraphDW tmp(dag);
     tmp.merge_vertices(a, b);
 
-    map<Vertex, set<Vertex> > dag_v2f = get_vertex2nonfusibles(dag.bglD());
     map<Vertex, set<Vertex> > tmp_v2f = get_vertex2nonfusibles(tmp.bglD());
 
     BOOST_FOREACH(Vertex v, boost::vertices(d))
