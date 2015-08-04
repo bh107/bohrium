@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")    # Shared modules
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
-include(ExternalProject)
 include(FeatureSummary)
+include(ExternalProject)
 
 if (APPLE)  # Build multi-arch OSX binaries
     set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
@@ -24,7 +25,6 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)                                 
     set (CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "The install prefix (default path is ~/.local)" FORCE)
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")    # Shared modules
 
 set(BENCHMARK_DIR "${CMAKE_SOURCE_DIR}/benchmark")                                  # Benchmarks (npbackend)
 message(STATUS "Benchmark-dir: ${BENCHMARKS_DIR}")
@@ -127,8 +127,7 @@ set(VE_CPU_C_COMPILER ${CMAKE_C_COMPILER} CACHE STRING "VE-CPU: C compiler")
 set(VE_CPU_CXX_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "VE-CPU: C++ compiler")
  
 if(VE_CPU)
-ExternalProject_Add(
-    BH_VE_CPU
+ExternalProject_Add(BH_VE_CPU
     DEPENDS bh
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/ve/cpu
     CMAKE_CACHE_ARGS
@@ -140,6 +139,7 @@ ExternalProject_Add(
         -DCMAKE_CXX_COMPILER:PATH=${VE_CPU_CXX_COMPILER}
         -DVE_CPU_PROFILING:STRING=${VE_CPU_PROFILING}
         -DVE_CPU_DEBUGGING:STRING=${VE_CPU_DEBUGGING}
+    BUILD_ALWAYS 1
 )
 endif()
 
