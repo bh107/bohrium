@@ -105,7 +105,7 @@ private:
 
     // Set of base-arrays that are synced by this kernel.
     std::set<bh_base*> syncs;
-    
+
     // Sequence set of views used in this kernel
     seqset<bh_view> views;
 
@@ -125,12 +125,12 @@ private:
 
     bool scalar; // Indicate whether there is a scalar output from the kernel or not
 
-    // sweep (reduce and accumulate) dimensions 
+    // sweep (reduce and accumulate) dimensions
     std::map<bh_intp, bh_int64> sweeps;
 
     // list of constants used in this kernel in topological order
     std::vector<bh_constant> constants;
-        
+
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
 
@@ -188,6 +188,13 @@ public:
      * @return The boolean answer
      */
     bool only_system_opcodes() const;
+
+    /* Determines whether all instructions in 'this' kernel
+     * are BH_NONE
+     *
+     * @return The boolean answer
+     */
+    bool is_noop() const;
 
     /* Determines whether the kernel fusible legal
      *

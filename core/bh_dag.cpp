@@ -306,7 +306,7 @@ void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
     topological_sort(dag, back_inserter(topological_order));
     BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
     {
-        if(dag[v].instr_indexes.size() > 0)
+        if(not dag[v].is_noop())
             kernel_list.push_back(dag[v]);
     }
 }

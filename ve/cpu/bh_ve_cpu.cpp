@@ -27,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sys/stat.h>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/filesystem.hpp>
 
 #include <bh.h>
 #define BH_TIMING_SUM
@@ -145,6 +146,28 @@ bh_error bh_ve_cpu_init(const char *name)
     mkdir(kernel_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     mkdir(object_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
+    // Construct architecture id for object-store
+    string arch_id = bohrium::core::hash_text(bohrium::engine::cpu::cpu_text());
+    string object_directory;            // Subfolder of object_path
+
+    boost::filesystem::path slash("/"); // Obtain system separator
+    boost::filesystem::path::string_type sep = slash.make_preferred().native();
+    
+    object_directory = object_path + sep + arch_id;
+
+    // Create object-directory for target/arch_id
+    if (!boost::filesystem::exists(object_directory)) {
+        if (!boost::filesystem::create_directory(object_directory)) {
+            if (!boost::filesystem::exists(object_directory)) {
+                stringstream ss;
+                ss << "CPU-VE: create_directory(" << object_directory << "), ";
+                ss << "failed. And it does not seem to exist. This directory ";
+                ss << "is needed for JIT-compilation.";
+                throw runtime_error(ss.str());
+            }
+        }
+    }
+
     //
     // VROOM VROOM VROOOOOOMMMM!!! VROOOOM!!
     engine = new bohrium::engine::cpu::Engine(
@@ -161,7 +184,7 @@ bh_error bh_ve_cpu_init(const char *name)
         string(compiler_lib),
         string(compiler_flg),
         string(compiler_ext),
-        string(object_path),
+        string(object_directory),
         string(template_path),
         string(kernel_path)
     );

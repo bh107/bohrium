@@ -12,6 +12,8 @@ typedef enum {
     BIND_TO_PU = 2
 } thread_binding;
 
+std::string cpu_text(void);
+
 class ThreadControl {
 public:
     ThreadControl(thread_binding binding, size_t thread_limit);

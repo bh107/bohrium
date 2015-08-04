@@ -62,6 +62,13 @@ string Operand::strides(void)
     return ss.str();
 }
 
+string Operand::stride_outer(void)
+{
+    stringstream ss;
+    ss << name() << "_stride_outer";
+    return ss.str();
+}
+
 string Operand::stride_inner(void)
 {
     stringstream ss;
