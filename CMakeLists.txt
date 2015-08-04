@@ -56,9 +56,7 @@ install(DIRECTORY thirdparty/Random123-1.08/include/Random123
 #
 # Default compile-flags for Bohrium
 #
-
-# C Flags
-check_c_compiler_flag(-pedantic HAS_C_PEDANTIC)
+check_c_compiler_flag(-pedantic HAS_C_PEDANTIC)             # C Flags
 if (HAS_C_PEDANTIC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic ")
 endif()
@@ -71,8 +69,7 @@ if (HAS_C_C99)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ")
 endif()
 
-# C++ Flags
-check_cxx_compiler_flag(-Wall HAS_CXX_PEDANTIC)
+check_cxx_compiler_flag(-Wall HAS_CXX_PEDANTIC)             # C++ Flags
 if (HAS_CXX_PEDANTIC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic ")
 endif()
@@ -80,9 +77,7 @@ check_cxx_compiler_flag(-Wall HAS_CXX_WALL)
 if (HAS_CXX_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
 endif()
-
-# Bohrium uses some fancy C++11 and GNU features... sigh...
-check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)
+check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)         # Sigh...
 if (HAS_CXX_GNU0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ")
 else()
@@ -95,50 +90,9 @@ endif()
 #
 # Bohrium components
 #
-ExternalProject_Add(
-    BH_CORE
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/core
-    CMAKE_CACHE_ARGS
-        -DBOHRIUM_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-        -DBOHRIUM_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-        -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-    LOG_UPDATE 0
-    BUILD_ALWAYS 1
-)
-ExternalProject_Get_Property(BH_CORE BINARY_DIR)
-set(BH_CORE_BINARY_DIR "${BINARY_DIR}")
-link_directories(${BH_CORE_BINARY_DIR})
+add_subdirectory(core)
 add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
-
-set(VE_CPU true CACHE BOOL "VE-CPU: Build CPU engine.")
-set(VE_CPU_PROFILING false CACHE BOOL "VE-CPU: Enabling CPU profiling.")
-set(VE_CPU_DEBUGGING false CACHE BOOL "VE-CPU: Enable debugging.")
-set(VE_CPU_C_COMPILER ${CMAKE_C_COMPILER} CACHE STRING "VE-CPU: C compiler")
-set(VE_CPU_CXX_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "VE-CPU: C++ compiler")
-if(VE_CPU)
-ExternalProject_Add(
-    BH_VE_CPU
-    DEPENDS BH_CORE
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/ve/cpu
-    CMAKE_CACHE_ARGS
-        -DBOHRIUM_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-        -DBOHRIUM_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
-        -DBH_CORE_BINARY_DIR:PATH=${BH_CORE_BINARY_DIR}
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DCMAKE_C_COMPILER:PATH=${VE_CPU_C_COMPILER}
-        -DCMAKE_CXX_COMPILER:PATH=${VE_CPU_CXX_COMPILER}
-        -DVE_CPU_PROFILING:STRING=${VE_CPU_PROFILING}
-        -DVE_CPU_DEBUGGING:STRING=${VE_CPU_DEBUGGING}
-    LOG_UPDATE 0
-    BUILD_ALWAYS 1
-)
-endif()
-
 add_subdirectory(filter/pprint)
 add_subdirectory(filter/fuseprinter)
 add_subdirectory(filter/pricer)
@@ -150,8 +104,6 @@ add_subdirectory(fuser/topological)
 add_subdirectory(fuser/gentle)
 add_subdirectory(fuser/optimal)
 add_subdirectory(fuser/greedy)
-
-# The other components
 add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(extmethods/fftw)
@@ -162,6 +114,36 @@ add_subdirectory(bridge/npbackend)
 add_subdirectory(bridge/NumCIL)
 add_subdirectory(bridge/cil)
 add_subdirectory(test)
+
+#
+# Building the CPU engine is done as an external-project.
+# This is an attempt to be able to compile with commercial
+# compilers such as pgi and pathscale.
+#
+set(VE_CPU true CACHE BOOL "VE-CPU: Build CPU engine.")
+set(VE_CPU_PROFILING false CACHE BOOL "VE-CPU: Enabling CPU profiling.")
+set(VE_CPU_DEBUGGING false CACHE BOOL "VE-CPU: Enable debugging.")
+set(VE_CPU_C_COMPILER ${CMAKE_C_COMPILER} CACHE STRING "VE-CPU: C compiler")
+set(VE_CPU_CXX_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "VE-CPU: C++ compiler")
+ 
+if(VE_CPU)
+ExternalProject_Add(
+    BH_VE_CPU
+    DEPENDS bh
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/ve/cpu
+    CMAKE_CACHE_ARGS
+        -DBH_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+        -DBH_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DCMAKE_C_COMPILER:PATH=${VE_CPU_C_COMPILER}
+        -DCMAKE_CXX_COMPILER:PATH=${VE_CPU_CXX_COMPILER}
+        -DVE_CPU_PROFILING:STRING=${VE_CPU_PROFILING}
+        -DVE_CPU_DEBUGGING:STRING=${VE_CPU_DEBUGGING}
+    LOG_UPDATE 0
+    BUILD_ALWAYS 1
+)
+endif()
 
 #
 # Bohrium configuration file, depends on global or local installation

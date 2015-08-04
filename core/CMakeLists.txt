@@ -1,17 +1,7 @@
 cmake_minimum_required(VERSION 2.8)                     # cmake features
-include(CheckCXXCompilerFlag)
-include(CheckCCompilerFlag)             
-include(FeatureSummary)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-project(BH_CORE)
-
-find_package(Boost REQUIRED COMPONENTS serialization filesystem system thread)      # Everything
-set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries" URL "www.boost.org")
-set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
+include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${Boost_INCLUDE_DIRS})
-
-include_directories(${BOHRIUM_SOURCE_DIR}/include)
 file(GLOB SRC *.cpp)
 
 add_library(bh SHARED ${SRC} bh_opcode.cpp)
