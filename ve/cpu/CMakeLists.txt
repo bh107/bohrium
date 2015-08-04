@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 project(BH_VE_CPU)
 
 include_directories(${BH_SOURCE_DIR}/include)           # Engine depends on BH headers
-link_directories("${BH_BINARY_DIR}/core")               # Engine depends on BH_CORE (libbh / bh)
+link_directories(${BH_BINARY_DIR}/core)                 # Engine depends on BH_CORE (libbh / bh)
 
 include_directories(${CMAKE_SOURCE_DIR}/codegen)        # Engine depends on its own headers
 include_directories(${CMAKE_SOURCE_DIR})
