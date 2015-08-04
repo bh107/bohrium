@@ -1,14 +1,15 @@
-ROOT=$(realpath ../../..)
-CPU=$(ROOT)/ve/cpu
+BH_SRC=$(realpath ../../..)
+CPU=$(BH_SRC)/ve/cpu
 BDIR=/tmp/bhbuild_cpu/
-PAR_LVL=-j$(nproc)
+#PAR_LVL=-j$(shell expr $(shell nproc) / 2)
+PAR_LVL=-j1
 BH_PYTHON=python
 TEST_EXCLUDE=
 DUMPSRC=1
 
 BUILD_OPTIONS=
 
-gcc:
+gcc:	
 	$(eval CC := gcc)
 	$(eval CXX := g++)
 
@@ -21,12 +22,12 @@ clang:
 	$(eval CXX := clang++)
 
 pgi:
-	$(eval CC := pgcc)
-	$(eval CXX := pgc++)
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_C_COMPILER=pgcc) 
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_CXX_COMPILER=pgc++) 
 
 path:
-	$(eval CC := pathcc)
-	$(eval CXX := pathCC)
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_C_COMPILER=pathcc) 
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_CXX_COMPILER=pathCC) 
 
 release_on:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DCMAKE_BUILD_TYPE=Release)
@@ -48,6 +49,20 @@ cpu_debug_on:
 
 cpu_profiling_on:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_PROFILING)
+
+fuser_gentle_off:
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DFUSER_GENTLE=OFF)
+
+fuser_greedy_off:
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DFUSER_GREEDY=OFF)
+
+fuser_optimal_off:
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DFUSER_OPTIMAL=OFF)
+
+fuser_singleton_off:
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DFUSER_SINGLETON=OFF)
+
+fuser_topological_only: fuser_greedy_off fuser_optimal_off fuser_singleton_off
 
 custom_boost_154:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DBOOST_ROOT=$(HOME)/tools/boost-1.54.0 -DBoost_INCLUDE_DIRS=$(HOME)/tools/boost-1.54.0/include -DBoost_LIBRARY_DIRS=$(HOME)/tools/boost-1.54.0/lib -DBoost_NO_SYSTEM_PATHS=ON -DBoost_NO_BOOST_CMAKE=ON )
@@ -83,7 +98,7 @@ purge_cpu: purge_ko
 #
 # Remove everything
 purge_all: purge_cpu
-	cd $(ROOT) && git clean -fdx && git clean -fdX
+	cd $(BH_SRC) && git clean -fdx && git clean -fdX
 	rm -rf $(BDIR)
 	rm -rf ~/.local/bin
 	rm -rf ~/.local/include
@@ -99,7 +114,7 @@ reset: purge_all clean gen
 
 install: purge_ko
 	mkdir -p $(BDIR)
-	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(ROOT) $(BUILD_OPTIONS) && make $(PAR_LVL) && make install
+	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(BH_SRC) $(BUILD_OPTIONS) && make $(PAR_LVL) && make install
 
 install_dev: cil_off cluster_off fun_off gpu_off install
 
@@ -116,8 +131,8 @@ crap:
 	rm -f graph*.dot flow*.dot trace*.txt flow*.html vgcore.* core /tmp/graph*.html /tmp/graph*.png /tmp/graph*.png
 
 test:
-	BH_CPU_JIT_LEVEL=3 python  $(ROOT)/test/python/numpytest.py $(TEST_EXCLUDE)
-	BH_CPU_JIT_LEVEL=1 python  $(ROOT)/test/python/numpytest.py $(TEST_EXCLUDE)
+	BH_CPU_JIT_LEVEL=3 python  $(BH_SRC)/test/python/numpytest.py $(TEST_EXCLUDE)
+	BH_CPU_JIT_LEVEL=1 python  $(BH_SRC)/test/python/numpytest.py $(TEST_EXCLUDE)
 
 #
 # Generate Doxygen documentation

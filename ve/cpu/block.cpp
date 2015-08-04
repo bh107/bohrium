@@ -2,7 +2,6 @@
 #include <iomanip>
 
 using namespace std;
-using namespace boost;
 
 namespace bohrium{
 namespace core{
@@ -51,9 +50,10 @@ void Block::compose(bh_ir_kernel& krnl)
 {
     // An array pointers to operands
     // Will be handed to the kernel-function.
-    operands_ = new operand_t*[krnl.instr_indexes.size()*3];
+    operands_ = new operand_t*[(krnl.instr_indexes.size()+1)*3];
 
-    for(std::vector<uint64_t>::iterator idx_it = krnl.instr_indexes.begin();
+    std::vector<uint64_t>::const_iterator idx_it;
+    for(idx_it = krnl.instr_indexes.begin();
         idx_it != krnl.instr_indexes.end();
         ++idx_it) {
 

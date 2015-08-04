@@ -20,14 +20,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <map>
 
-#include <errno.h>
-#include <unistd.h>
 #include <inttypes.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/filesystem.hpp>
+#include <unistd.h>
+#include <errno.h>
 
 #include <bh.h>
 #define BH_TIMING_SUM
@@ -53,11 +50,11 @@ static bh_intp timing;
 bh_error bh_ve_cpu_init(const char *name)
 {
     char* env = getenv("BH_FUSE_MODEL");                    // Set the fuse-model
-    if (env != NULL) {
-        string e(env);
-        if (not boost::iequals(e, string("same_shape_generate_1dreduce"))) {
+    if (NULL != env) {
+        string env_str(env);
+        if (!env_str.compare("same_shape_generate_1dreduce")) {
             fprintf(stderr, "[CPU-VE] Warning! unsupported fuse model: '%s"
-                    "', it may not work.\n",env);
+                    "', it may not work.\n", env);
         }
     } else {
         setenv("BH_FUSE_MODEL", "SAME_SHAPE_GENERATE_1DREDUCE", 1);
@@ -150,15 +147,15 @@ bh_error bh_ve_cpu_init(const char *name)
     string arch_id = bohrium::core::hash_text(bohrium::engine::cpu::cpu_text());
     string object_directory;            // Subfolder of object_path
 
-    boost::filesystem::path slash("/"); // Obtain system separator
-    boost::filesystem::path::string_type sep = slash.make_preferred().native();
+    string sep("/"); // TODO: Portable file-separator
     
     object_directory = object_path + sep + arch_id;
 
     // Create object-directory for target/arch_id
-    if (!boost::filesystem::exists(object_directory)) {
-        if (!boost::filesystem::create_directory(object_directory)) {
-            if (!boost::filesystem::exists(object_directory)) {
+    if (access(object_directory.c_str(), F_OK)) {
+        int err = mkdir(object_directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        if (err) {
+            if (access(object_directory.c_str(), F_OK)) {
                 stringstream ss;
                 ss << "CPU-VE: create_directory(" << object_directory << "), ";
                 ss << "failed. And it does not seem to exist. This directory ";
