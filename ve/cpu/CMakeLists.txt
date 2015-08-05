@@ -60,26 +60,22 @@ elseif(HAS_CXX_GNU0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ")
 endif()
 
-find_package(OpenMP COMPONENTS bohrium)         # Multi-core MACRO, flag, compiler-support and libraries
+find_package(OpenMP COMPONENTS bohrium)
 set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "Multicore processing, quite essential for performance")
-if(OPENMP_FOUND)
-    
-    find_package(HWLOC)                         # Look for HWLOC
-    set_package_properties(HWLOC PROPERTIES DESCRIPTION "hardware locality (hwloc)" URL "http://www.open-mpi.org/projects/hwloc/")
-    set_package_properties(HWLOC PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it to control thread affinity.")
-    
-    if (HWLOC_FOUND)                            # Engine can use HWLOC for threadbinding
-        include_directories(${HWLOC_INCLUDE_DIR})
-        target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
-        add_definitions(-DVE_CPU_BIND)
-    endif()
 
-    # Check OMP-ATOMIC
+if(OPENMP_FOUND)                                                    # Multi-core MACRO, flag, compiler-support and libraries for ENGINE
+
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")         # Enable compilation with OpenMp
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")  # Check OpenMP ATOMIC
     check_c_source_compiles( "
     #include <omp.h>
     int main(void){
         int acc = 0;
         int i;
+        #pragma omp parallel for
         for(i=0; i<10; i++) {
             #pragma omp atomic
             acc = acc + 1;
@@ -87,7 +83,7 @@ if(OPENMP_FOUND)
         return 0;
     }" OPENMP_ATOMIC_FOUND)
 
-    if (OPENMP_ATOMIC_FOUND)                    # Engine can use OMP-atomic for synchronization
+    if (OPENMP_ATOMIC_FOUND)                                        # Enable codegen "#omp atomic" for synchronization
         add_definitions(-DVE_CPU_OMP_ATOMIC)
     else()
         message("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -100,10 +96,16 @@ if(OPENMP_FOUND)
         message("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     endif()
 
-    # Assign OpenMP compile-flags
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    find_package(HWLOC)                                             # Check for HWLOC
+    set_package_properties(HWLOC PROPERTIES DESCRIPTION "hardware locality (hwloc)" URL "http://www.open-mpi.org/projects/hwloc/")
+    set_package_properties(HWLOC PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it to control thread affinity.")
+    
+    if (HWLOC_FOUND)                                                # Enable HWLOC for threadcontrol
+        include_directories(${HWLOC_INCLUDE_DIR})
+        target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
+        add_definitions(-DVE_CPU_BIND)
+    endif()
+    
 else()
     if(APPLE)
         if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -159,7 +161,7 @@ install(DIRECTORY kernels DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WR
 install(DIRECTORY objects DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE COMPONENT bohrium)
 
 #
-# Write the Bohrium configuration file
+# JIT-compiler capabilities: optimization, and parallelization
 #
 if (APPLE)
     install(
@@ -182,44 +184,27 @@ else()
     set(VE_CPU_COMPILER_INC " ${VE_CPU_COMPILER_INC} -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include ")
     set(VE_CPU_COMPILER_LIB "-lm")
     set(VE_CPU_COMPILER_EXT "-fPIC -shared -std=c99")
-
-    # Optional flags 
-    check_c_compiler_flag(-O3 HAS_O3)
-    if (HAS_O3)
+    
+    check_c_compiler_flag(-O3 HAS_O3)                                       # Highly RECOMMENDED flags
+    if (HAS_O3)                                                             # Optimization
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -O3")
     endif()
-    check_c_compiler_flag(-march=native HAS_MARCH_NATIVE)
-    if (HAS_MARCH_NATIVE)
+    check_c_compiler_flag(-march=native HAS_MARCH_NATIVE)                   
+    if (HAS_MARCH_NATIVE)                                                   # Machine specific code
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -march=native")
     endif()
     check_c_compiler_flag("--param vect-max-version-for-alias-checks=100" HAS_PARAM_VECTMAX)
-    if (HAS_PARAM_VECTMAX)
+    if (HAS_PARAM_VECTMAX)                                                  # Upper bound on alias-checks
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} --param vect-max-version-for-alias-checks=100")
     endif()
 
-    find_package(OpenMP)    # Parallism
-    if (OPENMP_FOUND)
-        set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        check_c_source_compiles( "
-        #include <omp.h>
-        int main(void){
-            int acc = 0;
-            int i;
-            for(i=0; i<10; i++) {
-                #pragma omp atomic
-                acc = acc + 1;
-            }
-            return 0;
-        }" OPENMP_ATOMIC_FOUND)
+    if (OPENMP_FOUND)        
+        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} ${OpenMP_C_FLAGS}") # OpenMP
         
-        # Check OMP-SIMD
         check_c_compiler_flag(-fopenmp-simd HAS_OPENMP_SIMD)
         if (HAS_OPENMP_SIMD)
-            set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -fopenmp-simd")
+            set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -fopenmp-simd") # OpenMP - SIMD
         endif()
-
-        # Set OMP compiler-flag
-        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} ${OpenMP_C_FLAGS}")
     endif()
 endif()
 
