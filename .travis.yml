@@ -1,7 +1,7 @@
 language: c
 compiler:
-  - gcc
   - clang
+  - gcc
 env:
   global:
     - LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
