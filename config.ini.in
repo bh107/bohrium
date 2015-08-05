@@ -20,8 +20,8 @@ node = cpu
 #
 [stack_gpu]
 type = stack
-stack_gpu = bcexp
-bcexp = dimclean
+stack_gpu = bcexp_gpu
+bcexp_gpu = dimclean
 dimclean = greedy
 greedy = node
 node = gpu
@@ -30,8 +30,8 @@ gpu = cpu
 [stack_gpu_debug]
 type = stack
 stack_gpu_debug = pprint
-pprint = bcexp
-bcexp = dimclean
+pprint = bcexp_gpu
+bcexp_gpu = dimclean
 dimclean = greedy
 greedy = fuseprinter
 fuseprinter = node
@@ -192,6 +192,18 @@ gc_threshold = 400
 matmul = 1
 sign = 1
 powk = 1
+reduce1d = 0
+timing = false
+
+[bcexp_gpu]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = dimclean
+gc_threshold = 400
+matmul = 1
+sign = 1
+powk = 1
+reduce1d = 32000
 timing = false
 
 [bcexp_cpu]
@@ -202,6 +214,7 @@ gc_threshold = 400
 matmul = 1
 sign = 0
 powk = 1
+reduce1d = 0
 timing = false
 
 #

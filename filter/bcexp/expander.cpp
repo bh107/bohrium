@@ -27,8 +27,8 @@ namespace composite {
 
 const char Expander::TAG[] = "Expander";
 
-Expander::Expander(size_t threshold, int matmul, int sign, int powk)
-    : gc_threshold_(threshold), matmul_(matmul), sign_(sign), powk_(powk) {}
+Expander::Expander(size_t threshold, int matmul, int sign, int powk, int reduce1d)
+    : gc_threshold_(threshold), matmul_(matmul), sign_(sign), powk_(powk), reduce1d_(reduce1d){}
 
 void Expander::expand(bh_ir& bhir)
 {
@@ -38,32 +38,48 @@ void Expander::expand(bh_ir& bhir)
         int increase = 0;
         switch(instr.opcode) {
 
-            case BH_POWER:
-                if (powk_) {
-                    end += expand_powk(bhir, pc);
-                    end += increase;
-                    pc += increase;
-                }
-                break;
-
-            case BH_MATMUL:
-                if (matmul_) {
-                    end += expand_matmul(bhir, pc);
-                    end += increase;
-                    pc += increase;
-                }
-                break;
-
-            case BH_SIGN:
-                if (sign_) {
-                    increase = expand_sign(bhir, pc);
-                    end += increase;
-                    pc += increase;
-                }
-                break;
-
-            default:
-                break;
+        case BH_POWER:
+            if (powk_) {
+                end += expand_powk(bhir, pc);
+                end += increase;
+                pc += increase;
+            }
+            break;
+            
+        case BH_MATMUL:
+            if (matmul_) {
+                end += expand_matmul(bhir, pc);
+                end += increase;
+                pc += increase;
+            }
+            break;
+            
+        case BH_SIGN:
+            if (sign_) {
+                increase = expand_sign(bhir, pc);
+                end += increase;
+                pc += increase;
+            }
+            break;
+        case BH_ADD_REDUCE:
+        case BH_MULTIPLY_REDUCE:
+        case BH_MINIMUM_REDUCE:
+        case BH_MAXIMUM_REDUCE:
+        case BH_LOGICAL_AND_REDUCE:
+        case BH_BITWISE_AND_REDUCE:
+        case BH_LOGICAL_OR_REDUCE:
+        case BH_BITWISE_OR_REDUCE:
+        case BH_LOGICAL_XOR_REDUCE:
+        case BH_BITWISE_XOR_REDUCE:
+            if (reduce1d_ && instr.operand[1].ndim == 1)
+            {
+                increase = expand_reduce1d(bhir, pc, reduce1d_);
+                end += increase;
+                pc += increase;
+            }
+            break;
+        default:
+            break;
         }
     }
 }
@@ -107,6 +123,17 @@ bh_view Expander::make_temp(bh_view& meta, bh_type type, bh_index nelem)
 {
     bh_view view = meta;
     view.base = make_base(type, nelem);
+    return view;
+}
+
+bh_view Expander::make_temp(bh_type type, bh_index nelem)
+{
+    bh_view view;
+    view.base = make_base(type, nelem);
+    view.start = 0;
+    view.ndim = 1;
+    view.shape[0] = nelem;
+    view.stride[0] = 1;
     return view;
 }
 
