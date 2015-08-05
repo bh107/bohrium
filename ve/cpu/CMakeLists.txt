@@ -30,7 +30,10 @@ if (VE_CPU_DEBUGGING)                                   # Engine debugging MACRO
     add_definitions( -DVE_CPU_DEBUGGING )
 endif()
 
-check_c_compiler_flag(-pedantic HAS_C_PEDANTIC)         # C Flags
+#
+# Default compile-flags for Bohrium
+#
+check_c_compiler_flag(-pedantic HAS_C_PEDANTIC)             # C Flags
 if (HAS_C_PEDANTIC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic ")
 endif()
@@ -43,7 +46,7 @@ if (HAS_C_C99)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ")
 endif()
 
-check_cxx_compiler_flag(-Wall HAS_CXX_PEDANTIC)         # C++ Flags
+check_cxx_compiler_flag(-Wall HAS_CXX_PEDANTIC)             # C++ Flags
 if (HAS_CXX_PEDANTIC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic ")
 endif()
@@ -51,13 +54,14 @@ check_cxx_compiler_flag(-Wall HAS_CXX_WALL)
 if (HAS_CXX_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
 endif()
-
-check_cxx_compiler_flag(-std=c++11 HAS_CXX_CXX11)       # Sigh...
-check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)         
-if (HAS_CXX_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
-elseif(HAS_CXX_GNU0X)
+check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)         # Sigh...
+if (HAS_CXX_GNU0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ")
+else()
+    check_cxx_compiler_flag(-std=c++11 HAS_CXX_CXX11)
+    if(HAS_CXX_CXX11)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
+    endif()
 endif()
 
 find_package(OpenMP COMPONENTS bohrium)
