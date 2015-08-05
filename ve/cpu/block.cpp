@@ -18,19 +18,20 @@ Block::~Block()
 }
 
 void Block::clear(void)
-{                               // Reset the current state of the block
-    tacs_.clear();              // tacs
-    array_tacs_.clear();        // array_tacs
+{                                   // Reset the current state of the block
+    omask_ = 0;                     // Operation mask
+
+    if (buffers_) {                 // Buffers
+        delete[] buffers_;
+        buffers_ = NULL;
+        nbuffers_ = 0;
+    }
+    buffer_ids_.clear();
+    input_buffers_.clear();
+    output_buffers_.clear();
     buffer_refs_.clear();
-
-    omask_ = 0;
-
-    iterspace_.layout = SCALAR_TEMP; // iteraton space
-    iterspace_.ndim = 0;
-    iterspace_.shape = NULL;
-    iterspace_.nelem = 0;
     
-    if (operands_) {            // operands
+    if (operands_) {                // Operands
         delete[] operands_;
         operands_   = NULL;
         noperands_  = 0;
