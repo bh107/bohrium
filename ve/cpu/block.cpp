@@ -21,7 +21,7 @@ void Block::clear(void)
 {                               // Reset the current state of the block
     tacs_.clear();              // tacs
     array_tacs_.clear();        // array_tacs
-    base_refs_.clear();
+    buffer_refs_.clear();
 
     omask_ = 0;
 

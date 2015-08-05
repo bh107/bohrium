@@ -50,7 +50,6 @@ double get_const_value(const operand_t& arg)
                 "Cannot get scalar-value of operand with "
                 "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
             );
-            return 0.0;
     }
 }
 
