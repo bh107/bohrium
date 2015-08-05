@@ -36,7 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sys/time.h>
 #endif
 #include <iostream>
-#include <mutex>
+#include <pthread.h>
 #include <vector>
 #include <fstream>
 
@@ -53,13 +53,32 @@ std::ostream& operator<< (std::ostream& os, bh::timing4 const& t);
 
 namespace bh
 {
+    class Mutex
+    {
+    public:
+        Mutex(void) {
+            pthread_mutex_init(&mutex_, NULL);
+        }
+        ~Mutex(void) {
+            pthread_mutex_destroy(&mutex_);
+        }
+        void lock(void) {
+            pthread_mutex_lock(&mutex_);
+        }
+        void unlock(void) {
+            pthread_mutex_unlock(&mutex_);
+        }
+    private:
+        pthread_mutex_t mutex_;
+    };
+
     template <typename T=timing2, bh_uint64 GRANULARITY=1000000>
     class Timer
     {
     private:
         std::string name;
         bh_uint64 total;
-        std::mutex mtx;
+        Mutex mtx;
 #ifndef BH_TIMING_SUM
         std::vector<T> values;
 #endif

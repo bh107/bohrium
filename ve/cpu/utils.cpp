@@ -8,6 +8,14 @@ namespace core{
 
 const char TAG[] = "Utils";
 
+template <typename T>
+string to_string(T val)
+{
+    stringstream stream;
+    stream << val;
+    return stream.str();
+}
+
 double get_const_value(const operand_t& arg)
 {
     switch(arg.etype) {
@@ -190,28 +198,6 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
     }
 }
 
-std::string string_format(const std::string fmt_str, ...) {
-    int size = 100;
-    std::string str;
-    va_list ap;
-    while (1) {
-        str.resize(size);
-        va_start(ap, fmt_str);
-        int n = vsnprintf((char *)str.c_str(), size, fmt_str.c_str(), ap);
-        va_end(ap);
-        if (n > -1 && n < size) {
-            str.resize(n);
-            return str;
-        }
-        if (n > -1) {
-            size = n + 1;
-        } else {
-            size *= 2;
-        }
-    }
-    return str;
-}
-
 bool equivalent(const operand_t& one, const operand_t& other)
 {
     if (one.layout != other.layout) {
@@ -242,6 +228,8 @@ bool equivalent(const operand_t& one, const operand_t& other)
     }
     return true;
 }
+
+
 
 bool compatible(const operand_t& one, const operand_t& other)
 {
@@ -556,7 +544,6 @@ int tac_noperands(const tac_t& tac)
                     return 1;
                 default:
                     throw runtime_error("noperands does not know how many operands are used.");
-                    return 0;
             }
         case INDEX:
             return 3;
@@ -570,9 +557,7 @@ int tac_noperands(const tac_t& tac)
                     return 0;
                 default:
                     throw runtime_error("noperands does not know how many operands are used.");
-                    return 0;
             }
-            break;
         case EXTENSION:
             return 3;
         case NOOP:

@@ -1039,7 +1039,7 @@ namespace detail {
     }
 
     inline void fence() { _mm_mfence(); }
-}; // namespace detail
+} // namespace detail
 
     
 /*! \brief class used to interface between C++ and

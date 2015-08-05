@@ -1,6 +1,7 @@
 #ifndef __BH_CORE_TIMEVAULT
 #define __BH_CORE_TIMEVAULT
 #include <sys/time.h>
+#include <stdint.h>
 #include <string>
 #include <map>
 
@@ -117,7 +118,7 @@ class Timevault {
         static const uint32_t width;
 };
 
-}};
+}}
 
 //
 // Profiling macros for non-intrusive profiling.

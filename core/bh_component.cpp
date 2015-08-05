@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <iostream>
+#include <errno.h>
 #include <sstream>
 #include <string>
 #include <boost/algorithm/string.hpp>
