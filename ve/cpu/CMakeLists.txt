@@ -52,8 +52,8 @@ if (HAS_CXX_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
 endif()
 
-check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)         # Sigh...
-check_cxx_compiler_flag(-std=c++0x HAS_CXX_CXX11)
+check_cxx_compiler_flag(-std=c++11 HAS_CXX_CXX11)       # Sigh...
+check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)         
 if (HAS_CXX_CXX11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
 elseif(HAS_CXX_GNU0X)
