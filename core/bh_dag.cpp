@@ -857,12 +857,27 @@ map<Vertex, set<Vertex> > get_vertex2nonfusibles(const GraphD &dag)
 static bool gently_fusible(const GraphDW &dag, Vertex a, Vertex b)
 {
     const GraphD &d = dag.bglD();
+    const GraphW &w = dag.bglW();
     if(not d[a].fusible(d[b]))
         return false;
 
     map<Vertex, set<Vertex> > dag_v2f = get_vertex2nonfusibles(dag.bglD());
-    if(dag_v2f[a].size() != dag_v2f[b].size() or not std::equal(dag_v2f[a].begin(), dag_v2f[a].end(), dag_v2f[b].begin()))
-        return false;
+
+    //Check if the edge 'a' -> 'b' is a single leaf edge, in which case
+    //the nonfusibles of 'b' does not have to be preserved.
+    if(boost::edge(a, b, d).second and boost::edge(a, b, w).second and
+       in_degree(b, d) == 1 and out_degree(b, d) == 0 and out_degree(b,w) == 1)
+    {
+        if(not std::includes(dag_v2f[a].begin(), dag_v2f[a].end(),
+                             dag_v2f[b].begin(), dag_v2f[b].end()))
+            return false;
+    }
+    else
+    {
+        if(dag_v2f[a].size() != dag_v2f[b].size() or
+           not std::equal(dag_v2f[a].begin(), dag_v2f[a].end(), dag_v2f[b].begin()))
+            return false;
+    }
 
     //Make sure that 'a' comes before 'b'
     if(path_exist(b, a, d))
