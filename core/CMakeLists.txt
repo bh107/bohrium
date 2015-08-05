@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8)                     # cmake features
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${Boost_INCLUDE_DIRS})
 file(GLOB SRC *.cpp)
 
 add_library(bh SHARED ${SRC} bh_opcode.cpp)
@@ -17,4 +16,3 @@ target_link_libraries(bh ${Boost_LIBRARIES})    # A shit ton of stuff depends on
 
 install(TARGETS bh DESTINATION lib COMPONENT bohrium)
 install(DIRECTORY ${BOHRIUM_SOURCE_DIR}/include/ DESTINATION include/bohrium COMPONENT bohrium)
-
