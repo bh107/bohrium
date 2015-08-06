@@ -125,8 +125,6 @@ private:
 
     // Largest input shape used in the kernel
     std::vector<bh_index> input_shape;
-    // Smalest output shape used in the kernel
-    std::vector<bh_index> output_shape;
 
     bool scalar; // Indicate whether there is a scalar output from the kernel or not
 
@@ -168,7 +166,7 @@ public:
     const std::vector<bh_constant>& get_constants() const {return constants;}
     const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
     const std::vector<bh_index>& get_input_shape() const {return input_shape;}
-    const std::vector<bh_index>& get_output_shape() const {return output_shape;}
+    std::vector<bh_index> get_output_shape() const;
 
     bool is_output(bh_base* base) const {return output_map.find(base) != output_map.end();}
     bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}

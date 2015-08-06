@@ -15,7 +15,7 @@ public:
     /**
      *  Construct the expander.
      */
-    Expander(size_t threshold, int matmul, int sign, int powk);
+    Expander(size_t threshold, int matmul, int sign, int powk, int reduce_1d);
 
     /**
      *  Tear down the expander.
@@ -48,6 +48,7 @@ public:
      */
     bh_base* make_base(bh_type type, bh_index nelem);
     bh_view make_temp(bh_view& meta, bh_type type, bh_index nelem);
+    bh_view make_temp(bh_type type, bh_index nelem);
 
     /**
      *  Inject an instruction.
@@ -137,6 +138,8 @@ public:
 
     int expand_powk(bh_ir& bhir, int pc);
 
+    int expand_reduce1d(bh_ir& bhir, int pc, int fold_limit);
+
 private:
 
     static const char TAG[];
@@ -145,6 +148,7 @@ private:
     int matmul_;
     int sign_;
     int powk_;
+    int reduce1d_;
     
 };
 

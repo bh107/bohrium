@@ -4,13 +4,14 @@
 //	Walks the iteration-space using outer/inner loop constructs.
 //	Partitions work into chunks of size equal to the inner-most dimension.
 //
+{{OFFLOAD}}
 {
-    const int64_t inner_dim  = iterspace->ndim-1;
-    const int64_t outer_dim  = iterspace->ndim-2;
+    const int64_t inner_dim  = iterspace_ndim-1;
+    const int64_t outer_dim  = iterspace_ndim-2;
 
     const int mthreads          = omp_get_max_threads();
-    const int64_t chunksize     = iterspace->shape[inner_dim];
-    const int64_t nchunks       = iterspace->nelem / chunksize;
+    const int64_t chunksize     = iterspace_shape[inner_dim];
+    const int64_t nchunks       = iterspace_nelem / chunksize;
     const int64_t nworkers      = nchunks > mthreads ? mthreads : 1;
     const int64_t work_split    = nchunks / nworkers;
     const int64_t work_spill    = nchunks % nworkers;

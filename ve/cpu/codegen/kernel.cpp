@@ -42,7 +42,26 @@ string Kernel::text(void)
 void Kernel::add_operand(uint64_t global_idx)
 {
     uint64_t local_idx = block_.global_to_local(global_idx);
-    operands_[global_idx] = Operand(&block_.operand(local_idx), local_idx);
+
+    operand_t& operand = block_.operand(local_idx);
+    
+    Buffer* buffer = NULL;  // Associate a Buffer instance
+    if ((operand.base) && ((operand.layout & DYNALLOC_LAYOUT)>0)) {
+        size_t buffer_id = block_.resolve_buffer(operand.base);
+        buffer = new Buffer(operand.base, buffer_id);
+        buffers_[buffer_id] = *buffer;
+    }
+
+    operands_[global_idx] = Operand(
+        &operand,
+        local_idx,
+        buffer
+    );
+}
+
+string Kernel::buffers(void)
+{
+    return "buffers";
 }
 
 string Kernel::args(void)
@@ -85,6 +104,16 @@ kernel_operand_iter Kernel::operands_end(void)
     return operands_.end();
 }
 
+kernel_buffer_iter Kernel::buffers_begin(void)
+{
+    return buffers_.begin();
+}
+
+kernel_buffer_iter Kernel::buffers_end(void)
+{
+    return buffers_.end();
+}
+
 uint32_t Kernel::omask(void)
 {
     return block_.omask();
@@ -110,7 +139,7 @@ kernel_tac_iter Kernel::tacs_end(void)
     return tacs_.end();
 }
 
-string Kernel::generate_source(void)
+string Kernel::generate_source(bool offload)
 {
     std::map<string, string> subjects;
     Walker walker(plaid_, *this);
@@ -128,10 +157,71 @@ string Kernel::generate_source(void)
     subjects["OMASK"]           = omask_text(omask());
     subjects["SYMBOL_TEXT"]     = block_.symbol_text();
     subjects["SYMBOL"]          = block_.symbol();
+    subjects["BUFFERS"]         = unpack_buffers();
     subjects["ARGUMENTS"]       = unpack_arguments();
-    subjects["WALKER"]          = walker.generate_source();
+    subjects["ITERSPACE"]       = unpack_iterspace();
+    subjects["WALKER"]          = walker.generate_source(offload);
 
     return plaid_.fill("kernel", subjects);
+}
+
+string Kernel::unpack_iterspace(void)
+{
+    stringstream ss;
+    ss << _declare_init(
+        "LAYOUT",
+        iterspace().layout(),
+        _access_ptr(iterspace().name(), "layout")
+    )
+    << _end();
+    ss << _declare_init(
+        _const(_int64()),
+        iterspace().ndim(),
+        _access_ptr(iterspace().name(), "ndim")
+    )
+    << _end();
+    ss << _declare_init(
+        _ptr(_int64()),
+        iterspace().shape(),
+        _access_ptr(iterspace().name(), "shape")
+    )
+    << _end();
+    ss << _declare_init(
+        _const(_int64()),
+        iterspace().nelem(),
+        _access_ptr(iterspace().name(), "nelem")
+    )
+    << _end();
+
+    return ss.str();
+}
+
+string Kernel::unpack_buffers(void)
+{
+    stringstream ss;
+    for(size_t bid=0; bid<block_.nbuffers(); ++bid) {
+        Buffer buffer(&block_.buffer(bid), bid);
+        ss << endl;
+        ss << "// Buffer " << buffer.name() << endl;
+        ss << _declare_init(
+            _ptr(buffer.etype()),
+            buffer.data(),
+            _access_ptr(
+                _index("buffers", bid),
+                "data"
+            )
+        ) << _end();
+        ss << _declare_init(
+            _int64(),
+            buffer.nelem(),
+            _access_ptr(
+                _index("buffers", bid),
+                "nelem"
+            )
+        ) << _end();
+        ss << _assert_not_null(buffer.data()) << _end();
+    }
+    return ss.str();
 }
 
 string Kernel::unpack_arguments(void)
@@ -156,32 +246,31 @@ string Kernel::unpack_arguments(void)
                 << _end();
                 ss
                 << _declare_init(
-                    _ptr_const(operand.etype()),
-                    operand.first(),
-                    _add(
-                        _cast(
-                            _ptr(operand.etype()),
-                            _deref(_access_ptr(_index(args(), id), "data"))
-                        ),
-                        _access_ptr(_index(args(), id), "start")
-                    )
+                    _const(_int64()),
+                    operand.start(),
+                    _access_ptr(_index(args(), id), "start")
                 )
-                << _end() 
-                << _assert_not_null(operand.first())
+                << _end();
+                ss
+                << _declare_init(
+                    _const(_int64()),
+                    operand.nelem(),
+                    _access_ptr(_index(args(), id), "nelem")
+                )
                 << _end();
                 break;
 
-            case SCALAR_CONST:  // "first" = operand_t->data
-                ss << _declare_init(
-                    _ptr_const(operand.etype()),
-                    operand.first(),
-                    _cast(
+            case SCALAR_CONST:
+                ss
+                << _declare_init(
+                    _const(operand.etype()),
+                    operand.walker(),
+                    _deref(_cast(
                         _ptr(operand.etype()),
-                        _deref(_access_ptr(_index(args(), id), "data"))
-                    )
+                        _access_ptr(_index(args(), id), "const_data")
+                    ))
                 )
-                << _end() 
-                << _assert_not_null(operand.first()) << _end();
+                << _end();
                 break;
 
             case SCALAR_TEMP:

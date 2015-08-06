@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <iostream>
+#include <errno.h>
 #include <sstream>
 #include <string>
 #include <boost/algorithm/string.hpp>
@@ -272,6 +273,18 @@ static bh_error component_children_init(bh_component *self, char* stack)
     }
 
     char *child_name = strtok(children_str, ",");
+
+    bh_component_iface *child = &self->children[self->nchildren];   // Grab child
+    strncpy(child->name, child_name, BH_COMPONENT_NAME_SIZE);       // Store name
+    component_dl_iface(self->config, child);                        // Load interface
+
+    ++(self->nchildren);                                            // Increment count
+
+    /*
+    //
+    // The strtok code cracks up with icc... since we do not actually use multiple
+    // children currently then this is commented out until strtok is debugged.
+    //
     while(child_name != NULL) {
         bh_component_iface *child = &self->children[self->nchildren];   // Grab child
         strncpy(child->name, child_name, BH_COMPONENT_NAME_SIZE);       // Store name
@@ -286,7 +299,7 @@ static bh_error component_children_init(bh_component *self, char* stack)
         }
 
         child_name = strtok(NULL, ",");                                 // Go to next child
-    }
+    }*/
     return BH_SUCCESS;
 }
 

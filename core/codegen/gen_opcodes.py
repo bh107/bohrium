@@ -194,13 +194,14 @@ __ACCUM_OP__
             return false;
     }
 }
-    """.replace('__TIMESTAMP__', stamp)\
-       .replace('__NOPS__', '\n'.join(nops))\
-       .replace('__TEXT__', '\n'.join(text))\
-       .replace('__SYS_OP__', '\n'.join(sys_op))\
-       .replace('__ELEM_OP__', '\n'.join(elem_op))\
-       .replace('__REDUCE_OP__', '\n'.join(reduce_op))\
-       .replace('__ACCUM_OP__', '\n'.join(accum_op))
+
+""".replace('__TIMESTAMP__', stamp)\
+   .replace('__NOPS__', '\n'.join(nops))\
+   .replace('__TEXT__', '\n'.join(text))\
+   .replace('__SYS_OP__', '\n'.join(sys_op))\
+   .replace('__ELEM_OP__', '\n'.join(elem_op))\
+   .replace('__REDUCE_OP__', '\n'.join(reduce_op))\
+   .replace('__ACCUM_OP__', '\n'.join(accum_op))
 
 def get_timestamp(f):
     st = os.stat(f)

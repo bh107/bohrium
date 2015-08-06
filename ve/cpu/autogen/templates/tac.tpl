@@ -19,15 +19,15 @@ typedef struct { uint64_t first, second; } pair_LL;
 #define __BH_BASE
 typedef struct
 {
-    /// The type of data in the array
-    uint64_t       type;
-
-    /// The number of elements in the array
-    uint64_t      nelem;
-
     /// Pointer to the actual data.
     void*   data;
-}bh_base;
+
+    /// The type of data in the array
+    int64_t       type;
+
+    /// The number of elements in the array
+    int64_t      nelem;
+} bh_base;
 #endif
 
 typedef enum OPERATION {
@@ -65,7 +65,6 @@ typedef struct tac {
 
 typedef struct operand {
     LAYOUT  layout;     // The layout of the data
-    void**  data;       // Pointer to pointer that points memory allocated for the array
     void*   const_data; // Pointer to constant
     ETYPE   etype;      // Type of the elements stored
     int64_t start;      // Offset from memory allocation to start of array
@@ -87,6 +86,7 @@ typedef struct iterspace {
 #define SCALAR_LAYOUT   ( SCALAR | SCALAR_CONST | SCALAR_TEMP )
 #define ARRAY_LAYOUT    ( CONTRACTABLE | CONTIGUOUS | CONSECUTIVE | STRIDED | SPARSE )
 #define COLLAPSIBLE     ( SCALAR | SCALAR_CONST | CONTRACTABLE | CONTIGUOUS | CONSECUTIVE )
+#define DYNALLOC_LAYOUT ( SCALAR | CONTIGUOUS | CONSECUTIVE | STRIDED | SPARSE )
 
 #define EWISE           ( MAP | ZIP | GENERATE )
 #define REDUCTION       ( REDUCE_COMPLETE | REDUCE_PARTIAL )

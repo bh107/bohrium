@@ -201,15 +201,37 @@ std::string _omp_atomic(std::string expr);
 
 std::string _beef(std::string info);
 
+class Buffer
+{
+public:
+    Buffer(void);
+    Buffer(bh_base* buffer, size_t buffer_id);
+
+    std::string name(void);
+
+    std::string data(void);
+    std::string nelem(void);
+    std::string etype(void);
+
+    bh_base& meta(void);
+    size_t id(void);
+
+private:
+    bh_base* buffer_;
+    size_t id_;
+};
+
 class Operand
 {
 public:
     Operand(void);
-    Operand(operand_t* operand, uint32_t local_id);
+    Operand(operand_t* operand, uint32_t local_id, Buffer* buffer);
 
     std::string name(void);
 
-    std::string first(void);
+    std::string data(void);
+    std::string nelem(void);
+    std::string start(void);
     std::string layout(void);
     std::string etype(void);
     std::string ndim(void);
@@ -225,15 +247,26 @@ public:
     std::string walker_val(void);
 
     operand_t& meta(void);
+
+    std::string buffer_name(void);
+    std::string buffer_data(void);
+    std::string buffer_nelem(void);
+    std::string buffer_etype(void);
+    bh_base* buffer_meta(void);
+
     uint64_t local_id(void);
 
 private:
-    operand_t* operand_;
     uint64_t local_id_;
+    operand_t* operand_;
+    Buffer* buffer_;
 };
 
-typedef std::map<uint64_t, Operand> kernel_operands;
+typedef std::map<uint64_t, Operand> kernel_operands;    // Operand
 typedef kernel_operands::iterator kernel_operand_iter;
+
+typedef std::map<size_t, Buffer> kernel_buffers;
+typedef kernel_buffers::iterator kernel_buffer_iter;    // Buffer
 
 typedef std::vector<tac_t*> kernel_tacs;
 typedef kernel_tacs::iterator kernel_tac_iter;
@@ -244,9 +277,12 @@ public:
     Iterspace(iterspace_t& iterspace);
 
     std::string name(void);
+    std::string layout(void);
     std::string ndim(void);
+    std::string shape(void);
     std::string shape(uint32_t dim);
-
+    std::string nelem(void);
+    
     iterspace_t& meta(void);
 private:
     iterspace_t& iterspace_;
@@ -257,7 +293,7 @@ class Kernel
 public:
     Kernel(Plaid& plaid, bohrium::core::Block& block);
     
-    std::string generate_source(void);
+    std::string generate_source(bool offload);
 
     uint64_t noperands(void);
     Operand& operand_glb(uint64_t gidx);
@@ -265,6 +301,11 @@ public:
 
     kernel_operand_iter operands_begin(void);
     kernel_operand_iter operands_end(void);
+
+    kernel_buffer_iter buffers_begin(void);
+    kernel_buffer_iter buffers_end(void);
+
+    Iterspace& iterspace(void);
 
     uint64_t base_refcount(uint64_t gidx);
 
@@ -276,22 +317,24 @@ public:
     kernel_tac_iter tacs_begin(void);
     kernel_tac_iter tacs_end(void);
 
-    Iterspace& iterspace(void);
-
 private:
-        
+    std::string unpack_buffers(void);
     std::string unpack_arguments(void);
+    std::string unpack_iterspace(void);
     
+    std::string buffers(void);
     std::string args(void);
 
     void add_operand(uint64_t global_idx);
 
     Plaid& plaid_;
     bohrium::core::Block& block_;
+
+    kernel_buffers buffers_;
     kernel_operands operands_;
-    kernel_tacs tacs_;
     Iterspace iterspace_;
-    
+
+    kernel_tacs tacs_;
 };
 
 class Walker
@@ -299,12 +342,14 @@ class Walker
 public:
     Walker(Plaid& plaid, Kernel& kernel);
 
-    std::string generate_source(void);
+    std::string generate_source(bool offload);
     std::string oper_neutral_element(OPERATOR oper, ETYPE etype);
     
 private:
     std::string declare_operands(void);
     std::string declare_operand(uint32_t oidx);
+
+    std::string offload_leo(void);
 
     // Construct the operator source for the tac.oper
     std::string oper(OPERATOR oper, ETYPE etype, std::string in1, std::string in2);

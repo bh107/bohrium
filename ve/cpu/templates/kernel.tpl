@@ -55,12 +55,24 @@ KERNEL-DESCRIPTION {
   SYMBOL_TEXT   = {{SYMBOL_TEXT}}
 }
 */
-void KRN_{{SYMBOL}}(operand_t** args, const iterspace_t* const iterspace)
+void KRN_{{SYMBOL}}(bh_base** buffers, operand_t** args, const iterspace_t* const iterspace, const int offload_devid)
 {
     //
-    // Argument unpacking
+    // Buffer unpacking
+    {{BUFFERS}}
+
     //
+    // Argument unpacking
     {{ARGUMENTS}}
+
+    //
+    // Iterspace unpacking
+    {{ITERSPACE}}
+
+    //
+    // Offloading
+    const int offload = offload_devid >= 0;
+
     //
     // Operation(s)
     //

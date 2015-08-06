@@ -7,6 +7,7 @@
 #include "block.hpp"
 #include "symbol_table.hpp"
 #include "thread_control.hpp"
+#include "accelerator.hpp"
 #include "store.hpp"
 #include "compiler.hpp"
 #include "plaid.hpp"
@@ -31,6 +32,7 @@ public:
         const bool jit_dumpsrc,
         const bool jit_fusion,
         const bool jit_contraction,
+        const bool jit_offload,
         const std::string compiler_cmd,
         const std::string compiler_inc,
         const std::string compiler_lib,
@@ -66,14 +68,18 @@ private:
 
     bool preload_,
          jit_enabled_,
+         jit_dumpsrc_,
          jit_fusion_,
          jit_contraction_,
-         jit_dumpsrc_;
+         jit_offload_;
+
+    int jit_offload_devid_;
     
     Store           storage_;
     codegen::Plaid  plaid_;
     Compiler        compiler_;
     ThreadControl   thread_control_;
+    std::vector<Accelerator*>   accelerators_;
 
     std::map<bh_opcode, bh_extmethod_impl> extensions_;
 

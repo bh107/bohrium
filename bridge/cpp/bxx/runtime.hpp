@@ -33,20 +33,21 @@ inline Runtime& Runtime::instance()
 
 inline Runtime::Runtime() : global_random_seed_(0), global_random_state_(0), extension_count(BH_MAX_OPCODE_ID+1), queue_size(0)
 {
-    bh_error err;
     char err_msg[1000];
 
-    if((err = bh_component_init(&bridge, NULL)) != BH_SUCCESS)
+    bh_error err = bh_component_init(&bridge, NULL);
+    if (BH_SUCCESS != err) {
         exit(-1);
-    if(bridge.nchildren != 1)
-    {
+    }
+    if (bridge.nchildren != 1) {
         sprintf(err_msg, "Error in the runtime configuration: the bridge must "
                          "have exactly one child of type VEM or FILTER.\n");
         throw std::runtime_error(err_msg);
     }
     runtime = &bridge.children[0];
-    if((err = runtime->init(runtime->name)) != BH_SUCCESS)
-    {
+
+    err = runtime->init(runtime->name);
+    if (BH_SUCCESS != err) {
         sprintf(err_msg, "Error in the initialization of the VEM.\n");
         throw std::runtime_error(err_msg);
     }

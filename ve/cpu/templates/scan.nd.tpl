@@ -1,22 +1,18 @@
 // Scan operation of a strided n-dimensional array where n>1
-// TODO: openmp
-//       dimension-based optimizations
-//       loop collapsing...
+{{OFFLOAD}}
 {
-    const int64_t nelements = iterspace->nelem;
-    {{ATYPE}} axis = *{{OPD_IN2}}_first;
+    const int64_t nelements = iterspace_nelem;
+    {{ATYPE}} axis = {{OPD_IN2}};
 
     const int64_t last_e      = nelements-1;
-    const int64_t shape_axis  = iterspace->shape[axis];
-    const int64_t ndim        = iterspace->ndim;
+    const int64_t shape_axis  = iterspace_shape[axis];
+    const int64_t ndim        = iterspace_ndim;
 
     int64_t coord[CPU_MAXDIM];
     memset(coord, 0, CPU_MAXDIM * sizeof(int64_t));
 
-    int64_t* const {{OPD_IN1}}_stride = args[2]->stride;
-    int64_t* const {{OPD_OUT}}_stride = args[1]->stride;
-    int64_t {{OPD_IN1}}_stride_axis = {{OPD_OUT}}_stride[axis];
-    int64_t {{OPD_OUT}}_stride_axis = {{OPD_OUT}}_stride[axis];
+    int64_t {{OPD_IN1}}_stride_axis = {{OPD_OUT}}_strides[axis];
+    int64_t {{OPD_OUT}}_stride_axis = {{OPD_OUT}}_strides[axis];
 
     //
     //  Walk over the output
@@ -27,12 +23,12 @@
         //
         // Compute offset based on coordinate
         //
-        {{ETYPE}}* {{OPD_OUT}} = {{OPD_OUT}}_first;
-        {{ETYPE}}* {{OPD_IN1}} = {{OPD_IN1}}_first;
+        {{ETYPE}}* {{OPD_OUT}} = {{BUF_OUT}}_data + {{OPD_OUT}}_start;
+        {{ETYPE}}* {{OPD_IN1}} = {{BUF_IN1}}_data + {{OPD_IN1}}_start;
 
         for (int64_t j=0; j<ndim; ++j) {           
-            {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_stride[j];
-            {{OPD_IN1}} += coord[j] * {{OPD_IN1}}_stride[j];
+            {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_strides[j];
+            {{OPD_IN1}} += coord[j] * {{OPD_IN1}}_strides[j];
         }
 
         //
@@ -53,7 +49,7 @@
                 continue;       // It is calculated within the loop above
             }
             coord[j]++;         // Still within this dimension
-            if (coord[j] < iterspace->shape[j]) {       
+            if (coord[j] < iterspace_shape[j]) {       
                 break;
             } else {            // Reached the end of this dimension
                 coord[j] = 0;   // Reset coordinate

@@ -135,7 +135,7 @@ void bh_sprint_const(const bh_constant* constant, char buf[] ) {
 void bh_sprint_base(const bh_base *base, char buf[])
 {
     sprintf(buf, "[ Addr: %p Type: %s #elem: %ld Data: %p ]",
-            base, bh_type_text(base->type), (long) base->nelem, base->data
+        (void*)base, bh_type_text(base->type), (long)base->nelem, base->data
     );
 }
 
@@ -151,7 +151,7 @@ void bh_sprint_view(const bh_view *op, char buf[])
             tmp[PPRINT_BUF_OPSTR_SIZE]      = "?";
 
     if (op == NULL) {
-        sprintf(buf, "%p", op);
+        sprintf(buf, "%p", (void*)op);
     } else {
 
         if (op->ndim > 0) {                 // Text of shape and stride

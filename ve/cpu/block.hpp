@@ -25,22 +25,19 @@ public:
     void clear(void);
 
     /**
-     *  Compose the block based based on a subset of program instructions.
+     *  Compose the block based on a single program instruction.
      *
-     *  @param prg_begin Start of the subset.
-     *  @param prg_end End of the subset, to and including prg_end.
+     *  This method is intended for SIJ-mode only.
      */
-    void compose(size_t prg_begin, size_t prg_end);
+    void compose(bh_ir_kernel& krnl, size_t prg_idx);
 
     /**
-     *  Compose the block based based on a subset of program instructions.
+     *  Compose the block base on every program instruction
+     *  in the given kernel.
      *
-     *  TODO: Document
-     *
-     *  @param prg_begin Start of the subset.
-     *  @param prg_end End of the subset, to and including prg_end.
+     *  @param krnl Bhir kernel
      */
-    void compose(bh_ir_kernel& krnl);
+    void compose(bh_ir_kernel& krnl, bool array_contraction);
 
     /**
      *  Return the block-local operand-index corresponding 
@@ -59,17 +56,6 @@ public:
      *  @return The global operand-index
      */
     size_t local_to_global(size_t local_idx) const;
-
-    /**
-     *  Create an operand with block scope based on the operand in global scope.
-     *
-     *  Reuses operands of equivalent meta-data.
-     *
-     *  @param global_idx Global index of the operand to add to block scope.
-     *
-     *  @returns The block-scoped index.
-     */
-    size_t localize(size_t global_idx);
 
     /**
      *  Create a symbol for the block.
@@ -105,12 +91,35 @@ public:
      */
     operand_t** operands(void);
 
-    size_t base_refcount(bh_base* base);
-
     /**
      * Count of operands in the block.
      */
     size_t noperands(void) const;
+
+    /**
+     *  Grab buffer with the given id.
+     */
+    bh_base& buffer(size_t buffer_id);
+
+    /**
+     *  Returns the buffer id for the provided buffer pointer.
+     */
+    size_t resolve_buffer(bh_base* buffer);
+
+    /**
+     *  Return the array of buffers
+     */
+    bh_base** buffers(void);
+
+    /**
+     *  Count of buffers in the block.
+     */
+    size_t nbuffers(void);
+
+    /**
+     *  How many operands use this buffer.
+     */
+    size_t base_refcount(bh_base* base);
 
     /**
      * Return the tac-instance with the given index.
@@ -131,28 +140,13 @@ public:
     std::string symbol(void) const;
     std::string symbol_text(void) const;
 
-
     /**
      *  Returns the iteration space of the block.
      */
     iterspace_t& iterspace(void);
 
-    /**
-     *  Update the iteration space of the block.
-     *
-     *  This means determing the "dominating" LAYOUT, ndim, shape,
-     *  and number of elements of an operation within the block.
-     *
-     *  That is choosing the "worst" LAYOUT, highest ndim, and then
-     *  choosing the shape of the operand with chose characteristics.
-     *
-     *  Since this is what will be the upper-bounds used in when
-     *  generating / specializing code, primarily for fusion / contraction.
-     *
-     *  NOTE: This should be done after applying array contraction or 
-     *  any other changes to tacs and operands.
-     */
-    void update_iterspace(void);
+    size_t footprint_nelem(void);
+    size_t footprint_bytes(void);
 
     /**
      * Returns a textual representation of the block in dot-format.
@@ -171,34 +165,84 @@ public:
 
     uint32_t omask(void);    
 
-
 private:
 
     Block();
 
-    SymbolTable& globals_;          // A reference to the global symbol table
-    std::vector<tac_t>& program_;   // A reference to the entire bytecode program
+    /**
+     *  This is a helper for the two public compose methods.
+     *
+     *  Performing what both composition methods needs.
+     *
+     */
+    void _compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx);
 
-    iterspace_t iterspace_;           // The iteration-space of the block
+    /**
+     *  Create an operand with block scope based on the operand in global scope.
+     *
+     *  Reuses operands of equivalent meta-data.
+     *
+     *  @param global_idx Global index of the operand to add to block scope.
+     *
+     *  @returns The block-scoped index.
+     */
+    size_t _localize_scope(size_t global_idx);
 
-    std::vector<tac_t*> tacs_;      // A subset of the tac-program reprensting the block.
-    std::vector<tac_t*> array_tacs_;// A subset of the tac-program containing only array ops.
+    /**
+     *  Determine use of buffer usage within block.
+     *
+     */
+    void _bufferize(size_t local_idx);
 
-    //SymbolTable locals_;             // A symbol table with block-scope
-    operand_t** operands_;
+    /**
+     *  Update the iteration space of the block.
+     *
+     *  This means determing the "dominating" LAYOUT, ndim, shape,
+     *  and number of elements of an operation within the block.
+     *
+     *  That is choosing the "worst" LAYOUT, highest ndim, and then
+     *  choosing the shape of the operand with chose characteristics.
+     *
+     *  Since this is what will be the upper-bounds used in when
+     *  generating / specializing code, primarily for fusion / contraction.
+     *
+     *  NOTE: This should be done after applying array contraction or 
+     *  any other changes to tacs and operands.
+     */
+    void _update_iterspace(void);
+    
+    uint32_t omask_;                            // Operation mask
+
+    bh_base** buffers_;                         // Buffer references
+    size_t nbuffers_;
+
+    std::map<bh_base*, size_t> buffer_ids_;
+    std::set<bh_base*> input_buffers_;
+    std::set<bh_base*> output_buffers_;
+    std::map<bh_base*, std::set<uint64_t>> buffer_refs_;
+
+    operand_t** operands_;                      // Operand references
     size_t noperands_;
+
+    SymbolTable& globals_;                      // A reference to the global symbol table
+
     std::map<size_t, size_t> global_to_local_;  // Mapping from global to block-local scope.
     std::map<size_t, size_t> local_to_global_;  // Mapping from global to block-local scope.
 
-    std::string symbol_text_;       // Textual representation of the block
-    std::string symbol_;            // Hash of textual representation
+    iterspace_t iterspace_;                     // The iteration-space of the block
 
-    uint32_t omask_;
+    std::vector<tac_t>& program_;               // A reference to the entire bytecode program
 
+    std::vector<tac_t*> tacs_;                  // A subset of the tac-program representing the block.
+    std::vector<tac_t*> array_tacs_;            // A subset of the tac-program containing only array ops.
+
+    std::string symbol_text_;                   // Textual representation of the block
+    std::string symbol_;                        // Hash of textual representation
+
+    size_t footprint_nelem_;
+    size_t footprint_bytes_;
+       
     static const char TAG[];
-
-    std::map<bh_base*, std::set<uint64_t>> base_refs_;
-
 };
 
 }}

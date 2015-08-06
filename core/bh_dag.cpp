@@ -507,7 +507,7 @@ void pprint(const GraphDW &dag, const char filename[])
         kernel_writer(const GraphD &g, const map<Vertex, set<Vertex> > &v2f) : graph(g), v2f(v2f) {};
         void operator()(std::ostream& out, const Vertex& v) const
         {
-            char buf[1024*100];
+            char buf[1024*10];
             out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
             out << " bytes\\n";
             out << "Shape: ";

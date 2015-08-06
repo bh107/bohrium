@@ -26,6 +26,9 @@
 namespace bohrium {
 namespace core {
 
+template <typename T>
+std::string to_string(T val);
+
 //
 // Self-explanatory function returning the textual representation of 
 // TAC enums; useful for pretty-printing.
@@ -144,11 +147,6 @@ bool compatible(const operand_t& one, const operand_t& other);
  *
  */
 bool equivalent(const operand_t& one, const operand_t& other);
-
-/**
- *  Return a string formatted with "fmt_str"; supporting positional identifiers.
- */
-std::string string_format(const std::string fmt_str, ...);
 
 /**
  *  Write source-code to file.

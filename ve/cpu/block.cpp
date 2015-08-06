@@ -2,7 +2,6 @@
 #include <iomanip>
 
 using namespace std;
-using namespace boost;
 
 namespace bohrium{
 namespace core{
@@ -10,32 +9,29 @@ namespace core{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& globals, vector<tac_t>& program)
-: globals_(globals), program_(program), operands_(NULL), noperands_(0), symbol_text_(""), symbol_(""), omask_(0)
+: omask_(0), buffers_(NULL), nbuffers_(0), operands_(NULL), noperands_(0), globals_(globals), program_(program), symbol_text_(""), symbol_(""), footprint_nelem_(0), footprint_bytes_(0)
 {}
 
 Block::~Block()
 {
-    if (operands_) {
-        delete[] operands_;
-        operands_   = NULL;
-        noperands_  = 0;
-    }
+    clear();
 }
 
 void Block::clear(void)
-{                               // Reset the current state of the block
-    tacs_.clear();              // tacs
-    array_tacs_.clear();        // array_tacs
-    base_refs_.clear();
+{                                   // Reset the current state of the block
+    omask_ = 0;                     // Operation mask
 
-    omask_ = 0;
-
-    iterspace_.layout = SCALAR_TEMP; // iteraton space
-    iterspace_.ndim = 0;
-    iterspace_.shape = NULL;
-    iterspace_.nelem = 0;
+    if (buffers_) {                 // Buffers
+        delete[] buffers_;
+        buffers_ = NULL;
+        nbuffers_ = 0;
+    }
+    buffer_ids_.clear();
+    input_buffers_.clear();
+    output_buffers_.clear();
+    buffer_refs_.clear();
     
-    if (operands_) {            // operands
+    if (operands_) {                // Operands
         delete[] operands_;
         operands_   = NULL;
         noperands_  = 0;
@@ -43,75 +39,121 @@ void Block::clear(void)
     global_to_local_.clear();   // global to local operand mapping
     local_to_global_.clear();   // local to global operand mapping
 
+    iterspace_.layout = SCALAR_TEMP;// Iteraton space
+    iterspace_.ndim = 0;
+    iterspace_.shape = NULL;
+    iterspace_.nelem = 0;
+
+    tacs_.clear();                  // tacs
+    array_tacs_.clear();            // array_tacs
+
     symbol_text_    = "";       // textual symbol representation
     symbol_         = "";       // hashed symbol representation
+
+    footprint_nelem_ = 0;
+    footprint_bytes_ = 0;
 }
 
-void Block::compose(bh_ir_kernel& krnl)
+void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 {
-    // An array pointers to operands
-    // Will be handed to the kernel-function.
+    tac_t& tac = program_[prg_idx];
+
+    tacs_.push_back(&tac);              // <-- All tacs
+    omask_ |= tac.op;                   // Update omask
+
+    if ((tac.op & (ARRAY_OPS))>0) { 
+        array_tacs_.push_back(&tac);    // <-- Only array operations
+    }
+
+    switch(tac_noperands(tac)) {
+        case 3:
+            _localize_scope(tac.in2);                   // Localize scope,      in2
+            if ((tac.op & (ARRAY_OPS))>0) {
+                if (array_contraction && (krnl.get_temps().find(globals_[tac.in2].base)!=krnl.get_temps().end())) {
+                    globals_.turn_contractable(tac.in2);    // Mark contractable,   in2
+                }
+                _bufferize(tac.in2);                        // Note down buffer id, in2
+            }
+        case 2:
+            _localize_scope(tac.in1);                   // Localize scope,      in1
+            if ((tac.op & (ARRAY_OPS))>0) {
+                if (array_contraction && (krnl.get_temps().find(globals_[tac.in1].base)!=krnl.get_temps().end())) {
+                    globals_.turn_contractable(tac.in1);    // Mark contractable,   in1
+                }
+                _bufferize(tac.in1);                        // Note down buffer id, in1
+            }
+        case 1:
+            _localize_scope(tac.out);                   // Localize scope,      out
+            if ((tac.op & (ARRAY_OPS))>0) {
+                if (array_contraction && (krnl.get_temps().find(globals_[tac.out].base)!=krnl.get_temps().end())) {
+                    globals_.turn_contractable(tac.out);    // Mark contractable,   out
+                }
+                _bufferize(tac.out);                        // Note down buffer id, out
+            }
+        default:
+            break;
+    }
+}
+
+void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
+{
+    buffers_ = new bh_base*[krnl.instr_indexes.size()*3];
     operands_ = new operand_t*[krnl.instr_indexes.size()*3];
 
     for(std::vector<uint64_t>::iterator idx_it = krnl.instr_indexes.begin();
         idx_it != krnl.instr_indexes.end();
         ++idx_it) {
 
-        tac_t& tac = program_[*idx_it];
+        _compose(krnl, array_contraction, *idx_it);
+    }
 
-        tacs_.push_back(&tac);              // <-- All tacs
-        omask_ |= tac.op;                   // Update omask
-
-        if ((tac.op & (ARRAY_OPS))>0) { 
-            array_tacs_.push_back(&tac);    // <-- Only array operations
-        }
-
-        // Map operands to local-scope
-        switch(tac_noperands(tac)) {
-            case 3:
-                localize(tac.in2);
-            case 2:
-                localize(tac.in1);
-            case 1:
-                localize(tac.out);
-            default:
-                break;
+    if (array_contraction) {    // Turn kernel-temps into scalars aka array-contraction
+        for (bh_base* base: krnl.get_temps()) {
+            for(size_t operand_idx = 0;
+                operand_idx < noperands();
+                ++operand_idx) {
+                if (operand(operand_idx).base == base) {
+                    globals_.turn_contractable(local_to_global(operand_idx));
+                }
+            }
         }
     }
+
+    _update_iterspace();        // Update the iteration space
+    // TODO: Classify buffers
 }
 
-
-void Block::compose(size_t prg_begin, size_t prg_end)
+void Block::compose(bh_ir_kernel& krnl, size_t prg_idx)
 {
-    // An array pointers to operands
-    // Will be handed to the kernel-function.
-    operands_ = new operand_t*[(prg_end-prg_begin+1)*3];
-
-    for(size_t prg_idx=prg_begin; prg_idx<=prg_end; ++prg_idx) {
-        tac_t& tac = program_[prg_idx];
-
-        tacs_.push_back(&tac);              // <-- All tacs
-        omask_ |= tac.op;                   // Update omask
-
-        if ((tac.op & (ARRAY_OPS))>0) { 
-            array_tacs_.push_back(&tac);    // <-- Only array operations
-        }
-
-        // Map operands to local-scope
-        switch(tac_noperands(tac)) {
-            case 3:
-                localize(tac.in2);
-            case 2:
-                localize(tac.in1);
-            case 1:
-                localize(tac.out);
-            default:
-                break;
-        }
-    }
+    buffers_ = new bh_base*[3];
+    operands_ = new operand_t*[3];
+    
+    _compose(krnl, false, prg_idx);
+    _update_iterspace();                        // Update the iteration space
+    // TODO: Classify buffers
 }
 
-size_t Block::localize(size_t global_idx)
+void Block::_bufferize(size_t global_idx)
+{
+    // Maintain references to buffers within the block.
+    if ((globals_[global_idx].layout & (DYNALLOC_LAYOUT))>0) {
+        bh_base* buffer = globals_[global_idx].base;
+
+        std::map<bh_base*, size_t>::iterator buf = buffer_ids_.find(buffer);
+        if (buf == buffer_ids_.end()) {
+            size_t buffer_id = nbuffers_++;
+            buffer_ids_.insert(pair<bh_base*, size_t>(
+                buffer,
+                buffer_id
+            ));
+            buffers_[buffer_id] = buffer;
+        }
+
+        buffer_refs_[buffer].insert(global_idx);
+    }
+} 
+
+size_t Block::_localize_scope(size_t global_idx)
 {
     //
     // Reuse operand identifiers: Detect if we have seen it before and reuse the index.
@@ -139,9 +181,6 @@ size_t Block::localize(size_t global_idx)
     global_to_local_.insert(pair<size_t,size_t>(global_idx, local_idx));
     local_to_global_.insert(pair<size_t,size_t>(local_idx, global_idx));
 
-    // Maintain references to bases within the block.
-    base_refs_[operands_[local_idx]->base].insert(global_idx);
-
     return local_idx;
 }
 
@@ -157,7 +196,7 @@ bool Block::symbolize(void)
         operands_ss << core::etype_text_shand(operands_[i]->etype);
 
         // Let the "Restrictable" flag be part of the symbol.
-        if (base_refs_[operands_[i]->base].size()==1) {
+        if (buffer_refs_[operands_[i]->base].size()==1) {
             operands_ss << "R";
         } else {
             operands_ss << "A";
@@ -238,9 +277,33 @@ bool Block::symbolize(void)
     return true;
 }
 
+bh_base& Block::buffer(size_t buffer_id)
+{
+    return *buffers_[buffer_id];
+}
+
+size_t Block::resolve_buffer(bh_base* buffer)
+{
+    std::map<bh_base*, size_t>::iterator buf = buffer_ids_.find(buffer);
+    if (buf == buffer_ids_.end()) {
+        // TODO: Raise exception
+    }
+    return buf->second;
+}
+
+bh_base** Block::buffers(void)
+{
+    return buffers_;
+}
+
+size_t Block::nbuffers(void)
+{
+    return nbuffers_;
+}
+
 size_t Block::base_refcount(bh_base* base)
 {
-    return base_refs_[base].size();
+    return buffer_refs_[base].size();
 }
 
 operand_t& Block::operand(size_t local_idx)
@@ -308,11 +371,10 @@ iterspace_t& Block::iterspace(void)
     return iterspace_;
 }
 
-void Block::update_iterspace(void)
-{   
-    // NOTE: This stuff is only valid for SIJ, and FUSION, streaming
-    //       will require another way to determine the iteration space.
-    
+void Block::_update_iterspace(void)
+{       
+    std::set<const bh_base*> footprint;
+
     //
     // Determine layout, ndim and shape
     for(size_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
@@ -321,7 +383,7 @@ void Block::update_iterspace(void)
             continue;
         }
         if ((tac.op & (REDUCE_COMPLETE|REDUCE_PARTIAL))>0) {     // Reductions are weird
-            if (globals_[tac.in1].layout >= iterspace_.layout) {
+            if (globals_[tac.in1].layout >= iterspace_.layout) {    // Iterspace
                 iterspace_.layout = globals_[tac.in1].layout;
                 iterspace_.ndim  = globals_[tac.in1].ndim;
                 iterspace_.shape = globals_[tac.in1].shape;
@@ -329,36 +391,68 @@ void Block::update_iterspace(void)
             if (globals_[tac.out].layout > iterspace_.layout) {
                 iterspace_.layout = globals_[tac.out].layout;
             }
+            if ((globals_[tac.out].layout & (DYNALLOC_LAYOUT))>0) {   // Footprint
+                footprint.insert(globals_[tac.out].base);
+                output_buffers_.insert(globals_[tac.in1].base);
+            }
+            if ((globals_[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
+                footprint.insert(globals_[tac.in1].base);
+                input_buffers_.insert(globals_[tac.in1].base);
+            }
         } else {
             switch(tac_noperands(tac)) {
                 case 3:
-                    if (globals_[tac.in2].layout > iterspace_.layout) {
+                    if (globals_[tac.in2].layout > iterspace_.layout) {     // Iterspace
                         iterspace_.layout = globals_[tac.in2].layout;
                         if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.in2].ndim;
                             iterspace_.shape = globals_[tac.in2].shape;
                         }
                     }
+                    if ((globals_[tac.in2].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
+                        footprint.insert(globals_[tac.in2].base);
+                        input_buffers_.insert(globals_[tac.in2].base);
+                    }
+
                 case 2:
-                    if (globals_[tac.in1].layout > iterspace_.layout) {
+                    if (globals_[tac.in1].layout > iterspace_.layout) {     // Iterspace
                         iterspace_.layout = globals_[tac.in1].layout;
                         if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.in1].ndim;
                             iterspace_.shape = globals_[tac.in1].shape;
                         }
                     }
+                    if ((globals_[tac.in1].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
+                        footprint.insert(globals_[tac.in1].base);
+                        input_buffers_.insert(globals_[tac.in1].base);
+                    }
+
                 case 1:
-                    if (globals_[tac.out].layout > iterspace_.layout) {
+                    if (globals_[tac.out].layout > iterspace_.layout) {     // Iterspace
                         iterspace_.layout = globals_[tac.out].layout;
                         if (iterspace_.layout > SCALAR_TEMP) {
                             iterspace_.ndim  = globals_[tac.out].ndim;
                             iterspace_.shape = globals_[tac.out].shape;
                         }
                     }
+                    if ((globals_[tac.out].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
+                        footprint.insert(globals_[tac.out].base);
+                        output_buffers_.insert(globals_[tac.in1].base);
+                    }
+
                 default:
                     break;
             }
         }
+    }
+
+    footprint_nelem_ = 0;                       // Compute the footprint
+    footprint_bytes_ = 0;
+    for (std::set<const bh_base*>::iterator it=footprint.begin();
+         it!=footprint.end();
+         ++it) {
+        footprint_nelem_ += (*it)->nelem;
+        footprint_bytes_ += bh_base_size(*it);
     }
 
     if (NULL != iterspace_.shape) {             // Determine number of elements
@@ -367,6 +461,16 @@ void Block::update_iterspace(void)
             iterspace_.nelem *= iterspace_.shape[k];
         }
     }
+}
+
+size_t Block::footprint_nelem(void)
+{
+    return footprint_nelem_;
+}
+
+size_t Block::footprint_bytes(void)
+{
+    return footprint_bytes_;
 }
 
 string Block::dot(void) const
@@ -420,8 +524,8 @@ std::string Block::text(void)
     ss << "}" << endl;
 
     ss << "BASE_REFS {" << endl;
-    for(std::map<bh_base*, std::set<uint64_t> >::iterator it=base_refs_.begin();
-        it!=base_refs_.end();
+    for(std::map<bh_base*, std::set<uint64_t> >::iterator it=buffer_refs_.begin();
+        it!=buffer_refs_.end();
         ++it) {
         std::set<uint64_t>& op_bases = it->second;
         ss << " " << it->first << " = ";

@@ -5,11 +5,12 @@
 //	Work is partitioned in the number of elements, regardless of dimension.
 //
 //
+{{OFFLOAD}}
 {
     const int mthreads = omp_get_max_threads();
-    const int64_t nworkers = iterspace->nelem > mthreads ? mthreads : 1;
-    const int64_t work_split= iterspace->nelem / nworkers;
-    const int64_t work_spill= iterspace->nelem % nworkers;
+    const int64_t nworkers = iterspace_nelem > mthreads ? mthreads : 1;
+    const int64_t work_split= iterspace_nelem / nworkers;
+    const int64_t work_spill= iterspace_nelem % nworkers;
 
     // Acculumator INNER_DIM - end
     {{WALKER_INNER_DIM}}
