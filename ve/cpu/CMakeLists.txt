@@ -10,6 +10,17 @@ project(BH_VE_CPU)
 include_directories(${BH_SOURCE_DIR}/include)           # Engine depends on BH headers
 link_directories(${BH_BINARY_DIR}/core)                 # Engine depends on BH_CORE (libbh / bh)
 
+add_custom_command(
+    OUTPUT tac.h instrs_to_tacs.cpp utils_mapping.cpp
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/autogen/gen.py
+    COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/utils_mapping.cpp ${CMAKE_CURRENT_SOURCE_DIR}/
+    COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/instrs_to_tacs.cpp ${CMAKE_CURRENT_SOURCE_DIR}/
+    COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/tac.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tac.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/autogen
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/tac.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/utils_mapping.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/instrs_to_tacs.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/layouts.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/operations.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/operators.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/types.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/gen.py
+    COMMENT "Autogenerating based on BhIR and TAC-representation")
+add_custom_target(tac DEPENDS tac.h instrs_to_tacs.cpp utils_mapping.cpp)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)# Engine depends on its own headers
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/codegen)# Engine depends on its own headers
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -39,6 +50,7 @@ set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp")
 add_library(bh_ve_cpu SHARED ${HDR} ${SRC})             # The main target for the Engine
+add_dependencies(bh_ve_cpu tac)
 
 target_link_libraries(bh_ve_cpu bh)                     # Link with BH_CORE
 
