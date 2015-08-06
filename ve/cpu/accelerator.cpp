@@ -79,21 +79,21 @@ void Accelerator::_alloc(kp_operand& kp_operand)
 void Accelerator::alloc(kp_operand& kp_operand)
 {
     switch(kp_operand.etype) {
-        case BOOL:      _alloc<unsigned char>(kp_operand); break;
-        case INT8:      _alloc<int8_t>(kp_operand); break;
-        case INT16:     _alloc<int16_t>(kp_operand); break;
-        case INT32:     _alloc<int32_t>(kp_operand); break;
-        case INT64:     _alloc<int64_t>(kp_operand); break;
-        case UINT8:     _alloc<uint8_t>(kp_operand); break;
-        case UINT16:    _alloc<uint16_t>(kp_operand); break;
-        case UINT32:    _alloc<uint32_t>(kp_operand); break;
-        case UINT64:    _alloc<uint64_t>(kp_operand); break;
-        case FLOAT32:   _alloc<float>(kp_operand); break;
-        case FLOAT64:   _alloc<double>(kp_operand); break;
+        case KP_BOOL:      _alloc<unsigned char>(kp_operand); break;
+        case KP_INT8:      _alloc<int8_t>(kp_operand); break;
+        case KP_INT16:     _alloc<int16_t>(kp_operand); break;
+        case KP_INT32:     _alloc<int32_t>(kp_operand); break;
+        case KP_INT64:     _alloc<int64_t>(kp_operand); break;
+        case KP_UINT8:     _alloc<uint8_t>(kp_operand); break;
+        case KP_UINT16:    _alloc<uint16_t>(kp_operand); break;
+        case KP_UINT32:    _alloc<uint32_t>(kp_operand); break;
+        case KP_UINT64:    _alloc<uint64_t>(kp_operand); break;
+        case KP_FLOAT32:   _alloc<float>(kp_operand); break;
+        case KP_FLOAT64:   _alloc<double>(kp_operand); break;
 
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
+        case KP_COMPLEX64:
+        case KP_COMPLEX128:
+        case KP_PAIRLL:
         default:
             throw runtime_error("Accelerator does not support this etype, yet...");
             break;
@@ -125,21 +125,21 @@ void Accelerator::_free(kp_operand& kp_operand)
 void Accelerator::free(kp_operand& kp_operand)
 {
     switch(kp_operand.etype) {
-        case BOOL:      _free<unsigned char>(kp_operand); break;
-        case INT8:      _free<int8_t>(kp_operand); break;
-        case INT16:     _free<int16_t>(kp_operand); break;
-        case INT32:     _free<int32_t>(kp_operand); break;
-        case INT64:     _free<int64_t>(kp_operand); break;
-        case UINT8:     _free<uint8_t>(kp_operand); break;
-        case UINT16:    _free<uint16_t>(kp_operand); break;
-        case UINT32:    _free<uint32_t>(kp_operand); break;
-        case UINT64:    _free<uint64_t>(kp_operand); break;
-        case FLOAT32:   _free<float>(kp_operand); break;
-        case FLOAT64:   _free<double>(kp_operand); break;
+        case KP_BOOL:      _free<unsigned char>(kp_operand); break;
+        case KP_INT8:      _free<int8_t>(kp_operand); break;
+        case KP_INT16:     _free<int16_t>(kp_operand); break;
+        case KP_INT32:     _free<int32_t>(kp_operand); break;
+        case KP_INT64:     _free<int64_t>(kp_operand); break;
+        case KP_UINT8:     _free<uint8_t>(kp_operand); break;
+        case KP_UINT16:    _free<uint16_t>(kp_operand); break;
+        case KP_UINT32:    _free<uint32_t>(kp_operand); break;
+        case KP_UINT64:    _free<uint64_t>(kp_operand); break;
+        case KP_FLOAT32:   _free<float>(kp_operand); break;
+        case KP_FLOAT64:   _free<double>(kp_operand); break;
 
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
+        case KP_COMPLEX64:
+        case KP_COMPLEX128:
+        case KP_PAIRLL:
         default:
             throw runtime_error("Accelerator does not support this etype, yet...");
             break;
@@ -169,21 +169,21 @@ void Accelerator::_push(kp_operand& kp_operand)
 void Accelerator::push(kp_operand& kp_operand)
 {
     switch(kp_operand.etype) {
-        case BOOL:      _push<unsigned char>(kp_operand); break;
-        case INT8:      _push<int8_t>(kp_operand); break;
-        case INT16:     _push<int16_t>(kp_operand); break;
-        case INT32:     _push<int32_t>(kp_operand); break;
-        case INT64:     _push<int64_t>(kp_operand); break;
-        case UINT8:     _push<uint8_t>(kp_operand); break;
-        case UINT16:    _push<uint16_t>(kp_operand); break;
-        case UINT32:    _push<uint32_t>(kp_operand); break;
-        case UINT64:    _push<uint64_t>(kp_operand); break;
-        case FLOAT32:   _push<float>(kp_operand); break;
-        case FLOAT64:   _push<double>(kp_operand); break;
+        case KP_BOOL:      _push<unsigned char>(kp_operand); break;
+        case KP_INT8:      _push<int8_t>(kp_operand); break;
+        case KP_INT16:     _push<int16_t>(kp_operand); break;
+        case KP_INT32:     _push<int32_t>(kp_operand); break;
+        case KP_INT64:     _push<int64_t>(kp_operand); break;
+        case KP_UINT8:     _push<uint8_t>(kp_operand); break;
+        case KP_UINT16:    _push<uint16_t>(kp_operand); break;
+        case KP_UINT32:    _push<uint32_t>(kp_operand); break;
+        case KP_UINT64:    _push<uint64_t>(kp_operand); break;
+        case KP_FLOAT32:   _push<float>(kp_operand); break;
+        case KP_FLOAT64:   _push<double>(kp_operand); break;
 
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
+        case KP_COMPLEX64:
+        case KP_COMPLEX128:
+        case KP_PAIRLL:
         default:
             throw runtime_error("Accelerator does not support this etype, yet...");
             break;
@@ -210,21 +210,21 @@ void Accelerator::_pull(kp_operand& kp_operand)
 void Accelerator::pull(kp_operand& kp_operand)
 {
     switch(kp_operand.etype) {
-        case BOOL:      _pull<unsigned char>(kp_operand); break;
-        case INT8:      _pull<int8_t>(kp_operand); break;
-        case INT16:     _pull<int16_t>(kp_operand); break;
-        case INT32:     _pull<int32_t>(kp_operand); break;
-        case INT64:     _pull<int64_t>(kp_operand); break;
-        case UINT8:     _pull<uint8_t>(kp_operand); break;
-        case UINT16:    _pull<uint16_t>(kp_operand); break;
-        case UINT32:    _pull<uint32_t>(kp_operand); break;
-        case UINT64:    _pull<uint64_t>(kp_operand); break;
-        case FLOAT32:   _pull<float>(kp_operand); break;
-        case FLOAT64:   _pull<double>(kp_operand); break;
+        case KP_BOOL:      _pull<unsigned char>(kp_operand); break;
+        case KP_INT8:      _pull<int8_t>(kp_operand); break;
+        case KP_INT16:     _pull<int16_t>(kp_operand); break;
+        case KP_INT32:     _pull<int32_t>(kp_operand); break;
+        case KP_INT64:     _pull<int64_t>(kp_operand); break;
+        case KP_UINT8:     _pull<uint8_t>(kp_operand); break;
+        case KP_UINT16:    _pull<uint16_t>(kp_operand); break;
+        case KP_UINT32:    _pull<uint32_t>(kp_operand); break;
+        case KP_UINT64:    _pull<uint64_t>(kp_operand); break;
+        case KP_FLOAT32:   _pull<float>(kp_operand); break;
+        case KP_FLOAT64:   _pull<double>(kp_operand); break;
 
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
+        case KP_COMPLEX64:
+        case KP_COMPLEX128:
+        case KP_PAIRLL:
         default:
             throw runtime_error("Accelerator does not support this etype, yet...");
             break;

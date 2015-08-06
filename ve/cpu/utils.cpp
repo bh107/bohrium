@@ -19,36 +19,36 @@ string to_string(T val)
 double get_const_value(const kp_operand & arg)
 {
     switch(arg.etype) {
-        case BOOL:
+        case KP_BOOL:
             return (double)(*(unsigned char*)(arg.const_data));
-        case INT8:
+        case KP_INT8:
             return (double)(*(int8_t*)(arg.const_data));
-        case INT16:
+        case KP_INT16:
             return (double)(*(int16_t*)(arg.const_data));
-        case INT32:
+        case KP_INT32:
             return (double)(*(int32_t*)(arg.const_data));
-        case INT64:
+        case KP_INT64:
             return (double)(*(int64_t*)(arg.const_data));
-        case UINT8:
+        case KP_UINT8:
             return (double)(*(uint8_t*)(arg.const_data));
-        case UINT16:
+        case KP_UINT16:
             return (double)(*(uint16_t*)(arg.const_data));
-        case UINT32:
+        case KP_UINT32:
             return (double)(*(uint32_t*)(arg.const_data));
-        case UINT64:
+        case KP_UINT64:
             return (double)(*(uint64_t*)(arg.const_data));
-        case FLOAT32:
+        case KP_FLOAT32:
             return (double)(*(float*)(arg.const_data));
-        case FLOAT64:
+        case KP_FLOAT64:
             return (double)(*(double*)(arg.const_data));
 
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
+        case KP_COMPLEX64:
+        case KP_COMPLEX128:
+        case KP_PAIRLL:
         default:
             throw invalid_argument(
                 "Cannot get scalar-value of kp_operand with "
-                "KP_ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+                "KP_ETYPE=[KP_COMPLEX64|KP_COMPLEX128|KP_PAIRLL]."
             );
     }
 }
@@ -56,47 +56,47 @@ double get_const_value(const kp_operand & arg)
 void set_const_value(const kp_operand & arg, double value)
 {
     switch(arg.etype) {
-        case BOOL:
+        case KP_BOOL:
             (*(unsigned char*)(arg.const_data)) = (unsigned char)value;
             break;
-        case INT8:
+        case KP_INT8:
             (*(int8_t*)(arg.const_data)) = (int8_t)value;
             break;
-        case INT16:
+        case KP_INT16:
             (*(int16_t*)(arg.const_data)) = (int16_t)value;
             break;
-        case INT32:
+        case KP_INT32:
             (*(int32_t*)(arg.const_data)) = (int32_t)value;
             break;
-        case INT64:
+        case KP_INT64:
             (*(int64_t*)(arg.const_data)) = (int64_t)value;
             break;
-        case UINT8:
+        case KP_UINT8:
             (*(uint8_t*)(arg.const_data)) = (uint8_t)value;
             break;
-        case UINT16:
+        case KP_UINT16:
             (*(uint16_t*)(arg.const_data)) = (uint16_t)value;
             break;
-        case UINT32:
+        case KP_UINT32:
             (*(uint32_t*)(arg.const_data)) = (uint32_t)value;
             break;
-        case UINT64:
+        case KP_UINT64:
             (*(uint64_t*)(arg.const_data)) = (uint64_t)value;
             break;
-        case FLOAT32:
+        case KP_FLOAT32:
             (*(float*)(arg.const_data)) = (float)value;
             break;
-        case FLOAT64:
+        case KP_FLOAT64:
             (*(double*)(arg.const_data)) = (double)value;
             break;
 
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
+        case KP_COMPLEX64:
+        case KP_COMPLEX128:
+        case KP_PAIRLL:
         default:
             throw invalid_argument(
                 "Cannot set value of kp_operand with "
-                "KP_ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+                "KP_ETYPE=[KP_COMPLEX64|KP_COMPLEX128|KP_PAIRLL]."
             );
             break;
     }

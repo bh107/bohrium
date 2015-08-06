@@ -108,7 +108,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
             table_[arg_idx].const_data   = &(instr.constant.value);
             table_[arg_idx].etype        = bhtype_to_etype(instr.constant.type);
         } else {                                        // "Special" for BH_R123
-            table_[arg_idx].etype        = UINT64;
+            table_[arg_idx].etype        = KP_UINT64;
             if (1 == operand_idx) {
                 table_[arg_idx].const_data  = &(instr.constant.value.r123.start);
             } else if (2 == operand_idx) {
