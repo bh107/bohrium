@@ -70,18 +70,18 @@ std::string tac_text(const kp_tac & tac, SymbolTable& symbol_table);
 int tac_noperands(const kp_tac & tac);
 
 /**
- *  Transforms the given tac to a NOOP or an equivalent tac,
+ *  Transforms the given tac to a KP_NOOP or an equivalent tac,
  *  which should be cheaper compute. 
  *
  *  # Silly stuff like
  *
- *  IDENTITY a, a   -> NOOP
+ *  IDENTITY a, a   -> KP_NOOP
  *
  *  # Operators with scalar neutral element
  * 
- *  ADD a, a, 0     -> NOOP
- *  MUL b, b, 1     -> NOOP
- *  DIV a, a, 1     -> NOOP
+ *  ADD a, a, 0     -> KP_NOOP
+ *  MUL b, b, 1     -> KP_NOOP
+ *  DIV a, a, 1     -> KP_NOOP
 
  *  ADD a, b, 0     -> IDENTITY a, b
  *  MUL a, b, 1     -> IDENTITY a, b

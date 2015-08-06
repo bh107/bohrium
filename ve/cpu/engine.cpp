@@ -313,7 +313,7 @@ bh_error Engine::execute(bh_ir* bhir)
         block.clear();                                  // Reset the block
         block.compose(*krnl, (bool)jit_contraction_);   // Compose it based on kernel
         
-        if ((block.omask() & EXTENSION)>0) {            // Extension-Instruction-Execute (EIE)
+        if ((block.omask() & KP_EXTENSION)>0) {            // Extension-Instruction-Execute (EIE)
             kp_tac & tac = block.tac(0);
             map<bh_opcode,bh_extmethod_impl>::iterator ext;
             ext = extensions_.find(static_cast<bh_instruction*>(tac.ext)->opcode);

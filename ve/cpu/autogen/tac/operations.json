@@ -1,5 +1,5 @@
 [{
-    "id": 1, "name": "MAP",
+    "id": 1, "name": "KP_MAP",
     "layouts": [
         "CC",  "CK",  "CS",  "SC",  "SK",  "SS"
     ],
@@ -16,7 +16,7 @@
 
 {
     "id": 2,
-    "name": "ZIP",
+    "name": "KP_ZIP",
     "layouts": [
         "CCC", "CCK", "CCS", "CKC", "CKS", "CSC", "CSK", "CSS",
         "SCC", "SCK", "SCS", "SKC", "SKS", "SSC", "SSK", "SSS"
@@ -34,7 +34,7 @@
 
 {
     "id": 4,
-    "name": "REDUCE_COMPLETE",
+    "name": "KP_REDUCE_COMPLETE",
     "layouts": [
         "SCK", "SSK", "SCK", "SSK"
     ],
@@ -48,7 +48,7 @@
 
 {
     "id": 8,
-    "name": "REDUCE_PARTIAL",
+    "name": "KP_REDUCE_PARTIAL",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK"
     ],
@@ -62,7 +62,7 @@
 
 {
     "id": 16,
-    "name": "SCAN",
+    "name": "KP_SCAN",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK"
     ],
@@ -73,7 +73,7 @@
 
 {
     "id": 32,
-    "name": "INDEX",
+    "name": "KP_INDEX",
     "layouts": [
         "CCC", "CCS", "CSC", "CSS",
         "SSS", "SSC", "SCS", "SCC"
@@ -85,7 +85,7 @@
 
 {
     "id": 64,
-    "name": "GENERATE",
+    "name": "KP_GENERATE",
     "layouts": [
         "K", "CKK", ""
     ],
@@ -96,7 +96,7 @@
 
 {
     "id": 128,
-    "name": "SYSTEM",
+    "name": "KP_SYSTEM",
     "layouts": ["C", "S"],
     "operators": [
         "FREE", "DISCARD", "SYNC"
@@ -105,7 +105,7 @@
 
 {
     "id": 256,
-    "name": "EXTENSION",
+    "name": "KP_EXTENSION",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK",
         "CCC", "CCK", "CCS", "CKC", "CKS", "CSC", "CSK", "CSS",
@@ -116,7 +116,7 @@
 
 {
     "id": 512,
-    "name": "NOOP",
+    "name": "KP_NOOP",
     "layouts": [""],
     "operators": [""]
 }

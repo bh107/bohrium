@@ -59,14 +59,14 @@ void instrs_to_tacs(bh_ir& bhir, vector<kp_tac>& tacs, SymbolTable& symbol_table
                     in1 = symbol_table.map_operand(instr, 1);
                     in2 = symbol_table.map_operand(instr, 2);
 
-                    tacs[idx].op   = EXTENSION;
+                    tacs[idx].op   = KP_EXTENSION;
                     tacs[idx].oper = EXTENSION_OPERATOR;
                     tacs[idx].ext  = &instr;
                     tacs[idx].out  = out;
                     tacs[idx].in1  = in1;
                     tacs[idx].in2  = in2;
 
-                    omask |= EXTENSION;
+                    omask |= KP_EXTENSION;
                     break;
 
                 } else {

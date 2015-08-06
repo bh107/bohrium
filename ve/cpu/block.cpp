@@ -210,7 +210,7 @@ bool Block::symbolize(void)
         kp_tac & tac = **tac_iter;
        
         // Do not include system opcodes in the kernel symbol.
-        if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
+        if ((tac.op == KP_SYSTEM) || (tac.op == KP_EXTENSION)) {
             continue;
         }
         if (!first) {   // Separate op+oper with "_"
@@ -220,13 +220,13 @@ bool Block::symbolize(void)
 
         tacs << core::operation_text(tac.op);
 
-        size_t ndim = ((tac.op & (REDUCE_COMPLETE|REDUCE_PARTIAL))>0) ? globals_[tac.in1].ndim : globals_[tac.out].ndim;
+        size_t ndim = ((tac.op & (KP_REDUCE_COMPLETE | KP_REDUCE_PARTIAL))>0) ? globals_[tac.in1].ndim : globals_[tac.out].ndim;
 
         //
         // Adding info of whether the kernel does reduction on the inner-most
         // dimensions or another "axis" dimension.
         //
-        if ((tac.op & REDUCE_PARTIAL)>0) {
+        if ((tac.op & KP_REDUCE_PARTIAL)>0) {
             if (*((uint64_t*)globals_[tac.in2].const_data) == (ndim-1)) {
                 tacs << "_INNER";
             } else {
@@ -382,7 +382,7 @@ void Block::_update_iterspace(void)
         if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
-        if ((tac.op & (REDUCE_COMPLETE|REDUCE_PARTIAL))>0) {     // Reductions are weird
+        if ((tac.op & (KP_REDUCE_COMPLETE | KP_REDUCE_PARTIAL))>0) {     // Reductions are weird
             if (globals_[tac.in1].layout >= iterspace_.layout) {    // Iterspace
                 iterspace_.layout = globals_[tac.in1].layout;
                 iterspace_.ndim  = globals_[tac.in1].ndim;

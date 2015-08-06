@@ -105,41 +105,41 @@ void set_const_value(const kp_operand & arg, double value)
 void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
 {
     switch(tac.op) {
-        case REDUCE_COMPLETE:
+        case KP_REDUCE_COMPLETE:
             if (symbol_table[tac.in1].layout == SCALAR) {
-                tac.op   = MAP;
+                tac.op   = KP_MAP;
                 tac.oper = IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
             }
             break;
 
-        case REDUCE_PARTIAL:
+        case KP_REDUCE_PARTIAL:
             if (symbol_table[tac.in1].layout == SCALAR) {
-                tac.op   = MAP;
+                tac.op   = KP_MAP;
                 tac.oper = IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
             } else if (symbol_table[tac.out].layout == SCALAR) {
-                tac.op = REDUCE_COMPLETE;
+                tac.op = KP_REDUCE_COMPLETE;
             }
             break;
 
-        case SCAN:
+        case KP_SCAN:
             if (symbol_table[tac.in1].layout == SCALAR) {
-                tac.op   = MAP;
+                tac.op   = KP_MAP;
                 tac.oper = IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
             }
             break;
 
-        case ZIP:
+        case KP_ZIP:
             switch(tac.oper) {
                 case ADD:
                     if (((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) && \
                         (get_const_value(symbol_table[tac.in2]) == 0.0)) {
-                        tac.op = MAP;
+                        tac.op = KP_MAP;
                         tac.oper = IDENTITY;
                         // tac.in1 = same as before
                         tac.in2 = 0;
@@ -149,13 +149,13 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
                 case MULTIPLY:
                     if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
                         if (get_const_value(symbol_table[tac.in2]) == 0.0) {
-                            tac.op = MAP;
+                            tac.op = KP_MAP;
                             tac.oper = IDENTITY;
                             tac.in1 = tac.in2;
                             set_const_value(symbol_table[tac.in1], 0);
                             tac.in2 = 0;
                         } else if (get_const_value(symbol_table[tac.in2]) == 1.0) {
-                            tac.op = MAP;
+                            tac.op = KP_MAP;
                             tac.oper = IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
@@ -166,7 +166,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
                 case DIVIDE:
                     if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
                         if (get_const_value(symbol_table[tac.in2]) == 1.0) {
-                            tac.op = MAP;
+                            tac.op = KP_MAP;
                             tac.oper = IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
@@ -179,12 +179,12 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
             }
             break;
 
-        case MAP:
+        case KP_MAP:
             switch(tac.oper) {
                 case IDENTITY:
                     transform_identity:
                     if (tac.out == tac.in1) {
-                        tac.op = NOOP;
+                        tac.op = KP_NOOP;
                     }
                     break;
                 default:
@@ -401,7 +401,7 @@ std::string omask_aop_text(uint32_t omask)
 {
     stringstream ss;
     std::vector<std::string> entries;
-    for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
+    for(uint32_t op= KP_MAP; op<= KP_NOOP; op=op<<1) {
         if ((((omask&op)>0) and ((op&ARRAY_OPS)>0))) {
             entries.push_back(operation_text((KP_OPERATION)op));
         }
@@ -423,7 +423,7 @@ std::string omask_text(uint32_t omask)
 {
     stringstream ss;
     std::vector<std::string> entries;
-    for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
+    for(uint32_t op= KP_MAP; op<= KP_NOOP; op=op<<1) {
         if((omask&op)>0) {
             entries.push_back(operation_text((KP_OPERATION)op));
         }
@@ -522,18 +522,18 @@ string hash_text(std::string text)
 int tac_noperands(const kp_tac & tac)
 {
     switch(tac.op) {
-        case MAP:
+        case KP_MAP:
             return 2;
-        case ZIP:
+        case KP_ZIP:
             return 3;
-        case SCAN:
+        case KP_SCAN:
             return 3;
-        case REDUCE_COMPLETE:
+        case KP_REDUCE_COMPLETE:
             return 3;
-        case REDUCE_PARTIAL:
+        case KP_REDUCE_PARTIAL:
             return 3;
 
-        case GENERATE:
+        case KP_GENERATE:
             switch(tac.oper) {
                 case FLOOD:
                     return 2;
@@ -544,9 +544,9 @@ int tac_noperands(const kp_tac & tac)
                 default:
                     throw runtime_error("noperands does not know how many operands are used.");
             }
-        case INDEX:
+        case KP_INDEX:
             return 3;
-        case SYSTEM:
+        case KP_SYSTEM:
             switch(tac.oper) {
                 case DISCARD:
                 case FREE:
@@ -557,9 +557,9 @@ int tac_noperands(const kp_tac & tac)
                 default:
                     throw runtime_error("noperands does not know how many operands are used.");
             }
-        case EXTENSION:
+        case KP_EXTENSION:
             return 3;
-        case NOOP:
+        case KP_NOOP:
             return 0;
     }
     return 0;

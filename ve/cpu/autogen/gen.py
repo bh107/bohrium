@@ -59,27 +59,27 @@ def instrs_to_tacs(opcodes, ops, opers, types, layouts):
                 continue
 
         if o['system_opcode']:
-            system.append([opcode, 'SYSTEM', opcode.replace('BH_',''), 0])
+            system.append([opcode, 'KP_SYSTEM', opcode.replace('BH_',''), 0])
 
         else:
             if 'REDUCE' in opcode:
                 operator = '_'.join(opcode.split('_')[1:-1])
-                reductions.append([opcode, 'REDUCE_PARTIAL', operator, 2])
+                reductions.append([opcode, 'KP_REDUCE_PARTIAL', operator, 2])
             elif 'ACCUMULATE' in opcode:
                 operator = '_'.join(opcode.split('_')[1:-1])
-                scans.append([opcode, 'SCAN', operator, 2])
+                scans.append([opcode, 'KP_SCAN', operator, 2])
             elif 'RANDOM' in opcode:
-                generators.append([opcode, 'GENERATE', 'RANDOM', 2])
+                generators.append([opcode, 'KP_GENERATE', 'RANDOM', 2])
             elif 'RANGE' in opcode:
-                generators.append([opcode, 'GENERATE', 'RANGE', 0])
-            elif 'GATHER' in opcode or 'SCATTER' in opcode:
-                index.append([opcode, 'INDEX', opcode.replace('BH_',''), 3])
+                generators.append([opcode, 'KP_GENERATE', 'RANGE', 0])
+            elif 'GATHER' in opcode or 'KP_SCATTER' in opcode:
+                index.append([opcode, 'KP_INDEX', opcode.replace('BH_',''), 3])
             else:
                 operator = '_'.join(opcode.split('_')[1:])
                 if o['nop'] == 3:
-                    ewise_b.append([opcode, 'ZIP', operator, 2])
+                    ewise_b.append([opcode, 'KP_ZIP', operator, 2])
                 elif o['nop'] == 2:
-                    ewise_u.append([opcode, 'MAP', operator, 1])
+                    ewise_u.append([opcode, 'KP_MAP', operator, 1])
                 else:
                     huh.append([opcode, '?', operator, 0])
     
