@@ -124,7 +124,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         table_[arg_idx].shape[0]     = 1;
         table_[arg_idx].stride       = instr.operand[operand_idx].shape;
         table_[arg_idx].stride[0]    = 0;
-        table_[arg_idx].layout       = SCALAR_CONST;
+        table_[arg_idx].layout       = KP_SCALAR_CONST;
         table_[arg_idx].base         = NULL;
     } else {
         table_[arg_idx].const_data= NULL;
@@ -160,10 +160,10 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
 void SymbolTable::turn_contractable(size_t symbol_idx)
 {
     kp_operand & operand = table_[symbol_idx];
-    if (operand.layout == SCALAR) {
-        operand.layout = SCALAR_TEMP;
+    if (operand.layout == KP_SCALAR) {
+        operand.layout = KP_SCALAR_TEMP;
     } else {
-        operand.layout = CONTRACTABLE;
+        operand.layout = KP_CONTRACTABLE;
     }
 
     // If data is already allocated for kp_operand then we do no lower nelem

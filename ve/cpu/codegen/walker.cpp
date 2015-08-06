@@ -22,11 +22,11 @@ string Walker::declare_operands(void)
         Operand& operand = oit->second;
         bool restrictable = kernel_.base_refcount(oit->first)==1;
         switch(operand.meta().layout) {
-            case SCALAR_CONST:
+            case KP_SCALAR_CONST:
                 // Declared as kp_operand.walker() in kernel-argument-unpacking
                 break;
 
-            case SCALAR:
+            case KP_SCALAR:
                 ss
                 << _declare_init(
                     operand.etype(),
@@ -35,8 +35,8 @@ string Walker::declare_operands(void)
                 );
                 break;
 
-            case SCALAR_TEMP:
-            case CONTRACTABLE:
+            case KP_SCALAR_TEMP:
+            case KP_CONTRACTABLE:
                 ss
                 << _declare(
                     operand.etype(),
@@ -44,9 +44,9 @@ string Walker::declare_operands(void)
                 );
                 break;
 
-            case CONTIGUOUS:
-            case CONSECUTIVE:
-            case STRIDED:
+            case KP_CONTIGUOUS:
+            case KP_CONSECUTIVE:
+            case KP_STRIDED:
                 if (restrictable) {
                     ss
                     << _declare_init(
@@ -64,7 +64,7 @@ string Walker::declare_operands(void)
                 }
                 break;
 
-            case SPARSE:
+            case KP_SPARSE:
 				ss
 				<< _beef("Unimplemented KP_LAYOUT.");
 				break;
@@ -89,23 +89,23 @@ string Walker::offload_leo(void)
         ++oit) {
         Operand& operand = oit->second;
         switch(operand.meta().layout) {
-            case SCALAR_CONST:
+            case KP_SCALAR_CONST:
                 ss << "in(" << operand.walker() << ") \\" << endl;
                 break;
 
-            case SCALAR_TEMP:
-            case CONTRACTABLE:
+            case KP_SCALAR_TEMP:
+            case KP_CONTRACTABLE:
                 break;
 
-            case CONTIGUOUS:
-            case CONSECUTIVE:
-            case STRIDED:
-            case SCALAR:
+            case KP_CONTIGUOUS:
+            case KP_CONSECUTIVE:
+            case KP_STRIDED:
+            case KP_SCALAR:
                 ss << "in(" << operand.start() << ") \\" << endl;
                 ss << "in(" << operand.strides() << ":length(CPU_MAXDIM) alloc_if(1) free_if(1)) \\" << endl;
                 break;
 
-            case SPARSE:
+            case KP_SPARSE:
 				ss << _beef("Unimplemented KP_LAYOUT.");
 				break;
         }
@@ -127,22 +127,22 @@ string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
     KP_LAYOUT ispace_layout = kernel_.iterspace().meta().layout;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:
-        case CONTRACTABLE:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:
+        case KP_CONTRACTABLE:
             break;
         
-        case CONTIGUOUS:
+        case KP_CONTIGUOUS:
             // CONT COMPATIBLE iteration construct
             // or specialized
-            // STRIDED construct for rank=1
+            // KP_STRIDED construct for rank=1
             if (((ispace_layout & COLLAPSIBLE)>0) or (rank==1)) {
                 ss << _add_assign(
                     operand.walker(),
                     "work_offset"
                 ) << _end();
-            // STRIDED iteration construct with rank>1
+            // KP_STRIDED iteration construct with rank>1
             } else {
                 ss << _add_assign(
                     operand.walker(),
@@ -151,16 +151,16 @@ string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
             }
             break;
 
-        case CONSECUTIVE:
+        case KP_CONSECUTIVE:
             // CONT COMPATIBLE iteration construct
             // or specialized
-            // STRIDED construct for rank=1
+            // KP_STRIDED construct for rank=1
             if (((ispace_layout & COLLAPSIBLE)>0) or (rank==1)) {
                 ss << _add_assign(
                     operand.walker(),
                     _mul("work_offset", operand.stride_inner())
                 ) << _end();
-            // STRIDED iteration construct with rank>1
+            // KP_STRIDED iteration construct with rank>1
             } else {
                 ss << _add_assign(
                     operand.walker(),
@@ -169,7 +169,7 @@ string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
             }
             break;
 
-        case STRIDED:       
+        case KP_STRIDED:
             switch(rank) {
                 case 3:
                 case 2:
@@ -186,7 +186,7 @@ string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
             }
             break;
 
-        case SPARSE:
+        case KP_SPARSE:
             ss << _beef("Non-implemented KP_LAYOUT.");
             break;
     }
@@ -210,15 +210,15 @@ string Walker::assign_offset_outer_2D(uint64_t oidx)
     stringstream ss;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:
-        case CONTRACTABLE:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:
+        case KP_CONTRACTABLE:
             break;
         
-        case CONTIGUOUS:
-        case CONSECUTIVE:
-        case STRIDED:       
+        case KP_CONTIGUOUS:
+        case KP_CONSECUTIVE:
+        case KP_STRIDED:
             ss << _add_assign(
                 operand.walker(),
                 _mul("work_offset", _index(operand.strides(), 0))
@@ -226,7 +226,7 @@ string Walker::assign_offset_outer_2D(uint64_t oidx)
             << _end();
             break;
 
-        case SPARSE:
+        case KP_SPARSE:
             ss << _beef("Non-implemented KP_LAYOUT.");
             break;
     }
@@ -250,16 +250,16 @@ string Walker::declare_stride_inner(uint64_t oidx)
     stringstream ss;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:
-        case CONTRACTABLE:
-        case CONTIGUOUS:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:
+        case KP_CONTRACTABLE:
+        case KP_CONTIGUOUS:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
 
-        case CONSECUTIVE:
-        case STRIDED:
+        case KP_CONSECUTIVE:
+        case KP_STRIDED:
             ss << _declare_init(
                 _const(_int64()),
                 operand.stride_inner(),
@@ -268,7 +268,7 @@ string Walker::declare_stride_inner(uint64_t oidx)
             << _end(operand.layout());
             break;
 
-        case SPARSE:
+        case KP_SPARSE:
             ss << _beef("Non-implemented KP_LAYOUT.");
 			break;
     }
@@ -293,16 +293,16 @@ string Walker::declare_stride_outer_2D(uint64_t oidx)
     Operand& operand = kernel_.operand_glb(oidx);
     if (2 == operand.meta().ndim) {
         switch(operand.meta().layout) {
-            case SCALAR_TEMP:
-            case SCALAR_CONST:
-            case SCALAR:
-            case CONTRACTABLE:
-            case CONTIGUOUS:
+            case KP_SCALAR_TEMP:
+            case KP_SCALAR_CONST:
+            case KP_SCALAR:
+            case KP_CONTRACTABLE:
+            case KP_CONTIGUOUS:
                 ss << "// " << operand.name() << " " << operand.layout() << endl;
                 break;
 
-            case CONSECUTIVE:
-            case STRIDED:
+            case KP_CONSECUTIVE:
+            case KP_STRIDED:
                 ss <<
                 _declare_init(
                     _const(_int64()),
@@ -318,22 +318,22 @@ string Walker::declare_stride_outer_2D(uint64_t oidx)
                 << _end(operand.layout());
                 break;
 
-            case SPARSE:
+            case KP_SPARSE:
                 ss << _beef("Non-implemented KP_LAYOUT.");
                 break;
         }
     } else {
         switch(operand.meta().layout) {
-            case SCALAR_TEMP:
-            case SCALAR_CONST:
-            case SCALAR:
-            case CONTRACTABLE:
+            case KP_SCALAR_TEMP:
+            case KP_SCALAR_CONST:
+            case KP_SCALAR:
+            case KP_CONTRACTABLE:
                 ss << "// " << operand.name() << " " << operand.layout() << endl;
                 break;
 
-            case CONSECUTIVE:
-            case STRIDED:
-            case CONTIGUOUS:
+            case KP_CONSECUTIVE:
+            case KP_STRIDED:
+            case KP_CONTIGUOUS:
                 ss <<
                 _declare_init(
                     _const(_int64()),
@@ -342,7 +342,7 @@ string Walker::declare_stride_outer_2D(uint64_t oidx)
                 ) << _end(operand.layout());
                 break;
 
-            case SPARSE:
+            case KP_SPARSE:
                 ss << _beef("Non-implemented KP_LAYOUT.");
                 break;
         }
@@ -367,16 +367,16 @@ string Walker::declare_stride_axis(uint64_t oidx)
     stringstream ss;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:
-        case CONTRACTABLE:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:
+        case KP_CONTRACTABLE:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
 
-        case CONTIGUOUS:
-        case CONSECUTIVE:
-        case STRIDED:
+        case KP_CONTIGUOUS:
+        case KP_CONSECUTIVE:
+        case KP_STRIDED:
             ss << _declare_init(
                 _const(_int64()),
                 operand.stride_axis(),
@@ -385,7 +385,7 @@ string Walker::declare_stride_axis(uint64_t oidx)
             << _end(operand.layout());
             break;
 
-        case SPARSE:
+        case KP_SPARSE:
             ss << _beef("Non-implemented KP_LAYOUT.");
 			break;
     }
@@ -410,10 +410,10 @@ string Walker::step_fwd_outer(uint64_t glb_idx)
 
     Operand& operand = kernel_.operand_glb(glb_idx);
     switch(operand.meta().layout) {
-        case SPARSE:
-        case STRIDED:
-        case CONTIGUOUS:
-        case CONSECUTIVE:
+        case KP_SPARSE:
+        case KP_STRIDED:
+        case KP_CONTIGUOUS:
+        case KP_CONSECUTIVE:
             ss <<
             _add_assign(
                 operand.walker(),
@@ -421,10 +421,10 @@ string Walker::step_fwd_outer(uint64_t glb_idx)
             ) << _end(operand.layout());
             break;
 
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:        // No stepping for these
-        case CONTRACTABLE:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:        // No stepping for these
+        case KP_CONTRACTABLE:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
@@ -447,13 +447,13 @@ string Walker::step_fwd_outer_2D(uint64_t glb_idx)
 
     Operand& operand = kernel_.operand_glb(glb_idx);
     switch(operand.meta().layout) {
-        case CONTIGUOUS:
+        case KP_CONTIGUOUS:
             if (2 == operand.meta().ndim) {
                 break;
             }
-        case SPARSE:
-        case STRIDED:
-        case CONSECUTIVE:
+        case KP_SPARSE:
+        case KP_STRIDED:
+        case KP_CONSECUTIVE:
             ss <<
             _add_assign(
                 operand.walker(),
@@ -461,10 +461,10 @@ string Walker::step_fwd_outer_2D(uint64_t glb_idx)
             ) << _end(operand.layout());
             break;
 
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:        // No stepping for these
-        case CONTRACTABLE:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:        // No stepping for these
+        case KP_CONTRACTABLE:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
@@ -487,15 +487,15 @@ string Walker::step_fwd_inner(uint64_t glb_idx)
 
     Operand& operand = kernel_.operand_glb(glb_idx);
     switch(operand.meta().layout) {
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:        
-        case CONTRACTABLE:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:
+        case KP_CONTRACTABLE:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
 
-        case STRIDED:
-        case CONSECUTIVE:
+        case KP_STRIDED:
+        case KP_CONSECUTIVE:
             ss
             << _add_assign(
                 operand.walker(),
@@ -503,12 +503,12 @@ string Walker::step_fwd_inner(uint64_t glb_idx)
             ) << _end(operand.layout());
             break;
 
-        case CONTIGUOUS:
+        case KP_CONTIGUOUS:
             ss <<
             _inc(operand.walker()) << _end(operand.layout());
             break;
 
-        case SPARSE:
+        case KP_SPARSE:
             ss << _beef("Non-implemented layout.");
             break;
     }
@@ -531,10 +531,10 @@ string Walker::step_fwd_other(uint64_t glb_idx, string dimvar)
 
     Operand& operand = kernel_.operand_glb(glb_idx);
     switch(operand.meta().layout) {
-        case SPARSE:
-        case STRIDED:
-        case CONTIGUOUS:
-        case CONSECUTIVE:
+        case KP_SPARSE:
+        case KP_STRIDED:
+        case KP_CONTIGUOUS:
+        case KP_CONSECUTIVE:
             ss <<
             _add_assign(
                 operand.walker(),
@@ -542,10 +542,10 @@ string Walker::step_fwd_other(uint64_t glb_idx, string dimvar)
             ) << _end(operand.layout());
             break;
 
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:        // No stepping for these
-        case CONTRACTABLE:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:        // No stepping for these
+        case KP_CONTRACTABLE:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
@@ -575,16 +575,16 @@ string Walker::step_fwd_axis(uint64_t glb_idx)
 
     Operand& operand = kernel_.operand_glb(glb_idx);
     switch(operand.meta().layout) {
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:        
-        case CONTRACTABLE:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:
+        case KP_CONTRACTABLE:
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
 
-        case STRIDED:
-        case CONSECUTIVE:
-        case CONTIGUOUS:
+        case KP_STRIDED:
+        case KP_CONSECUTIVE:
+        case KP_CONTIGUOUS:
             ss
             << _add_assign(
                 operand.walker(),
@@ -592,7 +592,7 @@ string Walker::step_fwd_axis(uint64_t glb_idx)
             ) << _end(operand.layout());
             break;
 
-        case SPARSE:
+        case KP_SPARSE:
             ss << _beef("Non-implemented layout.");
             break;
     }
@@ -750,7 +750,7 @@ string Walker::write_expanded_scalars(void)
 
         Operand& opd = kernel_.operand_glb(tac.out);
         if (((tac.op & (KP_MAP | KP_ZIP | KP_GENERATE))>0) and \
-            ((opd.meta().layout & SCALAR)>0) and \
+            ((opd.meta().layout & KP_SCALAR)>0) and \
             (written.find(tac.out)==written.end())) {
             ss << _line(_assign(
                 _deref(_add(opd.buffer_data(), opd.start())),
@@ -789,11 +789,11 @@ string Walker::generate_source(bool offload)
     subjects["WRITE_EXPANDED_SCALARS"]  = write_expanded_scalars();
 
     // Kernel contains nothing but operations on SCALARs
-    if ((kernel_.iterspace().meta().layout & SCALAR)>0) {
+    if ((kernel_.iterspace().meta().layout & KP_SCALAR)>0) {
         // A couple of sanitization checks
         if ((kernel_.omask() & ACCUMULATION)>0) {
             cerr << kernel_.text() << endl;
-            throw runtime_error("Accumulation in SCALAR kernel.");
+            throw runtime_error("Accumulation in KP_SCALAR kernel.");
         }
         plaid = "walker.scalar";
         return plaid_.fill(plaid, subjects);
@@ -878,7 +878,7 @@ string Walker::generate_source(bool offload)
 
         // Reduction specfics
         if ((kernel_.omask() & REDUCTION)>0) {
-            if ((out->meta().layout & (SCALAR|CONTIGUOUS|CONSECUTIVE|STRIDED))>0) {
+            if ((out->meta().layout & (KP_SCALAR | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED))>0) {
                 // Initialize the accumulator 
                 subjects["ACCU_OPD_INIT"] = _line(_assign(
                     _deref(_add(out->buffer_data(), out->start())),
@@ -930,7 +930,7 @@ string Walker::generate_source(bool offload)
 
         // Reduction specfics
         if (((kernel_.omask() & (KP_REDUCE_PARTIAL | KP_REDUCE_COMPLETE))>0) and \
-            ((out->meta().layout & (SCALAR|CONTIGUOUS|CONSECUTIVE|STRIDED))>0)) {
+            ((out->meta().layout & (KP_SCALAR | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED))>0)) {
             // Initialize the accumulator 
             subjects["ACCU_OPD_INIT"] = _line(_assign(
                 _deref(_add(out->buffer_data(), out->start())),
@@ -974,7 +974,7 @@ string Walker::generate_source(bool offload)
 
         // Reduction specfics
         if ((kernel_.omask() & KP_REDUCE_PARTIAL)>0) {
-            if (out->meta().layout == SCALAR) {
+            if (out->meta().layout == KP_SCALAR) {
                 subjects["ACCU_OPD_SYNC_PARTIAL"]= _line(_assign(
                     _deref(_add(out->buffer_data(), out->start())),
                     out->accu()
@@ -987,7 +987,7 @@ string Walker::generate_source(bool offload)
             }
         }
 
-    // KP_SCAN on STRIDED KP_LAYOUT of any RANK
+    // KP_SCAN on KP_STRIDED KP_LAYOUT of any RANK
     } else if ((kernel_.omask() & KP_SCAN)>0) {
         switch(rank) {
             case 1:

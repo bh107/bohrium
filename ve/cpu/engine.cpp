@@ -194,7 +194,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         switch(tac_noperands(tac)) {
             case 3:
                 if ((symbol_table[tac.in2].layout & (DYNALLOC_LAYOUT))>0) {
-                    if ((accelerator) && (block.iterspace().layout>SCALAR)) {
+                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
                         accelerator->alloc(symbol_table[tac.in2]);
                         if (NULL!=symbol_table[tac.in2].base->data) {
                             accelerator->push(symbol_table[tac.in2]);
@@ -203,7 +203,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                 }
             case 2:
                 if ((symbol_table[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
-                    if ((accelerator) && (block.iterspace().layout>SCALAR)) {
+                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
                         accelerator->alloc(symbol_table[tac.in1]);
                         if (NULL!=symbol_table[tac.in1].base->data) {
                             accelerator->push(symbol_table[tac.in1]);
@@ -218,7 +218,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                                         "called from bh_ve_cpu_execute()\n");
                         return res;
                     }
-                    if ((accelerator) && (block.iterspace().layout>SCALAR)) {
+                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
                         accelerator->alloc(symbol_table[tac.out]);
                     }
                 }

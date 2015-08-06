@@ -233,10 +233,10 @@ string Kernel::unpack_arguments(void)
         ss << endl;
         ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
         switch(operand.meta().layout) {
-            case STRIDED:       
-            case CONSECUTIVE:
-            case CONTIGUOUS:    
-            case SCALAR:
+            case KP_STRIDED:
+            case KP_CONSECUTIVE:
+            case KP_CONTIGUOUS:
+            case KP_SCALAR:
                 ss
                 << _declare_init(
                     _ptr_const(_int64()),
@@ -260,7 +260,7 @@ string Kernel::unpack_arguments(void)
                 << _end();
                 break;
 
-            case SCALAR_CONST:
+            case KP_SCALAR_CONST:
                 ss
                 << _declare_init(
                     _const(operand.etype()),
@@ -273,12 +273,12 @@ string Kernel::unpack_arguments(void)
                 << _end();
                 break;
 
-            case SCALAR_TEMP:
-            case CONTRACTABLE:  // Data pointer is never used.
+            case KP_SCALAR_TEMP:
+            case KP_CONTRACTABLE:  // Data pointer is never used.
                 ss << _comment("No unpacking needed.") << endl;
                 break;
 
-            case SPARSE:
+            case KP_SPARSE:
                 ss << _beef("Unpacking not implemented for KP_LAYOUT!");
                 break;
         }

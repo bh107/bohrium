@@ -106,7 +106,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
 {
     switch(tac.op) {
         case KP_REDUCE_COMPLETE:
-            if (symbol_table[tac.in1].layout == SCALAR) {
+            if (symbol_table[tac.in1].layout == KP_SCALAR) {
                 tac.op   = KP_MAP;
                 tac.oper = IDENTITY;
                 tac.in2  = 0;
@@ -115,18 +115,18 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
             break;
 
         case KP_REDUCE_PARTIAL:
-            if (symbol_table[tac.in1].layout == SCALAR) {
+            if (symbol_table[tac.in1].layout == KP_SCALAR) {
                 tac.op   = KP_MAP;
                 tac.oper = IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
-            } else if (symbol_table[tac.out].layout == SCALAR) {
+            } else if (symbol_table[tac.out].layout == KP_SCALAR) {
                 tac.op = KP_REDUCE_COMPLETE;
             }
             break;
 
         case KP_SCAN:
-            if (symbol_table[tac.in1].layout == SCALAR) {
+            if (symbol_table[tac.in1].layout == KP_SCALAR) {
                 tac.op   = KP_MAP;
                 tac.oper = IDENTITY;
                 tac.in2  = 0;
@@ -137,7 +137,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
         case KP_ZIP:
             switch(tac.oper) {
                 case ADD:
-                    if (((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) && \
+                    if (((symbol_table[tac.in2].layout & (KP_SCALAR_CONST))>0) && \
                         (get_const_value(symbol_table[tac.in2]) == 0.0)) {
                         tac.op = KP_MAP;
                         tac.oper = IDENTITY;
@@ -147,7 +147,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
                     }
                     break;
                 case MULTIPLY:
-                    if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
+                    if ((symbol_table[tac.in2].layout & (KP_SCALAR_CONST))>0) {
                         if (get_const_value(symbol_table[tac.in2]) == 0.0) {
                             tac.op = KP_MAP;
                             tac.oper = IDENTITY;
@@ -164,7 +164,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
                     }
                     break;
                 case DIVIDE:
-                    if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
+                    if ((symbol_table[tac.in2].layout & (KP_SCALAR_CONST))>0) {
                         if (get_const_value(symbol_table[tac.in2]) == 1.0) {
                             tac.op = KP_MAP;
                             tac.oper = IDENTITY;
@@ -202,7 +202,7 @@ bool equivalent(const kp_operand & one, const kp_operand & other)
     if (one.layout != other.layout) {
         return false;
     }
-    if (one.layout == SCALAR_CONST) {
+    if (one.layout == KP_SCALAR_CONST) {
         return false;
     }
     if (one.base != other.base) {
@@ -318,8 +318,8 @@ KP_LAYOUT determine_layout(const kp_operand & arg)
 {
     const int64_t inner_dim = arg.ndim-1;
     
-    // CONSECUTIVE: stride[dim] == stride[dim+1]*shape[dim+1]
-    // CONTIGUOUS:  stride[dim] == stride[dim+1]*shape[dim+1] and stride[inner] == 1
+    // KP_CONSECUTIVE: stride[dim] == stride[dim+1]*shape[dim+1]
+    // KP_CONTIGUOUS:  stride[dim] == stride[dim+1]*shape[dim+1] and stride[inner] == 1
     bool consecutive = true;    
     int64_t weight = arg.stride[inner_dim];
     int64_t nelements = 1;
@@ -332,13 +332,13 @@ KP_LAYOUT determine_layout(const kp_operand & arg)
     }
 
     if (nelements == 1) {
-        return SCALAR;
+        return KP_SCALAR;
     } else if (consecutive and arg.stride[inner_dim] == 1) {
-        return CONTIGUOUS;
+        return KP_CONTIGUOUS;
     } else if (consecutive and arg.stride[inner_dim] > 1) {
-        return CONSECUTIVE;
+        return KP_CONSECUTIVE;
     } else {
-        return STRIDED;
+        return KP_STRIDED;
     }
 }
 
