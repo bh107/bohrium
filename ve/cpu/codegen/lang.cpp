@@ -962,7 +962,7 @@ string _cimag(string right)
 //
 // OpenMP stuff
 //
-string _omp_reduction_oper(OPERATOR oper)
+string _omp_reduction_oper(KP_OPERATOR oper)
 {
     switch(oper) {
         case ADD:           return "+";

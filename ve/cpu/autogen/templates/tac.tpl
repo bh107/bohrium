@@ -19,54 +19,49 @@ typedef struct { uint64_t first, second; } pair_LL;
 #define __BH_BASE
 typedef struct
 {
-    /// Pointer to the actual data.
-    void*   data;
-
-    /// The type of data in the array
-    int64_t       type;
-
-    /// The number of elements in the array
-    int64_t      nelem;
+    void* data;     // Pointer to memory allocation supporting the buffer.
+    int64_t type;   // Datatype for which the buffer is intended to store.
+    int64_t nelem;  // Number of elements of the given datatype for which there is room for in the buffer.
 } bh_base;
 #endif
 
-typedef enum OPERATION {
+typedef enum KP_OPERATION {
     %for $op in $ops
     $addw($op['name']) = ${op['id']}$addsep($op, $ops)
     %end for
-} OPERATION;
+} KP_OPERATION;
 
-typedef enum OPERATOR {
+typedef enum KP_OPERATOR {
     %for $oper in $opers
     $addw($oper['name'],15) = ${oper['id']}$addsep($oper, $opers)
     %end for
-} OPERATOR;
+} KP_OPERATOR;
 
-typedef enum ETYPE {
+typedef enum KP_ETYPE {
     %for $type in $types
     $addw($type['name']) = ${type['id']}$addsep($type, $types)
     %end for
-} ETYPE;
+} KP_ETYPE;
 
-typedef enum LAYOUT {
+typedef enum KP_LAYOUT {
     %for $layout in $layouts
     $addw($layout['name']) = ${layout['id']}$addsep($layout, $layouts)
     %end for
-} LAYOUT;   // Uses a single byte
+} KP_LAYOUT;   // Uses a single byte
 
-typedef struct tac {
-    OPERATION op;       // Operation
-    OPERATOR  oper;     // Operator
+typedef struct kp_tac {
+    KP_OPERATION op;    // Operation
+    KP_OPERATOR  oper;  // Operator
     uint32_t  out;      // Output operand
     uint32_t  in1;      // First input operand
     uint32_t  in2;      // Second input operand
     void* ext;
-} tac_t;
+} kp_tac;
 
-typedef struct operand {
-    LAYOUT  layout;     // The layout of the data
+typedef struct kp_operand {
+    KP_LAYOUT  layout;  // The layout of the data
     void*   const_data; // Pointer to constant
-    ETYPE   etype;      // Type of the elements stored
+    KP_ETYPE   etype;   // Type of the elements stored
     int64_t start;      // Offset from memory allocation to start of array
     int64_t nelem;      // Number of elements available in the allocation
 
@@ -74,14 +69,14 @@ typedef struct operand {
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
     bh_base* base;      // Pointer to operand base or NULL when layout == SCALAR_CONST.
-} operand_t;            // Meta-data for a block argument
+} kp_operand;           // Meta-data for a block argument
 
-typedef struct iterspace {
-    LAYOUT layout;  // The dominating layout
-    int64_t ndim;   // The dominating rank/dimension of the iteration space
-    int64_t* shape; // Shape of the iteration space
-    int64_t nelem;  // The number of elements in the iteration space
-} iterspace_t;
+typedef struct kp_iterspace {
+    KP_LAYOUT layout;   // The dominating layout
+    int64_t ndim;       // The dominating rank/dimension of the iteration space
+    int64_t* shape;     // Shape of the iteration space
+    int64_t nelem;      // The number of elements in the iteration space
+} kp_iterspace;
 
 #define SCALAR_LAYOUT   ( SCALAR | SCALAR_CONST | SCALAR_TEMP )
 #define ARRAY_LAYOUT    ( CONTRACTABLE | CONTIGUOUS | CONSECUTIVE | STRIDED | SPARSE )

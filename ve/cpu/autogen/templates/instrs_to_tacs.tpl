@@ -11,7 +11,7 @@ using namespace std;
 namespace bohrium{
 namespace core{
 
-void instrs_to_tacs(bh_ir& bhir, vector<tac_t>& tacs, SymbolTable& symbol_table)
+void instrs_to_tacs(bh_ir& bhir, vector<kp_tac>& tacs, SymbolTable& symbol_table)
 {
     // Reset metadata
     int omask = 0;        // And the operation mask

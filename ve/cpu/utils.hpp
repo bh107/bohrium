@@ -1,7 +1,7 @@
 #ifndef __BH_VE_CPU_UTILS
 #define __BH_VE_CPU_UTILS
 #include "bh.h"
-#include "tac.h"
+#include "kp_tac.h"
 #include "block.hpp"
 #include "symbol_table.hpp"
 
@@ -34,40 +34,40 @@ std::string to_string(T val);
 // TAC enums; useful for pretty-printing.
 //
 
-std::string iterspace_text(const iterspace_t& iterspace);
+std::string iterspace_text(const kp_iterspace & iterspace);
 std::string omask_text(uint32_t omask);
 std::string omask_aop_text(uint32_t omask);
-std::string operation_text(OPERATION op);
-std::string operator_text(OPERATOR op);
-std::string operand_text(const operand_t& operand);
-std::string operand_access_text(const operand_t& operand);
+std::string operation_text(KP_OPERATION op);
+std::string operator_text(KP_OPERATOR op);
+std::string operand_text(const kp_operand & operand);
+std::string operand_access_text(const kp_operand & operand);
 
-std::string etype_text(ETYPE etype);
-std::string etype_text_shand(ETYPE etype);
-std::string etype_to_ctype_text(ETYPE etype);
+std::string etype_text(KP_ETYPE etype);
+std::string etype_text_shand(KP_ETYPE etype);
+std::string etype_to_ctype_text(KP_ETYPE etype);
 
-std::string layout_text(LAYOUT layout);
-std::string layout_text_shand(LAYOUT layout);
+std::string layout_text(KP_LAYOUT layout);
+std::string layout_text_shand(KP_LAYOUT layout);
 
 /**
- * Maps bh_type to ETYPE
+ * Maps bh_type to KP_ETYPE
  *
  * @param bhtype The bh_type to map.
- * @returns The ETYPE corresponding to the given bh_type.
+ * @returns The KP_ETYPE corresponding to the given bh_type.
  */
-ETYPE bhtype_to_etype(bh_type bhtype);
+        KP_ETYPE bhtype_to_etype(bh_type bhtype);
 
 /**
  * Returns a textual representation of a tac.
  */
-std::string tac_text(const tac_t& tac);
+std::string tac_text(const kp_tac & tac);
 
 /**
- * Returns a textual representation of a tac including operand info.
+ * Returns a textual representation of a tac including kp_operand info.
  */
-std::string tac_text(const tac_t& tac, SymbolTable& symbol_table);
+std::string tac_text(const kp_tac & tac, SymbolTable& symbol_table);
 
-int tac_noperands(const tac_t& tac);
+int tac_noperands(const kp_tac & tac);
 
 /**
  *  Transforms the given tac to a NOOP or an equivalent tac,
@@ -91,62 +91,62 @@ int tac_noperands(const tac_t& tac);
  *
  *  POW a, a, 2     -> MUL a, a, a
  */
-void tac_transform(tac_t& tac, SymbolTable& symbol_table);
+void tac_transform(kp_tac & tac, SymbolTable& symbol_table);
 
 /**
- *  Map bh_ir->instr_list (bh_instruction) to tac_t with entries in symbol_table.
+ *  Map bh_ir->instr_list (bh_instruction) to kp_tac with entries in symbol_table.
  */
 void instrs_to_tacs(bh_ir& bhir, 
-                    std::vector<tac_t>& tacs,
+                    std::vector<kp_tac>& tacs,
                     SymbolTable& symbol_table);
 
 /**
- *  Determine whether an operand has a contiguous layout.
+ *  Determine whether an kp_operand has a contiguous layout.
  *
- *  @param arg The operand to inspect.
+ *  @param arg The kp_operand to inspect.
  *  @returns True when the layout is contiguous, false othervise.
  */
-bool contiguous(const operand_t& arg);
+bool contiguous(const kp_operand & arg);
 
 /**
- *  Determine LAYOUT of the given operand by inspecting the stride/shape.
+ *  Determine KP_LAYOUT of the given kp_operand by inspecting the stride/shape.
  */
-LAYOUT determine_layout(const operand_t& arg);
+        KP_LAYOUT determine_layout(const kp_operand & arg);
 
 /**
  *  Return the first element that arg.data points to.
  *
  *  NOTE: Type is converted but overflows are not handled.
  */
-double get_scalar(const operand_t& arg);
+double get_scalar(const kp_operand & arg);
 
 /**
  *  Set the first element that arg.data points to.
  *  
  *  NOTE: Type is converted but overflows are not handled.
  */
-void set_scalar(const operand_t& arg, double value);
+void set_scalar(const kp_operand & arg, double value);
 
 /**
- *  Determines whether two operand have compatible meta-data.
+ *  Determines whether two kp_operand have compatible meta-data.
  *
  *  This function serves the same purpose as bh_view_identical, 
- *  but for tac-operands instead of bh_instruction.operand[...].
+ *  but for tac-operands instead of bh_instruction.kp_operand[...].
  *
  *  @param one
  *  @param other
  *  @returns True when compatible false othervise.
  */
-bool compatible(const operand_t& one, const operand_t& other);
+bool compatible(const kp_operand & one, const kp_operand & other);
 
 /**
- *  Determines whether two operand have equivalent meta-data.
+ *  Determines whether two kp_operand have equivalent meta-data.
  *
  *  This function serves the same purpose as bh_view_identical, 
- *  but for tac-operands instead of bh_instruction.operand[...].
+ *  but for tac-operands instead of bh_instruction.kp_operand[...].
  *
  */
-bool equivalent(const operand_t& one, const operand_t& other);
+bool equivalent(const kp_operand & one, const kp_operand & other);
 
 /**
  *  Write source-code to file.

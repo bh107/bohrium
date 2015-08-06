@@ -16,14 +16,14 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "tac.h"
+#include "kp_tac.h"
 #include "utils.hpp"
 
 namespace bohrium {
 namespace engine {
 namespace cpu {
 
-typedef void (*func)(bh_base** buffers, operand_t** args, iterspace_t* iterspace, const int offload_devid);
+typedef void (*func)(bh_base** buffers, kp_operand ** args, kp_iterspace * iterspace, const int offload_devid);
 
 //
 //  Retrieve a function pointer for the symbol (SYMBOL -> func)

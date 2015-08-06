@@ -14,7 +14,7 @@ namespace codegen{
 Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block), iterspace_(block.iterspace()) {
 
     for(size_t tac_idx=0; tac_idx<block_.ntacs(); ++tac_idx) {
-        tac_t& tac = block_.tac(tac_idx);
+        kp_tac & tac = block_.tac(tac_idx);
         if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
@@ -43,7 +43,7 @@ void Kernel::add_operand(uint64_t global_idx)
 {
     uint64_t local_idx = block_.global_to_local(global_idx);
 
-    operand_t& operand = block_.operand(local_idx);
+    kp_operand & operand = block_.operand(local_idx);
     
     Buffer* buffer = NULL;  // Associate a Buffer instance
     if ((operand.base) && ((operand.layout & DYNALLOC_LAYOUT)>0)) {
@@ -124,7 +124,7 @@ uint64_t Kernel::ntacs(void)
     return tacs_.size();
 }
 
-tac_t& Kernel::tac(uint64_t tidx)
+kp_tac & Kernel::tac(uint64_t tidx)
 {
     return *tacs_[tidx];
 }
@@ -169,7 +169,7 @@ string Kernel::unpack_iterspace(void)
 {
     stringstream ss;
     ss << _declare_init(
-        "LAYOUT",
+        "KP_LAYOUT",
         iterspace().layout(),
         _access_ptr(iterspace().name(), "layout")
     )
@@ -279,7 +279,7 @@ string Kernel::unpack_arguments(void)
                 break;
 
             case SPARSE:
-                ss << _beef("Unpacking not implemented for LAYOUT!");
+                ss << _beef("Unpacking not implemented for KP_LAYOUT!");
                 break;
         }
     }

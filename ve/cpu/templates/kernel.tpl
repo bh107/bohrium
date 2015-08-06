@@ -12,7 +12,7 @@
 #include <float.h>
 #include <math.h>
 #include <Random123/philox.h>
-#include <tac.h>
+#include <kp_tac.h>
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -55,7 +55,7 @@ KERNEL-DESCRIPTION {
   SYMBOL_TEXT   = {{SYMBOL_TEXT}}
 }
 */
-void KRN_{{SYMBOL}}(bh_base** buffers, operand_t** args, const iterspace_t* const iterspace, const int offload_devid)
+void KRN_{{SYMBOL}}(bh_base** buffers, kp_operand** args, const kp_iterspace* const iterspace, const int offload_devid)
 {
     //
     // Buffer unpacking

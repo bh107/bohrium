@@ -9,7 +9,7 @@ const char SymbolTable::TAG[] = "SymbolTable";
 
 SymbolTable::SymbolTable(size_t n) : table_(NULL), capacity_(n), nsymbols_(0)
 {
-    table_ = new operand_t[capacity_];
+    table_ = new kp_operand[capacity_];
 }
 
 SymbolTable::~SymbolTable(void)
@@ -88,12 +88,12 @@ size_t SymbolTable::size(void)
     return nsymbols_;
 }
 
-operand_t& SymbolTable::operator[](size_t operand_idx)
+kp_operand & SymbolTable::operator[](size_t operand_idx)
 {
     return table_[operand_idx];
 }
 
-size_t SymbolTable::import(operand_t& operand)
+size_t SymbolTable::import(kp_operand & operand)
 {
     table_[nsymbols_++] = operand;
     return nsymbols_;
@@ -140,10 +140,10 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
     }
 
     //
-    // Reuse operand identifiers: Detect if we have seen it before and reuse the name.
-    // This is done by comparing the currently investigated operand (arg_idx)
+    // Reuse kp_operand identifiers: Detect if we have seen it before and reuse the name.
+    // This is done by comparing the currently investigated kp_operand (arg_idx)
     // with all other operands in the current scope [1,arg_idx[
-    // Do remember that 0 is is not a valid operand and we therefore index from 1.
+    // Do remember that 0 is is not a valid kp_operand and we therefore index from 1.
     // Also we do not want to compare with selv, that is when i == arg_idx.
     for(size_t i=1; i<arg_idx; ++i) {
         if (!equivalent(table_[i], table_[arg_idx])) {
@@ -159,24 +159,24 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
 
 void SymbolTable::turn_contractable(size_t symbol_idx)
 {
-    operand_t& operand = table_[symbol_idx];
+    kp_operand & operand = table_[symbol_idx];
     if (operand.layout == SCALAR) {
         operand.layout = SCALAR_TEMP;
     } else {
         operand.layout = CONTRACTABLE;
     }
 
-    // If data is already allocated for operand then we do no lower nelem
+    // If data is already allocated for kp_operand then we do no lower nelem
     // since the nelem is needed by victim-cache to store it... it is important that nelem
     // correctly reflects the amount of elements for which storage is allocated.
     /*
-    if (NULL == *operand.data) {
-        operand.nelem = 1;
+    if (NULL == *kp_operand.data) {
+        kp_operand.nelem = 1;
     }
     */
 }
 
-operand_t* SymbolTable::operands(void)
+kp_operand * SymbolTable::operands(void)
 {
     return table_;
 }

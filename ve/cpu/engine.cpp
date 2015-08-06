@@ -107,7 +107,7 @@ string Engine::text()
 }
 
 bh_error Engine::execute_block(SymbolTable& symbol_table,
-                            std::vector<tac_t>& program,
+                            std::vector<kp_tac>& program,
                             Block& block,
                             bh_ir_kernel& krnl
                             )
@@ -186,7 +186,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     // - push input buffer(s) to accelerator (TODO)
     //
     for(size_t i=0; i<block.ntacs(); ++i) {
-        tac_t& tac = block.tac(i);
+        kp_tac & tac = block.tac(i);
 
         if (!((tac.op & ARRAY_OPS)>0)) {
             continue;
@@ -231,7 +231,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     // 
     if (block.narray_tacs() > 0) {
         TIMER_START
-        iterspace_t& iterspace = block.iterspace(); // Grab iteration space
+        kp_iterspace & iterspace = block.iterspace(); // Grab iteration space
         storage_.funcs[block.symbol()](             // Execute kernel function
             block.buffers(),
             block.operands(),
@@ -249,8 +249,8 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     // - pull buffer(s) from accelerator to host
     //
     for(size_t i=0; i<block.ntacs(); ++i) {
-        tac_t& tac = block.tac(i);
-        operand_t& operand = symbol_table[tac.out];
+        kp_tac & tac = block.tac(i);
+        kp_operand & operand = symbol_table[tac.out];
 
         switch(tac.oper) {  
 
@@ -296,7 +296,7 @@ bh_error Engine::execute(bh_ir* bhir)
     //
     // Instantiate the tac-program and symbol-table
     uint64_t program_size = bhir->instr_list.size();
-    vector<tac_t> program(program_size);                // Program
+    vector<kp_tac> program(program_size);                // Program
     SymbolTable symbol_table(program_size*6+2);         // SymbolTable
     
     instrs_to_tacs(*bhir, program, symbol_table);       // Map instructions to 
@@ -314,7 +314,7 @@ bh_error Engine::execute(bh_ir* bhir)
         block.compose(*krnl, (bool)jit_contraction_);   // Compose it based on kernel
         
         if ((block.omask() & EXTENSION)>0) {            // Extension-Instruction-Execute (EIE)
-            tac_t& tac = block.tac(0);
+            kp_tac & tac = block.tac(0);
             map<bh_opcode,bh_extmethod_impl>::iterator ext;
             ext = extensions_.find(static_cast<bh_instruction*>(tac.ext)->opcode);
             if (ext != extensions_.end()) {

@@ -12,7 +12,7 @@ namespace cpu{
 namespace codegen{
 
 Operand::Operand(void) : local_id_(0), operand_(NULL), buffer_(NULL) {}
-Operand::Operand(operand_t* operand, uint32_t local_id, Buffer* buffer) : local_id_(local_id), operand_(operand), buffer_(buffer) {
+Operand::Operand(kp_operand * operand, uint32_t local_id, Buffer* buffer) : local_id_(local_id), operand_(operand), buffer_(buffer) {
     if (NULL == operand_) {
         throw runtime_error("Constructing a NULL operand_, when expecting to have one");
     }
@@ -130,13 +130,13 @@ string Operand::walker_val(void)
             break;
 
         case SPARSE:
-            ss << _beef("Non-implemented LAYOUT.");
+            ss << _beef("Non-implemented KP_LAYOUT.");
             break;
     }
     return ss.str();
 }
 
-operand_t& Operand::meta(void)
+kp_operand & Operand::meta(void)
 {
     return *operand_;
 }

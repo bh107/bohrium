@@ -8,7 +8,7 @@ namespace core{
 
 const char Block::TAG[] = "Block";
 
-Block::Block(SymbolTable& globals, vector<tac_t>& program)
+Block::Block(SymbolTable& globals, vector<kp_tac>& program)
 : omask_(0), buffers_(NULL), nbuffers_(0), operands_(NULL), noperands_(0), globals_(globals), program_(program), symbol_text_(""), symbol_(""), footprint_nelem_(0), footprint_bytes_(0)
 {}
 
@@ -36,8 +36,8 @@ void Block::clear(void)
         operands_   = NULL;
         noperands_  = 0;
     }
-    global_to_local_.clear();   // global to local operand mapping
-    local_to_global_.clear();   // local to global operand mapping
+    global_to_local_.clear();   // global to local kp_operand mapping
+    local_to_global_.clear();   // local to global kp_operand mapping
 
     iterspace_.layout = SCALAR_TEMP;// Iteraton space
     iterspace_.ndim = 0;
@@ -56,7 +56,7 @@ void Block::clear(void)
 
 void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 {
-    tac_t& tac = program_[prg_idx];
+    kp_tac & tac = program_[prg_idx];
 
     tacs_.push_back(&tac);              // <-- All tacs
     omask_ |= tac.op;                   // Update omask
@@ -98,7 +98,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 {
     buffers_ = new bh_base*[krnl.instr_indexes.size()*3];
-    operands_ = new operand_t*[krnl.instr_indexes.size()*3];
+    operands_ = new kp_operand *[krnl.instr_indexes.size()*3];
 
     for(std::vector<uint64_t>::iterator idx_it = krnl.instr_indexes.begin();
         idx_it != krnl.instr_indexes.end();
@@ -126,7 +126,7 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 void Block::compose(bh_ir_kernel& krnl, size_t prg_idx)
 {
     buffers_ = new bh_base*[3];
-    operands_ = new operand_t*[3];
+    operands_ = new kp_operand *[3];
     
     _compose(krnl, false, prg_idx);
     _update_iterspace();                        // Update the iteration space
@@ -156,7 +156,7 @@ void Block::_bufferize(size_t global_idx)
 size_t Block::_localize_scope(size_t global_idx)
 {
     //
-    // Reuse operand identifiers: Detect if we have seen it before and reuse the index.
+    // Reuse kp_operand identifiers: Detect if we have seen it before and reuse the index.
     size_t local_idx = 0;
     bool found = false;
     for(size_t i=0; i<noperands_; ++i) {
@@ -169,7 +169,7 @@ size_t Block::_localize_scope(size_t global_idx)
         break;
     }
 
-    // Create the operand in block-scope
+    // Create the kp_operand in block-scope
     if (!found) {
         local_idx = noperands_;
         operands_[local_idx] = &globals_[global_idx];
@@ -206,8 +206,8 @@ bool Block::symbolize(void)
     //
     // Program
     bool first = true;
-    for(vector<tac_t*>::iterator tac_iter=tacs_.begin(); tac_iter!=tacs_.end(); ++tac_iter) {
-        tac_t& tac = **tac_iter;
+    for(vector<kp_tac *>::iterator tac_iter=tacs_.begin(); tac_iter!=tacs_.end(); ++tac_iter) {
+        kp_tac & tac = **tac_iter;
        
         // Do not include system opcodes in the kernel symbol.
         if ((tac.op == SYSTEM) || (tac.op == EXTENSION)) {
@@ -306,12 +306,12 @@ size_t Block::base_refcount(bh_base* base)
     return buffer_refs_[base].size();
 }
 
-operand_t& Block::operand(size_t local_idx)
+kp_operand & Block::operand(size_t local_idx)
 {
     return *operands_[local_idx];
 }
 
-operand_t** Block::operands(void)
+kp_operand ** Block::operands(void)
 {
     return operands_;
 }
@@ -331,12 +331,12 @@ size_t Block::local_to_global(size_t local_idx) const
     return local_to_global_.find(local_idx)->second;
 }
 
-tac_t& Block::tac(size_t idx) const
+kp_tac & Block::tac(size_t idx) const
 {
     return *tacs_[idx];
 }
 
-tac_t& Block::array_tac(size_t idx) const
+kp_tac & Block::array_tac(size_t idx) const
 {
     return *array_tacs_[idx];
 }
@@ -366,7 +366,7 @@ string Block::symbol_text(void) const
     return symbol_text_;
 }
 
-iterspace_t& Block::iterspace(void)
+kp_iterspace & Block::iterspace(void)
 {
     return iterspace_;
 }
@@ -378,7 +378,7 @@ void Block::_update_iterspace(void)
     //
     // Determine layout, ndim and shape
     for(size_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
-        tac_t& tac = this->tac(tac_idx);
+        kp_tac & tac = this->tac(tac_idx);
         if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
@@ -515,7 +515,7 @@ std::string Block::text(void)
 
     ss << "OPERANDS (" << noperands() << ") {" << endl;
     for(size_t opr_idx=0; opr_idx < noperands(); ++opr_idx) {
-        operand_t& opr = operand(opr_idx);
+        kp_operand & opr = operand(opr_idx);
         ss << " loc_idx(" << opr_idx << ")";
         ss << " gbl_idx(" << local_to_global(opr_idx) << ") = ";
         ss << operand_text(opr);

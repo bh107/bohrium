@@ -16,7 +16,7 @@ string to_string(T val)
     return stream.str();
 }
 
-double get_const_value(const operand_t& arg)
+double get_const_value(const kp_operand & arg)
 {
     switch(arg.etype) {
         case BOOL:
@@ -47,13 +47,13 @@ double get_const_value(const operand_t& arg)
         case PAIRLL:
         default:
             throw invalid_argument(
-                "Cannot get scalar-value of operand with "
-                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+                "Cannot get scalar-value of kp_operand with "
+                "KP_ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
             );
     }
 }
 
-void set_const_value(const operand_t& arg, double value)
+void set_const_value(const kp_operand & arg, double value)
 {
     switch(arg.etype) {
         case BOOL:
@@ -95,14 +95,14 @@ void set_const_value(const operand_t& arg, double value)
         case PAIRLL:
         default:
             throw invalid_argument(
-                "Cannot set value of operand with "
-                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+                "Cannot set value of kp_operand with "
+                "KP_ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
             );
             break;
     }
 }
 
-void tac_transform(tac_t& tac, SymbolTable& symbol_table)
+void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
 {
     switch(tac.op) {
         case REDUCE_COMPLETE:
@@ -197,7 +197,7 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
     }
 }
 
-bool equivalent(const operand_t& one, const operand_t& other)
+bool equivalent(const kp_operand & one, const kp_operand & other)
 {
     if (one.layout != other.layout) {
         return false;
@@ -230,7 +230,7 @@ bool equivalent(const operand_t& one, const operand_t& other)
 
 
 
-bool compatible(const operand_t& one, const operand_t& other)
+bool compatible(const kp_operand & one, const kp_operand & other)
 {
     //
     // Scalar layouts are compatible with any other layout
@@ -252,7 +252,7 @@ bool compatible(const operand_t& one, const operand_t& other)
     return true;
 }
 
-bool contiguous(const operand_t& arg)
+bool contiguous(const kp_operand & arg)
 {
     int64_t weight = 1;
     for(int dim=arg.ndim-1; dim>=0; --dim) {
@@ -264,7 +264,7 @@ bool contiguous(const operand_t& arg)
     return true;
 }
 
-string operand_access_text(const operand_t& arg)
+string operand_access_text(const kp_operand & arg)
 {
     /// Hmmm this is not entirely correct...
     // I forgot the simple thing:
@@ -314,7 +314,7 @@ string operand_access_text(const operand_t& arg)
     return ss.str();
 }
 
-LAYOUT determine_layout(const operand_t& arg)
+KP_LAYOUT determine_layout(const kp_operand & arg)
 {
     const int64_t inner_dim = arg.ndim-1;
     
@@ -342,7 +342,7 @@ LAYOUT determine_layout(const operand_t& arg)
     }
 }
 
-std::string iterspace_text(const iterspace_t& iterspace)
+std::string iterspace_text(const kp_iterspace & iterspace)
 {
     stringstream ss;
     ss << setw(12);
@@ -366,7 +366,7 @@ std::string iterspace_text(const iterspace_t& iterspace)
     return ss.str();
 }
 
-std::string operand_text(const operand_t& operand)
+std::string operand_text(const kp_operand & operand)
 {
     stringstream ss;
     ss << "{";
@@ -403,7 +403,7 @@ std::string omask_aop_text(uint32_t omask)
     std::vector<std::string> entries;
     for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
         if ((((omask&op)>0) and ((op&ARRAY_OPS)>0))) {
-            entries.push_back(operation_text((OPERATION)op));
+            entries.push_back(operation_text((KP_OPERATION)op));
         }
     }
     for(std::vector<std::string>::iterator eit=entries.begin();
@@ -425,7 +425,7 @@ std::string omask_text(uint32_t omask)
     std::vector<std::string> entries;
     for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
         if((omask&op)>0) {
-            entries.push_back(operation_text((OPERATION)op));
+            entries.push_back(operation_text((KP_OPERATION)op));
         }
     }
     for(std::vector<std::string>::iterator eit=entries.begin();
@@ -441,7 +441,7 @@ std::string omask_text(uint32_t omask)
     return ss.str();
 }
 
-std::string tac_text(const tac_t& tac)
+std::string tac_text(const kp_tac & tac)
 {
     std::stringstream ss;
     ss << "{ op("<< operation_text(tac.op) << "(" << tac.op << ")),";
@@ -453,7 +453,7 @@ std::string tac_text(const tac_t& tac)
     return ss.str();
 }
 
-string tac_text(const tac_t& tac, SymbolTable& symbol_table)
+string tac_text(const kp_tac & tac, SymbolTable& symbol_table)
 {
     std::stringstream ss;
     ss << "{ op("<< operation_text(tac.op) << "(" << tac.op << ")),";
@@ -519,7 +519,7 @@ string hash_text(std::string text)
     return ss.str();
 }
 
-int tac_noperands(const tac_t& tac)
+int tac_noperands(const kp_tac & tac)
 {
     switch(tac.op) {
         case MAP:

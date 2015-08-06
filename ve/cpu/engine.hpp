@@ -3,7 +3,7 @@
 #include "bh.h"
 #include "bh_vcache.h"
 
-#include "tac.h"
+#include "kp_tac.h"
 #include "block.hpp"
 #include "symbol_table.hpp"
 #include "thread_control.hpp"
@@ -59,7 +59,7 @@ private:
      */
     bh_error execute_block(
         core::SymbolTable& symbol_table,
-        std::vector<tac_t>& program,
+        std::vector<kp_tac>& program,
         core::Block& block,
         bh_ir_kernel& krnl
     );

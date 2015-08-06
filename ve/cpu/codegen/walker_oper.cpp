@@ -13,7 +13,7 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-string Walker::oper_neutral_element(OPERATOR oper, ETYPE etype)
+string Walker::oper_neutral_element(KP_OPERATOR oper, KP_ETYPE etype)
 {
     switch(oper) {
         case ADD:               return "0";
@@ -70,7 +70,7 @@ string Walker::oper_neutral_element(OPERATOR oper, ETYPE etype)
     }
 }
 
-string Walker::oper_description(tac_t tac)
+string Walker::oper_description(kp_tac tac)
 {
     stringstream ss;
     ss << operator_text(tac.oper) << " (";
@@ -97,7 +97,7 @@ string Walker::oper_description(tac_t tac)
     return ss.str();
 }
 
-string Walker::oper(OPERATOR oper, ETYPE etype, string in1, string in2)
+string Walker::oper(KP_OPERATOR oper, KP_ETYPE etype, string in1, string in2)
 {
     switch(oper) {
         case ABSOLUTE:
@@ -285,7 +285,7 @@ string Walker::oper(OPERATOR oper, ETYPE etype, string in1, string in2)
     return "NO NO< NO NO NO NO NONO NO NO NO NOTHERES NO LIMITS";
 }
 
-string Walker::synced_oper(OPERATOR operation, ETYPE etype, string out, string in1, string in2)
+string Walker::synced_oper(KP_OPERATOR operation, KP_ETYPE etype, string out, string in1, string in2)
 {
     stringstream ss;
     switch(operation) {

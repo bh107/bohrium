@@ -23,7 +23,7 @@ string Walker::declare_operands(void)
         bool restrictable = kernel_.base_refcount(oit->first)==1;
         switch(operand.meta().layout) {
             case SCALAR_CONST:
-                // Declared as operand.walker() in kernel-argument-unpacking
+                // Declared as kp_operand.walker() in kernel-argument-unpacking
                 break;
 
             case SCALAR:
@@ -66,7 +66,7 @@ string Walker::declare_operands(void)
 
             case SPARSE:
 				ss
-				<< _beef("Unimplemented LAYOUT.");
+				<< _beef("Unimplemented KP_LAYOUT.");
 				break;
         }
         ss << _end(operand.layout());
@@ -106,7 +106,7 @@ string Walker::offload_leo(void)
                 break;
 
             case SPARSE:
-				ss << _beef("Unimplemented LAYOUT.");
+				ss << _beef("Unimplemented KP_LAYOUT.");
 				break;
         }
     }
@@ -124,7 +124,7 @@ string Walker::offload_leo(void)
 string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
 {
     stringstream ss;
-    LAYOUT ispace_layout = kernel_.iterspace().meta().layout;
+    KP_LAYOUT ispace_layout = kernel_.iterspace().meta().layout;
     Operand& operand = kernel_.operand_glb(oidx);
     switch(operand.meta().layout) {
         case SCALAR_TEMP:
@@ -187,7 +187,7 @@ string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
             break;
 
         case SPARSE:
-            ss << _beef("Non-implemented LAYOUT.");
+            ss << _beef("Non-implemented KP_LAYOUT.");
             break;
     }
     return ss.str();
@@ -227,7 +227,7 @@ string Walker::assign_offset_outer_2D(uint64_t oidx)
             break;
 
         case SPARSE:
-            ss << _beef("Non-implemented LAYOUT.");
+            ss << _beef("Non-implemented KP_LAYOUT.");
             break;
     }
     return ss.str();
@@ -269,7 +269,7 @@ string Walker::declare_stride_inner(uint64_t oidx)
             break;
 
         case SPARSE:
-            ss << _beef("Non-implemented LAYOUT.");
+            ss << _beef("Non-implemented KP_LAYOUT.");
 			break;
     }
     return ss.str();
@@ -319,7 +319,7 @@ string Walker::declare_stride_outer_2D(uint64_t oidx)
                 break;
 
             case SPARSE:
-                ss << _beef("Non-implemented LAYOUT.");
+                ss << _beef("Non-implemented KP_LAYOUT.");
                 break;
         }
     } else {
@@ -343,7 +343,7 @@ string Walker::declare_stride_outer_2D(uint64_t oidx)
                 break;
 
             case SPARSE:
-                ss << _beef("Non-implemented LAYOUT.");
+                ss << _beef("Non-implemented KP_LAYOUT.");
                 break;
         }
     }
@@ -386,7 +386,7 @@ string Walker::declare_stride_axis(uint64_t oidx)
             break;
 
         case SPARSE:
-            ss << _beef("Non-implemented LAYOUT.");
+            ss << _beef("Non-implemented KP_LAYOUT.");
 			break;
     }
     return ss.str();
@@ -616,8 +616,8 @@ string Walker::operations(void)
     for(kernel_tac_iter tit=kernel_.tacs_begin();
         tit!=kernel_.tacs_end();
         ++tit) {
-        tac_t& tac = **tit;
-        ETYPE etype;
+        kp_tac & tac = **tit;
+        KP_ETYPE etype;
         if (ABSOLUTE == tac.oper) {
             etype = kernel_.operand_glb(tac.in1).meta().etype;
         } else {
@@ -746,7 +746,7 @@ string Walker::write_expanded_scalars(void)
     for(kernel_tac_iter tit=kernel_.tacs_begin();
         tit!=kernel_.tacs_end();
         ++tit) {
-        tac_t& tac = **tit;
+        kp_tac & tac = **tit;
 
         Operand& opd = kernel_.operand_glb(tac.out);
         if (((tac.op & (MAP|ZIP|GENERATE))>0) and \
@@ -800,7 +800,7 @@ string Walker::generate_source(bool offload)
     }
 
     // Note: start of crappy code used by reduction.
-    tac_t* tac = NULL;
+    kp_tac * tac = NULL;
     Operand* out = NULL;
     Operand* in1 = NULL;
     Operand* in2 = NULL;
@@ -832,7 +832,7 @@ string Walker::generate_source(bool offload)
             subjects["BUF_IN1"] = in1->buffer_name();
 
             subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
-            subjects["ETYPE"] = out->etype();
+            subjects["KP_ETYPE"] = out->etype();
             subjects["ATYPE"] = in2->etype();
 
             // Declare local accumulator var, REDUCE_[COMPLETE|PARTIAL]|SCAN
@@ -859,7 +859,7 @@ string Walker::generate_source(bool offload)
     }
     // Note: end of crappy code used by reductions / scan
 
-    // MAP | ZIP | GENERATE | INDEX | REDUCE_COMPLETE on COLLAPSIBLE LAYOUT of any RANK
+    // MAP | ZIP | GENERATE | INDEX | REDUCE_COMPLETE on COLLAPSIBLE KP_LAYOUT of any RANK
     // and
     // REDUCE_PARTIAL on with RANK == 1
     if (((kernel_.iterspace().meta().layout & COLLAPSIBLE)>0)       \
@@ -906,7 +906,7 @@ string Walker::generate_source(bool offload)
             }
         }
 
-    // MAP | ZIP | REDUCE_COMPLETE | REDUCE_PARTIAL_INNER on ANY LAYOUT, RANK > 1
+    // MAP | ZIP | REDUCE_COMPLETE | REDUCE_PARTIAL_INNER on ANY KP_LAYOUT, RANK > 1
     } else if (((kernel_.omask() & (EWISE|REDUCE_COMPLETE|REDUCE_PARTIAL))>0) and \
                 (!(((kernel_.omask() & (REDUCE_PARTIAL))>0) and \
                    (!partial_reduction_on_innermost)))) {
@@ -958,7 +958,7 @@ string Walker::generate_source(bool offload)
             }
         }
 
-    // MAP | ZIP | REDUCE_PARTIAL_AXIS on ANY LAYOUT, RANK > 1
+    // MAP | ZIP | REDUCE_PARTIAL_AXIS on ANY KP_LAYOUT, RANK > 1
     } else if ((kernel_.omask() & (EWISE|REDUCE_PARTIAL))>0) {
 
         plaid = "walker.axis.nd";
@@ -987,7 +987,7 @@ string Walker::generate_source(bool offload)
             }
         }
 
-    // SCAN on STRIDED LAYOUT of any RANK
+    // SCAN on STRIDED KP_LAYOUT of any RANK
     } else if ((kernel_.omask() & SCAN)>0) {
         switch(rank) {
             case 1:

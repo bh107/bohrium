@@ -10,7 +10,7 @@ namespace engine{
 namespace cpu{
 namespace codegen{
 
-Iterspace::Iterspace(iterspace_t& iterspace) : iterspace_(iterspace) {}
+Iterspace::Iterspace(kp_iterspace & iterspace) : iterspace_(iterspace) {}
 
 string Iterspace::name(void)
 {
@@ -54,7 +54,7 @@ string Iterspace::nelem(void)
     return ss.str();
 }
 
-iterspace_t& Iterspace::meta(void)
+kp_iterspace & Iterspace::meta(void)
 {
     return iterspace_;
 }
