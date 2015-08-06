@@ -137,7 +137,7 @@ string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
             // CONT COMPATIBLE iteration construct
             // or specialized
             // KP_STRIDED construct for rank=1
-            if (((ispace_layout & COLLAPSIBLE)>0) or (rank==1)) {
+            if (((ispace_layout & KP_COLLAPSIBLE)>0) or (rank==1)) {
                 ss << _add_assign(
                     operand.walker(),
                     "work_offset"
@@ -155,7 +155,7 @@ string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
             // CONT COMPATIBLE iteration construct
             // or specialized
             // KP_STRIDED construct for rank=1
-            if (((ispace_layout & COLLAPSIBLE)>0) or (rank==1)) {
+            if (((ispace_layout & KP_COLLAPSIBLE)>0) or (rank==1)) {
                 ss << _add_assign(
                     operand.walker(),
                     _mul("work_offset", operand.stride_inner())
@@ -768,7 +768,7 @@ string Walker::generate_source(bool offload)
     std::map<string, string> subjects;
     string plaid;
 
-    if ((kernel_.omask() & ARRAY_OPS)==0) { // There must be at lest one array operation
+    if ((kernel_.omask() & KP_ARRAY_OPS)==0) { // There must be at lest one array operation
         cerr << kernel_.text() << endl;
         throw runtime_error("No array operations!");
     }
@@ -791,7 +791,7 @@ string Walker::generate_source(bool offload)
     // Kernel contains nothing but operations on SCALARs
     if ((kernel_.iterspace().meta().layout & KP_SCALAR)>0) {
         // A couple of sanitization checks
-        if ((kernel_.omask() & ACCUMULATION)>0) {
+        if ((kernel_.omask() & KP_ACCUMULATION)>0) {
             cerr << kernel_.text() << endl;
             throw runtime_error("Accumulation in KP_SCALAR kernel.");
         }
@@ -808,11 +808,11 @@ string Walker::generate_source(bool offload)
     // To detect special-case of partial-reduction rank > 1
     bool partial_reduction_on_innermost = false;
 
-    if ((kernel_.omask() & ACCUMULATION)>0) {
+    if ((kernel_.omask() & KP_ACCUMULATION)>0) {
         for(kernel_tac_iter tit=kernel_.tacs_begin();
             tit != kernel_.tacs_end();
             ++tit) {
-            if ((((*tit)->op) & (ACCUMULATION))>0) {
+            if ((((*tit)->op) & (KP_ACCUMULATION))>0) {
                 tac = *tit;
             }
         }
@@ -859,10 +859,10 @@ string Walker::generate_source(bool offload)
     }
     // Note: end of crappy code used by reductions / scan
 
-    // MAP | ZIP | KP_GENERATE | KP_INDEX | KP_REDUCE_COMPLETE on COLLAPSIBLE KP_LAYOUT of any RANK
+    // MAP | ZIP | KP_GENERATE | KP_INDEX | KP_REDUCE_COMPLETE on KP_COLLAPSIBLE KP_LAYOUT of any RANK
     // and
     // KP_REDUCE_PARTIAL on with RANK == 1
-    if (((kernel_.iterspace().meta().layout & COLLAPSIBLE)>0)       \
+    if (((kernel_.iterspace().meta().layout & KP_COLLAPSIBLE)>0)       \
     and ((kernel_.omask() & KP_SCAN)==0)                               \
     and (not((rank>1) and ((kernel_.omask() & KP_REDUCE_PARTIAL)>0)))) {
         plaid = "walker.collapsed";
@@ -877,7 +877,7 @@ string Walker::generate_source(bool offload)
         subjects["WALKER_STEP_INNER"]   = step_fwd_inner();
 
         // Reduction specfics
-        if ((kernel_.omask() & REDUCTION)>0) {
+        if ((kernel_.omask() & KP_REDUCTION)>0) {
             if ((out->meta().layout & (KP_SCALAR | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED))>0) {
                 // Initialize the accumulator 
                 subjects["ACCU_OPD_INIT"] = _line(_assign(
@@ -907,7 +907,7 @@ string Walker::generate_source(bool offload)
         }
 
     // MAP | ZIP | KP_REDUCE_COMPLETE | REDUCE_PARTIAL_INNER on ANY KP_LAYOUT, RANK > 1
-    } else if (((kernel_.omask() & (EWISE| KP_REDUCE_COMPLETE | KP_REDUCE_PARTIAL))>0) and \
+    } else if (((kernel_.omask() & (KP_EWISE| KP_REDUCE_COMPLETE | KP_REDUCE_PARTIAL))>0) and \
                 (!(((kernel_.omask() & (KP_REDUCE_PARTIAL))>0) and \
                    (!partial_reduction_on_innermost)))) {
 
@@ -959,7 +959,7 @@ string Walker::generate_source(bool offload)
         }
 
     // MAP | ZIP | REDUCE_PARTIAL_AXIS on ANY KP_LAYOUT, RANK > 1
-    } else if ((kernel_.omask() & (EWISE| KP_REDUCE_PARTIAL))>0) {
+    } else if ((kernel_.omask() & (KP_EWISE| KP_REDUCE_PARTIAL))>0) {
 
         plaid = "walker.axis.nd";
 

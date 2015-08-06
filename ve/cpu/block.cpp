@@ -61,14 +61,14 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
     tacs_.push_back(&tac);              // <-- All tacs
     omask_ |= tac.op;                   // Update omask
 
-    if ((tac.op & (ARRAY_OPS))>0) { 
+    if ((tac.op & (KP_ARRAY_OPS))>0) {
         array_tacs_.push_back(&tac);    // <-- Only array operations
     }
 
     switch(tac_noperands(tac)) {
         case 3:
             _localize_scope(tac.in2);                   // Localize scope,      in2
-            if ((tac.op & (ARRAY_OPS))>0) {
+            if ((tac.op & (KP_ARRAY_OPS))>0) {
                 if (array_contraction && (krnl.get_temps().find(globals_[tac.in2].base)!=krnl.get_temps().end())) {
                     globals_.turn_contractable(tac.in2);    // Mark contractable,   in2
                 }
@@ -76,7 +76,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
             }
         case 2:
             _localize_scope(tac.in1);                   // Localize scope,      in1
-            if ((tac.op & (ARRAY_OPS))>0) {
+            if ((tac.op & (KP_ARRAY_OPS))>0) {
                 if (array_contraction && (krnl.get_temps().find(globals_[tac.in1].base)!=krnl.get_temps().end())) {
                     globals_.turn_contractable(tac.in1);    // Mark contractable,   in1
                 }
@@ -84,7 +84,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
             }
         case 1:
             _localize_scope(tac.out);                   // Localize scope,      out
-            if ((tac.op & (ARRAY_OPS))>0) {
+            if ((tac.op & (KP_ARRAY_OPS))>0) {
                 if (array_contraction && (krnl.get_temps().find(globals_[tac.out].base)!=krnl.get_temps().end())) {
                     globals_.turn_contractable(tac.out);    // Mark contractable,   out
                 }
@@ -136,7 +136,7 @@ void Block::compose(bh_ir_kernel& krnl, size_t prg_idx)
 void Block::_bufferize(size_t global_idx)
 {
     // Maintain references to buffers within the block.
-    if ((globals_[global_idx].layout & (DYNALLOC_LAYOUT))>0) {
+    if ((globals_[global_idx].layout & (KP_DYNALLOC_LAYOUT))>0) {
         bh_base* buffer = globals_[global_idx].base;
 
         std::map<bh_base*, size_t>::iterator buf = buffer_ids_.find(buffer);
@@ -379,7 +379,7 @@ void Block::_update_iterspace(void)
     // Determine layout, ndim and shape
     for(size_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
         kp_tac & tac = this->tac(tac_idx);
-        if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
+        if (not ((tac.op & (KP_ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
         if ((tac.op & (KP_REDUCE_COMPLETE | KP_REDUCE_PARTIAL))>0) {     // Reductions are weird
@@ -391,11 +391,11 @@ void Block::_update_iterspace(void)
             if (globals_[tac.out].layout > iterspace_.layout) {
                 iterspace_.layout = globals_[tac.out].layout;
             }
-            if ((globals_[tac.out].layout & (DYNALLOC_LAYOUT))>0) {   // Footprint
+            if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {   // Footprint
                 footprint.insert(globals_[tac.out].base);
                 output_buffers_.insert(globals_[tac.in1].base);
             }
-            if ((globals_[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
+            if ((globals_[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) {
                 footprint.insert(globals_[tac.in1].base);
                 input_buffers_.insert(globals_[tac.in1].base);
             }
@@ -409,7 +409,7 @@ void Block::_update_iterspace(void)
                             iterspace_.shape = globals_[tac.in2].shape;
                         }
                     }
-                    if ((globals_[tac.in2].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
+                    if ((globals_[tac.in2].layout & (KP_DYNALLOC_LAYOUT))>0) { // Footprint
                         footprint.insert(globals_[tac.in2].base);
                         input_buffers_.insert(globals_[tac.in2].base);
                     }
@@ -422,7 +422,7 @@ void Block::_update_iterspace(void)
                             iterspace_.shape = globals_[tac.in1].shape;
                         }
                     }
-                    if ((globals_[tac.in1].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
+                    if ((globals_[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) { // Footprint
                         footprint.insert(globals_[tac.in1].base);
                         input_buffers_.insert(globals_[tac.in1].base);
                     }
@@ -435,7 +435,7 @@ void Block::_update_iterspace(void)
                             iterspace_.shape = globals_[tac.out].shape;
                         }
                     }
-                    if ((globals_[tac.out].layout & (DYNALLOC_LAYOUT))>0) { // Footprint
+                    if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) { // Footprint
                         footprint.insert(globals_[tac.out].base);
                         output_buffers_.insert(globals_[tac.in1].base);
                     }

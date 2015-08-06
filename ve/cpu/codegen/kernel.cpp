@@ -15,7 +15,7 @@ Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block), iters
 
     for(size_t tac_idx=0; tac_idx<block_.ntacs(); ++tac_idx) {
         kp_tac & tac = block_.tac(tac_idx);
-        if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
+        if (not ((tac.op & (KP_ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
         tacs_.push_back(&tac);
@@ -46,7 +46,7 @@ void Kernel::add_operand(uint64_t global_idx)
     kp_operand & operand = block_.operand(local_idx);
     
     Buffer* buffer = NULL;  // Associate a Buffer instance
-    if ((operand.base) && ((operand.layout & DYNALLOC_LAYOUT)>0)) {
+    if ((operand.base) && ((operand.layout & KP_DYNALLOC_LAYOUT)>0)) {
         size_t buffer_id = block_.resolve_buffer(operand.base);
         buffer = new Buffer(operand.base, buffer_id);
         buffers_[buffer_id] = *buffer;

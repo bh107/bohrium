@@ -234,8 +234,8 @@ bool compatible(const kp_operand & one, const kp_operand & other)
 {
     //
     // Scalar layouts are compatible with any other layout
-    if (((one.layout & SCALAR_LAYOUT)>0) || \
-        ((other.layout & SCALAR_LAYOUT)>0)) {
+    if (((one.layout & KP_SCALAR_LAYOUT)>0) || \
+        ((other.layout & KP_SCALAR_LAYOUT)>0)) {
         return true;
     }
     if (one.start != other.start) {
@@ -402,7 +402,7 @@ std::string omask_aop_text(uint32_t omask)
     stringstream ss;
     std::vector<std::string> entries;
     for(uint32_t op= KP_MAP; op<= KP_NOOP; op=op<<1) {
-        if ((((omask&op)>0) and ((op&ARRAY_OPS)>0))) {
+        if ((((omask&op)>0) and ((op& KP_ARRAY_OPS)>0))) {
             entries.push_back(operation_text((KP_OPERATION)op));
         }
     }

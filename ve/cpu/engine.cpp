@@ -188,12 +188,12 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
     for(size_t i=0; i<block.ntacs(); ++i) {
         kp_tac & tac = block.tac(i);
 
-        if (!((tac.op & ARRAY_OPS)>0)) {
+        if (!((tac.op & KP_ARRAY_OPS)>0)) {
             continue;
         }
         switch(tac_noperands(tac)) {
             case 3:
-                if ((symbol_table[tac.in2].layout & (DYNALLOC_LAYOUT))>0) {
+                if ((symbol_table[tac.in2].layout & (KP_DYNALLOC_LAYOUT))>0) {
                     if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
                         accelerator->alloc(symbol_table[tac.in2]);
                         if (NULL!=symbol_table[tac.in2].base->data) {
@@ -202,7 +202,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                     }
                 }
             case 2:
-                if ((symbol_table[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
+                if ((symbol_table[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) {
                     if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
                         accelerator->alloc(symbol_table[tac.in1]);
                         if (NULL!=symbol_table[tac.in1].base->data) {
@@ -211,7 +211,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                     }
                 }
             case 1:
-                if ((symbol_table[tac.out].layout & (DYNALLOC_LAYOUT))>0) {
+                if ((symbol_table[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {
                     res = bh_vcache_malloc_base(symbol_table[tac.out].base);
                     if (BH_SUCCESS != res) {
                         fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
