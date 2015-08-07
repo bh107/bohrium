@@ -108,7 +108,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
         case KP_REDUCE_COMPLETE:
             if (symbol_table[tac.in1].layout == KP_SCALAR) {
                 tac.op   = KP_MAP;
-                tac.oper = IDENTITY;
+                tac.oper = KP_IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
             }
@@ -117,7 +117,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
         case KP_REDUCE_PARTIAL:
             if (symbol_table[tac.in1].layout == KP_SCALAR) {
                 tac.op   = KP_MAP;
-                tac.oper = IDENTITY;
+                tac.oper = KP_IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
             } else if (symbol_table[tac.out].layout == KP_SCALAR) {
@@ -128,7 +128,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
         case KP_SCAN:
             if (symbol_table[tac.in1].layout == KP_SCALAR) {
                 tac.op   = KP_MAP;
-                tac.oper = IDENTITY;
+                tac.oper = KP_IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
             }
@@ -136,38 +136,38 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
 
         case KP_ZIP:
             switch(tac.oper) {
-                case ADD:
+                case KP_ADD:
                     if (((symbol_table[tac.in2].layout & (KP_SCALAR_CONST))>0) && \
                         (get_const_value(symbol_table[tac.in2]) == 0.0)) {
                         tac.op = KP_MAP;
-                        tac.oper = IDENTITY;
+                        tac.oper = KP_IDENTITY;
                         // tac.in1 = same as before
                         tac.in2 = 0;
                         goto transform_identity;
                     }
                     break;
-                case MULTIPLY:
+                case KP_MULTIPLY:
                     if ((symbol_table[tac.in2].layout & (KP_SCALAR_CONST))>0) {
                         if (get_const_value(symbol_table[tac.in2]) == 0.0) {
                             tac.op = KP_MAP;
-                            tac.oper = IDENTITY;
+                            tac.oper = KP_IDENTITY;
                             tac.in1 = tac.in2;
                             set_const_value(symbol_table[tac.in1], 0);
                             tac.in2 = 0;
                         } else if (get_const_value(symbol_table[tac.in2]) == 1.0) {
                             tac.op = KP_MAP;
-                            tac.oper = IDENTITY;
+                            tac.oper = KP_IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
                             goto transform_identity;
                         }
                     }
                     break;
-                case DIVIDE:
+                case KP_DIVIDE:
                     if ((symbol_table[tac.in2].layout & (KP_SCALAR_CONST))>0) {
                         if (get_const_value(symbol_table[tac.in2]) == 1.0) {
                             tac.op = KP_MAP;
-                            tac.oper = IDENTITY;
+                            tac.oper = KP_IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
                             goto transform_identity;
@@ -181,7 +181,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
 
         case KP_MAP:
             switch(tac.oper) {
-                case IDENTITY:
+                case KP_IDENTITY:
                     transform_identity:
                     if (tac.out == tac.in1) {
                         tac.op = KP_NOOP;
@@ -535,11 +535,11 @@ int tac_noperands(const kp_tac & tac)
 
         case KP_GENERATE:
             switch(tac.oper) {
-                case FLOOD:
+                case KP_FLOOD:
                     return 2;
-                case RANDOM:
+                case KP_RANDOM:
                     return 3;
-                case RANGE:
+                case KP_RANGE:
                     return 1;
                 default:
                     throw runtime_error("noperands does not know how many operands are used.");
@@ -548,11 +548,11 @@ int tac_noperands(const kp_tac & tac)
             return 3;
         case KP_SYSTEM:
             switch(tac.oper) {
-                case DISCARD:
-                case FREE:
-                case SYNC:
+                case KP_DISCARD:
+                case KP_FREE:
+                case KP_SYNC:
                     return 1;
-                case NONE:
+                case KP_NONE:
                     return 0;
                 default:
                     throw runtime_error("noperands does not know how many operands are used.");

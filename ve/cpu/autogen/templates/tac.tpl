@@ -78,6 +78,8 @@ typedef struct kp_iterspace {
     int64_t nelem;      // The number of elements in the iteration space
 } kp_iterspace;
 
+typedef void (*kp_krnl_func)(bh_base** buffers, kp_operand ** args, kp_iterspace * iterspace, const int offload_devid);
+
 #define KP_SCALAR_LAYOUT   ( KP_SCALAR | KP_SCALAR_CONST | KP_SCALAR_TEMP )
 #define KP_ARRAY_LAYOUT    ( KP_CONTRACTABLE | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED | KP_SPARSE )
 #define KP_COLLAPSIBLE     ( KP_SCALAR | KP_SCALAR_CONST | KP_CONTRACTABLE | KP_CONTIGUOUS | KP_CONSECUTIVE )

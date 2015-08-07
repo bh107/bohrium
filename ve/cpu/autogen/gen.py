@@ -53,29 +53,29 @@ def instrs_to_tacs(opcodes, ops, opers, types, layouts):
     for o in opcodes:
         opcode = o['opcode']
         if o["composite"]:
-            tac_name = opcode.replace("BH_", '')
+            tac_name = opcode.replace("BH_", "KP_")
             if not [tac for tac in opers if tac['name'] == tac_name]:
                 print "Non-specialized composite: %s" % opcode
                 continue
 
         if o['system_opcode']:
-            system.append([opcode, 'KP_SYSTEM', opcode.replace('BH_',''), 0])
+            system.append([opcode, 'KP_SYSTEM', opcode.replace('BH_','KP_'), 0])
 
         else:
+            operator = opcode.replace("BH_", "KP_")
             if 'REDUCE' in opcode:
-                operator = '_'.join(opcode.split('_')[1:-1])
+                operator = '_'.join(operator.split('_')[:-1])
                 reductions.append([opcode, 'KP_REDUCE_PARTIAL', operator, 2])
             elif 'ACCUMULATE' in opcode:
-                operator = '_'.join(opcode.split('_')[1:-1])
+                operator = '_'.join(operator.split('_')[:-1])
                 scans.append([opcode, 'KP_SCAN', operator, 2])
             elif 'RANDOM' in opcode:
-                generators.append([opcode, 'KP_GENERATE', 'RANDOM', 2])
+                generators.append([opcode, 'KP_GENERATE', 'KP_RANDOM', 2])
             elif 'RANGE' in opcode:
-                generators.append([opcode, 'KP_GENERATE', 'RANGE', 0])
+                generators.append([opcode, 'KP_GENERATE', 'KP_RANGE', 0])
             elif 'GATHER' in opcode or 'KP_SCATTER' in opcode:
-                index.append([opcode, 'KP_INDEX', opcode.replace('BH_',''), 3])
+                index.append([opcode, 'KP_INDEX', operator, 3])
             else:
-                operator = '_'.join(opcode.split('_')[1:])
                 if o['nop'] == 3:
                     ewise_b.append([opcode, 'KP_ZIP', operator, 2])
                 elif o['nop'] == 2:

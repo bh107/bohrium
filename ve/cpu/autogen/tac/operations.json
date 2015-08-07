@@ -4,13 +4,38 @@
         "CC",  "CK",  "CS",  "SC",  "SK",  "SS"
     ],
     "operators": [
-        "IDENTITY", "ABSOLUTE", "INVERT", "LOGICAL_NOT", "SQRT", 
-        "REAL", "IMAG", "RINT", "ISINF", "ISNAN",
-        "CEIL", "FLOOR", "TRUNC",                
-        "COS", "COSH", "SIN", "SINH", "TAN", "TANH",
-        "ARCCOS", "ARCCOSH", "ARCSIN", "ARCSINH", "ARCTAN", "ARCTANH",         
-        "LOG", "LOG10", "LOG1P", "LOG2", 
-        "EXP", "EXP2", "EXPM1"
+        "KP_IDENTITY",
+        "KP_ABSOLUTE",
+        "KP_INVERT",
+        "KP_LOGICAL_NOT",
+        "KP_SQRT", 
+        "KP_REAL",
+        "KP_IMAG",
+        "KP_RINT",
+        "KP_ISINF",
+        "KP_ISNAN",
+        "KP_CEIL",
+        "KP_FLOOR",
+        "KP_TRUNC",                
+        "KP_COS",
+        "KP_COSH",
+        "KP_SIN",
+        "KP_SINH",
+        "KP_TAN",
+        "KP_TANH",
+        "KP_ARCCOS",
+        "KP_ARCCOSH",
+        "KP_ARCSIN",
+        "KP_ARCSINH",
+        "KP_ARCTAN",
+        "KP_ARCTANH",         
+        "KP_LOG",
+        "KP_LOG10",
+        "KP_LOG1P",
+        "KP_LOG2", 
+        "KP_EXP",
+        "KP_EXP2",
+        "KP_EXPM1"
     ]
 },
 
@@ -22,13 +47,28 @@
         "SCC", "SCK", "SCS", "SKC", "SKS", "SSC", "SSK", "SSS"
     ],
     "operators": [
-        "ADD", "SUBTRACT", "MULTIPLY", "POWER", "DIVIDE", "MOD",
-        "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR",
-        "LOGICAL_AND", "LOGICAL_OR",  "LOGICAL_XOR",
-        "EQUAL", "NOT_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL",
-        "RIGHT_SHIFT", "LEFT_SHIFT",
-        "MAXIMUM", "MINIMUM",
-        "ARCTAN2"
+        "KP_ADD",
+        "KP_SUBTRACT",
+        "KP_MULTIPLY",
+        "KP_POWER",
+        "KP_DIVIDE",
+        "KP_MOD",
+        "KP_BITWISE_AND",
+        "KP_BITWISE_OR",
+        "KP_BITWISE_XOR",
+        "KP_LOGICAL_AND",
+        "KP_LOGICAL_OR",  "LOGICAL_XOR",
+        "KP_EQUAL",
+        "KP_NOT_EQUAL",
+        "KP_GREATER",
+        "KP_GREATER_EQUAL",
+        "KP_LESS",
+        "KP_LESS_EQUAL",
+        "KP_RIGHT_SHIFT",
+        "KP_LEFT_SHIFT",
+        "KP_MAXIMUM",
+        "KP_MINIMUM",
+        "KP_ARCTAN2"
     ]
 },
 
@@ -39,10 +79,16 @@
         "SCK", "SSK", "SCK", "SSK"
     ],
     "operators": [
-        "ADD", "MULTIPLY",
-        "MINIMUM", "MAXIMUM", 
-        "LOGICAL_AND", "LOGICAL_OR", "LOGICAL_XOR",
-        "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR"
+        "KP_ADD",
+        "KP_MULTIPLY",
+        "KP_MINIMUM",
+        "KP_MAXIMUM", 
+        "KP_LOGICAL_AND",
+        "KP_LOGICAL_OR",
+        "KP_LOGICAL_XOR",
+        "KP_BITWISE_AND",
+        "KP_BITWISE_OR",
+        "KP_BITWISE_XOR"
     ]
 },
 
@@ -53,10 +99,16 @@
         "CCK", "CSK", "SCK", "SSK"
     ],
     "operators": [
-        "ADD", "MULTIPLY",
-        "MINIMUM", "MAXIMUM", 
-        "LOGICAL_AND", "LOGICAL_OR", "LOGICAL_XOR",
-        "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR"
+        "KP_ADD",
+        "KP_MULTIPLY",
+        "KP_MINIMUM",
+        "KP_MAXIMUM", 
+        "KP_LOGICAL_AND",
+        "KP_LOGICAL_OR",
+        "KP_LOGICAL_XOR",
+        "KP_BITWISE_AND",
+        "KP_BITWISE_OR",
+        "KP_BITWISE_XOR"
     ]
 },
 
@@ -67,7 +119,8 @@
         "CCK", "CSK", "SCK", "SSK"
     ],
     "operators": [
-        "ADD", "MULTIPLY"
+        "KP_ADD",
+        "KP_MULTIPLY"
     ]
 },
 
@@ -79,7 +132,8 @@
         "SSS", "SSC", "SCS", "SCC"
     ],
     "operators": [
-        "GATHER", "SCATTER"
+        "KP_GATHER",
+        "KP_SCATTER"
     ]
 },
 
@@ -90,7 +144,9 @@
         "K", "CKK", ""
     ],
     "operators": [
-        "FLOOD", "RANDOM", "RANGE"
+        "KP_FLOOD",
+        "KP_RANDOM",
+        "KP_RANGE"
     ]
 },
 
@@ -99,7 +155,9 @@
     "name": "KP_SYSTEM",
     "layouts": ["C", "S"],
     "operators": [
-        "FREE", "DISCARD", "SYNC"
+        "KP_FREE",
+        "KP_DISCARD",
+        "KP_SYNC"
     ]
 },
 

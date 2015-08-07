@@ -75,7 +75,7 @@ int tac_noperands(const kp_tac & tac);
  *
  *  # Silly stuff like
  *
- *  IDENTITY a, a   -> KP_NOOP
+ *  KP_IDENTITY a, a   -> KP_NOOP
  *
  *  # Operators with scalar neutral element
  * 
@@ -83,9 +83,9 @@ int tac_noperands(const kp_tac & tac);
  *  MUL b, b, 1     -> KP_NOOP
  *  DIV a, a, 1     -> KP_NOOP
 
- *  ADD a, b, 0     -> IDENTITY a, b
- *  MUL a, b, 1     -> IDENTITY a, b
- *  MUL a, b, 0     -> IDENTITY a, 0
+ *  ADD a, b, 0     -> KP_IDENTITY a, b
+ *  MUL a, b, 1     -> KP_IDENTITY a, b
+ *  MUL a, b, 0     -> KP_IDENTITY a, 0
  *
  *  # Specialization
  *

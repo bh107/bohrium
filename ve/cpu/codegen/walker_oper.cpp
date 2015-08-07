@@ -16,9 +16,9 @@ namespace codegen{
 string Walker::oper_neutral_element(KP_OPERATOR oper, KP_ETYPE etype)
 {
     switch(oper) {
-        case ADD:               return "0";
-        case MULTIPLY:          return "1";
-        case MAXIMUM:
+        case KP_ADD:               return "0";
+        case KP_MULTIPLY:          return "1";
+        case KP_MAXIMUM:
             switch(etype) {
                 case KP_BOOL:      return "0";
                 case KP_INT8:      return "INT8_MIN";
@@ -33,7 +33,7 @@ string Walker::oper_neutral_element(KP_OPERATOR oper, KP_ETYPE etype)
                 case KP_FLOAT64:   return "DBL_MIN";
                 default:        return "UNKNOWN_NEUTRAL_FOR_MAXIMUM_OF_GIVEN_TYPE";
             }
-        case MINIMUM:
+        case KP_MINIMUM:
             switch(etype) {
                 case KP_BOOL:      return "1";
                 case KP_INT8:      return "INT8_MAX";
@@ -48,10 +48,10 @@ string Walker::oper_neutral_element(KP_OPERATOR oper, KP_ETYPE etype)
                 case KP_FLOAT64:   return "DBL_MAX";
                 default:        return "UNKNOWN_NEUTRAL_FOR_MINIMUM_OF_GIVEN_TYPE";
             }
-        case LOGICAL_AND:       return "1";
-        case LOGICAL_OR:        return "0";
-        case LOGICAL_XOR:       return "0";
-        case BITWISE_AND:
+        case KP_LOGICAL_AND:       return "1";
+        case KP_LOGICAL_OR:        return "0";
+        case KP_LOGICAL_XOR:       return "0";
+        case KP_BITWISE_AND:
             switch(etype) {
                 case KP_BOOL:      return "1";
                 case KP_INT8:      return "-1";
@@ -64,8 +64,8 @@ string Walker::oper_neutral_element(KP_OPERATOR oper, KP_ETYPE etype)
                 case KP_UINT64:    return "UINT64_MAX";
                 default:        return "UNKNOWN_NEUTRAL_FOR_BITWISE_AND_OF_GIVEN_TYPE";
             }
-        case BITWISE_OR:        return "0";
-        case BITWISE_XOR:       return "0";
+        case KP_BITWISE_OR:        return "0";
+        case KP_BITWISE_XOR:       return "0";
         default:                return "UNKNOWN_NEUTRAL_FOR_OPERATOR";
     }
 }
@@ -100,150 +100,150 @@ string Walker::oper_description(kp_tac tac)
 string Walker::oper(KP_OPERATOR oper, KP_ETYPE etype, string in1, string in2)
 {
     switch(oper) {
-        case ABSOLUTE:
+        case KP_ABSOLUTE:
             switch(etype) {
                 case KP_COMPLEX128:    return _cabs(in1);
                 case KP_COMPLEX64:     return _cabsf(in1);
                 default:            return _abs(in1);
             }
-        case ADD:                   return _add(in1, in2);
-        case ARCCOS:            
+        case KP_ADD:                   return _add(in1, in2);
+        case KP_ARCCOS:
             switch(etype) {
                 case KP_COMPLEX128:    return _cacos(in1);
                 case KP_COMPLEX64:     return _cacosf(in1);
                 default:            return _acos(in1);
             }
-        case ARCCOSH:
+        case KP_ARCCOSH:
             switch(etype) {
                 case KP_COMPLEX128:    return _cacosh(in1);
                 case KP_COMPLEX64:     return _cacosf(in1);
                 default:            return _acosh(in1);
             }
-        case ARCSIN:
+        case KP_ARCSIN:
             switch(etype) {
                 case KP_COMPLEX128:    return _casin(in1);
                 case KP_COMPLEX64:     return _casinf(in1);
                 default:            return _asin(in1);
             }
-        case ARCSINH:
+        case KP_ARCSINH:
             switch(etype) {
                 case KP_COMPLEX128:    return _casinh(in1);
                 case KP_COMPLEX64:     return _casinhf(in1);
                 default:            return _asinh(in1);
             }
-        case ARCTAN:
+        case KP_ARCTAN:
             switch(etype) {
                 case KP_COMPLEX128:    return _catan(in1);
                 case KP_COMPLEX64:     return _catanf(in1);
                 default:            return _atan(in1);
             }
-        case ARCTAN2:               return _atan2(in1, in2);
-        case ARCTANH:
+        case KP_ARCTAN2:               return _atan2(in1, in2);
+        case KP_ARCTANH:
             switch(etype) {
                 case KP_COMPLEX128:    return _catanh(in1);
                 case KP_COMPLEX64:     return _catanhf(in1);
                 default:            return _atanh(in1);
             }
-        case BITWISE_AND:           return _bitw_and(in1, in2);
-        case BITWISE_OR:            return _bitw_or(in1, in2);
-        case BITWISE_XOR:           return _bitw_xor(in1, in2);
-        case CEIL:                  return _ceil(in1);
-        case COS:
+        case KP_BITWISE_AND:           return _bitw_and(in1, in2);
+        case KP_BITWISE_OR:            return _bitw_or(in1, in2);
+        case KP_BITWISE_XOR:           return _bitw_xor(in1, in2);
+        case KP_CEIL:                  return _ceil(in1);
+        case KP_COS:
             switch(etype) {
                 case KP_COMPLEX128:    return _ccos(in1);
                 case KP_COMPLEX64:     return _ccosf(in1);
                 default:            return _cos(in1);
             }
-        case COSH:
+        case KP_COSH:
             switch(etype) {
                 case KP_COMPLEX128:    return _ccosh(in1);
                 case KP_COMPLEX64:     return _ccoshf(in1);
                 default:            return _cosh(in1);
             }
-        case DISCARD:               break;  // TODO: Raise exception
-        case DIVIDE:                return _div(in1, in2);
-        case EQUAL:                 return _eq(in1, in2);
-        case EXP:
+        case KP_DISCARD:               break;  // TODO: Raise exception
+        case KP_DIVIDE:                return _div(in1, in2);
+        case KP_EQUAL:                 return _eq(in1, in2);
+        case KP_EXP:
             switch(etype) {
                 case KP_COMPLEX128:    return _cexp(in1);
                 case KP_COMPLEX64:     return _cexpf(in1);
                 default:            return _exp(in1);
             }
-        case EXP2:
+        case KP_EXP2:
             switch(etype) {
                 case KP_COMPLEX128:    return _cexp2(in1);
                 case KP_COMPLEX64:     return _cexp2f(in1);
                 default:            return _exp2(in1);
             }
-        case EXPM1:                 return _expm1(in1);
-        case EXTENSION_OPERATOR:    break;  // TODO: Raise exception
-        case FLOOD:                 break;  // TODO: Raise exception
-        case FLOOR:                 return _floor(in1);
-        case FREE:                  break;  // TODO: Raise exception
-        case GREATER:               return _gt(in1, in2);
-        case GREATER_EQUAL:         return _gteq(in1, in2);
-        case IDENTITY:              return in1;
-        case IMAG:
+        case KP_EXPM1:                 return _expm1(in1);
+        case KP_EXTENSION_OPERATOR:    break;  // TODO: Raise exception
+        case KP_FLOOD:                 break;  // TODO: Raise exception
+        case KP_FLOOR:                 return _floor(in1);
+        case KP_FREE:                  break;  // TODO: Raise exception
+        case KP_GREATER:               return _gt(in1, in2);
+        case KP_GREATER_EQUAL:         return _gteq(in1, in2);
+        case KP_IDENTITY:              return in1;
+        case KP_IMAG:
             switch(etype) {
                 case KP_FLOAT32:       return _cimagf(in1);
                 default:            return _cimag(in1);
             }
-        case INVERT:
+        case KP_INVERT:
             switch(etype) {
                 case KP_BOOL:          return _invertb(in1);
                 default:            return _invert(in1);
             }
-        case ISINF:                 return _isinf(in1);
-        case ISNAN:                 return _isnan(in1);
-        case LEFT_SHIFT:            return _bitw_leftshift(in1, in2);
-        case LESS:                  return _lt(in1, in2);
-        case LESS_EQUAL:            return _lteq(in1, in2);
-        case LOG:
+        case KP_ISINF:                 return _isinf(in1);
+        case KP_ISNAN:                 return _isnan(in1);
+        case KP_LEFT_SHIFT:            return _bitw_leftshift(in1, in2);
+        case KP_LESS:                  return _lt(in1, in2);
+        case KP_LESS_EQUAL:            return _lteq(in1, in2);
+        case KP_LOG:
             switch(etype) {
                 case KP_COMPLEX128:    return _clog(in1);
                 case KP_COMPLEX64:     return _clogf(in1);
                 default:            return _log(in1);
             }
-        case LOG10:
+        case KP_LOG10:
             switch(etype) {
                 case KP_COMPLEX128:    return _clog10(in1);
                 case KP_COMPLEX64:     return _clog10f(in1);
                 default:            return _log10(in1);
             }
-        case LOG1P:                 return _log1p(in1);
-        case LOG2:                  return _log2(in1);
-        case LOGICAL_AND:           return _logic_and(in1, in2);
-        case LOGICAL_NOT:           return _logic_not(in1);
-        case LOGICAL_OR:            return _logic_or(in1, in2);
-        case LOGICAL_XOR:           return _logic_xor(in1, in2);
-        case MAXIMUM:               return _max(in1, in2);
-        case MINIMUM:               return _min(in1, in2);
-        case MOD:                   return _mod(in1, in2);
-        case MULTIPLY:              return _mul(in1, in2);
-        case NONE:                  break;  // TODO: Raise exception
-        case NOT_EQUAL:             return _neq(in1, in2);
-        case POWER:
+        case KP_LOG1P:                 return _log1p(in1);
+        case KP_LOG2:                  return _log2(in1);
+        case KP_LOGICAL_AND:           return _logic_and(in1, in2);
+        case KP_LOGICAL_NOT:           return _logic_not(in1);
+        case KP_LOGICAL_OR:            return _logic_or(in1, in2);
+        case KP_LOGICAL_XOR:           return _logic_xor(in1, in2);
+        case KP_MAXIMUM:               return _max(in1, in2);
+        case KP_MINIMUM:               return _min(in1, in2);
+        case KP_MOD:                   return _mod(in1, in2);
+        case KP_MULTIPLY:              return _mul(in1, in2);
+        case KP_NONE:                  break;  // TODO: Raise exception
+        case KP_NOT_EQUAL:             return _neq(in1, in2);
+        case KP_POWER:
             switch(etype) {
                 case KP_COMPLEX128:    return _cpow(in1, in2);
                 case KP_COMPLEX64:     return _cpowf(in1, in2);
                 default:            return _pow(in1, in2);
             }
-        case RANDOM:                return _random(in1, in2);
-        case RANGE:                 return _range();
-        case REAL:
+        case KP_RANDOM:                return _random(in1, in2);
+        case KP_RANGE:                 return _range();
+        case KP_REAL:
             switch(etype) {
                 case KP_FLOAT32:       return _crealf(in1);
                 default:            return _creal(in1);
             }
-        case RIGHT_SHIFT:           return _bitw_rightshift(in1, in2);
-        case RINT:                  return _rint(in1);
-        case SIN:
+        case KP_RIGHT_SHIFT:           return _bitw_rightshift(in1, in2);
+        case KP_RINT:                  return _rint(in1);
+        case KP_SIN:
             switch(etype) {
                 case KP_COMPLEX128:    return _csin(in1);
                 case KP_COMPLEX64:     return _csinf(in1);
                 default:            return _sin(in1);
             }
-        case SIGN:
+        case KP_SIGN:
             switch(etype) {
                 case KP_COMPLEX128:    return _div(in1, _parens(_add(_cabs(in1), _parens(_eq(in1, "0")))));
                 case KP_COMPLEX64:     return _div(in1, _parens(_add(_cabsf(in1), _parens(_eq(in1, "0")))));
@@ -253,33 +253,33 @@ string Walker::oper(KP_OPERATOR oper, KP_ETYPE etype, string in1, string in2)
                                            );
             }
 
-        case SINH:
+        case KP_SINH:
             switch(etype) {
                 case KP_COMPLEX128:    return _csinh(in1);
                 case KP_COMPLEX64:     return _csinhf(in1);
                 default:            return _sinh(in1);
             }
-        case SQRT:
+        case KP_SQRT:
             switch(etype) {
                 case KP_COMPLEX128:    return _csqrt(in1);
                 case KP_COMPLEX64:     return _csqrtf(in1);
                 default:            return _sqrt(in1);
             }
-        case SUBTRACT:              return _sub(in1, in2);
-        case SYNC:                  break;  // TODO: Raise exception
-        case TAN:
+        case KP_SUBTRACT:              return _sub(in1, in2);
+        case KP_SYNC:                  break;  // TODO: Raise exception
+        case KP_TAN:
             switch(etype) {
                 case KP_COMPLEX128:    return _ctan(in1);
                 case KP_COMPLEX64:     return _ctanf(in1);
                 default:            return _tan(in1);
             }
-        case TANH:
+        case KP_TANH:
             switch(etype) {
                 case KP_COMPLEX128:    return _ctanh(in1);
                 case KP_COMPLEX64:     return _ctanhf(in1);
                 default:            return _tanh(in1);
             }
-        case TRUNC:                 return _trunc(in1);
+        case KP_TRUNC:                 return _trunc(in1);
         default:                    return "NOT_IMPLEMENTED_YET";
     }
     return "NO NO< NO NO NO NO NONO NO NO NO NOTHERES NO LIMITS";
@@ -289,11 +289,11 @@ string Walker::synced_oper(KP_OPERATOR operation, KP_ETYPE etype, string out, st
 {
     stringstream ss;
     switch(operation) {
-        case MAXIMUM:
-        case MINIMUM:
-        case LOGICAL_AND:
-        case LOGICAL_OR:
-        case LOGICAL_XOR:
+        case KP_MAXIMUM:
+        case KP_MINIMUM:
+        case KP_LOGICAL_AND:
+        case KP_LOGICAL_OR:
+        case KP_LOGICAL_XOR:
             ss << _omp_critical(_assign(out, oper(operation, etype, in1, in2)), "accusync");
             break;
         default:

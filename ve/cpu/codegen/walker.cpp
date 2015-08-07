@@ -618,7 +618,7 @@ string Walker::operations(void)
         ++tit) {
         kp_tac & tac = **tit;
         KP_ETYPE etype;
-        if (ABSOLUTE == tac.oper) {
+        if (KP_ABSOLUTE == tac.oper) {
             etype = kernel_.operand_glb(tac.in1).meta().etype;
         } else {
             etype = kernel_.operand_glb(tac.out).meta().etype;
@@ -693,7 +693,7 @@ string Walker::operations(void)
 
             case KP_INDEX:
                 switch(tac.oper) {
-                    case GATHER:
+                    case KP_GATHER:
                         inner_opds_.insert(tac.out);
                         inner_opds_.insert(tac.in2);
                         out = kernel_.operand_glb(tac.out).walker_val();
@@ -709,7 +709,7 @@ string Walker::operations(void)
                         ) << _end();
                         break;
 
-                    case SCATTER:
+                    case KP_SCATTER:
                         inner_opds_.insert(tac.in1);
                         inner_opds_.insert(tac.in2);
                         out = _add(
