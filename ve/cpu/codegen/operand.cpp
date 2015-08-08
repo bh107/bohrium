@@ -185,7 +185,7 @@ string Operand::buffer_etype(void)
     return ss.str();
 }
 
-bh_base* Operand::buffer_meta(void)
+kp_buffer * Operand::buffer_meta(void)
 {
     if (buffer_) {
         return &buffer_->meta();

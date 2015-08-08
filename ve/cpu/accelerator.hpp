@@ -107,9 +107,9 @@ private:
 
     int id_;
     size_t bytes_allocated_;
-    std::set<const bh_base*> buffers_allocated_;
+    std::set<const kp_buffer *> buffers_allocated_;
 
-    std::set<const bh_base*> buffers_pushed_;
+    std::set<const kp_buffer *> buffers_pushed_;
 
     static const char TAG[];
 };

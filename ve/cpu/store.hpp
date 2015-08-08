@@ -23,11 +23,9 @@ namespace bohrium {
 namespace engine {
 namespace cpu {
 
-typedef void (*func)(bh_base** buffers, kp_operand ** args, kp_iterspace * iterspace, const int offload_devid);
-
 //
-//  Retrieve a function pointer for the symbol (SYMBOL -> func)
-typedef std::map<const std::string, func> func_storage;
+//  Retrieve a function pointer for the symbol (SYMBOL -> kp_krnl_func)
+typedef std::map<const std::string, kp_krnl_func> func_storage;
 
 //
 //  Retrieve the library handle for a library (LIBRARY -> handle)

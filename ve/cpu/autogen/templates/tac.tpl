@@ -15,48 +15,24 @@ directiveStartToken= %
 // rid of it... at some point...
 typedef struct { uint64_t first, second; } pair_LL; 
 
-#ifndef __BH_BASE
-#define __BH_BASE
 typedef struct
 {
-    void* data;     // Pointer to memory allocation supporting the buffer.
-    int64_t type;   // Datatype for which the buffer is intended to store.
-    int64_t nelem;  // Number of elements of the given datatype for which there is room for in the buffer.
-} bh_base;
-#endif
-
-typedef enum KP_OPERATION {
-    %for $op in $ops
-    $addw($op['name']) = ${op['id']}$addsep($op, $ops)
-    %end for
-} KP_OPERATION;
-
-typedef enum KP_OPERATOR {
-    %for $oper in $opers
-    $addw($oper['name'],15) = ${oper['id']}$addsep($oper, $opers)
-    %end for
-} KP_OPERATOR;
+    void* data;         // Pointer to memory allocation supporting the buffer.
+    int64_t type;       // Datatype for which the buffer is intended to store.
+    int64_t nelem;      // Number of elements of the given datatype for which there is room for in the buffer.
+} kp_buffer;            // NOTE: Must be binary compatible with Bohrium for interoperability
 
 typedef enum KP_ETYPE {
     %for $type in $types
-    $addw($type['name']) = ${type['id']}$addsep($type, $types)
+    $addw($type['name'])$addsep($type, $types)
     %end for
-} KP_ETYPE;
+} KP_ETYPE;             // NOTE: Must be binary compatible with Bohrium for interoperability
 
 typedef enum KP_LAYOUT {
     %for $layout in $layouts
     $addw($layout['name']) = ${layout['id']}$addsep($layout, $layouts)
     %end for
-} KP_LAYOUT;   // Uses a single byte
-
-typedef struct kp_tac {
-    KP_OPERATION op;    // Operation
-    KP_OPERATOR  oper;  // Operator
-    uint32_t  out;      // Output operand
-    uint32_t  in1;      // First input operand
-    uint32_t  in2;      // Second input operand
-    void* ext;
-} kp_tac;
+} KP_LAYOUT;            // Bitmasks
 
 typedef struct kp_operand {
     KP_LAYOUT  layout;  // The layout of the data
@@ -68,8 +44,29 @@ typedef struct kp_operand {
     int64_t ndim;       // Number of dimensions of the array
     int64_t* shape;     // Shape of the array
     int64_t* stride;    // Stride in each dimension of the array
-    bh_base* base;      // Pointer to operand base or NULL when layout == SCALAR_CONST.
+    kp_buffer* base;    // Pointer to operand base or NULL when layout == SCALAR_CONST.
 } kp_operand;           // Meta-data for a block argument
+
+typedef enum KP_OPERATION {
+    %for $op in $ops
+    $addw($op['name']) = ${op['id']}$addsep($op, $ops)
+    %end for
+} KP_OPERATION;         // Bitmasks
+
+typedef enum KP_OPERATOR {
+    %for $oper in $opers
+    $addw($oper['name'],15) = ${oper['id']}$addsep($oper, $opers)
+    %end for
+} KP_OPERATOR;          // Bitmasks
+
+typedef struct kp_tac {
+    KP_OPERATION op;    // Operation
+    KP_OPERATOR  oper;  // Operator
+    uint32_t  out;      // Output operand
+    uint32_t  in1;      // First input operand
+    uint32_t  in2;      // Second input operand
+    void* ext;
+} kp_tac;
 
 typedef struct kp_iterspace {
     KP_LAYOUT layout;   // The dominating layout
@@ -78,7 +75,7 @@ typedef struct kp_iterspace {
     int64_t nelem;      // The number of elements in the iteration space
 } kp_iterspace;
 
-typedef void (*kp_krnl_func)(bh_base** buffers, kp_operand ** args, kp_iterspace * iterspace, const int offload_devid);
+typedef void (*kp_krnl_func)(kp_buffer** buffers, kp_operand ** args, kp_iterspace * iterspace, const int offload_devid);
 
 #define KP_SCALAR_LAYOUT   ( KP_SCALAR | KP_SCALAR_CONST | KP_SCALAR_TEMP )
 #define KP_ARRAY_LAYOUT    ( KP_CONTRACTABLE | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED | KP_SPARSE )

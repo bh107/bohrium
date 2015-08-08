@@ -213,7 +213,7 @@ void Store::add_symbol(const string symbol, const string library)
 }
 
 /**
- *  Load a single symbol from library symbol into func-storage.
+ *  Load a single symbol from library symbol into kp_krnl_func-storage.
  */
 bool Store::load(const string symbol)
 {
@@ -238,7 +238,7 @@ bool Store::load(const string symbol, const string library)
     }
 
     dlerror();                          // Clear any existing error then,
-    funcs[symbol] = (func)dlsym(        // Load symbol/function
+    funcs[symbol] = (kp_krnl_func)dlsym(        // Load symbol/function
         handles_[library],
         (kernel_prefix_+symbol).c_str()
     );

@@ -4,7 +4,7 @@
 #include <map>
 
 #include "bh.h"
-#include "kp_tac.h"
+#include "kp.h"
 #include "symbol_table.hpp"
 #include "utils.hpp"
 
@@ -99,17 +99,17 @@ public:
     /**
      *  Grab buffer with the given id.
      */
-    bh_base& buffer(size_t buffer_id);
+    kp_buffer& buffer(size_t buffer_id);
 
     /**
      *  Returns the buffer id for the provided buffer pointer.
      */
-    size_t resolve_buffer(bh_base* buffer);
+    size_t resolve_buffer(kp_buffer* buffer);
 
     /**
      *  Return the array of buffers
      */
-    bh_base** buffers(void);
+    kp_buffer** buffers(void);
 
     /**
      *  Count of buffers in the block.
@@ -119,7 +119,7 @@ public:
     /**
      *  How many operands use this buffer.
      */
-    size_t base_refcount(bh_base* base);
+    size_t base_refcount(kp_buffer* base);
 
     /**
      * Return the tac-instance with the given index.
@@ -213,13 +213,13 @@ private:
     
     uint32_t omask_;                            // Operation mask
 
-    bh_base** buffers_;                         // Buffer references
+    kp_buffer** buffers_;                         // Buffer references
     size_t nbuffers_;
 
-    std::map<bh_base*, size_t> buffer_ids_;
-    std::set<bh_base*> input_buffers_;
-    std::set<bh_base*> output_buffers_;
-    std::map<bh_base*, std::set<uint64_t>> buffer_refs_;
+    std::map<kp_buffer*, size_t> buffer_ids_;
+    std::set<kp_buffer*> input_buffers_;
+    std::set<kp_buffer*> output_buffers_;
+    std::map<kp_buffer*, std::set<uint64_t>> buffer_refs_;
 
     kp_operand ** operands_;                      // Operand references
     size_t noperands_;

@@ -136,7 +136,7 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
         table_[arg_idx].stride   = instr.operand[operand_idx].stride;
 
         table_[arg_idx].layout   = determine_layout(table_[arg_idx]);
-        table_[arg_idx].base     = instr.operand[operand_idx].base;
+        table_[arg_idx].base     = (kp_buffer*)instr.operand[operand_idx].base;
     }
 
     //

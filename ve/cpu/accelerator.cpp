@@ -19,7 +19,7 @@ namespace cpu{
 
 const char Accelerator::TAG[] = "Accelerator";
 
-Accelerator::Accelerator(int id) : id_(id), bytes_allocated_(0) {};
+Accelerator::Accelerator(int id) : id_(id), bytes_allocated_(0) {}
 
 int Accelerator::id(void)
 {

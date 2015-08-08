@@ -55,7 +55,7 @@ KERNEL-DESCRIPTION {
   SYMBOL_TEXT   = {{SYMBOL_TEXT}}
 }
 */
-void KRN_{{SYMBOL}}(bh_base** buffers, kp_operand** args, const kp_iterspace* const iterspace, const int offload_devid)
+void KRN_{{SYMBOL}}(kp_buffer** buffers, kp_operand** args, const kp_iterspace* const iterspace, const int offload_devid)
 {
     //
     // Buffer unpacking

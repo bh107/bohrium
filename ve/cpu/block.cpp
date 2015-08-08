@@ -69,7 +69,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
         case 3:
             _localize_scope(tac.in2);                   // Localize scope,      in2
             if ((tac.op & (KP_ARRAY_OPS))>0) {
-                if (array_contraction && (krnl.get_temps().find(globals_[tac.in2].base)!=krnl.get_temps().end())) {
+                if (array_contraction && (krnl.get_temps().find((bh_base*)globals_[tac.in2].base)!=krnl.get_temps().end())) {
                     globals_.turn_contractable(tac.in2);    // Mark contractable,   in2
                 }
                 _bufferize(tac.in2);                        // Note down buffer id, in2
@@ -77,7 +77,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
         case 2:
             _localize_scope(tac.in1);                   // Localize scope,      in1
             if ((tac.op & (KP_ARRAY_OPS))>0) {
-                if (array_contraction && (krnl.get_temps().find(globals_[tac.in1].base)!=krnl.get_temps().end())) {
+                if (array_contraction && (krnl.get_temps().find((bh_base*)globals_[tac.in1].base)!=krnl.get_temps().end())) {
                     globals_.turn_contractable(tac.in1);    // Mark contractable,   in1
                 }
                 _bufferize(tac.in1);                        // Note down buffer id, in1
@@ -85,7 +85,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
         case 1:
             _localize_scope(tac.out);                   // Localize scope,      out
             if ((tac.op & (KP_ARRAY_OPS))>0) {
-                if (array_contraction && (krnl.get_temps().find(globals_[tac.out].base)!=krnl.get_temps().end())) {
+                if (array_contraction && (krnl.get_temps().find((bh_base*)globals_[tac.out].base)!=krnl.get_temps().end())) {
                     globals_.turn_contractable(tac.out);    // Mark contractable,   out
                 }
                 _bufferize(tac.out);                        // Note down buffer id, out
@@ -97,7 +97,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 
 void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 {
-    buffers_ = new bh_base*[krnl.instr_indexes.size()*3];
+    buffers_ = new kp_buffer *[krnl.instr_indexes.size()*3];
     operands_ = new kp_operand *[krnl.instr_indexes.size()*3];
 
     for(std::vector<uint64_t>::iterator idx_it = krnl.instr_indexes.begin();
@@ -112,7 +112,7 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
             for(size_t operand_idx = 0;
                 operand_idx < noperands();
                 ++operand_idx) {
-                if (operand(operand_idx).base == base) {
+                if (operand(operand_idx).base == (kp_buffer*)base) {
                     globals_.turn_contractable(local_to_global(operand_idx));
                 }
             }
@@ -125,7 +125,7 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 
 void Block::compose(bh_ir_kernel& krnl, size_t prg_idx)
 {
-    buffers_ = new bh_base*[3];
+    buffers_ = new kp_buffer *[3];
     operands_ = new kp_operand *[3];
     
     _compose(krnl, false, prg_idx);
@@ -137,12 +137,12 @@ void Block::_bufferize(size_t global_idx)
 {
     // Maintain references to buffers within the block.
     if ((globals_[global_idx].layout & (KP_DYNALLOC_LAYOUT))>0) {
-        bh_base* buffer = globals_[global_idx].base;
+        kp_buffer * buffer = globals_[global_idx].base;
 
-        std::map<bh_base*, size_t>::iterator buf = buffer_ids_.find(buffer);
+        std::map<kp_buffer *, size_t>::iterator buf = buffer_ids_.find(buffer);
         if (buf == buffer_ids_.end()) {
             size_t buffer_id = nbuffers_++;
-            buffer_ids_.insert(pair<bh_base*, size_t>(
+            buffer_ids_.insert(pair<kp_buffer *, size_t>(
                 buffer,
                 buffer_id
             ));
@@ -277,21 +277,21 @@ bool Block::symbolize(void)
     return true;
 }
 
-bh_base& Block::buffer(size_t buffer_id)
+kp_buffer & Block::buffer(size_t buffer_id)
 {
     return *buffers_[buffer_id];
 }
 
-size_t Block::resolve_buffer(bh_base* buffer)
+size_t Block::resolve_buffer(kp_buffer * buffer)
 {
-    std::map<bh_base*, size_t>::iterator buf = buffer_ids_.find(buffer);
+    std::map<kp_buffer *, size_t>::iterator buf = buffer_ids_.find(buffer);
     if (buf == buffer_ids_.end()) {
         // TODO: Raise exception
     }
     return buf->second;
 }
 
-bh_base** Block::buffers(void)
+kp_buffer ** Block::buffers(void)
 {
     return buffers_;
 }
@@ -301,7 +301,7 @@ size_t Block::nbuffers(void)
     return nbuffers_;
 }
 
-size_t Block::base_refcount(bh_base* base)
+size_t Block::base_refcount(kp_buffer * base)
 {
     return buffer_refs_[base].size();
 }
@@ -373,7 +373,7 @@ kp_iterspace & Block::iterspace(void)
 
 void Block::_update_iterspace(void)
 {       
-    std::set<const bh_base*> footprint;
+    std::set<const kp_buffer *> footprint;
 
     //
     // Determine layout, ndim and shape
@@ -448,11 +448,11 @@ void Block::_update_iterspace(void)
 
     footprint_nelem_ = 0;                       // Compute the footprint
     footprint_bytes_ = 0;
-    for (std::set<const bh_base*>::iterator it=footprint.begin();
+    for (std::set<const kp_buffer*>::iterator it=footprint.begin();
          it!=footprint.end();
          ++it) {
         footprint_nelem_ += (*it)->nelem;
-        footprint_bytes_ += bh_base_size(*it);
+        footprint_bytes_ += kp_buffer_nbytes(*it);
     }
 
     if (NULL != iterspace_.shape) {             // Determine number of elements
@@ -524,7 +524,7 @@ std::string Block::text(void)
     ss << "}" << endl;
 
     ss << "BASE_REFS {" << endl;
-    for(std::map<bh_base*, std::set<uint64_t> >::iterator it=buffer_refs_.begin();
+    for(std::map<kp_buffer *, std::set<uint64_t> >::iterator it=buffer_refs_.begin();
         it!=buffer_refs_.end();
         ++it) {
         std::set<uint64_t>& op_bases = it->second;

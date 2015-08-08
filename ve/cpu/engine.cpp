@@ -212,7 +212,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                 }
             case 1:
                 if ((symbol_table[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    res = bh_vcache_malloc_base(symbol_table[tac.out].base);
+                    res = bh_vcache_malloc_base((bh_base*)symbol_table[tac.out].base);
                     if (BH_SUCCESS != res) {
                         fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
                                         "called from bh_ve_cpu_execute()\n");
@@ -271,7 +271,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                     accelerator->free(operand);                             // Note: must be done prior to
                 }                                                           //       freeing on host.
 
-                res = bh_vcache_free_base(operand.base);    // Free buffer on host
+                res = bh_vcache_free_base((bh_base*)operand.base);    // Free buffer on host
                 if (BH_SUCCESS != res) {
                     fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
                                     "called from bh_ve_cpu_execute)\n");

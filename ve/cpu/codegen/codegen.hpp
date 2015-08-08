@@ -205,7 +205,7 @@ class Buffer
 {
 public:
     Buffer(void);
-    Buffer(bh_base* buffer, size_t buffer_id);
+    Buffer(kp_buffer * buffer, size_t buffer_id);
 
     std::string name(void);
 
@@ -213,11 +213,11 @@ public:
     std::string nelem(void);
     std::string etype(void);
 
-    bh_base& meta(void);
+    kp_buffer & meta(void);
     size_t id(void);
 
 private:
-    bh_base* buffer_;
+    kp_buffer * buffer_;
     size_t id_;
 };
 
@@ -252,7 +252,7 @@ public:
     std::string buffer_data(void);
     std::string buffer_nelem(void);
     std::string buffer_etype(void);
-    bh_base* buffer_meta(void);
+    kp_buffer * buffer_meta(void);
 
     uint64_t local_id(void);
 
