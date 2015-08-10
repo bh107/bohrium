@@ -1,9 +1,8 @@
+#include <iomanip>
+
 #include "engine.hpp"
 #include "timevault.hpp"
-
-#include <algorithm>
-#include <set>
-#include <iomanip>
+#include <kp_vcache.h>
 
 using namespace std;
 using namespace bohrium::core;
@@ -50,7 +49,7 @@ Engine::Engine(
     thread_control_(binding, thread_limit),
     exec_count(0)
 {
-    bh_vcache_init(vcache_size);    // Victim cache
+    kp_vcache_init(vcache_size);    // Victim cache
     if (preload_) {                 // Object storage
         storage_.preload();
     }
@@ -74,8 +73,8 @@ Engine::Engine(
 Engine::~Engine()
 {   
     if (vcache_size_>0) {   // De-allocate the malloc-cache
-        bh_vcache_clear();
-        bh_vcache_delete();
+        kp_vcache_clear();
+        kp_vcache_delete();
     }
                             // Free accelerator instances
     for(std::vector<Accelerator*>::iterator it=accelerators_.begin();
@@ -212,9 +211,8 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
                 }
             case 1:
                 if ((symbol_table[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    res = bh_vcache_malloc_base((bh_base*)symbol_table[tac.out].base);
-                    if (BH_SUCCESS != res) {
-                        fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
+                    if (!kp_vcache_malloc(symbol_table[tac.out].base)) {
+                        fprintf(stderr, "Unhandled error returned by kp_vcache_malloc() "
                                         "called from bh_ve_cpu_execute()\n");
                         return res;
                     }
@@ -254,26 +252,25 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
 
         switch(tac.oper) {  
 
-            case KP_SYNC:              // Pull buffer from accelerator to host
+            case KP_SYNC:               // Pull buffer from accelerator to host
                 if (accelerator) {
                     accelerator->pull(operand);
                 }
                 break;
 
-            case KP_DISCARD:           // Free buffer on accelerator
+            case KP_DISCARD:            // Free buffer on accelerator
                 if (accelerator) {
                     accelerator->free(operand);
                 }
                 break;
 
-            case KP_FREE:              // NOTE: Isn't BH_FREE redundant?
-                if (accelerator) {   // Free buffer on accelerator
+            case KP_FREE:               // NOTE: Isn't BH_FREE redundant?
+                if (accelerator) {      // Free buffer on accelerator
                     accelerator->free(operand);                             // Note: must be done prior to
                 }                                                           //       freeing on host.
 
-                res = bh_vcache_free_base((bh_base*)operand.base);    // Free buffer on host
-                if (BH_SUCCESS != res) {
-                    fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
+                if (!kp_vcache_free(operand.base)) {                 // Free buffer on host
+                    fprintf(stderr, "Unhandled error returned by kp_vcache_free(...) "
                                     "called from bh_ve_cpu_execute)\n");
                     return res;
                 }

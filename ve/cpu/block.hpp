@@ -4,7 +4,7 @@
 #include <map>
 
 #include "bh.h"
-#include "kp.h"
+#include "kp_utils.h"
 #include "symbol_table.hpp"
 #include "utils.hpp"
 

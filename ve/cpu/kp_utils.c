@@ -1,4 +1,4 @@
-#include "kp.h"
+#include <kp_utils.h>
 
 size_t kp_etype_nbytes(KP_ETYPE etype)
 {

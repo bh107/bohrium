@@ -1,9 +1,8 @@
 #ifndef __BH_VE_CPU_ENGINE
 #define __BH_VE_CPU_ENGINE
 #include "bh.h"
-#include "bh_vcache.h"
 
-#include "kp_tac.h"
+
 #include "block.hpp"
 #include "symbol_table.hpp"
 #include "thread_control.hpp"

@@ -45,9 +45,10 @@ set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp")
 add_library(bh_ve_cpu SHARED ${HDR} ${SRC})             # The main target for the Engine
 
-set(KP_HDR "${KP_HDR};${CMAKE_CURRENT_SOURCE_DIR}/kp.h")
 set(KP_HDR "${KP_HDR};${CMAKE_CURRENT_SOURCE_DIR}/kp_tac.h")
-set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp.c")
+
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_utils.c")
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_vcache.c")
 add_library(kp SHARED ${KP_HDR} ${KP_SRC})
 
 #
@@ -102,7 +103,8 @@ if (HAS_C_WALL)
 endif()
 check_c_compiler_flag(-std=c99 HAS_C_C99)
 if (HAS_C_C99)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ")
+    #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 ")       # Needed for MAP_ANONYMOUS
 endif()
 
 check_cxx_compiler_flag(-Wall HAS_CXX_PEDANTIC)             # C++ Flags
