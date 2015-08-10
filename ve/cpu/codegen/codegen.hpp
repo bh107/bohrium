@@ -205,7 +205,7 @@ class Buffer
 {
 public:
     Buffer(void);
-    Buffer(kp_buffer * buffer, size_t buffer_id);
+    Buffer(kp_buffer* buffer, int64_t buffer_id);
 
     std::string name(void);
 
@@ -214,11 +214,11 @@ public:
     std::string etype(void);
 
     kp_buffer & meta(void);
-    size_t id(void);
+    int64_t id(void);
 
 private:
     kp_buffer * buffer_;
-    size_t id_;
+    int64_t id_;
 };
 
 class Operand

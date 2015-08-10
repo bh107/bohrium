@@ -89,12 +89,12 @@ public:
     /**
      *  Return the array of pointer-operands.
      */
-    kp_operand ** operands(void);
+    kp_operand** operands(void);
 
     /**
      * Count of operands in the block.
      */
-    size_t noperands(void) const;
+    int64_t noperands(void) const;
 
     /**
      *  Grab buffer with the given id.
@@ -114,12 +114,12 @@ public:
     /**
      *  Count of buffers in the block.
      */
-    size_t nbuffers(void);
+    int64_t nbuffers();
 
     /**
      *  How many operands use this buffer.
      */
-    size_t base_refcount(kp_buffer* base);
+    size_t buffer_refcount(kp_buffer *buffer);
 
     /**
      * Return the tac-instance with the given index.
@@ -143,7 +143,7 @@ public:
     /**
      *  Returns the iteration space of the block.
      */
-    kp_iterspace & iterspace(void);
+    kp_iterspace& iterspace(void);
 
     size_t footprint_nelem(void);
     size_t footprint_bytes(void);
@@ -210,31 +210,23 @@ private:
      *  any other changes to tacs and operands.
      */
     void _update_iterspace(void);
-    
-    uint32_t omask_;                            // Operation mask
 
-    kp_buffer** buffers_;                         // Buffer references
-    size_t nbuffers_;
+    kp_block block_;                             // buffers, operands, iterspace, and omask.
 
     std::map<kp_buffer*, size_t> buffer_ids_;
     std::set<kp_buffer*> input_buffers_;
     std::set<kp_buffer*> output_buffers_;
     std::map<kp_buffer*, std::set<uint64_t>> buffer_refs_;
 
-    kp_operand ** operands_;                      // Operand references
-    size_t noperands_;
-
     SymbolTable& globals_;                      // A reference to the global symbol table
 
     std::map<size_t, size_t> global_to_local_;  // Mapping from global to block-local scope.
     std::map<size_t, size_t> local_to_global_;  // Mapping from global to block-local scope.
 
-    kp_iterspace iterspace_;                     // The iteration-space of the block
+    std::vector<kp_tac>& program_;              // A reference to the entire bytecode program
 
-    std::vector<kp_tac>& program_;               // A reference to the entire bytecode program
-
-    std::vector<kp_tac *> tacs_;                  // A subset of the tac-program representing the block.
-    std::vector<kp_tac *> array_tacs_;            // A subset of the tac-program containing only array ops.
+    std::vector<kp_tac *> tacs_;                // A subset of the tac-program representing the block.
+    std::vector<kp_tac *> array_tacs_;          // A subset of the tac-program containing only array ops.
 
     std::string symbol_text_;                   // Textual representation of the block
     std::string symbol_;                        // Hash of textual representation

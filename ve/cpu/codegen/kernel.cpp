@@ -1,5 +1,4 @@
 #include <sstream>
-#include <string>
 #include "utils.hpp"
 #include "codegen.hpp"
 
@@ -76,7 +75,7 @@ Iterspace& Kernel::iterspace(void)
 
 uint64_t Kernel::base_refcount(uint64_t gidx)
 {
-    return block_.base_refcount(operand_glb(gidx).meta().base);
+    return block_.buffer_refcount(operand_glb(gidx).meta().base);
 }
 
 uint64_t Kernel::noperands(void)
@@ -199,7 +198,7 @@ string Kernel::unpack_iterspace(void)
 string Kernel::unpack_buffers(void)
 {
     stringstream ss;
-    for(size_t bid=0; bid<block_.nbuffers(); ++bid) {
+    for(int64_t bid=0; bid< block_.nbuffers(); ++bid) {
         Buffer buffer(&block_.buffer(bid), bid);
         ss << endl;
         ss << "// Buffer " << buffer.name() << endl;

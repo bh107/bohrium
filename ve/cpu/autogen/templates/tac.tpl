@@ -74,6 +74,15 @@ typedef struct kp_iterspace {
     int64_t nelem;      // The number of elements in the iteration space
 } kp_iterspace;
 
+typedef struct kp_block {
+    kp_operand** operands;  // Array of pointers to operands
+    int64_t noperands;     // # block operands
+    kp_buffer** buffers;    // Array of pointers to buffers
+    int64_t nbuffers;      // # buffers
+    kp_iterspace iterspace; // Iteration space
+    uint32_t omask;        // Operation mask
+} kp_block;
+
 typedef void (*kp_krnl_func)(kp_buffer** buffers, kp_operand ** args, kp_iterspace * iterspace, const int offload_devid);
 
 #define KP_SCALAR_LAYOUT   ( KP_SCALAR | KP_SCALAR_CONST | KP_SCALAR_TEMP )

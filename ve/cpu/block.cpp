@@ -9,7 +9,7 @@ namespace core{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& globals, vector<kp_tac>& program)
-: omask_(0), buffers_(NULL), nbuffers_(0), operands_(NULL), noperands_(0), globals_(globals), program_(program), symbol_text_(""), symbol_(""), footprint_nelem_(0), footprint_bytes_(0)
+: block_(), globals_(globals), program_(program), symbol_text_(""), symbol_(""), footprint_nelem_(0), footprint_bytes_(0)
 {}
 
 Block::~Block()
@@ -18,34 +18,36 @@ Block::~Block()
 }
 
 void Block::clear(void)
-{                                   // Reset the current state of the block
-    omask_ = 0;                     // Operation mask
-
-    if (buffers_) {                 // Buffers
-        delete[] buffers_;
-        buffers_ = NULL;
-        nbuffers_ = 0;
+{                                               // Reset the state of the kp_block (C interface)
+    if (block_.buffers) {                       // Buffers
+        delete[] block_.buffers;
+        block_.buffers = NULL;
+        block_.nbuffers = 0;
     }
-    buffer_ids_.clear();
+    
+    if (block_.operands) {                      // Operands
+        delete[] block_.operands;
+        block_.operands   = NULL;
+        block_.noperands  = 0;
+    }
+
+    block_.iterspace.layout = KP_SCALAR_TEMP;   // Iteraton space
+    block_.iterspace.ndim = 0;
+    block_.iterspace.shape = NULL;
+    block_.iterspace.nelem = 0;
+
+    block_.omask = 0;                           // Operation mask
+
+    buffer_ids_.clear();        // Reset the state of Block (C++ interface)
     input_buffers_.clear();
     output_buffers_.clear();
     buffer_refs_.clear();
-    
-    if (operands_) {                // Operands
-        delete[] operands_;
-        operands_   = NULL;
-        noperands_  = 0;
-    }
+
     global_to_local_.clear();   // global to local kp_operand mapping
     local_to_global_.clear();   // local to global kp_operand mapping
 
-    iterspace_.layout = KP_SCALAR_TEMP;// Iteraton space
-    iterspace_.ndim = 0;
-    iterspace_.shape = NULL;
-    iterspace_.nelem = 0;
-
-    tacs_.clear();                  // tacs
-    array_tacs_.clear();            // array_tacs
+    tacs_.clear();              // tacs
+    array_tacs_.clear();        // array_tacs
 
     symbol_text_    = "";       // textual symbol representation
     symbol_         = "";       // hashed symbol representation
@@ -59,7 +61,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
     kp_tac & tac = program_[prg_idx];
 
     tacs_.push_back(&tac);              // <-- All tacs
-    omask_ |= tac.op;                   // Update omask
+    block_.omask |= tac.op;                   // Update omask
 
     if ((tac.op & (KP_ARRAY_OPS))>0) {
         array_tacs_.push_back(&tac);    // <-- Only array operations
@@ -97,8 +99,8 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 
 void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 {
-    buffers_ = new kp_buffer *[krnl.instr_indexes.size()*3];
-    operands_ = new kp_operand *[krnl.instr_indexes.size()*3];
+    block_.buffers = new kp_buffer *[krnl.instr_indexes.size()*3];
+    block_.operands = new kp_operand *[krnl.instr_indexes.size()*3];
 
     for(std::vector<uint64_t>::iterator idx_it = krnl.instr_indexes.begin();
         idx_it != krnl.instr_indexes.end();
@@ -109,11 +111,9 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 
     if (array_contraction) {    // Turn kernel-temps into scalars aka array-contraction
         for (bh_base* base: krnl.get_temps()) {
-            for(size_t operand_idx = 0;
-                operand_idx < noperands();
-                ++operand_idx) {
-                if (operand(operand_idx).base == (kp_buffer*)base) {
-                    globals_.turn_contractable(local_to_global(operand_idx));
+            for(int64_t oidx = 0; oidx < noperands();  ++oidx) {
+                if (operand(oidx).base == (kp_buffer*)base) {
+                    globals_.turn_contractable(local_to_global(oidx));
                 }
             }
         }
@@ -125,8 +125,8 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 
 void Block::compose(bh_ir_kernel& krnl, size_t prg_idx)
 {
-    buffers_ = new kp_buffer *[3];
-    operands_ = new kp_operand *[3];
+    block_.buffers = new kp_buffer *[3];
+    block_.operands = new kp_operand *[3];
     
     _compose(krnl, false, prg_idx);
     _update_iterspace();                        // Update the iteration space
@@ -141,12 +141,12 @@ void Block::_bufferize(size_t global_idx)
 
         std::map<kp_buffer *, size_t>::iterator buf = buffer_ids_.find(buffer);
         if (buf == buffer_ids_.end()) {
-            size_t buffer_id = nbuffers_++;
+            size_t buffer_id = block_.nbuffers++;
             buffer_ids_.insert(pair<kp_buffer *, size_t>(
                 buffer,
                 buffer_id
             ));
-            buffers_[buffer_id] = buffer;
+            block_.buffers[buffer_id] = buffer;
         }
 
         buffer_refs_[buffer].insert(global_idx);
@@ -157,10 +157,10 @@ size_t Block::_localize_scope(size_t global_idx)
 {
     //
     // Reuse kp_operand identifiers: Detect if we have seen it before and reuse the index.
-    size_t local_idx = 0;
+    int64_t local_idx = 0;
     bool found = false;
-    for(size_t i=0; i<noperands_; ++i) {
-        if (!core::equivalent(*operands_[i], globals_[global_idx])) {
+    for(int64_t i=0; i<block_.noperands; ++i) {
+        if (!core::equivalent(*block_.operands[i], globals_[global_idx])) {
             continue; // Not equivalent, continue search.
         }
         // Found one! Use it instead of the incremented identifier.
@@ -171,9 +171,9 @@ size_t Block::_localize_scope(size_t global_idx)
 
     // Create the kp_operand in block-scope
     if (!found) {
-        local_idx = noperands_;
-        operands_[local_idx] = &globals_[global_idx];
-        ++noperands_;
+        local_idx = block_.noperands;
+        block_.operands[local_idx] = &globals_[global_idx];
+        ++block_.noperands;
     }
 
     //
@@ -190,13 +190,13 @@ bool Block::symbolize(void)
 
     //
     // Scope
-    for(size_t i=0; i<noperands_; ++i) {
-        operands_ss << "~" << i;
-        operands_ss << core::layout_text_shand(operands_[i]->layout);
-        operands_ss << core::etype_text_shand(operands_[i]->etype);
+    for(int64_t oidx=0; oidx <block_.noperands; ++oidx) {
+        operands_ss << "~" << oidx;
+        operands_ss << core::layout_text_shand(block_.operands[oidx]->layout);
+        operands_ss << core::etype_text_shand(block_.operands[oidx]->etype);
 
         // Let the "Restrictable" flag be part of the symbol.
-        if (buffer_refs_[operands_[i]->base].size()==1) {
+        if (buffer_refs_[block_.operands[oidx]->base].size()==1) {
             operands_ss << "R";
         } else {
             operands_ss << "A";
@@ -277,9 +277,9 @@ bool Block::symbolize(void)
     return true;
 }
 
-kp_buffer & Block::buffer(size_t buffer_id)
+kp_buffer& Block::buffer(size_t buffer_id)
 {
-    return *buffers_[buffer_id];
+    return *block_.buffers[buffer_id];
 }
 
 size_t Block::resolve_buffer(kp_buffer * buffer)
@@ -291,34 +291,34 @@ size_t Block::resolve_buffer(kp_buffer * buffer)
     return buf->second;
 }
 
-kp_buffer ** Block::buffers(void)
+kp_buffer** Block::buffers(void)
 {
-    return buffers_;
+    return block_.buffers;
 }
 
-size_t Block::nbuffers(void)
+int64_t Block::nbuffers()
 {
-    return nbuffers_;
+    return block_.nbuffers;
 }
 
-size_t Block::base_refcount(kp_buffer * base)
+size_t Block::buffer_refcount(kp_buffer *buffer)
 {
-    return buffer_refs_[base].size();
+    return buffer_refs_[buffer].size();
 }
 
 kp_operand & Block::operand(size_t local_idx)
 {
-    return *operands_[local_idx];
+    return *block_.operands[local_idx];
 }
 
-kp_operand ** Block::operands(void)
+kp_operand** Block::operands(void)
 {
-    return operands_;
+    return block_.operands;
 }
 
-size_t Block::noperands(void) const
+int64_t Block::noperands(void) const
 {
-    return noperands_;
+    return block_.noperands;
 }
 
 size_t Block::global_to_local(size_t global_idx) const
@@ -343,7 +343,7 @@ kp_tac & Block::array_tac(size_t idx) const
 
 uint32_t Block::omask(void)
 {
-    return omask_;
+    return block_.omask;
 }
 
 size_t Block::ntacs(void) const
@@ -366,9 +366,9 @@ string Block::symbol_text(void) const
     return symbol_text_;
 }
 
-kp_iterspace & Block::iterspace(void)
+kp_iterspace& Block::iterspace(void)
 {
-    return iterspace_;
+    return block_.iterspace;
 }
 
 void Block::_update_iterspace(void)
@@ -383,13 +383,13 @@ void Block::_update_iterspace(void)
             continue;
         }
         if ((tac.op & (KP_REDUCE_COMPLETE | KP_REDUCE_PARTIAL))>0) {     // Reductions are weird
-            if (globals_[tac.in1].layout >= iterspace_.layout) {    // Iterspace
-                iterspace_.layout = globals_[tac.in1].layout;
-                iterspace_.ndim  = globals_[tac.in1].ndim;
-                iterspace_.shape = globals_[tac.in1].shape;
+            if (globals_[tac.in1].layout >= block_.iterspace.layout) {    // Iterspace
+                block_.iterspace.layout = globals_[tac.in1].layout;
+                block_.iterspace.ndim  = globals_[tac.in1].ndim;
+                block_.iterspace.shape = globals_[tac.in1].shape;
             }
-            if (globals_[tac.out].layout > iterspace_.layout) {
-                iterspace_.layout = globals_[tac.out].layout;
+            if (globals_[tac.out].layout > block_.iterspace.layout) {
+                block_.iterspace.layout = globals_[tac.out].layout;
             }
             if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {   // Footprint
                 footprint.insert(globals_[tac.out].base);
@@ -402,11 +402,11 @@ void Block::_update_iterspace(void)
         } else {
             switch(tac_noperands(tac)) {
                 case 3:
-                    if (globals_[tac.in2].layout > iterspace_.layout) {     // Iterspace
-                        iterspace_.layout = globals_[tac.in2].layout;
-                        if (iterspace_.layout > KP_SCALAR_TEMP) {
-                            iterspace_.ndim  = globals_[tac.in2].ndim;
-                            iterspace_.shape = globals_[tac.in2].shape;
+                    if (globals_[tac.in2].layout > block_.iterspace.layout) {     // Iterspace
+                        block_.iterspace.layout = globals_[tac.in2].layout;
+                        if (block_.iterspace.layout > KP_SCALAR_TEMP) {
+                            block_.iterspace.ndim  = globals_[tac.in2].ndim;
+                            block_.iterspace.shape = globals_[tac.in2].shape;
                         }
                     }
                     if ((globals_[tac.in2].layout & (KP_DYNALLOC_LAYOUT))>0) { // Footprint
@@ -415,11 +415,11 @@ void Block::_update_iterspace(void)
                     }
 
                 case 2:
-                    if (globals_[tac.in1].layout > iterspace_.layout) {     // Iterspace
-                        iterspace_.layout = globals_[tac.in1].layout;
-                        if (iterspace_.layout > KP_SCALAR_TEMP) {
-                            iterspace_.ndim  = globals_[tac.in1].ndim;
-                            iterspace_.shape = globals_[tac.in1].shape;
+                    if (globals_[tac.in1].layout > block_.iterspace.layout) {     // Iterspace
+                        block_.iterspace.layout = globals_[tac.in1].layout;
+                        if (block_.iterspace.layout > KP_SCALAR_TEMP) {
+                            block_.iterspace.ndim  = globals_[tac.in1].ndim;
+                            block_.iterspace.shape = globals_[tac.in1].shape;
                         }
                     }
                     if ((globals_[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) { // Footprint
@@ -428,11 +428,11 @@ void Block::_update_iterspace(void)
                     }
 
                 case 1:
-                    if (globals_[tac.out].layout > iterspace_.layout) {     // Iterspace
-                        iterspace_.layout = globals_[tac.out].layout;
-                        if (iterspace_.layout > KP_SCALAR_TEMP) {
-                            iterspace_.ndim  = globals_[tac.out].ndim;
-                            iterspace_.shape = globals_[tac.out].shape;
+                    if (globals_[tac.out].layout > block_.iterspace.layout) {     // Iterspace
+                        block_.iterspace.layout = globals_[tac.out].layout;
+                        if (block_.iterspace.layout > KP_SCALAR_TEMP) {
+                            block_.iterspace.ndim  = globals_[tac.out].ndim;
+                            block_.iterspace.shape = globals_[tac.out].shape;
                         }
                     }
                     if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) { // Footprint
@@ -455,10 +455,10 @@ void Block::_update_iterspace(void)
         footprint_bytes_ += kp_buffer_nbytes(*it);
     }
 
-    if (NULL != iterspace_.shape) {             // Determine number of elements
-        iterspace_.nelem = 1;   
-        for(int k=0; k<iterspace_.ndim; ++k) {
-            iterspace_.nelem *= iterspace_.shape[k];
+    if (NULL != block_.iterspace.shape) {             // Determine number of elements
+        block_.iterspace.nelem = 1;
+        for(int k=0; k<block_.iterspace.ndim; ++k) {
+            block_.iterspace.nelem *= block_.iterspace.shape[k];
         }
     }
 }
@@ -514,7 +514,7 @@ std::string Block::text(void)
     ss << "}" << endl;
 
     ss << "OPERANDS (" << noperands() << ") {" << endl;
-    for(size_t opr_idx=0; opr_idx < noperands(); ++opr_idx) {
+    for(int64_t opr_idx=0; opr_idx < noperands(); ++opr_idx) {
         kp_operand & opr = operand(opr_idx);
         ss << " loc_idx(" << opr_idx << ")";
         ss << " gbl_idx(" << local_to_global(opr_idx) << ") = ";
@@ -539,17 +539,17 @@ std::string Block::text(void)
     ss << "}" << endl;
 
     ss << "ITERSPACE {" << endl;
-    ss << " LAYOUT = " << layout_text(iterspace_.layout) << "," << endl;
-    ss << " NDIM   = " << iterspace_.ndim << "," << endl;
+    ss << " LAYOUT = " << layout_text(block_.iterspace.layout) << "," << endl;
+    ss << " NDIM   = " << block_.iterspace.ndim << "," << endl;
     ss << " SHAPE  = {"; 
-    for(int64_t dim=0; dim < iterspace_.ndim; ++dim) {
-        ss << iterspace_.shape[dim];
-        if (dim != (iterspace_.ndim-1)) {
+    for(int64_t dim=0; dim < block_.iterspace.ndim; ++dim) {
+        ss << block_.iterspace.shape[dim];
+        if (dim != (block_.iterspace.ndim-1)) {
             ss << ", ";
         }
     }
     ss << "}" << endl;
-    ss << " NELEM  = " << iterspace_.nelem << endl;
+    ss << " NELEM  = " << block_.iterspace.nelem << endl;
     ss << "}" << endl;
     ss << "]" << endl;
     return ss.str();
