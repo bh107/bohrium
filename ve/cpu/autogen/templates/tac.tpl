@@ -10,6 +10,10 @@ directiveStartToken= %
 //
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Bohrium custom types, used of representing
 // two inputs in one constant... hopefully we can get
 // rid of it... at some point...
@@ -109,4 +113,7 @@ typedef void (*kp_krnl_func)(kp_buffer** buffers, kp_operand ** args, kp_iterspa
 #define KP_NBUILTIN_OPS    %echo $len($ops)-1
 #define KP_NBUILTIN_OPERS  %echo $len($opers)-1
 
+#ifdef __cplusplus
+}
+#endif
 #endif
