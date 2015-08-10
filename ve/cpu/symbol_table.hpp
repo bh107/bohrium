@@ -17,7 +17,7 @@ namespace core {
  *  as well as auxilary information.
  *
  *  Populating the symbol table is therefore done by "mapping"
- *  a bh_instruction kp_operand TO a symbol represented as an kp_operand.
+ *  a bh_instruction bh_view TO a symbol represented as an kp_operand.
  *
  *  In the future this could be changed to actually be self-contained
  *  by replacing bh_instruction with kp_tac. And instead of "mapping"
@@ -83,9 +83,9 @@ public:
     /**
      *  Return a reference to the kp_operand with operand_idx.
      */
-    kp_operand & operator[](size_t operand_idx);
+    kp_operand& operator[](size_t operand_idx);
 
-    kp_operand * operands(void);
+    kp_operand* operands(void);
 
     /**
      * Create a textual representation of the table.
@@ -106,9 +106,7 @@ private:
     SymbolTable(void);  // We do not want to be able to create a symbol_table
                         // with assumptions on capacity.
 
-    kp_operand * table_;           // The actual symbol-table
-    size_t capacity_;    // Capacity reserved
-    size_t nsymbols_;    // The current number of symbols in the table
+    kp_symboltable symboltable_;
 
     static const char TAG[];
 };

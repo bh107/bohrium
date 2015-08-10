@@ -46,6 +46,12 @@ typedef struct kp_operand {
     kp_buffer* base;    // Pointer to operand base or NULL when layout == SCALAR_CONST.
 } kp_operand;           // Meta-data for a block argument
 
+typedef struct kp_symboltable {
+    kp_operand* table;  // The actual symbol-table
+    size_t capacity;    // Capacity reserved
+    size_t nsymbols;    // The current number of symbols in the table
+} kp_symboltable;
+
 typedef enum KP_OPERATION {
     %for $op in $ops
     $addw($op['name']) = ${op['id']}$addsep($op, $ops)
@@ -76,11 +82,11 @@ typedef struct kp_iterspace {
 
 typedef struct kp_block {
     kp_operand** operands;  // Array of pointers to operands
-    int64_t noperands;     // # block operands
+    int64_t noperands;      // # block operands
     kp_buffer** buffers;    // Array of pointers to buffers
-    int64_t nbuffers;      // # buffers
+    int64_t nbuffers;       // # buffers
     kp_iterspace iterspace; // Iteration space
-    uint32_t omask;        // Operation mask
+    uint32_t omask;         // Operation mask
 } kp_block;
 
 typedef void (*kp_krnl_func)(kp_buffer** buffers, kp_operand ** args, kp_iterspace * iterspace, const int offload_devid);
