@@ -16,14 +16,7 @@ SymbolTable::SymbolTable(size_t n) : symboltable_()
 
 SymbolTable::~SymbolTable(void)
 {
-    //
-    // De-allocate storage for symbol_table, reads, and writes.
-    delete[] symboltable_.table;
-}
-
-string SymbolTable::text(void)
-{
-    return text("");
+    delete[] symboltable_.table;    // De-allocate storage for symbol_table
 }
 
 string SymbolTable::text_meta(void)
@@ -75,6 +68,11 @@ string SymbolTable::text(string prefix)
     return ss.str();
 }
 
+string SymbolTable::text(void)
+{
+    return text("");
+}
+
 void SymbolTable::clear(void)
 {
     symboltable_.nsymbols = 0;
@@ -90,12 +88,12 @@ size_t SymbolTable::size(void)
     return symboltable_.nsymbols;
 }
 
-kp_operand & SymbolTable::operator[](size_t operand_idx)
+kp_operand& SymbolTable::operator[](size_t operand_idx)
 {
     return symboltable_.table[operand_idx];
 }
 
-size_t SymbolTable::import(kp_operand & operand)
+size_t SymbolTable::import(kp_operand& operand)
 {
     symboltable_.table[symboltable_.nsymbols++] = operand;
     return symboltable_.nsymbols;
