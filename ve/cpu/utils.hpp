@@ -1,10 +1,5 @@
-#ifndef __BH_VE_CPU_UTILS
-#define __BH_VE_CPU_UTILS
-#include "bh.h"
-#include "kp_tac.h"
-#include "block.hpp"
-#include "symbol_table.hpp"
-
+#ifndef __KP_CORE_UTILS_HPP
+#define __KP_CORE_UTILS_HPP 1
 #include <fstream>
 #include <cstdlib>
 #include <cstring>
@@ -16,6 +11,10 @@
 #include <memory>
 #include <cerrno>
 #include <fcntl.h>
+#include "bh.h"
+#include "kp.h"
+#include "block.hpp"
+#include "symbol_table.hpp"
 
 #ifdef DEBUGGING
 #define DEBUG(tag,x) do { std::cerr << TAG << "::" << x << std::endl; } while (0);
@@ -23,8 +22,8 @@
 #define DEBUG(tag,x)
 #endif
 
-namespace bohrium {
-namespace core {
+namespace kp{
+namespace core{
 
 template <typename T>
 std::string to_string(T val);
@@ -97,7 +96,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table);
  *  Map bh_ir->instr_list (bh_instruction) to kp_tac with entries in symbol_table.
  */
 void instrs_to_tacs(bh_ir& bhir, 
-                    std::vector<kp_tac>& tacs,
+                    Program& tacs,
                     SymbolTable& symbol_table);
 
 /**
@@ -180,4 +179,5 @@ int error(int errnum, const char *fmt, ...);
 int error(const char *err_msg, const char *fmt, ...);
 
 }}
+
 #endif

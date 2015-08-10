@@ -13,9 +13,8 @@
 
 using namespace std;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 
 const char Accelerator::TAG[] = "Accelerator";
 
@@ -256,5 +255,5 @@ bool Accelerator::offloadable(void)
 }
 #endif
 
-}}}
+}}
 

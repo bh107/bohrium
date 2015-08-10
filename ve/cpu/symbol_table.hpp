@@ -1,12 +1,12 @@
-#ifndef __BH_CORE_SYMBOLTABLE
-#define __BH_CORE_SYMBOLTABLE
-#include "bh.h"
-#include "kp_tac.h"
+#ifndef __KP_CORE_SYMBOLTABLE_HPP
+#define __KP_CORE_SYMBOLTABLE_HPP 1
 #include <string>
 #include <set>
+#include "bh.h"
+#include "kp.h"
 
-namespace bohrium {
-namespace core {
+namespace kp{
+namespace core{
 
 /**
  *  Maintains a symbol table for kp_tac operands (kp_operand).

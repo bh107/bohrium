@@ -1,15 +1,14 @@
-#ifndef __BH_VE_CPU_CODEGEN
-#define __BH_VE_CPU_CODEGEN
+#ifndef __KP_ENGINE_CODEGEN_HPP
+#define __KP_ENGINE_CODEGEN_HPP 1
 
 #include <string>
 #include <map>
-#include "kp_tac.h"
-#include <block.hpp>
-#include <plaid.hpp>
+#include "kp.h"
+#include "block.hpp"
+#include "plaid.hpp"
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 // Primitive types
@@ -291,7 +290,7 @@ private:
 class Kernel
 {
 public:
-    Kernel(Plaid& plaid, bohrium::core::Block& block);
+    Kernel(Plaid& plaid, kp::core::Block& block);
     
     std::string generate_source(bool offload);
 
@@ -328,7 +327,7 @@ private:
     void add_operand(uint64_t global_idx);
 
     Plaid& plaid_;
-    bohrium::core::Block& block_;
+    kp::core::Block& block_;
 
     kernel_buffers buffers_;
     kernel_operands operands_;
@@ -409,8 +408,6 @@ private:
 
 };
 
-
-
-}}}}
+}}}
 
 #endif

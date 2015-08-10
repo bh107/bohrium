@@ -3,11 +3,10 @@
 #include "codegen.hpp"
 
 using namespace std;
-using namespace bohrium::core;
+using namespace kp::core;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block), iterspace_(block.iterspace()) {
@@ -285,4 +284,4 @@ string Kernel::unpack_arguments(void)
     return ss.str();
 }
 
-}}}}
+}}}

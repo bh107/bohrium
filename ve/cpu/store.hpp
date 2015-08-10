@@ -1,5 +1,5 @@
-#ifndef __BH_VE_CPU_STORE
-#define __BH_VE_CPU_STORE
+#ifndef __KP_ENGINE_STORE_HPP
+#define __KP_ENGINE_STORE_HPP 1
 
 #include <iostream>
 #include <cstring>
@@ -16,12 +16,11 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "kp_tac.h"
+#include "kp.h"
 #include "utils.hpp"
 
-namespace bohrium {
-namespace engine {
-namespace cpu {
+namespace kp{
+namespace engine{
 
 //
 //  Retrieve a function pointer for the symbol (SYMBOL -> kp_krnl_func)
@@ -70,5 +69,6 @@ private:
     static const char TAG[];
 };
 
-}}}
+}}
+
 #endif

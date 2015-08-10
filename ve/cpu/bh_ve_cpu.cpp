@@ -26,10 +26,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <errno.h>
 
-#include <bh.h>
+#include "bh.h"
 #define BH_TIMING_SUM
-#include <bh_timing.hpp>
+#include "bh_timing.hpp"
 #include "bh_ve_cpu.h"
+
 #include "engine.hpp"
 #include "timevault.hpp"
 
@@ -40,7 +41,7 @@ static bh_component myself;
 
 //
 // This is where the actual engine implementation is
-static bohrium::engine::cpu::Engine* engine = NULL;
+static kp::engine::Engine* engine = NULL;
 
 // Timing ID for timing of execute()
 static bh_intp exec_timing;
@@ -147,7 +148,7 @@ bh_error bh_ve_cpu_init(const char *name)
     mkdir(object_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     // Construct architecture id for object-store
-    string arch_id = bohrium::core::hash_text(bohrium::engine::cpu::cpu_text());
+    string arch_id = kp::core::hash_text(kp::engine::cpu_text());
     string object_directory;            // Subfolder of object_path
 
     string sep("/"); // TODO: Portable file-separator
@@ -170,8 +171,8 @@ bh_error bh_ve_cpu_init(const char *name)
 
     //
     // VROOM VROOM VROOOOOOMMMM!!! VROOOOM!!
-    engine = new bohrium::engine::cpu::Engine(
-        (bohrium::engine::cpu::thread_binding)bind,
+    engine = new kp::engine::Engine(
+        (kp::engine::thread_binding)bind,
         (size_t)thread_limit,
         (size_t)vcache_size,
         (bool)preload,

@@ -3,11 +3,9 @@
 #include "codegen.hpp"
 
 using namespace std;
-using namespace bohrium::core;
 
-namespace bohrium {
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 Buffer::Buffer(void) : buffer_(NULL), id_(0) {}
@@ -40,7 +38,7 @@ string Buffer::nelem(void)
 
 string Buffer::etype(void)
 {
-    return etype_to_ctype_text(bhtype_to_etype(meta().type));
+    return kp::core::etype_to_ctype_text(kp::core::bhtype_to_etype(meta().type));
 }
 
 kp_buffer& Buffer::meta(void)
@@ -53,4 +51,5 @@ int64_t Buffer::id(void)
     return id_;
 }
 
-}}}}
+}}}
+

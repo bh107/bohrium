@@ -2,7 +2,8 @@
 #include "utils.hpp"
 
 using namespace std;
-namespace bohrium{
+
+namespace kp{
 namespace core{
 
 const char SymbolTable::TAG[] = "SymbolTable";
@@ -182,4 +183,3 @@ kp_operand* SymbolTable::operands(void)
 }
 
 }}
-

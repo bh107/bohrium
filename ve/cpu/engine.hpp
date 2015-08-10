@@ -1,10 +1,13 @@
-#ifndef __BH_VE_CPU_ENGINE
-#define __BH_VE_CPU_ENGINE
+#ifndef __KP_ENGINE_ENGINE_HPP
+#define __KP_ENGINE_ENGINE_HPP 1
+
+#include <string>
+#include <vector>
+#include <map>
 #include "bh.h"
-
-
 #include "block.hpp"
 #include "symbol_table.hpp"
+#include "program.hpp"
 #include "thread_control.hpp"
 #include "accelerator.hpp"
 #include "store.hpp"
@@ -12,13 +15,8 @@
 #include "plaid.hpp"
 #include "codegen.hpp"
 
-#include <string>
-#include <vector>
-#include <map>
-
-namespace bohrium{
-namespace engine {
-namespace cpu {
+namespace kp{
+namespace engine{
 
 class Engine {
 public:
@@ -57,10 +55,10 @@ private:
      *
      */
     bh_error execute_block(
-        core::SymbolTable& symbol_table,
-        std::vector<kp_tac>& program,
-        core::Block& block,
-        bh_ir_kernel& krnl
+            core::SymbolTable &symbol_table,
+            core::Program& tac_program,
+            core::Block &block,
+            bh_ir_kernel &krnl
     );
 
     size_t vcache_size_;
@@ -86,5 +84,7 @@ private:
     size_t exec_count;
 };
 
-}}}
+}}
+
 #endif
+

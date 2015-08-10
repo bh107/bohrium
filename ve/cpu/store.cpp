@@ -1,11 +1,10 @@
+#include "thirdparty/MurmurHash3.h"
 #include "store.hpp"
 
-#include "thirdparty/MurmurHash3.h"
-
 using namespace std;
-namespace bohrium {
+
+namespace kp {
 namespace engine {
-namespace cpu {
 
 const char Store::TAG[] = "Store";
 
@@ -256,4 +255,4 @@ bool Store::load(const string symbol, const string library)
     return true;
 }
 
-}}}
+}}

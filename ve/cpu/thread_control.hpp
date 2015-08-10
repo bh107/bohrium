@@ -1,10 +1,9 @@
-#ifndef __BH_VE_CPU_THREAD_CONTROL
-#define __BH_VE_CPU_THREAD_CONTROL
+#ifndef __KP_ENGINE_THREAD_CONTROL_HPP
+#define __KP_ENGINE_THREAD_CONTROL_HPP 1
 #include <string>
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 
 typedef enum {
     BIND_TO_NONE = 0,
@@ -47,5 +46,6 @@ private:
     static const char TAG[];
 };
 
-}}}
+}}
+
 #endif

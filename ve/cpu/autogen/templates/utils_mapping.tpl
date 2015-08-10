@@ -8,7 +8,7 @@ directiveStartToken= %
 //        You should therefore not edit it manually.
 //
 using namespace std;
-namespace bohrium{
+namespace kp{
 namespace core{
 
 KP_ETYPE bhtype_to_etype(bh_type bhtype)

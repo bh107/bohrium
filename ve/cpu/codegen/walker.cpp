@@ -3,11 +3,10 @@
 #include "codegen.hpp"
 
 using namespace std;
-using namespace bohrium::core;
+using namespace kp::core;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 Walker::Walker(Plaid& plaid, Kernel& kernel) : plaid_(plaid), kernel_(kernel) {}
@@ -1015,4 +1014,4 @@ string Walker::generate_source(bool offload)
     return plaid_.fill(plaid, subjects);
 }
 
-}}}}
+}}}

@@ -1,19 +1,20 @@
-#ifndef __BH_VE_CPU_BLOCK
-#define __BH_VE_CPU_BLOCK
+#ifndef __KP_CORE_BLOCK_HPP
+#define __KP_CORE_BLOCK_HPP 1
 #include <string>
 #include <map>
 
 #include "bh.h"
 #include "kp_utils.h"
+#include "program.hpp"
 #include "symbol_table.hpp"
 #include "utils.hpp"
 
-namespace bohrium{
+namespace kp{
 namespace core{
 
 class Block {
 public:
-    Block(SymbolTable& globals, std::vector<kp_tac>& program);
+    Block(SymbolTable& globals, Program& tac_program);
     ~Block();
 
     /**
@@ -219,11 +220,10 @@ private:
     std::map<kp_buffer*, std::set<uint64_t>> buffer_refs_;
 
     SymbolTable& globals_;                      // A reference to the global symbol table
+    Program& tac_program_;                      // A reference to the entire bytecode program
 
     std::map<size_t, size_t> global_to_local_;  // Mapping from global to block-local scope.
-    std::map<size_t, size_t> local_to_global_;  // Mapping from global to block-local scope.
-
-    std::vector<kp_tac>& program_;              // A reference to the entire bytecode program
+    std::map<size_t, size_t> local_to_global_;  // Mapping from block-local to global scope.
 
     std::vector<kp_tac *> tacs_;                // A subset of the tac-program representing the block.
     std::vector<kp_tac *> array_tacs_;          // A subset of the tac-program containing only array ops.
@@ -238,4 +238,5 @@ private:
 };
 
 }}
+
 #endif

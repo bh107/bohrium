@@ -4,11 +4,10 @@
 #include "codegen.hpp"
 
 using namespace std;
-using namespace bohrium::core;
+using namespace kp::core;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 Operand::Operand(void) : local_id_(0), operand_(NULL), buffer_(NULL) {}
@@ -199,4 +198,5 @@ uint64_t Operand::local_id(void)
     return local_id_;
 }
 
-}}}}
+}}}
+

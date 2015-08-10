@@ -2,14 +2,13 @@
 
 #include "engine.hpp"
 #include "timevault.hpp"
-#include <kp_vcache.h>
+#include "kp_vcache.h"
 
 using namespace std;
-using namespace bohrium::core;
+using namespace kp::core;
 
-namespace bohrium{
-namespace engine {
-namespace cpu {
+namespace kp{
+namespace engine{
 
 typedef std::vector<bh_instruction> instr_iter;
 typedef std::vector<bh_ir_kernel>::iterator krnl_iter;
@@ -105,11 +104,11 @@ string Engine::text()
     return ss.str();    
 }
 
-bh_error Engine::execute_block(SymbolTable& symbol_table,
-                            std::vector<kp_tac>& program,
-                            Block& block,
-                            bh_ir_kernel& krnl
-                            )
+bh_error Engine::execute_block(SymbolTable &symbol_table,
+                               Program &tac_program,
+                               Block &block,
+                               bh_ir_kernel &krnl
+)
 {
     bh_error res = BH_SUCCESS;
 
@@ -291,15 +290,15 @@ bh_error Engine::execute(bh_ir* bhir)
     bh_error res = BH_SUCCESS;
 
     //
-    // Instantiate the tac-program and symbol-table
+    // Instantiate the tac-tac_program and symbol-table
     uint64_t program_size = bhir->instr_list.size();
-    vector<kp_tac> program(program_size);                // Program
+    Program tac_program(program_size);                   // Program
     SymbolTable symbol_table(program_size*6+2);         // SymbolTable
     
-    instrs_to_tacs(*bhir, program, symbol_table);       // Map instructions to 
+    instrs_to_tacs(*bhir, tac_program, symbol_table);   // Map instructions to
                                                         // tac and symbol_table.
 
-    Block block(symbol_table, program);                 // Construct a block
+    Block block(symbol_table, tac_program);             // Construct a block
 
     //
     //  Map bh_kernels to Blocks one at a time and execute them.
@@ -325,7 +324,7 @@ bh_error Engine::execute(bh_ir* bhir)
         } else if ((jit_fusion_) || 
                    (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
             DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
-            res = execute_block(symbol_table, program, block, *krnl);
+            res = execute_block(symbol_table, tac_program, block, *krnl);
             if (BH_SUCCESS != res) {
                 return res;
             }
@@ -339,7 +338,7 @@ bh_error Engine::execute(bh_ir* bhir)
                 block.clear();                          // Reset the block
                 block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
 
-                res = execute_block(symbol_table, program, block, *krnl);
+                res = execute_block(symbol_table, tac_program, block, *krnl);
                 if (BH_SUCCESS != res) {
                     return res;
                 }
@@ -367,4 +366,4 @@ bh_error Engine::register_extension(bh_component& instance, const char* name, bh
     return BH_SUCCESS;
 }
 
-}}}
+}}

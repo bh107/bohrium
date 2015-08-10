@@ -1,9 +1,10 @@
 #include <iomanip>
-#include "utils.hpp"
 #include "thirdparty/MurmurHash3.h"
+#include "utils.hpp"
 
 using namespace std;
-namespace bohrium{
+
+namespace kp{
 namespace core{
 
 const char TAG[] = "Utils";

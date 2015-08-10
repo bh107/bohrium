@@ -1,14 +1,13 @@
-#ifndef __BH_VE_CPU_COMPILER
-#define __BH_VE_CPU_COMPILER
+#ifndef __KP_ENGINE_COMPILER_HPP
+#define __KP_ENGINE_COMPILER_HPP 1
 
 #include <string>
 #include <sstream>
 #include <cstdio>
 #include <iostream>
 
-namespace bohrium{
-namespace engine {
-namespace cpu {
+namespace kp{
+namespace engine{
 
 class Compiler {
 public:
@@ -56,6 +55,6 @@ private:
     static const char TAG[];
 };
 
-}}}
+}}
 
 #endif

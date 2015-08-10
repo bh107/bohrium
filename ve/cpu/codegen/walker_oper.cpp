@@ -6,11 +6,10 @@
 //        You should therefore not edit it manually.
 //
 using namespace std;
-using namespace bohrium::core;
+using namespace kp::core;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 string Walker::oper_neutral_element(KP_OPERATOR oper, KP_ETYPE etype)
@@ -311,4 +310,4 @@ string Walker::synced_oper(KP_OPERATOR operation, KP_ETYPE etype, string out, st
     return ss.str();
 }
 
-}}}}
+}}}

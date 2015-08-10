@@ -1,4 +1,3 @@
-#include "thread_control.hpp"
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
@@ -12,11 +11,12 @@ inline int omp_get_thread_num()  { return 0; }
 inline int omp_get_num_threads() { return 1; }
 #endif
 
+#include "thread_control.hpp"
+
 using namespace std;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 
 const char ThreadControl::TAG[] = "ThreadControl";
 
@@ -235,5 +235,4 @@ size_t ThreadControl::bind_threads()
     return bind_threads(binding_);
 }
 
-}}}
-
+}}

@@ -20,7 +20,7 @@ inline int omp_get_thread_num()  { return 0; }
 inline int omp_get_num_threads() { return 1; }
 #endif
 #endif
-#include <kp_tac.h>
+#include "kp.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

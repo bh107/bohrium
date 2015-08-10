@@ -1,12 +1,11 @@
-#ifndef __BH_VE_CPU_ACCELERATOR
-#define __BH_VE_CPU_ACCELERATOR
+#ifndef __KP_ENGINE_ACCELERATOR_HPP
+#define __KP_ENGINE_ACCELERATOR_HPP 1
 #include <string>
 #include <set>
-#include "kp_tac.h"
+#include "kp.h"
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 
 class Accelerator {
 public:
@@ -114,6 +113,6 @@ private:
     static const char TAG[];
 };
 
-}}}
+}}
 
 #endif

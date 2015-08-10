@@ -2,11 +2,9 @@
 #include "codegen.hpp"
 
 using namespace std;
-using namespace bohrium::core;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 Iterspace::Iterspace(kp_iterspace & iterspace) : iterspace_(iterspace) {}
@@ -58,4 +56,5 @@ kp_iterspace & Iterspace::meta(void)
     return iterspace_;
 }
 
-}}}}
+}}}
+

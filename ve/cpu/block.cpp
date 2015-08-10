@@ -1,15 +1,15 @@
-#include "block.hpp"
 #include <iomanip>
+#include "block.hpp"
 
 using namespace std;
 
-namespace bohrium{
+namespace kp{
 namespace core{
 
 const char Block::TAG[] = "Block";
 
-Block::Block(SymbolTable& globals, vector<kp_tac>& program)
-: block_(), globals_(globals), program_(program), symbol_text_(""), symbol_(""), footprint_nelem_(0), footprint_bytes_(0)
+Block::Block(SymbolTable& globals, Program& tac_program)
+: block_(), globals_(globals), tac_program_(tac_program), symbol_text_(""), symbol_(""), footprint_nelem_(0), footprint_bytes_(0)
 {}
 
 Block::~Block()
@@ -58,7 +58,7 @@ void Block::clear(void)
 
 void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 {
-    kp_tac & tac = program_[prg_idx];
+    kp_tac& tac = tac_program_[prg_idx];
 
     tacs_.push_back(&tac);              // <-- All tacs
     block_.omask |= tac.op;                   // Update omask

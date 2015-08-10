@@ -1,12 +1,12 @@
 #ifndef __KP_VCACHE_H
 #define __KP_VCACHE_H 1
 
+#include <stdbool.h>
+#include "kp.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <stdbool.h>
-#include <kp_tac.h>
-#include <kp_vcache.h>
 
 void* kp_host_malloc(int64_t nbytes);
 

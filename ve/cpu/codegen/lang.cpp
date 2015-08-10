@@ -3,11 +3,9 @@
 #include "codegen.hpp"
 
 using namespace std;
-using namespace bohrium::core;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 // Element types;
@@ -1021,4 +1019,5 @@ string _beef(string info)
     return ss.str();
 }
 
-}}}}
+}}}
+
