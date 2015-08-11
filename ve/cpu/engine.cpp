@@ -10,9 +10,6 @@ using namespace kp::core;
 namespace kp{
 namespace engine{
 
-typedef std::vector<bh_instruction> instr_iter;
-typedef std::vector<bh_ir_kernel>::iterator krnl_iter;
-
 const char Engine::TAG[] = "Engine";
 
 Engine::Engine(
@@ -45,8 +42,7 @@ Engine::Engine(
     storage_(object_directory, kernel_directory),
     plaid_(template_directory),
     compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext),
-    thread_control_(binding, thread_limit),
-    exec_count(0)
+    thread_control_(binding, thread_limit)
 {
     kp_vcache_init(vcache_size);    // Victim cache
     if (preload_) {                 // Object storage
@@ -81,6 +77,46 @@ Engine::~Engine()
         ++it) {
         delete *it;
     }
+}
+
+size_t Engine::vcache_size(void)
+{
+    return vcache_size_;
+}
+
+bool Engine::preload(void)
+{
+    return preload_;
+}
+
+bool Engine::jit_enabled(void)
+{
+    return jit_enabled_;
+}
+
+bool Engine::jit_dumpsrc(void)
+{
+    return jit_dumpsrc_;
+}
+
+bool Engine::jit_fusion(void)
+{
+    return jit_fusion_;
+}
+
+bool Engine::jit_contraction(void)
+{
+    return jit_contraction_;
+}
+
+bool Engine::jit_offload(void)
+{
+    return jit_offload_;
+}
+
+int Engine::jit_offload_devid(void)
+{
+    return jit_offload_devid_;
 }
 
 string Engine::text()
@@ -285,90 +321,9 @@ bh_error Engine::process_block(SymbolTable &symbol_table,
         return BH_ERROR;
     }
 
+    // Now on with the execution
     return execute_block(symbol_table, tac_program, block);
 }
 
-bh_error Engine::execute(bh_ir* bhir)
-{
-    exec_count++;
-    DEBUG(TAG, "EXEC #" << exec_count);
-    bh_error res = BH_SUCCESS;
-
-    //
-    // Instantiate the tac-tac_program and symbol-table
-    uint64_t program_size = bhir->instr_list.size();
-    Program tac_program(program_size);                   // Program
-    SymbolTable symbol_table(program_size*6+2);         // SymbolTable
-    
-    instrs_to_tacs(*bhir, tac_program, symbol_table);   // Map instructions to
-                                                        // tac and symbol_table.
-
-    Block block(symbol_table, tac_program);             // Construct a block
-
-    //
-    //  Map bh_kernels to Blocks one at a time and execute them.
-    for(krnl_iter krnl = bhir->kernel_list.begin();
-        krnl != bhir->kernel_list.end();
-        ++krnl) {
-
-        block.clear();                                  // Reset the block
-        block.compose(*krnl, (bool)jit_contraction_);   // Compose it based on kernel
-        
-        if ((block.omask() & KP_EXTENSION)>0) {            // Extension-Instruction-Execute (EIE)
-            kp_tac & tac = block.tac(0);
-            map<bh_opcode,bh_extmethod_impl>::iterator ext;
-            ext = extensions_.find(static_cast<bh_instruction*>(tac.ext)->opcode);
-            if (ext != extensions_.end()) {
-                bh_extmethod_impl extmethod = ext->second;
-                res = extmethod(static_cast<bh_instruction*>(tac.ext), NULL);
-                if (BH_SUCCESS != res) {
-                    fprintf(stderr, "Unhandled error returned by extmethod(...) \n");
-                    return res;
-                }
-            }
-        } else if ((jit_fusion_) || 
-                   (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
-            DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
-            res = process_block(symbol_table, tac_program, block);
-            if (BH_SUCCESS != res) {
-                return res;
-            }
-            DEBUG(TAG, "Muilti-Instruction-Execute END");
-        } else {                                        // Single-Instruction-Execute (SIE)
-            DEBUG(TAG, "Single-Instruction-Execute BEGIN");
-            for(std::vector<uint64_t>::iterator idx_it = krnl->instr_indexes.begin();
-                idx_it != krnl->instr_indexes.end();
-                ++idx_it) {
-
-                block.clear();                          // Reset the block
-                block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
-
-                res = process_block(symbol_table, tac_program, block);
-                if (BH_SUCCESS != res) {
-                    return res;
-                }
-            }
-            DEBUG(TAG, "Single-Instruction-Execute END");
-        }
-    }
-    return res;
-}
-
-bh_error Engine::register_extension(bh_component& instance, const char* name, bh_opcode opcode)
-{
-    bh_extmethod_impl extmethod;
-    bh_error err = bh_component_extmethod(&instance, name, &extmethod);
-    if (err != BH_SUCCESS) {
-        return err;
-    }
-
-    if (extensions_.find(opcode) != extensions_.end()) {
-        fprintf(stderr, "[CPU-VE] Warning, multiple registrations of the same"
-               "extension method '%s' (opcode: %d)\n", name, (int)opcode);
-    }
-    extensions_[opcode] = extmethod;
-
-    return BH_SUCCESS;
-}
-
 }}
+

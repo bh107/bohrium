@@ -42,36 +42,33 @@ public:
 
     ~Engine();
 
+    size_t vcache_size(void);
+    bool preload(void);
+    bool jit_enabled(void);
+    bool jit_dumpsrc(void);
+    bool jit_fusion(void);
+    bool jit_contraction(void);
+    bool jit_offload(void);
+    int jit_offload_devid(void);
+
     std::string text();
-
-    bh_error register_extension(bh_component& instance, const char* name, bh_opcode opcode);
-
-    /**
-     *  Maps the Bohrium representation to CAPE representation.
-     */
-    bh_error execute(bh_ir* bhir);
-
-private:
 
     /**
      *  Generate and compile source, construct Block(kp_block) for execution.
      */
-    bh_error process_block(
-            core::SymbolTable &symbol_table,
-            core::Program& tac_program,
-            core::Block &block
-    );
-
+    bh_error process_block(core::SymbolTable &symbol_table,
+                           core::Program& tac_program,
+                           core::Block &block);
+    
     /**
      *  Execute the given Block(kp_block), that is, buffer management
      *  and possible execution of a kernel function.
      */
-    bh_error execute_block(
-            core::SymbolTable &symbol_table,
-            core::Program& tac_program,
-            core::Block &block
-    );
-
+    bh_error execute_block(core::SymbolTable &symbol_table,
+                           core::Program& tac_program,
+                           core::Block &block);
+    
+private:
     size_t vcache_size_;
 
     bool preload_,
@@ -89,10 +86,7 @@ private:
     ThreadControl   thread_control_;
     std::vector<Accelerator*>   accelerators_;
 
-    std::map<bh_opcode, bh_extmethod_impl> extensions_;
-
     static const char TAG[];
-    size_t exec_count;
 };
 
 }}
