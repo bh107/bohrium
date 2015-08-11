@@ -91,11 +91,11 @@ typedef struct kp_iterspace {
 } kp_iterspace;
 
 typedef struct kp_block {
-    kp_operand** operands;  // Array of pointers to operands
-    int64_t noperands;      // # block operands
-
     kp_buffer** buffers;    // Array of pointers to buffers
     int64_t nbuffers;       // # buffers
+
+    kp_operand** operands;  // Array of pointers to operands
+    int64_t noperands;      // # block operands
 
     kp_iterspace iterspace; // Iteration space
     uint32_t omask;         // Operation mask
@@ -107,7 +107,7 @@ typedef struct kp_block {
     int64_t narray_tacs;    // # of array tacs in the block
 } kp_block;
 
-typedef void (*kp_krnl_func)(kp_buffer** buffers, kp_operand ** args, kp_iterspace * iterspace, const int offload_devid);
+typedef void (*kp_krnl_func)(kp_buffer** buffers, kp_operand** args, kp_iterspace* iterspace, const int offload_devid);
 
 #define KP_SCALAR_LAYOUT   ( KP_SCALAR | KP_SCALAR_CONST | KP_SCALAR_TEMP )
 #define KP_ARRAY_LAYOUT    ( KP_CONTRACTABLE | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED | KP_SPARSE )

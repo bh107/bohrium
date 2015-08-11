@@ -10,45 +10,54 @@ const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& globals, Program& tac_program)
 : block_(), globals_(globals), tac_program_(tac_program), symbol_text_(""), symbol_("")
-{}
+{
+    const uint64_t buffer_capacity = globals_.capacity()+1;
+    const uint64_t tac_capacity = tac_program_.capacity()+1;
+
+    block_.buffers = new kp_buffer*[buffer_capacity];
+    block_.operands = new kp_operand*[buffer_capacity];
+    block_.tacs = new int64_t[tac_capacity];
+    block_.array_tacs = new int64_t[tac_capacity];
+}
 
 Block::~Block()
 {
-    clear();
-}
-
-void Block::clear(void)
-{                                               // Reset the state of the kp_block (C interface)
     if (block_.buffers) {                       // Buffers
         delete[] block_.buffers;
         block_.buffers = NULL;
-        block_.nbuffers = 0;
     }
     
     if (block_.operands) {                      // Operands
         delete[] block_.operands;
-        block_.operands   = NULL;
-        block_.noperands  = 0;
+        block_.operands = NULL;
     }
 
     if (block_.tacs) {                          // Block tacs
         delete[] block_.tacs;
         block_.tacs = NULL;
-        block_.ntacs = 0;
     }
 
     if (block_.array_tacs) {                    // Block array tacs
         delete[] block_.array_tacs;
         block_.array_tacs = NULL;
-        block_.narray_tacs = 0;
     }
+	clear();
+}
+
+void Block::clear(void)
+{                                   // Reset the state of the kp_block (C interface)
+    block_.nbuffers = 0;            // Buffers
+    block_.noperands = 0;           // Operands
 
     block_.iterspace.layout = KP_SCALAR_TEMP;   // Iteraton space
     block_.iterspace.ndim = 0;
     block_.iterspace.shape = NULL;
     block_.iterspace.nelem = 0;
 
-    block_.omask = 0;                           // Operation mask
+    block_.omask = 0;               // Operation mask
+    block_.ntacs = 0;               // Block tacs
+    block_.narray_tacs = 0;         // Block array tacs
+                                    // End of kp_block reset, dynamic memory is reused.
 
     buffer_ids_.clear();        // Reset the state of Block (C++ interface)
     buffer_refs_.clear();
@@ -56,8 +65,8 @@ void Block::clear(void)
     global_to_local_.clear();   // global to local kp_operand mapping
     local_to_global_.clear();   // local to global kp_operand mapping
 
-    symbol_text_    = "";       // textual symbol representation
-    symbol_         = "";       // hashed symbol representation
+    symbol_text_    = "";       // textual block-symbol representation
+    symbol_         = "";       // hashed block-symbol representation
 }
 
 void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
@@ -103,12 +112,6 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 
 void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 {
-    const size_t capacity = krnl.instr_indexes.size()*3;
-    block_.buffers = new kp_buffer*[capacity];
-    block_.operands = new kp_operand*[capacity];
-    block_.tacs = new int64_t[capacity];
-    block_.array_tacs = new int64_t[capacity];
-
     for(std::vector<uint64_t>::iterator idx_it = krnl.instr_indexes.begin();
         idx_it != krnl.instr_indexes.end();
         ++idx_it) {
@@ -127,20 +130,12 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
     }
 
     _update_iterspace();        // Update the iteration space
-    // TODO: Classify buffers
 }
 
 void Block::compose(bh_ir_kernel& krnl, size_t prg_idx)
 {
-    const size_t capacity = 3;
-    block_.buffers = new kp_buffer*[capacity];
-    block_.operands = new kp_operand*[capacity];
-    block_.tacs = new int64_t[capacity];
-    block_.array_tacs = new int64_t[capacity];
-    
     _compose(krnl, false, prg_idx);
-    _update_iterspace();                        // Update the iteration space
-    // TODO: Classify buffers
+    _update_iterspace();        // Update the iteration space
 }
 
 void Block::_bufferize(size_t global_idx)

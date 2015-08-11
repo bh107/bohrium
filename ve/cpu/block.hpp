@@ -164,7 +164,6 @@ public:
     uint32_t omask(void);    
 
 private:
-
     Block();
 
     /**
