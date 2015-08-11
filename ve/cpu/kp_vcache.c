@@ -11,12 +11,12 @@ static void** kp_vcache;                // Vcache entries
 static int64_t* kp_vcache_bytes;        // Stores number of bytes in each vcache entry
 
 static int64_t kp_vcache_bytes_total;   // Total number of bytes in vcache entries
-static int64_t kp_vcache_size;              // Number of enstries
-static int64_t kp_vcache_cur;               // Currently used entry
+static int64_t kp_vcache_size;          // Number of enstries
+static int64_t kp_vcache_cur;           // Currently used entry
 
-static int64_t kp_vcache_hits = 0;          // Maintain #hits from kp_vcache_malloc
-static int64_t kp_vcache_miss = 0;          // Maintain #misses from kp_vcache_malloc
-static int64_t kp_vcache_store = 0;         // Maintain #inserts into vcache
+static int64_t kp_vcache_hits = 0;      // Maintain #hits from kp_vcache_malloc
+static int64_t kp_vcache_miss = 0;      // Maintain #misses from kp_vcache_malloc
+static int64_t kp_vcache_store = 0;     // Maintain #inserts into vcache
 
 /**
  *  Reset vcache counters
@@ -160,7 +160,7 @@ bool kp_vcache_malloc(kp_buffer *buffer)
     if (buffer->data == NULL) {
         buffer->data = kp_host_malloc(bytes);
         if (buffer->data == NULL) {
-            printf("bh_data_malloc() could not allocate a data region.");
+            printf("kp_host_malloc() could not allocate a data region.");
             return false;
         }
     }
