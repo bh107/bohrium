@@ -106,25 +106,135 @@ string Engine::text()
 
 bh_error Engine::execute_block(SymbolTable &symbol_table,
                                Program &tac_program,
-                               Block &block,
-                               bh_ir_kernel &krnl
+                               Block &block
 )
 {
-    bh_error res = BH_SUCCESS;
-
-    bool consider_jit = jit_enabled_ and (block.narray_tacs() > 0);
-
     Accelerator* accelerator = NULL;    // Grab an accelerator instance
     if (jit_offload_) {
         accelerator = accelerators_[0];
     }
 
+    //
+    // Buffer Management
+    //
+    // - allocate output buffer(s) on host
+    // - allocate output buffer(s) on accelerator
+    // - allocate input buffer(s) on accelerator
+    // - push input buffer(s) to accelerator (TODO)
+    //
+    for(size_t i=0; i<block.ntacs(); ++i) {
+        kp_tac & tac = block.tac(i);
+
+        if (!((tac.op & KP_ARRAY_OPS)>0)) {
+            continue;
+        }
+        switch(tac_noperands(tac)) {
+            case 3:
+                if ((symbol_table[tac.in2].layout & (KP_DYNALLOC_LAYOUT))>0) {
+                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
+                        accelerator->alloc(symbol_table[tac.in2]);
+                        if (NULL!=symbol_table[tac.in2].base->data) {
+                            accelerator->push(symbol_table[tac.in2]);
+                        }
+                    }
+                }
+            case 2:
+                if ((symbol_table[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) {
+                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
+                        accelerator->alloc(symbol_table[tac.in1]);
+                        if (NULL!=symbol_table[tac.in1].base->data) {
+                            accelerator->push(symbol_table[tac.in1]);
+                        }
+                    }
+                }
+            case 1:
+                if ((symbol_table[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {
+                    if (!kp_vcache_malloc(symbol_table[tac.out].base)) {
+                        fprintf(stderr, "Unhandled error returned by kp_vcache_malloc() "
+                                        "called from bh_ve_cpu_execute()\n");
+                        return BH_ERROR;
+                    }
+                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
+                        accelerator->alloc(symbol_table[tac.out]);
+                    }
+                }
+                break;
+        }
+    }
+
+    //
+    // Execute array operations.
+    // 
+    if (block.narray_tacs() > 0) {
+        TIMER_START
+        kp_iterspace & iterspace = block.iterspace();   // Grab iteration space
+        storage_.funcs[block.symbol()](                 // Execute kernel function
+            block.buffers(),
+            block.operands(),
+            &iterspace,
+            jit_offload_devid_
+        );
+        TIMER_STOP(block.text_compact())
+    }
+
+    //
+    // Buffer Management
+    //
+    // - free buffer(s) on accelerator
+    // - free buffer(s) on host
+    // - pull buffer(s) from accelerator to host
+    //
+    for(size_t i=0; i<block.ntacs(); ++i) {
+        kp_tac & tac = block.tac(i);
+        kp_operand & operand = symbol_table[tac.out];
+
+        switch(tac.oper) {  
+
+            case KP_SYNC:               // Pull buffer from accelerator to host
+                if (accelerator) {
+                    accelerator->pull(operand);
+                }
+                break;
+
+            case KP_DISCARD:            // Free buffer on accelerator
+                if (accelerator) {
+                    accelerator->free(operand);
+                }
+                break;
+
+            case KP_FREE:               // NOTE: Isn't BH_FREE redundant?
+                if (accelerator) {      // Free buffer on accelerator
+                    accelerator->free(operand);                             // Note: must be done prior to
+                }                                                           //       freeing on host.
+
+                if (!kp_vcache_free(operand.base)) {                 // Free buffer on host
+                    fprintf(stderr, "Unhandled error returned by kp_vcache_free(...) "
+                                    "called from bh_ve_cpu_execute)\n");
+                    return BH_ERROR;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return BH_SUCCESS;
+}
+
+bh_error Engine::process_block(SymbolTable &symbol_table,
+                               Program &tac_program,
+                               Block &block
+)
+{
+    bool consider_jit = jit_enabled_ and (block.narray_tacs() > 0);
+
     if (!block.symbolize()) {                       // Update block-symbol
-        fprintf(stderr, "Engine::execute_block(...) == Failed creating symbol.\n");
+        fprintf(stderr, "Engine::process_block(...) == Failed creating symbol.\n");
         return BH_ERROR;
     }
 
-    DEBUG(TAG, "EXECUTING " << block.symbol());
+    DEBUG(TAG, "PROCESSING " << block.symbol());
 
     //
     // JIT-compile: generate source and compile code
@@ -175,112 +285,7 @@ bh_error Engine::execute_block(SymbolTable &symbol_table,
         return BH_ERROR;
     }
 
-    //
-    // Buffer Management
-    //
-    // - allocate output buffer(s) on host
-    // - allocate output buffer(s) on accelerator
-    // - allocate input buffer(s) on accelerator
-    // - push input buffer(s) to accelerator (TODO)
-    //
-    for(size_t i=0; i<block.ntacs(); ++i) {
-        kp_tac & tac = block.tac(i);
-
-        if (!((tac.op & KP_ARRAY_OPS)>0)) {
-            continue;
-        }
-        switch(tac_noperands(tac)) {
-            case 3:
-                if ((symbol_table[tac.in2].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
-                        accelerator->alloc(symbol_table[tac.in2]);
-                        if (NULL!=symbol_table[tac.in2].base->data) {
-                            accelerator->push(symbol_table[tac.in2]);
-                        }
-                    }
-                }
-            case 2:
-                if ((symbol_table[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
-                        accelerator->alloc(symbol_table[tac.in1]);
-                        if (NULL!=symbol_table[tac.in1].base->data) {
-                            accelerator->push(symbol_table[tac.in1]);
-                        }
-                    }
-                }
-            case 1:
-                if ((symbol_table[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    if (!kp_vcache_malloc(symbol_table[tac.out].base)) {
-                        fprintf(stderr, "Unhandled error returned by kp_vcache_malloc() "
-                                        "called from bh_ve_cpu_execute()\n");
-                        return res;
-                    }
-                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
-                        accelerator->alloc(symbol_table[tac.out]);
-                    }
-                }
-                break;
-        }
-    }
-
-    //
-    // Execute array operations.
-    // 
-    if (block.narray_tacs() > 0) {
-        TIMER_START
-        kp_iterspace & iterspace = block.iterspace(); // Grab iteration space
-        storage_.funcs[block.symbol()](             // Execute kernel function
-            block.buffers(),
-            block.operands(),
-            &iterspace,
-            jit_offload_devid_
-        );
-        TIMER_STOP(block.text_compact())
-    }
-
-    //
-    // Buffer Management
-    //
-    // - free buffer(s) on accelerator
-    // - free buffer(s) on host
-    // - pull buffer(s) from accelerator to host
-    //
-    for(size_t i=0; i<block.ntacs(); ++i) {
-        kp_tac & tac = block.tac(i);
-        kp_operand & operand = symbol_table[tac.out];
-
-        switch(tac.oper) {  
-
-            case KP_SYNC:               // Pull buffer from accelerator to host
-                if (accelerator) {
-                    accelerator->pull(operand);
-                }
-                break;
-
-            case KP_DISCARD:            // Free buffer on accelerator
-                if (accelerator) {
-                    accelerator->free(operand);
-                }
-                break;
-
-            case KP_FREE:               // NOTE: Isn't BH_FREE redundant?
-                if (accelerator) {      // Free buffer on accelerator
-                    accelerator->free(operand);                             // Note: must be done prior to
-                }                                                           //       freeing on host.
-
-                if (!kp_vcache_free(operand.base)) {                 // Free buffer on host
-                    fprintf(stderr, "Unhandled error returned by kp_vcache_free(...) "
-                                    "called from bh_ve_cpu_execute)\n");
-                    return res;
-                }
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    return BH_SUCCESS;
+    return execute_block(symbol_table, tac_program, block);
 }
 
 bh_error Engine::execute(bh_ir* bhir)
@@ -324,7 +329,7 @@ bh_error Engine::execute(bh_ir* bhir)
         } else if ((jit_fusion_) || 
                    (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
             DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
-            res = execute_block(symbol_table, tac_program, block, *krnl);
+            res = process_block(symbol_table, tac_program, block);
             if (BH_SUCCESS != res) {
                 return res;
             }
@@ -338,7 +343,7 @@ bh_error Engine::execute(bh_ir* bhir)
                 block.clear();                          // Reset the block
                 block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
 
-                res = execute_block(symbol_table, tac_program, block, *krnl);
+                res = process_block(symbol_table, tac_program, block);
                 if (BH_SUCCESS != res) {
                     return res;
                 }

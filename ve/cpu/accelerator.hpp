@@ -63,21 +63,9 @@ public:
     void push(kp_operand & operand);
 
     /**
-     *  Allocate kp_operand-buffer on accelerator and
-     *  push data from host to accelerator.
-     */
-    void push_alloc(kp_operand & operand);
-
-    /**
      *  Pull data from accelerator to host.
      */
     void pull(kp_operand & operand);
-
-    /**
-     *  Pull data from accelerator to host and
-     *  free kp_operand-buffer on accelerator.
-     */
-    void pull_free(kp_operand & operand);
 
     /**
      *  Get max threads on accelerator.
@@ -93,22 +81,22 @@ private:
     Accelerator(void);
 
     template <typename T>
-    void _alloc(kp_operand & operand);
+    void _alloc(kp_operand& operand);
 
     template <typename T>
-    void _free(kp_operand & operand);
+    void _free(kp_operand& operand);
 
     template <typename T>
-    void _push(kp_operand & operand);
+    void _push(kp_operand& operand);
 
     template <typename T>
-    void _pull(kp_operand & operand);
+    void _pull(kp_operand& operand);
 
     int id_;
     size_t bytes_allocated_;
-    std::set<const kp_buffer *> buffers_allocated_;
+    std::set<const kp_buffer*> buffers_allocated_;
 
-    std::set<const kp_buffer *> buffers_pushed_;
+    std::set<const kp_buffer*> buffers_pushed_;
 
     static const char TAG[];
 };

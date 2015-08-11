@@ -46,19 +46,30 @@ public:
 
     bh_error register_extension(bh_component& instance, const char* name, bh_opcode opcode);
 
+    /**
+     *  Maps the Bohrium representation to CAPE representation.
+     */
     bh_error execute(bh_ir* bhir);
 
 private:
 
     /**
-     *  Compile and execute the given program.
-     *
+     *  Generate and compile source, construct Block(kp_block) for execution.
+     */
+    bh_error process_block(
+            core::SymbolTable &symbol_table,
+            core::Program& tac_program,
+            core::Block &block
+    );
+
+    /**
+     *  Execute the given Block(kp_block), that is, buffer management
+     *  and possible execution of a kernel function.
      */
     bh_error execute_block(
             core::SymbolTable &symbol_table,
             core::Program& tac_program,
-            core::Block &block,
-            bh_ir_kernel &krnl
+            core::Block &block
     );
 
     size_t vcache_size_;
