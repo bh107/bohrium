@@ -80,12 +80,12 @@ public:
     //
 
     /**
-     *  Returns the kp_operand with local in block-scope.
+     *  Returns the kp_operand with local idx in block-scope.
      *
      *  @param local_idx Index / name in the block-scope of the kp_operand.
      *  @param A reference to the requested kp_operand.
      */
-    kp_operand & operand(size_t local_idx);
+    kp_operand& operand(size_t local_idx);
 
     /**
      *  Return the array of pointer-operands.
@@ -212,21 +212,19 @@ private:
      */
     void _update_iterspace(void);
 
-    kp_block block_;                             // buffers, operands, iterspace, and omask.
+    kp_block block_;                            // Buffers, operands, iterspace,  omask,
+                                                // tacs, ntacs, array_tacs, and narray_tacs.
+
+    SymbolTable& globals_;                      // A reference to the global symbol table
+    Program& tac_program_;                      // A reference to the entire bytecode program
 
     std::map<kp_buffer*, size_t> buffer_ids_;
     std::set<kp_buffer*> input_buffers_;
     std::set<kp_buffer*> output_buffers_;
     std::map<kp_buffer*, std::set<uint64_t>> buffer_refs_;
 
-    SymbolTable& globals_;                      // A reference to the global symbol table
-    Program& tac_program_;                      // A reference to the entire bytecode program
-
     std::map<size_t, size_t> global_to_local_;  // Mapping from global to block-local scope.
     std::map<size_t, size_t> local_to_global_;  // Mapping from block-local to global scope.
-
-    std::vector<kp_tac *> tacs_;                // A subset of the tac-program representing the block.
-    std::vector<kp_tac *> array_tacs_;          // A subset of the tac-program containing only array ops.
 
     std::string symbol_text_;                   // Textual representation of the block
     std::string symbol_;                        // Hash of textual representation

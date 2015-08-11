@@ -31,6 +31,18 @@ void Block::clear(void)
         block_.noperands  = 0;
     }
 
+    if (block_.tacs) {                          // Block tacs
+        delete[] block_.tacs;
+        block_.tacs = NULL;
+        block_.ntacs = 0;
+    }
+
+    if (block_.array_tacs) {                    // Block array tacs
+        delete[] block_.array_tacs;
+        block_.array_tacs = NULL;
+        block_.narray_tacs = 0;
+    }
+
     block_.iterspace.layout = KP_SCALAR_TEMP;   // Iteraton space
     block_.iterspace.ndim = 0;
     block_.iterspace.shape = NULL;
@@ -46,9 +58,6 @@ void Block::clear(void)
     global_to_local_.clear();   // global to local kp_operand mapping
     local_to_global_.clear();   // local to global kp_operand mapping
 
-    tacs_.clear();              // tacs
-    array_tacs_.clear();        // array_tacs
-
     symbol_text_    = "";       // textual symbol representation
     symbol_         = "";       // hashed symbol representation
 
@@ -60,16 +69,16 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 {
     kp_tac& tac = tac_program_[prg_idx];
 
-    tacs_.push_back(&tac);              // <-- All tacs
-    block_.omask |= tac.op;                   // Update omask
+    block_.tacs[block_.ntacs++] = prg_idx;  // <-- All tacs
+    block_.omask |= tac.op;                 // Update omask
 
-    if ((tac.op & (KP_ARRAY_OPS))>0) {
-        array_tacs_.push_back(&tac);    // <-- Only array operations
+    if ((tac.op & (KP_ARRAY_OPS))>0) {      // <-- Only array operations
+        block_.array_tacs[block_.narray_tacs++] = prg_idx;
     }
 
     switch(tac_noperands(tac)) {
         case 3:
-            _localize_scope(tac.in2);                   // Localize scope,      in2
+            _localize_scope(tac.in2);                       // Localize scope,      in2
             if ((tac.op & (KP_ARRAY_OPS))>0) {
                 if (array_contraction && (krnl.get_temps().find((bh_base*)globals_[tac.in2].base)!=krnl.get_temps().end())) {
                     globals_.turn_contractable(tac.in2);    // Mark contractable,   in2
@@ -77,7 +86,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
                 _bufferize(tac.in2);                        // Note down buffer id, in2
             }
         case 2:
-            _localize_scope(tac.in1);                   // Localize scope,      in1
+            _localize_scope(tac.in1);                       // Localize scope,      in1
             if ((tac.op & (KP_ARRAY_OPS))>0) {
                 if (array_contraction && (krnl.get_temps().find((bh_base*)globals_[tac.in1].base)!=krnl.get_temps().end())) {
                     globals_.turn_contractable(tac.in1);    // Mark contractable,   in1
@@ -85,7 +94,7 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
                 _bufferize(tac.in1);                        // Note down buffer id, in1
             }
         case 1:
-            _localize_scope(tac.out);                   // Localize scope,      out
+            _localize_scope(tac.out);                       // Localize scope,      out
             if ((tac.op & (KP_ARRAY_OPS))>0) {
                 if (array_contraction && (krnl.get_temps().find((bh_base*)globals_[tac.out].base)!=krnl.get_temps().end())) {
                     globals_.turn_contractable(tac.out);    // Mark contractable,   out
@@ -99,8 +108,11 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 
 void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 {
-    block_.buffers = new kp_buffer *[krnl.instr_indexes.size()*3];
-    block_.operands = new kp_operand *[krnl.instr_indexes.size()*3];
+    const size_t capacity = krnl.instr_indexes.size()*3;
+    block_.buffers = new kp_buffer*[capacity];
+    block_.operands = new kp_operand*[capacity];
+    block_.tacs = new int64_t[capacity];
+    block_.array_tacs = new int64_t[capacity];
 
     for(std::vector<uint64_t>::iterator idx_it = krnl.instr_indexes.begin();
         idx_it != krnl.instr_indexes.end();
@@ -125,8 +137,11 @@ void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 
 void Block::compose(bh_ir_kernel& krnl, size_t prg_idx)
 {
-    block_.buffers = new kp_buffer *[3];
-    block_.operands = new kp_operand *[3];
+    const size_t capacity = 3;
+    block_.buffers = new kp_buffer*[capacity];
+    block_.operands = new kp_operand*[capacity];
+    block_.tacs = new int64_t[capacity];
+    block_.array_tacs = new int64_t[capacity];
     
     _compose(krnl, false, prg_idx);
     _update_iterspace();                        // Update the iteration space
@@ -206,8 +221,8 @@ bool Block::symbolize(void)
     //
     // Program
     bool first = true;
-    for(vector<kp_tac *>::iterator tac_iter=tacs_.begin(); tac_iter!=tacs_.end(); ++tac_iter) {
-        kp_tac & tac = **tac_iter;
+    for(int64_t tac_iter=0; tac_iter<block_.ntacs; ++tac_iter) {
+        kp_tac& tac = this->tac(tac_iter);
        
         // Do not include system opcodes in the kernel symbol.
         if ((tac.op == KP_SYSTEM) || (tac.op == KP_EXTENSION)) {
@@ -331,14 +346,14 @@ size_t Block::local_to_global(size_t local_idx) const
     return local_to_global_.find(local_idx)->second;
 }
 
-kp_tac & Block::tac(size_t idx) const
+kp_tac& Block::tac(size_t idx) const
 {
-    return *tacs_[idx];
+    return tac_program_[block_.tacs[idx]];
 }
 
 kp_tac & Block::array_tac(size_t idx) const
 {
-    return *array_tacs_[idx];
+    return tac_program_[block_.array_tacs[idx]];
 }
 
 uint32_t Block::omask(void)
@@ -348,12 +363,12 @@ uint32_t Block::omask(void)
 
 size_t Block::ntacs(void) const
 {
-    return tacs_.size();
+    return block_.ntacs;
 }
 
 size_t Block::narray_tacs(void) const
 {
-    return array_tacs_.size();
+    return block_.narray_tacs;
 }
 
 string Block::symbol(void) const
@@ -382,8 +397,8 @@ void Block::_update_iterspace(void)
         if (not ((tac.op & (KP_ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
-        if ((tac.op & (KP_REDUCE_COMPLETE | KP_REDUCE_PARTIAL))>0) {     // Reductions are weird
-            if (globals_[tac.in1].layout >= block_.iterspace.layout) {    // Iterspace
+        if ((tac.op & (KP_REDUCE_COMPLETE | KP_REDUCE_PARTIAL))>0) {    // Reductions are weird
+            if (globals_[tac.in1].layout >= block_.iterspace.layout) {  // Iterspace
                 block_.iterspace.layout = globals_[tac.in1].layout;
                 block_.iterspace.ndim  = globals_[tac.in1].ndim;
                 block_.iterspace.shape = globals_[tac.in1].shape;
@@ -391,7 +406,7 @@ void Block::_update_iterspace(void)
             if (globals_[tac.out].layout > block_.iterspace.layout) {
                 block_.iterspace.layout = globals_[tac.out].layout;
             }
-            if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {   // Footprint
+            if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {  // Footprint
                 footprint.insert(globals_[tac.out].base);
                 output_buffers_.insert(globals_[tac.in1].base);
             }
@@ -402,40 +417,40 @@ void Block::_update_iterspace(void)
         } else {
             switch(tac_noperands(tac)) {
                 case 3:
-                    if (globals_[tac.in2].layout > block_.iterspace.layout) {     // Iterspace
+                    if (globals_[tac.in2].layout > block_.iterspace.layout) {   // Iterspace
                         block_.iterspace.layout = globals_[tac.in2].layout;
                         if (block_.iterspace.layout > KP_SCALAR_TEMP) {
                             block_.iterspace.ndim  = globals_[tac.in2].ndim;
                             block_.iterspace.shape = globals_[tac.in2].shape;
                         }
                     }
-                    if ((globals_[tac.in2].layout & (KP_DYNALLOC_LAYOUT))>0) { // Footprint
+                    if ((globals_[tac.in2].layout & (KP_DYNALLOC_LAYOUT))>0) {  // Footprint
                         footprint.insert(globals_[tac.in2].base);
                         input_buffers_.insert(globals_[tac.in2].base);
                     }
 
                 case 2:
-                    if (globals_[tac.in1].layout > block_.iterspace.layout) {     // Iterspace
+                    if (globals_[tac.in1].layout > block_.iterspace.layout) {   // Iterspace
                         block_.iterspace.layout = globals_[tac.in1].layout;
                         if (block_.iterspace.layout > KP_SCALAR_TEMP) {
                             block_.iterspace.ndim  = globals_[tac.in1].ndim;
                             block_.iterspace.shape = globals_[tac.in1].shape;
                         }
                     }
-                    if ((globals_[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) { // Footprint
+                    if ((globals_[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) {  // Footprint
                         footprint.insert(globals_[tac.in1].base);
                         input_buffers_.insert(globals_[tac.in1].base);
                     }
 
                 case 1:
-                    if (globals_[tac.out].layout > block_.iterspace.layout) {     // Iterspace
+                    if (globals_[tac.out].layout > block_.iterspace.layout) {   // Iterspace
                         block_.iterspace.layout = globals_[tac.out].layout;
                         if (block_.iterspace.layout > KP_SCALAR_TEMP) {
                             block_.iterspace.ndim  = globals_[tac.out].ndim;
                             block_.iterspace.shape = globals_[tac.out].shape;
                         }
                     }
-                    if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) { // Footprint
+                    if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {  // Footprint
                         footprint.insert(globals_[tac.out].base);
                         output_buffers_.insert(globals_[tac.in1].base);
                     }
@@ -446,7 +461,7 @@ void Block::_update_iterspace(void)
         }
     }
 
-    footprint_nelem_ = 0;                       // Compute the footprint
+    footprint_nelem_ = 0;                               // Compute the footprint
     footprint_bytes_ = 0;
     for (std::set<const kp_buffer*>::iterator it=footprint.begin();
          it!=footprint.end();
@@ -455,7 +470,7 @@ void Block::_update_iterspace(void)
         footprint_bytes_ += kp_buffer_nbytes(*it);
     }
 
-    if (NULL != block_.iterspace.shape) {             // Determine number of elements
+    if (NULL != block_.iterspace.shape) {               // Determine number of elements
         block_.iterspace.nelem = 1;
         for(int k=0; k<block_.iterspace.ndim; ++k) {
             block_.iterspace.nelem *= block_.iterspace.shape[k];
@@ -523,7 +538,7 @@ std::string Block::text(void)
     }
     ss << "}" << endl;
 
-    ss << "BASE_REFS {" << endl;
+    ss << "BUFFER_REFS {" << endl;
     for(std::map<kp_buffer *, std::set<uint64_t> >::iterator it=buffer_refs_.begin();
         it!=buffer_refs_.end();
         ++it) {
