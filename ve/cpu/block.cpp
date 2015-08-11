@@ -9,7 +9,7 @@ namespace core{
 const char Block::TAG[] = "Block";
 
 Block::Block(SymbolTable& globals, Program& tac_program)
-: block_(), globals_(globals), tac_program_(tac_program), symbol_text_(""), symbol_(""), footprint_nelem_(0), footprint_bytes_(0)
+: block_(), globals_(globals), tac_program_(tac_program), symbol_text_(""), symbol_("")
 {}
 
 Block::~Block()
@@ -51,8 +51,6 @@ void Block::clear(void)
     block_.omask = 0;                           // Operation mask
 
     buffer_ids_.clear();        // Reset the state of Block (C++ interface)
-    input_buffers_.clear();
-    output_buffers_.clear();
     buffer_refs_.clear();
 
     global_to_local_.clear();   // global to local kp_operand mapping
@@ -60,9 +58,6 @@ void Block::clear(void)
 
     symbol_text_    = "";       // textual symbol representation
     symbol_         = "";       // hashed symbol representation
-
-    footprint_nelem_ = 0;
-    footprint_bytes_ = 0;
 }
 
 void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
@@ -152,9 +147,9 @@ void Block::_bufferize(size_t global_idx)
 {
     // Maintain references to buffers within the block.
     if ((globals_[global_idx].layout & (KP_DYNALLOC_LAYOUT))>0) {
-        kp_buffer * buffer = globals_[global_idx].base;
+        kp_buffer* buffer = globals_[global_idx].base;
 
-        std::map<kp_buffer *, size_t>::iterator buf = buffer_ids_.find(buffer);
+        std::map<kp_buffer*, size_t>::iterator buf = buffer_ids_.find(buffer);
         if (buf == buffer_ids_.end()) {
             size_t buffer_id = block_.nbuffers++;
             buffer_ids_.insert(pair<kp_buffer *, size_t>(
@@ -297,9 +292,9 @@ kp_buffer& Block::buffer(size_t buffer_id)
     return *block_.buffers[buffer_id];
 }
 
-size_t Block::resolve_buffer(kp_buffer * buffer)
+size_t Block::resolve_buffer(kp_buffer* buffer)
 {
-    std::map<kp_buffer *, size_t>::iterator buf = buffer_ids_.find(buffer);
+    std::map<kp_buffer*, size_t>::iterator buf = buffer_ids_.find(buffer);
     if (buf == buffer_ids_.end()) {
         // TODO: Raise exception
     }
@@ -316,7 +311,7 @@ int64_t Block::nbuffers()
     return block_.nbuffers;
 }
 
-size_t Block::buffer_refcount(kp_buffer *buffer)
+size_t Block::buffer_refcount(kp_buffer* buffer)
 {
     return buffer_refs_[buffer].size();
 }
@@ -388,8 +383,6 @@ kp_iterspace& Block::iterspace(void)
 
 void Block::_update_iterspace(void)
 {       
-    std::set<const kp_buffer *> footprint;
-
     //
     // Determine layout, ndim and shape
     for(size_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
@@ -406,14 +399,6 @@ void Block::_update_iterspace(void)
             if (globals_[tac.out].layout > block_.iterspace.layout) {
                 block_.iterspace.layout = globals_[tac.out].layout;
             }
-            if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {  // Footprint
-                footprint.insert(globals_[tac.out].base);
-                output_buffers_.insert(globals_[tac.in1].base);
-            }
-            if ((globals_[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                footprint.insert(globals_[tac.in1].base);
-                input_buffers_.insert(globals_[tac.in1].base);
-            }
         } else {
             switch(tac_noperands(tac)) {
                 case 3:
@@ -424,11 +409,6 @@ void Block::_update_iterspace(void)
                             block_.iterspace.shape = globals_[tac.in2].shape;
                         }
                     }
-                    if ((globals_[tac.in2].layout & (KP_DYNALLOC_LAYOUT))>0) {  // Footprint
-                        footprint.insert(globals_[tac.in2].base);
-                        input_buffers_.insert(globals_[tac.in2].base);
-                    }
-
                 case 2:
                     if (globals_[tac.in1].layout > block_.iterspace.layout) {   // Iterspace
                         block_.iterspace.layout = globals_[tac.in1].layout;
@@ -437,11 +417,6 @@ void Block::_update_iterspace(void)
                             block_.iterspace.shape = globals_[tac.in1].shape;
                         }
                     }
-                    if ((globals_[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) {  // Footprint
-                        footprint.insert(globals_[tac.in1].base);
-                        input_buffers_.insert(globals_[tac.in1].base);
-                    }
-
                 case 1:
                     if (globals_[tac.out].layout > block_.iterspace.layout) {   // Iterspace
                         block_.iterspace.layout = globals_[tac.out].layout;
@@ -450,24 +425,10 @@ void Block::_update_iterspace(void)
                             block_.iterspace.shape = globals_[tac.out].shape;
                         }
                     }
-                    if ((globals_[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {  // Footprint
-                        footprint.insert(globals_[tac.out].base);
-                        output_buffers_.insert(globals_[tac.in1].base);
-                    }
-
                 default:
                     break;
             }
         }
-    }
-
-    footprint_nelem_ = 0;                               // Compute the footprint
-    footprint_bytes_ = 0;
-    for (std::set<const kp_buffer*>::iterator it=footprint.begin();
-         it!=footprint.end();
-         ++it) {
-        footprint_nelem_ += (*it)->nelem;
-        footprint_bytes_ += kp_buffer_nbytes(*it);
     }
 
     if (NULL != block_.iterspace.shape) {               // Determine number of elements
@@ -476,16 +437,6 @@ void Block::_update_iterspace(void)
             block_.iterspace.nelem *= block_.iterspace.shape[k];
         }
     }
-}
-
-size_t Block::footprint_nelem(void)
-{
-    return footprint_nelem_;
-}
-
-size_t Block::footprint_bytes(void)
-{
-    return footprint_bytes_;
 }
 
 string Block::dot(void) const

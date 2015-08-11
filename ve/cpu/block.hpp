@@ -146,9 +146,6 @@ public:
      */
     kp_iterspace& iterspace(void);
 
-    size_t footprint_nelem(void);
-    size_t footprint_bytes(void);
-
     /**
      * Returns a textual representation of the block in dot-format.
      */
@@ -228,9 +225,6 @@ private:
 
     std::string symbol_text_;                   // Textual representation of the block
     std::string symbol_;                        // Hash of textual representation
-
-    size_t footprint_nelem_;
-    size_t footprint_bytes_;
        
     static const char TAG[];
 };
