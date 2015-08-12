@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include "bh.h"
+#include "kp.h"
 #include "block.hpp"
 #include "symbol_table.hpp"
 #include "program.hpp"
@@ -54,17 +55,18 @@ public:
     /**
      *  Generate and compile source, construct Block(kp_block) for execution.
      */
-    bh_error process_block(core::SymbolTable &symbol_table,
-                           core::Program& tac_program,
+    bh_error process_block(core::Program& tac_program,
+                           core::SymbolTable &symbol_table,
                            core::Block &block);
     
     /**
      *  Execute the given Block(kp_block), that is, buffer management
      *  and possible execution of a kernel function.
      */
-    bh_error execute_block(core::SymbolTable &symbol_table,
-                           core::Program& tac_program,
-                           core::Block &block);
+    bh_error execute_block(core::Program& tac_program,
+                           core::SymbolTable &symbol_table,
+                           core::Block &block,
+                           kp_krnl_func func);
     
 private:
     kp_rt* rt_;

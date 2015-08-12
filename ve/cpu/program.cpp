@@ -57,5 +57,10 @@ kp_tac* Program::tacs(void)
     return program_.tacs;
 }
 
+kp_program& Program::meta(void)
+{
+    return program_;
+}
+
 }}
 

@@ -182,4 +182,10 @@ kp_operand* SymbolTable::operands(void)
     return symboltable_.table;
 }
 
+
+kp_symboltable& SymbolTable::meta(void)
+{
+    return symboltable_;
+}
+
 }}

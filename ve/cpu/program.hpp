@@ -35,6 +35,8 @@ public:
     kp_tac& operator[](size_t tac_idx);
     kp_tac* tacs(void);
 
+    kp_program& meta(void);
+
     std::string text_meta(void);
 
 private:

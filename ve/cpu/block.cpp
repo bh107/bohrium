@@ -516,4 +516,9 @@ std::string Block::text(void)
     return ss.str();
 }
 
+kp_block& Block::meta(void)
+{
+    return block_;
+}
+
 }}

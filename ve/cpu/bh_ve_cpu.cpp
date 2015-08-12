@@ -248,7 +248,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         } else if ((engine->jit_fusion()) || 
                    (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
             DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
-            res = engine->process_block(symbol_table, tac_program, block);
+            res = engine->process_block(tac_program, symbol_table, block);
             if (BH_SUCCESS != res) {
                 return res;
             }
@@ -262,7 +262,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                 block.clear();                          // Reset the block
                 block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
 
-                res = engine->process_block(symbol_table, tac_program, block);
+                res = engine->process_block(tac_program, symbol_table, block);
                 if (BH_SUCCESS != res) {
                     return res;
                 }

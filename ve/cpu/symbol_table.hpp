@@ -102,6 +102,8 @@ public:
      */
     std::string text(std::string prefix);
 
+    kp_symboltable& meta(void);
+
 private:
     SymbolTable(void);  // We do not want to be able to create a symbol_table
                         // with assumptions on capacity.

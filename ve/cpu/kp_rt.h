@@ -31,7 +31,7 @@ void kp_rt_shutdown(kp_rt* rt);
 /**
  *  Execute the given block using the provided runtime.
  */
-bool kp_rt_execute(kp_rt* rt, kp_block* block, kp_krnl_func func, kp_program* program, kp_symboltable* symbols);
+bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_block* block, kp_krnl_func func);
 
 /**
  *  Bind threads on host PUs.

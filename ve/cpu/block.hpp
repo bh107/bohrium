@@ -161,7 +161,9 @@ public:
      */
     std::string text_compact(void);
 
-    uint32_t omask(void);    
+    uint32_t omask(void);
+
+    kp_block& meta(void);
 
 private:
     Block();

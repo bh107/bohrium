@@ -137,9 +137,10 @@ string Engine::text()
     return ss.str();    
 }
 
-bh_error Engine::execute_block(SymbolTable &symbol_table,
-                               Program &tac_program,
-                               Block &block
+bh_error Engine::execute_block(Program &tac_program,
+                               SymbolTable &symbol_table,
+                               Block &block,
+                               kp_krnl_func func
 )
 {
     Accelerator* accelerator = NULL;    // Grab an accelerator instance
@@ -198,10 +199,10 @@ bh_error Engine::execute_block(SymbolTable &symbol_table,
     //
     // Execute array operations.
     // 
-    if (block.narray_tacs() > 0) {
+    if (func) {
         TIMER_START
-        kp_iterspace & iterspace = block.iterspace();   // Grab iteration space
-        storage_.funcs[block.symbol()](                 // Execute kernel function
+        kp_iterspace& iterspace = block.iterspace();    // Grab iteration space
+        func(                                           // Execute kernel function
             block.buffers(),
             block.operands(),
             &iterspace,
@@ -255,8 +256,8 @@ bh_error Engine::execute_block(SymbolTable &symbol_table,
     return BH_SUCCESS;
 }
 
-bh_error Engine::process_block(SymbolTable &symbol_table,
-                               Program &tac_program,
+bh_error Engine::process_block(Program &tac_program,
+                               SymbolTable &symbol_table,
                                Block &block
 )
 {
@@ -318,8 +319,24 @@ bh_error Engine::process_block(SymbolTable &symbol_table,
         return BH_ERROR;
     }
 
+    //
+    // Grab the kernel function
+    kp_krnl_func func = NULL;
+    if (block.narray_tacs() > 0) {
+        func = storage_.funcs[block.symbol()];
+    }
+
     // Now on with the execution
-    return execute_block(symbol_table, tac_program, block);
+    if (false) {
+        return execute_block(tac_program, symbol_table, block, func);
+    } else {
+        bool llexec = kp_rt_execute(rt_, &tac_program.meta(), &symbol_table.meta(), &block.meta(), func);
+        if (llexec) {
+            return BH_SUCCESS;
+        } else {
+            return BH_ERROR;
+        }
+    }
 }
 
 }}

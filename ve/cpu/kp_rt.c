@@ -153,15 +153,66 @@ void kp_rt_shutdown(kp_rt* rt)
     }
 }
 
-bool kp_rt_execute(kp_rt* rt, kp_block* block, kp_krnl_func func, kp_program* program, kp_symboltable* symbols)
+bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_block* block, kp_krnl_func func)
 {
-    return false;
+    //
+    // Buffer Management
+    //
+    // - allocate output buffer(s) on host
+    // - allocate output buffer(s) on accelerator
+    // - allocate input buffer(s) on accelerator
+    // - push input buffer(s) to accelerator (TODO)
+    //
+    for(size_t i=0; i<block->narray_tacs; ++i) {
+        kp_tac* tac = &program->tacs[block->array_tacs[i]];
+
+        if (!((tac->op & KP_ARRAY_OPS)>0)) {
+            continue;
+        }
+        if ((symbols->table[tac->out].layout & (KP_DYNALLOC_LAYOUT))>0) {
+            if (!kp_vcache_malloc(symbols->table[tac->out].base)) {
+                fprintf(stderr, "Unhandled error returned by kp_vcache_malloc() "
+                                "called from bh_ve_cpu_execute()\n");
+                return false;
+            }
+        }
+    }
+
+    if (func) {                                                     // Execute kernel function
+        func(block->buffers, block->operands, &block->iterspace, 0);
+    }
+
+    //
+    // Buffer Management
+    //
+    // - free buffer(s) on accelerator
+    // - free buffer(s) on host
+    // - pull buffer(s) from accelerator to host
+    //
+    for(size_t i=0; i<block->ntacs; ++i) {
+        kp_tac* tac = &program->tacs[block->tacs[i]];
+        kp_operand* operand = &symbols->table[tac->out];
+
+        switch(tac->oper) {  
+            case KP_FREE:
+                if (!kp_vcache_free(operand->base)) {
+                    fprintf(stderr, "Unhandled error returned by kp_vcache_free(...) "
+                                    "called from bh_ve_cpu_execute)\n");
+                    return false;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    return true;
 }
 
 #if defined(VE_CPU_BIND)
 int kp_rt_bind_threads(kp_rt* rt, kp_thread_binding binding)
 {
-    char* env = getenv("GOMP_CPU_AFFINITY");          // Back off if user specifies a
+    char* env = getenv("GOMP_CPU_AFFINITY");    // Back off if user specifies a
     if (NULL != env) {                          // a different binding scheme
         binding = KP_BIND_TO_NONE;
     }
