@@ -2,6 +2,7 @@
 
 #include "engine.hpp"
 #include "timevault.hpp"
+#include "kp_rt.h"
 #include "kp_vcache.h"
 
 using namespace std;
@@ -13,8 +14,7 @@ namespace engine{
 const char Engine::TAG[] = "Engine";
 
 Engine::Engine(
-    const thread_binding binding,
-    const size_t thread_limit,
+    const kp_thread_binding binding,
     const size_t vcache_size,
     const bool preload,
     const bool jit_enabled,
@@ -31,7 +31,7 @@ Engine::Engine(
     const string template_directory,
     const string kernel_directory
     )
-:   vcache_size_(vcache_size),
+:   rt_(NULL),
     preload_(preload),
     jit_enabled_(jit_enabled),
     jit_dumpsrc_(jit_dumpsrc),
@@ -41,14 +41,14 @@ Engine::Engine(
     jit_offload_devid_(jit_offload-1),
     storage_(object_directory, kernel_directory),
     plaid_(template_directory),
-    compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext),
-    thread_control_(binding, thread_limit)
+    compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext)
 {
-    kp_vcache_init(vcache_size);    // Victim cache
     if (preload_) {                 // Object storage
         storage_.preload();
     }
-    thread_control_.bind_threads(); // Thread control
+
+    rt_ = kp_rt_init(vcache_size);      // Initialize CAPE C-runtime
+    kp_rt_bind_threads(rt_, binding);   // Bind threads on host PUs
 
     if (jit_offload_) {             // Add accelerator instance
         Accelerator* accelerator = new Accelerator(jit_offload_devid_);
@@ -67,10 +67,8 @@ Engine::Engine(
 
 Engine::~Engine()
 {   
-    if (vcache_size_>0) {   // De-allocate the malloc-cache
-        kp_vcache_clear();
-        kp_vcache_delete();
-    }
+    kp_rt_shutdown(rt_);    // Shut down the CAPE C-runtime
+
                             // Free accelerator instances
     for(std::vector<Accelerator*>::iterator it=accelerators_.begin();
         it!=accelerators_.end();
@@ -81,7 +79,7 @@ Engine::~Engine()
 
 size_t Engine::vcache_size(void)
 {
-    return vcache_size_;
+    return kp_rt_vcache_size(rt_);
 }
 
 bool Engine::preload(void)
@@ -123,7 +121,7 @@ string Engine::text()
 {
     stringstream ss;
     ss << "Engine {" << endl;
-    ss << "  vcache_size = "        << this->vcache_size_ << endl;
+    ss << "  vcache_size = "        << kp_rt_vcache_size(rt_) << endl;
     ss << "  preload = "            << this->preload_ << endl;    
     ss << "  jit_enabled = "        << this->jit_enabled_ << endl;    
     ss << "  jit_dumpsrc = "        << this->jit_dumpsrc_ << endl;
@@ -132,7 +130,6 @@ string Engine::text()
     ss << "  jit_offload = "        << this->jit_offload_ << endl;
     ss << "}" << endl;
     
-    ss << thread_control_.text() << endl;
     ss << storage_.text() << endl;
     ss << compiler_.text() << endl;
     ss << plaid_.text() << endl;

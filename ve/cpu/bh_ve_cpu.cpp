@@ -34,6 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "utils.hpp"
 #include "engine.hpp"
 #include "timevault.hpp"
+#include "kp_rt.h"
 
 using namespace std;
 const char TAG[] = "Component";
@@ -79,7 +80,6 @@ bh_error bh_ve_cpu_init(const char *name)
     //  Get engine parameters
     //
     bh_intp bind;
-    bh_intp thread_limit;
     bh_intp vcache_size;
     bh_intp preload;
 
@@ -99,7 +99,6 @@ bh_error bh_ve_cpu_init(const char *name)
 
     if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "timing", 0, 1, &timing))                      or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "bind", 0, 2, &bind))                      or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "thread_limit", 0, 2048, &thread_limit))   or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "vcache_size", 0, 100, &vcache_size))      or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "preload", 0, 1, &preload))                or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_level", 0, 3, &jit_level))            or \
@@ -154,10 +153,14 @@ bh_error bh_ve_cpu_init(const char *name)
     mkdir(object_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     // Construct architecture id for object-store
-    string arch_id = kp::core::hash_text(kp::engine::cpu_text());
-    string object_directory;            // Subfolder of object_path
+    char* host_cstr = new char[200];
+    kp_set_host_text(host_cstr);
+    string host_str(host_cstr);
+    delete[] host_cstr;
 
-    string sep("/"); // TODO: Portable file-separator
+    string arch_id = kp::core::hash_text(host_str);
+    string object_directory;            // Subfolder of object_path
+    string sep("/");                    // TODO: Portable file-separator
     
     object_directory = object_path + sep + arch_id;
 
@@ -178,8 +181,7 @@ bh_error bh_ve_cpu_init(const char *name)
     //
     // VROOM VROOM VROOOOOOMMMM!!! VROOOOM!!
     engine = new kp::engine::Engine(
-        (kp::engine::thread_binding)bind,
-        (size_t)thread_limit,
+        (kp_thread_binding)bind,
         (size_t)vcache_size,
         (bool)preload,
         (bool)jit_enabled,

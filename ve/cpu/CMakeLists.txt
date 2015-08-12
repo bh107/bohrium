@@ -39,7 +39,6 @@ set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/engine.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/store.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/symbol_table.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/program.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/thread_control.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/timevault.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp")
@@ -48,8 +47,9 @@ add_library(bh_ve_cpu SHARED ${HDR} ${SRC})             # The main target for th
 
 set(KP_HDR "${KP_HDR};${CMAKE_CURRENT_SOURCE_DIR}/kp.h")
 
-set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_utils.c")
 set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_vcache.c")
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_utils.c")
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_rt.c")
 add_library(kp SHARED ${KP_HDR} ${KP_SRC})
 
 #

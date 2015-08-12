@@ -8,7 +8,6 @@
 #include "block.hpp"
 #include "symbol_table.hpp"
 #include "program.hpp"
-#include "thread_control.hpp"
 #include "accelerator.hpp"
 #include "store.hpp"
 #include "compiler.hpp"
@@ -21,8 +20,7 @@ namespace engine{
 class Engine {
 public:
     Engine(
-        const thread_binding binding,
-        const size_t thread_limit,
+        const kp_thread_binding binding,
         const size_t vcache_size,
         const bool preload,
         const bool jit_enabled,
@@ -69,7 +67,7 @@ public:
                            core::Block &block);
     
 private:
-    size_t vcache_size_;
+    kp_rt* rt_;
 
     bool preload_,
          jit_enabled_,
@@ -83,7 +81,6 @@ private:
     Store           storage_;
     codegen::Plaid  plaid_;
     Compiler        compiler_;
-    ThreadControl   thread_control_;
     std::vector<Accelerator*>   accelerators_;
 
     static const char TAG[];
