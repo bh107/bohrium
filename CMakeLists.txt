@@ -3,7 +3,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 include(FeatureSummary)
-include(ExternalProject)
 
 if (APPLE)  # Build multi-arch OSX binaries
     set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
@@ -39,9 +38,25 @@ check_c_compiler_flag(-Wall HAS_C_WALL)
 if (HAS_C_WALL)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall ")
 endif()
-check_c_compiler_flag(-std=c99 HAS_C_C99)
-if (HAS_C_C99)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ")
+
+# C99 for restrict, for(var name=0;...)
+# gnu99 for MAP_ANONYMOUS
+check_c_compiler_flag(-std=gnu99 HAS_GCC_GNU99)
+if (HAS_GCC_GNU99)
+    set(C99_FLAG "${C99_FLAG} -std=gnu99 ")
+else()
+    check_c_compiler_flag(-std=c99 HAS_GCC_C99)
+    if (HAS_GCC_C99)
+        set(C99_FLAG "${C99_FLAG} -std=c99 ")
+    else()
+        check_c_compiler_flag(-c99 HAS_PGI_C99)
+        if (HAS_PGI_C99)
+            set(C99_FLAG "${C99_FLAG} -c99 ")
+        endif()
+    endif()
+endif()
+if (HAS_GCC_GNU99 OR HAS_GCC_C99 OR HAS_PGI_C99)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C99_FLAG}")
 endif()
 
 check_cxx_compiler_flag(-Wall HAS_CXX_PEDANTIC)             # C++ Flags
@@ -83,42 +98,7 @@ set_package_properties(Cheetah PROPERTIES TYPE REQUIRED PURPOSE "Cheetah is requ
 # Bohrium components
 #
 add_subdirectory(core)
-
-#
-# Building the CPU engine is done as an external-project.
-# This is an attempt to be able to compile with commercial
-# compilers such as pgi and pathscale.
-#
-
-set(VE_CPU true CACHE BOOL "VE-CPU: Build CPU engine.")
-set(VE_CPU_PROFILING false CACHE BOOL "VE-CPU: Enabling CPU profiling.")
-set(VE_CPU_DEBUGGING false CACHE BOOL "VE-CPU: Enable debugging.")
-set(VE_CPU_C_COMPILER ${CMAKE_C_COMPILER} CACHE STRING "VE-CPU: C compiler")
-set(VE_CPU_CXX_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "VE-CPU: C++ compiler")
-if (VE_CPU)
-    set(BH_SOURCE_DIR ${CMAKE_SOURCE_DIR})
-    set(BH_BINARY_DIR ${CMAKE_BINARY_DIR})
-
-    if (${VE_CPU_C_COMPILER} STREQUAL ${CMAKE_C_COMPILER} AND ${VE_CPU_CXX_COMPILER} STREQUAL ${CMAKE_CXX_COMPILER})
-        add_subdirectory(ve/cpu)
-    else()
-        ExternalProject_Add(BH_VE_CPU
-            DEPENDS bh
-            SOURCE_DIR ${CMAKE_SOURCE_DIR}/ve/cpu
-            CMAKE_CACHE_ARGS
-                -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-                -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                -DCMAKE_C_COMPILER:PATH=${VE_CPU_C_COMPILER}
-                -DCMAKE_CXX_COMPILER:PATH=${VE_CPU_CXX_COMPILER}
-                -DBH_SOURCE_DIR:PATH=${BH_SOURCE_DIR}
-                -DBH_BINARY_DIR:PATH=${BH_BINARY_DIR}
-                -DVE_CPU_PROFILING:STRING=${VE_CPU_PROFILING}
-                -DVE_CPU_DEBUGGING:STRING=${VE_CPU_DEBUGGING}
-            BUILD_ALWAYS 1
-        )
-    endif()
-endif()
-
+add_subdirectory(ve/cpu)
 add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
 add_subdirectory(filter/pprint)
@@ -149,17 +129,21 @@ add_subdirectory(test)
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
-
-
 #
-# Bohrium configuration file, depends on global or local installation
-# 
-# The configuration file is written from within the VE-CPU,
-# because VE-CPU needs to add/modify various settings based on
-# compiler and it seems like it is not possible to retrieve those
-# values from ExternalProject_Add except for CMAKE_BINARY_DIR
-# and the like...
+# Bohrium configuration file
 #
+configure_file(${CMAKE_SOURCE_DIR}/config.ini.in ${CMAKE_BINARY_DIR}/config.ini)    # Fill out the config-template
+
+string(REGEX MATCH "^$ENV{HOME}" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})              # Install it
+if ("${ROOT_INSTALL}" STREQUAL "")
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
+else()
+    install(CODE "
+    if(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
+        configure_file(${CMAKE_BINARY_DIR}/config.ini \"\$ENV{HOME}/.bohrium/config.ini\" COPYONLY)
+    endif(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
+    " COMPONENT bohrium)
+endif()
 
 MESSAGE(STATUS "Default c compile flags:" ${CMAKE_C_COMPILE_FLAGS})
 MESSAGE(STATUS "Default c debug flags:" ${CMAKE_C_FLAGS_DEBUG})

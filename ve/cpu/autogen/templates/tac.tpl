@@ -9,6 +9,7 @@ directiveStartToken= %
 //        You should therefore not edit it manually.
 //
 #include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

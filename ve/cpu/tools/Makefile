@@ -9,25 +9,25 @@ DUMPSRC=1
 
 BUILD_OPTIONS=
 
-gcc:	
+gnu:
 	$(eval CC := gcc)
 	$(eval CXX := g++)
 
-icc:
+pgi:
+	$(eval CC := pgcc)
+	$(eval CXX := g++)
+
+path:
+	$(eval CC := pathcc)
+	$(eval CXX := g++)
+
+intel:
 	$(eval CC := icc)
 	$(eval CXX := ic)
 
 clang:
 	$(eval CC := clang)
 	$(eval CXX := clang++)
-
-pgi:
-	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_C_COMPILER=pgcc) 
-	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_CXX_COMPILER=pgc++) 
-
-path:
-	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_C_COMPILER=pathcc) 
-	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_CXX_COMPILER=pathCC) 
 
 release_on:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DCMAKE_BUILD_TYPE=Release)

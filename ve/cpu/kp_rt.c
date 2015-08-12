@@ -1,3 +1,6 @@
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #if defined(VE_CPU_BIND)
 #include <omp.h>
 #include <hwloc.h>
@@ -119,14 +122,14 @@ void kp_set_host_text(char* host_text)
 
 kp_rt* kp_rt_init(size_t vcache_size)
 {
-    kp_rt* rt = (kp_rt*)malloc(sizeof(*rt));
+    kp_rt* rt = (kp_rt*)malloc(sizeof(kp_rt));
     if (rt) {
         rt->binding = KP_BIND_TO_NONE;  // No binding until instructed to
 
         rt->vcache_size = vcache_size;  // Initialize victim cache
         kp_vcache_init(vcache_size);
 
-        rt->host_text = malloc(sizeof(*(rt->host_text))*200);
+        rt->host_text = (char*)malloc(sizeof(char)*200);
         kp_set_host_text(rt->host_text);
 
         rt->acc = NULL;                 // No accelerators until kp_rt_acc_init(...)
@@ -271,7 +274,7 @@ int kp_rt_bind_threads(kp_rt* rt, kp_thread_binding binding)
 
 }
 #else
-size_t kp_rt_bind_threads(kp_thread_binding binding)
+int kp_rt_bind_threads(kp_rt* rt, kp_thread_binding binding)
 {
     if (KP_BIND_TO_NONE!=binding) {
         printf("!! Trying to bind but compiled without required library  !!\n"
