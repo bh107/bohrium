@@ -43,38 +43,19 @@ Engine::Engine(
     plaid_(template_directory),
     compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext)
 {
-    if (preload_) {                 // Object storage
+    if (preload_) {                     // Object storage
         storage_.preload();
     }
 
     rt_ = kp_rt_init(vcache_size);      // Initialize CAPE C-runtime
     kp_rt_bind_threads(rt_, binding);   // Bind threads on host PUs
 
-    if (jit_offload_) {             // Add accelerator instance
-        Accelerator* accelerator = new Accelerator(jit_offload_devid_);
-        if (accelerator->offloadable()) {                           // Verify that it "works"
-            accelerators_.push_back(accelerator);
-            accelerators_[jit_offload_devid_]->get_max_threads();   // Initialize it
-        } else {
-            delete accelerator;                                     // Tear it down
-            jit_offload_ = false;
-            throw runtime_error("Failed initializing accelerator for offload.");
-        }
-    }
-
-    DEBUG(TAG, text());             // Print the engine configuration
+    DEBUG(TAG, text());                 // Print the engine configuration
 }
 
 Engine::~Engine()
 {   
-    kp_rt_shutdown(rt_);    // Shut down the CAPE C-runtime
-
-                            // Free accelerator instances
-    for(std::vector<Accelerator*>::iterator it=accelerators_.begin();
-        it!=accelerators_.end();
-        ++it) {
-        delete *it;
-    }
+    kp_rt_shutdown(rt_);                // Shut down the CAPE C-runtime
 }
 
 size_t Engine::vcache_size(void)
@@ -135,125 +116,6 @@ string Engine::text()
     ss << plaid_.text() << endl;
 
     return ss.str();    
-}
-
-bh_error Engine::execute_block(Program &tac_program,
-                               SymbolTable &symbol_table,
-                               Block &block,
-                               kp_krnl_func func
-)
-{
-    Accelerator* accelerator = NULL;    // Grab an accelerator instance
-    if (jit_offload_) {
-        accelerator = accelerators_[0];
-    }
-
-    //
-    // Buffer Management
-    //
-    // - allocate output buffer(s) on host
-    // - allocate output buffer(s) on accelerator
-    // - allocate input buffer(s) on accelerator
-    // - push input buffer(s) to accelerator (TODO)
-    //
-    for(size_t i=0; i<block.ntacs(); ++i) {
-        kp_tac & tac = block.tac(i);
-
-        if (!((tac.op & KP_ARRAY_OPS)>0)) {
-            continue;
-        }
-        switch(tac_noperands(tac)) {
-            case 3:
-                if ((symbol_table[tac.in2].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
-                        accelerator->alloc(symbol_table[tac.in2]);
-                        if (NULL!=symbol_table[tac.in2].base->data) {
-                            accelerator->push(symbol_table[tac.in2]);
-                        }
-                    }
-                }
-            case 2:
-                if ((symbol_table[tac.in1].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
-                        accelerator->alloc(symbol_table[tac.in1]);
-                        if (NULL!=symbol_table[tac.in1].base->data) {
-                            accelerator->push(symbol_table[tac.in1]);
-                        }
-                    }
-                }
-            case 1:
-                if ((symbol_table[tac.out].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    if (!kp_vcache_malloc(symbol_table[tac.out].base)) {
-                        fprintf(stderr, "Unhandled error returned by kp_vcache_malloc() "
-                                        "called from bh_ve_cpu_execute()\n");
-                        return BH_ERROR;
-                    }
-                    if ((accelerator) && (block.iterspace().layout> KP_SCALAR)) {
-                        accelerator->alloc(symbol_table[tac.out]);
-                    }
-                }
-                break;
-        }
-    }
-
-    //
-    // Execute array operations.
-    // 
-    if (func) {
-        TIMER_START
-        kp_iterspace& iterspace = block.iterspace();    // Grab iteration space
-        func(                                           // Execute kernel function
-            block.buffers(),
-            block.operands(),
-            &iterspace,
-            jit_offload_devid_
-        );
-        TIMER_STOP(block.text_compact())
-    }
-
-    //
-    // Buffer Management
-    //
-    // - free buffer(s) on accelerator
-    // - free buffer(s) on host
-    // - pull buffer(s) from accelerator to host
-    //
-    for(size_t i=0; i<block.ntacs(); ++i) {
-        kp_tac & tac = block.tac(i);
-        kp_operand & operand = symbol_table[tac.out];
-
-        switch(tac.oper) {  
-
-            case KP_SYNC:               // Pull buffer from accelerator to host
-                if (accelerator) {
-                    accelerator->pull(operand);
-                }
-                break;
-
-            case KP_DISCARD:            // Free buffer on accelerator
-                if (accelerator) {
-                    accelerator->free(operand);
-                }
-                break;
-
-            case KP_FREE:               // NOTE: Isn't BH_FREE redundant?
-                if (accelerator) {      // Free buffer on accelerator
-                    accelerator->free(operand);                             // Note: must be done prior to
-                }                                                           //       freeing on host.
-
-                if (!kp_vcache_free(operand.base)) {                 // Free buffer on host
-                    fprintf(stderr, "Unhandled error returned by kp_vcache_free(...) "
-                                    "called from bh_ve_cpu_execute)\n");
-                    return BH_ERROR;
-                }
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    return BH_SUCCESS;
 }
 
 bh_error Engine::process_block(Program &tac_program,
@@ -327,15 +189,11 @@ bh_error Engine::process_block(Program &tac_program,
     }
 
     // Now on with the execution
-    if (false) {
-        return execute_block(tac_program, symbol_table, block, func);
+    bool llexec = kp_rt_execute(rt_, &tac_program.meta(), &symbol_table.meta(), &block.meta(), func);
+    if (llexec) {
+        return BH_SUCCESS;
     } else {
-        bool llexec = kp_rt_execute(rt_, &tac_program.meta(), &symbol_table.meta(), &block.meta(), func);
-        if (llexec) {
-            return BH_SUCCESS;
-        } else {
-            return BH_ERROR;
-        }
+        return BH_ERROR;
     }
 }
 

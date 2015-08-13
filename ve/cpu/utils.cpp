@@ -520,50 +520,9 @@ string hash_text(std::string text)
     return ss.str();
 }
 
-int tac_noperands(const kp_tac & tac)
+size_t tac_noperands(const kp_tac & tac)
 {
-    switch(tac.op) {
-        case KP_MAP:
-            return 2;
-        case KP_ZIP:
-            return 3;
-        case KP_SCAN:
-            return 3;
-        case KP_REDUCE_COMPLETE:
-            return 3;
-        case KP_REDUCE_PARTIAL:
-            return 3;
-
-        case KP_GENERATE:
-            switch(tac.oper) {
-                case KP_FLOOD:
-                    return 2;
-                case KP_RANDOM:
-                    return 3;
-                case KP_RANGE:
-                    return 1;
-                default:
-                    throw runtime_error("noperands does not know how many operands are used.");
-            }
-        case KP_INDEX:
-            return 3;
-        case KP_SYSTEM:
-            switch(tac.oper) {
-                case KP_DISCARD:
-                case KP_FREE:
-                case KP_SYNC:
-                    return 1;
-                case KP_NONE:
-                    return 0;
-                default:
-                    throw runtime_error("noperands does not know how many operands are used.");
-            }
-        case KP_EXTENSION:
-            return 3;
-        case KP_NOOP:
-            return 0;
-    }
-    return 0;
+	return kp_tac_noperands(&tac);
 }
 
 bool write_file(string file_path, const char* sourcecode, size_t source_len)

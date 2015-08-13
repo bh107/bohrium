@@ -628,7 +628,7 @@ string Walker::operations(void)
             case KP_MAP:
             case KP_ZIP:
             case KP_GENERATE:
-                switch(core::tac_noperands(tac)) {
+                switch(tac_noperands(tac)) {
                     case 3:
                         inner_opds_.insert(tac.in2);
                         outer_opds_.insert(tac.in2);

@@ -66,7 +66,7 @@ std::string tac_text(const kp_tac & tac);
  */
 std::string tac_text(const kp_tac & tac, SymbolTable& symbol_table);
 
-int tac_noperands(const kp_tac & tac);
+size_t tac_noperands(const kp_tac & tac);
 
 /**
  *  Transforms the given tac to a KP_NOOP or an equivalent tac,

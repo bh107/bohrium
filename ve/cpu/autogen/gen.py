@@ -38,6 +38,15 @@ def utils_mapping(opcodes, ops, opers, types, layouts):
 def tac(opcodes, ops, opers, types, layouts):
     return forward_everything(opcodes, ops, opers, types, layouts)
 
+def acc(opcodes, ops, opers, types, layouts):
+    acc_etypes = [
+        (typedef['c'], typedef['name'])
+        for typedef
+        in types 
+        if typedef['name'] not in ["KP_COMPLEX128", "KP_COMPLEX64", "KP_PAIRLL"] 
+    ]
+    return {"ETYPES": acc_etypes}
+
 def instrs_to_tacs(opcodes, ops, opers, types, layouts):
     """Construct the data need to create a map from bh_instruction to tac_t."""
 

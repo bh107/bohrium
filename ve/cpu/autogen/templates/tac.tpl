@@ -114,15 +114,11 @@ typedef enum kp_thread_binding {
     KP_BIND_TO_PU = 2
 } kp_thread_binding;
 
-typedef struct kp_acc {
-    int id;
-    char* text_id;
-} kp_acc;
+struct kp_acc;
+typedef struct kp_acc kp_acc;
 
-typedef struct kp_gpu {
-    int id;
-    char* text_id;
-} kp_gpu;
+struct kp_gpu;
+typedef struct kp_gpu kp_gpu;
 
 typedef struct kp_rt {
     kp_thread_binding binding;

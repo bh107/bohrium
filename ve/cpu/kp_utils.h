@@ -11,6 +11,7 @@ extern "C" {
 
 size_t kp_etype_nbytes(KP_ETYPE etype);
 size_t kp_buffer_nbytes(const kp_buffer* buffer);
+size_t kp_tac_noperands(const kp_tac* tac);
 
 #ifdef __cplusplus
 }

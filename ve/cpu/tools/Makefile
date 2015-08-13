@@ -23,7 +23,7 @@ path:
 
 intel:
 	$(eval CC := icc)
-	$(eval CXX := ic)
+	$(eval CXX := g++)
 
 clang:
 	$(eval CC := clang)

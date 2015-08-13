@@ -9,7 +9,6 @@
 #include "block.hpp"
 #include "symbol_table.hpp"
 #include "program.hpp"
-#include "accelerator.hpp"
 #include "store.hpp"
 #include "compiler.hpp"
 #include "plaid.hpp"
@@ -54,19 +53,11 @@ public:
 
     /**
      *  Generate and compile source, construct Block(kp_block) for execution.
+     *  Send the program on to the C Runtime for execution
      */
     bh_error process_block(core::Program& tac_program,
                            core::SymbolTable &symbol_table,
                            core::Block &block);
-    
-    /**
-     *  Execute the given Block(kp_block), that is, buffer management
-     *  and possible execution of a kernel function.
-     */
-    bh_error execute_block(core::Program& tac_program,
-                           core::SymbolTable &symbol_table,
-                           core::Block &block,
-                           kp_krnl_func func);
     
 private:
     kp_rt* rt_;
@@ -83,7 +74,6 @@ private:
     Store           storage_;
     codegen::Plaid  plaid_;
     Compiler        compiler_;
-    std::vector<Accelerator*>   accelerators_;
 
     static const char TAG[];
 };

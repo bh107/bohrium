@@ -73,7 +73,7 @@ string Walker::oper_description(kp_tac tac)
 {
     stringstream ss;
     ss << operator_text(tac.oper) << " (";
-    switch(core::tac_noperands(tac)) {
+    switch(tac_noperands(tac)) {
         case 3:
             ss << layout_text(kernel_.operand_glb(tac.out).meta().layout);
             ss << ", ";

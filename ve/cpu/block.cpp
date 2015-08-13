@@ -252,7 +252,7 @@ bool Block::symbolize(void)
         tacs << "D";
         
         // Add operand IDs
-        switch(core::tac_noperands(tac)) {
+        switch(tac_noperands(tac)) {
             case 3:
                 tacs << "_" << global_to_local(tac.out);
                 tacs << "_" << global_to_local(tac.in1);

@@ -30,7 +30,6 @@ set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/operand.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/plaid.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/walker.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/walker_oper.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/accelerator.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/bh_ve_cpu.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/block.cpp")
 set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/compiler.cpp")
@@ -50,6 +49,7 @@ set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_vcache.c")
 set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_utils.c")
 set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_rt.c")
 set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_set.c")
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_acc.c")
 add_library(kp SHARED ${KP_HDR} ${KP_SRC})
 
 #
@@ -60,12 +60,14 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/kp.h ${CMAKE_CURRENT_SOURC
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/tac.cpp ${CMAKE_CURRENT_SOURCE_DIR}/kp.h
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/utils_mapping.cpp ${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/instrs_to_tacs.cpp ${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/acc.cpp ${CMAKE_CURRENT_SOURCE_DIR}/kp_acc_autogen.c
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/autogen
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/tac.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/utils_mapping.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/instrs_to_tacs.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/layouts.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/operations.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/operators.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/types.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/gen.py
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/acc.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/tac.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/utils_mapping.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/instrs_to_tacs.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/layouts.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/operations.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/operators.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/types.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/gen.py
     COMMENT "Autogenerating based on BhIR and TAC-representation"
     VERBATIM)
 
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp PROPERTIES GENERATED TRUE)
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/kp_acc_autogen.c PROPERTIES GENERATED TRUE)
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp PROPERTIES GENERATED TRUE)
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/kp.h PROPERTIES GENERATED TRUE)
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/kp.h HEADER_FILE_ONLY TRUE)
@@ -232,7 +234,7 @@ else()
 
             if (${LEO_COMPILE_CHECK_USAGE})
                 set(WITH_INTEL_LEO "1")
-                add_definitions(-DVE_CPU_WITH_INTEL_LEO)
+                add_definitions(-DCAPE_WITH_INTEL_LEO)
             else()
                 set(WITH_INTEL_LEO "0")
             endif()
