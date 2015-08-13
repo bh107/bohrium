@@ -4,6 +4,7 @@
 #include "timevault.hpp"
 #include "kp_rt.h"
 #include "kp_vcache.h"
+#include "kp_acc.h"
 
 using namespace std;
 using namespace kp::core;
@@ -49,6 +50,13 @@ Engine::Engine(
 
     rt_ = kp_rt_init(vcache_size);      // Initialize CAPE C-runtime
     kp_rt_bind_threads(rt_, binding);   // Bind threads on host PUs
+
+    if (jit_offload_) {                 // Initialize accelerator
+        rt_->acc = kp_acc_create(0);
+        if (!kp_acc_init(rt_->acc)) {
+            kp_acc_destroy(rt_->acc);
+        }
+    }
 
     DEBUG(TAG, text());                 // Print the engine configuration
 }

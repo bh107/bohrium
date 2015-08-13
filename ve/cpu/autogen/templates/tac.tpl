@@ -117,9 +117,6 @@ typedef enum kp_thread_binding {
 struct kp_acc;
 typedef struct kp_acc kp_acc;
 
-struct kp_gpu;
-typedef struct kp_gpu kp_gpu;
-
 typedef struct kp_rt {
     kp_thread_binding binding;
     size_t vcache_size;
@@ -127,9 +124,6 @@ typedef struct kp_rt {
 
     kp_acc* acc;
     size_t nacc;
-
-    kp_gpu* gpu;
-    size_t ngpu;
 } kp_rt;
 
 typedef void (*kp_krnl_func)(kp_buffer** buffers, kp_operand** args, kp_iterspace* iterspace, const int offload_devid);

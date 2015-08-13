@@ -12,6 +12,7 @@ inline int omp_get_num_threads() { return 1; }
 
 #include "kp_rt.h"
 #include "kp_vcache.h"
+#include "kp_acc.h"
 
 /*
 #if defined(VE_CPU_BIND)
@@ -134,8 +135,6 @@ kp_rt* kp_rt_init(size_t vcache_size)
 
         rt->acc = NULL;                 // No accelerators until kp_rt_acc_init(...)
         rt->acc = 0;
-        rt->gpu = NULL;                 // No gpus until kp_rt_gpu_init(...)
-        rt->ngpu = 0;
     }
     return rt;
 }
@@ -143,14 +142,16 @@ kp_rt* kp_rt_init(size_t vcache_size)
 void kp_rt_shutdown(kp_rt* rt)
 {
     if (rt) {
-        if (rt->vcache_size>0) {   // De-allocate the malloc-cache
+        if (rt->vcache_size>0) {    // De-allocate the malloc-cache
             kp_vcache_clear();
             kp_vcache_delete();
         }
         if (rt->host_text) {        // Free host textual identifier
             free(rt->host_text);
         }
-                                    // TODO: acc shutdown if not already done
+        if (rt->acc) {              // Free accelerator
+            kp_acc_destroy(rt->acc);
+        }
                                     // TODO: gpu shutdown if not already done
         free(rt);                   // Free runtime struct
     }
@@ -172,12 +173,37 @@ bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_b
         if (!((tac->op & KP_ARRAY_OPS)>0)) {
             continue;
         }
-        if ((symbols->table[tac->out].layout & (KP_DYNALLOC_LAYOUT))>0) {
-            if (!kp_vcache_malloc(symbols->table[tac->out].base)) {
-                fprintf(stderr, "Unhandled error returned by kp_vcache_malloc() "
-                                "called from bh_ve_cpu_execute()\n");
-                return false;
-            }
+        switch(kp_tac_noperands(tac)) {
+            case 3:
+                if ((symbols->table[tac->in2].layout & (KP_DYNALLOC_LAYOUT))>0) {
+                    if ((rt->acc) && (block->iterspace.layout>KP_SCALAR)) {
+                        kp_acc_alloc(rt->acc, symbols->table[tac->in2].base);
+                        if (NULL!=symbols->table[tac->in2].base->data) {
+                            kp_acc_push(rt->acc, symbols->table[tac->in2].base);
+                        }
+                    }
+                }
+            case 2:
+                if ((symbols->table[tac->in1].layout & (KP_DYNALLOC_LAYOUT))>0) {
+                    if ((rt->acc) && (block->iterspace.layout>KP_SCALAR)) {
+                        kp_acc_alloc(rt->acc, symbols->table[tac->in1].base);
+                        if (NULL!=symbols->table[tac->in1].base->data) {
+                            kp_acc_push(rt->acc, symbols->table[tac->in1].base);
+                        }
+                    }
+                } 
+            case 1:
+                if ((symbols->table[tac->out].layout & (KP_DYNALLOC_LAYOUT))>0) {
+                    if (!kp_vcache_malloc(symbols->table[tac->out].base)) {
+                        fprintf(stderr, "Unhandled error returned by kpvcache_malloc() "
+                                        "called from kp_ve_cpu_execute()\n");
+                        return false;
+                    }
+                    if ((rt->acc) && (block->iterspace.layout>KP_SCALAR)) {
+                        kp_acc_alloc(rt->acc, symbols->table[tac->out].base);
+                    }
+                }
+                break;
         }
     }
 
@@ -197,13 +223,31 @@ bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_b
         kp_operand* operand = &symbols->table[tac->out];
 
         switch(tac->oper) {  
+
+            case KP_SYNC:                                       // Pull buffer from accelerator to host
+                if (rt->acc) {
+                    kp_acc_pull(rt->acc, operand->base);
+                }
+                break;
+
+            case KP_DISCARD:                                    // Free buffer on accelerator
+                if (rt->acc) {
+                    kp_acc_free(rt->acc, operand->base);
+                }
+                break;
+
             case KP_FREE:
-                if (!kp_vcache_free(operand->base)) {
+                if (rt->acc) {                                  // Free buffer on accelerator
+                    kp_acc_free(rt->acc, operand->base);        // Note: must be done prior to
+                }                                               //       freeing on host.
+
+                if (!kp_vcache_free(operand->base)) {           // Free buffer on host
                     fprintf(stderr, "Unhandled error returned by kp_vcache_free(...) "
-                                    "called from bh_ve_cpu_execute)\n");
+                                    "called from kp_rt_execute)\n");
                     return false;
                 }
                 break;
+
             default:
                 break;
         }
