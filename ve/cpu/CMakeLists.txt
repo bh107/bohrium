@@ -49,6 +49,7 @@ set(KP_HDR "${KP_HDR};${CMAKE_CURRENT_SOURCE_DIR}/kp.h")
 set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_vcache.c")
 set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_utils.c")
 set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_rt.c")
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_set.c")
 add_library(kp SHARED ${KP_HDR} ${KP_SRC})
 
 #
