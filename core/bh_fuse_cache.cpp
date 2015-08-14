@@ -252,7 +252,7 @@ void FuseCache::write_to_files() const
 {
     if(deactivated)
         return;
-    if(dir_path == NULL)
+    if(dir_path == NULL or dir_path[0] == '\0')
     {
         cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \
             "the configure file thus no cache files are written to disk!" << endl;
@@ -293,7 +293,7 @@ void FuseCache::write_to_files() const
 
 void FuseCache::load_from_files()
 {
-    if(dir_path == NULL)
+    if(dir_path == NULL or dir_path[0] == '\0')
     {
         cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \
             "the configure file thus no cache files are loaded from disk!" << endl;
