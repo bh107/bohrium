@@ -1,9 +1,10 @@
 #include <iomanip>
-#include "utils.hpp"
 #include "thirdparty/MurmurHash3.h"
+#include "utils.hpp"
 
 using namespace std;
-namespace bohrium{
+
+namespace kp{
 namespace core{
 
 const char TAG[] = "Utils";
@@ -16,158 +17,158 @@ string to_string(T val)
     return stream.str();
 }
 
-double get_const_value(const operand_t& arg)
+double get_const_value(const kp_operand & arg)
 {
     switch(arg.etype) {
-        case BOOL:
+        case KP_BOOL:
             return (double)(*(unsigned char*)(arg.const_data));
-        case INT8:
+        case KP_INT8:
             return (double)(*(int8_t*)(arg.const_data));
-        case INT16:
+        case KP_INT16:
             return (double)(*(int16_t*)(arg.const_data));
-        case INT32:
+        case KP_INT32:
             return (double)(*(int32_t*)(arg.const_data));
-        case INT64:
+        case KP_INT64:
             return (double)(*(int64_t*)(arg.const_data));
-        case UINT8:
+        case KP_UINT8:
             return (double)(*(uint8_t*)(arg.const_data));
-        case UINT16:
+        case KP_UINT16:
             return (double)(*(uint16_t*)(arg.const_data));
-        case UINT32:
+        case KP_UINT32:
             return (double)(*(uint32_t*)(arg.const_data));
-        case UINT64:
+        case KP_UINT64:
             return (double)(*(uint64_t*)(arg.const_data));
-        case FLOAT32:
+        case KP_FLOAT32:
             return (double)(*(float*)(arg.const_data));
-        case FLOAT64:
+        case KP_FLOAT64:
             return (double)(*(double*)(arg.const_data));
 
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
+        case KP_COMPLEX64:
+        case KP_COMPLEX128:
+        case KP_PAIRLL:
         default:
             throw invalid_argument(
-                "Cannot get scalar-value of operand with "
-                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+                "Cannot get scalar-value of kp_operand with "
+                "KP_ETYPE=[KP_COMPLEX64|KP_COMPLEX128|KP_PAIRLL]."
             );
     }
 }
 
-void set_const_value(const operand_t& arg, double value)
+void set_const_value(const kp_operand & arg, double value)
 {
     switch(arg.etype) {
-        case BOOL:
+        case KP_BOOL:
             (*(unsigned char*)(arg.const_data)) = (unsigned char)value;
             break;
-        case INT8:
+        case KP_INT8:
             (*(int8_t*)(arg.const_data)) = (int8_t)value;
             break;
-        case INT16:
+        case KP_INT16:
             (*(int16_t*)(arg.const_data)) = (int16_t)value;
             break;
-        case INT32:
+        case KP_INT32:
             (*(int32_t*)(arg.const_data)) = (int32_t)value;
             break;
-        case INT64:
+        case KP_INT64:
             (*(int64_t*)(arg.const_data)) = (int64_t)value;
             break;
-        case UINT8:
+        case KP_UINT8:
             (*(uint8_t*)(arg.const_data)) = (uint8_t)value;
             break;
-        case UINT16:
+        case KP_UINT16:
             (*(uint16_t*)(arg.const_data)) = (uint16_t)value;
             break;
-        case UINT32:
+        case KP_UINT32:
             (*(uint32_t*)(arg.const_data)) = (uint32_t)value;
             break;
-        case UINT64:
+        case KP_UINT64:
             (*(uint64_t*)(arg.const_data)) = (uint64_t)value;
             break;
-        case FLOAT32:
+        case KP_FLOAT32:
             (*(float*)(arg.const_data)) = (float)value;
             break;
-        case FLOAT64:
+        case KP_FLOAT64:
             (*(double*)(arg.const_data)) = (double)value;
             break;
 
-        case COMPLEX64:
-        case COMPLEX128:
-        case PAIRLL:
+        case KP_COMPLEX64:
+        case KP_COMPLEX128:
+        case KP_PAIRLL:
         default:
             throw invalid_argument(
-                "Cannot set value of operand with "
-                "ETYPE=[COMPLEX64|COMPLEX128|PAIRLL]."
+                "Cannot set value of kp_operand with "
+                "KP_ETYPE=[KP_COMPLEX64|KP_COMPLEX128|KP_PAIRLL]."
             );
             break;
     }
 }
 
-void tac_transform(tac_t& tac, SymbolTable& symbol_table)
+void tac_transform(kp_tac & tac, SymbolTable& symbol_table)
 {
     switch(tac.op) {
-        case REDUCE_COMPLETE:
-            if (symbol_table[tac.in1].layout == SCALAR) {
-                tac.op   = MAP;
-                tac.oper = IDENTITY;
+        case KP_REDUCE_COMPLETE:
+            if (symbol_table[tac.in1].layout == KP_SCALAR) {
+                tac.op   = KP_MAP;
+                tac.oper = KP_IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
             }
             break;
 
-        case REDUCE_PARTIAL:
-            if (symbol_table[tac.in1].layout == SCALAR) {
-                tac.op   = MAP;
-                tac.oper = IDENTITY;
+        case KP_REDUCE_PARTIAL:
+            if (symbol_table[tac.in1].layout == KP_SCALAR) {
+                tac.op   = KP_MAP;
+                tac.oper = KP_IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
-            } else if (symbol_table[tac.out].layout == SCALAR) {
-                tac.op = REDUCE_COMPLETE;
+            } else if (symbol_table[tac.out].layout == KP_SCALAR) {
+                tac.op = KP_REDUCE_COMPLETE;
             }
             break;
 
-        case SCAN:
-            if (symbol_table[tac.in1].layout == SCALAR) {
-                tac.op   = MAP;
-                tac.oper = IDENTITY;
+        case KP_SCAN:
+            if (symbol_table[tac.in1].layout == KP_SCALAR) {
+                tac.op   = KP_MAP;
+                tac.oper = KP_IDENTITY;
                 tac.in2  = 0;
                 goto transform_identity;
             }
             break;
 
-        case ZIP:
+        case KP_ZIP:
             switch(tac.oper) {
-                case ADD:
-                    if (((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) && \
+                case KP_ADD:
+                    if (((symbol_table[tac.in2].layout & (KP_SCALAR_CONST))>0) && \
                         (get_const_value(symbol_table[tac.in2]) == 0.0)) {
-                        tac.op = MAP;
-                        tac.oper = IDENTITY;
+                        tac.op = KP_MAP;
+                        tac.oper = KP_IDENTITY;
                         // tac.in1 = same as before
                         tac.in2 = 0;
                         goto transform_identity;
                     }
                     break;
-                case MULTIPLY:
-                    if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
+                case KP_MULTIPLY:
+                    if ((symbol_table[tac.in2].layout & (KP_SCALAR_CONST))>0) {
                         if (get_const_value(symbol_table[tac.in2]) == 0.0) {
-                            tac.op = MAP;
-                            tac.oper = IDENTITY;
+                            tac.op = KP_MAP;
+                            tac.oper = KP_IDENTITY;
                             tac.in1 = tac.in2;
                             set_const_value(symbol_table[tac.in1], 0);
                             tac.in2 = 0;
                         } else if (get_const_value(symbol_table[tac.in2]) == 1.0) {
-                            tac.op = MAP;
-                            tac.oper = IDENTITY;
+                            tac.op = KP_MAP;
+                            tac.oper = KP_IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
                             goto transform_identity;
                         }
                     }
                     break;
-                case DIVIDE:
-                    if ((symbol_table[tac.in2].layout & (SCALAR_CONST))>0) {
+                case KP_DIVIDE:
+                    if ((symbol_table[tac.in2].layout & (KP_SCALAR_CONST))>0) {
                         if (get_const_value(symbol_table[tac.in2]) == 1.0) {
-                            tac.op = MAP;
-                            tac.oper = IDENTITY;
+                            tac.op = KP_MAP;
+                            tac.oper = KP_IDENTITY;
                             // tac.in1 = same as before
                             tac.in2 = 0;
                             goto transform_identity;
@@ -179,12 +180,12 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
             }
             break;
 
-        case MAP:
+        case KP_MAP:
             switch(tac.oper) {
-                case IDENTITY:
+                case KP_IDENTITY:
                     transform_identity:
                     if (tac.out == tac.in1) {
-                        tac.op = NOOP;
+                        tac.op = KP_NOOP;
                     }
                     break;
                 default:
@@ -197,12 +198,12 @@ void tac_transform(tac_t& tac, SymbolTable& symbol_table)
     }
 }
 
-bool equivalent(const operand_t& one, const operand_t& other)
+bool equivalent(const kp_operand & one, const kp_operand & other)
 {
     if (one.layout != other.layout) {
         return false;
     }
-    if (one.layout == SCALAR_CONST) {
+    if (one.layout == KP_SCALAR_CONST) {
         return false;
     }
     if (one.base != other.base) {
@@ -230,12 +231,12 @@ bool equivalent(const operand_t& one, const operand_t& other)
 
 
 
-bool compatible(const operand_t& one, const operand_t& other)
+bool compatible(const kp_operand & one, const kp_operand & other)
 {
     //
     // Scalar layouts are compatible with any other layout
-    if (((one.layout & SCALAR_LAYOUT)>0) || \
-        ((other.layout & SCALAR_LAYOUT)>0)) {
+    if (((one.layout & KP_SCALAR_LAYOUT)>0) || \
+        ((other.layout & KP_SCALAR_LAYOUT)>0)) {
         return true;
     }
     if (one.start != other.start) {
@@ -252,7 +253,7 @@ bool compatible(const operand_t& one, const operand_t& other)
     return true;
 }
 
-bool contiguous(const operand_t& arg)
+bool contiguous(const kp_operand & arg)
 {
     int64_t weight = 1;
     for(int dim=arg.ndim-1; dim>=0; --dim) {
@@ -264,7 +265,7 @@ bool contiguous(const operand_t& arg)
     return true;
 }
 
-string operand_access_text(const operand_t& arg)
+string operand_access_text(const kp_operand & arg)
 {
     /// Hmmm this is not entirely correct...
     // I forgot the simple thing:
@@ -314,12 +315,12 @@ string operand_access_text(const operand_t& arg)
     return ss.str();
 }
 
-LAYOUT determine_layout(const operand_t& arg)
+KP_LAYOUT determine_layout(const kp_operand & arg)
 {
     const int64_t inner_dim = arg.ndim-1;
     
-    // CONSECUTIVE: stride[dim] == stride[dim+1]*shape[dim+1]
-    // CONTIGUOUS:  stride[dim] == stride[dim+1]*shape[dim+1] and stride[inner] == 1
+    // KP_CONSECUTIVE: stride[dim] == stride[dim+1]*shape[dim+1]
+    // KP_CONTIGUOUS:  stride[dim] == stride[dim+1]*shape[dim+1] and stride[inner] == 1
     bool consecutive = true;    
     int64_t weight = arg.stride[inner_dim];
     int64_t nelements = 1;
@@ -332,17 +333,17 @@ LAYOUT determine_layout(const operand_t& arg)
     }
 
     if (nelements == 1) {
-        return SCALAR;
+        return KP_SCALAR;
     } else if (consecutive and arg.stride[inner_dim] == 1) {
-        return CONTIGUOUS;
+        return KP_CONTIGUOUS;
     } else if (consecutive and arg.stride[inner_dim] > 1) {
-        return CONSECUTIVE;
+        return KP_CONSECUTIVE;
     } else {
-        return STRIDED;
+        return KP_STRIDED;
     }
 }
 
-std::string iterspace_text(const iterspace_t& iterspace)
+std::string iterspace_text(const kp_iterspace & iterspace)
 {
     stringstream ss;
     ss << setw(12);
@@ -366,7 +367,7 @@ std::string iterspace_text(const iterspace_t& iterspace)
     return ss.str();
 }
 
-std::string operand_text(const operand_t& operand)
+std::string operand_text(const kp_operand & operand)
 {
     stringstream ss;
     ss << "{";
@@ -401,9 +402,9 @@ std::string omask_aop_text(uint32_t omask)
 {
     stringstream ss;
     std::vector<std::string> entries;
-    for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
-        if ((((omask&op)>0) and ((op&ARRAY_OPS)>0))) {
-            entries.push_back(operation_text((OPERATION)op));
+    for(uint32_t op= KP_MAP; op<= KP_NOOP; op=op<<1) {
+        if ((((omask&op)>0) and ((op& KP_ARRAY_OPS)>0))) {
+            entries.push_back(operation_text((KP_OPERATION)op));
         }
     }
     for(std::vector<std::string>::iterator eit=entries.begin();
@@ -423,9 +424,9 @@ std::string omask_text(uint32_t omask)
 {
     stringstream ss;
     std::vector<std::string> entries;
-    for(uint32_t op=MAP; op<=NOOP; op=op<<1) {
+    for(uint32_t op= KP_MAP; op<= KP_NOOP; op=op<<1) {
         if((omask&op)>0) {
-            entries.push_back(operation_text((OPERATION)op));
+            entries.push_back(operation_text((KP_OPERATION)op));
         }
     }
     for(std::vector<std::string>::iterator eit=entries.begin();
@@ -441,7 +442,7 @@ std::string omask_text(uint32_t omask)
     return ss.str();
 }
 
-std::string tac_text(const tac_t& tac)
+std::string tac_text(const kp_tac & tac)
 {
     std::stringstream ss;
     ss << "{ op("<< operation_text(tac.op) << "(" << tac.op << ")),";
@@ -453,7 +454,7 @@ std::string tac_text(const tac_t& tac)
     return ss.str();
 }
 
-string tac_text(const tac_t& tac, SymbolTable& symbol_table)
+string tac_text(const kp_tac & tac, SymbolTable& symbol_table)
 {
     std::stringstream ss;
     ss << "{ op("<< operation_text(tac.op) << "(" << tac.op << ")),";
@@ -519,50 +520,9 @@ string hash_text(std::string text)
     return ss.str();
 }
 
-int tac_noperands(const tac_t& tac)
+size_t tac_noperands(const kp_tac & tac)
 {
-    switch(tac.op) {
-        case MAP:
-            return 2;
-        case ZIP:
-            return 3;
-        case SCAN:
-            return 3;
-        case REDUCE_COMPLETE:
-            return 3;
-        case REDUCE_PARTIAL:
-            return 3;
-
-        case GENERATE:
-            switch(tac.oper) {
-                case FLOOD:
-                    return 2;
-                case RANDOM:
-                    return 3;
-                case RANGE:
-                    return 1;
-                default:
-                    throw runtime_error("noperands does not know how many operands are used.");
-            }
-        case INDEX:
-            return 3;
-        case SYSTEM:
-            switch(tac.oper) {
-                case DISCARD:
-                case FREE:
-                case SYNC:
-                    return 1;
-                case NONE:
-                    return 0;
-                default:
-                    throw runtime_error("noperands does not know how many operands are used.");
-            }
-        case EXTENSION:
-            return 3;
-        case NOOP:
-            return 0;
-    }
-    return 0;
+	return kp_tac_noperands(&tac);
 }
 
 bool write_file(string file_path, const char* sourcecode, size_t source_len)

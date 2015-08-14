@@ -1,5 +1,5 @@
-#ifndef __BH_VE_CPU_STORE
-#define __BH_VE_CPU_STORE
+#ifndef __KP_ENGINE_STORE_HPP
+#define __KP_ENGINE_STORE_HPP 1
 
 #include <iostream>
 #include <cstring>
@@ -16,18 +16,15 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "tac.h"
+#include "kp.h"
 #include "utils.hpp"
 
-namespace bohrium {
-namespace engine {
-namespace cpu {
-
-typedef void (*func)(bh_base** buffers, operand_t** args, iterspace_t* iterspace, const int offload_devid);
+namespace kp{
+namespace engine{
 
 //
-//  Retrieve a function pointer for the symbol (SYMBOL -> func)
-typedef std::map<const std::string, func> func_storage;
+//  Retrieve a function pointer for the symbol (SYMBOL -> kp_krnl_func)
+typedef std::map<const std::string, kp_krnl_func> func_storage;
 
 //
 //  Retrieve the library handle for a library (LIBRARY -> handle)
@@ -72,5 +69,6 @@ private:
     static const char TAG[];
 };
 
-}}}
+}}
+
 #endif

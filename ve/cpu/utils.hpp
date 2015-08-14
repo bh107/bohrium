@@ -1,10 +1,5 @@
-#ifndef __BH_VE_CPU_UTILS
-#define __BH_VE_CPU_UTILS
-#include "bh.h"
-#include "tac.h"
-#include "block.hpp"
-#include "symbol_table.hpp"
-
+#ifndef __KP_CORE_UTILS_HPP
+#define __KP_CORE_UTILS_HPP 1
 #include <fstream>
 #include <cstdlib>
 #include <cstring>
@@ -16,6 +11,10 @@
 #include <memory>
 #include <cerrno>
 #include <fcntl.h>
+#include "bh.h"
+#include "kp.h"
+#include "block.hpp"
+#include "symbol_table.hpp"
 
 #ifdef DEBUGGING
 #define DEBUG(tag,x) do { std::cerr << TAG << "::" << x << std::endl; } while (0);
@@ -23,8 +22,8 @@
 #define DEBUG(tag,x)
 #endif
 
-namespace bohrium {
-namespace core {
+namespace kp{
+namespace core{
 
 template <typename T>
 std::string to_string(T val);
@@ -34,119 +33,119 @@ std::string to_string(T val);
 // TAC enums; useful for pretty-printing.
 //
 
-std::string iterspace_text(const iterspace_t& iterspace);
+std::string iterspace_text(const kp_iterspace & iterspace);
 std::string omask_text(uint32_t omask);
 std::string omask_aop_text(uint32_t omask);
-std::string operation_text(OPERATION op);
-std::string operator_text(OPERATOR op);
-std::string operand_text(const operand_t& operand);
-std::string operand_access_text(const operand_t& operand);
+std::string operation_text(KP_OPERATION op);
+std::string operator_text(KP_OPERATOR op);
+std::string operand_text(const kp_operand & operand);
+std::string operand_access_text(const kp_operand & operand);
 
-std::string etype_text(ETYPE etype);
-std::string etype_text_shand(ETYPE etype);
-std::string etype_to_ctype_text(ETYPE etype);
+std::string etype_text(KP_ETYPE etype);
+std::string etype_text_shand(KP_ETYPE etype);
+std::string etype_to_ctype_text(KP_ETYPE etype);
 
-std::string layout_text(LAYOUT layout);
-std::string layout_text_shand(LAYOUT layout);
+std::string layout_text(KP_LAYOUT layout);
+std::string layout_text_shand(KP_LAYOUT layout);
 
 /**
- * Maps bh_type to ETYPE
+ * Maps bh_type to KP_ETYPE
  *
  * @param bhtype The bh_type to map.
- * @returns The ETYPE corresponding to the given bh_type.
+ * @returns The KP_ETYPE corresponding to the given bh_type.
  */
-ETYPE bhtype_to_etype(bh_type bhtype);
+        KP_ETYPE bhtype_to_etype(bh_type bhtype);
 
 /**
  * Returns a textual representation of a tac.
  */
-std::string tac_text(const tac_t& tac);
+std::string tac_text(const kp_tac & tac);
 
 /**
- * Returns a textual representation of a tac including operand info.
+ * Returns a textual representation of a tac including kp_operand info.
  */
-std::string tac_text(const tac_t& tac, SymbolTable& symbol_table);
+std::string tac_text(const kp_tac & tac, SymbolTable& symbol_table);
 
-int tac_noperands(const tac_t& tac);
+size_t tac_noperands(const kp_tac & tac);
 
 /**
- *  Transforms the given tac to a NOOP or an equivalent tac,
+ *  Transforms the given tac to a KP_NOOP or an equivalent tac,
  *  which should be cheaper compute. 
  *
  *  # Silly stuff like
  *
- *  IDENTITY a, a   -> NOOP
+ *  KP_IDENTITY a, a   -> KP_NOOP
  *
  *  # Operators with scalar neutral element
  * 
- *  ADD a, a, 0     -> NOOP
- *  MUL b, b, 1     -> NOOP
- *  DIV a, a, 1     -> NOOP
+ *  ADD a, a, 0     -> KP_NOOP
+ *  MUL b, b, 1     -> KP_NOOP
+ *  DIV a, a, 1     -> KP_NOOP
 
- *  ADD a, b, 0     -> IDENTITY a, b
- *  MUL a, b, 1     -> IDENTITY a, b
- *  MUL a, b, 0     -> IDENTITY a, 0
+ *  ADD a, b, 0     -> KP_IDENTITY a, b
+ *  MUL a, b, 1     -> KP_IDENTITY a, b
+ *  MUL a, b, 0     -> KP_IDENTITY a, 0
  *
  *  # Specialization
  *
  *  POW a, a, 2     -> MUL a, a, a
  */
-void tac_transform(tac_t& tac, SymbolTable& symbol_table);
+void tac_transform(kp_tac & tac, SymbolTable& symbol_table);
 
 /**
- *  Map bh_ir->instr_list (bh_instruction) to tac_t with entries in symbol_table.
+ *  Map bh_ir->instr_list (bh_instruction) to kp_tac with entries in symbol_table.
  */
 void instrs_to_tacs(bh_ir& bhir, 
-                    std::vector<tac_t>& tacs,
+                    Program& tacs,
                     SymbolTable& symbol_table);
 
 /**
- *  Determine whether an operand has a contiguous layout.
+ *  Determine whether an kp_operand has a contiguous layout.
  *
- *  @param arg The operand to inspect.
+ *  @param arg The kp_operand to inspect.
  *  @returns True when the layout is contiguous, false othervise.
  */
-bool contiguous(const operand_t& arg);
+bool contiguous(const kp_operand & arg);
 
 /**
- *  Determine LAYOUT of the given operand by inspecting the stride/shape.
+ *  Determine KP_LAYOUT of the given kp_operand by inspecting the stride/shape.
  */
-LAYOUT determine_layout(const operand_t& arg);
+        KP_LAYOUT determine_layout(const kp_operand & arg);
 
 /**
  *  Return the first element that arg.data points to.
  *
  *  NOTE: Type is converted but overflows are not handled.
  */
-double get_scalar(const operand_t& arg);
+double get_scalar(const kp_operand & arg);
 
 /**
  *  Set the first element that arg.data points to.
  *  
  *  NOTE: Type is converted but overflows are not handled.
  */
-void set_scalar(const operand_t& arg, double value);
+void set_scalar(const kp_operand & arg, double value);
 
 /**
- *  Determines whether two operand have compatible meta-data.
+ *  Determines whether two kp_operand have compatible meta-data.
  *
  *  This function serves the same purpose as bh_view_identical, 
- *  but for tac-operands instead of bh_instruction.operand[...].
+ *  but for tac-operands instead of bh_instruction.kp_operand[...].
  *
  *  @param one
  *  @param other
  *  @returns True when compatible false othervise.
  */
-bool compatible(const operand_t& one, const operand_t& other);
+bool compatible(const kp_operand & one, const kp_operand & other);
 
 /**
- *  Determines whether two operand have equivalent meta-data.
+ *  Determines whether two kp_operand have equivalent meta-data.
  *
  *  This function serves the same purpose as bh_view_identical, 
- *  but for tac-operands instead of bh_instruction.operand[...].
+ *  but for tac-operands instead of bh_instruction.kp_operand[...].
  *
  */
-bool equivalent(const operand_t& one, const operand_t& other);
+bool equivalent(const kp_operand & one, const kp_operand & other);
 
 /**
  *  Write source-code to file.
@@ -180,4 +179,5 @@ int error(int errnum, const char *fmt, ...);
 int error(const char *err_msg, const char *fmt, ...);
 
 }}
+
 #endif

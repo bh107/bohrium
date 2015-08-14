@@ -4,13 +4,12 @@
 #include <sstream>
 #include <string>
 #include <map>
-#include <plaid.hpp>
+#include "plaid.hpp"
 
 using namespace std;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 enum states {
@@ -174,4 +173,5 @@ void Plaid::replace(string& tmpl, unsigned int begin, unsigned int count, string
     tmpl.replace(begin, count, subject);
 }
 
-}}}}
+}}}
+

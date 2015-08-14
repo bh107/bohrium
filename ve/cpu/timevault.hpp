@@ -1,12 +1,12 @@
-#ifndef __BH_CORE_TIMEVAULT
-#define __BH_CORE_TIMEVAULT
+#ifndef __KP_CORE_TIMEVAULT_HPP
+#define __KP_CORE_TIMEVAULT_HPP 1
 #include <sys/time.h>
 #include <stdint.h>
 #include <string>
 #include <map>
 
-namespace bohrium{
-namespace core {
+namespace kp{
+namespace core{
 
 /**
  *  Sample and store wall-clock time.

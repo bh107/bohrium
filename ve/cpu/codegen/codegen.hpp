@@ -1,15 +1,14 @@
-#ifndef __BH_VE_CPU_CODEGEN
-#define __BH_VE_CPU_CODEGEN
+#ifndef __KP_ENGINE_CODEGEN_HPP
+#define __KP_ENGINE_CODEGEN_HPP 1
 
 #include <string>
 #include <map>
-#include <tac.h>
-#include <block.hpp>
-#include <plaid.hpp>
+#include "kp.h"
+#include "block.hpp"
+#include "plaid.hpp"
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 // Primitive types
@@ -191,7 +190,7 @@ std::string _cimag(std::string right);
 
 // OpenMP stuff
 
-std::string _omp_reduction_oper(OPERATOR oper);
+std::string _omp_reduction_oper(KP_OPERATOR oper);
 
 // Anonymous critical section
 std::string _omp_critical(std::string expr);
@@ -205,7 +204,7 @@ class Buffer
 {
 public:
     Buffer(void);
-    Buffer(bh_base* buffer, size_t buffer_id);
+    Buffer(kp_buffer* buffer, int64_t buffer_id);
 
     std::string name(void);
 
@@ -213,19 +212,19 @@ public:
     std::string nelem(void);
     std::string etype(void);
 
-    bh_base& meta(void);
-    size_t id(void);
+    kp_buffer & meta(void);
+    int64_t id(void);
 
 private:
-    bh_base* buffer_;
-    size_t id_;
+    kp_buffer * buffer_;
+    int64_t id_;
 };
 
 class Operand
 {
 public:
     Operand(void);
-    Operand(operand_t* operand, uint32_t local_id, Buffer* buffer);
+    Operand(kp_operand * operand, uint32_t local_id, Buffer* buffer);
 
     std::string name(void);
 
@@ -246,19 +245,19 @@ public:
     std::string walker(void);
     std::string walker_val(void);
 
-    operand_t& meta(void);
+    kp_operand & meta(void);
 
     std::string buffer_name(void);
     std::string buffer_data(void);
     std::string buffer_nelem(void);
     std::string buffer_etype(void);
-    bh_base* buffer_meta(void);
+    kp_buffer * buffer_meta(void);
 
     uint64_t local_id(void);
 
 private:
     uint64_t local_id_;
-    operand_t* operand_;
+    kp_operand * operand_;
     Buffer* buffer_;
 };
 
@@ -268,13 +267,13 @@ typedef kernel_operands::iterator kernel_operand_iter;
 typedef std::map<size_t, Buffer> kernel_buffers;
 typedef kernel_buffers::iterator kernel_buffer_iter;    // Buffer
 
-typedef std::vector<tac_t*> kernel_tacs;
+typedef std::vector<kp_tac *> kernel_tacs;
 typedef kernel_tacs::iterator kernel_tac_iter;
 
 class Iterspace
 {
 public:
-    Iterspace(iterspace_t& iterspace);
+    Iterspace(kp_iterspace & iterspace);
 
     std::string name(void);
     std::string layout(void);
@@ -283,15 +282,15 @@ public:
     std::string shape(uint32_t dim);
     std::string nelem(void);
     
-    iterspace_t& meta(void);
+    kp_iterspace & meta(void);
 private:
-    iterspace_t& iterspace_;
+    kp_iterspace & iterspace_;
 };
 
 class Kernel
 {
 public:
-    Kernel(Plaid& plaid, bohrium::core::Block& block);
+    Kernel(Plaid& plaid, kp::core::Block& block);
     
     std::string generate_source(bool offload);
 
@@ -313,7 +312,7 @@ public:
     std::string text(void);
 
     uint64_t ntacs(void);
-    tac_t& tac(uint64_t tidx);
+    kp_tac & tac(uint64_t tidx);
     kernel_tac_iter tacs_begin(void);
     kernel_tac_iter tacs_end(void);
 
@@ -328,7 +327,7 @@ private:
     void add_operand(uint64_t global_idx);
 
     Plaid& plaid_;
-    bohrium::core::Block& block_;
+    kp::core::Block& block_;
 
     kernel_buffers buffers_;
     kernel_operands operands_;
@@ -343,7 +342,7 @@ public:
     Walker(Plaid& plaid, Kernel& kernel);
 
     std::string generate_source(bool offload);
-    std::string oper_neutral_element(OPERATOR oper, ETYPE etype);
+    std::string oper_neutral_element(KP_OPERATOR oper, KP_ETYPE etype);
     
 private:
     std::string declare_operands(void);
@@ -352,13 +351,13 @@ private:
     std::string offload_leo(void);
 
     // Construct the operator source for the tac.oper
-    std::string oper(OPERATOR oper, ETYPE etype, std::string in1, std::string in2);
-    std::string synced_oper(OPERATOR oper, ETYPE etype, std::string out, std::string in1, std::string in2);
+    std::string oper(KP_OPERATOR oper, KP_ETYPE etype, std::string in1, std::string in2);
+    std::string synced_oper(KP_OPERATOR oper, KP_ETYPE etype, std::string out, std::string in1, std::string in2);
 
     /**
      *  Generate a comment describing the tac-operation.
      */
-    std::string oper_description(tac_t tac);
+    std::string oper_description(kp_tac tac);
 
     //
     //  map / zip / flood / generate
@@ -409,8 +408,6 @@ private:
 
 };
 
-
-
-}}}}
+}}}
 
 #endif

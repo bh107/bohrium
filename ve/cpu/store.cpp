@@ -1,11 +1,10 @@
+#include "thirdparty/MurmurHash3.h"
 #include "store.hpp"
 
-#include "thirdparty/MurmurHash3.h"
-
 using namespace std;
-namespace bohrium {
+
+namespace kp {
 namespace engine {
-namespace cpu {
 
 const char Store::TAG[] = "Store";
 
@@ -213,7 +212,7 @@ void Store::add_symbol(const string symbol, const string library)
 }
 
 /**
- *  Load a single symbol from library symbol into func-storage.
+ *  Load a single symbol from library symbol into kp_krnl_func-storage.
  */
 bool Store::load(const string symbol)
 {
@@ -238,7 +237,7 @@ bool Store::load(const string symbol, const string library)
     }
 
     dlerror();                          // Clear any existing error then,
-    funcs[symbol] = (func)dlsym(        // Load symbol/function
+    funcs[symbol] = (kp_krnl_func)dlsym(        // Load symbol/function
         handles_[library],
         (kernel_prefix_+symbol).c_str()
     );
@@ -256,4 +255,4 @@ bool Store::load(const string symbol, const string library)
     return true;
 }
 
-}}}
+}}

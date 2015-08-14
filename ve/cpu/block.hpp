@@ -1,19 +1,20 @@
-#ifndef __BH_VE_CPU_BLOCK
-#define __BH_VE_CPU_BLOCK
+#ifndef __KP_CORE_BLOCK_HPP
+#define __KP_CORE_BLOCK_HPP 1
 #include <string>
 #include <map>
 
 #include "bh.h"
-#include "tac.h"
+#include "kp_utils.h"
+#include "program.hpp"
 #include "symbol_table.hpp"
 #include "utils.hpp"
 
-namespace bohrium{
+namespace kp{
 namespace core{
 
 class Block {
 public:
-    Block(SymbolTable& globals, std::vector<tac_t>& program);
+    Block(SymbolTable& globals, Program& tac_program);
     ~Block();
 
     /**
@@ -40,20 +41,20 @@ public:
     void compose(bh_ir_kernel& krnl, bool array_contraction);
 
     /**
-     *  Return the block-local operand-index corresponding 
-     *  to the given global operand-index.
+     *  Return the block-local kp_operand-index corresponding
+     *  to the given global kp_operand-index.
      *
-     *  @param global_idx The global operand-index to resolve
-     *  @return The block-local operand-index
+     *  @param global_idx The global kp_operand-index to resolve
+     *  @return The block-local kp_operand-index
      */
     size_t global_to_local(size_t global_idx) const;
 
     /**
-     *  Return the global operand-index corresponding 
-     *  to the given local operand-index.
+     *  Return the global kp_operand-index corresponding
+     *  to the given local kp_operand-index.
      *
-     *  @param local_idx The local operand-index to resolve
-     *  @return The global operand-index
+     *  @param local_idx The local kp_operand-index to resolve
+     *  @return The global kp_operand-index
      */
     size_t local_to_global(size_t local_idx) const;
 
@@ -79,53 +80,53 @@ public:
     //
 
     /**
-     *  Returns the operand with local in block-scope.
+     *  Returns the kp_operand with local idx in block-scope.
      *
-     *  @param local_idx Index / name in the block-scope of the operand.
-     *  @param A reference to the requested operand.
+     *  @param local_idx Index / name in the block-scope of the kp_operand.
+     *  @param A reference to the requested kp_operand.
      */
-    operand_t& operand(size_t local_idx);
+    kp_operand& operand(size_t local_idx);
 
     /**
      *  Return the array of pointer-operands.
      */
-    operand_t** operands(void);
+    kp_operand** operands(void);
 
     /**
      * Count of operands in the block.
      */
-    size_t noperands(void) const;
+    int64_t noperands(void) const;
 
     /**
      *  Grab buffer with the given id.
      */
-    bh_base& buffer(size_t buffer_id);
+    kp_buffer& buffer(size_t buffer_id);
 
     /**
      *  Returns the buffer id for the provided buffer pointer.
      */
-    size_t resolve_buffer(bh_base* buffer);
+    size_t resolve_buffer(kp_buffer* buffer);
 
     /**
      *  Return the array of buffers
      */
-    bh_base** buffers(void);
+    kp_buffer** buffers(void);
 
     /**
      *  Count of buffers in the block.
      */
-    size_t nbuffers(void);
+    int64_t nbuffers();
 
     /**
      *  How many operands use this buffer.
      */
-    size_t base_refcount(bh_base* base);
+    size_t buffer_refcount(kp_buffer *buffer);
 
     /**
      * Return the tac-instance with the given index.
      */
-    tac_t& tac(size_t idx) const;
-    tac_t& array_tac(size_t idx) const;
+    kp_tac & tac(size_t idx) const;
+    kp_tac & array_tac(size_t idx) const;
 
     /**
      *  Count of tacs in the block.
@@ -143,10 +144,7 @@ public:
     /**
      *  Returns the iteration space of the block.
      */
-    iterspace_t& iterspace(void);
-
-    size_t footprint_nelem(void);
-    size_t footprint_bytes(void);
+    kp_iterspace& iterspace(void);
 
     /**
      * Returns a textual representation of the block in dot-format.
@@ -163,10 +161,11 @@ public:
      */
     std::string text_compact(void);
 
-    uint32_t omask(void);    
+    uint32_t omask(void);
+
+    kp_block& meta(void);
 
 private:
-
     Block();
 
     /**
@@ -178,11 +177,11 @@ private:
     void _compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx);
 
     /**
-     *  Create an operand with block scope based on the operand in global scope.
+     *  Create an kp_operand with block scope based on the kp_operand in global scope.
      *
      *  Reuses operands of equivalent meta-data.
      *
-     *  @param global_idx Global index of the operand to add to block scope.
+     *  @param global_idx Global index of the kp_operand to add to block scope.
      *
      *  @returns The block-scoped index.
      */
@@ -197,11 +196,11 @@ private:
     /**
      *  Update the iteration space of the block.
      *
-     *  This means determing the "dominating" LAYOUT, ndim, shape,
+     *  This means determing the "dominating" KP_LAYOUT, ndim, shape,
      *  and number of elements of an operation within the block.
      *
-     *  That is choosing the "worst" LAYOUT, highest ndim, and then
-     *  choosing the shape of the operand with chose characteristics.
+     *  That is choosing the "worst" KP_LAYOUT, highest ndim, and then
+     *  choosing the shape of the kp_operand with chose characteristics.
      *
      *  Since this is what will be the upper-bounds used in when
      *  generating / specializing code, primarily for fusion / contraction.
@@ -210,40 +209,27 @@ private:
      *  any other changes to tacs and operands.
      */
     void _update_iterspace(void);
-    
-    uint32_t omask_;                            // Operation mask
 
-    bh_base** buffers_;                         // Buffer references
-    size_t nbuffers_;
-
-    std::map<bh_base*, size_t> buffer_ids_;
-    std::set<bh_base*> input_buffers_;
-    std::set<bh_base*> output_buffers_;
-    std::map<bh_base*, std::set<uint64_t>> buffer_refs_;
-
-    operand_t** operands_;                      // Operand references
-    size_t noperands_;
+    kp_block block_;                            // Buffers, operands, iterspace,  omask,
+                                                // tacs, ntacs, array_tacs, and narray_tacs.
 
     SymbolTable& globals_;                      // A reference to the global symbol table
+    Program& tac_program_;                      // A reference to the entire bytecode program
+
+    std::map<kp_buffer*, size_t> buffer_ids_;
+    std::set<kp_buffer*> input_buffers_;
+    std::set<kp_buffer*> output_buffers_;
+    std::map<kp_buffer*, std::set<uint64_t>> buffer_refs_;
 
     std::map<size_t, size_t> global_to_local_;  // Mapping from global to block-local scope.
-    std::map<size_t, size_t> local_to_global_;  // Mapping from global to block-local scope.
-
-    iterspace_t iterspace_;                     // The iteration-space of the block
-
-    std::vector<tac_t>& program_;               // A reference to the entire bytecode program
-
-    std::vector<tac_t*> tacs_;                  // A subset of the tac-program representing the block.
-    std::vector<tac_t*> array_tacs_;            // A subset of the tac-program containing only array ops.
+    std::map<size_t, size_t> local_to_global_;  // Mapping from block-local to global scope.
 
     std::string symbol_text_;                   // Textual representation of the block
     std::string symbol_;                        // Hash of textual representation
-
-    size_t footprint_nelem_;
-    size_t footprint_bytes_;
        
     static const char TAG[];
 };
 
 }}
+
 #endif

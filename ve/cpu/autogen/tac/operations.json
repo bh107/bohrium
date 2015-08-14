@@ -1,111 +1,169 @@
 [{
-    "id": 1, "name": "MAP",
+    "id": 1, "name": "KP_MAP",
     "layouts": [
         "CC",  "CK",  "CS",  "SC",  "SK",  "SS"
     ],
     "operators": [
-        "IDENTITY", "ABSOLUTE", "INVERT", "LOGICAL_NOT", "SQRT", 
-        "REAL", "IMAG", "RINT", "ISINF", "ISNAN",
-        "CEIL", "FLOOR", "TRUNC",                
-        "COS", "COSH", "SIN", "SINH", "TAN", "TANH",
-        "ARCCOS", "ARCCOSH", "ARCSIN", "ARCSINH", "ARCTAN", "ARCTANH",         
-        "LOG", "LOG10", "LOG1P", "LOG2", 
-        "EXP", "EXP2", "EXPM1"
+        "KP_IDENTITY",
+        "KP_ABSOLUTE",
+        "KP_INVERT",
+        "KP_LOGICAL_NOT",
+        "KP_SQRT", 
+        "KP_REAL",
+        "KP_IMAG",
+        "KP_RINT",
+        "KP_ISINF",
+        "KP_ISNAN",
+        "KP_CEIL",
+        "KP_FLOOR",
+        "KP_TRUNC",                
+        "KP_COS",
+        "KP_COSH",
+        "KP_SIN",
+        "KP_SINH",
+        "KP_TAN",
+        "KP_TANH",
+        "KP_ARCCOS",
+        "KP_ARCCOSH",
+        "KP_ARCSIN",
+        "KP_ARCSINH",
+        "KP_ARCTAN",
+        "KP_ARCTANH",         
+        "KP_LOG",
+        "KP_LOG10",
+        "KP_LOG1P",
+        "KP_LOG2", 
+        "KP_EXP",
+        "KP_EXP2",
+        "KP_EXPM1"
     ]
 },
 
 {
     "id": 2,
-    "name": "ZIP",
+    "name": "KP_ZIP",
     "layouts": [
         "CCC", "CCK", "CCS", "CKC", "CKS", "CSC", "CSK", "CSS",
         "SCC", "SCK", "SCS", "SKC", "SKS", "SSC", "SSK", "SSS"
     ],
     "operators": [
-        "ADD", "SUBTRACT", "MULTIPLY", "POWER", "DIVIDE", "MOD",
-        "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR",
-        "LOGICAL_AND", "LOGICAL_OR",  "LOGICAL_XOR",
-        "EQUAL", "NOT_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL",
-        "RIGHT_SHIFT", "LEFT_SHIFT",
-        "MAXIMUM", "MINIMUM",
-        "ARCTAN2"
+        "KP_ADD",
+        "KP_SUBTRACT",
+        "KP_MULTIPLY",
+        "KP_POWER",
+        "KP_DIVIDE",
+        "KP_MOD",
+        "KP_BITWISE_AND",
+        "KP_BITWISE_OR",
+        "KP_BITWISE_XOR",
+        "KP_LOGICAL_AND",
+        "KP_LOGICAL_OR",  "LOGICAL_XOR",
+        "KP_EQUAL",
+        "KP_NOT_EQUAL",
+        "KP_GREATER",
+        "KP_GREATER_EQUAL",
+        "KP_LESS",
+        "KP_LESS_EQUAL",
+        "KP_RIGHT_SHIFT",
+        "KP_LEFT_SHIFT",
+        "KP_MAXIMUM",
+        "KP_MINIMUM",
+        "KP_ARCTAN2"
     ]
 },
 
 {
     "id": 4,
-    "name": "REDUCE_COMPLETE",
+    "name": "KP_REDUCE_COMPLETE",
     "layouts": [
         "SCK", "SSK", "SCK", "SSK"
     ],
     "operators": [
-        "ADD", "MULTIPLY",
-        "MINIMUM", "MAXIMUM", 
-        "LOGICAL_AND", "LOGICAL_OR", "LOGICAL_XOR",
-        "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR"
+        "KP_ADD",
+        "KP_MULTIPLY",
+        "KP_MINIMUM",
+        "KP_MAXIMUM", 
+        "KP_LOGICAL_AND",
+        "KP_LOGICAL_OR",
+        "KP_LOGICAL_XOR",
+        "KP_BITWISE_AND",
+        "KP_BITWISE_OR",
+        "KP_BITWISE_XOR"
     ]
 },
 
 {
     "id": 8,
-    "name": "REDUCE_PARTIAL",
+    "name": "KP_REDUCE_PARTIAL",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK"
     ],
     "operators": [
-        "ADD", "MULTIPLY",
-        "MINIMUM", "MAXIMUM", 
-        "LOGICAL_AND", "LOGICAL_OR", "LOGICAL_XOR",
-        "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR"
+        "KP_ADD",
+        "KP_MULTIPLY",
+        "KP_MINIMUM",
+        "KP_MAXIMUM", 
+        "KP_LOGICAL_AND",
+        "KP_LOGICAL_OR",
+        "KP_LOGICAL_XOR",
+        "KP_BITWISE_AND",
+        "KP_BITWISE_OR",
+        "KP_BITWISE_XOR"
     ]
 },
 
 {
     "id": 16,
-    "name": "SCAN",
+    "name": "KP_SCAN",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK"
     ],
     "operators": [
-        "ADD", "MULTIPLY"
+        "KP_ADD",
+        "KP_MULTIPLY"
     ]
 },
 
 {
     "id": 32,
-    "name": "INDEX",
+    "name": "KP_INDEX",
     "layouts": [
         "CCC", "CCS", "CSC", "CSS",
         "SSS", "SSC", "SCS", "SCC"
     ],
     "operators": [
-        "GATHER", "SCATTER"
+        "KP_GATHER",
+        "KP_SCATTER"
     ]
 },
 
 {
     "id": 64,
-    "name": "GENERATE",
+    "name": "KP_GENERATE",
     "layouts": [
         "K", "CKK", ""
     ],
     "operators": [
-        "FLOOD", "RANDOM", "RANGE"
+        "KP_FLOOD",
+        "KP_RANDOM",
+        "KP_RANGE"
     ]
 },
 
 {
     "id": 128,
-    "name": "SYSTEM",
+    "name": "KP_SYSTEM",
     "layouts": ["C", "S"],
     "operators": [
-        "FREE", "DISCARD", "SYNC"
+        "KP_FREE",
+        "KP_DISCARD",
+        "KP_SYNC"
     ]
 },
 
 {
     "id": 256,
-    "name": "EXTENSION",
+    "name": "KP_EXTENSION",
     "layouts": [
         "CCK", "CSK", "SCK", "SSK",
         "CCC", "CCK", "CCS", "CKC", "CKS", "CSC", "CSK", "CSS",
@@ -116,7 +174,7 @@
 
 {
     "id": 512,
-    "name": "NOOP",
+    "name": "KP_NOOP",
     "layouts": [""],
     "operators": [""]
 }

@@ -1,11 +1,10 @@
 [
-    {"id": 1,   "name": "SCALAR_CONST", "shorthand": "SCST"},
-    {"id": 2,   "name": "SCALAR_TEMP",  "shorthand": "STMP"},
-    {"id": 4,   "name": "SCALAR",       "shorthand": "SCLR"},
-
-    {"id": 8,   "name": "CONTRACTABLE", "shorthand": "ATMP"},
-    {"id": 16,  "name": "CONTIGUOUS",   "shorthand": "ACOT"},
-    {"id": 32,  "name": "CONSECUTIVE",  "shorthand": "ACOS"},
-    {"id": 64,  "name": "STRIDED",      "shorthand": "ASTR"},
-    {"id": 128, "name": "SPARSE",       "shorthand": "ASPS"}
+    {"id": 1,   "name": "KP_SCALAR_CONST", "shorthand": "SCST"},
+    {"id": 2,   "name": "KP_SCALAR_TEMP",  "shorthand": "STMP"},
+    {"id": 4,   "name": "KP_SCALAR",       "shorthand": "SCLR"},
+    {"id": 8,   "name": "KP_CONTRACTABLE", "shorthand": "ATMP"},
+    {"id": 16,  "name": "KP_CONTIGUOUS",   "shorthand": "ACOT"},
+    {"id": 32,  "name": "KP_CONSECUTIVE",  "shorthand": "ACOS"},
+    {"id": 64,  "name": "KP_STRIDED",      "shorthand": "ASTR"},
+    {"id": 128, "name": "KP_SPARSE",       "shorthand": "ASPS"}
 ]

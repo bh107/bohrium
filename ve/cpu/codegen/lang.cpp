@@ -3,11 +3,9 @@
 #include "codegen.hpp"
 
 using namespace std;
-using namespace bohrium::core;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 // Element types;
@@ -962,19 +960,19 @@ string _cimag(string right)
 //
 // OpenMP stuff
 //
-string _omp_reduction_oper(OPERATOR oper)
+string _omp_reduction_oper(KP_OPERATOR oper)
 {
     switch(oper) {
-        case ADD:           return "+";
-        case MULTIPLY:      return "*";
-        case MAXIMUM:       return "UNSUPPORTED_OMP_REDUCE_OPER_MAXIMUM";
-        case MINIMUM:       return "UNSUPPORTED_OMP_REDUCE_OPER_MINIMUM";
-        case LOGICAL_AND:   return "&&";
-        case LOGICAL_OR:    return "||";
-        case LOGICAL_XOR:   return "UNSUPPORTED_OMP_REDUCE_OPER_LOGICAL_XOR";
-        case BITWISE_AND:   return "&";
-        case BITWISE_OR:    return "|";
-        case BITWISE_XOR:   return "^";
+        case KP_ADD:           return "+";
+        case KP_MULTIPLY:      return "*";
+        case KP_MAXIMUM:       return "UNSUPPORTED_OMP_REDUCE_OPER_MAXIMUM";
+        case KP_MINIMUM:       return "UNSUPPORTED_OMP_REDUCE_OPER_MINIMUM";
+        case KP_LOGICAL_AND:   return "&&";
+        case KP_LOGICAL_OR:    return "||";
+        case KP_LOGICAL_XOR:   return "UNSUPPORTED_OMP_REDUCE_OPER_LOGICAL_XOR";
+        case KP_BITWISE_AND:   return "&";
+        case KP_BITWISE_OR:    return "|";
+        case KP_BITWISE_XOR:   return "^";
         default:            return "UNSUPPORTED_OMP_REDUCE_OPER";
     }
 }
@@ -1021,4 +1019,5 @@ string _beef(string info)
     return ss.str();
 }
 
-}}}}
+}}}
+
