@@ -3,17 +3,42 @@ include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)             
 include(ExternalProject)
 include(FeatureSummary)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 project(BH_VE_CPU)
 
 include_directories(${BH_SOURCE_DIR}/include)           # Engine depends on BH headers
 link_directories(${BH_BINARY_DIR}/core)                 # Engine depends on BH_CORE (libbh / bh)
 
-include_directories(${CMAKE_SOURCE_DIR}/codegen)        # Engine depends on its own headers
-include_directories(${CMAKE_SOURCE_DIR})
-file(GLOB SRC codegen/*.cpp *.cpp thirdparty/*.cpp)     # Engine source
-add_library(bh_ve_cpu SHARED ${SRC})                    # The main target for the Engine
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)# Engine depends on its own headers
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/codegen)# Engine depends on its own headers
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+set(HDR "${HDR};${CMAKE_CURRENT_SOURCE_DIR}/tac.h")
+set(HDR "${HDR};${CMAKE_CURRENT_SOURCE_DIR}/codegen/codegen.hpp")
+
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/MurmurHash3.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/buffer.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/iterspace.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/kernel.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/lang.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/operand.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/plaid.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/walker.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/walker_oper.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/accelerator.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/bh_ve_cpu.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/block.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/compiler.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/engine.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/store.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/symbol_table.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/thread_control.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/timevault.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp")
+add_library(bh_ve_cpu SHARED ${HDR} ${SRC})             # The main target for the Engine
 
 target_link_libraries(bh_ve_cpu bh)                     # Link with BH_CORE
 
@@ -217,16 +242,16 @@ else()
     endif()
 endif()
 
-configure_file(${BH_SOURCE_DIR}/config.ini.in config.ini)               # Fill out the config-template
+configure_file(${BH_SOURCE_DIR}/config.ini.in ${BH_BINARY_DIR}/config.ini)               # Fill out the config-template
 
 string(REGEX MATCH "^$ENV{HOME}" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})  # Install it
 if ("${ROOT_INSTALL}" STREQUAL "")
-    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
+    install(FILES ${BH_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
 else()
     install(CODE "
-    IF(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
-        CONFIGURE_FILE(${CMAKE_BINARY_DIR}/config.ini \"\$ENV{HOME}/.bohrium/config.ini\" COPYONLY)
-    ENDIF(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
+    if(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
+        configure_file(${BH_BINARY_DIR}/config.ini \"\$ENV{HOME}/.bohrium/config.ini\" COPYONLY)
+    endif(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
     " COMPONENT bohrium)
 endif()
 

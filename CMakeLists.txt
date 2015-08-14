@@ -83,6 +83,42 @@ set_package_properties(Cheetah PROPERTIES TYPE REQUIRED PURPOSE "Cheetah is requ
 # Bohrium components
 #
 add_subdirectory(core)
+
+#
+# Building the CPU engine is done as an external-project.
+# This is an attempt to be able to compile with commercial
+# compilers such as pgi and pathscale.
+#
+
+set(VE_CPU true CACHE BOOL "VE-CPU: Build CPU engine.")
+set(VE_CPU_PROFILING false CACHE BOOL "VE-CPU: Enabling CPU profiling.")
+set(VE_CPU_DEBUGGING false CACHE BOOL "VE-CPU: Enable debugging.")
+set(VE_CPU_C_COMPILER ${CMAKE_C_COMPILER} CACHE STRING "VE-CPU: C compiler")
+set(VE_CPU_CXX_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "VE-CPU: C++ compiler")
+if (VE_CPU)
+    set(BH_SOURCE_DIR ${CMAKE_SOURCE_DIR})
+    set(BH_BINARY_DIR ${CMAKE_BINARY_DIR})
+
+    if (${VE_CPU_C_COMPILER} STREQUAL ${CMAKE_C_COMPILER} AND ${VE_CPU_CXX_COMPILER} STREQUAL ${CMAKE_CXX_COMPILER})
+        add_subdirectory(ve/cpu)
+    else()
+        ExternalProject_Add(BH_VE_CPU
+            DEPENDS bh
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/ve/cpu
+            CMAKE_CACHE_ARGS
+                -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+                -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                -DCMAKE_C_COMPILER:PATH=${VE_CPU_C_COMPILER}
+                -DCMAKE_CXX_COMPILER:PATH=${VE_CPU_CXX_COMPILER}
+                -DBH_SOURCE_DIR:PATH=${BH_SOURCE_DIR}
+                -DBH_BINARY_DIR:PATH=${BH_BINARY_DIR}
+                -DVE_CPU_PROFILING:STRING=${VE_CPU_PROFILING}
+                -DVE_CPU_DEBUGGING:STRING=${VE_CPU_DEBUGGING}
+            BUILD_ALWAYS 1
+        )
+    endif()
+endif()
+
 add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
 add_subdirectory(filter/pprint)
@@ -113,33 +149,7 @@ add_subdirectory(test)
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
-#
-# Building the CPU engine is done as an external-project.
-# This is an attempt to be able to compile with commercial
-# compilers such as pgi and pathscale.
-#
-set(VE_CPU true CACHE BOOL "VE-CPU: Build CPU engine.")
-set(VE_CPU_PROFILING false CACHE BOOL "VE-CPU: Enabling CPU profiling.")
-set(VE_CPU_DEBUGGING false CACHE BOOL "VE-CPU: Enable debugging.")
-set(VE_CPU_C_COMPILER ${CMAKE_C_COMPILER} CACHE STRING "VE-CPU: C compiler")
-set(VE_CPU_CXX_COMPILER ${CMAKE_CXX_COMPILER} CACHE STRING "VE-CPU: C++ compiler")
- 
-if(VE_CPU)
-ExternalProject_Add(BH_VE_CPU
-    DEPENDS bh
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/ve/cpu
-    CMAKE_CACHE_ARGS
-        -DBH_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-        -DBH_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DCMAKE_C_COMPILER:PATH=${VE_CPU_C_COMPILER}
-        -DCMAKE_CXX_COMPILER:PATH=${VE_CPU_CXX_COMPILER}
-        -DVE_CPU_PROFILING:STRING=${VE_CPU_PROFILING}
-        -DVE_CPU_DEBUGGING:STRING=${VE_CPU_DEBUGGING}
-    BUILD_ALWAYS 1
-)
-endif()
+
 
 #
 # Bohrium configuration file, depends on global or local installation
