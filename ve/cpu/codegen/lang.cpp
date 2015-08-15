@@ -997,7 +997,7 @@ string _omp_critical(string expr, string name)
     return ss.str();
 }
 
-#ifdef VE_CPU_OMP_ATOMIC
+#ifdef CAPE_WITH_OMP_ATOMIC
 string _omp_atomic(string expr)
 {
     stringstream ss;

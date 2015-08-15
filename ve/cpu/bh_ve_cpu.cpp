@@ -47,7 +47,7 @@ static kp::engine::Engine* engine = NULL;
 
 // Timing ID for timing of execute()
 static bh_intp exec_timing;
-static bh_intp timing;
+static bool timing;
 static size_t exec_count = 0;
 static map<bh_opcode, bh_extmethod_impl> extensions;
 
@@ -81,10 +81,10 @@ bh_error bh_ve_cpu_init(const char *name)
     //
     bh_intp bind;
     bh_intp vcache_size;
-    bh_intp preload;
+    bool preload;
 
     bh_intp jit_level;
-    bh_intp jit_dumpsrc;
+    bool jit_dumpsrc;
     bh_intp jit_offload;
 
     char* compiler_cmd = NULL;
@@ -97,20 +97,20 @@ bh_error bh_ve_cpu_init(const char *name)
     char* template_path = NULL;
     char* kernel_path = NULL;
 
-    if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "timing", 0, 1, &timing))                      or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "bind", 0, 2, &bind))                      or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "vcache_size", 0, 100, &vcache_size))      or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "preload", 0, 1, &preload))                or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_level", 0, 3, &jit_level))            or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_dumpsrc", 0, 1, &jit_dumpsrc))        or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_offload", 0, 1, &jit_offload))        or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_cmd", &compiler_cmd))         or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_inc", &compiler_inc))         or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_lib", &compiler_lib))         or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_flg", &compiler_flg))         or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_ext", &compiler_ext))         or \
-        (BH_SUCCESS!=bh_component_config_path_option(&myself, "object_path", &object_path))             or \
-        (BH_SUCCESS!=bh_component_config_path_option(&myself, "kernel_path", &kernel_path))             or \
+    if ((BH_SUCCESS!=bh_component_config_bool_option(&myself, "timing", &timing))                   or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "bind", 0, 2, &bind))                  or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "vcache_size", 0, 100, &vcache_size))  or \
+        (BH_SUCCESS!=bh_component_config_bool_option(&myself, "preload", &preload))                 or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_level", 0, 3, &jit_level))        or \
+        (BH_SUCCESS!=bh_component_config_bool_option(&myself, "jit_dumpsrc", &jit_dumpsrc))         or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_offload", 0, 2, &jit_offload))    or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_cmd", &compiler_cmd))     or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_inc", &compiler_inc))     or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_lib", &compiler_lib))     or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_flg", &compiler_flg))     or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_ext", &compiler_ext))     or \
+        (BH_SUCCESS!=bh_component_config_path_option(&myself, "object_path", &object_path))         or \
+        (BH_SUCCESS!=bh_component_config_path_option(&myself, "kernel_path", &kernel_path))         or \
         (BH_SUCCESS!=bh_component_config_path_option(&myself, "template_path", &template_path))) {
         return BH_ERROR;
     }
@@ -123,26 +123,25 @@ bh_error bh_ve_cpu_init(const char *name)
     //
     //  Set JIT-parameters based on JIT-LEVEL
     //
-    bh_intp jit_enabled = 0;
-    bh_intp jit_fusion = 0;
-    bh_intp jit_contraction = 0;
+    bool jit_enabled = 0;
+    bool jit_fusion = 0;
+    bool jit_contraction = 0;
     switch(jit_level) {
         case 0:                     // Disable JIT, rely on preload.
-            preload = 1;
-            jit_enabled = 0;
-            jit_dumpsrc = 0;
-            jit_fusion = 0;
-            jit_contraction = 0;
-            jit_offload = 0;
+            preload = true;
+            jit_enabled = false;
+            jit_dumpsrc = false;
+            jit_fusion = false;
+            jit_contraction = false;
             break;
 
         case 3:                     // SIJ + Fusion + Contraction
-            jit_contraction = 1;
+            jit_contraction = true;
         case 2:                     // SIJ + Fusion
-            jit_fusion = 1;
+            jit_fusion = true;
         case 1:                     // SIJ
         default:
-            jit_enabled = 1;
+            jit_enabled = true;
             break;
     }
 
@@ -183,12 +182,12 @@ bh_error bh_ve_cpu_init(const char *name)
     engine = new kp::engine::Engine(
         (kp_thread_binding)bind,
         (size_t)vcache_size,
-        (bool)preload,
-        (bool)jit_enabled,
-        (bool)jit_dumpsrc,
-        (bool)jit_fusion,
-        (bool)jit_contraction,
-        (bool)jit_offload,
+        preload,
+        jit_enabled,
+        jit_dumpsrc,
+        jit_fusion,
+        jit_contraction,
+        (size_t)jit_offload,
         string(compiler_cmd),
         string(compiler_inc),
         string(compiler_lib),
@@ -198,6 +197,10 @@ bh_error bh_ve_cpu_init(const char *name)
         string(template_path),
         string(kernel_path)
     );
+
+    if (getenv("BH_VE_CPU_INFO")) { // Print out engine configuration
+        cout << engine->text() << endl;
+    }
 
     return BH_SUCCESS;
 }

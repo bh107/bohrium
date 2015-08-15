@@ -69,7 +69,7 @@ int kp_acc_init(kp_acc* acc)
     }                                    
     return mthreads;                     
 }
-#include "kp_acc_autogen.c"
+#include "kp_acc_leo_autogen.c"
 #else
 int kp_acc_init(kp_acc* acc) { return 0; }
 void kp_acc_alloc(kp_acc* acc, kp_buffer* buffer) {}

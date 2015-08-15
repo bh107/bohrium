@@ -22,7 +22,7 @@ Engine::Engine(
     const bool jit_dumpsrc,
     const bool jit_fusion,
     const bool jit_contraction,
-    const bool jit_offload,
+    const size_t jit_offload,
     const string compiler_cmd,
     const string compiler_inc,
     const string compiler_lib,
@@ -39,7 +39,6 @@ Engine::Engine(
     jit_fusion_(jit_fusion),
     jit_contraction_(jit_contraction),
     jit_offload_(jit_offload),
-    jit_offload_devid_(jit_offload-1),
     storage_(object_directory, kernel_directory),
     plaid_(template_directory),
     compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext)
@@ -101,14 +100,53 @@ bool Engine::jit_offload(void)
     return jit_offload_;
 }
 
-int Engine::jit_offload_devid(void)
-{
-    return jit_offload_devid_;
-}
-
 string Engine::text()
 {
     stringstream ss;
+    ss << boolalpha;
+    ss << "MACROS {" << endl;
+    #ifdef VE_CPU_PROFILING
+    ss << "  VE_CPU_PROFILING: ON" << endl;
+    #else
+    ss << "  VE_CPU_PROFILING: OFF" << endl;
+    #endif
+    #ifdef VE_CPU_DEBUGGING
+    ss << "  VE_CPU_DEBUGGING: ON" << endl;
+    #else
+    ss << "  VE_CPU_DEBUGGING: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_HWLOC
+    ss << "  CAPE_WITH_HWLOC: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_HWLOC: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_OPENMP
+    ss << "  CAPE_WITH_OPENMP: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_OPENMP: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_OMP_ATOMIC
+    ss << "  CAPE_WITH_OMP_ATOMIC: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_OMP_ATOMIC: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_INTEL_LEO
+    ss << "  CAPE_WITH_INTEL_LEO: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_INTEL_LEO: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_THREADBINDING
+    ss << "  CAPE_WITH_THREADBINDING: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_THREADBINDING: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_OPENACC
+    ss << "  CAPE_WITH_OPENACC: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_OPENACC: OFF" << endl;
+    #endif
+    ss << "}" << endl;
+
     ss << "Engine {" << endl;
     ss << "  vcache_size = "        << kp_rt_vcache_size(rt_) << endl;
     ss << "  preload = "            << this->preload_ << endl;    

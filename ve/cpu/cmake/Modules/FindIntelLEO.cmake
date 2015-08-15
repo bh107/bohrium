@@ -5,74 +5,59 @@
 # Finds IntelLEO support
 #
 # This module can be used to detect IntelLEO support in a compiler.  If
-# the compiler supports IntelLEO, the flags required to compile with
-# IntelLEO support are returned in variables for the different languages.
-# The variables may be empty if the compiler does not need a special
-# flag to support IntelLEO.
-#
-# The following variables are set:
+# the compiler supports IntelLEO then the following variables are set:
 #
 # ::
 #
-#    IntelLEO_C_FLAGS - flags to add to the C compiler for IntelLEO support
-#    INTEL_LEO_FOUND - true if openmp is detected
+#    IntelLEO_FOUND - true if support for Intel LEO is detected
 #
-# Supported compilers can be found at
-# http://www.openacc.org/content/tools
 include(FindPackageHandleStandardArgs)
 include(CheckCCompilerFlag)
 
-set(_INTEL_LEO_REQUIRED_VARS)
-set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
-set(CMAKE_REQUIRED_QUIET ${IntelLEO_FIND_QUIETLY})
-
-# sample openmp source code to test
-set(IntelLEO_C_TEST_SOURCE
-"
-#include <openacc.h>
-int main() {
-#ifdef _INTEL_LEO
-  return 0;
-#else
-  breaks_on_purpose
-#endif
-}
-")
+set(_INTEL_LEO)
 
 # check c compiler
 if(CMAKE_C_COMPILER_LOADED)
 
-  foreach(FLAG IN LISTS IntelLEO_C_FLAG_CANDIDATES)
-    set(SAFE_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
-    set(CMAKE_REQUIRED_FLAGS "${FLAG}")
-    unset(IntelLEO_FLAG_DETECTED CACHE)
-    if(NOT CMAKE_REQUIRED_QUIET)
-      message(STATUS "Try IntelLEO C flag = [${FLAG}]")
+    # Check that pragma is not ignored
+    check_c_source_compiles( "
+    #include <omp.h>
+    int main(void) {
+        int foo = 0;
+        #pragma offload target(mic) in(does_not_exist)
+        {
+            foo += 1;
+        }
+        return foo;
+    }" LEO_COMPILE_CHECK)
+
+    if (${LEO_COMPILE_CHECK})
+        set(_INTEL_LEO "0")
+    else()
+        # Check that pragma compiles
+        check_c_source_compiles( "
+        #include <stdlib.h>
+        #include <omp.h>
+        int main(void) {
+            int nelem = 10;
+            double* foo = (double*)malloc(nelem*sizeof(double));
+            #pragma offload target(mic) in(foo:length(nelem) alloc_if(1) free_if(1))
+            {
+                foo += 1;
+            }
+            free(foo);
+            return 0;
+        }" LEO_COMPILE_CHECK_USAGE)
+
+        if (${LEO_COMPILE_CHECK_USAGE})
+            set(_INTEL_LEO "1")
+        else()
+            set(_INTEL_LEO "0")
+        endif()
     endif()
-    check_c_source_compiles("${IntelLEO_C_TEST_SOURCE}" IntelLEO_FLAG_DETECTED)
-    set(CMAKE_REQUIRED_FLAGS "${SAFE_CMAKE_REQUIRED_FLAGS}")
-    if(IntelLEO_FLAG_DETECTED)
-      set(IntelLEO_C_FLAGS_INTERNAL "${FLAG}")
-      break()
-    endif()
-  endforeach()
 
-  set(IntelLEO_C_FLAGS "${IntelLEO_C_FLAGS_INTERNAL}"
-    CACHE STRING "C compiler flags for IntelLEO parallization")
-
-  list(APPEND _INTEL_LEO_REQUIRED_VARS IntelLEO_C_FLAGS)
-  unset(IntelLEO_C_FLAG_CANDIDATES)
-endif()
-
-set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_SAVE})
-
-if(_INTEL_LEO_REQUIRED_VARS)
-  find_package_handle_standard_args(IntelLEO
-                                    REQUIRED_VARS ${_INTEL_LEO_REQUIRED_VARS})
-
-  mark_as_advanced(${_INTEL_LEO_REQUIRED_VARS})
-
-  unset(_INTEL_LEO_REQUIRED_VARS)
 else()
-  message(SEND_ERROR "FindIntelLEO requires C language to be enabled")
+    message(SEND_ERROR "FindIntelLEO requires C language to be enabled")
 endif()
+
+find_package_handle_standard_args(IntelLEO "Language Extensions for Offload (LEO)" _INTEL_LEO)

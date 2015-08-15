@@ -19,6 +19,8 @@
 #
 # Supported compilers can be found at
 # http://www.openacc.org/content/tools
+include(FindPackageHandleStandardArgs)
+include(CheckCCompilerFlag)
 
 set(_OPENACC_REQUIRED_VARS)
 set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
@@ -68,7 +70,6 @@ if(CMAKE_C_COMPILER_LOADED)
     unset(OpenACC_C_FLAG_CANDIDATES)
   else()
     _OPENACC_FLAG_CANDIDATES("C")
-    include(${CMAKE_CURRENT_LIST_DIR}/CheckCSourceCompiles.cmake)
   endif()
 
   foreach(FLAG IN LISTS OpenACC_C_FLAG_CANDIDATES)
@@ -96,8 +97,6 @@ endif()
 set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_SAVE})
 
 if(_OPENACC_REQUIRED_VARS)
-  include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
-
   find_package_handle_standard_args(OpenACC
                                     REQUIRED_VARS ${_OPENACC_REQUIRED_VARS})
 

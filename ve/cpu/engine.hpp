@@ -27,7 +27,7 @@ public:
         const bool jit_dumpsrc,
         const bool jit_fusion,
         const bool jit_contraction,
-        const bool jit_offload,
+        const size_t jit_offload,
         const std::string compiler_cmd,
         const std::string compiler_inc,
         const std::string compiler_lib,
@@ -47,7 +47,6 @@ public:
     bool jit_fusion(void);
     bool jit_contraction(void);
     bool jit_offload(void);
-    int jit_offload_devid(void);
 
     std::string text();
 
@@ -66,10 +65,9 @@ private:
          jit_enabled_,
          jit_dumpsrc_,
          jit_fusion_,
-         jit_contraction_,
-         jit_offload_;
+         jit_contraction_;
 
-    int jit_offload_devid_;
+    size_t jit_offload_;
     
     Store           storage_;
     codegen::Plaid  plaid_;

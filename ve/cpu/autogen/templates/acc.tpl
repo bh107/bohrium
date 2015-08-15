@@ -14,9 +14,6 @@ static void acc_alloc_${ETYPE}(kp_acc* acc, kp_buffer* buffer)
     ${CTYPE}* data = (${CTYPE}*)(buffer->data); // Grab the buffer and cast it
     const int nelem = buffer->nelem; // Grab # elements
 
-    acc->bytes_allocated += nelem*sizeof(${CTYPE}); // House-keeping
-    kp_set_insert(acc->buffers_allocated, buffer);
-
     #pragma offload_transfer                                    \
             target(mic:id)                                      \
             nocopy(data:length(nelem) alloc_if(1) free_if(0))
@@ -24,16 +21,20 @@ static void acc_alloc_${ETYPE}(kp_acc* acc, kp_buffer* buffer)
 %end for
 void kp_acc_alloc(kp_acc* acc, kp_buffer* buffer)
 {
-    if (kp_acc_allocated(acc, buffer)) {     // Buffer is already allocated
+    if (kp_acc_allocated(acc, buffer)) {    // Buffer is already allocated on device
         return;
     }
-    if (NULL == buffer->data) {
+    if (NULL == buffer->data) {             // Buffer is not allocated on host
         fprintf(stderr, "kp_acc_alloc: Buffer is not allocated on host.\n");
         return;
     }
     switch(buffer->type) {
         %for $CTYPE, $ETYPE in $ETYPES
-        case $ETYPE: acc_alloc_${ETYPE}(acc, buffer); break;
+        case $ETYPE:
+            acc_alloc_${ETYPE}(acc, buffer);                // LEO-call
+            acc->bytes_allocated += nelem*sizeof(${CTYPE}); // House-keeping
+            kp_set_insert(acc->buffers_allocated, buffer);
+            break;
         %end for
 
         case KP_COMPLEX64:
@@ -43,6 +44,8 @@ void kp_acc_alloc(kp_acc* acc, kp_buffer* buffer)
             fprintf(stderr, "kp_acc_alloc: Unsupported datatype (complex or pair).");
             break;
     }
+
+
 }
 
 //
@@ -55,10 +58,6 @@ static void acc_free_${ETYPE}(kp_acc* acc, kp_buffer* buffer)
     const int id = kp_acc_id(acc); // Grab the accelerator device id
     ${CTYPE}* data = (${CTYPE}*)(buffer->data); // Grab the buffer and cast it
     const int nelem = buffer->nelem; // Grab # elements
-
-    acc->bytes_allocated -= nelem*sizeof(${CTYPE}); // Housekeeping
-    kp_set_erase(acc->buffers_allocated, buffer);
-    kp_set_erase(acc->buffers_pushed, buffer);
 
     #pragma offload_transfer                                    \
             target(mic:id)                                      \
@@ -76,7 +75,12 @@ void kp_acc_free(kp_acc* acc, kp_buffer* buffer)
     }
     switch(buffer->type) {
         %for $CTYPE, $ETYPE in $ETYPES
-        case $ETYPE: acc_free_${ETYPE}(acc, buffer); break;
+        case $ETYPE:
+            acc_free_${ETYPE}(acc, buffer);                 // LEO call
+            acc->bytes_allocated -= nelem*sizeof(${CTYPE}); // Housekeeping
+            kp_set_erase(acc->buffers_allocated, buffer);
+            kp_set_erase(acc->buffers_pushed, buffer);
+            break;
         %end for
 
         case KP_COMPLEX64:
@@ -98,7 +102,6 @@ static void acc_push_${ETYPE}(kp_acc* acc, kp_buffer* buffer)
     ${CTYPE}* data = (${CTYPE}*)(buffer->data); // Grab the buffer and cast it
     const int nelem = buffer->nelem; // Grab # elements
 
-    kp_set_insert(acc->buffers_pushed, buffer); // House-keeping
 
     #pragma offload_transfer                                    \
             target(mic:id)                                      \
@@ -116,7 +119,10 @@ void kp_acc_push(kp_acc* acc, kp_buffer* buffer)
     }
     switch(buffer->type) {
         %for $CTYPE, $ETYPE in $ETYPES
-        case $ETYPE: acc_push_${ETYPE}(acc, buffer); break;
+        case $ETYPE:
+            acc_push_${ETYPE}(acc, buffer);             // LEO call
+            kp_set_insert(acc->buffers_pushed, buffer); // House-keeping
+            break;
         %end for
 
         case KP_COMPLEX64:

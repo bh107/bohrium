@@ -224,21 +224,21 @@ timing = false
 type = ve
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
-timing = 0
-bind = 1
-vcache_size = 10
-preload = 1
-jit_level = 3
-jit_dumpsrc = 1
-jit_offload = ${WITH_INTEL_LEO}
+timing = ${VE_CPU_TIMING}
+bind = ${VE_CPU_BIND}
+vcache_size = ${VE_CPU_VCACHE_SIZE}
+preload = ${VE_CPU_PRELOAD}
+jit_level = ${VE_CPU_JIT_LEVEL}
+jit_dumpsrc = ${VE_CPU_JIT_DUMPSRC}
+jit_offload = ${VE_CPU_JIT_OFFLOAD}
 compiler_cmd="${VE_CPU_COMPILER_CMD}"
 compiler_inc="${VE_CPU_COMPILER_INC}"
 compiler_lib="${VE_CPU_COMPILER_LIB}"
 compiler_flg="${VE_CPU_COMPILER_FLG}"
 compiler_ext="${VE_CPU_COMPILER_EXT}"
-object_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/objects
-template_path=${CMAKE_INSTALL_PREFIX}/share/bohrium/templates
-kernel_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/kernels
+object_path="${VE_CPU_OBJECT_PATH}"
+template_path="${VE_CPU_TEMPLATE_PATH}"
+kernel_path="${VE_CPU_KERNEL_PATH}"
 ##
 ## Extra flags for JIT-compilation, add manually for experimentation.
 ##

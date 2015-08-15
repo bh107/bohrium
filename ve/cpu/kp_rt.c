@@ -1,9 +1,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#if defined(VE_CPU_BIND)
-#include <omp.h>
+#if defined(CAPE_WITH_HWLOC)
 #include <hwloc.h>
+#endif
+#if defined(CAPE_WITH_THREADBINDING)
+#include <omp.h>
 #else
 inline int omp_get_max_threads() { return 1; }
 inline int omp_get_thread_num()  { return 0; }
@@ -13,11 +15,13 @@ inline int omp_get_num_threads() { return 1; }
 #include "kp_rt.h"
 #include "kp_vcache.h"
 #include "kp_acc.h"
+#include "kp_utils.h"
 
-/*
-#if defined(VE_CPU_BIND)
-string coproc_text(void)
+#if defined(CAPE_WITH_HWLOC)
+void kp_hw_mic_text(char* text, size_t devid)
 {
+    strncpy(text, "[COPROC:UNKNOWN]", 16);
+/*
     hwloc_topology_t topo;                      // Setup topology
     hwloc_topology_init(&topo);                 
     hwloc_topology_set_flags(topo, HWLOC_TOPOLOGY_FLAG_IO_DEVICES);
@@ -50,17 +54,16 @@ string coproc_text(void)
     cout << ss.str() << endl;
 
     return ss.str();
-
+*/
 }
 #else
-string coproc_text(void)
+void kp_hw_mic_text(char* text, size_t devid)
 {
-    return "[COPROC:UNKNOWN]";
+    strncpy(text, "[COPROC:UNKNOWN]", 16);
 }
 #endif
-*/
 
-#if defined(VE_CPU_BIND)
+#if defined(CAPE_WITH_HWLOC)
 void kp_set_host_text(char* host_text)
 {
     if (host_text) {
@@ -256,7 +259,7 @@ bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_b
     return true;
 }
 
-#if defined(VE_CPU_BIND)
+#if defined(CAPE_WITH_THREADBINDING)
 int kp_rt_bind_threads(kp_rt* rt, kp_thread_binding binding)
 {
     char* env = getenv("GOMP_CPU_AFFINITY");    // Back off if user specifies a
