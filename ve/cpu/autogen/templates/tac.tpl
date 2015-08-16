@@ -114,16 +114,13 @@ typedef enum kp_thread_binding {
     KP_BIND_TO_PU = 2
 } kp_thread_binding;
 
-struct kp_acc;
 typedef struct kp_acc kp_acc;
 
 typedef struct kp_rt {
     kp_thread_binding binding;
     size_t vcache_size;
-    char* host_text;
-
     kp_acc* acc;
-    size_t nacc;
+    char* host_text;
 } kp_rt;
 
 typedef void (*kp_krnl_func)(kp_buffer** buffers, kp_operand** args, kp_iterspace* iterspace, const int offload_devid);

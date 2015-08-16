@@ -8,6 +8,8 @@
 extern "C" {
 #endif
 
+// Note: kp_acc is forward declared in kp.h and defined in kp_acc.c
+
 kp_acc* kp_acc_create(size_t id);
 int kp_acc_init(kp_acc* acc);
 void kp_acc_destroy(kp_acc* acc);
@@ -23,6 +25,8 @@ void kp_acc_alloc(kp_acc* acc, kp_buffer* buffer);
 void kp_acc_free(kp_acc* acc, kp_buffer* buffer);
 void kp_acc_push(kp_acc* acc, kp_buffer* buffer);
 void kp_acc_pull(kp_acc* acc, kp_buffer* buffer);
+
+void kp_acc_pprint(kp_acc* acc);
 
 #ifdef __cplusplus
 }
