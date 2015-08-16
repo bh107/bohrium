@@ -628,6 +628,27 @@ string Walker::operations(void)
             case KP_MAP:
             case KP_ZIP:
             case KP_GENERATE:
+				#if defined(CAPE_WITH_OPENACC)
+				switch(tac_noperands(tac)) {
+                    case 3:
+                        inner_opds_.insert(tac.in2);
+                        outer_opds_.insert(tac.in2);
+
+                        in2 = kernel_.operand_glb(tac.in2).walker_subscript_val();
+                    case 2:
+                        inner_opds_.insert(tac.in1);
+                        outer_opds_.insert(tac.in1);
+
+                        in1 = kernel_.operand_glb(tac.in1).walker_subscript_val();
+                    case 1:
+                        inner_opds_.insert(tac.out);
+                        outer_opds_.insert(tac.out);
+
+                        out = kernel_.operand_glb(tac.out).walker_subscript_val();
+                    default:
+                        break;
+                }
+				#else
                 switch(tac_noperands(tac)) {
                     case 3:
                         inner_opds_.insert(tac.in2);
@@ -647,6 +668,7 @@ string Walker::operations(void)
                     default:
                         break;
                 }
+                #endif
                 ss << _assign(
                     out,
                     oper(tac.oper, etype, in1, in2)

@@ -25,7 +25,11 @@ Plaid::Plaid(string template_directory) : template_directory_(template_directory
     add_from_file("license",    "license.tpl");
     add_from_file("kernel",     "kernel.tpl");
     add_from_file("walker.scalar",      "walker.scalar.tpl");
-    add_from_file("walker.collapsed",   "walker.collapsed.tpl");
+    #if defined(CAPE_WITH_OPENACC)
+    add_from_file("walker.collapsed",   "walker.collapsed.acc.tpl");
+	#else
+	add_from_file("walker.collapsed",   "walker.collapsed.tpl");
+	#endif
     add_from_file("walker.inner.2d",    "walker.inner.2d.tpl");
     add_from_file("walker.inner.nd",    "walker.inner.nd.tpl");
     add_from_file("walker.axis.2d",     "walker.axis.2d.tpl");
