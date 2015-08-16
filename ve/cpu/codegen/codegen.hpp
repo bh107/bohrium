@@ -244,6 +244,7 @@ public:
     std::string accu(void);
     std::string walker(void);
     std::string walker_val(void);
+    std::string walker_subscript_val(void);
 
     kp_operand & meta(void);
 

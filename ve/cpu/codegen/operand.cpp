@@ -135,6 +135,31 @@ string Operand::walker_val(void)
     return ss.str();
 }
 
+string Operand::walker_subscript_val(void)
+{
+    stringstream ss;
+
+    switch(meta().layout) {
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:
+        case KP_CONTRACTABLE:
+            ss << walker();
+            break;
+
+        case KP_CONSECUTIVE:
+        case KP_CONTIGUOUS:
+        case KP_STRIDED:
+            ss << _index(walker(), "eidx");
+            break;
+
+        case KP_SPARSE:
+            ss << _beef("Non-implemented KP_LAYOUT.");
+            break;
+    }
+    return ss.str();
+}
+
 kp_operand & Operand::meta(void)
 {
     return *operand_;
