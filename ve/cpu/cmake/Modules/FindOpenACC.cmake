@@ -31,12 +31,12 @@ function(_OPENACC_FLAG_CANDIDATES LANG)
     #GNU
     "-fopenacc"
     #Portland Group, PathScale
-    "-acc"
+    "-acc -ta=tesla:nordc"
   )
 
   set(ACC_FLAG_GNU "-fopenacc")
-  set(ACC_FLAG_PathScale "-acc")
-  set(ACC_FLAG_PGI "-acc")
+  set(ACC_FLAG_PathScale "-acc ")
+  set(ACC_FLAG_PGI "-acc -ta=tesla:nordc")
 
   # Move the flag that matches the compiler to the head of the list,
   # this is faster and doesn't clutter the output that much. If that
