@@ -4,6 +4,12 @@
 #include "assert.h"
 #include "kp_set.h"
 
+struct kp_set {
+    size_t capacity;    // Max # of values
+    void** entries;     // Values
+    size_t nentries;    // # of unique items in set
+};
+
 kp_set* kp_set_create(void)
 {
     kp_set* set = (kp_set*)malloc(sizeof(kp_set));

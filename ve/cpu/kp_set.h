@@ -39,11 +39,7 @@ extern "C" {
 static const size_t kp_set_default_capacity = 200;
 static const size_t kp_set_expand_capacity = 200;
 
-typedef struct kp_set {
-    size_t capacity;    // Max # of values
-    void** entries;     // Values
-    size_t nentries;    // # of unique items in set
-} kp_set;
+typedef struct kp_set kp_set;
 
 kp_set* kp_set_create(void);
 
