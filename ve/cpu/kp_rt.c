@@ -124,7 +124,7 @@ void kp_set_host_text(char* host_text)
 }
 #endif
 
-kp_rt* kp_rt_init(size_t vcache_size)
+kp_rt* kp_rt_create(size_t vcache_size)
 {
     kp_rt* rt = (kp_rt*)malloc(sizeof(kp_rt));
     if (rt) {
@@ -137,12 +137,11 @@ kp_rt* kp_rt_init(size_t vcache_size)
         kp_set_host_text(rt->host_text);
 
         rt->acc = NULL;                 // No accelerators until kp_rt_acc_init(...)
-        rt->acc = 0;
     }
     return rt;
 }
 
-void kp_rt_shutdown(kp_rt* rt)
+void kp_rt_destroy(kp_rt* rt)
 {
     if (rt) {
         if (rt->vcache_size>0) {    // De-allocate the malloc-cache
@@ -347,5 +346,17 @@ size_t kp_rt_vcache_size(kp_rt* rt)
 const char* kp_rt_host_text(kp_rt* rt)
 {
     return rt->host_text;
+}
+
+void kp_rt_pprint(kp_rt* rt)
+{
+    if (rt) {
+        fprintf(stdout,
+                "rt(%p) { binding:%d, vcache_size: %ld, acc: %p, host_text: %s }\n",
+                (void*)rt, (int)rt->binding, rt->vcache_size, (void*)rt->acc, rt->host_text);
+        kp_acc_pprint(rt->acc);
+    } else {
+        fprintf(stdout, "rt(%p) {}\n", (void*)rt);
+    }
 }
 

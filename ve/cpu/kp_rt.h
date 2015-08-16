@@ -21,12 +21,12 @@ void kp_set_host_text(char* host_text);
  *
  *  Returns pointer to the initialized runtime.
  */
-kp_rt* kp_rt_init(size_t vcache_size);
+kp_rt* kp_rt_create(size_t vcache_size);
 
 /**
  *  Shut down the CAPE C-Runtime
  */
-void kp_rt_shutdown(kp_rt* rt);
+void kp_rt_destroy(kp_rt* rt);
 
 /**
  *  Execute the given block using the provided runtime.
@@ -52,6 +52,11 @@ size_t kp_rt_vcache_size(kp_rt* rt);
  *  Get the textual host representation.
  */
 const char* kp_rt_host_text(kp_rt* rt);
+
+/**
+ *  Pretty print the runtime.
+ */
+void kp_rt_pprint(kp_rt* rt);
 
 #ifdef __cplusplus
 }
