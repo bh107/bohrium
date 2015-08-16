@@ -47,13 +47,14 @@ Engine::Engine(
         storage_.preload();
     }
 
-    rt_ = kp_rt_init(vcache_size);      // Initialize CAPE C-runtime
+    rt_ = kp_rt_create(vcache_size);      // Initialize CAPE C-runtime
     kp_rt_bind_threads(rt_, binding);   // Bind threads on host PUs
 
     if (jit_offload_) {                 // Initialize accelerator
         rt_->acc = kp_acc_create(0);
         if (!kp_acc_init(rt_->acc)) {
-            kp_acc_destroy(rt_->acc);
+            fprintf(stderr, "Engine::init(...) Failed initializing accelerator.\n");
+            kp_acc_destroy(rt_->acc);            
         }
     }
 
@@ -61,8 +62,8 @@ Engine::Engine(
 }
 
 Engine::~Engine()
-{   
-    kp_rt_shutdown(rt_);                // Shut down the CAPE C-runtime
+{
+    kp_rt_destroy(rt_);                // Shut down the CAPE C-runtime
 }
 
 size_t Engine::vcache_size(void)
@@ -115,6 +116,7 @@ string Engine::text()
     #else
     ss << "  VE_CPU_DEBUGGING: OFF" << endl;
     #endif
+    ss << endl;
     #ifdef CAPE_WITH_HWLOC
     ss << "  CAPE_WITH_HWLOC: ON" << endl;
     #else
@@ -206,7 +208,7 @@ bh_error Engine::process_block(Program &tac_program,
             );
         }
         if (!compile_res) {
-            fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
+            fprintf(stderr, "Engine::process_block(...) == Compilation failed.\n");
 
             return BH_ERROR;
         }
@@ -223,7 +225,7 @@ bh_error Engine::process_block(Program &tac_program,
         (!storage_.symbol_ready(block.symbol())) && \
         (!storage_.load(block.symbol()))) {             // Need but cannot load
 
-        fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
+        fprintf(stderr, "Engine::process_block(...) == Failed loading object.\n");
         return BH_ERROR;
     }
 
