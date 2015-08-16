@@ -73,6 +73,37 @@ string Walker::declare_operands(void)
     return ss.str();
 }
 
+string Walker::offload_acc_loop(void)
+{
+    stringstream ss;
+
+    ss << "#pragma acc kernels loop \\" << endl;
+    for(kernel_operand_iter oit=kernel_.operands_begin();
+        oit != kernel_.operands_end();
+        ++oit) {
+        Operand& operand = oit->second;
+        switch(operand.meta().layout) {
+            case KP_SCALAR_CONST:
+            case KP_SCALAR_TEMP:
+            case KP_CONTRACTABLE:
+                break;
+
+            case KP_CONTIGUOUS:
+            case KP_CONSECUTIVE:
+            case KP_STRIDED:
+            case KP_SCALAR:
+                ss << "present(" << operand.walker() << ") \\" << endl;
+                break;
+
+            case KP_SPARSE:
+				ss << _beef("Unimplemented KP_LAYOUT.");
+				break;
+        }
+    }
+
+    return ss.str();
+}
+
 string Walker::offload_leo(void)
 {
     stringstream ss;
@@ -800,7 +831,11 @@ string Walker::generate_source(bool offload)
 
     // Experimental offload pragma
     if (offload) {
+        #if defined(CAPE_WITH_INTEL_LEO)
         subjects["OFFLOAD"] = offload_leo();
+        #elif defined(CAPE_WITH_OPENACC)
+        subjects["OFFLOAD_LOOP"] = offload_acc_loop();
+        #endif
     }
 
     // These are used by all kernels.
