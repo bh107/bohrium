@@ -12,7 +12,7 @@ struct kp_set {
 
 kp_set* kp_set_create(void)
 {
-    kp_set* set = (kp_set*)malloc(sizeof(kp_set));
+    kp_set* set = malloc(sizeof(*set));
     if (set) {
         set->entries = malloc(sizeof(void*)*kp_set_default_capacity);
 
