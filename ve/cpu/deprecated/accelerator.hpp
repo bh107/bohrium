@@ -1,12 +1,11 @@
-#ifndef __BH_VE_CPU_ACCELERATOR
-#define __BH_VE_CPU_ACCELERATOR
+#ifndef __KP_ENGINE_ACCELERATOR_HPP
+#define __KP_ENGINE_ACCELERATOR_HPP 1
 #include <string>
 #include <set>
-#include "tac.h"
+#include "kp.h"
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 
 class Accelerator {
 public:
@@ -39,46 +38,34 @@ public:
     size_t bytes_allocated(void);
 
     /**
-     *  Check that operand-buffer is allocated on accelerator.
+     *  Check that kp_operand-buffer is allocated on accelerator.
      */
-    bool allocated(operand_t& operand);
+    bool allocated(kp_operand & operand);
 
     /**
-     *  Check that operand-buffer has been pushed to the accelerator.
+     *  Check that kp_operand-buffer has been pushed to the accelerator.
      */
-    bool pushed(operand_t& operand);
+    bool pushed(kp_operand & operand);
 
     /**
-     *  Allocate operand-buffer on accelerator.
+     *  Allocate kp_operand-buffer on accelerator.
      */
-    void alloc(operand_t& operand);
+    void alloc(kp_operand & operand);
 
     /**
-     *  Free operand-buffer on accelerator.
+     *  Free kp_operand-buffer on accelerator.
      */
-    void free(operand_t& operand);
+    void free(kp_operand & operand);
 
     /**
      *  Push data from host to accelerator.
      */
-    void push(operand_t& operand);
-
-    /**
-     *  Allocate operand-buffer on accelerator and
-     *  push data from host to accelerator.
-     */
-    void push_alloc(operand_t& operand);
+    void push(kp_operand & operand);
 
     /**
      *  Pull data from accelerator to host.
      */
-    void pull(operand_t& operand);
-
-    /**
-     *  Pull data from accelerator to host and
-     *  free operand-buffer on accelerator.
-     */
-    void pull_free(operand_t& operand);
+    void pull(kp_operand & operand);
 
     /**
      *  Get max threads on accelerator.
@@ -94,26 +81,26 @@ private:
     Accelerator(void);
 
     template <typename T>
-    void _alloc(operand_t& operand);
+    void _alloc(kp_operand& operand);
 
     template <typename T>
-    void _free(operand_t& operand);
+    void _free(kp_operand& operand);
 
     template <typename T>
-    void _push(operand_t& operand);
+    void _push(kp_operand& operand);
 
     template <typename T>
-    void _pull(operand_t& operand);
+    void _pull(kp_operand& operand);
 
     int id_;
     size_t bytes_allocated_;
-    std::set<const bh_base*> buffers_allocated_;
+    std::set<const kp_buffer*> buffers_allocated_;
 
-    std::set<const bh_base*> buffers_pushed_;
+    std::set<const kp_buffer*> buffers_pushed_;
 
     static const char TAG[];
 };
 
-}}}
+}}
 
 #endif

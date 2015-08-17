@@ -1,11 +1,10 @@
+#include <sstream>
 #include "utils.hpp"
 #include "compiler.hpp"
-#include <sstream>
 using namespace std;
 
-namespace bohrium{
-namespace engine {
-namespace cpu {
+namespace kp{
+namespace engine{
 
 const char Compiler::TAG[] = "Compiler";
 
@@ -106,4 +105,4 @@ bool Compiler::compile(string object_abspath, string src_abspath)
     return (exit_code==0);
 }
 
-}}}
+}}

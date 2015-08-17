@@ -23,8 +23,8 @@
         //
         // Compute offset based on coordinate
         //
-        {{ETYPE}}* {{OPD_OUT}} = {{BUF_OUT}}_data + {{OPD_OUT}}_start;
-        {{ETYPE}}* {{OPD_IN1}} = {{BUF_IN1}}_data + {{OPD_IN1}}_start;
+        {{KP_ETYPE}}* {{OPD_OUT}} = {{BUF_OUT}}_data + {{OPD_OUT}}_start;
+        {{KP_ETYPE}}* {{OPD_IN1}} = {{BUF_IN1}}_data + {{OPD_IN1}}_start;
 
         for (int64_t j=0; j<ndim; ++j) {           
             {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_strides[j];

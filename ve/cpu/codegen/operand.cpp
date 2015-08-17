@@ -4,15 +4,14 @@
 #include "codegen.hpp"
 
 using namespace std;
-using namespace bohrium::core;
+using namespace kp::core;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 Operand::Operand(void) : local_id_(0), operand_(NULL), buffer_(NULL) {}
-Operand::Operand(operand_t* operand, uint32_t local_id, Buffer* buffer) : local_id_(local_id), operand_(operand), buffer_(buffer) {
+Operand::Operand(kp_operand * operand, uint32_t local_id, Buffer* buffer) : local_id_(local_id), operand_(operand), buffer_(buffer) {
     if (NULL == operand_) {
         throw runtime_error("Constructing a NULL operand_, when expecting to have one");
     }
@@ -116,27 +115,52 @@ string Operand::walker_val(void)
     stringstream ss;
 
     switch(meta().layout) {
-        case SCALAR_TEMP:
-        case SCALAR_CONST:
-        case SCALAR:
-        case CONTRACTABLE:
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:
+        case KP_CONTRACTABLE:
             ss << walker();
             break;
 
-        case CONSECUTIVE:
-        case CONTIGUOUS:
-        case STRIDED:
+        case KP_CONSECUTIVE:
+        case KP_CONTIGUOUS:
+        case KP_STRIDED:
             ss << _deref(walker());
             break;
 
-        case SPARSE:
-            ss << _beef("Non-implemented LAYOUT.");
+        case KP_SPARSE:
+            ss << _beef("Non-implemented KP_LAYOUT.");
             break;
     }
     return ss.str();
 }
 
-operand_t& Operand::meta(void)
+string Operand::walker_subscript_val(void)
+{
+    stringstream ss;
+
+    switch(meta().layout) {
+        case KP_SCALAR_TEMP:
+        case KP_SCALAR_CONST:
+        case KP_SCALAR:
+        case KP_CONTRACTABLE:
+            ss << walker();
+            break;
+
+        case KP_CONSECUTIVE:
+        case KP_CONTIGUOUS:
+        case KP_STRIDED:
+            ss << _index(walker(), "eidx");
+            break;
+
+        case KP_SPARSE:
+            ss << _beef("Non-implemented KP_LAYOUT.");
+            break;
+    }
+    return ss.str();
+}
+
+kp_operand & Operand::meta(void)
 {
     return *operand_;
 }
@@ -185,7 +209,7 @@ string Operand::buffer_etype(void)
     return ss.str();
 }
 
-bh_base* Operand::buffer_meta(void)
+kp_buffer * Operand::buffer_meta(void)
 {
     if (buffer_) {
         return &buffer_->meta();
@@ -199,4 +223,5 @@ uint64_t Operand::local_id(void)
     return local_id_;
 }
 
-}}}}
+}}}
+

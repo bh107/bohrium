@@ -1,21 +1,19 @@
 #include <sstream>
-#include <string>
 #include "utils.hpp"
 #include "codegen.hpp"
 
 using namespace std;
-using namespace bohrium::core;
+using namespace kp::core;
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 Kernel::Kernel(Plaid& plaid, Block& block) : plaid_(plaid), block_(block), iterspace_(block.iterspace()) {
 
     for(size_t tac_idx=0; tac_idx<block_.ntacs(); ++tac_idx) {
-        tac_t& tac = block_.tac(tac_idx);
-        if (not ((tac.op & (ARRAY_OPS))>0)) {   // Only interested in array ops
+        kp_tac & tac = block_.tac(tac_idx);
+        if (not ((tac.op & (KP_ARRAY_OPS))>0)) {   // Only interested in array ops
             continue;
         }
         tacs_.push_back(&tac);
@@ -43,10 +41,10 @@ void Kernel::add_operand(uint64_t global_idx)
 {
     uint64_t local_idx = block_.global_to_local(global_idx);
 
-    operand_t& operand = block_.operand(local_idx);
+    kp_operand & operand = block_.operand(local_idx);
     
     Buffer* buffer = NULL;  // Associate a Buffer instance
-    if ((operand.base) && ((operand.layout & DYNALLOC_LAYOUT)>0)) {
+    if ((operand.base) && ((operand.layout & KP_DYNALLOC_LAYOUT)>0)) {
         size_t buffer_id = block_.resolve_buffer(operand.base);
         buffer = new Buffer(operand.base, buffer_id);
         buffers_[buffer_id] = *buffer;
@@ -76,7 +74,7 @@ Iterspace& Kernel::iterspace(void)
 
 uint64_t Kernel::base_refcount(uint64_t gidx)
 {
-    return block_.base_refcount(operand_glb(gidx).meta().base);
+    return block_.buffer_refcount(operand_glb(gidx).meta().base);
 }
 
 uint64_t Kernel::noperands(void)
@@ -124,7 +122,7 @@ uint64_t Kernel::ntacs(void)
     return tacs_.size();
 }
 
-tac_t& Kernel::tac(uint64_t tidx)
+kp_tac & Kernel::tac(uint64_t tidx)
 {
     return *tacs_[tidx];
 }
@@ -169,7 +167,7 @@ string Kernel::unpack_iterspace(void)
 {
     stringstream ss;
     ss << _declare_init(
-        "LAYOUT",
+        "KP_LAYOUT",
         iterspace().layout(),
         _access_ptr(iterspace().name(), "layout")
     )
@@ -199,7 +197,7 @@ string Kernel::unpack_iterspace(void)
 string Kernel::unpack_buffers(void)
 {
     stringstream ss;
-    for(size_t bid=0; bid<block_.nbuffers(); ++bid) {
+    for(int64_t bid=0; bid< block_.nbuffers(); ++bid) {
         Buffer buffer(&block_.buffer(bid), bid);
         ss << endl;
         ss << "// Buffer " << buffer.name() << endl;
@@ -233,10 +231,10 @@ string Kernel::unpack_arguments(void)
         ss << endl;
         ss << "// Argument " << operand.name() << " [" << operand.layout() << "]" << endl;
         switch(operand.meta().layout) {
-            case STRIDED:       
-            case CONSECUTIVE:
-            case CONTIGUOUS:    
-            case SCALAR:
+            case KP_STRIDED:
+            case KP_CONSECUTIVE:
+            case KP_CONTIGUOUS:
+            case KP_SCALAR:
                 ss
                 << _declare_init(
                     _ptr_const(_int64()),
@@ -260,7 +258,7 @@ string Kernel::unpack_arguments(void)
                 << _end();
                 break;
 
-            case SCALAR_CONST:
+            case KP_SCALAR_CONST:
                 ss
                 << _declare_init(
                     _const(operand.etype()),
@@ -273,17 +271,17 @@ string Kernel::unpack_arguments(void)
                 << _end();
                 break;
 
-            case SCALAR_TEMP:
-            case CONTRACTABLE:  // Data pointer is never used.
+            case KP_SCALAR_TEMP:
+            case KP_CONTRACTABLE:  // Data pointer is never used.
                 ss << _comment("No unpacking needed.") << endl;
                 break;
 
-            case SPARSE:
-                ss << _beef("Unpacking not implemented for LAYOUT!");
+            case KP_SPARSE:
+                ss << _beef("Unpacking not implemented for KP_LAYOUT!");
                 break;
         }
     }
     return ss.str();
 }
 
-}}}}
+}}}
