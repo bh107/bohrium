@@ -68,6 +68,16 @@ fuseprinter = pricer
 pricer = node
 node = cpu
 
+[stack_cpu_debug_d]
+type = stack
+stack_cpu_debug_d = bcexp_cpu
+bcexp_cpu = bccon
+bccon = gentle
+gentle = fuseprinter
+fuseprinter = pricer
+pricer = node
+node = cpu
+
 [stack_cpu_greedy]
 type = stack
 stack_cpu_greedy = bcexp_cpu
