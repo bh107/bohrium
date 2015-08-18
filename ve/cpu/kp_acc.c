@@ -35,7 +35,7 @@ void kp_acc_pull(kp_acc* acc, kp_buffer* buffer) {}
 
 kp_acc* kp_acc_create(size_t id)
 {
-    kp_acc* acc = malloc(sizeof(*acc));
+    kp_acc* acc = (kp_acc*)malloc(sizeof(kp_acc));
     if (acc) {
         acc->id = id;
         acc->text_id = NULL;

@@ -115,11 +115,10 @@ typedef enum kp_thread_binding {
 } kp_thread_binding;
 
 typedef struct kp_acc kp_acc;
-typedef struct kp_vcache kp_vcache;
 
 typedef struct kp_rt {
     kp_thread_binding binding;
-    kp_vcache* vcache;
+    size_t vcache_size;
     kp_acc* acc;
     char* host_text;
 } kp_rt;

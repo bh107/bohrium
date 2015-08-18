@@ -47,7 +47,7 @@ Engine::Engine(
         storage_.preload();
     }
 
-    rt_ = kp_rt_create(vcache_size);    // Initialize CAPE C-runtime
+    rt_ = kp_rt_create(vcache_size);      // Initialize CAPE C-runtime
     kp_rt_bind_threads(rt_, binding);   // Bind threads on host PUs
 
     if (jit_offload_) {                 // Initialize accelerator

@@ -7,157 +7,160 @@
 //
 // C-Friendly version of the vcache.
 //
-struct kp_vcache {
-    size_t nbytes_total;   // Total number of bytes in vcache entries
-    size_t capacity;       // Number of enstries
-    size_t cur;            // Currently used entry
+static void** kp_vcache;                // Vcache entries
+static int64_t* kp_vcache_bytes;        // Stores number of bytes in each vcache entry
 
-    void** entries;        // Vcache entries
-    size_t* nbytes;        // Stores number of bytes in each vcache entry
-};
+static int64_t kp_vcache_bytes_total;   // Total number of bytes in vcache entries
+static int64_t kp_vcache_size;          // Number of enstries
+static int64_t kp_vcache_cur;           // Currently used entry
 
-void* kp_host_malloc(size_t nbytes)
-{
-    //Allocate 'nbytes' of page-aligned memory.
-    //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
-    //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
+static int64_t kp_vcache_hits = 0;      // Maintain #hits from kp_vcache_malloc
+static int64_t kp_vcache_miss = 0;      // Maintain #misses from kp_vcache_malloc
+static int64_t kp_vcache_store = 0;     // Maintain #inserts into vcache
 
-    void* data = mmap(0, nbytes, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    if (data == MAP_FAILED) {
-        return NULL;
-    } else {
-        return data;
-    }
-}
-
-int kp_host_free(void *data, size_t size)
-{
-    return munmap(data, size);
+/**
+ *  Reset vcache counters
+ */
+static void kp_vcache_reset_counters() {
+    kp_vcache_hits = 0;
+    kp_vcache_miss = 0;
+    kp_vcache_store = 0;
 }
 
 /**
- * Return and **remove** a pointer of 'nbytes' from vcache.
+ *  Initiate vcache to a fixed size.
+ *
+ *  cache will hold 'size' elements in the cache.
+ *
+ *  Expiration / cache invalidation is based on round-robin;
+ *  Whenever an element is added to vcache the round-robin
+ *  counter is incremented.
+ */
+void kp_vcache_init(int64_t size)
+{
+    kp_vcache_size = size;
+    kp_vcache_bytes_total = 0;
+    kp_vcache_cur = 0;
+
+    if (0 < size) { // Enabled
+        kp_vcache = malloc(sizeof(void*)*size);
+        memset(kp_vcache, 0, sizeof(void*)*size);
+        kp_vcache_bytes = (int64_t*)malloc(sizeof(int64_t)*size);
+        memset(kp_vcache_bytes, 0, sizeof(int64_t)*size);
+    } else {        // Disabled
+        kp_vcache = NULL;
+        kp_vcache_bytes = NULL;
+    }
+
+    kp_vcache_reset_counters();
+}
+
+/**
+ * Deallocates vcache arrays.
+ */
+void kp_vcache_delete()
+{
+    if (0 < kp_vcache_size) {
+        free(kp_vcache);
+        free(kp_vcache_bytes);
+    }
+}
+
+/**
+ * Remove all entries from vcache and de-allocate them
+ */
+void kp_vcache_clear()
+{
+    for (int64_t i=0; i< kp_vcache_size; i++) {
+        if (kp_vcache_bytes[i] > 0) {
+            kp_host_free(kp_vcache[i], kp_vcache_bytes[i]);
+        }
+    }
+}
+
+/**
+ * Return and remove a pointer of size 'size' from vcache.
+ * NOTE: This is a helper function; it should not be used by a vector engine.
+ * NOTE: This removes it from the vcache!
  *
  * @return null If none exists.
  */
-static void* kp_vcache_find(kp_vcache* vcache, size_t nbytes)
+static void* kp_vcache_find(int64_t bytes)
 {
-    if (vcache) {
-        for (size_t i=0; i<vcache->capacity; i++) {
-            if (vcache->nbytes[i] == nbytes) {
-                void* entry = vcache->entries[i];   // Grab it
-                vcache->entries[i] = NULL;          // Remove it
-                vcache->nbytes[i] = 0;
-                vcache->nbytes_total -= nbytes;     // Housekeeping
+    for (int64_t i=0; i< kp_vcache_size; i++) {
+        if (kp_vcache_bytes[i] == bytes) {
+            kp_vcache_hits++;
+            kp_vcache_bytes[i] = 0;
+            kp_vcache_bytes_total -= bytes;
 
-                return entry;                       // Exit: Return matching entry
-            }
+            return kp_vcache[i];
         }
     }
-    return NULL;                            // Exit: Did not find an entry
-}
-
-kp_vcache* kp_vcache_create(size_t capacity)
-{
-    kp_vcache* vcache = malloc(sizeof(*vcache));
-    if (vcache) {
-        vcache->capacity = capacity;
-        vcache->nbytes_total = 0;
-        vcache->cur = 0;
-        vcache->entries = NULL;
-        vcache->nbytes = NULL;
-
-        if (capacity) {
-            vcache->entries = malloc(sizeof(void *) * capacity);
-            if (vcache->entries) {
-                memset(vcache->entries, 0, sizeof(void *) * capacity);
-
-                vcache->nbytes = malloc(sizeof(*(vcache->nbytes)) * capacity);
-                if (vcache->nbytes) {
-                    memset(vcache->nbytes, 0, sizeof(*(vcache->nbytes)) * capacity);
-                } else {
-                    fprintf(stdout,
-                            "kp_vcache_create: Failed allocating nbytes. Leaking...\n");
-                }
-            } else {
-                fprintf(stdout,
-                        "kp_vcache_create: Failed allocating entries. Leaking...\n");
-            }
-        }
-    }
-    return vcache;
-}
-
-void kp_vcache_destroy(kp_vcache *vcache)
-{
-    if (vcache) {
-        if (vcache->entries) {
-            for (size_t i = 0; i < vcache->capacity; i++) {    // Deallocate the entries themselves
-                if (vcache->entries[i]) {
-                    kp_host_free(vcache->entries[i], vcache->nbytes[i]);
-                    vcache->nbytes_total -= vcache->nbytes[i];
-                }
-            }
-            free(vcache->entries);                              // Deallocate placeholders
-            free(vcache->nbytes);
-        }
-        free(vcache);                                           // Deallocate the victim cache itself
-    }
+    kp_vcache_miss++;
+    return NULL;
 }
 
 /**
- * Add an entry of to vcache.
+ * Add an element to vcache.
+ * NOTE: This is a helper function; it should not be used by a vector engine.
  *
  * @param data Pointer to allocated data.
  * @param size Size in bytes of the allocated data.
  */
-static void kp_vcache_insert(kp_vcache* vcache, void *data, size_t nbytes)
+static void kp_vcache_insert(void* data, int64_t size)
 {
-    const size_t cur = vcache->cur;
-
-    if (vcache->entries[cur]) {                 // Remove current entry
-        vcache->nbytes_total -= vcache->nbytes[cur];  // Housekeeping
-        kp_host_free(vcache->entries[cur], vcache->nbytes[cur]);
+    if (kp_vcache_bytes[kp_vcache_cur] > 0) {
+        kp_host_free(kp_vcache[kp_vcache_cur], kp_vcache_bytes[kp_vcache_cur]);
     }
 
-    vcache->entries[cur] = data;                // Add it
-    vcache->nbytes[cur] = nbytes;
+    kp_vcache[kp_vcache_cur] = data;
+    kp_vcache_bytes[kp_vcache_cur] = size;
 
-    vcache->cur = (cur+1) % vcache->capacity;  // Housekeeping
-    vcache->nbytes_total += nbytes;
+    kp_vcache_cur = (kp_vcache_cur +1) % kp_vcache_size;
+    kp_vcache_bytes_total += size;
+
+    kp_vcache_store++;
 }
 
-bool kp_vcache_free(kp_vcache* vcache, kp_buffer *buffer)
+bool kp_vcache_free(kp_buffer *buffer)
 {
-    if (buffer->data) {
-        size_t nbytes = buffer->nelem * kp_etype_nbytes((KP_ETYPE)buffer->type);
-        
-        if (vcache->entries) {
-            kp_vcache_insert(vcache, buffer->data, nbytes);
+    int64_t nelements, bytes;
+
+    if (NULL != buffer->data) {
+        nelements   = buffer->nelem;
+        bytes       = nelements * kp_etype_nbytes((KP_ETYPE)buffer->type);
+
+        if (kp_vcache_size >0) {
+            kp_vcache_insert(buffer->data, bytes);
+            kp_vcache_store++;
         } else {
-            kp_host_free(buffer->data, nbytes);
+            kp_host_free(buffer->data, bytes);
         }
 		buffer->data = NULL;
     }
+
     return true;
 }
 
-bool kp_vcache_alloc(kp_vcache *vcache, kp_buffer *buffer)
+bool kp_vcache_malloc(kp_buffer *buffer)
 {
-    if (buffer->data) {         // For convenience "true" is returned
+    if (buffer->data != NULL) {   // For convenience "true" is returned
         return true;            // when data is already allocated.
     }
 
-    const size_t nbytes = kp_buffer_nbytes(buffer);
-
-    if (vcache->entries) {     // Find a matching entry
-        buffer->data = kp_vcache_find(vcache, nbytes);
+    int64_t bytes = kp_buffer_nbytes(buffer);
+    if (bytes <= 0) {
+        fprintf(stderr, "kp_vcache_malloc() Cannot allocate %lld bytes!\n", (long long)bytes);
+        return false;
     }
 
-    if (!buffer->data) { // Allocate anew when no entry is found in cache or when capacity == 0
-        buffer->data = kp_host_malloc(nbytes);
-        if (!buffer->data) {
-            printf("kp_vcache_alloc(...): Failed allocating a data region using kp_host_malloc(...).");
+    if (kp_vcache_size > 0) {
+        buffer->data = kp_vcache_find(bytes);
+    }
+    if (buffer->data == NULL) {
+        buffer->data = kp_host_malloc(bytes);
+        if (buffer->data == NULL) {
+            printf("kp_host_malloc() could not allocate a data region.");
             return false;
         }
     }
@@ -165,31 +168,33 @@ bool kp_vcache_alloc(kp_vcache *vcache, kp_buffer *buffer)
     return true;
 }
 
-size_t kp_vcache_capacity(kp_vcache *vcache)
+/* Allocate an alligned contigous block of memory,
+ * does not apply any initialization
+ *
+ * @size  The size of the allocated block
+ * @return A pointer to data, and NULL on error
+ */
+void* kp_host_malloc(int64_t size)
 {
-    return vcache->capacity;
+    //Allocate page-size aligned memory.
+    //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
+    //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
+
+    void* data = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    if (data == MAP_FAILED) {
+        return NULL;
+    } else {
+        return data;
+    }
 }
 
-void kp_vcache_pprint(kp_vcache* vcache)
+/* Frees a previously allocated data block
+ *
+ * @data  The pointer returned from a call to kp_host_malloc
+ * @size  The size of the allocated block
+ * @return Error code from munmap.
+ */
+int64_t kp_host_free(void* data, int64_t size)
 {
-    if (vcache) {
-        fprintf(stdout,
-                "vcache(%p)[capacity(%ld), entries(%p), nbytes(%p), nbytes_total(%ld)] {\n",
-                (void*)vcache,
-                vcache->capacity,
-                (void*)vcache->entries,
-                (void*)vcache->nbytes,
-                vcache->nbytes_total);
-        for(size_t i=0; i<vcache->capacity; ++i) {
-            fprintf(stdout,
-                    " [%ld] entry(%p), nbytes(%ld)\n",
-                    i,
-                    vcache->entries[i],
-                    vcache->nbytes[i]
-            );
-        }
-        fprintf(stdout, "}\n");
-    } else {
-        fprintf(stdout, "vcache(%p) {}\n", (void*)vcache);
-    }
+    return munmap(data, size);
 }
