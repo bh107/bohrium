@@ -1,49 +1,17 @@
-cmake_minimum_required(VERSION 2.8)                     # cmake features
+cmake_minimum_required(VERSION 2.8)                         # cmake features
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)             
-include(ExternalProject)
 include(FeatureSummary)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-project(BH_VE_CPU)
-
-include_directories(${BH_SOURCE_DIR}/include)           # Engine depends on BH headers
-link_directories(${BH_BINARY_DIR}/core)                 # Engine depends on BH_CORE (libbh / bh)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)# Engine depends on its own headers
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/codegen)# Engine depends on its own headers
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-set(HDR "${HDR};${CMAKE_CURRENT_SOURCE_DIR}/tac.h")
-set(HDR "${HDR};${CMAKE_CURRENT_SOURCE_DIR}/codegen/codegen.hpp")
-
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/MurmurHash3.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/buffer.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/iterspace.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/kernel.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/lang.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/operand.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/plaid.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/walker.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/walker_oper.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/accelerator.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/bh_ve_cpu.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/block.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/compiler.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/engine.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/store.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/symbol_table.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/thread_control.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/timevault.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp")
-set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp")
-add_library(bh_ve_cpu SHARED ${HDR} ${SRC})             # The main target for the Engine
-
-target_link_libraries(bh_ve_cpu bh)                     # Link with BH_CORE
+set(VE_CPU true CACHE BOOL "VE-CPU: Build CPU engine.")
+if (NOT VE_CPU)
+    return()
+endif()
 
 #
-# Compile-time macro definitions
+#   Internal code, libraries, and macros
 #
 if (VE_CPU_PROFILING)                                   # Engine profiling MACRO
     message(STATUS "VE-CPU: Enabling CPU profiling.")
@@ -55,50 +23,134 @@ if (VE_CPU_DEBUGGING)                                   # Engine debugging MACRO
     add_definitions( -DVE_CPU_DEBUGGING )
 endif()
 
-#
-# Default compile-flags for Bohrium
-#
-check_c_compiler_flag(-pedantic HAS_C_PEDANTIC)             # C Flags
-if (HAS_C_PEDANTIC)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic ")
-endif()
-check_c_compiler_flag(-Wall HAS_C_WALL)
-if (HAS_C_WALL)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall ")
-endif()
-check_c_compiler_flag(-std=c99 HAS_C_C99)
-if (HAS_C_C99)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ")
-endif()
+include_directories(${CMAKE_SOURCE_DIR}/include)        # Engine depends on BH headers
+link_directories(${CMAKE_BINARY_DIR}/core)              # Engine depends on BH_CORE (libbh / bh)
 
-check_cxx_compiler_flag(-Wall HAS_CXX_PEDANTIC)             # C++ Flags
-if (HAS_CXX_PEDANTIC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic ")
-endif()
-check_cxx_compiler_flag(-Wall HAS_CXX_WALL)
-if (HAS_CXX_WALL)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
-endif()
-check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)         # Sigh...
-if (HAS_CXX_GNU0X)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ")
-else()
-    check_cxx_compiler_flag(-std=c++11 HAS_CXX_CXX11)
-    if(HAS_CXX_CXX11)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
-    endif()
-endif()
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/codegen)# Code generator
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+set(HDR "${HDR};${CMAKE_CURRENT_SOURCE_DIR}/kp.h")
+set(HDR "${HDR};${CMAKE_CURRENT_SOURCE_DIR}/codegen/codegen.hpp")
+
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/bh_ve_cpu.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/block.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/compiler.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/engine.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/store.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/symbol_table.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/program.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/timevault.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/MurmurHash3.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/buffer.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/iterspace.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/kernel.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/lang.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/operand.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/plaid.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/walker.cpp")
+set(SRC "${SRC};${CMAKE_CURRENT_SOURCE_DIR}/codegen/walker_oper.cpp")
+add_library(bh_ve_cpu SHARED ${HDR} ${SRC})             # The main target for the Engine
+
+set(KP_HDR "${KP_HDR};${CMAKE_CURRENT_SOURCE_DIR}/kp.h")
+
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_vcache.c")
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_utils.c")
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_rt.c")
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_set.c")
+set(KP_SRC "${KP_SRC};${CMAKE_CURRENT_SOURCE_DIR}/kp_acc.c")
+add_library(kp SHARED ${KP_HDR} ${KP_SRC})
+
+#
+# Start of custom target for autogenerated header and code.
+#
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/kp.h ${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp ${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp
+    COMMAND ./gen.py
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/tac.cpp ${CMAKE_CURRENT_SOURCE_DIR}/kp.h
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/utils_mapping.cpp ${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/instrs_to_tacs.cpp ${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/autogen/output/acc.cpp ${CMAKE_CURRENT_SOURCE_DIR}/kp_acc_leo_autogen.c
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/autogen
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/acc.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/tac.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/utils_mapping.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/templates/instrs_to_tacs.tpl ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/layouts.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/operations.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/operators.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/tac/types.json ${CMAKE_CURRENT_SOURCE_DIR}/autogen/gen.py
+    COMMENT "Autogenerating based on BhIR and TAC-representation"
+    VERBATIM)
+
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping.cpp PROPERTIES GENERATED TRUE)
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/kp_acc_leo_autogen.c PROPERTIES GENERATED TRUE)
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/utils_mapping_tacs.cpp PROPERTIES GENERATED TRUE)
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/kp.h PROPERTIES GENERATED TRUE)
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/kp.h HEADER_FILE_ONLY TRUE)
+
+add_custom_target(CAPE_TAC DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kp.h)
+#
+# End of custom target for autogenerated code
+#
+
+add_dependencies(bh_ve_cpu CAPE_TAC)
+add_dependencies(kp CAPE_TAC)
+
+target_link_libraries(bh_ve_cpu bh)                     # Link with BH_CORE
+target_link_libraries(bh_ve_cpu kp)                     # Link with CAPE
+#
+# End of internal
+#
+
+#
+#   External code, libraries, and macros
+#
+find_package(HWLOC COMPONENTS bohrium)
+set_package_properties(HWLOC PROPERTIES DESCRIPTION "hardware locality (hwloc)" URL "http://www.open-mpi.org/projects/hwloc/")
+set_package_properties(HWLOC PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU: Probing hardware information and thread binding.")
 
 find_package(OpenMP COMPONENTS bohrium)
-set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "Multicore processing, quite essential for performance")
+set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "Multicore processing, essential for performance of the CPU VE.")
 
-if(OPENMP_FOUND)                                                    # Multi-core MACRO, flag, compiler-support and libraries for ENGINE
+find_package(OpenACC COMPONENTS bohrium)
+set_package_properties(OpenACC PROPERTIES TYPE RECOMMENDED PURPOSE "For experimental support for offloading to GPU in CPU VE.")
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")         # Enable compilation with OpenMp
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+check_c_compiler_flag(-O3 FLAG_03_FOUND)                            # Highly RECOMMENDED flags
+check_c_compiler_flag(-march=native FLAG_MARCH_NATIVE_FOUND)                   
+check_c_compiler_flag("--param vect-max-version-for-alias-checks=100" PARAM_VECTMAX_FOUND)
+
+if (HWLOC_FOUND)                                                    # Enable HWLOC for threadcontrol
+    add_definitions(-DCAPE_WITH_HWLOC)
+    include_directories(${HWLOC_INCLUDE_DIR})
+    target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
+endif()
+
+set(VE_CPU_BIND "0")
+if (OPENACC_FOUND)                                                  # OpenACC
+
+    add_definitions(-DCAPE_WITH_OPENACC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenACC_C_FLAGS}")        # Enable compilation with OpenACC
+    set(VE_CPU_JIT_OFFLOAD "2")
+
+elseif(OPENMP_FOUND)                                                # OpenMP
+
+    add_definitions(-DCAPE_WITH_OPENMP)
+    if (HWLOC_FOUND)                                                # We have both OpenMP and HWLOC..
+        add_definitions(-DCAPE_WITH_THREADBINDING)
+        set(VE_CPU_BIND "1")
+    endif()                                                         # .. so we enable thread-binding.
+
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")         # Enable compilation with OpenMP
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")  # Check OpenMP ATOMIC
+    check_c_compiler_flag(-fopenmp-simd FLAG_OPENMP_SIMD_FOUND)     # OpenMP - SIMD
+
+    find_package(IntelLEO COMPONENTS bohrium)                       # OpenMP - LEO
+    set_package_properties(IntelLEO PROPERTIES TYPE RECOMMENDED PURPOSE "For experimental support for offloading to MIC in CPU VE.")
+
+    if (IntelLEO_FOUND)
+        set(VE_CPU_JIT_OFFLOAD "1")
+        add_definitions(-DCAPE_WITH_INTEL_LEO)
+    else()
+        set(VE_CPU_JIT_OFFLOAD "0")
+    endif()
+
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")  # OpenMP - ATOMIC
     check_c_source_compiles( "
     #include <omp.h>
     int main(void){
@@ -112,33 +164,26 @@ if(OPENMP_FOUND)                                                    # Multi-core
         return 0;
     }" OPENMP_ATOMIC_FOUND)
 
-    if (OPENMP_ATOMIC_FOUND)                                        # Enable codegen "#omp atomic" for synchronization
-        add_definitions(-DVE_CPU_OMP_ATOMIC)
-    endif()
-
-    find_package(HWLOC)                                             # Check for HWLOC
-    set_package_properties(HWLOC PROPERTIES DESCRIPTION "hardware locality (hwloc)" URL "http://www.open-mpi.org/projects/hwloc/")
-    set_package_properties(HWLOC PROPERTIES TYPE RECOMMENDED PURPOSE "VE-CPU use it to control thread affinity.")
-    
-    if (HWLOC_FOUND)                                                # Enable HWLOC for threadcontrol
-        include_directories(${HWLOC_INCLUDE_DIR})
-        target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
-        add_definitions(-DVE_CPU_BIND)
+    if (OPENMP_ATOMIC_FOUND)    # Enable codegen "#omp atomic" for synchronization
+        add_definitions(-DCAPE_WITH_OMP_ATOMIC)
     endif()
 endif()
 
 install(
     TARGETS bh_ve_cpu 
-    DESTINATION lib COMPONENT bohrium)      # INSTALL the Engine itself
+    DESTINATION lib COMPONENT bohrium)      # INSTALL the Bohrium <-> CAPE and CAPE C++ Runtime and library
 install(
     DIRECTORY templates
     COMPONENT bohrium
     DESTINATION share/bohrium
-    FILES_MATCHING PATTERN "*.tpl")         # INSTALL codegen templates
+    FILES_MATCHING PATTERN "*.tpl")         # INSTALL CAPE Codegen templates
 install(
-    FILES tac.h
+    TARGETS kp
+    DESTINATION lib COMPONENT bohrium)      # INSTALL CAPE Runtime and library
+install(
+    FILES kp.h
     DESTINATION include/bohrium/
-    COMPONENT bohrium)                      # INSTALL binary representation (three-address-code) header
+    COMPONENT bohrium)                      # INSTALL CAPE C Header / Data-structures
 
 file(MAKE_DIRECTORY kernels)                # INSTALL directory structure and set permissions
 file(MAKE_DIRECTORY objects)
@@ -151,6 +196,9 @@ install(DIRECTORY objects DESTINATION var/bohrium DIRECTORY_PERMISSIONS OWNER_WR
 # JIT-compiler capabilities: optimization, and parallelization
 #
 if(APPLE)
+    #
+    # Fallback on APPLE, this will run but without optimizations and parallelization.
+    #
     install(
         FILES scripts/osx_compile.sh
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
@@ -163,102 +211,65 @@ if(APPLE)
     set(VE_CPU_COMPILER_LIB "")
     set(VE_CPU_COMPILER_EXT "")
 else()
-
+    #
     # Mandatory flags
-    set(VE_CPU_COMPILER_CMD "${CMAKE_C_COMPILER}")
-    set(VE_CPU_COMPILER_INC " ${VE_CPU_COMPILER_INC} -I${CMAKE_INSTALL_PREFIX}/include ")
-    set(VE_CPU_COMPILER_INC " ${VE_CPU_COMPILER_INC} -I${CMAKE_INSTALL_PREFIX}/include/bohrium ")
-    set(VE_CPU_COMPILER_INC " ${VE_CPU_COMPILER_INC} -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include ")
-    set(VE_CPU_COMPILER_LIB "-lm")
-    set(VE_CPU_COMPILER_EXT "-fPIC -shared -std=c99")
-    
-    check_c_compiler_flag(-O3 HAS_O3)                                       # Highly RECOMMENDED flags
-    if (HAS_O3)                                                             # Optimization
+    set(VE_CPU_COMPILER_FLG "-fPIC -shared ${C99_FLAG}")
+    #
+    # Optimizations
+    if (FLAG_03_FOUND)                                                      # Optimization Level
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -O3")
     endif()
-    check_c_compiler_flag(-march=native HAS_MARCH_NATIVE)                   
-    if (HAS_MARCH_NATIVE)                                                   # Machine specific code
+    if (FLAG_MARCH_NATIVE_FOUND)                                            # Machine specific code
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -march=native")
     endif()
-    check_c_compiler_flag("--param vect-max-version-for-alias-checks=100" HAS_PARAM_VECTMAX)
-    if (HAS_PARAM_VECTMAX)                                                  # Upper bound on alias-checks
+    if (PARAM_VECTMAX_FOUND)                                                # Upper bound on alias-checks
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} --param vect-max-version-for-alias-checks=100")
     endif()
-
-    if (OPENMP_FOUND)        
+    #
+    # Parallelization
+    #
+    # Assume that when OpenACC is available then we want to use it.
+    #
+    if (OPENACC_FOUND)
+        set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} ${OpenACC_C_FLAGS}")# OpenACC
+    elseif(OPENMP_FOUND)        
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} ${OpenMP_C_FLAGS}") # OpenMP
-        
-
-        #
-        # Check for Intel Language Extensions for Offloading (LEO) - BEGIN
-        #
-
-        # Check that pragma is not ignored
-        check_c_source_compiles( "
-        #include <omp.h>
-        int main(void) {
-            int foo = 0;
-            #pragma offload target(mic) in(does_not_exist)
-            {
-                foo += 1;
-            }
-            return foo;
-        }" LEO_COMPILE_CHECK)
-
-        if (${LEO_COMPILE_CHECK})
-            set(WITH_INTEL_LEO "0")
-        else()
-            # Check that pragma compiles
-            check_c_source_compiles( "
-            #include <stdlib.h>
-            #include <omp.h>
-            int main(void) {
-                int nelem = 10;
-                double* foo = (double*)malloc(nelem*sizeof(double));
-                #pragma offload target(mic) in(foo:length(nelem) alloc_if(1) free_if(1))
-                {
-                    foo += 1;
-                }
-                free(foo);
-                return 0;
-            }" LEO_COMPILE_CHECK_USAGE)
-
-            if (${LEO_COMPILE_CHECK_USAGE})
-                set(WITH_INTEL_LEO "1")
-                add_definitions(-DVE_CPU_WITH_INTEL_LEO)
-            else()
-                set(WITH_INTEL_LEO "0")
-            endif()
-        endif()
-        #
-        # Check for Intel Language Extensions for Offloading (LEO) - END
-        #
-
-        # Check OMP-SIMD
-        check_c_compiler_flag(-fopenmp-simd HAS_OPENMP_SIMD)
-        if (HAS_OPENMP_SIMD)
+        if (FLAG_OPENMP_SIMD_FOUND)
             set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -fopenmp-simd") # OpenMP - SIMD
         endif()
     endif()
 endif()
 
-configure_file(${BH_SOURCE_DIR}/config.ini.in ${BH_BINARY_DIR}/config.ini)               # Fill out the config-template
+set(VE_CPU_PROFILING    false   CACHE BOOL                                                  "VE-CPU: Enabling CPU profiling.")
+set(VE_CPU_DEBUGGING    false   CACHE BOOL                                                  "VE-CPU: Enable debugging.")
+set(VE_CPU_TIMING       false   CACHE BOOL                                                  "VE-CPU: Enabled timing.")
+set(VE_CPU_BIND         "${VE_CPU_BIND}"     CACHE STRING                                   "VE-CPU: Threadbinding: 0,1,2 (auto)")
+set(VE_CPU_VCACHE_SIZE  "10"    CACHE STRING                                                "VE-CPU: Victim cache size")
+set(VE_CPU_PRELOAD      true    CACHE BOOL                                                  "VE-CPU: Preload JIT objects")
 
-string(REGEX MATCH "^$ENV{HOME}" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})  # Install it
-if ("${ROOT_INSTALL}" STREQUAL "")
-    install(FILES ${BH_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
-else()
-    install(CODE "
-    if(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
-        configure_file(${BH_BINARY_DIR}/config.ini \"\$ENV{HOME}/.bohrium/config.ini\" COPYONLY)
-    endif(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
-    " COMPONENT bohrium)
-endif()
+set(VE_CPU_JIT_LEVEL    "3"     CACHE STRING                                                "VE-CPU: JIT level, 0=Disabled, 1=Fusion, 2=Fusion+Contraction")
+set(VE_CPU_JIT_DUMPSRC  true    CACHE BOOL                                                "VE-CPU: Dump generated code to filesystem.")
+set(VE_CPU_JIT_OFFLOAD  "${VE_CPU_JIT_OFFLOAD}"     CACHE STRING                                                "VE-CPU: Offloading: 0,1,2 (auto)")
+
+set(VE_CPU_COMPILER_CMD "${CMAKE_C_COMPILER}"       CACHE STRING                            "VE-CPU: JIT-Compiler")
+set(VE_CPU_COMPILER_INC "-I${CMAKE_INSTALL_PREFIX}/include")
+set(VE_CPU_COMPILER_INC "${VE_CPU_COMPILER_INC} -I${CMAKE_INSTALL_PREFIX}/include/bohrium")
+set(VE_CPU_COMPILER_INC "${VE_CPU_COMPILER_INC} -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include")
+set(VE_CPU_COMPILER_INC "${VE_CPU_COMPILER_INC}"    CACHE STRING                            "VE-CPU: JIT-Compiler includes")
+set(VE_CPU_COMPILER_LIB "-lm"                       CACHE STRING                            "VE-CPU: JIT-Compiler libraries")
+set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG}"    CACHE STRING                            "VE-CPU: JIT-Compiler flags")
+
+set(VE_CPU_OBJECT_PATH      "${CMAKE_INSTALL_PREFIX}/var/bohrium/objects" CACHE STRING      "VE-CPU: JIT-Compiler object path")
+set(VE_CPU_TEMPLATE_PATH    "${CMAKE_INSTALL_PREFIX}/share/bohrium/templates" CACHE STRING  "VE-CPU: JIT-Compiler codegen templates")
+set(VE_CPU_KERNEL_PATH      "${CMAKE_INSTALL_PREFIX}/var/bohrium/kernels" CACHE STRING      "VE-CPU: JIT-Compiler where codegen is dumped")
 
 feature_summary(WHAT ALL)
 
-if(OPENMP_FOUND)
-    if (NOT HWLOC_FOUND)
+#
+#   Warn about lacking features
+#
+if (OPENMP_FOUND)
+    if (NOT OPENACC_FOUND AND NOT OPENMP_ATOMIC_FOUND)
         message("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         message("!!                                                    !!")
         message("!!     Compiler does not support OpenMP ATOMIC        !!")

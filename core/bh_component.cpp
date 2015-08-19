@@ -620,6 +620,30 @@ double bh_component_config_lookup_double(const bh_component *component,
     return atof(val);
 }
 
+bh_error bh_component_config_bool_option(const bh_component* component,
+                                         const char* option_name,
+                                         bool* option)
+{
+    char* raw = bh_component_config_lookup(component, option_name);
+    if (!raw) {
+        fprintf(stderr, "parameter(%s) is missing.\n", option_name);
+        return BH_ERROR;
+    }
+    std::string value = boost::algorithm::to_lower_copy(std::string(raw));
+ 
+    if ((value == "true") || (value == "yes") || (value == "1"))  {
+        *option = true;
+    } else if ((value == "false") || (value == "no")|| (value == "0")) {
+        *option = false;
+    } else {
+        std::cerr << std::string(option_name) 
+                  << " must be boolean (true/false, yes/no, 1/0)." << std::endl;
+        return BH_ERROR;
+    }
+
+    return BH_SUCCESS;
+}
+
 bh_error bh_component_config_int_option(const bh_component* component,
                                         const char* option_name,
                                         int min,

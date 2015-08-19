@@ -1,6 +1,6 @@
 {{LICENSE}}
-#ifndef BH_CPU_KERNEL_LIBS
-#define BH_CPU_KERNEL_LIBS
+#ifndef KP_KERNEL_LIBS
+#define KP_KERNEL_LIBS
 #include <assert.h>
 #include <stdarg.h>
 #include <string.h>
@@ -12,8 +12,6 @@
 #include <float.h>
 #include <math.h>
 #include <Random123/philox.h>
-#include <tac.h>
-
 #if defined(_OPENMP)
 #include <omp.h>
 #else
@@ -22,6 +20,7 @@ inline int omp_get_thread_num()  { return 0; }
 inline int omp_get_num_threads() { return 1; }
 #endif
 #endif
+#include "kp.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -31,12 +30,13 @@ inline int omp_get_num_threads() { return 1; }
 #define DEG_RAD (M_PI / (DEG_CIR / 2.0))
 #define RAD_DEG ((DEG_CIR / 2.0) / M_PI)
 
-#ifndef CPU_MISC
+#ifndef KP_KERNEL_MISC
+#define KP_KERNEL_MISC 1
 #define CPU_MAXDIM 16
 #endif
 
-#ifndef CPU_CODEGEN_MISC
-#define CPU_CODEGEN_MISC 1
+#ifndef KP_CODEGEN_MISC
+#define KP_CODEGEN_MISC 1
 typedef union philox2x32_as_1x64 {
     philox2x32_ctr_t orig;
     uint64_t combined;
@@ -55,7 +55,7 @@ KERNEL-DESCRIPTION {
   SYMBOL_TEXT   = {{SYMBOL_TEXT}}
 }
 */
-void KRN_{{SYMBOL}}(bh_base** buffers, operand_t** args, const iterspace_t* const iterspace, const int offload_devid)
+void KRN_{{SYMBOL}}(kp_buffer** buffers, kp_operand** args, const kp_iterspace* const iterspace, const int offload_devid)
 {
     //
     // Buffer unpacking

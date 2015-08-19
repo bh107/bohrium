@@ -154,6 +154,20 @@ DLLEXPORT double bh_component_config_lookup_double(const bh_component *component
                                                    const char* key, double notfound);
 
 /**
+ *  Grab an bool-valued configuration option for the given component.
+ *  The bool-value option must be specified as (0/1, true/false, yes/no).
+ *
+ *  @param component The component to grab the configuration option for.
+ *  @param option_name Name of configuration option.
+ *  @param option Pointer to store the option in.
+ *
+ *  @return BH_ERROR if is not within bounds, does not exists etc. BH_SUCCESS othervise.
+ */
+DLLEXPORT bh_error bh_component_config_bool_option(const bh_component* component,
+                                                   const char* option_name,
+                                                   bool* option);
+
+/**
  *  Grab an int-valued configuration option for the given component.
  *  The int-value option must be within the range [min, max].
  *

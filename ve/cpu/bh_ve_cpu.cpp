@@ -26,12 +26,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <errno.h>
 
-#include <bh.h>
+#include "bh.h"
 #define BH_TIMING_SUM
-#include <bh_timing.hpp>
+#include "bh_timing.hpp"
 #include "bh_ve_cpu.h"
+
+#include "utils.hpp"
 #include "engine.hpp"
 #include "timevault.hpp"
+#include "kp_rt.h"
 
 using namespace std;
 const char TAG[] = "Component";
@@ -40,11 +43,16 @@ static bh_component myself;
 
 //
 // This is where the actual engine implementation is
-static bohrium::engine::cpu::Engine* engine = NULL;
+static kp::engine::Engine* engine = NULL;
 
 // Timing ID for timing of execute()
 static bh_intp exec_timing;
-static bh_intp timing;
+static bool timing;
+static size_t exec_count = 0;
+static map<bh_opcode, bh_extmethod_impl> extensions;
+
+typedef vector<bh_instruction> instr_iter;
+typedef vector<bh_ir_kernel>::iterator krnl_iter;
 
 /* Component interface: init (see bh_component.h) */
 bh_error bh_ve_cpu_init(const char *name)
@@ -72,12 +80,11 @@ bh_error bh_ve_cpu_init(const char *name)
     //  Get engine parameters
     //
     bh_intp bind;
-    bh_intp thread_limit;
     bh_intp vcache_size;
-    bh_intp preload;
+    bool preload;
 
     bh_intp jit_level;
-    bh_intp jit_dumpsrc;
+    bool jit_dumpsrc;
     bh_intp jit_offload;
 
     char* compiler_cmd = NULL;
@@ -90,21 +97,20 @@ bh_error bh_ve_cpu_init(const char *name)
     char* template_path = NULL;
     char* kernel_path = NULL;
 
-    if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "timing", 0, 1, &timing))                      or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "bind", 0, 2, &bind))                      or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "thread_limit", 0, 2048, &thread_limit))   or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "vcache_size", 0, 100, &vcache_size))      or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "preload", 0, 1, &preload))                or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_level", 0, 3, &jit_level))            or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_dumpsrc", 0, 1, &jit_dumpsrc))        or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_offload", 0, 1, &jit_offload))        or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_cmd", &compiler_cmd))         or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_inc", &compiler_inc))         or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_lib", &compiler_lib))         or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_flg", &compiler_flg))         or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_ext", &compiler_ext))         or \
-        (BH_SUCCESS!=bh_component_config_path_option(&myself, "object_path", &object_path))             or \
-        (BH_SUCCESS!=bh_component_config_path_option(&myself, "kernel_path", &kernel_path))             or \
+    if ((BH_SUCCESS!=bh_component_config_bool_option(&myself, "timing", &timing))                   or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "bind", 0, 2, &bind))                  or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "vcache_size", 0, 100, &vcache_size))  or \
+        (BH_SUCCESS!=bh_component_config_bool_option(&myself, "preload", &preload))                 or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_level", 0, 3, &jit_level))        or \
+        (BH_SUCCESS!=bh_component_config_bool_option(&myself, "jit_dumpsrc", &jit_dumpsrc))         or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_offload", 0, 2, &jit_offload))    or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_cmd", &compiler_cmd))     or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_inc", &compiler_inc))     or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_lib", &compiler_lib))     or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_flg", &compiler_flg))     or \
+        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_ext", &compiler_ext))     or \
+        (BH_SUCCESS!=bh_component_config_path_option(&myself, "object_path", &object_path))         or \
+        (BH_SUCCESS!=bh_component_config_path_option(&myself, "kernel_path", &kernel_path))         or \
         (BH_SUCCESS!=bh_component_config_path_option(&myself, "template_path", &template_path))) {
         return BH_ERROR;
     }
@@ -117,26 +123,25 @@ bh_error bh_ve_cpu_init(const char *name)
     //
     //  Set JIT-parameters based on JIT-LEVEL
     //
-    bh_intp jit_enabled = 0;
-    bh_intp jit_fusion = 0;
-    bh_intp jit_contraction = 0;
+    bool jit_enabled = 0;
+    bool jit_fusion = 0;
+    bool jit_contraction = 0;
     switch(jit_level) {
         case 0:                     // Disable JIT, rely on preload.
-            preload = 1;
-            jit_enabled = 0;
-            jit_dumpsrc = 0;
-            jit_fusion = 0;
-            jit_contraction = 0;
-            jit_offload = 0;
+            preload = true;
+            jit_enabled = false;
+            jit_dumpsrc = false;
+            jit_fusion = false;
+            jit_contraction = false;
             break;
 
         case 3:                     // SIJ + Fusion + Contraction
-            jit_contraction = 1;
+            jit_contraction = true;
         case 2:                     // SIJ + Fusion
-            jit_fusion = 1;
+            jit_fusion = true;
         case 1:                     // SIJ
         default:
-            jit_enabled = 1;
+            jit_enabled = true;
             break;
     }
 
@@ -147,10 +152,14 @@ bh_error bh_ve_cpu_init(const char *name)
     mkdir(object_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     // Construct architecture id for object-store
-    string arch_id = bohrium::core::hash_text(bohrium::engine::cpu::cpu_text());
-    string object_directory;            // Subfolder of object_path
+    char* host_cstr = new char[200];
+    kp_set_host_text(host_cstr);
+    string host_str(host_cstr);
+    delete[] host_cstr;
 
-    string sep("/"); // TODO: Portable file-separator
+    string arch_id = kp::core::hash_text(host_str);
+    string object_directory;            // Subfolder of object_path
+    string sep("/");                    // TODO: Portable file-separator
     
     object_directory = object_path + sep + arch_id;
 
@@ -170,16 +179,15 @@ bh_error bh_ve_cpu_init(const char *name)
 
     //
     // VROOM VROOM VROOOOOOMMMM!!! VROOOOM!!
-    engine = new bohrium::engine::cpu::Engine(
-        (bohrium::engine::cpu::thread_binding)bind,
-        (size_t)thread_limit,
+    engine = new kp::engine::Engine(
+        (kp_thread_binding)bind,
         (size_t)vcache_size,
-        (bool)preload,
-        (bool)jit_enabled,
-        (bool)jit_dumpsrc,
-        (bool)jit_fusion,
-        (bool)jit_contraction,
-        (bool)jit_offload,
+        preload,
+        jit_enabled,
+        jit_dumpsrc,
+        jit_fusion,
+        jit_contraction,
+        (size_t)jit_offload,
         string(compiler_cmd),
         string(compiler_inc),
         string(compiler_lib),
@@ -189,6 +197,10 @@ bh_error bh_ve_cpu_init(const char *name)
         string(template_path),
         string(kernel_path)
     );
+
+    if (getenv("BH_VE_CPU_INFO")) { // Print out engine configuration
+        cout << engine->text() << endl;
+    }
 
     return BH_SUCCESS;
 }
@@ -200,8 +212,67 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
     if (timing) {
         timestamp = bh_timer_stamp();
     }
+    bh_error res = BH_SUCCESS;
 
-    bh_error res = engine->execute(bhir);
+    exec_count++;
+    DEBUG(TAG, "EXEC #" << exec_count);
+
+    //
+    // Map Bohrium program representation to CAPE
+    uint64_t program_size = bhir->instr_list.size();
+    kp::core::Program tac_program(program_size);                  // Program
+    kp::core::SymbolTable symbol_table(program_size*6+2);         // SymbolTable
+    
+    kp::core::instrs_to_tacs(*bhir, tac_program, symbol_table);   // Map instructions to tac and symbol_table.
+
+    kp::core::Block block(symbol_table, tac_program);             // Construct a block
+
+    //
+    //  Map bh_kernels to Blocks one at a time and execute them.
+    for(krnl_iter krnl = bhir->kernel_list.begin();
+        krnl != bhir->kernel_list.end();
+        ++krnl) {
+
+        block.clear();                                          // Reset the block
+        block.compose(*krnl, (bool)engine->jit_contraction());  // Compose it based on kernel
+        
+        if ((block.omask() & KP_EXTENSION)>0) {         // Extension-Instruction-Execute (EIE)
+            kp_tac& tac = block.tac(0);
+            map<bh_opcode, bh_extmethod_impl>::iterator ext;
+            ext = extensions.find(static_cast<bh_instruction*>(tac.ext)->opcode);
+            if (ext != extensions.end()) {
+                bh_extmethod_impl extmethod = ext->second;
+                res = extmethod(static_cast<bh_instruction*>(tac.ext), NULL);
+                if (BH_SUCCESS != res) {
+                    fprintf(stderr, "Unhandled error returned by extmethod(...) \n");
+                    return res;
+                }
+            }
+        } else if ((engine->jit_fusion()) || 
+                   (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
+            DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
+            res = engine->process_block(tac_program, symbol_table, block);
+            if (BH_SUCCESS != res) {
+                return res;
+            }
+            DEBUG(TAG, "Muilti-Instruction-Execute END");
+        } else {                                        // Single-Instruction-Execute (SIE)
+            DEBUG(TAG, "Single-Instruction-Execute BEGIN");
+            for(std::vector<uint64_t>::iterator idx_it = krnl->instr_indexes.begin();
+                idx_it != krnl->instr_indexes.end();
+                ++idx_it) {
+
+                block.clear();                          // Reset the block
+                block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
+
+                res = engine->process_block(tac_program, symbol_table, block);
+                if (BH_SUCCESS != res) {
+                    return res;
+                }
+            }
+            DEBUG(TAG, "Single-Instruction-Execute END");
+        }
+    }
 
     if (timing) {
         bh_timer_add(exec_timing, timestamp, bh_timer_stamp());
@@ -228,8 +299,18 @@ bh_error bh_ve_cpu_shutdown(void)
 /* Component interface: extmethod (see bh_component.h) */
 bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
-    bh_error register_res = engine->register_extension(myself, name, opcode);
+    bh_extmethod_impl extmethod;
+    bh_error err = bh_component_extmethod(&myself, name, &extmethod);
+    if (err != BH_SUCCESS) {
+        return err;
+    }
 
-    return register_res;
+    if (extensions.find(opcode) != extensions.end()) {
+        fprintf(stderr, "[CPU-VE] Warning, multiple registrations of the same"
+               "extension method '%s' (opcode: %d)\n", name, (int)opcode);
+    }
+    extensions[opcode] = extmethod;
+
+    return BH_SUCCESS;
 }
 

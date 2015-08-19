@@ -1,12 +1,11 @@
-#ifndef __BH_VE_CPU_CODEGEN_PLAID
-#define __BH_VE_CPU_CODEGEN_PLAID
+#ifndef __KP_ENGINE_CODEGEN_PLAID_HPP
+#define __KP_ENGINE_CODEGEN_PLAID_HPP 1
 
 #include <string>
 #include <map>
 
-namespace bohrium{
+namespace kp{
 namespace engine{
-namespace cpu{
 namespace codegen{
 
 class Plaid
@@ -54,6 +53,6 @@ private:
 
 };
 
-}}}}
+}}}
 
 #endif

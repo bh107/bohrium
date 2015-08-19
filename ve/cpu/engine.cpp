@@ -1,32 +1,28 @@
-#include "engine.hpp"
-#include "timevault.hpp"
-
-#include <algorithm>
-#include <set>
 #include <iomanip>
 
+#include "engine.hpp"
+#include "timevault.hpp"
+#include "kp_rt.h"
+#include "kp_vcache.h"
+#include "kp_acc.h"
+
 using namespace std;
-using namespace bohrium::core;
+using namespace kp::core;
 
-namespace bohrium{
-namespace engine {
-namespace cpu {
-
-typedef std::vector<bh_instruction> instr_iter;
-typedef std::vector<bh_ir_kernel>::iterator krnl_iter;
+namespace kp{
+namespace engine{
 
 const char Engine::TAG[] = "Engine";
 
 Engine::Engine(
-    const thread_binding binding,
-    const size_t thread_limit,
+    const kp_thread_binding binding,
     const size_t vcache_size,
     const bool preload,
     const bool jit_enabled,
     const bool jit_dumpsrc,
     const bool jit_fusion,
     const bool jit_contraction,
-    const bool jit_offload,
+    const size_t jit_offload,
     const string compiler_cmd,
     const string compiler_inc,
     const string compiler_lib,
@@ -36,60 +32,125 @@ Engine::Engine(
     const string template_directory,
     const string kernel_directory
     )
-:   vcache_size_(vcache_size),
+:   rt_(NULL),
     preload_(preload),
     jit_enabled_(jit_enabled),
     jit_dumpsrc_(jit_dumpsrc),
     jit_fusion_(jit_fusion),
     jit_contraction_(jit_contraction),
     jit_offload_(jit_offload),
-    jit_offload_devid_(jit_offload-1),
     storage_(object_directory, kernel_directory),
     plaid_(template_directory),
-    compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext),
-    thread_control_(binding, thread_limit),
-    exec_count(0)
+    compiler_(compiler_cmd, compiler_inc, compiler_lib, compiler_flg, compiler_ext)
 {
-    bh_vcache_init(vcache_size);    // Victim cache
-    if (preload_) {                 // Object storage
+    if (preload_) {                     // Object storage
         storage_.preload();
     }
-    thread_control_.bind_threads(); // Thread control
 
-    if (jit_offload_) {             // Add accelerator instance
-        Accelerator* accelerator = new Accelerator(jit_offload_devid_);
-        if (accelerator->offloadable()) {                           // Verify that it "works"
-            accelerators_.push_back(accelerator);
-            accelerators_[jit_offload_devid_]->get_max_threads();   // Initialize it
-        } else {
-            delete accelerator;                                     // Tear it down
-            jit_offload_ = false;
-            throw runtime_error("Failed initializing accelerator for offload.");
+    rt_ = kp_rt_create(vcache_size);      // Initialize CAPE C-runtime
+    kp_rt_bind_threads(rt_, binding);   // Bind threads on host PUs
+
+    if (jit_offload_) {                 // Initialize accelerator
+        rt_->acc = kp_acc_create(0);
+        if (!kp_acc_init(rt_->acc)) {
+            fprintf(stderr, "Engine::init(...) Failed initializing accelerator.\n");
+            kp_acc_destroy(rt_->acc);            
         }
     }
 
-    DEBUG(TAG, text());             // Print the engine configuration
+    DEBUG(TAG, text());                 // Print the engine configuration
 }
 
 Engine::~Engine()
-{   
-    if (vcache_size_>0) {   // De-allocate the malloc-cache
-        bh_vcache_clear();
-        bh_vcache_delete();
-    }
-                            // Free accelerator instances
-    for(std::vector<Accelerator*>::iterator it=accelerators_.begin();
-        it!=accelerators_.end();
-        ++it) {
-        delete *it;
-    }
+{
+    kp_rt_destroy(rt_);                // Shut down the CAPE C-runtime
+}
+
+size_t Engine::vcache_size(void)
+{
+    return kp_rt_vcache_size(rt_);
+}
+
+bool Engine::preload(void)
+{
+    return preload_;
+}
+
+bool Engine::jit_enabled(void)
+{
+    return jit_enabled_;
+}
+
+bool Engine::jit_dumpsrc(void)
+{
+    return jit_dumpsrc_;
+}
+
+bool Engine::jit_fusion(void)
+{
+    return jit_fusion_;
+}
+
+bool Engine::jit_contraction(void)
+{
+    return jit_contraction_;
+}
+
+bool Engine::jit_offload(void)
+{
+    return jit_offload_;
 }
 
 string Engine::text()
 {
     stringstream ss;
+    ss << boolalpha;
+    ss << "MACROS {" << endl;
+    #ifdef VE_CPU_PROFILING
+    ss << "  VE_CPU_PROFILING: ON" << endl;
+    #else
+    ss << "  VE_CPU_PROFILING: OFF" << endl;
+    #endif
+    #ifdef VE_CPU_DEBUGGING
+    ss << "  VE_CPU_DEBUGGING: ON" << endl;
+    #else
+    ss << "  VE_CPU_DEBUGGING: OFF" << endl;
+    #endif
+    ss << endl;
+    #ifdef CAPE_WITH_HWLOC
+    ss << "  CAPE_WITH_HWLOC: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_HWLOC: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_OPENMP
+    ss << "  CAPE_WITH_OPENMP: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_OPENMP: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_OMP_ATOMIC
+    ss << "  CAPE_WITH_OMP_ATOMIC: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_OMP_ATOMIC: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_INTEL_LEO
+    ss << "  CAPE_WITH_INTEL_LEO: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_INTEL_LEO: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_THREADBINDING
+    ss << "  CAPE_WITH_THREADBINDING: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_THREADBINDING: OFF" << endl;
+    #endif
+    #ifdef CAPE_WITH_OPENACC
+    ss << "  CAPE_WITH_OPENACC: ON" << endl;
+    #else
+    ss << "  CAPE_WITH_OPENACC: OFF" << endl;
+    #endif
+    ss << "}" << endl;
+
     ss << "Engine {" << endl;
-    ss << "  vcache_size = "        << this->vcache_size_ << endl;
+    ss << "  vcache_size = "        << kp_rt_vcache_size(rt_) << endl;
     ss << "  preload = "            << this->preload_ << endl;    
     ss << "  jit_enabled = "        << this->jit_enabled_ << endl;    
     ss << "  jit_dumpsrc = "        << this->jit_dumpsrc_ << endl;
@@ -98,7 +159,6 @@ string Engine::text()
     ss << "  jit_offload = "        << this->jit_offload_ << endl;
     ss << "}" << endl;
     
-    ss << thread_control_.text() << endl;
     ss << storage_.text() << endl;
     ss << compiler_.text() << endl;
     ss << plaid_.text() << endl;
@@ -106,27 +166,19 @@ string Engine::text()
     return ss.str();    
 }
 
-bh_error Engine::execute_block(SymbolTable& symbol_table,
-                            std::vector<tac_t>& program,
-                            Block& block,
-                            bh_ir_kernel& krnl
-                            )
+bh_error Engine::process_block(Program &tac_program,
+                               SymbolTable &symbol_table,
+                               Block &block
+)
 {
-    bh_error res = BH_SUCCESS;
-
     bool consider_jit = jit_enabled_ and (block.narray_tacs() > 0);
 
-    Accelerator* accelerator = NULL;    // Grab an accelerator instance
-    if (jit_offload_) {
-        accelerator = accelerators_[0];
-    }
-
     if (!block.symbolize()) {                       // Update block-symbol
-        fprintf(stderr, "Engine::execute_block(...) == Failed creating symbol.\n");
+        fprintf(stderr, "Engine::process_block(...) == Failed creating symbol.\n");
         return BH_ERROR;
     }
 
-    DEBUG(TAG, "EXECUTING " << block.symbol());
+    DEBUG(TAG, "PROCESSING " << block.symbol());
 
     //
     // JIT-compile: generate source and compile code
@@ -156,7 +208,7 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
             );
         }
         if (!compile_res) {
-            fprintf(stderr, "Engine::execute(...) == Compilation failed.\n");
+            fprintf(stderr, "Engine::process_block(...) == Compilation failed.\n");
 
             return BH_ERROR;
         }
@@ -173,201 +225,25 @@ bh_error Engine::execute_block(SymbolTable& symbol_table,
         (!storage_.symbol_ready(block.symbol())) && \
         (!storage_.load(block.symbol()))) {             // Need but cannot load
 
-        fprintf(stderr, "Engine::execute(...) == Failed loading object.\n");
+        fprintf(stderr, "Engine::process_block(...) == Failed loading object.\n");
         return BH_ERROR;
     }
 
     //
-    // Buffer Management
-    //
-    // - allocate output buffer(s) on host
-    // - allocate output buffer(s) on accelerator
-    // - allocate input buffer(s) on accelerator
-    // - push input buffer(s) to accelerator (TODO)
-    //
-    for(size_t i=0; i<block.ntacs(); ++i) {
-        tac_t& tac = block.tac(i);
-
-        if (!((tac.op & ARRAY_OPS)>0)) {
-            continue;
-        }
-        switch(tac_noperands(tac)) {
-            case 3:
-                if ((symbol_table[tac.in2].layout & (DYNALLOC_LAYOUT))>0) {
-                    if ((accelerator) && (block.iterspace().layout>SCALAR)) {
-                        accelerator->alloc(symbol_table[tac.in2]);
-                        if (NULL!=symbol_table[tac.in2].base->data) {
-                            accelerator->push(symbol_table[tac.in2]);
-                        }
-                    }
-                }
-            case 2:
-                if ((symbol_table[tac.in1].layout & (DYNALLOC_LAYOUT))>0) {
-                    if ((accelerator) && (block.iterspace().layout>SCALAR)) {
-                        accelerator->alloc(symbol_table[tac.in1]);
-                        if (NULL!=symbol_table[tac.in1].base->data) {
-                            accelerator->push(symbol_table[tac.in1]);
-                        }
-                    }
-                }
-            case 1:
-                if ((symbol_table[tac.out].layout & (DYNALLOC_LAYOUT))>0) {
-                    res = bh_vcache_malloc_base(symbol_table[tac.out].base);
-                    if (BH_SUCCESS != res) {
-                        fprintf(stderr, "Unhandled error returned by bh_vcache_malloc() "
-                                        "called from bh_ve_cpu_execute()\n");
-                        return res;
-                    }
-                    if ((accelerator) && (block.iterspace().layout>SCALAR)) {
-                        accelerator->alloc(symbol_table[tac.out]);
-                    }
-                }
-                break;
-        }
-    }
-
-    //
-    // Execute array operations.
-    // 
+    // Grab the kernel function
+    kp_krnl_func func = NULL;
     if (block.narray_tacs() > 0) {
-        TIMER_START
-        iterspace_t& iterspace = block.iterspace(); // Grab iteration space
-        storage_.funcs[block.symbol()](             // Execute kernel function
-            block.buffers(),
-            block.operands(),
-            &iterspace,
-            jit_offload_devid_
-        );
-        TIMER_STOP(block.text_compact())
+        func = storage_.funcs[block.symbol()];
     }
 
-    //
-    // Buffer Management
-    //
-    // - free buffer(s) on accelerator
-    // - free buffer(s) on host
-    // - pull buffer(s) from accelerator to host
-    //
-    for(size_t i=0; i<block.ntacs(); ++i) {
-        tac_t& tac = block.tac(i);
-        operand_t& operand = symbol_table[tac.out];
-
-        switch(tac.oper) {  
-
-            case SYNC:              // Pull buffer from accelerator to host
-                if (accelerator) {
-                    accelerator->pull(operand);
-                }
-                break;
-
-            case DISCARD:           // Free buffer on accelerator
-                if (accelerator) {
-                    accelerator->free(operand);
-                }
-                break;
-
-            case FREE:              // NOTE: Isn't BH_FREE redundant?
-                if (accelerator) {   // Free buffer on accelerator
-                    accelerator->free(operand);                             // Note: must be done prior to
-                }                                                           //       freeing on host.
-
-                res = bh_vcache_free_base(operand.base);    // Free buffer on host
-                if (BH_SUCCESS != res) {
-                    fprintf(stderr, "Unhandled error returned by bh_vcache_free(...) "
-                                    "called from bh_ve_cpu_execute)\n");
-                    return res;
-                }
-                break;
-
-            default:
-                break;
-        }
+    // Now on with the execution
+    bool llexec = kp_rt_execute(rt_, &tac_program.meta(), &symbol_table.meta(), &block.meta(), func);
+    if (llexec) {
+        return BH_SUCCESS;
+    } else {
+        return BH_ERROR;
     }
-
-    return BH_SUCCESS;
 }
 
-bh_error Engine::execute(bh_ir* bhir)
-{
-    exec_count++;
-    DEBUG(TAG, "EXEC #" << exec_count);
-    bh_error res = BH_SUCCESS;
+}}
 
-    //
-    // Instantiate the tac-program and symbol-table
-    uint64_t program_size = bhir->instr_list.size();
-    vector<tac_t> program(program_size);                // Program
-    SymbolTable symbol_table(program_size*6+2);         // SymbolTable
-    
-    instrs_to_tacs(*bhir, program, symbol_table);       // Map instructions to 
-                                                        // tac and symbol_table.
-
-    Block block(symbol_table, program);                 // Construct a block
-
-    //
-    //  Map bh_kernels to Blocks one at a time and execute them.
-    for(krnl_iter krnl = bhir->kernel_list.begin();
-        krnl != bhir->kernel_list.end();
-        ++krnl) {
-
-        block.clear();                                  // Reset the block
-        block.compose(*krnl, (bool)jit_contraction_);   // Compose it based on kernel
-        
-        if ((block.omask() & EXTENSION)>0) {            // Extension-Instruction-Execute (EIE)
-            tac_t& tac = block.tac(0);
-            map<bh_opcode,bh_extmethod_impl>::iterator ext;
-            ext = extensions_.find(static_cast<bh_instruction*>(tac.ext)->opcode);
-            if (ext != extensions_.end()) {
-                bh_extmethod_impl extmethod = ext->second;
-                res = extmethod(static_cast<bh_instruction*>(tac.ext), NULL);
-                if (BH_SUCCESS != res) {
-                    fprintf(stderr, "Unhandled error returned by extmethod(...) \n");
-                    return res;
-                }
-            }
-        } else if ((jit_fusion_) || 
-                   (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
-            DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
-            res = execute_block(symbol_table, program, block, *krnl);
-            if (BH_SUCCESS != res) {
-                return res;
-            }
-            DEBUG(TAG, "Muilti-Instruction-Execute END");
-        } else {                                        // Single-Instruction-Execute (SIE)
-            DEBUG(TAG, "Single-Instruction-Execute BEGIN");
-            for(std::vector<uint64_t>::iterator idx_it = krnl->instr_indexes.begin();
-                idx_it != krnl->instr_indexes.end();
-                ++idx_it) {
-
-                block.clear();                          // Reset the block
-                block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
-
-                res = execute_block(symbol_table, program, block, *krnl);
-                if (BH_SUCCESS != res) {
-                    return res;
-                }
-            }
-            DEBUG(TAG, "Single-Instruction-Execute END");
-        }
-    }
-    return res;
-}
-
-bh_error Engine::register_extension(bh_component& instance, const char* name, bh_opcode opcode)
-{
-    bh_extmethod_impl extmethod;
-    bh_error err = bh_component_extmethod(&instance, name, &extmethod);
-    if (err != BH_SUCCESS) {
-        return err;
-    }
-
-    if (extensions_.find(opcode) != extensions_.end()) {
-        fprintf(stderr, "[CPU-VE] Warning, multiple registrations of the same"
-               "extension method '%s' (opcode: %d)\n", name, (int)opcode);
-    }
-    extensions_[opcode] = extmethod;
-
-    return BH_SUCCESS;
-}
-
-}}}
