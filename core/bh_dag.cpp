@@ -853,67 +853,14 @@ map<Vertex, set<Vertex> > get_vertex2nonfusibles(const GraphD &dag)
     return vertex2nonfusibles;
 }
 
-//Help function that checks is f two vertices a gently fusible
-static bool gently_fusible(const GraphDW &dag, Vertex a, Vertex b)
-{
-    const GraphD &d = dag.bglD();
-    const GraphW &w = dag.bglW();
-    if(not d[a].fusible(d[b]))
-        return false;
-
-    map<Vertex, set<Vertex> > dag_v2f = get_vertex2nonfusibles(dag.bglD());
-
-    //Check if the edge 'a' -> 'b' is a single leaf edge, in which case
-    //the nonfusibles of 'b' does not have to be preserved.
-    if(boost::edge(a, b, d).second and boost::edge(a, b, w).second and
-       in_degree(b, d) == 1 and out_degree(b, d) == 0 and out_degree(b,w) == 1)
-    {
-        if(not std::includes(dag_v2f[a].begin(), dag_v2f[a].end(),
-                             dag_v2f[b].begin(), dag_v2f[b].end()))
-            return false;
-    }
-    else
-    {
-        if(dag_v2f[a].size() != dag_v2f[b].size() or
-           not std::equal(dag_v2f[a].begin(), dag_v2f[a].end(), dag_v2f[b].begin()))
-            return false;
-    }
-
-    //Make sure that 'a' comes before 'b'
-    if(path_exist(b, a, d))
-        swap(a,b);
-
-    GraphDW tmp(dag);
-    tmp.merge_vertices(a, b);
-
-    map<Vertex, set<Vertex> > tmp_v2f = get_vertex2nonfusibles(tmp.bglD());
-
-    BOOST_FOREACH(Vertex v, boost::vertices(d))
-    {
-        if(v == b)//We ignore 'b' since it has been removed by the merger
-            continue;
-
-        set<Vertex> dag_nonfusibles = dag_v2f[v];
-        set<Vertex> tmp_nonfusibles = tmp_v2f[v];
-        dag_nonfusibles.erase(b);
-        tmp_nonfusibles.erase(b);
-        if(dag_nonfusibles.size() != tmp_nonfusibles.size())
-        {
-            return false;
-        }
-        if(not std::equal(dag_nonfusibles.begin(), dag_nonfusibles.end(), tmp_nonfusibles.begin()))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 //Help function to find a gently fusible edge.
 //NB: removes transitive edges from 'dag'
 pair<EdgeD,bool> find_gently_fusible_edge(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();
+    const GraphW &w = dag.bglW();
+
+    map<Vertex, set<Vertex> > dag_v2f = get_vertex2nonfusibles(dag.bglD());
     auto begin = boost::edges(d).first;
     auto end = boost::edges(d).second;
     for(auto it=begin; it != end;)
@@ -926,9 +873,19 @@ pair<EdgeD,bool> find_gently_fusible_edge(GraphDW &dag)
         {
             dag.remove_edges(src, dst);
         }
-        else if(gently_fusible(dag, src, dst))
+        //Leaf
+        else if(out_degree(dst, w) == 1 and in_degree(dst, d) == 1 and \
+                out_degree(dst, d) == 0 and  d[src].fusible(d[dst]))
         {
-            return make_pair(e, true);
+            if(dag_v2f[src].size() == dag_v2f[dst].size() and std::equal(dag_v2f[src].begin(), dag_v2f[src].end(), dag_v2f[dst].begin()))
+                return make_pair(e, true);
+        }
+        //Root
+        else if(out_degree(src, w) == 1 and in_degree(src, d) == 0 and \
+                out_degree(src, d) == 1 and  d[src].fusible(d[dst]))
+        {
+            if(dag_v2f[src].size() == dag_v2f[dst].size() and std::equal(dag_v2f[src].begin(), dag_v2f[src].end(), dag_v2f[dst].begin()))
+                return make_pair(e, true);
         }
         assert(dag_validate(dag));
     }
