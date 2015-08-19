@@ -126,14 +126,12 @@ void kp_set_host_text(char* host_text)
 
 kp_rt* kp_rt_create(size_t vcache_size)
 {
-    kp_rt* rt = (kp_rt*)malloc(sizeof(kp_rt));
+    kp_rt* rt = malloc(sizeof(*rt));
     if (rt) {
         rt->binding = KP_BIND_TO_NONE;  // No binding until instructed to
 
-        rt->vcache_size = vcache_size;  // Initialize victim cache
-        kp_vcache_init(vcache_size);
-
-        rt->host_text = (char*)malloc(sizeof(char)*200);
+        rt->vcache = kp_vcache_create(vcache_size);
+        rt->host_text = malloc(sizeof(*(rt->host_text))*200);
         kp_set_host_text(rt->host_text);
 
         rt->acc = NULL;                 // No accelerators until kp_rt_acc_init(...)
@@ -144,18 +142,14 @@ kp_rt* kp_rt_create(size_t vcache_size)
 void kp_rt_destroy(kp_rt* rt)
 {
     if (rt) {
-        if (rt->vcache_size>0) {    // De-allocate the malloc-cache
-            kp_vcache_clear();
-            kp_vcache_delete();
-        }
-        if (rt->host_text) {        // Free host textual identifier
-            free(rt->host_text);
-        }
-        if (rt->acc) {              // Free accelerator
+        if (rt->acc) {                  // Free accelerator
             kp_acc_destroy(rt->acc);
         }
-                                    // TODO: gpu shutdown if not already done
-        free(rt);                   // Free runtime struct
+        if (rt->host_text) {            // Free host textual identifier
+            free(rt->host_text);
+        }
+        kp_vcache_destroy(rt->vcache);  // De-allocate the victim cache
+        free(rt);                       // Free runtime struct
     }
 }
 
@@ -196,7 +190,7 @@ bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_b
                 } 
             case 1:
                 if ((symbols->table[tac->out].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    if (!kp_vcache_malloc(symbols->table[tac->out].base)) {
+                    if (!kp_vcache_alloc(rt->vcache, symbols->table[tac->out].base)) {
                         fprintf(stderr, "Unhandled error returned by kpvcache_malloc() "
                                         "called from kp_ve_cpu_execute()\n");
                         return false;
@@ -239,11 +233,11 @@ bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_b
                 break;
 
             case KP_FREE:
-                if (rt->acc) {                                  // Free buffer on accelerator
-                    kp_acc_free(rt->acc, operand->base);        // Note: must be done prior to
-                }                                               //       freeing on host.
+                if (rt->acc) {                                      // Free buffer on accelerator
+                    kp_acc_free(rt->acc, operand->base);            // Note: must be done prior to
+                }                                                   //       freeing on host.
 
-                if (!kp_vcache_free(operand->base)) {           // Free buffer on host
+                if (!kp_vcache_free(rt->vcache, operand->base)) {  // Free buffer on host
                     fprintf(stderr, "Unhandled error returned by kp_vcache_free(...) "
                                     "called from kp_rt_execute)\n");
                     return false;
@@ -340,7 +334,7 @@ kp_thread_binding kp_rt_thread_binding(kp_rt* rt)
 
 size_t kp_rt_vcache_size(kp_rt* rt)
 {
-    return rt->vcache_size;
+    return kp_vcache_capacity(rt->vcache);
 }
 
 const char* kp_rt_host_text(kp_rt* rt)
@@ -353,7 +347,11 @@ void kp_rt_pprint(kp_rt* rt)
     if (rt) {
         fprintf(stdout,
                 "rt(%p) { binding:%d, vcache_size: %ld, acc: %p, host_text: %s }\n",
-                (void*)rt, (int)rt->binding, rt->vcache_size, (void*)rt->acc, rt->host_text);
+                (void*)rt,
+                (int)kp_rt_thread_binding(rt),
+                kp_rt_vcache_size(rt),
+                (void*)rt->acc,
+                kp_rt_host_text(rt));
         kp_acc_pprint(rt->acc);
     } else {
         fprintf(stdout, "rt(%p) {}\n", (void*)rt);
