@@ -859,6 +859,7 @@ pair<EdgeD,bool> find_gently_fusible_edge(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();
     const GraphW &w = dag.bglW();
+    dag.transitive_reduction();
 
     map<Vertex, set<Vertex> > dag_v2f = get_vertex2nonfusibles(dag.bglD());
     auto begin = boost::edges(d).first;
@@ -877,14 +878,18 @@ pair<EdgeD,bool> find_gently_fusible_edge(GraphDW &dag)
         else if(out_degree(dst, w) == 1 and in_degree(dst, d) == 1 and \
                 out_degree(dst, d) == 0 and  d[src].fusible(d[dst]))
         {
-            if(dag_v2f[src].size() == dag_v2f[dst].size() and std::equal(dag_v2f[src].begin(), dag_v2f[src].end(), dag_v2f[dst].begin()))
+            //Check if 'dst' is a subset of 'src'
+            if(std::includes(dag_v2f[src].begin(), dag_v2f[src].end(),\
+                             dag_v2f[dst].begin(), dag_v2f[dst].end()))
                 return make_pair(e, true);
         }
         //Root
         else if(out_degree(src, w) == 1 and in_degree(src, d) == 0 and \
                 out_degree(src, d) == 1 and  d[src].fusible(d[dst]))
         {
-            if(dag_v2f[src].size() == dag_v2f[dst].size() and std::equal(dag_v2f[src].begin(), dag_v2f[src].end(), dag_v2f[dst].begin()))
+            //Check if 'src' is a subset of 'dst'
+            if(std::includes(dag_v2f[dst].begin(), dag_v2f[dst].end(),\
+                             dag_v2f[src].begin(), dag_v2f[src].end()))
                 return make_pair(e, true);
         }
         assert(dag_validate(dag));
