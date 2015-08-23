@@ -163,7 +163,7 @@ void kp_acc_push(kp_acc* acc, kp_buffer* buffer)
 void kp_acc_pull(kp_acc* acc, kp_buffer* buffer)
 {
     if (!kp_acc_allocated(acc, buffer)) {       // Not allocated on device!
-        fprintf(stderr, "kp_acc_pull: Buffer is not allocated on device.\n");
+        //fprintf(stderr, "kp_acc_pull: Buffer is not allocated on device.\n");
         return;
     }
     if (NULL==buffer->data) {                   // Not allocated on host!
