@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include "kp_set.h"
 #include "kp_acc.h"
+#include "kp_utils.h"
+
+#if defined(CAPE_WITH_INTEL_LEO)
+#include <omp.h>
+#endif
 
 struct kp_acc {
     size_t id;
