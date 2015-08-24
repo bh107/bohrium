@@ -73,7 +73,7 @@ string Walker::declare_operands(void)
     return ss.str();
 }
 
-string Walker::offload_acc_loop(void)
+string Walker::offload_loop_openacc(void)
 {
     stringstream ss;
 
@@ -104,7 +104,7 @@ string Walker::offload_acc_loop(void)
     return ss.str();
 }
 
-string Walker::offload_leo(void)
+string Walker::offload_block_leo(void)
 {
     stringstream ss;
 
@@ -832,9 +832,9 @@ string Walker::generate_source(bool offload)
     // Experimental offload pragma
     if (offload) {
         #if defined(CAPE_WITH_INTEL_LEO)
-        subjects["OFFLOAD"] = offload_leo();
+        subjects["OFFLOAD_BLOCK"] = offload_block_leo();
         #elif defined(CAPE_WITH_OPENACC)
-        subjects["OFFLOAD_LOOP"] = offload_acc_loop();
+        subjects["OFFLOAD_LOOP"] = offload_loop_openacc();
         #endif
     }
 

@@ -1,7 +1,7 @@
 //
 //  Collapsed walker (OpenACC)
 //
-{{OFFLOAD}}
+{{OFFLOAD_BLOCK}}
 {
     // Walker declaration(s) - begin
     {{WALKER_DECLARATION}}
