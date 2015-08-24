@@ -33,6 +33,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include "bh_ir.h"
 #include "bh_fuse.h"
+#include "bh_fuse_price.h"
 
 using namespace std;
 using namespace boost;
@@ -251,7 +252,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     instr_indexes.push_back(instr_idx);
 }
 
-// Smalest output shape used in the kernel
+// Smallest output shape used in the kernel
 std::vector<bh_index> bh_ir_kernel::get_output_shape() const
 {
     bh_index nelem = INT64_MAX;
@@ -419,26 +420,10 @@ int bh_ir_kernel::dependency(const bh_ir_kernel &other) const
     return ret;
 }
 
-/* Returns the cost of a bh_view */
-inline static uint64_t cost_of_view(const bh_view &v)
-{
-    assert (!bh_is_constant(&v));
-    return bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
-}
-
 /* Returns the cost of the kernel */
 uint64_t bh_ir_kernel::cost() const
 {
-    uint64_t sum = 0;
-    BOOST_FOREACH(const bh_view &v, input_set)
-    {
-        sum += cost_of_view(v);
-    }
-    BOOST_FOREACH(const bh_view &v, output_set)
-    {
-        sum += cost_of_view(v);
-    }
-    return sum;
+    return bohrium::kernel_cost(*this);
 }
 
 /* Returns the cost savings of merging with the 'other' kernel.
@@ -472,35 +457,5 @@ int64_t bh_ir_kernel::merge_cost_savings(const bh_ir_kernel &other) const
         a = &other;
         b = this;
     }
-
-    int64_t price_drop = 0;
-
-    //Subtract inputs in 'a' that comes from 'b' or is already an input in 'b'
-    BOOST_FOREACH(const bh_view &i, a->get_input_set())
-    {
-        BOOST_FOREACH(const bh_view &o, b->get_output_set())
-        {
-            if(bh_view_aligned(&i, &o))
-                price_drop += cost_of_view(i);
-        }
-        BOOST_FOREACH(const bh_view &o, b->get_input_set())
-        {
-            if(bh_view_aligned(&i, &o))
-                price_drop += cost_of_view(i);
-        }
-    }
-    //Subtract outputs from 'b' that are discared in 'a'
-    BOOST_FOREACH(const bh_view &o, b->get_output_set())
-    {
-        BOOST_FOREACH(uint64_t a_instr_idx, a->instr_indexes)
-        {
-            const bh_instruction &a_instr = a->bhir->instr_list[a_instr_idx];
-            if(a_instr.opcode == BH_DISCARD and a_instr.operand[0].base == o.base)
-            {
-                price_drop += cost_of_view(o);
-                break;
-            }
-        }
-    }
-    return price_drop;
+    return bohrium::cost_savings(*b, *a);
 }
