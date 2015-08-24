@@ -93,6 +93,21 @@ static uint64_t savings_unique(const bh_ir_kernel &a, const bh_ir_kernel &b)
     return price_drop;
 }
 
+/* The cost of a kernel is 'number of instruction' * 3 - 'number of temp arrays' */
+static bool cost_temp_elemination(const bh_ir_kernel &k)
+{
+    return k.instr_indexes.size() * 3 - k.get_temps().size();
+}
+static uint64_t savings_temp_elemination(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
+{
+    bh_ir_kernel tmp = k1;
+    for(uint64_t instr_idx: k2.instr_indexes)
+    {
+        tmp.add_instr(instr_idx);
+    }
+    return cost_temp_elemination(k1) + cost_temp_elemination(k1) - cost_temp_elemination(tmp);
+}
+
 /************************************************************************/
 /*************** The public interface implementation ********************/
 /************************************************************************/
@@ -139,6 +154,9 @@ void fuse_price_model_text(FusePriceModel price_model, string &output)
     case UNIQUE_VIEWS:
         output = "unique_views";
         break;
+    case TEMP_ELEMINATION:
+        output = "temp_elemination";
+        break;
     default:
         output = "unknown";
     }
@@ -153,6 +171,8 @@ uint64_t kernel_cost(const bh_ir_kernel &kernel)
         return kernel_cost(kernel);
     case UNIQUE_VIEWS:
         return cost_unique(kernel);
+    case TEMP_ELEMINATION:
+        return cost_temp_elemination(kernel);
     default:
         throw runtime_error("No price module is selected!");
     }
@@ -167,6 +187,8 @@ uint64_t cost_savings(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
         return cost_savings(k1, k2);
     case UNIQUE_VIEWS:
         return savings_unique(k1, k2);
+    case TEMP_ELEMINATION:
+        return savings_temp_elemination(k1, k2);
     default:
         throw runtime_error("No price module is selected!");
     }
