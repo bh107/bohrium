@@ -228,7 +228,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
 }
 
 /* Find the optimal solution through branch and bound */
-void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explore, FuseCache &cache,
+void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explore,
                       const vector<bool> &init_mask, unsigned int init_offset=0)
 {
     //We use the greedy algorithm to find a good initial guess
@@ -295,21 +295,6 @@ void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explor
                 best_cost = cost;
                 best_dag = new_dag;
                 assert(dag_validate(best_dag));
-
-                //Lets write the current best to file
-                if(cache.enabled)
-                {
-                    vector<bh_ir_kernel> kernel_list;
-                    fill_kernel_list(best_dag, kernel_list);
-                    const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
-                    cache.write_to_files();
-                    stringstream ss;
-                    string filename;
-                    i.get_filename(filename);
-                    ss << "new_best_dag-" << filename << ".dot";
-                    cout << "write file: " << ss.str() << endl;
-                    pprint(best_dag, ss.str().c_str());
-                }
                 purge_count += pow(2.0, (int)(mask.size()-offset));
             }
             continue;
@@ -361,7 +346,7 @@ void get_edges2explore(const GraphDW &dag, vector<EdgeW> &edges2explore)
 }
 
 /* Fuse the 'dag' optimally */
-void fuse_optimal(bh_ir &bhir, GraphDW &dag, FuseCache &cache)
+void fuse_optimal(bh_ir &bhir, GraphDW &dag)
 {
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
@@ -392,10 +377,10 @@ void fuse_optimal(bh_ir &bhir, GraphDW &dag, FuseCache &cache)
     }
 
     cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-    branch_n_bound(bhir, dag, edges2explore, cache, mask, preload_offset);
+    branch_n_bound(bhir, dag, edges2explore, mask, preload_offset);
 }
 
-void do_fusion(bh_ir &bhir, FuseCache &cache)
+void do_fusion(bh_ir &bhir)
 {
     GraphDW dag;
     from_bhir(bhir, dag);
@@ -406,7 +391,7 @@ void do_fusion(bh_ir &bhir, FuseCache &cache)
     {
         fuse_gently(d);
         d.transitive_reduction();
-        fuse_optimal(bhir, d, cache);
+        fuse_optimal(bhir, d);
     }
     assert(dag_validate(bhir, dags));
     BOOST_FOREACH(GraphDW &d, dags)
@@ -423,12 +408,12 @@ void fuser(bh_ir &bhir, FuseCache &cache)
         BatchHash hash(bhir.instr_list);
         if(cache.lookup(hash, bhir, bhir.kernel_list))
             return;//Fuse cache hit!
-        do_fusion(bhir, cache);
+        do_fusion(bhir);
         cache.insert(hash, bhir.kernel_list);
     }
     else
     {
-        do_fusion(bhir, cache);
+        do_fusion(bhir);
     }
 }
 
