@@ -227,6 +227,10 @@ BatchHash::BatchHash(const vector<bh_instruction> &instr_list)
 InstrIndexesList &FuseCache::insert(const BatchHash &batch,
                                     const vector<bh_ir_kernel> &kernel_list)
 {
+    if(cache.find(batch.hash()) != cache.end())
+    {
+        throw runtime_error("Instruction list is already in the fuse cache!");
+    }
     cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash(), fuser_name);
     return cache[batch.hash()];
 }
@@ -306,6 +310,8 @@ void FuseCache::load_from_files()
 
     string fuse_model_name;
     fuse_model_text(fuse_get_selected_model(), fuse_model_name);
+    string fuse_price_name;
+    fuse_price_model_text(fuse_get_selected_price_model(), fuse_price_name);
 
     //Iterate the 'dir_path' diretory and load each file
     directory_iterator it(p), eod;
@@ -323,8 +329,13 @@ void FuseCache::load_from_files()
                     InstrIndexesList t;
                     ia >> t;
                     if(iequals(t.fuser_name(), fuser_name) and
-                       iequals(t.fuse_model(), fuse_model_name))
+                       iequals(t.fuse_model(), fuse_model_name) and
+                       iequals(t.price_model(), fuse_price_name))
                     {
+                        if(cache.find(t.hash()) != cache.end())
+                        {
+                            throw runtime_error("Instruction list is already in the fuse cache!");
+                        }
                         cache[t.hash()] = t;
                     }
                 }
