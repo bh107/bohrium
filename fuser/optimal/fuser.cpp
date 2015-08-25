@@ -297,17 +297,19 @@ void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explor
                 assert(dag_validate(best_dag));
 
                 //Lets write the current best to file
-                vector<bh_ir_kernel> kernel_list;
-                fill_kernel_list(best_dag, kernel_list);
-                const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
-                cache.write_to_files();
-
-                stringstream ss;
-                string filename;
-                i.get_filename(filename);
-                ss << "new_best_dag-" << filename << ".dot";
-                cout << "write file: " << ss.str() << endl;
-                pprint(best_dag, ss.str().c_str());
+                if(cache.enabled)
+                {
+                    vector<bh_ir_kernel> kernel_list;
+                    fill_kernel_list(best_dag, kernel_list);
+                    const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
+                    cache.write_to_files();
+                    stringstream ss;
+                    string filename;
+                    i.get_filename(filename);
+                    ss << "new_best_dag-" << filename << ".dot";
+                    cout << "write file: " << ss.str() << endl;
+                    pprint(best_dag, ss.str().c_str());
+                }
                 purge_count += pow(2.0, (int)(mask.size()-offset));
             }
             continue;
@@ -416,11 +418,17 @@ void fuser(bh_ir &bhir, FuseCache &cache)
     if(bhir.kernel_list.size() != 0)
         throw logic_error("The kernel_list is not empty!");
 
-    BatchHash hash(bhir.instr_list);
-    if(not cache.lookup(hash, bhir, bhir.kernel_list))
+    if(cache.enabled)
     {
+        BatchHash hash(bhir.instr_list);
+        if(cache.lookup(hash, bhir, bhir.kernel_list))
+            return;//Fuse cache hit!
         do_fusion(bhir, cache);
         cache.insert(hash, bhir.kernel_list);
+    }
+    else
+    {
+        do_fusion(bhir, cache);
     }
 }
 

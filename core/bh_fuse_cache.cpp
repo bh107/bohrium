@@ -236,8 +236,9 @@ bool FuseCache::lookup(const BatchHash &batch,
                        vector<bh_ir_kernel> &kernel_list) const
 {
     assert(kernel_list.size() == 0);
+    assert(enabled);
     CacheMap::const_iterator it = cache.find(batch.hash());
-    if(deactivated or it == cache.end())
+    if(it == cache.end())
     {
         return false;
     }
@@ -250,8 +251,7 @@ bool FuseCache::lookup(const BatchHash &batch,
 
 void FuseCache::write_to_files() const
 {
-    if(deactivated)
-        return;
+    assert(enabled);
     if(dir_path == NULL or dir_path[0] == '\0')
     {
         cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \
@@ -293,6 +293,7 @@ void FuseCache::write_to_files() const
 
 void FuseCache::load_from_files()
 {
+    assert(enabled);
     if(dir_path == NULL or dir_path[0] == '\0')
     {
         cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \

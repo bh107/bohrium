@@ -143,25 +143,24 @@ class FuseCache
     //The name of the current fuser component
     std::string fuser_name;
 
-    //Whether the cache is disabled or not
-    bool deactivated;
-
 public:
 
+    //Whether the cache is enabled or disabled
+    //NB: the cache is disabled when using the default constructor
+    bool enabled;
+
     /* The vector class needs a default constructor */
-    FuseCache(){}
+    FuseCache():enabled(false){}
 
     /* Construct a new FuseCache instant
      *
      * @component  The component handle
      */
-    FuseCache(const bh_component &component)
+    FuseCache(const bh_component &component):enabled(true)
     {
         dir_path = bh_component_config_lookup(&component, "cache_path");
         fuser_name = component.name;
-        deactivated = not bh_component_config_lookup_bool(&component, "fuse_cache", true);
-        if(not deactivated)
-            load_from_files();
+        load_from_files();
     }
 
     /* Insert a 'kernel_list' into the fuse cache
