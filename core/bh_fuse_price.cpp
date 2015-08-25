@@ -47,7 +47,7 @@ inline static uint64_t bytes_in_view(const bh_view &v)
 }
 
 /* The cost of a kernel is the sum of unique views read and written */
-static bool cost_unique(const bh_ir_kernel &k)
+static uint64_t cost_unique(const bh_ir_kernel &k)
 {
     uint64_t sum = 0;
     for(const bh_view &v: k.get_input_set())
@@ -94,7 +94,7 @@ static uint64_t savings_unique(const bh_ir_kernel &a, const bh_ir_kernel &b)
 }
 
 /* The cost of a kernel is 'number of instruction' * 3 - 'number of temp arrays' */
-static bool cost_temp_elemination(const bh_ir_kernel &k)
+static uint64_t cost_temp_elemination(const bh_ir_kernel &k)
 {
     return k.instr_indexes.size() * 3 - k.get_temps().size();
 }
