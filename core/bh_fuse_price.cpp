@@ -105,7 +105,10 @@ static uint64_t savings_temp_elemination(const bh_ir_kernel &k1, const bh_ir_ker
     {
         tmp.add_instr(instr_idx);
     }
-    return cost_temp_elemination(k1) + cost_temp_elemination(k1) - cost_temp_elemination(tmp);
+    uint64_t old_cost = cost_temp_elemination(k1) + cost_temp_elemination(k2);
+    uint64_t new_cost = cost_temp_elemination(tmp);
+    assert(old_cost >= new_cost);
+    return old_cost - new_cost;
 }
 
 /************************************************************************/
