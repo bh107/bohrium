@@ -171,21 +171,17 @@ bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_b
         }
         switch(kp_tac_noperands(tac)) {
             case 3:
-                if ((symbols->table[tac->in2].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    if ((rt->acc) && (block->iterspace.layout>KP_SCALAR)) {
-                        kp_acc_alloc(rt->acc, symbols->table[tac->in2].base);
-                        if (NULL!=symbols->table[tac->in2].base->data) {
-                            kp_acc_push(rt->acc, symbols->table[tac->in2].base);
-                        }
+                if ((rt->acc) && ((symbols->table[tac->in2].layout & (KP_DYNALLOC_LAYOUT))>0)) {
+                    kp_acc_alloc(rt->acc, symbols->table[tac->in2].base);
+                    if (NULL!=symbols->table[tac->in2].base->data) {
+                        kp_acc_push(rt->acc, symbols->table[tac->in2].base);
                     }
                 }
             case 2:
-                if ((symbols->table[tac->in1].layout & (KP_DYNALLOC_LAYOUT))>0) {
-                    if ((rt->acc) && (block->iterspace.layout>KP_SCALAR)) {
-                        kp_acc_alloc(rt->acc, symbols->table[tac->in1].base);
-                        if (NULL!=symbols->table[tac->in1].base->data) {
-                            kp_acc_push(rt->acc, symbols->table[tac->in1].base);
-                        }
+                if ((rt->acc) && ((symbols->table[tac->in1].layout & (KP_DYNALLOC_LAYOUT))>0)) {
+                    kp_acc_alloc(rt->acc, symbols->table[tac->in1].base);
+                    if (NULL!=symbols->table[tac->in1].base->data) {
+                        kp_acc_push(rt->acc, symbols->table[tac->in1].base);
                     }
                 } 
             case 1:
@@ -195,7 +191,7 @@ bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_b
                                         "called from kp_ve_cpu_execute()\n");
                         return false;
                     }
-                    if ((rt->acc) && (block->iterspace.layout>KP_SCALAR)) {
+                    if (rt->acc) {
                         kp_acc_alloc(rt->acc, symbols->table[tac->out].base);
                     }
                 }

@@ -350,7 +350,9 @@ private:
     std::string declare_operand(uint32_t oidx);
 
     std::string offload_block_leo(void);
-    std::string offload_loop_openacc(void);
+    //std::string offload_loop_openacc(void);
+    std::string offload_loop_openacc(kp_tac* tac_reduction, Operand* out);
+    std::string offload_loop_sequel_openacc(kp_tac* tac_reduction, Operand* out);
 
     // Construct the operator source for the tac.oper
     std::string oper(KP_OPERATOR oper, KP_ETYPE etype, std::string in1, std::string in2);

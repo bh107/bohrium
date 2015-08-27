@@ -73,7 +73,7 @@ string Walker::declare_operands(void)
     return ss.str();
 }
 
-string Walker::offload_loop_openacc(void)
+string Walker::offload_loop_openacc(kp_tac* tac_reduction, Operand* out)
 {
     stringstream ss;
 
@@ -82,6 +82,9 @@ string Walker::offload_loop_openacc(void)
         oit != kernel_.operands_end();
         ++oit) {
         Operand& operand = oit->second;
+        if (out && out->meta().base == operand.meta().base) {
+            continue;
+        }
         switch(operand.meta().layout) {
             case KP_SCALAR_CONST:
             case KP_SCALAR_TEMP:
@@ -91,8 +94,11 @@ string Walker::offload_loop_openacc(void)
             case KP_CONTIGUOUS:
             case KP_CONSECUTIVE:
             case KP_STRIDED:
-            case KP_SCALAR:
                 ss << "present(" << operand.walker() << ") \\" << endl;
+                break;
+
+            case KP_SCALAR:
+                ss << "copyin( " << operand.walker() << ") \\" << endl;
                 break;
 
             case KP_SPARSE:
@@ -100,7 +106,27 @@ string Walker::offload_loop_openacc(void)
 				break;
         }
     }
+    if (tac_reduction) {
+        ss << "reduction(+:" << out->accu() << ") \\" << endl;
+    }
+    ss << "if(1)" << endl;
 
+    return ss.str();
+}
+
+string Walker::offload_loop_sequel_openacc(kp_tac* tac_reduction, Operand* out)
+{
+    if (!out) {
+        return "";
+    }
+
+    stringstream ss;
+    ss << _assign(
+        _deref(_add(
+            out->buffer_data(), out->start()
+        )),
+        out->accu()
+    ) << _end();
     return ss.str();
 }
 
@@ -829,15 +855,6 @@ string Walker::generate_source(bool offload)
         throw runtime_error("KP_EXTENSION in kernel");
     }
 
-    // Experimental offload pragma
-    if (offload) {
-        #if defined(CAPE_WITH_INTEL_LEO)
-        subjects["OFFLOAD_BLOCK"] = offload_block_leo();
-        #elif defined(CAPE_WITH_OPENACC)
-        subjects["OFFLOAD_LOOP"] = offload_loop_openacc();
-        #endif
-    }
-
     // These are used by all kernels.
     const uint32_t rank = kernel_.iterspace().meta().ndim;
     subjects["WALKER_DECLARATION"]      = declare_operands();
@@ -914,6 +931,16 @@ string Walker::generate_source(bool offload)
         }
     }
     // Note: end of crappy code used by reductions / scan
+
+    // Experimental offload pragma
+    if (offload) {
+        #if defined(CAPE_WITH_INTEL_LEO)
+        subjects["OFFLOAD_BLOCK"] = offload_block_leo();
+        #elif defined(CAPE_WITH_OPENACC)
+        subjects["OFFLOAD_LOOP"] = offload_loop_openacc(tac, out);
+        subjects["OFFLOAD_LOOP_SEQUEL"] = offload_loop_sequel_openacc(tac, out);
+        #endif
+    }
 
     // MAP | ZIP | KP_GENERATE | KP_INDEX | KP_REDUCE_COMPLETE on KP_COLLAPSIBLE KP_LAYOUT of any RANK
     // and
