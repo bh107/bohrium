@@ -1,13 +1,13 @@
-#ifndef MAP_ANONYMOUS
-#define MAP_ANONYMOUS MAP_ANON
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include "kp_utils.h"
 #include "kp_vcache.h"
+
+#ifndef MAP_ANONYMOUS      // Anonymous memory mapping for Linux and OSX/BSD.
+#define MAP_ANONYMOUS MAP_ANON
+#endif
 
 //
 // C-Friendly version of the vcache.
