@@ -238,6 +238,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
         TIMER_DETAILED        
         if ((block.omask() & KP_EXTENSION)>0) {         // Extension-Instruction-Execute (EIE)
+            TIMER_START
             kp_tac& tac = block.tac(0);
             map<bh_opcode, bh_extmethod_impl>::iterator ext;
             ext = extensions.find(static_cast<bh_instruction*>(tac.ext)->opcode);
@@ -249,6 +250,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                     return res;
                 }
             }
+            TIMER_STOP(block.text_compact());
         } else if ((engine->jit_fusion()) || 
                    (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
             DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
