@@ -85,33 +85,14 @@ static bool fuse_no_xsweep_scalar_seperate_shape_match(const bh_instruction *a, 
 {
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
-    const bh_view& ao = a->operand[0];
-    const int b_nop = bh_operands(b->opcode);
-    for(int i=0; i<b_nop; ++i)
-    {
-        const bh_view& bv = b->operand[i];
-        if(bh_is_constant(&bv))
-           continue;
-        if (ao.base == bv.base)
-        {
-            if (!bh_view_same_shape(&ao,&bv))
-                return false;
-        }
-
-    }        
-    const bh_view& bo = b->operand[0];
-    const int a_nop = bh_operands(a->opcode);
-    for(int i=0; i<a_nop; ++i)
-    {
-        const bh_view& av = a->operand[i];
-        if(bh_is_constant(&av))
-           continue;
-        if (bo.base == av.base)
-        {
-            if (!bh_view_same_shape(&bo,&av))
-                return false;
-        }
-    }        
+    const bh_view va = (bh_opcode_is_sweep(a->opcode) ? a->operand[1] : a->operand[0]);
+    const bh_view vb = (bh_opcode_is_sweep(b->opcode) ? b->operand[1] : b->operand[0]);
+    const bh_intp ndim = MIN(va.ndim,vb.ndim);
+    for (bh_intp i =  1; i <= ndim; ++i)
+    { // Check that the inner most dimensions match
+        if (va.shape[va.ndim-i] != vb.shape[vb.ndim-i])
+            return false;
+    }
     return fuse_no_xsweep_scalar_seperate(a, b);
 }
 
