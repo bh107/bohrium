@@ -71,24 +71,18 @@ class Timevault {
         static std::string format_line(char fill, char sep);
 
         /**
-         *  Returns a textual representation of the elapsed time
-         *  stored within the timevault, without details.
+         *  Returns a textual representation of the elapsed time,
+         *  control with or without detailed by calling TIMER_DETAILED macro
+         *  or set_detailed(...);
          *
          *  TODO: Add average and deviation.
          */
         std::string text(void);
 
         /**
-         *  Returns a textual representation of the elapsed time
-         *  stored within the timevault, with or without details.
+         *  Controls whether or not text(void) should return detailed dump.
          */
-        std::string text(bool detailed);
-
-        /**
-         *  Writes the textual representation of the elapsed time
-         *  stored within the Timevault to file.
-         */
-        void to_file(std::string absolute_path);
+        void set_detailed(bool detailed);
 
         /**
          *  The de-constructor will dump-timings.
@@ -111,11 +105,12 @@ class Timevault {
          */
         Timevault& operator=(Timevault const& copy);
 
-        std::multimap<std::string, time_t> _elapsed; // Storage of elapsed time.
+        std::map<std::string, std::vector<time_t> > _elapsed; // Storage of elapsed time
 
         time_t timer_start; // Storage for timer
 
         static const uint32_t width;
+        bool _detailed;
 };
 
 }}
@@ -123,16 +118,16 @@ class Timevault {
 //
 // Profiling macros for non-intrusive profiling.
 //
-#ifdef CPU_PROFILING
-#define TIMER_START               do{ Timevault::instance().start(); } while(0);
-#define TIMER_STOP(IDENT) do{ Timevault::instance().store(IDENT, Timevault::instance().stop()); } while(0);
-#define TIMER_DUMP                do{ cout << Timevault::instance().text() << endl; } while(0);
-#define TIMER_DUMP_DETAILED       do{ cout << Timevault::instance().text(true) << endl; } while(0);
+#ifdef VE_CPU_PROFILING
+#define TIMER_START               do{ kp::core::Timevault::instance().start(); } while(0);
+#define TIMER_STOP(IDENT) do{ kp::core::Timevault::instance().store(IDENT, kp::core::Timevault::instance().stop()); } while(0);
+#define TIMER_DUMP                do{ cout << kp::core::Timevault::instance().text() << endl; } while(0);
+#define TIMER_DETAILED       do{ kp::core::Timevault::instance().set_detailed(true); } while(0);
 #else
 #define TIMER_START
 #define TIMER_STOP(IDENT)
 #define TIMER_DUMP
-#define TIMER_DUMP_DETAILED
+#define TIMER_DETAILED
 #endif
 
 #endif

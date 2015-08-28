@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 
 #include "timevault.hpp"
 
@@ -10,7 +11,7 @@ namespace core{
 
 const uint32_t Timevault::width = 140;
 
-Timevault::Timevault() {}
+Timevault::Timevault() : _detailed(false) {}
 
 Timevault& Timevault::instance()
 {
@@ -59,7 +60,7 @@ void Timevault::store(time_t elapsed)
 
 void Timevault::store(string ident, time_t elapsed)
 {
-    _elapsed.insert(pair<string, time_t>(ident, elapsed));
+    _elapsed[ident].push_back(elapsed);
 }
 
 void Timevault::clear(void)
@@ -109,12 +110,7 @@ string Timevault::format_line(char fill, char sep)
     return line.str();
 }
 
-string Timevault::text(void)
-{
-    return text(false);
-}
-
-string Timevault::text(bool detailed)
+string Timevault::text()
 {
     stringstream header, details, summary;
 
@@ -131,23 +127,17 @@ string Timevault::text(bool detailed)
 
     //
     // Iterate over identifiers
-    for(multimap<string, time_t>::iterator it=_elapsed.begin();
-        it!=_elapsed.end();
-        it=_elapsed.upper_bound(it->first)) {
-        
-        pair<multimap<string, time_t>::iterator, multimap<string, time_t>::iterator> ret;
-        ret = _elapsed.equal_range((*it).first);
-
+    for(map<string, vector<time_t> >::iterator it=_elapsed.begin(); it!=_elapsed.end(); ++it) {
+        string ident = it->first;
         //
         // Accumulate elapsed time for each identifier and count amount of samples
         time_t acc = 0;
         size_t samples = 0;
-        for(multimap<string, time_t>::iterator inner=ret.first;
-            inner!=ret.second;
+        for(vector<time_t>::iterator inner=it->second.begin(); inner!=it->second.end();
             ++inner) {
             samples++;
-            acc += (*inner).second;
-            details << format_row((*inner).first, (*inner).second, 1) << endl;
+            acc += *inner;
+            details << format_row(ident, *inner, 1) << endl;
         }
         elapsed_total += acc;
         samples_total += samples;
@@ -157,16 +147,22 @@ string Timevault::text(bool detailed)
 
         details << format_line('-', '+');
         details << format_row("Subtotal", acc, samples) << endl << endl;
-        summary << format_row((*it).first, acc, samples) << endl;
+        summary << format_row(ident, acc, samples) << endl;
     }
+
     summary << format_line('=', '+');
     summary << format_row("Total", elapsed_total, samples_total) << endl;
 
-    if (detailed) {
+    if (_detailed) {
         return header.str() + details.str() + header.str() + summary.str();
     } else {
         return header.str() + summary.str();
     }
+}
+
+void Timevault::set_detailed(bool detailed)
+{
+    _detailed = detailed;
 }
 
 }}
