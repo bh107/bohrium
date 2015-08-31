@@ -31,9 +31,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_timing.hpp"
 #include "bh_ve_cpu.h"
 
+#include "timevault.hpp"
 #include "utils.hpp"
 #include "engine.hpp"
-#include "timevault.hpp"
 #include "kp_rt.h"
 
 using namespace std;
@@ -235,8 +235,10 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
         block.clear();                                          // Reset the block
         block.compose(*krnl, (bool)engine->jit_contraction());  // Compose it based on kernel
-        
+
+        TIMER_DETAILED        
         if ((block.omask() & KP_EXTENSION)>0) {         // Extension-Instruction-Execute (EIE)
+            TIMER_START
             kp_tac& tac = block.tac(0);
             map<bh_opcode, bh_extmethod_impl>::iterator ext;
             ext = extensions.find(static_cast<bh_instruction*>(tac.ext)->opcode);
@@ -248,10 +250,15 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                     return res;
                 }
             }
+            TIMER_STOP(block.text_compact());
         } else if ((engine->jit_fusion()) || 
                    (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
             DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
+
+            TIMER_START
             res = engine->process_block(tac_program, symbol_table, block);
+            TIMER_STOP(block.text_compact());
+
             if (BH_SUCCESS != res) {
                 return res;
             }
@@ -264,8 +271,11 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
 
                 block.clear();                          // Reset the block
                 block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
-
+                
+                TIMER_START
                 res = engine->process_block(tac_program, symbol_table, block);
+                TIMER_STOP(block.text_compact());
+
                 if (BH_SUCCESS != res) {
                     return res;
                 }

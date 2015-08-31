@@ -345,25 +345,36 @@ KP_LAYOUT determine_layout(const kp_operand & arg)
 
 std::string iterspace_text(const kp_iterspace & iterspace)
 {
-    stringstream ss;
-    ss << setw(12);
-    ss << setfill('-');
-    ss << core::layout_text(iterspace.layout) << "_";
-    ss << iterspace.ndim << "D_";
+    stringstream ss_layout_ndim, ss_shape, ss_nelem, ss;
 
-    stringstream ss_shape;
+    ss_layout_ndim << setfill('-');
+    ss_layout_ndim << left;
+    ss_layout_ndim << setw(14);
+    ss_layout_ndim << core::layout_text(iterspace.layout);
+    ss_layout_ndim << setw(4);
+    ss_layout_ndim << " "+ to_string(iterspace.ndim) + "D ";
+
     for(int64_t dim=0; dim <iterspace.ndim; ++dim) {
+        //ss_shape << iterspace.shape[dim];
         ss_shape << iterspace.shape[dim];
         if (dim!=iterspace.ndim-1) {
             ss_shape << "x";
         }
     }
-    ss << left;
-    ss << setw(20);
-    ss << ss_shape.str();
-    ss << "_";
-    ss << iterspace.nelem;
+
+    ss_nelem << " #";
+    ss_nelem << setw(16);
+    ss_nelem << setfill('-');
+    ss_nelem << right;
+    ss_nelem << to_string(iterspace.nelem);
     
+    ss << ss_layout_ndim.str();
+    ss << setfill('-');
+    ss << right;
+    ss << setw(21); 
+    ss << ss_shape.str();
+    ss << ss_nelem.str();
+ 
     return ss.str();
 }
 

@@ -24,6 +24,7 @@ class Bohrium < Formula
   depends_on "mono" => :build
   depends_on "swig" => :build
   depends_on "Python" => :build
+  depends_on "hwloc" => [:build,  "universal"]
   depends_on "boost" => [:build,  "universal"]
   depends_on "numpy" => :build
   depends_on "cython" => [:python, "cython", :build]
