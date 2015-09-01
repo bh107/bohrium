@@ -58,9 +58,26 @@ static uint64_t cost_unique(const bh_ir_kernel &k)
     {
         sum += bytes_in_view(v);
     }
+    for(const bh_base *b: k.get_discards())
+    {
+        sum += bh_base_size(b);
+    }
     return sum;
 }
-static uint64_t savings_unique(const bh_ir_kernel &a, const bh_ir_kernel &b)
+static uint64_t savings_unique(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
+{
+    bh_ir_kernel tmp = k1;
+    for(uint64_t instr_idx: k2.instr_indexes)
+    {
+        tmp.add_instr(instr_idx);
+    }
+    uint64_t old_cost = cost_unique(k1) + cost_unique(k2);
+    uint64_t new_cost = cost_unique(tmp);
+    assert(old_cost >= new_cost);
+    return old_cost - new_cost;
+}
+
+static uint64_t savings_unique_old(const bh_ir_kernel &a, const bh_ir_kernel &b)
 {
     int64_t price_drop = 0;
     //Subtract inputs in 'a' that comes from 'b' or is already an input in 'b'
