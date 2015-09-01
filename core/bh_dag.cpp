@@ -493,8 +493,13 @@ void pprint(const GraphDW &dag, const char filename[])
         graph_writer(const GraphD &g) : graph(g){};
         void operator()(std::ostream& out) const
         {
+            const uint64_t cost = dag_cost(graph);
             out << "labelloc=\"t\";" << endl;
-            out << "label=\"DAG with a total cost of " << dag_cost(graph);
+            out << "label=\"DAG with a total cost of ";
+            if(cost > 10000)
+                out << (double) cost;
+            else
+                out << cost;
             out << " bytes\";" << endl;
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
@@ -507,8 +512,13 @@ void pprint(const GraphDW &dag, const char filename[])
         kernel_writer(const GraphD &g, const map<Vertex, set<Vertex> > &v2f) : graph(g), v2f(v2f) {};
         void operator()(std::ostream& out, const Vertex& v) const
         {
+            const uint64_t cost = graph[v].cost();
             char buf[1024*10];
-            out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
+            out << "[label=\"Kernel " << v << ", ";
+            if(cost > 10000)
+                out << (double) cost;
+            else
+                out << cost;
             out << " bytes\\n";
             out << "Shape: ";
             const std::vector<bh_index>& ishape = graph[v].get_input_shape();
