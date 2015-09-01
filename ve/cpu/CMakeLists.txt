@@ -118,6 +118,7 @@ if (HWLOC_FOUND)                                                    # Enable HWL
     add_definitions(-DCAPE_WITH_HWLOC)
     include_directories(${HWLOC_INCLUDE_DIR})
     target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
+    target_link_libraries(kp ${HWLOC_LIBRARY})
 endif()
 
 set(VE_CPU_BIND "0")

@@ -4,7 +4,7 @@
 //	Walks the iteration-space using other/axis loop constructs.
 //	Partitions work into chunks of size equal to the "axis" dimension.
 //
-{{OFFLOAD}}
+{{OFFLOAD_BLOCK}}
 {
     {{WALKER_AXIS_DIM}}
     int64_t axis_shape = iterspace_shape[axis_dim];
