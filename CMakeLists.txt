@@ -8,6 +8,11 @@ if (APPLE)  # Build multi-arch OSX binaries
     set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
 endif()
 
+# Let's make sure that 'CMAKE_INSTALL_LIBDIR' is defined
+if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+    set(CMAKE_INSTALL_LIBDIR lib)
+endif(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+
 # We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
 if(DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are:
