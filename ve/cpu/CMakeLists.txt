@@ -117,7 +117,6 @@ check_c_compiler_flag("--param vect-max-version-for-alias-checks=100" PARAM_VECT
 if (HWLOC_FOUND)                                                    # Enable HWLOC for threadcontrol
     add_definitions(-DCAPE_WITH_HWLOC)
     include_directories(${HWLOC_INCLUDE_DIR})
-    target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
     target_link_libraries(kp ${HWLOC_LIBRARY})
 endif()
 
