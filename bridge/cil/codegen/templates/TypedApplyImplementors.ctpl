@@ -203,6 +203,36 @@ namespace NumCIL.Bohrium
         };
 
 %end for
+%for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+        private Dictionary<Type, Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}>> m_compareLookup_${bh_ctype2}_scalar_lhs = new Dictionary<Type, Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}>>();
+        private Tuple<Type, Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}>>[] m_compareOps_${bh_ctype2}_scalar_lhs =
+        {
+            new Tuple<Type, Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}>>(typeof(NumCIL.Generic.Operators.IEqual), PInvoke.bh_multi_array_${bh_ctype2}_equal_scalar_lhs),
+            new Tuple<Type, Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}>>(typeof(NumCIL.Generic.Operators.INotEqual), PInvoke.bh_multi_array_${bh_ctype2}_not_equal_scalar_lhs),
+%if $bh_ctype2 != "complex64" and $bh_ctype2 != "complex128" and $bh_ctype2  != "bool8"
+            new Tuple<Type, Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}>>(typeof(NumCIL.Generic.Operators.ILessThan), PInvoke.bh_multi_array_${bh_ctype2}_less_scalar_lhs),
+            new Tuple<Type, Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}>>(typeof(NumCIL.Generic.Operators.IGreaterThan), PInvoke.bh_multi_array_${bh_ctype2}_greater_scalar_lhs),
+            new Tuple<Type, Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}>>(typeof(NumCIL.Generic.Operators.ILessThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_less_equal_scalar_lhs),
+            new Tuple<Type, Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}>>(typeof(NumCIL.Generic.Operators.IGreaterThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_greater_equal_scalar_lhs),
+%end if
+        };
+
+%end for
+%for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+        private Dictionary<Type, Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}>> m_compareLookup_${bh_ctype2}_scalar_rhs = new Dictionary<Type, Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}>>();
+        private Tuple<Type, Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}>>[] m_compareOps_${bh_ctype2}_scalar_rhs =
+        {
+            new Tuple<Type, Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}>>(typeof(NumCIL.Generic.Operators.IEqual), PInvoke.bh_multi_array_${bh_ctype2}_equal_scalar_rhs),
+            new Tuple<Type, Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}>>(typeof(NumCIL.Generic.Operators.INotEqual), PInvoke.bh_multi_array_${bh_ctype2}_not_equal_scalar_rhs),
+%if $bh_ctype2 != "complex64" and $bh_ctype2 != "complex128" and $bh_ctype2  != "bool8"
+            new Tuple<Type, Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}>>(typeof(NumCIL.Generic.Operators.ILessThan), PInvoke.bh_multi_array_${bh_ctype2}_less_scalar_rhs),
+            new Tuple<Type, Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}>>(typeof(NumCIL.Generic.Operators.IGreaterThan), PInvoke.bh_multi_array_${bh_ctype2}_greater_scalar_rhs),
+            new Tuple<Type, Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}>>(typeof(NumCIL.Generic.Operators.ILessThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_less_equal_scalar_rhs),
+            new Tuple<Type, Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}>>(typeof(NumCIL.Generic.Operators.IGreaterThanOrEqual), PInvoke.bh_multi_array_${bh_ctype2}_greater_equal_scalar_rhs),
+%end if
+        };
+
+%end for
 %end if
         
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, long>> m_reduceLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, long>>();
@@ -368,6 +398,17 @@ namespace NumCIL.Bohrium
 %for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
             if (typeof(Ta) == typeof($bh_atype2))
             {
+                var isScalarIn1 = @in1.DataAccessor.GetType() == typeof(DefaultAccessor<${bh_atype2}>) && @in1.DataAccessor.Length == 1;
+
+                if (isScalarIn1 && ApplyBinaryConvOpScalarLhs<Ta>(c, (Ta)(object)in1.Value[0], in2, @out))
+                    return true;
+
+
+                var isScalarIn2 = @in2.DataAccessor.GetType() == typeof(DefaultAccessor<${bh_atype2}>) && @in2.DataAccessor.Length == 1;            
+
+                if (isScalarIn2 && ApplyBinaryConvOpScalarRhs<Ta>(c, in1, (Ta)(object)in2.Value[0], @out))
+                    return true;
+
                 Action<ma_bool8, ma_${bh_ctype2}, ma_${bh_ctype2}> m;
                 if (!m_compareLookup_${bh_ctype2}.TryGetValue(c, out m))
                 {
@@ -409,6 +450,98 @@ namespace NumCIL.Bohrium
 %end if
             return false;
         }
+
+%if $bh_ctype == "bool8"
+        public bool ApplyBinaryConvOpScalarLhs<Ta>(Type c, Ta in1, NdArray<Ta> in2, NdArray<${bh_atype}> @out)
+        {
+%for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+            if (typeof(Ta) == typeof($bh_atype2))
+            {
+                Action<ma_bool8, ${bh_atype2}, ma_${bh_ctype2}> m;
+                if (!m_compareLookup_${bh_ctype2}_scalar_lhs.TryGetValue(c, out m))
+                {
+                    m = (from n in m_compareOps_${bh_ctype2}_scalar_lhs
+                                        where n.Item1.IsAssignableFrom(c)
+                                        select n.Item2).FirstOrDefault();
+                    m_compareLookup_${bh_ctype2}_scalar_lhs[c] = m;
+                }
+            
+                if (m == null)
+                {
+                    Console.WriteLine("No registered match for left-hand-side scalar: {0}", c.FullName);
+                    return false;
+                }
+
+                var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};                  
+                lock(PinnedArrayTracker.ExecuteLock)
+                {
+                    using (var v2 = new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)@in2))
+                    using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+                    {
+                        m(v0, (${bh_atype2})(object)in1, v2);
+
+                        if (isUnmanaged)
+                            ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                        else
+                            v0.Sync();
+                    }
+                }
+
+                // If the output is CIL-managed, we must sync immediately
+                if (!isUnmanaged)
+                    PinnedArrayTracker.Release();
+
+                return true;
+            }
+%end for
+            return false;
+        }
+
+        public bool ApplyBinaryConvOpScalarRhs<Ta>(Type c, NdArray<Ta> in1, Ta in2, NdArray<${bh_atype}> @out)
+        {
+%for $ctype2, $bh_atype2, $bh_ctype2, $bh_enum2 in $ops
+            if (typeof(Ta) == typeof($bh_atype2))
+            {
+                Action<ma_bool8, ma_${bh_ctype2}, ${bh_atype2}> m;
+                if (!m_compareLookup_${bh_ctype2}_scalar_rhs.TryGetValue(c, out m))
+                {
+                    m = (from n in m_compareOps_${bh_ctype2}_scalar_rhs
+                                        where n.Item1.IsAssignableFrom(c)
+                                        select n.Item2).FirstOrDefault();
+                    m_compareLookup_${bh_ctype2}_scalar_rhs[c] = m;
+                }
+            
+                if (m == null)
+                {
+                    Console.WriteLine("No registered match for left-hand-side scalar: {0}", c.FullName);
+                    return false;
+                }
+
+                var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};                  
+                lock(PinnedArrayTracker.ExecuteLock)
+                {
+                    using (var v1 = new PInvoke.bh_multi_array_${bh_ctype2}_p((NdArray<${bh_atype2}>)(object)@in1))
+                    using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+                    {
+                        m(v0, v1, (${bh_atype2})(object)in2);
+
+                        if (isUnmanaged)
+                            ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                        else
+                            v0.Sync();
+                    }
+                }
+
+                // If the output is CIL-managed, we must sync immediately
+                if (!isUnmanaged)
+                    PinnedArrayTracker.Release();
+
+                return true;
+            }
+%end for
+            return false;
+        }        
+%end if        
 
         public bool ApplyUnaryOp(Type c, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> @out)
         {
