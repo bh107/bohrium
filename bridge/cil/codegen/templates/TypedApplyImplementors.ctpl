@@ -127,6 +127,33 @@ namespace NumCIL.Bohrium
 %end for
         };
 
+        private Tuple<Type, Action<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>[] m_binOps_scalar_lhs = 
+        {
+%for $op, $opcode, $opname, $opcount, $typesigs, $cilname in $methods
+%if $opcode != "BH_IDENTITY" and opcount == 3 and $cilname != ""
+%for $op1_type, $op2_type, $op3_type in $typesigs
+%if op1_type[2] == $bh_ctype and op2_type[2] == $bh_ctype and op3_type[2] == $bh_ctype
+            new Tuple<Type, Action<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>(typeof(${cilname}), PInvoke.bh_multi_array_${bh_ctype}_${opname}_scalar_lhs),
+%end if
+%end for
+%end if
+%end for
+        };
+
+        private Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ${bh_atype}>>[] m_binOps_scalar_rhs = 
+        {
+%for $op, $opcode, $opname, $opcount, $typesigs, $cilname in $methods
+%if $opcode != "BH_IDENTITY" and opcount == 3 and $cilname != ""
+%for $op1_type, $op2_type, $op3_type in $typesigs
+%if op1_type[2] == $bh_ctype and op2_type[2] == $bh_ctype and op3_type[2] == $bh_ctype
+            new Tuple<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ${bh_atype}>>(typeof(${cilname}), PInvoke.bh_multi_array_${bh_ctype}_${opname}_scalar_rhs),
+%end if
+%end for
+%end if
+%end for
+        };
+
+
         private Tuple<Type, Func<ma_${bh_ctype}, ${bh_atype}>>[] m_aggregateOps = 
         {
 %if $bh_atype == "bh_bool8"
@@ -181,6 +208,8 @@ namespace NumCIL.Bohrium
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, long>> m_reduceLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, long>>();
         private Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}>> m_aggregateLookup = new Dictionary<Type, Func<ma_${bh_ctype}, ${bh_atype}>>();
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>> m_binOpLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}>>();
+        private Dictionary<Type, Action<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>> m_binOpLookupScalarLhs = new Dictionary<Type, Action<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}>>();
+        private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ${bh_atype}>> m_binOpLookupScalarRhs = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}, ${bh_atype}>>();
         private Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>> m_unOpLookup = new Dictionary<Type, Action<ma_${bh_ctype}, ma_${bh_ctype}>>();
         private Dictionary<Type, Action<ma_${bh_ctype}>> m_nullOpLookup = new Dictionary<Type, Action<ma_${bh_ctype}>>();
 
@@ -188,6 +217,17 @@ namespace NumCIL.Bohrium
 
         public bool ApplyBinaryOp(Type c, NdArray<${bh_atype}> in1, NdArray<${bh_atype}> in2, NdArray<${bh_atype}> @out)
         {
+            var isScalarIn1 = @in1.DataAccessor.GetType() == typeof(DefaultAccessor<${bh_atype}>) && @in1.DataAccessor.Length == 1;
+
+            if (isScalarIn1 && ApplyBinaryOpScalarLhs(c, in1.Value[0], in2, @out))
+                return true;
+
+
+            var isScalarIn2 = @in2.DataAccessor.GetType() == typeof(DefaultAccessor<${bh_atype}>) && @in2.DataAccessor.Length == 1;            
+
+            if (isScalarIn2 && ApplyBinaryOpScalarRhs(c, in1, in2.Value[0], @out))
+                return true;
+
             Action<ma_${bh_ctype}, ma_${bh_ctype}, ma_${bh_ctype}> m;
             // This lookup prevents a linear scan of the supported operands
             if (!m_binOpLookup.TryGetValue(c, out m))
@@ -211,12 +251,102 @@ namespace NumCIL.Bohrium
 
             var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};                  
             lock(PinnedArrayTracker.ExecuteLock)
-            {                        
+            {
                 using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
                 using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in2))
                 using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
                 {
                     m(v0, v1, v2);
+
+                    if (isUnmanaged)
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    else
+                        v0.Sync();
+                }
+            }
+
+            // If the output is CIL-managed, we must sync immediately
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
+
+            return true;
+        }
+
+        public bool ApplyBinaryOpScalarLhs(Type c, ${bh_atype} in1, NdArray<${bh_atype}> in2, NdArray<${bh_atype}> @out)
+        {
+            Action<ma_${bh_ctype}, ${bh_atype}, ma_${bh_ctype}> m;
+            // This lookup prevents a linear scan of the supported operands
+            if (!m_binOpLookupScalarLhs.TryGetValue(c, out m))
+            {
+                m = (from n in m_binOps_scalar_lhs
+                                    where n.Item1.IsAssignableFrom(c)
+                                    select n.Item2).FirstOrDefault();
+                m_binOpLookupScalarLhs[c] = m;
+            }
+        
+            if (m == null)
+            {
+                Console.WriteLine("No registered match for left-hand-side scalar version: {0}", c.FullName);
+                return false;
+            }
+                
+            // If the accessor is CIL-managed, we register a GC handle for the array
+            // If the input is used, no special action is performed until 
+            // a sync is executed, then all the BH queue is flushed and 
+            // the GC handles released
+
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};                  
+            lock(PinnedArrayTracker.ExecuteLock)
+            {
+                using (var v2 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in2))
+                using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+                {
+                    m(v0, in1, v2);
+
+                    if (isUnmanaged)
+                        ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
+                    else
+                        v0.Sync();
+                }
+            }
+
+            // If the output is CIL-managed, we must sync immediately
+            if (!isUnmanaged)
+                PinnedArrayTracker.Release();
+
+            return true;
+        }        
+
+        public bool ApplyBinaryOpScalarRhs(Type c, NdArray<${bh_atype}> in1, ${bh_atype} in2, NdArray<${bh_atype}> @out)
+        {
+            Action<ma_${bh_ctype}, ma_${bh_ctype}, ${bh_atype}> m;
+            // This lookup prevents a linear scan of the supported operands
+            if (!m_binOpLookupScalarRhs.TryGetValue(c, out m))
+            {
+                m = (from n in m_binOps_scalar_rhs
+                                    where n.Item1.IsAssignableFrom(c)
+                                    select n.Item2).FirstOrDefault();
+                m_binOpLookupScalarRhs[c] = m;
+            }
+        
+            if (m == null)
+            {
+                Console.WriteLine("No registered match for right-hand-side scalar version: {0}", c.FullName);
+                return false;
+            }
+                
+            // If the accessor is CIL-managed, we register a GC handle for the array
+            // If the input is used, no special action is performed until 
+            // a sync is executed, then all the BH queue is flushed and 
+            // the GC handles released
+
+            var isUnmanaged = @out.DataAccessor is DataAccessor_${bh_ctype};                  
+            lock(PinnedArrayTracker.ExecuteLock)
+            {
+                using (var v1 = new PInvoke.bh_multi_array_${bh_ctype}_p(@in1))
+                using (var v0 = new PInvoke.bh_multi_array_${bh_ctype}_p(@out))
+                {
+                    m(v0, v1, in2);
 
                     if (isUnmanaged)
                         ((DataAccessor_${bh_ctype})@out.DataAccessor).SetDirty();
