@@ -117,7 +117,6 @@ check_c_compiler_flag("--param vect-max-version-for-alias-checks=100" PARAM_VECT
 if (HWLOC_FOUND)                                                    # Enable HWLOC for threadcontrol
     add_definitions(-DCAPE_WITH_HWLOC)
     include_directories(${HWLOC_INCLUDE_DIR})
-    target_link_libraries(bh_ve_cpu ${HWLOC_LIBRARY})
     target_link_libraries(kp ${HWLOC_LIBRARY})
 endif()
 
@@ -205,10 +204,12 @@ if(APPLE)
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
         DESTINATION var/bohrium/scripts
     )
-    set(VE_CPU_COMPILER_CMD "${CMAKE_INSTALL_PREFIX}/var/bohrium/scripts/osx_compile.sh -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include ")
+    # Currently we store the source files, so no need for the tempfile hack
+    # Note that this is overriden later in this script anyway ....
+    # set(VE_CPU_COMPILER_CMD "${CMAKE_INSTALL_PREFIX}/var/bohrium/scripts/osx_compile.sh -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_INSTALL_PREFIX}/include/bohrium -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include ")
+
     set(VE_CPU_COMPILER_INC "")
-    set(VE_CPU_COMPILER_INC "")
-    set(VE_CPU_COMPILER_INC "")
+    set(VE_CPU_COMPILER_FLG "-dynamiclib -arch i386 -arch x86_64")
     set(VE_CPU_COMPILER_LIB "")
     set(VE_CPU_COMPILER_EXT "")
 else()
