@@ -49,6 +49,8 @@ enum FusePriceModel
 
     TEMP_ELEMINATION,
 
+    AMOS,
+
 /* The number of price models in this enum */
     NUM_OF_PRICE_MODELS
 };

@@ -76,7 +76,7 @@ static uint64_t savings_unique(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
     assert(old_cost >= new_cost);
     return old_cost - new_cost;
 }
-
+/*
 static uint64_t savings_unique_old(const bh_ir_kernel &a, const bh_ir_kernel &b)
 {
     int64_t price_drop = 0;
@@ -109,6 +109,7 @@ static uint64_t savings_unique_old(const bh_ir_kernel &a, const bh_ir_kernel &b)
     }
     return price_drop;
 }
+*/
 
 /* The cost of a kernel is 'number of instruction' * 3 - 'number of temp arrays' */
 static uint64_t cost_temp_elemination(const bh_ir_kernel &k)
@@ -124,6 +125,72 @@ static uint64_t savings_temp_elemination(const bh_ir_kernel &k1, const bh_ir_ker
     }
     uint64_t old_cost = cost_temp_elemination(k1) + cost_temp_elemination(k2);
     uint64_t new_cost = cost_temp_elemination(tmp);
+    assert(old_cost >= new_cost);
+    return old_cost - new_cost;
+}
+
+static uint64_t cost_amos(const bh_ir_kernel &k)
+{
+    uint64_t N = k.bhir->instr_list.size();
+    if(k.instr_indexes.size() == 0)
+        return 0;
+
+    uint64_t loop_overhead = 1;
+    uint64_t not_tmp = k.get_parameters().size();
+    uint64_t shared_access = 0;
+
+    for(uint64_t instr_idx=0; instr_idx < k.bhir->instr_list.size(); ++instr_idx)
+    {
+        const bh_instruction &instr = k.bhir->instr_list[instr_idx];
+        //Check if the instruction is in this kernel
+        if(std::find(k.instr_indexes.begin(), k.instr_indexes.end(), instr_idx) != k.instr_indexes.end())
+            continue;
+
+        //Let's count the number of inputs in this kernel that reads the output of 'instr'
+        for(uint64_t krn_idx: k.instr_indexes)
+        {
+            if(krn_idx < instr_idx)
+                continue;
+            const bh_instruction &krn_instr = k.bhir->instr_list[krn_idx];
+            const int nop = bh_operands(krn_instr.opcode);
+            for(int i=1; i<nop; ++i)
+            {
+                const bh_view &read = krn_instr.operand[i];
+                if(bh_is_constant(&read))
+                    continue;
+                if(instr.operand[0] == read)
+                    ++shared_access;
+            }
+        }
+        //Let's count the number of shared inputs
+        for(uint64_t krn_idx: k.instr_indexes)
+        {
+            const bh_instruction &krn_instr = k.bhir->instr_list[krn_idx];
+            for(int i=1; i < bh_operands(instr.opcode); ++i)
+            {
+                if(bh_is_constant(&instr.operand[i]))
+                    continue;
+                for(int j=1; j < bh_operands(krn_instr.opcode); ++j)
+                {
+                    if(bh_is_constant(&krn_instr.operand[j]))
+                        continue;
+                    if(instr.operand[i] == krn_instr.operand[j])
+                        ++shared_access;
+                }
+            }
+        }
+    }
+    return loop_overhead+not_tmp*N+shared_access*N*N;
+}
+static uint64_t savings_amos(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
+{
+    bh_ir_kernel tmp = k1;
+    for(uint64_t instr_idx: k2.instr_indexes)
+    {
+        tmp.add_instr(instr_idx);
+    }
+    uint64_t old_cost = cost_amos(k1) + cost_amos(k2);
+    uint64_t new_cost = cost_amos(tmp);
     assert(old_cost >= new_cost);
     return old_cost - new_cost;
 }
@@ -177,6 +244,9 @@ void fuse_price_model_text(FusePriceModel price_model, string &output)
     case TEMP_ELEMINATION:
         output = "temp_elemination";
         break;
+    case AMOS:
+        output = "amos";
+        break;
     default:
         output = "unknown";
     }
@@ -193,6 +263,8 @@ uint64_t kernel_cost(const bh_ir_kernel &kernel)
         return cost_unique(kernel);
     case TEMP_ELEMINATION:
         return cost_temp_elemination(kernel);
+    case AMOS:
+        return cost_amos(kernel);
     default:
         throw runtime_error("No price module is selected!");
     }
@@ -209,6 +281,8 @@ uint64_t cost_savings(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
         return savings_unique(k1, k2);
     case TEMP_ELEMINATION:
         return savings_temp_elemination(k1, k2);
+    case AMOS:
+        return savings_amos(k1, k2);
     default:
         throw runtime_error("No price module is selected!");
     }
