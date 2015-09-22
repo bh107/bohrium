@@ -49,18 +49,14 @@ inline static uint64_t bytes_in_view(const bh_view &v)
 /* The cost of a kernel is the sum of unique views read and written */
 static uint64_t cost_unique(const bh_ir_kernel &k)
 {
+    set<bh_view> unique_views;
+    unique_views.insert(k.get_input_set().begin(), k.get_input_set().end());
+    unique_views.insert(k.get_output_set().begin(), k.get_output_set().end());
+
     uint64_t sum = 0;
-    for(const bh_view &v: k.get_input_set())
+    for(const bh_view &v: unique_views)
     {
         sum += bytes_in_view(v);
-    }
-    for(const bh_view &v: k.get_output_set())
-    {
-        sum += bytes_in_view(v);
-    }
-    for(const bh_base *b: k.get_discards())
-    {
-        sum += bh_base_size(b);
     }
     return sum;
 }
