@@ -218,7 +218,6 @@ FusePriceModel fuse_get_selected_price_model()
             fuse_price_model_text(m, model);
             if(iequals(e, model))
             {
-                cout << "[FUSE] info: selected price model: '" << model << "'" << endl;
                 return m;
             }
         }
@@ -226,7 +225,6 @@ FusePriceModel fuse_get_selected_price_model()
         cerr << "', using the default model '" << default_model << "' instead" << endl;
         setenv("BH_PRICE_MODEL", default_model.c_str(), 1);
     }
-    cout << "[FUSE] info: selected price model: '" << default_model << "'" << endl;
     return default_price_model;
 }
 
