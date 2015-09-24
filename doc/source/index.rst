@@ -42,6 +42,8 @@ Get Started!
 
 * `Student Projects <https://docs.google.com/document/d/1bMxKi86q-F0kVHLZoQzzt7BhTde4GOco9cA_fhJf45c/edit?usp=sharing/>`_
 
+* `Benchmark Suite <http://benchpress.readthedocs.org/>`_
+
 .. toctree::
    :maxdepth: 1
 
