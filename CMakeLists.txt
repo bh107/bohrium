@@ -8,6 +8,9 @@ if (APPLE)  # Build multi-arch OSX binaries
     set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
 endif()
 
+# This is for the Clion IDE
+ADD_CUSTOM_TARGET(run_install COMMAND ${CMAKE_MAKE_PROGRAM} install)
+
 # Let's make sure that 'CMAKE_INSTALL_LIBDIR' is defined
 if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
     set(CMAKE_INSTALL_LIBDIR lib)
