@@ -74,6 +74,15 @@ pricer = fuseprinter
 fuseprinter = node
 node = cpu
 
+[stack_proxy_cpu]
+type = stack
+stack_proxy_cpu = bcexp_cpu
+bcexp_cpu = bccon
+bccon = proxy
+proxy = topological
+topological = node
+node = cpu
+
 #
 # Component configuration
 #
