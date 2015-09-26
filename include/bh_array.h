@@ -27,10 +27,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_type.h"
 #include "bh_win.h"
 
+#include <boost/serialization/split_member.hpp>
+
+// Forward declaration of class boost::serialization::access
+namespace boost {namespace serialization {class access;}}
+
 #define BH_MAXDIM (16)
 
-#ifndef __BH_BASE
-#define __BH_BASE
 struct bh_base
 {
     /// Pointer to the actual data.
@@ -41,8 +44,26 @@ struct bh_base
 
     /// The number of elements in the array
     bh_index      nelem;
+
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+        size_t tmp = (size_t)data;
+        ar << tmp;
+        ar & type;
+        ar & nelem;
+    }
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version)
+    {
+        size_t tmp;
+        ar >> tmp;
+        data = (void*)tmp;
+        ar & type;
+        ar & nelem;
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
-#endif
 
 struct bh_view
 {
@@ -52,23 +73,23 @@ struct bh_view
     /// Index of the start element
     bh_index      start;
 
-    /// Number of dimentions
+    /// Number of dimensions
     bh_intp       ndim;
 
-    /// Number of elements in each dimention
+    /// Number of elements in each dimensions
     bh_index      shape[BH_MAXDIM];
 
-    /// The stride for each dimention
+    /// The stride for each dimensions
     bh_index      stride[BH_MAXDIM];
 
     bool operator<(const bh_view& other) const
     {
-        if (base < other.base) return true; 
-        if (other.base < base) return false; 
-        if (start < other.start) return true; 
+        if (base < other.base) return true;
+        if (other.base < base) return false;
+        if (start < other.start) return true;
         if (other.start < start) return false;
-        if (ndim < other.ndim) return true; 
-        if (other.ndim < ndim) return false; 
+        if (ndim < other.ndim) return true;
+        if (other.ndim < ndim) return false;
         for (bh_intp i = 0; i < ndim; ++i)
         {
             if (shape[i] < other.shape[i]) return true;
@@ -83,15 +104,44 @@ struct bh_view
     }
     bool operator==(const bh_view& other) const
     {
-        if (base != other.base) return false; 
-        if (ndim != other.ndim) return false; 
-        if (start != other.start) return false; 
+        if (base != other.base) return false;
+        if (ndim != other.ndim) return false;
+        if (start != other.start) return false;
         for (bh_intp i = 0; i < ndim; ++i)
             if (shape[i] != other.shape[i]) return false;
         for (bh_intp i = 0; i < ndim; ++i)
             if (stride[i] != other.stride[i]) return false;
         return true;
     }
+
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+        size_t tmp = (size_t)base;
+        ar << tmp;
+        ar & start;
+        ar & ndim;
+        for(size_t i=0; i<ndim; ++i)
+        {
+            ar & shape[i];
+            ar & stride[i];
+        }
+    }
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version)
+    {
+        size_t tmp;
+        ar >> tmp;
+        base = (bh_base*)tmp;
+        ar & start;
+        ar & ndim;
+        for(size_t i=0; i<ndim; ++i)
+        {
+            ar & shape[i];
+            ar & stride[i];
+        }
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 /** Create a new base array.
