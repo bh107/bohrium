@@ -34,17 +34,31 @@ namespace bohrium {
 namespace serialize {
 
 /* Message type */
-enum MessageType
+enum Type
 {
-    MSG_INIT,
-    MSG_SHUTDOWN,
-    MSG_EXEC,
-    MSG_EXTMETHOD
+    TYPE_INIT,
+    TYPE_SHUTDOWN,
+    TYPE_EXEC,
+    TYPE_EXTMETHOD
 };
 
-struct MessageHead
+struct Header
 {
-    MessageType type;
+    Type type;
+    size_t body_size;
+    Header(Type type, size_t body_size):type(type),body_size(body_size){}
+    Header(const std::vector<char> &buffer);
+    void serialize(std::vector<char> &buffer);
+};
+const size_t HeaderSize = sizeof(Type) + sizeof(size_t);
+
+struct Init
+{
+    std::string component_name;
+    Init(std::string component_name):component_name(component_name){}
+    Init(const std::vector<char> &buffer);
+
+    void serialize(std::vector<char> &buffer);
 };
 
 class ExecuteFrontend
@@ -60,7 +74,7 @@ class ExecuteBackend
     std::map<const bh_base*, bh_base> remote2local;
     std::set<const bh_base*> remote_discards;
 public:
-    void deserialize(bh_ir &bhir, std::vector<char> &buffer, std::vector<bh_base*> &data_send, std::vector<bh_base*> &data_recv);
+    bh_ir deserialize(std::vector<char> &buffer, std::vector<bh_base*> &data_send, std::vector<bh_base*> &data_recv);
     void cleanup(const bh_ir &bhir);
 };
 

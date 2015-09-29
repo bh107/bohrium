@@ -35,12 +35,61 @@ using namespace boost;
 namespace bohrium {
 namespace serialize {
 
+Header::Header(const std::vector<char> &buffer)//Deserialize constructor
+{
+    assert(buffer.size() >= HeaderSize);
+
+    //Interpret the buffer as a Type and a body size
+    const Type *type = reinterpret_cast<const Type*>(&buffer[0]);
+    const size_t *body_size = reinterpret_cast<const size_t*>(type+1);
+
+    //Write from buffer
+    this->type = *type;
+    this->body_size = *body_size;
+}
+
+void Header::serialize(std::vector<char> &buffer)
+{
+    //Make room for the Header data
+    buffer.resize(buffer.size()+HeaderSize);
+
+    //Interpret the buffer as a Type and a body size
+    Type *type = reinterpret_cast<Type*>(&buffer[0]);
+    size_t *body_size = reinterpret_cast<size_t*>(type+1);
+
+    //Write to buffer
+    *type = this->type;
+    *body_size = this->body_size;
+}
+
+Init::Init(const std::vector<char> &buffer)//Deserialize constructor
+{
+    //Wrap 'buffer' in an io stream
+    iostreams::basic_array_source<char> source(&buffer[0], buffer.size());
+    iostreams::stream<iostreams::basic_array_source <char> > input_stream(source);
+    archive::binary_iarchive ia(input_stream);
+
+    //Deserialize the component name
+    ia >> this->component_name;
+}
+
+void Init::serialize(std::vector<char> &buffer)
+{
+    //Wrap 'buffer' in an io stream
+    iostreams::stream<iostreams::back_insert_device<vector<char> > > output_stream(buffer);
+    archive::binary_oarchive oa(output_stream);
+
+    //Serialize the component name
+    oa << this->component_name;
+}
+
 void ExecuteFrontend::serialize(const bh_ir &bhir, vector<char> &buffer, vector<bh_base*> &data_send, vector<bh_base*> &data_recv)
 {
     //Wrap 'buffer' in an io stream
     iostreams::stream<iostreams::back_insert_device<vector<char> > > output_stream(buffer);
     archive::binary_oarchive oa(output_stream);
 
+    //Serialize the BhIR
     oa << bhir;
 
     //Serialize the new base arrays in 'bhir' and find base arrays that have data we must send
@@ -63,8 +112,10 @@ void ExecuteFrontend::serialize(const bh_ir &bhir, vector<char> &buffer, vector<
         }
     }
 
+    //Serialize the new base arrays in the 'bhir'
     oa << new_bases;
 
+    //Update 'known_base_arrays' and 'data_recv'
     for(const bh_instruction &instr: bhir.instr_list)
     {
         assert(instr.opcode >= 0);
@@ -102,17 +153,15 @@ void ExecuteFrontend::cleanup(bh_ir &bhir)
     }
 }
 
-void ExecuteBackend::deserialize(bh_ir &bhir, vector<char> &buffer, vector<bh_base*> &data_send, vector<bh_base*> &data_recv)
+bh_ir ExecuteBackend::deserialize(vector<char> &buffer, vector<bh_base*> &data_send, vector<bh_base*> &data_recv)
 {
-
-
-
     //Wrap 'buffer' in an io stream
     iostreams::basic_array_source<char> source(&buffer[0], buffer.size());
     iostreams::stream<iostreams::basic_array_source <char> > input_stream(source);
     archive::binary_iarchive ia(input_stream);
 
     //deserialize the BhIR
+    bh_ir bhir;
     ia >> bhir;
 
     //Find all discarded base arrays (remote base pointers)
@@ -181,6 +230,7 @@ void ExecuteBackend::deserialize(bh_ir &bhir, vector<char> &buffer, vector<bh_ba
             default: {}
         }
     }
+    return bhir;
 }
 
 void ExecuteBackend::cleanup(const bh_ir &bhir)
