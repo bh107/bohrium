@@ -106,9 +106,9 @@ Packages for visualization::
 
 Build and install::
 
-  wget https://github.com/bh107/bohrium/get/master.tgz
-  tar -xzf master.tgz
-  cd bohrium-bohrium-<hash>
+  wget https://github.com/bh107/bohrium/archive/master.zip
+  unzip master.tgz
+  cd bohrium-master
   mkdir build
   cd build
   cmake .. -DCMAKE_INSTALL_PREFIX=<path to install directory>
