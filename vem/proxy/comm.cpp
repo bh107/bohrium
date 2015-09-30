@@ -41,11 +41,23 @@ static void init_client_socket(tcp::socket &socket, const std::string &address, 
     {
         try
         {
+            // Get a list of endpoints corresponding to the server name.
             tcp::resolver resolver(io_service);
             tcp::resolver::query query(address, to_string(port));
             tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-            boost::asio::connect(socket, endpoint_iterator);
-            break;
+            tcp::resolver::iterator end;
+
+            // Try each endpoint until we successfully establish a connection.
+            boost::system::error_code error = boost::asio::error::host_not_found;
+            while (error && endpoint_iterator != end)
+            {
+                socket.close();
+                socket.connect(*endpoint_iterator++, error);
+            }
+            if (error)
+                throw boost::system::system_error(error);
+
+            return;
         }
         catch(...)
         {
