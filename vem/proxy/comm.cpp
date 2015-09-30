@@ -37,13 +37,26 @@ tcp::socket socket(io_service);
 
 static void init_client_socket(tcp::socket &socket, const std::string &address, int port)
 {
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(address, to_string(port));
-    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-    boost::asio::connect(socket, endpoint_iterator);
+    for(unsigned int i = 0; i < 1000000; ++i)
+    {
+        try
+        {
+            tcp::resolver resolver(io_service);
+            tcp::resolver::query query(address, to_string(port));
+            tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+            boost::asio::connect(socket, endpoint_iterator);
+            break;
+        }
+        catch(...)
+        {
+            cout << "retry"  << endl;
+
+        }
+
+    }
 }
 
-static void init_server_socket(tcp::socket &socket, const std::string &address, int port)
+static void init_server_socket(tcp::socket &socket, int port)
 {
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
     acceptor.accept(socket);
@@ -142,7 +155,7 @@ void CommFrontend::recv_array_data(bh_base *base)
 
 
 CommBackend::CommBackend(const std::string &address, int port) {
-    init_server_socket(socket, address, port);
+    init_server_socket(socket, port);
 }
 
 serialize::Header CommBackend::next_message_head()

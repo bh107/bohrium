@@ -42,6 +42,9 @@ bh_error exec_extmethod(const char *name, bh_opcode opcode);
  */
 bh_error exec_execute(bh_ir *bhir);
 
+/* Returns the initiated self component */
+bh_component *exec_get_self_component();
+
 }}
 
 #endif

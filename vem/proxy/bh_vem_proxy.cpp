@@ -43,7 +43,8 @@ bh_error bh_vem_proxy_init(const char* name)
     if((e = exec_init(name)) != BH_SUCCESS)
         return e;
 
-    comm_front = CommFrontend(name, "localhost", 4200);
+    int port = bh_component_config_lookup_int(exec_get_self_component(), "port", 4200);
+    comm_front = CommFrontend(name, "localhost", port);
 
     return BH_SUCCESS;
 }

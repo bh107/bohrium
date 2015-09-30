@@ -27,10 +27,11 @@ using namespace bohrium;
 using namespace bohrium::proxy;
 
 
-int main()
+
+bh_error service(const std::string &address, int port)
 {
     bh_error e;
-    CommBackend comm_backend = CommBackend("localhost", 4200);
+    CommBackend comm_backend = CommBackend(address, port);
     serialize::ExecuteBackend exec;
 
     while(1)
@@ -107,4 +108,27 @@ int main()
     }
 
     return 0;
+}
+
+int main(int argc, char * argv[])
+{
+    char *address = NULL;
+    int port = 0;
+
+    if (argc == 5 && \
+        (strncmp(argv[1], "-a\0", 3) == 0) && \
+        (strncmp(argv[3], "-p\0", 3) == 0)) {
+        address = argv[2];
+        port = atoi(argv[4]);
+    } else {
+        printf("Usage: %s -a ipaddress -p port\n", argv[0]);
+        return 0;
+    }
+    if (!address) {
+        fprintf(stderr, "Please supply address.\n");
+        return 0;
+    }
+
+    printf("Backend will serve on port %d.\n", port);
+    service(address, port);
 }

@@ -33,7 +33,7 @@ namespace bohrium {
 namespace proxy {
 
 //Our self
-static bh_component myself;
+bh_component myself;
 
 //Function pointers to our child.
 bh_component_iface *mychild;
@@ -96,5 +96,12 @@ bh_error exec_execute(bh_ir *bhir) {
 
     return mychild->execute(bhir);
 }
+
+/* Returns the initiated self component */
+bh_component *exec_get_self_component()
+{
+    return &myself;
+}
+
 
 }}
