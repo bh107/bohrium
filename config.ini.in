@@ -78,7 +78,8 @@ node = cpu
 type = stack
 stack_proxy_cpu = bcexp_cpu
 bcexp_cpu = bccon
-bccon = proxy
+bccon = visualizer
+visualizer = proxy
 proxy = topological
 topological = node
 node = cpu
@@ -103,6 +104,14 @@ type = vem
 address = localhost
 port = 4200
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_proxy${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = node
+
+[visualizer]
+type = vem
+address = localhost
+port = 4200
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
+libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
 
 [cluster]
