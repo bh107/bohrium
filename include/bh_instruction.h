@@ -14,8 +14,16 @@ namespace boost {namespace serialization {class access;}}
 #define BH_MAX_NO_OPERANDS (3)
 
 //Memory layout of the Bohrium instruction
-typedef struct
+struct bh_instruction
 {
+    bh_instruction(){}
+    bh_instruction(const bh_instruction& instr)
+    {
+        opcode = instr.opcode;
+        constant = instr.constant;
+        std::memcpy(operand, instr.operand, bh_noperands(opcode) * sizeof(bh_view));
+    }
+
     //Opcode: Identifies the operation
     bh_opcode  opcode;
     //Id of each operand
@@ -23,18 +31,19 @@ typedef struct
     //Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
 
-protected:
     // Serialization using Boost
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)
     {
         ar & opcode;
-        ar & operand;
         //We use make_array as a hack to make bh_constant BOOST_IS_BITWISE_SERIALIZABLE
         ar & boost::serialization::make_array(&constant, 1);
+        const size_t nop = bh_noperands(opcode);
+        for(size_t i=0; i<nop; ++i)
+            ar & operand[i];
     }
-} bh_instruction;
+};
 
 BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)
 

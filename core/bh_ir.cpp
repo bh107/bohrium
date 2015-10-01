@@ -45,7 +45,7 @@ namespace io = boost::iostreams;
 */
 bh_ir::bh_ir(bh_intp ninstr, const bh_instruction instr_list[])
 {
-    bh_ir::instr_list = vector<bh_instruction>(instr_list, &instr_list[ninstr]);
+    this->instr_list = vector<bh_instruction>(instr_list, &instr_list[ninstr]);
 }
 
 bh_ir::bh_ir(const bh_instruction& instr)
@@ -247,7 +247,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     instr_indexes.push_back(instr_idx);
 }
 
-// Smalest output shape used in the kernel
+// Smallest output shape used in the kernel
 std::vector<bh_index> bh_ir_kernel::get_output_shape() const
 {
     bh_index nelem = INT64_MAX;

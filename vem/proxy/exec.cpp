@@ -50,7 +50,7 @@ bh_error exec_init(const char *component_name) {
 
     //For now, we have one child exactly
     if (myself.nchildren != 1) {
-        std::cerr << "[CLUSTER-VEM] Unexpected number of children, must be 1" << std::endl;
+        std::cerr << "[PROXY-VEM] Unexpected number of children, must be 1" << std::endl;
         return BH_ERROR;
     }
 

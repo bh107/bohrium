@@ -31,7 +31,7 @@ static bh_component_iface *child;
 static bh_component myself;
 
 //The visualizer opcode and implementation
-static int visualizer_opcode = -1;
+static bh_opcode visualizer_opcode = -1;
 bh_extmethod_impl visualizer_impl;
 
 /* Component interface: init (see bh_component.h) */
@@ -105,26 +105,27 @@ bh_error bh_vem_visualizer_execute(bh_ir* bhir)
     size_t exec_count = 0;//Count of already executed instruction
     for(size_t i=0; i<bhir->instr_list.size(); ++i)
     {
-        if(bhir->instr_list[i].opcode == visualizer_opcode)
+        const bh_instruction &instr = bhir->instr_list[i];
+        if(instr.opcode == visualizer_opcode)
         {
-            bh_instruction sync;
-            sync.opcode = BH_SYNC;
-            sync.operand[0] = bhir->instr_list[i].operand[0];
+            bh_instruction sync[2];
+            sync[0].opcode = BH_SYNC;
+            sync[0].operand[0] = instr.operand[0];
+            sync[1].opcode = BH_SYNC;
+            sync[1].operand[0] = instr.operand[1];
 
             if(exec_count < i)//Let's execute the instructions between 'exec_count' and 'i' with an appended SYNC
             {
-                bh_ir b;
-                b.instr_list.insert(b.instr_list.end(), bhir->instr_list.begin()+exec_count, bhir->instr_list.begin()+i);
-                b.instr_list.push_back(sync);
+                bh_ir b(i - exec_count, &(bhir->instr_list.begin()+exec_count)[0]);
+                b.instr_list.push_back(sync[0]);
+                b.instr_list.push_back(sync[1]);
                 bh_error ret = child->execute(&b);
                 if(ret != BH_SUCCESS)
                     return ret;
-                exec_count += i - exec_count;
             }
             else
             {
-                bh_ir b;
-                b.instr_list.push_back(sync);
+                bh_ir b(2, sync);
                 bh_error ret = child->execute(&b);
                 if(ret != BH_SUCCESS)
                     return ret;
@@ -134,7 +135,10 @@ bh_error bh_vem_visualizer_execute(bh_ir* bhir)
             exec_count = i;
         }
     }
-    bh_ir b;
-    b.instr_list.insert(b.instr_list.end(), bhir->instr_list.begin()+exec_count, bhir->instr_list.end());
-    return child->execute(&b);
+    if(bhir->instr_list.size() > exec_count)
+    {
+        bh_ir b(bhir->instr_list.size() - exec_count, &(bhir->instr_list.begin()+exec_count)[0]);
+        return child->execute(&b);
+    }
+    return BH_SUCCESS;
 }

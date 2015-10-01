@@ -24,6 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <stdbool.h>
 #include <iostream>
+#include <cstring>
+#include <cassert>
 #include "bh_type.h"
 #include "bh_win.h"
 
@@ -67,6 +69,17 @@ struct bh_base
 
 struct bh_view
 {
+    bh_view(){}
+    bh_view(const bh_view& view)
+    {
+        base = view.base;
+        start = view.start;
+        ndim = view.ndim;
+        assert(ndim < BH_MAXDIM);
+        std::memcpy(shape, view.shape, ndim * sizeof(bh_index));
+        std::memcpy(stride, view.stride, ndim * sizeof(bh_index));
+    }
+
     /// Pointer to the base array.
     bh_base*      base;
 

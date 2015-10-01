@@ -72,7 +72,6 @@ bh_error bh_vem_proxy_extmethod(const char *name, bh_opcode opcode)
 
 bh_error bh_vem_proxy_execute(bh_ir* bhir)
 {
-    vector<char> buffer;
     comm_front.execute(*bhir);
 
     return BH_SUCCESS;
