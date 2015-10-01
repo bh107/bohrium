@@ -36,7 +36,6 @@ static CommFrontend comm_front;
 
 bh_error bh_vem_proxy_init(const char* name)
 {
-    cout << "init backend" << endl;
     bh_error e;
 
     //Execute our self
@@ -44,7 +43,9 @@ bh_error bh_vem_proxy_init(const char* name)
         return e;
 
     int port = bh_component_config_lookup_int(exec_get_self_component(), "port", 4200);
-    comm_front = CommFrontend(name, "localhost", port);
+    char *address;
+    bh_component_config_string_option(exec_get_self_component(),"address", &address);
+    comm_front = CommFrontend(name, address, port);
 
     return BH_SUCCESS;
 }
@@ -54,7 +55,6 @@ bh_error bh_vem_proxy_shutdown(void)
     //Execute our self
     bh_error err = exec_shutdown();
     comm_front.shutdown();
-    cout << "shutdown backend" << endl;
     return err;
 }
 

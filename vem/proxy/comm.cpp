@@ -74,6 +74,7 @@ static void init_client_socket(tcp::socket &socket, const std::string &address, 
 
 static void init_server_socket(tcp::socket &socket, int port)
 {
+    cout << "[PROXY-VEM] Server listen on port " << port << endl;
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
     acceptor.accept(socket);
 }
@@ -93,7 +94,6 @@ CommFrontend::CommFrontend(const char* component_name, const std::string &addres
     head.serialize(buf_head);
 
     //Send serialized message
-    cout << "server send INIT message " << endl;
     boost::asio::write(socket, boost::asio::buffer(buf_head));
     boost::asio::write(socket, boost::asio::buffer(buf_body));
 }
@@ -106,7 +106,6 @@ void CommFrontend::shutdown()
     head.serialize(buf_head);
 
     //Send serialized message
-    cout << "server send SHUTDOWN message " << endl;
     boost::asio::write(socket, boost::asio::buffer(buf_head));
     socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     socket.close();
@@ -127,34 +126,27 @@ void CommFrontend::execute(bh_ir &bhir)
     head.serialize(buf_head);
 
     //Send serialized message
-    cout << "server send EXEC message " << endl;
     boost::asio::write(socket, boost::asio::buffer(buf_head));
     boost::asio::write(socket, boost::asio::buffer(buf_body));
 
     //Send array data
-    cout << "EXEC send new base data: ";
     for(size_t i=0; i< data_send.size(); ++i)
     {
         bh_base *base = data_send[i];
         assert(base->data != NULL);
-        printf("%p ", (void*) base);
         send_array_data(base);
     }
-    cout << endl;
 
     //Cleanup discard base array etc.
     exec_serializer.cleanup(bhir);
 
     //Receive sync'ed array data
-    cout << "EXEC recv sync'ed base data: [";
     for(size_t i=0; i< data_recv.size(); ++i)
     {
         bh_base *base = data_recv[i];
         bh_data_malloc(base);
-        printf("%p ", (void*) base);
         recv_array_data(base);
     }
-    cout << "]" << endl;
 }
 
 void CommFrontend::send_array_data(const bh_base *base)
@@ -180,8 +172,6 @@ serialize::Header CommBackend::next_message_head()
     vector<char> buf_head(serialize::HeaderSize);
     boost::asio::read(socket, boost::asio::buffer(buf_head));
     serialize::Header head(buf_head);
-
-    cout << "client read head with body size of " << head.body_size << endl;
     return head;
 }
 

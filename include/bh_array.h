@@ -134,7 +134,7 @@ struct bh_view
         ar << tmp;
         ar & start;
         ar & ndim;
-        for(size_t i=0; i<ndim; ++i)
+        for(bh_intp i=0; i<ndim; ++i)
         {
             ar & shape[i];
             ar & stride[i];

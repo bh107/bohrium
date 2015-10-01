@@ -37,12 +37,10 @@ bh_error service(const std::string &address, int port)
     while(1)
     {
         serialize::Header head = comm_backend.next_message_head();
-        cout << "backend received message type: ";
         switch(head.type)
         {
             case serialize::TYPE_INIT:
             {
-                cout << "INIT" << endl;
                 std::vector<char> buffer(head.body_size);
                 comm_backend.next_message_body(buffer);
                 serialize::Init body(buffer);
@@ -53,15 +51,12 @@ bh_error service(const std::string &address, int port)
             }
             case serialize::TYPE_SHUTDOWN:
             {
-                cout << "SHUTDOWN" << endl;
                 e = exec_shutdown();
                 comm_backend.shutdown();
                 return e;
             }
             case serialize::TYPE_EXEC:
             {
-                cout << "EXEC" << endl;
-                cout << "EXEC read next body" << endl;
                 std::vector<char> buffer(head.body_size);
                 comm_backend.next_message_body(buffer);
 
@@ -69,33 +64,26 @@ bh_error service(const std::string &address, int port)
                 vector<bh_base*> data_recv;
                 bh_ir bhir = exec.deserialize(buffer, data_send, data_recv);
 
-                cout << "EXEC recv new base data: ";
                 //Receive new base array data
                 for(size_t i=0; i<data_recv.size(); ++i)
                 {
                     bh_base *base = data_recv[i];
                     base->data = NULL;
                     bh_data_malloc(base);
-                    printf("%p ", base);
                     comm_backend.recv_array_data(base);
                 }
-                cout << endl;
 
-                cout << "EXEC execute bytecode" << endl;
                 bh_error e = exec_execute(&bhir);
                 if(e != BH_SUCCESS)
                     return e;
 
                 //Send sync'ed array data
-                cout << "EXEC send sync'ed data: ";
                 for(size_t i=0; i<data_send.size(); ++i)
                 {
                     bh_base *base = data_send[i];
                     bh_data_malloc(base);
-                    printf("%p ", base);
                     comm_backend.send_array_data(base);
                 }
-                cout << endl;
                 exec.cleanup(bhir);
                 break;
             }
@@ -128,7 +116,5 @@ int main(int argc, char * argv[])
         fprintf(stderr, "Please supply address.\n");
         return 0;
     }
-
-    printf("Backend will serve on port %d.\n", port);
     service(address, port);
 }
