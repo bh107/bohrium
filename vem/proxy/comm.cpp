@@ -20,10 +20,13 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <iostream>
 #include <boost/asio.hpp>
+#include <thread>         // std::this_thread::sleep_for
+#include <chrono>         // std::chrono::seconds
 
 #include <bh.h>
 #include <bh_serialize.h>
 #include "comm.h"
+
 
 using boost::asio::ip::tcp;
 using namespace std;
@@ -37,10 +40,12 @@ tcp::socket socket(io_service);
 
 static void init_client_socket(tcp::socket &socket, const std::string &address, int port)
 {
-    for(unsigned int i = 0; i < 1000000; ++i)
+    const unsigned int retries = 100;
+    for(unsigned int i = 1; i <= retries; ++i)
     {
         try
         {
+            cout << "[PROXY-VEM] Connecting to " << address << ":" << port << endl;
             // Get a list of endpoints corresponding to the server name.
             tcp::resolver resolver(io_service);
             tcp::resolver::query query(address, to_string(port));
@@ -61,10 +66,9 @@ static void init_client_socket(tcp::socket &socket, const std::string &address, 
         }
         catch(...)
         {
-            cout << "retry"  << endl;
-
+            this_thread::sleep_for(chrono::seconds(1));
+            cout << "Retrying - attempt number " << i << " of " << retries << endl;
         }
-
     }
 }
 
@@ -133,7 +137,7 @@ void CommFrontend::execute(bh_ir &bhir)
     {
         bh_base *base = data_send[i];
         assert(base->data != NULL);
-        printf("%p ", base);
+        printf("%p ", (void*) base);
         send_array_data(base);
     }
     cout << endl;
@@ -147,7 +151,7 @@ void CommFrontend::execute(bh_ir &bhir)
     {
         bh_base *base = data_recv[i];
         bh_data_malloc(base);
-        printf("%p ", base);
+        printf("%p ", (void*) base);
         recv_array_data(base);
     }
     cout << "]" << endl;

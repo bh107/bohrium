@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bh.h>
-#include <bh_instruction.h>
 #include "bh_vem_visualizer.h"
 
 using namespace std;
@@ -69,19 +68,18 @@ bh_error bh_vem_visualizer_shutdown(void)
 bh_error bh_vem_visualizer_extmethod(const char *name, bh_opcode opcode)
 {
     string name_str(name);
-    cout << "bh_vem_visualizer_extmethod: " << name << endl;
 
     if(name_str != "visualizer")
         return child->extmethod(name, opcode);
 
 
     bh_error err = bh_component_extmethod(&myself, "visualizer", &visualizer_impl);
-    if (err != BH_SUCCESS) {
+    if (err != BH_SUCCESS)
+    {
         cerr << "[VISUALIZER-VEM] Cannot find the visualizer extension method!" << endl;
         return err;
     }
     visualizer_opcode = opcode;
-    cout << "reg ext method visualizer with opcode: " << opcode << endl;
     return BH_SUCCESS;
 }
 
@@ -116,7 +114,7 @@ bh_error bh_vem_visualizer_execute(bh_ir* bhir)
 
             if(exec_count < i)//Let's execute the instructions between 'exec_count' and 'i' with an appended SYNC
             {
-                bh_ir b(i - exec_count, &(bhir->instr_list.begin()+exec_count)[0]);
+                bh_ir b(i - exec_count, &bhir->instr_list[exec_count]);
                 b.instr_list.push_back(sync[0]);
                 b.instr_list.push_back(sync[1]);
                 bh_error ret = child->execute(&b);
@@ -137,7 +135,7 @@ bh_error bh_vem_visualizer_execute(bh_ir* bhir)
     }
     if(bhir->instr_list.size() > exec_count)
     {
-        bh_ir b(bhir->instr_list.size() - exec_count, &(bhir->instr_list.begin()+exec_count)[0]);
+        bh_ir b(bhir->instr_list.size() - exec_count, &bhir->instr_list[exec_count]);
         return child->execute(&b);
     }
     return BH_SUCCESS;
