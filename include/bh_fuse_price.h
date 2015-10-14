@@ -46,10 +46,9 @@ enum FusePriceModel
 {
 /* The price of a kernel is the sum of unique views read and written */
     UNIQUE_VIEWS,
-
     TEMP_ELEMINATION,
-
     AMOS,
+    MAX_SHARE,
 
 /* The number of price models in this enum */
     NUM_OF_PRICE_MODELS

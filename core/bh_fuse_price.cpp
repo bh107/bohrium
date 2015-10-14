@@ -125,16 +125,12 @@ static uint64_t savings_temp_elemination(const bh_ir_kernel &k1, const bh_ir_ker
     return old_cost - new_cost;
 }
 
-static uint64_t cost_amos(const bh_ir_kernel &k)
+static uint64_t cost_max_share(const bh_ir_kernel &k)
 {
-    uint64_t N = k.bhir->instr_list.size();
     if(k.instr_indexes.size() == 0)
         return 0;
 
-    uint64_t loop_overhead = 1;
-    uint64_t not_tmp = k.get_parameters().size();
     uint64_t shared_access = 0;
-
     for(uint64_t instr_idx=0; instr_idx < k.bhir->instr_list.size(); ++instr_idx)
     {
         const bh_instruction &instr = k.bhir->instr_list[instr_idx];
@@ -176,6 +172,31 @@ static uint64_t cost_amos(const bh_ir_kernel &k)
             }
         }
     }
+    return shared_access;
+}
+static uint64_t savings_max_share(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
+{
+    bh_ir_kernel tmp = k1;
+    for(uint64_t instr_idx: k2.instr_indexes)
+    {
+        tmp.add_instr(instr_idx);
+    }
+    uint64_t old_cost = cost_max_share(k1) + cost_max_share(k2);
+    uint64_t new_cost = cost_max_share(tmp);
+    assert(old_cost >= new_cost);
+    return old_cost - new_cost;
+}
+
+static uint64_t cost_amos(const bh_ir_kernel &k)
+{
+    uint64_t N = k.bhir->instr_list.size();
+    if(k.instr_indexes.size() == 0)
+        return 0;
+
+    uint64_t loop_overhead = 1;
+    uint64_t not_tmp = k.get_parameters().size();
+    uint64_t shared_access = cost_max_share(k);
+
     return loop_overhead+not_tmp*N+shared_access*N*N;
 }
 static uint64_t savings_amos(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
@@ -238,6 +259,9 @@ void fuse_price_model_text(FusePriceModel price_model, string &output)
     case TEMP_ELEMINATION:
         output = "temp_elemination";
         break;
+    case MAX_SHARE:
+        output = "max_share";
+        break;
     case AMOS:
         output = "amos";
         break;
@@ -257,6 +281,8 @@ uint64_t kernel_cost(const bh_ir_kernel &kernel)
         return cost_unique(kernel);
     case TEMP_ELEMINATION:
         return cost_temp_elemination(kernel);
+    case MAX_SHARE:
+        return cost_max_share(kernel);
     case AMOS:
         return cost_amos(kernel);
     default:
@@ -275,6 +301,8 @@ uint64_t cost_savings(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
         return savings_unique(k1, k2);
     case TEMP_ELEMINATION:
         return savings_temp_elemination(k1, k2);
+    case MAX_SHARE:
+        return savings_max_share(k1, k2);
     case AMOS:
         return savings_amos(k1, k2);
     default:
