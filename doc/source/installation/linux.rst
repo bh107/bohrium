@@ -58,28 +58,28 @@ In order to utilize GPUs you need an OpenCL 1.2 compatible graphics card and the
 .. note:: On Nvidia Optimus architectures, remember to install and use bumblebee (``optirun``) when calling Bohrium.
 
 
-Cluster Support
-~~~~~~~~~~~~~~~
-
-In order to utilize a Cluster of machines you must choose between the two supported MPI libraries::
-
-  sudo apt-get install bohrium-openmpi
-                or
-  sudo apt-get install bohrium-mpich
-
-Now execute using MPI::
-
-  mpiexec -np 1 <user application> : -np 3 /usr/bin/bh_vem_cluster_slave
-
-Where one process executes the user application and multiple processes executes the slave binary.
-
-For example, the following utilize eight cluster nodes::
-
-  mpiexec -np 1 python /usr/share/bohrium/test/numpy/numpytest.py : -np 7 /usr/bin/bh_vem_cluster_slave
-
-When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
-
-.. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
+.. Cluster Support
+.. ~~~~~~~~~~~~~~~
+..
+.. In order to utilize a Cluster of machines you must choose between the two supported MPI libraries::
+..
+..   sudo apt-get install bohrium-openmpi
+..                 or
+..   sudo apt-get install bohrium-mpich
+..
+.. Now execute using MPI::
+..
+..   mpiexec -np 1 <user application> : -np 3 /usr/bin/bh_vem_cluster_slave
+..
+.. Where one process executes the user application and multiple processes executes the slave binary.
+..
+.. For example, the following utilize eight cluster nodes::
+..
+..   mpiexec -np 1 python /usr/share/bohrium/test/numpy/numpytest.py : -np 7 /usr/bin/bh_vem_cluster_slave
+..
+.. When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
+..
+.. .. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
 
 
 Install From Source Package
@@ -225,27 +225,27 @@ Assuming that your GPU-hardware is functioning correctly you need to install an 
 You should now have everything you need to utilize the GPU engine.
 
 
-MPI / Cluster Engine
-~~~~~~~~~~~~~~~~~~~~
-
-In order to utilize a computer clusters, you need to install mpich2 or OpenMPI before building Bohrium::
-
-  sudo apt-get install mpich2 libmpich2-dev
-                    or
-  sudo apt-get install libopenmpi-dev openmpi-bin
-
-And execute using mpi::
-
-  mpiexec -np 1 <user application> : -np 3 <install dir>/bh_vem_cluster_slave
-
-Where one process executes the user application and multiple processes executes the slave binary from the installation directory.
-
-For example, the following utilize eight cluster nodes::
-
-  mpiexec -np 1 python numpytest.py : -np 7 .local/bh_vem_cluster_slave
-
-When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
-
-
-.. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
+.. MPI / Cluster Engine
+.. ~~~~~~~~~~~~~~~~~~~~
+..
+.. In order to utilize a computer clusters, you need to install mpich2 or OpenMPI before building Bohrium::
+..
+..   sudo apt-get install mpich2 libmpich2-dev
+..                     or
+..   sudo apt-get install libopenmpi-dev openmpi-bin
+..
+.. And execute using mpi::
+..
+..   mpiexec -np 1 <user application> : -np 3 <install dir>/bh_vem_cluster_slave
+..
+.. Where one process executes the user application and multiple processes executes the slave binary from the installation directory.
+..
+.. For example, the following utilize eight cluster nodes::
+..
+..   mpiexec -np 1 python numpytest.py : -np 7 .local/bh_vem_cluster_slave
+..
+.. When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
+..
+..
+.. .. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
 
