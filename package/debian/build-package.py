@@ -51,6 +51,9 @@ build:
 	cd b; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DVEM_CLUSTER=OFF ..
 	$(MAKE) VERBOSE=1 -C b preinstall
 	touch build
+	rm -f /usr/var/bohrium/fuse_cache/*
+	rm -f /usr/var/bohrium/kernels/*
+	rm -f /usr/var/bohrium/objects/*
 
 binary-core: build
 	cd b; cmake -DCOMPONENT=bohrium -DCMAKE_INSTALL_PREFIX=../debian/core/usr -P cmake_install.cmake
@@ -100,7 +103,7 @@ rm -f /usr/var/bohrium/objects/*
 exit 1
 """
 
-UBUNTU_RELEASES = ['trusty']#, 'vivid']
+UBUNTU_RELEASES = ['trusty', 'vivid']
 
 
 SRC = path.join(path.dirname(os.path.realpath(__file__)),"..","..")
