@@ -87,7 +87,7 @@ Install From Source Package
 
 Visit https://github.com/bh107/bohrium/downloads and download a specific tarball release or the whole repository. Then build and install Bohrium as described in the following subsections.
 
-.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download: https://github.com/bh107/bohrium/get/master.tgz.
+.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download: https://github.com/bh107/bohrium/archive/master.zip
 
 Python / NumPy
 ~~~~~~~~~~~~~~
