@@ -94,7 +94,9 @@ REMOVE_CACHEFILES = \
 set -e
 echo "Cleanup old Bohrium cache files"
 echo ${PWD}
-rm -fd /usr/var/bohrium
+rm -fd /usr/var/bohrium/fuse_cache
+rm -fd /usr/var/bohrium/kernels
+rm -fd /usr/var/bohrium/objects
 
 exit 0
 """
@@ -144,6 +146,12 @@ def build_src_dir(args, bh_version, release="trusty"):
     #debian/preinst
     with open("%s/preinst"%deb_src_dir, "w") as f:
         f.write(REMOVE_CACHEFILES)
+    os.chmod("%s/preinst"%deb_src_dir, 0o755)
+
+    #debian/prerm
+    with open("%s/prerm"%deb_src_dir, "w") as f:
+        f.write(REMOVE_CACHEFILES)
+    os.chmod("%s/prerm"%deb_src_dir, 0o755)
 
     #debian/source/format
     os.makedirs(path.join(deb_src_dir,"source"))
