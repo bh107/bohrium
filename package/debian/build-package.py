@@ -97,7 +97,7 @@ rm -f /usr/var/bohrium/fuse_cache/*
 rm -f /usr/var/bohrium/kernels/*
 rm -f /usr/var/bohrium/objects/*
 
-exit 0
+exit 1
 """
 
 UBUNTU_RELEASES = ['trusty']#, 'vivid']
