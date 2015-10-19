@@ -87,8 +87,7 @@ clean:
 .PHONY: binary binary-arch binary-indep clean
 """
 
-REMOVE_CACHEFILES = \
-"""
+REMOVE_CACHEFILES = """\
 #!/bin/sh
 
 set -e
