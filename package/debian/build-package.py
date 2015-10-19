@@ -48,7 +48,7 @@ RULES ="""\
 
 build:
 	mkdir b
-	cd b; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
+	cd b; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DVEM_CLUSTER=OFF ..
 	$(MAKE) VERBOSE=1 -C b preinstall
 	touch build
 
