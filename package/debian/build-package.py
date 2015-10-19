@@ -16,7 +16,7 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-numpy, debhelper, cmake, swig, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, mpich2, libmpich2-dev, libopenmpi-dev, openmpi-bin, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, mono-devel, mono-gmcs, libhwloc-dev
+Build-Depends: python-numpy, debhelper, cmake, swig, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, mono-devel, mono-gmcs, libhwloc-dev
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
@@ -24,7 +24,7 @@ Package: bohrium
 Architecture: amd64
 Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, libhwloc-dev
 Recommends:
-Suggests: bohrium-gpu, bohrium-mpich, bohrium-openmpi, ipython,
+Suggests: bohrium-gpu, ipython,
 Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python
 
 Package: bohrium-numcil
@@ -41,21 +41,6 @@ Recommends:
 Suggests: bumblebee
 Description: The GPU (OpenCL) backend for the Bohrium Runtime System
 
-Package: bohrium-mpich
-Architecture: amd64
-Depends: bohrium, mpich2
-Conflicts: bohrium-openmpi
-Recommends:
-Suggests:
-Description: The Cluster (MPICH) backend for the Bohrium Runtime System
-
-Package: bohrium-openmpi
-Architecture: amd64
-Depends: bohrium, openmpi-bin
-Conflicts: bohrium-mpich
-Recommends:
-Suggests:
-Description: The Cluster (OpenMPI) backend for the Bohrium Runtime System
 """
 
 RULES ="""\
@@ -63,7 +48,7 @@ RULES ="""\
 
 build:
 	mkdir b
-	cd b; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DNO_VEM_CLUSTER=1 ..
+	cd b; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
 	$(MAKE) VERBOSE=1 -C b preinstall
 	touch build
 
@@ -89,33 +74,11 @@ binary-gpu: build
 	dpkg-gencontrol -pbohrium-gpu -Pdebian/gpu -Tdebian/bohrium-gpu.substvars
 	dpkg --build debian/gpu ..
 
-binary-mpich: build
-	rm -Rf b/vem/cluster
-	cd b; cmake -UMPI* -DNO_VEM_CLUSTER=1 ..
-	cd b; cmake -UNO_VEM_CLUSTER -DMPI_CXX_COMPILER=mpicxx.mpich2 -DMPI_C_COMPILER=mpicc.mpich2 ..
-	$(MAKE) VERBOSE=1 -C b preinstall
-	cd b; cmake -DCOMPONENT=bohrium-cluster -DCMAKE_INSTALL_PREFIX=../debian/mpich/usr -P cmake_install.cmake
-	mkdir -p debian/mpich/DEBIAN
-	dpkg-gensymbols -q -pbohrium-mpich -Pdebian/mpich
-	dpkg-gencontrol -pbohrium-mpich -Pdebian/mpich -Tdebian/bohrium-mpich.substvars
-	dpkg --build debian/mpich ..
-
-binary-openmpi: build
-	rm -Rf b/vem/cluster
-	cd b; cmake -UMPI* -DNO_VEM_CLUSTER=1 ..
-	cd b; cmake -UNO_VEM_CLUSTER -DMPI_CXX_COMPILER=mpicxx.openmpi -DMPI_C_COMPILER=mpicc.openmpi ..
-	$(MAKE) VERBOSE=1 -C b preinstall
-	cd b; cmake -DCOMPONENT=bohrium-cluster -DCMAKE_INSTALL_PREFIX=../debian/openmpi/usr -P cmake_install.cmake
-	mkdir -p debian/openmpi/DEBIAN
-	dpkg-gensymbols -q -pbohrium-openmpi -Pdebian/openmpi
-	dpkg-gencontrol -pbohrium-openmpi -Pdebian/openmpi -Tdebian/bohrium-openmpi.substvars
-	dpkg --build debian/openmpi ..
-
 binary: binary-indep binary-arch
 
 binary-indep: build
 
-binary-arch: binary-core binary-gpu binary-mpich binary-openmpi binary-numcil
+binary-arch: binary-core binary-gpu binary-numcil
 
 clean:
 	rm -f build
@@ -124,23 +87,38 @@ clean:
 .PHONY: binary binary-arch binary-indep clean
 """
 
-UBUNTU_RELEASES = ['trusty', 'utopic']
+REMOVE_CACHEFILES = \
+"""
+#!/bin/sh
+
+set -e
+echo "Cleanup old Bohrium cache files"
+echo ${PWD}
+rm -fd /usr/var/bohrium
+
+exit 0
+"""
+
+UBUNTU_RELEASES = ['utopic', 'vivid']
 
 
 SRC = path.join(path.dirname(os.path.realpath(__file__)),"..","..")
 
 def bash_cmd(cmd, cwd=None):
-    print cmd
-    p = subprocess.Popen(
-        cmd,
-        stdout  = subprocess.PIPE,
-        stderr  = subprocess.PIPE,
-        shell = True,
-        cwd=cwd
-    )
-    out, err = p.communicate()
-    print out,
-    print err,
+    out = ""
+    try:
+        p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True, cwd=cwd)
+        while p.poll() is None:
+            t = p.stdout.readline()
+            out += t
+            print t,
+        t = p.stdout.read()
+        out += t
+        print t,
+        p.wait()
+    except KeyboardInterrupt:
+        p.kill()
+        raise
     return out
 
 def build_src_dir(args, bh_version, release="trusty"):
@@ -162,6 +140,10 @@ def build_src_dir(args, bh_version, release="trusty"):
     #debian/compat
     with open("%s/compat"%deb_src_dir, "w") as f:
         f.write("7")
+
+    #debian/preinst
+    with open("%s/preinst"%deb_src_dir, "w") as f:
+        f.write(REMOVE_CACHEFILES)
 
     #debian/source/format
     os.makedirs(path.join(deb_src_dir,"source"))
