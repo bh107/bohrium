@@ -41,6 +41,13 @@ And you should see a result similar to this::
     Testing test_sor.py/sor/sor
     ************************ Finish ************************
 
+Visualizer (matplotlib alternative)
+~~~~~~~~~~~~~~~~~~~~~
+
+In order to use the Bohrium visualizer install the Bohrium Visualizer package::
+
+    sudo apt-get install bohrium-visualizer
+
 NumCIL (.NET) Support
 ~~~~~~~~~~~~~~~~~~~~~
 
