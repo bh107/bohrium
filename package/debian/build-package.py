@@ -24,7 +24,7 @@ Package: bohrium
 Architecture: amd64
 Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, libhwloc-dev
 Recommends:
-Suggests: bohrium-gpu, ipython,
+Suggests: bohrium-numcil, bohrium-gpu, bohrium-visualizer, ipython,
 Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python
 
 Package: bohrium-numcil
@@ -40,6 +40,13 @@ Depends: bohrium, opencl-dev, libopencl1, libgl-dev
 Recommends:
 Suggests: bumblebee
 Description: The GPU (OpenCL) backend for the Bohrium Runtime System
+
+Package: bohrium-visualizer
+Architecture: amd64
+Depends: bohrium, freeglut3, libxmu6, libxi6
+Recommends:
+Suggests:
+Description: The Visualizer for the Bohrium Runtime System
 
 """
 
@@ -76,11 +83,18 @@ binary-gpu: build
 	dpkg-gencontrol -pbohrium-gpu -Pdebian/gpu -Tdebian/bohrium-gpu.substvars
 	dpkg --build debian/gpu ..
 
+binary-visualizer: build
+	cd b; cmake -DCOMPONENT=bohrium-visualizer -DCMAKE_INSTALL_PREFIX=../debian/visualizer/usr -P cmake_install.cmake
+	mkdir -p debian/visualizer/DEBIAN
+	dpkg-gensymbols -q -pbohrium-visualizer -Pdebian/visualizer
+	dpkg-gencontrol -pbohrium-visualizer -Pdebian/visualizer -Tdebian/bohrium-visualizer.substvars
+	dpkg --build debian/visualizer ..
+
 binary: binary-indep binary-arch
 
 binary-indep: build
 
-binary-arch: binary-core binary-gpu binary-numcil
+binary-arch: binary-core binary-numcil binary-gpu binary-visualizer
 
 clean:
 	rm -f build
