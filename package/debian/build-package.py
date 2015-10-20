@@ -59,8 +59,11 @@ binary-core: build
 	dpkg-gensymbols -q -pbohrium -Pdebian/core
 	dpkg-gencontrol -pbohrium -Pdebian/core
 	dpkg --build debian/core ..
-	cp -p preinst debian/core/DEBIAN/
-	cp -p prerm debian/core/DEBIAN/
+	ls
+        ls ../
+	echo $(PWD)
+	cp -p ../preinst debian/core/DEBIAN/
+	cp -p ../prerm debian/core/DEBIAN/
 
 binary-numcil: build
 	cd b; cmake -DCOMPONENT=bohrium-numcil -DCMAKE_INSTALL_PREFIX=../debian/numcil/usr -P cmake_install.cmake
