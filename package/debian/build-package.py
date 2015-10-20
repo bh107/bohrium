@@ -56,18 +56,10 @@ binary-core: build
 	cd b; cmake -DCOMPONENT=bohrium -DCMAKE_INSTALL_PREFIX=../debian/core/usr -P cmake_install.cmake
 	mv debian/core/usr/lib/python2.7/site-packages debian/core/usr/lib/python2.7/dist-packages
 	mkdir -p debian/core/DEBIAN
-	ls
-	ls ../
-	ls ../../
-	ls debian
-	ls debian/core
-	ls debian/core/DEBIAN
-	echo $(PWD)
 	cp -p debian/preinst debian/core/DEBIAN/
 	cp -p debian/prerm debian/core/DEBIAN/
 	dpkg-gensymbols -q -pbohrium -Pdebian/core
 	dpkg-gencontrol -pbohrium -Pdebian/core
-	ls debian/core/DEBIAN
 	dpkg --build debian/core ..
 
 binary-numcil: build
@@ -101,10 +93,10 @@ REMOVE_CACHEFILES = """\
 #!/bin/sh
 
 set -e
-echo "Cleanup old Bohrium cache files"
-rm -f /usr/var/bohrium/fuse_cache/*
-rm -f /usr/var/bohrium/kernels/*
-rm -f /usr/var/bohrium/objects/*
+
+rm -fR /usr/var/bohrium/fuse_cache/*
+rm -fR /usr/var/bohrium/kernels/*
+rm -fR /usr/var/bohrium/objects/*
 
 exit 0
 """
