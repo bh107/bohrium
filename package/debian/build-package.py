@@ -56,14 +56,19 @@ binary-core: build
 	cd b; cmake -DCOMPONENT=bohrium -DCMAKE_INSTALL_PREFIX=../debian/core/usr -P cmake_install.cmake
 	mv debian/core/usr/lib/python2.7/site-packages debian/core/usr/lib/python2.7/dist-packages
 	mkdir -p debian/core/DEBIAN
-	dpkg-gensymbols -q -pbohrium -Pdebian/core
-	dpkg-gencontrol -pbohrium -Pdebian/core
-	dpkg --build debian/core ..
 	ls
 	ls ../
+	ls ../../
+	ls debian
+	ls debian/core
+	ls debian/core/DEBIAN
 	echo $(PWD)
-	cp -p ../preinst debian/core/DEBIAN/
-	cp -p ../prerm debian/core/DEBIAN/
+	cp -p debian/preinst debian/core/DEBIAN/
+	cp -p debian/prerm debian/core/DEBIAN/
+	dpkg-gensymbols -q -pbohrium -Pdebian/core
+	dpkg-gencontrol -pbohrium -Pdebian/core
+	ls debian/core/DEBIAN
+	dpkg --build debian/core ..
 
 binary-numcil: build
 	cd b; cmake -DCOMPONENT=bohrium-numcil -DCMAKE_INSTALL_PREFIX=../debian/numcil/usr -P cmake_install.cmake
