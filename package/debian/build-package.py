@@ -169,7 +169,14 @@ def build_src_dir(args, bh_version, release="trusty"):
         t += " -- Bohrium Builder <builder@bh107.org>  %s"%(date)
         f.write(t)
 
-    bash_cmd("debuild -S", cwd=deb_src_dir)
+    #Check if we should sign the package
+    if args.unsign:
+        unsign = "-us -uc"
+    else:
+        unsign = ""
+
+    #Let's build the package
+    bash_cmd("debuild -S %s"%unsign, cwd=deb_src_dir)
 
 
 def main(args):
@@ -180,6 +187,7 @@ def main(args):
     bh_version = bh_version.strip()[1:]
 
     #Get source archive
+    os.makedirs(os.path.basename(args.output))
     bash_cmd("git archive --format=tar.gz -o %s/bohrium_%s.orig.tar.gz HEAD"%(args.output, bh_version), cwd=SRC)
 
     #Lets build a source dir for each Ubuntu Release
@@ -201,9 +209,15 @@ if __name__ == "__main__":
         type=str,
         help='The output directory.'
     )
+    parser.add_argument(
+        '--unsign',
+        action='store_true',
+        help="Use if the package shouldn't be signed."
+    )
     args = parser.parse_args()
     if args.output is None:
         args.output = tempfile.mkdtemp()
+    args.output = os.path.abspath(args.output)
 
     print "output dir: ", args.output
     main(args)
