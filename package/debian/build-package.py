@@ -60,7 +60,7 @@ binary-core: build
 	dpkg-gencontrol -pbohrium -Pdebian/core
 	dpkg --build debian/core ..
 	ls
-        ls ../
+	ls ../
 	echo $(PWD)
 	cp -p ../preinst debian/core/DEBIAN/
 	cp -p ../prerm debian/core/DEBIAN/
