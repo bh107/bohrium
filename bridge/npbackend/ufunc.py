@@ -70,7 +70,7 @@ def overlap_conflict(out, *inputs):
 
 @fix_returned_biclass
 def assign(ary, out):
-    """Copy data from array 'a' to 'out'"""
+    """Copy data from array 'ary' to 'out'"""
 
     if not np.isscalar(ary):
         (ary, out) = broadcast_arrays(ary, out)

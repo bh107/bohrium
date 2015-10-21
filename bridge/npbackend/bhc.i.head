@@ -4,7 +4,10 @@
 %}
 
 %typemap(in) bh_bool const {
-    $1 = PyBool_Check($input);
+    if(PyObject_IsTrue($input))
+        $1 = 1;
+    else
+        $1 = 0;
 }
 %typemap(in) uint64_t {
     %#if PY_MAJOR_VERSION >= 3
@@ -84,7 +87,10 @@
     $1.imag = PyComplex_ImagAsDouble($input);
 }
 %typemap(in) bh_bool {
-    $1 = PyBool_Check($input);
+    if(PyObject_IsTrue($input))
+        $1 = 1;
+    else
+        $1 = 0;
 }
 %typemap(in) bh_int8 {
     %#if PY_MAJOR_VERSION >= 3
