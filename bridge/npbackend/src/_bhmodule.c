@@ -626,11 +626,67 @@ BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
     return 0;
 }
 
+//Help function that returns True when 'o' contains a list or array
+static int obj_contains_a_list_or_ary(PyObject *o)
+{
+    Py_ssize_t i;
+    assert(o != NULL);
+
+    if(PyArray_Check(o) || PyList_Check(o))
+        return 1;
+
+    if(PyTuple_Check(o))
+    {
+        for(i=0; i<PyTuple_GET_SIZE(o); ++i)
+        {
+            PyObject *a = PyTuple_GET_ITEM(o, i);
+            if(PyArray_Check(a) || PyList_Check(a))
+                return 1;
+        }
+    }
+    return 0;
+}
+
 static PyObject *
 BhArray_GetItem(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
     assert(k != NULL);
+
+    //We do not support indexing with arrays
+    if(obj_contains_a_list_or_ary(k) == 1)
+    {
+        PyErr_WarnEx(NULL,"Bohrium does not support indexing with arrays. "
+                          "Bohrium will return a NumPy copy of the indexed array.",1);
+
+        o = BhArray_copy2numpy(o, NULL);
+        if(o == NULL)
+            return NULL;
+
+        if(BhArray_CheckExact(k))
+        {
+            k = BhArray_copy2numpy(k, NULL);
+            if(k == NULL)
+                return NULL;
+        }
+        if(PyTuple_Check(k))
+        {
+            for(i=0; i<PyTuple_GET_SIZE(k); ++i)
+            {
+                PyObject *a = PyTuple_GET_ITEM(k, i);
+                if(BhArray_CheckExact(a))
+                {
+                    //Let's replace the item with a NumPy copy.
+                    PyObject *t = BhArray_copy2numpy(a, NULL);
+                    if(t == NULL)
+                        return NULL;
+                    Py_DECREF(a);
+                    PyTuple_SET_ITEM(k, i, t);
+                }
+            }
+        }
+        return PyArray_Type.tp_as_mapping->mp_subscript(o, k);
+    }
 
     //If the tuple access all dimensions we must check for Python slice objects
     if(PyTuple_Check(k) && (PyTuple_GET_SIZE(k) == PyArray_NDIM((PyArrayObject*)o)))
