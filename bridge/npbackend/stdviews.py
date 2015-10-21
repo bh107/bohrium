@@ -13,13 +13,13 @@ def cartesian(x, size):
         stop = -size+1+i
         if stop==0: stop = None
         dist.append((start,stop))
-    stencil = [x[s] for s in [map((lambda se : slice(se[0],se[1])),i)
+    stencil = [x[tuple(s)] for s in [map((lambda se : slice(se[0],se[1])),i)
                for i in itertools.product(dist,
                repeat=len(x.shape))]]
     return stencil
 
 def no_border(x, boarder):
-    stencil = [x[s] for s in [map((lambda se : slice(se[0],se[1])),i)
+    stencil = [x[tuple(s)] for s in [map((lambda se : slice(se[0],se[1])),i)
                for i in itertools.product([(boarder,-boarder)],
                repeat=len(x.shape))]]
     return stencil[0]

@@ -606,26 +606,6 @@ BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
     return 0;
 }
 
-static int
-BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
-{
-    if(v == NULL)
-    {
-        PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
-        return -1;
-    }
-    if(!PyArray_ISWRITEABLE((PyArrayObject *)o))
-    {
-        PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
-        return -1;
-    }
-    PyObject *ret = PyObject_CallMethod(ufunc, "setitem", "OOO", o, key, v);
-    if(ret == NULL)
-        return -1;
-    Py_XDECREF(ret);
-    return 0;
-}
-
 //Help function that returns True when 'o' contains a list or array
 static int obj_contains_a_list_or_ary(PyObject *o)
 {
@@ -644,6 +624,71 @@ static int obj_contains_a_list_or_ary(PyObject *o)
                 return 1;
         }
     }
+    return 0;
+}
+
+static int
+BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
+{
+    Py_ssize_t i;
+    assert(k != NULL);
+    if(v == NULL)
+    {
+        PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
+        return -1;
+    }
+    if(!PyArray_ISWRITEABLE((PyArrayObject *)o))
+    {
+        PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
+        return -1;
+    }
+
+    //We do not support indexing with arrays
+    if(obj_contains_a_list_or_ary(k) == 1)
+    {
+        PyErr_WarnEx(NULL,"Bohrium does not support indexing with arrays. "
+                          "It will be handled by the original NumPy.",1);
+
+        //Let's make sure that 'k' is a NumPy array
+        if(BhArray_CheckExact(k))
+        {
+            k = BhArray_copy2numpy(k, NULL);
+            if(k == NULL)
+                return -1;
+        }
+        if(PyTuple_Check(k))
+        {
+            for(i=0; i<PyTuple_GET_SIZE(k); ++i)
+            {
+                PyObject *a = PyTuple_GET_ITEM(k, i);
+                if(BhArray_CheckExact(a))
+                {
+                    //Let's replace the item with a NumPy copy.
+                    PyObject *t = BhArray_copy2numpy(a, NULL);
+                    if(t == NULL)
+                        return -1;
+                    Py_DECREF(a);
+                    PyTuple_SET_ITEM(k, i, t);
+                }
+            }
+        }
+        //Let's make sure that 'v' is a NumPy array
+        if(BhArray_CheckExact(v))
+        {
+            v = BhArray_copy2numpy(v, NULL);
+            if(v == NULL)
+                return -1;
+        }
+        //Finally, let's do the SetItem in NumPy
+        if(BhArray_data_bhc2np(o, NULL) == NULL)
+            return -1;
+        return PyArray_Type.tp_as_mapping->mp_ass_subscript(o, k, v);
+    }
+    //It is a regular SetItem call, let's do it in Python
+    PyObject *ret = PyObject_CallMethod(ufunc, "setitem", "OOO", o, k, v);
+    if(ret == NULL)
+        return -1;
+    Py_XDECREF(ret);
     return 0;
 }
 
