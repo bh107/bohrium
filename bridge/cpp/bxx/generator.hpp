@@ -176,15 +176,15 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
         nelem = (start-adj_end+1)/abs(skip);
     }
 
-    multi_array<uint32_t>* base_range = new multi_array<uint32_t>(nelem);
+    multi_array<T>* base_range = new multi_array<T>(nelem);
     base_range->link();
 
     multi_array<T>* result = new multi_array<T>(nelem);
     result->link();
 
     bh_range(*base_range);
-    bh_multiply(*base_range, *base_range, (uint32_t)skip);
-    bh_add(*base_range, *base_range, (uint32_t)start);
+    bh_multiply(*base_range, *base_range, (T)skip);
+    bh_add(*base_range, *base_range, (T)start);
     base_range->setTemp(true);
     bh_identity(*result, *base_range);
    
