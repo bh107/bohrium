@@ -121,6 +121,7 @@ UBUNTU_RELEASES = ['trusty', 'vivid']
 SRC = path.join(path.dirname(os.path.realpath(__file__)),"..","..")
 
 def bash_cmd(cmd, cwd=None):
+    print cmd
     out = ""
     try:
         p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True, cwd=cwd)
@@ -201,7 +202,7 @@ def main(args):
     bh_version = bh_version.strip()[1:]
 
     #Get source archive
-    os.makedirs(os.path.basename(args.output))
+    bash_cmd("mkdir -p %s"%args.output)
     bash_cmd("git archive --format=tar.gz -o %s/bohrium_%s.orig.tar.gz HEAD"%(args.output, bh_version), cwd=SRC)
 
     #Lets build a source dir for each Ubuntu Release
