@@ -263,7 +263,7 @@ class BenchHelper:
 
         if not os.path.exists(outputfn):
             raise Exception('Benchmark did not produce any output, expected: %s' % outputfn)
-        #        
+        #
         # We silently accept these errors when output to stderr:
         #
         #   * The Python object count
@@ -280,9 +280,7 @@ class BenchHelper:
         npzs    = np.load(outputfn)     # Load the result from disk
         res     = {}
         for k in npzs:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                res[k] = npzs[k]
+            res[k] = npzs[k]
         del npzs                        # Delete npz
 
         if os.path.exists(outputfn):    # Delete the result from disk
@@ -379,12 +377,12 @@ if __name__ == "__main__":
 
                             index = 0
                             non_complex = {}
-                            for ary in np_arys.values():                                
+                            for ary in np_arys.values():
                                 if ary.dtype not in complex_nptypes:
                                     non_complex[index] = ary
                                     index += 1
                             np_arays = non_complex
-                            
+
                         bh_arys = []                    # Get Bohrium arrays
                         for a in np_arys.values():
                             bh_arys.append(bh.array(a))
