@@ -29,8 +29,8 @@ Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++
 
 Package: bohrium-numcil
 Architecture: amd64
-Depends: bohrium, mono-devel, mono-gmcs
-Recommends:
+Depends: bohrium, mono-mcs, mono-xbuild, libmono-system-numerics4.0-cil
+Recommends: mono-devel
 Suggests:
 Description: The NumCIL (.NET) frontend for the Bohrium Runtime System
 
