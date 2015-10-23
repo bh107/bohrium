@@ -115,7 +115,7 @@ rm -fR /usr/var/bohrium/objects/*
 exit 0
 """
 
-UBUNTU_RELEASES = ['trusty', 'vivid']
+UBUNTU_RELEASES = ['trusty', 'vivid', 'wily']
 
 
 SRC = path.join(path.dirname(os.path.realpath(__file__)),"..","..")
