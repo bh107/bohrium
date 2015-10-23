@@ -29,7 +29,7 @@ Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++
 
 Package: bohrium-numcil
 Architecture: amd64
-Depends: bohrium, mono-mcs, mono-xbuild, libmono-system-numerics4.0-cil
+Depends: bohrium, mono-mcs, mono-xbuild, libmono-system-numerics4.0-cil, libmono-microsoft-build-tasks-v4.0-4.0-cil
 Recommends: mono-devel
 Suggests:
 Description: The NumCIL (.NET) frontend for the Bohrium Runtime System
@@ -72,6 +72,8 @@ binary-core: build
 binary-numcil: build
 	cd b; cmake -DCOMPONENT=bohrium-numcil -DCMAKE_INSTALL_PREFIX=../debian/numcil/usr -P cmake_install.cmake
 	mkdir -p debian/numcil/DEBIAN
+	cp -p debian/postinst_numcil debian/numcil/DEBIAN/postinst
+	cp -p debian/postrm_numcil debian/numcil/DEBIAN/postrm
 	dpkg-gensymbols -q -pbohrium-numcil -Pdebian/numcil
 	dpkg-gencontrol -pbohrium-numcil -Pdebian/numcil -Tdebian/bohrium-numcil.substvars
 	dpkg --build debian/numcil ..
@@ -111,7 +113,24 @@ set -e
 rm -fR /usr/var/bohrium/fuse_cache/*
 rm -fR /usr/var/bohrium/kernels/*
 rm -fR /usr/var/bohrium/objects/*
+exit 0
+"""
 
+CIL_GLOBAL_DLL_CACHE_INSTALL = """\
+#!/bin/sh
+
+gacutil -i /usr/lib/mono/NumCIL.Bohrium.dll
+gacutil -i /usr/lib/mono/NumCIL.dll
+gacutil -i /usr/lib/mono/NumCIL.Unsafe.dll
+exit 0
+"""
+
+CIL_GLOBAL_DLL_CACHE_UNINSTALL = """\
+#!/bin/sh
+
+gacutil -u NumCIL.Bohrium.dll
+gacutil -u NumCIL.dll
+gacutil -u NumCIL.Unsafe.dll
 exit 0
 """
 
@@ -167,6 +186,16 @@ def build_src_dir(args, bh_version, release="trusty"):
     with open("%s/prerm"%deb_src_dir, "w") as f:
         f.write(REMOVE_CACHEFILES)
     bash_cmd("chmod +x %s/prerm"%deb_src_dir)
+
+    #debian/postinst_numcil
+    with open("%s/postinst_numcil"%deb_src_dir, "w") as f:
+        f.write(CIL_GLOBAL_DLL_CACHE_INSTALL)
+    bash_cmd("chmod +x %s/postinst_numcil"%deb_src_dir)
+
+    #debian/postrm_numcil
+    with open("%s/postrm_numcil"%deb_src_dir, "w") as f:
+        f.write(CIL_GLOBAL_DLL_CACHE_UNINSTALL)
+    bash_cmd("chmod +x %s/postrm_numcil"%deb_src_dir)
 
     #debian/source/format
     os.makedirs(path.join(deb_src_dir,"source"))
