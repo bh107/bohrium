@@ -128,9 +128,9 @@ exit 0
 CIL_GLOBAL_DLL_CACHE_UNINSTALL = """\
 #!/bin/sh
 
-gacutil -u NumCIL.Bohrium.dll
-gacutil -u NumCIL.dll
-gacutil -u NumCIL.Unsafe.dll
+gacutil -u NumCIL.Bohrium
+gacutil -u NumCIL
+gacutil -u NumCIL.Unsafe
 exit 0
 """
 
