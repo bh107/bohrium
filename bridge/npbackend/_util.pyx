@@ -26,7 +26,7 @@ import atexit
 def flush(ary=None):
     """Flush the delayed operations for Bohrium execution."""
 
-    from .ndarray import check
+    from .bhary import check
     if ary is None or check(ary):
         bhc.bh_runtime_flush()
 

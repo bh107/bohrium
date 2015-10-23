@@ -2,13 +2,13 @@ import imp
 import sys
 import inspect
 from importlib import import_module
-from . import ndarray
+from . import bhary
 import numpy_force as numpy
 
 def bohriumify(obj):
     """Returns a bohrium compatible version of 'obj'"""
     if inspect.isroutine(obj):
-        return ndarray.fix_returned_biclass(obj)
+        return bhary.fix_returned_biclass(obj)
     return obj
 
 def new_module(fullname):

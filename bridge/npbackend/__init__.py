@@ -11,7 +11,7 @@ if 'numpy_force' not in sys.modules:
 from .array_create import *
 from .array_manipulation import *
 from .ufunc import UFUNCS
-from .ndarray import check, check_biclass, fix_biclass
+from .bhary import check, check_biclass, fix_biclass
 from ._info import numpy_types
 from ._util import flush
 from . import linalg
