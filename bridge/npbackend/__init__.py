@@ -20,7 +20,6 @@ from ._util import flush
 from . import linalg
 from .linalg import matmul, dot
 from .summations import sum, prod, max, min
-from . import import_external
 from numpy_force import dtype
 asarray = array
 asanyarray = array
