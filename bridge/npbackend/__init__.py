@@ -39,3 +39,7 @@ from . import random123 as random
 # Some modules (e.g. scipy) accesses '__all__' directly
 __all__ = [x for x in dir() if not x.startswith("_")]
 
+#Finally, let's bohriumify the exposed API
+import bohriumify
+bohriumify.modules()
+
