@@ -74,6 +74,7 @@ def fix_returned_biclass(func):
         ret = func(*args, **kwargs)
         return fix_biclass(ret)
 
+    inner._fixed_returned_biclass = True #Flag that this function has been handled
     return inner
 
 def new(shape, dtype, bhc_ary=None):
