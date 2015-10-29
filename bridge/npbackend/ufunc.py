@@ -294,13 +294,16 @@ class Ufunc(object):
             func = eval("np.%s.reduce" % self.info['name'])
             return func(ary, axis=axis, out=out)
 
-        #Make sure that 'axis' is a list of dimensions to reduce
+        #Make sure that 'axis' is a sorted list of dimensions to reduce
         if axis is None:
             axis = range(ary.ndim)#We reduce all dimensions
         elif np.isscalar(axis):
             axis = [axis]#We reduce one dimension
         else:
             axis = list(axis)#We reduce multiple dimensions
+        if len(axis) != len(set(axis)):
+            raise ValueError("duplicate value in 'axis'")
+        axis = sorted(axis)
 
         #When reducting booleans numerically, we count the number of True values
         if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
