@@ -14,7 +14,16 @@ add_custom_command(
     DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/gen_types.py
 )
 
-add_library(bhc SHARED ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.cpp)
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_array_operations.h
+           ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_array_operations.cpp
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gen_array_operations.py ${CMAKE_CURRENT_BINARY_DIR}/out
+    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/gen_array_operations.py
+)
+
+add_library(bhc SHARED ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.cpp
+                       ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_array_operations.cpp
+)
 
 #We depend on bh.so
 target_link_libraries(bhc bh)

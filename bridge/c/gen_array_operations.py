@@ -30,7 +30,7 @@ def main(args):
         impl += doc; head += doc
         for type_sig in op['types']:
             for layout in op['layout']:
-                decl = "void %s bhc_%s"%(type_map[type_sig[0]]['bhc_ary'], op['opcode'][3:].lower())
+                decl = "void bhc_%s"%(op['opcode'][3:].lower())
                 assert len(layout) == len(type_sig)
                 for symbol, t in zip(layout,type_sig):
                     decl += "_%s%s"%(symbol, type_map[t]['name'])
@@ -50,9 +50,15 @@ def main(args):
                 for i, (symbol, t) in enumerate(zip(layout[1:], type_sig[1:])):
                     if symbol in ["A", "D1"]:
                         impl += "\tmulti_array<%(t)s> *i%(i)d = (multi_array<%(t)s> *) in%(i)d;\n"%{'t':type_map[t]['cpp'], 'i':i+1}
+                        bxx_args += ", *i%d"%(i+1);
                     else:
-                        impl += "\t%(t)s i%(i)d = in%(i)d;\n"%{'t':type_map[t]['cpp'], 'i':i+1}
-                    bxx_args += ", *i%d"%(i+1);
+                        impl += "\t%s i%d;\n"%(type_map[t]['cpp'], i+1)
+                        if t.startswith("BH_COMPLEX"):
+                            impl += "\ti%(i)d.real(in%(i)d.real);\n"%{'i':i+1}
+                            impl += "\ti%(i)d.imag(in%(i)d.imag);\n"%{'i':i+1}
+                        else:
+                            impl += "\ti%(i)d = in%(i)d;\n"%{'i':i+1}
+                        bxx_args += ", i%d"%(i+1);
                 impl += "\t%s(%s);\n"%(op['opcode'].lower(), bxx_args)
 
                 impl += "}\n"
@@ -65,7 +71,7 @@ def main(args):
 #define __BHC_ARRAY_OPERATIONS_H
 
 #include <stdint.h>
-#include "bh_type.h"
+#include "bhc_types.h"
 
 #ifdef _WIN32
 #define DLLEXPORT __declspec( dllexport )
