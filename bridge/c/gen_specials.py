@@ -21,14 +21,15 @@ def main(args):
     # Let's generate the header and implementation of all data types
     head = ""; impl = ""
 
-    doc = "//Create new array\n"
+    doc = "//Create new flat array\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
         decl = "%s bhc_new_%s(uint64_t size)"%(t['bhc_ary'], t['name'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s{\n"%decl
         impl += "\tmulti_array<%(t)s> *ret = new multi_array<%(t)s>(size);\n"%{'t':t['cpp']}
-        impl += "\tret->setTemp(false);\n\tret->link();\n}\n"
+        impl += "\tret->setTemp(false);\n\tret->link();\n"
+        impl += "\treturn (%s) ret;\n}\n"%t['bhc_ary']
 
     doc = "//Destroy array\n"
     impl += doc; head += doc
@@ -46,7 +47,10 @@ def main(args):
         decl += "const int64_t *shape, const int64_t *stride)"
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s{\n"%decl
-        impl += "}\n"
+        impl += "\tbh_base *b = ((multi_array<bool>*)src)->meta.base;\n"
+        impl += "\tmulti_array<%(t)s>* ret = new multi_array<%(t)s>(b, rank, start, shape, stride);\n"%{'t':t['cpp']}
+        impl += "\tret->setTemp(false);\n"
+        impl += "\treturn (%s) ret;\n}\n"%t['bhc_ary']
 
     #Let's add header and footer
     head = """/* Bohrium C Bridge: special functions. Auto generated! */
@@ -54,8 +58,7 @@ def main(args):
 #ifndef __BHC_SPECIALS_H
 #define __BHC_SPECIALS_H
 
-#include <stdint.h>
-#include <bh_type.h>
+#include "bhc_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,8 +80,11 @@ using namespace bxx;
 %s
 """%impl
 
-    print head
-    print impl
+    #Finally, let's write the files
+    with open(join(args.output,'bhc_specials.h'), 'w') as f:
+        f.write(head)
+    with open(join(args.output,'bhc_specials.cpp'), 'w') as f:
+        f.write(impl)
 
 if __name__ == "__main__":
 

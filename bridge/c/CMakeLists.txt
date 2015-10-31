@@ -21,8 +21,16 @@ add_custom_command(
     DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/gen_array_operations.py
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.h
+           ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.cpp
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gen_specials.py ${CMAKE_CURRENT_BINARY_DIR}/out
+    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/gen_specials.py
+)
+
 add_library(bhc SHARED ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.cpp
                        ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_array_operations.cpp
+                       ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.cpp
 )
 
 #We depend on bh.so

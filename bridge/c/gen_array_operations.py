@@ -70,7 +70,6 @@ def main(args):
 #ifndef __BHC_ARRAY_OPERATIONS_H
 #define __BHC_ARRAY_OPERATIONS_H
 
-#include <stdint.h>
 #include "bhc_types.h"
 
 #ifdef _WIN32
