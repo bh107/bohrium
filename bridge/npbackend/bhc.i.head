@@ -1,6 +1,6 @@
 %module bhc
 %{
-#include<bh_c.h>
+#include<bhc.h>
 %}
 
 %typemap(in) bh_bool const {

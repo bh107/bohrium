@@ -66,7 +66,7 @@ def dtype_bh2np(bh_type_str):
 #Merge bhc.i.head with the bh_c.h to create our SWIG interface bhc.i
 time = 0
 with open(buildpath("bhc.i"), 'w') as outfile:
-    for fname in [srcpath("bhc.i.head"),srcpath("..","c","codegen","output","bh_c.h")]:
+    for fname in [srcpath("bhc.i.head"),buildpath("..","c","out","bhc.h")]:
         t = get_timestamp(fname)
         if t > time:
             time = t
@@ -160,7 +160,7 @@ setup(name='Bohrium',
                              sources=[srcpath('src','_bhmodule.c')],
                              depends=[srcpath('src','types.c'), srcpath('src','types.h'),
                                       srcpath('src','operator_overload.c')],
-                             include_dirs=[srcpath('..','c','codegen','output'),
+                             include_dirs=[buildpath("..","c","out"),
                                            srcpath('..','..','include')],
                              libraries=['dl','bhc', 'bh'],
                              library_dirs=[buildpath('..','c'),
@@ -168,7 +168,7 @@ setup(name='Bohrium',
                              ),
                    Extension(name='_bhc',
                              sources=[buildpath('bhc.i')],
-                             include_dirs=[srcpath('..','c','codegen','output'),
+                             include_dirs=[buildpath("..","c","out"),
                                            srcpath('..','..','include')],
                              libraries=['dl','bhc', 'bh'],
                              library_dirs=[buildpath('..','c'),

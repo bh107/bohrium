@@ -40,6 +40,12 @@ def main(args):
 #include <stdint.h>
 #include <bh_type.h>
 
+#ifdef _WIN32
+#define DLLEXPORT __declspec( dllexport )
+#else
+#define DLLEXPORT
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

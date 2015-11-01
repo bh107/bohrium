@@ -21,6 +21,17 @@ def main(args):
     # Let's generate the header and implementation of all data types
     head = ""; impl = ""
 
+    doc = "\n//Flush the Bohrium runtime system\n"
+    impl += doc; head += doc
+    decl = "void bhc_flush(void)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s\n"%decl
+    impl += """
+{
+    Runtime::instance().flush();
+}
+"""
+
     doc = "\n//Create new flat array\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
@@ -70,7 +81,7 @@ def main(args):
     doc += "//  if 'nullify', set the data pointer to NULL after returning the data pointer\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
-        decl = "%s* bhc_data_get_%s(const %s ary, bool force_alloc, bool nullify)"%(t['bhc'], t['name'], t['bhc_ary'])
+        decl = "%s* bhc_data_get_%s(const %s ary, bh_bool force_alloc, bh_bool nullify)"%(t['bhc'], t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
         impl += """\

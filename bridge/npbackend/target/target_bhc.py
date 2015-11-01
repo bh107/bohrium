@@ -18,14 +18,14 @@ class Base(interface.Base):
             return
 
         if bhc_obj is None:
-            func = eval("bhc.bh_multi_array_%s_new_empty" % dtype_name(dtype))
-            bhc_obj = _bhc_exec(func, 1, (size,))
+            func = eval("bhc.bhc_new_%s" % dtype_name(dtype))
+            bhc_obj = _bhc_exec(func, size)
         self.bhc_obj = bhc_obj
 
     def __del__(self):
         if self.size == 0:
             return
-        exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)" %
+        exec("bhc.bhc_destroy_%s(self.bhc_obj)" %
              dtype_name(self.dtype)
         )
 
@@ -38,7 +38,7 @@ class View(interface.View):
         if self.size == 0:
             return
         dtype = dtype_name(self.dtype)
-        func = eval("bhc.bh_multi_array_%s_new_view" % dtype)
+        func = eval("bhc.bhc_view_%s" % dtype)
         self.bhc_obj = func(base.bhc_obj, ndim, start, shape, strides)
 
     def __del__(self):
@@ -64,9 +64,9 @@ def get_data_pointer(ary, allocate=False, nullify=False):
 
     dtype = dtype_name(ary)
     ary = ary.bhc_obj
-    exec("bhc.bh_multi_array_%s_sync(ary)" % dtype)
+    exec("bhc.bhc_multi_array_%s_sync(ary)" % dtype)
     exec("bhc.bh_multi_array_%s_discard(ary)" % dtype)
-    exec("bhc.bh_runtime_flush()")
+    exec("bhc.bhc_flush()")
     exec("data = bhc.bh_multi_array_%s_get_data(ary)" % dtype)
     if data is None:
         if not allocate:

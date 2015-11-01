@@ -38,3 +38,6 @@ add_library(bhc SHARED ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.cpp
 #We depend on bh.so
 target_link_libraries(bhc bh)
 
+# Finally, let's install the compiled library and the combined header file
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/out/bhc.h DESTINATION include/bohrium COMPONENT bohrium)
+install(TARGETS bhc DESTINATION lib COMPONENT bohrium)
