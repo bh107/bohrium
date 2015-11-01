@@ -21,36 +21,85 @@ def main(args):
     # Let's generate the header and implementation of all data types
     head = ""; impl = ""
 
-    doc = "//Create new flat array\n"
+    doc = "\n//Create new flat array\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
         decl = "%s bhc_new_%s(uint64_t size)"%(t['bhc_ary'], t['name'])
         head += "DLLEXPORT %s;\n"%decl
-        impl += "%s{\n"%decl
-        impl += "\tmulti_array<%(t)s> *ret = new multi_array<%(t)s>(size);\n"%{'t':t['cpp']}
-        impl += "\tret->setTemp(false);\n\tret->link();\n"
-        impl += "\treturn (%s) ret;\n}\n"%t['bhc_ary']
+        impl += "%s\n"%decl
+        impl += """
+{
+    multi_array<%(cpp)s> *ret = new multi_array<%(cpp)s>(size);
+    ret->setTemp(false);
+    ret->link();
+    return (%(bhc_ary)s) ret;
+}
+"""%t
 
-    doc = "//Destroy array\n"
+    doc = "\n//Destroy array\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
         decl = "void bhc_destroy_%s(%s ary)"%(t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
-        impl += "%s{\n"%decl
-        impl += "\tdelete ((multi_array<%s>*)ary);\n}\n"%t['cpp']
+        impl += "%s\n"%decl
+        impl += """
+{
+    delete ((multi_array<%(cpp)s>*)ary);
+}
+"""%t
 
-    doc = "//Create view\n"
+    doc = "\n//Create view\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
         decl = "%s bhc_view_%s("%(t['bhc_ary'], t['name'])
         decl += "const %s src, uint64_t rank, int64_t start, "%t['bhc_ary']
         decl += "const int64_t *shape, const int64_t *stride)"
         head += "DLLEXPORT %s;\n"%decl
-        impl += "%s{\n"%decl
-        impl += "\tbh_base *b = ((multi_array<bool>*)src)->meta.base;\n"
-        impl += "\tmulti_array<%(t)s>* ret = new multi_array<%(t)s>(b, rank, start, shape, stride);\n"%{'t':t['cpp']}
-        impl += "\tret->setTemp(false);\n"
-        impl += "\treturn (%s) ret;\n}\n"%t['bhc_ary']
+        impl += "%s\n"%decl
+        impl += """\
+{
+    bh_base *b = ((multi_array<%(cpp)s>*)src)->meta.base;
+    multi_array<%(cpp)s>* ret = new multi_array<%(cpp)s>(b, rank, start, shape, stride);
+    ret->setTemp(false);
+    return (%(bhc_ary)s) ret;
+}
+"""%t
+
+    doc = "\n//Get data pointer and:\n"
+    doc += "//  if 'force_alloc', force memory allocation before returning the data pointer\n"
+    doc += "//  if 'nullify', set the data pointer to NULL after returning the data pointer\n"
+    impl += doc; head += doc
+    for key, t in type_map.iteritems():
+        decl = "%s* bhc_data_get_%s(const %s ary, bool force_alloc, bool nullify)"%(t['bhc'], t['name'], t['bhc_ary'])
+        head += "DLLEXPORT %s;\n"%decl
+        impl += "%s\n"%decl
+        impl += """\
+{
+    bh_base *b = ((multi_array<%(cpp)s>*)ary)->meta.base;
+    if(force_alloc)
+    {
+        if(bh_data_malloc(b) != 0)
+            return NULL;
+    }
+    %(bhc)s* ret = (%(bhc)s*)(b->data);
+    if(nullify)
+        b->data = NULL;
+    return ret;
+}
+"""%t
+
+    doc = "\n//Set data pointer\n"
+    impl += doc; head += doc
+    for key, t in type_map.iteritems():
+        decl = "void bhc_data_set_%(name)s(const %(bhc_ary)s ary, %(bhc)s *data)"%t
+        head += "DLLEXPORT %s;\n"%decl
+        impl += "%s\n"%decl
+        impl += """\
+{
+    bh_base *b = ((multi_array<%(cpp)s>*)ary)->meta.base;
+    b->data = data;
+}
+"""%t
 
     #Let's add header and footer
     head = """/* Bohrium C Bridge: special functions. Auto generated! */
