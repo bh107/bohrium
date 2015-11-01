@@ -7,25 +7,27 @@ endif()
 include_directories(../../include)
 include_directories(../cpp/bxx)
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.h
-           ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.cpp
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gen_types.py ${CMAKE_CURRENT_BINARY_DIR}/out
-    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/gen_types.py
-)
+set(SRC_H ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.h
+          ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.h
+          ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_array_operations.h)
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_array_operations.h
-           ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_array_operations.cpp
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gen_array_operations.py ${CMAKE_CURRENT_BINARY_DIR}/out
-    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/gen_array_operations.py
-)
+set(SRC_CPP ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.cpp
+            ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.cpp
+            ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_array_operations.cpp)
 
+
+#Let's generate the source files of the C bridge
+#Note that we concatenate all header files in to one 'bhc.h'
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.h
-           ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.cpp
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gen_specials.py ${CMAKE_CURRENT_BINARY_DIR}/out
-    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/gen_specials.py
+    OUTPUT ${SRC_H} ${SRC_CPP} ${CMAKE_CURRENT_BINARY_DIR}/out/bhc.h
+    COMMAND ${PYTHON_EXECUTABLE} gen_types.py ${CMAKE_CURRENT_BINARY_DIR}/out
+    COMMAND ${PYTHON_EXECUTABLE} gen_array_operations.py ${CMAKE_CURRENT_BINARY_DIR}/out
+    COMMAND ${PYTHON_EXECUTABLE} gen_specials.py ${CMAKE_CURRENT_BINARY_DIR}/out
+    COMMAND ${PYTHON_EXECUTABLE} cat_files.py ${SRC_H} --output ${CMAKE_CURRENT_BINARY_DIR}/out/bhc.h
+    DEPENDS gen_types.py
+            gen_array_operations.py
+            gen_specials.py
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_library(bhc SHARED ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.cpp

@@ -70,8 +70,6 @@ def main(args):
 #ifndef __BHC_ARRAY_OPERATIONS_H
 #define __BHC_ARRAY_OPERATIONS_H
 
-#include "bhc_types.h"
-
 #ifdef _WIN32
 #define DLLEXPORT __declspec( dllexport )
 #else
@@ -91,7 +89,7 @@ extern "C" {
     impl = """/* Bohrium C Bridge: array operation functions. Auto generated! */
 
 #include <bohrium.hpp>
-#include "bhc_array_operations.h"
+#include "bhc.h"
 
 using namespace bxx;
 

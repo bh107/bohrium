@@ -107,8 +107,6 @@ def main(args):
 #ifndef __BHC_SPECIALS_H
 #define __BHC_SPECIALS_H
 
-#include "bhc_types.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -122,7 +120,7 @@ extern "C" {
     impl = """/* Bohrium C Bridge: special functions. Auto generated! */
 
 #include <bohrium.hpp>
-#include "bhc_specials.h"
+#include "bhc.h"
 
 using namespace bxx;
 

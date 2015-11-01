@@ -53,7 +53,7 @@ extern "C" {
     impl = """/* Bohrium C Bridge: data types. Auto generated! */
 
 #include <bohrium.hpp>
-#include "bhc_types.h"
+#include "bhc.h"
 
 using namespace bxx;
 
