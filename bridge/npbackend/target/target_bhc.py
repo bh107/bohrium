@@ -89,16 +89,19 @@ def set_bhc_data_from_ary(self, ary):
     ptr = get_data_pointer(self, allocate=True, nullify=False)
     ctypes.memmove(ptr, ary.ctypes.data, ary.dtype.itemsize * ary.size)
 
-def ufunc(op, *args):
+def ufunc(op, *args, **kwd):
     """
     Apply the 'op' on args, which is the output followed by one or two inputs
+    Use the 'dtypes' option in 'kwd' to force the data types (None is default)
 
     :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
     :args *?: Probably any one of ndarray, Base, Scalar, View, and npscalar.
     :rtype: None
     """
 
-    if not isinstance(op, str):#Make sure that 'op' is the operation name
+    dtypes = kwd.get("dtypes", [None]*len(args))
+
+    if hasattr(op, "info"):#Make sure that 'op' is the operation name
         op = op.info['name']
 
     # The dtype of the scalar argument (if any) is the same as the array input
@@ -114,11 +117,17 @@ def ufunc(op, *args):
             scalar_type = dtype_name(args[1])
 
     fname  = "bhc.bhc_%s"%op
-    for arg in args:
+    for arg, dtype in zip(args, dtypes):
         if numpy.isscalar(arg):
-            fname += "_K%s"%scalar_type
+            if dtype is None:
+                fname += "_K%s"%scalar_type
+            else:
+                fname += "_K%s"%dtype_name(dtype)
         else:
-            fname += "_A%s"%dtype_name(arg)
+            if dtype is None:
+                fname += "_A%s"%dtype_name(arg)
+            else:
+                fname += "_A%s"%dtype_name(dtype)
 
     _bhc_exec(eval(fname), *args)
 
@@ -142,8 +151,7 @@ def reduce(op, out, ary, axis):
     if ary.size == 0 or ary.base.size == 0:
         return
 
-    fname = "bhc.bhc_%s_reduce_A%s_A%s_Kint64"%(op.info['name'], dtype_name(out), dtype_name(ary))
-    _bhc_exec(eval(fname), out, ary, axis)
+    ufunc("%s_reduce"%op.info['name'], out, ary, axis, dtypes=[None,None,numpy.dtype("int64")])
 
 
 def accumulate(op, out, ary, axis):
@@ -159,29 +167,10 @@ def accumulate(op, out, ary, axis):
     if ary.size == 0 or ary.base.size == 0:
         return
 
-    fname = "bhc.bhc_%s_accumulate_A%s_A%s_Kint64"%(op.info['name'], dtype_name(out), dtype_name(ary))
-    _bhc_exec(eval(fname), out, ary, axis)
-
-def range(size, dtype):
-    """
-    create a new array containing the values [0:size[
-
-    :size int: Number of elements in the range [0:size[
-    :in1 numpy.dtype: The
-    :rtype: None
-    """
-
-    #Create new array
-    ret = View(1, 0, (size,), (1,), Base(size, dtype))
-
-    #And apply the range operation
-    if size > 0:
-        ufunc("range", ret)
-    return ret
+    ufunc("%s_accumulate"%op.info['name'], out, ary, axis, dtypes=[None,None,numpy.dtype("int64")])
 
 def extmethod(name, out, in1, in2):
     """
-
     Apply the extended method 'name'
 
     :name str: Name of the extension method.
@@ -204,6 +193,23 @@ def extmethod(name, out, in1, in2):
         raise NotImplementedError("The current runtime system does not support "
                                   "the extension method '%s'" % name)
 
+def range(size, dtype):
+    """
+    Create a new array containing the values [0:size[
+
+    :size int: Number of elements in the range [0:size[
+    :in1 numpy.dtype: The
+    :rtype: None
+    """
+
+    #Create new array
+    ret = View(1, 0, (size,), (1,), Base(size, dtype))
+
+    #And apply the range operation
+    if size > 0:
+        ufunc("range", ret)
+    return ret
+
 def random123(size, start_index, key):
     """
     Create a new random array using the random123 algorithm.
@@ -211,12 +217,12 @@ def random123(size, start_index, key):
     """
 
     dtype = numpy.dtype("uint64")
-    if size > 0:
-        func = eval("bhc.bh_multi_array_uint64_new_random123")
-        bhc_obj = _bhc_exec(func, size, start_index, key)
-    else:
-        bhc_obj = None
-    base = Base(size, dtype, bhc_obj)
-    return View(1, 0, (size,), (dtype.itemsize,), base)
 
+    #Create new array
+    ret = View(1, 0, (size,), (1,), Base(size, dtype))
+
+    #And apply the range operation
+    if size > 0:
+        ufunc("random123", ret, start_index, key, dtypes=[dtype]*3)
+    return ret
 
