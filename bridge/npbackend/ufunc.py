@@ -124,7 +124,7 @@ class Ufunc(object):
         for k, val in kwargs.iteritems():
             if val is not None:
                 raise ValueError(
-                    "Bohrium funcs doesn't support the '%s' argument" % str(k)
+                    "Bohrium ufuncs doesn't support the '%s' argument" % str(k)
                 )
 
         #Broadcast the args

@@ -30,6 +30,11 @@ def main(args):
         impl += doc; head += doc
         for type_sig in op['types']:
             for layout in op['layout']:
+
+                for i in xrange(len(layout)):#We need to replace 1D symbols with A
+                    if layout[i].endswith("D"):
+                        layout[i] = "A"
+
                 decl = "void bhc_%s"%(op['opcode'][3:].lower())
                 assert len(layout) == len(type_sig)
                 for symbol, t in zip(layout,type_sig):
@@ -37,7 +42,7 @@ def main(args):
                 decl += "(%s out"%type_map[type_sig[0]]['bhc_ary']
                 for i, (symbol, t) in enumerate(zip(layout[1:], type_sig[1:])):
                     decl += ", "
-                    if symbol in ["A", "D1"]:
+                    if symbol == "A":
                         decl += "const %s in%d"%(type_map[t]['bhc_ary'],i+1)
                     else:
                         decl += "%s in%d"%(type_map[t]['bhc'],i+1)

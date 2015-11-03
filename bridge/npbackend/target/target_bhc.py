@@ -44,9 +44,9 @@ class View(interface.View):
     def __del__(self):
         if self.size == 0:
             return
-        exec("bhc.bh_multi_array_%s_destroy(self.bhc_obj)" % dtype_name(
-            self.dtype
-        ))
+        exec("bhc.bhc_destroy_%s(self.bhc_obj)" %
+             dtype_name(self.dtype)
+        )
 
 def _bhc_exec(func, *args):
     """execute the 'func' with the bhc objects in 'args'"""
@@ -54,8 +54,14 @@ def _bhc_exec(func, *args):
     args = list(args)
     for i in xrange(len(args)):
         if isinstance(args[i], View):
+            if not hasattr(args[i], 'bhc_obj'):
+                return#Ignore zero-sized views
             args[i] = args[i].bhc_obj
     return func(*args)
+
+def runtime_flush():
+    """Flush the runtime system"""
+    bhc.bhc_flush()
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     """Retrieves the data pointer from Bohrium Runtime."""
@@ -64,20 +70,15 @@ def get_data_pointer(ary, allocate=False, nullify=False):
 
     dtype = dtype_name(ary)
     ary = ary.bhc_obj
-    exec("bhc.bhc_multi_array_%s_sync(ary)" % dtype)
-    exec("bhc.bh_multi_array_%s_discard(ary)" % dtype)
+    exec("bhc.bhc_sync_A%s(ary)" % dtype)
+    exec("bhc.bhc_discard_A%s(ary)" % dtype)
     exec("bhc.bhc_flush()")
-    exec("data = bhc.bh_multi_array_%s_get_data(ary)" % dtype)
+    exec("data = bhc.bhc_data_get_%s(ary, allocate, nullify)" % dtype)
     if data is None:
         if not allocate:
             return 0
-        exec("data = bhc.bh_multi_array_%s_get_data_and_force_alloc(ary)"
-             % dtype
-        )
-        if data is None:
+        else:
             raise MemoryError()
-    if nullify:
-        exec("bhc.bh_multi_array_%s_nullify_data(ary)"%dtype)
     return int(data)
 
 def set_bhc_data_from_ary(self, ary):
@@ -97,31 +98,40 @@ def ufunc(op, *args):
     :rtype: None
     """
 
-    scalar_str = ""
-    in_dtype = dtype_name(args[1])
-    for i, arg in enumerate(args):
-        if numpy.isscalar(arg):
-            if i == 1:
-                scalar_str = "_scalar" + ("_lhs" if len(args) > 2 else "")
-            if i == 2:
-                scalar_str = "_scalar" + ("_rhs" if len(args) > 2 else "")
-        elif i > 0:
-            in_dtype = arg.dtype#overwrite with a non-scalar input
-            #Do nothing on zero-sized arguments
-            if arg.size == 0 or arg.base.size == 0:
-                return
+    if not isinstance(op, str):#Make sure that 'op' is the operation name
+        op = op.info['name']
 
-    if op.info['name'] == "identity":#Identity is a special case
-        cmd = "bhc.bh_multi_array_%s_identity_%s" % (
-            dtype_name(args[0].dtype),
-            dtype_name(in_dtype)
-        )
-    else:
-        cmd = "bhc.bh_multi_array_%s_%s" % (
-            dtype_name(in_dtype), op.info['name']
-        )
-    cmd += scalar_str
-    _bhc_exec(eval(cmd), *args)
+    # The dtype of the scalar argument (if any) is the same as the array input
+    scalar_type = None
+    for arg in args[1:]:
+        if not numpy.isscalar(arg):
+            scalar_type = dtype_name(arg)
+            break
+    if scalar_type is None:#All inputs are scalars
+        if len(args) == 1:
+            scalar_type = dtype_name(args[0])
+        else:
+            scalar_type = dtype_name(args[1])
+
+    fname  = "bhc.bhc_%s"%op
+    for arg in args:
+        if numpy.isscalar(arg):
+            fname += "_K%s"%scalar_type
+        else:
+            fname += "_A%s"%dtype_name(arg)
+
+    _bhc_exec(eval(fname), *args)
+
+def matmul(out, in1, in2):
+    """
+    Perform matrix multiplication of 'in1' and 'in2' and store it in 'out'.
+
+    :out ?:
+    :in1 ?:
+    :in2 ?:
+    :rtype: None
+    """
+    ufunc("matmul", out, in1, in2)
 
 def reduce(op, out, ary, axis):
     """
@@ -132,10 +142,9 @@ def reduce(op, out, ary, axis):
     if ary.size == 0 or ary.base.size == 0:
         return
 
-    func = eval("bhc.bh_multi_array_%s_%s_reduce" % (
-        dtype_name(ary), op.info['name']
-    ))
-    _bhc_exec(func, out, ary, axis)
+    fname = "bhc.bhc_%s_reduce_A%s_A%s_Kint64"%(op.info['name'], dtype_name(out), dtype_name(ary))
+    _bhc_exec(eval(fname), out, ary, axis)
+
 
 def accumulate(op, out, ary, axis):
     """
@@ -150,23 +159,25 @@ def accumulate(op, out, ary, axis):
     if ary.size == 0 or ary.base.size == 0:
         return
 
-    func = eval("bhc.bh_multi_array_%s_%s_accumulate" % (
-        dtype_name(ary), op.info['name'])
-    )
-    _bhc_exec(func, out, ary, axis)
+    fname = "bhc.bhc_%s_accumulate_A%s_A%s_Kint64"%(op.info['name'], dtype_name(out), dtype_name(ary))
+    _bhc_exec(eval(fname), out, ary, axis)
 
-def matmul(out, in1, in2):
+def range(size, dtype):
     """
-    Perform matrix multiplication of 'in1' and 'in2' and store it in 'out'.
+    create a new array containing the values [0:size[
 
-    :out ?:
-    :in1 ?:
-    :in2 ?:
+    :size int: Number of elements in the range [0:size[
+    :in1 numpy.dtype: The
     :rtype: None
     """
 
-    func = eval("bhc.bh_multi_array_%s_matmul" % dtype_name(out))
-    _bhc_exec(func, out, in1, in2)
+    #Create new array
+    ret = View(1, 0, (size,), (1,), Base(size, dtype))
+
+    #And apply the range operation
+    if size > 0:
+        ufunc("range", ret)
+    return ret
 
 def extmethod(name, out, in1, in2):
     """
@@ -192,23 +203,6 @@ def extmethod(name, out, in1, in2):
     if ret != 0:
         raise NotImplementedError("The current runtime system does not support "
                                   "the extension method '%s'" % name)
-
-def range(size, dtype):
-    """
-    create a new array containing the values [0:size[
-
-    :size int: Number of elements in the range [0:size[
-    :in1 numpy.dtype: The
-    :rtype: None
-    """
-
-    if size > 0:
-        func = eval("bhc.bh_multi_array_%s_new_range"%dtype_name(dtype))
-        bhc_obj = _bhc_exec(func, size)
-    else:
-        bhc_obj = None
-    base = Base(size, dtype, bhc_obj)
-    return View(1, 0, (size,), (dtype.itemsize,), base)
 
 def random123(size, start_index, key):
     """

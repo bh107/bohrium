@@ -27,6 +27,7 @@ add_custom_command(
     DEPENDS gen_types.py
             gen_array_operations.py
             gen_specials.py
+            ../../core/codegen/opcodes.json
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

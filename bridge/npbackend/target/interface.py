@@ -33,7 +33,7 @@ class View(object):
     """
     Abstract array view handle.
     Encapsulates meta-data of an array.
-    
+
     :param int ndim: Number of dimensions / rank of the view
     :param int start: Offset from base (in elements), converted to offset from base
                 when constructed.
@@ -49,12 +49,16 @@ class View(object):
         self.start = start * base.dtype.itemsize # Offset from base (in bytes)
         self.strides = [x * base.dtype.itemsize for x in strides] #Tuple of strides (in bytes)
 
+def runtime_flush():
+    """Flush the runtime system"""
+    pass
+
 def get_data_pointer(ary, allocate=False, nullify=False):
     """
     Return a C-pointer to the array data (represented as a Python integer).
 
     .. note:: One way of implementing this would be to return a ndarray.ctypes.data.
-   
+
     :param Mixed ary: The array to retrieve a data-pointer for.
     :param bool allocate: When true the target is expected to allocate the data prior to returning.
     :param bool nullify: TODO
@@ -76,7 +80,7 @@ def set_bhc_data_from_ary(self, ary):
 def ufunc(op, *args):
     """
     Perform the ufunc 'op' on the 'args' arrays
-    
+
     :param npbackend.ufunc.Ufunc op: The ufunc operation to apply to args.
     :param Mixed args: Args to the ufunc operation.
     :rtype: None
@@ -86,7 +90,7 @@ def ufunc(op, *args):
 def reduce(op, out, ary, axis):
     """
     Reduce 'axis' dimension of 'ary' and write the result to out
-    
+
     :param op npbackend.ufunc.Ufunc: The ufunc operation to apply to args.
     :param out Mixed: The array to reduce "into".
     :param ary Mixed: The array to reduce.
@@ -110,7 +114,7 @@ def accumulate(op, out, ary, axis):
 def extmethod(name, out, in1, in2):
     """
     Apply the extension method 'name'.
-    
+
     :param Mixed out: The array to write results to.
     :param Mixed in1: First input array.
     :param Mixed in2: Second input array.

@@ -20,15 +20,15 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy_force as np
 from . import _info
-from . import bhc
 import atexit
 
 def flush(ary=None):
     """Flush the delayed operations for Bohrium execution."""
 
     from .bhary import check
+    from . import target
     if ary is None or check(ary):
-        bhc.bh_runtime_flush()
+        target.runtime_flush()
 
 def dtype_of(obj):
     """Returns the dtype of 'obj'."""

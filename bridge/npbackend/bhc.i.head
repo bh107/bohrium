@@ -169,6 +169,13 @@
         $1 = PyInt_AsLong($input);
     %#endif
 }
+%typemap(in) int64_t {
+    %#if PY_MAJOR_VERSION >= 3
+        $1 = PyLong_AsLong($input);
+    %#else
+        $1 = PyInt_AsLong($input);
+    %#endif
+}
 %typemap(in) int64_t const * (int64_t temp[32]) {
   int i;
   if (!PySequence_Check($input)) {

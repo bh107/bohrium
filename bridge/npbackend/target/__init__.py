@@ -1,7 +1,7 @@
 """
 Initialization of npbackend target.
 
-The target chosen is controlled by setting one of the following 
+The target chosen is controlled by setting one of the following
 environment vars:
 
     * BHPY_BACKEND
@@ -25,7 +25,7 @@ import os
 DEFAULT_TARGET = "bhc"
 TARGETS = ["bhc", "numpy", "numexpr", "pygpu", "chapel"]
 METHODS = [
-    'Base', 'View', 'get_data_pointer', 'set_bhc_data_from_ary',
+    'Base', 'View', 'runtime_flush', 'get_data_pointer', 'set_bhc_data_from_ary',
     'ufunc', 'reduce', 'accumulate', 'extmethod', 'matmul', 'range', 'random123'
 ]
 

@@ -6,7 +6,9 @@ file(GLOB SRC *.cpp)
 add_library(bh SHARED ${SRC} bh_opcode.cpp)
 
 # Rules for how to generate bh_opcode.cpp and bh_opcode.h
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/bh_opcode.cpp COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen_opcodes.py VERBATIM)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/bh_opcode.cpp
+                          ${CMAKE_CURRENT_SOURCE_DIR}/../include/bh_opcode.h
+                  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen_opcodes.py VERBATIM)
 set_source_files_properties(bh_opcode.cpp PROPERTIES GENERATED TRUE)
 
 add_subdirectory(iniparser)                     # bh_component depends on iniparser
