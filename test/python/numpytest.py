@@ -166,7 +166,7 @@ class numpytest:
             res.shape = dims
         return np.asarray(res, dtype=dtype)
 
-def shell_cmd(cmd, cwd=None, verbose=False):
+def shell_cmd(cmd, cwd=None, verbose=False, env=None):
 
     from subprocess import Popen, PIPE, STDOUT
     cmd = " ".join(cmd)
@@ -174,7 +174,7 @@ def shell_cmd(cmd, cwd=None, verbose=False):
         print (cmd)
     out = ""
     try:
-        p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True, cwd=cwd)
+        p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True, cwd=cwd, env=env)
         while p.poll() is None:
             t = p.stdout.readline()
             out += t
@@ -276,12 +276,7 @@ class BenchHelper:
             if not os.path.exists(inputfn):
                 raise Exception('File does not exist: %s' % inputfn)
 
-        p = subprocess.Popen(           # Execute the benchmark
-            cmd,
-            stdout  = subprocess.PIPE,
-            stderr  = subprocess.PIPE,
-        )
-        out = shell_cmd(cmd, verbose=self.verbose)
+        out = shell_cmd(cmd, verbose=self.verbose) # Execute the benchmark
         if 'elapsed-time' not in out:
             raise Exception("Cannot find elapsed time, output:\n%s\n\n" %out)
 
