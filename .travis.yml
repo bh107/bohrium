@@ -6,18 +6,10 @@ env:
   global:
     - LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
   matrix:
-    - BH_STACK="stack_gpu" BH_BCEXP_GPU_REDUCE1D=100 BH_GPU_VERBOSE=true BH_EXCLUDE="--exclude-test=test_lbm_3d --exclude-test test_gauss  --exclude-test test_gauss_20x20 --exclude-test test_jacobi --exclude-test test_jacobi_fixed --exclude-test test_idl_init --exclude-test=test_black_scholes"
-
-
-#    - BH_STACK="stack_gpu" BH_BCEXP_GPU_REDUCE1D=100 BH_GPU_VERBOSE=true BH_GPU_COMPILE=sync BH_EXCLUDE="--exclude-test=test_lbm_3d"
-
-#    - BH_STACK="stack_gpu" BH_FUSE_MODEL=NO_XSWEEP_SCALAR_SEPERATE BH_GPU_VERBOSE=true BH_EXCLUDE="--exclude-test=test_lbm_3d --exclude-test test_gauss  --exclude-test test_gauss_20x20 --exclude-test test_jacobi --exclude-test test_jacobi_fixed --exclude-test test_idl_init"
-#    - BH_STACK="stack_gpu" BH_FUSE_MODEL=NO_XSWEEP_SCALAR_SEPERATE BH_GPU_VERBOSE=true BH_GPU_COMPILE=sync BH_EXCLUDE="--exclude-test=test_lbm_3d --exclude-test=test_black_scholes --exclude-test=jacobi"
-#    - BH_STACK="stack_gpu" BH_FUSE_MODEL=NO_XSWEEP_SCALAR_SEPERATE BH_GPU_VERBOSE=true BH_GPU_COMPILE=sync BH_EXCLUDE="--exclude-test=test_lbm_3d --exclude-test=test_black_scholes --exclude-test=jacobi"
-#    - BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=0
-#    - BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=0
-#    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=0
-#    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=0
+    - BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=0
+    - BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=0
+    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=0
+    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=0
 before_install:
   - sudo add-apt-repository --yes ppa:kalakris/cmake
   - sudo apt-get update -qq
