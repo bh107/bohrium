@@ -78,7 +78,7 @@ def fix_returned_biclass(func):
         #Flag that this function has been handled
         setattr(inner, "_fixed_returned_biclass", True)
     except:#In older versions of cython, this is not possible
-        print("Warning: could not set decorator flag")
+        pass
     return inner
 
 def new(shape, dtype, bhc_ary=None):
