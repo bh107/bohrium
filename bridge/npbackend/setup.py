@@ -140,7 +140,7 @@ class CustomBuild(build):
 
 if os.path.realpath(buildpath('random123.pyx')) != os.path.realpath(srcpath('random123.pyx')):
   shutil.copy2(srcpath('random123.pyx'), buildpath('random123.pyx'))
-  shutil.copy2(srcpath('ndarray.pyx'), buildpath('ndarray.pyx'))
+  shutil.copy2(srcpath('bhary.pyx'), buildpath('bhary.pyx'))
   shutil.copy2(srcpath('_util.pyx'), buildpath('_util.pyx'))
 
 setup(name='Bohrium',
@@ -187,8 +187,8 @@ setup(name='Bohrium',
                              libraries=[],
                              library_dirs=[],
                              ),
-                   Extension(name='ndarray',
-                             sources=[buildpath('ndarray.pyx')],
+                   Extension(name='bhary',
+                             sources=[buildpath('bhary.pyx')],
                              include_dirs=[srcpath('.')],
                              libraries=[],
                              library_dirs=[],

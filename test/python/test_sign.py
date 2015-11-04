@@ -3,10 +3,10 @@ from numpytest import numpytest, TYPES
 
 sign_str="""
 def sign(a):
-    if np.ndarray.check(a):
+    if np.bhary.check(a):
         return np.sign(a)
     else:
-        s = np.absolute(a) 
+        s = np.absolute(a)
         s += s == 0
         return a/s
 """
@@ -89,7 +89,7 @@ class test_csign_mixed(numpytest):
             a = {}
             cmd = "a[0] = self.asarray(%s, dtype=%s);" % (signs, dtype)
             exec(cmd)
-            yield (a, cmd) 
+            yield (a, cmd)
 
     def test_sign(self,a):
         cmd = sign_str+"res = sign(a[0])"

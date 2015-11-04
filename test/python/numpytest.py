@@ -166,6 +166,30 @@ class numpytest:
             res.shape = dims
         return np.asarray(res, dtype=dtype)
 
+def shell_cmd(cmd, cwd=None, verbose=False, env=None):
+
+    from subprocess import Popen, PIPE, STDOUT
+    cmd = " ".join(cmd)
+    if verbose:
+        print (cmd)
+    out = ""
+    try:
+        p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True, cwd=cwd, env=env)
+        while p.poll() is None:
+            t = p.stdout.readline()
+            out += t
+            if verbose:
+                print (t,)
+        t = p.stdout.read()
+        out += t
+        if verbose:
+            print (t,)
+        p.wait()
+    except KeyboardInterrupt:
+        p.kill()
+        raise
+    return out
+
 class BenchHelper:
     """Mixin for numpytest to aid the execution of Benchmarks."""
 
@@ -254,31 +278,12 @@ class BenchHelper:
 
         env = os.environ.copy()
         env['BH_PROXY_PORT'] = "4201"
-        p = subprocess.Popen(           # Execute the benchmark
-            cmd,
-            stdout  = subprocess.PIPE,
-            stderr  = subprocess.PIPE,
-            env = env,
-        )
-        out, err = p.communicate()
+        out = shell_cmd(cmd, verbose=self.verbose, env=env) # Execute the benchmark
         if 'elapsed-time' not in out:
-            raise Exception("Cannot find elapsed time got stdout(%s) stderr(%s)]" % (out, err))
+            raise Exception("Cannot find elapsed time, output:\n%s\n\n" %out)
 
         if not os.path.exists(outputfn):
             raise Exception('Benchmark did not produce any output, expected: %s' % outputfn)
-        #
-        # We silently accept these errors when output to stderr:
-        #
-        #   * The Python object count
-        #   * Unsupported fuse model
-        #   * Unknown fuse model
-        #
-        if err and not re.match("\[[0-9]+ refs\]", err) \
-               and 'unsupported fuse model' not in err  \
-               and 'unknown fuse model' not in err:
-            err_chunked = ", ".join(err.split("\n"))
-            print(_C.OKBLUE + "[CMD] %s" % " ".join(cmd) + _C.ENDC)
-            print(_C.WARNING + "[Warning] The CMD above wrote the following to stderr: [%s]" % err_chunked + _C.ENDC)
 
         npzs    = np.load(outputfn)     # Load the result from disk
         res     = {}
@@ -346,6 +351,11 @@ if __name__ == "__main__":
         action='store_true',
         help="Exclude tests with arrays of complex dtype"
     )
+    parser.add_argument(
+        '--verbose',
+        action='store_true',
+        help="Print benchmark output"
+    )
     args = parser.parse_args()
     if len(args.file) == 0:
         args.file = os.listdir(os.path.dirname(os.path.abspath(__file__)))
@@ -365,6 +375,7 @@ if __name__ == "__main__":
 
                 cls_obj  = getattr(m, cls)
                 cls_inst = cls_obj()
+                cls_inst.verbose = args.verbose
 
                 import inspect                          # Exclude benchmarks
                 is_benchmark = BenchHelper.__name__ in [c.__name__ for c in inspect.getmro(cls_obj)]

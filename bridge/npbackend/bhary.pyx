@@ -74,6 +74,11 @@ def fix_returned_biclass(func):
         ret = func(*args, **kwargs)
         return fix_biclass(ret)
 
+    try:
+        #Flag that this function has been handled
+        setattr(inner, "_fixed_returned_biclass", True)
+    except:#In older versions of cython, this is not possible
+        print("Warning: could not set decorator flag")
     return inner
 
 def new(shape, dtype, bhc_ary=None):
@@ -82,7 +87,7 @@ def new(shape, dtype, bhc_ary=None):
     Use a new Bohrium-C array when 'bhc_ary' is None.
     """
 
-    import _bh #We import locally in order to avoid cycles
+    import _bh #We import locally in order to avoid import cycle
     ret = _bh.ndarray(shape, dtype=dtype)
     if bhc_ary is None:
         new_bhc_base(ret)

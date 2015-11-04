@@ -8,7 +8,7 @@ Common linear algebra functions
 import bohrium as np
 import numpy_force.linalg as la
 import numpy_force as numpy
-from . import ndarray
+from . import bhary
 from . import ufunc
 from . import target
 from . import array_create
@@ -159,7 +159,7 @@ def matmul(a,b):
     if a.ndim != 2 and b.ndim != 2:
         raise ValueError("Input must be 2-D.")
 
-    if not(ndarray.check(a) or ndarray.check(b)):
+    if not(bhary.check(a) or bhary.check(b)):
     	return numpy.dot(a, b)
 
     a = array_create.array(a)
@@ -231,7 +231,7 @@ def dot(a,b, no_matmul=False):
     499128
 
     """
-    if ndarray.check(a) or ndarray.check(b):
+    if bhary.check(a) or bhary.check(b):
         a = array_create.array(a)
         b = array_create.array(b)
     if b.ndim == 1:

@@ -47,7 +47,7 @@ static PyObject *BhArray_data_bhc2np(PyObject *self, PyObject *args);
 static PyTypeObject BhArrayType;
 
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
-PyObject *ndarray = NULL; //The ndarray Python module
+PyObject *bhary = NULL; //The bhary Python module
 PyObject *ufunc = NULL; //The ufunc Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
 PyObject *array_create = NULL; //The array_create Python module
@@ -84,7 +84,7 @@ static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify
                   "which is not support by Bohrium");
         return -1;
     }
-    PyObject *data = PyObject_CallMethod(ndarray, "get_bhc_data_pointer",
+    PyObject *data = PyObject_CallMethod(bhary, "get_bhc_data_pointer",
                                          "Oii", ary, force_allocation, nullify);
     if(data == NULL)
         return -1;
@@ -123,7 +123,7 @@ static int set_bhc_data_from_ary(PyObject *self, PyObject *ary)
                   "which is not support by Bohrium");
         return -1;
     }
-    PyObject *ret = PyObject_CallMethod(ndarray, "set_bhc_data_from_ary", "OO", self, ary);
+    PyObject *ret = PyObject_CallMethod(bhary, "set_bhc_data_from_ary", "OO", self, ary);
     Py_XDECREF(ret);
     if(ret == NULL)
         return -1;
@@ -334,7 +334,7 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     assert(BhArray_CheckExact(self));
 
     //We move the whole array (i.e. the base array) from Bohrium to NumPy
-    PyObject *base = PyObject_CallMethod(ndarray, "get_base", "O", self);
+    PyObject *base = PyObject_CallMethod(bhary, "get_base", "O", self);
 
     //Note that we always detach the signal before returning
     bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)base));
@@ -377,7 +377,7 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     }
 
     //Lets delete the current bhc_ary
-    if(PyObject_CallMethod(ndarray, "del_bhc", "O", self) == NULL)
+    if(PyObject_CallMethod(bhary, "del_bhc", "O", self) == NULL)
         return NULL;
     Py_RETURN_NONE;
 }
@@ -389,7 +389,7 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
     assert(BhArray_CheckExact(self));
 
     //We move the whole array (i.e. the base array) from Bohrium to NumPy
-    PyObject *base = PyObject_CallMethod(ndarray, "get_base", "O", self);
+    PyObject *base = PyObject_CallMethod(bhary, "get_base", "O", self);
     if(base == NULL)
         return NULL;
     assert(BhArray_CheckExact(base));
@@ -403,7 +403,7 @@ BhArray_data_np2bhc(PyObject *self, PyObject *args)
     //Make sure that bhc_ary exist
     if(((BhArray*)base)->bhc_ary == Py_None)
     {
-        PyObject *err = PyObject_CallMethod(ndarray, "new_bhc_base", "O", base);
+        PyObject *err = PyObject_CallMethod(bhary, "new_bhc_base", "O", base);
         if(err == NULL)
             return NULL;
         Py_DECREF(err);
@@ -606,9 +606,32 @@ BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
     return 0;
 }
 
-static int
-BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
+//Help function that returns True when 'o' contains a list or array
+static int obj_contains_a_list_or_ary(PyObject *o)
 {
+    Py_ssize_t i;
+    assert(o != NULL);
+
+    if(PyArray_Check(o) || PyList_Check(o))
+        return 1;
+
+    if(PyTuple_Check(o))
+    {
+        for(i=0; i<PyTuple_GET_SIZE(o); ++i)
+        {
+            PyObject *a = PyTuple_GET_ITEM(o, i);
+            if(PyArray_Check(a) || PyList_Check(a))
+                return 1;
+        }
+    }
+    return 0;
+}
+
+static int
+BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
+{
+    Py_ssize_t i;
+    assert(k != NULL);
     if(v == NULL)
     {
         PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
@@ -619,7 +642,50 @@ BhArray_SetItem(PyObject *o, PyObject *key, PyObject *v)
         PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
         return -1;
     }
-    PyObject *ret = PyObject_CallMethod(ufunc, "setitem", "OOO", o, key, v);
+
+    //We do not support indexing with arrays
+    if(obj_contains_a_list_or_ary(k) == 1)
+    {
+        PyErr_WarnEx(NULL,"Bohrium does not support indexing with arrays. "
+                          "It will be handled by the original NumPy.",1);
+
+        //Let's make sure that 'k' is a NumPy array
+        if(BhArray_CheckExact(k))
+        {
+            k = BhArray_copy2numpy(k, NULL);
+            if(k == NULL)
+                return -1;
+        }
+        if(PyTuple_Check(k))
+        {
+            for(i=0; i<PyTuple_GET_SIZE(k); ++i)
+            {
+                PyObject *a = PyTuple_GET_ITEM(k, i);
+                if(BhArray_CheckExact(a))
+                {
+                    //Let's replace the item with a NumPy copy.
+                    PyObject *t = BhArray_copy2numpy(a, NULL);
+                    if(t == NULL)
+                        return -1;
+                    Py_DECREF(a);
+                    PyTuple_SET_ITEM(k, i, t);
+                }
+            }
+        }
+        //Let's make sure that 'v' is a NumPy array
+        if(BhArray_CheckExact(v))
+        {
+            v = BhArray_copy2numpy(v, NULL);
+            if(v == NULL)
+                return -1;
+        }
+        //Finally, let's do the SetItem in NumPy
+        if(BhArray_data_bhc2np(o, NULL) == NULL)
+            return -1;
+        return PyArray_Type.tp_as_mapping->mp_ass_subscript(o, k, v);
+    }
+    //It is a regular SetItem call, let's do it in Python
+    PyObject *ret = PyObject_CallMethod(ufunc, "setitem", "OOO", o, k, v);
     if(ret == NULL)
         return -1;
     Py_XDECREF(ret);
@@ -631,6 +697,41 @@ BhArray_GetItem(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
     assert(k != NULL);
+
+    //We do not support indexing with arrays
+    if(obj_contains_a_list_or_ary(k) == 1)
+    {
+        PyErr_WarnEx(NULL,"Bohrium does not support indexing with arrays. "
+                          "Bohrium will return a NumPy copy of the indexed array.",1);
+
+        o = BhArray_copy2numpy(o, NULL);
+        if(o == NULL)
+            return NULL;
+
+        if(BhArray_CheckExact(k))
+        {
+            k = BhArray_copy2numpy(k, NULL);
+            if(k == NULL)
+                return NULL;
+        }
+        if(PyTuple_Check(k))
+        {
+            for(i=0; i<PyTuple_GET_SIZE(k); ++i)
+            {
+                PyObject *a = PyTuple_GET_ITEM(k, i);
+                if(BhArray_CheckExact(a))
+                {
+                    //Let's replace the item with a NumPy copy.
+                    PyObject *t = BhArray_copy2numpy(a, NULL);
+                    if(t == NULL)
+                        return NULL;
+                    Py_DECREF(a);
+                    PyTuple_SET_ITEM(k, i, t);
+                }
+            }
+        }
+        return PyArray_Type.tp_as_mapping->mp_subscript(o, k);
+    }
 
     //If the tuple access all dimensions we must check for Python slice objects
     if(PyTuple_Check(k) && (PyTuple_GET_SIZE(k) == PyArray_NDIM((PyArrayObject*)o)))
@@ -846,8 +947,8 @@ PyMODINIT_FUNC init_bh(void)
 
     PyModule_AddObject(m, "ndarray", (PyObject *)&BhArrayType);
 
-    ndarray = PyImport_ImportModule("bohrium.ndarray");
-    if(ndarray == NULL)
+    bhary = PyImport_ImportModule("bohrium.bhary");
+    if(bhary == NULL)
         return RETVAL;
     ufunc = PyImport_ImportModule("bohrium.ufunc");
     if(ufunc == NULL)
