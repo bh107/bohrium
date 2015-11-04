@@ -25,7 +25,7 @@
 
 // packet buffer
 static bh_packet * packet;
-static long bufferLength = DEFAULT_DATABUFFER_LENGTH;
+static long bufferLength = DEFAULT_DATABUFFER_LENGTH
 
 // master array store
 static StaticStore<bh_base> array_store(512);
