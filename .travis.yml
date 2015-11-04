@@ -20,5 +20,5 @@ script:
   - cmake --version
   - mkdir bdir && cd bdir && cmake -DCMAKE_BUILD_TYPE=Release .. && make && make install
   - BASEDIR=${HOME}/build/bh107 && git clone --depth=1 git://github.com/bh107/benchpress.git ${BASEDIR}/benchpress && cd ${BASEDIR}/benchpress && . util/setbpenv.bash && cd ${BASEDIR}
-  - python bohrium/test/python/numpytest.py $BH_EXCLUDE
-  - BH_BCEXP_SIGN=1 python bohrium/test/python/numpytest.py --file=test_sign.py
+  - python bohrium/test/python/numpytest.py --verbose $BH_EXCLUDE
+  - BH_BCEXP_SIGN=1 python bohrium/test/python/numpytest.py --verbose --file=test_sign.py
