@@ -116,7 +116,7 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_view(const bh_multi_
     multi_array<${ctype}>* result = new multi_array<${ctype}>(bh_multi_array_${bh_ctype}_get_base(source), rank, start, shape, stride);
 
     result->setTemp(false);
-    return (bh_multi_array_${bh_ctype}_p)result;    
+    return (bh_multi_array_${bh_ctype}_p)result;
 }
 
 
@@ -153,8 +153,11 @@ bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_ones(uint64_t rank, 
 %if $bh_ctype == "uint64" or $bh_ctype == "uint32"
 // Construct a new array with sequential numbers
 bh_multi_array_${bh_ctype}_p bh_multi_array_${bh_ctype}_new_range(uint64_t size) {
-    multi_array<${ctype}> *result = &range<${ctype}>(size);
+    multi_array<${ctype}>* result = new multi_array<${ctype}>(size);
     result->setTemp(false);
+    result->link();
+    bh_range<${ctype}>(*result);
+
     return (bh_multi_array_${bh_ctype}_p)result;
 }
 %end if

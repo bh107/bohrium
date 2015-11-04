@@ -5,8 +5,8 @@ Array manipulation routines
 """
 from . import array_create
 import numpy_force as numpy
-from . import ndarray
-from .ndarray import fix_returned_biclass
+from . import bhary
+from .bhary import fix_returned_biclass
 import itertools
 
 @fix_returned_biclass
@@ -148,7 +148,7 @@ def diagflat(d, k=0):
     """
     d = flatten(d)
     size = d.size+abs(k)
-    A = array_create.zeros((size, size), dtype=d.dtype, bohrium=ndarray.check(d))
+    A = array_create.zeros((size, size), dtype=d.dtype, bohrium=bhary.check(d))
     Ad = diagonal(A, offset=k)
     Ad[...] = d
     return A
@@ -349,7 +349,7 @@ def broadcast_arrays(*args):
     for a, b in itertools.izip(args, bargs):
         if numpy.isscalar(a):
             ret.append(b)
-        elif ndarray.identical_views(a, b):
+        elif bhary.identical_views(a, b):
             ret.append(a)
         else:
             ret.append(b)

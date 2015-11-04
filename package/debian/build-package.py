@@ -16,7 +16,7 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-numpy, debhelper, cmake, swig, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, mpich2, libmpich2-dev, libopenmpi-dev, openmpi-bin, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, mono-devel, mono-gmcs, libhwloc-dev
+Build-Depends: python-numpy, debhelper, cmake, swig, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, mono-devel, mono-gmcs, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
@@ -24,13 +24,13 @@ Package: bohrium
 Architecture: amd64
 Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, libhwloc-dev
 Recommends:
-Suggests: bohrium-gpu, bohrium-mpich, bohrium-openmpi, ipython,
+Suggests: bohrium-numcil, bohrium-gpu, bohrium-visualizer, ipython,
 Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python
 
 Package: bohrium-numcil
 Architecture: amd64
-Depends: bohrium, mono-devel, mono-gmcs
-Recommends:
+Depends: bohrium, mono-mcs, mono-xbuild, libmono-system-numerics4.0-cil, libmono-microsoft-build-tasks-v4.0-4.0-cil
+Recommends: mono-devel
 Suggests:
 Description: The NumCIL (.NET) frontend for the Bohrium Runtime System
 
@@ -41,21 +41,13 @@ Recommends:
 Suggests: bumblebee
 Description: The GPU (OpenCL) backend for the Bohrium Runtime System
 
-Package: bohrium-mpich
+Package: bohrium-visualizer
 Architecture: amd64
-Depends: bohrium, mpich2
-Conflicts: bohrium-openmpi
+Depends: bohrium, freeglut3, libxmu6, libxi6
 Recommends:
 Suggests:
-Description: The Cluster (MPICH) backend for the Bohrium Runtime System
+Description: The Visualizer for the Bohrium Runtime System
 
-Package: bohrium-openmpi
-Architecture: amd64
-Depends: bohrium, openmpi-bin
-Conflicts: bohrium-mpich
-Recommends:
-Suggests:
-Description: The Cluster (OpenMPI) backend for the Bohrium Runtime System
 """
 
 RULES ="""\
@@ -63,7 +55,7 @@ RULES ="""\
 
 build:
 	mkdir b
-	cd b; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DNO_VEM_CLUSTER=1 ..
+	cd b; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DVEM_CLUSTER=OFF ..
 	$(MAKE) VERBOSE=1 -C b preinstall
 	touch build
 
@@ -71,6 +63,8 @@ binary-core: build
 	cd b; cmake -DCOMPONENT=bohrium -DCMAKE_INSTALL_PREFIX=../debian/core/usr -P cmake_install.cmake
 	mv debian/core/usr/lib/python2.7/site-packages debian/core/usr/lib/python2.7/dist-packages
 	mkdir -p debian/core/DEBIAN
+	cp -p debian/preinst debian/core/DEBIAN/
+	cp -p debian/prerm debian/core/DEBIAN/
 	dpkg-gensymbols -q -pbohrium -Pdebian/core
 	dpkg-gencontrol -pbohrium -Pdebian/core
 	dpkg --build debian/core ..
@@ -78,6 +72,8 @@ binary-core: build
 binary-numcil: build
 	cd b; cmake -DCOMPONENT=bohrium-numcil -DCMAKE_INSTALL_PREFIX=../debian/numcil/usr -P cmake_install.cmake
 	mkdir -p debian/numcil/DEBIAN
+	cp -p debian/postinst_numcil debian/numcil/DEBIAN/postinst
+	cp -p debian/postrm_numcil debian/numcil/DEBIAN/postrm
 	dpkg-gensymbols -q -pbohrium-numcil -Pdebian/numcil
 	dpkg-gencontrol -pbohrium-numcil -Pdebian/numcil -Tdebian/bohrium-numcil.substvars
 	dpkg --build debian/numcil ..
@@ -89,33 +85,18 @@ binary-gpu: build
 	dpkg-gencontrol -pbohrium-gpu -Pdebian/gpu -Tdebian/bohrium-gpu.substvars
 	dpkg --build debian/gpu ..
 
-binary-mpich: build
-	rm -Rf b/vem/cluster
-	cd b; cmake -UMPI* -DNO_VEM_CLUSTER=1 ..
-	cd b; cmake -UNO_VEM_CLUSTER -DMPI_CXX_COMPILER=mpicxx.mpich2 -DMPI_C_COMPILER=mpicc.mpich2 ..
-	$(MAKE) VERBOSE=1 -C b preinstall
-	cd b; cmake -DCOMPONENT=bohrium-cluster -DCMAKE_INSTALL_PREFIX=../debian/mpich/usr -P cmake_install.cmake
-	mkdir -p debian/mpich/DEBIAN
-	dpkg-gensymbols -q -pbohrium-mpich -Pdebian/mpich
-	dpkg-gencontrol -pbohrium-mpich -Pdebian/mpich -Tdebian/bohrium-mpich.substvars
-	dpkg --build debian/mpich ..
-
-binary-openmpi: build
-	rm -Rf b/vem/cluster
-	cd b; cmake -UMPI* -DNO_VEM_CLUSTER=1 ..
-	cd b; cmake -UNO_VEM_CLUSTER -DMPI_CXX_COMPILER=mpicxx.openmpi -DMPI_C_COMPILER=mpicc.openmpi ..
-	$(MAKE) VERBOSE=1 -C b preinstall
-	cd b; cmake -DCOMPONENT=bohrium-cluster -DCMAKE_INSTALL_PREFIX=../debian/openmpi/usr -P cmake_install.cmake
-	mkdir -p debian/openmpi/DEBIAN
-	dpkg-gensymbols -q -pbohrium-openmpi -Pdebian/openmpi
-	dpkg-gencontrol -pbohrium-openmpi -Pdebian/openmpi -Tdebian/bohrium-openmpi.substvars
-	dpkg --build debian/openmpi ..
+binary-visualizer: build
+	cd b; cmake -DCOMPONENT=bohrium-visualizer -DCMAKE_INSTALL_PREFIX=../debian/visualizer/usr -P cmake_install.cmake
+	mkdir -p debian/visualizer/DEBIAN
+	dpkg-gensymbols -q -pbohrium-visualizer -Pdebian/visualizer
+	dpkg-gencontrol -pbohrium-visualizer -Pdebian/visualizer -Tdebian/bohrium-visualizer.substvars
+	dpkg --build debian/visualizer ..
 
 binary: binary-indep binary-arch
 
 binary-indep: build
 
-binary-arch: binary-core binary-gpu binary-mpich binary-openmpi binary-numcil
+binary-arch: binary-core binary-numcil binary-gpu binary-visualizer
 
 clean:
 	rm -f build
@@ -124,23 +105,56 @@ clean:
 .PHONY: binary binary-arch binary-indep clean
 """
 
-UBUNTU_RELEASES = ['trusty', 'utopic']
+REMOVE_CACHEFILES = """\
+#!/bin/sh
+
+set -e
+
+rm -fR /usr/var/bohrium/fuse_cache/*
+rm -fR /usr/var/bohrium/kernels/*
+rm -fR /usr/var/bohrium/objects/*
+exit 0
+"""
+
+CIL_GLOBAL_DLL_CACHE_INSTALL = """\
+#!/bin/sh
+
+gacutil -i /usr/lib/mono/NumCIL.Bohrium.dll
+gacutil -i /usr/lib/mono/NumCIL.dll
+gacutil -i /usr/lib/mono/NumCIL.Unsafe.dll
+exit 0
+"""
+
+CIL_GLOBAL_DLL_CACHE_UNINSTALL = """\
+#!/bin/sh
+
+gacutil -u NumCIL.Bohrium
+gacutil -u NumCIL
+gacutil -u NumCIL.Unsafe
+exit 0
+"""
+
+UBUNTU_RELEASES = ['trusty', 'vivid', 'wily']
 
 
 SRC = path.join(path.dirname(os.path.realpath(__file__)),"..","..")
 
 def bash_cmd(cmd, cwd=None):
     print cmd
-    p = subprocess.Popen(
-        cmd,
-        stdout  = subprocess.PIPE,
-        stderr  = subprocess.PIPE,
-        shell = True,
-        cwd=cwd
-    )
-    out, err = p.communicate()
-    print out,
-    print err,
+    out = ""
+    try:
+        p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True, cwd=cwd)
+        while p.poll() is None:
+            t = p.stdout.readline()
+            out += t
+            print t,
+        t = p.stdout.read()
+        out += t
+        print t,
+        p.wait()
+    except KeyboardInterrupt:
+        p.kill()
+        raise
     return out
 
 def build_src_dir(args, bh_version, release="trusty"):
@@ -163,6 +177,26 @@ def build_src_dir(args, bh_version, release="trusty"):
     with open("%s/compat"%deb_src_dir, "w") as f:
         f.write("7")
 
+    #debian/preinst
+    with open("%s/preinst"%deb_src_dir, "w") as f:
+        f.write(REMOVE_CACHEFILES)
+    bash_cmd("chmod +x %s/preinst"%deb_src_dir)
+
+    #debian/prerm
+    with open("%s/prerm"%deb_src_dir, "w") as f:
+        f.write(REMOVE_CACHEFILES)
+    bash_cmd("chmod +x %s/prerm"%deb_src_dir)
+
+    #debian/postinst_numcil
+    with open("%s/postinst_numcil"%deb_src_dir, "w") as f:
+        f.write(CIL_GLOBAL_DLL_CACHE_INSTALL)
+    bash_cmd("chmod +x %s/postinst_numcil"%deb_src_dir)
+
+    #debian/postrm_numcil
+    with open("%s/postrm_numcil"%deb_src_dir, "w") as f:
+        f.write(CIL_GLOBAL_DLL_CACHE_UNINSTALL)
+    bash_cmd("chmod +x %s/postrm_numcil"%deb_src_dir)
+
     #debian/source/format
     os.makedirs(path.join(deb_src_dir,"source"))
     with open("%s/source/format"%deb_src_dir, "w") as f:
@@ -179,7 +213,14 @@ def build_src_dir(args, bh_version, release="trusty"):
         t += " -- Bohrium Builder <builder@bh107.org>  %s"%(date)
         f.write(t)
 
-    bash_cmd("debuild -S", cwd=deb_src_dir)
+    #Check if we should sign the package
+    if args.unsign:
+        unsign = "-us -uc"
+    else:
+        unsign = ""
+
+    #Let's build the package
+    bash_cmd("debuild -S %s"%unsign, cwd=deb_src_dir)
 
 
 def main(args):
@@ -190,6 +231,7 @@ def main(args):
     bh_version = bh_version.strip()[1:]
 
     #Get source archive
+    bash_cmd("mkdir -p %s"%args.output)
     bash_cmd("git archive --format=tar.gz -o %s/bohrium_%s.orig.tar.gz HEAD"%(args.output, bh_version), cwd=SRC)
 
     #Lets build a source dir for each Ubuntu Release
@@ -211,9 +253,15 @@ if __name__ == "__main__":
         type=str,
         help='The output directory.'
     )
+    parser.add_argument(
+        '--unsign',
+        action='store_true',
+        help="Use if the package shouldn't be signed."
+    )
     args = parser.parse_args()
     if args.output is None:
         args.output = tempfile.mkdtemp()
+    args.output = os.path.abspath(args.output)
 
     print "output dir: ", args.output
     main(args)

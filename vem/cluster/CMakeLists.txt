@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-set(VEM_CLUSTER true CACHE BOOL "VEM-CLUSTER: Build the CLUSTER VEM.")
+set(VEM_CLUSTER false CACHE BOOL "VEM-CLUSTER: Build the CLUSTER VEM.")
 if(NOT VEM_CLUSTER)
     return()
 endif()

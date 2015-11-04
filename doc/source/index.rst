@@ -15,12 +15,17 @@ Features
 +-----------+-----+-----+-------------+-------+-----+------+
 |           | CPU | GPU | CPU Cluster | NumPy | C++ | .NET |
 +===========+=====+=====+=============+=======+=====+======+
-| Linux     | X   | X   | X           | X     | X   |  X   |
+| Linux     | X   | X   | ( X )       | X     | X   |  X   |
 +-----------+-----+-----+-------------+-------+-----+------+
 | MacOSX    | X   | X   |             | X     |     |  X   |
 +-----------+-----+-----+-------------+-------+-----+------+
-| Windows   | X   |     |             |       |     |  X   |
+| Windows   |     |     |             |       |     |      |
 +-----------+-----+-----+-------------+-------+-----+------+
+
+Please note:
+    * Bohrium is a 64bit project exclusively.
+    * The Cluster implementation is very experimental thus has no Ubuntu package etc.
+    * We are working on a Windows version that uses the .NET frontend and CPU backend.
 
 Get Started!
 ------------

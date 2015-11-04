@@ -210,7 +210,7 @@ cdef class RandomState:
         else:
             length = size if numpy.isscalar(size) else reduce(operator.mul, size)
             bhc_obj = target.random123(length, self.index, self.key)
-            ret = np.ndarray.new((length,), np.uint64, bhc_obj).reshape(size)
+            ret = np.bhary.new((length,), np.uint64, bhc_obj).reshape(size)
         self.index += length
         return ret
 

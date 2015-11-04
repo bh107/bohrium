@@ -4,8 +4,8 @@ Array Creation Routines
 
 """
 import math
-from . import ndarray
-from .ndarray import fix_returned_biclass
+from . import bhary
+from .bhary import fix_returned_biclass
 import numpy_force as numpy
 from ._util import dtype_equal, dtype_in
 from . import target
@@ -105,7 +105,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
     """
     ary = obj
     if bohrium:
-        if ndarray.check(ary):
+        if bhary.check(ary):
             if order == 'F':
                 raise ValueError("Cannot convert a Bohrium array to "\
                             "column-major ('F') memory representation")
@@ -128,7 +128,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
                 ret._data_fill(ary)
             return ret
     else:
-        if ndarray.check(ary):
+        if bhary.check(ary):
             ret = ary.copy2numpy()
             return numpy.array(ret, dtype=dtype, copy=copy, order=order, \
                                subok=subok, ndmin=ndmin)
@@ -174,7 +174,7 @@ def empty(shape, dtype=float, bohrium=True):
     """
     if not bohrium:
         return numpy.empty(shape, dtype=dtype)
-    return ndarray.new(shape, dtype)
+    return bhary.new(shape, dtype)
 
 @fix_returned_biclass
 def ones(shape, dtype=float, bohrium=True):
@@ -320,7 +320,7 @@ def empty_like(a, dtype=None, bohrium=None):
     if dtype is None:
         dtype = a.dtype
     if bohrium is None:
-        bohrium = ndarray.check(a)
+        bohrium = bhary.check(a)
     return empty(a.shape, dtype, bohrium)
 
 @fix_returned_biclass
@@ -378,7 +378,7 @@ def zeros_like(a, dtype=None, bohrium=None):
     if dtype is None:
         dtype = a.dtype
     if bohrium is None:
-        bohrium = ndarray.check(a)
+        bohrium = bhary.check(a)
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[...] = b.dtype.type(0)
     return b
@@ -438,7 +438,7 @@ def ones_like(a, dtype=None, bohrium=None):
     if dtype is None:
         dtype = a.dtype
     if bohrium is None:
-        bohrium = ndarray.check(a)
+        bohrium = bhary.check(a)
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[...] = b.dtype.type(1)
     return b
@@ -537,7 +537,7 @@ def range(size, dtype=numpy.uint64):
     else:
         A = empty((size,), dtype=numpy.uint64, bohrium=True)
     ret = target.range(size, A.dtype)
-    A = ndarray.new((size,), A.dtype, ret)
+    A = bhary.new((size,), A.dtype, ret)
     if not dtype_equal(dtype, A.dtype):
         B = empty_like(A, dtype=dtype)
         B[...] = A[...]
@@ -757,7 +757,7 @@ def save(file, arr):
     array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
     """
-    bohrium = ndarray.check(arr)
+    bohrium = bhary.check(arr)
     if bohrium:
         array(arr, bohrium=False)
     numpy.save(file, arr)

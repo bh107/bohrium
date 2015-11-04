@@ -8,16 +8,18 @@ if 'numpy_force' not in sys.modules:
     sys.modules['numpy_force'] = numpy
     del numpy
 
+#We import all of NumPy and overwrite with the objects we implement ourself
+from numpy_force import *
+
 from .array_create import *
 from .array_manipulation import *
 from .ufunc import UFUNCS
-from .ndarray import check, check_biclass, fix_biclass
+from .bhary import check, check_biclass, fix_biclass
 from ._info import numpy_types
 from ._util import flush
 from . import linalg
 from .linalg import matmul, dot
 from .summations import sum, prod, max, min
-from . import import_external
 from numpy_force import dtype
 asarray = array
 asanyarray = array
@@ -33,28 +35,10 @@ for t in numpy_types:
 # Note that the following modules needs ufuncs and dtypes
 from . import random123 as random
 
-# TODO: import all numpy functions
-from numpy import meshgrid
-from numpy import rollaxis
-from numpy import swapaxes
+# Some modules (e.g. scipy) accesses '__all__' directly
+__all__ = [x for x in dir() if not x.startswith("_")]
 
-# Finally, we import and expose external libraries
-numpy_interface = [
-    "numpy.lib.stride_tricks.as_strided",
-    "numpy.newaxis",
-    "numpy.pi",
-    "numpy.transpose",
-    "numpy.ma",
-    "numpy.__version__",
-    "numpy.eye",
-    "numpy.bool_",
-    "numpy.object_",
-    "numpy.string_",
-    "numpy.float_",
-    "numpy.inf",
-    "numpy.nan",
-    "numpy.e",
-]
+#Finally, let's bohriumify the exposed API
+import bohriumify
+bohriumify.modules()
 
-for i in import_external.api(numpy_interface):
-    exec(i)
