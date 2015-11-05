@@ -11,8 +11,8 @@ from . import array_create
 import numpy_force as np
 from . import _info
 from ._util import dtype_equal
-from .ndarray import get_bhc, get_base, fix_returned_biclass
-from . import ndarray
+from .bhary import get_bhc, get_base, fix_returned_biclass
+from . import bhary
 from . import target
 from .array_manipulation import broadcast_arrays
 
@@ -81,15 +81,15 @@ def assign(ary, out):
         assign(ary, tmp)
         return assign(tmp, out)
 
-    if ndarray.check(out):
+    if bhary.check(out):
         out = get_bhc(out)
         if not np.isscalar(ary):
-            if not ndarray.check(ary):
+            if not bhary.check(ary):
                 ary = array_create.array(ary)#Convert the NumPy array to bohrium
             ary = get_bhc(ary)
         target.ufunc(identity, out, ary)
     else:
-        if ndarray.check(ary):
+        if bhary.check(ary):
             get_base(ary)._data_bhc2np()
         out[...] = ary
 
@@ -152,11 +152,11 @@ class Ufunc(object):
             if not np.isscalar(args[i]):
                 args[i] = bargs[i]
 
-        if any([ndarray.check(a) for a in args]):
-            if out is not None and not ndarray.check(out):
+        if any([bhary.check(a) for a in args]):
+            if out is not None and not bhary.check(out):
                 raise NotImplementedError("For now, the output must be a Bohrium "\
                                           "array when the input arrays are")
-        elif not ndarray.check(out):#All operands are regular NumPy arrays
+        elif not bhary.check(out):#All operands are regular NumPy arrays
             func = eval("np.%s"%self.info['name'])
             if out is not None:
                 args.append(out)
@@ -186,7 +186,7 @@ class Ufunc(object):
         for arg in args:
             if np.isscalar(arg):
                 bhcs.append(arg)
-            elif ndarray.check(arg):
+            elif bhary.check(arg):
                 bhcs.append(get_bhc(arg))
             else:
                 arg = array_create.array(arg)
@@ -283,24 +283,27 @@ class Ufunc(object):
         """
 
         if out is not None:
-            if ndarray.check(out):
-                if not ndarray.check(ary):
+            if bhary.check(out):
+                if not bhary.check(ary):
                     ary = array_create.array(ary)
             else:
-                if ndarray.check(ary):
+                if bhary.check(ary):
                     ary = a.copy2numpy()
         #Let NumPy handle NumPy array reductions
-        if not ndarray.check(ary):
+        if not bhary.check(ary):
             func = eval("np.%s.reduce" % self.info['name'])
             return func(ary, axis=axis, out=out)
 
-        #Make sure that 'axis' is a list of dimensions to reduce
+        #Make sure that 'axis' is a sorted list of dimensions to reduce
         if axis is None:
             axis = range(ary.ndim)#We reduce all dimensions
         elif np.isscalar(axis):
             axis = [axis]#We reduce one dimension
         else:
             axis = list(axis)#We reduce multiple dimensions
+        if len(axis) != len(set(axis)):
+            raise ValueError("duplicate value in 'axis'")
+        axis = sorted(axis,reverse=True)
 
         #When reducting booleans numerically, we count the number of True values
         if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
@@ -337,7 +340,7 @@ class Ufunc(object):
             return out
         else:
             tmp1 = self.reduce(ary, axis[0])
-            axis = [i-1 for i in axis[1:]]
+            axis = axis[1:]
             tmp2 = self.reduce(tmp1, axis)
             if out is not None:
                 out[...] = tmp2
@@ -415,18 +418,18 @@ class Ufunc(object):
            [ 0.,  1.]])
         """
         if out is not None:
-            if ndarray.check(out):
-                if not ndarray.check(ary):
+            if bhary.check(out):
+                if not bhary.check(ary):
                     ary = array_create.array(ary)
             else:
-                if ndarray.check(ary):
+                if bhary.check(ary):
                     ary = ary.copy2numpy()
             if out.shape != ary.shape:
                 raise ValueError("output dimension mismatch expect "\
                                  "shape '%s' got '%s'"%(ary.shape, out.shape))
 
         #Let NumPy handle NumPy array accumulate
-        if not ndarray.check(ary):
+        if not bhary.check(ary):
             func = eval("np.%s.accumulate" % self.info['name'])
             return func(ary, axis=axis, out=out)
 

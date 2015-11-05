@@ -5,7 +5,7 @@ Visualization
 Common functions for visualization.
 """
 import bohrium as np
-from . import ufunc, ndarray, array_create
+from . import ufunc, bhary, array_create
 
 def plot_surface(ary, mode, colormap, lowerbound, upperbound):
 
@@ -36,7 +36,7 @@ def plot_surface(ary, mode, colormap, lowerbound, upperbound):
     else:
         raise ValueError("Unsupported mode '%s' " % mode)
 
-    if ndarray.check(ary):                          # Must be a Bohrium array
+    if bhary.check(ary):                          # Must be a Bohrium array
         ary = array_create.array(ary)
 
     args = array_create.array([                     # Construct arguments

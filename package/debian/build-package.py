@@ -29,8 +29,8 @@ Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++
 
 Package: bohrium-numcil
 Architecture: amd64
-Depends: bohrium, mono-devel, mono-gmcs
-Recommends:
+Depends: bohrium, mono-mcs, mono-xbuild, libmono-system-numerics4.0-cil, libmono-microsoft-build-tasks-v4.0-4.0-cil
+Recommends: mono-devel
 Suggests:
 Description: The NumCIL (.NET) frontend for the Bohrium Runtime System
 
@@ -72,6 +72,8 @@ binary-core: build
 binary-numcil: build
 	cd b; cmake -DCOMPONENT=bohrium-numcil -DCMAKE_INSTALL_PREFIX=../debian/numcil/usr -P cmake_install.cmake
 	mkdir -p debian/numcil/DEBIAN
+	cp -p debian/postinst_numcil debian/numcil/DEBIAN/postinst
+	cp -p debian/postrm_numcil debian/numcil/DEBIAN/postrm
 	dpkg-gensymbols -q -pbohrium-numcil -Pdebian/numcil
 	dpkg-gencontrol -pbohrium-numcil -Pdebian/numcil -Tdebian/bohrium-numcil.substvars
 	dpkg --build debian/numcil ..
@@ -111,16 +113,34 @@ set -e
 rm -fR /usr/var/bohrium/fuse_cache/*
 rm -fR /usr/var/bohrium/kernels/*
 rm -fR /usr/var/bohrium/objects/*
-
 exit 0
 """
 
-UBUNTU_RELEASES = ['trusty', 'vivid']
+CIL_GLOBAL_DLL_CACHE_INSTALL = """\
+#!/bin/sh
+
+gacutil -i /usr/lib/mono/NumCIL.Bohrium.dll
+gacutil -i /usr/lib/mono/NumCIL.dll
+gacutil -i /usr/lib/mono/NumCIL.Unsafe.dll
+exit 0
+"""
+
+CIL_GLOBAL_DLL_CACHE_UNINSTALL = """\
+#!/bin/sh
+
+gacutil -u NumCIL.Bohrium
+gacutil -u NumCIL
+gacutil -u NumCIL.Unsafe
+exit 0
+"""
+
+UBUNTU_RELEASES = ['trusty', 'vivid', 'wily']
 
 
 SRC = path.join(path.dirname(os.path.realpath(__file__)),"..","..")
 
 def bash_cmd(cmd, cwd=None):
+    print cmd
     out = ""
     try:
         p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True, cwd=cwd)
@@ -167,6 +187,16 @@ def build_src_dir(args, bh_version, release="trusty"):
         f.write(REMOVE_CACHEFILES)
     bash_cmd("chmod +x %s/prerm"%deb_src_dir)
 
+    #debian/postinst_numcil
+    with open("%s/postinst_numcil"%deb_src_dir, "w") as f:
+        f.write(CIL_GLOBAL_DLL_CACHE_INSTALL)
+    bash_cmd("chmod +x %s/postinst_numcil"%deb_src_dir)
+
+    #debian/postrm_numcil
+    with open("%s/postrm_numcil"%deb_src_dir, "w") as f:
+        f.write(CIL_GLOBAL_DLL_CACHE_UNINSTALL)
+    bash_cmd("chmod +x %s/postrm_numcil"%deb_src_dir)
+
     #debian/source/format
     os.makedirs(path.join(deb_src_dir,"source"))
     with open("%s/source/format"%deb_src_dir, "w") as f:
@@ -201,7 +231,7 @@ def main(args):
     bh_version = bh_version.strip()[1:]
 
     #Get source archive
-    os.makedirs(os.path.basename(args.output))
+    bash_cmd("mkdir -p %s"%args.output)
     bash_cmd("git archive --format=tar.gz -o %s/bohrium_%s.orig.tar.gz HEAD"%(args.output, bh_version), cwd=SRC)
 
     #Lets build a source dir for each Ubuntu Release
