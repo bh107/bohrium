@@ -16,5 +16,9 @@ before_install:
   - cat package/docker/ubuntu14.04/Dockerfile
   - docker build -t bh107 package/docker/ubuntu14.04/
 
+env:
+  matrix:
+    - ENVS="export BH_STACK=stack_default;"
+
 script:
-  -  docker run -t bh107 /bin/sh -c "cd /tmp/bohrium; ls"
+  - docker run -t bh107 /bin/sh -c "cd /tmp/bohrium; ${ENVS} python bohrium/test/python/numpytest.py"
