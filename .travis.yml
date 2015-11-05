@@ -13,7 +13,7 @@ before_install:
   - wget raw.githubusercontent.com/bh107/bohrium/${TRAVIS_COMMIT}/package/docker/ubuntu14.04/Dockerfile
   - docker build -t bh107 .
   - ls
-  - docker run -t bh107 /bin/bash "cd /tmp; wget https://github.com/bh107/bohrium/archive/${TRAVIS_COMMIT}.zip; unzip bohrium* "
+  - docker run -t bh107 /bin/bash "cd /tmp; wget https://github.com/bh107/bohrium/archive/${TRAVIS_COMMIT}.zip; unzip ${TRAVIS_COMMIT}.zip; mv bohrium-* bohrium"
 
 script:
   - ls
