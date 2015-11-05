@@ -17,4 +17,4 @@ before_install:
   - ls
 
 script:
-  - ls
+  -  docker run -t bh107 /bin/sh -c "ls /tmp"
