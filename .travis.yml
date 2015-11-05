@@ -21,4 +21,4 @@ env:
     - ENVS="export BH_STACK=stack_default;"
 
 script:
-  - docker run -t bh107 /bin/sh -c "cd /tmp/bohrium; ${ENVS} python bohrium/test/python/numpytest.py"
+  - docker run -t bh107 /bin/sh -c "cd /tmp/bohrium; ${ENVS} python test/python/numpytest.py"
