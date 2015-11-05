@@ -12,7 +12,7 @@ before_install:
   - echo ${TRAVIS_COMMIT}
   - echo "RUN cd /tmp && wget https://github.com/bh107/bohrium/archive/${TRAVIS_COMMIT}.zip" >> package/docker/ubuntu14.04/Dockerfile
   - echo "RUN cd /tmp && unzip ${TRAVIS_COMMIT}.zip && mv bohrium-* bohrium" >> package/docker/ubuntu14.04/Dockerfile
-  - echo "RUN mkdir /tmp/build && cd /tmp/build && cmake ../bohrium" >> package/docker/ubuntu14.04/Dockerfile
+  - echo "RUN mkdir /tmp/build && cd /tmp/build && cmake ../bohrium -DCMAKE_BUILD_TYPE=Release" >> package/docker/ubuntu14.04/Dockerfile
   - cat package/docker/ubuntu14.04/Dockerfile
   - docker build -t bh107 package/docker/ubuntu14.04/
 
