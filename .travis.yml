@@ -10,7 +10,9 @@ compiler:
 
 before_install:
   - echo ${TRAVIS_COMMIT}
-  - wget www.github.com
+  - wget raw.githubusercontent.com/bh107/bohrium/${TRAVIS_COMMIT}/package/docker/ubuntu14.04/Dockerfile
+  - ls
+  - docker build -t bh107 .
 
 script:
   - ls
