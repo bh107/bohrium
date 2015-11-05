@@ -10,10 +10,11 @@ compiler:
 
 before_install:
   - echo ${TRAVIS_COMMIT}
-  - wget raw.githubusercontent.com/bh107/bohrium/${TRAVIS_COMMIT}/package/docker/ubuntu14.04/Dockerfile
-  - docker build -t bh107 .
+  - cat "RUN cd /tmp && https://github.com/bh107/bohrium/archive/${TRAVIS_COMMIT}.zip\n" > package/docker/ubuntu14.04/Dockerfile
+  - cat "RUN cd /tmp && unzip ${TRAVIS_COMMIT}.zip && mv bohrium-* bohrium\n" > package/docker/ubuntu14.04/Dockerfile
+  - echo package/docker/ubuntu14.04/Dockerfile
+  - docker build -t bh107 package/docker/ubuntu14.04/
   - ls
-  - docker run -t bh107 /bin/bash "cd /tmp; wget https://github.com/bh107/bohrium/archive/${TRAVIS_COMMIT}.zip; unzip ${TRAVIS_COMMIT}.zip; mv bohrium-* bohrium"
 
 script:
   - ls
