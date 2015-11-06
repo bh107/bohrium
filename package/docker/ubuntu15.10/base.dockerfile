@@ -1,6 +1,6 @@
 # This is a Dockerfile for installing Bohrium dependencies
 
-FROM ubuntu:14.04
+FROM ubuntu:15.10
 MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
 RUN mkdir -p /bohrium/build
 WORKDIR /bohrium/build
@@ -20,7 +20,6 @@ RUN apt-get install -qq libboost-serialization-dev libboost-system-dev libboost-
 RUN apt-get install -qq mono-mcs mono-xbuild libmono-system-numerics4.0-cil libmono-microsoft-build-tasks-v4.0-4.0-cil
 RUN apt-get install -qq fftw3-dev
 RUN apt-get install -qq libhwloc-dev
-RUN apt-get install -qq ocl-icd-opencl-dev ocl-icd-libopencl1
-RUN apt-get install -qq fglrx fglrx-dev opencl-headers
-RUN apt-get install -qq freeglut3 freeglut3-dev libxmu-dev libxi-dev
-
+RUN apt-get install -qq ocl-icd-opencl-dev ocl-icd-libopencl1 opencl-headers
+#RUN apt-get install -qq fglrx fglrx-dev
+#RUN apt-get install -qq freeglut3 freeglut3-dev libxmu-dev libxi-dev
