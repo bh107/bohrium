@@ -5,8 +5,14 @@
 
 FROM ubuntu:14.04
 MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
-RUN mkdir -p /tmp/bohrium/build
-WORKDIR /tmp/bohrium/build
+RUN mkdir -p /bohrium/build
+WORKDIR /bohrium/build
+
+# Set the locale
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 # Install dependencies
 RUN apt-get update
@@ -28,4 +34,4 @@ RUN make install
 
 # Test Suite
 ENV PYTHONPATH /usr/lib/python2.7/site-packages
-ENTRYPOINT echo $BH_STACK && python /tmp/bohrium/test/python/numpytest.py
+ENTRYPOINT echo $BH_STACK && python /bohrium/test/python/numpytest.py
