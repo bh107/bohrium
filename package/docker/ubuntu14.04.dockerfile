@@ -10,15 +10,15 @@ WORKDIR /tmp/bohrium/build
 
 # Install dependencies
 RUN apt-get update
-RUN apt-get install -y wget unzip build-essential
-RUN apt-get install -y cmake swig python python-numpy python-cheetah python-dev cython
-RUN apt-get install -y libboost-serialization-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev
-RUN apt-get install -y mono-mcs mono-xbuild libmono-system-numerics4.0-cil libmono-microsoft-build-tasks-v4.0-4.0-cil
-RUN apt-get install -y fftw3-dev
-RUN apt-get install -y libhwloc-dev
-RUN apt-get install -y ocl-icd-opencl-dev ocl-icd-libopencl1
-RUN apt-get install -y fglrx fglrx-dev opencl-headers
-RUN apt-get install -y freeglut3-dev libxmu-dev libxi-dev
+RUN apt-get install -qq wget unzip build-essential
+RUN apt-get install -qq cmake swig python python-numpy python-cheetah python-dev cython
+RUN apt-get install -qq libboost-serialization-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev
+RUN apt-get install -qq mono-mcs mono-xbuild libmono-system-numerics4.0-cil libmono-microsoft-build-tasks-v4.0-4.0-cil
+RUN apt-get install -qq fftw3-dev
+RUN apt-get install -qq libhwloc-dev
+RUN apt-get install -qq ocl-icd-opencl-dev ocl-icd-libopencl1
+RUN apt-get install -qq fglrx fglrx-dev opencl-headers
+RUN apt-get install -qq freeglut3 freeglut3-dev libxmu-dev libxi-dev
 
 # Copy and build bohrium source files from "context"
 COPY . ../
