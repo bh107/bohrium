@@ -9,16 +9,12 @@ compiler:
   - gcc
 
 before_install:
-  - echo ${TRAVIS_COMMIT}
-  - echo "RUN cd /tmp && wget https://github.com/bh107/bohrium/archive/${TRAVIS_COMMIT}.zip" >> package/docker/ubuntu14.04/Dockerfile
-  - echo "RUN cd /tmp && unzip ${TRAVIS_COMMIT}.zip && mv bohrium-* bohrium" >> package/docker/ubuntu14.04/Dockerfile
-  - echo "RUN mkdir /tmp/build && cd /tmp/build && cmake ../bohrium -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr && make install" >> package/docker/ubuntu14.04/Dockerfile
-  - cat package/docker/ubuntu14.04/Dockerfile
-  - docker build -t bh107 package/docker/ubuntu14.04/
+    - docker build -t bohrium -f package/docker/ubuntu14.04/ .
 
 env:
   matrix:
-      - ENVS="export BH_STACK=stack_default; export PYTHONPATH=/usr/lib/python2.7/site-packages/bohrium;"
+      - BH_STACK=stack_default
+      - BH_STACK=stack_gpu
 
 script:
-    - docker run -t bh107 /bin/sh -c "cd /tmp/bohrium; export PYTHONPATH=/usr/lib/python2.7/site-packages; python test/python/numpytest.py"
+    - docker run -t -e BH_STACK bohrium
