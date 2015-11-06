@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)                         # cmake features
 include(CheckCXXCompilerFlag)
-include(CheckCCompilerFlag)             
+include(CheckCCompilerFlag)
 include(FeatureSummary)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -110,8 +110,13 @@ set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "Multicore pro
 find_package(OpenACC COMPONENTS bohrium)
 set_package_properties(OpenACC PROPERTIES TYPE RECOMMENDED PURPOSE "For experimental support for offloading to GPU in CPU VE.")
 
+set(OpenACC false CACHE BOOL "For OpenACC support.")
+if (NOT OpenACC)
+    set(OPENACC_FOUND false)
+endif()
+
 check_c_compiler_flag(-O3 FLAG_03_FOUND)                            # Highly RECOMMENDED flags
-check_c_compiler_flag(-march=native FLAG_MARCH_NATIVE_FOUND)                   
+check_c_compiler_flag(-march=native FLAG_MARCH_NATIVE_FOUND)
 check_c_compiler_flag("--param vect-max-version-for-alias-checks=100" PARAM_VECTMAX_FOUND)
 
 if (HWLOC_FOUND)                                                    # Enable HWLOC for threadcontrol
@@ -170,7 +175,7 @@ elseif(OPENMP_FOUND)                                                # OpenMP
 endif()
 
 install(
-    TARGETS bh_ve_cpu 
+    TARGETS bh_ve_cpu
     DESTINATION lib COMPONENT bohrium)      # INSTALL the Bohrium <-> CAPE and CAPE C++ Runtime and library
 install(
     DIRECTORY templates
@@ -234,7 +239,7 @@ else()
     #
     if (OPENACC_FOUND)
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} ${OpenACC_C_FLAGS}")# OpenACC
-    elseif(OPENMP_FOUND)        
+    elseif(OPENMP_FOUND)
         set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} ${OpenMP_C_FLAGS}") # OpenMP
         if (FLAG_OPENMP_SIMD_FOUND)
             set(VE_CPU_COMPILER_FLG "${VE_CPU_COMPILER_FLG} -fopenmp-simd") # OpenMP - SIMD
