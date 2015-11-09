@@ -9,7 +9,7 @@ compiler:
   - gcc
 
 before_install:
-    - docker build -t bohrium_release -f package/docker/ubuntu14.04/bohrium.dockerfile .
+    - docker build -t bohrium_release -f package/docker/ubuntu14.04/bohrium_debug.dockerfile .
 
 env:
   matrix:
