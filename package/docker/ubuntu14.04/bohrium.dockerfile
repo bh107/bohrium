@@ -17,8 +17,7 @@ ENV LC_ALL en_US.UTF-8
 RUN mkdir -p /benchpress
 WORKDIR /benchpress/
 RUN wget -nv https://github.com/bh107/benchpress/archive/master.zip
-RUN unzip master.zip
-RUN cd benchpress-master && bash util/setbpenv.bash
+RUN unzip -q master.zip
 
 # Copy and build bohrium source files from "context"
 RUN mkdir -p /bohrium/build
@@ -30,4 +29,4 @@ RUN make install
 
 # Test Suite
 ENV PYTHONPATH /usr/lib/python2.7/site-packages
-ENTRYPOINT echo $BH_STACK && python /bohrium/test/python/numpytest.py --no-complex128
+ENTRYPOINT cd /benchpress/benchpress-master && bash util/setbpenv.bash && echo $BH_STACK && python /bohrium/test/python/numpytest.py --no-complex128
