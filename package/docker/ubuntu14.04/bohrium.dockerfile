@@ -32,7 +32,7 @@ ENV PYTHONPATH "/usr/lib/python2.7/site-packages:$PYTHONPATH"
 
 # Test Suite
 WORKDIR /bohrium
-RUN echo "dython -c 'import bohrium as bh; bh.empty(10)'" > numpytest.sh
-RUN echo "dython /bohrium/test/python/numpytest.py --no-complex128" >> numpytest.sh
+RUN echo "python -c 'import bohrium as bh; bh.empty(10)'" > numpytest.sh
+RUN echo "python /bohrium/test/python/numpytest.py --no-complex128" >> numpytest.sh
 ENTRYPOINT export && cat numpytest.sh && bash numpytest.sh
 #ENTRYPOINT export && python /bohrium/test/python/numpytest.py --no-complex128
