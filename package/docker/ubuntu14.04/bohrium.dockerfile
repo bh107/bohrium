@@ -6,8 +6,6 @@
 
 FROM bohrium/ubuntu:14.04
 MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
-RUN mkdir -p /bohrium/build
-WORKDIR /bohrium/build
 
 # Set the locale
 RUN locale-gen en_US.UTF-8
@@ -15,7 +13,16 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
+# Download benchpress
+RUN mkdir -p /benchpress
+WORKDIR /benchpress/
+RUN wget -nv https://github.com/bh107/benchpress/archive/master.zip
+RUN unzip master.zip
+RUN cd benchpress-master && bash util/setbpenv.bash
+
 # Copy and build bohrium source files from "context"
+RUN mkdir -p /bohrium/build
+WORKDIR /bohrium/build
 COPY . ../
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
 RUN make
