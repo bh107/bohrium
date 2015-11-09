@@ -20,8 +20,6 @@ RUN wget -nv https://github.com/bh107/benchpress/archive/master.zip
 RUN unzip -q master.zip
 ENV PATH "/benchpress/benchpress-master/bin:$PATH"
 ENV PYTHONPATH "/benchpress/benchpress-master/module:$PYTHONPATH"
-RUN export
-RUN bp-info
 
 # Copy and build bohrium source files from "context"
 RUN mkdir -p /bohrium/build
@@ -30,7 +28,11 @@ COPY . ../
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
 RUN make
 RUN make install
+ENV PYTHONPATH "/usr/lib/python2.7/site-packages:$PYTHONPATH"
 
 # Test Suite
-ENV PYTHONPATH /usr/lib/python2.7/site-packages:$PYTHONPATH
-ENTRYPOINT export && python /bohrium/test/python/numpytest.py --no-complex128
+WORKDIR /bohrium
+RUN echo "dython -c 'import bohrium as bh; bh.empty(10)'" > numpytest.sh
+RUN echo "dython /bohrium/test/python/numpytest.py --no-complex128" >> numpytest.sh
+ENTRYPOINT export && cat numpytest.sh && bash numpytest.sh
+#ENTRYPOINT export && python /bohrium/test/python/numpytest.py --no-complex128

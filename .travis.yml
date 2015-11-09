@@ -9,7 +9,7 @@ compiler:
   - gcc
 
 before_install:
-    - docker build -t bohrium -f package/docker/ubuntu14.04/bohrium.dockerfile .
+    - docker build -t bohrium_release -f package/docker/ubuntu14.04/bohrium.dockerfile .
 
 env:
   matrix:
@@ -17,4 +17,4 @@ env:
       - BH_STACK=stack_gpu
 
 script:
-    - docker run -t -e BH_STACK bohrium
+    - docker run -t -e BH_STACK bohrium_release
