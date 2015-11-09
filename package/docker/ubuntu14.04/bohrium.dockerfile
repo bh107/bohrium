@@ -18,8 +18,8 @@ RUN mkdir -p /benchpress
 WORKDIR /benchpress/
 RUN wget -nv https://github.com/bh107/benchpress/archive/master.zip
 RUN unzip -q master.zip
-ENV PATH "/benchpress/bin:$PATH"
-ENV PYTHONPATH "/benchpress/module:$PYTHONPATH"
+ENV PATH "/benchpress/benchpress-master/bin:$PATH"
+ENV PYTHONPATH "/benchpress/benchpress-master/module:$PYTHONPATH"
 RUN ls /benchpress
 RUN ls /benchpress/bin
 RUN ls /benchpress/module
