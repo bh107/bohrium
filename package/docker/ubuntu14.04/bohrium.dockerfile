@@ -23,4 +23,4 @@ RUN make install
 
 # Test Suite
 ENV PYTHONPATH /usr/lib/python2.7/site-packages
-ENTRYPOINT echo $BH_STACK && python /bohrium/test/python/numpytest.py
+ENTRYPOINT echo $BH_STACK && python /bohrium/test/python/numpytest.py --no-complex128
