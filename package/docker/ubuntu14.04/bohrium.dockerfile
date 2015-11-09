@@ -29,4 +29,5 @@ RUN make install
 
 # Test Suite
 ENV PYTHONPATH /usr/lib/python2.7/site-packages
-ENTRYPOINT cd /benchpress/benchpress-master && bash util/setbpenv.bash && echo $BH_STACK && python /bohrium/test/python/numpytest.py --no-complex128
+WORKDIR /benchpress/benchpress-master
+ENTRYPOINT bash util/setbpenv.bash && echo $BH_STACK && export && python /bohrium/test/python/numpytest.py --no-complex128
