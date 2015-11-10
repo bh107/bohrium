@@ -1,24 +1,30 @@
+sudo: required
+
+services:
+  - docker
+
 language: c
+
 compiler:
-#  - clang
   - gcc
+
+install:
+    - docker build -t bohrium_release -f package/docker/ubuntu14.04/bohrium.dockerfile .
+
 env:
   global:
-    - LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
+      - BH_GPU_VERBOSE=true
+      - BH_GPU_TROUBLESOME="--exclude-test=test_lbm_3d --exclude-test test_gauss  --exclude-test test_gauss_20x20 --exclude-test test_jacobi --exclude-test test_jacobi_fixed --exclude-test test_idl_init"
   matrix:
-    - BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=0
-    - BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=0
-    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=3 BH_BCEXP_SIGN=0
-    - BH_STACK="stack_cpu_greedy" BH_CPU_JIT_LEVEL=1 BH_BCEXP_SIGN=0
-before_install:
-  - sudo add-apt-repository --yes ppa:kalakris/cmake
-  - sudo apt-get update -qq
-  - sudo apt-get build-dep -qq python-numpy
-  - sudo apt-get install -qq python python-numpy python-cheetah cython cmake swig libboost-all-dev libboost-dev libboost-filesystem-dev libboost-system-dev libboost-serialization-dev libboost-thread-dev libhwloc-dev freeglut3 freeglut3-dev libxmu-dev libxi-dev fglrx fglrx-dev opencl-headers
+      - BH_STACK=stack_default BH_CPU_JIT_LEVEL=3
+      - BH_STACK=stack_default BH_CPU_JIT_LEVEL=1
+      - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=3
+      - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=1
+
+      - BH_STACK=stack_gpu NUMPYTEST_ARGS=$BH_GPU_TROUBLESOME BH_BCEXP_GPU_REDUCE1D=100
+      - BH_STACK=stack_gpu NUMPYTEST_ARGS=$BH_GPU_TROUBLESOME BH_BCEXP_GPU_REDUCE1D=100 BH_GPU_COMPILE=sync
+      - BH_STACK=stack_gpu NUMPYTEST_ARGS=$BH_GPU_TROUBLESOME BH_FUSE_MODEL=NO_XSWEEP_SCALAR_SEPERATE
+      - BH_STACK=stack_gpu NUMPYTEST_ARGS=$BH_GPU_TROUBLESOME BH_FUSE_MODEL=NO_XSWEEP_SCALAR_SEPERATE BH_GPU_COMPILE=sync
 
 script:
-  - cmake --version
-  - mkdir bdir && cd bdir && cmake -DCMAKE_BUILD_TYPE=Release .. && make && make install
-  - BASEDIR=${HOME}/build/bh107 && git clone --depth=1 git://github.com/bh107/benchpress.git ${BASEDIR}/benchpress && cd ${BASEDIR}/benchpress && . util/setbpenv.bash && cd ${BASEDIR}
-  - python bohrium/test/python/numpytest.py --verbose $BH_EXCLUDE
-  - BH_BCEXP_SIGN=1 python bohrium/test/python/numpytest.py --verbose --file=test_sign.py
+    - docker run -t -e BH_STACK -e NUMPYTEST_ARGS bohrium_release

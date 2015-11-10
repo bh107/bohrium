@@ -33,6 +33,10 @@ class test_bh_opcodes(numpytest):#Ufuncs directly mappable to Bohrium
                 cmd = ""
                 for i in xrange(len(t)):
                     cmd += "a[%d] = self.array((10),np.dtype('%s') %s);"%(i, t[i],high)
+
+                if self.args.no_complex128 and "complex128" in t[i]:
+                    continue
+
                 exec(cmd)
                 yield (a,cmd)
 

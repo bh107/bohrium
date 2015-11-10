@@ -64,7 +64,8 @@
                      sinr = sincos(a.s0, &cosr);                \
                      r.s0 = cosr*cosh(a.s1);                    \
                      r.s1 = -sinr*sinh(a.s1); }
-#define CTAN(t,r,a) r = 2.0*a;                                  \
+#define CTAN(t,r,a) r.s0 = 2.0*a.s0;                            \
+                    r.s1 = 2.0*a.s1;                            \
                     if (fabs(r.s1) > logmax##t) {               \
                         r.s0 = 0.0;                             \
                         r.s1 = (r.s1 > 0.0 ? 1.0 : -1.0);       \
@@ -81,7 +82,8 @@
                      sini = sincos(a.s1, &cosi);                \
                      r.s0 = cosh(a.s0)*cosi;                    \
                      r.s1 = sinh(a.s0)*sini; }
-#define CTANH(t,r,a) r = 2.0*a;                                 \
+#define CTANH(t,r,a) r.s0 = 2.0*a.s0;                            \
+                     r.s1 = 2.0*a.s1;                            \
                      if (fabs(r.s0) > logmax##t) {              \
                          r.s0 = (r.s0 > 0.0 ? 1.0 : -1.0);      \
                          r.s1 = 0.0;                            \
