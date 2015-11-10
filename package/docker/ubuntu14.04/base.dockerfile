@@ -47,6 +47,7 @@ WORKDIR Python-$PV
 RUN ./configure --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
 RUN make install
 RUN ln -s /opt/python/bin/python /usr/bin/dython
+RUN rm ../Python-$PV.tgz
 
 RUN mkdir -p /opt/cython
 WORKDIR /opt/cython
@@ -55,6 +56,7 @@ RUN wget -q http://cython.org/release/Cython-$CV.tar.gz
 RUN tar -xzf Cython-$CV.tar.gz
 WORKDIR Cython-$CV
 RUN dython setup.py install
+RUN rm ../Cython-$CV.tar.gz
 
 RUN mkdir -p /opt/cheetah
 WORKDIR /opt/cheetah
@@ -63,6 +65,7 @@ RUN wget -q https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$CTV.tar.g
 RUN tar -xzf Cheetah-$CTV.tar.gz
 WORKDIR Cheetah-$CTV
 RUN dython setup.py install
+RUN rm ../Cheetah-$CTV.tar.gz
 
 RUN mkdir -p /opt/numpy
 WORKDIR /opt/numpy
@@ -71,3 +74,4 @@ RUN wget -q http://optimate.dl.sourceforge.net/project/numpy/NumPy/$NV/numpy-$NV
 RUN tar -xzf numpy-$NV.tar.gz
 WORKDIR numpy-$NV
 RUN dython setup.py install
+RUN rm ../numpy-$NV.tar.gz

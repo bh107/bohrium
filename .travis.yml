@@ -13,8 +13,8 @@ before_install:
 
 env:
   matrix:
-      - BH_STACK=stack_default
-      - BH_STACK=stack_gpu
+      - BH_STACK=stack_default NUMPYTEST_ARGS=""
+      - BH_STACK=stack_gpu NUMPYTEST_ARGS="--exclude-test test_gauss --exclude-test test_gauss_20x20 --exclude-test test_idl_init --exclude-test test_lbm_3d"
 
 script:
-    - docker run -t -e BH_STACK bohrium_release --exclude-test test_gauss --exclude-test test_gauss_20x20 --exclude-test test_idl_init --exclude-test test_lbm_3d
+    - docker run -t -e BH_STACK -e NUMPYTEST_ARGS bohrium_release

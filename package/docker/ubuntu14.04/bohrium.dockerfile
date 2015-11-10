@@ -32,4 +32,4 @@ ENV PYTHONPATH "/usr/lib/python2.7/site-packages:$PYTHONPATH"
 
 # Test Suite
 WORKDIR /bohrium
-ENTRYPOINT export && python /bohrium/test/python/numpytest.py
+ENTRYPOINT python /bohrium/test/python/numpytest.py $NUMPYTEST_ARGS
