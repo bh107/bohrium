@@ -20,9 +20,19 @@ RUN apt-get install -qq libboost-serialization-dev libboost-system-dev libboost-
 RUN apt-get install -qq mono-mcs mono-xbuild libmono-system-numerics4.0-cil libmono-microsoft-build-tasks-v4.0-4.0-cil
 RUN apt-get install -qq fftw3-dev
 RUN apt-get install -qq libhwloc-dev
-RUN apt-get install -qq ocl-icd-opencl-dev ocl-icd-libopencl1
-RUN apt-get install -qq fglrx fglrx-dev opencl-headers
-RUN apt-get install -qq freeglut3 freeglut3-dev libxmu-dev libxi-dev
+RUN apt-get install -qq libgl1-mesa-dev
+
+# Install AMD SDK for OpenCL
+RUN mkdir -p /opt/amd_src
+WORKDIR /opt/amd_src
+ENV OPENCL_HOME /opt/AMDAPPSDK-2.9-1
+ENV OPENCL_LIBPATH /opt/AMDAPPSDK-2.9-1/lib/x86_64
+RUN wget -nv http://jenkins.choderalab.org/userContent/AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2; exit 0;
+RUN tar xjf AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2
+RUN ./AMD-APP-SDK-v2.9-1.599.381-GA-linux64.sh -- -s -a yes
+ENV OpenCL_LIBPATH "/opt/AMDAPPSDK-2.9-1/lib/x86_64/"
+ENV OpenCL_INCPATH "/opt/AMDAPPSDK-2.9-1/include"
+ENV LD_LIBRARY_PATH "$OpenCL_LIBPATH:$LD_LIBRARY_PATH"
 
 # Install debug dependencies
 RUN apt-get install -qq zlib1g-dev valgrind gdb vim cgdb

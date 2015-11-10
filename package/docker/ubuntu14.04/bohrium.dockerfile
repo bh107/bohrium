@@ -25,14 +25,11 @@ ENV PYTHONPATH "/benchpress/benchpress-master/module:$PYTHONPATH"
 RUN mkdir -p /bohrium/build
 WORKDIR /bohrium/build
 COPY . ../
-RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DEXT_VISUALIZER=OFF
 RUN make
 RUN make install
 ENV PYTHONPATH "/usr/lib/python2.7/site-packages:$PYTHONPATH"
 
 # Test Suite
 WORKDIR /bohrium
-RUN echo "python -c 'import bohrium as bh; bh.empty(10)'" > numpytest.sh
-RUN echo "python /bohrium/test/python/numpytest.py --no-complex128" >> numpytest.sh
-ENTRYPOINT export && cat numpytest.sh && bash numpytest.sh
-#ENTRYPOINT export && python /bohrium/test/python/numpytest.py --no-complex128
+ENTRYPOINT export && python /bohrium/test/python/numpytest.py --exclude-test test_gauss --exclude-test test_gauss_20x20 --exclude-test test_idl_init --exclude-test test_lbm_3d
