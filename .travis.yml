@@ -8,13 +8,24 @@ language: c
 compiler:
   - gcc
 
-before_install:
+install:
     - docker build -t bohrium_release -f package/docker/ubuntu14.04/bohrium.dockerfile .
 
 env:
+  global:
+      - BH_GPU_VERBOSE=true
+      - BH_GPU_TROUBLESOME="--exclude-test=test_lbm_3d --exclude-test test_gauss  --exclude-test test_gauss_20x20 --exclude-test test_jacobi --exclude-test test_jacobi_fixed --exclude-test test_idl_init"
   matrix:
       - BH_STACK=stack_default NUMPYTEST_ARGS=""
-      - BH_STACK=stack_gpu NUMPYTEST_ARGS="--exclude-test test_gauss --exclude-test test_gauss_20x20 --exclude-test test_idl_init --exclude-test test_lbm_3d"
+      - BH_CPU_JIT_LEVEL=3
+      - BH_CPU_JIT_LEVEL=1
+      - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=3
+      - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=1
+
+      - BH_STACK=stack_gpu NUMPYTEST_ARGS=$BH_GPU_TROUBLESOME BH_BCEXP_GPU_REDUCE1D=100
+      - BH_STACK=stack_gpu NUMPYTEST_ARGS=$BH_GPU_TROUBLESOME BH_BCEXP_GPU_REDUCE1D=100 BH_GPU_COMPILE=sync
+      - BH_STACK=stack_gpu NUMPYTEST_ARGS=$BH_GPU_TROUBLESOME BH_FUSE_MODEL=NO_XSWEEP_SCALAR_SEPERATE
+      - BH_STACK=stack_gpu NUMPYTEST_ARGS=$BH_GPU_TROUBLESOME BH_FUSE_MODEL=NO_XSWEEP_SCALAR_SEPERATE BH_GPU_COMPILE=sync
 
 script:
     - docker run -t -e BH_STACK -e NUMPYTEST_ARGS bohrium_release
