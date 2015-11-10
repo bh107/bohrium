@@ -32,4 +32,4 @@ ENV PYTHONPATH "/usr/lib/python2.7/site-packages:$PYTHONPATH"
 
 # Test Suite
 WORKDIR /bohrium
-ENTRYPOINT export && python /bohrium/test/python/numpytest.py --exclude-test test_gauss --exclude-test test_gauss_20x20 --exclude-test test_idl_init --exclude-test test_lbm_3d
+ENTRYPOINT export && python /bohrium/test/python/numpytest.py -DEXT_VISUALIZER=OFF --exclude-test test_gauss --exclude-test test_gauss_20x20 --exclude-test test_idl_init --exclude-test test_lbm_3d
