@@ -16,9 +16,8 @@ env:
       - BH_GPU_VERBOSE=true
       - BH_GPU_TROUBLESOME="--exclude-test=test_lbm_3d --exclude-test test_gauss  --exclude-test test_gauss_20x20 --exclude-test test_jacobi --exclude-test test_jacobi_fixed --exclude-test test_idl_init"
   matrix:
-      - BH_STACK=stack_default NUMPYTEST_ARGS=""
-      - BH_CPU_JIT_LEVEL=3
-      - BH_CPU_JIT_LEVEL=1
+      - BH_STACK=stack_default BH_CPU_JIT_LEVEL=3
+      - BH_STACK=stack_default BH_CPU_JIT_LEVEL=1
       - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=3
       - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=1
 
