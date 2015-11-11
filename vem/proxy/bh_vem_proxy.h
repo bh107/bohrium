@@ -18,35 +18,29 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
-#include <cstring>
-#include <iostream>
+#ifndef __BH_VEM_PROXY_H
+#define __BH_VEM_PROXY_H
+
 #include <bh.h>
-#include "timing.h"
-#include <set>
 
-static int bh_sleep = -1;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-//Sleep a period based on BH_VEM_PROXY_SLEEP (in ms)
-void timing_sleep(void)
-{
-    if(bh_sleep == -1)
-    {
-        const char *str = getenv("BH_VEM_PROXY_SLEEP");
-        if(str == NULL)
-            bh_sleep = 0;
-        else
-            bh_sleep = atoi(str);
-        printf("sleep enabled: %dms\n", bh_sleep);
-    }
-    if(bh_sleep == 0)
-        return;
+/* Component interface: init (see bh_component.h) */
+DLLEXPORT bh_error bh_vem_proxy_init(const char* name);
 
-    struct timespec tim, tim2;
-    tim.tv_sec = bh_sleep/1000;
-    tim.tv_nsec = bh_sleep%1000 * 1000000;
+/* Component interface: shutdown (see bh_component.h) */
+DLLEXPORT bh_error bh_vem_proxy_shutdown(void);
 
-    if(nanosleep(&tim , &tim2) < 0 )
-        fprintf(stderr,"Nano sleep system call failed \n");
+/* Component interface: extmethod (see bh_component.h) */
+DLLEXPORT bh_error bh_vem_proxy_execute(bh_ir* bhir);
+
+/* Component interface: extmethod (see bh_component.h) */
+DLLEXPORT bh_error bh_vem_proxy_extmethod(const char *name, bh_opcode opcode);
+
+#ifdef __cplusplus
 }
+#endif
 
+#endif

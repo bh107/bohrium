@@ -18,20 +18,33 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VEM_PROXY_TIMING_H
-#define __BH_VEM_PROXY_TIMING_H
-
 #include <bh.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef __BH_VEM_PROXY_EXEC_H
+#define __BH_VEM_PROXY_EXEC_H
 
-DLLEXPORT void timing_sleep(void);
+namespace bohrium {
+namespace proxy {
 
+/* Component interface: init (see bh_component.h) */
+bh_error exec_init(const char *component_name);
 
-#ifdef __cplusplus
-}
-#endif
+/* Component interface: shutdown (see bh_component.h) */
+bh_error exec_shutdown(void);
+
+/* Component interface: extmethod (see bh_component.h) */
+bh_error exec_extmethod(const char *name, bh_opcode opcode);
+
+/* Execute a BhIR where all operands are global arrays
+ *
+ * @bhir   The BhIR in question
+ * @return Error codes
+ */
+bh_error exec_execute(bh_ir *bhir);
+
+/* Returns the initiated self component */
+bh_component *exec_get_self_component();
+
+}}
 
 #endif

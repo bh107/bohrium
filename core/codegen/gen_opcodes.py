@@ -52,6 +52,13 @@ __OPCODES__
     BH_MAX_OPCODE_ID = __MAX_OP__   // The extension method offset
 };
 
+/* Number of operands for operation
+ *
+ * @opcode Opcode for operation
+ * @return Number of operands
+ */
+int bh_noperands(bh_opcode opcode);
+
 #ifdef __cplusplus
 }
 #endif
@@ -88,6 +95,22 @@ def gen_cfile(opcodes):
  * @return Number of operands
  */
 int bh_operands(bh_opcode opcode)
+{
+    switch(opcode)
+    {
+__NOPS__
+
+    default:
+        return 3;//Extension methods have 3 operands always
+    }
+}
+
+/* Number of operands for operation
+ *
+ * @opcode Opcode for operation
+ * @return Number of operands
+ */
+int bh_noperands(bh_opcode opcode)
 {
     switch(opcode)
     {

@@ -179,7 +179,6 @@ public:
 
     /* Add an instruction to the kernel
      *
-     * TODO: Comment.
      *
      * @instr   The instruction to add
      * @return  The boolean answer

@@ -276,7 +276,9 @@ class BenchHelper:
             if not os.path.exists(inputfn):
                 raise Exception('File does not exist: %s' % inputfn)
 
-        out = shell_cmd(cmd, verbose=self.args.verbose) # Execute the benchmark
+        env = os.environ.copy()
+        env['BH_PROXY_PORT'] = "4201"
+        out = shell_cmd(cmd, verbose=self.args.verbose, env=env) # Execute the benchmark
         if 'elapsed-time' not in out:
             raise Exception("Cannot find elapsed time, output:\n%s\n\n" %out)
 

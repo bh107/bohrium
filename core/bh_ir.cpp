@@ -46,7 +46,7 @@ namespace io = boost::iostreams;
 */
 bh_ir::bh_ir(bh_intp ninstr, const bh_instruction instr_list[])
 {
-    bh_ir::instr_list = vector<bh_instruction>(instr_list, &instr_list[ninstr]);
+    this->instr_list = vector<bh_instruction>(instr_list, &instr_list[ninstr]);
 }
 
 bh_ir::bh_ir(const bh_instruction& instr)
