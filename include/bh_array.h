@@ -73,6 +73,8 @@ struct bh_view
     bh_view(const bh_view& view)
     {
         base = view.base;
+        if(base == NULL)
+            return; //'view' is a constant thus the rest are garbage
         start = view.start;
         ndim = view.ndim;
         assert(ndim < BH_MAXDIM);
