@@ -139,14 +139,17 @@ static void hashScalarShapeidOpidSweepdim(std::ostream& os, const bh_instruction
      * <is_scalar> <shape-id> (<operant-id>)[1] <op_sep> (<ndim> <sweep-dim>)[2] <seperator>
      * 1: for each operand
      * 2: if the operation is a sweep operation
+     * NB: but ignores instructions that takes no arguments, such as BH_NONE
      */
+    int noperands = bh_operands(instr.opcode);
+    if(noperands == 0)
+        return;
     bool scalar = (bh_is_scalar(&(instr.operand[0])) ||
                    (bh_opcode_is_accumulate(instr.opcode) && instr.operand[0].ndim == 1));
     os.write((char*)&scalar, sizeof(scalar));                           // <is_scalar>
     const bh_view& view = (bh_opcode_is_sweep(instr.opcode) ? instr.operand[1] : instr.operand[0]);
     std::pair<size_t,bool> sidp = batchHash.shapes.insert(std::vector<bh_index>(view.shape,view.shape+view.ndim));
     os.write((char*)&sidp.first, sizeof(sidp.first));                   // <shape-id>
-    int noperands = bh_operands(instr.opcode);
     for(int oidx=0; oidx<noperands; ++oidx) {
         const bh_view& view = instr.operand[oidx];
         if (bh_is_constant(&view))
