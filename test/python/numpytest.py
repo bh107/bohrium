@@ -169,6 +169,8 @@ class numpytest:
 def shell_cmd(cmd, cwd=None, verbose=False, env=None):
 
     from subprocess import Popen, PIPE, STDOUT
+    if verbose:
+        cmd.append('--verbose')
     cmd = " ".join(cmd)
     if verbose:
         print (cmd)
