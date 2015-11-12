@@ -248,7 +248,7 @@ class BenchHelper:
             stderr  = subprocess.PIPE,
         ).communicate()
 
-        sys_exec = [sys.executable, "-m", "bohrium"] if target else [sys.executable]
+        sys_exec = [sys.executable] if target.lower() == "none" else [sys.executable, "-m", "bohrium"]
         benchmark_path = os.sep.join([benchmarks_dir.strip(), self.script, "python_numpy", self.script+ ".py"])
 
         # Setup command
