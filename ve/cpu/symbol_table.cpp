@@ -104,7 +104,28 @@ size_t SymbolTable::map_operand(bh_instruction& instr, size_t operand_idx)
 {
     size_t arg_idx = ++(symboltable_.nsymbols); // Candidate arg_idx if not reused
 
-    if (bh_is_constant(&instr.operand[operand_idx])) {  // Constants
+    if (instr.opcode == BH_RANDOM and operand_idx > 0)
+    {
+        symboltable_.table[arg_idx].etype        = KP_UINT64;
+        if (1 == operand_idx) {
+            symboltable_.table[arg_idx].const_data  = &(instr.constant.value.r123.start);
+        } else if (2 == operand_idx) {
+            symboltable_.table[arg_idx].const_data  = &(instr.constant.value.r123.key);
+        } else {
+            throw runtime_error("THIS SHOULD NEVER HAPPEN!");
+        }
+        symboltable_.table[arg_idx].nelem        = 1;
+        symboltable_.table[arg_idx].ndim         = 1;
+        symboltable_.table[arg_idx].start        = 0;
+        symboltable_.table[arg_idx].shape        = instr.operand[operand_idx].shape;
+        symboltable_.table[arg_idx].shape[0]     = 1;
+        symboltable_.table[arg_idx].stride       = instr.operand[operand_idx].shape;
+        symboltable_.table[arg_idx].stride[0]    = 0;
+        symboltable_.table[arg_idx].layout       = KP_SCALAR_CONST;
+        symboltable_.table[arg_idx].base         = NULL;
+
+    }
+    else if (bh_is_constant(&instr.operand[operand_idx])) {  // Constants
         if (BH_R123 != instr.constant.type) {           // Regular constants
             symboltable_.table[arg_idx].const_data   = &(instr.constant.value);
             symboltable_.table[arg_idx].etype        = bhtype_to_etype(instr.constant.type);

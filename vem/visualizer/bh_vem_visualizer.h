@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VEM_PROXY_SERVER_H
-#define __BH_VEM_PROXY_SERVER_H
+#ifndef __BH_VEM_VISUALIZER_H
+#define __BH_VEM_VISUALIZER_H
 
 #include <bh.h>
 
@@ -28,16 +28,16 @@ extern "C" {
 #endif
 
 /* Component interface: init (see bh_component.h) */
-DLLEXPORT bh_error bh_vem_proxy_init(const char* name);
+DLLEXPORT bh_error bh_vem_visualizer_init(const char* name);
 
 /* Component interface: shutdown (see bh_component.h) */
-DLLEXPORT bh_error bh_vem_proxy_shutdown(void);
+DLLEXPORT bh_error bh_vem_visualizer_shutdown(void);
 
 /* Component interface: extmethod (see bh_component.h) */
-DLLEXPORT bh_error bh_vem_proxy_extmethod(const char *name, bh_opcode opcode);
+DLLEXPORT bh_error bh_vem_visualizer_extmethod(const char *name, bh_opcode opcode);
 
 /* Component interface: execute (see bh_component.h) */
-DLLEXPORT bh_error bh_vem_proxy_execute(bh_ir* bhir);
+DLLEXPORT bh_error bh_vem_visualizer_execute(bh_ir* bhir);
 
 #ifdef __cplusplus
 }

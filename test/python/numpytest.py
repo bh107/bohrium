@@ -276,7 +276,9 @@ class BenchHelper:
             if not os.path.exists(inputfn):
                 raise Exception('File does not exist: %s' % inputfn)
 
-        out = shell_cmd(cmd, verbose=self.verbose) # Execute the benchmark
+        env = os.environ.copy()
+        env['BH_PROXY_PORT'] = "4201"
+        out = shell_cmd(cmd, verbose=self.args.verbose, env=env) # Execute the benchmark
         if 'elapsed-time' not in out:
             raise Exception("Cannot find elapsed time, output:\n%s\n\n" %out)
 
@@ -354,6 +356,11 @@ if __name__ == "__main__":
         action='store_true',
         help="Print benchmark output"
     )
+    parser.add_argument(
+        '--no-complex128',
+        action='store_true',
+        help="Disable complex128 tests"
+    )
     args = parser.parse_args()
     if len(args.file) == 0:
         args.file = os.listdir(os.path.dirname(os.path.abspath(__file__)))
@@ -373,7 +380,7 @@ if __name__ == "__main__":
 
                 cls_obj  = getattr(m, cls)
                 cls_inst = cls_obj()
-                cls_inst.verbose = args.verbose
+                cls_inst.args = args
 
                 import inspect                          # Exclude benchmarks
                 is_benchmark = BenchHelper.__name__ in [c.__name__ for c in inspect.getmro(cls_obj)]
