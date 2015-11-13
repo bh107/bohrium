@@ -25,7 +25,7 @@ ENV PYTHONPATH "/benchpress/benchpress-master/module:$PYTHONPATH"
 RUN mkdir -p /bohrium/build
 WORKDIR /bohrium/build
 COPY . ../
-RUN cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DPYTHON_EXECUTABLE=/usr/bin/dython -DPY_SCRIPT=python
+RUN cmake .. -DEXT_VISUALIZER=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DPYTHON_EXECUTABLE=/usr/bin/dython -DPY_SCRIPT=python
 RUN make
 RUN make install
 ENV PYTHONPATH "$PYTHONPATH:/usr/lib/python2.7/site-packages"
