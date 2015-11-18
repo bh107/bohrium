@@ -558,9 +558,10 @@ void pprint(const GraphDW &dag, const char filename[])
                 out << "[" << p.first << "]" << buf << "\\l";
             }
             out << "Constants: \\l";
-            for (const bh_constant& c: graph[v].get_constants())
+            for (const std::pair<uint64_t, bh_constant>& c: graph[v].get_constants())
             {
-                bh_sprint_const(&c, buf);
+                out << "[" << c.first << "]" ;
+                bh_sprint_const(&c.second, buf);
                 out << buf << "\\l";
             }
             out << "Temp base-arrays: \\l";
@@ -604,7 +605,7 @@ void pprint(const GraphDW &dag, const char filename[])
                         if(not bh_is_constant(&instr.operand[i]))
                             out << "v" << graph[v].get_view_id(instr.operand[i]);
                         else
-                            out << "K";
+                            out << "c" << idx;
                         if (i < nop-1)
                             out << ", ";
                     }

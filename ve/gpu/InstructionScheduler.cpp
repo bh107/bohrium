@@ -313,12 +313,11 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
 
     }
     // Add constants to function declaration
-    const std::vector<bh_constant> constants = kernel.get_constants();  
-    for (size_t i = 0; i < constants.size(); ++i)
+    for (const std::pair<uint64_t, bh_constant>& c: kernel.get_constants())
     {
-        Scalar* s = new Scalar(constants[i]);
+        Scalar* s = new Scalar(c.second);
         kernelParameters.push_back(std::make_pair(s, false));
-        functionDeclaration << "\n\t, " << *s << " c" << i;
+        functionDeclaration << "\n\t, " << *s << " c" << c.first;
     }
 
     functionDeclaration << "\n#ifndef FIXED_SIZE";
@@ -472,7 +471,6 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     bh_index elements = 1; // Number of elements in active dimensionality
     for (int d = shape.size()-1; d >= (int)shape.size()-(int)dims; --d)
         elements *= shape[dimOrders[shape.size()-1][d]];
-    size_t const_id = 0;
     // Generate code for instruction list
     std::vector<std::string> operands;
     std::vector<OCLtype> types;
@@ -544,7 +542,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 }
             } else { // constant 
                 operands.emplace_back("c");
-                operands.back() += std::to_string(const_id++);
+                operands.back() += std::to_string(idx);
                 types.push_back(oclType(instr.constant.type));
             }
         }
