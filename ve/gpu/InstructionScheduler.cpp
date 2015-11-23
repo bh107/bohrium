@@ -36,7 +36,7 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
     for (const bh_ir_kernel& kernel: bhir->kernel_list)
     {
         if (kernel.get_output_set().size() > 0)
-        {    
+        {
             if (kernel.is_scalar())
             {
                 bh_error err = call_child(kernel);
@@ -50,7 +50,7 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
                 compileAndRun(sourceKernel);
                 sync(kernel.get_syncs());
                 discard(kernel.get_discards()); // After sync the queue is empty so we just discard
-            } else { // No syncs: so we simply attach the discards to the kernel 
+            } else { // No syncs: so we simply attach the discards to the kernel
                 for (bh_base* base: kernel.get_discards())
                 {
                     // We may recieve discard for arrays I don't own
@@ -67,7 +67,7 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
             if (kernel.get_discards().size() > 0)
             {
                 kernelMutex.lock();
-                if (!callQueue.empty()) 
+                if (!callQueue.empty())
                 { // attach the discards to the last kernel in the call queue
                     for (bh_base* base: kernel.get_discards())
                     {
@@ -78,7 +78,7 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
                         callQueue.back().second.addDiscard(it->second);
                         arrayMap.erase(it);
                     }
-                    kernelMutex.unlock();  
+                    kernelMutex.unlock();
                 } else { // Call queue empty. So we just discard
                     kernelMutex.unlock();
                     discard(kernel.get_discards());
@@ -144,10 +144,10 @@ void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
     if (kidit != knownKernelID.end() && (resourceManager->dynamicSizeKernel() ||
                                          kidit->second == sourceKernel.literalID()))
     {   /*
-         * We know the functionID, and if we are only building fixed size kernels 
+         * We know the functionID, and if we are only building fixed size kernels
          * we also know the literalID
          */
-        KernelID kernelID(sourceKernel.functionID(),0); 
+        KernelID kernelID(sourceKernel.functionID(),0);
         if (kidit->second == sourceKernel.literalID())
         {
             kernelID.second = kidit->second;
@@ -188,12 +188,12 @@ void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
         {
             if (resourceManager->fixedSizeKernel())
             {
-                std::thread(&InstructionScheduler::build, this, sourceKernel.id(), 
+                std::thread(&InstructionScheduler::build, this, sourceKernel.id(),
                             sourceKernel.source()).detach();
             }
             if (resourceManager->dynamicSizeKernel())
             {
-                std::thread(&InstructionScheduler::build, this, KernelID(functionID,0), 
+                std::thread(&InstructionScheduler::build, this, KernelID(functionID,0),
                             sourceKernel.source()).detach();
             }
         } else {
@@ -202,7 +202,7 @@ void InstructionScheduler::compileAndRun(SourceKernelCall sourceKernel)
             if (resourceManager->dynamicSizeKernel())
                 build(KernelID(functionID,0), sourceKernel.source());
         }
-    }        
+    }
 }
 
 void InstructionScheduler::build(KernelID kernelID, const std::string source)
@@ -227,9 +227,9 @@ void InstructionScheduler::build(KernelID kernelID, const std::string source)
             callQueue.pop_front();
         }
         else
-            break;            
+            break;
     }
-    kernelMutex.unlock(); 
+    kernelMutex.unlock();
 }
 
 void InstructionScheduler::registerFunction(bh_opcode opcode, bh_extmethod_impl extmethod_impl)
@@ -263,8 +263,8 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
     for (const bh_view& view: kernel.get_output_set())
         output.insert(view.base);
     discard(output);
-    // Run instructions in the kernel one at a time 
-    for (uint64_t idx: kernel.instr_indexes)
+    // Run instructions in the kernel one at a time
+    for (uint64_t idx: kernel.instr_indexes())
     {
         bh_instruction instr = kernel.bhir->instr_list[idx];
         bh_ir bhir = bh_ir(instr);
@@ -274,7 +274,7 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
     }
     // Discard the discards
     discard(kernel.get_discards());
-    // Frees have been freed by child 
+    // Frees have been freed by child
     return BH_SUCCESS;
 }
 
@@ -287,7 +287,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     std::vector<KernelParameter*> sizeParameters;
     std::ostringstream defines(std::ios_base::ate);
     std::ostringstream functionDeclaration("(", std::ios_base::ate);
-    
+
     assert(kernel.get_parameters().size() > 0);
 
     // Get the GPU kernel parameters and include en function decleration
@@ -308,7 +308,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
             ba = it->second;
         }
         kernelParameters.push_back(std::make_pair(ba, kernel.is_output(base)));
-        functionDeclaration << "\n\t" << (kpit==kernel.get_parameters().begin()?"  ":", ") << 
+        functionDeclaration << "\n\t" << (kpit==kernel.get_parameters().begin()?"  ":", ") <<
             *ba << " a" << kpit->first;
 
     }
@@ -340,7 +340,7 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
         sizeParameters.push_back(s);
         functionDeclaration << "\n\t, " << *s << " " << ss.str();
     }
-    
+
     // Get all unique view ids for input \union output
     std::map<size_t, bh_view> ioviews;
     for (const bh_view& v: kernel.get_output_set())
@@ -381,12 +381,12 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     {
         kernelShape.push_back(rkshape[i]);
     }
-    
+
     bool float64 = false;
     bool complex = false;
     bool integer = false;
     bool random = false;
-    std::string functionBody = generateFunctionBody(kernel, kernelShape.size(), 
+    std::string functionBody = generateFunctionBody(kernel, kernelShape.size(),
                                                     shape, dimOrders, float64, complex, integer, random);
     size_t functionID = string_hasher(functionBody);
     size_t literalID = string_hasher(defines.str());
@@ -406,19 +406,19 @@ SourceKernelCall InstructionScheduler::generateKernel(const bh_ir_kernel& kernel
     std::vector<size_t> localShape = resourceManager->localShape(kernelShape);
     while (localShape.size() < 3)
         localShape.push_back(1);
-    source << "#ifdef FIXED_SIZE\n" << defines.str() << "#endif\n" << 
-        "__kernel __attribute__((work_group_size_hint(" << localShape[0] <<  ", " << localShape[1] <<  ", " << 
+    source << "#ifdef FIXED_SIZE\n" << defines.str() << "#endif\n" <<
+        "__kernel __attribute__((work_group_size_hint(" << localShape[0] <<  ", " << localShape[1] <<  ", " <<
         localShape[2]  << "))) void\n#ifndef FIXED_SIZE\nkernel" << std::hex << functionID <<
-        "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() << 
+        "\n#else\nkernel" << std::hex << functionID << "_\n#endif\n" << functionDeclaration.str() <<
         "\n" << functionBody;
     if (resourceManager->timing())
-        resourceManager->codeGen->add({start, bh::Timer<>::stamp()}); 
+        resourceManager->codeGen->add({start, bh::Timer<>::stamp()});
     return SourceKernelCall(KernelID(functionID, literalID), kernelShape,source.str(),
                             sizeParameters, kernelParameters);
-    
+
 }
 
-static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel, 
+static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel,
                                             const std::vector<uint64_t>& instr_indexes)
 {
     bh_intp dims = 0;
@@ -454,7 +454,7 @@ static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel,
 
 static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel)
 {
-    return getInstIndexes(kernel, kernel.instr_indexes);
+    return getInstIndexes(kernel, kernel.instr_indexes());
 }
 
 std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
@@ -463,11 +463,11 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                                                        bool& float64, bool& complex, bool& integer, bool& random)
 {
     std::ostringstream source("{\n", std::ios_base::ate); // The active code block (dimension)
-    std::vector<std::string> beforesource; // opening code blosks of lower dimensions 
+    std::vector<std::string> beforesource; // opening code blosks of lower dimensions
     generateGIDSource(kdims, source);
     std::ostringstream indentss("\t", std::ios_base::ate);
     std::set<size_t> initiated_view;
-    size_t dims = kdims;   // "Active" dimensions 
+    size_t dims = kdims;   // "Active" dimensions
     bh_index elements = 1; // Number of elements in active dimensionality
     for (int d = shape.size()-1; d >= (int)shape.size()-(int)dims; --d)
         elements *= shape[dimOrders[shape.size()-1][d]];
@@ -475,7 +475,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     std::vector<std::string> operands;
     std::vector<OCLtype> types;
     std::map<size_t, bh_view> save; // Views that need saving <view_id, view>
-    std::map<size_t,size_t> incr_idx; // View indexes which need incrementing <view_id, dims> 
+    std::map<size_t,size_t> incr_idx; // View indexes which need incrementing <view_id, dims>
     for (uint64_t idx: getInstIndexes(kernel))
     {
         bh_instruction& instr = kernel.bhir->instr_list[idx];
@@ -506,7 +506,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 assert (viewElements == elements);
                 bh_base* base = view.base;
                 OCLtype type = oclType(base->type);
-                // Is this a new view? 
+                // Is this a new view?
                 if (initiated_view.find(vid) == initiated_view.end())
                 {
                     if (dims > kdims)
@@ -515,8 +515,8 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                         mysource << indentss.str().substr(1);
                         generateIndexSource(dims-1, view.ndim, vid, mysource);
                         if (view.ndim < (bh_intp)dims) // We are folding a view into higher dimension
-                        { // TODO We need a more rubust solution for this 
-                            mysource << indentss.str().substr(1) << "const int v" << vid << "s" << dims << 
+                        { // TODO We need a more rubust solution for this
+                            mysource << indentss.str().substr(1) << "const int v" << vid << "s" << dims <<
                                 " = v" << vid << "s" << dims-1 << "*ds" << dims-1 << ";\n";
                         }
                         beforesource.back() = mysource.str();
@@ -540,7 +540,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                     types.push_back(type);
                     break; // skip the constant
                 }
-            } else { // constant 
+            } else { // constant
                 operands.emplace_back("c");
                 operands.back() += std::to_string(idx);
                 types.push_back(oclType(instr.constant.type));
@@ -572,7 +572,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
                 types[1] = type;
             } else {
                 source << indentss.str() << oclTypeStr(type) << " v" << vid << ";\n";
-            }            
+            }
             initiated_view.insert(vid);
         }
         operands.front() += std::to_string(vid);
@@ -585,8 +585,8 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
         }
         // generate source code for the instruction
         // HACK to make BH_INVERT on BH_BOOL work correctly TODO Fix!
-        if (instr.opcode == BH_INVERT && (instr.operand[1].base ? 
-                                          instr.operand[1].base->type : 
+        if (instr.opcode == BH_INVERT && (instr.operand[1].base ?
+                                          instr.operand[1].base->type :
                                           instr.constant.type) == BH_BOOL)
             generateInstructionSource(BH_LOGICAL_NOT, types, operands, indentss.str(), source);
         else
@@ -638,21 +638,21 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     return source.str();
 }
 
-void InstructionScheduler::beginDim(std::ostringstream& source, 
-                                    std::ostringstream& indentss, 
-                                    std::vector<std::string>& beforesource, 
+void InstructionScheduler::beginDim(std::ostringstream& source,
+                                    std::ostringstream& indentss,
+                                    std::vector<std::string>& beforesource,
                                     const size_t dims)
 {
     beforesource.emplace_back(source.str());
     source.str(indentss.str());
-    source << "for (int idd" << dims << " = 0; idd" << dims << " < ds" << 
+    source << "for (int idd" << dims << " = 0; idd" << dims << " < ds" <<
         dims << "; ++idd" << dims << ")\n" << indentss.str() << "{\n";
     indentss << '\t';
 }
 
-void InstructionScheduler::endDim(std::ostringstream& source, 
-                                  std::ostringstream& indentss, 
-                                  std::vector<std::string>& beforesource, 
+void InstructionScheduler::endDim(std::ostringstream& source,
+                                  std::ostringstream& indentss,
+                                  std::vector<std::string>& beforesource,
                                   std::map<size_t,bh_view>& save,
                                   std::map<size_t,size_t>& incr_idx,
                                   const std::vector<bh_index>& shape,
@@ -682,8 +682,8 @@ void InstructionScheduler::endDim(std::ostringstream& source,
                     mysource << indentss.str().substr(1);
                     generateIndexSource(dims-1, view.ndim, vid, mysource);
                     if (view.ndim < (bh_intp)dims) // We are folding a view into higher dimension
-                    { // TODO We need a more rubust solution for this 
-                        mysource << indentss.str().substr(1) << "const int v" << vid << "s" << dims << 
+                    { // TODO We need a more rubust solution for this
+                        mysource << indentss.str().substr(1) << "const int v" << vid << "s" << dims <<
                             " = v" << vid << "s" << dims-1 << "*ds" << dims-1 << ";\n";
                     }
                     incr_idx[vid] = dims;
@@ -715,7 +715,7 @@ void InstructionScheduler::endDim(std::ostringstream& source,
     source << indentss.str() << "}\n";
 }
 
-std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::map<bh_intp, bh_int64>& sweeps, 
+std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::map<bh_intp, bh_int64>& sweeps,
                                                                      const size_t ndim)
 {
     /* First generate "basic" dimension orders:
@@ -733,13 +733,13 @@ std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::
             dimOrders[d].push_back(i);
         }
     }
-    /* Rearrange the orders according to sweeps by moving the indicated 
-     * dimension first in the given dimensionality and doing the same for 
-     * esponding dimensions in higher dimensionality - skipping the highest 
+    /* Rearrange the orders according to sweeps by moving the indicated
+     * dimension first in the given dimensionality and doing the same for
+     * esponding dimensions in higher dimensionality - skipping the highest
      * (first) dimensions.
      */
     for (auto rit = sweeps.crbegin(); rit != sweeps.crend(); ++rit)
-    { 
+    {
         bh_int64 s = rit->second;
         bh_int64 o = 0;
         for (bh_intp d = rit->first - 1; d < (int)ndim; ++d)
@@ -756,10 +756,10 @@ std::vector<std::vector<size_t> > InstructionScheduler::genDimOrders(const std::
     // for (const std::vector<size_t>& dimOrder: dimOrders)
     // {
     //     std::cout << " ["  << dimOrder[0];
-    //     for (int i = 1; i < (int)dimOrder.size();++i) 
+    //     for (int i = 1; i < (int)dimOrder.size();++i)
     //         std::cout << ", "  << dimOrder[i];
     //     std::cout << "] ";
     // }
-    // std::cout << "}" << std::endl; 
+    // std::cout << "}" << std::endl;
     return dimOrders;
 }

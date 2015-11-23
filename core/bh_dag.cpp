@@ -126,12 +126,12 @@ void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
     //Merge the two instruction lists
     if(a_before_b)
     {
-        BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
+        BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes())
             _bglD[a].add_instr(idx);
     }
     else
     {
-        BOOST_FOREACH(uint64_t idx, _bglD[a].instr_indexes)
+        BOOST_FOREACH(uint64_t idx, _bglD[a].instr_indexes())
             _bglD[b].add_instr(idx);
         _bglD[a] = _bglD[b];//Only 'a' survives
     }
@@ -224,7 +224,7 @@ void GraphDW::transitive_reduction()
 static bool base_in_kernel(const bh_ir &bhir, const bh_ir_kernel &kernel,
                            const bh_base *base)
 {
-    for(uint64_t instr_idx: kernel.instr_indexes)
+    for(uint64_t instr_idx: kernel.instr_indexes())
     {
         const bh_instruction &instr = bhir.instr_list[instr_idx];
         for(int i=0; i < bh_operands(instr.opcode); ++i)
@@ -282,7 +282,7 @@ void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
 
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
-        if(kernel.instr_indexes.size() > 0)
+        if(kernel.instr_indexes().size() > 0)
             dag.add_vertex(kernel, base2vertices);
     }
     assert(dag_validate(dag));
@@ -296,10 +296,13 @@ void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
     {
         if(not dag[v].is_noop())
         {
-            bh_ir_kernel tmp = dag[v];
-            std::sort(tmp.instr_indexes.begin(), tmp.instr_indexes.end());
-            kernel_list.push_back(tmp);
-
+            vector<uint64_t> tmp = dag[v].instr_indexes();
+            //We sort the instructions in order to gain consist performance results
+            std::sort(tmp.begin(), tmp.end());
+            bh_ir_kernel kernel;
+            for(uint64_t idx: tmp)
+                kernel.add_instr(idx);
+            kernel_list.push_back(kernel);
         }
     }
 }
@@ -588,7 +591,7 @@ void pprint(const GraphDW &dag, const char filename[])
                 bh_sprint_base(i, buf);
                 out << buf << "\\l";
             }
-            BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes)
+            BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes())
             {
                 const bh_instruction &instr = graph[v].bhir->instr_list[idx];
                 out << "[" << idx << ": (";
@@ -682,127 +685,127 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
         set<uint64_t> instr_indexes;
         BOOST_FOREACH(Vertex v, vertices(d))
         {
-            BOOST_FOREACH(uint64_t i, d[v].instr_indexes)
-            {
-                if(instr_indexes.find(i) != instr_indexes.end())
+                BOOST_FOREACH(uint64_t i, d[v].instr_indexes())
                 {
-                    cout << "Instruction [" << i << "] is in multiple kernels!" << endl;
-                    goto fail;
+                    if(instr_indexes.find(i) != instr_indexes.end())
+                    {
+                        cout << "Instruction [" << i << "] is in multiple kernels!" << endl;
+                        goto fail;
+                    }
+                    instr_indexes.insert(i);
                 }
-                instr_indexes.insert(i);
             }
         }
-    }
-    //Check for cycles
-    if(cycles(d))
-        goto fail;
-    //Check precedence constraints
-    BOOST_FOREACH(Vertex v1, vertices(d))
-    {
-        BOOST_FOREACH(Vertex v2, vertices(d))
+        //Check for cycles
+        if(cycles(d))
+            goto fail;
+        //Check precedence constraints
+        BOOST_FOREACH(Vertex v1, vertices(d))
         {
-            if(v1 != v2)
+            BOOST_FOREACH(Vertex v2, vertices(d))
             {
-                const int dep = d[v1].dependency(d[v2]);
-                if(dep == 1)//'v1' depend on 'v2'
+                if(v1 != v2)
                 {
-                    if(not path_exist(v2, v1, d))
+                    const int dep = d[v1].dependency(d[v2]);
+                    if(dep == 1)//'v1' depend on 'v2'
                     {
-                        cout << "Precedence check: not path between " << v1 \
-                             << " and " << v2 << endl;
-                        goto fail;
+                        if(not path_exist(v2, v1, d))
+                        {
+                            cout << "Precedence check: not path between " << v1 \
+                                 << " and " << v2 << endl;
+                            goto fail;
+                        }
                     }
                 }
             }
         }
-    }
-    //Check for weight edge inconsistency
-    BOOST_FOREACH(EdgeD e, edges(d))
-    {
-        Vertex src = source(e, d);
-        Vertex dst = target(e, d);
-        int64_t cost = d[src].merge_cost_savings(d[dst]);
-        if(cost != -1)//Is fusible
-        {
-            EdgeW we;
-            bool we_exist;
-            tie(we, we_exist) = edge(src,dst,w);
-            if(we_exist)
-            {
-                if(w[we].value != cost)
-                {
-                    cout << "Weight check: weight of edge " << we \
-                         << " is inconsistent with merge_cost_savings()!" << endl;
-                    goto fail;
-                }
-            }
-            else
-            {
-                cout << "Weight check: vertex " << src << " and " << dst \
-                     << " is fusible and has a dependency edge but "\
-                        "has no weight edge!" << endl;
-                goto fail;
-            }
-        }
-    }
-    //Check transitivity
-    if(not transitivity_allowed)
-    {
+        //Check for weight edge inconsistency
         BOOST_FOREACH(EdgeD e, edges(d))
         {
             Vertex src = source(e, d);
             Vertex dst = target(e, d);
-            if(path_exist(src, dst, d, true))
+            int64_t cost = d[src].merge_cost_savings(d[dst]);
+            if(cost != -1)//Is fusible
             {
-                cout << "Transitivity check: dependency edge " << e \
-                     << " is redundant!" << endl;
-                goto fail;
-            }
-        }
-        BOOST_FOREACH(EdgeW e, edges(w))
-        {
-            Vertex src = source(e, d);
-            Vertex dst = target(e, d);
-            if(path_exist(src, dst, d, true))
-            {
-                cout << "Transitivity check: weight edge " << e \
-                     << " is redundant!" << endl;
-                goto fail;
-            }
-        }
-    }
-    return true;
-fail:
-    cout << "writing validate-fail.dot" << endl;
-    pprint(dag, "validate-fail.dot");
-    return false;
-}
-
-bool dag_validate(const bh_ir &bhir, const vector<GraphDW> &dags, bool transitivity_allowed)
-{
-    set<uint64_t> instr_indexes;
-    BOOST_FOREACH(const GraphDW &dag, dags)
-    {
-        const GraphD &d = dag.bglD();
-        if(not dag_validate(dag, transitivity_allowed))
-            return false;
-        BOOST_FOREACH(Vertex v, boost::vertices(d))
-        {
-            BOOST_FOREACH(uint64_t idx, d[v].instr_indexes)
-            {
-                if(instr_indexes.find(idx) != instr_indexes.end())
+                EdgeW we;
+                bool we_exist;
+                tie(we, we_exist) = edge(src,dst,w);
+                if(we_exist)
                 {
-                    cout << "Instruction [" << idx << "] is in multiple kernels!" << endl;
+                    if(w[we].value != cost)
+                    {
+                        cout << "Weight check: weight of edge " << we \
+                             << " is inconsistent with merge_cost_savings()!" << endl;
+                        goto fail;
+                    }
+                }
+                else
+                {
+                    cout << "Weight check: vertex " << src << " and " << dst \
+                         << " is fusible and has a dependency edge but "\
+                            "has no weight edge!" << endl;
                     goto fail;
                 }
-                instr_indexes.insert(idx);
             }
         }
+        //Check transitivity
+        if(not transitivity_allowed)
+        {
+            BOOST_FOREACH(EdgeD e, edges(d))
+            {
+                Vertex src = source(e, d);
+                Vertex dst = target(e, d);
+                if(path_exist(src, dst, d, true))
+                {
+                    cout << "Transitivity check: dependency edge " << e \
+                         << " is redundant!" << endl;
+                    goto fail;
+                }
+            }
+            BOOST_FOREACH(EdgeW e, edges(w))
+            {
+                Vertex src = source(e, d);
+                Vertex dst = target(e, d);
+                if(path_exist(src, dst, d, true))
+                {
+                    cout << "Transitivity check: weight edge " << e \
+                         << " is redundant!" << endl;
+                    goto fail;
+                }
+            }
+        }
+        return true;
+    fail:
+        cout << "writing validate-fail.dot" << endl;
+        pprint(dag, "validate-fail.dot");
+        return false;
     }
-    //And check if all instructions exist
-    for(uint64_t idx=0; idx<bhir.instr_list.size(); ++idx)
+
+    bool dag_validate(const bh_ir &bhir, const vector<GraphDW> &dags, bool transitivity_allowed)
     {
-        if(instr_indexes.find(idx) == instr_indexes.end())
+        set<uint64_t> instr_indexes;
+        BOOST_FOREACH(const GraphDW &dag, dags)
+        {
+            const GraphD &d = dag.bglD();
+            if(not dag_validate(dag, transitivity_allowed))
+                return false;
+            BOOST_FOREACH(Vertex v, boost::vertices(d))
+            {
+                BOOST_FOREACH(uint64_t idx, d[v].instr_indexes())
+                {
+                    if(instr_indexes.find(idx) != instr_indexes.end())
+                    {
+                        cout << "Instruction [" << idx << "] is in multiple kernels!" << endl;
+                        goto fail;
+                    }
+                    instr_indexes.insert(idx);
+                }
+            }
+        }
+        //And check if all instructions exist
+        for(uint64_t idx=0; idx<bhir.instr_list.size(); ++idx)
+        {
+            if(instr_indexes.find(idx) == instr_indexes.end())
         {
             cout << "Instruction [" << idx << "] is missing!" << endl;
             goto fail;

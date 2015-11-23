@@ -75,7 +75,7 @@ bh_error bh_ve_cpu_init(const char *name)
         fprintf(stderr, "[CPU-VE] Unexpected number of children, must be 0\n");
         return BH_ERROR;
     }
-    
+
     //
     //  Get engine parameters
     //
@@ -160,7 +160,7 @@ bh_error bh_ve_cpu_init(const char *name)
     string arch_id = kp::core::hash_text(host_str);
     string object_directory;            // Subfolder of object_path
     string sep("/");                    // TODO: Portable file-separator
-    
+
     object_directory = object_path + sep + arch_id;
 
     // Create object-directory for target/arch_id
@@ -222,7 +222,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
     uint64_t program_size = bhir->instr_list.size();
     kp::core::Program tac_program(program_size);                  // Program
     kp::core::SymbolTable symbol_table(program_size*6+2);         // SymbolTable
-    
+
     kp::core::instrs_to_tacs(*bhir, tac_program, symbol_table);   // Map instructions to tac and symbol_table.
 
     kp::core::Block block(symbol_table, tac_program);             // Construct a block
@@ -236,7 +236,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         block.clear();                                          // Reset the block
         block.compose(*krnl, (bool)engine->jit_contraction());  // Compose it based on kernel
 
-        TIMER_DETAILED        
+        TIMER_DETAILED
         if ((block.omask() & KP_EXTENSION)>0) {         // Extension-Instruction-Execute (EIE)
             TIMER_START
             kp_tac& tac = block.tac(0);
@@ -251,7 +251,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                 }
             }
             TIMER_STOP(block.text_compact());
-        } else if ((engine->jit_fusion()) || 
+        } else if ((engine->jit_fusion()) ||
                    (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
             DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
 
@@ -265,13 +265,13 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
             DEBUG(TAG, "Muilti-Instruction-Execute END");
         } else {                                        // Single-Instruction-Execute (SIE)
             DEBUG(TAG, "Single-Instruction-Execute BEGIN");
-            for(std::vector<uint64_t>::iterator idx_it = krnl->instr_indexes.begin();
-                idx_it != krnl->instr_indexes.end();
+            for(std::vector<uint64_t>::const_iterator idx_it = krnl->instr_indexes().begin();
+                idx_it != krnl->instr_indexes().end();
                 ++idx_it) {
 
                 block.clear();                          // Reset the block
                 block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
-                
+
                 TIMER_START
                 res = engine->process_block(tac_program, symbol_table, block);
                 TIMER_STOP(block.text_compact());

@@ -118,7 +118,7 @@ bh_ir_kernel::bh_ir_kernel(bh_ir &bhir)
 /* Clear this kernel of all instructions */
 void bh_ir_kernel::clear()
 {
-    instr_indexes.clear();
+    _instr_indexes.clear();
     input_set.clear();
     output_set.clear();
     input_map.clear();
@@ -142,7 +142,7 @@ size_t bh_ir_kernel::get_view_id(const bh_view& v) const
 /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
 bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const
 {
-    BOOST_FOREACH(uint64_t idx, instr_indexes)
+    BOOST_FOREACH(uint64_t idx, instr_indexes())
     {
         const bh_instruction &instr = bhir->instr_list[idx];
         if(instr.opcode == opcode and instr.operand[0].base == b)
@@ -250,7 +250,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         }
     }
     }
-    instr_indexes.push_back(instr_idx);
+    _instr_indexes.push_back(instr_idx);
 }
 
 // Smallest output shape used in the kernel
@@ -276,7 +276,7 @@ std::vector<bh_index> bh_ir_kernel::get_output_shape() const
  */
 bool bh_ir_kernel::only_system_opcodes() const
 {
-    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes())
     {
         if(not bh_opcode_is_system(bhir->instr_list[this_idx].opcode))
             return false;
@@ -291,7 +291,7 @@ bool bh_ir_kernel::only_system_opcodes() const
  */
 bool bh_ir_kernel::is_noop() const
 {
-    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes())
     {
         if(bhir->instr_list[this_idx].opcode != BH_NONE)
             return false;
@@ -305,12 +305,12 @@ bool bh_ir_kernel::is_noop() const
  */
 bool bh_ir_kernel::fusible() const
 {
-    for(uint64_t i=0; i<instr_indexes.size(); ++i)
+    for(uint64_t i=0; i<instr_indexes().size(); ++i)
     {
-        const bh_instruction *instr = &bhir->instr_list[instr_indexes[i]];
-        for(uint64_t j=i+1; j<instr_indexes.size(); ++j)
+        const bh_instruction *instr = &bhir->instr_list[instr_indexes()[i]];
+        for(uint64_t j=i+1; j<instr_indexes().size(); ++j)
         {
-            if(not bohrium::check_fusible(instr, &bhir->instr_list[instr_indexes[j]]))
+            if(not bohrium::check_fusible(instr, &bhir->instr_list[instr_indexes()[j]]))
                 return false;
         }
     }
@@ -325,7 +325,7 @@ bool bh_ir_kernel::fusible() const
 bool bh_ir_kernel::fusible(uint64_t instr_idx) const
 {
     const bh_instruction *instr = &bhir->instr_list[instr_idx];
-    BOOST_FOREACH(uint64_t i, instr_indexes)
+    BOOST_FOREACH(uint64_t i, instr_indexes())
     {
         if(not bohrium::check_fusible(instr, &bhir->instr_list[i]))
             return false;
@@ -340,10 +340,10 @@ bool bh_ir_kernel::fusible(uint64_t instr_idx) const
  */
 bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
 {
-    BOOST_FOREACH(uint64_t idx1, instr_indexes)
+    BOOST_FOREACH(uint64_t idx1, instr_indexes())
     {
         const bh_instruction *instr = &bhir->instr_list[idx1];
-        BOOST_FOREACH(uint64_t idx2, other.instr_indexes)
+        BOOST_FOREACH(uint64_t idx2, other.instr_indexes())
         {
             if(not bohrium::check_fusible(instr, &other.bhir->instr_list[idx2]))
                 return false;
@@ -366,7 +366,7 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
 int bh_ir_kernel::dependency(uint64_t instr_idx) const
 {
     int ret = 0;
-    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes())
     {
         if(bh_instr_dependency(&bhir->instr_list[instr_idx],
                                &bhir->instr_list[this_idx]))
@@ -406,7 +406,7 @@ int bh_ir_kernel::dependency(uint64_t instr_idx) const
 int bh_ir_kernel::dependency(const bh_ir_kernel &other) const
 {
     int ret = 0;
-    BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
+    BOOST_FOREACH(uint64_t other_idx, other.instr_indexes())
     {
         const int dep = dependency(other_idx);
         if(dep != 0)

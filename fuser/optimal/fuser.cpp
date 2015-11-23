@@ -151,7 +151,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     {
         Vertex v = loc_map.at(vertex);
         bh_ir_kernel &k = new_vertices.at(v);
-        BOOST_FOREACH(uint64_t idx, dag[vertex].instr_indexes)
+        BOOST_FOREACH(uint64_t idx, dag[vertex].instr_indexes())
         {
             if(not k.fusible(idx))
                 fusibility = false;
@@ -163,7 +163,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         if(loc_map.at(v) == v)
-            assert(new_vertices[v].instr_indexes.size() > 0);
+            assert(new_vertices[v].instr_indexes().size() > 0);
     }
 
     //Find the total cost
@@ -184,7 +184,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         if(loc_v == v)
         {
             dag[v] = new_vertices.at(v);
-            assert(dag[v].instr_indexes.size() > 0);
+            assert(dag[v].instr_indexes().size() > 0);
         }
         else//Lets merge 'v' into 'loc_v'
         {
@@ -208,7 +208,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     //TODO: remove assert check
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
-        if(dag[loc_map.at(v)].instr_indexes.size() == 0)
+        if(dag[loc_map.at(v)].instr_indexes().size() == 0)
         {
             cout << v << endl;
             cout << loc_map.at(v) << endl;

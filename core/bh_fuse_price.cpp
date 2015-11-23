@@ -63,7 +63,7 @@ static uint64_t cost_unique(const bh_ir_kernel &k)
 static uint64_t savings_unique(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
 {
     bh_ir_kernel tmp = k1;
-    for(uint64_t instr_idx: k2.instr_indexes)
+    for(uint64_t instr_idx: k2.instr_indexes())
     {
         tmp.add_instr(instr_idx);
     }
@@ -93,7 +93,7 @@ static uint64_t savings_unique_old(const bh_ir_kernel &a, const bh_ir_kernel &b)
     //Subtract outputs from 'b' that are discared in 'a'
     for(const bh_view &o: b.get_output_set())
     {
-        for(uint64_t a_instr_idx: a.instr_indexes)
+        for(uint64_t a_instr_idx: a.instr_indexes())
         {
             const bh_instruction &a_instr = a.bhir->instr_list[a_instr_idx];
             if(a_instr.opcode == BH_DISCARD and a_instr.operand[0].base == o.base)
@@ -110,12 +110,12 @@ static uint64_t savings_unique_old(const bh_ir_kernel &a, const bh_ir_kernel &b)
 /* The cost of a kernel is 'number of instruction' * 3 - 'number of temp arrays' */
 static uint64_t cost_temp_elemination(const bh_ir_kernel &k)
 {
-    return k.instr_indexes.size() * 3 - k.get_temps().size();
+    return k.instr_indexes().size() * 3 - k.get_temps().size();
 }
 static uint64_t savings_temp_elemination(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
 {
     bh_ir_kernel tmp = k1;
-    for(uint64_t instr_idx: k2.instr_indexes)
+    for(uint64_t instr_idx: k2.instr_indexes())
     {
         tmp.add_instr(instr_idx);
     }
@@ -127,7 +127,7 @@ static uint64_t savings_temp_elemination(const bh_ir_kernel &k1, const bh_ir_ker
 
 static uint64_t cost_max_share(const bh_ir_kernel &k)
 {
-    if(k.instr_indexes.size() == 0)
+    if(k.instr_indexes().size() == 0)
         return 0;
 
     uint64_t shared_access = 0;
@@ -135,11 +135,11 @@ static uint64_t cost_max_share(const bh_ir_kernel &k)
     {
         const bh_instruction &instr = k.bhir->instr_list[instr_idx];
         //Check if the instruction is in this kernel
-        if(std::find(k.instr_indexes.begin(), k.instr_indexes.end(), instr_idx) != k.instr_indexes.end())
+        if(std::find(k.instr_indexes().begin(), k.instr_indexes().end(), instr_idx) != k.instr_indexes().end())
             continue;
 
         //Let's count the number of inputs in this kernel that reads the output of 'instr'
-        for(uint64_t krn_idx: k.instr_indexes)
+        for(uint64_t krn_idx: k.instr_indexes())
         {
             if(krn_idx < instr_idx)
                 continue;
@@ -155,7 +155,7 @@ static uint64_t cost_max_share(const bh_ir_kernel &k)
             }
         }
         //Let's count the number of shared inputs
-        for(uint64_t krn_idx: k.instr_indexes)
+        for(uint64_t krn_idx: k.instr_indexes())
         {
             const bh_instruction &krn_instr = k.bhir->instr_list[krn_idx];
             for(int i=1; i < bh_operands(instr.opcode); ++i)
@@ -177,7 +177,7 @@ static uint64_t cost_max_share(const bh_ir_kernel &k)
 static uint64_t savings_max_share(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
 {
     bh_ir_kernel tmp = k1;
-    for(uint64_t instr_idx: k2.instr_indexes)
+    for(uint64_t instr_idx: k2.instr_indexes())
     {
         tmp.add_instr(instr_idx);
     }
@@ -190,7 +190,7 @@ static uint64_t savings_max_share(const bh_ir_kernel &k1, const bh_ir_kernel &k2
 static uint64_t cost_amos(const bh_ir_kernel &k)
 {
     uint64_t N = k.bhir->instr_list.size();
-    if(k.instr_indexes.size() == 0)
+    if(k.instr_indexes().size() == 0)
         return 0;
 
     uint64_t loop_overhead = 1;
@@ -202,7 +202,7 @@ static uint64_t cost_amos(const bh_ir_kernel &k)
 static uint64_t savings_amos(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
 {
     bh_ir_kernel tmp = k1;
-    for(uint64_t instr_idx: k2.instr_indexes)
+    for(uint64_t instr_idx: k2.instr_indexes())
     {
         tmp.add_instr(instr_idx);
     }

@@ -147,7 +147,7 @@ public:
         std::vector<Vertex> removes;
         BOOST_FOREACH(Vertex v, boost::vertices(_bglD))
         {
-            if(_bglD[v].instr_indexes.size() == 0)
+            if(_bglD[v].instr_indexes().size() == 0)
             {
                 removes.push_back(v);
             }

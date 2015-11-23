@@ -78,7 +78,7 @@ public:
     {
         BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
         {
-            instr_indexes_list.push_back(kernel.instr_indexes);
+            instr_indexes_list.push_back(kernel.instr_indexes());
         }
         fuse_model_text(fuse_get_selected_model(), _fuse_model);
         fuse_price_model_text(fuse_get_selected_price_model(), _price_model);

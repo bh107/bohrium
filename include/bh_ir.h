@@ -137,7 +137,11 @@ private:
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
 
+    // Topologically ordered list of instruction indexes
+    std::vector<uint64_t> _instr_indexes;
+
 public:
+
     /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
     bh_ir_kernel();
 
@@ -147,12 +151,10 @@ public:
     // The program representation that the kernel is subset of
     bh_ir *bhir;
 
-    // Topologically ordered list of instruction indexes
-    std::vector<uint64_t> instr_indexes;
-
     /* Clear this kernel of all instructions */
     void clear();
 
+    const std::vector<uint64_t>& instr_indexes() const {return _instr_indexes;}
     const std::multimap<bh_base*,bh_view>& get_output_map() const {return output_map;}
     const std::multimap<bh_base*,bh_view>& get_input_map() const {return input_map;}
     const std::set<bh_view>& get_output_set() const {return output_set;}
