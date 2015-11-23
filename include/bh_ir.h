@@ -131,8 +131,8 @@ private:
     // sweep (reduce and accumulate) dimensions
     std::map<bh_intp, bh_int64> sweeps;
 
-    // list of constants used in this kernel in topological order
-    std::vector<bh_constant> constants;
+    // map of constants used in this kernel key is instruction id
+    std::map<uint64_t, bh_constant> constants;
 
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
@@ -163,7 +163,7 @@ public:
     const std::set<bh_base*>& get_discards() const {return discards;}
     const std::set<bh_base*>& get_syncs() const {return syncs;}
     const seqset<bh_base*>& get_parameters() const {return parameters;}
-    const std::vector<bh_constant>& get_constants() const {return constants;}
+    const std::map<uint64_t, bh_constant>& get_constants() const {return constants;}
     const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
     const std::vector<bh_index>& get_input_shape() const {return input_shape;}
     std::vector<bh_index> get_output_shape() const;

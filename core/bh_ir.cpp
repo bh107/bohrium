@@ -130,6 +130,7 @@ void bh_ir_kernel::clear()
     discards.clear();
     parameters.clear();
     input_shape.clear();
+    constants.clear();
     scalar = false;
 }
 
@@ -213,7 +214,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             if(bh_is_constant(&v))
             {
                 if (!sweep)
-                    constants.push_back(instr.constant);
+                    constants[instr_idx] = instr.constant;
                 continue;
             }
             bh_view sv = bh_view_simplify(v);

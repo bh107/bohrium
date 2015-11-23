@@ -558,9 +558,10 @@ void pprint(const GraphDW &dag, const char filename[])
                 out << "[" << p.first << "]" << buf << "\\l";
             }
             out << "Constants: \\l";
-            for (const bh_constant& c: graph[v].get_constants())
+            for (const std::pair<uint64_t, bh_constant>& c: graph[v].get_constants())
             {
-                bh_sprint_const(&c, buf);
+                out << "[" << c.first << "]" ;
+                bh_sprint_const(&c.second, buf);
                 out << buf << "\\l";
             }
             out << "Temp base-arrays: \\l";
@@ -590,7 +591,26 @@ void pprint(const GraphDW &dag, const char filename[])
             BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes)
             {
                 const bh_instruction &instr = graph[v].bhir->instr_list[idx];
-                out << "[" << idx << "] ";
+                out << "[" << idx << ": (";
+                switch (instr.opcode) {
+                case BH_NONE:
+                case BH_SYNC:
+                case BH_DISCARD:
+                case BH_FREE:
+                    break;
+                default:
+                    const int nop = bh_operands(instr.opcode);
+                    for(int i=0; i<nop; ++i)
+                    {
+                        if(not bh_is_constant(&instr.operand[i]))
+                            out << "v" << graph[v].get_view_id(instr.operand[i]);
+                        else
+                            out << "c" << idx;
+                        if (i < nop-1)
+                            out << ", ";
+                    }
+                }
+                out << ") ] ";
                 bh_sprint_instr(&instr, buf, "\\l");
                 out << buf << "\\l";
             }
