@@ -296,12 +296,14 @@ void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
     {
         if(not dag[v].is_noop())
         {
-            vector<uint64_t> tmp = dag[v].instr_indexes();
+            vector<uint64_t> tmp(dag[v].instr_indexes());
             //We sort the instructions in order to gain consist performance results
             std::sort(tmp.begin(), tmp.end());
-            bh_ir_kernel kernel;
+            bh_ir_kernel kernel(*dag[v].bhir);
             for(uint64_t idx: tmp)
+            {
                 kernel.add_instr(idx);
+            }
             kernel_list.push_back(kernel);
         }
     }
