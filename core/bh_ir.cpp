@@ -142,6 +142,7 @@ size_t bh_ir_kernel::get_view_id(const bh_view& v) const
 /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
 bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const
 {
+    assert(bhir != NULL);
     BOOST_FOREACH(uint64_t idx, instr_indexes())
     {
         const bh_instruction &instr = bhir->instr_list[idx];
@@ -153,6 +154,8 @@ bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) co
 
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
+    assert(bhir != NULL);
+    assert(instr_idx < bhir->instr_list.size());
     const bh_instruction& instr = bhir->instr_list[instr_idx];
     const int nop = bh_operands(instr.opcode);
     for(int i=0; i<nop; ++i)
@@ -276,6 +279,7 @@ std::vector<bh_index> bh_ir_kernel::get_output_shape() const
  */
 bool bh_ir_kernel::only_system_opcodes() const
 {
+    assert(bhir != NULL);
     BOOST_FOREACH(uint64_t this_idx, instr_indexes())
     {
         if(not bh_opcode_is_system(bhir->instr_list[this_idx].opcode))
@@ -291,6 +295,7 @@ bool bh_ir_kernel::only_system_opcodes() const
  */
 bool bh_ir_kernel::is_noop() const
 {
+    assert(bhir != NULL);
     BOOST_FOREACH(uint64_t this_idx, instr_indexes())
     {
         if(bhir->instr_list[this_idx].opcode != BH_NONE)
@@ -305,6 +310,7 @@ bool bh_ir_kernel::is_noop() const
  */
 bool bh_ir_kernel::fusible() const
 {
+    assert(bhir != NULL);
     for(uint64_t i=0; i<instr_indexes().size(); ++i)
     {
         const bh_instruction *instr = &bhir->instr_list[instr_indexes()[i]];
@@ -324,6 +330,7 @@ bool bh_ir_kernel::fusible() const
  */
 bool bh_ir_kernel::fusible(uint64_t instr_idx) const
 {
+    assert(bhir != NULL);
     const bh_instruction *instr = &bhir->instr_list[instr_idx];
     BOOST_FOREACH(uint64_t i, instr_indexes())
     {
@@ -340,6 +347,7 @@ bool bh_ir_kernel::fusible(uint64_t instr_idx) const
  */
 bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
 {
+    assert(bhir != NULL);
     BOOST_FOREACH(uint64_t idx1, instr_indexes())
     {
         const bh_instruction *instr = &bhir->instr_list[idx1];
@@ -365,6 +373,7 @@ bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
  */
 int bh_ir_kernel::dependency(uint64_t instr_idx) const
 {
+    assert(bhir != NULL);
     int ret = 0;
     BOOST_FOREACH(uint64_t this_idx, instr_indexes())
     {
