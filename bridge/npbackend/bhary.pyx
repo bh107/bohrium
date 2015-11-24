@@ -164,6 +164,11 @@ def identical_views(view1, view2):
         return False
     return True
 
+def in_bhmem(ary):
+    """Returns True when 'ary' is in the memory address space of Bohrium"""
+
+    return get_base(ary).bhc_ary is not None
+
 def get_bhc(ary):
     """
     Returns the Bohrium-C part of the array (supports both Bohrium or NumPy arrays)
