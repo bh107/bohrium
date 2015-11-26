@@ -53,6 +53,8 @@ private:
     std::string compilerOptions;
     void registerExtensions(const std::vector<std::string>& extensions);
     bool setContext(const std::vector<cl::Platform>& platforms, cl_device_type device_type);
+    size_t maxAllocatedMem;
+    size_t allocatedMem;
 public:
     bh::Timer<>* codeGen;
     bh::Timer<>* kernelGen;
@@ -63,6 +65,7 @@ public:
     static void CL_CALLBACK eventProfiler(cl::Event event, cl_int eventStatus, void* total);
     ResourceManager(bh_component* _component);
     cl::Buffer* createBuffer(size_t size);
+    void freeBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.
     // Because we are handing off the array
     void readBuffer(const cl::Buffer& buffer,
