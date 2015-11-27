@@ -294,7 +294,13 @@ BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems)
     PyObject *obj;
     obj = (PyObject *)malloc(type->tp_basicsize);
     PyObject_Init(obj, type);
+
+    // Flag the array as uninitialized
     ((BhArray*)obj)->mmap_allocated = 0;
+    ((BhArray*)obj)->bhc_ary = NULL;
+    ((BhArray*)obj)->bhc_ary_version = NULL;
+    ((BhArray*)obj)->bhc_view = NULL;
+    ((BhArray*)obj)->bhc_view_version = NULL;
     return obj;
 }
 
