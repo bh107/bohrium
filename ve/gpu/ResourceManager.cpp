@@ -40,6 +40,9 @@ ResourceManager::ResourceManager(bh_component* _component)
     , _fixedSizeKernel(true)
     , _dynamicSizeKernel(true)
     , _asyncCompile(true)
+    , maxAllocatedMem(0)
+    , allocatedMem(0)
+
 
 {
     _verbose = bh_component_config_lookup_bool(component, "verbose", false);
@@ -172,6 +175,8 @@ ResourceManager::~ResourceManager()
         commandQueue.finish();
     if (_timing)
     {
+        std::cout << "[Memory] [GPU] Max memory used: " <<  (double)maxAllocatedMem/(double)(1024*1024) << 
+            " MB" << std::endl;
         delete codeGen;
         delete kernelGen;
         delete bufferWrite;
@@ -189,7 +194,15 @@ void ResourceManager::registerExtensions(const std::vector<std::string>& extensi
 
 cl::Buffer* ResourceManager::createBuffer(size_t size)
 {
+    allocatedMem += size;
+    if (allocatedMem > maxAllocatedMem)
+        maxAllocatedMem = allocatedMem; 
     return new cl::Buffer(context, CL_MEM_READ_WRITE, size);
+}
+
+void ResourceManager::freeBuffer(size_t size)
+{
+    allocatedMem -= size;
 }
 
 void ResourceManager::readBuffer(const cl::Buffer& buffer,
