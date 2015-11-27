@@ -254,6 +254,8 @@ static PyObject *
 BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyObject *ret = PyArray_Type.tp_new(type, args, kwds);
+    if(ret == NULL)
+        return NULL;
     if(_protected_malloc((BhArray *) ret) != 0)
         return NULL;
     return ret;
