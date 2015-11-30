@@ -260,12 +260,57 @@ static int _protected_malloc(BhArray *ary)
     return 0;
 }
 
+//Help function that creates a simple new array.
+//We parse to PyArray_NewFromDescr(), a new protected memory allocation
+//Return the new Python object, or NULL on error
+static PyObject* _simply_new_array(PyTypeObject *type, PyArray_Descr *descr,
+                                   uint64_t nbytes, PyArray_Dims shape)
+{
+    //Let's create a new NumPy array using our memory allocation
+    void *addr = _mmap_mem(nbytes);
+    if(addr == NULL)
+        return NULL;
+
+    PyObject *ret = PyArray_NewFromDescr(type, descr, shape.len, shape.ptr, NULL, addr, 0, NULL);
+    if(ret == NULL)
+        return NULL;
+    ((BhArray*)ret)->base.flags |= NPY_ARRAY_OWNDATA;
+    ((BhArray*)ret)->base.flags |= NPY_ARRAY_CARRAY;
+    ((BhArray*)ret)->mmap_allocated = 1;
+    PyArray_UpdateFlags((PyArrayObject*)ret, NPY_ARRAY_UPDATE_ALL);
+    bh_mem_signal_attach(ret, ((BhArray*)ret)->base.data, nbytes, mem_access_callback);
+    return ret;
+}
+
 static PyObject *
 BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
+    //If this is a "simple" new array, we can use our own memory allocation
+    {
+        static char *kwlist[] = {"shape", "dtype", NULL};//We only support simple arrays
+        PyArray_Descr *descr = NULL;
+        PyArray_Dims shape = {NULL, 0};
+        if(PyArg_ParseTupleAndKeywords(args, kwds, "O&|O&", kwlist,
+                                       PyArray_IntpConverter, &shape,
+                                       PyArray_DescrConverter, &descr))
+        {
+            int i; uint64_t nelem = 1;
+            for(i=0; i<shape.len; ++i)
+                nelem *= shape.ptr[i];
+
+            if(nelem > 0)
+            {
+                if(descr == NULL)//Get default dtype
+                    descr = PyArray_DescrFromType(NPY_DEFAULT_TYPE);
+                return _simply_new_array(type, descr, nelem * descr->elsize, shape);
+            }
+        }
+    }
+    //If it is not a simple new array, we let NumPy create it
     PyObject *ret = PyArray_Type.tp_new(type, args, kwds);
     if(ret == NULL)
         return NULL;
+    //And then protect the memory afterwards
     if(_protected_malloc((BhArray *) ret) != 0)
         return NULL;
     return ret;
