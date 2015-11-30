@@ -10,11 +10,10 @@ class test_bohrium(numpytest):
             exec(v)
             yield (a,v)
 
-    def test_tally(self,a):
-        cmd = "\n".join([
-            "res = a[0] + a[0]",
-            'if "target" in np.__dict__ and "tally" in np.target.__dict__:',
-            "    np.target.tally()"
-        ])
+    def test_tally(self, a):
+        cmd = "res = a[0] + a[0]"
         exec(cmd)
+        if bh.check(a[0]):
+            bh.target.tally()
         return (res,cmd)
+
