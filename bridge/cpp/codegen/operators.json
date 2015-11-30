@@ -230,6 +230,8 @@
 ["matmul",      "BH_MATMUL",    "sugar.binary",   true],
 ["bh_matmul",   "BH_MATMUL",    "runtime.binary", true],
 
+["bh_none",     "BH_NONE",      "runtime.none", true],
+["bh_tally",    "BH_TALLY",     "runtime.none", true],
 ["bh_free",     "BH_FREE",      "runtime.zero", true],
 ["bh_sync",     "BH_SYNC",      "runtime.zero", true],
 ["bh_discard",  "BH_DISCARD",   "runtime.zero", true]

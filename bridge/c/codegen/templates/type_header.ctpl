@@ -26,6 +26,9 @@ DLLEXPORT void bh_runtime_flush(void);
 // Shutdown Bohrium
 DLLEXPORT void bh_runtime_shutdown(void);
 
+// Send the BH_TALLY instruction.
+DLLEXPORT void bh_runtime_tally(void);
+
 // Common type forward definition
 #ifndef __BH_ARRAY_H
 struct bh_base;

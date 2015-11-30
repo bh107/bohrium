@@ -24,6 +24,12 @@ void bh_runtime_shutdown(void){
    //delete &Runtime::instance();
 }
 
+// Send the tally instruction
+void bh_runtime_tally(void)
+{
+    bh_tally();
+}
+
 %for $ctype, $bh_atype, $bh_ctype, $bh_enum in $ops
 
 // $bh_enum

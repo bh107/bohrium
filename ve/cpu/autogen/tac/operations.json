@@ -157,7 +157,8 @@
     "operators": [
         "KP_FREE",
         "KP_DISCARD",
-        "KP_SYNC"
+        "KP_SYNC",
+        "KP_TALLY"
     ]
 },
 

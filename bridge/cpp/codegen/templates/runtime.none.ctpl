@@ -1,0 +1,16 @@
+#slurp
+#compiler-settings
+directiveStartToken = %
+#end compiler-settings
+%slurp
+
+%for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
+
+inline
+void $op (void)
+{
+    Runtime::instance().enqueue((bh_opcode)$opcode);
+}
+
+%end for
+

@@ -155,6 +155,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     const bh_instruction& instr = bhir->instr_list[instr_idx];
     switch (instr.opcode) {
     case BH_NONE:
+    case BH_TALLY:
         break;
     case BH_SYNC:
         syncs.insert(instr.operand[0].base);

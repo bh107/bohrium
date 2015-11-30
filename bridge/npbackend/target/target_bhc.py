@@ -225,4 +225,6 @@ def random123(size, start_index, key):
     base = Base(size, dtype, bhc_obj)
     return View(1, 0, (size,), (dtype.itemsize,), base)
 
-
+def tally():
+    bhc.bh_runtime_tally()
+    return None
