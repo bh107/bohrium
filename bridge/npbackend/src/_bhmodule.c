@@ -217,6 +217,26 @@ static int _mprotect_np_part(BhArray *ary)
     return 0;
 }
 
+//Help function for allocate protected memory through mmep
+//Returns a pointer to the new memory or NULL on error
+static void* _mmap_mem(uint64_t nbytes)
+{
+    //Allocate page-size aligned memory.
+    //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
+    //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
+    void *addr = mmap(0, nbytes, PROT_NONE,
+                      MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    if(addr == MAP_FAILED)
+    {
+        int errsv = errno;//mmap() sets the errno.
+        PyErr_Format(PyExc_RuntimeError, "The Array Data Protection "
+                     "could not mmap a data region. "
+                     "Returned error code by mmap: %s.", strerror(errsv));
+        return NULL;
+    }
+    return addr;
+}
+
 //Help function for allocate protected memory for the NumPy part of 'ary'
 //This function only allocates if the 'ary' is a new base array and avoids multiple
 //allocations by checking and setting the ary->mmap_allocated
@@ -227,19 +247,9 @@ static int _protected_malloc(BhArray *ary)
         return 0;
     ary->mmap_allocated = 1;
 
-    //Allocate page-size aligned memory.
-    //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
-    //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-    void *addr = mmap(0, ary_nbytes(ary), PROT_NONE,
-                      MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    if(addr == MAP_FAILED)
-    {
-        int errsv = errno;//mmap() sets the errno.
-        PyErr_Format(PyExc_RuntimeError, "The Array Data Protection "
-                     "could not mmap a data region. "
-                     "Returned error code by mmap: %s.", strerror(errsv));
+    void *addr = _mmap_mem(ary_nbytes(ary));
+    if(addr == NULL)
         return -1;
-    }
 
     //Lets free the NumPy allocated memory and use the mprotect'ed memory instead
     free(ary->base.data);
