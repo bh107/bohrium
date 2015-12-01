@@ -32,6 +32,22 @@ namespace bxx {
 
 
 
+inline
+void bh_none (void)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_NONE);
+}
+
+
+inline
+void bh_tally (void)
+{
+    Runtime::instance().enqueue((bh_opcode)BH_TALLY);
+}
+
+
+
+
 //
 // bh_add - BH_ADD - runtime.binary - 3
 //
