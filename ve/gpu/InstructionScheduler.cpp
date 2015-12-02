@@ -90,6 +90,14 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
             bh_data_free(base);
         }
     }
+    if (bhir->tally)
+    {   
+        while (!callQueueEmpty())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+        resourceManager->tally();        
+    }
     return BH_SUCCESS;
 }
 
@@ -433,6 +441,7 @@ static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel,
         case BH_FREE:
         case BH_SYNC:
         case BH_NONE:
+        case BH_TALLY:
             continue;
         }
         const bh_intp ndim = (bh_opcode_is_sweep(instr.opcode) ? instr.operand[1].ndim : instr.operand[0].ndim);

@@ -185,6 +185,12 @@ ResourceManager::~ResourceManager()
     }
 }
 
+void ResourceManager::tally()
+{
+    for (cl::CommandQueue& commandQueue: commandQueues)
+        commandQueue.finish();
+}
+
 void ResourceManager::registerExtensions(const std::vector<std::string>& extensions)
 {
     _float64 = extensions[0].find("cl_khr_fp64") != std::string::npos;
