@@ -45,11 +45,13 @@ namespace io = boost::iostreams;
 * @instr_list  The instruction list
 */
 bh_ir::bh_ir(bh_intp ninstr, const bh_instruction instr_list[])
+    : tally(false)
 {
     this->instr_list = vector<bh_instruction>(instr_list, &instr_list[ninstr]);
 }
 
 bh_ir::bh_ir(const bh_instruction& instr)
+    : tally(false)
 {
     instr_list.push_back(instr);
     bh_ir_kernel kernel(*this);
@@ -62,6 +64,7 @@ bh_ir::bh_ir(const bh_instruction& instr)
 * @bhir The BhIr serialized as a char array or vector
 */
 bh_ir::bh_ir(const char bhir[], bh_intp size)
+    : tally(false)
 {
     io::basic_array_source<char> source(bhir,size);
     io::stream<io::basic_array_source <char> > input_stream(source);
@@ -165,7 +168,9 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     }
     switch (instr.opcode) {
     case BH_NONE:
+        break;
     case BH_TALLY:
+        bhir->tally = true;
         break;
     case BH_SYNC:
         syncs.insert(instr.operand[0].base);

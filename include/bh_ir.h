@@ -77,6 +77,8 @@ public:
     //The list of kernels in topological order
     std::vector<bh_ir_kernel> kernel_list;
 
+    bool tally;  // Should the ve tally after this bh_ir
+
 protected:
     // Serialization using Boost
     friend class boost::serialization::access;
@@ -174,7 +176,6 @@ public:
     bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}
     bool is_input(const bh_view& view) const {return input_set.find(view) != input_set.end();}
     bool is_scalar() const { return scalar;}
-
 
     size_t get_view_id(const bh_view& v) const;
     const bh_view& get_view(size_t id) const {return views[id];}
