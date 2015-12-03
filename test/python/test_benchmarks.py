@@ -433,7 +433,7 @@ class test_idl_init(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
+        self.config['maxerror'] = 0.0001
         self.size = 16
 
         # Benchmark parameters

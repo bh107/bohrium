@@ -14,7 +14,7 @@ install:
 env:
   global:
       - BH_GPU_VERBOSE=true
-      - BH_GPU_TROUBLESOME="--exclude-test=test_lbm_3d --exclude-test test_idl_init"
+      - BH_GPU_TROUBLESOME="--exclude-test=test_lbm_3d"
       - BH_CPU_TROUBLESOME="--exclude-test=test_lbm_3d"
   matrix:
       - BH_STACK=stack_default BH_CPU_JIT_LEVEL=3 NUMPYTEST_ARGS=$BH_CPU_TROUBLESOME
