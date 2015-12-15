@@ -23,11 +23,22 @@ def main(args):
     # Let's generate the header and implementation of all array operations
     head = ""; impl = ""
     for op in opcodes:
-        if op['opcode'] == "BH_RANDOM":#We handle random separately
+        if op['opcode'] in ["BH_RANDOM", "BH_NONE"]:#We handle random separately and ignore None
             continue
         doc = "// %s: %s\n"%(op['opcode'][3:], op['doc'])
         doc += "// E.g. %s:\n"%(op['code'])
         impl += doc; head += doc
+
+        # Generate functions that takes no operands
+        if len(op['types']) == 0:
+            decl = "void bhc_%s()"%(op['opcode'][3:].lower())
+            head += "DLLEXPORT %s;\n"%decl
+            impl += decl;
+            impl += "{\n"
+            impl += "\t%s();\n"%op['opcode'].lower()
+            impl += "}\n"
+
+        # Generate a function for each type signature
         for type_sig in op['types']:
             for layout in op['layout']:
 
