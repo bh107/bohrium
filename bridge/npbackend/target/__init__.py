@@ -43,6 +43,9 @@ if TARGET not in TARGETS:   # Validate the target
     )
     raise RuntimeError(msg)
 
+if TARGET == "bhc":
+    METHODS.append("tally")
+
 # Do the actual import of methods from the chosen target
 exec("from .target_%s import %s" % (TARGET, ", ".join(METHODS)))
 

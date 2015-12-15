@@ -66,10 +66,9 @@ class GraphDW
 protected:
     GraphD _bglD;
     GraphW _bglW;
-    //Map from base-array to the set of vertices that accesses it
-    std::map<bh_base*, std::set<Vertex> > base2vertices;
 
 public:
+    //Map from base-array to the set of vertices that accesses it
     const GraphD &bglD() const {return _bglD;}
     const GraphW &bglW() const {return _bglW;}
 
@@ -77,15 +76,17 @@ public:
      * Additionally, both dependency and weight edges are
      * added / updated as needed.
      *
- iro Quintana    * @kernel  The kernel to bundle with the new vertex
+     * @base2vertices  In order to improve the build process, this
+     *                 function accepts and maintain a map from base-
+     *                 array to the set of vertices that accesses it
      */
-    Vertex add_vertex(const bh_ir_kernel &kernel);
+    Vertex add_vertex(const bh_ir_kernel &kernel,
+                      std::map<bh_base*,std::set<Vertex> > &base2vertices);
 
-    /* The default and the copy constructors */
+    /* The default constructor */
     GraphDW(){};
-    GraphDW(const GraphDW &graph):_bglD(graph.bglD()), _bglW(graph.bglW()) {};
 
-    /* Constructor based on a dependency graph. All weights are zero.
+    /* Constructor based on a dependency graph.
      *
      * @dag     The dependency graph
      */
@@ -146,7 +147,7 @@ public:
         std::vector<Vertex> removes;
         BOOST_FOREACH(Vertex v, boost::vertices(_bglD))
         {
-            if(_bglD[v].instr_indexes.size() == 0)
+            if(_bglD[v].instr_indexes().size() == 0)
             {
                 removes.push_back(v);
             }
@@ -283,6 +284,14 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed=true);
  * @return                The bool answer
  */
 bool dag_validate(const bh_ir &bhir, const std::vector<GraphDW> &dags, bool transitivity_allowed=true);
+
+
+/* Returns the set of non-fusibles for each vertex in 'dag'
+ *
+ * @dag                   The dag in question
+ * @return                The vertex-to-non-fusibles map
+ */
+std::map<Vertex, std::set<Vertex> > get_vertex2nonfusibles(const GraphD &dag);
 
 /* Fuse vertices in the graph that can be fused without
  * changing any future possible fusings

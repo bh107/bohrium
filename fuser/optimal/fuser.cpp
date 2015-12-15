@@ -151,7 +151,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     {
         Vertex v = loc_map.at(vertex);
         bh_ir_kernel &k = new_vertices.at(v);
-        BOOST_FOREACH(uint64_t idx, dag[vertex].instr_indexes)
+        BOOST_FOREACH(uint64_t idx, dag[vertex].instr_indexes())
         {
             if(not k.fusible(idx))
                 fusibility = false;
@@ -163,7 +163,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
         if(loc_map.at(v) == v)
-            assert(new_vertices[v].instr_indexes.size() > 0);
+            assert(new_vertices[v].instr_indexes().size() > 0);
     }
 
     //Find the total cost
@@ -184,7 +184,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
         if(loc_v == v)
         {
             dag[v] = new_vertices.at(v);
-            assert(dag[v].instr_indexes.size() > 0);
+            assert(dag[v].instr_indexes().size() > 0);
         }
         else//Lets merge 'v' into 'loc_v'
         {
@@ -208,7 +208,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
     //TODO: remove assert check
     BOOST_FOREACH(Vertex v, vertices(dag))
     {
-        if(dag[loc_map.at(v)].instr_indexes.size() == 0)
+        if(dag[loc_map.at(v)].instr_indexes().size() == 0)
         {
             cout << v << endl;
             cout << loc_map.at(v) << endl;
@@ -228,7 +228,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
 }
 
 /* Find the optimal solution through branch and bound */
-void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explore, FuseCache &cache,
+void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explore,
                       const vector<bool> &init_mask, unsigned int init_offset=0)
 {
     //We use the greedy algorithm to find a good initial guess
@@ -295,19 +295,6 @@ void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explor
                 best_cost = cost;
                 best_dag = new_dag;
                 assert(dag_validate(best_dag));
-
-                //Lets write the current best to file
-                vector<bh_ir_kernel> kernel_list;
-                fill_kernel_list(best_dag, kernel_list);
-                const InstrIndexesList &i = cache.insert(bhir.instr_list, kernel_list);
-                cache.write_to_files();
-
-                stringstream ss;
-                string filename;
-                i.get_filename(filename);
-                ss << "new_best_dag-" << filename << ".dot";
-                cout << "write file: " << ss.str() << endl;
-                pprint(best_dag, ss.str().c_str());
                 purge_count += pow(2.0, (int)(mask.size()-offset));
             }
             continue;
@@ -359,7 +346,7 @@ void get_edges2explore(const GraphDW &dag, vector<EdgeW> &edges2explore)
 }
 
 /* Fuse the 'dag' optimally */
-void fuse_optimal(bh_ir &bhir, GraphDW &dag, FuseCache &cache)
+void fuse_optimal(bh_ir &bhir, GraphDW &dag)
 {
     //The list of edges that we should try to merge
     vector<EdgeW> edges2explore;
@@ -390,10 +377,10 @@ void fuse_optimal(bh_ir &bhir, GraphDW &dag, FuseCache &cache)
     }
 
     cout << "FUSER-OPTIMAL: the size of the search space is 2^" << mask.size() << "!" << endl;
-    branch_n_bound(bhir, dag, edges2explore, cache, mask, preload_offset);
+    branch_n_bound(bhir, dag, edges2explore, mask, preload_offset);
 }
 
-void do_fusion(bh_ir &bhir, FuseCache &cache)
+void do_fusion(bh_ir &bhir)
 {
     GraphDW dag;
     from_bhir(bhir, dag);
@@ -404,7 +391,7 @@ void do_fusion(bh_ir &bhir, FuseCache &cache)
     {
         fuse_gently(d);
         d.transitive_reduction();
-        fuse_optimal(bhir, d, cache);
+        fuse_optimal(bhir, d);
     }
     assert(dag_validate(bhir, dags));
     BOOST_FOREACH(GraphDW &d, dags)
@@ -416,11 +403,17 @@ void fuser(bh_ir &bhir, FuseCache &cache)
     if(bhir.kernel_list.size() != 0)
         throw logic_error("The kernel_list is not empty!");
 
-    BatchHash hash(bhir.instr_list);
-    if(not cache.lookup(hash, bhir, bhir.kernel_list))
+    if(cache.enabled)
     {
-        do_fusion(bhir, cache);
+        BatchHash hash(bhir.instr_list);
+        if(cache.lookup(hash, bhir, bhir.kernel_list))
+            return;//Fuse cache hit!
+        do_fusion(bhir);
         cache.insert(hash, bhir.kernel_list);
+    }
+    else
+    {
+        do_fusion(bhir);
     }
 }
 

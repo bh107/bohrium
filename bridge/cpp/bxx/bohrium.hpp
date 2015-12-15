@@ -345,6 +345,8 @@ public:
     template <typename TO>
     void enqueue(bh_opcode opcode, multi_array<TO>& op0);
 
+    void enqueue(bh_opcode opcode);
+
     template <typename TO>
     void enqueue(bh_opcode opcode, multi_array<TO>& op0, const uint64_t op1, const uint64_t op2);
 

@@ -142,6 +142,7 @@ def main():
         ('runtime.typechecker.ctpl', 'runtime.typechecker.hpp', checker),
 
         ('runtime.header.ctpl',     'runtime.operations.hpp', datasets['runtime.binary']),
+        ('runtime.none.ctpl',       'runtime.operations.hpp', datasets['runtime.none']),
         ('runtime.binary.ctpl',     'runtime.operations.hpp', datasets['runtime.binary']),
         ('runtime.binary.bool.ctpl','runtime.operations.hpp', datasets['runtime.binary.bool']),
         ('runtime.unary.ctpl',      'runtime.operations.hpp', datasets['runtime.unary']),

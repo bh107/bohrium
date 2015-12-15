@@ -63,6 +63,13 @@ def runtime_flush():
     """Flush the runtime system"""
     bhc.bhc_flush()
 
+def tally():
+    """
+    System instruction that informs the child component
+    to tally operations.
+    """
+    bhc.bhc_tally()
+
 def get_data_pointer(ary, allocate=False, nullify=False):
     """Retrieves the data pointer from Bohrium Runtime."""
     if ary.size == 0 or ary.base.size == 0:
@@ -225,4 +232,3 @@ def random123(size, start_index, key):
     if size > 0:
         ufunc("random123", ret, start_index, key, dtypes=[dtype]*3)
     return ret
-

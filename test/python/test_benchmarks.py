@@ -433,7 +433,7 @@ class test_idl_init(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
+        self.config['maxerror'] = 0.0001
         self.size = 16
 
         # Benchmark parameters
@@ -443,4 +443,36 @@ class test_idl_init(BenchHelper, numpytest):
         self.inputfn    = "idl_input-float64_512*512.npz"
 
     def test_idl_init(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_idl_init_1loop(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size = 16
+
+        # Benchmark parameters
+        self.script     = "idl_init_1loop"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "16*16"
+        self.inputfn    = "idl_input-float64_512*512.npz"
+
+    def test_idl_init(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_xraysim(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 32
+
+        # Benchmark parameters
+        self.script     = "xraysim"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "32*10*2"
+        self.inputfn    = None
+
+    def test_xraysim(self, pseudo_arrays):
         return self.run(pseudo_arrays)

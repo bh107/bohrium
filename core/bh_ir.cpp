@@ -33,6 +33,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include "bh_ir.h"
 #include "bh_fuse.h"
+#include "bh_fuse_price.h"
 
 using namespace std;
 using namespace boost;
@@ -44,11 +45,13 @@ namespace io = boost::iostreams;
 * @instr_list  The instruction list
 */
 bh_ir::bh_ir(bh_intp ninstr, const bh_instruction instr_list[])
+    : tally(false)
 {
     this->instr_list = vector<bh_instruction>(instr_list, &instr_list[ninstr]);
 }
 
 bh_ir::bh_ir(const bh_instruction& instr)
+    : tally(false)
 {
     instr_list.push_back(instr);
     bh_ir_kernel kernel(*this);
@@ -61,6 +64,7 @@ bh_ir::bh_ir(const bh_instruction& instr)
 * @bhir The BhIr serialized as a char array or vector
 */
 bh_ir::bh_ir(const char bhir[], bh_intp size)
+    : tally(false)
 {
     io::basic_array_source<char> source(bhir,size);
     io::stream<io::basic_array_source <char> > input_stream(source);
@@ -117,7 +121,7 @@ bh_ir_kernel::bh_ir_kernel(bh_ir &bhir)
 /* Clear this kernel of all instructions */
 void bh_ir_kernel::clear()
 {
-    instr_indexes.clear();
+    _instr_indexes.clear();
     input_set.clear();
     output_set.clear();
     input_map.clear();
@@ -129,6 +133,7 @@ void bh_ir_kernel::clear()
     discards.clear();
     parameters.clear();
     input_shape.clear();
+    constants.clear();
     scalar = false;
 }
 
@@ -140,7 +145,8 @@ size_t bh_ir_kernel::get_view_id(const bh_view& v) const
 /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
 bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const
 {
-    BOOST_FOREACH(uint64_t idx, instr_indexes)
+    assert(bhir != NULL);
+    BOOST_FOREACH(uint64_t idx, instr_indexes())
     {
         const bh_instruction &instr = bhir->instr_list[idx];
         if(instr.opcode == opcode and instr.operand[0].base == b)
@@ -151,10 +157,20 @@ bool bh_ir_kernel::is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) co
 
 void bh_ir_kernel::add_instr(uint64_t instr_idx)
 {
-
+    assert(bhir != NULL);
+    assert(instr_idx < bhir->instr_list.size());
     const bh_instruction& instr = bhir->instr_list[instr_idx];
+    const int nop = bh_operands(instr.opcode);
+    for(int i=0; i<nop; ++i)
+    {
+        if(not bh_is_constant(&instr.operand[i]))
+            bases.insert(instr.operand[i].base);
+    }
     switch (instr.opcode) {
     case BH_NONE:
+        break;
+    case BH_TALLY:
+        bhir->tally = true;
         break;
     case BH_SYNC:
         syncs.insert(instr.operand[0].base);
@@ -200,7 +216,6 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     default:
     {
         bool sweep = bh_opcode_is_sweep(instr.opcode);
-        const int nop = bh_operands(instr.opcode);
         //Add the inputs of the instruction to 'inputs'
         for(int i=1; i<nop; ++i)
         {
@@ -208,7 +223,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
             if(bh_is_constant(&v))
             {
                 if (!sweep)
-                    constants.push_back(instr.constant);
+                    constants[instr_idx] = instr.constant;
                 continue;
             }
             bh_view sv = bh_view_simplify(v);
@@ -244,7 +259,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         }
     }
     }
-    instr_indexes.push_back(instr_idx);
+    _instr_indexes.push_back(instr_idx);
 }
 
 // Smallest output shape used in the kernel
@@ -270,7 +285,8 @@ std::vector<bh_index> bh_ir_kernel::get_output_shape() const
  */
 bool bh_ir_kernel::only_system_opcodes() const
 {
-    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    assert(bhir != NULL);
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes())
     {
         if(not bh_opcode_is_system(bhir->instr_list[this_idx].opcode))
             return false;
@@ -285,7 +301,8 @@ bool bh_ir_kernel::only_system_opcodes() const
  */
 bool bh_ir_kernel::is_noop() const
 {
-    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    assert(bhir != NULL);
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes())
     {
         if(bhir->instr_list[this_idx].opcode != BH_NONE)
             return false;
@@ -299,12 +316,13 @@ bool bh_ir_kernel::is_noop() const
  */
 bool bh_ir_kernel::fusible() const
 {
-    for(uint64_t i=0; i<instr_indexes.size(); ++i)
+    assert(bhir != NULL);
+    for(uint64_t i=0; i<instr_indexes().size(); ++i)
     {
-        const bh_instruction *instr = &bhir->instr_list[instr_indexes[i]];
-        for(uint64_t j=i+1; j<instr_indexes.size(); ++j)
+        const bh_instruction *instr = &bhir->instr_list[instr_indexes()[i]];
+        for(uint64_t j=i+1; j<instr_indexes().size(); ++j)
         {
-            if(not bohrium::check_fusible(instr, &bhir->instr_list[instr_indexes[j]]))
+            if(not bohrium::check_fusible(instr, &bhir->instr_list[instr_indexes()[j]]))
                 return false;
         }
     }
@@ -318,8 +336,9 @@ bool bh_ir_kernel::fusible() const
  */
 bool bh_ir_kernel::fusible(uint64_t instr_idx) const
 {
+    assert(bhir != NULL);
     const bh_instruction *instr = &bhir->instr_list[instr_idx];
-    BOOST_FOREACH(uint64_t i, instr_indexes)
+    BOOST_FOREACH(uint64_t i, instr_indexes())
     {
         if(not bohrium::check_fusible(instr, &bhir->instr_list[i]))
             return false;
@@ -334,41 +353,15 @@ bool bh_ir_kernel::fusible(uint64_t instr_idx) const
  */
 bool bh_ir_kernel::fusible(const bh_ir_kernel &other) const
 {
-    BOOST_FOREACH(uint64_t idx1, instr_indexes)
+    assert(bhir != NULL);
+    BOOST_FOREACH(uint64_t idx1, instr_indexes())
     {
         const bh_instruction *instr = &bhir->instr_list[idx1];
-        BOOST_FOREACH(uint64_t idx2, other.instr_indexes)
+        BOOST_FOREACH(uint64_t idx2, other.instr_indexes())
         {
             if(not bohrium::check_fusible(instr, &other.bhir->instr_list[idx2]))
                 return false;
         }
-    }
-    return true;
-}
-
-/* Determines whether the in-/output of 'this' kernel is a subset of 'other'
- *
- * @other  The other kernel
- * @return The boolean answer
- */
-bool bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other) const
-{
-    const std::set<bh_view>& other_input_set = other.get_input_set();
-    if(input_set.size() > other_input_set.size())
-        return false;
-    const std::set<bh_view>& other_output_set = other.get_output_set();
-    if(output_set.size() > other_output_set.size())
-        return false;
-
-    for (const bh_view& iv: input_set)
-    {
-        if (other_input_set.find(iv) == other_input_set.end())
-            return false;
-    }
-    for (const bh_view& ov: output_set)
-    {
-        if (other_output_set.find(ov) == other_output_set.end())
-            return false;
     }
     return true;
 }
@@ -386,8 +379,9 @@ bool bh_ir_kernel::input_and_output_subset_of(const bh_ir_kernel &other) const
  */
 int bh_ir_kernel::dependency(uint64_t instr_idx) const
 {
+    assert(bhir != NULL);
     int ret = 0;
-    BOOST_FOREACH(uint64_t this_idx, instr_indexes)
+    BOOST_FOREACH(uint64_t this_idx, instr_indexes())
     {
         if(bh_instr_dependency(&bhir->instr_list[instr_idx],
                                &bhir->instr_list[this_idx]))
@@ -427,39 +421,25 @@ int bh_ir_kernel::dependency(uint64_t instr_idx) const
 int bh_ir_kernel::dependency(const bh_ir_kernel &other) const
 {
     int ret = 0;
-    BOOST_FOREACH(uint64_t other_idx, other.instr_indexes)
+    BOOST_FOREACH(uint64_t other_idx, other.instr_indexes())
     {
         const int dep = dependency(other_idx);
         if(dep != 0)
         {
             assert(ret == 0 or ret == dep);//Check for cyclic dependency
             ret = dep;
-            //TODO: return 'ret' here, but for now we check all instructions
+            #ifdef NDEBUG
+                return ret; //We only check all instructions when in debug mode
+            #endif
         }
     }
     return ret;
 }
 
-/* Returns the cost of a bh_view */
-inline static uint64_t cost_of_view(const bh_view &v)
-{
-    assert (!bh_is_constant(&v));
-    return bh_nelements_nbcast(&v) * bh_type_size(v.base->type);
-}
-
 /* Returns the cost of the kernel */
 uint64_t bh_ir_kernel::cost() const
 {
-    uint64_t sum = 0;
-    BOOST_FOREACH(const bh_view &v, input_set)
-    {
-        sum += cost_of_view(v);
-    }
-    BOOST_FOREACH(const bh_view &v, output_set)
-    {
-        sum += cost_of_view(v);
-    }
-    return sum;
+    return bohrium::kernel_cost(*this);
 }
 
 /* Returns the cost savings of merging with the 'other' kernel.
@@ -493,35 +473,5 @@ int64_t bh_ir_kernel::merge_cost_savings(const bh_ir_kernel &other) const
         a = &other;
         b = this;
     }
-
-    int64_t price_drop = 0;
-
-    //Subtract inputs in 'a' that comes from 'b' or is already an input in 'b'
-    BOOST_FOREACH(const bh_view &i, a->get_input_set())
-    {
-        BOOST_FOREACH(const bh_view &o, b->get_output_set())
-        {
-            if(bh_view_aligned(&i, &o))
-                price_drop += cost_of_view(i);
-        }
-        BOOST_FOREACH(const bh_view &o, b->get_input_set())
-        {
-            if(bh_view_aligned(&i, &o))
-                price_drop += cost_of_view(i);
-        }
-    }
-    //Subtract outputs from 'b' that are discared in 'a'
-    BOOST_FOREACH(const bh_view &o, b->get_output_set())
-    {
-        BOOST_FOREACH(uint64_t a_instr_idx, a->instr_indexes)
-        {
-            const bh_instruction &a_instr = a->bhir->instr_list[a_instr_idx];
-            if(a_instr.opcode == BH_DISCARD and a_instr.operand[0].base == o.base)
-            {
-                price_drop += cost_of_view(o);
-                break;
-            }
-        }
-    }
-    return price_drop;
+    return bohrium::cost_savings(*b, *a);
 }

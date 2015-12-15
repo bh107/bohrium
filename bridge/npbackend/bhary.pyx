@@ -78,7 +78,7 @@ def fix_returned_biclass(func):
         #Flag that this function has been handled
         setattr(inner, "_fixed_returned_biclass", True)
     except:#In older versions of cython, this is not possible
-        print("Warning: could not set decorator flag")
+        pass
     return inner
 
 def new(shape, dtype, bhc_ary=None):
@@ -163,6 +163,11 @@ def identical_views(view1, view2):
     if list(view1.strides) != list(view2.strides):
         return False
     return True
+
+def in_bhmem(ary):
+    """Returns True when 'ary' is in the memory address space of Bohrium"""
+
+    return get_base(ary).bhc_ary is not None
 
 def get_bhc(ary):
     """

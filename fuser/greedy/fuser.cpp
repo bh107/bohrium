@@ -42,7 +42,6 @@ static void do_fusion(bh_ir &bhir)
     assert(dag_validate(bhir, dags));
     BOOST_FOREACH(GraphDW &d, dags)
     {
-        fuse_gently(d);
         fuse_greedy(d);
     }
     assert(dag_validate(bhir, dags));
@@ -55,10 +54,16 @@ void fuser(bh_ir &bhir, FuseCache &cache)
     if(bhir.kernel_list.size() != 0)
         throw logic_error("The kernel_list is not empty!");
 
-    BatchHash hash(bhir.instr_list);
-    if(not cache.lookup(hash, bhir, bhir.kernel_list))
+    if(cache.enabled)
     {
+        BatchHash hash(bhir.instr_list);
+        if(cache.lookup(hash, bhir, bhir.kernel_list))
+            return;//Fuse cache hit!
         do_fusion(bhir);
         cache.insert(hash, bhir.kernel_list);
+    }
+    else
+    {
+        do_fusion(bhir);
     }
 }

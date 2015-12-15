@@ -42,56 +42,42 @@ using namespace boost;
 namespace bohrium {
 namespace dag {
 
-Vertex GraphDW::add_vertex(const bh_ir_kernel &kernel)
+Vertex GraphDW::add_vertex(const bh_ir_kernel &kernel,
+                           map<bh_base*, set<Vertex> > &base2vertices)
 {
     Vertex d = boost::add_vertex(kernel, _bglD);
     boost::add_vertex(_bglW);
 
-    //Let's start by finding all base-arrays accessed by the kernel
-    set<bh_base *> bases;
-    BOOST_FOREACH(uint64_t instr_idx, kernel.instr_indexes)
+    //Find all vertices that must connect to 'kernel'
+    set<Vertex> connect_vs;
+    BOOST_FOREACH(bh_base *base, kernel.get_bases())
     {
-        const bh_instruction &instr = kernel.bhir->instr_list[instr_idx];
-        const int nop = bh_operands(instr.opcode);
-        for(int i=0; i<nop; ++i)
-        {
-            if(bh_is_constant(&instr.operand[i]))
-                continue;
-            bases.insert(instr.operand[i].base);
-        }
+        set<Vertex> &vs = base2vertices[base];
+        connect_vs.insert(vs.begin(), vs.end());
+        vs.insert(d);
     }
 
-    //Add edges
-    BOOST_FOREACH(bh_base *base, bases)
+    //Add path to 'kernel'
+    BOOST_REVERSE_FOREACH(Vertex v, connect_vs)
     {
-        auto vs = base2vertices.find(base);
-        if(vs == base2vertices.end())//Unknown base-array
+        if(d != v and not path_exist(v, d, _bglD, true))
         {
-            base2vertices[base].insert(d);
-            continue;
-        }
-        //Let's check all vertices that access the base-array.
-        BOOST_FOREACH(Vertex v, vs->second)
-        {
-            if(d != v and not path_exist(v, d, _bglD, false))
+            bool dependency = false;
+            int dep = kernel.dependency(_bglD[v]);
+            if(dep)
             {
-                bool dependency = false;
-                int dep = kernel.dependency(_bglD[v]);
-                if(dep)
-                {
-                    assert(dep == 1);
-                    dependency = true;
-                    boost::add_edge(v, d, _bglD);
-                }
-                int64_t cost = kernel.merge_cost_savings(_bglD[v]);
-                if((cost > 0) or (cost == 0 and dependency))
-                {
-                    boost::add_edge(v, d, EdgeWeight(cost), _bglW);
-                }
+                assert(dep == 1);
+                dependency = true;
+                boost::add_edge(v, d, _bglD);
+            }
+            int64_t cost = kernel.merge_cost_savings(_bglD[v]);
+            if((cost > 0) or (cost == 0 and dependency))
+            {
+                boost::add_edge(v, d, EdgeWeight(cost), _bglW);
             }
         }
-        vs->second.insert(d);
     }
+    assert(dag_validate(*this));
     return d;
 }
 
@@ -102,9 +88,10 @@ void GraphDW::add_from_subgraph(const set<Vertex> &sub_graph, const GraphDW &dag
 
     //Build the vertices of 'this' graph
     map<Vertex,Vertex> dag2this;//Maps from vertices in 'dag' to vertices in 'this'
-    BOOST_FOREACH(Vertex v, sub_graph)
+    BOOST_FOREACH(Vertex v_dag, sub_graph)
     {
-        dag2this[v] = boost::add_vertex(d[v], _bglD);
+        Vertex v_this = boost::add_vertex(d[v_dag], _bglD);
+        dag2this[v_dag] = v_this;
         boost::add_vertex(_bglW);
     }
     //Add all dependency edges that connects vertices within 'sub_graph'
@@ -129,6 +116,7 @@ void GraphDW::add_from_subgraph(const set<Vertex> &sub_graph, const GraphDW &dag
             boost::add_edge(dag2this[src], dag2this[dst], w[e], _bglW);
         }
     }
+    assert(dag_validate(*this));
 }
 
 void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
@@ -138,12 +126,12 @@ void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
     //Merge the two instruction lists
     if(a_before_b)
     {
-        BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes)
+        BOOST_FOREACH(uint64_t idx, _bglD[b].instr_indexes())
             _bglD[a].add_instr(idx);
     }
     else
     {
-        BOOST_FOREACH(uint64_t idx, _bglD[a].instr_indexes)
+        BOOST_FOREACH(uint64_t idx, _bglD[a].instr_indexes())
             _bglD[b].add_instr(idx);
         _bglD[a] = _bglD[b];//Only 'a' survives
     }
@@ -236,7 +224,7 @@ void GraphDW::transitive_reduction()
 static bool base_in_kernel(const bh_ir &bhir, const bh_ir_kernel &kernel,
                            const bh_base *base)
 {
-    for(uint64_t instr_idx: kernel.instr_indexes)
+    for(uint64_t instr_idx: kernel.instr_indexes())
     {
         const bh_instruction &instr = bhir.instr_list[instr_idx];
         for(int i=0; i < bh_operands(instr.opcode); ++i)
@@ -250,16 +238,15 @@ static bool base_in_kernel(const bh_ir &bhir, const bh_ir_kernel &kernel,
     return false;
 }
 
-
 void from_bhir(bh_ir &bhir, GraphDW &dag)
 {
-    assert(num_vertices(dag.bglD()) == 0);
-
     if(bhir.kernel_list.size() != 0)
     {
         throw logic_error("The kernel_list is not empty!");
     }
 
+    assert(num_vertices(dag.bglD()) == 0);
+    map<bh_base*, set<Vertex> > base2vertices;
     uint64_t idx=0;
     while(idx < bhir.instr_list.size())
     {
@@ -283,7 +270,7 @@ void from_bhir(bh_ir &bhir, GraphDW &dag)
             else
                 break;
         }
-        dag.add_vertex(kernel);
+        dag.add_vertex(kernel, base2vertices);
     }
     assert(dag_validate(dag));
 }
@@ -291,11 +278,12 @@ void from_bhir(bh_ir &bhir, GraphDW &dag)
 void from_kernels(const std::vector<bh_ir_kernel> &kernels, GraphDW &dag)
 {
     assert(num_vertices(dag.bglD()) == 0);
+    map<bh_base*, set<Vertex> > base2vertices;
 
     BOOST_FOREACH(const bh_ir_kernel &kernel, kernels)
     {
-        if(kernel.instr_indexes.size() > 0)
-            dag.add_vertex(kernel);
+        if(kernel.instr_indexes().size() > 0)
+            dag.add_vertex(kernel, base2vertices);
     }
     assert(dag_validate(dag));
 }
@@ -307,7 +295,17 @@ void fill_kernel_list(const GraphD &dag, std::vector<bh_ir_kernel> &kernel_list)
     BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
     {
         if(not dag[v].is_noop())
-            kernel_list.push_back(dag[v]);
+        {
+            vector<uint64_t> tmp(dag[v].instr_indexes());
+            //We sort the instructions in order to gain consist performance results
+            std::sort(tmp.begin(), tmp.end());
+            bh_ir_kernel kernel(*dag[v].bhir);
+            for(uint64_t idx: tmp)
+            {
+                kernel.add_instr(idx);
+            }
+            kernel_list.push_back(kernel);
+        }
     }
 }
 
@@ -484,6 +482,8 @@ void pprint(const GraphDW &dag, const char filename[])
     GraphD new_dag(dag.bglD());
     map<pair<Vertex, Vertex>, pair<int64_t, bool> > weights;
 
+    map<Vertex, set<Vertex> > vertex2nonfusibles = get_vertex2nonfusibles(dag.bglD());
+
     BOOST_FOREACH(const EdgeW &e, edges(dag.bglW()))
     {
         Vertex src = source(e, dag.bglW());
@@ -500,11 +500,16 @@ void pprint(const GraphDW &dag, const char filename[])
     struct graph_writer
     {
         const GraphD &graph;
-        graph_writer(const GraphD &g) : graph(g) {};
+        graph_writer(const GraphD &g) : graph(g){};
         void operator()(std::ostream& out) const
         {
+            const uint64_t cost = dag_cost(graph);
             out << "labelloc=\"t\";" << endl;
-            out << "label=\"DAG with a total cost of " << dag_cost(graph);
+            out << "label=\"DAG with a total cost of ";
+            if(cost > 10000)
+                out << (double) cost;
+            else
+                out << cost;
             out << " bytes\";" << endl;
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
@@ -513,11 +518,17 @@ void pprint(const GraphDW &dag, const char filename[])
     struct kernel_writer
     {
         const GraphD &graph;
-        kernel_writer(const GraphD &g) : graph(g) {};
+        const map<Vertex, set<Vertex> > &v2f;
+        kernel_writer(const GraphD &g, const map<Vertex, set<Vertex> > &v2f) : graph(g), v2f(v2f) {};
         void operator()(std::ostream& out, const Vertex& v) const
         {
+            const uint64_t cost = graph[v].cost();
             char buf[1024*10];
-            out << "[label=\"Kernel " << v << ", cost: " << graph[v].cost();
+            out << "[label=\"Kernel " << v << ", ";
+            if(cost > 10000)
+                out << (double) cost;
+            else
+                out << cost;
             out << " bytes\\n";
             out << "Shape: ";
             const std::vector<bh_index>& ishape = graph[v].get_input_shape();
@@ -552,9 +563,10 @@ void pprint(const GraphDW &dag, const char filename[])
                 out << "[" << p.first << "]" << buf << "\\l";
             }
             out << "Constants: \\l";
-            for (const bh_constant& c: graph[v].get_constants())
+            for (const std::pair<uint64_t, bh_constant>& c: graph[v].get_constants())
             {
-                bh_sprint_const(&c, buf);
+                out << "[" << c.first << "]" ;
+                bh_sprint_const(&c.second, buf);
                 out << buf << "\\l";
             }
             out << "Temp base-arrays: \\l";
@@ -581,13 +593,43 @@ void pprint(const GraphDW &dag, const char filename[])
                 bh_sprint_base(i, buf);
                 out << buf << "\\l";
             }
-            BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes)
+            BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes())
             {
                 const bh_instruction &instr = graph[v].bhir->instr_list[idx];
-                out << "[" << idx << "] ";
+                out << "[" << idx << ": (";
+                switch (instr.opcode) {
+                case BH_NONE:
+                case BH_SYNC:
+                case BH_DISCARD:
+                case BH_FREE:
+                    break;
+                default:
+                    const int nop = bh_operands(instr.opcode);
+                    for(int i=0; i<nop; ++i)
+                    {
+                        if(not bh_is_constant(&instr.operand[i]))
+                            out << "v" << graph[v].get_view_id(instr.operand[i]);
+                        else
+                            out << "c" << idx;
+                        if (i < nop-1)
+                            out << ", ";
+                    }
+                }
+                out << ") ] ";
                 bh_sprint_instr(&instr, buf, "\\l");
                 out << buf << "\\l";
             }
+            out << "Directly nonfusible vertices: [";
+            BOOST_FOREACH(Vertex v2, vertices(graph))
+            {
+                if(v != v2 and not graph[v].fusible(graph[v2]))
+                    out << v2 << " ";
+            }
+            out << "]\\l";
+            out << "nonfusible vertices: [";
+            BOOST_FOREACH(Vertex v2, v2f.at(v))
+                    out << v2 << " ";
+            out << "]\\l";
             out << "\"]";
         }
     };
@@ -623,7 +665,7 @@ void pprint(const GraphDW &dag, const char filename[])
     };
     ofstream file;
     file.open(filename);
-    write_graphviz(file, new_dag, kernel_writer(new_dag),
+    write_graphviz(file, new_dag, kernel_writer(new_dag, vertex2nonfusibles),
                    edge_writer(new_dag, weights), graph_writer(new_dag));
     file.close();
 }
@@ -645,127 +687,127 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
         set<uint64_t> instr_indexes;
         BOOST_FOREACH(Vertex v, vertices(d))
         {
-            BOOST_FOREACH(uint64_t v_foo, d[v].instr_indexes)
-            {
-                if(instr_indexes.find(v_foo) != instr_indexes.end())
+                BOOST_FOREACH(uint64_t i, d[v].instr_indexes())
                 {
-                    cout << "Instruction [" << v_foo << "] is in multiple kernels!" << endl;
-                    goto fail;
+                    if(instr_indexes.find(i) != instr_indexes.end())
+                    {
+                        cout << "Instruction [" << i << "] is in multiple kernels!" << endl;
+                        goto fail;
+                    }
+                    instr_indexes.insert(i);
                 }
-                instr_indexes.insert(v_foo);
             }
         }
-    }
-    //Check for cycles
-    if(cycles(d))
-        goto fail;
-    //Check precedence constraints
-    BOOST_FOREACH(Vertex v1, vertices(d))
-    {
-        BOOST_FOREACH(Vertex v2, vertices(d))
+        //Check for cycles
+        if(cycles(d))
+            goto fail;
+        //Check precedence constraints
+        BOOST_FOREACH(Vertex v1, vertices(d))
         {
-            if(v1 != v2)
+            BOOST_FOREACH(Vertex v2, vertices(d))
             {
-                const int dep = d[v1].dependency(d[v2]);
-                if(dep == 1)//'v1' depend on 'v2'
+                if(v1 != v2)
                 {
-                    if(not path_exist(v2, v1, d))
+                    const int dep = d[v1].dependency(d[v2]);
+                    if(dep == 1)//'v1' depend on 'v2'
                     {
-                        cout << "Precedence check: not path between " << v1 \
-                             << " and " << v2 << endl;
-                        goto fail;
+                        if(not path_exist(v2, v1, d))
+                        {
+                            cout << "Precedence check: not path between " << v1 \
+                                 << " and " << v2 << endl;
+                            goto fail;
+                        }
                     }
                 }
             }
         }
-    }
-    //Check for weight edge inconsistency
-    BOOST_FOREACH(EdgeD e, edges(d))
-    {
-        Vertex src = source(e, d);
-        Vertex dst = target(e, d);
-        int64_t cost = d[src].merge_cost_savings(d[dst]);
-        if(cost != -1)//Is fusible
-        {
-            EdgeW we;
-            bool we_exist;
-            tie(we, we_exist) = edge(src,dst,w);
-            if(we_exist)
-            {
-                if(w[we].value != cost)
-                {
-                    cout << "Weight check: weight of edge " << we \
-                         << " is inconsistent with merge_cost_savings()!" << endl;
-                    goto fail;
-                }
-            }
-            else
-            {
-                cout << "Weight check: vertex " << src << " and " << dst \
-                     << " is fusible and has a dependency edge but "\
-                        "has no weight edge!" << endl;
-                goto fail;
-            }
-        }
-    }
-    //Check transitivity
-    if(not transitivity_allowed)
-    {
+        //Check for weight edge inconsistency
         BOOST_FOREACH(EdgeD e, edges(d))
         {
             Vertex src = source(e, d);
             Vertex dst = target(e, d);
-            if(path_exist(src, dst, d, true))
+            int64_t cost = d[src].merge_cost_savings(d[dst]);
+            if(cost != -1)//Is fusible
             {
-                cout << "Transitivity check: dependency edge " << e \
-                     << " is redundant!" << endl;
-                goto fail;
-            }
-        }
-        BOOST_FOREACH(EdgeW e, edges(w))
-        {
-            Vertex src = source(e, d);
-            Vertex dst = target(e, d);
-            if(path_exist(src, dst, d, true))
-            {
-                cout << "Transitivity check: weight edge " << e \
-                     << " is redundant!" << endl;
-                goto fail;
-            }
-        }
-    }
-    return true;
-fail:
-    cout << "writing validate-fail.dot" << endl;
-    pprint(dag, "validate-fail.dot");
-    return false;
-}
-
-bool dag_validate(const bh_ir &bhir, const vector<GraphDW> &dags, bool transitivity_allowed)
-{
-    set<uint64_t> instr_indexes;
-    BOOST_FOREACH(const GraphDW &dag, dags)
-    {
-        const GraphD &d = dag.bglD();
-        if(not dag_validate(dag, transitivity_allowed))
-            return false;
-        BOOST_FOREACH(Vertex v, boost::vertices(d))
-        {
-            BOOST_FOREACH(uint64_t idx, d[v].instr_indexes)
-            {
-                if(instr_indexes.find(idx) != instr_indexes.end())
+                EdgeW we;
+                bool we_exist;
+                tie(we, we_exist) = edge(src,dst,w);
+                if(we_exist)
                 {
-                    cout << "Instruction [" << idx << "] is in multiple kernels!" << endl;
+                    if(w[we].value != cost)
+                    {
+                        cout << "Weight check: weight of edge " << we \
+                             << " is inconsistent with merge_cost_savings()!" << endl;
+                        goto fail;
+                    }
+                }
+                else
+                {
+                    cout << "Weight check: vertex " << src << " and " << dst \
+                         << " is fusible and has a dependency edge but "\
+                            "has no weight edge!" << endl;
                     goto fail;
                 }
-                instr_indexes.insert(idx);
             }
         }
+        //Check transitivity
+        if(not transitivity_allowed)
+        {
+            BOOST_FOREACH(EdgeD e, edges(d))
+            {
+                Vertex src = source(e, d);
+                Vertex dst = target(e, d);
+                if(path_exist(src, dst, d, true))
+                {
+                    cout << "Transitivity check: dependency edge " << e \
+                         << " is redundant!" << endl;
+                    goto fail;
+                }
+            }
+            BOOST_FOREACH(EdgeW e, edges(w))
+            {
+                Vertex src = source(e, d);
+                Vertex dst = target(e, d);
+                if(path_exist(src, dst, d, true))
+                {
+                    cout << "Transitivity check: weight edge " << e \
+                         << " is redundant!" << endl;
+                    goto fail;
+                }
+            }
+        }
+        return true;
+    fail:
+        cout << "writing validate-fail.dot" << endl;
+        pprint(dag, "validate-fail.dot");
+        return false;
     }
-    //And check if all instructions exist
-    for(uint64_t idx=0; idx<bhir.instr_list.size(); ++idx)
+
+    bool dag_validate(const bh_ir &bhir, const vector<GraphDW> &dags, bool transitivity_allowed)
     {
-        if(instr_indexes.find(idx) == instr_indexes.end())
+        set<uint64_t> instr_indexes;
+        BOOST_FOREACH(const GraphDW &dag, dags)
+        {
+            const GraphD &d = dag.bglD();
+            if(not dag_validate(dag, transitivity_allowed))
+                return false;
+            BOOST_FOREACH(Vertex v, boost::vertices(d))
+            {
+                BOOST_FOREACH(uint64_t idx, d[v].instr_indexes())
+                {
+                    if(instr_indexes.find(idx) != instr_indexes.end())
+                    {
+                        cout << "Instruction [" << idx << "] is in multiple kernels!" << endl;
+                        goto fail;
+                    }
+                    instr_indexes.insert(idx);
+                }
+            }
+        }
+        //And check if all instructions exist
+        for(uint64_t idx=0; idx<bhir.instr_list.size(); ++idx)
+        {
+            if(instr_indexes.find(idx) == instr_indexes.end())
         {
             cout << "Instruction [" << idx << "] is missing!" << endl;
             goto fail;
@@ -785,46 +827,130 @@ fail:
     return false;
 }
 
+//Help visitor class that records all vertices in a breadth first search
+struct record_bfs_visitor:default_bfs_visitor
+{
+    set<Vertex> &vs;
+    record_bfs_visitor(set<Vertex> &vs):vs(vs){};
+    template<typename V, typename G>
+    void discover_vertex(V v, const G &g)
+    {
+        vs.insert(v);
+    }
+};
+
+//Help function that returns all ascendants of v
+static set<Vertex> ascendants(const GraphD &dag, Vertex v)
+{
+    set<Vertex> output;
+    breadth_first_search(make_reverse_graph(dag), v, visitor(record_bfs_visitor(output)));
+    output.erase(v);
+    return output;
+}
+
+map<Vertex, set<Vertex> > get_vertex2nonfusibles(const GraphD &dag)
+{
+    map<Vertex, set<Vertex> > vertex2nonfusibles;
+    vector<Vertex> topological_order;
+    topological_sort(dag, back_inserter(topological_order));
+
+    //Add inherent nonfusibles
+    BOOST_REVERSE_FOREACH(Vertex v1, topological_order)
+    {
+        set<Vertex> &v1_nonfusibles = vertex2nonfusibles[v1];
+        for(Vertex v2: ascendants(dag, v1))
+        {
+            assert(v1 != v2);
+            set<Vertex> &v2_nonfusibles = vertex2nonfusibles[v2];
+            v1_nonfusibles.insert(v2_nonfusibles.begin(), v2_nonfusibles.end());
+            if(not dag[v1].fusible(dag[v2]))
+            {
+                v1_nonfusibles.insert(v2);
+                auto v2_ascendants = ascendants(dag, v2);
+                v1_nonfusibles.insert(v2_ascendants.begin(), v2_ascendants.end());
+            }
+        }
+    }
+    //Add directly nonfusibles
+    BOOST_FOREACH(Vertex v1, boost::vertices(dag))
+    {
+        BOOST_FOREACH(Vertex v2, boost::vertices(dag))
+        {
+            if(v1 == v2)
+                continue;
+            if(not dag[v1].fusible(dag[v2]))
+                vertex2nonfusibles[v1].insert(v2);
+        }
+    }
+    //Make sure that nonfusibles goes both ways
+    for(auto &v2n: vertex2nonfusibles)
+    {
+        Vertex v = v2n.first;
+        set<Vertex> &nonfusibles = v2n.second;
+        for(Vertex nonfusible: nonfusibles)
+            vertex2nonfusibles[nonfusible].insert(v);
+    }
+    return vertex2nonfusibles;
+}
+
+//Help function to find a gently fusible edge.
+//NB: removes transitive edges from 'dag'
+pair<EdgeD,bool> find_gently_fusible_edge(GraphDW &dag)
+{
+    const GraphD &d = dag.bglD();
+    const GraphW &w = dag.bglW();
+    dag.transitive_reduction();
+
+    map<Vertex, set<Vertex> > dag_v2f = get_vertex2nonfusibles(dag.bglD());
+    auto begin = boost::edges(d).first;
+    auto end = boost::edges(d).second;
+    for(auto it=begin; it != end;)
+    {
+        EdgeD e = *it;
+        ++it;
+        Vertex src = source(e, d);
+        Vertex dst = target(e, d);
+        if(path_exist(src, dst, d, true))
+        {
+            dag.remove_edges(src, dst);
+        }
+        //Leaf
+        else if(out_degree(dst, w) == 1 and in_degree(dst, d) == 1 and \
+                out_degree(dst, d) == 0 and  d[src].fusible(d[dst]))
+        {
+            //Check if 'dst' is a subset of 'src'
+            if(std::includes(dag_v2f[src].begin(), dag_v2f[src].end(),\
+                             dag_v2f[dst].begin(), dag_v2f[dst].end()))
+                return make_pair(e, true);
+        }
+        //Root
+        else if(out_degree(src, w) == 1 and in_degree(src, d) == 0 and \
+                out_degree(src, d) == 1 and  d[src].fusible(d[dst]))
+        {
+            //Check if 'src' is a subset of 'dst'
+            if(std::includes(dag_v2f[dst].begin(), dag_v2f[dst].end(),\
+                             dag_v2f[src].begin(), dag_v2f[src].end()))
+                return make_pair(e, true);
+        }
+        assert(dag_validate(dag));
+    }
+    return make_pair(EdgeD(), false);
+}
+
 void fuse_gently(GraphDW &dag)
 {
     const GraphD &d = dag.bglD();
-    set<Vertex> vs(vertices(d).first, vertices(d).second);
-    while(not vs.empty())
+    while(1)
     {
-        //Lets find and merge a "single ending" vertex
-        set<Vertex>::iterator it=vs.begin();
-        for(; it != vs.end(); ++it)
+        bool valid;
+        EdgeD e;
+        tie(e, valid) = find_gently_fusible_edge(dag);
+        if(valid)
         {
-            if(in_degree(*it, d) == 0 and out_degree(*it, d) == 1)
-            {
-                auto adj = adjacent_vertices(*it, d);
-                Vertex v = *adj.first;
-                if(d[*it].input_and_output_subset_of(d[v]))
-                {
-                    if(d[*it].fusible(d[v]))
-                        dag.merge_vertices(v, *it, false);
-                    vs.erase(it);
-                    break;
-                }
-            }
-            if(in_degree(*it, d) == 1 and out_degree(*it, d) == 0)
-            {
-                auto adj = inv_adjacent_vertices(*it, d);
-                Vertex v = *adj.first;
-                if(d[*it].input_and_output_subset_of(d[v]))
-                {
-                    if(d[*it].fusible(d[v]))
-                        dag.merge_vertices(v, *it, true);
-                    vs.erase(it);
-                    break;
-                }
-            }
+            dag.merge_vertices(source(e,d), target(e,d));
         }
-        if(it == vs.end())
-            break;//No single ending vertex found
-
-        //Note that 'vs' is maintained since the extracted vertex '*it'
-        //is the only vertex removed by the merge
+        else
+            break;
     }
     dag.remove_cleared_vertices();
     assert(dag_validate(dag));

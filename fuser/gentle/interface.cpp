@@ -69,7 +69,8 @@ bh_error bh_fuser_gentle_init(const char* name)
     if((err = child->init(child->name)) != 0)
         return err;
 
-    fuse_cache = FuseCache(myself);
+    if(bh_component_config_lookup_bool(&myself, "fuse_cache", true))
+        fuse_cache = FuseCache(myself);
 
     return BH_SUCCESS;
 }
@@ -77,7 +78,8 @@ bh_error bh_fuser_gentle_init(const char* name)
 bh_error bh_fuser_gentle_shutdown(void)
 {
     bh_error err = child->shutdown();
-    fuse_cache.write_to_files();
+    if(fuse_cache.enabled)
+        fuse_cache.write_to_files();
     bh_component_destroy(&myself);
     if (timing)
         bh_timer_finalize(exec_timing);

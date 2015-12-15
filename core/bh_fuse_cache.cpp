@@ -143,7 +143,10 @@ static void hashScalarShapeidOpidSweepdim(std::ostream& os, const bh_instruction
      */
     int noperands = bh_operands(instr.opcode);
     if(noperands == 0)
+    {
+        os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
         return;
+    }
     bool scalar = (bh_is_scalar(&(instr.operand[0])) ||
                    (bh_opcode_is_accumulate(instr.opcode) && instr.operand[0].ndim == 1));
     os.write((char*)&scalar, sizeof(scalar));                           // <is_scalar>
@@ -230,6 +233,10 @@ BatchHash::BatchHash(const vector<bh_instruction> &instr_list)
 InstrIndexesList &FuseCache::insert(const BatchHash &batch,
                                     const vector<bh_ir_kernel> &kernel_list)
 {
+    if(cache.find(batch.hash()) != cache.end())
+    {
+        throw runtime_error("Instruction list is already in the fuse cache!");
+    }
     cache[batch.hash()] = InstrIndexesList(kernel_list, batch.hash(), fuser_name);
     return cache[batch.hash()];
 }
@@ -239,8 +246,9 @@ bool FuseCache::lookup(const BatchHash &batch,
                        vector<bh_ir_kernel> &kernel_list) const
 {
     assert(kernel_list.size() == 0);
+    assert(enabled);
     CacheMap::const_iterator it = cache.find(batch.hash());
-    if(deactivated or it == cache.end())
+    if(it == cache.end())
     {
         return false;
     }
@@ -253,9 +261,8 @@ bool FuseCache::lookup(const BatchHash &batch,
 
 void FuseCache::write_to_files() const
 {
-    if(deactivated)
-        return;
-    if(dir_path == NULL)
+    assert(enabled);
+    if(dir_path == NULL or dir_path[0] == '\0')
     {
         cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \
             "the configure file thus no cache files are written to disk!" << endl;
@@ -296,7 +303,8 @@ void FuseCache::write_to_files() const
 
 void FuseCache::load_from_files()
 {
-    if(dir_path == NULL)
+    assert(enabled);
+    if(dir_path == NULL or dir_path[0] == '\0')
     {
         cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \
             "the configure file thus no cache files are loaded from disk!" << endl;
@@ -308,6 +316,8 @@ void FuseCache::load_from_files()
 
     string fuse_model_name;
     fuse_model_text(fuse_get_selected_model(), fuse_model_name);
+    string fuse_price_name;
+    fuse_price_model_text(fuse_get_selected_price_model(), fuse_price_name);
 
     //Iterate the 'dir_path' diretory and load each file
     directory_iterator it(p), eod;
@@ -325,8 +335,13 @@ void FuseCache::load_from_files()
                     InstrIndexesList t;
                     ia >> t;
                     if(iequals(t.fuser_name(), fuser_name) and
-                       iequals(t.fuse_model(), fuse_model_name))
+                       iequals(t.fuse_model(), fuse_model_name) and
+                       iequals(t.price_model(), fuse_price_name))
                     {
+                        if(cache.find(t.hash()) != cache.end())
+                        {
+                            throw runtime_error("Instruction list is already in the fuse cache!");
+                        }
                         cache[t.hash()] = t;
                     }
                 }

@@ -46,6 +46,7 @@ Buffer::~Buffer()
     if (clBuffer != NULL)
     {
         cl::Event::waitForEvents(allEvents());
+        resourceManager->freeBuffer(size);
         delete clBuffer;
     }
 }

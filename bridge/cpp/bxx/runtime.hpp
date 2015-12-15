@@ -322,6 +322,23 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0)
 }
 
 //
+// This function is used to encode SYSTEM opcodes without operands (NONE and TALLY)
+//
+inline
+void Runtime::enqueue(bh_opcode opcode)
+{
+    bh_instruction* instr;
+
+    guard();
+
+    instr = &queue[queue_size++];
+    instr->opcode = opcode;
+    instr->operand[0].base = NULL;
+    instr->operand[1].base = NULL;
+    instr->operand[2].base = NULL;
+}
+
+//
 //  This function should only be used by random to encode the degenerate bh_r123 type.
 //
 template <typename TO>

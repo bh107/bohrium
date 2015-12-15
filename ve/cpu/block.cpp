@@ -26,7 +26,7 @@ Block::~Block()
         delete[] block_.buffers;
         block_.buffers = NULL;
     }
-    
+
     if (block_.operands) {                      // Operands
         delete[] block_.operands;
         block_.operands = NULL;
@@ -112,8 +112,8 @@ void Block::_compose(bh_ir_kernel& krnl, bool array_contraction, size_t prg_idx)
 
 void Block::compose(bh_ir_kernel& krnl, bool array_contraction)
 {
-    for(std::vector<uint64_t>::iterator idx_it = krnl.instr_indexes.begin();
-        idx_it != krnl.instr_indexes.end();
+    for(std::vector<uint64_t>::const_iterator idx_it = krnl.instr_indexes().begin();
+        idx_it != krnl.instr_indexes().end();
         ++idx_it) {
 
         _compose(krnl, array_contraction, *idx_it);
@@ -156,7 +156,7 @@ void Block::_bufferize(size_t global_idx)
 
         buffer_refs_[buffer].insert(global_idx);
     }
-} 
+}
 
 size_t Block::_localize_scope(size_t global_idx)
 {
@@ -213,7 +213,7 @@ bool Block::symbolize(void)
     bool first = true;
     for(int64_t tac_iter=0; tac_iter<block_.ntacs; ++tac_iter) {
         kp_tac& tac = this->tac(tac_iter);
-       
+
         // Do not include system opcodes in the kernel symbol.
         if ((tac.op == KP_SYSTEM) || (tac.op == KP_EXTENSION)) {
             continue;
@@ -250,7 +250,7 @@ bool Block::symbolize(void)
             tacs << "N";
         }
         tacs << "D";
-        
+
         // Add operand IDs
         switch(tac_noperands(tac)) {
             case 3:
@@ -377,7 +377,7 @@ kp_iterspace& Block::iterspace(void)
 }
 
 void Block::_update_iterspace(void)
-{       
+{
     //
     // Determine layout, ndim and shape
     for(size_t tac_idx=0; tac_idx<ntacs(); ++tac_idx) {
@@ -502,7 +502,7 @@ std::string Block::text(void)
     ss << "ITERSPACE {" << endl;
     ss << " LAYOUT = " << layout_text(block_.iterspace.layout) << "," << endl;
     ss << " NDIM   = " << block_.iterspace.ndim << "," << endl;
-    ss << " SHAPE  = {"; 
+    ss << " SHAPE  = {";
     for(int64_t dim=0; dim < block_.iterspace.ndim; ++dim) {
         ss << block_.iterspace.shape[dim];
         if (dim != (block_.iterspace.ndim-1)) {

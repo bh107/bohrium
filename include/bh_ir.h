@@ -77,6 +77,8 @@ public:
     //The list of kernels in topological order
     std::vector<bh_ir_kernel> kernel_list;
 
+    bool tally;  // Should the ve tally after this bh_ir
+
 protected:
     // Serialization using Boost
     friend class boost::serialization::access;
@@ -94,6 +96,9 @@ protected:
 class bh_ir_kernel
 {
 private:
+    // Set of all base-arrays in this kernel.
+    std::set<bh_base*> bases;
+
     // Set of temporary base-arrays in this kernel.
     std::set<bh_base*> temps;
 
@@ -128,13 +133,17 @@ private:
     // sweep (reduce and accumulate) dimensions
     std::map<bh_intp, bh_int64> sweeps;
 
-    // list of constants used in this kernel in topological order
-    std::vector<bh_constant> constants;
+    // map of constants used in this kernel key is instruction id
+    std::map<uint64_t, bh_constant> constants;
 
     /* Check f the 'base' is used in combination with the 'opcode' in this kernel  */
     bool is_base_used_by_opcode(const bh_base *b, bh_opcode opcode) const;
 
+    // Topologically ordered list of instruction indexes
+    std::vector<uint64_t> _instr_indexes;
+
 public:
+
     /* Default constructor NB: the 'bhir' pointer is NULL in this case! */
     bh_ir_kernel();
 
@@ -144,22 +153,21 @@ public:
     // The program representation that the kernel is subset of
     bh_ir *bhir;
 
-    // Topologically ordered list of instruction indexes
-    std::vector<uint64_t> instr_indexes;
-
     /* Clear this kernel of all instructions */
     void clear();
 
+    const std::vector<uint64_t>& instr_indexes() const {return _instr_indexes;}
     const std::multimap<bh_base*,bh_view>& get_output_map() const {return output_map;}
     const std::multimap<bh_base*,bh_view>& get_input_map() const {return input_map;}
     const std::set<bh_view>& get_output_set() const {return output_set;}
     const std::set<bh_view>& get_input_set() const {return input_set;}
+    const std::set<bh_base*>& get_bases() const {return bases;}
     const std::set<bh_base*>& get_temps() const {return temps;}
     const std::set<bh_base*>& get_frees() const {return frees;}
     const std::set<bh_base*>& get_discards() const {return discards;}
     const std::set<bh_base*>& get_syncs() const {return syncs;}
     const seqset<bh_base*>& get_parameters() const {return parameters;}
-    const std::vector<bh_constant>& get_constants() const {return constants;}
+    const std::map<uint64_t, bh_constant>& get_constants() const {return constants;}
     const std::map<bh_intp, bh_int64>& get_sweeps() const {return sweeps;}
     const std::vector<bh_index>& get_input_shape() const {return input_shape;}
     std::vector<bh_index> get_output_shape() const;
@@ -168,7 +176,6 @@ public:
     bool is_output(const bh_view& view) const {return output_set.find(view) != output_set.end();}
     bool is_input(const bh_view& view) const {return input_set.find(view) != input_set.end();}
     bool is_scalar() const { return scalar;}
-
 
     size_t get_view_id(const bh_view& v) const;
     const bh_view& get_view(size_t id) const {return views[id];}
@@ -214,13 +221,6 @@ public:
      * @return The boolean answer
      */
     bool fusible(const bh_ir_kernel &other) const;
-
-    /* Determines whether the in-/output of 'this' kernel is a subset of 'other'
-     *
-     * @other  The other kernel
-     * @return The boolean answer
-     */
-    bool input_and_output_subset_of(const bh_ir_kernel &other) const;
 
     /* Determines dependency between this kernel and the instruction 'instr',
      * which is true when:

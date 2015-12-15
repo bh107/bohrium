@@ -4,7 +4,7 @@ BDIR=/tmp/bhbuild_cpu/
 #PAR_LVL=-j$(shell expr $(shell nproc) / 2)
 PAR_LVL=-j1
 BH_PYTHON=python
-TEST_EXCLUDE=
+TEST_EXCLUDE=--exclude-test=test_lbm_3d
 DUMPSRC=1
 
 BUILD_OPTIONS=

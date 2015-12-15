@@ -1540,6 +1540,22 @@
     "system_opcode": true
 },
 {
+    "opcode": "BH_TALLY",
+    "doc":  "System instruction that informs the child component to tally operations.",
+    "code": "TALLY",
+    "id":   "58",
+    "nop":   0,
+    "types": [
+    ],
+    "layout": [
+    ],
+    "elementwise":   false,
+    "composite":     false,
+    "reduction":     false,
+    "accumulate":    false,
+    "system_opcode": true
+},
+{
     "opcode": "BH_ADD_REDUCE",
     "doc":  "Sums all elements in the specified dimension.",
     "code": "sum(a, axis)",

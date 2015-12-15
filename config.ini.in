@@ -38,24 +38,6 @@ fuseprinter = node
 node = gpu
 gpu = cpu
 
-[stack_cpu_debug_t]
-type = stack
-stack_cpu_debug_t = bcexp_cpu
-bcexp_cpu = bccon
-bccon = topological
-topological = fuseprinter
-fuseprinter = node
-node = cpu
-
-[stack_cpu_debug_g]
-type = stack
-stack_cpu_debug_g = bcexp_cpu
-bcexp_cpu = bccon
-bccon = greedy
-greedy = fuseprinter
-fuseprinter = node
-node = cpu
-
 [stack_cpu_greedy]
 type = stack
 stack_cpu_greedy = bcexp_cpu
@@ -64,14 +46,44 @@ bccon = greedy
 greedy = node
 node = cpu
 
-[stack_fuseprinter]
+[stack_cpu_debug_t]
 type = stack
-stack_fuseprinter = dimclean
-dimclean = bcexp
-bcexp = topological
-topological = pricer
-pricer = fuseprinter
-fuseprinter = node
+stack_cpu_debug_t = bcexp_cpu
+bcexp_cpu = bccon
+bccon = topological
+topological = fuseprinter
+fuseprinter = pricer
+pricer = node
+node = cpu
+
+[stack_cpu_debug_g]
+type = stack
+stack_cpu_debug_g = bcexp_cpu
+bcexp_cpu = bccon
+bccon = greedy
+greedy = fuseprinter
+fuseprinter = pricer
+pricer = node
+node = cpu
+
+[stack_cpu_debug_o]
+type = stack
+stack_cpu_debug_o = bcexp_cpu
+bcexp_cpu = bccon
+bccon = optimal
+optimal = fuseprinter
+fuseprinter = pricer
+pricer = node
+node = cpu
+
+[stack_cpu_debug_d]
+type = stack
+stack_cpu_debug_d = bcexp_cpu
+bcexp_cpu = bccon
+bccon = gentle
+gentle = fuseprinter
+fuseprinter = pricer
+pricer = node
 node = cpu
 
 [stack_proxy_cpu]
@@ -284,7 +296,7 @@ work_goup_size_3dz = 2
 # kernel = {[both],fixed,dynamic}
 kernel = both
 # compile = {[async],sync}
-compile = async
+compile = sync
 children = cpu
 verbose = false
 timing = false

@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
 #include "bh_fuse.h"
+#include "bh_fuse_price.h"
 
 namespace bohrium {
 
@@ -59,6 +60,7 @@ class InstrIndexesList
     std::vector<std::vector<uint64_t> > instr_indexes_list;
     uint64_t _hash;
     std::string _fuse_model;
+    std::string _price_model;
     std::string _fuser_name;
 
 public:
@@ -76,9 +78,10 @@ public:
     {
         BOOST_FOREACH(const bh_ir_kernel &kernel, kernel_list)
         {
-            instr_indexes_list.push_back(kernel.instr_indexes);
+            instr_indexes_list.push_back(kernel.instr_indexes());
         }
         fuse_model_text(fuse_get_selected_model(), _fuse_model);
+        fuse_price_model_text(fuse_get_selected_price_model(), _price_model);
     }
 
     /* Fills the 'kernel_list' with the content of 'this' cached instruction indexes list
@@ -105,6 +108,9 @@ public:
     /* Returns the name of the fuse model */
     const std::string& fuse_model() const {return _fuse_model;}
 
+    /* Returns the name of the price model */
+    const std::string& price_model() const {return _price_model;}
+
     /* Returns the name of the fuser component that generated this fusion */
     const std::string& fuser_name() const {return _fuser_name;}
 
@@ -112,7 +118,8 @@ public:
     void get_filename(std::string &filename) const
     {
         std::stringstream ss;
-        ss << fuse_model() << "--" << std::hex << hash() << "--" << fuser_name();
+        ss << fuse_model() << "--" << price_model() << "--" << fuser_name() \
+           << "--" << std::hex << hash();
         filename = ss.str();
     }
 
@@ -125,6 +132,7 @@ protected:
         ar & instr_indexes_list;
         ar & _hash;
         ar & _fuse_model;
+        ar & _price_model;
         ar & _fuser_name;
     }
 };
@@ -143,25 +151,24 @@ class FuseCache
     //The name of the current fuser component
     std::string fuser_name;
 
-    //Whether the cache is disabled or not
-    bool deactivated;
-
 public:
 
+    //Whether the cache is enabled or disabled
+    //NB: the cache is disabled when using the default constructor
+    bool enabled;
+
     /* The vector class needs a default constructor */
-    FuseCache(){}
+    FuseCache():enabled(false){}
 
     /* Construct a new FuseCache instant
      *
      * @component  The component handle
      */
-    FuseCache(const bh_component &component)
+    FuseCache(const bh_component &component):enabled(true)
     {
         dir_path = bh_component_config_lookup(&component, "cache_path");
         fuser_name = component.name;
-        deactivated = not bh_component_config_lookup_bool(&component, "fuse_cache", true);
-        if(not deactivated)
-            load_from_files();
+        load_from_files();
     }
 
     /* Insert a 'kernel_list' into the fuse cache

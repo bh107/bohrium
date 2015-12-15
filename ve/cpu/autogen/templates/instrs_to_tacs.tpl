@@ -24,8 +24,8 @@ void instrs_to_tacs(bh_ir& bhir, Program& tacs, SymbolTable& symbol_table)
 
         //
         // Program packing: output argument
-        // NOTE: All but BH_NONE has an output which is an array
-        if (instr.opcode != BH_NONE) {
+        // NOTE: All but BH_NONE and TALLY has an output array
+        if ((instr.opcode != BH_NONE) && (instr.opcode != BH_TALLY)) {
             out = symbol_table.map_operand(instr, 0);
         }
 
