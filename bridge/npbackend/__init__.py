@@ -18,7 +18,7 @@ from .bhary import check, check_biclass, fix_biclass, in_bhmem
 from ._info import numpy_types
 from ._util import flush
 from . import linalg
-from .linalg import matmul, dot
+from .linalg import matmul, dot, tensordot
 from .summations import sum, prod, max, min
 from numpy_force import dtype
 asarray = array
