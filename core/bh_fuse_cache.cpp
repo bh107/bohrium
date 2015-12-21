@@ -111,10 +111,15 @@ static void hashScalarOpidSweepdim(std::ostream& os, const bh_instruction& instr
      * 1: for each operand
      * 2: if the operation is a sweep operation
      */
+    int noperands = bh_operands(instr.opcode);
+    if(noperands == 0)
+    {
+        os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
+        return;
+    }
     bool scalar = (bh_is_scalar(&(instr.operand[0])) ||
                    (bh_opcode_is_accumulate(instr.opcode) && instr.operand[0].ndim == 1));
     os.write((char*)&scalar, sizeof(scalar));                           // <is_scalar>
-    int noperands = bh_operands(instr.opcode);
     for(int oidx=0; oidx<noperands; ++oidx) {
         const bh_view& view = instr.operand[oidx];
         if (bh_is_constant(&view))
