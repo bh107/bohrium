@@ -458,7 +458,7 @@ class test_idl_init_1loop(BenchHelper, numpytest):
         self.sizetxt    = "16*16"
         self.inputfn    = "idl_input-float64_512*512.npz"
 
-    def test_idl_init(self, pseudo_arrays):
+    def test_idl_init_1loop(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 class test_xraysim(BenchHelper, numpytest):
