@@ -290,6 +290,11 @@ uint64_t kernel_cost(const bh_ir_kernel &kernel)
     }
 }
 
+uint64_t kernel_cost_unique_views(const bh_ir_kernel &kernel)
+{
+    return cost_unique(kernel);
+}
+
 uint64_t cost_savings(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
 {
     switch(selected_price_model)

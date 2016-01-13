@@ -251,6 +251,16 @@ bool cycles(const GraphD &g);
  */
 uint64_t dag_cost(const GraphD &dag);
 
+/* Determines the cost of the DAG using the
+ * Unique-Views cost model.
+ *
+ * Complexity: O(E + V)
+ *
+ * @dag     The DAG
+ * @return  The cost
+ */
+uint64_t dag_cost_unique_views(const GraphD &dag);
+
 /* Sort the weights in descending order
  *
  * Complexity: O(E * log E)

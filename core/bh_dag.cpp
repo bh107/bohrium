@@ -35,6 +35,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <bh_dag.h>
 #include "bh_fuse.h"
+#include "bh_fuse_price.h"
 
 using namespace std;
 using namespace boost;
@@ -458,6 +459,16 @@ uint64_t dag_cost(const GraphD &dag)
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
         cost += dag[v].cost();
+    }
+    return cost;
+}
+
+uint64_t dag_cost_unique_views(const GraphD &dag)
+{
+    uint64_t cost = 0;
+    BOOST_FOREACH(const Vertex &v, vertices(dag))
+    {
+        cost += bohrium::kernel_cost_unique_views(dag[v]);
     }
     return cost;
 }

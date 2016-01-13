@@ -33,6 +33,14 @@ namespace bohrium {
  */
 uint64_t kernel_cost(const bh_ir_kernel &kernel);
 
+/* Returns the cost of the kernel 'kernel' using the
+ * Unique-Views cost model.
+ *
+ * @kernel The kernel in question
+ * @return The kernel price
+ */
+uint64_t kernel_cost_unique_views(const bh_ir_kernel &kernel);
+
 /* Returns the cost saving of fusing the two kernel 'k1' and 'k2' (in that order)
  *
  * @k1     The first kernel
