@@ -9,23 +9,32 @@ find_package(Mono)
 
 if(BRIDGE_CIL AND MONO_FOUND AND PYTHONINTERP_FOUND)
 
-  # Determine names of output .cs files based on .ctpl input names
-  FILE(GLOB files codegen/templates/*.ctpl)
-  SET(ctpl_outputs)
+  # Enumerate over all .tt files and apply T4 to them
+  SET(numcil_tt_outputs)
+  FILE(GLOB files NumCIL.Bohrium/*.tt)
 
   FOREACH(file ${files})
+    SET(src ${file})
     GET_FILENAME_COMPONENT(basename ${file} NAME_WE)
     GET_FILENAME_COMPONENT(targetfolder ${file} PATH)
-    SET(ctpl_outputs ${ctpl_outputs} ${targetfolder}/../output/${basename}.cs)
+    SET(dst ${targetfolder}/${basename}.cs)
+    ADD_CUSTOM_COMMAND(
+      OUTPUT ${dst}
+      DEPENDS ${file}
+      COMMAND ${MONO_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../NumCIL/buildsupport/TextTransform.exe --out=${dst} ${src}
+    )
+    SET(numcil_tt_outputs ${numcil_tt_outputs} ${dst})
   ENDFOREACH(file)
 
-  file(GLOB ctpl_sources codegen/templates/*.ctpl codegen/*.json codegen/*.py)
+  set(autogen_file ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bhc_array_operations.cs)
 
   add_custom_command(
-    OUTPUT ${ctpl_outputs}
-    COMMAND ${PY_SCRIPT} codegen/gen.py
-    DEPENDS ${ctpl_sources}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      OUTPUT ${autogen_file}
+      COMMAND ${PYTHON_EXECUTABLE} gen_array_operations.py codegen/output
+      DEPENDS gen_array_operations.py
+            ../../core/codegen/opcodes.json
+            ../cpp/codegen/element_types.json
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
   set(build_type "Release")
@@ -33,13 +42,12 @@ if(BRIDGE_CIL AND MONO_FOUND AND PYTHONINTERP_FOUND)
     set(build_type "Debug")
   endif()
 
-
   file(GLOB build_deps ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/*.cs)
   set(target_file ${CMAKE_CURRENT_BINARY_DIR}/NumCIL.Bohrium/bin/${build_type}/NumCIL.Bohrium.dll)
   add_custom_command(
       OUTPUT ${target_file}
-      DEPENDS ${ctpl_outputs} ${build_deps} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/NumCIL.Bohrium.csproj
       COMMAND ${XBUILD_EXECUTABLE} /verbosity:quiet /nologo /property:Configuration=${build_type} /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/NumCIL.Bohrium/bin/${build_type} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/NumCIL.Bohrium.csproj
+      DEPENDS ${autogen_file} ${build_deps} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/NumCIL.Bohrium.csproj
   )
 
   # Add a target, and register a simple name

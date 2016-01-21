@@ -38,25 +38,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\codegen\output\PInvoke-basics.cs">
-      <Link>PInvoke.basics.cs</Link>
-    </Compile>
-    <Compile Include="..\codegen\output\PInvoke-operations.cs">
-      <Link>PInvoke.operations.cs</Link>
-    </Compile>
     <Compile Include="Utility.cs" />
     <Compile Include="PinnedArrayTracker.cs" />
-    <Compile Include="..\codegen\output\BohriumDataAccessor.cs">
-      <Link>BohriumDataAccessor.cs</Link>
-    </Compile>
-    <Compile Include="ITypedApplyImplementor.cs" />
-    <Compile Include="..\codegen\output\TypedApplyImplementors.cs">
-      <Link>TypedApplyImplementors.cs</Link>
-    </Compile>
     <Compile Include="ApplyImplementor.cs" />
-    <Compile Include="..\codegen\output\BohriumAccessorFactory.cs">
-      <Link>BohriumAccessorFactory.cs</Link>
+    <Compile Include="BohriumDataAccessorBase.cs" />
+    <Compile Include="BohriumDataAccessorTyped.cs">
+      <DependentUpon>BohriumDataAccessorTyped.tt</DependentUpon>
     </Compile>
+    <Compile Include="BohriumMultiArrayBase.cs" />
+    <Compile Include="..\codegen\output\bhc_array_operations.cs">
+      <Link>bhc_array_operations.cs</Link>
+    </Compile>
+    <Compile Include="NameMapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -68,5 +61,11 @@
       <Project>{F3DA9742-5A09-4456-9531-548324D35CE3}</Project>
       <Name>NumCIL.Unsafe</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BohriumDataAccessorTyped.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>BohriumDataAccessorTyped.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 </Project>

@@ -119,7 +119,7 @@ namespace NumCIL.Bohrium
 		/// Decs the reference count.
 		/// </summary>
 		/// <param name="data">The data pointer</param>
-		public static void DecReference(IntPtr data)
+		public static bool DecReference(IntPtr data)
 		{
 			lock (_lock)
 			{
@@ -139,9 +139,13 @@ namespace NumCIL.Bohrium
 								_allocated.Remove(n.Key);
 								break;
 							}
+
+						return true;
 					}
 				}
 			}
+
+			return false;
 		}
 
         /// <summary>
@@ -158,7 +162,7 @@ namespace NumCIL.Bohrium
 			lock (_lock)
 			{
 				// Execute all the operations
-				PInvoke.bh_runtime_flush();
+				PInvoke.bhc_flush();
 
 				/*if (_delayUnpins.Count != 0)
 					Console.WriteLine("Unpinning {0} items", _delayUnpins.Count); */

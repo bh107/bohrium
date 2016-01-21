@@ -40,12 +40,13 @@ namespace UnitTest
 			var g = (NumCIL.UInt8.NdArray)d;
 			var h = (NumCIL.UInt8.NdArray)e;
 
+			var fsum = f.Sum();
 			if (f.Sum() != 4)
-				throw new Exception("Error in compare");
+				throw new Exception(string.Format("Error in compare 1: {0}", fsum));
 			if (g.Sum() != 4)
-				throw new Exception("Error in compare");
+				throw new Exception("Error in compare 2");
 			if (h.Sum() != 1)
-				throw new Exception("Error in compare");
+				throw new Exception("Error in compare 3");
 
 			var i = (NumCIL.UInt8.NdArray)(c ^ !e);
 			var j = (NumCIL.UInt8.NdArray)(c & !e);
@@ -55,7 +56,7 @@ namespace UnitTest
 
 			var l = (NumCIL.UInt8.NdArray)((a >= 4) | (a <= 2));
 			if (l.Sum() != 9)
-				throw new Exception("Error in compare");
+				throw new Exception("Error in compare 4");
 
 		}
 	}

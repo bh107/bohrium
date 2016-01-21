@@ -86,9 +86,9 @@ namespace UnitTest
             using (new DispTimer("Repeat tests"))
                 RepeatTests.RunTests();
 
-            Console.WriteLine("Running complex tests" + name);
+            /*Console.WriteLine("Running complex tests" + name);
             using (new DispTimer("Complex tests"))
-                ComplexTests.RunTests();
+                ComplexTests.RunTests();*/
 
             Console.WriteLine("Running logical tests" + name);
             using (new DispTimer("Logical tests"))
