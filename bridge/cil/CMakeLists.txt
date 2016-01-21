@@ -38,8 +38,8 @@ if(BRIDGE_CIL AND MONO_FOUND AND PYTHONINTERP_FOUND)
   set(target_file ${CMAKE_CURRENT_BINARY_DIR}/NumCIL.Bohrium/bin/${build_type}/NumCIL.Bohrium.dll)
   add_custom_command(
       OUTPUT ${target_file}
-      COMMAND ${XBUILD_EXECUTABLE} /property:Configuration=${build_type} /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/NumCIL.Bohrium/bin/${build_type} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/NumCIL.Bohrium.csproj
       DEPENDS ${ctpl_outputs} ${build_deps} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/NumCIL.Bohrium.csproj
+      COMMAND ${XBUILD_EXECUTABLE} /verbosity:quiet /nologo /property:Configuration=${build_type} /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/NumCIL.Bohrium/bin/${build_type} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/NumCIL.Bohrium.csproj
   )
 
   # Add a target, and register a simple name
