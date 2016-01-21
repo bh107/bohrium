@@ -36,7 +36,7 @@ if(BRIDGE_NUMCIL AND MONO_FOUND)
   set(numcil_binaries ${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type}/NumCIL.dll ${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type}/NumCIL.Unsafe.dll)
   add_custom_command(
       OUTPUT ${numcil_binaries}
-      COMMAND ${XBUILD_EXECUTABLE} /property:Configuration=${build_type} /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.sln
+      COMMAND ${XBUILD_EXECUTABLE} /verbosity:quiet /nologo /property:Configuration=${build_type} /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.sln
       DEPENDS ${sln_sources} ${numcil_tt_outputs}
   )
 
