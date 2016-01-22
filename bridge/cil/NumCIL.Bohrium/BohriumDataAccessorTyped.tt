@@ -208,7 +208,7 @@ foreach(var kp in types) {
 				var targetshape = new Shape(target.Shape.Dimensions.Select(x => x.Length).ToArray());
                 using(var view = (PInvoke.<#= tpointer #>)target.WrapWithPointer())
                 using (var tmp = PInvoke.bhc_new_Auint64((ulong)targetshape.Length))
-				using (var tmpv = PInvoke.bhc_view_uint64(tmp, (ulong)targetshape.Dimensions.Length, 0, targetshape.Dimensions.Select(x => x.Length).ToArray(), targetshape.Dimensions.Select(x => x.Stride).ToArray()))
+				using (var tmpv = PInvoke.bhc_view_Auint64(tmp, (ulong)targetshape.Dimensions.Length, 0, targetshape.Dimensions.Select(x => x.Length).ToArray(), targetshape.Dimensions.Select(x => x.Stride).ToArray()))
                 {
                 	PInvoke.bhc_random123_Auint64_Kuint64_Kuint64(tmp, m_index, m_seed);
                     m_index += (ulong)targetshape.Length;
@@ -229,7 +229,7 @@ foreach(var kp in types) {
             {    
                 var len = target.DataAccessor.Length;
                 using(var a = (PInvoke.<#= tpointer #>)target.WrapWithPointer())
-                using(var view = PInvoke.bhc_view_<#= kp.Key #>(a, 1, 0, new long[] { len }, new long[] { 1 }))
+                using(var view = PInvoke.bhc_view_A<#= kp.Key #>(a, 1, 0, new long[] { len }, new long[] { 1 }))
                 using (var tmp = PInvoke.bhc_new_Auint64((ulong)len))
                 {
                 	PInvoke.bhc_range_Auint64(tmp);
