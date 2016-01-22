@@ -35,7 +35,7 @@ def main(args):
     doc = "\n//Create new flat array\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
-        decl = "%s bhc_new_%s(uint64_t size)"%(t['bhc_ary'], t['name'])
+        decl = "%s bhc_new_A%s(uint64_t size)"%(t['bhc_ary'], t['name'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
         impl += """
@@ -50,7 +50,7 @@ def main(args):
     doc = "\n//Destroy array\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
-        decl = "void bhc_destroy_%s(%s ary)"%(t['name'], t['bhc_ary'])
+        decl = "void bhc_destroy_A%s(%s ary)"%(t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
         impl += """
@@ -62,7 +62,7 @@ def main(args):
     doc = "\n//Create view\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
-        decl = "%s bhc_view_%s("%(t['bhc_ary'], t['name'])
+        decl = "%s bhc_view_A%s("%(t['bhc_ary'], t['name'])
         decl += "const %s src, uint64_t rank, int64_t start, "%t['bhc_ary']
         decl += "const int64_t *shape, const int64_t *stride)"
         head += "DLLEXPORT %s;\n"%decl
@@ -81,7 +81,7 @@ def main(args):
     doc += "//  if 'nullify', set the data pointer to NULL after returning the data pointer\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
-        decl = "%s* bhc_data_get_%s(const %s ary, bh_bool force_alloc, bh_bool nullify)"%(t['bhc'], t['name'], t['bhc_ary'])
+        decl = "%s* bhc_data_get_A%s(const %s ary, bh_bool force_alloc, bh_bool nullify)"%(t['bhc'], t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
         impl += """\
@@ -102,7 +102,7 @@ def main(args):
     doc = "\n//Set data pointer\n"
     impl += doc; head += doc
     for key, t in type_map.iteritems():
-        decl = "void bhc_data_set_%(name)s(const %(bhc_ary)s ary, %(bhc)s *data)"%t
+        decl = "void bhc_data_set_A%(name)s(const %(bhc_ary)s ary, %(bhc)s *data)"%t
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
         impl += """\
