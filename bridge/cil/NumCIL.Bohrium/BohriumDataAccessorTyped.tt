@@ -185,7 +185,7 @@ foreach(var kp in types) {
 		{
 			lock(PinnedArrayTracker.ExecuteLock)
 			{
-				var res = PInvoke.bhc_new_<#= kp.Key #>(size);
+				var res = PInvoke.bhc_new_A<#= kp.Key #>(size);
 				PInvoke.bhc_identity_A<#= kp.Key #>_K<#= kp.Key #>(res, value);
 				return res;
 			}
@@ -194,7 +194,7 @@ foreach(var kp in types) {
 		override protected PInvoke.<#= tpointer #> NewFromEmpty(ulong size)
 		{
 			lock(PinnedArrayTracker.ExecuteLock)
-				return PInvoke.bhc_new_<#= kp.Key #>(size);
+				return PInvoke.bhc_new_A<#= kp.Key #>(size);
 		}
     }
 
@@ -207,7 +207,7 @@ foreach(var kp in types) {
             {
 				var targetshape = new Shape(target.Shape.Dimensions.Select(x => x.Length).ToArray());
                 using(var view = (PInvoke.<#= tpointer #>)target.WrapWithPointer())
-                using (var tmp = PInvoke.bhc_new_uint64((ulong)targetshape.Length))
+                using (var tmp = PInvoke.bhc_new_Auint64((ulong)targetshape.Length))
 				using (var tmpv = PInvoke.bhc_view_uint64(tmp, (ulong)targetshape.Dimensions.Length, 0, targetshape.Dimensions.Select(x => x.Length).ToArray(), targetshape.Dimensions.Select(x => x.Stride).ToArray()))
                 {
                 	PInvoke.bhc_random123_Auint64_Kuint64_Kuint64(tmp, m_index, m_seed);
@@ -230,7 +230,7 @@ foreach(var kp in types) {
                 var len = target.DataAccessor.Length;
                 using(var a = (PInvoke.<#= tpointer #>)target.WrapWithPointer())
                 using(var view = PInvoke.bhc_view_<#= kp.Key #>(a, 1, 0, new long[] { len }, new long[] { 1 }))
-                using (var tmp = PInvoke.bhc_new_uint64((ulong)len))
+                using (var tmp = PInvoke.bhc_new_Auint64((ulong)len))
                 {
                 	PInvoke.bhc_range_Auint64(tmp);
                     PInvoke.bhc_identity_A<#= kp.Key #>_Auint64(view, tmp);
@@ -245,12 +245,12 @@ foreach(var kp in types) {
 		internal class <#= twrapper #> : ITypedMultiArrayMapper<<#= tpointer #>>
 		{
 			public bool IsAllocated(<#= tpointer #> self) { return self.Pointer != IntPtr.Zero; }
-			public <#= tpointer #> NewView(<#= tpointer #> self, ulong rank, long offset, long[] dimensions, long[] stride) { return PInvoke.bhc_view_<#= kp.Key #>(self, rank, offset, dimensions, stride); }
-			public <#= tpointer #> NewEmpty(ulong size) { return PInvoke.bhc_new_<#= kp.Key #>(size); }
-			public void Destroy(<#= tpointer #> self) { PInvoke.bhc_destroy_<#= kp.Key #>(self); }
+			public <#= tpointer #> NewView(<#= tpointer #> self, ulong rank, long offset, long[] dimensions, long[] stride) { return PInvoke.bhc_view_A<#= kp.Key #>(self, rank, offset, dimensions, stride); }
+			public <#= tpointer #> NewEmpty(ulong size) { return PInvoke.bhc_new_A<#= kp.Key #>(size); }
+			public void Destroy(<#= tpointer #> self) { PInvoke.bhc_destroy_A<#= kp.Key #>(self); }
 			public void Sync(<#= tpointer #> self) { PInvoke.bhc_sync_A<#= kp.Key #>(self); }
-			public IntPtr GetData(<#= tpointer #> self) { return PInvoke.bhc_data_get_<#= kp.Key #>(self, false, false); }
-			public void SetData(<#= tpointer #> self, IntPtr data) { PInvoke.bhc_data_set_<#= kp.Key #>(self, data); }
+			public IntPtr GetData(<#= tpointer #> self) { return PInvoke.bhc_data_get_A<#= kp.Key #>(self, false, false); }
+			public void SetData(<#= tpointer #> self, IntPtr data) { PInvoke.bhc_data_set_A<#= kp.Key #>(self, data); }
 			public void Copy(<#= tpointer #> self, <#= tpointer #> source) { PInvoke.bhc_identity_A<#= kp.Key #>_A<#= kp.Key #>(self, source); }
 
 		}
@@ -313,31 +313,31 @@ foreach(var kp in types) {
         /// Gets the data pointer from a view
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static IntPtr bhc_data_get_<#= kp.Key #>([In] <#= tpointer #> self, [In] bool force_alloc, [In] bool nullify);
+        public extern static IntPtr bhc_data_get_A<#= kp.Key #>([In] <#= tpointer #> self, [In] bool force_alloc, [In] bool nullify);
 
         /// <summary>
         /// Sets the data pointer for a view
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static void bhc_data_set_<#= kp.Key #>([In] <#= tpointer #> self, [In] IntPtr data);
+        public extern static void bhc_data_set_A<#= kp.Key #>([In] <#= tpointer #> self, [In] IntPtr data);
 
         /// <summary>
         /// Construct a new empty array 
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static <#= tpointer #> bhc_new_<#= kp.Key #>([In] ulong size);
+        public extern static <#= tpointer #> bhc_new_A<#= kp.Key #>([In] ulong size);
 
         /// <summary>
         /// Destroy the pointer and release resources
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static void bhc_destroy_<#= kp.Key #>([In] <#= tpointer #> self);
+        public extern static void bhc_destroy_A<#= kp.Key #>([In] <#= tpointer #> self);
 
         /// <summary>
         /// Construct a new view from an existing array
         /// </summary>
         [DllImport("libbhc", SetLastError = true, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public extern static <#= tpointer #> bhc_view_<#= kp.Key #>([In] <#= tpointer #> source, [In] ulong rank, [In] long offset, [In] long[] sizes, [In] long[] strides);
+        public extern static <#= tpointer #> bhc_view_A<#= kp.Key #>([In] <#= tpointer #> source, [In] ulong rank, [In] long offset, [In] long[] sizes, [In] long[] strides);
     }
 <# 
 } 
