@@ -18,14 +18,14 @@ class Base(interface.Base):
             return
 
         if bhc_obj is None:
-            func = eval("bhc.bhc_new_%s" % dtype_name(dtype))
+            func = eval("bhc.bhc_new_A%s" % dtype_name(dtype))
             bhc_obj = _bhc_exec(func, size)
         self.bhc_obj = bhc_obj
 
     def __del__(self):
         if self.size == 0:
             return
-        exec("bhc.bhc_destroy_%s(self.bhc_obj)" %
+        exec("bhc.bhc_destroy_A%s(self.bhc_obj)" %
              dtype_name(self.dtype)
         )
 
@@ -38,13 +38,13 @@ class View(interface.View):
         if self.size == 0:
             return
         dtype = dtype_name(self.dtype)
-        func = eval("bhc.bhc_view_%s" % dtype)
+        func = eval("bhc.bhc_view_A%s" % dtype)
         self.bhc_obj = func(base.bhc_obj, ndim, start, shape, strides)
 
     def __del__(self):
         if self.size == 0:
             return
-        exec("bhc.bhc_destroy_%s(self.bhc_obj)" %
+        exec("bhc.bhc_destroy_A%s(self.bhc_obj)" %
              dtype_name(self.dtype)
         )
 
@@ -80,7 +80,7 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     exec("bhc.bhc_sync_A%s(ary)" % dtype)
     exec("bhc.bhc_discard_A%s(ary)" % dtype)
     exec("bhc.bhc_flush()")
-    exec("data = bhc.bhc_data_get_%s(ary, allocate, nullify)" % dtype)
+    exec("data = bhc.bhc_data_get_A%s(ary, allocate, nullify)" % dtype)
     if data is None:
         if not allocate:
             return 0

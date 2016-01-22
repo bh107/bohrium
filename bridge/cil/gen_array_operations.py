@@ -137,4 +137,6 @@ if __name__ == "__main__":
         help='Path to the output directory.'
     )
     args = parser.parse_args()
+    if not os.path.exists(args.output):
+        os.makedirs(args.output)
     main(args)

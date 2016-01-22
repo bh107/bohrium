@@ -10,7 +10,7 @@ find_package(Mono)
 if(BRIDGE_CIL AND MONO_FOUND AND PYTHONINTERP_FOUND)
 
   # Enumerate over all .tt files and apply T4 to them
-  SET(numcil_tt_outputs)
+  SET(numcil_bohrium_tt_outputs)
   FILE(GLOB files NumCIL.Bohrium/*.tt)
 
   FOREACH(file ${files})
@@ -23,7 +23,7 @@ if(BRIDGE_CIL AND MONO_FOUND AND PYTHONINTERP_FOUND)
       DEPENDS ${file}
       COMMAND ${MONO_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../NumCIL/buildsupport/TextTransform.exe --out=${dst} ${src}
     )
-    SET(numcil_tt_outputs ${numcil_tt_outputs} ${dst})
+    SET(numcil_bohrium_tt_outputs ${numcil_bohrium_tt_outputs} ${dst})
   ENDFOREACH(file)
 
   set(autogen_file ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/bhc_array_operations.cs)
@@ -47,7 +47,7 @@ if(BRIDGE_CIL AND MONO_FOUND AND PYTHONINTERP_FOUND)
   add_custom_command(
       OUTPUT ${target_file}
       COMMAND ${XBUILD_EXECUTABLE} /verbosity:quiet /nologo /property:Configuration=${build_type} /property:OutputPath=${CMAKE_CURRENT_BINARY_DIR}/NumCIL.Bohrium/bin/${build_type} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/NumCIL.Bohrium.csproj
-      DEPENDS ${autogen_file} ${build_deps} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/NumCIL.Bohrium.csproj
+      DEPENDS ${numcil_bohrium_tt_outputs} ${autogen_file} ${build_deps} ${CMAKE_CURRENT_SOURCE_DIR}/NumCIL.Bohrium/NumCIL.Bohrium.csproj
   )
 
   # Add a target, and register a simple name
