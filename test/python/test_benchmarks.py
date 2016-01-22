@@ -210,8 +210,6 @@ Cannot test: lattice_boltzmann_D2Q9.py
 Cannot test: lbm_3d.py
 
 Test breaks due to overflow errors.
-"""
-
 class test_lbm_3d(BenchHelper, numpytest):
 
     def __init__(self):
@@ -227,6 +225,7 @@ class test_lbm_3d(BenchHelper, numpytest):
 
     def test_lbm_3d(self, pseudo_arrays):
         return self.run(pseudo_arrays)
+"""
 
 class test_lu(BenchHelper, numpytest):
 
