@@ -371,8 +371,6 @@ public:
     //
     //  Operand construction
     //
-    template <typename T>
-    multi_array<T>& op();
 
     template <typename T>
     multi_array<T>& temp();
