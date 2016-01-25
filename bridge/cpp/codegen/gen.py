@@ -131,12 +131,15 @@ def main():
     gens = [
         ('traits.ctpl',     'traits.hpp',    types),
 
-        ('sugar.header.ctpl',       'operators.hpp', datasets['sugar.nops3']),
-        ('sugar.nops3.intern.ctpl', 'operators.hpp', datasets['sugar.nops3.intern']),
-        ('sugar.nops3.ctpl',        'operators.hpp', datasets['sugar.nops3']),
-        ('sugar.nops3.bool.ctpl',   'operators.hpp', datasets['sugar.nops3.bool']),
+        ('sugar.header.ctpl',       'operators.hpp', datasets['sugar.nops2']),
+
         ('sugar.nops2.ctpl',        'operators.hpp', datasets['sugar.nops2']),
         ('sugar.nops2.bool.ctpl',   'operators.hpp', datasets['sugar.nops2.bool']),
+
+        ('sugar.nops3.ctpl',        'operators.hpp', datasets['sugar.nops3']),
+        ('sugar.nops3.bool.ctpl',   'operators.hpp', datasets['sugar.nops3.bool']),
+        ('sugar.nops3.intern.ctpl', 'operators.hpp', datasets['sugar.nops3.intern']),
+
         ('sugar.footer.ctpl',       'operators.hpp', datasets['sugar.nops2']),
 
         ('runtime.typechecker.ctpl', 'runtime.typechecker.hpp', checker),

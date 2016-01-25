@@ -9,10 +9,9 @@ directiveStartToken = %
 // $op - $opcode - $optype - $opcount (A)
 template <typename T>
 inline
-multi_array<T>& $op (multi_array<T>& res)
+void $op (multi_array<T>& res)
 {
     Runtime::instance().typecheck<$opcode, T>();
     Runtime::instance().enqueue((bh_opcode)$opcode, res);
-    return res;
 }
 %end for

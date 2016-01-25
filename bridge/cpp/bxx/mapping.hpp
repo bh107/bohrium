@@ -37,9 +37,11 @@ multi_array<TO>& gatherz(multi_array<TO>& out,
     }
     
     if (index.len() == out.len()) {
-        return bh_gather(out, in, index);
+        bh_gather(out, in, index);
+        return out;
     } else {
-        return bh_gather(out[_(0, index.len()-1)], in, index); 
+        bh_gather(out[_(0, index.len()-1)], in, index); 
+        return out; 
     }
 }
 
@@ -71,9 +73,11 @@ multi_array<TO>& scatterz(multi_array<TO>& out,
     }
 
     if (index.len() == in.len()) {
-        return bh_scatter(out, in, index);
+        bh_scatter(out, in, index);
+        return out;
     } else {
-        return bh_scatter(out, in[_(0, index.len()-1)], index);
+        bh_scatter(out, in[_(0, index.len()-1)], index);
+        return out;
     }
 
 }

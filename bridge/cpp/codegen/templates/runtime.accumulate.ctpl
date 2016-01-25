@@ -6,49 +6,23 @@ directiveStartToken = %
 
 %for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 
-template <typename T>
-multi_array<T>& $op (multi_array<T>& res, multi_array<T> &lhs, int64_t rhs)
+// $op - $opcode - $optype - $opcount (A,A,K)
+template <typename Tres, typename Tlhs>
+inline
+void $op (multi_array<Tres>& res, multi_array<Tlhs> &lhs, int64_t rhs)
 {
-    Runtime::instance().typecheck<$opcode, T, T, int64_t>();
+    Runtime::instance().typecheck<$opcode, Tres, Tlhs, int64_t>();
 
-    // Check axis
-    if (rhs<0) {
-        rhs = lhs.getRank()+rhs;
-    }
-    if (rhs >= (int64_t)lhs.getRank()) {
-        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
-    }
     // TODO:
+    //  * Check axis
     //  * shape-check
-    //  * type-check
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-
-    return res;
-}
-
-template <typename T>
-multi_array<T>& $op (multi_array<T> &lhs, int64_t rhs)
-{
-    Runtime::instance().typecheck<$opcode, T, T, int64_t>();
-
-    // Check axis
+    //  * move checks to sugar-layer
     if (rhs<0) {
         rhs = lhs.getRank()+rhs;
     }
     if (rhs >= (int64_t)lhs.getRank()) {
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
-
-    // Construct result array
-    multi_array<T>* result = &Runtime::instance().temp<T, T>(lhs);
-    result->link();
-    result->setTemp(false);
-
-    Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
-    result->setTemp(true);
-
-    return *result;
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
 }
-
 %end for
-

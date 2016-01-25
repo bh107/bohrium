@@ -155,7 +155,20 @@ size_t Runtime::flush()
 }
 
 /**
- * Create an intermediate operand based on another operands meta-data.
+ *  Create a non-linked operand without any meta-data.
+ *  This is basically just "new multi_array<T>();"
+ */
+template <typename T>
+inline
+multi_array<T>& Runtime::create(void)
+{
+    multi_array<T>* operand = new multi_array<T>();
+    return *operand;
+}
+
+/**
+ * Create an operand based on another operands meta-data (shape)
+ * But linked with its own bh_base.
  */
 template <typename T, typename OtherT>
 inline

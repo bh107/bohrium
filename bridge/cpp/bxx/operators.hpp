@@ -31,105 +31,393 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bxx {
 
 
-//
-//  multi_array - Internally defined operator overloads
-//
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::operator+= (const T& rhs)
+inline
+multi_array<T>& logical_not (multi_array<T>& rhs)
 {
-    return bh_add (*this, *this, rhs);
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_logical_not (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
-template <typename T>
-inline multi_array<T>& multi_array<T>::operator+= (multi_array<T>& rhs)
-{
-    return bh_add (*this, *this, rhs);
-}
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::operator-= (const T& rhs)
+inline
+multi_array<T>& operator! (multi_array<T>& rhs)
 {
-    return bh_subtract (*this, *this, rhs);
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_logical_not (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
-template <typename T>
-inline multi_array<T>& multi_array<T>::operator-= (multi_array<T>& rhs)
-{
-    return bh_subtract (*this, *this, rhs);
-}
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::operator*= (const T& rhs)
+inline
+multi_array<T>& invert (multi_array<T>& rhs)
 {
-    return bh_multiply (*this, *this, rhs);
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_invert (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
-template <typename T>
-inline multi_array<T>& multi_array<T>::operator*= (multi_array<T>& rhs)
-{
-    return bh_multiply (*this, *this, rhs);
-}
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::operator/= (const T& rhs)
+inline
+multi_array<T>& operator~ (multi_array<T>& rhs)
 {
-    return bh_divide (*this, *this, rhs);
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_invert (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
-template <typename T>
-inline multi_array<T>& multi_array<T>::operator/= (multi_array<T>& rhs)
-{
-    return bh_divide (*this, *this, rhs);
-}
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::operator%= (const T& rhs)
+inline
+multi_array<T>& abs (multi_array<T>& rhs)
 {
-    return bh_mod (*this, *this, rhs);
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_absolute (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
-template <typename T>
-inline multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
-{
-    return bh_mod (*this, *this, rhs);
-}
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::operator&= (const T& rhs)
+inline
+multi_array<T>& sin (multi_array<T>& rhs)
 {
-    return bh_bitwise_and (*this, *this, rhs);
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_sin (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
-template <typename T>
-inline multi_array<T>& multi_array<T>::operator&= (multi_array<T>& rhs)
-{
-    return bh_bitwise_and (*this, *this, rhs);
-}
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::operator|= (const T& rhs)
+inline
+multi_array<T>& cos (multi_array<T>& rhs)
 {
-    return bh_bitwise_or (*this, *this, rhs);
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_cos (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
-template <typename T>
-inline multi_array<T>& multi_array<T>::operator|= (multi_array<T>& rhs)
-{
-    return bh_bitwise_or (*this, *this, rhs);
-}
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::operator^= (const T& rhs)
+inline
+multi_array<T>& tan (multi_array<T>& rhs)
 {
-    return bh_bitwise_xor (*this, *this, rhs);
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_tan (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
+
 template <typename T>
-inline multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
+inline
+multi_array<T>& sinh (multi_array<T>& rhs)
 {
-    return bh_bitwise_xor (*this, *this, rhs);
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_sinh (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
+
+
+template <typename T>
+inline
+multi_array<T>& cosh (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_cosh (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& tanh (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_tanh (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& asin (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_arcsin (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& acos (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_arccos (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& atan (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_arctan (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& asinh (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_arcsinh (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& acosh (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_arccosh (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& atanh (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_arctanh (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& exp (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_exp (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& exp2 (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_exp2 (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& expm1 (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_expm1 (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& log (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_log (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& log2 (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_log2 (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& log10 (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_log10 (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& log1p (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_log1p (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& sqrt (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_sqrt (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& ceil (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_ceil (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& trunc (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_trunc (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& floor (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_floor (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& rint (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_rint (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<T>& sign (multi_array<T>& rhs)
+{
+    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
+    bh_sign (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+
+
+template <typename T>
+inline
+multi_array<bool>& isnan (multi_array<T>& rhs)
+{
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_isnan (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
+template <typename T>
+inline
+multi_array<bool>& isinf (multi_array<T>& rhs)
+{
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_isinf (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+
 
 
 template <typename TL, typename TR>
@@ -2041,392 +2329,136 @@ inline multi_array<bool>& operator<= (const T lhs, multi_array<T>& rhs)
 }
 
 
+//
+//  multi_array - Internally defined operator overloads
+//
 
 template <typename T>
 inline
-multi_array<T>& logical_not (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator+= (const T& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_logical_not (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_add (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& operator! (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator+= (multi_array<T>& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_logical_not (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_add (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& invert (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator-= (const T& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_invert (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_subtract (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& operator~ (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator-= (multi_array<T>& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_invert (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_subtract (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& abs (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator*= (const T& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_absolute (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_multiply (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& sin (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator*= (multi_array<T>& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_sin (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_multiply (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& cos (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator/= (const T& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_cos (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_divide (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& tan (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator/= (multi_array<T>& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_tan (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_divide (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& sinh (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator%= (const T& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_sinh (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_mod (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& cosh (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_cosh (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_mod (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& tanh (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator&= (const T& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_tanh (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_bitwise_and (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& asin (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator&= (multi_array<T>& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_arcsin (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_bitwise_and (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& acos (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator|= (const T& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_arccos (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_bitwise_or (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& atan (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator|= (multi_array<T>& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_arctan (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_bitwise_or (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& asinh (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator^= (const T& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_arcsinh (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_bitwise_xor (*this, *this, rhs);
+    return *this;
 }
-
 
 template <typename T>
 inline
-multi_array<T>& acosh (multi_array<T>& rhs)
+multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
 {
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_arccosh (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
+    bh_bitwise_xor (*this, *this, rhs);
+    return *this;
 }
-
-
-template <typename T>
-inline
-multi_array<T>& atanh (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_arctanh (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& exp (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_exp (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& exp2 (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_exp2 (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& expm1 (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_expm1 (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& log (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_log (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& log2 (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_log2 (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& log10 (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_log10 (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& log1p (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_log1p (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& sqrt (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_sqrt (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& ceil (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_ceil (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& trunc (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_trunc (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& floor (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_floor (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& rint (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_rint (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<T>& sign (multi_array<T>& rhs)
-{
-    multi_array<T>* res = &Runtime::instance().create_base<T, T>(rhs); // Construct result
-    bh_sign (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-
-
-template <typename T>
-inline
-multi_array<bool>& isnan (multi_array<T>& rhs)
-{
-    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
-    bh_isnan (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
-template <typename T>
-inline
-multi_array<bool>& isinf (multi_array<T>& rhs)
-{
-    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
-    bh_isinf (*res, rhs); // Enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-
 }
 #endif

@@ -10,11 +10,10 @@ directiveStartToken = %
 // $op - $opcode - $optype - $opcount (A,A)
 template <typename OutT, typename InT>
 inline
-multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &rhs)
+void $op (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
     Runtime::instance().typecheck<$opcode, OutT, InT>();
     Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
-    return res;
 }
 %end if
 
@@ -22,11 +21,10 @@ multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &rhs)
 // $op - $opcode - $optype - $opcount (A,K)
 template <typename OutT, typename InT>
 inline
-multi_array<OutT>& $op (multi_array<OutT>& res, const InT rhs)
+void $op (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().typecheck<$opcode, OutT, InT>();
     Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
-    return res;
 }
 %end if
 %end for

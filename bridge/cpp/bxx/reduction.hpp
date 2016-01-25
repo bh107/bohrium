@@ -22,14 +22,49 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bxx {
 
+template <typename T_out, typename T_in>
+inline
+multi_array<T_out>& create_reduce_result(multi_array<T_in> &lhs, int64_t rhs)
+{
+    // Construct result array
+    multi_array<T_out>* result = &Runtime::instance().create<T_out>();
+
+    result->meta.start = 0;                 // Update meta-data
+    if (lhs.meta.ndim == 1) {               // Pseudo-scalar; one element
+        result->meta.ndim      = 1;
+        result->meta.shape[0]  = 1;
+        result->meta.stride[0] = lhs.meta.stride[0];
+    } else {                                // Remove axis
+        result->meta.ndim  = lhs.meta.ndim -1;
+        int64_t stride = 1; 
+        for(int64_t i=lhs.meta.ndim-1, j=result->meta.ndim-1; i>=0; --i) {
+            if (i!=(int64_t)rhs) {
+                result->meta.shape[j]  = lhs.meta.shape[i];
+                result->meta.stride[j] = stride;
+                stride *= result->meta.shape[j];
+                --j;
+            }
+        }
+    }
+    result->link();                         // Bind the base
+
+    return *result;
+}
+
 template <typename T>
 multi_array<T>& sum(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &bh_add_reduce(op, (int64_t)0);
+    multi_array<T>* in = &op;
+    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
+    bh_add_reduce(*result, *in, (int64_t)0);
+    
     for(size_t i=1; i<dims; i++) {
-        result = &bh_add_reduce(*result, (int64_t)0);
+        result = &create_reduce_result<T,T>(*in, 0);
+        in->setTemp(true);
+        bh_add_reduce(*result, *in, (int64_t)0);
+        in = result;
     }
 
     return *result;
@@ -40,9 +75,15 @@ multi_array<T>& product(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &bh_multiply_reduce(op, (int64_t)0);
+    multi_array<T>* in = &op;
+    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
+    bh_multiply_reduce(*result, *in, (int64_t)0);
+    
     for(size_t i=1; i<dims; i++) {
-        result = &bh_multiply_reduce(*result, (int64_t)0);
+        result = &create_reduce_result<T,T>(*in, 0);
+        in->setTemp(true);
+        bh_multiply_reduce(*result, *in, (int64_t)0);
+        in = result;
     }
 
     return *result;
@@ -53,9 +94,15 @@ multi_array<T>& min(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &bh_minimum_reduce(op, (int64_t)0);
+    multi_array<T>* in = &op;
+    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
+    bh_minimum_reduce(*result, *in, (int64_t)0);
+    
     for(size_t i=1; i<dims; i++) {
-        result = &bh_minimum_reduce(*result, (int64_t)0);
+        result = &create_reduce_result<T,T>(*in, 0);
+        in->setTemp(true);
+        bh_minimum_reduce(*result, *in, (int64_t)0);
+        in = result;
     }
 
     return *result;
@@ -66,36 +113,55 @@ multi_array<T>& max(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &bh_maximum_reduce(op, (int64_t)0);
+    multi_array<T>* in = &op;
+    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
+    bh_maximum_reduce(*result, *in, (int64_t)0);
+    
     for(size_t i=1; i<dims; i++) {
-        result = &bh_maximum_reduce(*result, (int64_t)0);
+        result = &create_reduce_result<T,T>(*in, 0);
+        in->setTemp(true);
+        bh_maximum_reduce(*result, *in, (int64_t)0);
+        in = result;
+    }
+    
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& any(multi_array<T>& op)
+{
+    size_t dims = op.meta.ndim;
+
+    multi_array<T>* in = &op;
+    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
+    bh_logical_or_reduce_reduce(*result, *in, (int64_t)0);
+    
+    for(size_t i=1; i<dims; i++) {
+        result = &create_reduce_result<T,T>(*in, 0);
+        in->setTemp(true);
+        bh_logical_or_reduce_reduce(*result, *in, (int64_t)0);
+        in = result;
     }
 
     return *result;
 }
 
 template <typename T>
-multi_array<bool>& any(multi_array<T>& op)
+multi_array<T>& all(multi_array<T>& op)
 {
     size_t dims = op.meta.ndim;
 
-    multi_array<T>* result = &bh_logical_or_reduce(op, (int64_t)0);
+    multi_array<T>* in = &op;
+    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
+    bh_logical_and_reduce_reduce(*result, *in, (int64_t)0);
+    
     for(size_t i=1; i<dims; i++) {
-        result = &bh_logical_or_reduce(*result, (int64_t)0);
+        result = &create_reduce_result<T,T>(*in, 0);
+        in->setTemp(true);
+        bh_logical_and_reduce_reduce(*result, *in, (int64_t)0);
+        in = result;
     }
 
-    return *result;
-}
-
-template <typename T>
-multi_array<bool>& all(multi_array<T>& op)
-{
-    size_t dims = op.meta.ndim;
-
-    multi_array<T>* result = &bh_logical_and_reduce(op, (int64_t)0);
-    for(size_t i=1; i<dims; i++) {
-        result = &bh_logical_and_reduce(*result, (int64_t)0);
-    }
     return *result;
 }
 

@@ -7,15 +7,18 @@ directiveStartToken = %
 %for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::$op (const T rhs)
+inline
+multi_array<T>& multi_array<T>::$op (const T rhs)
 {
-    return $opcode.lower() (*this, rhs);
+    $opcode.lower() (*this, rhs);
+    return *this;
 }
 
 template <typename T>
-inline multi_array<T>& multi_array<T>::$op (multi_array<T>& rhs)
+inline
+multi_array<T>& multi_array<T>::$op (multi_array<T>& rhs)
 {
-    return $opcode.lower() (*this, rhs);
+    $opcode.lower() (*this, rhs);
+    return *this;
 }
 %end for
-
