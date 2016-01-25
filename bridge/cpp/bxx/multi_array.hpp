@@ -222,8 +222,11 @@ int64_t multi_array<T>::shape(int64_t dim)
 template <typename T>
 void multi_array<T>::sync()
 {
+    bool wasTemp = this->getTemp();
+    this->setTemp(false);
     bh_sync(*this);
     Runtime::instance().flush();
+    this->setTemp(wasTemp);
 }
 
 template <typename T>
