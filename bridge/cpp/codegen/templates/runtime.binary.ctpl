@@ -6,185 +6,39 @@ directiveStartToken = %
 
 %for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 
-//
-// $op - $opcode - $optype - $opcount
-//
-
-//
-// Explicit result array
+// $op - $opcode - $optype - $opcount - BINARY(A,A,A)
 %if ["A", "A", "A"] in $layouts
 template <typename TO, typename TL, typename TR>
 multi_array<TO>& $op (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
     Runtime::instance().typecheck<$opcode, TO, TL, TR>();
-
-    multi_array<TL>* left    = &lhs;
-    multi_array<TR>* right   = &rhs;
-    
-    %if $broadcast
-    if (!same_shape(*left, *right)) {           // Broadcast
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(res, *left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(res, *right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-
-    // Check that operands are compatible with the output
-    // TODO: Broadcasting should also be done in relation to output
-    //       for now we simply fail...
-    if (!same_shape(res, *right)) {
-        throw std::runtime_error("Incompatible shapes of output and input.");
-    }
-    %end if
-
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, *left, *right);
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
 
     return res;
 }
 %end if
 
+// $op - $opcode - $optype - $opcount - BINARY(A,A,K)
 %if ["A", "A", "K"] in $layouts
 template <typename TO, typename TL, typename TR>
 multi_array<TO>& $op (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
 {
     Runtime::instance().typecheck<$opcode, TO, TL, TR>();
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
 
-    multi_array<TL>* left = &lhs;
-
-    %if $broadcast
-    if (res.getRank() < left->getRank()) {  // Check for unbroadcastable situation
-        std::stringstream s;
-        s << "Incompatible shapes " << "$op: " << res.getRank() << ", " << left->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    if (!same_shape(res, *left)) {          // Broadcast
-        left = &Runtime::instance().temp_view(lhs);
-        
-        if (!broadcast_right(res, *left)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        if (!same_shape(res, *left)) {      // Re-check compatibility
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-    %end if
-
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, *left, rhs);
     return res;
 }
 %end if
 
+// $op - $opcode - $optype - $opcount - BINARY(A,K,A)
 %if ["A", "K", "A"] in $layouts
 template <typename TO, typename TL, typename TR>
 multi_array<TO>& $op (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
 {
     Runtime::instance().typecheck<$opcode, TO, TL, TR>();
+    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
 
-    multi_array<TR>* right = &rhs;
-
-    %if $broadcast
-    if (res.getRank() < right->getRank()) { // Check for unbroadcastable situation
-        std::stringstream s;
-        s << "Incompatible shapes " << "$op: " << res.getRank() << ", " << right->getRank() << "." << std::endl;
-        throw std::runtime_error(s.str());
-    }
-
-    if (!same_shape(res, *right)) {         // Broadcast
-        right = &Runtime::instance().temp_view(rhs);
-        
-        if (!broadcast_right(res, *right)) {
-            throw std::runtime_error("LHS is not broadcastable.");
-        }
-        
-        if (!same_shape(res, *right)) {     // Re-check compatibility
-            throw std::runtime_error("Incompatable shapes after attempted broadcast.");
-        }
-    }
-    %end if
-
-    Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, *right);
     return res;
-}
-%end if
-
-//
-// Implicit temporary result array
-%if ["A", "A", "A"] in $layouts
-template <typename TL, typename TR>
-multi_array<TL>& $op (multi_array<TL> &lhs, multi_array<TR> &rhs)
-{
-    Runtime::instance().typecheck<$opcode, TL, TL, TR>();
-
-    multi_array<TL>* left    = &lhs;
-    multi_array<TR>* right   = &rhs;
-    
-    %if $broadcast 
-    if (!same_shape(*left, *right)) {           // Broadcast
-        left    = &Runtime::instance().temp_view(lhs);
-        right   = &Runtime::instance().temp_view(rhs);
-
-        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
-            if (!broadcast(*left, *right)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        } else {                                // Right-handside has lowest rank
-            if (!broadcast(*right, *left)) {
-                throw std::runtime_error("Failed broadcasting.");
-            }
-        }
-    }
-    %end if
-
-    // Construct output / result array
-    multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(*left);
-    result->link();
-    result->setTemp(false);
-
-    Runtime::instance().enqueue((bh_opcode)$opcode, *result, *left, *right);
-    result->setTemp(true);
-    return *result;
-}
-%end if
-
-%if ["A", "A", "K"] in $layouts
-template <typename TL, typename TR>
-multi_array<TL>& $op (multi_array<TL>& lhs, const TR rhs)
-{
-    Runtime::instance().typecheck<$opcode, TL, TL, TR>();
-
-    multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(lhs);
-    result->link();
-    result->setTemp(false);
-
-    Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
-    result->setTemp(true);
-    return *result;
-}
-%end if
-
-%if ["A", "K", "A"] in $layouts
-template <typename TL, typename TR>
-multi_array<TL>& $op (const TL lhs, multi_array<TR>& rhs)
-{
-    Runtime::instance().typecheck<$opcode, TL, TL, TR>();
-
-    multi_array<TL>* result = &Runtime::instance().temp<TL, TR>(rhs);
-    result->link();
-    result->setTemp(false);
-
-    Runtime::instance().enqueue((bh_opcode)$opcode, *result, lhs, rhs);
-    result->setTemp(true);
-    return *result;
 }
 %end if
 

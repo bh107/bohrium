@@ -135,505 +135,1331 @@ inline multi_array<T>& multi_array<T>::operator^= (multi_array<T>& rhs)
 template <typename TL, typename TR>
 inline multi_array<TL>& add (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_add (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_add (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& add (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_add (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_add (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& add (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_add (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_add (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator+ (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_add (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_add (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator+ (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_add (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_add (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator+ (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_add (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_add (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& subtract (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_subtract (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_subtract (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& subtract (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_subtract (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_subtract (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& subtract (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_subtract (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_subtract (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator- (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_subtract (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_subtract (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator- (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_subtract (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_subtract (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator- (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_subtract (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_subtract (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& mul (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_multiply (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_multiply (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& mul (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_multiply (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_multiply (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& mul (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_multiply (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_multiply (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator* (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_multiply (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_multiply (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator* (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_multiply (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_multiply (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator* (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_multiply (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_multiply (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& div (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_divide (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_divide (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& div (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_divide (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_divide (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& div (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_divide (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_divide (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator/ (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_divide (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_divide (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator/ (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_divide (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_divide (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator/ (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_divide (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_divide (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& mod (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_mod (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_mod (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& mod (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_mod (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_mod (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& mod (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_mod (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_mod (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator% (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_mod (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_mod (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator% (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_mod (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_mod (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator% (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_mod (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_mod (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& bitwise_and (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_and (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_bitwise_and (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& bitwise_and (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_bitwise_and (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_bitwise_and (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& bitwise_and (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_and (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_bitwise_and (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator& (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_and (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_bitwise_and (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator& (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_bitwise_and (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_bitwise_and (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator& (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_and (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_bitwise_and (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& bitwise_or (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_or (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_bitwise_or (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& bitwise_or (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_bitwise_or (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_bitwise_or (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& bitwise_or (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_or (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_bitwise_or (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator| (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_or (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_bitwise_or (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator| (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_bitwise_or (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_bitwise_or (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator| (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_or (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_bitwise_or (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& bitwise_xor (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_xor (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_bitwise_xor (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& bitwise_xor (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_bitwise_xor (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_bitwise_xor (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& bitwise_xor (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_xor (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_bitwise_xor (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator^ (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_xor (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_bitwise_xor (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator^ (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_bitwise_xor (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_bitwise_xor (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator^ (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_bitwise_xor (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_bitwise_xor (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& left_shift (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_left_shift (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_left_shift (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& left_shift (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_left_shift (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_left_shift (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& left_shift (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_left_shift (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_left_shift (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& right_shift (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_right_shift (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_right_shift (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& right_shift (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_right_shift (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_right_shift (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& right_shift (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_right_shift (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_right_shift (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& logical_and (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_and (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_logical_and (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& logical_and (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_logical_and (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_logical_and (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& logical_and (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_and (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_logical_and (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator&& (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_and (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_logical_and (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator&& (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_logical_and (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_logical_and (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator&& (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_and (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_logical_and (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& logical_or (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_or (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_logical_or (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& logical_or (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_logical_or (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_logical_or (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& logical_or (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_or (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_logical_or (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator|| (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_or (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_logical_or (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator|| (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_logical_or (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_logical_or (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& operator|| (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_or (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_logical_or (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& logical_xor (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_xor (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_logical_xor (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& logical_xor (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_logical_xor (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_logical_xor (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& logical_xor (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_logical_xor (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_logical_xor (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& pow (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_power (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_power (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& pow (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_power (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_power (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& pow (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_power (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_power (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& maximum (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_maximum (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_maximum (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& maximum (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_maximum (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_maximum (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& maximum (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_maximum (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_maximum (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& minimum (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_minimum (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_minimum (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& minimum (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_minimum (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_minimum (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& minimum (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_minimum (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_minimum (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& atan2 (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_arctan2 (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_arctan2 (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& atan2 (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_arctan2 (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_arctan2 (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& atan2 (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_arctan2 (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_arctan2 (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& matmul (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
-    return bh_matmul (lhs, rhs);
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_matmul (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& matmul (multi_array<TL>& lhs, const TR rhs)
 {
-    return bh_matmul (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_matmul (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename TL, typename TR>
 inline multi_array<TL>& matmul (const TL lhs, multi_array<TR>& rhs)
 {
-    return bh_matmul (lhs, rhs);
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_matmul (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 
@@ -641,217 +1467,577 @@ inline multi_array<TL>& matmul (const TL lhs, multi_array<TR>& rhs)
 template <typename T>
 inline multi_array<bool>& eq (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_equal (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_equal (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& eq (multi_array<T>& lhs, const T rhs)
 {
-    return bh_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& eq (const T lhs, multi_array<T>& rhs)
 {
-    return bh_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator== (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_equal (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_equal (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator== (multi_array<T>& lhs, const T rhs)
 {
-    return bh_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator== (const T lhs, multi_array<T>& rhs)
 {
-    return bh_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& neq (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_not_equal (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_not_equal (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& neq (multi_array<T>& lhs, const T rhs)
 {
-    return bh_not_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_not_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& neq (const T lhs, multi_array<T>& rhs)
 {
-    return bh_not_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_not_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator!= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_not_equal (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_not_equal (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator!= (multi_array<T>& lhs, const T rhs)
 {
-    return bh_not_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_not_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator!= (const T lhs, multi_array<T>& rhs)
 {
-    return bh_not_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_not_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& gt (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_greater (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_greater (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& gt (multi_array<T>& lhs, const T rhs)
 {
-    return bh_greater (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_greater (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& gt (const T lhs, multi_array<T>& rhs)
 {
-    return bh_greater (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_greater (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator> (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_greater (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_greater (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator> (multi_array<T>& lhs, const T rhs)
 {
-    return bh_greater (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_greater (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator> (const T lhs, multi_array<T>& rhs)
 {
-    return bh_greater (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_greater (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& gteq (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_greater_equal (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_greater_equal (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& gteq (multi_array<T>& lhs, const T rhs)
 {
-    return bh_greater_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_greater_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& gteq (const T lhs, multi_array<T>& rhs)
 {
-    return bh_greater_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_greater_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator>= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_greater_equal (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_greater_equal (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator>= (multi_array<T>& lhs, const T rhs)
 {
-    return bh_greater_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_greater_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator>= (const T lhs, multi_array<T>& rhs)
 {
-    return bh_greater_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_greater_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& lt (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_less (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_less (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& lt (multi_array<T>& lhs, const T rhs)
 {
-    return bh_less (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_less (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& lt (const T lhs, multi_array<T>& rhs)
 {
-    return bh_less (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_less (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator< (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_less (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_less (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator< (multi_array<T>& lhs, const T rhs)
 {
-    return bh_less (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_less (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator< (const T lhs, multi_array<T>& rhs)
 {
-    return bh_less (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_less (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& lteq (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_less_equal (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_less_equal (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& lteq (multi_array<T>& lhs, const T rhs)
 {
-    return bh_less_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_less_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& lteq (const T lhs, multi_array<T>& rhs)
 {
-    return bh_less_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_less_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator<= (multi_array<T>& lhs, multi_array<T>& rhs)
 {
-    return bh_less_equal (lhs, rhs);
+    multi_array<T>* left    = &lhs;
+    multi_array<T>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(*left); // Construct result
+    bh_less_equal (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator<= (multi_array<T>& lhs, const T rhs)
 {
-    return bh_less_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(lhs); // Construct result
+    bh_less_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 template <typename T>
 inline multi_array<bool>& operator<= (const T lhs, multi_array<T>& rhs)
 {
-    return bh_less_equal (lhs, rhs);
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_less_equal (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
 }
 
 
