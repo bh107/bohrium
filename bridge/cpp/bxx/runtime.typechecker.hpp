@@ -748,6 +748,71 @@ void Runtime::typecheck<BH_COSH, double, double>(void) { }
 
 template <>
 inline
+void Runtime::typecheck<BH_DISCARD, bool>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, std::complex<double> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, std::complex<float> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, float>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, double>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, int16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, int32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, int8_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, uint16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, uint32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_DISCARD, uint8_t>(void) { }
+
+
+template <>
+inline
 void Runtime::typecheck<BH_DIVIDE, std::complex<double> , std::complex<double> , std::complex<double> >(void) { }
 
 
@@ -919,6 +984,71 @@ void Runtime::typecheck<BH_FLOOR, float, float>(void) { }
 template <>
 inline
 void Runtime::typecheck<BH_FLOOR, double, double>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, bool>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, std::complex<double> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, std::complex<float> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, float>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, double>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, int16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, int32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, int8_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, uint16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, uint32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_FREE, uint8_t>(void) { }
 
 
 template <>
@@ -3109,6 +3239,71 @@ void Runtime::typecheck<BH_SUBTRACT, uint64_t, uint64_t, uint64_t>(void) { }
 template <>
 inline
 void Runtime::typecheck<BH_SUBTRACT, uint8_t, uint8_t, uint8_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, bool>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, std::complex<double> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, std::complex<float> >(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, float>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, double>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, int16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, int32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, int8_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, uint16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, uint32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_SYNC, uint8_t>(void) { }
 
 
 template <>
