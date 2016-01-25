@@ -61,27 +61,27 @@
 
 ["eq",              "BH_EQUAL", "sugar.binary.bool",     true],
 ["operator==",      "BH_EQUAL", "sugar.binary.bool",     true],
-["bh_equal",        "BH_EQUAL", "runtime.binary.bool",   true],
+["bh_equal",        "BH_EQUAL", "runtime.binary",   true],
 
 ["neq",             "BH_NOT_EQUAL", "sugar.binary.bool",     true],
 ["operator!=",      "BH_NOT_EQUAL", "sugar.binary.bool",     true],
-["bh_not_equal",    "BH_NOT_EQUAL", "runtime.binary.bool",   true],
+["bh_not_equal",    "BH_NOT_EQUAL", "runtime.binary",   true],
 
 ["gt",              "BH_GREATER",   "sugar.binary.bool",     true],
 ["operator>",       "BH_GREATER",   "sugar.binary.bool",     true],
-["bh_greater",      "BH_GREATER",   "runtime.binary.bool",   true],
+["bh_greater",      "BH_GREATER",   "runtime.binary",   true],
 
 ["gteq",            "BH_GREATER_EQUAL",  "sugar.binary.bool",    true],
 ["operator>=",      "BH_GREATER_EQUAL",  "sugar.binary.bool",    true],
-["bh_greater_equal","BH_GREATER_EQUAL",  "runtime.binary.bool",  true],
+["bh_greater_equal","BH_GREATER_EQUAL",  "runtime.binary",  true],
 
 ["lt",              "BH_LESS",  "sugar.binary.bool",     true],
 ["operator<",       "BH_LESS",  "sugar.binary.bool",     true],
-["bh_less",         "BH_LESS",  "runtime.binary.bool",   true],
+["bh_less",         "BH_LESS",  "runtime.binary",   true],
 
 ["lteq",            "BH_LESS_EQUAL",    "sugar.binary.bool",     true],
 ["operator<=",      "BH_LESS_EQUAL",    "sugar.binary.bool",     true],
-["bh_less_equal",   "BH_LESS_EQUAL",    "runtime.binary.bool",   true],
+["bh_less_equal",   "BH_LESS_EQUAL",    "runtime.binary",   true],
 
 ["logical_and",     "BH_LOGICAL_AND",   "sugar.binary",     true],
 ["operator&&",      "BH_LOGICAL_AND",   "sugar.binary",     true],
@@ -169,10 +169,10 @@
 ["bh_expm1",        "BH_EXPM1",     "runtime.unary",    true],
         
 ["isnan",           "BH_ISNAN", "sugar.unary.bool",     true],
-["bh_isnan",        "BH_ISNAN", "runtime.unary.bool",   true],
+["bh_isnan",        "BH_ISNAN", "runtime.unary",   true],
         
 ["isinf",           "BH_ISINF", "sugar.unary.bool",     true],
-["bh_isinf",        "BH_ISINF", "runtime.unary.bool",   true],
+["bh_isinf",        "BH_ISINF", "runtime.unary",   true],
         
 ["log",             "BH_LOG",   "sugar.unary",      true],
 ["bh_log",          "BH_LOG",   "runtime.unary",    true],

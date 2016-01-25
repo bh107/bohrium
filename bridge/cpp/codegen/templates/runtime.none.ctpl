@@ -6,6 +6,7 @@ directiveStartToken = %
 
 %for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 
+// $op - $opcode - $optype - $opcount ()
 inline
 void $op (void)
 {

@@ -6,38 +6,38 @@ directiveStartToken = %
 
 %for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 
-// $op - $opcode - $optype - $opcount - BINARY(A,A,A)
+// $op - $opcode - $optype - $opcount (A,A,A)
 %if ["A", "A", "A"] in $layouts
 template <typename TO, typename TL, typename TR>
+inline
 multi_array<TO>& $op (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
     Runtime::instance().typecheck<$opcode, TO, TL, TR>();
     Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-
     return res;
 }
 %end if
 
-// $op - $opcode - $optype - $opcount - BINARY(A,A,K)
+// $op - $opcode - $optype - $opcount (A,A,K)
 %if ["A", "A", "K"] in $layouts
 template <typename TO, typename TL, typename TR>
+inline
 multi_array<TO>& $op (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
 {
     Runtime::instance().typecheck<$opcode, TO, TL, TR>();
     Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-
     return res;
 }
 %end if
 
-// $op - $opcode - $optype - $opcount - BINARY(A,K,A)
+// $op - $opcode - $optype - $opcount (A,K,A)
 %if ["A", "K", "A"] in $layouts
 template <typename TO, typename TL, typename TR>
+inline
 multi_array<TO>& $op (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
 {
     Runtime::instance().typecheck<$opcode, TO, TL, TR>();
     Runtime::instance().enqueue((bh_opcode)$opcode, res, lhs, rhs);
-
     return res;
 }
 %end if

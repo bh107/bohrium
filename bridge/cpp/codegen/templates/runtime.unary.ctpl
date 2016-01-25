@@ -5,7 +5,8 @@ directiveStartToken = %
 %slurp
 
 %for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
-// $op - $opcode - $optype - $opcount (UNARY - res=ARRAY, rhs=ARRAY)
+
+// $op - $opcode - $optype - $opcount (A,A)
 %if ["A", "A"] in $layouts
 template <typename OutT, typename InT>
 inline
@@ -13,12 +14,11 @@ multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &rhs)
 {
     Runtime::instance().typecheck<$opcode, OutT, InT>();
     Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
-
     return res;
 }
 %end if
 
-// $op - $opcode - $optype - $opcount (UNARY - res=ARRAY, rhs=SCALAR)
+// $op - $opcode - $optype - $opcount (A,K)
 %if ["A", "K"] in $layouts
 template <typename OutT, typename InT>
 inline
@@ -26,10 +26,8 @@ multi_array<OutT>& $op (multi_array<OutT>& res, const InT rhs)
 {
     Runtime::instance().typecheck<$opcode, OutT, InT>();
     Runtime::instance().enqueue((bh_opcode)$opcode, res, rhs);
-
     return res;
 }
 %end if
-
 %end for
 
