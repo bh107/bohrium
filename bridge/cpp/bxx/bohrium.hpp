@@ -372,6 +372,9 @@ public:
     //  Operand construction
     //
 
+    template <typename T>
+    multi_array<T>& create(void);
+
     /**
         Construct a new "linked" array, that it, it has an
         associated `bh_base`.
