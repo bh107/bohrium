@@ -188,8 +188,7 @@ def extmethod(name, out, in1, in2):
     """
     if out.size == 0 or out.base.size == 0:
         return
-
-    func = eval("bhc.bh_multi_array_extmethod_%s_%s_%s" % (
+    func = eval("bhc.bhc_extmethod_A%s_A%s_A%s" % (
         dtype_name(out),
         dtype_name(in1),
         dtype_name(in2)

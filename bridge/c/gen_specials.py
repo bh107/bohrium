@@ -112,6 +112,27 @@ def main(args):
 }
 """%t
 
+    doc = "\n//Extension Method, returns 0 when the extension exist\n"
+    impl += doc; head += doc
+    for key, t in type_map.iteritems():
+        decl = "int bhc_extmethod"
+        decl += "_A%(name)s_A%(name)s_A%(name)s"%t
+        decl += "(const char *name, %(bhc_ary)s out, const %(bhc_ary)s in1, const %(bhc_ary)s in2)"%t
+        head += "DLLEXPORT %s;\n"%decl
+        impl += "%s\n"%decl
+        impl += """
+{
+    try{
+        Runtime::instance().enqueue_extension(name, *((multi_array<%(cpp)s>*) out),
+                                                    *((multi_array<%(cpp)s>*) in1),
+                                                    *((multi_array<%(cpp)s>*) in2));
+    }catch (...){
+        return -1;
+    }
+    return 0;
+}
+"""%t
+
     #Let's add header and footer
     head = """/* Bohrium C Bridge: special functions. Auto generated! */
 
