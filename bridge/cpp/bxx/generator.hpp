@@ -215,6 +215,9 @@ multi_array<T>& linspace(int64_t begin, int64_t end, uint64_t nelem, bool endpoi
     T dist = std::abs(begin - end);
     T skip = endpoint ? dist/(T)(nelem-1) : dist/(T)nelem;
 
+    multi_array<T>* result = new multi_array<T>(nelem);     // Construct the result
+    result->link();
+
     if (nelem >= std::numeric_limits<uint32_t>::max()) {    // Construct the range using uint64
         multi_array<uint64_t>* base_range = new multi_array<uint64_t>(nelem);
         base_range->link();
