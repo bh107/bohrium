@@ -32,15 +32,14 @@ namespace bxx {
 
 
 
-// bh_none - BH_NONE - runtime.none - 0 ()
+// bh_none - BH_NONE - runtime.nops0 - 0 ()
 inline
 void bh_none (void)
 {
     Runtime::instance().enqueue((bh_opcode)BH_NONE);
 }
 
-
-// bh_tally - BH_TALLY - runtime.none - 0 ()
+// bh_tally - BH_TALLY - runtime.nops0 - 0 ()
 inline
 void bh_tally (void)
 {
@@ -48,9 +47,7 @@ void bh_tally (void)
 }
 
 
-
-
-// bh_add - BH_ADD - runtime.binary - 3 (A,A,A)
+// bh_add - BH_ADD - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_add (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -60,7 +57,7 @@ multi_array<TO>& bh_add (multi_array<TO>& res, multi_array<TL>& lhs, multi_array
     return res;
 }
 
-// bh_add - BH_ADD - runtime.binary - 3 (A,A,K)
+// bh_add - BH_ADD - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_add (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -70,7 +67,7 @@ multi_array<TO>& bh_add (multi_array<TO>& res, multi_array<TL>& lhs, const TR rh
     return res;
 }
 
-// bh_add - BH_ADD - runtime.binary - 3 (A,K,A)
+// bh_add - BH_ADD - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_add (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -80,8 +77,7 @@ multi_array<TO>& bh_add (multi_array<TO>& res, const TL lhs, multi_array<TR>& rh
     return res;
 }
 
-
-// bh_subtract - BH_SUBTRACT - runtime.binary - 3 (A,A,A)
+// bh_subtract - BH_SUBTRACT - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_subtract (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -91,7 +87,7 @@ multi_array<TO>& bh_subtract (multi_array<TO>& res, multi_array<TL>& lhs, multi_
     return res;
 }
 
-// bh_subtract - BH_SUBTRACT - runtime.binary - 3 (A,A,K)
+// bh_subtract - BH_SUBTRACT - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_subtract (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -101,7 +97,7 @@ multi_array<TO>& bh_subtract (multi_array<TO>& res, multi_array<TL>& lhs, const 
     return res;
 }
 
-// bh_subtract - BH_SUBTRACT - runtime.binary - 3 (A,K,A)
+// bh_subtract - BH_SUBTRACT - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_subtract (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -111,8 +107,7 @@ multi_array<TO>& bh_subtract (multi_array<TO>& res, const TL lhs, multi_array<TR
     return res;
 }
 
-
-// bh_multiply - BH_MULTIPLY - runtime.binary - 3 (A,A,A)
+// bh_multiply - BH_MULTIPLY - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_multiply (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -122,7 +117,7 @@ multi_array<TO>& bh_multiply (multi_array<TO>& res, multi_array<TL>& lhs, multi_
     return res;
 }
 
-// bh_multiply - BH_MULTIPLY - runtime.binary - 3 (A,A,K)
+// bh_multiply - BH_MULTIPLY - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_multiply (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -132,7 +127,7 @@ multi_array<TO>& bh_multiply (multi_array<TO>& res, multi_array<TL>& lhs, const 
     return res;
 }
 
-// bh_multiply - BH_MULTIPLY - runtime.binary - 3 (A,K,A)
+// bh_multiply - BH_MULTIPLY - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_multiply (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -142,8 +137,7 @@ multi_array<TO>& bh_multiply (multi_array<TO>& res, const TL lhs, multi_array<TR
     return res;
 }
 
-
-// bh_divide - BH_DIVIDE - runtime.binary - 3 (A,A,A)
+// bh_divide - BH_DIVIDE - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_divide (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -153,7 +147,7 @@ multi_array<TO>& bh_divide (multi_array<TO>& res, multi_array<TL>& lhs, multi_ar
     return res;
 }
 
-// bh_divide - BH_DIVIDE - runtime.binary - 3 (A,A,K)
+// bh_divide - BH_DIVIDE - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_divide (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -163,7 +157,7 @@ multi_array<TO>& bh_divide (multi_array<TO>& res, multi_array<TL>& lhs, const TR
     return res;
 }
 
-// bh_divide - BH_DIVIDE - runtime.binary - 3 (A,K,A)
+// bh_divide - BH_DIVIDE - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_divide (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -173,8 +167,7 @@ multi_array<TO>& bh_divide (multi_array<TO>& res, const TL lhs, multi_array<TR>&
     return res;
 }
 
-
-// bh_mod - BH_MOD - runtime.binary - 3 (A,A,A)
+// bh_mod - BH_MOD - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_mod (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -184,7 +177,7 @@ multi_array<TO>& bh_mod (multi_array<TO>& res, multi_array<TL>& lhs, multi_array
     return res;
 }
 
-// bh_mod - BH_MOD - runtime.binary - 3 (A,A,K)
+// bh_mod - BH_MOD - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_mod (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -194,7 +187,7 @@ multi_array<TO>& bh_mod (multi_array<TO>& res, multi_array<TL>& lhs, const TR rh
     return res;
 }
 
-// bh_mod - BH_MOD - runtime.binary - 3 (A,K,A)
+// bh_mod - BH_MOD - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_mod (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -204,8 +197,7 @@ multi_array<TO>& bh_mod (multi_array<TO>& res, const TL lhs, multi_array<TR>& rh
     return res;
 }
 
-
-// bh_bitwise_and - BH_BITWISE_AND - runtime.binary - 3 (A,A,A)
+// bh_bitwise_and - BH_BITWISE_AND - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_bitwise_and (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -215,7 +207,7 @@ multi_array<TO>& bh_bitwise_and (multi_array<TO>& res, multi_array<TL>& lhs, mul
     return res;
 }
 
-// bh_bitwise_and - BH_BITWISE_AND - runtime.binary - 3 (A,A,K)
+// bh_bitwise_and - BH_BITWISE_AND - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_bitwise_and (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -225,7 +217,7 @@ multi_array<TO>& bh_bitwise_and (multi_array<TO>& res, multi_array<TL>& lhs, con
     return res;
 }
 
-// bh_bitwise_and - BH_BITWISE_AND - runtime.binary - 3 (A,K,A)
+// bh_bitwise_and - BH_BITWISE_AND - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_bitwise_and (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -235,8 +227,7 @@ multi_array<TO>& bh_bitwise_and (multi_array<TO>& res, const TL lhs, multi_array
     return res;
 }
 
-
-// bh_bitwise_or - BH_BITWISE_OR - runtime.binary - 3 (A,A,A)
+// bh_bitwise_or - BH_BITWISE_OR - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_bitwise_or (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -246,7 +237,7 @@ multi_array<TO>& bh_bitwise_or (multi_array<TO>& res, multi_array<TL>& lhs, mult
     return res;
 }
 
-// bh_bitwise_or - BH_BITWISE_OR - runtime.binary - 3 (A,A,K)
+// bh_bitwise_or - BH_BITWISE_OR - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_bitwise_or (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -256,7 +247,7 @@ multi_array<TO>& bh_bitwise_or (multi_array<TO>& res, multi_array<TL>& lhs, cons
     return res;
 }
 
-// bh_bitwise_or - BH_BITWISE_OR - runtime.binary - 3 (A,K,A)
+// bh_bitwise_or - BH_BITWISE_OR - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_bitwise_or (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -266,8 +257,7 @@ multi_array<TO>& bh_bitwise_or (multi_array<TO>& res, const TL lhs, multi_array<
     return res;
 }
 
-
-// bh_bitwise_xor - BH_BITWISE_XOR - runtime.binary - 3 (A,A,A)
+// bh_bitwise_xor - BH_BITWISE_XOR - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_bitwise_xor (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -277,7 +267,7 @@ multi_array<TO>& bh_bitwise_xor (multi_array<TO>& res, multi_array<TL>& lhs, mul
     return res;
 }
 
-// bh_bitwise_xor - BH_BITWISE_XOR - runtime.binary - 3 (A,A,K)
+// bh_bitwise_xor - BH_BITWISE_XOR - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_bitwise_xor (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -287,7 +277,7 @@ multi_array<TO>& bh_bitwise_xor (multi_array<TO>& res, multi_array<TL>& lhs, con
     return res;
 }
 
-// bh_bitwise_xor - BH_BITWISE_XOR - runtime.binary - 3 (A,K,A)
+// bh_bitwise_xor - BH_BITWISE_XOR - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_bitwise_xor (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -297,8 +287,7 @@ multi_array<TO>& bh_bitwise_xor (multi_array<TO>& res, const TL lhs, multi_array
     return res;
 }
 
-
-// bh_left_shift - BH_LEFT_SHIFT - runtime.binary - 3 (A,A,A)
+// bh_left_shift - BH_LEFT_SHIFT - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_left_shift (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -308,7 +297,7 @@ multi_array<TO>& bh_left_shift (multi_array<TO>& res, multi_array<TL>& lhs, mult
     return res;
 }
 
-// bh_left_shift - BH_LEFT_SHIFT - runtime.binary - 3 (A,A,K)
+// bh_left_shift - BH_LEFT_SHIFT - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_left_shift (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -318,7 +307,7 @@ multi_array<TO>& bh_left_shift (multi_array<TO>& res, multi_array<TL>& lhs, cons
     return res;
 }
 
-// bh_left_shift - BH_LEFT_SHIFT - runtime.binary - 3 (A,K,A)
+// bh_left_shift - BH_LEFT_SHIFT - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_left_shift (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -328,8 +317,7 @@ multi_array<TO>& bh_left_shift (multi_array<TO>& res, const TL lhs, multi_array<
     return res;
 }
 
-
-// bh_right_shift - BH_RIGHT_SHIFT - runtime.binary - 3 (A,A,A)
+// bh_right_shift - BH_RIGHT_SHIFT - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_right_shift (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -339,7 +327,7 @@ multi_array<TO>& bh_right_shift (multi_array<TO>& res, multi_array<TL>& lhs, mul
     return res;
 }
 
-// bh_right_shift - BH_RIGHT_SHIFT - runtime.binary - 3 (A,A,K)
+// bh_right_shift - BH_RIGHT_SHIFT - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_right_shift (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -349,7 +337,7 @@ multi_array<TO>& bh_right_shift (multi_array<TO>& res, multi_array<TL>& lhs, con
     return res;
 }
 
-// bh_right_shift - BH_RIGHT_SHIFT - runtime.binary - 3 (A,K,A)
+// bh_right_shift - BH_RIGHT_SHIFT - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_right_shift (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -359,8 +347,7 @@ multi_array<TO>& bh_right_shift (multi_array<TO>& res, const TL lhs, multi_array
     return res;
 }
 
-
-// bh_equal - BH_EQUAL - runtime.binary - 3 (A,A,A)
+// bh_equal - BH_EQUAL - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_equal (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -370,7 +357,7 @@ multi_array<TO>& bh_equal (multi_array<TO>& res, multi_array<TL>& lhs, multi_arr
     return res;
 }
 
-// bh_equal - BH_EQUAL - runtime.binary - 3 (A,A,K)
+// bh_equal - BH_EQUAL - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_equal (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -380,7 +367,7 @@ multi_array<TO>& bh_equal (multi_array<TO>& res, multi_array<TL>& lhs, const TR 
     return res;
 }
 
-// bh_equal - BH_EQUAL - runtime.binary - 3 (A,K,A)
+// bh_equal - BH_EQUAL - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_equal (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -390,8 +377,7 @@ multi_array<TO>& bh_equal (multi_array<TO>& res, const TL lhs, multi_array<TR>& 
     return res;
 }
 
-
-// bh_not_equal - BH_NOT_EQUAL - runtime.binary - 3 (A,A,A)
+// bh_not_equal - BH_NOT_EQUAL - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_not_equal (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -401,7 +387,7 @@ multi_array<TO>& bh_not_equal (multi_array<TO>& res, multi_array<TL>& lhs, multi
     return res;
 }
 
-// bh_not_equal - BH_NOT_EQUAL - runtime.binary - 3 (A,A,K)
+// bh_not_equal - BH_NOT_EQUAL - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_not_equal (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -411,7 +397,7 @@ multi_array<TO>& bh_not_equal (multi_array<TO>& res, multi_array<TL>& lhs, const
     return res;
 }
 
-// bh_not_equal - BH_NOT_EQUAL - runtime.binary - 3 (A,K,A)
+// bh_not_equal - BH_NOT_EQUAL - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_not_equal (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -421,8 +407,7 @@ multi_array<TO>& bh_not_equal (multi_array<TO>& res, const TL lhs, multi_array<T
     return res;
 }
 
-
-// bh_greater - BH_GREATER - runtime.binary - 3 (A,A,A)
+// bh_greater - BH_GREATER - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_greater (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -432,7 +417,7 @@ multi_array<TO>& bh_greater (multi_array<TO>& res, multi_array<TL>& lhs, multi_a
     return res;
 }
 
-// bh_greater - BH_GREATER - runtime.binary - 3 (A,A,K)
+// bh_greater - BH_GREATER - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_greater (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -442,7 +427,7 @@ multi_array<TO>& bh_greater (multi_array<TO>& res, multi_array<TL>& lhs, const T
     return res;
 }
 
-// bh_greater - BH_GREATER - runtime.binary - 3 (A,K,A)
+// bh_greater - BH_GREATER - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_greater (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -452,8 +437,7 @@ multi_array<TO>& bh_greater (multi_array<TO>& res, const TL lhs, multi_array<TR>
     return res;
 }
 
-
-// bh_greater_equal - BH_GREATER_EQUAL - runtime.binary - 3 (A,A,A)
+// bh_greater_equal - BH_GREATER_EQUAL - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_greater_equal (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -463,7 +447,7 @@ multi_array<TO>& bh_greater_equal (multi_array<TO>& res, multi_array<TL>& lhs, m
     return res;
 }
 
-// bh_greater_equal - BH_GREATER_EQUAL - runtime.binary - 3 (A,A,K)
+// bh_greater_equal - BH_GREATER_EQUAL - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_greater_equal (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -473,7 +457,7 @@ multi_array<TO>& bh_greater_equal (multi_array<TO>& res, multi_array<TL>& lhs, c
     return res;
 }
 
-// bh_greater_equal - BH_GREATER_EQUAL - runtime.binary - 3 (A,K,A)
+// bh_greater_equal - BH_GREATER_EQUAL - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_greater_equal (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -483,8 +467,7 @@ multi_array<TO>& bh_greater_equal (multi_array<TO>& res, const TL lhs, multi_arr
     return res;
 }
 
-
-// bh_less - BH_LESS - runtime.binary - 3 (A,A,A)
+// bh_less - BH_LESS - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_less (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -494,7 +477,7 @@ multi_array<TO>& bh_less (multi_array<TO>& res, multi_array<TL>& lhs, multi_arra
     return res;
 }
 
-// bh_less - BH_LESS - runtime.binary - 3 (A,A,K)
+// bh_less - BH_LESS - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_less (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -504,7 +487,7 @@ multi_array<TO>& bh_less (multi_array<TO>& res, multi_array<TL>& lhs, const TR r
     return res;
 }
 
-// bh_less - BH_LESS - runtime.binary - 3 (A,K,A)
+// bh_less - BH_LESS - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_less (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -514,8 +497,7 @@ multi_array<TO>& bh_less (multi_array<TO>& res, const TL lhs, multi_array<TR>& r
     return res;
 }
 
-
-// bh_less_equal - BH_LESS_EQUAL - runtime.binary - 3 (A,A,A)
+// bh_less_equal - BH_LESS_EQUAL - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_less_equal (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -525,7 +507,7 @@ multi_array<TO>& bh_less_equal (multi_array<TO>& res, multi_array<TL>& lhs, mult
     return res;
 }
 
-// bh_less_equal - BH_LESS_EQUAL - runtime.binary - 3 (A,A,K)
+// bh_less_equal - BH_LESS_EQUAL - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_less_equal (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -535,7 +517,7 @@ multi_array<TO>& bh_less_equal (multi_array<TO>& res, multi_array<TL>& lhs, cons
     return res;
 }
 
-// bh_less_equal - BH_LESS_EQUAL - runtime.binary - 3 (A,K,A)
+// bh_less_equal - BH_LESS_EQUAL - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_less_equal (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -545,8 +527,7 @@ multi_array<TO>& bh_less_equal (multi_array<TO>& res, const TL lhs, multi_array<
     return res;
 }
 
-
-// bh_logical_and - BH_LOGICAL_AND - runtime.binary - 3 (A,A,A)
+// bh_logical_and - BH_LOGICAL_AND - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_logical_and (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -556,7 +537,7 @@ multi_array<TO>& bh_logical_and (multi_array<TO>& res, multi_array<TL>& lhs, mul
     return res;
 }
 
-// bh_logical_and - BH_LOGICAL_AND - runtime.binary - 3 (A,A,K)
+// bh_logical_and - BH_LOGICAL_AND - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_logical_and (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -566,7 +547,7 @@ multi_array<TO>& bh_logical_and (multi_array<TO>& res, multi_array<TL>& lhs, con
     return res;
 }
 
-// bh_logical_and - BH_LOGICAL_AND - runtime.binary - 3 (A,K,A)
+// bh_logical_and - BH_LOGICAL_AND - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_logical_and (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -576,8 +557,7 @@ multi_array<TO>& bh_logical_and (multi_array<TO>& res, const TL lhs, multi_array
     return res;
 }
 
-
-// bh_logical_or - BH_LOGICAL_OR - runtime.binary - 3 (A,A,A)
+// bh_logical_or - BH_LOGICAL_OR - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_logical_or (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -587,7 +567,7 @@ multi_array<TO>& bh_logical_or (multi_array<TO>& res, multi_array<TL>& lhs, mult
     return res;
 }
 
-// bh_logical_or - BH_LOGICAL_OR - runtime.binary - 3 (A,A,K)
+// bh_logical_or - BH_LOGICAL_OR - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_logical_or (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -597,7 +577,7 @@ multi_array<TO>& bh_logical_or (multi_array<TO>& res, multi_array<TL>& lhs, cons
     return res;
 }
 
-// bh_logical_or - BH_LOGICAL_OR - runtime.binary - 3 (A,K,A)
+// bh_logical_or - BH_LOGICAL_OR - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_logical_or (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -607,8 +587,7 @@ multi_array<TO>& bh_logical_or (multi_array<TO>& res, const TL lhs, multi_array<
     return res;
 }
 
-
-// bh_logical_xor - BH_LOGICAL_XOR - runtime.binary - 3 (A,A,A)
+// bh_logical_xor - BH_LOGICAL_XOR - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_logical_xor (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -618,7 +597,7 @@ multi_array<TO>& bh_logical_xor (multi_array<TO>& res, multi_array<TL>& lhs, mul
     return res;
 }
 
-// bh_logical_xor - BH_LOGICAL_XOR - runtime.binary - 3 (A,A,K)
+// bh_logical_xor - BH_LOGICAL_XOR - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_logical_xor (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -628,7 +607,7 @@ multi_array<TO>& bh_logical_xor (multi_array<TO>& res, multi_array<TL>& lhs, con
     return res;
 }
 
-// bh_logical_xor - BH_LOGICAL_XOR - runtime.binary - 3 (A,K,A)
+// bh_logical_xor - BH_LOGICAL_XOR - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_logical_xor (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -638,8 +617,7 @@ multi_array<TO>& bh_logical_xor (multi_array<TO>& res, const TL lhs, multi_array
     return res;
 }
 
-
-// bh_power - BH_POWER - runtime.binary - 3 (A,A,A)
+// bh_power - BH_POWER - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_power (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -649,7 +627,7 @@ multi_array<TO>& bh_power (multi_array<TO>& res, multi_array<TL>& lhs, multi_arr
     return res;
 }
 
-// bh_power - BH_POWER - runtime.binary - 3 (A,A,K)
+// bh_power - BH_POWER - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_power (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -659,7 +637,7 @@ multi_array<TO>& bh_power (multi_array<TO>& res, multi_array<TL>& lhs, const TR 
     return res;
 }
 
-// bh_power - BH_POWER - runtime.binary - 3 (A,K,A)
+// bh_power - BH_POWER - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_power (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -669,8 +647,7 @@ multi_array<TO>& bh_power (multi_array<TO>& res, const TL lhs, multi_array<TR>& 
     return res;
 }
 
-
-// bh_maximum - BH_MAXIMUM - runtime.binary - 3 (A,A,A)
+// bh_maximum - BH_MAXIMUM - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_maximum (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -680,7 +657,7 @@ multi_array<TO>& bh_maximum (multi_array<TO>& res, multi_array<TL>& lhs, multi_a
     return res;
 }
 
-// bh_maximum - BH_MAXIMUM - runtime.binary - 3 (A,A,K)
+// bh_maximum - BH_MAXIMUM - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_maximum (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -690,7 +667,7 @@ multi_array<TO>& bh_maximum (multi_array<TO>& res, multi_array<TL>& lhs, const T
     return res;
 }
 
-// bh_maximum - BH_MAXIMUM - runtime.binary - 3 (A,K,A)
+// bh_maximum - BH_MAXIMUM - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_maximum (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -700,8 +677,7 @@ multi_array<TO>& bh_maximum (multi_array<TO>& res, const TL lhs, multi_array<TR>
     return res;
 }
 
-
-// bh_minimum - BH_MINIMUM - runtime.binary - 3 (A,A,A)
+// bh_minimum - BH_MINIMUM - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_minimum (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -711,7 +687,7 @@ multi_array<TO>& bh_minimum (multi_array<TO>& res, multi_array<TL>& lhs, multi_a
     return res;
 }
 
-// bh_minimum - BH_MINIMUM - runtime.binary - 3 (A,A,K)
+// bh_minimum - BH_MINIMUM - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_minimum (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -721,7 +697,7 @@ multi_array<TO>& bh_minimum (multi_array<TO>& res, multi_array<TL>& lhs, const T
     return res;
 }
 
-// bh_minimum - BH_MINIMUM - runtime.binary - 3 (A,K,A)
+// bh_minimum - BH_MINIMUM - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_minimum (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -731,8 +707,7 @@ multi_array<TO>& bh_minimum (multi_array<TO>& res, const TL lhs, multi_array<TR>
     return res;
 }
 
-
-// bh_arctan2 - BH_ARCTAN2 - runtime.binary - 3 (A,A,A)
+// bh_arctan2 - BH_ARCTAN2 - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_arctan2 (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -742,7 +717,7 @@ multi_array<TO>& bh_arctan2 (multi_array<TO>& res, multi_array<TL>& lhs, multi_a
     return res;
 }
 
-// bh_arctan2 - BH_ARCTAN2 - runtime.binary - 3 (A,A,K)
+// bh_arctan2 - BH_ARCTAN2 - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_arctan2 (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -752,7 +727,7 @@ multi_array<TO>& bh_arctan2 (multi_array<TO>& res, multi_array<TL>& lhs, const T
     return res;
 }
 
-// bh_arctan2 - BH_ARCTAN2 - runtime.binary - 3 (A,K,A)
+// bh_arctan2 - BH_ARCTAN2 - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_arctan2 (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -762,8 +737,7 @@ multi_array<TO>& bh_arctan2 (multi_array<TO>& res, const TL lhs, multi_array<TR>
     return res;
 }
 
-
-// bh_scatter - BH_SCATTER - runtime.binary - 3 (A,A,A)
+// bh_scatter - BH_SCATTER - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_scatter (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -773,12 +747,9 @@ multi_array<TO>& bh_scatter (multi_array<TO>& res, multi_array<TL>& lhs, multi_a
     return res;
 }
 
-// bh_scatter - BH_SCATTER - runtime.binary - 3 (A,A,K)
-
-// bh_scatter - BH_SCATTER - runtime.binary - 3 (A,K,A)
 
 
-// bh_gather - BH_GATHER - runtime.binary - 3 (A,A,A)
+// bh_gather - BH_GATHER - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_gather (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -788,12 +759,9 @@ multi_array<TO>& bh_gather (multi_array<TO>& res, multi_array<TL>& lhs, multi_ar
     return res;
 }
 
-// bh_gather - BH_GATHER - runtime.binary - 3 (A,A,K)
-
-// bh_gather - BH_GATHER - runtime.binary - 3 (A,K,A)
 
 
-// bh_matmul - BH_MATMUL - runtime.binary - 3 (A,A,A)
+// bh_matmul - BH_MATMUL - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_matmul (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -803,7 +771,7 @@ multi_array<TO>& bh_matmul (multi_array<TO>& res, multi_array<TL>& lhs, multi_ar
     return res;
 }
 
-// bh_matmul - BH_MATMUL - runtime.binary - 3 (A,A,K)
+// bh_matmul - BH_MATMUL - runtime.nops3 - 3 (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_matmul (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -813,7 +781,7 @@ multi_array<TO>& bh_matmul (multi_array<TO>& res, multi_array<TL>& lhs, const TR
     return res;
 }
 
-// bh_matmul - BH_MATMUL - runtime.binary - 3 (A,K,A)
+// bh_matmul - BH_MATMUL - runtime.nops3 - 3 (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& bh_matmul (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -824,9 +792,7 @@ multi_array<TO>& bh_matmul (multi_array<TO>& res, const TL lhs, multi_array<TR>&
 }
 
 
-
-
-// bh_identity - BH_IDENTITY - runtime.unary - 2 (A,A)
+// bh_identity - BH_IDENTITY - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_identity (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -836,7 +802,7 @@ multi_array<OutT>& bh_identity (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_identity - BH_IDENTITY - runtime.unary - 2 (A,K)
+// bh_identity - BH_IDENTITY - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_identity (multi_array<OutT>& res, const InT rhs)
@@ -846,7 +812,7 @@ multi_array<OutT>& bh_identity (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_logical_not - BH_LOGICAL_NOT - runtime.unary - 2 (A,A)
+// bh_logical_not - BH_LOGICAL_NOT - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -856,7 +822,7 @@ multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, multi_array<InT> &rhs
     return res;
 }
 
-// bh_logical_not - BH_LOGICAL_NOT - runtime.unary - 2 (A,K)
+// bh_logical_not - BH_LOGICAL_NOT - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT rhs)
@@ -866,7 +832,7 @@ multi_array<OutT>& bh_logical_not (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_invert - BH_INVERT - runtime.unary - 2 (A,A)
+// bh_invert - BH_INVERT - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_invert (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -876,7 +842,7 @@ multi_array<OutT>& bh_invert (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_invert - BH_INVERT - runtime.unary - 2 (A,K)
+// bh_invert - BH_INVERT - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_invert (multi_array<OutT>& res, const InT rhs)
@@ -886,7 +852,7 @@ multi_array<OutT>& bh_invert (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_imag - BH_IMAG - runtime.unary - 2 (A,A)
+// bh_imag - BH_IMAG - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_imag (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -896,7 +862,7 @@ multi_array<OutT>& bh_imag (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_imag - BH_IMAG - runtime.unary - 2 (A,K)
+// bh_imag - BH_IMAG - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_imag (multi_array<OutT>& res, const InT rhs)
@@ -906,7 +872,7 @@ multi_array<OutT>& bh_imag (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_real - BH_REAL - runtime.unary - 2 (A,A)
+// bh_real - BH_REAL - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_real (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -916,7 +882,7 @@ multi_array<OutT>& bh_real (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_real - BH_REAL - runtime.unary - 2 (A,K)
+// bh_real - BH_REAL - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_real (multi_array<OutT>& res, const InT rhs)
@@ -926,7 +892,7 @@ multi_array<OutT>& bh_real (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_absolute - BH_ABSOLUTE - runtime.unary - 2 (A,A)
+// bh_absolute - BH_ABSOLUTE - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_absolute (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -936,7 +902,7 @@ multi_array<OutT>& bh_absolute (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_absolute - BH_ABSOLUTE - runtime.unary - 2 (A,K)
+// bh_absolute - BH_ABSOLUTE - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_absolute (multi_array<OutT>& res, const InT rhs)
@@ -946,7 +912,7 @@ multi_array<OutT>& bh_absolute (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_sin - BH_SIN - runtime.unary - 2 (A,A)
+// bh_sin - BH_SIN - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sin (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -956,7 +922,7 @@ multi_array<OutT>& bh_sin (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_sin - BH_SIN - runtime.unary - 2 (A,K)
+// bh_sin - BH_SIN - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sin (multi_array<OutT>& res, const InT rhs)
@@ -966,7 +932,7 @@ multi_array<OutT>& bh_sin (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_cos - BH_COS - runtime.unary - 2 (A,A)
+// bh_cos - BH_COS - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_cos (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -976,7 +942,7 @@ multi_array<OutT>& bh_cos (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_cos - BH_COS - runtime.unary - 2 (A,K)
+// bh_cos - BH_COS - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_cos (multi_array<OutT>& res, const InT rhs)
@@ -986,7 +952,7 @@ multi_array<OutT>& bh_cos (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_tan - BH_TAN - runtime.unary - 2 (A,A)
+// bh_tan - BH_TAN - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_tan (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -996,7 +962,7 @@ multi_array<OutT>& bh_tan (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_tan - BH_TAN - runtime.unary - 2 (A,K)
+// bh_tan - BH_TAN - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_tan (multi_array<OutT>& res, const InT rhs)
@@ -1006,7 +972,7 @@ multi_array<OutT>& bh_tan (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_sinh - BH_SINH - runtime.unary - 2 (A,A)
+// bh_sinh - BH_SINH - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sinh (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1016,7 +982,7 @@ multi_array<OutT>& bh_sinh (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_sinh - BH_SINH - runtime.unary - 2 (A,K)
+// bh_sinh - BH_SINH - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sinh (multi_array<OutT>& res, const InT rhs)
@@ -1026,7 +992,7 @@ multi_array<OutT>& bh_sinh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_cosh - BH_COSH - runtime.unary - 2 (A,A)
+// bh_cosh - BH_COSH - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_cosh (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1036,7 +1002,7 @@ multi_array<OutT>& bh_cosh (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_cosh - BH_COSH - runtime.unary - 2 (A,K)
+// bh_cosh - BH_COSH - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_cosh (multi_array<OutT>& res, const InT rhs)
@@ -1046,7 +1012,7 @@ multi_array<OutT>& bh_cosh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_tanh - BH_TANH - runtime.unary - 2 (A,A)
+// bh_tanh - BH_TANH - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_tanh (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1056,7 +1022,7 @@ multi_array<OutT>& bh_tanh (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_tanh - BH_TANH - runtime.unary - 2 (A,K)
+// bh_tanh - BH_TANH - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_tanh (multi_array<OutT>& res, const InT rhs)
@@ -1066,7 +1032,7 @@ multi_array<OutT>& bh_tanh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_arcsin - BH_ARCSIN - runtime.unary - 2 (A,A)
+// bh_arcsin - BH_ARCSIN - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arcsin (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1076,7 +1042,7 @@ multi_array<OutT>& bh_arcsin (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_arcsin - BH_ARCSIN - runtime.unary - 2 (A,K)
+// bh_arcsin - BH_ARCSIN - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arcsin (multi_array<OutT>& res, const InT rhs)
@@ -1086,7 +1052,7 @@ multi_array<OutT>& bh_arcsin (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_arccos - BH_ARCCOS - runtime.unary - 2 (A,A)
+// bh_arccos - BH_ARCCOS - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arccos (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1096,7 +1062,7 @@ multi_array<OutT>& bh_arccos (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_arccos - BH_ARCCOS - runtime.unary - 2 (A,K)
+// bh_arccos - BH_ARCCOS - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arccos (multi_array<OutT>& res, const InT rhs)
@@ -1106,7 +1072,7 @@ multi_array<OutT>& bh_arccos (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_arctan - BH_ARCTAN - runtime.unary - 2 (A,A)
+// bh_arctan - BH_ARCTAN - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arctan (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1116,7 +1082,7 @@ multi_array<OutT>& bh_arctan (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_arctan - BH_ARCTAN - runtime.unary - 2 (A,K)
+// bh_arctan - BH_ARCTAN - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arctan (multi_array<OutT>& res, const InT rhs)
@@ -1126,7 +1092,7 @@ multi_array<OutT>& bh_arctan (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_arcsinh - BH_ARCSINH - runtime.unary - 2 (A,A)
+// bh_arcsinh - BH_ARCSINH - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arcsinh (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1136,7 +1102,7 @@ multi_array<OutT>& bh_arcsinh (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_arcsinh - BH_ARCSINH - runtime.unary - 2 (A,K)
+// bh_arcsinh - BH_ARCSINH - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arcsinh (multi_array<OutT>& res, const InT rhs)
@@ -1146,7 +1112,7 @@ multi_array<OutT>& bh_arcsinh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_arccosh - BH_ARCCOSH - runtime.unary - 2 (A,A)
+// bh_arccosh - BH_ARCCOSH - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arccosh (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1156,7 +1122,7 @@ multi_array<OutT>& bh_arccosh (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_arccosh - BH_ARCCOSH - runtime.unary - 2 (A,K)
+// bh_arccosh - BH_ARCCOSH - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arccosh (multi_array<OutT>& res, const InT rhs)
@@ -1166,7 +1132,7 @@ multi_array<OutT>& bh_arccosh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_arctanh - BH_ARCTANH - runtime.unary - 2 (A,A)
+// bh_arctanh - BH_ARCTANH - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arctanh (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1176,7 +1142,7 @@ multi_array<OutT>& bh_arctanh (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_arctanh - BH_ARCTANH - runtime.unary - 2 (A,K)
+// bh_arctanh - BH_ARCTANH - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_arctanh (multi_array<OutT>& res, const InT rhs)
@@ -1186,7 +1152,7 @@ multi_array<OutT>& bh_arctanh (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_exp - BH_EXP - runtime.unary - 2 (A,A)
+// bh_exp - BH_EXP - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_exp (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1196,7 +1162,7 @@ multi_array<OutT>& bh_exp (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_exp - BH_EXP - runtime.unary - 2 (A,K)
+// bh_exp - BH_EXP - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_exp (multi_array<OutT>& res, const InT rhs)
@@ -1206,7 +1172,7 @@ multi_array<OutT>& bh_exp (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_exp2 - BH_EXP2 - runtime.unary - 2 (A,A)
+// bh_exp2 - BH_EXP2 - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1216,7 +1182,7 @@ multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_exp2 - BH_EXP2 - runtime.unary - 2 (A,K)
+// bh_exp2 - BH_EXP2 - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, const InT rhs)
@@ -1226,7 +1192,7 @@ multi_array<OutT>& bh_exp2 (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_expm1 - BH_EXPM1 - runtime.unary - 2 (A,A)
+// bh_expm1 - BH_EXPM1 - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1236,7 +1202,7 @@ multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_expm1 - BH_EXPM1 - runtime.unary - 2 (A,K)
+// bh_expm1 - BH_EXPM1 - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, const InT rhs)
@@ -1246,7 +1212,7 @@ multi_array<OutT>& bh_expm1 (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_isnan - BH_ISNAN - runtime.unary - 2 (A,A)
+// bh_isnan - BH_ISNAN - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_isnan (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1256,7 +1222,7 @@ multi_array<OutT>& bh_isnan (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_isnan - BH_ISNAN - runtime.unary - 2 (A,K)
+// bh_isnan - BH_ISNAN - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_isnan (multi_array<OutT>& res, const InT rhs)
@@ -1266,7 +1232,7 @@ multi_array<OutT>& bh_isnan (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_isinf - BH_ISINF - runtime.unary - 2 (A,A)
+// bh_isinf - BH_ISINF - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_isinf (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1276,7 +1242,7 @@ multi_array<OutT>& bh_isinf (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_isinf - BH_ISINF - runtime.unary - 2 (A,K)
+// bh_isinf - BH_ISINF - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_isinf (multi_array<OutT>& res, const InT rhs)
@@ -1286,7 +1252,7 @@ multi_array<OutT>& bh_isinf (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_log - BH_LOG - runtime.unary - 2 (A,A)
+// bh_log - BH_LOG - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1296,7 +1262,7 @@ multi_array<OutT>& bh_log (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_log - BH_LOG - runtime.unary - 2 (A,K)
+// bh_log - BH_LOG - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log (multi_array<OutT>& res, const InT rhs)
@@ -1306,7 +1272,7 @@ multi_array<OutT>& bh_log (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_log2 - BH_LOG2 - runtime.unary - 2 (A,A)
+// bh_log2 - BH_LOG2 - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log2 (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1316,7 +1282,7 @@ multi_array<OutT>& bh_log2 (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_log2 - BH_LOG2 - runtime.unary - 2 (A,K)
+// bh_log2 - BH_LOG2 - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log2 (multi_array<OutT>& res, const InT rhs)
@@ -1326,7 +1292,7 @@ multi_array<OutT>& bh_log2 (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_log10 - BH_LOG10 - runtime.unary - 2 (A,A)
+// bh_log10 - BH_LOG10 - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log10 (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1336,7 +1302,7 @@ multi_array<OutT>& bh_log10 (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_log10 - BH_LOG10 - runtime.unary - 2 (A,K)
+// bh_log10 - BH_LOG10 - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log10 (multi_array<OutT>& res, const InT rhs)
@@ -1346,7 +1312,7 @@ multi_array<OutT>& bh_log10 (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_log1p - BH_LOG1P - runtime.unary - 2 (A,A)
+// bh_log1p - BH_LOG1P - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log1p (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1356,7 +1322,7 @@ multi_array<OutT>& bh_log1p (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_log1p - BH_LOG1P - runtime.unary - 2 (A,K)
+// bh_log1p - BH_LOG1P - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_log1p (multi_array<OutT>& res, const InT rhs)
@@ -1366,7 +1332,7 @@ multi_array<OutT>& bh_log1p (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_sqrt - BH_SQRT - runtime.unary - 2 (A,A)
+// bh_sqrt - BH_SQRT - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1376,7 +1342,7 @@ multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_sqrt - BH_SQRT - runtime.unary - 2 (A,K)
+// bh_sqrt - BH_SQRT - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, const InT rhs)
@@ -1386,7 +1352,7 @@ multi_array<OutT>& bh_sqrt (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_ceil - BH_CEIL - runtime.unary - 2 (A,A)
+// bh_ceil - BH_CEIL - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_ceil (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1396,7 +1362,7 @@ multi_array<OutT>& bh_ceil (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_ceil - BH_CEIL - runtime.unary - 2 (A,K)
+// bh_ceil - BH_CEIL - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_ceil (multi_array<OutT>& res, const InT rhs)
@@ -1406,7 +1372,7 @@ multi_array<OutT>& bh_ceil (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_trunc - BH_TRUNC - runtime.unary - 2 (A,A)
+// bh_trunc - BH_TRUNC - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_trunc (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1416,7 +1382,7 @@ multi_array<OutT>& bh_trunc (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_trunc - BH_TRUNC - runtime.unary - 2 (A,K)
+// bh_trunc - BH_TRUNC - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_trunc (multi_array<OutT>& res, const InT rhs)
@@ -1426,7 +1392,7 @@ multi_array<OutT>& bh_trunc (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_floor - BH_FLOOR - runtime.unary - 2 (A,A)
+// bh_floor - BH_FLOOR - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_floor (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1436,7 +1402,7 @@ multi_array<OutT>& bh_floor (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_floor - BH_FLOOR - runtime.unary - 2 (A,K)
+// bh_floor - BH_FLOOR - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_floor (multi_array<OutT>& res, const InT rhs)
@@ -1446,7 +1412,7 @@ multi_array<OutT>& bh_floor (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_rint - BH_RINT - runtime.unary - 2 (A,A)
+// bh_rint - BH_RINT - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_rint (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1456,7 +1422,7 @@ multi_array<OutT>& bh_rint (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_rint - BH_RINT - runtime.unary - 2 (A,K)
+// bh_rint - BH_RINT - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_rint (multi_array<OutT>& res, const InT rhs)
@@ -1466,7 +1432,7 @@ multi_array<OutT>& bh_rint (multi_array<OutT>& res, const InT rhs)
     return res;
 }
 
-// bh_sign - BH_SIGN - runtime.unary - 2 (A,A)
+// bh_sign - BH_SIGN - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sign (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -1476,7 +1442,7 @@ multi_array<OutT>& bh_sign (multi_array<OutT>& res, multi_array<InT> &rhs)
     return res;
 }
 
-// bh_sign - BH_SIGN - runtime.unary - 2 (A,K)
+// bh_sign - BH_SIGN - runtime.nops2 - 2 (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& bh_sign (multi_array<OutT>& res, const InT rhs)
@@ -1487,39 +1453,45 @@ multi_array<OutT>& bh_sign (multi_array<OutT>& res, const InT rhs)
 }
 
 
-
+// bh_range - BH_RANGE - runtime.nops1 - 1 (A)
 template <typename T>
+inline
 multi_array<T>& bh_range (multi_array<T>& res)
 {
+    Runtime::instance().typecheck<BH_RANGE, T>();
     Runtime::instance().enqueue((bh_opcode)BH_RANGE, res);
     return res;
 }
 
-
+// bh_free - BH_FREE - runtime.nops1 - 1 (A)
 template <typename T>
+inline
 multi_array<T>& bh_free (multi_array<T>& res)
 {
+    Runtime::instance().typecheck<BH_FREE, T>();
     Runtime::instance().enqueue((bh_opcode)BH_FREE, res);
     return res;
 }
 
-
+// bh_sync - BH_SYNC - runtime.nops1 - 1 (A)
 template <typename T>
+inline
 multi_array<T>& bh_sync (multi_array<T>& res)
 {
+    Runtime::instance().typecheck<BH_SYNC, T>();
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, res);
     return res;
 }
 
-
+// bh_discard - BH_DISCARD - runtime.nops1 - 1 (A)
 template <typename T>
+inline
 multi_array<T>& bh_discard (multi_array<T>& res)
 {
+    Runtime::instance().typecheck<BH_DISCARD, T>();
     Runtime::instance().enqueue((bh_opcode)BH_DISCARD, res);
     return res;
 }
-
-
 
 
 template <typename T>

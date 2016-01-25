@@ -5,7 +5,7 @@ directiveStartToken = %
 %slurp
 
 //
-//  Internally defined operator overloads
+//  multi_array - Internally defined operator overloads
 //
 %for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 

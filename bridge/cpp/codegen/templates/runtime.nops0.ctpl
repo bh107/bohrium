@@ -12,6 +12,4 @@ void $op (void)
 {
     Runtime::instance().enqueue((bh_opcode)$opcode);
 }
-
 %end for
-

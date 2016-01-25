@@ -6,8 +6,8 @@ directiveStartToken = %
 
 %for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 
-// $op - $opcode - $optype - $opcount (A,A)
 %if ["A", "A"] in $layouts
+// $op - $opcode - $optype - $opcount (A,A)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &rhs)
@@ -18,8 +18,8 @@ multi_array<OutT>& $op (multi_array<OutT>& res, multi_array<InT> &rhs)
 }
 %end if
 
-// $op - $opcode - $optype - $opcount (A,K)
 %if ["A", "K"] in $layouts
+// $op - $opcode - $optype - $opcount (A,K)
 template <typename OutT, typename InT>
 inline
 multi_array<OutT>& $op (multi_array<OutT>& res, const InT rhs)
@@ -30,4 +30,3 @@ multi_array<OutT>& $op (multi_array<OutT>& res, const InT rhs)
 }
 %end if
 %end for
-

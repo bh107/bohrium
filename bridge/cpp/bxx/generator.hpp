@@ -176,17 +176,25 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
         nelem = (start-adj_end+1)/abs(skip);
     }
 
-    multi_array<T>* base_range = new multi_array<T>(nelem);
-    base_range->link();
-
-    multi_array<T>* result = new multi_array<T>(nelem);
+    multi_array<T>* result = new multi_array<T>(nelem);     // Construct the result
     result->link();
 
-    bh_range(*base_range);
-    bh_multiply(*base_range, *base_range, (T)skip);
-    bh_add(*base_range, *base_range, (T)start);
-    base_range->setTemp(true);
-    bh_identity(*result, *base_range);
+    if (nelem >= std::numeric_limits<uint32_t>::max()) {    // Construct the range using uint64
+        multi_array<uint64_t>* base_range = new multi_array<uint64_t>(nelem);
+        base_range->link();
+        bh_range(*base_range);
+        base_range->setTemp(true);
+        bh_identity(*result, *base_range);                  // Convert the type to T
+    } else {                                                // Construct the range using uint32
+        multi_array<uint32_t>* base_range = new multi_array<uint32_t>(nelem);
+        base_range->link();
+        bh_range(*base_range);
+        base_range->setTemp(true);
+        bh_identity(*result, *base_range);                  // Convert the type to T
+    }
+
+    bh_multiply(*result, *result, (T)skip);                 // Expand the range
+    bh_add(*result, *result, (T)start);
    
     result->setTemp(true);
     return *result;
@@ -202,20 +210,26 @@ multi_array<T>& range(uint64_t nelem)
 }
 
 template <typename T>
-multi_array<T>& linspace(int64_t begin, int64_t end, uint64_t nelements, bool endpoint)
+multi_array<T>& linspace(int64_t begin, int64_t end, uint64_t nelem, bool endpoint)
 {
     T dist = std::abs(begin - end);
-    T skip = endpoint ? dist/(T)(nelements-1) : dist/(T)nelements;
+    T skip = endpoint ? dist/(T)(nelem-1) : dist/(T)nelem;
 
-    multi_array<uint32_t>* base_range = new multi_array<uint32_t>(nelements);
-    base_range->link();
-    bh_range(*base_range);
-    base_range->setTemp(true);
+    if (nelem >= std::numeric_limits<uint32_t>::max()) {    // Construct the range using uint64
+        multi_array<uint64_t>* base_range = new multi_array<uint64_t>(nelem);
+        base_range->link();
+        bh_range(*base_range);
+        base_range->setTemp(true);
+        bh_identity(*result, *base_range);                  // Convert the type to T
+    } else {                                                // Construct the range using uint32
+        multi_array<uint32_t>* base_range = new multi_array<uint32_t>(nelem);
+        base_range->link();
+        bh_range(*base_range);
+        base_range->setTemp(true);
+        bh_identity(*result, *base_range);                  // Convert the type to T
+    }
 
-    multi_array<T>* result = new multi_array<T>(nelements);
-    result->link();
-
-    bh_identity(*result, *base_range);
+    // Expand the range
     bh_multiply(*result, *result, skip);
     bh_add(*result, *result, (T)begin);
     

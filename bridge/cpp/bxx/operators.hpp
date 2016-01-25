@@ -32,7 +32,7 @@ namespace bxx {
 
 
 //
-//  Internally defined operator overloads
+//  multi_array - Internally defined operator overloads
 //
 
 template <typename T>

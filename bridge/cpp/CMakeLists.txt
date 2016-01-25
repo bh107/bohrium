@@ -21,28 +21,34 @@ set(CODEGEN_SRC "${CODEGEN_SRC};${CMAKE_CURRENT_SOURCE_DIR}/bxx/runtime.typechec
 set(CODEGEN_DEF "${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen.py")
 set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/element_types.json")
 set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/operators.json")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/element_types.json")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.accumulate.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.binary.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.footer.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.header.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.none.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.random.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.reduce.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.typechecker.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.unary.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.zero.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.binary.bool.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.binary.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.footer.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.header.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.int.binary.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.int.unary.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.unary.bool.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.unary.ctpl")
+
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.ctpl")
 set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.array.ctpl")
 set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.const.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.ctpl")
+
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.footer.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.header.ctpl")
+
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops0.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops1.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops2.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops3.ctpl")
+
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.random.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.reduce.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.accumulate.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.typechecker.ctpl")
+
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.footer.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.header.ctpl")
+
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops2.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops2.bool.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops2.intern.ctpl")
+
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.bool.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.intern.ctpl")
 
 add_custom_command(OUTPUT ${CODEGEN_SRC}
     COMMAND ./codegen/gen.py

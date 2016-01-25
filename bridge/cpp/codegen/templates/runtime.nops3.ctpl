@@ -6,8 +6,8 @@ directiveStartToken = %
 
 %for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
 
-// $op - $opcode - $optype - $opcount (A,A,A)
 %if ["A", "A", "A"] in $layouts
+// $op - $opcode - $optype - $opcount (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& $op (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
@@ -18,8 +18,8 @@ multi_array<TO>& $op (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR
 }
 %end if
 
-// $op - $opcode - $optype - $opcount (A,A,K)
 %if ["A", "A", "K"] in $layouts
+// $op - $opcode - $optype - $opcount (A,A,K)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& $op (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
@@ -30,8 +30,8 @@ multi_array<TO>& $op (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
 }
 %end if
 
-// $op - $opcode - $optype - $opcount (A,K,A)
 %if ["A", "K", "A"] in $layouts
+// $op - $opcode - $optype - $opcount (A,K,A)
 template <typename TO, typename TL, typename TR>
 inline
 multi_array<TO>& $op (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
@@ -41,6 +41,4 @@ multi_array<TO>& $op (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
     return res;
 }
 %end if
-
 %end for
-
