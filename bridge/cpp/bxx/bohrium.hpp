@@ -372,6 +372,14 @@ public:
     //  Operand construction
     //
 
+    /**
+        Construct a new "linked" array, that it, it has an
+        associated `bh_base`.
+        Shape is inherited by `input`.
+    **/
+    template <typename T, typename OtherT>
+    multi_array<T>& create_base(multi_array<OtherT>& input);
+
     template <typename T>
     multi_array<T>& temp();
 

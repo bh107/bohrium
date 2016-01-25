@@ -155,6 +155,19 @@ size_t Runtime::flush()
 }
 
 /**
+ * Create an intermediate operand based on another operands meta-data.
+ */
+template <typename T, typename OtherT>
+inline
+multi_array<T>& Runtime::create_base(multi_array<OtherT>& input)
+{
+    multi_array<T>* operand = new multi_array<T>(input);
+    operand->link();
+
+    return *operand;
+}
+
+/**
  * Create an unitialized intermediate operand.
  */
 template <typename T>
