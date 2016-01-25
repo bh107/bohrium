@@ -1,15 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 include_directories(../../../include)
 
-file(GLOB SRC hello_world.cpp)
+add_executable(bxx_add "bxx_add.cc")    # bxx_add
+target_link_libraries(bxx_add bh)       # Depends on libbh.so ...
+include_directories(../)                # ... and header files of the C++ Bridge
+install(TARGETS bxx_add DESTINATION share/bohrium/test/cpp COMPONENT bohrium)
 
-add_executable(bh_hello_world_cpp ${SRC})
-
-#We depend on bh.so
-target_link_libraries(bh_hello_world_cpp bh)
-
-#We need to include the header files of the C++ Bridge
-include_directories(../)
-
-install(TARGETS bh_hello_world_cpp DESTINATION share/bohrium/test/cpp COMPONENT bohrium)
+add_executable(bxx_sum "bxx_sum.cc")    # bxx_sum
+target_link_libraries(bxx_sum bh)       # Depends on libbh.so ...
+include_directories(../)                # ... and header files of the C++ Bridge
+install(TARGETS bxx_sum DESTINATION share/bohrium/test/cpp COMPONENT bohrium)
 

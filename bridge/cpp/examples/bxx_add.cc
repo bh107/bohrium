@@ -24,110 +24,16 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace bxx;
 
-template <typename T>
-void complex_ones()
-{
-    multi_array<std::complex<T> > cc;
-    multi_array<T> r, i;
-
-    cc      = ones<std::complex<T> >(3,3);
-    r       = real<std::complex<T>, T>(cc);
-    i       = imag<std::complex<T>, T>(cc);
-
-    std::cout << r << "111" << i << "222" << cc << "!!!" << std::endl;
-}
-
-template <typename T>
-void complex_constant()
-{
-    multi_array<std::complex<T> > cc;
-    multi_array<T> r, i;
-
-    cc      = ones<std::complex<T> >(3,3);
-    cc      = (T)4.5;
-    r       = real<std::complex<T>, T>(cc);
-    i       = imag<std::complex<T>, T>(cc);
-
-    std::cout << r << "111" << i << "222" << cc << "!!!" << std::endl;
-}
-
 void compute()
 {
-    std::cout << "Hello World." << std::endl;
+    std::cout << "Hello Addition." << std::endl;
 
-    /*
-    // Complex numbers
-    complex_ones<double>();
-    complex_ones<float>();
-
-    complex_constant<double>();
-    complex_constant<float>();
-    */
-
-    /*
-    float* diller = (float*)malloc(100*sizeof(float));
-    for(int i=0; i<100;++i) {
-        diller[i] = i;
-    }
-
-    multi_array<float> hullet;
-    hullet = empty<float>(100);
-    hullet(diller);
-
-    std::cout << "Hvad er der i hullet? " << hullet << "." << std::endl;
-    std::cout << "Range(10)" << range<int64_t>(10) << std::endl;
-    std::cout << "Range(0, 10, 2)" << range<int64_t>(0, 10, 1) << std::endl;
-
-    1
-    // Scan
-    multi_array<float> a;
-    a = ones<float>(20);
-    a = scan(a, SUM, 0);
-
-    std::cout << "a= 1,2,3, ... , 20:" << a << std::endl;
-    std::cout << "prefix-sum(a): "  << scan(a, SUM, 0) << std::endl;
-    std::cout << "prefix-prod(a): " << scan(a, PRODUCT, 0) << std::endl;
-
-    multi_array<float> a;
-    multi_array<float> b;
-
-    // Transposition
-    a = ones<float>(3,2,5);
-    b = transpose(a);
-    //b = sin(a);
-    //b = a;
-    std::cout << (b+a) << std::endl;
-
-    //
-    // Random
-    cout << random123<float>(10, 1, 0) << endl;
-    cout << random123<float>(10, 2, 0) << endl;
-
-    //
-    // Explicit return...
-    multi_array<float> a,b,c;
-    a = ones<float>(10);
-    b = ones<float>(10);
-    c = ones<float>(10);
-
-    cout << add(a, b) << endl;
-    cout << add(c, a, b) << endl;
-
-    c = add(a, b);
-    cout << c << endl;
-
-    add(c, a, b);
-    cout << c << endl;
-
-    */
     multi_array<float> x, y;
-    multi_array<float> z;
+    
     x = ones<float>(10);
     y = ones<float>(10);
-    z = ones<float>(10);
 
-    std::cout << x+y+z << std::endl;
-
+    std::cout << x + y << std::endl;
 }
 
 int main()
