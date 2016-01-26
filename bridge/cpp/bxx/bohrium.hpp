@@ -91,19 +91,6 @@ int64_t nelements_shape(size_t arg, Args... args)
 #define END 0
 #endif
 
-enum reducible {
-    ADD         = BH_ADD,
-    MULTIPLY    = BH_MULTIPLY,
-    MIN         = BH_MINIMUM,
-    MAX         = BH_MAXIMUM,
-    LOGICAL_AND = BH_LOGICAL_AND,
-    LOGICAL_OR  = BH_LOGICAL_OR,
-    LOGICAL_XOR = BH_LOGICAL_XOR,
-    BITWISE_AND = BH_BITWISE_AND,
-    BITWISE_OR  = BH_BITWISE_OR,
-    BITWISE_XOR  = BH_BITWISE_XOR
-};
-
 enum scannable {
     SUM     = BH_ADD_ACCUMULATE,
     PRODUCT = BH_MULTIPLY_ACCUMULATE

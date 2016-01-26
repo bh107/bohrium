@@ -24,7 +24,7 @@ namespace bxx {
 
 template <typename T_out, typename T_in>
 inline
-multi_array<T_out>& create_reduce_result(multi_array<T_in> &lhs, int64_t rhs)
+multi_array<T_out>& create_reduce_result(multi_array<T_in>& lhs, int64_t rhs)
 {
     // Construct result array
     multi_array<T_out>* result = &Runtime::instance().create<T_out>();
@@ -54,46 +54,95 @@ multi_array<T_out>& create_reduce_result(multi_array<T_in> &lhs, int64_t rhs)
 //
 // Partial reduction
 template <typename T>
-multi_array<T>& reduce(multi_array<T>& op, reducible opcode, size_t axis)
+multi_array<T>& reduce_add(multi_array<T>& op, int64_t axis)
 {
-    multi_array<T>* result = &create_reduce_result(op, axis);
-    switch(opcode) {
-        case ADD:
-            bh_add_reduce(*result, op, (bh_int64)axis);
-            break;
-        case MULTIPLY:
-            bh_multiply_reduce(*result, op, (bh_int64)axis);
-            break;
-         case MIN:
-            bh_minimum_reduce(*result, op, (bh_int64)axis);
-            break;
-         case MAX:
-            bh_maximum_reduce(*result, op, (bh_int64)axis);
-            break;
-         case LOGICAL_AND:
-            bh_logical_and_reduce(*result, op, (bh_int64)axis);
-            break;
-         case LOGICAL_OR:
-            bh_logical_or_reduce(*result, op, (bh_int64)axis);
-            break;
-         case LOGICAL_XOR:
-            bh_logical_xor_reduce(*result, op, (bh_int64)axis);
-            break;
-         case BITWISE_AND:
-            bh_bitwise_and_reduce(*result, op, (bh_int64)axis);
-            break;
-         case BITWISE_OR:
-            bh_bitwise_or_reduce(*result, op, (bh_int64)axis);
-            break;
-         case BITWISE_XOR:
-            bh_bitwise_xor_reduce(*result, op, (bh_int64)axis);
-            break;
-        default:
-            throw std::runtime_error("Error: Unsupported opcode for reduction.\n");
-    }
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_add_reduce(*result, op, axis);
     result->setTemp(true);
     return *result;
 }
+
+template <typename T>
+multi_array<T>& reduce_mul(multi_array<T>& op, int64_t axis)
+{
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_multiply_reduce(*result, op, axis);
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& reduce_min(multi_array<T>& op, int64_t axis)
+{
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_minimum_reduce(*result, op, axis);
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& reduce_max(multi_array<T>& op, int64_t axis)
+{
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_maximum_reduce(*result, op, axis);
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& reduce_and(multi_array<T>& op, int64_t axis)
+{
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_logical_and_reduce(*result, op, axis);
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& reduce_or(multi_array<T>& op, int64_t axis)
+{
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_logical_or_reduce(*result, op, axis);
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& reduce_xor(multi_array<T>& op, int64_t axis)
+{
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_logical_xor_reduce(*result, op, axis);
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& reduce_bw_and(multi_array<T>& op, int64_t axis)
+{
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_bitwise_and_reduce(*result, op, axis);
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& reduce_bw_or(multi_array<T>& op, int64_t axis)
+{
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_bitwise_or_reduce(*result, op, axis);
+    result->setTemp(true);
+    return *result;
+}
+
+template <typename T>
+multi_array<T>& reduce_bw_xor(multi_array<T>& op, int64_t axis)
+{
+    multi_array<T>* result = &create_reduce_result<T,T>(op, axis);
+    bh_bitwise_xor_reduce(*result, op, axis);
+    result->setTemp(true);
+    return *result;
+}
+
 
 //
 // Complete reduction
