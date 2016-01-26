@@ -740,11 +740,11 @@ string Walker::operations(void)
                 outer_opds_.insert(tac.out);
 
                 ss << _assign(
-                    kernel_.operand_glb(tac.out).accu_shared(),
+                    kernel_.operand_glb(tac.out).accu_private(),
                     oper(
                         tac.oper,
                         kernel_.operand_glb(tac.out).meta().etype,
-                        kernel_.operand_glb(tac.out).accu_shared(),
+                        kernel_.operand_glb(tac.out).accu_private(),
                         kernel_.operand_glb(tac.in1).walker_val()
                     )
                 ) << _end();
@@ -760,12 +760,12 @@ string Walker::operations(void)
                 in1 = kernel_.operand_glb(tac.in1).walker_val();
 
                 ss << _assign(
-                    kernel_.operand_glb(tac.out).accu_shared(),
-                    oper(tac.oper, etype, kernel_.operand_glb(tac.out).accu_shared(), in1)
+                    kernel_.operand_glb(tac.out).accu_private(),
+                    oper(tac.oper, etype, kernel_.operand_glb(tac.out).accu_private(), in1)
                 ) << _end();
                 ss << _assign(
                     kernel_.operand_glb(tac.out).walker_val(),
-                    kernel_.operand_glb(tac.out).accu_shared()
+                    kernel_.operand_glb(tac.out).accu_private()
                 ) << _end();
                 break;
 
@@ -912,19 +912,19 @@ string Walker::generate_source(bool offload)
             if ((kernel_.omask() & KP_REDUCE_COMPLETE)>0) {
                 subjects["ACCU_LOCAL_DECLARE_COMPLETE"] = _line(_declare_init(
                     in1->etype(),
-                    out->accu_shared(),
+                    out->accu_private(),
                     oper_neutral_element(tac->oper, in1->meta().etype)
                 ));
             } else if ((kernel_.omask() & KP_REDUCE_PARTIAL)>0) {
                 subjects["ACCU_LOCAL_DECLARE_PARTIAL"] = _line(_declare_init(
                     in1->etype(),
-                    out->accu_shared(),
+                    out->accu_private(),
                     oper_neutral_element(tac->oper, in1->meta().etype)
                 ));
             } else if ((kernel_.omask() & KP_SCAN)>0) {
                 subjects["ACCU_LOCAL_DECLARE"] = _line(_declare_init(
                     in1->etype(),
-                    out->accu_shared(),
+                    out->accu_private(),
                     oper_neutral_element(tac->oper, in1->meta().etype)
                 ));
             }
@@ -963,8 +963,9 @@ string Walker::generate_source(bool offload)
         if ((kernel_.omask() & KP_REDUCTION)>0) {
             if ((out->meta().layout & (KP_SCALAR | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED))>0) {
                 // Initialize the accumulator
-                subjects["ACCU_OPD_INIT"] = _line(_assign(
-                    _deref(_add(out->buffer_data(), out->start())),
+                subjects["ACCU_OPD_INIT"] = _line(_declare_init(
+                    in1->etype(),
+                    out->accu_shared(),
                     oper_neutral_element(tac->oper, in1->meta().etype)
                 ));
                 if ((kernel_.omask() & KP_REDUCE_COMPLETE)>0) {
@@ -972,7 +973,11 @@ string Walker::generate_source(bool offload)
                     subjects["ACCU_OPD_SYNC_COMPLETE"] = _line(synced_oper(
                         tac->oper,
                         in1->meta().etype,
-                        _deref(_add(out->buffer_data(), out->start())),
+                        out->accu_shared(),
+                        out->accu_shared(),
+                        out->accu_private()
+                    ));
+                    subjects["ACCU_OPD_WRITEBACK"] = _line(_assign(
                         _deref(_add(out->buffer_data(), out->start())),
                         out->accu_shared()
                     ));
@@ -983,7 +988,7 @@ string Walker::generate_source(bool offload)
                         in1->meta().etype,
                         _deref(_add(out->buffer_data(), out->start())),
                         _deref(_add(out->buffer_data(), out->start())),
-                        out->accu_shared()
+                        out->accu_private()
                     ));
                 }
             }
@@ -1015,8 +1020,9 @@ string Walker::generate_source(bool offload)
         if (((kernel_.omask() & (KP_REDUCE_PARTIAL | KP_REDUCE_COMPLETE))>0) and \
             ((out->meta().layout & (KP_SCALAR | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED))>0)) {
             // Initialize the accumulator
-            subjects["ACCU_OPD_INIT"] = _line(_assign(
-                _deref(_add(out->buffer_data(), out->start())),
+            subjects["ACCU_OPD_INIT"] = _line(_declare_init(
+                in1->etype(),
+                out->accu_shared(),
                 oper_neutral_element(tac->oper, in1->meta().etype)
             ));
 
@@ -1024,13 +1030,17 @@ string Walker::generate_source(bool offload)
             if ((kernel_.omask() & (KP_REDUCE_PARTIAL))>0) {
                 subjects["ACCU_OPD_SYNC_PARTIAL"] = _line(_assign(
                     out->walker_val(),
-                    out->accu_shared()
+                    out->accu_private()
                 ));
             } else if ((kernel_.omask() & (KP_REDUCE_COMPLETE))>0) {
                 subjects["ACCU_OPD_SYNC_COMPLETE"] = _line(synced_oper(
                     tac->oper,
                     in1->meta().etype,
-                    _deref(_add(out->buffer_data(), out->start())),
+                    out->accu_shared(),
+                    out->accu_shared(),
+                    out->accu_private()
+                ));
+                subjects["ACCU_OPD_WRITEBACK"] = _line(_assign(
                     _deref(_add(out->buffer_data(), out->start())),
                     out->accu_shared()
                 ));
@@ -1060,12 +1070,12 @@ string Walker::generate_source(bool offload)
             if (out->meta().layout == KP_SCALAR) {
                 subjects["ACCU_OPD_SYNC_PARTIAL"]= _line(_assign(
                     _deref(_add(out->buffer_data(), out->start())),
-                    out->accu_shared()
+                    out->accu_private()
                 ));
             } else {
                 subjects["ACCU_OPD_SYNC_PARTIAL"]= _line(_assign(
                     out->walker_val(),
-                    out->accu_shared()
+                    out->accu_private()
                 ));
             }
         }

@@ -94,4 +94,7 @@
             // Accumulator COMPLETE SYNC - end
         }
     }
+    // Accumulator COMPLETE WRITEBACK - begin
+    {{ACCU_OPD_WRITEBACK}}
+    // Accumulator COMPLETE WRITEBACK - end
 }
