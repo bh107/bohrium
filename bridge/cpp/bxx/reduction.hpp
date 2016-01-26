@@ -57,16 +57,16 @@ multi_array<T>& sum(multi_array<T>& op)
     size_t dims = op.meta.ndim;
 
     multi_array<T>* in = &op;
-    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
+    multi_array<T>* result = &create_reduce_result<T,T>(op, 0);
     bh_add_reduce(*result, *in, (int64_t)0);
     
     for(size_t i=1; i<dims; i++) {
-        result = &create_reduce_result<T,T>(*in, 0);
-        in->setTemp(true);
-        bh_add_reduce(*result, *in, (int64_t)0);
         in = result;
+        in->setTemp(true);
+        result = &create_reduce_result<T,T>(*in, 0);
+        bh_add_reduce(*result, *in, (int64_t)0);
     }
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -76,16 +76,16 @@ multi_array<T>& product(multi_array<T>& op)
     size_t dims = op.meta.ndim;
 
     multi_array<T>* in = &op;
-    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
-    bh_multiply_reduce(*result, *in, (int64_t)0);
+    multi_array<T>* result = &create_reduce_result<T,T>(op, 0);
+    bh_add_reduce(*result, *in, (int64_t)0);
     
     for(size_t i=1; i<dims; i++) {
-        result = &create_reduce_result<T,T>(*in, 0);
-        in->setTemp(true);
-        bh_multiply_reduce(*result, *in, (int64_t)0);
         in = result;
+        in->setTemp(true);
+        result = &create_reduce_result<T,T>(*in, 0);
+        bh_multiply_reduce(*result, *in, (int64_t)0);
     }
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -95,16 +95,16 @@ multi_array<T>& min(multi_array<T>& op)
     size_t dims = op.meta.ndim;
 
     multi_array<T>* in = &op;
-    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
-    bh_minimum_reduce(*result, *in, (int64_t)0);
+    multi_array<T>* result = &create_reduce_result<T,T>(op, 0);
+    bh_add_reduce(*result, *in, (int64_t)0);
     
     for(size_t i=1; i<dims; i++) {
-        result = &create_reduce_result<T,T>(*in, 0);
-        in->setTemp(true);
-        bh_minimum_reduce(*result, *in, (int64_t)0);
         in = result;
+        in->setTemp(true);
+        result = &create_reduce_result<T,T>(*in, 0);
+        bh_minimum_reduce(*result, *in, (int64_t)0);
     }
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -114,16 +114,16 @@ multi_array<T>& max(multi_array<T>& op)
     size_t dims = op.meta.ndim;
 
     multi_array<T>* in = &op;
-    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
-    bh_maximum_reduce(*result, *in, (int64_t)0);
+    multi_array<T>* result = &create_reduce_result<T,T>(op, 0);
+    bh_add_reduce(*result, *in, (int64_t)0);
     
     for(size_t i=1; i<dims; i++) {
-        result = &create_reduce_result<T,T>(*in, 0);
-        in->setTemp(true);
-        bh_maximum_reduce(*result, *in, (int64_t)0);
         in = result;
+        in->setTemp(true);
+        result = &create_reduce_result<T,T>(*in, 0);
+        bh_maximum_reduce(*result, *in, (int64_t)0);
     }
-    
+    result->setTemp(true);
     return *result;
 }
 
@@ -133,16 +133,16 @@ multi_array<T>& any(multi_array<T>& op)
     size_t dims = op.meta.ndim;
 
     multi_array<T>* in = &op;
-    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
-    bh_logical_or_reduce_reduce(*result, *in, (int64_t)0);
+    multi_array<T>* result = &create_reduce_result<T,T>(op, 0);
+    bh_add_reduce(*result, *in, (int64_t)0);
     
     for(size_t i=1; i<dims; i++) {
-        result = &create_reduce_result<T,T>(*in, 0);
-        in->setTemp(true);
-        bh_logical_or_reduce_reduce(*result, *in, (int64_t)0);
         in = result;
+        in->setTemp(true);
+        result = &create_reduce_result<T,T>(*in, 0);
+        bh_logical_or_reduce(*result, *in, (int64_t)0);
     }
-
+    result->setTemp(true);
     return *result;
 }
 
@@ -152,16 +152,16 @@ multi_array<T>& all(multi_array<T>& op)
     size_t dims = op.meta.ndim;
 
     multi_array<T>* in = &op;
-    multi_array<T>* result = &create_reduce_result<T,T>(*in, 0);
-    bh_logical_and_reduce_reduce(*result, *in, (int64_t)0);
+    multi_array<T>* result = &create_reduce_result<T,T>(op, 0);
+    bh_add_reduce(*result, *in, (int64_t)0);
     
     for(size_t i=1; i<dims; i++) {
-        result = &create_reduce_result<T,T>(*in, 0);
-        in->setTemp(true);
-        bh_logical_and_reduce_reduce(*result, *in, (int64_t)0);
         in = result;
+        in->setTemp(true);
+        result = &create_reduce_result<T,T>(*in, 0);
+        bh_logical_and_reduce(*result, *in, (int64_t)0);
     }
-
+    result->setTemp(true);
     return *result;
 }
 
