@@ -241,7 +241,8 @@ public:
     std::string stride_outer(void);
     std::string stride_axis(void);
 
-    std::string accu(void);
+    std::string accu_shared(void);
+    std::string accu_private(void);
     std::string walker(void);
     std::string walker_val(void);
     std::string walker_subscript_val(void);

@@ -107,7 +107,7 @@ string Walker::offload_loop_openacc(kp_tac* tac_reduction, Operand* out)
         }
     }
     if (tac_reduction) {
-        ss << "reduction(+:" << out->accu() << ") \\" << endl;
+        ss << "reduction(+:" << out->accu_shared() << ") \\" << endl;
     }
     ss << "if(1)" << endl;
 
@@ -125,7 +125,7 @@ string Walker::offload_loop_sequel_openacc(kp_tac* tac_reduction, Operand* out)
         _deref(_add(
             out->buffer_data(), out->start()
         )),
-        out->accu()
+        out->accu_shared()
     ) << _end();
     return ss.str();
 }
@@ -740,11 +740,11 @@ string Walker::operations(void)
                 outer_opds_.insert(tac.out);
 
                 ss << _assign(
-                    kernel_.operand_glb(tac.out).accu(),
+                    kernel_.operand_glb(tac.out).accu_shared(),
                     oper(
                         tac.oper,
                         kernel_.operand_glb(tac.out).meta().etype,
-                        kernel_.operand_glb(tac.out).accu(),
+                        kernel_.operand_glb(tac.out).accu_shared(),
                         kernel_.operand_glb(tac.in1).walker_val()
                     )
                 ) << _end();
@@ -760,12 +760,12 @@ string Walker::operations(void)
                 in1 = kernel_.operand_glb(tac.in1).walker_val();
 
                 ss << _assign(
-                    kernel_.operand_glb(tac.out).accu(),
-                    oper(tac.oper, etype, kernel_.operand_glb(tac.out).accu(), in1)
+                    kernel_.operand_glb(tac.out).accu_shared(),
+                    oper(tac.oper, etype, kernel_.operand_glb(tac.out).accu_shared(), in1)
                 ) << _end();
                 ss << _assign(
                     kernel_.operand_glb(tac.out).walker_val(),
-                    kernel_.operand_glb(tac.out).accu()
+                    kernel_.operand_glb(tac.out).accu_shared()
                 ) << _end();
                 break;
 
@@ -905,26 +905,26 @@ string Walker::generate_source(bool offload)
             subjects["BUF_IN1"] = in1->buffer_name();
 
             subjects["NEUTRAL_ELEMENT"] = oper_neutral_element(tac->oper, in1->meta().etype);
-            subjects["KP_ETYPE"] = out->etype();
+            subjects["KP_ETYPE"] = in1->etype();
             subjects["ATYPE"] = in2->etype();
 
             // Declare local accumulator var, REDUCE_[COMPLETE|PARTIAL]|KP_SCAN
             if ((kernel_.omask() & KP_REDUCE_COMPLETE)>0) {
                 subjects["ACCU_LOCAL_DECLARE_COMPLETE"] = _line(_declare_init(
                     in1->etype(),
-                    out->accu(),
+                    out->accu_shared(),
                     oper_neutral_element(tac->oper, in1->meta().etype)
                 ));
             } else if ((kernel_.omask() & KP_REDUCE_PARTIAL)>0) {
                 subjects["ACCU_LOCAL_DECLARE_PARTIAL"] = _line(_declare_init(
                     in1->etype(),
-                    out->accu(),
+                    out->accu_shared(),
                     oper_neutral_element(tac->oper, in1->meta().etype)
                 ));
             } else if ((kernel_.omask() & KP_SCAN)>0) {
                 subjects["ACCU_LOCAL_DECLARE"] = _line(_declare_init(
                     in1->etype(),
-                    out->accu(),
+                    out->accu_shared(),
                     oper_neutral_element(tac->oper, in1->meta().etype)
                 ));
             }
@@ -974,7 +974,7 @@ string Walker::generate_source(bool offload)
                         in1->meta().etype,
                         _deref(_add(out->buffer_data(), out->start())),
                         _deref(_add(out->buffer_data(), out->start())),
-                        out->accu()
+                        out->accu_shared()
                     ));
                 } else {
                     // Syncronize accumulator and local accumulator var
@@ -983,7 +983,7 @@ string Walker::generate_source(bool offload)
                         in1->meta().etype,
                         _deref(_add(out->buffer_data(), out->start())),
                         _deref(_add(out->buffer_data(), out->start())),
-                        out->accu()
+                        out->accu_shared()
                     ));
                 }
             }
@@ -1024,7 +1024,7 @@ string Walker::generate_source(bool offload)
             if ((kernel_.omask() & (KP_REDUCE_PARTIAL))>0) {
                 subjects["ACCU_OPD_SYNC_PARTIAL"] = _line(_assign(
                     out->walker_val(),
-                    out->accu()
+                    out->accu_shared()
                 ));
             } else if ((kernel_.omask() & (KP_REDUCE_COMPLETE))>0) {
                 subjects["ACCU_OPD_SYNC_COMPLETE"] = _line(synced_oper(
@@ -1032,7 +1032,7 @@ string Walker::generate_source(bool offload)
                     in1->meta().etype,
                     _deref(_add(out->buffer_data(), out->start())),
                     _deref(_add(out->buffer_data(), out->start())),
-                    out->accu()
+                    out->accu_shared()
                 ));
             } else {
                 // CRAP
@@ -1060,12 +1060,12 @@ string Walker::generate_source(bool offload)
             if (out->meta().layout == KP_SCALAR) {
                 subjects["ACCU_OPD_SYNC_PARTIAL"]= _line(_assign(
                     _deref(_add(out->buffer_data(), out->start())),
-                    out->accu()
+                    out->accu_shared()
                 ));
             } else {
                 subjects["ACCU_OPD_SYNC_PARTIAL"]= _line(_assign(
                     out->walker_val(),
-                    out->accu()
+                    out->accu_shared()
                 ));
             }
         }
