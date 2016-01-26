@@ -1802,10 +1802,64 @@
     "system_opcode": false
 },
 {
+    "opcode": "BH_ARG_MAXIMUM_REDUCE",
+    "doc":  "",
+    "code": "amax(a, axis)",
+    "id":   "69",
+    "nop":   3,
+    "types": [
+            [ "BH_UINT64", "BH_UINT8",      "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT16",     "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT32",     "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT64",     "BH_INT64" ],
+            [ "BH_UINT64", "BH_INT8",       "BH_INT64" ],
+            [ "BH_UINT64", "BH_INT16",      "BH_INT64" ],
+            [ "BH_UINT64", "BH_INT32",      "BH_INT64" ],
+            [ "BH_UINT64", "BH_INT64",      "BH_INT64" ],
+            [ "BH_UINT64", "BH_FLOAT32",    "BH_INT64" ],
+            [ "BH_UINT64", "BH_FLOAT64",    "BH_INT64" ]
+    ],
+    "layout": [
+             [ "A", "A", "K" ]
+    ],
+    "elementwise":   false,
+    "composite":     false,
+    "reduction":     true,
+    "accumulate":    false,
+    "system_opcode": false
+},
+{
+    "opcode": "BH_ARG_MINIMUM_REDUCE",
+    "doc":  "",
+    "code": "amin(a, axis)",
+    "id":   "70",
+    "nop":   3,
+    "types": [
+            [ "BH_UINT64", "BH_UINT8",      "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT16",     "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT32",     "BH_INT64" ],
+            [ "BH_UINT64", "BH_UINT64",     "BH_INT64" ],
+            [ "BH_UINT64", "BH_INT8",       "BH_INT64" ],
+            [ "BH_UINT64", "BH_INT16",      "BH_INT64" ],
+            [ "BH_UINT64", "BH_INT32",      "BH_INT64" ],
+            [ "BH_UINT64", "BH_INT64",      "BH_INT64" ],
+            [ "BH_UINT64", "BH_FLOAT32",    "BH_INT64" ],
+            [ "BH_UINT64", "BH_FLOAT64",    "BH_INT64" ]
+    ],
+    "layout": [
+             [ "A", "A", "K" ]
+    ],
+    "elementwise":   false,
+    "composite":     false,
+    "reduction":     true,
+    "accumulate":    false,
+    "system_opcode": false
+},
+{
     "opcode": "BH_RANDOM",
     "doc":  "Random123: The returned result is a deterministic function of the key and counter, i.e. a unique (seed, indexes) tuple will always produce the same result. The result is highly sensitive to small changes in the inputs, so that the sequence of values produced by simply incrementing the counter (or key) is effectively indistinguishable from a sequence of samples of a uniformly distributed random variable.",
     "code": "op1 = phillox2x32(op2, op3)",
-    "id":   "69",
+    "id":   "71",
     "nop":   2,
     "types": [
             [ "BH_UINT64", "BH_R123" ]
@@ -1823,7 +1877,7 @@
     "opcode": "BH_RANGE",
     "doc":  "Returns a 1-dim base-array filled with integer range starting a zero",
     "code": "op1 = [0,1,2,...,n]",
-    "id":   "70",
+    "id":   "72",
     "nop":   1,
     "types": [
             [ "BH_UINT32" ],
@@ -1842,7 +1896,7 @@
     "opcode": "BH_REAL",
     "doc":  "Return the real part of the elements of the array.",
     "code": "op1 = real(op2)",
-    "id":   "71",
+    "id":   "73",
     "nop":   2,
     "types": [
             [ "BH_FLOAT64", "BH_COMPLEX128" ],
@@ -1862,7 +1916,7 @@
     "opcode": "BH_IMAG",
     "doc":  "Return the imaginary part of the elements of the array.",
     "code": "op1 = imag(op2)",
-    "id":   "72",
+    "id":   "74",
     "nop":   2,
     "types": [
             [ "BH_FLOAT64", "BH_COMPLEX128" ],
@@ -1882,7 +1936,7 @@
     "opcode": "BH_ADD_ACCUMULATE",
     "doc":  "Computes the prefix sum.",
     "code": "cumsum(a, axis)",
-    "id":   "73",
+    "id":   "75",
     "nop":   3,
     "types": [
             [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],
@@ -1912,7 +1966,7 @@
     "opcode": "BH_MULTIPLY_ACCUMULATE",
     "doc":  "Computes the prefix product.",
     "code": "cumprod(a, axis)",
-    "id":   "74",
+    "id":   "76",
     "nop":   3,
     "types": [
             [ "BH_BOOL", "BH_BOOL", "BH_INT64" ],
@@ -1942,7 +1996,7 @@
     "opcode": "BH_SIGN",
     "doc":  "Computes the SIGN of elements. -1 = negative, 1=positive. 0 = 0.",
     "code": "sign(a)",
-    "id":   "75",
+    "id":   "77",
     "nop":   2,
     "types": [
         [ "BH_COMPLEX128",  "BH_COMPLEX128"],
@@ -1968,7 +2022,7 @@
     "opcode": "BH_MATMUL",
     "doc":  "Matrix multiplication C = A x B",
     "code": "matmul(A,B)",
-    "id":   "76",
+    "id":   "78",
     "nop":   3,
     "types": [
         [ "BH_BOOL"      , "BH_BOOL"      , "BH_BOOL"       ],
@@ -2000,7 +2054,7 @@
     "opcode": "BH_GATHER",
     "doc":  "Gather elements from IN selected by INDEX into OUT. IN.shape == INDEX.shape.",
     "code": "gather(OUT, IN, INDEX)",
-    "id":   "77",
+    "id":   "79",
     "nop":   3,
     "types": [
         [ "BH_BOOL"      , "BH_BOOL"      , "BH_UINT64"],
@@ -2030,7 +2084,7 @@
     "opcode": "BH_SCATTER",
     "doc":  "Scatter all elements of IN into OUT selected by INDEX. OUT.shape == INDEX.shape.",
     "code": "scatter(OUT, IN, INDEX)",
-    "id":   "78",
+    "id":   "80",
     "nop":   3,
     "types": [
         [ "BH_BOOL"      , "BH_BOOL"      , "BH_UINT64"],
@@ -2060,7 +2114,7 @@
     "opcode": "BH_REPEAT",
     "doc": "",
     "code": "",
-    "id": "79",
+    "id": "81",
     "nop": 1,
     "types": [
         [ "BH_R123" ]
