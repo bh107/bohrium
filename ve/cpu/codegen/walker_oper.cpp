@@ -280,7 +280,7 @@ string Walker::oper(KP_OPERATOR oper, KP_ETYPE etype, string in1, string in2)
                 default:            return _tanh(in1);
             }
         case KP_TRUNC:                 return _trunc(in1);
-        default:                    return "NOT_IMPLEMENTED_YET";
+        default:                    return "NON_IMPLEMENTED_OPERATOR";
     }
     return "NO NO< NO NO NO NO NONO NO NO NO NOTHERES NO LIMITS";
 }
