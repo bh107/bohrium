@@ -62,10 +62,7 @@ add_custom_command(OUTPUT ${CODEGEN_SRC}
     COMMENT "BXX autogenerator"
     VERBATIM)
 
-add_library(BXX STATIC ${CODEGEN_SRC})
-set_target_properties(BXX PROPERTIES LINKER_LANGUAGE CXX)
-
-#add_custom_target(BXX DEPENDS ${CODEGEN_SRC})
+add_custom_target(BXX DEPENDS ${CODEGEN_SRC})
 # Autogeneration - end
 #
 
