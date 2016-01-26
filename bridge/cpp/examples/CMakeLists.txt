@@ -19,3 +19,9 @@ target_link_libraries(bxx_reduce bh)        # Depends on libbh.so ...
 include_directories(../)                    # ... and header files of the C++ Bridge
 install(TARGETS bxx_reduce DESTINATION share/bohrium/test/cpp COMPONENT bohrium)
 add_dependencies(bxx_reduce BXX)
+
+add_executable(bxx_amax "bxx_amax.cc")      # bxx_amax
+target_link_libraries(bxx_amax bh)          # Depends on libbh.so ...
+include_directories(../)                    # ... and header files of the C++ Bridge
+install(TARGETS bxx_amax DESTINATION share/bohrium/test/cpp COMPONENT bohrium)
+add_dependencies(bxx_amax BXX)
