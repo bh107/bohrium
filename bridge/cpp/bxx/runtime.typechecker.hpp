@@ -428,6 +428,106 @@ void Runtime::typecheck<BH_ADD_REDUCE, uint8_t, uint8_t, int64_t>(void) { }
 
 template <>
 inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, uint8_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, uint16_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, uint32_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, uint64_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, int8_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, int16_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, int32_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, int64_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, float, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MAXIMUM_REDUCE, uint64_t, double, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, uint8_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, uint16_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, uint32_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, uint64_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, int8_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, int16_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, int32_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, int64_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, float, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_ARG_MINIMUM_REDUCE, uint64_t, double, int64_t>(void) { }
+
+
+template <>
+inline
 void Runtime::typecheck<BH_BITWISE_AND, bool, bool, bool>(void) { }
 
 

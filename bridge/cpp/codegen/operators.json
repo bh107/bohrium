@@ -217,6 +217,9 @@
 ["bh_bitwise_or_reduce",    "BH_BITWISE_OR_REDUCE",     "runtime.reduce", true],
 ["bh_bitwise_xor_reduce",   "BH_BITWISE_XOR_REDUCE",    "runtime.reduce", true],
 
+["bh_arg_maximum_reduce",   "BH_ARG_MAXIMUM_REDUCE",    "runtime.reduce", true],
+["bh_arg_minimum_reduce",   "BH_ARG_MINIMUM_REDUCE",    "runtime.reduce", true],
+
 ["bh_add_accumulate",       "BH_ADD_ACCUMULATE",        "runtime.accumulate", true],
 ["bh_multiply_accumulate",  "BH_MULTIPLY_ACCUMULATE",   "runtime.accumulate", true],
 
