@@ -136,14 +136,14 @@ size_t Store::preload(void)
 
                 // Add the ".so" extension
                 library = basename +".so";
-               
+
                 //
                 // Construct the absolute path to the file since we need
                 // to open and read it.
                 string index_fn = object_directory_  +\
                                   "/"               +\
                                   filename;
-                ifstream symbol_file(index_fn.c_str(), ifstream::in);
+                std::ifstream symbol_file(index_fn.c_str(), std::ifstream::in);
                 for(string symbol; getline(symbol_file, symbol) && res;) {
                     if (0==libraries_.count(symbol)) {
                         add_symbol(symbol, library);
