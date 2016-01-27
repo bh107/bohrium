@@ -674,7 +674,7 @@ void pprint(const GraphDW &dag, const char filename[])
             out << "]";
         }
     };
-    ofstream file;
+    std::ofstream file;
     file.open(filename);
     write_graphviz(file, new_dag, kernel_writer(new_dag, vertex2nonfusibles),
                    edge_writer(new_dag, weights), graph_writer(new_dag));
@@ -1000,4 +1000,3 @@ void fuse_greedy(GraphDW &dag)
 }
 
 }} //namespace bohrium::dag
-

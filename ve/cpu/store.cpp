@@ -8,12 +8,12 @@ namespace engine {
 
 const char Store::TAG[] = "Store";
 
-Store::Store(const string object_directory, const string kernel_directory) 
+Store::Store(const string object_directory, const string kernel_directory)
 : object_directory_(object_directory), kernel_directory_(kernel_directory), kernel_prefix_("KRN_"), library_prefix_("LIB_")
 {
     //
     // Create an identifier with low collision...
-    char uid[7];    
+    char uid[7];
     static const char alphanum[] =
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -136,14 +136,14 @@ size_t Store::preload(void)
 
                 // Add the ".so" extension
                 library = basename +".so";
-               
+
                 //
                 // Construct the absolute path to the file since we need
                 // to open and read it.
                 string index_fn = object_directory_  +\
                                   "/"               +\
                                   filename;
-                ifstream symbol_file(index_fn.c_str(), ifstream::in);
+                std::ifstream symbol_file(index_fn.c_str(), std::ifstream::in);
                 for(string symbol; getline(symbol_file, symbol) && res;) {
                     if (0==libraries_.count(symbol)) {
                         add_symbol(symbol, library);
@@ -171,8 +171,8 @@ size_t Store::preload(void)
             }
             string filename(ent->d_name);
             string symbol;                     // BH_ADD_fff_CCC_3d
-           
-            // Must begin with "KRN_" 
+
+            // Must begin with "KRN_"
             // Must end with ".so"
             if ((0==filename.compare(0, this->kernel_prefix_.length(), this->kernel_prefix_)) && \
                 (0==filename.compare(fn_len-3, 3, ".so"))) {
@@ -222,7 +222,7 @@ bool Store::load(const string symbol)
 bool Store::load(const string symbol, const string library)
 {
     char *error_msg = NULL;             // Buffer for dlopen errors
-    
+
     string library_abspath = this->object_directory_+"/"+library;
 
     dlerror();                          // Clear any existing error then,
@@ -231,7 +231,7 @@ bool Store::load(const string symbol, const string library)
         if (NULL==lib_handle) {
             error_msg = dlerror();
             fprintf(stderr, "dlopen(..., RTLD_NOW) failed, dlerror() msg: [%s]\n", error_msg);
-            return false; 
+            return false;
         }
         handles_[library] = lib_handle;
     }

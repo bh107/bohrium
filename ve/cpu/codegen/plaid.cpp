@@ -57,8 +57,8 @@ void Plaid::add_from_file(string name, string filename)
     stringstream ss;
     ss << template_directory_ << "/" << filename;
     string abspath = ss.str();
-    ifstream ifs(abspath.c_str());
-    
+    std::ifstream ifs(abspath.c_str());
+
     string content(
         (istreambuf_iterator<char>(ifs)),
         (istreambuf_iterator<char>())
@@ -178,4 +178,3 @@ void Plaid::replace(string& tmpl, unsigned int begin, unsigned int count, string
 }
 
 }}}
-
