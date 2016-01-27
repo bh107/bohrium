@@ -178,4 +178,3 @@ void Plaid::replace(string& tmpl, unsigned int begin, unsigned int count, string
 }
 
 }}}
-

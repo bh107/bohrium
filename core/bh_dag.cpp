@@ -1000,4 +1000,3 @@ void fuse_greedy(GraphDW &dag)
 }
 
 }} //namespace bohrium::dag
-
