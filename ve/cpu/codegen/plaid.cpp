@@ -32,7 +32,6 @@ Plaid::Plaid(string template_directory) : template_directory_(template_directory
 	#endif
     add_from_file("walker.inner.2d",    "walker.inner.2d.tpl");
     add_from_file("walker.inner.nd",    "walker.inner.nd.tpl");
-    add_from_file("walker.axis.2d",     "walker.axis.2d.tpl");
     add_from_file("walker.axis.nd",     "walker.axis.nd.tpl");
     add_from_file("scan.1d",    "scan.1d.tpl");
     add_from_file("scan.nd",    "scan.nd.tpl");
