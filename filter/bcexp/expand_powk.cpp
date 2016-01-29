@@ -18,6 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include "expander.hpp"
+#include <math.h>
 
 using namespace std;
 
@@ -85,25 +86,23 @@ int Expander::expand_powk(bh_ir& bhir, int pc)
         inject(bhir, ++pc, BH_IDENTITY, out, 1);
     } else if (exponent == 1) {                         // x^1 = x
         inject(bhir, ++pc, BH_IDENTITY, out, in1);
-    } else if (exponent == 2) {                         // x^2 = x*x
+    } else {                                            // x^n = (x*x)*(x*x)*...
+        int highest_power_below_input = pow(2, (int)log2(exponent));
+        exponent -= highest_power_below_input;
+
+        // Do x=x^2 as many times as n is a power of 2
         inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1);
-    } else if (exponent == 3) {                         // x^3 = x*x*x
-        inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1); 
-        inject(bhir, ++pc, BH_MULTIPLY, out, out, in1);
-    } else if (exponent == 4) {                         // x^4 = (x*x)*(x*x)
-        inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1);
-        inject(bhir, ++pc, BH_MULTIPLY, out, out, out);
-    } else if (exponent == 5) {                         // x^5 = (x*x)*(x*x)*x
-        inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1);
-        inject(bhir, ++pc, BH_MULTIPLY, out, out, out);
-        inject(bhir, ++pc, BH_MULTIPLY, out, out, in1);
-    } else {
-        // Linear unroll.
-        inject(bhir, ++pc, BH_MULTIPLY, out, in1, in1); // First multiplication
-        for(int exp=2; exp<exponent; ++exp) {           // The remaining
+        highest_power_below_input /= 2;
+
+        while(highest_power_below_input != 1) {
+            inject(bhir, ++pc, BH_MULTIPLY, out, out, out);
+            highest_power_below_input /= 2;
+        }
+
+        // Linear unroll the rest
+        for(int exp=0; exp<exponent; ++exp) {
             inject(bhir, ++pc, BH_MULTIPLY, out, out, in1);
         }
-        // TODO: Replace this with squaring.
     }
 
     return pc-start_pc;
