@@ -1,8 +1,8 @@
 //
-//  INNER-WALKER
+//  walker.inner.nd
 //
-//    Walks the iteration-space using outer/inner loop constructs.
-//    Partitions work into chunks of size equal to the inner-most dimension.
+//	Walks the iteration-space using outer/inner loop constructs.
+//	Partitions work into chunks of size equal to the inner-most dimension.
 //
 {{OFFLOAD_BLOCK}}
 {
@@ -77,10 +77,10 @@
                     {{WALKER_STEP_INNER}}
                     // Walker step INNER - end
                 }
+
                 // Accumulator PARTIAL SYNC - begin
                 {{ACCU_OPD_SYNC_PARTIAL}}
                 // Accumulator PARTIAL SYNC - end
-
             }
 
             // Write EXPANDED scalars back to memory - begin
@@ -94,6 +94,7 @@
             // Accumulator COMPLETE SYNC - end
         }
     }
+
     // Accumulator COMPLETE WRITEBACK - begin
     {{ACCU_OPD_WRITEBACK}}
     // Accumulator COMPLETE WRITEBACK - end

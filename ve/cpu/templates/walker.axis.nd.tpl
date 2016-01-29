@@ -1,8 +1,8 @@
 //
-//  AXIS-walker ND
+//  walking.axis.nd
 //
-//    Walks the iteration-space using other/axis loop constructs.
-//    Partitions work into chunks of size equal to the "axis" dimension.
+//	Walks the iteration-space using other/axis loop constructs.
+//	Partitions work into chunks of size equal to the "axis" dimension.
 //
 {{OFFLOAD_BLOCK}}
 {
@@ -19,7 +19,8 @@
         shape[outer_dim] = iterspace_shape[dim];
         ++outer_dim;
     }
-    int64_t ndim = iterspace_ndim-1;
+
+    int64_t ndim      = iterspace_ndim-1;
     int64_t inner_dim = ndim-1;
     int64_t nelements = 1;
     for(int64_t dim=0; dim<ndim; ++dim) {
@@ -85,9 +86,9 @@
                 }
                 // Walker step non-axis / operand offset - end
 
-                // Accumulator DECLARE - begin
+                // Accumulator DECLARE PARTIAL - begin
                 {{ACCU_LOCAL_DECLARE_PARTIAL}}
-                // Accumulator DECLARE - end
+                // Accumulator DECLARE PARTIAL - end
 
                 {{PRAGMA_SIMD}}
                 for (int64_t aidx=0; aidx < axis_shape; aidx++) {
@@ -99,17 +100,18 @@
                     {{WALKER_STEP_AXIS}}
                     // Walker step INNER - end
                 }
+
                 // Accumulator PARTIAL SYNC - begin
                 {{ACCU_OPD_SYNC_PARTIAL}}
                 // Accumulator PARTIAL SYNC - end
             }
 
             // Write EXPANDED scalars back to memory - begin
-            if (0==tid) {   // Write EXPANDED scalars back to memory.
+            if (0==tid) {
                 {{WRITE_EXPANDED_SCALARS}}
             }
-
             // Write EXPANDED scalars back to memory - end
+
             // Accumulator COMPLETE SYNC - begin
             {{ACCU_OPD_SYNC_COMPLETE}}
             // Accumulator COMPLETE SYNC - end

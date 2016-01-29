@@ -1,6 +1,7 @@
 #ifndef __KP_ENGINE_CODEGEN_HPP
 #define __KP_ENGINE_CODEGEN_HPP 1
 
+#include <sstream>
 #include <string>
 #include <map>
 #include "kp.h"
@@ -199,6 +200,55 @@ std::string _omp_critical(std::string expr, std::string name);
 std::string _omp_atomic(std::string expr);
 
 std::string _beef(std::string info);
+
+class Codeblock
+{
+public:
+    Codeblock(Plaid& plaid, std::string template_fn);
+    
+    void prolog(std::string source);
+
+    void epilog(std::string source);
+
+    void pragma(std::string source);
+
+    void head(std::string source);
+
+    void body(std::string source);
+
+    void foot(std::string source);
+
+    std::string prolog(void);
+
+    std::string epilog(void);
+
+    std::string pragma(void);
+
+    std::string head(void);
+
+    std::string body(void);
+
+    std::string foot(void);
+
+    std::string emit(void);
+
+private:
+    Plaid& plaid_;
+
+    std::string template_fn_;
+
+    std::stringstream prolog_;
+
+    std::stringstream epilog_;
+
+    std::stringstream pragma_;
+
+    std::stringstream head_;
+
+    std::stringstream body_;
+
+    std::stringstream foot_;
+};
 
 class Buffer
 {
