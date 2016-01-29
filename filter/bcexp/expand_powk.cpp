@@ -27,13 +27,30 @@ namespace composite {
 
 int64_t bh_get_integer(bh_constant constant)
 {
-    // TODO: Add extraction for additonal types.
     switch(constant.type) {
+        case BH_UINT8:
+            return (int64_t)constant.value.uint8;
+        case BH_UINT16:
+            return (int64_t)constant.value.uint16;
+        case BH_UINT32:
+            return (int64_t)constant.value.uint32;
+        case BH_UINT64:
+            return (int64_t)constant.value.uint64;
+
+        case BH_INT8:
+            return (constant.value.int8) == (uint64_t)constant.value.int8 ? (int64_t)constant.value.int8 : -1;
+        case BH_INT16:
+            return (constant.value.int16) == (uint64_t)constant.value.int16 ? (int64_t)constant.value.int16 : -1;
+        case BH_INT32:
+            return (constant.value.int32) == (uint64_t)constant.value.int32 ? (int64_t)constant.value.int32 : -1;
+        case BH_INT64:
+            return (constant.value.int64) == (uint64_t)constant.value.int64 ? (int64_t)constant.value.int64 : -1;
+
         case BH_FLOAT32:
             return (constant.value.float32) == (uint64_t)constant.value.float32 ? (int64_t)constant.value.float32 : -1;
-            break;
         case BH_FLOAT64:
             return (constant.value.float64) == (uint64_t)constant.value.float64 ? (int64_t)constant.value.float64 : -1;
+            
         default:
             return -1;
     }
@@ -41,7 +58,7 @@ int64_t bh_get_integer(bh_constant constant)
 
 int Expander::expand_powk(bh_ir& bhir, int pc)
 {
-    int start_pc = pc;                              
+    int start_pc = pc;
     bh_instruction& instr = bhir.instr_list[pc];        // Grab the BH_POWER instruction
     int64_t const k = 100;                              // Max exponent "unfolding"
 
@@ -50,7 +67,6 @@ int Expander::expand_powk(bh_ir& bhir, int pc)
     }
 
     int64_t exponent = bh_get_integer(instr.constant);  // Extract the exponent
-
     if ((exponent < 0) || (exponent > k)) {             // Transformation does not apply
         return 0;
     }
