@@ -19,6 +19,8 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh.h>
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -30,8 +32,14 @@ void pprint_filter(bh_ir *bhir)
     ++pprint_filter_count;
     snprintf(trace_fn, 8000, "trace-%d.txt", pprint_filter_count);
 
-    printf("pprint-filter: writing trace('%s').\n", trace_fn);
-
-    bh_pprint_trace_file(bhir, trace_fn);   // Trace
+    cout << "pprint-filter: writing trace('" << trace_fn << "')." << endl;
+    ofstream f(trace_fn);
+    f << "Trace " << pprint_filter_count << ":" << endl;
+    for(const bh_instruction &instr: bhir->instr_list)
+    {
+        f << instr << endl;
+    }
+    f << endl;
+    f.close();
 }
 

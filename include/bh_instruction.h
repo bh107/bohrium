@@ -44,7 +44,10 @@ struct bh_instruction
             ar & operand[i];
     }
 };
-
 BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)
 
+//Implements pprint of an instruction
+DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_instruction& instr);
+
 #endif
+
