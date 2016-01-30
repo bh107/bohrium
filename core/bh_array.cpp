@@ -19,6 +19,14 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bh.h>
+#include <map>
+#include <string>
+#include <algorithm>
+#include <tuple>
+#include <iostream>
+#include <sstream>
+
+using namespace std;
 
 /** Create a new base array.
  *
@@ -55,14 +63,90 @@ void bh_destroy_base(bh_base**  base)
     b = NULL;
 }
 
-std::ostream& operator<<(std::ostream& out, const bh_view& v) 
+// Returns the label of this base array
+// NB: generated a new label if necessary
+static map<const bh_base*, unsigned int>label_map;
+unsigned int bh_base::get_label() const
 {
-    out << "{base: " << v.base << ", start: " << v.start << ", ndim: " << v.ndim << " shape: [" << v.shape[0];
-    for (int i = 1; i < v.ndim; ++i)
-        out << ", " << v.shape[i];
-    out << "], stride: [" << v.stride[0];
-    for (int i = 1; i < v.ndim; ++i)
-        out << ", " << v.stride[i];
-    out << "] }";
+   if(label_map.find(this) == label_map.end())
+       label_map[this] = label_map.size();
+   return label_map[this];
+}
+
+ostream& operator<<(ostream& out, const bh_base& b)
+{
+    unsigned int label = b.get_label();
+    out << "a" << label << "{dtype: " << bh_type_text(b.type) << ", nelem: " \
+        << b.nelem << ", address: " << &b << "}";
+    return out;
+}
+
+string bh_base::str() const
+{
+    stringstream ss;
+    ss << *this;
+    return ss.str();
+}
+
+vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const
+{
+    //stride&shape&index for each dimension (in that order)
+    vector<tuple<int64_t, int64_t, int64_t> > sns;
+    for(int64_t i=0; i<this->ndim; ++i)
+    {
+        sns.push_back(make_tuple(this->stride[i], this->shape[i], i));
+    }
+    //Let's sort them such that the greatest strides comes first
+    sort(sns.begin(), sns.end(), greater<tuple<int64_t, int64_t, int64_t> >());
+
+    //Now let's compute start&end&stride of each dimension, which
+    //makes up the python notation e.g. [2:4:1]
+    vector<tuple<int64_t, int64_t, int64_t> > sne(sns.size());
+    int64_t offset = this->start;
+    for(size_t i=0; i<sns.size(); ++i)
+    {
+        int64_t stride = std::get<0>(sns[i]);
+        int64_t shape  = std::get<1>(sns[i]);
+        int64_t index  = std::get<2>(sns[i]);
+
+        int64_t start = 0;
+        if (stride > 0)//avoid division by zero
+            start = offset / stride;
+        int64_t end = start + shape;
+        offset -= start * stride;
+        sne[index] = make_tuple(start, end, stride);
+    }
+
+    /*
+    //Find the contiguous strides, that is the stride of each dimension
+    //assuming the view is contiguous.
+    int64_t cont_stride = 1;
+    for(int64_t i=sns.size()-1; i >= 0; --i)
+    {
+        int64_t stride = std::get<0>(sns[i]);
+        int64_t shape  = std::get<1>(sns[i]);
+        int64_t index  = std::get<2>(sns[i]);
+
+        if(stride == cont_stride)
+            std::get<2>(sne[index]) = -1;//Flag it as unnecessary
+        cont_stride *= shape;
+    }
+    */
+    return sne;
+}
+
+ostream& operator<<(ostream& out, const bh_view& v)
+{
+    unsigned int label = v.base->get_label();
+    out << "a" << label << "[";
+
+    for(const tuple<int64_t, int64_t, int64_t> sne: v.python_notation())
+    {
+        int64_t start  = std::get<0>(sne);
+        int64_t end    = std::get<1>(sne);
+        int64_t stride = std::get<2>(sne);
+        out << start << ":" << end << ":" << stride << ",";
+    }
+    out << "]";
     return out;
 }

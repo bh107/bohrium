@@ -24,8 +24,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <stdbool.h>
 #include <iostream>
+#include <map>
 #include <cstring>
 #include <cassert>
+#include <tuple>
 #include "bh_type.h"
 #include "bh_win.h"
 
@@ -47,6 +49,12 @@ struct bh_base
     /// The number of elements in the array
     bh_index      nelem;
 
+    // Returns an unique ID of this base array
+    unsigned int get_label() const;
+
+    // Returns pprint string of this base array
+    std::string str() const;
+
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
@@ -66,6 +74,9 @@ struct bh_base
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
+
+//Implements pprint of base arrays
+DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_base& b);
 
 struct bh_view
 {
@@ -96,6 +107,11 @@ struct bh_view
 
     /// The stride for each dimensions
     bh_index      stride[BH_MAXDIM];
+
+    //Returns a vector of tuples that describe the view using (almost)
+    //Python Notation.
+    //NB: in this notation the stride is always absolute eg. [2:4:3, 0:3:1]
+    std::vector<std::tuple<int64_t, int64_t, int64_t> > python_notation() const;
 
     bool operator<(const bh_view& other) const
     {
@@ -159,6 +175,9 @@ struct bh_view
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
+//Implements pprint of views
+DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_view& v);
+
 /** Create a new base array.
  *
  * @param type The type of data in the array
@@ -176,7 +195,6 @@ DLLEXPORT bh_error bh_create_base(bh_type    type,
  */
 DLLEXPORT void bh_destroy_base(bh_base**  base);
 
-DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_view& v);
 
 #endif
 
