@@ -534,7 +534,6 @@ void pprint(const GraphDW &dag, const char filename[])
         void operator()(std::ostream& out, const Vertex& v) const
         {
             const uint64_t cost = graph[v].cost();
-            char buf[1024*10];
             out << "[label=\"Kernel " << v << ", ";
             if(cost > 10000)
                 out << (double) cost;
@@ -558,77 +557,43 @@ void pprint(const GraphDW &dag, const char filename[])
             out << "\\lInput views: \\l";
             BOOST_FOREACH(const bh_view &i, graph[v].get_input_set())
             {
-                bh_sprint_view(&i, buf);
-                out << graph[v].get_view_id(i) << ":" << buf << "\\l";
+                out << i << "\\l";
             }
             out << "Output views: \\l";
             BOOST_FOREACH(const bh_view &i, graph[v].get_output_set())
             {
-                bh_sprint_view(&i, buf);
-                out << graph[v].get_view_id(i) << ":" << buf << "\\l";
+                out << i << "\\l";
             }
             out << "Parameters: \\l";
             for (const std::pair<size_t,bh_base*>& p: graph[v].get_parameters())
             {
-                bh_sprint_base(p.second, buf);
-                out << "[" << p.first << "]" << buf << "\\l";
-            }
-            out << "Constants: \\l";
-            for (const std::pair<uint64_t, bh_constant>& c: graph[v].get_constants())
-            {
-                out << "[" << c.first << "]" ;
-                bh_sprint_const(&c.second, buf);
-                out << buf << "\\l";
+                out << *p.second << "\\l";
             }
             out << "Temp base-arrays: \\l";
             BOOST_FOREACH(const bh_base* i, graph[v].get_temps())
             {
-                bh_sprint_base(i, buf);
-                out << buf << "\\l";
+                out << *i << "\\l";
             }
             out << "Free base-arrays: \\l";
             BOOST_FOREACH(const bh_base* i, graph[v].get_frees())
             {
-                bh_sprint_base(i, buf);
-                out << buf << "\\l";
+                out << *i << "\\l";
             }
             out << "Discard base-arrays: \\l";
             BOOST_FOREACH(const bh_base* i, graph[v].get_discards())
             {
-                bh_sprint_base(i, buf);
-                out << buf << "\\l";
+                out << *i << "\\l";
             }
             out << "Sync base-arrays: \\l";
             BOOST_FOREACH(const bh_base* i, graph[v].get_syncs())
             {
-                bh_sprint_base(i, buf);
-                out << buf << "\\l";
+                out << *i << "\\l";
             }
+            out << "Instructions: \\l";
             BOOST_FOREACH(uint64_t idx, graph[v].instr_indexes())
             {
                 const bh_instruction &instr = graph[v].bhir->instr_list[idx];
-                out << "[" << idx << ": (";
-                switch (instr.opcode) {
-                case BH_NONE:
-                case BH_SYNC:
-                case BH_DISCARD:
-                case BH_FREE:
-                    break;
-                default:
-                    const int nop = bh_operands(instr.opcode);
-                    for(int i=0; i<nop; ++i)
-                    {
-                        if(not bh_is_constant(&instr.operand[i]))
-                            out << "v" << graph[v].get_view_id(instr.operand[i]);
-                        else
-                            out << "c" << idx;
-                        if (i < nop-1)
-                            out << ", ";
-                    }
-                }
-                out << ") ] ";
-                bh_sprint_instr(&instr, buf, "\\l");
-                out << buf << "\\l";
+                out << "[" << idx << "] " << instr << "\\l";
             }
             out << "Directly nonfusible vertices: [";
             BOOST_FOREACH(Vertex v2, vertices(graph))
