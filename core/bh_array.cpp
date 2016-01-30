@@ -140,12 +140,15 @@ ostream& operator<<(ostream& out, const bh_view& v)
     unsigned int label = v.base->get_label();
     out << "a" << label << "[";
 
-    for(const tuple<int64_t, int64_t, int64_t> sne: v.python_notation())
+    const vector<tuple<int64_t, int64_t, int64_t> > sne = v.python_notation();
+    for(size_t i=0; i<sne.size(); ++i)
     {
-        int64_t start  = std::get<0>(sne);
-        int64_t end    = std::get<1>(sne);
-        int64_t stride = std::get<2>(sne);
-        out << start << ":" << end << ":" << stride << ",";
+        int64_t start  = std::get<0>(sne[i]);
+        int64_t end    = std::get<1>(sne[i]);
+        int64_t stride = std::get<2>(sne[i]);
+        out << start << ":" << end << ":" << stride;
+        if(i < sne.size()-1)//Not the last iteration
+            out << ",";
     }
     out << "]";
     return out;
