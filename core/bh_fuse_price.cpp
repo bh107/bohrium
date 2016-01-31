@@ -54,10 +54,10 @@ static uint64_t cost_unique(const bh_ir_kernel &k)
     unique_views.insert(k.get_output_set().begin(), k.get_output_set().end());
 
     uint64_t sum = 0;
-    for(const bh_view &v: unique_views)
-    {
+    for(const bh_view &v: k.get_input_set())
         sum += bytes_in_view(v);
-    }
+    for(const bh_view &v: k.get_output_set())
+        sum += bytes_in_view(v);
     return sum;
 }
 static uint64_t savings_unique(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
