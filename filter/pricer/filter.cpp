@@ -26,7 +26,7 @@ using namespace std;
 using namespace boost;
 using namespace bohrium::dag;
 
-static int64_t sum=0;
+static int64_t sum=0, sum_uv=0;
 void filter(const bh_ir &bhir)
 {
     if(bhir.kernel_list.size() == 0)
@@ -35,14 +35,13 @@ void filter(const bh_ir &bhir)
     GraphDW dag;
     from_kernels(bhir.kernel_list, dag);
     sum += dag_cost(dag.bglD());
-    if(not dag_validate(dag))
-    {
-        cerr << "[PRICER-FILTER] Invalid BhIR! " << endl;
+    sum_uv += dag_cost_unique_views(dag.bglD());
 
-    }
+    if(not dag_validate(dag))
+        cerr << "[PRICER-FILTER] Invalid BhIR! " << endl;
 }
 
 void shutdown()
 {
-    cout << "[PRICER-FILTER] total cost: " << sum << endl;
+    cout << "[PRICER-FILTER] total cost: " << sum << " (" << sum_uv << " bytes)" << endl;
 }

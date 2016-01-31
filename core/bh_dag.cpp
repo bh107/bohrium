@@ -515,13 +515,14 @@ void pprint(const GraphDW &dag, const char filename[])
         void operator()(std::ostream& out) const
         {
             const uint64_t cost = dag_cost(graph);
+            const uint64_t cost_uv = dag_cost_unique_views(graph);
             out << "labelloc=\"t\";" << endl;
             out << "label=\"DAG with a total cost of ";
             if(cost > 10000)
                 out << (double) cost;
             else
                 out << cost;
-            out << " bytes\";" << endl;
+            out << " (" << (double) cost_uv << " bytes)\";" << endl;
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
         }
@@ -534,12 +535,13 @@ void pprint(const GraphDW &dag, const char filename[])
         void operator()(std::ostream& out, const Vertex& v) const
         {
             const uint64_t cost = graph[v].cost();
-            out << "[label=\"Kernel " << v << ", ";
+            const uint64_t cost_uv = graph[v].cost_unique_views();
+            out << "[label=\"Kernel " << v << ", cost: ";
             if(cost > 10000)
                 out << (double) cost;
             else
                 out << cost;
-            out << " bytes\\n";
+            out << " (" << (double) cost_uv << " bytes)\\n";
             out << "Shape: ";
             const std::vector<bh_index>& ishape = graph[v].get_input_shape();
             for (size_t i = 0; i < ishape.size(); ++i)
