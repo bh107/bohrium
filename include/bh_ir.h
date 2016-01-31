@@ -251,6 +251,9 @@ public:
     /* Returns the cost of the kernel */
     uint64_t cost() const;
 
+    /* Returns the cost of the kernel using the unique views cost model */
+    uint64_t cost_unique_views() const;
+
     /* Returns the cost savings of merging with the 'other' kernel.
      * The cost savings is defined as the amount the BhIR will drop
      * in price if the two kernels are fused.
