@@ -206,33 +206,33 @@ class Codeblock
 public:
     Codeblock(Plaid& plaid, std::string template_fn);
     
-    void prolog(std::string source);
+    virtual void prolog(std::string source);
 
-    void epilog(std::string source);
+    virtual void epilog(std::string source);
 
-    void pragma(std::string source);
+    virtual void pragma(std::string source);
 
-    void head(std::string source);
+    virtual void head(std::string source);
 
-    void body(std::string source);
+    virtual void body(std::string source);
 
-    void foot(std::string source);
+    virtual void foot(std::string source);
 
-    std::string prolog(void);
+    virtual std::string prolog(void);
 
-    std::string epilog(void);
+    virtual std::string epilog(void);
 
-    std::string pragma(void);
+    virtual std::string pragma(void);
 
-    std::string head(void);
+    virtual std::string head(void);
 
-    std::string body(void);
+    virtual std::string body(void);
 
-    std::string foot(void);
+    virtual std::string foot(void);
 
-    std::string emit(void);
+    virtual std::string emit(void);
 
-private:
+protected:
     Plaid& plaid_;
 
     std::string template_fn_;
@@ -248,6 +248,39 @@ private:
     std::stringstream body_;
 
     std::stringstream foot_;
+
+private:
+    Codeblock(void);
+
+};
+
+class Loop : public Codeblock
+{
+public:
+    Loop(Plaid& plaid, std::string template_fn);
+    
+    void init(std::string source);
+
+    void cond(std::string source);
+
+    void incr(std::string source);
+
+    std::string init(void);
+
+    std::string cond(void);
+
+    std::string incr(void);
+
+    std::string emit(void);
+
+protected:
+    std::stringstream init_;
+    std::stringstream cond_;
+    std::stringstream incr_;
+
+private:
+    Loop(void);
+
 };
 
 class Buffer

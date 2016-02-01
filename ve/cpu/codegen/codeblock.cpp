@@ -10,8 +10,7 @@ namespace kp{
 namespace engine{
 namespace codegen{
 
-Codeblock::Codeblock(void) : _template_fn("block.tpl") {}
-Codeblock::Codeblock(std::string template_fn) : _template_fn(template_fn) {}
+Codeblock::Codeblock(Plaid& plaid, std::string template_fn) : plaid_(plaid), template_fn_(template_fn) {}
 
 void Codeblock::prolog(string source)
 {
@@ -73,7 +72,7 @@ std::string Codeblock::foot(void)
     return foot_.str();
 }
 
-std::string emit(void)
+std::string Codeblock::emit(void)
 {
     std::map<string, string> subjects;
 

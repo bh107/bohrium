@@ -5,9 +5,9 @@
 using namespace std;
 using namespace kp::core;
 
-namespace kp{
-namespace engine{
-namespace codegen{
+namespace kp {
+namespace engine {
+namespace codegen {
 
 Walker::Walker(Plaid& plaid, Kernel& kernel) : plaid_(plaid), kernel_(kernel) {}
 
@@ -15,11 +15,11 @@ string Walker::declare_operands(void)
 {
     stringstream ss;
 
-    for(kernel_operand_iter oit=kernel_.operands_begin();
+    for (kernel_operand_iter oit = kernel_.operands_begin();
         oit != kernel_.operands_end();
         ++oit) {
         Operand& operand = oit->second;
-        bool restrictable = kernel_.base_refcount(oit->first)==1;
+        bool restrictable = kernel_.base_refcount(oit->first) == 1;
         switch(operand.meta().layout) {
             case KP_SCALAR_CONST:
                 // Declared as kp_operand.walker() in kernel-argument-unpacking

@@ -24,7 +24,11 @@ enum states {
 Plaid::Plaid(string template_directory) : template_directory_(template_directory) {
     add_from_file("license",    "license.tpl");
     add_from_file("kernel",     "kernel.tpl");
-    add_from_file("walker.scalar",      "walker.scalar.tpl");
+    add_from_file("code.block", "code.block.tpl");
+    add_from_file("code.loop",  "code.loop.tpl");
+    add_from_file("scan.1d",    "scan.1d.tpl");
+    add_from_file("scan.nd",    "scan.nd.tpl");
+    add_from_file("walker.axis.nd",     "walker.axis.nd.tpl");
     #if defined(CAPE_WITH_OPENACC)
     add_from_file("walker.collapsed",   "walker.collapsed.acc.tpl");
 	#else
@@ -32,9 +36,7 @@ Plaid::Plaid(string template_directory) : template_directory_(template_directory
 	#endif
     add_from_file("walker.inner.2d",    "walker.inner.2d.tpl");
     add_from_file("walker.inner.nd",    "walker.inner.nd.tpl");
-    add_from_file("walker.axis.nd",     "walker.axis.nd.tpl");
-    add_from_file("scan.1d",    "scan.1d.tpl");
-    add_from_file("scan.nd",    "scan.nd.tpl");
+    add_from_file("walker.scalar",      "walker.scalar.tpl");
 }
 
 string Plaid::text(void)
