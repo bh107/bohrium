@@ -184,6 +184,16 @@ void GraphDW::merge_vertices(Vertex a, Vertex b, bool a_before_b)
     assert(dag_validate(*this));
 }
 
+void GraphDW::merge_vertices_by_id(uint64_t id_a, uint64_t id_b)
+{
+    map<uint64_t, Vertex> id2vertex;
+    BOOST_FOREACH(const Vertex &v, vertices(_bglD))
+    {
+        id2vertex[_bglD[v].id()] = v;
+    }
+    merge_vertices(id2vertex[id_a], id2vertex[id_b]);
+}
+
 void GraphDW::transitive_reduction()
 {
     //Remove redundant dependency edges

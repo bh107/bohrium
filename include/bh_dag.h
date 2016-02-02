@@ -169,6 +169,14 @@ public:
      */
     void merge_vertices(Vertex a, Vertex b, bool a_before_b=true);
 
+    /* Merge vertex 'id_a' and 'id_b' where 'id_b' is cleared and 'id_a' becomes
+     * the merged vertex.
+     *
+     * @a          The surviving vertex (as kernel ID)
+     * @b          The cleared vertex (as kernel ID)
+     */
+    void merge_vertices_by_id(uint64_t id_a, uint64_t id_b);
+
     /* Transitive reduce the 'dag', i.e. remove all redundant edges,
      *
      * Complexity: O(E * (E + V))
