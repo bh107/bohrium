@@ -265,6 +265,10 @@ public:
      *         kernel isn't fusible.
      */
     int64_t merge_cost_savings(const bh_ir_kernel &other) const;
+
+    // We use the current lowest instruction index in '_instr_indexes'
+    // as kernel ID.
+    uint64_t id() const;
 };
 
 #endif

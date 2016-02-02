@@ -481,3 +481,11 @@ int64_t bh_ir_kernel::merge_cost_savings(const bh_ir_kernel &other) const
     }
     return bohrium::cost_savings(*b, *a);
 }
+
+// We use the current lowest instruction index in '_instr_indexes'
+// as kernel ID.
+uint64_t bh_ir_kernel::id() const
+{
+    return *std::min_element(_instr_indexes.begin(), _instr_indexes.end());
+}
+

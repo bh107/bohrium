@@ -536,7 +536,7 @@ void pprint(const GraphDW &dag, const char filename[])
         {
             const uint64_t cost = graph[v].cost();
             const uint64_t cost_uv = graph[v].cost_unique_views();
-            out << "[label=\"Kernel " << v << ", cost: ";
+            out << "[label=\"Kernel " << graph[v].id() << ", cost: ";
             if(cost > 10000)
                 out << (double) cost;
             else
