@@ -229,7 +229,7 @@ pair<int64_t,bool> fuse_mask(int64_t best_cost, const vector<EdgeW> &edges2explo
 
 /* Find the optimal solution through branch and bound */
 void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explore,
-                      const vector<bool> &init_mask, unsigned int init_offset=0)
+                    const vector<bool> &init_mask, unsigned int init_offset=0)
 {
     //We use the greedy algorithm to find a good initial guess
     int64_t best_cost;
@@ -240,7 +240,7 @@ void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explor
         best_dag = new_dag.bglD();
         best_cost = dag_cost(best_dag);
     }
-    double purge_count=0;
+    uint64_t purge_count=0;
     uint64_t explore_count=0;
 
     TaskQueue tasks(omp_get_max_threads());
@@ -267,15 +267,14 @@ void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explor
         {
             #pragma omp critical
             {
-                cout << "[" << explore_count << "][";
+                cout << "[" << (double) explore_count << "][";
                 BOOST_FOREACH(bool b, mask)
                 {
                     if(b){cout << "1";}else{cout << "0";}
                 }
-                cout << "] purge count: ";
-                cout << purge_count << " / " << pow(2.0, (int)mask.size());
-                cout << ", cost: " << cost << ", best_cost: " << best_cost;
-                cout << ", fusibility: " << fusibility << endl;
+                cout << "] search: ";
+                cout << (double) explore_count + purge_count << " / " << pow(2.0, (int)mask.size());
+                cout << ", purged: " << (double) purge_count << ", best_cost: " << best_cost << endl;
             }
         }
         #pragma omp critical
