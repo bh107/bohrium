@@ -283,7 +283,7 @@ void branch_n_bound(bh_ir &bhir, GraphDW &dag, const vector<EdgeW> &edges2explor
         if(cost >= best_cost)
         {
             #pragma omp critical
-            purge_count += pow(2.0, (int)(mask.size()-offset));
+            purge_count += pow(2.0, (int)(mask.size()-offset))-1;
             continue;
         }
         if(fusibility)
