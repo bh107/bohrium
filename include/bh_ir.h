@@ -267,8 +267,8 @@ public:
     int64_t merge_cost_savings(const bh_ir_kernel &other) const;
 
     // We use the current lowest instruction index in '_instr_indexes'
-    // as kernel ID.
-    uint64_t id() const;
+    // as kernel ID. Empty kernels have ID '-1'
+    int64_t id() const;
 };
 
 #endif

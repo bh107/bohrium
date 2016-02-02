@@ -483,9 +483,11 @@ int64_t bh_ir_kernel::merge_cost_savings(const bh_ir_kernel &other) const
 }
 
 // We use the current lowest instruction index in '_instr_indexes'
-// as kernel ID.
-uint64_t bh_ir_kernel::id() const
+// as kernel ID. Empty kernels have ID '-1'
+int64_t bh_ir_kernel::id() const
 {
+    if(_instr_indexes.size() == 0)
+        return -1;
     return *std::min_element(_instr_indexes.begin(), _instr_indexes.end());
 }
 
