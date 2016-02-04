@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <iostream>
 #include <map>
+#include <vector>
 #include <cstring>
 #include <cassert>
 #include <tuple>
