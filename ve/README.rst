@@ -6,4 +6,5 @@ Here goes::
 
     gpu - GPU vector engine.
     cpu - JIT compiled engine for CPU, the first of its kind ;)
+    bpu - FPGA target soft processor
 
