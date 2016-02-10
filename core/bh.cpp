@@ -475,9 +475,9 @@ bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b)
     return true;
 }
 
-/* Determines whether two views access some of the same data points
- * NB: This functions may return False on two non-overlapping views.
- *     But will always return True on overlapping views.
+/* Determines whether two views access some of the same data points or not
+ * NB: This functions may return True on two non-overlapping views.
+ *     But will always return False on overlapping views.
  *
  * @a The first view
  * @b The second view
@@ -497,6 +497,10 @@ bool bh_view_disjoint(const bh_view *a, const bh_view *b)
     int stride = 1;
     for (int i = 0; i < a->ndim; ++i)
     {
+        //Negative strides is always an overlap
+        if(a->stride[i] < 0 or b->stride[i] < 0)
+            return false;
+
         stride = gcd(a->stride[i], b->stride[i]);
         if (stride == 0) // stride is 0 in both views: dimension is virtual
             continue;
