@@ -150,6 +150,8 @@ static uint64_t cost_max_share(const bh_ir_kernel &k)
                 const bh_view &read = krn_instr.operand[i];
                 if(bh_is_constant(&read))
                     continue;
+                if(read.base->nelem <= 1)
+                    continue; //We ignore 1-sized arrays
                 if(instr.operand[0] == read)
                     ++shared_access;
             }
@@ -166,6 +168,8 @@ static uint64_t cost_max_share(const bh_ir_kernel &k)
                 {
                     if(bh_is_constant(&krn_instr.operand[j]))
                         continue;
+                    if(krn_instr.operand[j].base->nelem <= 1)
+                        continue; //We ignore 1-sized arrays
                     if(instr.operand[i] == krn_instr.operand[j])
                         ++shared_access;
                 }
