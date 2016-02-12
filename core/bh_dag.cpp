@@ -607,16 +607,16 @@ void pprint(const GraphDW &dag, const char filename[])
                 const bh_instruction &instr = graph[v].bhir->instr_list[idx];
                 out << "[" << idx << "] " << instr << "\\l";
             }
-            out << "Directly nonfusible vertices: [";
+            out << "Directly nonfusible kernels: [";
             BOOST_FOREACH(Vertex v2, vertices(graph))
             {
                 if(v != v2 and not graph[v].fusible(graph[v2]))
-                    out << v2 << " ";
+                    out << graph[v2].id() << " ";
             }
             out << "]\\l";
-            out << "nonfusible vertices: [";
+            out << "nonfusible kernels: [";
             BOOST_FOREACH(Vertex v2, v2f.at(v))
-                    out << v2 << " ";
+                    out << graph[v2].id() << " ";
             out << "]\\l";
             out << "\"]";
         }
