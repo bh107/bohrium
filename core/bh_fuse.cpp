@@ -265,11 +265,11 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
 
-    if((a->opcode != BH_RANGE and a->opcode != BH_RANDOM \
+    if((a->opcode != BH_RANGE and a->opcode != BH_RANDOM and a->opcode != BH_GATHER \
         and not bh_opcode_is_elementwise(a->opcode)      \
         and not bh_opcode_is_reduction(a->opcode))
         or                                               \
-       (b->opcode != BH_RANGE and b->opcode != BH_RANDOM \
+       (b->opcode != BH_RANGE and b->opcode != BH_RANDOM and b->opcode != BH_GATHER \
         and not bh_opcode_is_elementwise(b->opcode)      \
         and not bh_opcode_is_reduction(b->opcode))) {
         return false;
@@ -358,7 +358,7 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
             }
         }
     }
-    
+
     return fuse_broadest(a, b);
 }
 
