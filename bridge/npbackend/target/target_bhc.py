@@ -231,3 +231,16 @@ def random123(size, start_index, key):
     if size > 0:
         ufunc("random123", ret, start_index, key, dtypes=[dtype]*3)
     return ret
+
+def gather(out, ary, indexes):
+    """
+    Gather elements from 'ary' selected by 'indexes'.
+    ary.shape == indexes.shape.
+
+    :param Mixed out: The array to write results to.
+    :param Mixed ary: Input array.
+    :param Mixed indexes: Array of indexes (uint64).
+    """
+
+    ufunc("gather", out, ary, indexes)
+

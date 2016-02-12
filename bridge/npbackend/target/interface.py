@@ -143,3 +143,14 @@ def random123(size, start_index, key):
     :param int key: TODO
     """
     raise NotImplementedError()
+
+def gather(out, ary, indexes):
+    """
+    Gather elements from 'ary' selected by 'indexes'.
+    ary.shape == indexes.shape.
+
+    :param Mixed out: The array to write results to.
+    :param Mixed ary: Input array.
+    :param Mixed indexes: Array of indexes (uint64).
+    """
+    raise NotImplementedError()

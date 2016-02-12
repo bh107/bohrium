@@ -26,7 +26,8 @@ DEFAULT_TARGET = "bhc"
 TARGETS = ["bhc", "numpy", "numexpr", "pygpu", "chapel"]
 METHODS = [
     'Base', 'View', 'runtime_flush', 'get_data_pointer', 'set_bhc_data_from_ary',
-    'ufunc', 'reduce', 'accumulate', 'extmethod', 'matmul', 'range', 'random123'
+    'ufunc', 'reduce', 'accumulate', 'extmethod', 'matmul', 'range', 'random123',
+    'gather',
 ]
 
 TARGET = None               # Check for environment override of default target

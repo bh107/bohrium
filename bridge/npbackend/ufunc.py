@@ -29,6 +29,32 @@ def matmul(out, in1, in2):
     assert(in1.dtype == out.dtype)
     target.matmul(get_bhc(out), get_bhc(in1), get_bhc(in2))
 
+@fix_returned_biclass
+def gather(ary, indexes):
+    """
+    gather(ary, indexes)
+
+    Gather elements from 'ary' selected by 'indexes'.
+    The shape of the returned array equals indexes.shape.
+
+    Parameters
+    ----------
+    array : array_like
+        The array to gather elements from.
+    indexes : array_like
+        Array or list of indexes that will be gather from 'array'
+
+    Returns
+    -------
+    r : ndarray
+        The gathered array freshly-allocated.
+    """
+    ary = array_create.array(ary)
+    indexes = array_create.array(indexes, dtype=np.uint64, bohrium=True)
+    ret = array_create.empty(indexes.shape, dtype=ary.dtype, bohrium=True)
+    target.gather(get_bhc(ret), get_bhc(ary), get_bhc(indexes));
+    return ret
+
 def setitem(ary, loc, value):
     """Set the 'value' into 'ary' at the location specified through 'loc'.
     'loc' can be a scalar or a slice object, or a tuple thereof"""
@@ -475,67 +501,3 @@ for ufunc in UFUNCS:                        # Expose via their name.
     exec("%s = ufunc" % ufunc.info['name'])
 del(ufunc) # We do not want to expose a function named "ufunc"
 
-"""
-Since ufunc.py uses relative imports then these tests cannot be executed, I
-assume that they are deprecated code and haven't been used for anything in
-several years? This this "UNIT TEST" cover anything that numpytest does not?
-Does it every run?
-
-###############################################################################
-################################ UNIT TEST ####################################
-###############################################################################
-
-import unittest
-
-class Tests(unittest.TestCase):
-
-    def test_assign_copy(self):
-        A = array_create.empty((4, 4), dtype=int)
-        B = array_create.empty((4, 4), dtype=int)
-        assign(42, A)
-        assign(A, B)
-        A = A.copy2numpy()
-        B = B.copy2numpy()
-        #Compare result to NumPy
-        N = np.empty((4, 4), dtype=int)
-        N[...] = 42
-        self.assertTrue(np.array_equal(B, N))
-        self.assertTrue(np.array_equal(A, N))
-
-    def test_ufunc(self):
-        for func in ufuncs:
-            for type_sig in func.info['type_sig']:
-                if func.info['name'] == "identity":
-                    continue
-                print(func, type_sig)
-                A = array_create.empty((4, 4), dtype=type_sig[1])
-                if type_sig[1] == "bool":
-                    assign(False, A)
-                else:
-                    assign(2, A)
-                if func.info['nop'] == 2:
-                    res = func(A)
-                elif func.info['nop'] == 3:
-                    B = array_create.empty((4, 4), dtype=type_sig[2])
-                    if type_sig[1] == "bool":
-                        assign(True, B)
-                    else:
-                        assign(3, B)
-                    res = func(A, B)
-                res = res.copy2numpy()
-                #Compare result to NumPy
-                A = np.empty((4, 4), dtype=type_sig[1])
-                A[...] = 2
-                B = np.empty((4, 4), dtype=type_sig[1])
-                B[...] = 3
-                if func.info['nop'] == 2:
-                    exec("np_res = np.%s(A)" % func.info['name'])
-                elif func.info['nop'] == 3:
-                    exec("np_res = np.%s(A,B)" % func.info['name'])
-                self.assertTrue(np.allclose(res, np_res))
-
-if __name__ == '__main__':
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(Tests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-"""
