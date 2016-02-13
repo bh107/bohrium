@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #Test and demonstration of the NumPy Bridge.
 from __future__ import print_function
 
@@ -389,12 +390,14 @@ if __name__ == "__main__":
                 if args.exclude_benchmarks and is_benchmark:
                     continue
 
+                testOkay = True
                 # All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
                     name = "%s/%s/%s"%(f,cls[5:],mth[5:])
-                    print("Testing %s"%(name))
-                    for (np_arys, cmd) in getattr(cls_inst,"init")():
+                    print("Testing " + _C.OKGREEN + str(name) + _C.ENDC, end=" ")
+                    sys.stdout.flush()
 
+                    for (np_arys, cmd) in getattr(cls_inst,"init")():
                         if args.exclude_complex_dtype:  # Exclude complex
                             complex_nptypes = [eval(dtype) for dtype in TYPES.COMPLEX]
 
@@ -419,25 +422,30 @@ if __name__ == "__main__":
                             if not np.isscalar(res2):
                                 res2 = res2.copy2numpy()
                         except RuntimeError as error_msg:
-                            print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
-                            print(_C.FAIL + str(error_msg) + _C.ENDC)
+                            testOkay = False
+                            print()
+                            print("  " + _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
+                            print("  " + _C.FAIL   + str(error_msg)  + _C.ENDC)
                         else:
                             rtol = cls_inst.config['maxerror']
                             atol = rtol * 0.1
                             if not np.allclose(res1, res2, rtol=rtol, atol=atol):
-
+                                testOkay = False
                                 if 'warn_on_err' in cls_inst.config:
-                                    print(_C.WARNING + "[Warning] %s"%(name) + _C.ENDC)
-                                    print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
-                                    print(_C.OKGREEN + str(res1) + _C.ENDC)
-                                    print(_C.FAIL + str(res2) + _C.ENDC)
-                                    print(_C.WARNING + str(cls_inst.config['warn_on_err']) + _C.ENDC)
-                                    print(_C.OKBLUE + str("Manual verification is needed.") + _C.ENDC)
+                                    print()
+                                    print(_C.WARNING + "  [Warning] %s"%(name)                    + _C.ENDC)
+                                    print(_C.OKBLUE  + "  [CMD]     %s"%cmd                       + _C.ENDC)
+                                    print(_C.OKGREEN + "  NumPy result:   %s"%(res1)              + _C.ENDC)
+                                    print(_C.FAIL    + "  Bohrium result: %s"%(res2)              + _C.ENDC)
+                                    print(_C.WARNING + "  " + str(cls_inst.config['warn_on_err']) + _C.ENDC)
+                                    print(_C.OKBLUE  + "  Manual verification is needed."         + _C.ENDC)
                                 else:
-                                    print(_C.FAIL + "[Error] %s"%(name) + _C.ENDC)
-                                    print(_C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
-                                    print(_C.OKGREEN + str(res1) + _C.ENDC)
-                                    print(_C.FAIL + str(res2) + _C.ENDC)
-                                    sys.exit (1)
+                                    print()
+                                    print(_C.FAIL    + "  [Error] %s"%(name)         + _C.ENDC)
+                                    print(_C.OKBLUE  + "  [CMD]   %s"%cmd            + _C.ENDC)
+                                    print(_C.OKGREEN + "  NumPy result:   %s"%(res1) + _C.ENDC)
+                                    print(_C.FAIL    + "  Bohrium result: %s"%(res2) + _C.ENDC)
+                                    sys.exit(1)
+                    if testOkay: print("✓")
 
     print("*"*24, "Finish", "*"*24)
