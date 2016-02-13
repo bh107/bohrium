@@ -354,5 +354,3 @@ def broadcast_arrays(*args):
         else:
             ret.append(b)
     return ret
-
-

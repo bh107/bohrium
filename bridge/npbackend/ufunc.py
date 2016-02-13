@@ -499,5 +499,5 @@ for op in _info.op.itervalues():
 
 for ufunc in UFUNCS:                        # Expose via their name.
     exec("%s = ufunc" % ufunc.info['name'])
-del(ufunc) # We do not want to expose a function named "ufunc"
 
+del ufunc # We do not want to expose a function named "ufunc"
