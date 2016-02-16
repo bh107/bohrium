@@ -407,14 +407,12 @@ class test_wireworld(BenchHelper, numpytest):
 #
 #   Testing via import of modules
 #
-class test_jacobi_module(numpytest):#disabled
+class test_jacobi_module(numpytest):
     def __init__(self):
         numpytest.__init__(self)
         self.config['maxerror'] = 0.00001
         self.size = 20
     def init(self):
-        print("We need to implement numpy.norm() for test_jacobi() to work")
-        raise StopIteration()
         for t in ['bh.float32','bh.float64']:
             a = {}
             cmd  = "a[0] = self.array(({0},{0}),dtype={1});".format(self.size,t)
