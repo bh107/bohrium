@@ -173,7 +173,7 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
     if (skip>0) {
         nelem = (adj_end-start+1)/skip;
     } else {
-        nelem = (start-adj_end+1)/abs(skip);
+        nelem = (start-adj_end+1)/std::abs(skip);
     }
 
     multi_array<T>* result = new multi_array<T>(nelem);     // Construct the result
