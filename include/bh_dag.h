@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/graph/adjacency_list.hpp>
 #include <vector>
 #include <set>
+#include <map>
 #include <bh.h>
 
 namespace bohrium {
@@ -90,11 +91,7 @@ public:
      *
      * @dag     The dependency graph
      */
-    GraphDW(const GraphD &dag)
-    {
-        _bglD = dag;
-        _bglW = GraphW(boost::num_vertices(dag));
-    }
+    GraphDW(const GraphD &dag);
 
     /* Add the set of vertices 'sub_graph' to 'this' graph.
      *

@@ -43,6 +43,19 @@ using namespace boost;
 namespace bohrium {
 namespace dag {
 
+
+GraphDW::GraphDW(const GraphD &dag)
+{
+    //We simply adds each vertex from 'dag' topologically
+    map<bh_base*, set<Vertex> > base2vertices;
+    vector<Vertex> topological_order;
+    topological_sort(dag, back_inserter(topological_order));
+    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order)
+    {
+        add_vertex(dag[v], base2vertices);
+    }
+}
+
 Vertex GraphDW::add_vertex(const bh_ir_kernel &kernel,
                            map<bh_base*, set<Vertex> > &base2vertices)
 {
