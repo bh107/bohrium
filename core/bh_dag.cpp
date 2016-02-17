@@ -701,8 +701,8 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
                     {
                         if(not path_exist(v2, v1, d))
                         {
-                            cout << "Precedence check: not path between " << v1 \
-                                 << " and " << v2 << endl;
+                            cout << "Precedence check: not path between " << d[v1].id() \
+                                 << " and " << d[v2].id() << endl;
                             goto fail;
                         }
                     }
@@ -731,7 +731,7 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed)
                 }
                 else
                 {
-                    cout << "Weight check: vertex " << src << " and " << dst \
+                    cout << "Weight check: vertex " << d[src].id() << " and " << d[dst].id() \
                          << " is fusible and has a dependency edge but "\
                             "has no weight edge!" << endl;
                     goto fail;
