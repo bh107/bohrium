@@ -16,7 +16,7 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-numpy, debhelper, cmake, swig, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, mono-devel, mono-gmcs, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev
+Build-Depends: python-numpy, debhelper, cmake, swig, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, mono-devel, mono-gmcs, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
@@ -134,7 +134,7 @@ gacutil -u NumCIL.Unsafe
 exit 0
 """
 
-UBUNTU_RELEASES = ['trusty', 'vivid', 'wily']
+UBUNTU_RELEASES = ['trusty', 'wily']
 
 
 SRC = path.join(path.dirname(os.path.realpath(__file__)),"..","..")
