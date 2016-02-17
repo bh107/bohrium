@@ -100,6 +100,10 @@ def assign(ary, out):
 
     if not np.isscalar(ary):
         (ary, out) = broadcast_arrays(ary, out)
+        # We ignore self assignments
+        if bhary.get_base(ary) is bhary.get_base(out) and \
+                bhary.identical_views(ary, out):
+            return
 
     #We use a tmp array if the in-/out-put has memory conflicts
     if overlap_conflict(out, ary):
