@@ -144,6 +144,7 @@ def identical_views(view1, view2):
 
      * dtype
      * ndim
+     * offset
      * shape
      * strides
 
@@ -161,6 +162,13 @@ def identical_views(view1, view2):
     if list(view1.shape) != list(view2.shape):
         return False
     if list(view1.strides) != list(view2.strides):
+        return False
+
+    b1 = get_base(view1)
+    b2 = get_base(view1)
+    v1_offset = view1.start if hasattr(view1, 'start') else view1.ctypes.data - b1.ctypes.data
+    v2_offset = view2.start if hasattr(view2, 'start') else view2.ctypes.data - b2.ctypes.data
+    if v1_offset != v2_offset:
         return False
     return True
 
