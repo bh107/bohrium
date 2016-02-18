@@ -131,49 +131,60 @@ static uint64_t cost_max_share(const bh_ir_kernel &k)
         return 0;
 
     uint64_t shared_access = 0;
-    for(uint64_t instr_idx=0; instr_idx < k.bhir->instr_list.size(); ++instr_idx)
+    for(uint64_t krn_idx: k.instr_indexes())
     {
-        const bh_instruction &instr = k.bhir->instr_list[instr_idx];
-        //Check if the instruction is in this kernel
-        if(std::find(k.instr_indexes().begin(), k.instr_indexes().end(), instr_idx) != k.instr_indexes().end())
+        const bh_instruction &krn_instr = k.bhir->instr_list[krn_idx];
+        if(bh_opcode_is_system(krn_instr.opcode))
             continue;
-
-        //Let's count the number of inputs in this kernel that reads the output of 'instr'
-        for(uint64_t krn_idx: k.instr_indexes())
+        //Find which instructions that reads and writes to arrays "visible" to
+        //the instruction 'krn_idx'
+        multiset<bh_view> read_access, read_access_outside;
+        set<bh_view> write_access, write_access_outside;;
+        for(uint64_t instr_idx=0; instr_idx < krn_idx; ++instr_idx)
         {
-            if(krn_idx < instr_idx)
+            const bh_instruction &instr = k.bhir->instr_list[instr_idx];
+            if(bh_opcode_is_system(instr.opcode))
                 continue;
-            const bh_instruction &krn_instr = k.bhir->instr_list[krn_idx];
-            const int nop = bh_operands(krn_instr.opcode);
-            for(int i=1; i<nop; ++i)
+
+            //Check if the instruction is in this kernel
+            bool instr_in_kernel = false;
+            if(std::find(k.instr_indexes().begin(),
+                         k.instr_indexes().end(), instr_idx) != k.instr_indexes().end())
+                instr_in_kernel = true;
+
+            for(int i=bh_operands(instr.opcode)-1; i>=0; --i)
             {
-                const bh_view &read = krn_instr.operand[i];
-                if(bh_is_constant(&read))
+                const bh_view &v = instr.operand[i];
+                if(bh_is_constant(&v))
                     continue;
-                if(read.base->nelem <= 1)
-                    continue; //We ignore 1-sized arrays
-                if(instr.operand[0] == read)
-                    ++shared_access;
-            }
-        }
-        //Let's count the number of shared inputs
-        for(uint64_t krn_idx: k.instr_indexes())
-        {
-            const bh_instruction &krn_instr = k.bhir->instr_list[krn_idx];
-            for(int i=1; i < bh_operands(instr.opcode); ++i)
-            {
-                if(bh_is_constant(&instr.operand[i]))
-                    continue;
-                for(int j=1; j < bh_operands(krn_instr.opcode); ++j)
+                if(i > 0)
                 {
-                    if(bh_is_constant(&krn_instr.operand[j]))
-                        continue;
-                    if(krn_instr.operand[j].base->nelem <= 1)
-                        continue; //We ignore 1-sized arrays
-                    if(instr.operand[i] == krn_instr.operand[j])
-                        ++shared_access;
+                    read_access.insert(v);
+                    if(not instr_in_kernel)
+                        read_access_outside.insert(v);
+                }
+                else
+                {
+                    write_access.insert(v);
+                    read_access.erase(v);
+                    if(not instr_in_kernel)
+                    {
+                        write_access_outside.insert(v);
+                    }
+                    else
+                        write_access_outside.erase(v);
+                    read_access_outside.erase(v);
                 }
             }
+        }
+        for(int i=1; i < bh_operands(krn_instr.opcode); ++i)
+        {
+            const bh_view &v = krn_instr.operand[i];
+            if(bh_is_constant(&v))
+                continue;
+            if(write_access_outside.find(v) != write_access_outside.end())
+                shared_access++;
+            shared_access += read_access_outside.count(v);
         }
     }
     return shared_access;
