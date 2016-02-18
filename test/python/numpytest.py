@@ -391,7 +391,7 @@ if __name__ == "__main__":
                 if args.exclude_benchmarks and is_benchmark:
                     continue
 
-                testOkay = True
+                test_okay = True
                 test_start_time = time.time()
                 # All test methods starts with "test_"
                 for mth in [o for o in dir(cls_obj) if o.startswith("test_")]:
@@ -424,7 +424,7 @@ if __name__ == "__main__":
                             if not np.isscalar(res2):
                                 res2 = res2.copy2numpy()
                         except RuntimeError as error_msg:
-                            testOkay = False
+                            test_okay = False
                             print()
                             print("  " + _C.OKBLUE + "[CMD]   %s"%cmd + _C.ENDC)
                             print("  " + _C.FAIL   + str(error_msg)  + _C.ENDC)
@@ -432,7 +432,7 @@ if __name__ == "__main__":
                             rtol = cls_inst.config['maxerror']
                             atol = rtol * 0.1
                             if not np.allclose(res1, res2, rtol=rtol, atol=atol):
-                                testOkay = False
+                                test_okay = False
                                 if 'warn_on_err' in cls_inst.config:
                                     print()
                                     print(_C.WARNING + "  [Warning] %s"%(name)                    + _C.ENDC)
@@ -448,7 +448,7 @@ if __name__ == "__main__":
                                     print(_C.OKGREEN + "  NumPy result:   %s"%(res1) + _C.ENDC)
                                     print(_C.FAIL    + "  Bohrium result: %s"%(res2) + _C.ENDC)
                                     sys.exit(1)
-                    if testOkay:
+                    if test_okay:
                         print(_C.OKBLUE + "({:.2f}s)".format(time.time() - test_start_time) + _C.ENDC, "✓")
 
     print("*** Finished in: " + _C.OKBLUE + "{:.2f}s".format(time.time() - test_suite_start_time) + _C.ENDC + " ***")
