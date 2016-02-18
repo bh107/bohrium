@@ -1,9 +1,7 @@
 import bohrium as np
 from numpytest import numpytest,gen_views,TYPES
 
-
 class test_flatten(numpytest):
-
     def init(self):
         for v in gen_views(3,64,6):
             a = {}
@@ -26,7 +24,6 @@ class test_flatten(numpytest):
         return (res,cmd)
 
 class test_diagonal(numpytest):
-
     def init(self):
         for v in gen_views(4,32,6,min_ndim=2):
             a = {}
@@ -38,9 +35,7 @@ class test_diagonal(numpytest):
         exec(cmd)
         return (res,cmd)
 
-
 class test_transpose(numpytest):
-
     def init(self):
         for v in gen_views(4,16,6,min_ndim=2):
             a = {}
