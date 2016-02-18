@@ -202,6 +202,30 @@ static uint64_t savings_max_share(const bh_ir_kernel &k1, const bh_ir_kernel &k2
     return old_cost - new_cost;
 }
 
+static uint64_t cost_tmp_share(const bh_ir_kernel &k)
+{
+    uint64_t N = k.bhir->instr_list.size();
+    if(k.instr_indexes().size() == 0)
+        return 0;
+
+    uint64_t not_tmp = k.get_parameters().size();
+    uint64_t shared_access = cost_max_share(k);
+
+    return shared_access*N*N+not_tmp*N;
+}
+static uint64_t savings_tmp_share(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
+{
+    bh_ir_kernel tmp = k1;
+    for(uint64_t instr_idx: k2.instr_indexes())
+    {
+        tmp.add_instr(instr_idx);
+    }
+    uint64_t old_cost = cost_tmp_share(k1) + cost_tmp_share(k2);
+    uint64_t new_cost = cost_tmp_share(tmp);
+    assert(old_cost >= new_cost);
+    return old_cost - new_cost;
+}
+
 static uint64_t cost_amos(const bh_ir_kernel &k)
 {
     uint64_t N = k.bhir->instr_list.size();
@@ -300,6 +324,8 @@ uint64_t kernel_cost(const bh_ir_kernel &kernel)
         return cost_max_share(kernel);
     case AMOS:
         return cost_amos(kernel);
+    case TEMP_SHARE:
+        return cost_tmp_share(kernel);
     default:
         throw runtime_error("No price module is selected!");
     }
@@ -325,6 +351,8 @@ uint64_t cost_savings(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
         return savings_max_share(k1, k2);
     case AMOS:
         return savings_amos(k1, k2);
+    case TEMP_SHARE:
+        return savings_tmp_share(k1, k2);
     default:
         throw runtime_error("No price module is selected!");
     }

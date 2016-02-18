@@ -57,6 +57,7 @@ enum FusePriceModel
     TEMP_ELEMINATION,
     AMOS,
     MAX_SHARE,
+    TEMP_SHARE,
 
 /* The number of price models in this enum */
     NUM_OF_PRICE_MODELS
