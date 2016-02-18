@@ -28,7 +28,7 @@ class test_flatten(numpytest):
 class test_diagonal(numpytest):
 
     def init(self):
-        for v in gen_views(2,64,12,min_ndim=2):
+        for v in gen_views(4,32,6,min_ndim=2):
             a = {}
             exec(v)
             yield (a,v)

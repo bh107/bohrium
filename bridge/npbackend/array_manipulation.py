@@ -37,12 +37,17 @@ def flatten(ary):
     return ary.reshape(numpy.multiply.reduce(numpy.asarray(ary.shape)))
 
 @fix_returned_biclass
-def diagonal(ary, offset=0):
+def diagonal(ary, offset=0, axis1=0, axis2=1):
     """
     Return specified diagonals.
 
     If `a` is 2-D, returns the diagonal of `a` with the given offset,
     i.e., the collection of elements of the form ``a[i, i+offset]``.
+    If `a` has more than two dimensions, then the axes specified by
+    `axis1` and `axis2` are used to determine the 2-D sub-array whose
+    diagonal is returned. The shape of the resulting array can be
+    determined by removing `axis1` and `axis2` and appending an index
+    to the right equal to the size of the resulting diagonals.
 
     Parameters
     ----------
@@ -51,6 +56,12 @@ def diagonal(ary, offset=0):
     offset : int, optional
         Offset of the diagonal from the main diagonal.  Can be positive or
         negative.  Defaults to main diagonal (0).
+    axis1 : int, optional
+        Axis to be used as the first axis of the 2-D sub-arrays from which
+        the diagonals should be taken. Defaults to first axis (0).
+    axis2 : int, optional
+        Axis to be used as the second axis of the 2-D sub-arrays from which
+        the diagonals should be taken. Defaults to second axis (1).
 
     Returns
     -------
@@ -90,21 +101,45 @@ def diagonal(ary, offset=0):
            [[4, 5],
             [6, 7]]])
     """
-    if ary.ndim != 2:
-        raise Exception("diagonal only supports 2 dimensions\n")
-    if offset < 0:
+    if axis1 == axis2:
+        raise Exception("axis1 and axis2 cannot be the same\n")
+    if ary.ndim < 2:
+        raise Exception("diagonal requires an array of at least two dimensions\n")
+
+    dim1    = ary.shape[axis1]
+    dim2    = ary.shape[axis2]
+    stride1 = ary.strides[axis1]
+    stride2 = ary.strides[axis2]
+
+    diag_size = None
+    if offset > 0:
+        if offset >= dim2:
+            diag_size = 0
+        else:
+            diag_size = min(dim2 - offset, dim1)
+    elif offset < 0:
         offset = -offset
-        if (ary.shape[0]-offset) > ary.shape[1]:
-            ary_diag = ary[offset, :]
+        if offset >= dim1:
+            diag_size = 0
         else:
-            ary_diag = ary[offset:, 0]
+            diag_size = min(dim1 - offset, dim2)
     else:
-        if ary.shape[1]-offset > ary.shape[0]:
-            ary_diag = ary[:, offset]
-        else:
-            ary_diag = ary[0, offset:]
-    ary_diag.strides = (ary.strides[0]+ary.strides[1],)
-    return ary_diag
+        diag_size = min(dim1, dim2)
+
+    ret_shape   = numpy.empty(ary.ndim-1, dtype=numpy.int)
+    ret_strides = numpy.empty(ary.ndim-1, dtype=numpy.int)
+
+    i = 0
+    for idim in xrange(ary.ndim):
+        if idim != axis1 and idim != axis2:
+            ret_shape[i]   = ary.shape[idim]
+            ret_strides[i] = ary.strides[idim]
+            i += 1
+
+    ret_shape[ary.ndim-2]   = diag_size
+    ret_strides[ary.ndim-2] = stride1 + stride2
+
+    return numpy.lib.stride_tricks.as_strided(ary, shape=ret_shape, strides=ret_strides)
 
 @fix_returned_biclass
 def diagflat(d, k=0):
