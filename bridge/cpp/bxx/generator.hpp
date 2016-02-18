@@ -100,7 +100,7 @@ template <typename T, typename ...Dimensions>
 multi_array<T>& random(const Dimensions&... shape)
 {
     int64_t nelements = nelements_shape(shape...);
-    
+
     uint64_t state  = rand_get_state();
     uint64_t key    = rand_get_seed();
 
@@ -110,7 +110,7 @@ multi_array<T>& random(const Dimensions&... shape)
     rand_result->link();
     bh_random(*rand_result, state, key);
     rand_result->setTemp(true);
-    
+
     multi_array<T>* result = new multi_array<T>(nelements); // Convert their type
     result->link();
     bh_identity(*result, *rand_result);
@@ -123,7 +123,7 @@ template <typename T, typename ...Dimensions>
 multi_array<T>& randu(const Dimensions&... shape)
 {
     int64_t nelements = nelements_shape(shape...);
-    
+
     uint64_t state  = rand_get_state();
     uint64_t key    = rand_get_seed();
 
@@ -133,7 +133,7 @@ multi_array<T>& randu(const Dimensions&... shape)
     rand_result->link();
     bh_random(*rand_result, state, key);
     rand_result->setTemp(true);
-    
+
     multi_array<T>* result = new multi_array<T>(nelements); // Convert their type
     result->link();
     bh_identity(*result, *rand_result);
@@ -173,7 +173,7 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
     if (skip>0) {
         nelem = (adj_end-start+1)/skip;
     } else {
-        nelem = (start-adj_end+1)/abs(skip);
+        nelem = (start-adj_end+1)/std::abs(skip);
     }
 
     multi_array<T>* result = new multi_array<T>(nelem);     // Construct the result
@@ -195,7 +195,7 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
 
     bh_multiply(*result, *result, (T)skip);                 // Expand the range
     bh_add(*result, *result, (T)start);
-   
+
     result->setTemp(true);
     return *result;
 }
@@ -235,11 +235,10 @@ multi_array<T>& linspace(int64_t begin, int64_t end, uint64_t nelem, bool endpoi
     // Expand the range
     bh_multiply(*result, *result, skip);
     bh_add(*result, *result, (T)begin);
-    
+
     result->setTemp(true);
     return *result;
 }
 
 }
 #endif
-
