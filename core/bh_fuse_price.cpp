@@ -301,6 +301,9 @@ void fuse_price_model_text(FusePriceModel price_model, string &output)
     case MAX_SHARE:
         output = "max_share";
         break;
+    case TEMP_SHARE:
+        output = "temp_share";
+        break;
     case AMOS:
         output = "amos";
         break;
