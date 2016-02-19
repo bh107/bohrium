@@ -42,33 +42,6 @@ class test_reduce(numpytest):
         exec(cmd)
         return (res,cmd)
 
-class test_reduce_bitwise_and(numpytest):
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
-
-    def init(self):
-        print("numpy.bitwise_and.reduce is broken, testing it makes no sense.")
-        raise StopIteration()
-        for v in gen_views(4,10,6, dtype="np.uint32"):
-            a = {}
-            self.axis = 0
-            exec(v)
-            yield (a,v)
-            for axis in range(1,a[0].ndim):
-                exec(v)
-                self.axis = axis
-                yield (a,v)
-            for axis in range(1,a[0].ndim):
-                exec(v)
-                self.axis = -axis
-                yield (a,v)
-
-    def test_reduce_bitwise_and(self,a):
-        cmd = "res = np.bitwise_and.reduce(a[0],axis=%d)"%self.axis
-        exec(cmd)
-        return (res,cmd)
-
 class test_reduce_bitwise(numpytest):
     def __init__(self):
         numpytest.__init__(self)
@@ -98,6 +71,14 @@ class test_reduce_bitwise(numpytest):
         cmd = "res = np.bitwise_xor.reduce(a[0],axis=%d)"%self.axis
         exec(cmd)
         return (res,cmd)
+
+    ## numpy.bitwise_and.reduce doesn't work because bitwise_and.identity doesn't make sense:
+    ## https://github.com/numpy/numpy/issues/7060
+    #
+    # def test_reduce_bitwise_and(self,a):
+    #     cmd = "res = np.bitwise_and.reduce(a[0],axis=%d)"%self.axis
+    #     exec(cmd)
+    #     return (res,cmd)
 
 class test_reduce_bool(numpytest):
     def __init__(self):
@@ -204,4 +185,3 @@ class test_reduce1D(numpytest):
         cmd += "np.add.reduce(a[0], out=t2)"
         exec(cmd)
         return (a[1],cmd)
-
