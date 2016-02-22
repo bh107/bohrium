@@ -1,4 +1,5 @@
-import bohrium as np
+import numpy as np
+import bohrium as bh
 from numpytest import numpytest,gen_views,TYPES
 
 class test_flatten(numpytest):
@@ -9,7 +10,7 @@ class test_flatten(numpytest):
             yield (a,v)
 
     def test_flatten(self,a):
-        cmd = "res = np.flatten(a[0])"
+        cmd = "res = bh.flatten(a[0])"
         exec(cmd)
         return (res,cmd)
 
@@ -31,7 +32,10 @@ class test_diagonal(numpytest):
             yield (a,v)
 
     def test_diagonal(self,a):
-        cmd = "res = np.diagonal(a[0])"
+        if bh.check(a[0]):
+            cmd = "res = bh.diagonal(a[0])"
+        else:
+            cmd = "res = np.diagonal(a[0])"
         exec(cmd)
         return (res,cmd)
 
@@ -39,21 +43,18 @@ class test_diagonal_offset(numpytest):
     def init(self):
         for v in gen_views(4,16,6,min_ndim=2):
             a = {}
-            self.offset = 0
             exec(v)
-            yield (a,v)
 
-            for offset in xrange(1, a[0].shape[0]):
+            for offset in xrange(-a[0].shape[0], a[0].shape[0]+1):
                 exec(v)
                 self.offset = offset
                 yield (a,v)
 
-                exec(v)
-                self.offset = -offset
-                yield (a,v)
-
     def test_diagonal_offset(self,a):
-        cmd = "res = np.diagonal(a[0], offset=%d)" % self.offset
+        if bh.check(a[0]):
+            cmd = "res = bh.diagonal(a[0], offset=%d)" % self.offset
+        else:
+            cmd = "res = np.diagonal(a[0], offset=%d)" % self.offset
         exec(cmd)
         return (res,cmd)
 
@@ -76,7 +77,45 @@ class test_diagonal_axis(numpytest):
                     yield (a,v)
 
     def test_diagonal_axis(self,a):
-        cmd = "res = np.diagonal(a[0], axis1=%d, axis2=%d)" % (self.axis1, self.axis2)
+        if bh.check(a[0]):
+            cmd = "res = bh.diagonal(a[0], axis1=%d, axis2=%d)" % (self.axis1, self.axis2)
+        else:
+            cmd = "res = np.diagonal(a[0], axis1=%d, axis2=%d)" % (self.axis1, self.axis2)
+        exec(cmd)
+        return (res,cmd)
+
+class test_diagonal_axis_and_offset(numpytest):
+    def init(self):
+        for v in gen_views(4,16,4,min_ndim=2):
+            a = {}
+            self.axis1 = 0
+            self.axis2 = 1
+            self.offset = 0
+            exec(v)
+            yield (a,v)
+
+            for offset in xrange(1, a[0].shape[0]):
+                self.offset = offset
+                exec(v)
+                yield (a,v)
+
+
+            for axis1 in xrange(a[0].ndim):
+                for axis2 in xrange(a[0].ndim):
+                    if axis1 == axis2:
+                        continue
+                    for offset in xrange(1, a[0].shape[axis1]):
+                        exec(v)
+                        self.offset = offset
+                        self.axis1 = axis1
+                        self.axis2 = axis2
+                        yield (a,v)
+
+    def test_diagonal_axis_and_offset(self,a):
+        if bh.check(a[0]):
+            cmd = "res = bh.diagonal(a[0], offset=%d, axis1=%d, axis2=%d)" % (self.offset, self.axis1, self.axis2)
+        else:
+            cmd = "res = np.diagonal(a[0], offset=%d, axis1=%d, axis2=%d)" % (self.offset, self.axis1, self.axis2)
         exec(cmd)
         return (res,cmd)
 
