@@ -30,7 +30,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/range/adaptors.hpp>
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
-#include <regex>
 #include <vector>
 #include <map>
 #include <iterator>
@@ -383,14 +382,47 @@ void fuse_optimal(bh_ir &bhir, GraphDW &dag)
 static uint64_t bhir_count=0;
 static void manual_merges(GraphDW &dag)
 {
-    const char *t = getenv("BH_FUSER_OPTIMAL_MERGE");
+    char *t = getenv("BH_FUSER_OPTIMAL_MERGE");
     if(t == NULL)
         return;
-    string s = string(t);
+    //Lets make a working copy
+    t = strdup(t);
+    if(t == NULL)
+        throw std::bad_alloc();
 
+    char *merge = strtok(t,",");
+    while(merge != NULL)
+    {
+        string m(merge);
+        size_t colon = m.find(":");
+        if(colon == std::string::npos)
+        {
+            cerr << "The \":\" char not found!" << endl;
+            break;
+        }
+        size_t plus = m.find("+");
+        if(plus == std::string::npos)
+        {
+            cerr << "The \"+\" char not found!" << endl;
+            break;
+        }
+        int dag_id = stoi(m.substr(0,colon));
+        int v1 = stoi(m.substr(colon+1,plus-colon));
+        int v2 = stoi(m.substr(plus+1));
+        if(dag_id == (int)bhir_count)
+        {
+            cout << "FUSER-OPTIMAL: manual merge of (" << v1 << ", " << v2 << ") in dag " \
+                 << dag_id << endl;
+            dag.merge_vertices_by_id(v1,v2);
+        }
+        merge = strtok(NULL,",");
+    }
+    free(t);
+    dag.remove_cleared_vertices();
+/*
     std::smatch sm;
     std::regex e("\\s*(\\d+):(\\d+)\\+(\\d+),*\\s*");
-    while(std::regex_search(s,sm,e))
+    while(boost::regex_search(s,sm,e))
     {
         assert(sm.size() == 4);
         int dag_id = stoi(sm[1]);
@@ -405,7 +437,8 @@ static void manual_merges(GraphDW &dag)
         s = sm.suffix().str();//Iterate to the next match
     }
     dag.remove_cleared_vertices();
-}
+*/
+;}
 
 void do_fusion(bh_ir &bhir)
 {
