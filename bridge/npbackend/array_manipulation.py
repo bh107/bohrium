@@ -37,6 +37,15 @@ def flatten(ary):
     return ary.reshape(numpy.multiply.reduce(numpy.asarray(ary.shape)))
 
 @fix_returned_biclass
+def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
+    D = diagonal(ary, offset=offset, axis1=axis1, axis2=axis2)
+    if bhary.check(D):
+        D = D.copy2numpy()
+    if dtype:
+        D = D.astype(dtype)
+    return numpy.add.reduce(D, axis=D.ndim-1)
+
+@fix_returned_biclass
 def diagonal(ary, offset=0, axis1=0, axis2=1):
     """
     Return specified diagonals.
@@ -84,8 +93,7 @@ def diagonal(ary, offset=0, axis1=0, axis2=1):
 
     Examples
     --------
-    >>> a = np.arange(4).reshape(2,2)
-    >>> a
+    >>> a = np.arange(4).reshape(2,2); a
     array([[0, 1],
            [2, 3]])
     >>> a.diagonal()
@@ -98,47 +106,43 @@ def diagonal(ary, offset=0, axis1=0, axis2=1):
     >>> a = np.arange(8).reshape(2,2,2); a
     array([[[0, 1],
             [2, 3]],
+
            [[4, 5],
             [6, 7]]])
+    >>> a.diagonal()
+    array([[0, 6],
+           [1, 7]])
     """
     if axis1 == axis2:
         raise Exception("axis1 and axis2 cannot be the same\n")
     if ary.ndim < 2:
         raise Exception("diagonal requires an array of at least two dimensions\n")
 
-    dim1    = ary.shape[axis1]
-    dim2    = ary.shape[axis2]
-    stride1 = ary.strides[axis1]
-    stride2 = ary.strides[axis2]
+    # Get all axes except the two which has the diagonal we seek;
+    # these are added later
+    min_axis, max_axis = sorted([axis1, axis2])
+    tr = list(range(ary.ndim))
+    del tr[max_axis]
+    del tr[min_axis]
 
-    diag_size = None
-    if offset > 0:
-        if offset >= dim2:
-            diag_size = 0
-        else:
-            diag_size = min(dim2 - offset, dim1)
-    elif offset < 0:
-        offset = -offset
-        if offset >= dim1:
-            diag_size = 0
-        else:
-            diag_size = min(dim1 - offset, dim2)
+    # Positive offset means upper diagonals, negative is lower, so we switch
+    # the axes around if negative
+    if offset >= 0:
+        ary = ary.transpose(tr + [axis1, axis2])
     else:
-        diag_size = min(dim1, dim2)
+        ary = ary.transpose(tr + [axis2, axis1])
+        offset = -offset
 
-    ret_shape   = numpy.empty(ary.ndim-1, dtype=numpy.int)
-    ret_strides = numpy.empty(ary.ndim-1, dtype=numpy.int)
+    # Calculate how many elements will be in the diagonal
+    diag_size = max(0, min(ary.shape[-2], ary.shape[-1] - offset))
+    ret_shape = ary.shape[:-2] + (diag_size,)
+    # Return empty array if the diagonal has zero elements
+    if diag_size == 0:
+        return numpy.empty(ret_shape, dtype=ary.dtype)
 
-    i = 0
-    for idim in xrange(ary.ndim):
-        if idim != axis1 and idim != axis2:
-            ret_shape[i]   = ary.shape[idim]
-            ret_strides[i] = ary.strides[idim]
-            i += 1
+    ary = ary[..., :diag_size, offset:(offset + diag_size)]
 
-    ret_shape[ary.ndim-2]   = diag_size
-    ret_strides[ary.ndim-2] = stride1 + stride2
-
+    ret_strides = ary.strides[:-2] + (ary.strides[-1] + ary.strides[-2],)
     return numpy.lib.stride_tricks.as_strided(ary, shape=ret_shape, strides=ret_strides)
 
 @fix_returned_biclass
