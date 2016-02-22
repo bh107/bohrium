@@ -257,10 +257,10 @@ class BenchHelper:
         # Setup command
         cmd = sys_exec + [
             benchmark_path,
-            '--size='       +self.sizetxt,
-            '--dtype='      +str(dtype),
-            '--target='    +target,
-            '--outputfn='   +outputfn
+            '--size='     + self.sizetxt,
+            '--dtype='    + str(dtype),
+            '--target='   + target,
+            '--outputfn=' + outputfn
         ]
 
         # Setup the inputfn if one is needed/provided
@@ -277,19 +277,19 @@ class BenchHelper:
             cmd.append(inputfn)
 
             if not os.path.exists(inputfn):
-                raise Exception('File does not exist: %s' % inputfn)
+                raise Exception('File does not exist: %s\n' % inputfn)
 
         env = os.environ.copy()
         env['BH_PROXY_PORT'] = "4201"
         out = shell_cmd(cmd, verbose=self.args.verbose, env=env) # Execute the benchmark
         if 'elapsed-time' not in out:
-            raise Exception("Cannot find elapsed time, output:\n%s\n\n" %out)
+            raise Exception("Cannot find elapsed time, output:\n%s\n" % out)
 
         if not os.path.exists(outputfn):
-            raise Exception('Benchmark did not produce any output, expected: %s' % outputfn)
+            raise Exception('Benchmark did not produce any output, expected: %s\n' % outputfn)
 
-        npzs    = np.load(outputfn)     # Load the result from disk
-        res     = {}
+        npzs = np.load(outputfn)     # Load the result from disk
+        res  = {}
         for k in npzs:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -421,7 +421,7 @@ if __name__ == "__main__":
                         (res2,cmd2) = getattr(cls_inst,mth)(bh_arys)
                         cmd += cmd1
                         try:                            # Compare
-                            if not np.isscalar(res2):
+                            if not np.isscalar(res2) and bh.check(res2):
                                 res2 = res2.copy2numpy()
                         except RuntimeError as error_msg:
                             test_okay = False
@@ -431,6 +431,7 @@ if __name__ == "__main__":
                         else:
                             rtol = cls_inst.config['maxerror']
                             atol = rtol * 0.1
+
                             if not np.allclose(res1, res2, rtol=rtol, atol=atol):
                                 test_okay = False
                                 if 'warn_on_err' in cls_inst.config:
