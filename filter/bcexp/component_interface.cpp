@@ -49,11 +49,11 @@ bh_error bh_filter_bcexp_init(const char* name)
 
     if (myself.nchildren != 1) {    // For now only one child is supported
         fprintf(stderr,
-                "[FILTER-bcexp] Only a single child is supported, has %ld.",
+                "[FILTER-bcexp] Only a single child is supported, has %lld.",
                 myself.nchildren);
         return BH_ERROR;
     }
-    
+
     timing = bh_component_config_lookup_bool(&myself, "timing", false);
     if (timing)
         exec_timing = bh_timer_new("[BC-Exp] Execution");
@@ -122,4 +122,3 @@ bh_error bh_filter_bcexp_execute(bh_ir* bhir)
         bh_timer_add(exec_timing, start, bh_timer_stamp());
     return res;                             // Send result up the stack
 }
-
