@@ -37,6 +37,15 @@ def flatten(ary):
     return ary.reshape(numpy.multiply.reduce(numpy.asarray(ary.shape)))
 
 @fix_returned_biclass
+def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
+    D = diagonal(ary, offset=offset, axis1=axis1, axis2=axis2)
+    if bhary.check(D):
+        D = D.copy2numpy()
+    if dtype:
+        D = D.astype(dtype)
+    return numpy.add.reduce(D, axis=D.ndim-1)
+
+@fix_returned_biclass
 def diagonal(ary, offset=0, axis1=0, axis2=1):
     """
     Return specified diagonals.
