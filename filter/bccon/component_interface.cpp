@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.h>
 
 #include "component_interface.h"
-#include "filter.hpp"
+#include "reduction_chain_filter.hpp"
 
 //
 // Components

@@ -43,7 +43,7 @@ void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* first, bh_ins
     }
 }
 
-void filter(bh_ir &bhir)
+void reduction_chain_filter(bh_ir &bhir)
 {
     bh_opcode reduce_opcode = BH_NONE;
     bh_instruction* first;
