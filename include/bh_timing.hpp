@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_TIMING_HPP
 #define __BH_TIMING_HPP
 
-//When BH_TIMING_SUM is defined we only record timing sums.
+// When BH_TIMING_SUM is defined we only record timing sums.
 #ifdef BH_TIMING_SUM
     #define BH_TIMING
 #endif
@@ -30,17 +30,15 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "bh_type.h"
 #ifdef _WIN32
-#include <Windows.h>
-#include <time.h>
+    #include <Windows.h>
+    #include <time.h>
 #else
-#include <sys/time.h>
+    #include <sys/time.h>
 #endif
 #include <iostream>
 #include <pthread.h>
 #include <vector>
 #include <fstream>
-
-
 
 namespace bh
 {
@@ -140,9 +138,9 @@ namespace bh
     };
 }
 
-#endif
+#endif /* BH_TIMING */
 
-//Only when BH_TIMING is defined will the bh_timing* functions do anything.
+// Only when BH_TIMING is defined will the bh_timing* functions do anything.
 #ifdef BH_TIMING
     #define bh_timer_new(name) ((bh_intp)(new bh::Timer<>(name)))
     #define bh_timer_stamp() (bh::Timer<>::stamp())

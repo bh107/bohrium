@@ -25,47 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-typedef vector<bh_instruction> ilist;
-typedef ilist::iterator ilist_iter;
-
-/*
-    The implementation currently only detects chains of reductions as produced by
-    np.sum(), it does not detect chains created by np.add.reduce(np.add.reduce()).
-    This could and should be remedied.
-
-    With the input::
-
-    "np.sum(np.ones((10,10,10)))" produces::
-
-    ADD_REDUCE(t1, a)
-    ADD_REDUCE(t2, t1)
-    ADD_REDUCE(s, t2)
-    BH_FREE(t2)
-    BH_DISCARD(t2)
-    BH_FREE(t1)
-    BH_DISCARD(t1)
-    BH_FREE(a)
-    BH_DISCARD(a)
-
-    Which the implementation handles.
-
-    np.add.reduce(np.add.reduce(np.add.reduce(np.ones((10,10,10))))) produces::
-
-    ADD_REDUCE(t1, a)
-    BH_FREE(a)
-    BH_DISCARD(a)
-    ADD_REDUCE(t2, t1)
-    BH_FREE(t1)
-    BH_DISCARD(t1)
-    ADD_REDUCE(s, t2)
-    BH_FREE(t2)
-    BH_DISCARD(t2)
-
-    There are other permutations of reduce-chains that are not detected.
-    However, the above is sufficient to start using/implementing/testing
-    complete reductions.
-*/
-
 void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* first, bh_instruction* last)
 {
     // Rewrite the first reduction as a "COMPLETE" REDUCE.
@@ -77,9 +36,8 @@ void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* first, bh_ins
 
     // Set all the instructions "links" in the chain as BH_NONE
     // they no longer need execution.
-    for(vector<bh_instruction*>::iterator rit=links.begin();
-        rit!=links.end();
-        ++rit) {
+    vector<bh_instruction*>::iterator rit;
+    for(rit = links.begin(); rit != links.end(); ++rit) {
         bh_instruction& rinstr = **rit;
         rinstr.opcode = BH_NONE;
     }
@@ -93,82 +51,63 @@ void filter(bh_ir &bhir)
 
     std::set<bh_base*> bases;
 
-    vector<bh_instruction*> links;  // Instructions in the chain that are not,
-                                    // the first and the last reduction.
+    // Instructions in the chain that are not, the first and the last reduction.
+    vector<bh_instruction*> links;
 
-    for(size_t pc=0; pc<bhir.instr_list.size(); ++pc) {
+    for(size_t pc = 0; pc < bhir.instr_list.size(); ++pc) {
         bh_instruction& instr = bhir.instr_list[pc];
 
         // Look for the "first" reduction in a chain of reductions
-        if (bh_opcode_is_reduction(instr.opcode) and (instr.operand[0].base->nelem > 1)) {
-
+        if (bh_opcode_is_reduction(instr.opcode) and instr.operand[0].base->nelem > 1) {
             reduce_opcode = instr.opcode;
             bases.insert(instr.operand[0].base);
 
             first = &instr;
-            last = NULL;
+            last  = NULL;
 
-            //printf("Beginning the chain...\n");
-            //bh_pprint_instr(&instr);
-
-            for(size_t pc_chain=pc+1; pc_chain<bhir.instr_list.size(); ++pc_chain) {
-
+            for(size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
-                bool other_use=false;                   // Check for other use
-                for(int oidx=0; oidx < bh_noperands(other_instr.opcode); ++oidx) {
+                bool other_use = false;                                     // Check for other use
+                for(int oidx = 0; oidx < bh_noperands(other_instr.opcode); ++oidx) {
                     if (bh_is_constant(&other_instr.operand[oidx])) {
                         continue;
                     }
                     if (bases.find(other_instr.operand[oidx].base) != bases.end()) {
                         other_use = true;
+                        break;
                     }
                 }
-                if (!other_use) {                       // Ignore it
-                    //printf("IGNORING\n");
-                    //bh_pprint_instr(&other_instr);
+
+                if (!other_use) {                                           // Ignore it
                     continue;
                 }
 
-                int gets_freed = other_instr.opcode == BH_FREE;
-                int gets_discarded = other_instr.opcode == BH_DISCARD;
-                int gets_reduced = other_instr.opcode == reduce_opcode;
-                bool is_continuation = gets_freed or gets_discarded or gets_reduced;
-                bool scalar_output = (other_instr.operand[0].base->nelem == 1);
+                bool is_none      = other_instr.opcode == BH_NONE;
+                bool is_freed     = other_instr.opcode == BH_FREE;
+                bool is_discarded = other_instr.opcode == BH_DISCARD;
+                bool is_reduced   = other_instr.opcode == reduce_opcode;
 
-                if (not is_continuation) {              // Chain is broken
-                    //printf("CHAIN BROKEN BY: \n");
-                    //bh_pprint_instr(&other_instr);
-
-                    reduce_opcode = BH_NONE;            // Reset the search
+                if (!(is_none or is_freed or is_discarded or is_reduced)) { // Chain is broken
                     first = NULL;
-                    last = NULL;
-                    links.clear();
-                    bases.clear();
-                }
-
-                if (scalar_output) {                    // End of the chain
-                    //printf("Ending the chain and REWRITE as COMPLETE REDUCE\n");
-                    //bh_pprint_instr(&other_instr);
-
-                    last = &other_instr;
-                } else {                                // Continuation
-                    //printf("Continuing the chain...\n");
-                    //bh_pprint_instr(&other_instr);
-
+                    break;                                                  // Reset the search
+                } else if (other_instr.operand[0].base->nelem == 1) {       // Scalar output
+                    last = &other_instr;                                    // End of the chain
+                } else {                                                    // Continuation
                     links.push_back(&other_instr);
-                    if (other_instr.opcode == reduce_opcode) {    // Update reduce_output
+                    if (other_instr.opcode == reduce_opcode) {              // Update reduce_output
                         bases.insert(other_instr.operand[0].base);
                     }
                 }
             }
 
-            if (first and last) {                       // Rewrite the chain
+            if (first and last) {                                           // Rewrite the chain
                 rewrite_chain(links, first, last);
             }
-            reduce_opcode = BH_NONE;                    // Reset the search
-            first = NULL;
-            last = NULL;
+
+            reduce_opcode = BH_NONE;                                        // Reset the search
+            first         = NULL;
+            last          = NULL;
             links.clear();
             bases.clear();
         }
