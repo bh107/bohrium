@@ -21,12 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <bh_dag.h>
 #include <boost/foreach.hpp>
+#include <boost/foreach.hpp>
 
 using namespace std;
 using namespace boost;
 using namespace bohrium::dag;
 
-static int64_t sum=0, sum_uv=0;
+static int64_t sum=0, sum_uv=0, sum_wedges=0;
 void filter(const bh_ir &bhir)
 {
     if(bhir.kernel_list.size() == 0)
@@ -36,6 +37,7 @@ void filter(const bh_ir &bhir)
     from_kernels(bhir.kernel_list, dag);
     sum += dag_cost(dag.bglD());
     sum_uv += dag_cost_unique_views(dag.bglD());
+    sum_wedges += num_edges(dag.bglW());
 
     if(not dag_validate(dag))
         cerr << "[PRICER-FILTER] Invalid BhIR! " << endl;
@@ -43,5 +45,7 @@ void filter(const bh_ir &bhir)
 
 void shutdown()
 {
-    cout << "[PRICER-FILTER] total cost: " << sum << " (" << sum_uv << " bytes)" << endl;
+    cout << "[PRICER-FILTER] total cost: " << sum \
+         << " (" << sum_uv << " bytes, "\
+         << sum_wedges << " wedges)" << endl;
 }
