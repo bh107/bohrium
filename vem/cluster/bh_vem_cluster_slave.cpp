@@ -103,7 +103,7 @@ int main()
                 for(uint64_t i=0; i < bhir.instr_list.size(); ++i)
                 {
                     bh_instruction *inst = &bhir.instr_list[i];
-                    int nop = bh_operands_in_instruction(inst);
+                    int nop = bh_noperands(inst->opcode);
                     bh_view *ops = bh_inst_operands(inst);
 
                     //Convert all instructon operands

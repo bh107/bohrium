@@ -52,7 +52,7 @@ bh_error bh_vem_node_init(const char* name)
         return err;
 
     timing = bh_component_config_lookup_bool(&vem_node_myself, "timing", false);
-    
+
     //For now, we have one child exactly
     if(vem_node_myself.nchildren != 1)
     {
@@ -110,7 +110,7 @@ bh_error bh_vem_node_extmethod(const char *name, bh_opcode opcode)
 //Inspect one instruction
 static bh_error inspect(bh_instruction *instr)
 {
-    int nop = bh_operands_in_instruction(instr);
+    int nop = bh_noperands(instr->opcode);
     bh_view *operands = bh_inst_operands(instr);
 
     //Save all new base arrays
@@ -144,7 +144,7 @@ bh_error bh_vem_node_execute(bh_ir* bhir)
         inspect(&bhir->instr_list[i]);
 
     bh_error ret = child->execute(bhir);
-    
+
     if (timing)
         bh_timer_add(exec_timing, start, bh_timer_stamp());
 

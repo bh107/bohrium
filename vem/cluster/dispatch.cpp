@@ -332,7 +332,7 @@ void dispatch_bhir(bh_ir *bhir)
     for(uint64_t i=0; i<bhir->instr_list.size(); ++i)
     {
         const bh_instruction *inst = &bhir->instr_list[i];
-        int nop = bh_operands_in_instruction(inst);
+        int nop = bh_noperands(inst->opcode);
         for(bh_intp j=0; j<nop; ++j)
         {
             bh_view *operand = &bh_inst_operands((bh_instruction*)inst)[j];

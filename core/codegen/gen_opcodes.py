@@ -104,16 +104,6 @@ __NOPS__
     }
 }
 
-/* Number of operands in instruction
- * NB: this function handles user-defined function correctly
- * @inst Instruction
- * @return Number of operands
- */
-int bh_operands_in_instruction(const bh_instruction *inst)
-{
-    return bh_noperands(inst->opcode);
-}
-
 /* Text descriptions for a given operation */
 const char* _opcode_text[BH_NONE+1];
 bool _opcode_text_initialized = false;

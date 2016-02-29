@@ -69,7 +69,6 @@ void batch_schedule_inst_on_base(bh_opcode opcode, bh_base *base)
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
     bh_assign_complete_base(&t.inst.inst.operand[0], base);
-    assert(bh_operands_in_instruction(&t.inst.inst) == 1);
     batch_schedule(t);
 }
 

@@ -39,13 +39,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) >= (b) ? (a) : (b))
 
-/* Number of operands in instruction
- * NB: this function handles user-defined function correctly
- * @inst Instruction
- * @return Number of operands
- */
-DLLEXPORT int bh_operands_in_instruction(const bh_instruction *inst);
-
 /* Text string for operation
  *
  * @opcode Opcode for operation

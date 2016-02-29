@@ -119,7 +119,7 @@ bh_error exec_extmethod(const char *name, bh_opcode opcode)
 /*
 static void fallback_exec(bh_instruction *inst)
 {
-    int nop = bh_operands_in_instruction(inst);
+    int nop = bh_noperands(inst->opcode);
     std::set<bh_base*> arys2discard;
 
     batch_flush();
@@ -180,7 +180,7 @@ static void fallback_exec(bh_instruction *inst)
 static void execute_regular(bh_instruction *inst)
 {
     std::vector<ary_chunk> chunks;
-    int nop = bh_operands_in_instruction(inst);
+    int nop = bh_noperands(inst->opcode);
     bh_view *operands = bh_inst_operands(inst);
 
     mapping_chunks(nop, operands, chunks);
