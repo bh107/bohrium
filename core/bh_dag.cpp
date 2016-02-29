@@ -493,7 +493,7 @@ uint64_t dag_cost_unique_views(const GraphD &dag)
     uint64_t cost = 0;
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
-        cost += bohrium::kernel_cost_unique_views(dag[v]);
+        cost += bohrium::kernel_cost(dag[v], UNIQUE_VIEWS);
     }
     return cost;
 }

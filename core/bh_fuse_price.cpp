@@ -315,9 +315,14 @@ void fuse_price_model_text(FusePriceModel price_model, string &output)
     }
 }
 
-uint64_t kernel_cost(const bh_ir_kernel &kernel)
+uint64_t kernel_cost(const bh_ir_kernel &kernel, FusePriceModel model)
 {
-    switch(selected_price_model)
+    FusePriceModel m = selected_price_model;
+
+    if(model != ENV_DECIDE)
+        m = model;
+
+    switch(m)
     {
     case NUM_OF_PRICE_MODELS:
         selected_price_model = fuse_get_selected_price_model();
@@ -335,11 +340,6 @@ uint64_t kernel_cost(const bh_ir_kernel &kernel)
     default:
         throw runtime_error("No price module is selected!");
     }
-}
-
-uint64_t kernel_cost_unique_views(const bh_ir_kernel &kernel)
-{
-    return cost_unique(kernel);
 }
 
 uint64_t cost_savings(const bh_ir_kernel &k1, const bh_ir_kernel &k2)

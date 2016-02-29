@@ -447,7 +447,7 @@ uint64_t bh_ir_kernel::cost() const
 /* Returns the cost of the kernel using the unique views cost model */
 uint64_t bh_ir_kernel::cost_unique_views() const
 {
-    return bohrium::kernel_cost_unique_views(*this);
+    return bohrium::kernel_cost(*this, bohrium::ENV_DECIDE);
 }
 
 /* Returns the cost savings of merging with the 'other' kernel.

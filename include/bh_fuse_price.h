@@ -27,29 +27,6 @@ class bh_ir_kernel; // Forward declaration from <bh_ir.h>
 
 namespace bohrium {
 
-/* Returns the cost of the kernel 'kernel'
- *
- * @kernel The kernel in question
- * @return The kernel price
- */
-uint64_t kernel_cost(const bh_ir_kernel &kernel);
-
-/* Returns the cost of the kernel 'kernel' using the
- * Unique-Views cost model.
- *
- * @kernel The kernel in question
- * @return The kernel price
- */
-uint64_t kernel_cost_unique_views(const bh_ir_kernel &kernel);
-
-/* Returns the cost saving of fusing the two kernel 'k1' and 'k2' (in that order)
- *
- * @k1     The first kernel
- * @k2     The second kernel
- * @return The cost savings
- */
-uint64_t cost_savings(const bh_ir_kernel &k1, const bh_ir_kernel &k2);
-
 /* The possible fuse models */
 enum FusePriceModel
 {
@@ -60,9 +37,27 @@ enum FusePriceModel
     MAX_SHARE,
     TEMP_SHARE,
 
+/* The environment variables BH_FUSE_MODEL decides the model */
+    ENV_DECIDE,
+
 /* The number of price models in this enum */
     NUM_OF_PRICE_MODELS
 };
+
+/* Returns the cost of the kernel 'kernel'
+ *
+ * @kernel The kernel in question
+ * @return The kernel price
+ */
+uint64_t kernel_cost(const bh_ir_kernel &kernel, FusePriceModel model=ENV_DECIDE);
+
+/* Returns the cost saving of fusing the two kernel 'k1' and 'k2' (in that order)
+ *
+ * @k1     The first kernel
+ * @k2     The second kernel
+ * @return The cost savings
+ */
+uint64_t cost_savings(const bh_ir_kernel &k1, const bh_ir_kernel &k2);
 
 /* Writes the name of the 'fuse_model' to the 'output' string
  *
