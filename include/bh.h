@@ -256,66 +256,6 @@ DLLEXPORT bool bh_is_constant(const bh_view* o);
  */
 DLLEXPORT void bh_flag_constant(bh_view* o);
 
-/* Returns the simplest view (fewest dimensions) that access 
- * the same elements in the same pattern
- *
- * @view The view
- * @return The simplified view
- */
-DLLEXPORT bh_view bh_view_simplify(const bh_view &view);
-
-/* Simplifies the given view down to the given shape.
- * If that is not possible an std::invalid_argument exception is thrown 
- *
- * @view The view
- * @return The simplified view
- */
-DLLEXPORT bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape);
-
-/* Determines whether two views have same shape.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_same_shape(const bh_view *a, const bh_view *b);
-
-/* Determines whether two views are identical and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_same(const bh_view *a, const bh_view *b);
-
-/* Determines whether two views are aligned and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_aligned(const bh_view *a, const bh_view *b);
-
-/* Determines whether two views are aligned, points
- * to the same base array, and have same shape.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b);
-
-/* Determines whether two views access some of the same data points
- * NB: This functions may return True on non-overlapping views.
- *     But will always return False on overlapping views.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
 
 /* Determines whether instruction 'a' depends on instruction 'b',
  * which is true when:
@@ -329,7 +269,7 @@ DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
  */
 DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
 
-/* Determines whether the opcode is a sweep opcode 
+/* Determines whether the opcode is a sweep opcode
  * i.e. either a reduction or an accumulate
  *
  * @opcode
@@ -338,7 +278,7 @@ DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction
 DLLEXPORT bool bh_opcode_is_sweep(bh_opcode opcode);
 
 template<typename E>
-std::ostream& operator<<(std::ostream& out, const std::vector<E>& v) 
+std::ostream& operator<<(std::ostream& out, const std::vector<E>& v)
 {
     out << "[";
     for (typename std::vector<E>::const_iterator i = v.cbegin();;)
