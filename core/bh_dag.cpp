@@ -478,22 +478,12 @@ bool cycles(const GraphD &g)
     }
 }
 
-uint64_t dag_cost(const GraphD &dag)
+uint64_t dag_cost(const GraphD &dag, FusePriceModel model)
 {
     uint64_t cost = 0;
     BOOST_FOREACH(const Vertex &v, vertices(dag))
     {
-        cost += dag[v].cost();
-    }
-    return cost;
-}
-
-uint64_t dag_cost_unique_views(const GraphD &dag)
-{
-    uint64_t cost = 0;
-    BOOST_FOREACH(const Vertex &v, vertices(dag))
-    {
-        cost += bohrium::kernel_cost(dag[v], UNIQUE_VIEWS);
+        cost += dag[v].cost(model);
     }
     return cost;
 }
@@ -540,7 +530,7 @@ void pprint(const GraphDW &dag, const char filename[])
         void operator()(std::ostream& out) const
         {
             const uint64_t cost = dag_cost(graph);
-            const uint64_t cost_uv = dag_cost_unique_views(graph);
+            const uint64_t cost_uv = dag_cost(graph, UNIQUE_VIEWS);
             out << "labelloc=\"t\";" << endl;
             out << "label=\"DAG with a total cost of ";
             if(cost > 10000)

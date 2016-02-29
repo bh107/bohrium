@@ -36,7 +36,7 @@ void filter(const bh_ir &bhir)
     GraphDW dag;
     from_kernels(bhir.kernel_list, dag);
     sum += dag_cost(dag.bglD());
-    sum_uv += dag_cost_unique_views(dag.bglD());
+    sum_uv += dag_cost(dag.bglD(), bohrium::UNIQUE_VIEWS);
     sum_wedges += num_edges(dag.bglW());
 
     if(not dag_validate(dag))
