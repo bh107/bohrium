@@ -84,7 +84,7 @@ void batch_schedule_inst(bh_opcode opcode, bh_view *operands)
     task t;
     t.inst.type = TASK_INST;
     t.inst.inst.opcode = opcode;
-    memcpy(t.inst.inst.operand, operands, bh_operands(opcode)
+    memcpy(t.inst.inst.operand, operands, bh_noperands(opcode)
                                           * sizeof(bh_view));
     batch_schedule(t);
 }
