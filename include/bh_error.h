@@ -24,6 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
+#include <stdint.h>
+#include "bh_win.h"
+
 /* Error codes */
 enum /* bh_error */
 {
@@ -34,7 +37,14 @@ enum /* bh_error */
     BH_INST_NOT_SUPPORTED,     // Instruction not supported
     BH_EXTMETHOD_NOT_SUPPORTED // Extension Method not supported
 };
+typedef int64_t bh_error;
 
+/* Text string for error code
+ *
+ * @error  Error code.
+ * @return Text string.
+ */
+DLLEXPORT const char* bh_error_text(bh_error error);
 
 #ifdef __cplusplus
 }

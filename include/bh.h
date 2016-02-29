@@ -134,21 +134,12 @@ DLLEXPORT bool bh_type_sig_check(int type_sig);
  */
 DLLEXPORT int bh_type_size(bh_type type);
 
-
 /* Text string for type
  *
  * @type   Type code.
  * @return Text string.
  */
 DLLEXPORT const char* bh_type_text(bh_type type);
-
-
-/* Text string for error code
- *
- * @error  Error code.
- * @return Text string.
- */
-DLLEXPORT const char* bh_error_text(bh_error error);
 
 /* Determines whether the opcode is a sweep opcode
  * i.e. either a reduction or an accumulate
