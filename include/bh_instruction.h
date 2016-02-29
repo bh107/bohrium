@@ -49,5 +49,25 @@ BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)
 //Implements pprint of an instruction
 DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_instruction& instr);
 
+/* Retrive the operands of a instruction.
+ *
+ * @instruction  The instruction in question
+ * @return The operand list
+ */
+DLLEXPORT bh_view *bh_inst_operands(bh_instruction *instruction);
+
+/* Determines whether instruction 'a' depends on instruction 'b',
+ * which is true when:
+ *      'b' writes to an array that 'a' access
+ *                        or
+ *      'a' writes to an array that 'b' access
+ *
+ * @a The first instruction
+ * @b The second instruction
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
+
+
 #endif
 

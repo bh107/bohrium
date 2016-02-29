@@ -150,26 +150,6 @@ DLLEXPORT const char* bh_type_text(bh_type type);
  */
 DLLEXPORT const char* bh_error_text(bh_error error);
 
-
-/* Retrive the operands of a instruction.
- *
- * @instruction  The instruction in question
- * @return The operand list
- */
-DLLEXPORT bh_view *bh_inst_operands(bh_instruction *instruction);
-
-/* Determines whether instruction 'a' depends on instruction 'b',
- * which is true when:
- *      'b' writes to an array that 'a' access
- *                        or
- *      'a' writes to an array that 'b' access
- *
- * @a The first instruction
- * @b The second instruction
- * @return The boolean answer
- */
-DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
-
 /* Determines whether the opcode is a sweep opcode
  * i.e. either a reduction or an accumulate
  *
