@@ -1,6 +1,7 @@
 #ifndef __BH_FILTER_COMPOSITE_EXPANDER
 #define __BH_FILTER_COMPOSITE_EXPANDER
-#include "bh.h"
+
+#include <bh_component.h>
 
 namespace bohrium {
 namespace filter {
@@ -92,18 +93,18 @@ public:
      *  IDENTITY, t1, t1_bool
      *  FREE, t1_bool
      *  DISCARD, t1_bool
-     *  
+     *
      *  GREATER, t2_bool, input, 0.0
      *  IDENTITY, t2, t2_bool
      *  FREE, t2_bool
      *  DISCARD, t2_bool
-     *  
+     *
      *  SUBTRACT, out, t2, t1
      *  FREE, t1
      *  DISCARD, t1
      *  FREE, t2
      *  DISCARD, t2
-     *  
+     *
      *          BH_SIGN OUT, IN1 (When IN1.type == COMPLEX):
      *
      *  REAL, input_r, input
@@ -149,7 +150,7 @@ private:
     int sign_;
     int powk_;
     int reduce1d_;
-    
+
 };
 
 void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2)

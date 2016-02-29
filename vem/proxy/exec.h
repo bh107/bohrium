@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh.h>
+#include <bh_component.h>
 
 #ifndef __BH_VEM_PROXY_EXEC_H
 #define __BH_VEM_PROXY_EXEC_H

@@ -23,7 +23,7 @@ add_executable(bh_proxy_backend backend.cpp)
 
 #We depend on bh.so
 target_link_libraries(bh_vem_proxy bh ${ZLIB_LIBRARIES})
-target_link_libraries(bh_proxy_backend bh_vem_proxy ${ZLIB_LIBRARIES})
+target_link_libraries(bh_proxy_backend bh_vem_proxy bh ${ZLIB_LIBRARIES})
 
 install(TARGETS bh_vem_proxy DESTINATION lib COMPONENT bohrium)
 install(TARGETS bh_proxy_backend DESTINATION bin COMPONENT bohrium)

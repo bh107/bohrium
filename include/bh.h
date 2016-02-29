@@ -21,20 +21,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_H
 #define __BH_H
 
+#include <bh_type.h>
+#include <bh_opcode.h>
+#include <bh_win.h>
+#include <bh_error.h>
+
 #include <cstddef>
-#include "bh_error.h"
-#include "bh_debug.h"
-#include "bh_opcode.h"
-#include "bh_type.h"
-#include "bh_array.h"
-#include "bh_instruction.h"
-#include "bh_component.h"
-#include "bh_pprint.h"
-#include "bh_osx.h"
-#include "bh_win.h"
-#include "bh_memory.h"
-#include "bh_ir.h"
-#include "bh_mem_signal.h"
+#include <iostream>
+#include <vector>
+
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) >= (b) ? (a) : (b))

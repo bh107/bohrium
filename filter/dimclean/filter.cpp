@@ -17,6 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include <bh_component.h>
 #include <bh.h>
 
 void filter(bh_ir &bhir)
@@ -49,15 +50,15 @@ void filter(bh_ir &bhir)
                             --view.ndim;
                         if (sweep && o == 1 && instr.constant.value.int64 > ii)
                             --instr.constant.value.int64;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         if (ii<i)
                         {
                             view.shape[ii] = view.shape[i];
                             view.stride[ii++] = view.stride[i];
                         }
-                        else 
+                        else
                             ++ii;
                     }
                 }

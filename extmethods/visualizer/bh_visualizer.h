@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_VISUALIZER_H
 #define __BH_VISUALIZER_H
 
-#include <bh.h>
+#include <bh_component.h>
 
 #ifdef __cplusplus
 extern "C" {

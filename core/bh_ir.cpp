@@ -31,9 +31,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+
 #include "bh_ir.h"
 #include "bh_fuse.h"
 #include "bh_fuse_price.h"
+#include "bh_pprint.h"
 
 using namespace std;
 using namespace boost;

@@ -18,7 +18,6 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh.h>
 #include <string.h>
 #include <assert.h>
 #include <iostream>
@@ -26,6 +25,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <string>
 #include <boost/algorithm/string.hpp>
+
+#include <bh_component.h>
 
 #ifdef _WIN32
 
@@ -101,7 +102,7 @@ static bh_component_type get_type(dictionary *dict, const char *name)
 
 /**
  *  Extract component symbol from the given string.
- *  
+ *
  *  Expects a string like: "anythinglibbh_componenttype_COMPONENTNAME.anything"
  *
  *  No error-checking in this thing...
@@ -122,11 +123,11 @@ static void extract_symbol_from_path(const char* path, char* symbol)
     int name_len = strlen(name);
 
     strncpy(symbol, name, name_len);                // Copy the symbol
-                                                            
+
     for(int i=0;                                    // Terminate at extension
         (symbol[i]!='\0') || (i>=(name_len-1));
-        ++i) { 
-        if (symbol[i] == '.') {                              
+        ++i) {
+        if (symbol[i] == '.') {
             *(symbol+i) = '\0';
             break;
         }
@@ -185,7 +186,7 @@ static bh_error component_dl_iface(dictionary* config, bh_component_iface* comp)
     }
 
     char impl_inikey[BH_COMPONENT_NAME_SIZE+5];             // Get path to shared-object
-    snprintf(impl_inikey, BH_COMPONENT_NAME_SIZE+5, "%s:impl", comp->name); 
+    snprintf(impl_inikey, BH_COMPONENT_NAME_SIZE+5, "%s:impl", comp->name);
     char *impl = iniparser_getstring(config, impl_inikey, NULL);
     if (impl == NULL) {
         fprintf(stderr,
@@ -303,7 +304,7 @@ static bh_error component_children_init(bh_component *self, char* stack)
     return BH_SUCCESS;
 }
 
-/** 
+/**
  * Find configuration file
  *
  */
@@ -312,7 +313,7 @@ bh_error bh_component_config_find(bh_component *self)
     const char* homepath = HOME_INI_PATH;
     const char* syspath1 = SYSTEM_INI_PATH_1;
     const char* syspath2 = SYSTEM_INI_PATH_2;
-   
+
     //
     // Find the configuration file
     //
@@ -445,7 +446,7 @@ bh_error bh_component_init(bh_component *self, const char* name)
         stack = (char*)"stack_default";
         default_stack = 1;
     }
-    
+
     int stack_exists = component_exists(self->config, stack);
     if ((!default_stack) && (!stack_exists)) {
         fprintf(stderr, "The requested stack configuration(%s) does not exist,"
@@ -464,7 +465,7 @@ bh_error bh_component_init(bh_component *self, const char* name)
     } else {
         strcpy(self->name, name);
     }
-    
+
     self->type = get_type(self->config, self->name);    // Store type
     if (BH_COMPONENT_ERROR == self->type) {
         return BH_ERROR;
@@ -630,13 +631,13 @@ bh_error bh_component_config_bool_option(const bh_component* component,
         return BH_ERROR;
     }
     std::string value = boost::algorithm::to_lower_copy(std::string(raw));
- 
+
     if ((value == "true") || (value == "yes") || (value == "1"))  {
         *option = true;
     } else if ((value == "false") || (value == "no")|| (value == "0")) {
         *option = false;
     } else {
-        std::cerr << std::string(option_name) 
+        std::cerr << std::string(option_name)
                   << " must be boolean (true/false, yes/no, 1/0)." << std::endl;
         return BH_ERROR;
     }

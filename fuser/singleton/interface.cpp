@@ -18,9 +18,10 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
-#include <bh.h>
 #define BH_TIMING_SUM
 #include <bh_timing.hpp>
+#include <bh_component.h>
+
 #include "interface.h"
 #include "fuser.h"
 #include "bh_fuse_cache.h"

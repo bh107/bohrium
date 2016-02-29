@@ -18,13 +18,16 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh.h>
 #include <map>
 #include <string>
 #include <algorithm>
 #include <tuple>
 #include <iostream>
 #include <sstream>
+
+#include <bh_array.h>
+#include <bh_memory.h>
+#include <bh.h>
 
 using namespace std;
 

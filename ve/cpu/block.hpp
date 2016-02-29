@@ -3,7 +3,8 @@
 #include <string>
 #include <map>
 
-#include "bh.h"
+#include "bh_ir.h"
+
 #include "kp_utils.h"
 #include "program.hpp"
 #include "symbol_table.hpp"
@@ -62,7 +63,7 @@ public:
      *  Create a symbol for the block.
      *
      *  The textual version of the  symbol looks something like::
-     *  
+     *
      *  symbol_text = ZIP-ADD-2D~1~2~3_~1Cf~2Cf~3Cf
      *
      *  Which will be hashed to some uint32_t value::
@@ -205,7 +206,7 @@ private:
      *  Since this is what will be the upper-bounds used in when
      *  generating / specializing code, primarily for fusion / contraction.
      *
-     *  NOTE: This should be done after applying array contraction or 
+     *  NOTE: This should be done after applying array contraction or
      *  any other changes to tacs and operands.
      */
     void _update_iterspace(void);
@@ -226,7 +227,7 @@ private:
 
     std::string symbol_text_;                   // Textual representation of the block
     std::string symbol_;                        // Hash of textual representation
-       
+
     static const char TAG[];
 };
 

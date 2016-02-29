@@ -2,7 +2,9 @@
 #define __KP_CORE_SYMBOLTABLE_HPP 1
 #include <string>
 #include <set>
-#include "bh.h"
+
+#include <bh_instruction.h>
+
 #include "kp.h"
 
 namespace kp{
@@ -91,7 +93,7 @@ public:
      * Create a textual representation of the table.
      */
     std::string text(void);
-    
+
     /**
      *  Return a textual representation of meta-data; size, capacity, etc.
      */

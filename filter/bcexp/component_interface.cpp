@@ -20,6 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #define BH_TIMING_SUM
 #include <bh_timing.hpp>
+#include <bh_component.h>
+
 #include "component_interface.h"
 #include "expander.hpp"
 

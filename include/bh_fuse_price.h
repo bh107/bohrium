@@ -21,8 +21,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_IR_FUSE_PRICE_H
 #define __BH_IR_FUSE_PRICE_H
 
-#include <bh.h>
 #include <string>
+
+#include "bh_ir.h"
 
 namespace bohrium {
 

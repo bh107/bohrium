@@ -17,9 +17,11 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <bh.h>
 #include <stdio.h>
 #include <set>
+
+#include <bh_component.h>
+#include <bh.h>
 
 using namespace std;
 
@@ -127,7 +129,7 @@ void filter(bh_ir &bhir)
                     //bh_pprint_instr(&other_instr);
                     continue;
                 }
-            
+
                 int gets_freed = other_instr.opcode == BH_FREE;
                 int gets_discarded = other_instr.opcode == BH_DISCARD;
                 int gets_reduced = other_instr.opcode == reduce_opcode;
@@ -144,7 +146,7 @@ void filter(bh_ir &bhir)
                     links.clear();
                     bases.clear();
                 }
-            
+
                 if (scalar_output) {                    // End of the chain
                     //printf("Ending the chain and REWRITE as COMPLETE REDUCE\n");
                     //bh_pprint_instr(&other_instr);

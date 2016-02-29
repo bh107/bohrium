@@ -27,7 +27,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <set>
 #include <map>
+
 #include <bh.h>
+#include <bh_ir.h>
 
 namespace bohrium {
 namespace dag {

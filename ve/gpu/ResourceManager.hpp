@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -24,9 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "cl.hpp"
 #include <vector>
 #include <map>
-#include <bh.h>
 #define BH_TIMING_SUM
 #include <bh_timing.hpp>
+#include <bh_component.h>
 #include "OCLtype.h"
 
 class ResourceManager
@@ -49,7 +49,7 @@ private:
     bool _asyncCompile;
     bool _verbose;
     bool _printSource;
-    bool _timing; 
+    bool _timing;
     std::string compilerOptions;
     void registerExtensions(const std::vector<std::string>& extensions);
     bool setContext(const std::vector<cl::Platform>& platforms, cl_device_type device_type);
@@ -70,26 +70,26 @@ public:
     // We allways read synchronous with at most one event to wait for.
     // Because we are handing off the array
     void readBuffer(const cl::Buffer& buffer,
-                    void* hostPtr, 
+                    void* hostPtr,
                     cl::Event waitFor,
                     unsigned int device);
     // We allways write asynchronous with NO events to wait for.
     // Because we just recieved the array from upstream
     cl::Event enqueueWriteBuffer(const cl::Buffer& buffer,
-                                 const void* hostPtr, 
-                                 std::vector<cl::Event> waitFor, 
+                                 const void* hostPtr,
+                                 std::vector<cl::Event> waitFor,
                                  unsigned int device);
     cl::Event completeEvent();
-    cl::Kernel createKernel(const std::string& source, 
+    cl::Kernel createKernel(const std::string& source,
                             const std::string& kernelName,
                             const std::string& options = std::string(""));
-    std::vector<cl::Kernel> createKernelsFromFile(const std::string& fileName, 
+    std::vector<cl::Kernel> createKernelsFromFile(const std::string& fileName,
                                                   const std::vector<std::string>& kernelNames,
                                                   const std::string& options = std::string(""));
-    std::vector<cl::Kernel> createKernels(const std::string& source, 
-                                          const std::vector<std::string>& kernelNames, 
+    std::vector<cl::Kernel> createKernels(const std::string& source,
+                                          const std::vector<std::string>& kernelNames,
                                           const std::string& options = std::string(""));
-    cl::Event enqueueNDRangeKernel(const cl::Kernel& kernel, 
+    cl::Event enqueueNDRangeKernel(const cl::Kernel& kernel,
                                    const cl::NDRange& globalSize,
                                    const cl::NDRange& localSize,
                                    const std::vector<cl::Event>* waitFor,

@@ -17,10 +17,12 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <bh.h>
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+
+#include "pprint_filter.h"
+#include <bh_component.h>
 
 using namespace std;
 

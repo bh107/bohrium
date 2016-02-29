@@ -33,9 +33,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <set>
 #include <stdexcept>
+
 #include <bh_dag.h>
-#include "bh_fuse.h"
-#include "bh_fuse_price.h"
+#include <bh_fuse.h>
+#include <bh_fuse_price.h>
+#include <bh_ir.h>
 
 using namespace std;
 using namespace boost;

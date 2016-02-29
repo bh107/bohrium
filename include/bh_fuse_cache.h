@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_FUSE_CACHE_H
 #define __BH_FUSE_CACHE_H
 
-#include <bh.h>
 #include <string>
 #include <sstream>
 #include <map>
@@ -29,8 +28,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
+
 #include "bh_fuse.h"
 #include "bh_fuse_price.h"
+#include "bh_component.h"
 
 namespace bohrium {
 

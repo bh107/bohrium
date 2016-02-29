@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,21 +12,23 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <assert.h>
 #include <stdlib.h>
-#include <bh.h>
 #include "OCLtype.h"
 #if defined(__APPLE__) || defined(__MACOSX)
 #include <OpenCL/opencl.h>
 #else
 #include <CL/cl.h>
 #endif
+#include <stdexcept>
+
+#include <bh.h>
 
 OCLtype oclType(bh_type vbtype)
 {
@@ -85,7 +87,7 @@ const char* oclTypeStr(OCLtype type)
     case OCL_R123: return "ulong2";
     case OCL_UNKNOWN: return "void";
     default: throw std::runtime_error("Unknown OCLtype");
-        
+
     }
 }
 
@@ -107,7 +109,7 @@ const char* oclAPItypeStr(OCLtype type)
     case OCL_COMPLEX128: return "cl_double2";
     case OCL_R123: return "cl_ulong2";
     default: throw std::runtime_error("Unknown OCLtype");
-        
+
     }
 }
 

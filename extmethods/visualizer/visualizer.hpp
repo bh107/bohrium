@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <bh.h>
+#include <bh_array.h>
 #include "Vector3.hpp"
 #include "colormaps.hpp"
 #define max(a,b) (a>=b?a:b)
@@ -47,7 +47,7 @@ class Visualizer
     void updateNormals();
     void updateColors();
     float interpolateColor(float value, const float (* rgb)[3]);
-    
+
     bool toggleFullscreen(void);
 
     void updateArray3D();

@@ -21,8 +21,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_IR_FUSE_H
 #define __BH_IR_FUSE_H
 
-#include <bh.h>
 #include <string>
+
+#include "bh_instruction.h"
 
 namespace bohrium {
 
@@ -44,13 +45,13 @@ enum FuseModel
  * thus accepts broadcast, reduction, extension methods, etc. */
     BROADEST,
 
-/* Same as broadest, but does not allow two sweep operations 
- * (reduce or scan) on the same input unless the sweep dimension is 
- * the same  
+/* Same as broadest, but does not allow two sweep operations
+ * (reduce or scan) on the same input unless the sweep dimension is
+ * the same
  */
     NO_XSWEEP,
 
-/* combines broadest and no_xsweep with ensuring that operations producing 
+/* combines broadest and no_xsweep with ensuring that operations producing
  * scalars are in seperate kernels
  */
     NO_XSWEEP_SCALAR_SEPERATE,

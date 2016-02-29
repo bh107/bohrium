@@ -18,10 +18,13 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <iostream>
+#include <sstream>
+
+#include <bh_memory.h>
 
 #include "traits.hpp"           // Traits for assigning type to constants and multi_arrays.
 #include "runtime.hpp"
-#include <sstream>
+
 
 namespace bxx {
 
@@ -158,7 +161,7 @@ multi_array<T>::~multi_array()
             } else {
                 bh_free(*this);
             }
-            
+
             bh_discard(*this);                               // Send BH_DISCARD to Bohrium
             Runtime::instance().trash(meta.base);            // Queue the bh_base for de-allocation
             Runtime::instance().ref_count.erase(meta.base);  // Remove from ref-count
@@ -308,7 +311,7 @@ std::ostream& operator<< (std::ostream& stream, multi_array<T>& rhs)
     if (2 == rhs.getRank()) {
         int64_t inner = rhs.shape(1);
         size_t nelements = rhs.len();
-        
+
         for(int c=0; it != end; ++c, ++it) {
             if ((c % inner) == 0) {
                 stream << " [ ";
@@ -410,7 +413,7 @@ multi_array<T>& multi_array<T>::operator[](Slice slice) {
     if (this->getTemp()) {
         delete this;
     }
-    
+
     return *sliced_array;
 }
 
@@ -439,7 +442,7 @@ multi_array<T>& multi_array<T>::operator=(const T& rhs)
             throw std::runtime_error("Err: cannot assign to an uninitialized operand.");
         }
     }
-    
+
     bh_identity(*this, rhs);
 
     //
@@ -549,7 +552,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
         if (getTemp() && rhs.getTemp()) {
             //std::cout << "Both are temps" << std::endl;
             bh_identity(*this, rhs);
-        
+
         // Neither side is temporary, that is, both are already
         // aliases for the same base, so this is a NOOP.
         } else if (!getTemp() && (!rhs.getTemp())) {
@@ -570,7 +573,7 @@ multi_array<T>& multi_array<T>::operator=(multi_array<T>& rhs)
             bh_identity(*this, rhs);
         } else {                                                    // Aliasing
             //std::cout << "Aliasing" << std::endl;
-            if (linked()) {                         
+            if (linked()) {
                 //std::cout << "Is linked" << std::endl;
                 Runtime::instance().ref_count[meta.base] -= 1;      // Decrement ref-count
                 if (0==Runtime::instance().ref_count[meta.base]) {  // De-allocate it
@@ -671,7 +674,7 @@ template <typename T>
 multi_array<T>& multi_array<T>::operator()(const void* data) {
 
     // We know nothing about the shape and size of this array
-    if (!initialized()) {    
+    if (!initialized()) {
         throw std::runtime_error("Err: You are trying to update "
                                  "something that does not exist!");
     }
@@ -710,7 +713,7 @@ multi_array<T>& as(multi_array<FromT>& rhs)
     multi_array<T>* result = &Runtime::instance().temp<T>(rhs);
     result->link();
     result->setTemp(false);
-    
+
     bh_identity(*result, rhs);
     result->setTemp(true);
 

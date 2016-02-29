@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <tuple>
 #include "bh_type.h"
+#include "bh_error.h"
 #include "bh_win.h"
 
 #include <boost/serialization/split_member.hpp>

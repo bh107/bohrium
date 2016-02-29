@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <list>
 #include <map>
 
-#include <bh.h>
+#include <bh_component.h>
 #include "iterator.hpp"
 
 #ifdef DEBUG
@@ -316,7 +316,7 @@ public:
     //
     template <typename TO, typename TL, typename TR>
     void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, multi_array<TR>& op2);
-    
+
     template <typename TO, typename TL, typename TR>
     void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, const TR op2);
 
@@ -353,7 +353,7 @@ public:
     void typecheck(void);
 
     template <size_t Opcode, typename Out>
-    void typecheck(void);   
+    void typecheck(void);
 
     //
     //  Operand construction
@@ -387,14 +387,14 @@ public:
     uint64_t getRandSeed(void);                 // Get/set the global random seed and state
     void setRandSeed(uint64_t);
 
-    uint64_t getRandState(void);                
+    uint64_t getRandState(void);
     void setRandState(uint64_t);
 
     std::map<bh_base*, size_t> ref_count;       // Count references to bh_base
     std::map<bh_base*, size_t> ext_allocated;   // Lookup register for externally allocated data
 
 private:
-    
+
     uint64_t    global_random_seed_;            // Random state and seed
     uint64_t    global_random_state_;           // TODO: Should be encapsulated in a "sugar-layer"
 
@@ -436,7 +436,7 @@ private:
 
 #include "reduction.hpp"    // DSEL Reduction
 #include "scan.hpp"         // DSEL Scan operation
-#include "generator.hpp"    // DSEL Generators 
+#include "generator.hpp"    // DSEL Generators
 #include "mapping.hpp"      // DSEL Gather / Scatter
 #include "grids.hpp"        // DSEL Grid constructors
 #include "movement.hpp"     // DSEL Export / import data from arrays

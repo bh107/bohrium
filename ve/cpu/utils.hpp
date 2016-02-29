@@ -11,7 +11,10 @@
 #include <memory>
 #include <cerrno>
 #include <fcntl.h>
-#include "bh.h"
+
+#include <bh_pprint.h>
+#include <bh_ir.h>
+
 #include "kp.h"
 #include "block.hpp"
 #include "symbol_table.hpp"
@@ -29,7 +32,7 @@ template <typename T>
 std::string to_string(T val);
 
 //
-// Self-explanatory function returning the textual representation of 
+// Self-explanatory function returning the textual representation of
 // TAC enums; useful for pretty-printing.
 //
 
@@ -70,14 +73,14 @@ size_t tac_noperands(const kp_tac & tac);
 
 /**
  *  Transforms the given tac to a KP_NOOP or an equivalent tac,
- *  which should be cheaper compute. 
+ *  which should be cheaper compute.
  *
  *  # Silly stuff like
  *
  *  KP_IDENTITY a, a   -> KP_NOOP
  *
  *  # Operators with scalar neutral element
- * 
+ *
  *  ADD a, a, 0     -> KP_NOOP
  *  MUL b, b, 1     -> KP_NOOP
  *  DIV a, a, 1     -> KP_NOOP
@@ -95,7 +98,7 @@ void tac_transform(kp_tac & tac, SymbolTable& symbol_table);
 /**
  *  Map bh_ir->instr_list (bh_instruction) to kp_tac with entries in symbol_table.
  */
-void instrs_to_tacs(bh_ir& bhir, 
+void instrs_to_tacs(bh_ir& bhir,
                     Program& tacs,
                     SymbolTable& symbol_table);
 
@@ -121,7 +124,7 @@ double get_scalar(const kp_operand & arg);
 
 /**
  *  Set the first element that arg.data points to.
- *  
+ *
  *  NOTE: Type is converted but overflows are not handled.
  */
 void set_scalar(const kp_operand & arg, double value);
@@ -129,7 +132,7 @@ void set_scalar(const kp_operand & arg, double value);
 /**
  *  Determines whether two kp_operand have compatible meta-data.
  *
- *  This function serves the same purpose as bh_view_identical, 
+ *  This function serves the same purpose as bh_view_identical,
  *  but for tac-operands instead of bh_instruction.kp_operand[...].
  *
  *  @param one
@@ -141,7 +144,7 @@ bool compatible(const kp_operand & one, const kp_operand & other);
 /**
  *  Determines whether two kp_operand have equivalent meta-data.
  *
- *  This function serves the same purpose as bh_view_identical, 
+ *  This function serves the same purpose as bh_view_identical,
  *  but for tac-operands instead of bh_instruction.kp_operand[...].
  *
  */
@@ -157,7 +160,7 @@ bool write_file(std::string file_path, const char* sourcecode, size_t source_len
 /**
  *  Returns a hash represented as a positive integer of the given text.
  *
- *  @param text The text to hash. 
+ *  @param text The text to hash.
  *  @returns Hash of the given text as an integer.
  */
 uint32_t hash(std::string text);
@@ -167,10 +170,10 @@ uint32_t hash(std::string text);
  *
  * @param text The text to hash.
  * @returns Hash of the given text as a string.
- */ 
+ */
 std::string hash_text(std::string text);
 
-/* these should be part of core 
+/* these should be part of core
 void bh_string_option(char *&option, const char *env_name, const char *conf_name);
 void bh_path_option(char *&option, const char *env_name, const char *conf_name);
 */
