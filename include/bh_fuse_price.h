@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 
-#include "bh_ir.h"
+class bh_ir_kernel; // Forward declaration from <bh_ir.h>
 
 namespace bohrium {
 
