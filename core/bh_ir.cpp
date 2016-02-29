@@ -40,6 +40,7 @@ If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 using namespace boost;
 namespace io = boost::iostreams;
+using namespace bohrium;
 
 /* Creates a Bohrium Internal Representation (BhIR) from a instruction list.
 *
@@ -439,15 +440,9 @@ int bh_ir_kernel::dependency(const bh_ir_kernel &other) const
 }
 
 /* Returns the cost of the kernel */
-uint64_t bh_ir_kernel::cost() const
+uint64_t bh_ir_kernel::cost(FusePriceModel model) const
 {
-    return bohrium::kernel_cost(*this);
-}
-
-/* Returns the cost of the kernel using the unique views cost model */
-uint64_t bh_ir_kernel::cost_unique_views() const
-{
-    return bohrium::kernel_cost(*this, bohrium::ENV_DECIDE);
+    return bohrium::kernel_cost(*this, model);
 }
 
 /* Returns the cost savings of merging with the 'other' kernel.

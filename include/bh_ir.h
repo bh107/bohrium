@@ -26,8 +26,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <boost/serialization/vector.hpp>
 
-#include "bh_instruction.h"
-#include "bh_seqset.h"
+#include <bh_instruction.h>
+#include <bh_seqset.h>
+#include <bh_fuse_price.h>
 
 // Forward declaration of class boost::serialization::access
 namespace boost {namespace serialization {class access;}}
@@ -249,10 +250,7 @@ public:
     int dependency(const bh_ir_kernel &other) const;
 
     /* Returns the cost of the kernel */
-    uint64_t cost() const;
-
-    /* Returns the cost of the kernel using the unique views cost model */
-    uint64_t cost_unique_views() const;
+    uint64_t cost(bohrium::FusePriceModel model=bohrium::ENV_DECIDE) const;
 
     /* Returns the cost savings of merging with the 'other' kernel.
      * The cost savings is defined as the amount the BhIR will drop

@@ -560,7 +560,7 @@ void pprint(const GraphDW &dag, const char filename[])
         void operator()(std::ostream& out, const Vertex& v) const
         {
             const uint64_t cost = graph[v].cost();
-            const uint64_t cost_uv = graph[v].cost_unique_views();
+            const uint64_t cost_uv = graph[v].cost(UNIQUE_VIEWS);
             out << "[label=\"Kernel " << graph[v].id() << ", cost: ";
             if(cost > 10000)
                 out << (double) cost;
