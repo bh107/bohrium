@@ -18,7 +18,6 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include "bh_fftw.h"
-#include <bh.h>
 #include <complex.h>
 #include <assert.h>
 #include <fftw3.h>
