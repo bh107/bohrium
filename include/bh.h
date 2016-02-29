@@ -39,52 +39,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) >= (b) ? (a) : (b))
 
-/* Find the base array for a given view
- *
- * @view   The view in question
- * @return The Base array
- */
-#define bh_base_array(view) ((view)->base)
-
-/* Number of non-broadcasted elements in a given view
- *
- * @view    The view in question.
- * @return  Number of elements.
- */
-bh_index bh_nelements_nbcast(const bh_view *view);
-
-/* Number of element in a given shape
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @return   Number of element operations
- */
-DLLEXPORT bh_index bh_nelements(bh_intp ndim,
-                                const bh_index shape[]);
-DLLEXPORT bh_index bh_nelements(const bh_view& view);
-
-/* Size of the base array in bytes
- *
- * @base    The base in question
- * @return  The size of the base array in bytes
- */
-bh_index bh_base_size(const bh_base *base);
-
-/* Set the view stride to contiguous row-major
- *
- * @view    The view in question
- * @return  The total number of elements in view
- */
-DLLEXPORT bh_intp bh_set_contiguous_stride(bh_view *view);
-
-/* Updates the view with the complete base
- *
- * @view    The view to update (in-/out-put)
- * @base    The base assign to the view
- * @return  The total number of elements in view
- */
-DLLEXPORT void bh_assign_complete_base(bh_view *view, bh_base *base);
-
 /* Number of operands in instruction
  * NB: this function handles user-defined function correctly
  * @inst Instruction
@@ -196,38 +150,6 @@ DLLEXPORT const char* bh_type_text(bh_type type);
  */
 DLLEXPORT const char* bh_error_text(bh_error error);
 
-/* Set the data pointer for the view.
- * Can only set to non-NULL if the data ptr is already NULL
- *
- * @view   The view in question
- * @data   The new data pointer
- * @return Error code (BH_SUCCESS, BH_ERROR)
- */
-DLLEXPORT bh_error bh_data_set(bh_view* view, bh_data_ptr data);
-
-/* Get the data pointer for the view.
- *
- * @view    The view in question
- * @result  Output data pointer
- * @return  Error code (BH_SUCCESS, BH_ERROR)
- */
-DLLEXPORT bh_error bh_data_get(bh_view* view, bh_data_ptr* result);
-
-/* Allocate data memory for the given base if not already allocated.
- * For convenience, the base is allowed to be NULL.
- *
- * @base    The base in question
- * @return  Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
- */
-DLLEXPORT bh_error bh_data_malloc(bh_base* base);
-
-/* Frees data memory for the given view.
- * For convenience, the view is allowed to be NULL.
- *
- * @base    The base in question
- * @return  Error code (BH_SUCCESS, BH_ERROR)
- */
-bh_error bh_data_free(bh_base* base);
 
 /* Retrive the operands of a instruction.
  *
@@ -235,27 +157,6 @@ bh_error bh_data_free(bh_base* base);
  * @return The operand list
  */
 DLLEXPORT bh_view *bh_inst_operands(bh_instruction *instruction);
-
-/* Determines whether the view is a scalar or a broadcasted scalar.
- *
- * @view The view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_is_scalar(const bh_view* view);
-
-/* Determines whether the operand is a constant
- *
- * @o The operand
- * @return The boolean answer
- */
-DLLEXPORT bool bh_is_constant(const bh_view* o);
-
-/* Flag operand as a constant
- *
- * @o      The operand
- */
-DLLEXPORT void bh_flag_constant(bh_view* o);
-
 
 /* Determines whether instruction 'a' depends on instruction 'b',
  * which is true when:
