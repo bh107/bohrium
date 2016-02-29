@@ -188,7 +188,7 @@ void bh_sprint_instr(const bh_instruction *instr, char buf[], const char newline
 
     char op_str[PPRINT_BUF_OPSTR_SIZE];
     char tmp[PPRINT_BUF_OPSTR_SIZE];
-    int op_count = bh_operands(instr->opcode);
+    int op_count = bh_noperands(instr->opcode);
     int i;
     if(instr->opcode > BH_MAX_OPCODE_ID)//It is a extension method
         sprintf(buf, "Extension Method (%d) OPS=%d{%s", (int)instr->opcode, op_count, newline);

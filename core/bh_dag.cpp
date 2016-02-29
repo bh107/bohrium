@@ -251,7 +251,7 @@ static bool base_in_kernel(const bh_ir &bhir, const bh_ir_kernel &kernel,
     for(uint64_t instr_idx: kernel.instr_indexes())
     {
         const bh_instruction &instr = bhir.instr_list[instr_idx];
-        for(int i=0; i < bh_operands(instr.opcode); ++i)
+        for(int i=0; i < bh_noperands(instr.opcode); ++i)
         {
             if(bh_is_constant(&instr.operand[i]))
                 continue;
@@ -286,7 +286,7 @@ void from_bhir(bh_ir &bhir, GraphDW &dag)
             //The new instruction must be system, only access one array, and
             //be equal to at least one array already in 'kernel'
             if(bh_opcode_is_system(instr.opcode) and \
-               bh_operands(instr.opcode) == 1 and \
+               bh_noperands(instr.opcode) == 1 and \
                base_in_kernel(bhir, kernel, instr.operand[0].base))
             {
                 kernel.add_instr(idx);

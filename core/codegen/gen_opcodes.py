@@ -88,23 +88,6 @@ def gen_cfile(opcodes):
 #include <bh.h>
 #include <stdbool.h>
 
-
-/* Number of operands for operation
- *
- * @opcode Opcode for operation
- * @return Number of operands
- */
-int bh_operands(bh_opcode opcode)
-{
-    switch(opcode)
-    {
-__NOPS__
-
-    default:
-        return 3;//Extension methods have 3 operands always
-    }
-}
-
 /* Number of operands for operation
  *
  * @opcode Opcode for operation
@@ -128,7 +111,7 @@ __NOPS__
  */
 int bh_operands_in_instruction(const bh_instruction *inst)
 {
-    return bh_operands(inst->opcode);
+    return bh_noperands(inst->opcode);
 }
 
 /* Text descriptions for a given operation */

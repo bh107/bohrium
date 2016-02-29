@@ -85,13 +85,6 @@ DLLEXPORT bh_intp bh_set_contiguous_stride(bh_view *view);
  */
 DLLEXPORT void bh_assign_complete_base(bh_view *view, bh_base *base);
 
-/* Number of operands for operation
- *
- * @opcode Opcode for operation
- * @return Number of operands
- */
-DLLEXPORT int bh_operands(bh_opcode opcode);
-
 /* Number of operands in instruction
  * NB: this function handles user-defined function correctly
  * @inst Instruction

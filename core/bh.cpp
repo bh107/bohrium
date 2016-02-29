@@ -530,8 +530,8 @@ bool bh_view_disjoint(const bh_view *a, const bh_view *b)
  */
 bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
 {
-    const int a_nop = bh_operands(a->opcode);
-    const int b_nop = bh_operands(b->opcode);
+    const int a_nop = bh_noperands(a->opcode);
+    const int b_nop = bh_noperands(b->opcode);
     if(a_nop == 0 or b_nop == 0)
         return false;
     for(int i=0; i<a_nop; ++i)

@@ -152,7 +152,7 @@ static uint64_t cost_max_share(const bh_ir_kernel &k)
                          k.instr_indexes().end(), instr_idx) != k.instr_indexes().end())
                 instr_in_kernel = true;
 
-            for(int i=bh_operands(instr.opcode)-1; i>=0; --i)
+            for(int i= bh_noperands(instr.opcode) - 1; i >= 0; --i)
             {
                 const bh_view &v = instr.operand[i];
                 if(bh_is_constant(&v))
@@ -177,7 +177,7 @@ static uint64_t cost_max_share(const bh_ir_kernel &k)
                 }
             }
         }
-        for(int i=1; i < bh_operands(krn_instr.opcode); ++i)
+        for(int i=1; i < bh_noperands(krn_instr.opcode); ++i)
         {
             const bh_view &v = krn_instr.operand[i];
             if(bh_is_constant(&v))

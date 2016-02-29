@@ -160,7 +160,7 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     assert(bhir != NULL);
     assert(instr_idx < bhir->instr_list.size());
     const bh_instruction& instr = bhir->instr_list[instr_idx];
-    const int nop = bh_operands(instr.opcode);
+    const int nop = bh_noperands(instr.opcode);
     for(int i=0; i<nop; ++i)
     {
         if(not bh_is_constant(&instr.operand[i]))

@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 int bh_type_sig(bh_instruction *instr)
 {
     int type_sig;
-    const int nops = bh_operands(instr->opcode);
+    const int nops = bh_noperands(instr->opcode);
     switch(nops) {
         case 3:
             type_sig = instr->operand[0].base->type+1;
@@ -287,7 +287,7 @@ bool bh_validate_types(bh_opcode opcode, bh_type outtype, bh_type inputtype1, bh
     // All in one nicely switchable value.
     long int poly;
  
-    if (bh_operands(opcode) == 3) {                 // Three operands
+    if (bh_noperands(opcode) == 3) {                 // Three operands
 
         if (inputtype1 == BH_UNKNOWN) {             // First operand is constant
             poly = opcode \
@@ -1958,7 +1958,7 @@ bool bh_get_type_conversion(bh_opcode opcode, bh_type outtype, bh_type* inputtyp
     if (desired_input_type1 == BH_UNKNOWN)
         return false;
     
-    if (bh_operands(opcode) == 3)
+    if (bh_noperands(opcode) == 3)
     {
         // The output type does not exist for the opcode
         if (desired_input_type2 == BH_UNKNOWN)

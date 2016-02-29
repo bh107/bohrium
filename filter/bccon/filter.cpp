@@ -114,7 +114,7 @@ void filter(bh_ir &bhir)
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
                 bool other_use=false;                   // Check for other use
-                for(int oidx=0; oidx<bh_operands(other_instr.opcode); ++oidx) {
+                for(int oidx=0; oidx < bh_noperands(other_instr.opcode); ++oidx) {
                     if (bh_is_constant(&other_instr.operand[oidx])) {
                         continue;
                     }

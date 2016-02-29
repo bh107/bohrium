@@ -44,14 +44,14 @@ static bool fuse_broadest(const bh_instruction *a, const bh_instruction *b)
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
 
-    const int a_nop = bh_operands(a->opcode);
+    const int a_nop = bh_noperands(a->opcode);
     for(int i=0; i<a_nop; ++i)
     {
         if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
            && not bh_view_aligned(&b->operand[0], &a->operand[i]))
             return false;
     }
-    const int b_nop = bh_operands(b->opcode);
+    const int b_nop = bh_noperands(b->opcode);
     for(int i=0; i<b_nop; ++i)
     {
         if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
@@ -104,8 +104,8 @@ static bool fuse_same_shape(const bh_instruction *a, const bh_instruction *b)
     if(!bh_opcode_is_elementwise(a->opcode) || !bh_opcode_is_elementwise(b->opcode))
         return false;
 
-    const int a_nop = bh_operands(a->opcode);
-    const int b_nop = bh_operands(b->opcode);
+    const int a_nop = bh_noperands(a->opcode);
+    const int b_nop = bh_noperands(b->opcode);
     const bh_intp *shape = a->operand[0].shape;
     const bh_intp ndim = a->operand[0].ndim;
     for(int i=1; i<a_nop; ++i)
@@ -144,8 +144,8 @@ static bool fuse_same_shape_range(const bh_instruction *a, const bh_instruction 
        (b->opcode != BH_RANGE and not bh_opcode_is_elementwise(b->opcode)))
         return false;
 
-    const int a_nop = bh_operands(a->opcode);
-    const int b_nop = bh_operands(b->opcode);
+    const int a_nop = bh_noperands(a->opcode);
+    const int b_nop = bh_noperands(b->opcode);
     const bh_intp *shape = a->operand[0].shape;
     const bh_intp ndim = a->operand[0].ndim;
     for(int i=1; i<a_nop; ++i)
@@ -184,8 +184,8 @@ static bool fuse_same_shape_random(const bh_instruction *a, const bh_instruction
        (b->opcode != BH_RANDOM and not bh_opcode_is_elementwise(b->opcode)))
         return false;
 
-    const int a_nop = bh_operands(a->opcode);
-    const int b_nop = bh_operands(b->opcode);
+    const int a_nop = bh_noperands(a->opcode);
+    const int b_nop = bh_noperands(b->opcode);
     const bh_intp *shape = a->operand[0].shape;
     const bh_intp ndim = a->operand[0].ndim;
     for(int i=1; i<a_nop; ++i)
@@ -224,8 +224,8 @@ static bool fuse_same_shape_range_random(const bh_instruction *a, const bh_instr
        (b->opcode != BH_RANGE and b->opcode != BH_RANDOM and not bh_opcode_is_elementwise(b->opcode)))
         return false;
 
-    const int a_nop = bh_operands(a->opcode);
-    const int b_nop = bh_operands(b->opcode);
+    const int a_nop = bh_noperands(a->opcode);
+    const int b_nop = bh_noperands(b->opcode);
     const bh_intp *shape = a->operand[0].shape;
     const bh_intp ndim = a->operand[0].ndim;
     for(int i=1; i<a_nop; ++i)
@@ -277,8 +277,8 @@ static bool fuse_same_shape_generate_1dreduce(const bh_instruction *a, const bh_
 
     //  Check that the output of instruction "a" has the shape
     //  shape as all other operands.
-    const int a_nop = bh_operands(a->opcode);
-    const int b_nop = bh_operands(b->opcode);
+    const int a_nop = bh_noperands(a->opcode);
+    const int b_nop = bh_noperands(b->opcode);
     // a is reduction, b is reduction
     if (bh_opcode_is_reduction(a->opcode) and bh_opcode_is_reduction(b->opcode)) {
         return false;

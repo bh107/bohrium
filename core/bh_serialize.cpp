@@ -96,7 +96,7 @@ void ExecuteFrontend::serialize(const bh_ir &bhir, vector<char> &buffer, vector<
     vector<bh_base> new_bases;//New base arrays in the order they appear in the instruction list
     for(const bh_instruction &instr: bhir.instr_list)
     {
-        const int nop = bh_operands(instr.opcode);
+        const int nop = bh_noperands(instr.opcode);
         for(int i=0; i<nop; ++i)
         {
             const bh_view &v = instr.operand[i];
@@ -186,7 +186,7 @@ bh_ir ExecuteBackend::deserialize(vector<char> &buffer, vector<bh_base*> &data_s
     size_t new_base_count = 0;
     for(const bh_instruction &instr: bhir.instr_list)
     {
-        const int nop = bh_operands(instr.opcode);
+        const int nop = bh_noperands(instr.opcode);
         for(int i=0; i<nop; ++i)
         {
             const bh_view &v = instr.operand[i];
@@ -206,7 +206,7 @@ bh_ir ExecuteBackend::deserialize(vector<char> &buffer, vector<bh_base*> &data_s
     //Update all base pointers to point to the local bases
     for(bh_instruction &instr: bhir.instr_list)
     {
-        const int nop = bh_operands(instr.opcode);
+        const int nop = bh_noperands(instr.opcode);
         for(int i=0; i<nop; ++i)
         {
             bh_view &v = instr.operand[i];

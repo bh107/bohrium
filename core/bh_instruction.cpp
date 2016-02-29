@@ -95,7 +95,7 @@ ostream& operator<<(ostream& out, const bh_instruction& instr)
         name = bh_opcode_text(instr.opcode);
     out << name;
 
-    for(int i=0; i < bh_operands(instr.opcode); i++)
+    for(int i=0; i < bh_noperands(instr.opcode); i++)
     {
         const bh_view &v = instr.operand[i];
         out << " ";

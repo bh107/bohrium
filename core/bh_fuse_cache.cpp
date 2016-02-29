@@ -59,7 +59,7 @@ static void hashOpcodeOpidShapeidSweepdim(std::ostream& os, const bh_instruction
      * 1: for each operand
      * 2: if the operation is a sweep operation
      */
-    int noperands = bh_operands(instr.opcode);
+    int noperands = bh_noperands(instr.opcode);
     os.write((const char*)&instr.opcode, sizeof(instr.opcode));         // <opcode>
     for(int oidx=0; oidx<noperands; ++oidx) {
         const bh_view& view = instr.operand[oidx];
@@ -85,7 +85,7 @@ static void hashOpidSweepdim(std::ostream& os, const bh_instruction& instr, Batc
      * 1: for each operand
      * 2: if the operation is a sweep operation
      */
-    int noperands = bh_operands(instr.opcode);
+    int noperands = bh_noperands(instr.opcode);
     for(int oidx=0; oidx<noperands; ++oidx) {
         const bh_view& view = instr.operand[oidx];
         if (bh_is_constant(&view))
@@ -111,7 +111,7 @@ static void hashScalarOpidSweepdim(std::ostream& os, const bh_instruction& instr
      * 1: for each operand
      * 2: if the operation is a sweep operation
      */
-    int noperands = bh_operands(instr.opcode);
+    int noperands = bh_noperands(instr.opcode);
     if(noperands == 0)
     {
         os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
@@ -146,7 +146,7 @@ static void hashScalarShapeidOpidSweepdim(std::ostream& os, const bh_instruction
      * 2: if the operation is a sweep operation
      * NB: but ignores instructions that takes no arguments, such as BH_NONE
      */
-    int noperands = bh_operands(instr.opcode);
+    int noperands = bh_noperands(instr.opcode);
     if(noperands == 0)
     {
         os.write((char*)&inst_sep, sizeof(inst_sep));                       // <inst_sep>
@@ -182,7 +182,7 @@ static void hashOpid(std::ostream& os, const bh_instruction& instr, BatchHash& b
      * (<operant-id>)[1]  <seperator>
      * 1: for each operand
      */
-    int noperands = bh_operands(instr.opcode);
+    int noperands = bh_noperands(instr.opcode);
     for(int oidx=0; oidx<noperands; ++oidx) {
         const bh_view& view = instr.operand[oidx];
         if (bh_is_constant(&view))

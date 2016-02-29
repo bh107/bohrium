@@ -23,7 +23,7 @@ void filter(bh_ir &bhir)
 {
     for (bh_instruction& instr: bhir.instr_list)
     {
-        const int nop = bh_operands(instr.opcode);
+        const int nop = bh_noperands(instr.opcode);
         bool sweep = bh_opcode_is_sweep(instr.opcode);
         for(int o=0; o<nop; ++o)
         {

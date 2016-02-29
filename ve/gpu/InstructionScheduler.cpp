@@ -488,7 +488,7 @@ std::string InstructionScheduler::generateFunctionBody(const bh_ir_kernel& kerne
     for (uint64_t idx: getInstIndexes(kernel))
     {
         bh_instruction& instr = kernel.bhir->instr_list[idx];
-        const int nop = bh_operands(instr.opcode);
+        const int nop = bh_noperands(instr.opcode);
         const bool sweep = bh_opcode_is_sweep(instr.opcode);
         operands.emplace_back("v");       // placeholder for output
         types.push_back(OCL_UNKNOWN); // placeholder for output
