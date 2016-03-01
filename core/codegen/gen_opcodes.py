@@ -85,6 +85,7 @@ def gen_cfile(opcodes):
 #include <stdlib.h>
 #include <stdio.h>
 #include <bh_opcode.h>
+#include <bh_instruction.h>
 #include <bh.h>
 #include <stdbool.h>
 
