@@ -70,24 +70,35 @@ custom_boost_154:
 custom_boost_158:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DBOOST_ROOT=$(HOME)/tools/boost-1.58.0 -DBoost_INCLUDE_DIRS=$(HOME)/tools/boost-1.58.0/include -DBoost_LIBRARY_DIRS=$(HOME)/tools/boost-1.58.0/lib -DBoost_NO_SYSTEM_PATHS=ON -DBoost_NO_BOOST_CMAKE=ON )
 
-#
-# Purge runtime generated objects
-purge_ko:
+
+.PHONY: help
+
+BLUE=\033[0;35m
+NC=\033[0m
+
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[0;35m%-20s\033[0m %s\n", $$1, $$2}'
+
+
+purge_ko: ## Purge runtime generated objects
+	@echo "${BLUE}Purging runtime generated objects${NC}"
 	rm -f ~/.local/var/bohrium/kernels/*
 	rm -rf ~/.local/var/bohrium/objects/*
 	rm -f ~/.local/var/bohrium/fuse_cache/*
 
-#
-# Remove installed stuff specific to the cpu-engine
-purge_cpu: purge_ko
+
+purge_cpu: purge_ko ## Remove installed stuff specific to the CPU-engine
+	@echo "${BLUE}Removing installed stuff specific to the CPU-engine${NC}"
 	rm -rf ~/.local/share/bohrium/templates/*
 	rm -rf ~/.local/var/bohrium/scripts
 	rm -f ~/.local/lib/libbh_ve_cpu.*
 
-#
-# Remove everything
-purge_all: purge_cpu
-	cd $(BH_SRC) && git clean -fdx && git clean -fdX
+
+purge_all: purge_cpu ## Remove everything (this also does 'git clean' and removes ~/.local)
+	@echo "${BLUE}Removing everything${NC}"
+	@echo "${BLUE}Running git clean${NC}"
+	cd $(BH_SRC) && git clean -fdx &&	git clean -fdX
+	@echo "${BLUE}Removing ~/.local${NC}"
 	rm -rf $(BDIR)
 	rm -rf ~/.local/bin
 	rm -rf ~/.local/include
@@ -96,35 +107,43 @@ purge_all: purge_cpu
 	rm -rf ~/.local/var
 	rm -f ~/.bohrium/config.ini
 
-#
-# "Install the cpu-engine
 
-reset: purge_all clean
+reset: purge_all clean ## Purge and clean
 
-install: purge_ko
+
+install: purge_ko ## Install the CPU-engine
+	@echo "${BLUE}Installing the CPU-engine${NC}"
 	mkdir -p $(BDIR)
-	cd $(BDIR) && CC=$(CC) CXX=$(CXX) cmake $(BH_SRC) $(BUILD_OPTIONS) && make $(PAR_LVL) && make install
+	cd $(BDIR) &&	CC=$(CC) CXX=$(CXX) cmake $(BH_SRC) $(BUILD_OPTIONS) && make $(PAR_LVL) && make install
 
-install_dev: cil_off cluster_off fun_off gpu_off install
 
-install_debug: cil_off cluster_off fun_off gpu_off cpu_debug_on install
+install_dev: cil_off cluster_off fun_off gpu_off install ## Install without CIL, Cluster, Fun, and GPU
 
-install_profiling: cil_off cluster_off fun_off gpu_off cpu_profiling_on install
 
-#
-# Clean up the build-files
-clean:
+install_debug: cil_off cluster_off fun_off gpu_off cpu_debug_on install ## Install without CIL, Cluster, Fun, and GPU but with debug
+
+
+install_profiling: cil_off cluster_off fun_off gpu_off cpu_profiling_on install ## Install without CIL, Cluster, Fun, and GPU but with profiling
+
+
+clean: ## Clean up the build-files
+	@echo "${BLUE}Cleaning up the build-files${NC}"
 	rm -rf $(BDIR) core trace-*.txt flow*.dot flow*.html graph-*.dot $(CPU)/doc/output
 
-crap:
+
+crap: ## Remove dot-, trace-, flow-, and core-files
+	@echo "${BLUE}Removing dot-, trace-, flow-, and core-files${NC}"
 	rm -f graph*.dot flow*.dot trace*.txt flow*.html vgcore.* core /tmp/graph*.html /tmp/graph*.png /tmp/graph*.png
 
-test:
+
+test: ## Run tests with JIT 3 and 1
+	@echo "${BLUE}Running tests with JIT 3${NC}"
 	BH_CPU_JIT_LEVEL=3 python  $(BH_SRC)/test/python/numpytest.py $(TEST_EXCLUDE)
+	@echo "${BLUE}Running tests with JIT 1${NC}"
 	BH_CPU_JIT_LEVEL=1 python  $(BH_SRC)/test/python/numpytest.py $(TEST_EXCLUDE)
 
-#
-# Generate Doxygen documentation
-docs:
+
+docs: ## Generate Doxygen documentation
+	@echo "${BLUE}Generating Doxygen documentation${NC}"
 	mkdir -p $(CPU)/doc/output
 	cd $(CPU) && doxygen doc/cpu_engine.doxy
