@@ -563,7 +563,7 @@ char* bh_component_config_lookup(const bh_component *component, const char* key)
 }
 
 /*
- * @brief     Lookup a keys value in the config fil converted to a bool
+ * @brief     Lookup a keys value in the config file converted to a bool
  * @component The component.
  * @key       The key to lookup in the config file
  * @notfound  Value to return in case of error
@@ -572,19 +572,29 @@ char* bh_component_config_lookup(const bh_component *component, const char* key)
 bool bh_component_config_lookup_bool(const bh_component *component,
                                      const char* key, bool notfound)
 {
-    char* val ;
-    bool ret ;
-    val = bh_component_config_lookup(component, key);
+    char* val = bh_component_config_lookup(component, key);
+
     if (val == NULL)
-        return notfound ;
-    if (val[0]=='y' || val[0]=='Y' || val[0]=='1' || val[0]=='t' || val[0]=='T') {
-        ret = true;
-    } else if (val[0]=='n' || val[0]=='N' || val[0]=='0' || val[0]=='f' || val[0]=='F') {
-        ret = false;
-    } else {
-        ret = notfound ;
+        return notfound;
+
+    switch(val[0]) {
+        case 'y':
+        case 'Y':
+        case '1':
+        case 't':
+        case 'T':
+            return true;
+
+        case 'n':
+        case 'N':
+        case '0':
+        case 'f':
+        case 'F':
+            return false;
+
+        default:
+            return notfound;
     }
-    return ret;
 }
 
 /*
