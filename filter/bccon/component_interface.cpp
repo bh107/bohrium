@@ -34,7 +34,7 @@ static bh_component myself; // Myself
 // Function pointers to our child.
 static bh_component_iface *child;
 
-static bh_intp reduction_;
+static bool reduction_;
 
 // The timing ID for the filter
 static bh_intp exec_timing;
@@ -67,9 +67,7 @@ bh_error bh_filter_bccon_init(const char* name)
         return err;
     }
 
-    if (BH_SUCCESS != bh_component_config_int_option(&myself, "reduction", 0, 1, &reduction_)) {
-        return BH_ERROR;
-    }
+    reduction_ = bh_component_config_lookup_bool(&myself, "reduction", false);
 
     return BH_SUCCESS;
 }
@@ -93,9 +91,10 @@ bh_error bh_filter_bccon_execute(bh_ir* bhir)
     bh_uint64 start = 0;
     if (timing)
         start = bh_timer_stamp();
-    if (reduction_) {
-        reduction_chain_filter(*bhir); // Run the filter
-    }
+
+    if (reduction_) reduction_chain_filter(*bhir);
+    if (collect_)   collect_filter(*bhir);
+
     if (timing)
         bh_timer_add(exec_timing, start, bh_timer_stamp());
 
