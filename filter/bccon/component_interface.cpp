@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.h>
 
 #include "component_interface.h"
-#include "filter.hpp"
+#include "reduction_chain_filter.hpp"
 
 //
 // Components
@@ -31,12 +31,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 static bh_component myself; // Myself
 
-//Function pointers to our child.
+// Function pointers to our child.
 static bh_component_iface *child;
 
 static bh_intp reduction_;
 
-//The timing ID for the filter
+// The timing ID for the filter
 static bh_intp exec_timing;
 static bool timing;
 
@@ -51,7 +51,7 @@ bh_error bh_filter_bccon_init(const char* name)
         return err;
     }
 
-    //For now, we have one child exactly
+    // For now, we have one child exactly
     if (myself.nchildren != 1) {
         fprintf(stderr, "[reduction-FILTER] Unexpected number of children, must be 1");
         return BH_ERROR;
@@ -61,13 +61,13 @@ bh_error bh_filter_bccon_init(const char* name)
     if (timing)
         exec_timing = bh_timer_new("[BC-Con] Execution");
 
-    //Let us initiate the child.
+    // Let us initiate the child.
     child = &myself.children[0];
     if ((err = child->init(child->name)) != 0) {
         return err;
     }
 
-    if (BH_SUCCESS!=bh_component_config_int_option(&myself, "reduction", 0, 1, &reduction_)) {
+    if (BH_SUCCESS != bh_component_config_int_option(&myself, "reduction", 0, 1, &reduction_)) {
         return BH_ERROR;
     }
 
@@ -94,10 +94,10 @@ bh_error bh_filter_bccon_execute(bh_ir* bhir)
     if (timing)
         start = bh_timer_stamp();
     if (reduction_) {
-        filter(*bhir);              // Run the filter
+        reduction_chain_filter(*bhir); // Run the filter
     }
     if (timing)
         bh_timer_add(exec_timing, start, bh_timer_stamp());
 
-    return child->execute(bhir);    // Execute the filtered bhir
+    return child->execute(bhir);       // Execute the filtered bhir
 }
