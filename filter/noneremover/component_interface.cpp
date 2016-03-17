@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.h>
 
 #include "component_interface.h"
-#include "reduction_chain_filter.hpp"
+#include "noneremover.hpp"
 
 //
 // Components
@@ -34,8 +34,6 @@ static bh_component myself; // Myself
 // Function pointers to our child.
 static bh_component_iface *child;
 
-static bh_intp reduction_;
-
 // The timing ID for the filter
 static bh_intp exec_timing;
 static bool timing;
@@ -44,37 +42,32 @@ static bool timing;
 // Component interface init/execute/shutdown
 //
 
-bh_error bh_filter_bccon_init(const char* name)
+bh_error bh_filter_noneremover_init(const char* name)
 {
     bh_error err;
-    if ((err = bh_component_init(&myself, name)) != BH_SUCCESS) {
+    if((err = bh_component_init(&myself, name)) != BH_SUCCESS)
         return err;
-    }
 
     // For now, we have one child exactly
-    if (myself.nchildren != 1) {
-        fprintf(stderr, "[reduction-FILTER] Unexpected number of children, must be 1");
+    if(myself.nchildren != 1)
+    {
+        fprintf(stderr, "[NONEREMOVER-FILTER] Unexpected number of children, must be 1");
         return BH_ERROR;
     }
 
     timing = bh_component_config_lookup_bool(&myself, "timing", false);
     if (timing)
-        exec_timing = bh_timer_new("[BC-Con] Execution");
+        exec_timing = bh_timer_new("[NoneRemover] Execution");
 
     // Let us initiate the child.
     child = &myself.children[0];
-    if ((err = child->init(child->name)) != 0) {
+    if((err = child->init(child->name)) != 0)
         return err;
-    }
-
-    if (BH_SUCCESS != bh_component_config_int_option(&myself, "reduction", 0, 1, &reduction_)) {
-        return BH_ERROR;
-    }
 
     return BH_SUCCESS;
 }
 
-bh_error bh_filter_bccon_shutdown(void)
+bh_error bh_filter_noneremover_shutdown(void)
 {
     bh_error err = child->shutdown();
     bh_component_destroy(&myself);
@@ -83,21 +76,22 @@ bh_error bh_filter_bccon_shutdown(void)
     return err;
 }
 
-bh_error bh_filter_bccon_extmethod(const char *name, bh_opcode opcode)
-{
-    return child->extmethod(name, opcode);
-}
-
-bh_error bh_filter_bccon_execute(bh_ir* bhir)
+#include <bh_pprint.h>
+bh_error bh_filter_noneremover_execute(bh_ir* bhir)
 {
     bh_uint64 start = 0;
     if (timing)
         start = bh_timer_stamp();
-    if (reduction_) {
-        reduction_chain_filter(*bhir); // Run the filter
-    }
+
+    noneremover_filter(*bhir);   // Run the filter
+
     if (timing)
         bh_timer_add(exec_timing, start, bh_timer_stamp());
 
-    return child->execute(bhir);       // Execute the filtered bhir
+    return child->execute(bhir); // Execute the filtered bhir
+}
+
+bh_error bh_filter_noneremover_extmethod(const char *name, bh_opcode opcode)
+{
+    return child->extmethod(name, opcode);
 }

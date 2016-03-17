@@ -40,20 +40,20 @@ void Expander::expand(bh_ir& bhir)
 
         case BH_POWER:
             if (powk_) {
-                end += expand_powk(bhir, pc);
+                increase = expand_powk(bhir, pc);
                 end += increase;
                 pc += increase;
             }
             break;
-            
+
         case BH_MATMUL:
             if (matmul_) {
-                end += expand_matmul(bhir, pc);
+                increase = expand_matmul(bhir, pc);
                 end += increase;
                 pc += increase;
             }
             break;
-            
+
         case BH_SIGN:
             if (sign_) {
                 increase = expand_sign(bhir, pc);
@@ -61,6 +61,7 @@ void Expander::expand(bh_ir& bhir)
                 pc += increase;
             }
             break;
+
         case BH_ADD_REDUCE:
         case BH_MULTIPLY_REDUCE:
         case BH_MINIMUM_REDUCE:
@@ -110,7 +111,7 @@ bh_base* Expander::make_base(bh_type type, bh_index nelem)
         fprintf(stderr, "Expander::make_base(...) bh_base allocation failed.\n");
         throw std::runtime_error("Expander::make_base(...) bh_base allocation failed.\n");
     }
-    
+
     base->type = type;
     base->nelem = nelem;
     base->data = NULL;
@@ -163,4 +164,3 @@ Expander::~Expander(void)
 }
 
 }}}
-

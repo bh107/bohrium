@@ -215,6 +215,12 @@ children = node
 reduction = 1
 timing = false
 
+[noneremover]
+type = filter
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_noneremover${CMAKE_SHARED_LIBRARY_SUFFIX}
+children = node
+timing = false
+
 [bcexp]
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
