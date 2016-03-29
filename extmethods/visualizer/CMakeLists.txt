@@ -59,5 +59,5 @@ if (GLUT_FOUND AND OPENGL_FOUND)
     #We depend on bh.so
     target_link_libraries(bh_visualizer bh ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
 
-    install(TARGETS bh_visualizer DESTINATION lib COMPONENT bohrium-visualizer)
+    install(TARGETS bh_visualizer DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium-visualizer)
 endif()

@@ -13,4 +13,4 @@ add_library(bh_filter_dimclean SHARED ${SRC})
 #We depend on bh.so
 target_link_libraries(bh_filter_dimclean bh)
 
-install(TARGETS bh_filter_dimclean DESTINATION lib COMPONENT bohrium)
+install(TARGETS bh_filter_dimclean DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)

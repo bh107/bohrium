@@ -176,7 +176,7 @@ endif()
 
 install(
     TARGETS bh_ve_cpu
-    DESTINATION lib COMPONENT bohrium)      # INSTALL the Bohrium <-> CAPE and CAPE C++ Runtime and library
+    DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)      # INSTALL the Bohrium <-> CAPE and CAPE C++ Runtime and library
 install(
     DIRECTORY templates
     COMPONENT bohrium
@@ -184,7 +184,7 @@ install(
     FILES_MATCHING PATTERN "*.tpl")         # INSTALL CAPE Codegen templates
 install(
     TARGETS kp
-    DESTINATION lib COMPONENT bohrium)      # INSTALL CAPE Runtime and library
+    DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)      # INSTALL CAPE Runtime and library
 install(
     FILES kp.h
     DESTINATION include/bohrium/

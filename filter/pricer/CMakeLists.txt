@@ -13,4 +13,4 @@ add_library(bh_filter_pricer SHARED ${SRC})
 #We depend on bh.so
 target_link_libraries(bh_filter_pricer bh)
 
-install(TARGETS bh_filter_pricer DESTINATION lib COMPONENT bohrium)
+install(TARGETS bh_filter_pricer DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)

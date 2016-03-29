@@ -13,4 +13,4 @@ add_library(bh_filter_noneremover SHARED ${SRC})
 #We depend on bh.so
 target_link_libraries(bh_filter_noneremover bh)
 
-install(TARGETS bh_filter_noneremover DESTINATION lib COMPONENT bohrium)
+install(TARGETS bh_filter_noneremover DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)

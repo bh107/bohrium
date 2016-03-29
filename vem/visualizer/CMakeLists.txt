@@ -13,4 +13,4 @@ add_library(bh_vem_visualizer SHARED ${SRC})
 #We depend on bh.so
 target_link_libraries(bh_vem_visualizer bh)
 
-install(TARGETS bh_vem_visualizer DESTINATION lib COMPONENT bohrium)
+install(TARGETS bh_vem_visualizer DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)

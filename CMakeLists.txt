@@ -11,10 +11,16 @@ endif()
 # This is for the Clion IDE
 ADD_CUSTOM_TARGET(run_install COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
-# Let's make sure that 'CMAKE_INSTALL_LIBDIR' is defined
-if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
-    set(CMAKE_INSTALL_LIBDIR lib)
-endif(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+# UseMultiArch sets variable
+#	CMAKE_INSTALL_LIBDIR	     to lib, lib64 or lib/x86_64-linux-gnu
+#	                             depending on the platform; use this path
+#	                             for platform-specific binaries.
+#
+#	CMAKE_INSTALL_LIBDIR_NOARCH  to lib or lib64 depending on the platform;
+#	                             use this path for architecture-independent
+#	                             files.
+include(UseMultiArch)
+message(STATUS "CMAKE_INSTALL_LIBDIR: ${CMAKE_INSTALL_LIBDIR}")
 
 # We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
 if(DEFINED CMAKE_BUILD_TYPE)

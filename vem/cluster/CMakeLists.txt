@@ -27,5 +27,5 @@ target_link_libraries(bh_vem_cluster bh)
 target_link_libraries(bh_vem_cluster_slave ${MPI_CXX_LIBRARIES})
 target_link_libraries(bh_vem_cluster_slave bh_vem_cluster)
 
-install(TARGETS bh_vem_cluster DESTINATION lib COMPONENT bohrium-cluster)
+install(TARGETS bh_vem_cluster DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium-cluster)
 install(TARGETS bh_vem_cluster_slave DESTINATION bin COMPONENT bohrium-cluster)

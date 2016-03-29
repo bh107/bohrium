@@ -29,6 +29,6 @@ ENDIF (APPLE)
     add_library(bh_ve_gpu SHARED ${SRC})
 
     target_link_libraries(bh_ve_gpu bh ${OPENCL_LIBRARIES})
-    install(TARGETS bh_ve_gpu DESTINATION lib COMPONENT bohrium-gpu)
+    install(TARGETS bh_ve_gpu DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium-gpu)
     install(DIRECTORY include DESTINATION share/bohrium COMPONENT bohrium-gpu)
 endif()

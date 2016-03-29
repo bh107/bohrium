@@ -16,5 +16,5 @@ target_link_libraries(bh iniparser)
 target_link_libraries(bh ${CMAKE_DL_LIBS})      # bh_component depends on dlopen etc.
 target_link_libraries(bh ${Boost_LIBRARIES})    # A shit ton of stuff depends on boost
 
-install(TARGETS bh DESTINATION lib COMPONENT bohrium)
+install(TARGETS bh DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
 install(DIRECTORY ${BOHRIUM_SOURCE_DIR}/include/ DESTINATION include/bohrium COMPONENT bohrium)
