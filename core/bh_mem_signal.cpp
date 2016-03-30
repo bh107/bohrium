@@ -52,13 +52,25 @@ static map<const void*,segment> segments;
 //Returns segments.end() if 'addr' isn't in any segments
 static map<const void*,segment>::const_iterator get_segment(const void *addr)
 {
-    map<const void*,segment>::const_iterator s = segments.lower_bound(addr);
+    map<const void*,segment>::const_iterator s = segments.find(addr);
     if(s != segments.end())
     {
         uint64_t offset = ((uint64_t)addr) - ((uint64_t)s->first);
         if(offset > s->second.size)
             return segments.end();
     }
+    else
+    {
+        s = segments.lower_bound(addr);
+        if(s == segments.begin())
+            return segments.end();
+        s--;
+
+        uint64_t offset = ((uint64_t)addr) - ((uint64_t)s->first);
+        if(offset > s->second.size)
+            return segments.end();
+    }
+
     return s;
 }
 
@@ -99,7 +111,8 @@ int bh_mem_signal_init(void)
         sigfillset(&(sact.sa_mask));
         sact.sa_flags = SA_SIGINFO | SA_ONSTACK;
         sact.sa_sigaction = sighandler;
-        sigaction(SIGSEGV, &sact, &sact);
+        sigaction(SIGSEGV, &sact, NULL);
+        sigaction(SIGBUS, &sact, NULL);
     }
     initialized = true;
     pthread_mutex_unlock(&signal_mutex);
@@ -123,6 +136,7 @@ int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
     {
         fprintf(stderr, "Could not attach signal, memory segment is in conflict with "
                         "already attached signal\n");
+        pthread_mutex_unlock(&signal_mutex);
         return BH_ERROR;
     }
     segment &s = segments[addr];

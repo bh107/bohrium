@@ -39,8 +39,6 @@ def flatten(ary):
 @fix_returned_biclass
 def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
     D = diagonal(ary, offset=offset, axis1=axis1, axis2=axis2)
-    if bhary.check(D):
-        D = D.copy2numpy()
     if dtype:
         D = D.astype(dtype)
     return numpy.add.reduce(D, axis=D.ndim-1)
