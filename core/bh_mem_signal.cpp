@@ -52,13 +52,25 @@ static map<const void*,segment> segments;
 //Returns segments.end() if 'addr' isn't in any segments
 static map<const void*,segment>::const_iterator get_segment(const void *addr)
 {
-    map<const void*,segment>::const_iterator s = segments.lower_bound(addr);
+    map<const void*,segment>::const_iterator s = segments.find(addr);
     if(s != segments.end())
     {
         uint64_t offset = ((uint64_t)addr) - ((uint64_t)s->first);
         if(offset > s->second.size)
             return segments.end();
     }
+    else
+    {
+        s = segments.lower_bound(addr);
+        if(s == segments.begin())
+            return segments.end();
+        s--;
+
+        uint64_t offset = ((uint64_t)addr) - ((uint64_t)s->first);
+        if(offset > s->second.size)
+            return segments.end();
+    }
+
     return s;
 }
 
