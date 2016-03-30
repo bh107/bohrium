@@ -136,6 +136,7 @@ int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
     {
         fprintf(stderr, "Could not attach signal, memory segment is in conflict with "
                         "already attached signal\n");
+        pthread_mutex_unlock(&signal_mutex);
         return BH_ERROR;
     }
     segment &s = segments[addr];
