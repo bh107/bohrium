@@ -99,7 +99,8 @@ int bh_mem_signal_init(void)
         sigfillset(&(sact.sa_mask));
         sact.sa_flags = SA_SIGINFO | SA_ONSTACK;
         sact.sa_sigaction = sighandler;
-        sigaction(SIGSEGV, &sact, &sact);
+        sigaction(SIGSEGV, &sact, NULL);
+        sigaction(SIGBUS, &sact, NULL);
     }
     initialized = true;
     pthread_mutex_unlock(&signal_mutex);
