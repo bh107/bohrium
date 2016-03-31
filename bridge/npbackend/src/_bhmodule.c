@@ -203,6 +203,8 @@ void mem_access_callback(void *id, void *addr)
 //Return -1 on error
 static int _mprotect_np_part(BhArray *ary)
 {
+    assert(((BhArray*)ary)->mmap_allocated);
+
     //Finally we memory protect the NumPy data
     if(mprotect(ary->base.data, ary_nbytes(ary), PROT_NONE) == -1)
     {
@@ -258,6 +260,12 @@ static int _protected_malloc(BhArray *ary)
     bh_mem_signal_attach(ary, ary->base.data,
                   ary_nbytes(ary), mem_access_callback);
     return 0;
+}
+
+//Called when module exits
+static void module_exit(void)
+{
+    bh_mem_signal_shutdown();
 }
 
 //Help function that creates a simple new array.
@@ -1025,5 +1033,8 @@ PyMODINIT_FUNC init_bh(void)
 
     //Initialize the signal handler
     bh_mem_signal_init();
+
+    //Register an module exit function
+    Py_AtExit(module_exit);
     return RETVAL;
 }
