@@ -26,41 +26,65 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <map>
+#include <cassert>
+#include <set>
 #include "bh_mem_signal.h"
 #include <bh.h>
 
 using namespace std;
 
-static long PAGE_SIZE = sysconf(_SC_PAGESIZE);
 static pthread_mutex_t signal_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool initialized=false;
 
-typedef struct
+struct Segment
 {
-    //Id to identify the memory segment when executing the callback function.
-    const void *idx;
+    //Start address of this memory segment
+    const void *addr;
     //Size of memory segment in bytes
     uint64_t size;
+    //Id to identify the memory segment when executing the callback function.
+    const void *idx;
     //The callback function to call
     void (*callback)(void*, void*);
-} segment;
 
-static map<const void*,segment> segments;
+    //Some constructors
+    Segment(){};
+    Segment(const void *addr) : addr(addr),size(1),idx(NULL),callback(NULL){};
+    Segment(const void *addr, uint64_t size) : addr(addr),size(size),idx(NULL),callback(NULL){};
+    Segment(const void *addr, uint64_t size, const void *idx, void (*callback)(void*, void*))
+            : addr(addr),size(size),idx(idx),callback(callback){};
 
-//Return a iterator to the segment the 'addr' is part of.
-//Returns segments.end() if 'addr' isn't in any segments
-static map<const void*,segment>::const_iterator get_segment(const void *addr)
-{
-    map<const void*,segment>::const_iterator s = segments.lower_bound(addr);
-    if(s != segments.end())
+    bool operator<(const Segment& other) const
     {
-        uint64_t offset = ((uint64_t)addr) - ((uint64_t)s->first);
-        if(offset > s->second.size)
-            return segments.end();
+        const uint64_t a_begin = (uint64_t) addr;
+        const uint64_t b_begin = (uint64_t) other.addr;
+        const uint64_t a_end = a_begin + size - 1;
+        const uint64_t b_end = b_begin + other.size - 1;
+
+        //When the two segments overlaps we return false such that
+        //overlapping segments are identical in a set
+        if((a_begin <= b_end) and (a_end >= b_begin))
+        {
+            return false;
+        }
+        else//Else we simple compare the begin address
+            return a_begin < b_begin;
     }
-    return s;
-}
+
+    //Read begin and end memory address
+    const void *addr_begin() const
+    {
+        return addr;
+    }
+    const void *addr_end() const
+    {
+        return (const void*)(((uint64_t)addr+size));
+    }
+};
+
+// All registered memory segments
+// NB: never insert overlapping memory segments into this set
+static set<Segment> segments;
 
 /** Signal handler.
  *  Executes appropriate callback function associated with memory segment.
@@ -72,16 +96,16 @@ static map<const void*,segment>::const_iterator get_segment(const void *addr)
 static void sighandler(int signal_number, siginfo_t *info, void *context)
 {
     pthread_mutex_lock(&signal_mutex);
-    map<const void*,segment>::const_iterator s = get_segment(info->si_addr);
+    set<Segment>::const_iterator s = segments.find(Segment(info->si_addr));
     pthread_mutex_unlock(&signal_mutex);
-    if(s == segments.end())
+    if(s == segments.end())//Address not found in 'segments'
     {
 //        printf("bh_signal: Defaulting to segfaul at addr: %p\n", info->si_addr);
         signal(signal_number, SIG_DFL);
     }
     else
     {
-        s->second.callback((void*)s->second.idx, info->si_addr);
+        s->callback((void*)s->idx, info->si_addr);
     }
 }
 
@@ -99,7 +123,8 @@ int bh_mem_signal_init(void)
         sigfillset(&(sact.sa_mask));
         sact.sa_flags = SA_SIGINFO | SA_ONSTACK;
         sact.sa_sigaction = sighandler;
-        sigaction(SIGSEGV, &sact, &sact);
+        sigaction(SIGSEGV, &sact, NULL);
+        sigaction(SIGBUS, &sact, NULL);
     }
     initialized = true;
     pthread_mutex_unlock(&signal_mutex);
@@ -130,17 +155,24 @@ int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
                          void (*callback)(void*, void*))
 {
     pthread_mutex_lock(&signal_mutex);
-    if(get_segment(addr) != segments.end())
+
+    //Create new memory segment that we will attach
+    Segment segment(addr, size, idx, callback);
+
+    //Let's check for double attachments
+    if(segments.find(segment) != segments.end())
     {
-        fprintf(stderr, "Could not attach signal, memory segment is in conflict with "
-                        "already attached signal\n");
+        auto conflict = segments.find(Segment(addr, size));
+        cerr << "mem_signal: Could not attach signal, memory segment (" \
+             << segment.addr_begin() << " to " << segment.addr_end() \
+             << ") is in conflict with already attached memory segment (" \
+             << conflict->addr_begin() << " to " << conflict->addr_end() << ")" << endl;
+        pthread_mutex_unlock(&signal_mutex);
         return BH_ERROR;
     }
-    segment &s = segments[addr];
-    s.idx = idx;
-    s.size = size;
-    s.callback = callback;
 
+    //Finally, let's insert the new segment
+    segments.insert(segment);
     pthread_mutex_unlock(&signal_mutex);
     return 0;
 }
