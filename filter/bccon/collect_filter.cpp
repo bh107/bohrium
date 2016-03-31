@@ -152,7 +152,34 @@ void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
 
 void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
 {
-    // TODO Implement
+    bh_instruction& first = *chain.front();
+    bh_instruction& last = *chain.back();
+    float_t result = 1.0;
+
+    // Update first instruction's result base to last
+    first.operand[0].base = last.operand[0].base;
+
+    // Get first instructions value
+    if (first.opcode == BH_MULTIPLY) {
+        result *= bh_get_value(first.constant);
+    } else {
+        result /= bh_get_value(first.constant);
+    }
+
+    // Loop through rest and accumulate value
+    for(vector<bh_instruction*>::iterator ite=chain.begin()+1; ite != chain.end(); ++ite) {
+        bh_instruction& rinstr = **ite;
+        if (rinstr.opcode == BH_MULTIPLY) {
+            result *= bh_get_value(rinstr.constant);
+        } else {
+            result /= bh_get_value(rinstr.constant);
+        }
+        // Remove instruction
+        rinstr.opcode = BH_NONE;
+    }
+
+    // Set first instruction's new value
+    bh_set_value(&(first.constant), result);
 }
 
 void rewrite_chain(vector<bh_instruction*>& chain)
@@ -190,7 +217,13 @@ void collect_filter(bh_ir &bhir)
                     }
                 } else if (is_mul_div(collect_opcode) and is_mul_div(other_instr.opcode) and bh_is_constant(&instr.operand[2])) {
                     // Both are MULTIPLY or DIVIDE
-                    if (*views.back() == other_instr.operand[1]) {
+
+                    // We are not allowed to DIVIDE when the result operand has integer type
+                    if (bh_type_is_integer(other_instr.operand[0].base->type)) {
+                        chain.clear();
+                        views.clear();
+                        break;
+                    } else if (*views.back() == other_instr.operand[1]) {
                         views.push_back(&other_instr.operand[0]);
                         chain.push_back(&other_instr);
                     }
