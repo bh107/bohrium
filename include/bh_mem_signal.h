@@ -36,6 +36,9 @@ extern "C" {
  */
 int bh_mem_signal_init(void);
 
+/** Shutdown of this library */
+void bh_mem_signal_shutdown(void);
+
 /** Attach continues memory segment to signal handler
  *
  * @param idx - Id to identify the memory segment when executing the callback function.

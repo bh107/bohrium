@@ -106,6 +106,17 @@ int bh_mem_signal_init(void)
     return 0;
 }
 
+/** Shutdown of this library */
+void bh_mem_signal_shutdown(void)
+{
+    pthread_mutex_lock(&signal_mutex);
+    if(segments.size() > 0)
+    {
+        cerr << "mem_signal: not all attached memory segments are detached!" << endl;
+    }
+    pthread_mutex_unlock(&signal_mutex);
+}
+
 /** Attach continues memory segment to signal handler
  *
  * @param idx - Id to identify the memory segment when executing the callback function.
