@@ -237,7 +237,7 @@ void collect_filter(bh_ir &bhir)
                     } else {
                         // Is not ADD, SUBTRACT, MULTIPLY, DIVIDE, NONE, FREE, DISCARD
                         // End chain
-                        if (!chain.empty()) {
+                        if (chain.size() > 1) {
                             rewrite_chain(chain);
                         }
                         // Reset
