@@ -109,10 +109,32 @@ bool is_mul_div(bh_opcode opc)
     return opc == BH_MULTIPLY or opc == BH_DIVIDE;
 }
 
+bool chain_has_same_type(vector<bh_instruction*>& chain)
+{
+    bh_type type = chain.front()->constant.type;
+    for(vector<bh_instruction*>::iterator ite=chain.begin()+1; ite != chain.end(); ++ite) {
+        if (type != (**ite).constant.type)
+            return false;
+    }
+    return true;
+}
+
 void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
 {
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
+
+    if (!chain_has_same_type(chain))
+        return;
+
+    switch (first.constant.type) {
+        // Don't know how to do complex types, yet.
+        case BH_BOOL:
+        case BH_COMPLEX64:
+        case BH_COMPLEX128:
+            return;
+    }
+
     float_t sum = 0.0;
 
     // Update first instruction's result base to last
@@ -154,6 +176,18 @@ void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
 {
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
+
+    if (!chain_has_same_type(chain))
+        return;
+
+    switch (first.constant.type) {
+        // Don't know how to do complex types, yet.
+        case BH_BOOL:
+        case BH_COMPLEX64:
+        case BH_COMPLEX128:
+            return;
+    }
+
     float_t result = 1.0;
 
     // Update first instruction's result base to last
