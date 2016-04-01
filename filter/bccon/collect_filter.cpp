@@ -271,9 +271,9 @@ void collect_filter(bh_ir &bhir)
                     } else {
                         // Is not ADD, SUBTRACT, MULTIPLY, DIVIDE, NONE, FREE, DISCARD
                         // End chain
-                        if (chain.size() > 1) {
+                        if (chain.size() > 1)
                             rewrite_chain(chain);
-                        }
+
                         // Reset
                         chain.clear();
                         views.clear();
@@ -282,6 +282,10 @@ void collect_filter(bh_ir &bhir)
                 }
             }
         }
+
+        // Rewrite if end of instruction list
+        if (chain.size() > 1)
+            rewrite_chain(chain);
 
         chain.clear();
         views.clear();
