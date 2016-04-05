@@ -5,7 +5,6 @@ from __future__ import print_function
 from operator import mul
 from numbers import Number
 import subprocess
-import warnings
 import random
 import pickle
 import time
@@ -291,9 +290,7 @@ class BenchHelper:
         npzs = np.load(outputfn)     # Load the result from disk
         res  = {}
         for k in npzs:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                res[k] = npzs[k]
+            res[k] = npzs[k]
         del npzs                        # Delete npz
 
         if os.path.exists(outputfn):    # Delete the result from disk
@@ -305,7 +302,6 @@ class BenchHelper:
         return (res['res'], ' '.join(cmd))
 
 if __name__ == "__main__":
-    warnings.simplefilter('error')#Warnings will raise exceptions
     pydebug = True
 
     try:
