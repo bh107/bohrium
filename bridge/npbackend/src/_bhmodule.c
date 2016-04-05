@@ -191,9 +191,15 @@ void mem_access_callback(void *id, void *addr)
 //    printf("mem_access_callback() - ary: %p, addr: %p\n", ary, addr);
 
     PyGILState_STATE GIL = PyGILState_Ensure();
-    PyErr_WarnEx(NULL,"Encountering an operation not supported by Bohrium. "
-                      "It will be handled by the original NumPy.",1);
-
+    int err = PyErr_WarnEx(NULL,"Encountering an operation not supported by Bohrium. "
+                                "It will be handled by the original NumPy.",1);
+    if(err == -1)
+    {
+        PyErr_WarnEx(NULL,"Encountering an operation not supported by Bohrium. "
+                          "[Sorry, you cannot upgrade this warning to an exception]",1);
+        PyErr_Print();
+    }
+    PyErr_Clear();
     if(BhArray_data_bhc2np(ary, NULL) == NULL)
         PyErr_Print();
     PyGILState_Release(GIL);
