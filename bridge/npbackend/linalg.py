@@ -8,6 +8,10 @@ Common linear algebra functions
 import bohrium as np
 import numpy_force.linalg as la
 import numpy_force as numpy
+
+#We import all of NumPy LinAlg and overwrite with the objects we implement ourself
+from numpy_force.linalg import *
+
 from . import bhary
 from . import ufunc
 from . import target
