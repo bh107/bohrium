@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "component_interface.h"
 #include "reduction_chain_filter.hpp"
 #include "collect_filter.hpp"
+#include "stupid_math_filter.hpp"
 
 //
 // Components
@@ -35,7 +36,7 @@ static bh_component myself; // Myself
 // Function pointers to our child.
 static bh_component_iface *child;
 
-static bool reduction_, collect_;
+static bool reduction_, stupidmath_, collect_;
 
 // The timing ID for the filter
 static bh_intp exec_timing;
@@ -68,8 +69,9 @@ bh_error bh_filter_bccon_init(const char* name)
         return err;
     }
 
-    reduction_ = bh_component_config_lookup_bool(&myself, "reduction", false);
-    collect_   = bh_component_config_lookup_bool(&myself, "collect",   false);
+    reduction_  = bh_component_config_lookup_bool(&myself, "reduction",  false);
+    stupidmath_ = bh_component_config_lookup_bool(&myself, "stupidmath", false);
+    collect_    = bh_component_config_lookup_bool(&myself, "collect",    false);
 
     return BH_SUCCESS;
 }
@@ -94,8 +96,9 @@ bh_error bh_filter_bccon_execute(bh_ir* bhir)
     if (timing)
         start = bh_timer_stamp();
 
-    if (reduction_) reduction_chain_filter(*bhir);
-    if (collect_)   collect_filter(*bhir);
+    if (reduction_)  reduction_chain_filter(*bhir);
+    if (stupidmath_) stupid_math_filter(*bhir);
+    if (collect_)    collect_filter(*bhir);
 
     if (timing)
         bh_timer_add(exec_timing, start, bh_timer_stamp());

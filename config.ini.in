@@ -212,8 +212,9 @@ children = node
 type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
 children = node
-reduction = 1
-collect = 1
+reduction = true
+collect = true
+stupidmath = true
 timing = false
 
 [noneremover]
