@@ -90,6 +90,13 @@ DLLEXPORT int bh_type_size(bh_type type);
  */
 DLLEXPORT const char* bh_type_text(bh_type type);
 
+/* Is type an integer type
+ *
+ * @type   The type.
+ * @return True if integer type.
+ */
+DLLEXPORT bool bh_type_is_integer(bh_type type);
+
 /* Determines whether the opcode is a sweep opcode
  * i.e. either a reduction or an accumulate
  *
@@ -114,4 +121,3 @@ std::ostream& operator<<(std::ostream& out, const std::vector<E>& v)
 }
 
 #endif
-

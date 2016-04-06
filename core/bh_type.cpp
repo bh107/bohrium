@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -105,5 +105,28 @@ const char* bh_type_text(bh_type type)
         return "BH_UNKNOWN";
     default:
         return "Unknown type";
+    }
+}
+
+/* Is type an integer type
+ *
+ * @type   The type.
+ * @return True if integer type.
+ */
+bool bh_type_is_integer(bh_type type)
+{
+    switch(type)
+    {
+    case BH_UINT8:
+    case BH_UINT16:
+    case BH_UINT32:
+    case BH_UINT64:
+    case BH_INT8:
+    case BH_INT16:
+    case BH_INT32:
+    case BH_INT64:
+        return true;
+    default:
+        return false;
     }
 }
