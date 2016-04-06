@@ -19,7 +19,7 @@ documented below:
 
 class Base(object):
     """
-    Abstract base array handle (a array has only one base)
+    Abstract base array handle (an array has only one base)
     Encapsulates memory allocated for an array.
 
     :param int size: Number of elements in the array
@@ -35,10 +35,9 @@ class View(object):
     Encapsulates meta-data of an array.
 
     :param int ndim: Number of dimensions / rank of the view
-    :param int start: Offset from base (in elements), converted to offset from base
-                when constructed.
+    :param int start: Offset from base (in elements), converted to bytes upon construction.
     :param tuple(int*ndim) shape: Number of elements in each dimension of the array.
-    :param tuple(int*ndim) strides: Stride for each dimension (in elements), converted to stride for each dimension (in bytes) upon construction.
+    :param tuple(int*ndim) strides: Stride for each dimension (in elements), converted to bytes upon construction.
     :param interface.Base base: Base associated with array.
     """
     def __init__(self, ndim, start, shape, strides, base):
@@ -51,6 +50,10 @@ class View(object):
 
 def runtime_flush():
     """Flush the runtime system"""
+    pass
+
+def tally():
+    """Tally the runtime system"""
     pass
 
 def get_data_pointer(ary, allocate=False, nullify=False):
