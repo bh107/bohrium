@@ -59,7 +59,7 @@ def ufunc(op, *args):
 
 def reduce(op, out, a, axis):
     """reduce 'axis' dimension of 'a' and write the result to out"""
-   
+
     (a, out) = views2numpy((a, out))
     pych_reduce_add(a, axis, out)
 
@@ -98,8 +98,3 @@ def random123(size, start_index, key):
 
     print "random123"
 
-    
-import atexit
-@atexit.register
-def shutdown():
-    pass

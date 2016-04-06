@@ -19,7 +19,7 @@ documented below:
 
 class Base(object):
     """
-    Abstract base array handle (a array has only one base)
+    Abstract base array handle (an array has only one base)
     Encapsulates memory allocated for an array.
 
     :param int size: Number of elements in the array
@@ -35,10 +35,9 @@ class View(object):
     Encapsulates meta-data of an array.
 
     :param int ndim: Number of dimensions / rank of the view
-    :param int start: Offset from base (in elements), converted to offset from base
-                when constructed.
+    :param int start: Offset from base (in elements), converted to bytes upon construction.
     :param tuple(int*ndim) shape: Number of elements in each dimension of the array.
-    :param tuple(int*ndim) strides: Stride for each dimension (in elements), converted to stride for each dimension (in bytes) upon construction.
+    :param tuple(int*ndim) strides: Stride for each dimension (in elements), converted to bytes upon construction.
     :param interface.Base base: Base associated with array.
     """
     def __init__(self, ndim, start, shape, strides, base):
@@ -51,6 +50,10 @@ class View(object):
 
 def runtime_flush():
     """Flush the runtime system"""
+    pass
+
+def tally():
+    """Tally the runtime system"""
     pass
 
 def get_data_pointer(ary, allocate=False, nullify=False):
@@ -81,7 +84,7 @@ def ufunc(op, *args):
     """
     Perform the ufunc 'op' on the 'args' arrays
 
-    :param npbackend.ufunc.Ufunc op: The ufunc operation to apply to args.
+    :param bohrium.ufunc.Ufunc op: The ufunc operation to apply to args.
     :param Mixed args: Args to the ufunc operation.
     :rtype: None
     """
@@ -91,7 +94,7 @@ def reduce(op, out, ary, axis):
     """
     Reduce 'axis' dimension of 'ary' and write the result to out
 
-    :param op npbackend.ufunc.Ufunc: The ufunc operation to apply to args.
+    :param op bohrium.ufunc.Ufunc: The ufunc operation to apply to args.
     :param out Mixed: The array to reduce "into".
     :param ary Mixed: The array to reduce.
     :param axis Mixed: The axis to apply the reduction over.
@@ -103,7 +106,7 @@ def accumulate(op, out, ary, axis):
     """
     Accumulate/scan 'axis' dimension of 'ary' and write the result to 'out'.
 
-    :param npbackend.ufunc.Ufunc op: The element-wise operator to accumulate.
+    :param bohrium.ufunc.Ufunc op: The element-wise operator to accumulate.
     :param Mixed out: The array to accumulate/scan "into".
     :param Mixed ary: The array to accumulate/scan.
     :param Mixed axis: The axis to apply the accumulation/scan over.

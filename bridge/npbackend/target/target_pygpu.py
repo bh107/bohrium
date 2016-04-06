@@ -89,11 +89,6 @@ def reduce(op, out, a, axis):
     else:
         rfun(axis=axis, out=out)
 
-def accumulate(op, out, a, axis):
-    """accumulate 'axis' dimension of 'a' and write the result to out"""
-
-    raise NotImplementedError()
-
 def extmethod(name, out, in1, in2):
     """Apply the extended method 'name' """
 
@@ -104,19 +99,3 @@ def extmethod(name, out, in1, in2):
         raise NotImplementedError("The current runtime system does not support "
                                   "the extension method '%s'"%name)
 
-def range(size, dtype):
-    """create a new array containing the values [0:size["""
-    raise NotImplementedError()
-    return np.arange((size,), dtype=dtype)
-
-def random123(size, start_index, key):
-    """Create a new random array using the random123 algorithm.
-    The dtype is uint64 always."""
-    raise NotImplementedError()
-    return np.random.random(size)
-
-
-import atexit
-@atexit.register
-def shutdown():
-    pass
