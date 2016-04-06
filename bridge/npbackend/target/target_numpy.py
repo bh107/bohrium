@@ -126,16 +126,9 @@ def extmethod(name, out, in1, in2):
 
 def range(size, dtype):
     """create a new array containing the values [0:size["""
-    raise NotImplementedError()
     return np.arange((size,), dtype=dtype)
 
 def random123(size, start_index, key):
     """Create a new random array using the random123 algorithm.
     The dtype is uint64 always."""
-    raise NotImplementedError()
     return np.random.random(size)
-
-import atexit
-@atexit.register
-def shutdown():
-    pass

@@ -84,7 +84,7 @@ def ufunc(op, *args):
     """
     Perform the ufunc 'op' on the 'args' arrays
 
-    :param npbackend.ufunc.Ufunc op: The ufunc operation to apply to args.
+    :param bohrium.ufunc.Ufunc op: The ufunc operation to apply to args.
     :param Mixed args: Args to the ufunc operation.
     :rtype: None
     """
@@ -94,7 +94,7 @@ def reduce(op, out, ary, axis):
     """
     Reduce 'axis' dimension of 'ary' and write the result to out
 
-    :param op npbackend.ufunc.Ufunc: The ufunc operation to apply to args.
+    :param op bohrium.ufunc.Ufunc: The ufunc operation to apply to args.
     :param out Mixed: The array to reduce "into".
     :param ary Mixed: The array to reduce.
     :param axis Mixed: The axis to apply the reduction over.
@@ -106,7 +106,7 @@ def accumulate(op, out, ary, axis):
     """
     Accumulate/scan 'axis' dimension of 'ary' and write the result to 'out'.
 
-    :param npbackend.ufunc.Ufunc op: The element-wise operator to accumulate.
+    :param bohrium.ufunc.Ufunc op: The element-wise operator to accumulate.
     :param Mixed out: The array to accumulate/scan "into".
     :param Mixed ary: The array to accumulate/scan.
     :param Mixed axis: The axis to apply the accumulation/scan over.
