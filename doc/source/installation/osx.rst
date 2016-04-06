@@ -8,7 +8,7 @@ You need to install the `Xcode Developer Tools <https://developer.apple.com/xcod
 Simple install with Homebrew
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Start by `installing Homebrew as explained on their website <http://brew.sh/>`::
+Start by `installing Homebrew as explained on their website <http://brew.sh/>`_ ::
 
   ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
