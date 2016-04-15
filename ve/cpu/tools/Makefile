@@ -87,7 +87,7 @@ purge_ko: ## Purge runtime generated objects
 	@echo "${BLUE}Purging runtime generated objects${NC}"
 	rm -f ~/.local/var/bohrium/kernels/*
 	rm -rf ~/.local/var/bohrium/objects/*
-	rm -f ~/.local/var/bohrium/fuse_cache/*
+	rm -rf ~/.local/var/bohrium/fuse_cache/*
 
 
 purge_cpu: purge_ko ## Remove installed stuff specific to the CPU-engine
