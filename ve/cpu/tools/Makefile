@@ -29,6 +29,9 @@ clang:
 	$(eval CC := clang)
 	$(eval CXX := clang++)
 
+for_dython:
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DPYTHON_EXECUTABLE=/usr/bin/dython -DPY_SCRIPT=python)
+
 release_on:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DCMAKE_BUILD_TYPE=Release)
 
