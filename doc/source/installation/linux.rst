@@ -105,7 +105,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy swig python-cheetah cmake libboost-serialization-dev libboost-thread-dev cython libhwloc-dev libboost-filesystem-dev
+  sudo apt-get install python-numpy python-dev swig python-cheetah cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-thread-dev libboost-thread-dev libboost-system-dev  zlib1g-dev
 
 Packages for visualization::
 
@@ -114,7 +114,7 @@ Packages for visualization::
 Build and install::
 
   wget https://github.com/bh107/bohrium/archive/master.zip
-  unzip master.tgz
+  unzip master.zip
   cd bohrium-master
   mkdir build
   cd build
