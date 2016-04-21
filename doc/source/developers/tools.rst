@@ -3,59 +3,86 @@
 Tools
 =====
 
-Valgrind and Python
--------------------
+Valgrind, GDB, and Python
+-------------------------
 
 Valgrind is a great tool for memory debugging, memory leak detection, and profiling.
 However, both Python and NumPy floods the valgrind output with memory errors - it is therefore necessary to use a debug and valgrind friendly version of Python and NumPy::
 
   sudo apt-get build-dep python
   sudo apt-get install zlib1g-dev valgrind
-  export PV=2.7.3
-  sudo mkdir /opt/python
   
-  cd /tmp
-  wget http://www.python.org/ftp/python/$PV/Python-$PV.tgz
-  tar -xzf Python-$PV.tgz
-  cd Python-$PV
-  ./configure --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
-  sudo make install
-  sudo ln -s /opt/python/bin/python /usr/bin/dython
-
-  export CV=0.22
-  cd /tmp/
-  wget http://cython.org/release/Cython-$CV.tar.gz
-  tar -xzf Cython-$CV.tar.gz
-  cd Cython-$CV
-  sudo dython setup.py install
+  mkdir python_debug_env
+  cd python_debug_env
+  export INSTALL_DIR=$PWD
   
-  export CTV=2.4.4
-  cd /tmp/
-  wget https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$CTV.tar.gz
-  tar -xzf Cheetah-$CTV.tar.gz
-  cd Cheetah-$CTV
-  sudo dython setup.py install
-
-  export NV=1.8.2
-  cd /tmp/
-  wget http://optimate.dl.sourceforge.net/project/numpy/NumPy/$NV/numpy-$NV.tar.gz
-  tar -xzf numpy-$NV.tar.gz
-  cd numpy-$NV
-  sudo dython setup.py install
+  # Build and install Python:
+  export VERSION=2.7.11
+  wget http://www.python.org/ftp/python/$VERSION/Python-$VERSION.tgz
+  tar -xzf Python-$VERSION.tgz
+  cd Python-$VERSION
+  ./configure --with-pydebug --without-pymalloc --with-valgrind --prefix=$INSTALL_DIR
+  make install
+  sudo ln -s $PWD/python-gdb.py /usr/bin/python-gdb.py
+  sudo ln -s $INSTALL_DIR/bin/python /usr/bin/dython
+  cd ..
+  rm Python-$VERSION.tgz
+  
+  # Build and install Cython
+  export VERSION=0.24
+  wget http://cython.org/release/Cython-$VERSION.tar.gz
+  tar -xzf Cython-$VERSION.tar.gz
+  cd Cython-$VERSION
+  dython setup.py install
+  cd ..
+  rm Cython-$VERSION.tar.gz
+  
+  # Build and install Cheetah
+  export VERSION=2.4.4
+  wget https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$VERSION.tar.gz
+  tar -xzf Cheetah-$VERSION.tar.gz
+  cd Cheetah-$VERSION
+  dython setup.py install
+  cd ..
+  rm Cheetah-$VERSION.tar.gz
+  
+  # Build and install NumPy
+  export VERSION=1.9.2
+  wget http://optimate.dl.sourceforge.net/project/numpy/NumPy/$VERSION/numpy-$VERSION.tar.gz
+  tar -xzf numpy-$VERSION.tar.gz
+  cd numpy-$VERSION
+  dython setup.py install
+  cd ..
+  rm numpy-$VERSION.tar.gz
 
 Build Bohrium with custom Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Build and install Bohrium::
+Build and install Bohrium (with some components deactivated)::
 
-  cd <bohrium path>
+  unzip master.zip
+  cd bohrium-master
   mkdir build
   cd build
-  cmake ../ -DPYTHON_EXECUTABLE=/usr/bin/dython -DPY_SCRIPT=python
+  cmake .. -DPYTHON_EXECUTABLE=/usr/bin/dython -DEXT_FFTW=OFF -DEXT_VISUALIZER=OFF -DVEM_VISUALIZER=OFF -DVEM_PROXY=OFF -DVE_GPU=OFF  -DBRIDGE_NUMCIL=OFF -DTEST_CIL=OFF
+  make
   make install
+  cd ..
+  rm master.zip
 
 Most Used Commands
-~~~~~~~~~~~~~~~~~~
+``````````````````
+
+**GDB**
+
+GDB supports some helpful Python commands (https://docs.python.org/devguide/gdb.html). To activate, ``source`` the ``python-gdb.py`` file within GDB::
+  
+  source /usr/bin/python-gdb.py
+  
+Then you can use Python specific GDB commands such as ``py-list`` or ``py-bt``.
+
+
+**Valgrind**
 
 Valgrind can be used to detect memory errors by invoking it with::
 
