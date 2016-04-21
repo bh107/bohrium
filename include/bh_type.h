@@ -65,28 +65,4 @@ typedef bh_intp    bh_type;
 typedef bh_intp    bh_opcode;
 typedef void*      bh_data_ptr;
 
-typedef union /* bh_constant_value */
-{
-    bh_bool       bool8;
-    bh_int8       int8;
-    bh_int16      int16;
-    bh_int32      int32;
-    bh_int64      int64;
-    bh_uint8      uint8;
-    bh_uint16     uint16;
-    bh_uint32     uint32;
-    bh_uint64     uint64;
-    bh_float32    float32;
-    bh_float64    float64;
-    bh_complex64  complex64;
-    bh_complex128 complex128;
-    bh_r123       r123;
-} bh_constant_value;
-
-typedef struct
-{
-    bh_constant_value value;
-    bh_type type;
-} bh_constant;
-
 #endif
