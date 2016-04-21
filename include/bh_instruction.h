@@ -43,6 +43,23 @@ struct bh_instruction
         for(size_t i=0; i<nop; ++i)
             ar & operand[i];
     }
+
+    bool operator==(const bh_instruction& other) const
+    {
+        if (opcode != other.opcode) return false;
+        if (constant != other.constant) return false;
+
+        for (bh_intp i = 0; i < BH_MAX_NO_OPERANDS; ++i) {
+            if (operand[i] != other.operand[i]) return false;
+        }
+
+        return true;
+    }
+
+    bool operator!=(const bh_instruction& other) const
+    {
+        return !(*this == other);
+    }
 };
 BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)
 
@@ -70,4 +87,3 @@ DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction
 
 
 #endif
-

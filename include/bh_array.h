@@ -136,6 +136,7 @@ struct bh_view
         }
         return false;
     }
+
     bool operator==(const bh_view& other) const
     {
         if (base != other.base) return false;
@@ -146,6 +147,11 @@ struct bh_view
         for (bh_intp i = 0; i < ndim; ++i)
             if (stride[i] != other.stride[i]) return false;
         return true;
+    }
+
+    bool operator!=(const bh_view& other) const
+    {
+        return !(*this == other);
     }
 
     template<class Archive>
@@ -360,4 +366,3 @@ DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
 
 
 #endif
-
