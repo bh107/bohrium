@@ -26,47 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-void bh_set_value(bh_constant* constant, float_t value)
-{
-    switch(constant->type) {
-        case BH_UINT8:
-            constant->value.uint8 = (uint)value;
-            break;
-        case BH_UINT16:
-            constant->value.uint16 = (uint)value;
-            break;
-        case BH_UINT32:
-            constant->value.uint32 = (uint)value;
-            break;
-        case BH_UINT64:
-            constant->value.uint64 = (uint)value;
-            break;
-
-        case BH_INT8:
-            constant->value.int8 = (int)value;
-            break;
-        case BH_INT16:
-            constant->value.int16 = (int)value;
-            break;
-        case BH_INT32:
-            constant->value.int32 = (int)value;
-            break;
-        case BH_INT64:
-            constant->value.int64 = (int)value;
-            break;
-
-        case BH_FLOAT32:
-            constant->value.float32 = value;
-            break;
-        case BH_FLOAT64:
-            constant->value.float64 = value;
-            break;
-
-        default:
-            fprintf(stderr, "Can't set value for this type (%s) for collect filter.\n", bh_type_text(constant->type));
-    }
-}
-
 bool is_add_sub(bh_opcode opc)
 {
     return opc == BH_ADD or opc == BH_SUBTRACT;
@@ -138,7 +97,7 @@ void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
     }
 
     // Set first instruction's new value
-    bh_set_value(&(first.constant), sum);
+    first.constant.set_double(sum);
 }
 
 void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
@@ -183,7 +142,7 @@ void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
     }
 
     // Set first instruction's new value
-    bh_set_value(&(first.constant), result);
+    first.constant.set_double(result);
 }
 
 void rewrite_chain(vector<bh_instruction*>& chain)
