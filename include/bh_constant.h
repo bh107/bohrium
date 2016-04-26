@@ -50,6 +50,11 @@ struct bh_constant
     //Throw an overflow_error() exception if impossible
     int64_t get_int64() const;
 
+    //Convert the constant value to an double
+    //Throw an overflow_error() exception if impossible
+    //Throw an runtime_error() exception if type is unknown
+    double get_double() const;
+
     bool operator==(const bh_constant& other) const;
 
     bool operator!=(const bh_constant& other) const

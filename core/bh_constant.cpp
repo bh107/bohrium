@@ -53,6 +53,48 @@ int64_t bh_constant::get_int64() const
     }
 }
 
+double bh_constant::get_double() const
+{
+    switch(type) {
+        case BH_INT8:
+            return static_cast<double>(value.int8);
+        case BH_INT16:
+            return static_cast<double>(value.int16);
+        case BH_INT32:
+            return static_cast<double>(value.int32);
+        case BH_INT64:
+            return static_cast<double>(value.int64);
+        case BH_UINT8:
+            return static_cast<double>(value.uint8);
+        case BH_UINT16:
+            return static_cast<double>(value.uint16);
+        case BH_UINT32:
+            return static_cast<double>(value.uint32);
+        case BH_UINT64:
+            return static_cast<double>(value.uint64);
+        case BH_FLOAT32:
+            return static_cast<double>(value.float32);
+        case BH_FLOAT64:
+            return value.float64;
+        case BH_COMPLEX64:
+            if (value.complex64.imag != 0){
+                throw overflow_error("Complex64 cannot be converted"
+                                     "to double when imag isn't zero");
+            }
+            return static_cast<double>(value.complex64.real);
+        case BH_COMPLEX128:
+            if (value.complex128.imag != 0){
+                throw overflow_error("Complex128 cannot be converted"
+                                     "to double when imag isn't zero");
+            }
+            return static_cast<double>(value.complex128.real);
+        case BH_R123:
+            throw overflow_error("R123 cannot be converted to double");
+        default:
+            throw runtime_error("Unknown constant type");
+    }
+}
+
 bool bh_constant::operator==(const bh_constant& other) const
 {
     if (other.type != type) return false;
