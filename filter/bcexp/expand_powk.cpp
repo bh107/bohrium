@@ -36,13 +36,17 @@ int Expander::expand_powk(bh_ir& bhir, int pc)
         return 0;
     }
 
+    if (!bh_type_is_integer(instr.constant.type)) {
+        return 0;
+    }
+
     int64_t exponent;
     try {
         exponent = instr.constant.get_int64();          // Extract the exponent
+    } catch (overflow_error& e) {
+        return 0; //Give up, if we cannot get a signed integer
     }
-    catch (overflow_error& e){
-        return 0;
-    }
+
     if (0 > exponent || exponent > k) {
         return 0;
     }

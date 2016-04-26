@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <limits>
 
-
 using namespace std;
 
 
