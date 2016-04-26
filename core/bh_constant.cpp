@@ -94,6 +94,42 @@ double bh_constant::get_double() const
     }
 }
 
+double bh_constant::set_double(double value)
+{
+    switch(type) {
+        case BH_INT8:
+            this->value.int8 = static_cast<int8_t>(value);
+        case BH_INT16:
+            this->value.int16 = static_cast<int16_t>(value);
+        case BH_INT32:
+            this->value.int32 = static_cast<int32_t>(value);
+        case BH_INT64:
+            this->value.int64 = static_cast<int64_t>(value);
+        case BH_UINT8:
+            this->value.uint8 = static_cast<uint8_t>(value);
+        case BH_UINT16:
+            this->value.uint16 = static_cast<uint16_t>(value);
+        case BH_UINT32:
+            this->value.uint32 = static_cast<uint32_t>(value);
+        case BH_UINT64:
+            this->value.uint64 = static_cast<uint64_t>(value);
+        case BH_FLOAT32:
+            this->value.float32 = static_cast<float>(value);
+        case BH_FLOAT64:
+            this->value.float64 = value;
+        case BH_COMPLEX64:
+            this->value.complex64.real = static_cast<int32_t>(value);
+            this->value.complex64.imag = 0;
+        case BH_COMPLEX128:
+            this->value.complex128.real = static_cast<int64_t>(value);
+            this->value.complex128.imag = 0;
+        case BH_R123:
+            throw overflow_error("double to R123 isn't possible");
+        default:
+            throw runtime_error("Unknown constant type");
+    }
+}
+
 bool bh_constant::operator==(const bh_constant& other) const
 {
     if (other.type != type) return false;
