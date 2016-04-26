@@ -81,6 +81,22 @@ struct Segment
         return (const void*)(((uint64_t)addr+size));
     }
 };
+//Pretty print of Segment
+ostream& operator<<(ostream& out, const Segment& segment)
+{
+    out << segment.idx << "{addr: " << segment.addr_begin() << " - "
+        << segment.addr_end() << "}";
+    return out;
+}
+ostream& operator<<(ostream& out, const set<Segment>& segments)
+{
+    out << "bh_mem_signal contains: " << endl;
+    for(const Segment &seg: segments)
+    {
+        out << seg << endl;
+    }
+    return out;
+}
 
 // All registered memory segments
 // NB: never insert overlapping memory segments into this set
@@ -173,6 +189,8 @@ int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
 
     //Finally, let's insert the new segment
     segments.insert(segment);
+//    printf("bh_mem_signal_attach()\n");
+//    cout << segments << endl;
     pthread_mutex_unlock(&signal_mutex);
     return 0;
 }
@@ -186,6 +204,8 @@ int bh_mem_signal_detach(const void *addr)
 {
     pthread_mutex_lock(&signal_mutex);
     segments.erase(addr);
+//    printf("bh_mem_signal_detach()\n");
+//    cout << segments << endl;
     pthread_mutex_unlock(&signal_mutex);
     return 0;
 }
