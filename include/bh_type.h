@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_TYPE_H
 
 #include <stdint.h>
+#include <bh_win.h>
 
 /* Mapping of bohrium data types to C data types */
 typedef unsigned char bh_bool;
@@ -64,5 +65,27 @@ typedef bh_intp    bh_index;
 typedef bh_intp    bh_type;
 typedef bh_intp    bh_opcode;
 typedef void*      bh_data_ptr;
+
+
+/* Byte size for type
+ *
+ * @type   Type code
+ * @return Byte size
+ */
+DLLEXPORT int bh_type_size(bh_type type);
+
+/* Text string for type
+ *
+ * @type   Type code.
+ * @return Text string.
+ */
+DLLEXPORT const char* bh_type_text(bh_type type);
+
+/* Is type an integer type
+ *
+ * @type   The type.
+ * @return True if integer type.
+ */
+DLLEXPORT bool bh_type_is_integer(bh_type type);
 
 #endif
