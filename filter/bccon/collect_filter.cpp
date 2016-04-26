@@ -26,38 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-float_t bh_get_value(bh_constant constant)
-{
-    switch(constant.type) {
-        case BH_UINT8:
-            return (float_t)constant.value.uint8;
-        case BH_UINT16:
-            return (float_t)constant.value.uint16;
-        case BH_UINT32:
-            return (float_t)constant.value.uint32;
-        case BH_UINT64:
-            return (float_t)constant.value.uint64;
-
-        case BH_INT8:
-            return (float_t)constant.value.int8;
-        case BH_INT16:
-            return (float_t)constant.value.int16;
-        case BH_INT32:
-            return (float_t)constant.value.int32;
-        case BH_INT64:
-            return (float_t)constant.value.int64;
-
-        case BH_FLOAT32:
-            return (float_t)constant.value.float32;
-        case BH_FLOAT64:
-            return (float_t)constant.value.float64;
-
-        default:
-            fprintf(stderr, "Don't know this type (%s) for collect filter.\n", bh_type_text(constant.type));
-            return 0;
-    }
-}
-
 void bh_set_value(bh_constant* constant, float_t value)
 {
     switch(constant->type) {
@@ -132,6 +100,7 @@ void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
         case BH_BOOL:
         case BH_COMPLEX64:
         case BH_COMPLEX128:
+        case BH_R123:
             return;
     }
 
@@ -142,18 +111,18 @@ void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
 
     // Get first instructions value
     if (first.opcode == BH_ADD) {
-        sum += bh_get_value(first.constant);
+        sum += first.constant.get_double();
     } else {
-        sum -= bh_get_value(first.constant);
+        sum -= first.constant.get_double();
     }
 
     // Loop through rest and accumulate value
     for(vector<bh_instruction*>::iterator ite=chain.begin()+1; ite != chain.end(); ++ite) {
         bh_instruction& rinstr = **ite;
         if (rinstr.opcode == BH_ADD) {
-            sum += bh_get_value(rinstr.constant);
+            sum += rinstr.constant.get_double();
         } else {
-            sum -= bh_get_value(rinstr.constant);
+            sum -= rinstr.constant.get_double();
         }
         // Remove instruction
         rinstr.opcode = BH_NONE;
@@ -185,6 +154,7 @@ void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
         case BH_BOOL:
         case BH_COMPLEX64:
         case BH_COMPLEX128:
+        case BH_R123:
             return;
     }
 
@@ -195,18 +165,18 @@ void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
 
     // Get first instructions value
     if (first.opcode == BH_MULTIPLY) {
-        result *= bh_get_value(first.constant);
+        result *= first.constant.get_double();
     } else {
-        result /= bh_get_value(first.constant);
+        result /= first.constant.get_double();
     }
 
     // Loop through rest and accumulate value
     for(vector<bh_instruction*>::iterator ite=chain.begin()+1; ite != chain.end(); ++ite) {
         bh_instruction& rinstr = **ite;
         if (rinstr.opcode == BH_MULTIPLY) {
-            result *= bh_get_value(rinstr.constant);
+            result *= rinstr.constant.get_double();
         } else {
-            result /= bh_get_value(rinstr.constant);
+            result /= rinstr.constant.get_double();
         }
         // Remove instruction
         rinstr.opcode = BH_NONE;
