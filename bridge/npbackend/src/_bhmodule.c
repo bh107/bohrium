@@ -521,7 +521,7 @@ BhArray_data_fill(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    //Sets the bhc data from the NumPy part of 'base'
+    //Sets the bhc data from the NumPy array 'np_ary'
     if(set_bhc_data_from_ary(self, np_ary) == -1)
         return NULL;
 
@@ -991,7 +991,6 @@ PyMODINIT_FUNC init_bh(void)
 #endif
 {
     PyObject *m;
-    Py_ssize_t i;
 
 #if defined(NPY_PY3K)
     m = PyModule_Create(&moduledef);
@@ -1008,28 +1007,35 @@ PyMODINIT_FUNC init_bh(void)
     if (PyType_Ready(&BhArrayType) < 0)
         return RETVAL;
 
-    PyObject *_info = PyImport_ImportModule("bohrium._info");
-    if(_info == NULL)
-        return RETVAL;
-
     //HACK: In order to force NumPy scalars on the left hand side of an operand to use Bohrium
     //we add all scalar types to the Method Resolution Order tuple.
-    PyObject *dtypes = PyObject_GetAttrString(_info, "numpy_types");
-    if(dtypes == NULL)
-        return RETVAL;
-    Py_ssize_t ndtypes = PyList_GET_SIZE(dtypes);
-    Py_ssize_t old_size = PyTuple_GET_SIZE(BhArrayType.tp_mro);
-    Py_ssize_t new_size = old_size + ndtypes;
-    if(_PyTuple_Resize(&BhArrayType.tp_mro, new_size) != 0)
-        return RETVAL;
-    for(i=0; i<ndtypes; ++i)
+    //This hack has undesirable consequences: <https://github.com/bh107/bohrium/issues/22>
+    //Until NumPy introduces the "__numpy_ufunc__" method, we will accept that NumPy scalars
+    //on the left hand side raises mem_access_callback()
+/*
     {
-        PyObject *t = PyObject_GetAttrString(PyList_GET_ITEM(dtypes, i), "type");
-        if(t == NULL)
+        Py_ssize_t i;
+        PyObject *_info = PyImport_ImportModule("bohrium._info");
+        if(_info == NULL)
             return RETVAL;
-        PyTuple_SET_ITEM(BhArrayType.tp_mro, i+old_size, t);
+        PyObject *dtypes = PyObject_GetAttrString(_info, "numpy_types");
+        if(dtypes == NULL)
+            return RETVAL;
+        Py_ssize_t ndtypes = PyList_GET_SIZE(dtypes);
+        Py_ssize_t old_size = PyTuple_GET_SIZE(BhArrayType.tp_mro);
+        Py_ssize_t new_size = old_size + ndtypes;
+        if(_PyTuple_Resize(&BhArrayType.tp_mro, new_size) != 0)
+            return RETVAL;
+        for(i=0; i<ndtypes; ++i)
+        {
+            PyObject *t = PyObject_GetAttrString(PyList_GET_ITEM(dtypes, i), "type");
+            if(t == NULL)
+                return RETVAL;
+            PyTuple_SET_ITEM(BhArrayType.tp_mro, i+old_size, t);
+        }
+        Py_DECREF(_info);
     }
-    Py_DECREF(_info);
+*/
 
     PyModule_AddObject(m, "ndarray", (PyObject *)&BhArrayType);
 
