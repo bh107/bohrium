@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <thread>
 #include <chrono>
 #include <sstream>
-#include <bh.h>
+#include <bh.hpp>
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"

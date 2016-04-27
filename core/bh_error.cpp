@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #else
 #include <error.h>
 #endif
-#include <bh.h>
+#include <bh.hpp>
 #include <stdbool.h>
 
 /* Text string for error code

@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <deque>
 #include <StaticStore.hpp>
-#include <bh.h>
+#include <bh.hpp>
 #include "tmp.h"
 #include "except.h"
 

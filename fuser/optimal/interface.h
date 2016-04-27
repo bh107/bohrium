@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_FILTER_FUSE_optimal_H
 #define __BH_FILTER_FUSE_optimal_H
 
-#include <bh.h>
+#include <bh.hpp>
 #include "interface.h"
 
 #ifdef __cplusplus

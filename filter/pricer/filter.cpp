@@ -17,9 +17,9 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <bh.h>
+#include <bh.hpp>
 #include <stdio.h>
-#include <bh_dag.h>
+#include <bh_dag.hpp>
 #include <boost/foreach.hpp>
 #include <boost/foreach.hpp>
 

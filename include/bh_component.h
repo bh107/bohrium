@@ -22,12 +22,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_INTERFACE_H
 
 #include <bh_type.h>
-#include <bh_instruction.h>
+#include <bh_instruction.hpp>
 #include <bh_opcode.h>
 #include <bh_error.h>
 #include <bh_iniparser.h>
 #include <bh_win.h>
-#include <bh_ir.h>
+#include <bh_ir.hpp>
 
 #ifdef __cplusplus
 extern "C" {

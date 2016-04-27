@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_VEM_CLUSTER_DISPATCH_H
 #define __BH_VEM_CLUSTER_DISPATCH_H
 
-#include <bh.h>
+#include <bh.hpp>
 #include <stack>
 
 /* Dispatch message type */

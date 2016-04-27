@@ -13,7 +13,7 @@
 #include <fcntl.h>
 
 #include <bh_pprint.h>
-#include <bh_ir.h>
+#include <bh_ir.hpp>
 
 #include "kp.h"
 #include "block.hpp"

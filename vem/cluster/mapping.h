@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_VEM_CLUSTER_MAPPING_H
 #define __BH_VEM_CLUSTER_MAPPING_H
 
-#include <bh.h>
+#include <bh.hpp>
 #include "array.h"
 #include <vector>
 

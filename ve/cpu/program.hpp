@@ -1,7 +1,7 @@
 #ifndef __KP_PROGRAM_HPP
 #define __KP_PROGRAM_HPP 1
 #include <string>
-#include "bh.h"
+#include <bh.hpp>
 #include "kp.h"
 
 namespace kp{

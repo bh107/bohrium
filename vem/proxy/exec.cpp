@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <set>
 #include <map>
-#include <bh.h>
+#include <bh.hpp>
 #include <bh_component.h>
 
 #include "exec.h"

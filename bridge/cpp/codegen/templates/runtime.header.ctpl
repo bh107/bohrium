@@ -9,7 +9,7 @@ directiveStartToken = %
 
 #ifndef __BOHRIUM_BRIDGE_CPP_RUNTIME_OPERATIONS
 #define __BOHRIUM_BRIDGE_CPP_RUNTIME_OPERATIONS
-#include <bh.h>
+#include <bh.hpp>
 
 namespace bxx {
 

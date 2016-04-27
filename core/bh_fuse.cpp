@@ -22,9 +22,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <boost/algorithm/string/predicate.hpp> //For iequals()
 
-#include <bh_fuse.h>
-#include <bh_instruction.h>
-#include <bh.h>
+#include <bh_fuse.hpp>
+#include <bh_instruction.hpp>
+#include <bh.hpp>
 
 using namespace std;
 

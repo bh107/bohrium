@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_FILTER_FUSEPRINTER_H
 #define __BH_FILTER_FUSEPRINTER_H
 
-#include <bh.h>
+#include <bh.hpp>
 #include "filter.h"
 
 #ifdef __cplusplus

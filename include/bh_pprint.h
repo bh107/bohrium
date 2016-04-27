@@ -20,11 +20,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_PPRINT_H
 #define __BH_PPRINT_H
 
-#include "bh_opcode.h"
-#include "bh_array.h"
-#include "bh_error.h"
-#include "bh_ir.h"
-#include "bh_type.h"
+#include <bh_opcode.h>
+#include <bh_array.hpp>
+#include <bh_error.h>
+#include <bh_ir.hpp>
+#include <bh_type.h>
 
 #ifdef __cplusplus
 extern "C" {

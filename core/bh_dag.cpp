@@ -34,10 +34,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <stdexcept>
 
-#include <bh_dag.h>
-#include <bh_fuse.h>
-#include <bh_fuse_price.h>
-#include <bh_ir.h>
+#include <bh_dag.hpp>
+#include <bh_fuse.hpp>
+#include <bh_fuse_price.hpp>
+#include <bh_ir.hpp>
 
 using namespace std;
 using namespace boost;

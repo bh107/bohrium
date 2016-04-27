@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __OCLTYPE_HPP
 #define __OCLTYPE_HPP
 
-#include <bh.h>
+#include <bh.hpp>
 
 #ifdef __cplusplus
 extern "C" {

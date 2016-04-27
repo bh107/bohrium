@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include <bh_component.h>
-#include <bh.h>
+#include <bh.hpp>
 
 void filter(bh_ir &bhir)
 {

@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #endif
 #include <stdexcept>
 
-#include <bh.h>
+#include <bh.hpp>
 
 OCLtype oclType(bh_type vbtype)
 {

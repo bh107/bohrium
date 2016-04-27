@@ -3,7 +3,7 @@
 #include <string>
 #include <map>
 
-#include "bh_ir.h"
+#include <bh_ir.hpp>
 
 #include "kp_utils.h"
 #include "program.hpp"

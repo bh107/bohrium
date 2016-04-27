@@ -22,10 +22,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <boost/algorithm/string/predicate.hpp> //For iequals()
 
-#include <bh_fuse_price.h>
-#include <bh_ir.h>
+#include <bh_fuse_price.hpp>
+#include <bh_ir.hpp>
 #include <bh_pprint.h>
-#include <bh.h>
+#include <bh.hpp>
 
 using namespace std;
 

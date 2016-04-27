@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh.h>
+#include <bh.hpp>
 #include <sstream>
 #include <mpi.h>
 #include "except.h"

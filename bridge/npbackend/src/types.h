@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-#include <bh.h>
+#include <bh.hpp>
 
 //Check that the definitions in numpy are in accordance with Bohrium.
 #if NPY_BITSOF_SHORT != 16

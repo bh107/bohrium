@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __STRINGHASHER_HPP 
 #define __STRINGHASHER_HPP 
 
-#include <bh.h>
+#include <bh.hpp>
 #include <iostream>
 
 size_t string_hasher(std::string str);

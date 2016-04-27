@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bh_serialize.h"
+#include <bh_serialize.hpp>
 
 #include <set>
 #include <boost/serialization/map.hpp>

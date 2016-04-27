@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 
-#include "bh_instruction.h"
+#include <bh_instruction.hpp>
 
 namespace bohrium {
 

@@ -29,7 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <set>
 #include "bh_mem_signal.h"
-#include <bh.h>
+#include <bh.hpp>
 
 using namespace std;
 
