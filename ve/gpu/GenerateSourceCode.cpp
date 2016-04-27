@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,14 +12,16 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
+
 #include "GenerateSourceCode.hpp"
 #include "bh_ve_gpu.h"
 
@@ -43,7 +45,7 @@ void generateOffsetSource(size_t cdims, bh_index vdims, size_t id, std::ostream&
     {
         source << "idd" << d << "*ds" << d-1 << "+";
     }
-    bh_index dims = MIN((bh_index)cdims,vdims);
+    bh_index dims = std::min((bh_index)cdims,vdims);
     source << "idd" << dims << ")*v" << id << "s" << dims << " + ";
     for (bh_index d = dims-1; d > 0; --d)
     {
@@ -57,7 +59,7 @@ void generateIndexSource(size_t cdims, bh_index vdims, size_t id, std::ostream& 
     source << "size_t v" << id << "idx = ";
     generateOffsetSource(cdims, vdims, id, source);
     source << ";\n";
-} 
+}
 
 void generateSaveSource(size_t aid, size_t vid, std::ostream& source)
 {
@@ -81,7 +83,7 @@ void generateElementNumber(const std::vector<size_t>& dimOrder, std::ostream& so
         if (d > 1)
             source << " + ";
     }
-} 
+}
 
 void generateNeutral(bh_opcode opcode,OCLtype type, std::ostream& source)
 {
@@ -218,7 +220,7 @@ void generateNeutral(bh_opcode opcode,OCLtype type, std::ostream& source)
         break;
     default:
         break;
-    }    
+    }
 }
 
 #define TYPE ((type[1] == OCL_COMPLEX64) ? "float" : "double")
@@ -236,33 +238,33 @@ void generateInstructionSource(const bh_opcode opcode,
         case BH_ADD:
         case BH_ADD_REDUCE:
         case BH_ADD_ACCUMULATE:
-            source << indent << "CADD(" << parameters[0] << ", " << parameters[1] << ", " << 
+            source << indent << "CADD(" << parameters[0] << ", " << parameters[1] << ", " <<
                 parameters[2] << ")\n";
             break;
         case BH_SUBTRACT:
-            source << indent << "CSUB(" << parameters[0] << ", " << parameters[1] << ", " << 
+            source << indent << "CSUB(" << parameters[0] << ", " << parameters[1] << ", " <<
                 parameters[2] << ")\n";
             break;
         case BH_MULTIPLY:
         case BH_MULTIPLY_REDUCE:
         case BH_MULTIPLY_ACCUMULATE:
-            source << indent << "CMUL(" << parameters[0] << ", " << parameters[1] << ", " << 
+            source << indent << "CMUL(" << parameters[0] << ", " << parameters[1] << ", " <<
                 parameters[2] << ")\n";
             break;
         case BH_DIVIDE:
-            source << indent << "CDIV(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " << 
+            source << indent << "CDIV(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " <<
                 parameters[2] << ")\n";
             break;
         case BH_POWER:
-            source << indent << "CPOW(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " << 
+            source << indent << "CPOW(" << TYPE << ", " << parameters[0] << ", " << parameters[1] << ", " <<
                 parameters[2] << ")\n";
             break;
         case BH_EQUAL:
-            source << indent << "CEQ(" << parameters[0] << ", " << parameters[1] << ", " << 
+            source << indent << "CEQ(" << parameters[0] << ", " << parameters[1] << ", " <<
                 parameters[2] << ")\n";
             break;
         case BH_NOT_EQUAL:
-            source << indent << "CNEQ(" << parameters[0] << ", " << parameters[1] << ", " << 
+            source << indent << "CNEQ(" << parameters[0] << ", " << parameters[1] << ", " <<
                 parameters[2] << ")\n";
             break;
         case BH_COS:
@@ -322,7 +324,7 @@ void generateInstructionSource(const bh_opcode opcode,
             break;
         default:
             if (resourceManager->verbose())
-                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode << 
+                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode <<
                     ") not supported for complex operations." << std::endl;
             throw std::runtime_error("Instruction not supported.");
         }
@@ -333,7 +335,7 @@ void generateInstructionSource(const bh_opcode opcode,
         {
         case BH_ADD:
         case BH_ADD_REDUCE:
-        case BH_ADD_ACCUMULATE:    
+        case BH_ADD_ACCUMULATE:
             source << indent << parameters[0] << " = " << parameters[1] << " + " << parameters[2] << ";\n";
             break;
         case BH_SUBTRACT:
@@ -351,12 +353,12 @@ void generateInstructionSource(const bh_opcode opcode,
             if (isFloat(type[1]))
                 source << indent << parameters[0] << " = pow(" << parameters[1] << ", " << parameters[2] << ");\n";
             else
-                source << indent << "IPOW(" << parameters[0] << ", " << parameters[1] << ", " << 
-                    parameters[2] << ")\n";   
+                source << indent << "IPOW(" << parameters[0] << ", " << parameters[1] << ", " <<
+                    parameters[2] << ")\n";
             break;
         case BH_MOD:
             if (isFloat(type[1]))
-                source << indent << parameters[0] << " = fmod(" << parameters[1] << ", " << 
+                source << indent << parameters[0] << " = fmod(" << parameters[1] << ", " <<
                     parameters[2] << ");\n";
             else
                 source << indent << parameters[0] << " = " << parameters[1] << " % " << parameters[2] << ";\n";
@@ -521,7 +523,7 @@ void generateInstructionSource(const bh_opcode opcode,
             break;
         default:
             if (resourceManager->verbose())
-                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode << 
+                std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode <<
                     ") not supported for non complex operations." << std::endl;
             throw std::runtime_error("Instruction not supported.");
         }

@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <cstring>
 #include <iostream>
-#include <bh.hpp>
 #include <set>
 #define BH_TIMING_SUM
 #include <bh_timing.hpp>

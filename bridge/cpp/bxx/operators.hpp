@@ -26,7 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __BOHRIUM_BRIDGE_CPP_OPERATORS
 #define __BOHRIUM_BRIDGE_CPP_OPERATORS
-#include <bh.hpp>
 
 namespace bxx {
 

@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <cstring>
-#include <bh.hpp>
 #include <bh_fuse.hpp>
 #include <bh_fuse_cache.hpp>
 #include <fstream>

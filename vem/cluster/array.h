@@ -18,7 +18,6 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh.hpp>
 
 #ifndef __BH_VEM_CLUSTER_DARRAY_H
 #define __BH_VEM_CLUSTER_DARRAY_H

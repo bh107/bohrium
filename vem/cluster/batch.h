@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_VEM_CLUSTER_BATCH_H
 #define __BH_VEM_CLUSTER_BATCH_H
 
-#include <bh.hpp>
 #include "task.h"
 
 /* Schedule an task.

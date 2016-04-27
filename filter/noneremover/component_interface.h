@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_FILTER_NONEREMOVER_H
 #define __BH_FILTER_NONEREMOVER_H
 
-#include <bh.hpp>
 
 #ifdef __cplusplus
 extern "C" {

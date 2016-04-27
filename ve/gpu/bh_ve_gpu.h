@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_VE_GPU_H
 #define __BH_VE_GPU_H
 
-#include <bh.hpp>
 #include "ResourceManager.hpp"
 #include <bh_win.h>
 

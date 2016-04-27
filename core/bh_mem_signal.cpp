@@ -28,8 +28,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <cassert>
 #include <set>
-#include "bh_mem_signal.h"
-#include <bh.hpp>
+#include <iostream>
+
+#include <bh_mem_signal.h>
+#include <bh_error.h>
 
 using namespace std;
 

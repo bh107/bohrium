@@ -26,7 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <deque>
 #include <mutex>
-#include <bh.hpp>
 #include "ResourceManager.hpp"
 #include "SourceKernelCall.hpp"
 

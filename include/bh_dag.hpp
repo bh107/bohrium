@@ -28,7 +28,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <map>
 
-#include <bh.hpp>
 #include <bh_ir.hpp>
 
 namespace bohrium {

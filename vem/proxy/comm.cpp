@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
 
-#include <bh.hpp>
 #include <bh_serialize.hpp>
 #include "comm.h"
 

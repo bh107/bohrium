@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <iostream>
 #include <vector>
-#include <bh.hpp>
 
 #include "bh_vem_cluster.h"
 #include "exec.h"

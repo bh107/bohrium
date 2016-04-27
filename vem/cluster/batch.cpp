@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <StaticStore.hpp>
-#include <bh.hpp>
 #include <vector>
 #include <set>
 #include "task.h"

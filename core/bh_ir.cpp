@@ -25,7 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/foreach.hpp>
-#include <bh.hpp>
 #include <vector>
 #include <map>
 #include <iostream>

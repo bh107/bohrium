@@ -26,7 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <errno.h>
 
-#include <bh.hpp>
 #define BH_TIMING_SUM
 #include "bh_timing.hpp"
 #include "bh_ve_cpu.h"

@@ -18,7 +18,6 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh.hpp>
 #include <cassert>
 #include <map>
 #include "bh_vem_cluster.h"

@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string>
-#include <bh.hpp>
 #include <bh_serialize.hpp>
 
 #ifndef __BH_VEM_PROXY_COMM_H

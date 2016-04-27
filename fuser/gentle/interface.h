@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_FILTER_FUSE_GENTLE_H
 #define __BH_FILTER_FUSE_GENTLE_H
 
-#include <bh.hpp>
 #include "interface.h"
 
 #ifdef __cplusplus
