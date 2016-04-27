@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 import json
-import sys
-import os
-import re
 import time
-import stat
-import collections
+import argparse
 
 """
     Generates the include/bh_opcode.h and core/bh_opcode
@@ -200,47 +196,35 @@ __ACCUM_OP__
    .replace('__REDUCE_OP__', '\n'.join(reduce_op))\
    .replace('__ACCUM_OP__', '\n'.join(accum_op))
 
-def get_timestamp(f):
-    st = os.stat(f)
-    atime = st[stat.ST_ATIME] #access time
-    mtime = st[stat.ST_MTIME] #modification time
-    return (atime,mtime)
-
-def set_timestamp(f,timestamp):
-    os.utime(f,timestamp)
-
-def main(script_dir):
-
-    # Save the newest timestamp of this file and the definition file.
-    # We will set this timest
-    timestamp = get_timestamp(os.path.join(script_dir,'gen_opcodes.py'))
-    t = get_timestamp(os.path.join(script_dir,'opcodes.json'))
-    timestamp = t if t[1] > timestamp[1] else timestamp
+def main(args):
 
     # Read the opcode definitions from opcodes.json.
-    opcodes = json.loads(open(os.path.join(script_dir,'opcodes.json')).read())
+    opcodes = json.loads(args.opcode_json.read())
 
     # Write the header file
-    headerfile  = gen_headerfile(opcodes)
-    cfile       = gen_cfile(opcodes)
-
-    name = os.path.join(script_dir,'..','..','include','bh_opcode.h')
-    h = open(name,"w")
-    h.write(headerfile)
-    h.close()
-    set_timestamp(name, timestamp)
+    hfile = gen_headerfile(opcodes)
+    args.opcode_h.write(hfile)
 
     # Write the c file
-    name = os.path.join(script_dir,'..','bh_opcode.cpp')
-    h = open(name,"w")
-    h.write(cfile)
-    h.close()
-    set_timestamp(name, timestamp)
+    cfile = gen_cfile(opcodes)
+    args.opcode_cpp.write(cfile)
 
 if __name__ == "__main__":
-    try:
-        script_dir = os.path.abspath(os.path.dirname(__file__))
-    except NameError:
-        print "The build script cannot run interactively."
-        sys.exit(-1)
-    main(script_dir)
+
+    parser = argparse.ArgumentParser(description='Generates bh_opcode.cpp and bh_opcode.h')
+    parser.add_argument(
+        'opcode_json',
+        type=argparse.FileType('r'),
+        help="The opcode.json file that defines all Bohrium opcodes."
+    )
+    parser.add_argument(
+        'opcode_h',
+        type=argparse.FileType('w'),
+        help="The bh_opcode.h to write."
+    )
+    parser.add_argument(
+        'opcode_cpp',
+        type=argparse.FileType('w'),
+        help="The bh_opcode.cpp to write."
+    )
+    main(parser.parse_args())
