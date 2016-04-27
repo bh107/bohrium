@@ -76,7 +76,7 @@ bh_error bh_filter_noneremover_shutdown(void)
     return err;
 }
 
-#include <bh_pprint.h>
+#include <bh_pprint.hpp>
 bh_error bh_filter_noneremover_execute(bh_ir* bhir)
 {
     bh_uint64 start = 0;

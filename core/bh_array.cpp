@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_array.hpp>
 #include <bh_memory.h>
-#include <bh_pprint.h>
+#include <bh_pprint.hpp>
 
 using namespace std;
 

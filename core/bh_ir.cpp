@@ -34,7 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_ir.hpp>
 #include <bh_fuse.hpp>
 #include <bh_fuse_price.hpp>
-#include "bh_pprint.h"
+#include <bh_pprint.hpp>
 
 using namespace std;
 using namespace boost;

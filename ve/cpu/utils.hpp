@@ -12,7 +12,7 @@
 #include <cerrno>
 #include <fcntl.h>
 
-#include <bh_pprint.h>
+#include <bh_pprint.hpp>
 #include <bh_ir.hpp>
 
 #include "kp.h"
