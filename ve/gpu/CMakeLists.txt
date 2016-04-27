@@ -15,7 +15,8 @@ set_package_properties(OpenGL PROPERTIES TYPE RECOMMENDED PURPOSE "Required by O
 
 if(OPENCL_FOUND AND OPENGL_FOUND)
 
-    include_directories(../../include)
+    include_directories(${CMAKE_SOURCE_DIR}/include)
+    include_directories(${CMAKE_BINARY_DIR}/include)
 
 IF (APPLE)
     include_directories(${OPENCL_INCLUDE_DIRS}/Headers)

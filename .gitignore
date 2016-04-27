@@ -44,16 +44,12 @@ bridge/cpp/codegen/output/*
 bridge/cpp/bin/*
 benchmark/c/bin/*
 benchmark/cpp/bin/*
-include/bh_opcode.h
-core/bh_opcode.cpp
-core/compute/codegen/out
 bohrium/build
 OpCodes.cs
 OpCodes_fix.tt
 Tester.userprefs
 OpCodes_fix.cs
 bh-release
-bh_vem_cluster_slave
 *.user
 misc/tools/output/*.svg
 benchmark/CIL/Csharp/shallow_water/bin
@@ -67,8 +63,6 @@ benchmark/CIL/Csharp/blackscholes/bin
 benchmark/CIL/Csharp/blackscholes/obj
 benchmark/CIL/Csharp/jacobi/bin
 benchmark/CIL/Csharp/jacobi/obj
-vem/proxy/bh_proxy_client
-build
 ve/cpu/precompiler.dSYM
 ve/cpu/autogen/output/*.cpp
 ve/cpu/kp.h

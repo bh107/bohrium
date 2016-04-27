@@ -12,7 +12,9 @@ if(NOT ZLIB_FOUND)
     message(FATAL_ERROR " zlib not found! Set VEM_PROXY=OFF or install zlib.")
 endif()
 
-include_directories(../../include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
+
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 file(GLOB SRC *.cpp)

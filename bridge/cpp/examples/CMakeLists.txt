@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-include_directories(../../../include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
 add_executable(bxx_add "bxx_add.cc")    # bxx_add
 target_link_libraries(bxx_add bh)       # Depends on libbh.so ...

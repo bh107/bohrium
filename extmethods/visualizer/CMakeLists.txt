@@ -42,7 +42,8 @@ endif()
 # Dependencies are met
 
 if (GLUT_FOUND AND OPENGL_FOUND)
-    include_directories(../../include)
+    include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
     include_directories(${GLUT_INCLUDE_DIRS})
     link_directories(${GLUT_LIBRARY_DIRS})

@@ -4,7 +4,8 @@ if(NOT BRIDGE_C)
     return()
 endif()
 
-include_directories(../../include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 include_directories(../cpp/bxx)
 
 set(SRC_H ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.h
