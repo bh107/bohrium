@@ -4,7 +4,8 @@ if(NOT FUSER_OPTIMAL)
     return()
 endif()
 
-include_directories(../../include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
 find_package(OpenMP COMPONENTS bohrium)
 if(OPENMP_FOUND)

@@ -4,7 +4,8 @@ if(NOT EXT_FFTW)
     return()
 endif()
 
-include_directories(../../include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
 #External dependencies
 find_package(FFTW)

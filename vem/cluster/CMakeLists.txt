@@ -13,7 +13,8 @@ if(NOT MPI_CXX_FOUND)
     message(FATAL_ERROR " MPI not found! Set VEM_CLUSTER=OFF or install MPI.")
 endif()
 
-include_directories(../../include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 file(GLOB SRC *.cpp)
 
 include_directories(${MPI_CXX_INCLUDE_PATH})

@@ -24,6 +24,7 @@ if (VE_CPU_DEBUGGING)                                   # Engine debugging MACRO
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include)        # Engine depends on BH headers
+include_directories(${CMAKE_BINARY_DIR}/include)        # Engine depends on BH headers
 link_directories(${CMAKE_BINARY_DIR}/core)              # Engine depends on BH_CORE (libbh / bh)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/codegen)# Code generator
