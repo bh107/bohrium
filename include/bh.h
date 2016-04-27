@@ -76,27 +76,6 @@ DLLEXPORT bool bh_opcode_is_accumulate(bh_opcode opcode);
  */
 DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
 
-/* Byte size for type
- *
- * @type   Type code
- * @return Byte size
- */
-DLLEXPORT int bh_type_size(bh_type type);
-
-/* Text string for type
- *
- * @type   Type code.
- * @return Text string.
- */
-DLLEXPORT const char* bh_type_text(bh_type type);
-
-/* Is type an integer type
- *
- * @type   The type.
- * @return True if integer type.
- */
-DLLEXPORT bool bh_type_is_integer(bh_type type);
-
 /* Determines whether the opcode is a sweep opcode
  * i.e. either a reduction or an accumulate
  *

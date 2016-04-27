@@ -21,6 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_CONSTANT_H
 #define __BH_CONSTANT_H
 
+#include <bh_type.h>
+
 union bh_constant_value
 {
     bh_bool       bool8;
@@ -44,47 +46,21 @@ struct bh_constant
     bh_constant_value value;
     bh_type type;
 
-    bool operator==(const bh_constant& other) const
-    {
-        if (other.type != type) return false;
+    //Convert the constant value to an int64
+    //Throw an overflow_error() exception if impossible
+    int64_t get_int64() const;
 
-        switch (type) {
-            case BH_BOOL:
-                return other.value.bool8 == value.bool8;
-            case BH_INT8:
-                return other.value.int8 == value.int8;
-            case BH_INT16:
-                return other.value.int16 == value.int16;
-            case BH_INT32:
-                return other.value.int32 == value.int32;
-            case BH_INT64:
-                return other.value.int64 == value.int64;
-            case BH_UINT8:
-                return other.value.uint8 == value.uint8;
-            case BH_UINT16:
-                return other.value.uint16 == value.uint16;
-            case BH_UINT32:
-                return other.value.uint32 == value.uint32;
-            case BH_UINT64:
-                return other.value.uint64 == value.uint64;
-            case BH_FLOAT32:
-                return other.value.float32 == value.float32;
-            case BH_FLOAT64:
-                return other.value.float64 == value.float64;
-            case BH_COMPLEX64:
-                return other.value.complex64.real == value.complex64.real &&
-                       other.value.complex64.imag == value.complex64.imag;
-            case BH_COMPLEX128:
-                return other.value.complex128.real == value.complex128.real &&
-                       other.value.complex128.imag == value.complex128.imag;
-            case BH_R123:
-                return other.value.r123.start == value.r123.start &&
-                       other.value.r123.key == value.r123.key;
-            case BH_UNKNOWN:
-            default:
-                return false;
-        }
-    }
+    //Convert the constant value to an double
+    //Throw an overflow_error() exception if impossible
+    //Throw an runtime_error() exception if type is unknown
+    double get_double() const;
+
+    //Convert the constant value to an double
+    //Throw an overflow_error() exception if impossible
+    //Throw an runtime_error() exception if type is unknown
+    void set_double(double value);
+
+    bool operator==(const bh_constant& other) const;
 
     bool operator!=(const bh_constant& other) const
     {

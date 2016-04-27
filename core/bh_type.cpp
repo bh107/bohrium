@@ -20,13 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_type.h>
 #include <bh.h>
-#include <stdbool.h>
 
-/* Byte size for type
- *
- * @type   Type code
- * @return Byte size
- */
 int bh_type_size(bh_type type)
 {
     switch(type)
@@ -64,11 +58,6 @@ int bh_type_size(bh_type type)
 	}
 }
 
-/* Text string for type
- *
- * @type   Type code.
- * @return Text string.
- */
 const char* bh_type_text(bh_type type)
 {
     switch(type)
@@ -108,12 +97,7 @@ const char* bh_type_text(bh_type type)
     }
 }
 
-/* Is type an integer type
- *
- * @type   The type.
- * @return True if integer type.
- */
-bool bh_type_is_integer(bh_type type)
+int bh_type_is_integer(bh_type type)
 {
     switch(type)
     {
