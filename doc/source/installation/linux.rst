@@ -105,7 +105,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy python-dev swig python-cheetah cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-thread-dev libboost-thread-dev libboost-system-dev  zlib1g-dev
+  sudo apt-get install python-numpy python-dev swig python-cheetah cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-thread-dev libboost-regex-dev libboost-system-dev  zlib1g-dev
 
 Packages for visualization::
 
@@ -255,4 +255,3 @@ You should now have everything you need to utilize the GPU engine.
 ..
 ..
 .. .. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
-
