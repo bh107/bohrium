@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 
 #include <bh_component.h>
-#include <bh.h>
 
 using namespace std;
 

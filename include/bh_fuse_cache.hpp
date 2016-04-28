@@ -29,8 +29,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
 
-#include "bh_fuse.h"
-#include "bh_fuse_price.h"
+#include <bh_fuse.hpp>
+#include <bh_fuse_price.hpp>
 #include "bh_component.h"
 
 namespace bohrium {

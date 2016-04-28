@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <map>
 #include <set>
-#include <bh.h>
 #include <StaticStore.hpp>
 #include "dispatch.h"
 #include "pgrid.h"

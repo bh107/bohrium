@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <iostream>
 #include <stdexcept>
-#include <bh.h>
 #include "bh_ve_gpu.h"
 #include "InstructionScheduler.hpp"
 

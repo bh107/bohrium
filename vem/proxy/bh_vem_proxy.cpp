@@ -18,9 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh.h>
 #include "exec.h"
-#include "bh_serialize.h"
+#include <bh_serialize.hpp>
 #include "bh_vem_proxy.h"
 #include "comm.h"
 

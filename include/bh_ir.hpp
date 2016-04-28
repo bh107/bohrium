@@ -26,9 +26,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <boost/serialization/vector.hpp>
 
-#include <bh_instruction.h>
-#include <bh_seqset.h>
-#include <bh_fuse_price.h>
+#include <bh_instruction.hpp>
+#include <bh_seqset.hpp>
+#include <bh_fuse_price.hpp>
 
 // Forward declaration of class boost::serialization::access
 namespace boost {namespace serialization {class access;}}

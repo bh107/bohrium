@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_FILTER_BCCON_H
 #define __BH_FILTER_BCCON_H
 
-#include <bh.h>
 
 #ifdef __cplusplus
 extern "C" {

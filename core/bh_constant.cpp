@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_constant.h>
+#include <bh_constant.hpp>
 #include <bh_type.h>
 #include <stdexcept>
 #include <limits>

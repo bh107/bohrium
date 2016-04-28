@@ -17,9 +17,8 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <bh.h>
-#include <bh_fuse.h>
-#include <bh_fuse_cache.h>
+#include <bh_fuse.hpp>
+#include <bh_fuse_cache.hpp>
 #include <boost/foreach.hpp>
 #include <vector>
 

@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef CLUSTER_VEM_PGRID_H
 #define CLUSTER_VEM_PGRID_H
 #include <mpi.h>
-#include <bh.h>
 
 extern int pgrid_myrank, pgrid_worldsize;
 

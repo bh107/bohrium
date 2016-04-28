@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 
 #include <bh_component.h>
-#include <bh_dag.h>
+#include <bh_dag.hpp>
 
 using namespace std;
 using namespace boost;

@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cassert>
-#include <bh.h>
 #include <vector>
 #include "array.h"
 #include "mapping.h"

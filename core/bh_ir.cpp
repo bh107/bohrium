@@ -25,17 +25,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/foreach.hpp>
-#include <bh.h>
 #include <vector>
 #include <map>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 
-#include "bh_ir.h"
-#include "bh_fuse.h"
-#include "bh_fuse_price.h"
-#include "bh_pprint.h"
+#include <bh_ir.hpp>
+#include <bh_fuse.hpp>
+#include <bh_fuse_price.hpp>
+#include <bh_pprint.hpp>
 
 using namespace std;
 using namespace boost;

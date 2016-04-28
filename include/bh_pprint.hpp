@@ -20,15 +20,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_PPRINT_H
 #define __BH_PPRINT_H
 
-#include "bh_opcode.h"
-#include "bh_array.h"
-#include "bh_error.h"
-#include "bh_ir.h"
-#include "bh_type.h"
+#include <iostream>
+#include <vector>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <bh_opcode.h>
+#include <bh_array.hpp>
+#include <bh_error.h>
+#include <bh_ir.hpp>
+#include <bh_type.h>
 
 /* Pretty print a constant.
  *
@@ -110,7 +109,21 @@ DLLEXPORT void bh_pprint_coord(const bh_index coord[], bh_index ndims);
  */
 DLLEXPORT void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[]);
 
-#ifdef __cplusplus
+
+// Pretty print of std::vector
+template<typename E>
+std::ostream& operator<<(std::ostream& out, const std::vector<E>& v)
+{
+    out << "[";
+    for (typename std::vector<E>::const_iterator i = v.cbegin();;)
+    {
+        out << *i;
+        if (++i == v.cend())
+            break;
+        out << ", ";
+    }
+    out << "]";
+    return out;
 }
-#endif
+
 #endif

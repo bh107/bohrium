@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <stdexcept>
-#include <bh.h>
 #include "Scalar.hpp"
 #include "bh_ve_gpu.h"
 

@@ -25,8 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 
-#include <bh_instruction.h>
-#include <bh.h>
+#include <bh_instruction.hpp>
 
 using namespace std;
 

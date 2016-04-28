@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bh_type.h>
-#include <bh.h>
 
 int bh_type_size(bh_type type)
 {

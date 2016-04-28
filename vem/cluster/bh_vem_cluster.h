@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_VEM_CLUSTER_H
 #define __BH_VEM_CLUSTER_H
 
-#include <bh.h>
 
 #ifdef __cplusplus
 extern "C" {

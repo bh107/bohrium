@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_FILTER_PPRINT_H
 #define __BH_FILTER_PPRINT_H
 
-#include <bh.h>
 #include "pprint_filter.h"
 
 #ifdef __cplusplus

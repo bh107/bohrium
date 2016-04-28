@@ -17,7 +17,6 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <bh.h>
 #include <assert.h>
 #include <iostream>
 

@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "bh.h"
 #include "kp.h"
 #include "block.hpp"
 #include "symbol_table.hpp"

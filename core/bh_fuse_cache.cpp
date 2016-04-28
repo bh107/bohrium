@@ -20,9 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <cstring>
-#include <bh.h>
-#include "bh_fuse.h"
-#include "bh_fuse_cache.h"
+#include <bh_fuse.hpp>
+#include <bh_fuse_cache.hpp>
 #include <fstream>
 #include <exception>
 #include <boost/archive/text_oarchive.hpp>

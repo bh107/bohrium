@@ -4,7 +4,7 @@
 #include <boost/serialization/is_bitwise_serializable.hpp>
 #include <boost/serialization/array.hpp>
 #include "bh_opcode.h"
-#include "bh_array.h"
+#include <bh_array.hpp>
 #include "bh_error.h"
 
 // Forward declaration of class boost::serialization::access

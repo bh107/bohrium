@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifdef _WIN32
 #include <sstream>
 #endif
-#include <bh.h>
 #include "OCLtype.h"
 
 void generateGIDSource(size_t kdims, std::ostream& source);

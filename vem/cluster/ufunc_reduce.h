@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_VEM_CLUSTER_UFUNC_REDUCE_H
 #define __BH_VEM_CLUSTER_UFUNC_REDUCE_H
 
-#include <bh.h>
 
 /* Apply the reduce instruction for a vector input and scalar output.
  * @inst    The reduce instruction.

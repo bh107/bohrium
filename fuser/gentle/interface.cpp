@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "interface.h"
 #include "fuser.h"
-#include "bh_fuse_cache.h"
+#include <bh_fuse_cache.hpp>
 
 using namespace bohrium;
 

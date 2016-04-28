@@ -55,6 +55,49 @@ __OPCODES__
  */
 int bh_noperands(bh_opcode opcode);
 
+/* Text string for operation
+ *
+ * @opcode Opcode for operation
+ * @return Text string.
+ */
+DLLEXPORT const char* bh_opcode_text(bh_opcode opcode);
+
+/* Determines if the operation is a system operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_system(bh_opcode opcode);
+
+/* Determines if the operation is a reduction operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_reduction(bh_opcode opcode);
+
+/* Determines if the operation is an accumulate operation
+ *
+ * @opcode The operation opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_accumulate(bh_opcode opcode);
+
+/* Determines if the operation is performed elementwise
+ *
+ * @opcode Opcode for operation
+ * @return TRUE if the operation is performed elementwise, FALSE otherwise
+ */
+DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
+
+/* Determines whether the opcode is a sweep opcode
+ * i.e. either a reduction or an accumulate
+ *
+ * @opcode
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_opcode_is_sweep(bh_opcode opcode);
+
 #ifdef __cplusplus
 }
 #endif
@@ -81,8 +124,7 @@ def gen_cfile(opcodes):
 #include <stdlib.h>
 #include <stdio.h>
 #include <bh_opcode.h>
-#include <bh_instruction.h>
-#include <bh.h>
+#include <bh_instruction.hpp>
 #include <stdbool.h>
 
 /* Number of operands for operation
@@ -186,6 +228,17 @@ __ACCUM_OP__
         default:
             return false;
     }
+}
+
+/* Determines whether the opcode is a sweep opcode
+ * i.e. either a reduction or an accumulate
+ *
+ * @opcode
+ * @return The boolean answer
+ */
+bool bh_opcode_is_sweep(bh_opcode opcode)
+{
+    return (bh_opcode_is_reduction(opcode) || bh_opcode_is_accumulate(opcode));
 }
 
 """.replace('__TIMESTAMP__', stamp)\

@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <bh_array.h>
+#include <bh_array.hpp>
 #include "Vector3.hpp"
 #include "colormaps.hpp"
 #define max(a,b) (a>=b?a:b)

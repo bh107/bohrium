@@ -19,8 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
 #include <string.h>
-#include <bh.h>
-#include <bh_pprint.h>
+#include <bh_pprint.hpp>
 
 #define PPRINT_BUF_STRIDE_SIZE 50
 #define PPRINT_BUF_SHAPE_SIZE 50

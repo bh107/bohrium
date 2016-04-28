@@ -3,7 +3,7 @@
 #include <string>
 #include <set>
 
-#include <bh_instruction.h>
+#include <bh_instruction.hpp>
 
 #include "kp.h"
 

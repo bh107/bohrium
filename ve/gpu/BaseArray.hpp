@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BASEARRAY_HPP
 #define __BASEARRAY_HPP
 
-#include <bh.h>
 #include "Buffer.hpp"
 #include "KernelParameter.hpp"
 
