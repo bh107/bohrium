@@ -2055,6 +2055,24 @@
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
+},
+{
+    "opcode": "BH_REPEAT",
+    "doc": "",
+    "code": "",
+    "id": "79",
+    "nop": 1,
+    "types": [
+        [ "BH_R123" ]
+    ],
+    "layout": [
+        [ "K" ]
+    ],
+    "elementwise":   false,
+    "composite":     false,
+    "reduction":     false,
+    "accumulate":    false,
+    "system_opcode": true
 }
 
 ]

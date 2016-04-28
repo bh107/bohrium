@@ -1348,6 +1348,15 @@ void bh_discard (multi_array<T>& res)
     Runtime::instance().enqueue((bh_opcode)BH_DISCARD, res);
 }
 
+// bh_repeat - BH_REPEAT - runtime.nops1 - 1 (A)
+template <typename T>
+inline
+void bh_repeat (multi_array<T>& res)
+{
+    Runtime::instance().typecheck<BH_REPEAT, T>();
+    Runtime::instance().enqueue((bh_opcode)BH_REPEAT, res);
+}
+
 
 // bh_random - BH_RANDOM - runtime.random - 2 (A,K,K)
 template <typename T>

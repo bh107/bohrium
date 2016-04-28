@@ -234,6 +234,7 @@ string Walker::oper(KP_OPERATOR oper, KP_ETYPE etype, string in1, string in2)
                 case KP_FLOAT32:       return _crealf(in1);
                 default:            return _creal(in1);
             }
+        case KP_REPEAT:                break;
         case KP_RIGHT_SHIFT:           return _bitw_rightshift(in1, in2);
         case KP_RINT:                  return _rint(in1);
         case KP_SIN:

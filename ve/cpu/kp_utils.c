@@ -66,6 +66,7 @@ size_t kp_tac_noperands(const kp_tac* tac)
                     return 1;
                 case KP_NONE:
                 case KP_TALLY:
+                case KP_REPEAT:
                     return 0;
                 default:
                     fprintf(stderr, "kp_tac_noperands: Unknown #operands of KP_SYSTEM, assuming 0;\n");

@@ -65,10 +65,11 @@
     {"id": 62, "name": "KP_SYNC",      "nop": 1, "types": []},
     {"id": 63, "name": "KP_TALLY",     "nop": 0, "types": []},
     {"id": 64, "name": "KP_NONE",      "nop": 0, "types": []},
+    {"id": 65, "name": "KP_REPEAT",      "nop": 0, "types": []},
 
-    {"id": 65, "name": "KP_FLOOD",     "nop": 1, "types": []},
-    {"id": 66, "name": "KP_RANDOM",    "nop": 2, "types": []},
-    {"id": 67, "name": "KP_RANGE",     "nop": 0, "types": []},
+    {"id": 66, "name": "KP_FLOOD",     "nop": 1, "types": []},
+    {"id": 67, "name": "KP_RANDOM",    "nop": 2, "types": []},
+    {"id": 68, "name": "KP_RANGE",     "nop": 0, "types": []},
 
-    {"id": 68, "name": "KP_EXTENSION_OPERATOR","nop": 0, "types": []}
+    {"id": 69, "name": "KP_EXTENSION_OPERATOR","nop": 0, "types": []}
 ]

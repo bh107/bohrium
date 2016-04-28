@@ -25,7 +25,7 @@ def main(args):
     # Let's generate the header and implementation of all array operations
     head = ""
     for op in opcodes:
-        if op['opcode'] in ["BH_RANDOM", "BH_NONE"]:#We handle random separately and ignore None
+        if op['opcode'] in ["BH_REPEAT", "BH_RANDOM", "BH_NONE"]:#We handle random separately and ignore None
             continue
 
         # Generate functions that takes no operands
@@ -76,8 +76,8 @@ This file is part of Bohrium and copyright (c) 2013 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -85,8 +85,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -113,7 +113,7 @@ using bh_complex128 = System.Numerics.Complex;
 
 namespace NumCIL.Bohrium
 {
-    internal static partial class PInvoke 
+    internal static partial class PInvoke
     {
 
 %s

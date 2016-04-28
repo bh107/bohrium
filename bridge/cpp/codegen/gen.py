@@ -124,6 +124,10 @@ def main():
             nop = 3
             typesigs = [(u'uint64_t', u'uint64_t', u'uint64_t')]
             op = (fun, enum, template, nop, typesigs, layouts, broadcast)
+        elif enum == "BH_REPEAT":
+            nop = 2
+            typesigs = [(u'uint64_t', u'uint64_t')]
+            op = (fun, enum, template, nop, typesigs, layouts, broadcast)
 
         if enum not in enums:
             checker.append(op)

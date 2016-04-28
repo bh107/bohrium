@@ -2963,6 +2963,11 @@ void Runtime::typecheck<BH_REAL, float, std::complex<float> >(void) { }
 
 template <>
 inline
+void Runtime::typecheck<BH_REPEAT, uint64_t, uint64_t>(void) { }
+
+
+template <>
+inline
 void Runtime::typecheck<BH_RIGHT_SHIFT, int16_t, int16_t, int16_t>(void) { }
 
 
@@ -3178,11 +3183,6 @@ void Runtime::typecheck<BH_SQRT, double, double>(void) { }
 
 template <>
 inline
-void Runtime::typecheck<BH_SUBTRACT, bool, bool, bool>(void) { }
-
-
-template <>
-inline
 void Runtime::typecheck<BH_SUBTRACT, std::complex<double> , std::complex<double> , std::complex<double> >(void) { }
 
 
@@ -3357,3 +3357,4 @@ void Runtime::typecheck<BH_TRUNC, double, double>(void) { }
 
 }
 #endif
+
