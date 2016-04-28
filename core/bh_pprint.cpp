@@ -188,18 +188,20 @@ void bh_sprint_instr(const bh_instruction *instr, char buf[], const char newline
     char op_str[PPRINT_BUF_OPSTR_SIZE];
     char tmp[PPRINT_BUF_OPSTR_SIZE];
     int op_count = bh_noperands(instr->opcode);
-    int i;
-    if(instr->opcode > BH_MAX_OPCODE_ID)//It is a extension method
-        sprintf(buf, "Extension Method (%d) OPS=%d{%s", (int)instr->opcode, op_count, newline);
-    else
-        sprintf(buf, "%s OPS=%d{%s", bh_opcode_text(instr->opcode), op_count, newline);
-    for(i=0; i < op_count; i++) {
 
-        if (!bh_is_constant(&instr->operand[i]))
+    if(instr->opcode > BH_MAX_OPCODE_ID) { //It is a extension method
+        sprintf(buf, "Extension Method (%d) OPS=%d{%s", (int)instr->opcode, op_count, newline);
+    } else {
+        sprintf(buf, "%s OPS=%d{%s", bh_opcode_text(instr->opcode), op_count, newline);
+    }
+
+    for(int i = 0; i < op_count; i++) {
+        if (!bh_is_constant(&instr->operand[i])) {
             bh_sprint_view(&instr->operand[i], op_str );
-        else
+        } else {
             //sprintf(op_str, "CONSTANT");
             bh_sprint_const(&instr->constant, op_str );
+        }
 
         sprintf(tmp, "  OP%d %s%s", i, op_str, newline);
         strcat(buf, tmp);
@@ -213,7 +215,6 @@ void bh_sprint_instr(const bh_instruction *instr, char buf[], const char newline
  */
 void bh_pprint_instr(const bh_instruction *instr)
 {
-
     char buf[PPRINT_BUF_SIZE];
     bh_sprint_instr( instr, buf, "\n" );
     puts( buf );
@@ -301,4 +302,3 @@ void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[])
     }
     fclose(file);
 }
-

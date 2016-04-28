@@ -1,11 +1,11 @@
 [
 ["=",               "BH_IDENTITY",  "sugar.nops2.intern",  false],
 ["bh_identity",     "BH_IDENTITY",  "runtime.nops2",    true],
-    
+
 ["[]",              "CUSTOM_2",      "operator.intern", false],
 ["()",              "CUSTOM_2",      "operator.intern", false],
 ["->",              "CUSTOM_2",      "operator.intern", false],
-    
+
 ["++",              "CUSTOM_2",      "operator.extern.prefix",  true],
 ["++",              "CUSTOM_2",      "operator.extern.postfix", true],
 ["--",              "CUSTOM_2",      "operator.extern.prefix",  true],
@@ -15,22 +15,22 @@
 ["operator+",       "BH_ADD",   "sugar.nops3",     true],
 ["operator+=",      "BH_ADD",   "sugar.nops3.intern", true],
 ["bh_add",          "BH_ADD",   "runtime.nops3",   true],
-    
+
 ["subtract",        "BH_SUBTRACT",  "sugar.nops3",     true],
 ["operator-",       "BH_SUBTRACT",  "sugar.nops3",     true],
 ["operator-=",      "BH_SUBTRACT",  "sugar.nops3.intern", true],
 ["bh_subtract",     "BH_SUBTRACT",  "runtime.nops3",   true],
-    
+
 ["mul",             "BH_MULTIPLY",  "sugar.nops3",     true],
 ["operator*",       "BH_MULTIPLY",  "sugar.nops3",     true],
 ["operator*=",      "BH_MULTIPLY",  "sugar.nops3.intern", true],
 ["bh_multiply",     "BH_MULTIPLY",  "runtime.nops3",   true],
-    
+
 ["div",             "BH_DIVIDE",    "sugar.nops3",     true],
 ["operator/",       "BH_DIVIDE",    "sugar.nops3",     true],
 ["operator/=",      "BH_DIVIDE",    "sugar.nops3.intern", true],
 ["bh_divide",       "BH_DIVIDE",    "runtime.nops3",   true],
-    
+
 ["mod",             "BH_MOD",   "sugar.nops3",     true],
 ["operator%",       "BH_MOD",   "sugar.nops3",     true],
 ["operator%=",      "BH_MOD",   "sugar.nops3.intern", true],
@@ -161,34 +161,34 @@
 
 ["exp",             "BH_EXP",       "sugar.nops2",      true],
 ["bh_exp",          "BH_EXP",       "runtime.nops2",    true],
-        
+
 ["exp2",            "BH_EXP2",      "sugar.nops2",      true],
 ["bh_exp2",         "BH_EXP2",      "runtime.nops2",    true],
-        
+
 ["expm1",           "BH_EXPM1",     "sugar.nops2",      true],
 ["bh_expm1",        "BH_EXPM1",     "runtime.nops2",    true],
-        
+
 ["isnan",           "BH_ISNAN", "sugar.nops2.bool",     true],
 ["bh_isnan",        "BH_ISNAN", "runtime.nops2",   true],
-        
+
 ["isinf",           "BH_ISINF", "sugar.nops2.bool",     true],
 ["bh_isinf",        "BH_ISINF", "runtime.nops2",   true],
-        
+
 ["log",             "BH_LOG",   "sugar.nops2",      true],
 ["bh_log",          "BH_LOG",   "runtime.nops2",    true],
-        
+
 ["log2",            "BH_LOG2",  "sugar.nops2",      true],
 ["bh_log2",         "BH_LOG2",  "runtime.nops2",    true],
-        
+
 ["log10",           "BH_LOG10", "sugar.nops2",      true],
 ["bh_log10",        "BH_LOG10", "runtime.nops2",    true],
-        
+
 ["log1p",           "BH_LOG1P", "sugar.nops2",      true],
 ["bh_log1p",        "BH_LOG1P", "runtime.nops2",    true],
-        
+
 ["sqrt",            "BH_SQRT",  "sugar.nops2",      true],
 ["bh_sqrt",         "BH_SQRT",  "runtime.nops2",    true],
-        
+
 ["ceil",            "BH_CEIL",  "sugar.nops2",      true],
 ["bh_ceil",         "BH_CEIL",  "runtime.nops2",    true],
 

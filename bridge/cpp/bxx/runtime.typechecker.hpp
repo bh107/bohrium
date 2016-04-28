@@ -3357,4 +3357,3 @@ void Runtime::typecheck<BH_TRUNC, double, double>(void) { }
 
 }
 #endif
-

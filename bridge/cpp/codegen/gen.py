@@ -6,10 +6,10 @@ from pprint import pprint
 from Cheetah.Template import Template
 import stat
 
-def render( gens, tmpl_dir, output_dir, mtime ):
+def render(gens, tmpl_dir, output_dir, mtime):
+    prev_output_fn = gens[0][1]
+    prev_output    = ""
 
-    prev_output_fn   = gens[0][1]
-    prev_output      = ""
     count = (len(gens)-1)
     for c, (tmpl_fn, output_fn, data) in enumerate(gens):   # Concat the rendered template into output_fn
         t_tmpl  = Template(file= "%s%s" % (tmpl_dir, tmpl_fn), searchList=[{
@@ -44,20 +44,19 @@ def map_type(typename, types):
 
 def get_timestamp(f):
     st = os.stat(f)
-    atime = st[stat.ST_ATIME] #access time
-    mtime = st[stat.ST_MTIME] #modification time
+    atime = st[stat.ST_ATIME] # access time
+    mtime = st[stat.ST_MTIME] # modification time
     return (atime,mtime)
 
-def set_timestamp(f,timestamp):
-    os.utime(f,timestamp)
+def set_timestamp(f, timestamp):
+    os.utime(f, timestamp)
 
 def main():
+    script_dir = "." + os.sep + "codegen" + os.sep
+    output_dir = script_dir + "output" + os.sep
+    tmpl_dir   = script_dir + "templates" + os.sep
 
-    script_dir  = "." + os.sep + "codegen" + os.sep
-    output_dir  = script_dir + "output" + os.sep
-    tmpl_dir    = script_dir + "templates" + os.sep
-
-    paths = {'types'     : join(script_dir,'element_types.json'),
+    paths = {'types'    : join(script_dir,'element_types.json'),
              'opcodes'  : join(script_dir,'..','..','..','core','codegen','opcodes.json'),
              'operators': join(script_dir,'operators.json'),
              'self'     : join(script_dir,'gen.py')}
@@ -74,20 +73,21 @@ def main():
             mtime = t[1]
 
     op_map = []
-    
+
     datasets = {}
     for name, opcode, mapper, mapped in (x for x in operators if x[3]):
         bytecode = [x for x in opcodes if x['opcode'] == opcode]
         if not bytecode:
             print "skipping %s" % opcode
             continue
+
         bytecode = bytecode[0]
 
         typesigs = bytecode["types"]
 
         layouts = bytecode["layout"]
         broadcast = bytecode["elementwise"]
-        
+
         new_typesigs = []
         for ttt in typesigs:
             sig = [map_type(typesig, types) for typesig in ttt]
@@ -104,7 +104,7 @@ def main():
         else:
             print "The Bohrium opcodes no longer include [ %s ]." % opcode
             continue
-        
+
         if mapper not in datasets:
             datasets[mapper] = []
 
@@ -116,8 +116,9 @@ def main():
     # Generate data for generation of type-checker.
     enums = set()
     checker = []
+
     for op in op_map:
-        fun, enum, template, nop, typesigs, layouts, broadcast = op        
+        fun, enum, template, nop, typesigs, layouts, broadcast = op
 
         if enum == "BH_RANDOM":
             nop = 3
@@ -155,7 +156,7 @@ def main():
         ('runtime.footer.ctpl',     'runtime.operations.hpp', datasets['runtime.reduce']),
     ]
 
-    render( gens, tmpl_dir, output_dir, mtime )
+    render(gens, tmpl_dir, output_dir, mtime)
 
 if __name__ == "__main__":
     main()
