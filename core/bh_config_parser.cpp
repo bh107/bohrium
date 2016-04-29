@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/exceptions.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include <cstdlib>
 
 #include <bh_config_parser.hpp>
@@ -57,8 +56,8 @@ using namespace boost;
 namespace bohrium {
 
 namespace {
-//Help function to get the file path to the Bohrium config file
-string get_config_path(){
+// Path to the config file e.g. ~/.bohrium/config.ini
+string get_config_path() {
 
     const char* homepath = HOME_INI_PATH;
     const char* syspath1 = SYSTEM_INI_PATH_1;
@@ -170,10 +169,9 @@ string get_config_path(){
     }
     return string(env);
 }
+}// namespace unnamed
 
-//Help function to find section/option as an environment variable
-//Returns the empty string if the environment variable was found
-static string lookup_env(const string &section, const string &option)
+string ConfigParser::lookup_env(const string &section, const string &option) const
 {
     string s = "BH_" + section + option;
     to_lower(s);
@@ -184,35 +182,41 @@ static string lookup_env(const string &section, const string &option)
         return string(env);
     }
 }
-} //namespace unnamed
 
-ConfigParser::ConfigParser(const string &default_section) : _default_section(default_section) {
+ConfigParser::ConfigParser(unsigned int stack_level) : file_path(get_config_path()),
+                                                       stack_level(stack_level) {
 
     // Load the bohrium configuration file
-    _file_path = get_config_path();
-    property_tree::ini_parser::read_ini(_file_path, _config);
-}
+    property_tree::ini_parser::read_ini(file_path, _config);
 
-template<typename T>
-const T& ConfigParser::get(const string &section, const string &option) const {
-    //Check the environment variable e.g. BH_VEM_NODE_TIMING
+    // Find the stack name specified by 'BH_STACK'
+    const char *env = getenv("BH_STACK");
+    string stack_name;
+    if (env == NULL){
+        stack_name = "default";
+    } else {
+        stack_name = env;
+    }
+    // Read stack, which is a comma separated list of component names,
+    // into a vector of component names.
     {
-        string env = lookup_env(section, option);
-        if (not env.empty()){
-            return lexical_cast<T>(env);
-        }
+        string s = get<string>("stacks", stack_name);
+        algorithm::split(_stack_list, s, is_any_of("\t, "), token_compress_on);
     }
-    //Check the config file
-    try {
-        string s = _config.get<string>(section + "." + option);
-        return lexical_cast<T>(s);
-    } catch (const property_tree::ptree_bad_path&) {
-        cerr << "Error parsing the config file '" << _file_path << "', '"
-             << section << "." << option << " not found!" << endl;
-        throw;
+    if (_stack_list.size() < stack_level) {
+        throw invalid_argument("ConfigParser: stack level is out of bound");
     }
 }
 
-
+string ConfigParser::getChildLibraryPath()
+{
+    // Do we have a child?
+    if (_stack_list.size() <= stack_level+1) {
+        throw runtime_error("ConfigParser: No child");
+    }
+    // Our child is our stack level plus one
+    string child_name = _stack_list[stack_level+1];
+    return get<string>(child_name, "impl");
+}
 
 } //namespace bohrium
