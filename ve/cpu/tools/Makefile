@@ -36,19 +36,19 @@ release_on:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DCMAKE_BUILD_TYPE=Release)
 
 cil_off:
-	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DBENCHMARK_CIL=OFF -DBRIDGE_CIL=OFF -DTEST_CIL=OFF -DBRIDGE_NUMCIL=OFF )
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DBENCHMARK_CIL=OFF -DBRIDGE_CIL=OFF -DTEST_CIL=OFF -DBRIDGE_NUMCIL=OFF)
 
 cluster_off:
-	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVEM_CLUSTER=OFF -DVEM_PROXY=OFF )
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVEM_CLUSTER=OFF -DVEM_PROXY=OFF)
 
 fun_off:
-	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DEXT_VISUALIZER=OFF )
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DEXT_VISUALIZER=OFF)
 
 gpu_off:
-	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_GPU=OFF )
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_GPU=OFF)
 
 cpu_debug_on:
-	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_DEBUGGING=ON)
+	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_DEBUGGING=ON -DCMAKE_BUILD_TYPE=Debug)
 
 cpu_profiling_on:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DVE_CPU_PROFILING=ON)
@@ -94,7 +94,7 @@ purge_cpu: purge_ko ## Remove installed stuff specific to the CPU-engine
 	@echo "${BLUE}Removing installed stuff specific to the CPU-engine${NC}"
 	rm -rf ~/.local/share/bohrium/templates/*
 	rm -rf ~/.local/var/bohrium/scripts
-	rm -f ~/.local/lib/libbh_ve_cpu.*
+	rm -rf ~/.local/lib/libbh_ve_cpu.*
 
 
 purge_all: purge_cpu ## Remove everything (this also does 'git clean' and removes ~/.local)
@@ -108,7 +108,6 @@ purge_all: purge_cpu ## Remove everything (this also does 'git clean' and remove
 	rm -rf ~/.local/lib
 	rm -rf ~/.local/share/bohrium
 	rm -rf ~/.local/var
-	rm -f ~/.bohrium/config.ini
 
 
 reset: purge_all clean ## Purge and clean

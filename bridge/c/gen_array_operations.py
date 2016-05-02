@@ -23,7 +23,7 @@ def main(args):
     # Let's generate the header and implementation of all array operations
     head = ""; impl = ""
     for op in opcodes:
-        if op['opcode'] in ["BH_RANDOM", "BH_NONE"]:#We handle random separately and ignore None
+        if op['opcode'] in ["BH_REPEAT", "BH_RANDOM", "BH_NONE"]:#We handle random separately and ignore None
             continue
         doc = "// %s: %s\n"%(op['opcode'][3:], op['doc'])
         doc += "// E.g. %s:\n"%(op['code'])

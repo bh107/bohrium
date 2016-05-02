@@ -65,11 +65,12 @@ bh_error bh_filter_bcexp_init(const char* name)
         return err;
     }
 
-    bh_intp gc_threshold, sign, matmul, powk,reduce1d;
+    bh_intp gc_threshold, sign, matmul, powk, repeat, reduce1d;
     if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "gc_threshold", 0, 2000, &gc_threshold)) or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "matmul", 0, 1, &matmul)) or \
         (BH_SUCCESS!=bh_component_config_int_option(&myself, "sign", 0, 1, &sign)) or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "powk", 0, 1, &powk))) {
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "powk", 0, 1, &powk)) or \
+        (BH_SUCCESS!=bh_component_config_int_option(&myself, "repeat", 0, 1, &repeat))) {
         return BH_ERROR;
     }
     reduce1d = bh_component_config_lookup_int(&myself, "reduce1d", 0);
@@ -78,7 +79,8 @@ bh_error bh_filter_bcexp_init(const char* name)
                                                             matmul,
                                                             sign,
                                                             powk,
-                                                            reduce1d);
+                                                            reduce1d,
+                                                            repeat);
     } catch (std::bad_alloc& ba) {
         fprintf(stderr, "Failed constructing Expander due to allocation error.\n");
     }

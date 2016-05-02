@@ -214,6 +214,7 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFF
 children = node
 reduction = true
 collect = true
+find_repeats = false
 stupidmath = true
 timing = false
 
@@ -232,6 +233,7 @@ matmul = 1
 sign = 1
 powk = 1
 reduce1d = 0
+repeat = 0
 timing = false
 
 [bcexp_gpu]
@@ -243,6 +245,7 @@ matmul = 1
 sign = 1
 powk = 1
 reduce1d = 32000
+repeat = 0
 timing = false
 
 [bcexp_cpu]
@@ -254,6 +257,7 @@ matmul = 1
 sign = 0
 powk = 1
 reduce1d = 0
+repeat = 0
 timing = false
 
 #

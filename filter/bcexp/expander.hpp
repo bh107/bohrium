@@ -16,7 +16,7 @@ public:
     /**
      *  Construct the expander.
      */
-    Expander(size_t threshold, int matmul, int sign, int powk, int reduce_1d);
+    Expander(size_t threshold, int matmul, int sign, int powk, int reduce_1d, int repeat);
 
     /**
      *  Tear down the expander.
@@ -57,6 +57,7 @@ public:
 
     // System instruction
     void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out);
+    inline void inject(bh_ir& bhir, int pc, bh_instruction instr);
 
     // Unary instruction
     void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1);
@@ -136,10 +137,11 @@ public:
      */
     int expand_sign(bh_ir& bhir, int pc);
 
-
     int expand_powk(bh_ir& bhir, int pc);
 
     int expand_reduce1d(bh_ir& bhir, int pc, int fold_limit);
+
+    int expand_repeat(bh_ir& bhir, int pc);
 
 private:
 
@@ -150,6 +152,7 @@ private:
     int sign_;
     int powk_;
     int reduce1d_;
+    int repeat_;
 
 };
 
@@ -160,6 +163,11 @@ void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_vi
     instr.operand[0] = out;
     instr.operand[1] = in1;
     instr.operand[2] = in2;
+    bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
+}
+
+inline void Expander::inject(bh_ir& bhir, int pc, bh_instruction instr)
+{
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }
 

@@ -8,7 +8,7 @@
         "KP_ABSOLUTE",
         "KP_INVERT",
         "KP_LOGICAL_NOT",
-        "KP_SQRT", 
+        "KP_SQRT",
         "KP_REAL",
         "KP_IMAG",
         "KP_RINT",
@@ -16,7 +16,7 @@
         "KP_ISNAN",
         "KP_CEIL",
         "KP_FLOOR",
-        "KP_TRUNC",                
+        "KP_TRUNC",
         "KP_COS",
         "KP_COSH",
         "KP_SIN",
@@ -28,11 +28,11 @@
         "KP_ARCSIN",
         "KP_ARCSINH",
         "KP_ARCTAN",
-        "KP_ARCTANH",         
+        "KP_ARCTANH",
         "KP_LOG",
         "KP_LOG10",
         "KP_LOG1P",
-        "KP_LOG2", 
+        "KP_LOG2",
         "KP_EXP",
         "KP_EXP2",
         "KP_EXPM1"
@@ -82,7 +82,7 @@
         "KP_ADD",
         "KP_MULTIPLY",
         "KP_MINIMUM",
-        "KP_MAXIMUM", 
+        "KP_MAXIMUM",
         "KP_LOGICAL_AND",
         "KP_LOGICAL_OR",
         "KP_LOGICAL_XOR",
@@ -102,7 +102,7 @@
         "KP_ADD",
         "KP_MULTIPLY",
         "KP_MINIMUM",
-        "KP_MAXIMUM", 
+        "KP_MAXIMUM",
         "KP_LOGICAL_AND",
         "KP_LOGICAL_OR",
         "KP_LOGICAL_XOR",
@@ -158,7 +158,8 @@
         "KP_FREE",
         "KP_DISCARD",
         "KP_SYNC",
-        "KP_TALLY"
+        "KP_TALLY",
+        "KP_REPEAT"
     ]
 },
 
@@ -181,4 +182,3 @@
 }
 
 ]
-
