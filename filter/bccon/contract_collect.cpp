@@ -17,25 +17,29 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include "contracter.hpp"
 
-#include <stdio.h>
 #include <set>
 
 #include <bh_component.h>
 
 using namespace std;
 
-bool is_add_sub(bh_opcode opc)
+namespace bohrium {
+namespace filter {
+namespace composite {
+
+static inline bool is_add_sub(bh_opcode opc)
 {
     return opc == BH_ADD or opc == BH_SUBTRACT;
 }
 
-bool is_mul_div(bh_opcode opc)
+static inline bool is_mul_div(bh_opcode opc)
 {
     return opc == BH_MULTIPLY or opc == BH_DIVIDE;
 }
 
-bool chain_has_same_type(vector<bh_instruction*>& chain)
+static bool chain_has_same_type(vector<bh_instruction*>& chain)
 {
     bh_type type = chain.front()->constant.type;
     for(vector<bh_instruction*>::iterator ite=chain.begin()+1; ite != chain.end(); ++ite) {
@@ -45,7 +49,7 @@ bool chain_has_same_type(vector<bh_instruction*>& chain)
     return true;
 }
 
-void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
+static void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
 {
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
@@ -99,7 +103,7 @@ void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
     first.constant.set_double(sum);
 }
 
-void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
+static void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
 {
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
@@ -144,7 +148,7 @@ void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
     first.constant.set_double(result);
 }
 
-void rewrite_chain(vector<bh_instruction*>& chain)
+static void rewrite_chain(vector<bh_instruction*>& chain)
 {
     bh_opcode opc = chain[0]->opcode;
     if (is_add_sub(opc)) {
@@ -154,7 +158,7 @@ void rewrite_chain(vector<bh_instruction*>& chain)
     }
 }
 
-void collect_filter(bh_ir &bhir)
+void Contracter::contract_collect(bh_ir &bhir)
 {
     bh_opcode collect_opcode = BH_NONE;
     vector<bh_view*> views;
@@ -219,3 +223,5 @@ void collect_filter(bh_ir &bhir)
         views.clear();
     }
 }
+
+}}}

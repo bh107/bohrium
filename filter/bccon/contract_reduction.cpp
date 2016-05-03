@@ -17,14 +17,19 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <stdio.h>
+#include "contracter.hpp"
+
 #include <set>
 
 #include <bh_component.h>
 
 using namespace std;
 
-void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* first, bh_instruction* last)
+namespace bohrium {
+namespace filter {
+namespace composite {
+
+static void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* first, bh_instruction* last)
 {
     // Rewrite the first reduction as a "COMPLETE" REDUCE.
     // Copy the meta-data of the SCALAR output from the last REDUCE
@@ -42,7 +47,7 @@ void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* first, bh_ins
     }
 }
 
-void reduction_chain_filter(bh_ir &bhir)
+void Contracter::contract_reduction(bh_ir &bhir)
 {
     bh_opcode reduce_opcode = BH_NONE;
     bh_instruction* first;
@@ -112,3 +117,5 @@ void reduction_chain_filter(bh_ir &bhir)
         }
     }
 }
+
+}}}

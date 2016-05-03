@@ -17,14 +17,19 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <stdio.h>
+#include "contracter.hpp"
+
 #include <set>
 
 #include <bh_component.h>
 
 using namespace std;
 
-bool bh_constant_is_value(bh_constant constant, float_t value)
+namespace bohrium {
+namespace filter {
+namespace composite {
+
+static bool bh_constant_is_value(bh_constant constant, float_t value)
 {
     switch(constant.type) {
         case BH_UINT8:
@@ -58,41 +63,41 @@ bool bh_constant_is_value(bh_constant constant, float_t value)
     }
 }
 
-bool is_multiplying_by_one(bh_instruction& instr)
+static inline bool is_multiplying_by_one(bh_instruction& instr)
 {
     return instr.opcode == BH_MULTIPLY and
            bh_is_constant(&(instr.operand[2])) and
            bh_constant_is_value(instr.constant, 1.0);
 }
 
-bool is_dividing_by_one(bh_instruction& instr)
+static inline bool is_dividing_by_one(bh_instruction& instr)
 {
     return instr.opcode == BH_DIVIDE and
            bh_is_constant(&(instr.operand[2])) and
            bh_constant_is_value(instr.constant, 1.0);
 }
 
-bool is_adding_zero(bh_instruction& instr)
+static inline bool is_adding_zero(bh_instruction& instr)
 {
     return instr.opcode == BH_ADD and
            bh_is_constant(&(instr.operand[2])) and
            bh_constant_is_value(instr.constant, 0.0);
 }
 
-bool is_subtracting_zero(bh_instruction& instr)
+static inline bool is_subtracting_zero(bh_instruction& instr)
 {
     return instr.opcode == BH_SUBTRACT and
            bh_is_constant(&(instr.operand[2])) and
            bh_constant_is_value(instr.constant, 0.0);
 }
 
-bool is_free_or_discard(bh_instruction& instr)
+static inline bool is_free_or_discard(bh_instruction& instr)
 {
     return instr.opcode == BH_FREE or
            instr.opcode == BH_DISCARD;
 }
 
-bool is_doing_stupid_math(bh_instruction& instr)
+static inline bool is_doing_stupid_math(bh_instruction& instr)
 {
     return is_multiplying_by_one(instr) or
            is_dividing_by_one(instr) or
@@ -100,7 +105,7 @@ bool is_doing_stupid_math(bh_instruction& instr)
            is_subtracting_zero(instr);
 }
 
-void stupid_math_filter(bh_ir &bhir)
+void Contracter::contract_stupidmath(bh_ir &bhir)
 {
     for(size_t pc = 0; pc < bhir.instr_list.size(); ++pc) {
         bh_instruction& instr = bhir.instr_list[pc];
@@ -162,3 +167,5 @@ void stupid_math_filter(bh_ir &bhir)
         }
     }
 }
+
+}}}
