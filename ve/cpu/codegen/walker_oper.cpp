@@ -115,7 +115,7 @@ string Walker::oper(KP_OPERATOR oper, KP_ETYPE etype, string in1, string in2)
         case KP_ARCCOSH:
             switch(etype) {
                 case KP_COMPLEX128:    return _cacosh(in1);
-                case KP_COMPLEX64:     return _cacosf(in1);
+                case KP_COMPLEX64:     return _cacoshf(in1);
                 default:            return _acosh(in1);
             }
         case KP_ARCSIN:
