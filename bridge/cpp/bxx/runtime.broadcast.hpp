@@ -127,13 +127,9 @@ template <typename OT, typename LT, typename HT>
 inline
 bool broadcast(const multi_array<OT>& output, multi_array<LT>& lower, multi_array<HT>& higher)
 {
-    bool broadcastable = true;
-
-    broadcastable = broadcastable && broadcast_right(output, lower);
-    broadcastable = broadcastable && broadcast(lower, higher);
-    broadcastable = broadcastable && same_shape(output, lower);
-
-    return broadcastable;
+    return broadcast_right(output, lower) &&
+           broadcast(lower, higher) &&
+           same_shape(output, lower);
 }
 
 }
