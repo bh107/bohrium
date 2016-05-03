@@ -29,7 +29,7 @@ using namespace std;
 
 // Regex matcher. This regex will match all repeating groups in a string
 // ie. will match 'bc' in 'abcbcbcde'
-static const boost::regex re("\\A(.+)\\1+\\z");
+static const boost::regex re("(.+)\\1+");
 
 // Convert the instruction list to a string of characters
 // Identical instructions will be mapped to the same character
