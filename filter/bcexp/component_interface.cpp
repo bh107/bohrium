@@ -32,7 +32,7 @@ If not, see <http://www.gnu.org/licenses/>.
 static bh_component myself;         // Myself
 static bh_component_iface *child;   // My child
 
-//The timing ID for the filter
+// The timing ID for the filter
 static bh_intp exec_timing;
 static bool timing;
 

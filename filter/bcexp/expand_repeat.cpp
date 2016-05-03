@@ -18,7 +18,6 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 #include "expander.hpp"
-#include <math.h>
 
 using namespace std;
 

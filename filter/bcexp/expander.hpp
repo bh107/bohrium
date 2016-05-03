@@ -68,7 +68,6 @@ public:
     template <typename T>
     inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1);
 
-
     // Binary instruction
     inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2);
     // Binary with constants
@@ -78,73 +77,13 @@ public:
     template <typename T>
     inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2);
 
-    /**
-     *  Expand matmul at the given pc in the bhir instruction list.
-     *
-     *  Returns the number of additional instructions used.
-     */
     int expand_matmul(bh_ir& bhir, int pc);
-
-    /**
-     *  Expand BH_SIGN at the given PC into the sequence:
-     *
-     *          BH_SIGN OUT, IN1 (When IN1.type != COMPLEX):
-     *
-     *  LESS, t1_bool, input, 0.0
-     *  IDENTITY, t1, t1_bool
-     *  FREE, t1_bool
-     *  DISCARD, t1_bool
-     *
-     *  GREATER, t2_bool, input, 0.0
-     *  IDENTITY, t2, t2_bool
-     *  FREE, t2_bool
-     *  DISCARD, t2_bool
-     *
-     *  SUBTRACT, out, t2, t1
-     *  FREE, t1
-     *  DISCARD, t1
-     *  FREE, t2
-     *  DISCARD, t2
-     *
-     *          BH_SIGN OUT, IN1 (When IN1.type == COMPLEX):
-     *
-     *  REAL, input_r, input
-     *
-     *  LESS, t1_bool, input_r, 0.0
-     *  IDENTITY, t1, t1_bool
-     *  FREE, t1_bool
-     *  DISCARD, t1_bool
-     *
-     *  GREATER, t2_bool, input_r, 0.0
-     *  FREE, input_r
-     *  DISCARD, input_r
-     *
-     *  IDENTITY, t2, t2_bool
-     *  FREE, t2_bool
-     *  DISCARD, t2_bool
-     *
-     *  SUBTRACT, t3, t2, t1
-     *  FREE, t1
-     *  DISCARD, t1
-     *  FREE, t2
-     *  DISCARD, t2
-     *
-     *  IDENTITY, out, t3
-     *  FREE, t3
-     *  DISCARD, t3
-     *
-     *  Returns the number of instructions used (12 or 17).
-     */
     int expand_sign(bh_ir& bhir, int pc);
-
     int expand_powk(bh_ir& bhir, int pc);
-
     int expand_reduce1d(bh_ir& bhir, int pc, int fold_limit);
-
     int expand_repeat(bh_ir& bhir, int pc);
 
 private:
-
     static const char TAG[];
     std::vector<bh_base*> bases_;
     size_t gc_threshold_;
@@ -153,7 +92,6 @@ private:
     int powk_;
     int reduce1d_;
     int repeat_;
-
 };
 
 void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2)

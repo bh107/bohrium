@@ -31,10 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 //
 // Components
 //
-
-static bh_component myself; // Myself
-
-// Function pointers to our child.
+static bh_component myself;
 static bh_component_iface *child;
 
 static bool find_repeats_, reduction_, stupidmath_, collect_;

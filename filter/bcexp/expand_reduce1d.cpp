@@ -19,11 +19,14 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include "expander.hpp"
 #include <map>
+
 using namespace std;
 
 namespace bohrium {
 namespace filter {
 namespace composite {
+
+static std::map<int, int> fold_map;
 
 static inline int find_fold(bh_index elements, int thread_limit)
 {
@@ -35,44 +38,53 @@ static inline int find_fold(bh_index elements, int thread_limit)
     return 1;
 }
 
+// TODO: What does this do? Give example like expand_sign.cpp
 int Expander::expand_reduce1d(bh_ir& bhir, int pc, int thread_limit)
 {
-    static std::map<int,int> fold_map;
-    int start_pc = pc;                              
-    bh_instruction& instr = bhir.instr_list[pc];        // Grab the BH_POWER instruction
-    
+    int start_pc = pc;
+    bh_instruction& instr = bhir.instr_list[pc];
+
     bh_index elements = bh_nelements(instr.operand[1]);
 
-    if (elements * 2 < thread_limit)
+    if (elements * 2 < thread_limit) {
         return 0;
-        
+    }
+
     int fold = 0;
-    if (fold_map.find(elements) != fold_map.end())
-    {    
+    if (fold_map.find(elements) != fold_map.end()) {
         fold = fold_map.find(elements)->second;
     } else {
         fold = find_fold(elements,thread_limit);
         fold_map[elements] = fold;
     }
-    if (fold < 2)
+
+    if (fold < 2) {
         return 0;
-    
+    }
+
     bh_opcode opcode = instr.opcode;
-    instr.opcode = BH_NONE;             // Lazy choice... no re-use just NOP it.
-    bh_view out = instr.operand[0];     // Grab operands
-    bh_view in = instr.operand[1];
+    // Lazy choice... no re-use just NOP it.
+    instr.opcode = BH_NONE;
+
+    // Grab operands
+    bh_view out = instr.operand[0];
+    bh_view in  = instr.operand[1];
+
     in.ndim = 2;
-    in.shape[0] = fold; 
-    in.shape[1] = elements/fold;
+    in.shape[0] = fold;
+    in.shape[1] = elements / fold;
+
     in.stride[1] = in.stride[0];
-    in.stride[0] = in.stride[0]*elements/fold;
+    in.stride[0] = in.stride[0] * elements / fold;
+
     bh_view temp = make_temp(in.base->type, elements/fold);
-    inject(bhir, ++pc, opcode, temp, in, 0, BH_INT64);
-    inject(bhir, ++pc, opcode, out, temp, 0, BH_INT64);
-    inject(bhir, ++pc, BH_FREE, temp);
+
+    inject(bhir, ++pc, opcode,     temp, in,   0, BH_INT64);
+    inject(bhir, ++pc, opcode,     out,  temp, 0, BH_INT64);
+    inject(bhir, ++pc, BH_FREE,    temp);
     inject(bhir, ++pc, BH_DISCARD, temp);
 
-    return pc-start_pc;
+    return pc - start_pc;
 }
 
 }}}
