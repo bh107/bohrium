@@ -22,6 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 
+#include <bh_component.hpp>
+
 namespace bxx {
 
 // Runtime : Definition
@@ -31,26 +33,13 @@ inline Runtime& Runtime::instance()
     return instance;
 }
 
-inline Runtime::Runtime() : global_random_seed_(0), global_random_state_(0), extension_count(BH_MAX_OPCODE_ID+1), queue_size(0)
+inline Runtime::Runtime() : global_random_seed_(0),
+                            global_random_state_(0),
+                            config(0), // stack level zero is the bridge
+                            runtime(config.getChildLibraryPath(), config.stack_level),
+                            extension_count(BH_MAX_OPCODE_ID+1),
+                            queue_size(0)
 {
-    char err_msg[1000];
-
-    bh_error err = bh_component_init(&bridge, NULL);
-    if (BH_SUCCESS != err) {
-        exit(-1);
-    }
-    if (bridge.nchildren != 1) {
-        sprintf(err_msg, "Error in the runtime configuration: the bridge must "
-                         "have exactly one child of type VEM or FILTER.\n");
-        throw std::runtime_error(err_msg);
-    }
-    runtime = &bridge.children[0];
-
-    err = runtime->init(runtime->name);
-    if (BH_SUCCESS != err) {
-        sprintf(err_msg, "Error in the initialization of the VEM.\n");
-        throw std::runtime_error(err_msg);
-    }
 }
 
 inline Runtime::~Runtime()
@@ -63,10 +52,7 @@ inline Runtime::~Runtime()
             std::cout << it->first << " => " << it->second << '\n';
         }
     }
- 
     flush();
-    runtime->shutdown();
-    bh_component_destroy(&bridge);
 }
 
 inline size_t Runtime::get_queue_size()
@@ -106,18 +92,9 @@ size_t Runtime::execute()
     size_t cur_size = queue_size;
 
     bh_ir bhir = bh_ir(queue_size, queue);
-    bh_error status = runtime->execute(&bhir);   // Send instructions to Bohrium
-    queue_size = 0;                                // Reset size of the queue
-
-    if (status != BH_SUCCESS) {
-        std::stringstream err_msg;
-        err_msg << "Err: Runtime::execute() child->execute() failed: " << bh_error_text(status) << std::endl;
-
-        throw std::runtime_error(err_msg.str());
-    }
-
+    runtime.getImpl()->execute(&bhir);      // Send instructions to Bohrium
+    queue_size = 0;                         // Reset size of the queue
     deallocate_meta(cur_size);
-
     return cur_size;
 }
 
@@ -229,7 +206,7 @@ inline
 multi_array<T>& Runtime::temp_view(multi_array<T>& base)
 {
     multi_array<T>* operand = new multi_array<T>(base);
-    
+
     operand->meta.base = base.meta.base;
     operand->setTemp(true);
     Runtime::instance().ref_count[operand->meta.base] += 1;
@@ -403,8 +380,7 @@ void Runtime::enqueue_extension(const std::string& name,
     } else {                        // Add it
         opcode = extension_count++;
         extensions.insert(std::pair<std::string, bh_opcode>(name, opcode));
-        if(runtime->extmethod(name.c_str(), opcode) != BH_SUCCESS)
-            throw std::runtime_error("Unknown extmethod");
+        runtime.getImpl()->extmethod(name.c_str(), opcode);
     }
 
     guard();
