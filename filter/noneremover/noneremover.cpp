@@ -22,40 +22,38 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-void noneremover_filter(bh_ir &bhir)
+int remove_none(vector<bh_instruction> &bh_instr_list, int from, int to, int decrementer)
 {
-    int decrementer = 0;
+    int i = from;
 
-    // Loop through the instruction list. Increment happens inside.
-    for(auto it = bhir.instr_list.begin(); it != bhir.instr_list.end(); /* !!! */)
+    // Loop through the partial instruction list. Increment happens inside.
+    for(auto it = bh_instr_list.begin() + from; it != bh_instr_list.begin() + to; ++i)
     {
         switch(it->opcode) {
             case BH_REPEAT:
-                // We need to loop through the inner parts of the repeat
-                // TODO: Nested BH_REPEATs
-                decrementer = 0;
-
-                for(int i = 1; i <= it->constant.value.r123.start; ++i) {
-                    if ((it+i)->opcode == BH_NONE) {
-                        it = bhir.instr_list.erase(it+i);
-                        ++decrementer;
-                    }
-                }
-
-                // Decrement BH_REPEAT's size
+                // Recursively remove BH_NONE from inner part of BH_REPEAT
+                decrementer = remove_none(bh_instr_list, i + 1, i + 1 + it->constant.value.r123.start, decrementer);
                 it->constant.value.r123.start -= decrementer;
 
-                // Move iterator to end of BH_REPEAT
-                it += it->constant.value.r123.start;
-
+                // Increment iterator manually
+                ++it;
                 break;
             case BH_NONE:
-                // Remove the BH_NONE
-                it = bhir.instr_list.erase(it);
+                // Remove the BH_NONE and increase the decrementer for inner BH_REPEAT
+                it = bh_instr_list.erase(it);
+                ++decrementer;
                 break;
             default:
                 // Increment iterator manually
                 ++it;
         }
     }
+
+    return decrementer;
+}
+
+void noneremover_filter(bh_ir &bhir)
+{
+    // Remove BH_NONE from entire instruction list
+    remove_none(bhir.instr_list, 0, bhir.instr_list.size(), 0);
 }
