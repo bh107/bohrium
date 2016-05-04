@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <list>
 #include <map>
 
-#include <bh_component.h>
+#include <bh_component.hpp>
 #include "iterator.hpp"
 
 #ifdef DEBUG
@@ -398,8 +398,8 @@ private:
     uint64_t    global_random_seed_;            // Random state and seed
     uint64_t    global_random_state_;           // TODO: Should be encapsulated in a "sugar-layer"
 
-    bh_component        bridge;                 // Bohrium
-    bh_component_iface  *runtime;
+    bohrium::ConfigParser config;               // Bohrium Configuration
+    bohrium::component::Interface runtime;      // The Bohrium Runtime i.e. the child of this component
 
     std::map<std::string, bh_opcode> extensions;// Register of extensions
     size_t extension_count;
