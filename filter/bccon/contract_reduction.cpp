@@ -29,7 +29,7 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-static void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* first, bh_instruction* last)
+static void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* &first, bh_instruction* &last)
 {
     // Rewrite the first reduction as a "COMPLETE" REDUCE.
     // Copy the meta-data of the SCALAR output from the last REDUCE
@@ -53,7 +53,7 @@ void Contracter::contract_reduction(bh_ir &bhir)
     bh_instruction* first;
     bh_instruction* last;
 
-    std::set<bh_base*> bases;
+    std::set<const bh_base*> bases;
 
     // Instructions in the chain that are not, the first and the last reduction.
     vector<bh_instruction*> links;

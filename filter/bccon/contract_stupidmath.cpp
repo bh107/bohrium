@@ -29,7 +29,7 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-static bool bh_constant_is_value(bh_constant constant, float_t value)
+static bool bh_constant_is_value(const bh_constant constant, float_t value)
 {
     switch(constant.type) {
         case BH_UINT8:
@@ -63,41 +63,41 @@ static bool bh_constant_is_value(bh_constant constant, float_t value)
     }
 }
 
-static inline bool is_multiplying_by_one(bh_instruction& instr)
+static inline bool is_multiplying_by_one(const bh_instruction& instr)
 {
     return instr.opcode == BH_MULTIPLY and
            bh_is_constant(&(instr.operand[2])) and
            bh_constant_is_value(instr.constant, 1.0);
 }
 
-static inline bool is_dividing_by_one(bh_instruction& instr)
+static inline bool is_dividing_by_one(const bh_instruction& instr)
 {
     return instr.opcode == BH_DIVIDE and
            bh_is_constant(&(instr.operand[2])) and
            bh_constant_is_value(instr.constant, 1.0);
 }
 
-static inline bool is_adding_zero(bh_instruction& instr)
+static inline bool is_adding_zero(const bh_instruction& instr)
 {
     return instr.opcode == BH_ADD and
            bh_is_constant(&(instr.operand[2])) and
            bh_constant_is_value(instr.constant, 0.0);
 }
 
-static inline bool is_subtracting_zero(bh_instruction& instr)
+static inline bool is_subtracting_zero(const bh_instruction& instr)
 {
     return instr.opcode == BH_SUBTRACT and
            bh_is_constant(&(instr.operand[2])) and
            bh_constant_is_value(instr.constant, 0.0);
 }
 
-static inline bool is_free_or_discard(bh_instruction& instr)
+static inline bool is_free_or_discard(const bh_instruction& instr)
 {
     return instr.opcode == BH_FREE or
            instr.opcode == BH_DISCARD;
 }
 
-static inline bool is_doing_stupid_math(bh_instruction& instr)
+static inline bool is_doing_stupid_math(const bh_instruction& instr)
 {
     return is_multiplying_by_one(instr) or
            is_dividing_by_one(instr) or
@@ -140,7 +140,9 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
                 for (int idx = 0; idx < bh_noperands(other_instr.opcode); ++idx) {
                     created_before = created_before or other_instr.operand[idx].base == B;
                 }
-                if (created_before) break;
+
+                if (created_before)
+                    break;
             }
 
             // Only if we FREE and DISCARD B in the same flush, are we allowed to change things.

@@ -29,21 +29,21 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-static inline bool is_add_sub(bh_opcode opc)
+static inline bool is_add_sub(const bh_opcode& opc)
 {
     return opc == BH_ADD or opc == BH_SUBTRACT;
 }
 
-static inline bool is_mul_div(bh_opcode opc)
+static inline bool is_mul_div(const bh_opcode& opc)
 {
     return opc == BH_MULTIPLY or opc == BH_DIVIDE;
 }
 
 static bool chain_has_same_type(vector<bh_instruction*>& chain)
 {
-    bh_type type = chain.front()->constant.type;
-    for(vector<bh_instruction*>::iterator ite=chain.begin()+1; ite != chain.end(); ++ite) {
-        if (type != (**ite).constant.type)
+    const bh_type type = chain.front()->constant.type;
+    for(auto const instr : chain) {
+        if (type != instr->constant.type)
             return false;
     }
     return true;
@@ -161,7 +161,7 @@ static void rewrite_chain(vector<bh_instruction*>& chain)
 void Contracter::contract_collect(bh_ir &bhir)
 {
     bh_opcode collect_opcode = BH_NONE;
-    vector<bh_view*> views;
+    vector<const bh_view*> views;
     vector<bh_instruction*> chain;
 
     for(size_t pc = 0; pc < bhir.instr_list.size(); ++pc) {
