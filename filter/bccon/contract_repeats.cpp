@@ -17,6 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include "contracter.hpp"
 
 #include <boost/regex.hpp>
 #include <iostream>
@@ -27,13 +28,17 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
+namespace bohrium {
+namespace filter {
+namespace composite {
+
 // Regex matcher. This regex will match all repeating groups in a string
 // ie. will match 'bc' in 'abcbcbcde'
 static const boost::regex re("(.+)\\1+");
 
 // Convert the instruction list to a string of characters
 // Identical instructions will be mapped to the same character
-string bh_instr_list_to_string(const vector<bh_instruction> &instr_list, unordered_map<char, const bh_instruction*> &identifier_map)
+static string bh_instr_list_to_string(const vector<bh_instruction> &instr_list, unordered_map<char, const bh_instruction*> &identifier_map)
 {
     string result = "";
     char identifier = (char)((int) 'a' - 1);
@@ -63,7 +68,7 @@ string bh_instr_list_to_string(const vector<bh_instruction> &instr_list, unorder
 }
 
 // Count occurrences of str2 in str1
-int count_occur(string str1, string str2)
+static int count_occur(string str1, string str2)
 {
     int occur = 0;
     int start = 0;
@@ -76,7 +81,7 @@ int count_occur(string str1, string str2)
     return occur;
 }
 
-void find_repeats_filter(bh_ir &bhir)
+void Contracter::contract_repeats(bh_ir &bhir)
 {
     // Build map of instructions and string representation of instruction list
     unordered_map<char, const bh_instruction*> identifier_map;
@@ -133,3 +138,5 @@ void find_repeats_filter(bh_ir &bhir)
 
     return;
 }
+
+}}}

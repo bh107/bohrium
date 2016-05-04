@@ -17,7 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include "expander.hpp"
+#include "contracter.hpp"
 
 using namespace std;
 
@@ -25,28 +25,17 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-int Expander::expand_repeat(bh_ir& bhir, int pc)
+Contracter::Contracter(bool repeats, bool reduction, bool stupidmath, bool collect)
+    : repeats_(repeats), reduction_(reduction), stupidmath_(stupidmath), collect_(collect) {}
+
+Contracter::~Contracter(void) {}
+
+void Contracter::contract(bh_ir& bhir)
 {
-    // Grab the BH_REPEAT instruction
-    bh_instruction& instr = bhir.instr_list[pc];
-
-    // Get the two arguments, which are enclosed in the constant of type BH_R123
-    int size = instr.constant.value.r123.start;
-    int occur = instr.constant.value.r123.key;
-
-    // Remove BH_REPEAT
-    instr.opcode = BH_NONE;
-
-    // Repeat content of BH_REPEAT occur-1 times.
-    // -1 since it's already there once
-    for (int i = 0; i < occur-1; ++i) {
-        for (int j = 0; j < size; ++j) {
-            ++pc;
-            inject(bhir, pc, bhir.instr_list[pc + j]);
-        }
-    }
-
-    return size * occur;
+    if(repeats_)    contract_repeats(bhir);
+    if(reduction_)  contract_reduction(bhir);
+    if(stupidmath_) contract_stupidmath(bhir);
+    if(collect_)    contract_collect(bhir);
 }
 
 }}}

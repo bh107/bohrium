@@ -25,69 +25,136 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
+/**
+ *  Expand BH_SIGN at the given PC into the sequence:
+ *
+ *          BH_SIGN OUT, IN1 (When IN1.type != COMPLEX):
+ *
+ *  LESS, t1_bool, input, 0.0
+ *  IDENTITY, t1, t1_bool
+ *  FREE, t1_bool
+ *  DISCARD, t1_bool
+ *
+ *  GREATER, t2_bool, input, 0.0
+ *  IDENTITY, t2, t2_bool
+ *  FREE, t2_bool
+ *  DISCARD, t2_bool
+ *
+ *  SUBTRACT, out, t2, t1
+ *  FREE, t1
+ *  DISCARD, t1
+ *  FREE, t2
+ *  DISCARD, t2
+ *
+ *          BH_SIGN OUT, IN1 (When IN1.type == COMPLEX):
+ *
+ *  REAL, input_r, input
+ *
+ *  LESS, t1_bool, input_r, 0.0
+ *  IDENTITY, t1, t1_bool
+ *  FREE, t1_bool
+ *  DISCARD, t1_bool
+ *
+ *  GREATER, t2_bool, input_r, 0.0
+ *  FREE, input_r
+ *  DISCARD, input_r
+ *
+ *  IDENTITY, t2, t2_bool
+ *  FREE, t2_bool
+ *  DISCARD, t2_bool
+ *
+ *  SUBTRACT, t3, t2, t1
+ *  FREE, t1
+ *  DISCARD, t1
+ *  FREE, t2
+ *  DISCARD, t2
+ *
+ *  IDENTITY, out, t3
+ *  FREE, t3
+ *  DISCARD, t3
+ *
+ *  Returns the number of instructions used (12 or 17).
+ */
 int Expander::expand_sign(bh_ir& bhir, int pc)
 {
     int start_pc = pc;
     bh_instruction& composite = bhir.instr_list[pc];
-    composite.opcode = BH_NONE; // Lazy choice... no re-use just NOP it.
 
-    bh_view output  = composite.operand[0];         // Grab operands
-    bh_view input   = composite.operand[1];
+    // Lazy choice... no re-use just NOP it.
+    composite.opcode = BH_NONE;
 
-    bh_type input_type = input.base->type;          // Grab the input-type
+    // Grab operands
+    bh_view output = composite.operand[0];
+    bh_view input  = composite.operand[1];
 
-    bh_view meta = composite.operand[0];            // Inherit ndim and shape
+    // Grab the input-type
+    bh_type input_type = input.base->type;
+
+    // Inherit ndim and shape
+    bh_view meta = composite.operand[0];
     meta.start = 0;
-    bh_intp nelements = 1;                          // Count number of elements
-    for(bh_intp dim=meta.ndim-1; dim >= 0; --dim) { // Contiguous stride
+
+    // Count number of elements
+    bh_intp nelements = 1;
+
+    // Contiguous stride
+    for(bh_intp dim=meta.ndim-1; dim >= 0; --dim) {
         meta.stride[dim] = nelements;
         nelements *= meta.shape[dim];
     }
-    if (!((input_type == BH_COMPLEX64) || \
-          (input_type == BH_COMPLEX128))) { // For non-complex: sign(x) = (x>0)-(x<0)
-                                                            
-        bh_view lss     = make_temp(meta, input_type, nelements);// Temps
-        bh_view gtr     = make_temp(meta, input_type, nelements);
-        bh_view t_bool  = make_temp(meta, BH_BOOL, nelements);  
 
-        inject(bhir, ++pc, BH_GREATER, t_bool, input, 0.0);    // Sequence
-        inject(bhir, ++pc, BH_IDENTITY, lss, t_bool);
-        inject(bhir, ++pc, BH_FREE, t_bool);
-        inject(bhir, ++pc, BH_DISCARD, t_bool);
-        
-        inject(bhir, ++pc, BH_LESS, t_bool, input, 0.0);       
-        inject(bhir, ++pc, BH_IDENTITY, gtr, t_bool);
-        inject(bhir, ++pc, BH_FREE, t_bool);
-        inject(bhir, ++pc, BH_DISCARD, t_bool);
+    if (!((input_type == BH_COMPLEX64) || (input_type == BH_COMPLEX128))) {
+        // For non-complex: sign(x) = (x>0)-(x<0)
+        // Temps
+        bh_view lss    = make_temp(meta, input_type, nelements);
+        bh_view gtr    = make_temp(meta, input_type, nelements);
+        bh_view t_bool = make_temp(meta, BH_BOOL,    nelements);
+
+        // Sequence
+        inject(bhir, ++pc, BH_GREATER,  t_bool, input, 0.0);
+        inject(bhir, ++pc, BH_IDENTITY, lss,    t_bool);
+        inject(bhir, ++pc, BH_FREE,     t_bool);
+        inject(bhir, ++pc, BH_DISCARD,  t_bool);
+
+        inject(bhir, ++pc, BH_LESS,     t_bool, input, 0.0);
+        inject(bhir, ++pc, BH_IDENTITY, gtr,    t_bool);
+        inject(bhir, ++pc, BH_FREE,     t_bool);
+        inject(bhir, ++pc, BH_DISCARD,  t_bool);
 
         inject(bhir, ++pc, BH_SUBTRACT, output, lss, gtr);
-        inject(bhir, ++pc, BH_FREE, lss);
-        inject(bhir, ++pc, BH_DISCARD, lss);
-        inject(bhir, ++pc, BH_FREE, gtr);
-        inject(bhir, ++pc, BH_DISCARD, gtr);
-    } else {                                // For complex: sign(0) = 0, sign(z) = z/|z|
-
+        inject(bhir, ++pc, BH_FREE,     lss);
+        inject(bhir, ++pc, BH_DISCARD,  lss);
+        inject(bhir, ++pc, BH_FREE,     gtr);
+        inject(bhir, ++pc, BH_DISCARD,  gtr);
+    } else {
+        // For complex: sign(0) = 0, sign(z) = z/|z|
         bh_type float_type = (input_type == BH_COMPLEX64) ? BH_FLOAT32 : BH_FLOAT64;
-                                            // General form: sign(z) = z/(|z|+(z==0))
-        bh_view f_abs = make_temp(meta, float_type, nelements); // Temps
-        bh_view b_zero = make_temp(meta, BH_BOOL, nelements);
+
+        // General form: sign(z) = z/(|z|+(z==0))
+        // Temps
+        bh_view f_abs  = make_temp(meta, float_type, nelements);
+        bh_view b_zero = make_temp(meta, BH_BOOL,    nelements);
         bh_view f_zero = make_temp(meta, float_type, nelements);
 
-        inject(bhir, ++pc, BH_ABSOLUTE, f_abs, input);          // Sequence
-        inject(bhir, ++pc, BH_EQUAL, b_zero, f_abs, 0.0, float_type);
+        // Sequence
+        inject(bhir, ++pc, BH_ABSOLUTE, f_abs,  input);
+        inject(bhir, ++pc, BH_EQUAL,    b_zero, f_abs, 0.0, float_type);
         inject(bhir, ++pc, BH_IDENTITY, f_zero, b_zero);
-        inject(bhir, ++pc, BH_FREE, b_zero);
-        inject(bhir, ++pc, BH_DISCARD, b_zero);
-        inject(bhir, ++pc, BH_ADD, f_abs, f_abs, f_zero);
-        inject(bhir, ++pc, BH_FREE, f_zero);
+        inject(bhir, ++pc, BH_FREE,     b_zero);
+        inject(bhir, ++pc, BH_DISCARD,  b_zero);
+
+        inject(bhir, ++pc, BH_ADD,     f_abs, f_abs, f_zero);
+        inject(bhir, ++pc, BH_FREE,    f_zero);
         inject(bhir, ++pc, BH_DISCARD, f_zero);
+
         inject(bhir, ++pc, BH_IDENTITY, output, f_abs);
-        inject(bhir, ++pc, BH_FREE, f_abs);
-        inject(bhir, ++pc, BH_DISCARD, f_abs);
+        inject(bhir, ++pc, BH_FREE,     f_abs);
+        inject(bhir, ++pc, BH_DISCARD,  f_abs);
+
         inject(bhir, ++pc, BH_DIVIDE, output, input, output);
     }
 
-    return pc-start_pc;
+    return pc - start_pc;
 }
 
 }}}

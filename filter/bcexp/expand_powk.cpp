@@ -26,13 +26,17 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
+static const int64_t max_exponent_unfolding = 100;
+
 int Expander::expand_powk(bh_ir& bhir, int pc)
 {
     int start_pc = pc;
-    bh_instruction& instr = bhir.instr_list[pc];        // Grab the BH_POWER instruction
-    int64_t const k = 100;                              // Max exponent "unfolding"
 
-    if (!bh_is_constant(&instr.operand[2])) {           // Transformation does not apply
+    // Grab the BH_POWER instruction
+    bh_instruction& instr = bhir.instr_list[pc];
+
+    // Transformation does not apply for non constants
+    if (!bh_is_constant(&instr.operand[2])) {
         return 0;
     }
 
@@ -42,22 +46,27 @@ int Expander::expand_powk(bh_ir& bhir, int pc)
 
     int64_t exponent;
     try {
-        exponent = instr.constant.get_int64();          // Extract the exponent
+        // Extract the exponent
+        exponent = instr.constant.get_int64();
     } catch (overflow_error& e) {
-        return 0; //Give up, if we cannot get a signed integer
+        // Give up, if we cannot get a signed integer
+        return 0;
     }
 
-    if (0 > exponent || exponent > k) {
+    if (0 > exponent || exponent > max_exponent_unfolding) {
         return 0;
     }
 
     // TODO: Add support for this case by using intermediates.
-    if (instr.operand[0].base == instr.operand[1].base) {// Transformation does not apply
+    if (instr.operand[0].base == instr.operand[1].base) {
         return 0;
     }
 
-    instr.opcode = BH_NONE;             // Lazy choice... no re-use just NOP it.
-    bh_view out = instr.operand[0];     // Grab operands
+    // Lazy choice... no re-use just NOP it.
+    instr.opcode = BH_NONE;
+
+    // Grab operands
+    bh_view out = instr.operand[0];
     bh_view in1 = instr.operand[1];
 
     // Transform BH_POWER into BH_MULTIPLY sequences.
@@ -84,7 +93,7 @@ int Expander::expand_powk(bh_ir& bhir, int pc)
         }
     }
 
-    return pc-start_pc;
+    return pc - start_pc;
 }
 
 }}}

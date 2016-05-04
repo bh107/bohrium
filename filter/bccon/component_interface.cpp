@@ -23,25 +23,19 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.h>
 
 #include "component_interface.h"
-#include "reduction_chain_filter.hpp"
-#include "collect_filter.hpp"
-#include "find_repeats_filter.hpp"
-#include "stupid_math_filter.hpp"
+#include "contracter.hpp"
 
 //
 // Components
 //
-
-static bh_component myself; // Myself
-
-// Function pointers to our child.
+static bh_component myself;
 static bh_component_iface *child;
-
-static bool find_repeats_, reduction_, stupidmath_, collect_;
 
 // The timing ID for the filter
 static bh_intp exec_timing;
 static bool timing;
+
+static bohrium::filter::composite::Contracter* contracter = NULL;
 
 //
 // Component interface init/execute/shutdown
@@ -70,10 +64,12 @@ bh_error bh_filter_bccon_init(const char* name)
         return err;
     }
 
-    find_repeats_ = bh_component_config_lookup_bool(&myself, "find_repeats", false);
-    reduction_    = bh_component_config_lookup_bool(&myself, "reduction",    false);
-    stupidmath_   = bh_component_config_lookup_bool(&myself, "stupidmath",   false);
-    collect_      = bh_component_config_lookup_bool(&myself, "collect",      false);
+    contracter = new bohrium::filter::composite::Contracter(
+        bh_component_config_lookup_bool(&myself, "find_repeats", false),
+        bh_component_config_lookup_bool(&myself, "reduction",    false),
+        bh_component_config_lookup_bool(&myself, "stupidmath",   false),
+        bh_component_config_lookup_bool(&myself, "collect",      false)
+    );
 
     return BH_SUCCESS;
 }
@@ -98,10 +94,7 @@ bh_error bh_filter_bccon_execute(bh_ir* bhir)
     if (timing)
         start = bh_timer_stamp();
 
-    if (find_repeats_) find_repeats_filter(*bhir);
-    if (reduction_)    reduction_chain_filter(*bhir);
-    if (stupidmath_)   stupid_math_filter(*bhir);
-    if (collect_)      collect_filter(*bhir);
+    contracter->contract(*bhir);
 
     if (timing)
         bh_timer_add(exec_timing, start, bh_timer_stamp());

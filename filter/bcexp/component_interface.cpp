@@ -32,7 +32,7 @@ If not, see <http://www.gnu.org/licenses/>.
 static bh_component myself;         // Myself
 static bh_component_iface *child;   // My child
 
-//The timing ID for the filter
+// The timing ID for the filter
 static bh_intp exec_timing;
 static bool timing;
 
@@ -65,30 +65,21 @@ bh_error bh_filter_bcexp_init(const char* name)
         return err;
     }
 
-    bh_intp gc_threshold, sign, matmul, powk, repeat, reduce1d;
-    if ((BH_SUCCESS!=bh_component_config_int_option(&myself, "gc_threshold", 0, 2000, &gc_threshold)) or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "matmul", 0, 1, &matmul)) or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "sign", 0, 1, &sign)) or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "powk", 0, 1, &powk)) or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "repeat", 0, 1, &repeat))) {
-        return BH_ERROR;
-    }
-    reduce1d = bh_component_config_lookup_int(&myself, "reduce1d", 0);
     try {                           // Construct the expander
-        expander = new bohrium::filter::composite::Expander(gc_threshold,
-                                                            matmul,
-                                                            sign,
-                                                            powk,
-                                                            reduce1d,
-                                                            repeat);
+        expander = new bohrium::filter::composite::Expander(
+            bh_component_config_lookup_int( &myself, "gc_threshold",  400),
+            bh_component_config_lookup_bool(&myself, "matmul",       true),
+            bh_component_config_lookup_bool(&myself, "sign",         true),
+            bh_component_config_lookup_bool(&myself, "powk",         true),
+            bh_component_config_lookup_bool(&myself, "reduce1d",    false),
+            bh_component_config_lookup_bool(&myself, "repeat",       true)
+        );
     } catch (std::bad_alloc& ba) {
         fprintf(stderr, "Failed constructing Expander due to allocation error.\n");
-    }
-    if (NULL == expander) {
         return BH_ERROR;
-    } else {
-        return BH_SUCCESS;
     }
+
+    return BH_SUCCESS;
 }
 
 bh_error bh_filter_bcexp_shutdown(void)
