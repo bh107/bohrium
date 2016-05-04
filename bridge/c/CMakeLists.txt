@@ -24,7 +24,7 @@ add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} gen_types.py ${CMAKE_CURRENT_BINARY_DIR}/out
     COMMAND ${PYTHON_EXECUTABLE} gen_array_operations.py ${CMAKE_CURRENT_BINARY_DIR}/out
     COMMAND ${PYTHON_EXECUTABLE} gen_specials.py ${CMAKE_CURRENT_BINARY_DIR}/out
-    COMMAND ${PYTHON_EXECUTABLE} cat_files.py ${SRC_H} --output ${CMAKE_CURRENT_BINARY_DIR}/out/bhc.h
+    COMMAND cat ${SRC_H} > ${CMAKE_CURRENT_BINARY_DIR}/out/bhc.h
     DEPENDS gen_types.py
             gen_array_operations.py
             gen_specials.py
