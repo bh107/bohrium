@@ -1,217 +1,93 @@
 #
-# Stack configuration
+# Stack configurations
+# NB: 'stacks' is a reversed section name and 'default'
+#     is used when 'BH_STACKS' is unset.
 #
-[stack_default]
-type = stack
-stack_default = bcexp_cpu
-bcexp_cpu = bccon
-bccon = topological
-topological = node
-node = cpu
+[stacks]
+default = bcexp_cpu, bccon, topological, node, cpu
+gpu = bcexp_gpu, dimclean, greedy, node, gpu, cpu
 
-#
-# Other stack configurations (for reference, experiments, testing, etc.)
-#
-# Use the BH_STACK env-var to choose another stack configuration.
-#
-# Such as BH_STACK="stack_gpu"
-# or
-# modify the default stack configuration above ("stack_default").
-#
-[stack_gpu]
-type = stack
-stack_gpu = bcexp_gpu
-bcexp_gpu = dimclean
-dimclean = greedy
-greedy = node
-node = gpu
-gpu = cpu
-
-[stack_gpu_debug]
-type = stack
-stack_gpu_debug = pprint
-pprint = bcexp_gpu
-bcexp_gpu = dimclean
-dimclean = greedy
-greedy = fuseprinter
-fuseprinter = node
-node = gpu
-gpu = cpu
-
-[stack_cpu_greedy]
-type = stack
-stack_cpu_greedy = bcexp_cpu
-bcexp_cpu = bccon
-bccon = greedy
-greedy = node
-node = cpu
-
-[stack_cpu_debug_t]
-type = stack
-stack_cpu_debug_t = bcexp_cpu
-bcexp_cpu = bccon
-bccon = topological
-topological = fuseprinter
-fuseprinter = pricer
-pricer = node
-node = cpu
-
-[stack_cpu_debug_g]
-type = stack
-stack_cpu_debug_g = bcexp_cpu
-bcexp_cpu = bccon
-bccon = greedy
-greedy = fuseprinter
-fuseprinter = pricer
-pricer = node
-node = cpu
-
-[stack_cpu_debug_o]
-type = stack
-stack_cpu_debug_o = bcexp_cpu
-bcexp_cpu = bccon
-bccon = optimal
-optimal = fuseprinter
-fuseprinter = pricer
-pricer = node
-node = cpu
-
-[stack_cpu_debug_d]
-type = stack
-stack_cpu_debug_d = bcexp_cpu
-bcexp_cpu = bccon
-bccon = gentle
-gentle = fuseprinter
-fuseprinter = pricer
-pricer = node
-node = cpu
-
-[stack_proxy_cpu]
-type = stack
-stack_proxy_cpu = bcexp_cpu
-bcexp_cpu = bccon
-bccon = visualizer
-visualizer = proxy
-proxy = topological
-topological = node
-node = cpu
-
-#
-# Component configuration
-#
-
-#
-# Bridges
-#
-[bridge]
-type = bridge
-children = bcexp
 
 #
 # Managers
 #
 
+[node]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node${CMAKE_SHARED_LIBRARY_SUFFIX}
+timing = false
+
 [proxy]
-type = vem
 address = localhost
 port = 4200
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_proxy${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = node
 
 [visualizer]
-type = vem
 address = localhost
 port = 4200
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = node
 
 [cluster]
-type = vem
-children = node
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_cluster${CMAKE_SHARED_LIBRARY_SUFFIX}
 
-[node]
-type = vem
-children = topological
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node${CMAKE_SHARED_LIBRARY_SUFFIX}
-timing = false
 
 #
 # Fusers
 #
 
 [singleton]
-type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_singleton${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
 fuse_cache = true
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 timing = false
 
 [topological]
-type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_topological${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
 fuse_cache = true
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 timing = false
 
 [gentle]
-type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_gentle${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
 fuse_cache = true
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 timing = false
 
 [greedy]
-type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_greedy${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
 fuse_cache = true
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 timing = false
 
 [optimal]
-type = fuser
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_optimal${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
 fuse_cache = true
 cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
 timing = false
+
 
 #
 # Filters - Helpers / Tools
 #
 [pprint]
-type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pprint${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
 
 [fuseprinter]
-type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_fuseprinter${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = pricer
 
 [pricer]
-type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pricer${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = cpu
+
 
 #
 # Filters - Bytecode transformers
 #
 [dimclean]
-type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_dimclean${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = false
-children = node
 
 [bccon]
-type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = node
 reduction = true
 collect = true
 find_repeats = false
@@ -220,15 +96,11 @@ muladd = true
 timing = false
 
 [noneremover]
-type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_noneremover${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = node
 timing = false
 
 [bcexp]
-type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = dimclean
 gc_threshold = 400
 matmul = 1
 sign = 1
@@ -238,9 +110,7 @@ repeat = 0
 timing = false
 
 [bcexp_gpu]
-type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = dimclean
 gc_threshold = 400
 matmul = 1
 sign = 1
@@ -250,9 +120,7 @@ repeat = 0
 timing = false
 
 [bcexp_cpu]
-type = filter
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
-children = node
 gc_threshold = 400
 matmul = 1
 sign = 0
@@ -261,11 +129,11 @@ reduce1d = 0
 repeat = 0
 timing = false
 
+
 #
 # Engines
 #
 [cpu]
-type = ve
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = ${VE_CPU_TIMING}
@@ -294,7 +162,6 @@ kernel_path="${VE_CPU_KERNEL_PATH}"
 ##
 
 [gpu]
-type = ve
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 include = ${CMAKE_INSTALL_PREFIX}/share/bohrium/include
@@ -310,7 +177,6 @@ work_goup_size_3dz = 2
 kernel = both
 # compile = {[async],sync}
 compile = sync
-children = cpu
 verbose = false
 timing = false
 print_source = false
