@@ -17,17 +17,33 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <bh_fuse_cache.hpp>
-#include <iostream>
-#include <fstream>
-#include <boost/foreach.hpp>
-#include <vector>
-#include <map>
-#include <stdexcept>
 
-using namespace std;
-using namespace boost;
+#include <iostream>
+#include <bh_component.hpp>
+#include <bh_fuse_cache.hpp>
+
 using namespace bohrium;
+using namespace component;
+using namespace std;
+
+class Impl : public Implementation {
+  private:
+    Interface child;
+    FuseCache _fuse_cache;
+  public:
+    Impl(unsigned int stack_level) : Implementation(stack_level),
+         child(Implementation::config.getChildLibraryPath(), stack_level+1) {}
+    ~Impl() {};
+    void execute(bh_ir *bhir);
+    void extmethod(const string &name, bh_opcode opcode);
+};
+
+extern "C" Implementation* create(unsigned int stack_level) {
+    return new Impl(stack_level);
+}
+extern "C" void destroy(Implementation* self) {
+    delete self;
+}
 
 static void do_fusion(bh_ir &bhir)
 {
@@ -39,22 +55,29 @@ static void do_fusion(bh_ir &bhir)
     }
 }
 
-void fuser(bh_ir &bhir, FuseCache &cache)
+static void fuser(bh_ir &bhir, FuseCache &cache)
 {
     if(bhir.kernel_list.size() != 0)
         throw logic_error("The kernel_list is not empty!");
 
-    if(cache.enabled)
-    {
+    if(cache.enabled) {
         BatchHash hash(bhir.instr_list);
         if(cache.lookup(hash, bhir, bhir.kernel_list))
             return;//Fuse cache hit!
         do_fusion(bhir);
         cache.insert(hash, bhir.kernel_list);
     }
-    else
-    {
+    else {
         do_fusion(bhir);
     }
 }
 
+void Impl::execute(bh_ir *bhir) {
+
+    cout << "execute singleton!" << endl;
+    fuser(*bhir, _fuse_cache);     // Run the filter
+}
+
+void Impl::extmethod(const string &name, bh_opcode opcode) {
+    cout << "extmethod!" << endl;
+}
