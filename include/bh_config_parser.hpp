@@ -120,7 +120,7 @@ class ConfigParser {
      * @return File path to shared library
      * Throw exception if the calling component has not children
      */
-    std::string getChildLibraryPath();
+    std::string getChildLibraryPath() const;
 
     /* Retrieve the name of the calling component
      *
