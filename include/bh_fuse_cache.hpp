@@ -31,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_fuse.hpp>
 #include <bh_fuse_price.hpp>
-#include "bh_component.h"
+#include <bh_component.hpp>
 
 namespace bohrium {
 
@@ -147,7 +147,7 @@ class FuseCache
     CacheMap cache;
 
     //Path to the directory of the fuse cache files
-    const char* dir_path;
+    std::string dir_path;
 
     //The name of the current fuser component
     std::string fuser_name;
@@ -163,12 +163,12 @@ public:
 
     /* Construct a new FuseCache instant
      *
-     * @component  The component handle
+     * @config The config parser
      */
-    FuseCache(const bh_component &component):enabled(true)
+    FuseCache(const ConfigParser &config) : enabled(true)
     {
-        dir_path = bh_component_config_lookup(&component, "cache_path");
-        fuser_name = component.name;
+        dir_path = config.defaultGet<std::string>("cache_path", "");
+        fuser_name = config.getName();
         load_from_files();
     }
 

@@ -266,7 +266,7 @@ bool FuseCache::lookup(const BatchHash &batch,
 void FuseCache::write_to_files() const
 {
     assert(enabled);
-    if(dir_path == NULL or dir_path[0] == '\0')
+    if(dir_path.empty())
     {
         cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \
             "the configure file thus no cache files are written to disk!" << endl;
@@ -308,7 +308,7 @@ void FuseCache::write_to_files() const
 void FuseCache::load_from_files()
 {
     assert(enabled);
-    if(dir_path == NULL or dir_path[0] == '\0')
+    if(dir_path.empty())
     {
         cout << "[FUSE-CACHE] Couldn't find the 'cache_path' key in "   \
             "the configure file thus no cache files are loaded from disk!" << endl;
