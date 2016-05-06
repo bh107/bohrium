@@ -61,7 +61,7 @@ class ConfigParser {
      * @return   The value, which is lexically converted to type 'T'
      */
     template<typename T>
-    const T get(const std::string &section, const std::string &option) const {
+    T get(const std::string &section, const std::string &option) const {
         using namespace std;
         using namespace boost;
         //Check the environment variable e.g. BH_VEM_NODE_TIMING
@@ -82,8 +82,36 @@ class ConfigParser {
         }
     }
     template<typename T>
-    const T get(const std::string &option) const {
+    T get(const std::string &option) const {
         return get<T>(_stack_list[stack_level], option);
+    }
+
+    /* Get an value of the 'option' within the 'section' and if it
+     * does not exist return 'default_value' instead
+     *
+     * @section        The ini section e.g. [gpu]. If omitted, the
+     *                 default section is used.
+     * @option         The ini option e.g. timing = True
+     * @default_value  The default value of type 'T'
+     * @return         The value, which is lexically converted to
+     *                 type 'T' or the 'default_value'
+     */
+    template<typename T>
+    T defaultGet(const std::string &section, const std::string &option,
+                 const T &default_value) const {
+        try {
+            return get<T>(section, option);
+        } catch (const boost::property_tree::ptree_bad_path&) {
+            return default_value;
+        }
+    }
+    template<typename T>
+    T defaultGet(const std::string &option, const T &default_value) const {
+        try {
+            return get<T>(option);
+        } catch (const boost::property_tree::ptree_bad_path&) {
+            return default_value;
+        }
     }
 
     /* Return the path to the library that implements
