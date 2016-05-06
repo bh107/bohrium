@@ -208,7 +208,7 @@ ConfigParser::ConfigParser(unsigned int stack_level) : file_path(get_config_path
     }
 }
 
-string ConfigParser::getChildLibraryPath()
+string ConfigParser::getChildLibraryPath() const
 {
     // Do we have a child?
     if (_stack_list.size() <= stack_level+1) {
