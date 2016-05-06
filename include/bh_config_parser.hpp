@@ -121,6 +121,12 @@ class ConfigParser {
      * Throw exception if the calling component has not children
      */
     std::string getChildLibraryPath();
+
+    /* Retrieve the name of the calling component
+     *
+     * @return Component name as given in the config file
+     */
+    std::string getName() const { return _stack_list[stack_level]; };
 };
 
 } //namespace bohrium
