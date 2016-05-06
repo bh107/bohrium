@@ -25,6 +25,29 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/lexical_cast.hpp>
 #include <string>
 
+// We need to specialize lexical_cast() in order to support booleans
+// other then the standard 0/1 to true/false conversion.
+namespace boost {
+    template<>
+    inline bool lexical_cast<bool, std::string>(const std::string& arg) {
+        switch(arg[0]) {
+            case 'y':
+            case 'Y':
+            case '1':
+            case 't':
+            case 'T':
+                return true;
+            case 'n':
+            case 'N':
+            case '0':
+            case 'f':
+            case 'F':
+                return false;
+            default:
+                throw boost::bad_lexical_cast();
+        }
+    }
+}
 
 namespace bohrium {
 
@@ -65,19 +88,24 @@ class ConfigParser {
         using namespace std;
         using namespace boost;
         //Check the environment variable e.g. BH_VEM_NODE_TIMING
-        {
-            string env = lookup_env(section, option);
-            if (not env.empty()) {
-                return lexical_cast<T>(env);
+        string value = lookup_env(section, option);
+        //Check the config file
+        if (value.empty()) {
+            try {
+                value = _config.get<string>(section + "." + option);
+            } catch (const property_tree::ptree_bad_path&) {
+                cerr << "Error parsing the config file '" << file_path << "', '"
+                     << section << "." << option << "' not found!" << endl;
+                throw;
             }
         }
-        //Check the config file
+        //Now let's try to convert the value to the requested type
         try {
+            return lexical_cast<T>(value);
+        } catch (const boost::bad_lexical_cast&) {
             string s = _config.get<string>(section + "." + option);
-            return lexical_cast<T>(s);
-        } catch (const property_tree::ptree_bad_path&) {
-            cerr << "Error parsing the config file '" << file_path << "', '"
-                 << section << "." << option << "' not found!" << endl;
+            cerr << "ConfigParser cannot convert '" << section << "." << option
+                 << "=" << s << "' to type <" << typeid(T).name() << ">" << endl;
             throw;
         }
     }
