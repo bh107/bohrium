@@ -78,7 +78,7 @@ void Impl::inspect(bh_instruction *instr) {
             _allocated_bases.insert(operands[o].base);
     }
 
-    //And remove discared arrays
+    //And remove discarded arrays
     if(instr->opcode == BH_DISCARD)
     {
         bh_base *base = operands[0].base;
@@ -92,11 +92,10 @@ void Impl::inspect(bh_instruction *instr) {
 
 void Impl::execute(bh_ir *bhir) {
 
-    cout << "execute!" << endl;
+    cout << "NODE execute!" << endl;
     for(uint64_t i=0; i < bhir->instr_list.size(); ++i)
         inspect(&bhir->instr_list[i]);
     child.getImpl()->execute(bhir);
-
 }
 
 void Impl::extmethod(const string &name, bh_opcode opcode) {

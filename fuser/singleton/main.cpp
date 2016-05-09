@@ -76,6 +76,7 @@ void Impl::execute(bh_ir *bhir) {
 
     cout << "execute singleton!" << endl;
     fuser(*bhir, _fuse_cache);     // Run the filter
+    child.getImpl()->execute(bhir);
 }
 
 void Impl::extmethod(const string &name, bh_opcode opcode) {
