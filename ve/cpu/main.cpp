@@ -28,34 +28,71 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define BH_TIMING_SUM
 #include "bh_timing.hpp"
-#include "bh_ve_cpu.h"
 
 #include "timevault.hpp"
 #include "utils.hpp"
 #include "engine.hpp"
 #include "kp_rt.h"
 
-using namespace std;
 const char TAG[] = "Component";
 
-static bh_component myself;
+#include <bh_component.hpp>
 
-//
-// This is where the actual engine implementation is
-static kp::engine::Engine* engine = NULL;
-
-// Timing ID for timing of execute()
-static bh_intp exec_timing;
-static bool timing;
-static size_t exec_count = 0;
-static map<bh_opcode, bh_extmethod_impl> extensions;
+using namespace std;
+using namespace bohrium;
+using namespace component;
 
 typedef vector<bh_instruction> instr_iter;
 typedef vector<bh_ir_kernel>::iterator krnl_iter;
 
-/* Component interface: init (see bh_component.h) */
-bh_error bh_ve_cpu_init(const char *name)
-{
+class Impl : public Implementation {
+  private:
+    // This is where the actual engine implementation is
+    kp::engine::Engine* engine = NULL;
+
+    // Timing ID for timing of execute()
+    bh_intp exec_timing;
+    bool timing;
+    size_t exec_count = 0;
+    //static map<bh_opcode, bh_extmethod_impl> extensions;
+  public:
+    Impl(unsigned int stack_level);
+    ~Impl() {
+        delete engine;
+        if (timing) {
+            bh_timer_finalize(exec_timing);
+        }
+    }
+    void execute(bh_ir *bhir);
+    void extmethod(const string &name, bh_opcode opcode) {
+        cout << "extmethod" << endl;
+        exit(-1);
+        /*
+        bh_extmethod_impl extmethod;
+        bh_error err = bh_component_extmethod(&myself, name, &extmethod);
+        if (err != BH_SUCCESS) {
+            return err;
+        }
+
+        if (extensions.find(opcode) != extensions.end()) {
+            fprintf(stderr, "[CPU-VE] Warning, multiple registrations of the same"
+                   "extension method '%s' (opcode: %d)\n", name, (int)opcode);
+        }
+        extensions[opcode] = extmethod;
+        */
+    }
+};
+
+extern "C" Implementation* create(unsigned int stack_level) {
+    return new Impl(stack_level);
+}
+extern "C" void destroy(Implementation* self) {
+    delete self;
+}
+
+
+
+Impl::Impl(unsigned int stack_level) : Implementation(stack_level) {
     char* env = getenv("BH_FUSE_MODEL");                    // Set the fuse-model
     if (NULL != env) {
         string env_str(env);
@@ -66,53 +103,28 @@ bh_error bh_ve_cpu_init(const char *name)
     } else {
         setenv("BH_FUSE_MODEL", "SAME_SHAPE_GENERATE_1DREDUCE", 1);
     }
-    if (BH_SUCCESS != bh_component_init(&myself, name)) {   // Initialize engine
-        fprintf(stderr, "[CPU-VE] Failed initializing component\n");
-        return BH_ERROR;
-    }
-    if (0 != myself.nchildren) {                            // Check stack
-        fprintf(stderr, "[CPU-VE] Unexpected number of children, must be 0\n");
-        return BH_ERROR;
-    }
 
     //
     //  Get engine parameters
     //
-    bh_intp bind;
-    bh_intp vcache_size;
-    bool preload;
+    timing = config.defaultGet<bool>("timing", false);
+    bh_intp bind = config.get<bh_intp>("bind");
+    bh_intp vcache_size = config.get<bh_intp>("vcache_size");
+    bool preload = config.defaultGet<bool>("preload", false);
 
-    bh_intp jit_level;
-    bool jit_dumpsrc;
-    bh_intp jit_offload;
+    bh_intp jit_level   = config.get<bh_intp>("jit_level");
+    bool jit_dumpsrc    = config.defaultGet<bool>("jit_dumpsrc", false);
+    bh_intp jit_offload = config.get<bh_intp>("jit_offload");
 
-    char* compiler_cmd = NULL;
-    char* compiler_inc = NULL;
-    char* compiler_lib = NULL;
-    char* compiler_flg = NULL;
-    char* compiler_ext = NULL;
+    string compiler_cmd = config.get<string>("compiler_cmd");
+    string compiler_inc = config.get<string>("compiler_inc");
+    string compiler_lib = config.get<string>("compiler_lib");
+    string compiler_flg = config.get<string>("compiler_flg");
+    string compiler_ext = config.get<string>("compiler_ext");
 
-    char* object_path = NULL;
-    char* template_path = NULL;
-    char* kernel_path = NULL;
-
-    if ((BH_SUCCESS!=bh_component_config_bool_option(&myself, "timing", &timing))                   or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "bind", 0, 2, &bind))                  or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "vcache_size", 0, 100, &vcache_size))  or \
-        (BH_SUCCESS!=bh_component_config_bool_option(&myself, "preload", &preload))                 or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_level", 0, 3, &jit_level))        or \
-        (BH_SUCCESS!=bh_component_config_bool_option(&myself, "jit_dumpsrc", &jit_dumpsrc))         or \
-        (BH_SUCCESS!=bh_component_config_int_option(&myself, "jit_offload", 0, 2, &jit_offload))    or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_cmd", &compiler_cmd))     or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_inc", &compiler_inc))     or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_lib", &compiler_lib))     or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_flg", &compiler_flg))     or \
-        (BH_SUCCESS!=bh_component_config_string_option(&myself, "compiler_ext", &compiler_ext))     or \
-        (BH_SUCCESS!=bh_component_config_path_option(&myself, "object_path", &object_path))         or \
-        (BH_SUCCESS!=bh_component_config_path_option(&myself, "kernel_path", &kernel_path))         or \
-        (BH_SUCCESS!=bh_component_config_path_option(&myself, "template_path", &template_path))) {
-        return BH_ERROR;
-    }
+    string object_path   = config.get<string>("object_path");
+    string template_path = config.get<string>("template_path");
+    string kernel_path   = config.get<string>("kernel_path");
 
     // Initialize execute(...) timer
     if (timing) {
@@ -145,11 +157,10 @@ bh_error bh_ve_cpu_init(const char *name)
             break;
     }
 
-	//
     // Make sure that kernel and object path exists
-	// TODO: This is anti-portable and should be fixed.
-    mkdir(kernel_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    mkdir(object_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    // TODO: This is anti-portable and should be fixed.
+    mkdir(kernel_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    mkdir(object_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     // Construct architecture id for object-store
     char* host_cstr = new char[200];
@@ -201,13 +212,9 @@ bh_error bh_ve_cpu_init(const char *name)
     if (getenv("BH_VE_CPU_INFO")) { // Print out engine configuration
         cout << engine->text() << endl;
     }
-
-    return BH_SUCCESS;
 }
 
-/* Component interface: execute (see bh_component.h) */
-bh_error bh_ve_cpu_execute(bh_ir* bhir)
-{
+void Impl::execute(bh_ir* bhir) {
     bh_uint64 timestamp = 0;
     if (timing) {
         timestamp = bh_timer_stamp();
@@ -240,6 +247,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
         if ((block.omask() & KP_EXTENSION)>0) {         // Extension-Instruction-Execute (EIE)
             TIMER_START
             kp_tac& tac = block.tac(0);
+            /*
             map<bh_opcode, bh_extmethod_impl>::iterator ext;
             ext = extensions.find(static_cast<bh_instruction*>(tac.ext)->opcode);
             if (ext != extensions.end()) {
@@ -250,6 +258,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                     return res;
                 }
             }
+            */
             TIMER_STOP(block.text_compact());
         } else if ((engine->jit_fusion()) ||
                    (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
@@ -260,7 +269,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
             TIMER_STOP(block.text_compact());
 
             if (BH_SUCCESS != res) {
-                return res;
+                throw runtime_error("VE-CPU: fatal error");
             }
             DEBUG(TAG, "Muilti-Instruction-Execute END");
         } else {                                        // Single-Instruction-Execute (SIE)
@@ -277,7 +286,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                 TIMER_STOP(block.text_compact());
 
                 if (BH_SUCCESS != res) {
-                    return res;
+                    throw runtime_error("VE-CPU: fatal error");
                 }
             }
             DEBUG(TAG, "Single-Instruction-Execute END");
@@ -287,26 +296,9 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
     if (timing) {
         bh_timer_add(exec_timing, timestamp, bh_timer_stamp());
     }
-
-    return res;
 }
 
-/* Component interface: shutdown (see bh_component.h) */
-bh_error bh_ve_cpu_shutdown(void)
-{
-    bh_component_destroy(&myself);
-
-    delete engine;
-    engine = NULL;
-
-    if (timing) {
-        bh_timer_finalize(exec_timing);
-    }
-
-    return BH_SUCCESS;
-}
-
-/* Component interface: extmethod (see bh_component.h) */
+/*
 bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 {
     bh_extmethod_impl extmethod;
@@ -323,3 +315,6 @@ bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 
     return BH_SUCCESS;
 }
+*/
+
+
