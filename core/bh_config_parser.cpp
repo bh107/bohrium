@@ -169,10 +169,10 @@ string get_config_path() {
     }
     return string(env);
 }
-}// namespace unnamed
 
-string ConfigParser::lookup_env(const string &section, const string &option) const
-{
+// Return section/option as an environment variable
+// or the empty string if the environment variable wasn't found
+string lookup_env(const string &section, const string &option) {
     string s = "BH_" + section + option;
     to_lower(s);
     const char *env = getenv(s.c_str());
@@ -181,6 +181,19 @@ string ConfigParser::lookup_env(const string &section, const string &option) con
     } else {
         return string(env);
     }
+}
+
+}// namespace unnamed
+
+string ConfigParser::lookup(const string &section, const string &option) const {
+    //Check environment variable
+    string ret = lookup_env(section, option);
+    if (not ret.empty())
+        return ret;
+
+    //Check config file
+    ret = _config.get<string>(section + "." + option);
+    return ret;
 }
 
 ConfigParser::ConfigParser(unsigned int stack_level) : file_path(get_config_path()),
