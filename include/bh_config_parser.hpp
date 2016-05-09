@@ -64,10 +64,10 @@ class ConfigParser {
     std::vector<std::string> _stack_list;
     // The config data
     boost::property_tree::ptree _config;
-    // Return section/option as an environment variable
-    // or the empty string if the environment variable wasn't found
-    std::string lookup_env(const std::string &section,
-                           const std::string &option) const;
+    // Return section/option first looking at the environment variable
+    // and then the ini file.
+    std::string lookup(const std::string &section,
+                       const std::string &option) const;
   public:
     /* Uses 'stack_level' to find the default section to use with get()
      * and when calculating the child in getChild()
@@ -87,21 +87,18 @@ class ConfigParser {
     T get(const std::string &section, const std::string &option) const {
         using namespace std;
         using namespace boost;
-        //Check the environment variable e.g. BH_VEM_NODE_TIMING
-        string value = lookup_env(section, option);
-        //Check the config file
-        if (value.empty()) {
-            try {
-                value = _config.get<string>(section + "." + option);
-            } catch (const property_tree::ptree_bad_path&) {
-                cerr << "Error parsing the config file '" << file_path << "', '"
-                     << section << "." << option << "' not found!" << endl;
-                throw;
-            }
+        //Retrieve the option
+        string ret;
+        try {
+            ret = lookup(section, option);
+        } catch (const property_tree::ptree_bad_path&) {
+            cerr << "Error parsing the config file '" << file_path << "', '"
+                 << section << "." << option << "' not found!" << endl;
+            throw;
         }
         //Now let's try to convert the value to the requested type
         try {
-            return lexical_cast<T>(value);
+            return lexical_cast<T>(ret);
         } catch (const boost::bad_lexical_cast&) {
             string s = _config.get<string>(section + "." + option);
             cerr << "ConfigParser cannot convert '" << section << "." << option
