@@ -193,7 +193,13 @@ string ConfigParser::lookup(const string &section, const string &option) const {
 
     //Check config file
     ret = _config.get<string>(section + "." + option);
-    return ret;
+
+    //Remove quotes "" or '' and return
+    if (ret.find_first_of("\"'") == 0 and ret.find_last_of("\"'") == ret.size()-1) {
+        return ret.substr(1, ret.size()-2);
+    } else {
+        return ret;
+    }
 }
 
 ConfigParser::ConfigParser(unsigned int stack_level) : file_path(get_config_path()),
