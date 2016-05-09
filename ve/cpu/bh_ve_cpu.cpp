@@ -122,15 +122,16 @@ bh_error bh_ve_cpu_init(const char *name)
     //
     //  Set JIT-parameters based on JIT-LEVEL
     //
-    bool jit_enabled = 0;
-    bool jit_fusion = 0;
-    bool jit_contraction = 0;
+    bool jit_enabled     = false;
+    bool jit_fusion      = false;
+    bool jit_contraction = false;
+
     switch(jit_level) {
         case 0:                     // Disable JIT, rely on preload.
-            preload = true;
-            jit_enabled = false;
-            jit_dumpsrc = false;
-            jit_fusion = false;
+            preload         = true;
+            jit_enabled     = false;
+            jit_dumpsrc     = false;
+            jit_fusion      = false;
             jit_contraction = false;
             break;
 
@@ -322,4 +323,3 @@ bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
 
     return BH_SUCCESS;
 }
-

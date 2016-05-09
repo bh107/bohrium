@@ -1,8 +1,8 @@
 //
 //  AXIS-walker ND
 //
-//	Walks the iteration-space using other/axis loop constructs.
-//	Partitions work into chunks of size equal to the "axis" dimension.
+//    Walks the iteration-space using other/axis loop constructs.
+//    Partitions work into chunks of size equal to the "axis" dimension.
 //
 {{OFFLOAD_BLOCK}}
 {
@@ -25,6 +25,7 @@
     for(int64_t dim=0; dim<ndim; ++dim) {
         nelements *= shape[dim];
     }
+
     // Now only the strides a needed
     //
     // Compute the weight
@@ -35,13 +36,13 @@
         acc *= shape[dim];
     }
 
-    const int mthreads          = omp_get_max_threads();
-    const int64_t chunksize     = shape[inner_dim];
-    const int64_t nchunks       = nelements / chunksize;
-    const int64_t nworkers      = nchunks > mthreads ? mthreads : 1;
-    const int64_t work_split    = nchunks / nworkers;
-    const int64_t work_spill    = nchunks % nworkers;
-    
+    const int mthreads       = omp_get_max_threads();
+    const int64_t chunksize  = shape[inner_dim];
+    const int64_t nchunks    = nelements / chunksize;
+    const int64_t nworkers   = nchunks > mthreads ? mthreads : 1;
+    const int64_t work_split = nchunks / nworkers;
+    const int64_t work_spill = nchunks % nworkers;
+
     #pragma omp parallel num_threads(nworkers)
     {
         const int tid = omp_get_thread_num();
@@ -57,60 +58,61 @@
         work_end = work_offset + work;
 
         if (work) {
-        // Walker STRIDE_AXIS - begin
-        {{WALKER_STRIDE_AXIS}}
-        // Walker STRIDE_AXIS - end
+            // Walker STRIDE_AXIS - begin
+            {{WALKER_STRIDE_AXIS}}
+            // Walker STRIDE_AXIS - end
 
-        // Accumulator DECLARE COMPLETE - begin
-        {{ACCU_LOCAL_DECLARE_COMPLETE}}
-        // Accumulator DECLARE COMPLETE - end        
+            // Accumulator DECLARE COMPLETE - begin
+            {{ACCU_LOCAL_DECLARE_COMPLETE}}
+            // Accumulator DECLARE COMPLETE - end
 
-        const int64_t eidx_begin = work_offset*chunksize;
-        const int64_t eidx_end   = work_end*chunksize;
-        for(int64_t eidx=eidx_begin; eidx<eidx_end; ++eidx) {
-            // Walker declaration(s) - begin
-            {{WALKER_DECLARATION}}
-            // Walker declaration(s) - end
+            const int64_t eidx_begin = work_offset*chunksize;
+            const int64_t eidx_end   = work_end*chunksize;
+            for(int64_t eidx=eidx_begin; eidx<eidx_end; ++eidx) {
+                // Walker declaration(s) - begin
+                {{WALKER_DECLARATION}}
+                // Walker declaration(s) - end
 
-            // Walker step non-axis / operand offset - begin
-            for(int64_t dim=0, other_dim=0; dim<iterspace_ndim; ++dim) {
-                if (dim==axis_dim) {
-                    continue;
+                // Walker step non-axis / operand offset - begin
+                for(int64_t dim=0, other_dim=0; dim<iterspace_ndim; ++dim) {
+                    if (dim==axis_dim) {
+                        continue;
+                    }
+                    const int64_t coord = (eidx / weight[other_dim]) % shape[other_dim];
+
+                    {{WALKER_STEP_OTHER}}
+                    ++other_dim;
                 }
-                const int64_t coord = (eidx / weight[other_dim]) % shape[other_dim];
+                // Walker step non-axis / operand offset - end
 
-                {{WALKER_STEP_OTHER}}
-                ++other_dim;
+                // Accumulator DECLARE - begin
+                {{ACCU_LOCAL_DECLARE_PARTIAL}}
+                // Accumulator DECLARE - end
+
+                {{PRAGMA_SIMD}}
+                for (int64_t aidx=0; aidx < axis_shape; aidx++) {
+                    // Apply operator(s) on operands - begin
+                    {{OPERATIONS}}
+                    // Apply operator(s) on operands - end
+
+                    // Walker step INNER - begin
+                    {{WALKER_STEP_AXIS}}
+                    // Walker step INNER - end
+                }
+                // Accumulator PARTIAL SYNC - begin
+                {{ACCU_OPD_SYNC_PARTIAL}}
+                // Accumulator PARTIAL SYNC - end
             }
-            // Walker step non-axis / operand offset - end
 
-            // Accumulator DECLARE - begin
-            {{ACCU_LOCAL_DECLARE_PARTIAL}}
-            // Accumulator DECLARE - end
-
-            {{PRAGMA_SIMD}}
-            for (int64_t aidx=0; aidx < axis_shape; aidx++) {
-                // Apply operator(s) on operands - begin
-                {{OPERATIONS}}
-                // Apply operator(s) on operands - end
-
-                // Walker step INNER - begin
-                {{WALKER_STEP_AXIS}}
-                // Walker step INNER - end
+            // Write EXPANDED scalars back to memory - begin
+            if (0==tid) {   // Write EXPANDED scalars back to memory.
+                {{WRITE_EXPANDED_SCALARS}}
             }
-            // Accumulator PARTIAL SYNC - begin
-            {{ACCU_OPD_SYNC_PARTIAL}}
-            // Accumulator PARTIAL SYNC - end
-        }
-        // Write EXPANDED scalars back to memory - begin
-        if (0==tid) {   // Write EXPANDED scalars back to memory.
-            {{WRITE_EXPANDED_SCALARS}}
-        }
-        // Write EXPANDED scalars back to memory - end
-        // Accumulator COMPLETE SYNC - begin
-        {{ACCU_OPD_SYNC_COMPLETE}}
-        // Accumulator COMPLETE SYNC - end
+
+            // Write EXPANDED scalars back to memory - end
+            // Accumulator COMPLETE SYNC - begin
+            {{ACCU_OPD_SYNC_COMPLETE}}
+            // Accumulator COMPLETE SYNC - end
         }
     }
 }
-

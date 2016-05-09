@@ -26,7 +26,7 @@
         {{KP_ETYPE}}* {{OPD_OUT}} = {{BUF_OUT}}_data + {{OPD_OUT}}_start;
         {{KP_ETYPE}}* {{OPD_IN1}} = {{BUF_IN1}}_data + {{OPD_IN1}}_start;
 
-        for (int64_t j=0; j<ndim; ++j) {           
+        for (int64_t j=0; j<ndim; ++j) {
             {{OPD_OUT}} += coord[j] * {{OPD_OUT}}_strides[j];
             {{OPD_IN1}} += coord[j] * {{OPD_IN1}}_strides[j];
         }
@@ -37,7 +37,7 @@
         {{ACCU_LOCAL_DECLARE}}
         for (int64_t j = 0; j<shape_axis; ++j) {
             {{OPERATIONS}}
-            
+
             {{OPD_OUT}} += {{OPD_OUT}}_stride_axis;
             {{OPD_IN1}} += {{OPD_IN1}}_stride_axis;
         }
@@ -49,7 +49,7 @@
                 continue;       // It is calculated within the loop above
             }
             coord[j]++;         // Still within this dimension
-            if (coord[j] < iterspace_shape[j]) {       
+            if (coord[j] < iterspace_shape[j]) {
                 break;
             } else {            // Reached the end of this dimension
                 coord[j] = 0;   // Reset coordinate
@@ -58,4 +58,3 @@
     }
     // TODO: Handle write-out of non-temp and non-const scalars.
 }
-

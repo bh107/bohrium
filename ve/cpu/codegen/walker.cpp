@@ -168,7 +168,7 @@ string Walker::offload_block_leo(void)
     }
     for(kernel_buffer_iter bit=kernel_.buffers_begin();
         bit != kernel_.buffers_end();
-        ++bit) { 
+        ++bit) {
         Buffer& buffer = bit->second;
         ss << "in(" << buffer.data() << ":length(0) alloc_if(0) free_if(0)) \\" << endl;
     }
@@ -188,7 +188,7 @@ string Walker::assign_collapsed_offset(uint32_t rank, uint64_t oidx)
         case KP_SCALAR:
         case KP_CONTRACTABLE:
             break;
-        
+
         case KP_CONTIGUOUS:
             // CONT COMPATIBLE iteration construct
             // or specialized
@@ -256,7 +256,7 @@ string Walker::assign_collapsed_offset(uint32_t rank)
         oit != kernel_.operands_end();
         ++oit) {
         ss << assign_collapsed_offset(rank, oit->first);
-        
+
     }
     return ss.str();
 }
@@ -271,7 +271,7 @@ string Walker::assign_offset_outer_2D(uint64_t oidx)
         case KP_SCALAR:
         case KP_CONTRACTABLE:
             break;
-        
+
         case KP_CONTIGUOUS:
         case KP_CONSECUTIVE:
         case KP_STRIDED:
@@ -296,7 +296,7 @@ string Walker::assign_offset_outer_2D(void)
         oit != kernel_.operands_end();
         ++oit) {
         ss << assign_offset_outer_2D(oit->first);
-        
+
     }
     return ss.str();
 }
@@ -484,7 +484,7 @@ string Walker::step_fwd_outer(uint64_t glb_idx)
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
- 
+
     return ss.str();
 }
 
@@ -524,7 +524,7 @@ string Walker::step_fwd_outer_2D(uint64_t glb_idx)
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
- 
+
     return ss.str();
 }
 
@@ -605,7 +605,7 @@ string Walker::step_fwd_other(uint64_t glb_idx, string dimvar)
             ss << "// " << operand.name() << " " << operand.layout() << endl;
             break;
     }
- 
+
     return ss.str();
 }
 
@@ -668,7 +668,7 @@ string Walker::step_fwd_axis(void)
 string Walker::operations(void)
 {
     stringstream ss;
-    
+
     for(kernel_tac_iter tit=kernel_.tacs_begin();
         tit!=kernel_.tacs_end();
         ++tit) {
@@ -753,7 +753,7 @@ string Walker::operations(void)
             case KP_SCAN:
                 inner_opds_.insert(tac.in1);
                 outer_opds_.insert(tac.in1);
-                
+
                 inner_opds_.insert(tac.out);
                 outer_opds_.insert(tac.out);
 
@@ -895,7 +895,7 @@ string Walker::generate_source(bool offload)
             in2 = &kernel_.operand_glb(tac->in2);
 
             partial_reduction_on_innermost = *((uint64_t*)(in2->meta().const_data)) == (rank-1);
-    
+
             // Construct reduction-type string for reduction-sync
             subjects["OPD_OUT"] = out->name();
             subjects["OPD_IN1"] = in1->name();
@@ -962,7 +962,7 @@ string Walker::generate_source(bool offload)
         // Reduction specfics
         if ((kernel_.omask() & KP_REDUCTION)>0) {
             if ((out->meta().layout & (KP_SCALAR | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED))>0) {
-                // Initialize the accumulator 
+                // Initialize the accumulator
                 subjects["ACCU_OPD_INIT"] = _line(_assign(
                     _deref(_add(out->buffer_data(), out->start())),
                     oper_neutral_element(tac->oper, in1->meta().etype)
@@ -1002,7 +1002,7 @@ string Walker::generate_source(bool offload)
         subjects["WALKER_STRIDE_INNER"] = declare_stride_inner();
         if (2 == rank) {
             plaid = "walker.inner.2d";
-            subjects["WALKER_STRIDE_OUTER"] = declare_stride_outer_2D(); 
+            subjects["WALKER_STRIDE_OUTER"] = declare_stride_outer_2D();
             subjects["WALKER_OFFSET"]       = assign_offset_outer_2D();
             subjects["WALKER_STEP_OUTER"]   = step_fwd_outer_2D();
         } else {
@@ -1014,7 +1014,7 @@ string Walker::generate_source(bool offload)
         // Reduction specfics
         if (((kernel_.omask() & (KP_REDUCE_PARTIAL | KP_REDUCE_COMPLETE))>0) and \
             ((out->meta().layout & (KP_SCALAR | KP_CONTIGUOUS | KP_CONSECUTIVE | KP_STRIDED))>0)) {
-            // Initialize the accumulator 
+            // Initialize the accumulator
             subjects["ACCU_OPD_INIT"] = _line(_assign(
                 _deref(_add(out->buffer_data(), out->start())),
                 oper_neutral_element(tac->oper, in1->meta().etype)
