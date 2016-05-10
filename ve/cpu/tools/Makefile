@@ -4,7 +4,7 @@ BDIR=/tmp/bhbuild_cpu/
 #PAR_LVL=-j$(shell expr $(shell nproc) / 2)
 PAR_LVL=-j1
 BH_PYTHON=python
-TEST_EXCLUDE=--exclude-test=test_lbm_3d
+TEST_EXCLUDE=
 DUMPSRC=1
 
 BUILD_OPTIONS=
@@ -28,6 +28,9 @@ intel:
 clang:
 	$(eval CC := clang)
 	$(eval CXX := clang++)
+
+use_dython:
+	$(eval BH_PYTHON := dython)
 
 for_dython:
 	$(eval BUILD_OPTIONS := $(BUILD_OPTIONS) -DPYTHON_EXECUTABLE=/usr/bin/dython -DPY_SCRIPT=python)
@@ -140,9 +143,9 @@ crap: ## Remove dot-, trace-, flow-, and core-files
 
 test: ## Run tests with JIT 3 and 1
 	@echo "${BLUE}Running tests with JIT 3${NC}"
-	BH_CPU_JIT_LEVEL=3 python  $(BH_SRC)/test/python/numpytest.py $(TEST_EXCLUDE)
+	BH_CPU_JIT_LEVEL=3 $(BH_PYTHON) $(BH_SRC)/test/python/numpytest.py $(TEST_EXCLUDE)
 	@echo "${BLUE}Running tests with JIT 1${NC}"
-	BH_CPU_JIT_LEVEL=1 python  $(BH_SRC)/test/python/numpytest.py $(TEST_EXCLUDE)
+	BH_CPU_JIT_LEVEL=1 $(BH_PYTHON) $(BH_SRC)/test/python/numpytest.py $(TEST_EXCLUDE)
 
 
 docs: ## Generate Doxygen documentation
