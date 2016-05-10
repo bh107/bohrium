@@ -162,6 +162,20 @@ public:
      */
     std::string text_compact(void);
 
+    /**
+     * Returns the global symbol table
+     */
+    SymbolTable& globals(void) {
+        return globals_;
+    }
+
+    /**
+     * Returns the byte code for the program
+     */
+    Program& tac_program(void) {
+        return tac_program_;
+    }
+
     uint32_t omask(void);
 
     kp_block& meta(void);

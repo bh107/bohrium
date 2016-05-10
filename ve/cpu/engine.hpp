@@ -53,10 +53,8 @@ public:
      *  Generate and compile source, construct Block(kp_block) for execution.
      *  Send the program on to the C Runtime for execution
      */
-    bh_error process_block(core::Program& tac_program,
-                           core::SymbolTable &symbol_table,
-                           core::Block &block);
-    
+    bh_error process_block(core::Block &block);
+
 private:
     kp_rt* rt_;
 

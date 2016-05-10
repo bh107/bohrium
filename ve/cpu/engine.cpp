@@ -165,10 +165,7 @@ string Engine::text()
     return ss.str();    
 }
 
-bh_error Engine::process_block(Program &tac_program,
-                               SymbolTable &symbol_table,
-                               Block &block
-)
+bh_error Engine::process_block(Block &block)
 {
     bool consider_jit = jit_enabled_ and (block.narray_tacs() > 0);
 
@@ -236,7 +233,7 @@ bh_error Engine::process_block(Program &tac_program,
     }
 
     // Now on with the execution
-    bool llexec = kp_rt_execute(rt_, &tac_program.meta(), &symbol_table.meta(), &block.meta(), func);
+    bool llexec = kp_rt_execute(rt_, &block.tac_program().meta(), &block.globals().meta(), &block.meta(), func);
     if (llexec) {
         return BH_SUCCESS;
     } else {

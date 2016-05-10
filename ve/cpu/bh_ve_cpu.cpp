@@ -256,7 +256,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
             DEBUG(TAG, "Multi-Instruction-Execute BEGIN");
 
             TIMER_START
-            res = engine->process_block(tac_program, symbol_table, block);
+            res = engine->process_block(block);
             TIMER_STOP(block.text_compact());
 
             if (BH_SUCCESS != res) {
@@ -273,7 +273,7 @@ bh_error bh_ve_cpu_execute(bh_ir* bhir)
                 block.compose(*krnl, (size_t)*idx_it);  // Compose based on a single instruction
 
                 TIMER_START
-                res = engine->process_block(tac_program, symbol_table, block);
+                res = engine->process_block(block);
                 TIMER_STOP(block.text_compact());
 
                 if (BH_SUCCESS != res) {
