@@ -15,22 +15,21 @@ before_install:
 env:
   global:
       - BH_GPU_VERBOSE=true
-      - BH_GPU_TROUBLESOME="--exclude-test=test_lbm_3d"
-      - BH_CPU_TROUBLESOME="--exclude-test=test_lbm_3d"
+
   matrix:
       # Default stack
-      - BH_STACK=stack_default BH_CPU_JIT_LEVEL=3 NUMPYTEST_ARGS=$BH_CPU_TROUBLESOME
-      - BH_STACK=stack_default BH_CPU_JIT_LEVEL=1 NUMPYTEST_ARGS=$BH_CPU_TROUBLESOME
+      - BH_STACK=stack_default BH_CPU_JIT_LEVEL=3
+      - BH_STACK=stack_default BH_CPU_JIT_LEVEL=1
 
       # CPU greedy stack
-      - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=3 NUMPYTEST_ARGS=$BH_CPU_TROUBLESOME
-      - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=1 NUMPYTEST_ARGS=$BH_CPU_TROUBLESOME
+      - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=3
+      - BH_STACK=stack_cpu_greedy BH_CPU_JIT_LEVEL=1
 
       # GPU stack
-      - BH_STACK=stack_gpu NUMPYTEST_ARGS=$BH_GPU_TROUBLESOME BH_BCEXP_GPU_REDUCE1D=100
+      - BH_STACK=stack_gpu BH_BCEXP_GPU_REDUCE1D=100
 
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
 
 script:
-    - docker run -t -e BH_STACK -e NUMPYTEST_ARGS -e BH_CPU_JIT_LEVEL -e BH_GPU_COMPILE -e BH_BCEXP_GPU_REDUCE1D -e BH_FUSE_MODEL -e BH_GPU_VERBOSE bohrium_release
+    - docker run -t -e BH_STACK -e BH_CPU_JIT_LEVEL -e BH_BCEXP_GPU_REDUCE1D -e BH_GPU_VERBOSE bohrium_release
