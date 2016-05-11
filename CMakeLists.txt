@@ -73,7 +73,12 @@ if (HAS_GCC_GNU99 OR HAS_GCC_C99 OR HAS_PGI_C99)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C99_FLAG}")
 endif()
 
-check_cxx_compiler_flag(-Wall HAS_CXX_PEDANTIC)             # C++ Flags
+check_c_compiler_flag(-Werror HAS_WERROR)
+if (HAS_WERROR)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror ")
+endif()
+
+check_cxx_compiler_flag(-pedantic HAS_CXX_PEDANTIC)         # C++ Flags
 if (HAS_CXX_PEDANTIC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic ")
 endif()
@@ -81,7 +86,7 @@ check_cxx_compiler_flag(-Wall HAS_CXX_WALL)
 if (HAS_CXX_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
 endif()
-check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)         # Sigh...
+check_cxx_compiler_flag(-std=gnu++0x HAS_CXX_GNU0X)         # Need by the GPU-VE :(
 if (HAS_CXX_GNU0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ")
 else()
@@ -90,6 +95,11 @@ else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
     endif()
 endif()
+check_cxx_compiler_flag(-Werror HAS_CXX_WERROR)
+if (HAS_CXX_WERROR)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror ")
+endif()
+
 
 #
 # External dependencies
