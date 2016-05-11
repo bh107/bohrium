@@ -216,6 +216,7 @@ reduction = true
 collect = true
 find_repeats = false
 stupidmath = true
+muladd = true
 timing = false
 
 [noneremover]
