@@ -26,22 +26,22 @@ using namespace bohrium;
 using namespace component;
 using namespace std;
 
-class Impl : public Implementation {
+class Impl : public ComponentImpl {
   private:
-    Interface child;
+    ComponentFace child;
     FuseCache _fuse_cache;
   public:
-    Impl(unsigned int stack_level) : Implementation(stack_level),
-         child(Implementation::config.getChildLibraryPath(), stack_level+1) {}
+    Impl(unsigned int stack_level) : ComponentImpl(stack_level),
+         child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {}
     ~Impl() {};
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode);
 };
 
-extern "C" Implementation* create(unsigned int stack_level) {
+extern "C" ComponentImpl* create(unsigned int stack_level) {
     return new Impl(stack_level);
 }
-extern "C" void destroy(Implementation* self) {
+extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 

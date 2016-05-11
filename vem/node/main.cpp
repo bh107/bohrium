@@ -25,16 +25,16 @@ using namespace bohrium;
 using namespace component;
 using namespace std;
 
-class Impl : public Implementation {
+class Impl : public ComponentImpl {
   private:
-    Interface child;
+    ComponentFace child;
     //Allocated base arrays
     set<bh_base*> _allocated_bases;
     //Inspect one instruction and throws exception on error
     void inspect(bh_instruction *instr);
   public:
-    Impl(unsigned int stack_level) : Implementation(stack_level),
-                child(Implementation::config.getChildLibraryPath(), stack_level+1) {
+    Impl(unsigned int stack_level) : ComponentImpl(stack_level),
+                child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {
         cout << "init node vem" << endl;
     }
     ~Impl();
@@ -42,10 +42,10 @@ class Impl : public Implementation {
     void extmethod(const string &name, bh_opcode opcode);
 };
 
-extern "C" Implementation* create(unsigned int stack_level) {
+extern "C" ComponentImpl* create(unsigned int stack_level) {
     return new Impl(stack_level);
 }
-extern "C" void destroy(Implementation* self) {
+extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 

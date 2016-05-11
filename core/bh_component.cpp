@@ -27,7 +27,7 @@ using namespace std;
 namespace bohrium {
 namespace component {
 
-Interface::Interface(const string &lib_path, unsigned int stack_level) :
+ComponentFace::ComponentFace(const string &lib_path, unsigned int stack_level) :
                     _lib_path(lib_path) {
 
     // Load the shared library
@@ -61,7 +61,7 @@ Interface::Interface(const string &lib_path, unsigned int stack_level) :
     _implementation = _create(stack_level);
 }
 
-Interface::~Interface() {
+ComponentFace::~ComponentFace() {
     _destroy(_implementation);
     dlerror(); // Reset errors
     if (dlclose(_lib_handle)) {
