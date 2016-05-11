@@ -37,15 +37,17 @@ If not, see <http://www.gnu.org/licenses/>.
 const char TAG[] = "Component";
 
 #include <bh_component.hpp>
+#include <bh_extmethod.hpp>
 
 using namespace std;
 using namespace bohrium;
 using namespace component;
+using namespace extmethod;
 
 typedef vector<bh_instruction> instr_iter;
 typedef vector<bh_ir_kernel>::iterator krnl_iter;
 
-class Impl : public Implementation {
+class Impl : public ComponentImpl {
   private:
     // This is where the actual engine implementation is
     kp::engine::Engine* engine = NULL;
@@ -54,7 +56,7 @@ class Impl : public Implementation {
     bh_intp exec_timing;
     bool timing;
     size_t exec_count = 0;
-    //static map<bh_opcode, bh_extmethod_impl> extensions;
+
   public:
     Impl(unsigned int stack_level);
     ~Impl() {
@@ -83,16 +85,16 @@ class Impl : public Implementation {
     }
 };
 
-extern "C" Implementation* create(unsigned int stack_level) {
+extern "C" ComponentImpl* create(unsigned int stack_level) {
     return new Impl(stack_level);
 }
-extern "C" void destroy(Implementation* self) {
+extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 
 
 
-Impl::Impl(unsigned int stack_level) : Implementation(stack_level) {
+Impl::Impl(unsigned int stack_level) : ComponentImpl(stack_level) {
     char* env = getenv("BH_FUSE_MODEL");                    // Set the fuse-model
     if (NULL != env) {
         string env_str(env);

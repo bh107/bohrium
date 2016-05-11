@@ -399,7 +399,7 @@ private:
     uint64_t    global_random_state_;           // TODO: Should be encapsulated in a "sugar-layer"
 
     bohrium::ConfigParser config;               // Bohrium Configuration
-    bohrium::component::Interface runtime;      // The Bohrium Runtime i.e. the child of this component
+    bohrium::component::ComponentFace runtime;  // The Bohrium Runtime i.e. the child of this component
 
     std::map<std::string, bh_opcode> extensions;// Register of extensions
     size_t extension_count;
