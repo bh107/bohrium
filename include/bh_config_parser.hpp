@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
 #include <string>
+#include <vector>
 
 // We need to specialize lexical_cast() in order to support booleans
 // other then the standard 0/1 to true/false conversion.
@@ -76,12 +77,14 @@ class ConfigParser {
      */
     ConfigParser(unsigned int stack_level);
 
-    /* Get an value of the 'option' within the 'section'
+    /* Get the value of the 'option' within the 'section'
      *
      * @section  The ini section e.g. [gpu]. If omitted, the default
      *           section is used.
      * @option   The ini option e.g. timing = True
      * @return   The value, which is lexically converted to type 'T'
+     * Throws property_tree::ptree_bad_path if the section/option does not exist
+     * Throws bad_lexical_cast if the value cannot be converted
      */
     template<typename T>
     T get(const std::string &section, const std::string &option) const {
@@ -111,7 +114,7 @@ class ConfigParser {
         return get<T>(_stack_list[stack_level], option);
     }
 
-    /* Get an value of the 'option' within the 'section' and if it
+    /* Get the value of the 'option' within the 'section' and if it
      * does not exist return 'default_value' instead
      *
      * @section        The ini section e.g. [gpu]. If omitted, the
@@ -132,13 +135,23 @@ class ConfigParser {
     }
     template<typename T>
     T defaultGet(const std::string &option, const T &default_value) const {
-        try {
-            return get<T>(option);
-        } catch (const boost::property_tree::ptree_bad_path&) {
-            return default_value;
-        }
+        return defaultGet(_stack_list[stack_level], option, default_value);
     }
 
+    /* Get the value of the 'option' within the 'section' and convert the value,
+     * which must be a comma separated list, into a vector of strings.
+     *
+     * @section        The ini section e.g. [gpu]. If omitted, the
+     *                 default section is used.
+     * @option         The ini option e.g. timing = True
+     * @return         Vector of strings
+     * Throws property_tree::ptree_bad_path if the section/option does not exist
+     */
+    std::vector<std::string> getList(const std::string &section,
+                                     const std::string &option) const;
+    std::vector<std::string> getList(const std::string &option) const {
+        return getList(_stack_list[stack_level], option);
+    }
     /* Return the path to the library that implements
      * the calling component's child.
      *

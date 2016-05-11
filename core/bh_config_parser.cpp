@@ -218,13 +218,18 @@ ConfigParser::ConfigParser(unsigned int stack_level) : file_path(get_config_path
     }
     // Read stack, which is a comma separated list of component names,
     // into a vector of component names.
-    {
-        string s = get<string>("stacks", stack_name);
-        algorithm::split(_stack_list, s, is_any_of("\t, "), token_compress_on);
-    }
+    _stack_list = getList("stacks", stack_name);
     if (_stack_list.size() < stack_level) {
         throw invalid_argument("ConfigParser: stack level is out of bound");
     }
+}
+
+vector<string> ConfigParser::getList(const std::string &section,
+                                     const std::string &option) const {
+    vector<string> ret;
+    string s = get<string>(section, option);
+    algorithm::split(ret, s, is_any_of("\t, "), token_compress_on);
+    return ret;
 }
 
 string ConfigParser::getChildLibraryPath() const
