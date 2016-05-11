@@ -9,8 +9,8 @@ compiler:
   - gcc
 
 before_install:
-  - docker pull bohrium/ubuntu:14.04
-  - docker build -t bohrium_release -f package/docker/ubuntu14.04/bohrium.dockerfile .
+  - docker pull bohrium/ubuntu:16.04
+  - docker build -t bohrium_release -f package/docker/bohrium.dockerfile .
 
 env:
   global:

@@ -1,6 +1,6 @@
 # This is a Dockerfile for installing Bohrium dependencies
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
 RUN mkdir -p /bohrium/build
 WORKDIR /bohrium/build
@@ -40,7 +40,7 @@ RUN apt-get install -qq zlib1g-dev valgrind gdb vim cgdb
 # Build and install source dependencies
 RUN mkdir -p /opt/dython
 WORKDIR /opt/dython
-ENV PV 2.7.3
+ENV PV 2.7.11
 RUN wget -q http://www.python.org/ftp/python/$PV/Python-$PV.tgz
 RUN tar -xzf Python-$PV.tgz
 WORKDIR Python-$PV
@@ -51,7 +51,7 @@ RUN rm ../Python-$PV.tgz
 
 RUN mkdir -p /opt/cython
 WORKDIR /opt/cython
-ENV CV 0.22
+ENV CV 0.24
 RUN wget -q http://cython.org/release/Cython-$CV.tar.gz
 RUN tar -xzf Cython-$CV.tar.gz
 WORKDIR Cython-$CV
@@ -69,7 +69,7 @@ RUN rm ../Cheetah-$CTV.tar.gz
 
 RUN mkdir -p /opt/numpy
 WORKDIR /opt/numpy
-ENV NV 1.8.2
+ENV NV 1.10.4
 RUN wget -q http://optimate.dl.sourceforge.net/project/numpy/NumPy/$NV/numpy-$NV.tar.gz
 RUN tar -xzf numpy-$NV.tar.gz
 WORKDIR numpy-$NV

@@ -4,7 +4,7 @@
 # e.g. 'docker build -t bohrium -f <path to this file> <path to bohrium source>'
 # Then you can run 'docker run -t bohrium' to Bohrium test
 
-FROM bohrium/ubuntu:14.04
+FROM bohrium/ubuntu:16.04
 MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
 
 # Set the locale
