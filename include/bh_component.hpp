@@ -88,6 +88,7 @@ class ComponentFace {
     ComponentImpl* (*_create)(unsigned int);
     // Function pointer to the component's destroy function
     void (*_destroy)(ComponentImpl *component);
+    // Pointer to the implementation of the component
     ComponentImpl *_implementation;
   public:
     // Constructor that takes the path to the shared library and
