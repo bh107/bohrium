@@ -88,7 +88,9 @@
         "KP_LOGICAL_XOR",
         "KP_BITWISE_AND",
         "KP_BITWISE_OR",
-        "KP_BITWISE_XOR"
+        "KP_BITWISE_XOR",
+        "KP_ARG_MAXIMUM",
+        "KP_ARG_MINIMUM"
     ]
 },
 

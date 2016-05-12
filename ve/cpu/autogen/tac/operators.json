@@ -57,19 +57,22 @@
     {"id": 56, "name": "KP_TANH",          "nop": 2, "types": []},
     {"id": 57, "name": "KP_TRUNC",         "nop": 2, "types": []},
 
-    {"id": 58, "name": "KP_GATHER",    "nop": 3, "types": []},
-    {"id": 59, "name": "KP_SCATTER",   "nop": 3, "types": []},
+    {"id": 58, "name": "KP_GATHER",        "nop": 3, "types": []},
+    {"id": 59, "name": "KP_SCATTER",       "nop": 3, "types": []},
 
-    {"id": 60, "name": "KP_DISCARD",   "nop": 1, "types": []},
-    {"id": 61, "name": "KP_FREE",      "nop": 1, "types": []},
-    {"id": 62, "name": "KP_SYNC",      "nop": 1, "types": []},
-    {"id": 63, "name": "KP_TALLY",     "nop": 0, "types": []},
-    {"id": 64, "name": "KP_NONE",      "nop": 0, "types": []},
-    {"id": 65, "name": "KP_REPEAT",      "nop": 0, "types": []},
+    {"id": 60, "name": "KP_DISCARD",       "nop": 1, "types": []},
+    {"id": 61, "name": "KP_FREE",          "nop": 1, "types": []},
+    {"id": 62, "name": "KP_SYNC",          "nop": 1, "types": []},
+    {"id": 63, "name": "KP_TALLY",         "nop": 0, "types": []},
+    {"id": 64, "name": "KP_NONE",          "nop": 0, "types": []},
+    {"id": 65, "name": "KP_REPEAT",        "nop": 0, "types": []},
 
-    {"id": 66, "name": "KP_FLOOD",     "nop": 1, "types": []},
-    {"id": 67, "name": "KP_RANDOM",    "nop": 2, "types": []},
-    {"id": 68, "name": "KP_RANGE",     "nop": 0, "types": []},
+    {"id": 66, "name": "KP_FLOOD",         "nop": 1, "types": []},
+    {"id": 67, "name": "KP_RANDOM",        "nop": 2, "types": []},
+    {"id": 68, "name": "KP_RANGE",         "nop": 0, "types": []},
 
-    {"id": 69, "name": "KP_EXTENSION_OPERATOR","nop": 0, "types": []}
+    {"id": 69, "name": "KP_ARG_MAXIMUM",   "nop": 3, "types": []},
+    {"id": 70, "name": "KP_ARG_MINIMUM",   "nop": 3, "types": []},
+
+    {"id": 71, "name": "KP_EXTENSION_OPERATOR", "nop": 0, "types": []}
 ]

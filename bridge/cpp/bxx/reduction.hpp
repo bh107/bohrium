@@ -266,6 +266,28 @@ multi_array<size_t>& count(multi_array<T>& op)
     return sum(op.template as<size_t>());
 }
 
+//
+// Argument reduction
+template <typename T>
+multi_array<uint64_t>& amax(multi_array<T>& op, int64_t axis)
+{
+    multi_array<uint64_t>* result = &create_reduce_result<uint64_t, T>(op, axis);
+    bh_arg_maximum_reduce(*result, op, axis);
+    result->setTemp(true);
+
+    return *result;
+}
+
+template <typename T>
+multi_array<uint64_t>& amin(multi_array<T>& op, int64_t axis)
+{
+    multi_array<uint64_t>* result = &create_reduce_result<uint64_t, T>(op, axis);
+    bh_arg_minimum_reduce(*result, op, axis);
+    result->setTemp(true);
+
+    return *result;
+}
+
 }
 #endif
 

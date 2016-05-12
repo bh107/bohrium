@@ -1588,5 +1588,41 @@ void bh_bitwise_xor_reduce (multi_array<Tres>& res, multi_array<Tlhs> &lhs, int6
     Runtime::instance().enqueue((bh_opcode)BH_BITWISE_XOR_REDUCE, res, lhs, rhs);
 }
 
+
+// bh_arg_maximum_reduce - BH_ARG_MAXIMUM_REDUCE - runtime.reduce - 3 (A,A,K)
+template <typename Tres, typename Tlhs>
+void bh_arg_maximum_reduce (multi_array<Tres>& res, multi_array<Tlhs> &lhs, int64_t rhs)
+{
+    Runtime::instance().typecheck<BH_ARG_MAXIMUM_REDUCE, Tres, Tlhs, int64_t>();
+    // TODO:
+    // * Shape-check
+    // * move checks to sugar-layer
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+    Runtime::instance().enqueue((bh_opcode)BH_ARG_MAXIMUM_REDUCE, res, lhs, rhs);
+}
+
+
+// bh_arg_minimum_reduce - BH_ARG_MINIMUM_REDUCE - runtime.reduce - 3 (A,A,K)
+template <typename Tres, typename Tlhs>
+void bh_arg_minimum_reduce (multi_array<Tres>& res, multi_array<Tlhs> &lhs, int64_t rhs)
+{
+    Runtime::instance().typecheck<BH_ARG_MINIMUM_REDUCE, Tres, Tlhs, int64_t>();
+    // TODO:
+    // * Shape-check
+    // * move checks to sugar-layer
+    if (rhs<0) {
+        rhs = lhs.getRank()+rhs;
+    }
+    if (rhs >= (int64_t)lhs.getRank()) {
+        throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
+    }
+    Runtime::instance().enqueue((bh_opcode)BH_ARG_MINIMUM_REDUCE, res, lhs, rhs);
+}
+
 }
 #endif
