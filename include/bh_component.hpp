@@ -97,6 +97,11 @@ class ComponentFace {
     ~ComponentFace();
     // Get the component implementation
     ComponentImpl* getImpl() { return _implementation; };
+
+    // No default, copy, or move constructor!
+    ComponentFace() = delete;
+    ComponentFace(const ComponentFace &other) = delete;
+    ComponentFace(ComponentFace &&other) = delete;
 };
 
 }} //namespace bohrium::component
