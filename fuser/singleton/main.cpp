@@ -45,8 +45,7 @@ extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 
-static void do_fusion(bh_ir &bhir)
-{
+static void do_fusion(bh_ir &bhir) {
     for(uint64_t idx=0; idx < bhir.instr_list.size(); idx++)
     {
         bh_ir_kernel kernel(bhir);
@@ -55,8 +54,7 @@ static void do_fusion(bh_ir &bhir)
     }
 }
 
-static void fuser(bh_ir &bhir, FuseCache &cache)
-{
+static void fuser(bh_ir &bhir, FuseCache &cache) {
     if(bhir.kernel_list.size() != 0)
         throw logic_error("The kernel_list is not empty!");
 
@@ -73,12 +71,10 @@ static void fuser(bh_ir &bhir, FuseCache &cache)
 }
 
 void Impl::execute(bh_ir *bhir) {
-
-    cout << "execute singleton!" << endl;
     fuser(*bhir, _fuse_cache);     // Run the filter
-    child.getImpl()->execute(bhir);
+    child.execute(bhir);
 }
 
 void Impl::extmethod(const string &name, bh_opcode opcode) {
-    cout << "extmethod!" << endl;
+    child.extmethod(name, opcode);
 }

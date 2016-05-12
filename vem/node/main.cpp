@@ -34,9 +34,7 @@ class Impl : public ComponentImpl {
     void inspect(bh_instruction *instr);
   public:
     Impl(unsigned int stack_level) : ComponentImpl(stack_level),
-                child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {
-        cout << "init node vem" << endl;
-    }
+                child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode);
@@ -91,15 +89,12 @@ void Impl::inspect(bh_instruction *instr) {
 }
 
 void Impl::execute(bh_ir *bhir) {
-
-    cout << "NODE execute!" << endl;
     for(uint64_t i=0; i < bhir->instr_list.size(); ++i)
         inspect(&bhir->instr_list[i]);
-    child.getImpl()->execute(bhir);
+    child.execute(bhir);
 }
 
 void Impl::extmethod(const string &name, bh_opcode opcode) {
-    cout << "extmethod!" << endl;
-    child.getImpl()->extmethod(name, opcode);
+    child.extmethod(name, opcode);
 }
 

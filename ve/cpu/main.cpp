@@ -56,7 +56,7 @@ class Impl : public ComponentImpl {
     bh_intp exec_timing;
     bool timing;
     size_t exec_count = 0;
-
+    map<bh_opcode, ExtmethodFace> extensions;
   public:
     Impl(unsigned int stack_level);
     ~Impl() {
@@ -67,21 +67,9 @@ class Impl : public ComponentImpl {
     }
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
-        cout << "extmethod" << endl;
-        exit(-1);
-        /*
-        bh_extmethod_impl extmethod;
-        bh_error err = bh_component_extmethod(&myself, name, &extmethod);
-        if (err != BH_SUCCESS) {
-            return err;
-        }
-
-        if (extensions.find(opcode) != extensions.end()) {
-            fprintf(stderr, "[CPU-VE] Warning, multiple registrations of the same"
-                   "extension method '%s' (opcode: %d)\n", name, (int)opcode);
-        }
-        extensions[opcode] = extmethod;
-        */
+        // ExtmethodFace does not have a default or copy constructor thus
+        // we have to use its move constructor.
+        extensions.insert(make_pair(opcode, ExtmethodFace(config, name)));
     }
 };
 
@@ -91,8 +79,6 @@ extern "C" ComponentImpl* create(unsigned int stack_level) {
 extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
-
-
 
 Impl::Impl(unsigned int stack_level) : ComponentImpl(stack_level) {
     char* env = getenv("BH_FUSE_MODEL");                    // Set the fuse-model
@@ -249,18 +235,10 @@ void Impl::execute(bh_ir* bhir) {
         if ((block.omask() & KP_EXTENSION)>0) {         // Extension-Instruction-Execute (EIE)
             TIMER_START
             kp_tac& tac = block.tac(0);
-            /*
-            map<bh_opcode, bh_extmethod_impl>::iterator ext;
-            ext = extensions.find(static_cast<bh_instruction*>(tac.ext)->opcode);
+            auto ext = extensions.find(static_cast<bh_instruction*>(tac.ext)->opcode);
             if (ext != extensions.end()) {
-                bh_extmethod_impl extmethod = ext->second;
-                res = extmethod(static_cast<bh_instruction*>(tac.ext), NULL);
-                if (BH_SUCCESS != res) {
-                    fprintf(stderr, "Unhandled error returned by extmethod(...) \n");
-                    return res;
-                }
+                ext->second.execute(static_cast<bh_instruction*>(tac.ext), NULL);
             }
-            */
             TIMER_STOP(block.text_compact());
         } else if ((engine->jit_fusion()) ||
                    (block.narray_tacs() == 0)) {        // Multi-Instruction-Execute (MIE)
@@ -299,24 +277,5 @@ void Impl::execute(bh_ir* bhir) {
         bh_timer_add(exec_timing, timestamp, bh_timer_stamp());
     }
 }
-
-/*
-bh_error bh_ve_cpu_extmethod(const char *name, bh_opcode opcode)
-{
-    bh_extmethod_impl extmethod;
-    bh_error err = bh_component_extmethod(&myself, name, &extmethod);
-    if (err != BH_SUCCESS) {
-        return err;
-    }
-
-    if (extensions.find(opcode) != extensions.end()) {
-        fprintf(stderr, "[CPU-VE] Warning, multiple registrations of the same"
-               "extension method '%s' (opcode: %d)\n", name, (int)opcode);
-    }
-    extensions[opcode] = extmethod;
-
-    return BH_SUCCESS;
-}
-*/
 
 
