@@ -56,7 +56,7 @@ namespace extmethod {
  */
 
 // Representation of a extmethod implementation, which is a virtual class
-// that all extended methods should implement
+// that all extension methods should implement
 class ExtmethodImpl {
   public:
     ExtmethodImpl() = default;
@@ -85,7 +85,7 @@ class ExtmethodFace {
     ExtmethodImpl* (*_create)();
     // Function pointer to the extmethod's destroy function
     void (*_destroy)(ExtmethodImpl *extmethod);
-    // Pointer to the implementation of the extended method
+    // Pointer to the implementation of the extension method
     ExtmethodImpl *_implementation;
   public:
     // Constructor that takes the config file of the parent component and
@@ -129,8 +129,8 @@ class ExtmethodFace {
     };
 };
 
-class ExtmethodNotFound : public std::exception
-{
+// Exception thrown when an extension method is not found
+class ExtmethodNotFound : public std::exception {
     std::string _msg;
 public:
     ExtmethodNotFound(const std::string& msg) : _msg(msg) {}
