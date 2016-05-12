@@ -68,7 +68,8 @@ bh_error bh_filter_bccon_init(const char* name)
         bh_component_config_lookup_bool(&myself, "find_repeats", false),
         bh_component_config_lookup_bool(&myself, "reduction",    false),
         bh_component_config_lookup_bool(&myself, "stupidmath",   false),
-        bh_component_config_lookup_bool(&myself, "collect",      false)
+        bh_component_config_lookup_bool(&myself, "collect",      false),
+        bh_component_config_lookup_bool(&myself, "muladd",       false)
     );
 
     return BH_SUCCESS;

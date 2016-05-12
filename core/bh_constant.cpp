@@ -55,6 +55,8 @@ int64_t bh_constant::get_int64() const
 double bh_constant::get_double() const
 {
     switch(type) {
+        case BH_BOOL:
+            return static_cast<double>(value.bool8);
         case BH_INT8:
             return static_cast<double>(value.int8);
         case BH_INT16:
@@ -90,13 +92,16 @@ double bh_constant::get_double() const
         case BH_R123:
             throw overflow_error("R123 cannot be converted to double");
         default:
-            throw runtime_error("Unknown constant type");
+            throw runtime_error("Unknown constant type in get_double");
     }
 }
 
 void bh_constant::set_double(double value)
 {
     switch(type) {
+        case BH_BOOL:
+            this->value.bool8 = static_cast<bool>(value);
+            return;
         case BH_INT8:
             this->value.int8 = static_cast<int8_t>(value);
             return;
@@ -138,7 +143,7 @@ void bh_constant::set_double(double value)
         case BH_R123:
             throw overflow_error("double to R123 isn't possible");
         default:
-            throw runtime_error("Unknown constant type");
+            throw runtime_error("Unknown constant type in set_double");
     }
 }
 

@@ -25,8 +25,8 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-Contracter::Contracter(bool repeats, bool reduction, bool stupidmath, bool collect)
-    : repeats_(repeats), reduction_(reduction), stupidmath_(stupidmath), collect_(collect) {}
+Contracter::Contracter(bool repeats, bool reduction, bool stupidmath, bool collect, bool muladd)
+    : repeats_(repeats), reduction_(reduction), stupidmath_(stupidmath), collect_(collect), muladd_(muladd) {}
 
 Contracter::~Contracter(void) {}
 
@@ -36,6 +36,7 @@ void Contracter::contract(bh_ir& bhir)
     if(reduction_)  contract_reduction(bhir);
     if(stupidmath_) contract_stupidmath(bhir);
     if(collect_)    contract_collect(bhir);
+    if(muladd_)     contract_muladd(bhir);
 }
 
 }}}
