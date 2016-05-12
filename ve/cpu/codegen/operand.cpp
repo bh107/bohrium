@@ -96,10 +96,17 @@ string Operand::stride_axis(void)
     return ss.str();
 }
 
-string Operand::accu(void)
+string Operand::accu_shared(void)
 {
     stringstream ss;
-    ss << name() << "_accu";
+    ss << name() << "_accu_shared";
+    return ss.str();
+}
+
+string Operand::accu_private(void)
+{
+    stringstream ss;
+    ss << name() << "_accu_private";
     return ss.str();
 }
 

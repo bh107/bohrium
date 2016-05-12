@@ -1,5 +1,5 @@
 //
-//  Collapsed walker
+//  walker.collapsed
 //
 //    Flattens the iteration-space and walks it using a single loop construct.
 //    Work is partitioned in the number of elements, regardless of dimension.
@@ -73,4 +73,7 @@
             }
         }
     }
+    // Accumulator COMPLETE WRITEBACK - begin
+    {{ACCU_OPD_WRITEBACK}}
+    // Accumulator COMPLETE WRITEBACK - end
 }

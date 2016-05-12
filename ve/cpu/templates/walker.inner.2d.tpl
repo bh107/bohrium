@@ -1,5 +1,5 @@
 //
-//  2D-INNER-WALKER
+//  walker.inner.2d
 //
 //    Walks the iteration-space using outer/inner loop constructs.
 //    Partitions work into chunks of size equal to the inner-most dimension.
@@ -93,4 +93,7 @@
             // Accumulator COMPLETE SYNC - end
         }
     }
+    // Accumulator COMPLETE WRITEBACK - begin
+    {{ACCU_OPD_WRITEBACK}}
+    // Accumulator COMPLETE WRITEBACK - end
 }

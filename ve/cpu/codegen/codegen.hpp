@@ -1,6 +1,7 @@
 #ifndef __KP_ENGINE_CODEGEN_HPP
 #define __KP_ENGINE_CODEGEN_HPP 1
 
+#include <sstream>
 #include <string>
 #include <map>
 #include "kp.h"
@@ -200,6 +201,88 @@ std::string _omp_atomic(std::string expr);
 
 std::string _beef(std::string info);
 
+class Codeblock
+{
+public:
+    Codeblock(Plaid& plaid, std::string template_fn);
+    
+    virtual void prolog(std::string source);
+
+    virtual void epilog(std::string source);
+
+    virtual void pragma(std::string source);
+
+    virtual void head(std::string source);
+
+    virtual void body(std::string source);
+
+    virtual void foot(std::string source);
+
+    virtual std::string prolog(void);
+
+    virtual std::string epilog(void);
+
+    virtual std::string pragma(void);
+
+    virtual std::string head(void);
+
+    virtual std::string body(void);
+
+    virtual std::string foot(void);
+
+    virtual std::string emit(void);
+
+protected:
+    Plaid& plaid_;
+
+    std::string template_fn_;
+
+    std::stringstream prolog_;
+
+    std::stringstream epilog_;
+
+    std::stringstream pragma_;
+
+    std::stringstream head_;
+
+    std::stringstream body_;
+
+    std::stringstream foot_;
+
+private:
+    Codeblock(void);
+
+};
+
+class Loop : public Codeblock
+{
+public:
+    Loop(Plaid& plaid, std::string template_fn);
+    
+    void init(std::string source);
+
+    void cond(std::string source);
+
+    void incr(std::string source);
+
+    std::string init(void);
+
+    std::string cond(void);
+
+    std::string incr(void);
+
+    std::string emit(void);
+
+protected:
+    std::stringstream init_;
+    std::stringstream cond_;
+    std::stringstream incr_;
+
+private:
+    Loop(void);
+
+};
+
 class Buffer
 {
 public:
@@ -241,7 +324,8 @@ public:
     std::string stride_outer(void);
     std::string stride_axis(void);
 
-    std::string accu(void);
+    std::string accu_shared(void);
+    std::string accu_private(void);
     std::string walker(void);
     std::string walker_val(void);
     std::string walker_subscript_val(void);
