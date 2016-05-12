@@ -52,6 +52,14 @@ namespace boost {
 
 namespace bohrium {
 
+// Exception thrown when a config key is not found
+class ConfigKeyNotFound : public std::exception {
+    std::string _msg;
+public:
+    ConfigKeyNotFound(const std::string& msg) : _msg(msg) {}
+    virtual const char* what() const throw() { return _msg.c_str(); }
+};
+
 //Representation of the Bohrium configuration file
 class ConfigParser {
   public:
@@ -95,17 +103,17 @@ class ConfigParser {
         try {
             ret = lookup(section, option);
         } catch (const property_tree::ptree_bad_path&) {
-            cerr << "Error parsing the config file '" << file_path << "', '"
-                 << section << "." << option << "' not found!" << endl;
-            throw;
+            stringstream ss;
+            ss << "Error parsing the config file '" << file_path << "': '" \
+               << section << "." << option << "' not found!" << endl;
+            throw ConfigKeyNotFound(ss.str());
         }
         //Now let's try to convert the value to the requested type
         try {
             return lexical_cast<T>(ret);
         } catch (const boost::bad_lexical_cast&) {
-            string s = _config.get<string>(section + "." + option);
             cerr << "ConfigParser cannot convert '" << section << "." << option
-                 << "=" << s << "' to type <" << typeid(T).name() << ">" << endl;
+                 << "=" << ret << "' to type <" << typeid(T).name() << ">" << endl;
             throw;
         }
     }
@@ -129,7 +137,7 @@ class ConfigParser {
                  const T &default_value) const {
         try {
             return get<T>(section, option);
-        } catch (const boost::property_tree::ptree_bad_path&) {
+        } catch (const ConfigKeyNotFound&) {
             return default_value;
         }
     }
@@ -152,6 +160,7 @@ class ConfigParser {
     std::vector<std::string> getList(const std::string &option) const {
         return getList(_stack_list[stack_level], option);
     }
+
     /* Return the path to the library that implements
      * the calling component's child.
      *
