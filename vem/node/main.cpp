@@ -35,9 +35,11 @@ class Impl : public ComponentImpl {
   public:
     Impl(unsigned int stack_level) : ComponentImpl(stack_level),
                 child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {}
-    ~Impl();
+    ~Impl(); // NB: a destructor implementation must exist
     void execute(bh_ir *bhir);
-    void extmethod(const string &name, bh_opcode opcode);
+    void extmethod(const string &name, bh_opcode opcode) {
+        child.extmethod(name, opcode);
+    };
 };
 
 extern "C" ComponentImpl* create(unsigned int stack_level) {
@@ -92,9 +94,5 @@ void Impl::execute(bh_ir *bhir) {
     for(uint64_t i=0; i < bhir->instr_list.size(); ++i)
         inspect(&bhir->instr_list[i]);
     child.execute(bhir);
-}
-
-void Impl::extmethod(const string &name, bh_opcode opcode) {
-    child.extmethod(name, opcode);
 }
 
