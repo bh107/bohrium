@@ -95,13 +95,32 @@ class ComponentFace {
     // the stack level of the component
     ComponentFace(const std::string &lib_path, unsigned int stack_level);
     ~ComponentFace();
-    // Get the component implementation
-    ComponentImpl* getImpl() { return _implementation; };
 
     // No default, copy, or move constructor!
     ComponentFace() = delete;
     ComponentFace(const ComponentFace &other) = delete;
     ComponentFace(ComponentFace &&other) = delete;
+
+    /* Execute a BhIR (graph of instructions)
+     *
+     * @bhir  The BhIR to execute
+     * Throws exceptions on error
+     */
+    void execute(bh_ir *bhir) {
+        assert(_implementation != NULL);
+        _implementation->execute(bhir);
+    };
+
+    /* Register a new extension method.
+     *
+     * @name   Name of the function e.g. matmul
+     * @opcode Opcode for the new function.
+     * Throws exceptions on error
+     */
+    void extmethod(const std::string &name, bh_opcode opcode){
+        assert(_implementation != NULL);
+        _implementation->extmethod(name, opcode);
+    };
 };
 
 }} //namespace bohrium::component

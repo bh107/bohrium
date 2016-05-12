@@ -92,7 +92,7 @@ size_t Runtime::execute()
     size_t cur_size = queue_size;
 
     bh_ir bhir = bh_ir(queue_size, queue);
-    runtime.getImpl()->execute(&bhir);      // Send instructions to Bohrium
+    runtime.execute(&bhir);      // Send instructions to Bohrium
     queue_size = 0;                         // Reset size of the queue
     deallocate_meta(cur_size);
     return cur_size;
@@ -380,7 +380,7 @@ void Runtime::enqueue_extension(const std::string& name,
     } else {                        // Add it
         opcode = extension_count++;
         extensions.insert(std::pair<std::string, bh_opcode>(name, opcode));
-        runtime.getImpl()->extmethod(name.c_str(), opcode);
+        runtime.extmethod(name.c_str(), opcode);
     }
 
     guard();
