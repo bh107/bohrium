@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include "contracter.hpp"
 
-#include <bh_component.h>
 
 using namespace std;
 
