@@ -125,7 +125,7 @@ add_subdirectory(vem/node)
 # add_subdirectory(filter/pricer)
 # add_subdirectory(filter/dimclean)
 add_subdirectory(filter/bccon)
-# add_subdirectory(filter/bcexp)
+add_subdirectory(filter/bcexp)
 # add_subdirectory(filter/noneremover)
 add_subdirectory(fuser/singleton)
 # add_subdirectory(fuser/topological)
@@ -178,3 +178,4 @@ MESSAGE(STATUS "CXX min size flags:" ${CMAKE_CXX_FLAGS_MINSIZEREL})
 MESSAGE(STATUS "CXX flags:" ${CMAKE_CXX_FLAGS})
 
 feature_summary(WHAT ALL)
+
