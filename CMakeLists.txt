@@ -4,6 +4,10 @@ include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 include(FeatureSummary)
 
+# Write all compile commands to 'compile_commands.json', which can be used by YouCompleteMe
+# and other auto-completion software
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
+
 if (APPLE)  # Build multi-arch OSX binaries
     set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
 endif()
