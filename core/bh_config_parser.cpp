@@ -202,8 +202,8 @@ string ConfigParser::lookup(const string &section, const string &option) const {
     }
 }
 
-ConfigParser::ConfigParser(unsigned int stack_level) : file_path(get_config_path()),
-                                                       stack_level(stack_level) {
+ConfigParser::ConfigParser(int stack_level) : file_path(get_config_path()),
+                                              stack_level(stack_level) {
 
     // Load the bohrium configuration file
     property_tree::ini_parser::read_ini(file_path, _config);
@@ -219,8 +219,13 @@ ConfigParser::ConfigParser(unsigned int stack_level) : file_path(get_config_path
     // Read stack, which is a comma separated list of component names,
     // into a vector of component names.
     _stack_list = getList("stacks", stack_name);
-    if (_stack_list.size() < stack_level) {
-        throw invalid_argument("ConfigParser: stack level is out of bound");
+    if (stack_level >= static_cast<int>(_stack_list.size()) or stack_level < -1) {
+        throw ConfigError("ConfigParser: stack level is out of bound");
+    }
+    if (stack_level > 0) {
+        _default_section = _stack_list[stack_level];
+    } else {
+        _default_section = "bridge";
     }
 }
 
@@ -235,8 +240,8 @@ vector<string> ConfigParser::getList(const std::string &section,
 string ConfigParser::getChildLibraryPath() const
 {
     // Do we have a child?
-    if (_stack_list.size() <= stack_level+1) {
-        throw runtime_error("ConfigParser: No child");
+    if (static_cast<int>(_stack_list.size()) <= stack_level+1) {
+        throw ConfigNoChild("ConfigParser: " + getName() + " has no child!");
     }
     // Our child is our stack level plus one
     string child_name = _stack_list[stack_level+1];

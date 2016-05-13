@@ -1,12 +1,14 @@
 #
-# Stack configurations
+# Stack configurations, which are a comma separated lists of components.
 # NB: 'stacks' is a reversed section name and 'default'
 #     is used when 'BH_STACKS' is unset.
+#     The bridge is never part of the list
 #
 [stacks]
 default = bcexp_cpu, bccon, topological, node, cpu
 gpu = bcexp_gpu, dimclean, greedy, node, gpu, cpu
 
+[bridge] # 'bridge' is a reversed section name that always refers to the bridge.
 
 #
 # Managers

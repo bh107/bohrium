@@ -52,12 +52,32 @@ namespace boost {
 
 namespace bohrium {
 
-// Exception thrown when a config key is not found
-class ConfigKeyNotFound : public std::exception {
+// Generic Config Parser Exception
+class ConfigError : public std::exception {
     std::string _msg;
 public:
-    ConfigKeyNotFound(const std::string& msg) : _msg(msg) {}
+    ConfigError(const std::string& msg) : _msg(msg) {}
     virtual const char* what() const throw() { return _msg.c_str(); }
+};
+
+// Exception thrown when getChildLibraryPath() does not exist
+class ConfigNoChild : public ConfigError {
+public:
+    ConfigNoChild(const std::string& msg) : ConfigError(msg) {}
+};
+
+// Exception thrown when a config key is not found
+class ConfigKeyNotFound : public ConfigError {
+    std::string _msg;
+public:
+    ConfigKeyNotFound(const std::string& msg) : ConfigError(msg) {}
+};
+
+// Exception thrown when cast failed
+class ConfigBadCast : public ConfigError {
+    std::string _msg;
+public:
+    ConfigBadCast(const std::string& msg) : ConfigError(msg) {}
 };
 
 //Representation of the Bohrium configuration file
@@ -65,9 +85,12 @@ class ConfigParser {
   public:
     // Path to the config file e.g. ~/.bohrium/config.ini
     const std::string file_path;
-    // The stack level of the calling component
-    const unsigned int stack_level;
+    // The stack level of the calling component (-1 is the bridge,
+    // 0 is the first component in the stack list, 1 is the second component etc.)
+    const int stack_level;
   private:
+    // The default section, which should be name of the component owning this class
+    std::string _default_section;
     // The list of components in the user-specified stack starting
     // at the bridge
     std::vector<std::string> _stack_list;
@@ -83,7 +106,7 @@ class ConfigParser {
      *
      * @stack_level  Is the level of the calling component
      */
-    ConfigParser(unsigned int stack_level);
+    ConfigParser(int stack_level);
 
     /* Get the value of the 'option' within the 'section'
      *
@@ -91,8 +114,8 @@ class ConfigParser {
      *           section is used.
      * @option   The ini option e.g. timing = True
      * @return   The value, which is lexically converted to type 'T'
-     * Throws property_tree::ptree_bad_path if the section/option does not exist
-     * Throws bad_lexical_cast if the value cannot be converted
+     * Throws ConfigKeyNotFound if the section/option does not exist
+     * Throws ConfigBadCast if the value cannot be converted
      */
     template<typename T>
     T get(const std::string &section, const std::string &option) const {
@@ -112,14 +135,15 @@ class ConfigParser {
         try {
             return lexical_cast<T>(ret);
         } catch (const boost::bad_lexical_cast&) {
-            cerr << "ConfigParser cannot convert '" << section << "." << option
-                 << "=" << ret << "' to type <" << typeid(T).name() << ">" << endl;
-            throw;
+            stringstream ss;
+            ss << "ConfigParser cannot convert '" << section << "." << option
+               << "=" << ret << "' to type <" << typeid(T).name() << ">" << endl;
+            throw ConfigBadCast(ss.str());
         }
     }
     template<typename T>
     T get(const std::string &option) const {
-        return get<T>(_stack_list[stack_level], option);
+        return get<T>(_default_section, option);
     }
 
     /* Get the value of the 'option' within the 'section' and if it
@@ -143,7 +167,7 @@ class ConfigParser {
     }
     template<typename T>
     T defaultGet(const std::string &option, const T &default_value) const {
-        return defaultGet(_stack_list[stack_level], option, default_value);
+        return defaultGet(_default_section, option, default_value);
     }
 
     /* Get the value of the 'option' within the 'section' and convert the value,
@@ -153,19 +177,19 @@ class ConfigParser {
      *                 default section is used.
      * @option         The ini option e.g. timing = True
      * @return         Vector of strings
-     * Throws property_tree::ptree_bad_path if the section/option does not exist
+     * Throws ConfigKeyNotFound if the section/option does not exist
      */
     std::vector<std::string> getList(const std::string &section,
                                      const std::string &option) const;
     std::vector<std::string> getList(const std::string &option) const {
-        return getList(_stack_list[stack_level], option);
+        return getList(_default_section, option);
     }
 
     /* Return the path to the library that implements
      * the calling component's child.
      *
      * @return File path to shared library
-     * Throw exception if the calling component has not children
+     * Throw ConfigNoChild exception if the calling component has not children
      */
     std::string getChildLibraryPath() const;
 
@@ -173,7 +197,7 @@ class ConfigParser {
      *
      * @return Component name as given in the config file
      */
-    std::string getName() const { return _stack_list[stack_level]; };
+    std::string getName() const { return _default_section; };
 };
 
 } //namespace bohrium

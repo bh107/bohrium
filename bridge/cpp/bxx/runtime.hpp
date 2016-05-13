@@ -35,12 +35,10 @@ inline Runtime& Runtime::instance()
 
 inline Runtime::Runtime() : global_random_seed_(0),
                             global_random_state_(0),
-                            config(0), // stack level zero is the bridge
-                            runtime(config.getChildLibraryPath(), 1), // and child is stack level 1
+                            config(-1), // stack level -1 is the bridge
+                            runtime(config.getChildLibraryPath(), 0), // and child is stack level 0
                             extension_count(BH_MAX_OPCODE_ID+1),
-                            queue_size(0)
-{
-}
+                            queue_size(0) {}
 
 inline Runtime::~Runtime()
 {
