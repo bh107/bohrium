@@ -36,8 +36,8 @@ private:
     // All fusers have a cache
     FuseCache _cache;
 public:
-    ComponentFuser(unsigned int stack_level) : ComponentImplWithChild(stack_level),
-                                               _cache(config) {};
+    ComponentFuser(int stack_level) : ComponentImplWithChild(stack_level),
+                                      _cache(config) {};
     virtual ~ComponentFuser() {};
 
     // On cache miss, we call this function thus anyone

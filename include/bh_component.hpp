@@ -52,12 +52,13 @@ namespace component {
 // that all Bohrium components should implement
 class ComponentImpl {
   public:
-    // The level in the runtime stack starting a zero, which is the bridge
-    const unsigned int stack_level;
+    // The level in the runtime stack starting a -1, which is the bridge,
+    // 0 is the first component in the stack list, 1 is the second component etc.
+    const int stack_level;
     // The configure file
     const ConfigParser config;
     // Constructor
-    ComponentImpl(unsigned int stack_level) : stack_level(stack_level), config(stack_level) {};
+    ComponentImpl(int stack_level) : stack_level(stack_level), config(stack_level) {};
     virtual ~ComponentImpl() {}; // NB: a destructor implementation must exist
 
     /* Execute a BhIR (graph of instructions)
@@ -94,7 +95,7 @@ class ComponentFace {
   public:
     // Constructor that takes the path to the shared library and
     // the stack level of the component
-    ComponentFace(const std::string &lib_path, unsigned int stack_level);
+    ComponentFace(const std::string &lib_path, int stack_level);
     ~ComponentFace();
 
     // No default, copy, or move constructor!
@@ -132,7 +133,7 @@ protected:
     // The interface of the child
     ComponentFace child;
 public:
-    ComponentImplWithChild(unsigned int stack_level)
+    ComponentImplWithChild(int stack_level)
             : ComponentImpl(stack_level),
               child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {}
     virtual ~ComponentImplWithChild() {};
