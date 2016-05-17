@@ -18,24 +18,25 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
 #include <bh_component.hpp>
-#include <bh_fuse_cache.hpp>
+#include <bh_fuser.hpp>
 
 using namespace bohrium;
 using namespace component;
 using namespace std;
 
-class Impl : public ComponentImpl {
-  private:
-    ComponentFace child;
-    FuseCache _fuse_cache;
+class Impl : public ComponentFuser {
   public:
-    Impl(unsigned int stack_level) : ComponentImpl(stack_level),
-         child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {}
+    Impl(unsigned int stack_level) : ComponentFuser(stack_level) {}
     ~Impl() {};
-    void execute(bh_ir *bhir);
-    void extmethod(const string &name, bh_opcode opcode);
+    void do_fusion(bh_ir &bhir) {
+        for(uint64_t idx=0; idx < bhir.instr_list.size(); idx++)
+        {
+            bh_ir_kernel kernel(bhir);
+            kernel.add_instr(idx);
+            bhir.kernel_list.push_back(kernel);
+        }
+    }
 };
 
 extern "C" ComponentImpl* create(unsigned int stack_level) {
@@ -43,38 +44,4 @@ extern "C" ComponentImpl* create(unsigned int stack_level) {
 }
 extern "C" void destroy(ComponentImpl* self) {
     delete self;
-}
-
-static void do_fusion(bh_ir &bhir) {
-    for(uint64_t idx=0; idx < bhir.instr_list.size(); idx++)
-    {
-        bh_ir_kernel kernel(bhir);
-        kernel.add_instr(idx);
-        bhir.kernel_list.push_back(kernel);
-    }
-}
-
-static void fuser(bh_ir &bhir, FuseCache &cache) {
-    if(bhir.kernel_list.size() != 0)
-        throw logic_error("The kernel_list is not empty!");
-
-    if(cache.enabled) {
-        BatchHash hash(bhir.instr_list);
-        if(cache.lookup(hash, bhir, bhir.kernel_list))
-            return;//Fuse cache hit!
-        do_fusion(bhir);
-        cache.insert(hash, bhir.kernel_list);
-    }
-    else {
-        do_fusion(bhir);
-    }
-}
-
-void Impl::execute(bh_ir *bhir) {
-    fuser(*bhir, _fuse_cache);     // Run the filter
-    child.execute(bhir);
-}
-
-void Impl::extmethod(const string &name, bh_opcode opcode) {
-    child.extmethod(name, opcode);
 }
