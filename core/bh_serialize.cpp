@@ -69,7 +69,7 @@ Init::Init(const std::vector<char> &buffer)//Deserialize constructor
     archive::binary_iarchive ia(input_stream);
 
     //Deserialize the component name
-    ia >> this->component_name;
+    ia >> this->stack_level;
 }
 
 void Init::serialize(std::vector<char> &buffer)
@@ -79,7 +79,7 @@ void Init::serialize(std::vector<char> &buffer)
     archive::binary_oarchive oa(output_stream);
 
     //Serialize the component name
-    oa << this->component_name;
+    oa << this->stack_level;
 }
 
 void ExecuteFrontend::serialize(const bh_ir &bhir, vector<char> &buffer, vector<bh_base*> &data_send, vector<bh_base*> &data_recv)

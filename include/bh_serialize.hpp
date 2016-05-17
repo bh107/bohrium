@@ -53,12 +53,12 @@ struct Header
     Header(const std::vector<char> &buffer);
     void serialize(std::vector<char> &buffer);
 };
-const size_t HeaderSize = sizeof(Type) + sizeof(size_t);
+constexpr size_t HeaderSize = sizeof(Type) + sizeof(size_t);
 
 struct Init
 {
-    std::string component_name;
-    Init(std::string component_name):component_name(component_name){}
+    int stack_level;// Stack level of the component
+    Init(int stack_level):stack_level(stack_level){}
     Init(const std::vector<char> &buffer);
 
     void serialize(std::vector<char> &buffer);
