@@ -33,11 +33,6 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
     bh_instruction& second = *chain.at(1); // BH_MULTIPLY
     bh_instruction& third  = *chain.at(2); // BH_ADD or BH_SUBTRACT
 
-    // The types of the two constants have to match
-    if (first.constant.type != second.constant.type) {
-        return false;
-    }
-
     vector<bh_instruction*> discards;
     vector<bh_instruction*> frees;
 
@@ -71,7 +66,7 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
         }
     }
 
-    if (discards.size() != temps.size() || frees.size() != temps.size()) {
+    if (discards.size() != temps.size() or frees.size() != temps.size()) {
         // Can't rewrite - Not same amount of views as discards and frees
         return false;
     }
@@ -81,6 +76,9 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
     } else { // BH_SUBTRACT
         first.constant.set_double(first.constant.get_double() - second.constant.get_double());
     }
+
+    // Set the constant type to the result type
+    first.constant.type = third.operand[0].base->type;
 
     // The result of the first operations should be that of the thrid
     first.operand[0] = third.operand[0];
@@ -132,7 +130,7 @@ void Contracter::contract_muladd(bh_ir &bhir)
         if (rewritten) {
             // We might catch more rewrites if we found one
             // so we loop back to the beginning
-            pc = 0;
+            pc        = 0;
             rewritten = false;
             temp_results.clear();
             instruction_chain.clear();
@@ -159,8 +157,8 @@ void Contracter::contract_muladd(bh_ir &bhir)
                 bh_instruction& other_instr = bhir.instr_list[sub_pc];
 
                 if (other_instr.opcode == BH_MULTIPLY) {
-                    if (!((bh_is_constant(&(instr.operand[1])) and multiplying_view == &(instr.operand[2])) or
-                          (bh_is_constant(&(instr.operand[2])) and multiplying_view == &(instr.operand[1])))) {
+                    if (!((bh_is_constant(&(other_instr.operand[1])) and *multiplying_view == other_instr.operand[2]) or
+                          (bh_is_constant(&(other_instr.operand[2])) and *multiplying_view == other_instr.operand[1]))) {
                         continue;
                     }
 
@@ -173,7 +171,6 @@ void Contracter::contract_muladd(bh_ir &bhir)
                         bh_instruction& yet_another_instr = bhir.instr_list[sub_sub_pc];
 
                         if (yet_another_instr.opcode == BH_ADD or yet_another_instr.opcode == BH_SUBTRACT) {
-
                             uint found = 0;
                             for(auto it : temp_results) {
                                 if (*it == yet_another_instr.operand[1] or *it == yet_another_instr.operand[2]) {
