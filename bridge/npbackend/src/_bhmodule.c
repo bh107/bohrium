@@ -624,40 +624,27 @@ BhArray_astype(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef BhArrayMethods[] = {
-    {"__array_finalize__", BhArray_finalize, METH_VARARGS, NULL},
-    {"_data_bhc2np", BhArray_data_bhc2np, METH_NOARGS, "Copy the Bohrium-C data to NumPy data"},
-    {"_data_np2bhc", BhArray_data_np2bhc, METH_NOARGS, "Copy the NumPy data to Bohrium-C data"},
-    {"_data_fill", BhArray_data_fill, METH_VARARGS, "Fill the Bohrium-C data from a numpy NumPy"},
-    {"copy", BhArray_copy, METH_NOARGS, "Copy the array in C-style memory layout"},
-    {"copy2numpy", BhArray_copy2numpy, METH_NOARGS, "Copy the array in C-style memory "
-                                                    "layout to a regular NumPy array"},
-    {"resize", BhArray_resize, METH_VARARGS, "Change shape and size of array in-place"},
-    {"reshape", BhArray_reshape, METH_VARARGS, "a.reshape(shape)\n\nReturns an array"
-                                               "containing the same data with a new shape.\n\n"
-                                               "Refer to `bohrium.reshape` for full documentation."},
-    {"flatten", BhArray_flatten, METH_VARARGS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
-    {"ravel", BhArray_flatten, METH_VARARGS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
-    {"sum", BhArray_sum, METH_VARARGS, "a.sum(axis=None, dtype=None, out=None)\n\n"
-                                       "Return the sum of the array elements over the given axis.\n\n"
-                                       "Refer to `bohrium.sum` for full documentation."},
-    {"prod", BhArray_prod, METH_VARARGS,"a.prod(axis=None, dtype=None, out=None)\n\n"
-                                        "Return the product of the array elements over the given axis\n\n"
-                                        "Refer to `numpy.prod` for full documentation."},
-
-    {"astype", BhArray_astype, METH_VARARGS, "a.astype(dtype, order='C', subok=True, copy=True)\n\n"
-                                             "Copy of the array, cast to a specified type."},
+    {"__array_finalize__", BhArray_finalize,    METH_VARARGS,  NULL},
+    {"_data_bhc2np",       BhArray_data_bhc2np, METH_NOARGS,   "Copy the Bohrium-C data to NumPy data"},
+    {"_data_np2bhc",       BhArray_data_np2bhc, METH_NOARGS,   "Copy the NumPy data to Bohrium-C data"},
+    {"_data_fill",         BhArray_data_fill,   METH_VARARGS,  "Fill the Bohrium-C data from a numpy NumPy"},
+    {"copy",               BhArray_copy,        METH_NOARGS,   "Copy the array in C-style memory layout"},
+    {"copy2numpy",         BhArray_copy2numpy,  METH_NOARGS,   "Copy the array in C-style memory layout to a regular NumPy array"},
+    {"resize",             BhArray_resize,      METH_VARARGS,  "Change shape and size of array in-place"},
+    {"reshape",            BhArray_reshape,     METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},
+    {"flatten",            BhArray_flatten,     METH_KEYWORDS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"ravel",              BhArray_flatten,     METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"sum",                BhArray_sum,         METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
+    {"prod",               BhArray_prod,        METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
+    {"astype",             BhArray_astype,      METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
 static PyMemberDef BhArrayMembers[] = {
-    {"bhc_ary", T_OBJECT_EX, offsetof(BhArray, bhc_ary), 0,
-     "The Bohrium backend base-array"},
-    {"bhc_ary_version", T_OBJECT_EX, offsetof(BhArray, bhc_ary_version), 0,
-     "The version of the Bohrium backend base-array"},
-    {"bhc_view", T_OBJECT_EX, offsetof(BhArray, bhc_view), 0,
-     "The Bohrium backend view-array"},
-    {"bhc_view_version", T_OBJECT_EX, offsetof(BhArray, bhc_view_version), 0,
-     "The version of the Bohrium backend view-array"},
+    {"bhc_ary",          T_OBJECT_EX, offsetof(BhArray, bhc_ary),          0, "The Bohrium backend base-array"},
+    {"bhc_ary_version",  T_OBJECT_EX, offsetof(BhArray, bhc_ary_version),  0, "The version of the Bohrium backend base-array"},
+    {"bhc_view",         T_OBJECT_EX, offsetof(BhArray, bhc_view),         0, "The Bohrium backend view-array"},
+    {"bhc_view_version", T_OBJECT_EX, offsetof(BhArray, bhc_view_version), 0, "The version of the Bohrium backend view-array"},
     {NULL}  /* Sentinel */
 };
 
