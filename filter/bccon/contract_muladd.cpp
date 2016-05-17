@@ -33,11 +33,6 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
     bh_instruction& second = *chain.at(1); // BH_MULTIPLY
     bh_instruction& third  = *chain.at(2); // BH_ADD or BH_SUBTRACT
 
-    // The types of the two constants have to match
-    if (first.constant.type != second.constant.type) {
-        return false;
-    }
-
     vector<bh_instruction*> discards;
     vector<bh_instruction*> frees;
 
@@ -81,6 +76,9 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
     } else { // BH_SUBTRACT
         first.constant.set_double(first.constant.get_double() - second.constant.get_double());
     }
+
+    // Set the constant type to the result type
+    first.constant.type = third.operand[0].base->type;
 
     // The result of the first operations should be that of the thrid
     first.operand[0] = third.operand[0];
