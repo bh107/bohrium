@@ -66,7 +66,7 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
         }
     }
 
-    if (discards.size() != temps.size() || frees.size() != temps.size()) {
+    if (discards.size() != temps.size() or frees.size() != temps.size()) {
         // Can't rewrite - Not same amount of views as discards and frees
         return false;
     }
@@ -130,7 +130,7 @@ void Contracter::contract_muladd(bh_ir &bhir)
         if (rewritten) {
             // We might catch more rewrites if we found one
             // so we loop back to the beginning
-            pc = 0;
+            pc        = 0;
             rewritten = false;
             temp_results.clear();
             instruction_chain.clear();
@@ -171,7 +171,6 @@ void Contracter::contract_muladd(bh_ir &bhir)
                         bh_instruction& yet_another_instr = bhir.instr_list[sub_sub_pc];
 
                         if (yet_another_instr.opcode == BH_ADD or yet_another_instr.opcode == BH_SUBTRACT) {
-
                             uint found = 0;
                             for(auto it : temp_results) {
                                 if (*it == yet_another_instr.operand[1] or *it == yet_another_instr.operand[2]) {
