@@ -27,7 +27,7 @@ using namespace std;
 
 class Impl : public ComponentFuser {
   public:
-    Impl(unsigned int stack_level) : ComponentFuser(stack_level) {}
+    Impl(int stack_level) : ComponentFuser(stack_level) {}
     ~Impl() {};
     void do_fusion(bh_ir &bhir) {
         for(uint64_t idx=0; idx < bhir.instr_list.size(); idx++)
@@ -39,7 +39,7 @@ class Impl : public ComponentFuser {
     }
 };
 
-extern "C" ComponentImpl* create(unsigned int stack_level) {
+extern "C" ComponentImpl* create(int stack_level) {
     return new Impl(stack_level);
 }
 extern "C" void destroy(ComponentImpl* self) {

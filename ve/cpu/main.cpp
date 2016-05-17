@@ -58,7 +58,7 @@ class Impl : public ComponentImpl {
     size_t exec_count = 0;
     map<bh_opcode, ExtmethodFace> extensions;
   public:
-    Impl(unsigned int stack_level);
+    Impl(int stack_level);
     ~Impl() {
         delete engine;
         if (timing) {
@@ -73,14 +73,14 @@ class Impl : public ComponentImpl {
     }
 };
 
-extern "C" ComponentImpl* create(unsigned int stack_level) {
+extern "C" ComponentImpl* create(int stack_level) {
     return new Impl(stack_level);
 }
 extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 
-Impl::Impl(unsigned int stack_level) : ComponentImpl(stack_level) {
+Impl::Impl(int stack_level) : ComponentImpl(stack_level) {
     char* env = getenv("BH_FUSE_MODEL");                    // Set the fuse-model
     if (NULL != env) {
         string env_str(env);

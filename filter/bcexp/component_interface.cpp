@@ -29,13 +29,13 @@ class Impl : public ComponentImplWithChild {
 private:
     filter::composite::Expander expander;
 public:
-    Impl(unsigned int stack_level) : ComponentImplWithChild(stack_level),
-                                       expander(config.defaultGet<int>("gc_threshold", 400),
-                                                config.defaultGet<bool>("matmul", true),
-                                                config.defaultGet<bool>("sign", true),
-                                                config.defaultGet<bool>("powk", true),
-                                                config.defaultGet<bool>("reduce1d", false),
-                                                config.defaultGet<bool>("repeat", true)) {};
+    Impl(int stack_level) : ComponentImplWithChild(stack_level),
+                            expander(config.defaultGet<int>("gc_threshold", 400),
+                            config.defaultGet<bool>("matmul", true),
+                            config.defaultGet<bool>("sign", true),
+                            config.defaultGet<bool>("powk", true),
+                            config.defaultGet<bool>("reduce1d", false),
+                            config.defaultGet<bool>("repeat", true)) {};
 
     ~Impl() {}; // NB: a destructor implementation must exist
     void execute(bh_ir *bhir) {
@@ -44,7 +44,7 @@ public:
     };
 };
 
-extern "C" ComponentImpl* create(unsigned int stack_level) {
+extern "C" ComponentImpl* create(int stack_level) {
     return new Impl(stack_level);
 }
 extern "C" void destroy(ComponentImpl* self) {

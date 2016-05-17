@@ -32,12 +32,12 @@ class Impl : public ComponentImplWithChild {
     //Inspect one instruction and throws exception on error
     void inspect(bh_instruction *instr);
   public:
-    Impl(unsigned int stack_level) : ComponentImplWithChild(stack_level) {}
+    Impl(int stack_level) : ComponentImplWithChild(stack_level) {}
     ~Impl(); // NB: a destructor implementation must exist
     void execute(bh_ir *bhir);
 };
 
-extern "C" ComponentImpl* create(unsigned int stack_level) {
+extern "C" ComponentImpl* create(int stack_level) {
     return new Impl(stack_level);
 }
 extern "C" void destroy(ComponentImpl* self) {
