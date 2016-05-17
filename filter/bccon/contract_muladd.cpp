@@ -157,8 +157,8 @@ void Contracter::contract_muladd(bh_ir &bhir)
                 bh_instruction& other_instr = bhir.instr_list[sub_pc];
 
                 if (other_instr.opcode == BH_MULTIPLY) {
-                    if (!((bh_is_constant(&(instr.operand[1])) and multiplying_view == &(instr.operand[2])) or
-                          (bh_is_constant(&(instr.operand[2])) and multiplying_view == &(instr.operand[1])))) {
+                    if (!((bh_is_constant(&(other_instr.operand[1])) and *multiplying_view == other_instr.operand[2]) or
+                          (bh_is_constant(&(other_instr.operand[2])) and *multiplying_view == other_instr.operand[1]))) {
                         continue;
                     }
 
