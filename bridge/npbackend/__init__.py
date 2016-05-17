@@ -41,4 +41,3 @@ __all__ = [x for x in dir() if not x.startswith("_")]
 #Finally, let's bohriumify the exposed API
 import bohriumify
 bohriumify.modules()
-

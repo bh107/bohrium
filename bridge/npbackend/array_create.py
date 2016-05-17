@@ -107,8 +107,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
     if bohrium:
         if bhary.check(ary):
             if order == 'F':
-                raise ValueError("Cannot convert a Bohrium array to "\
-                            "column-major ('F') memory representation")
+                raise ValueError("Cannot convert a Bohrium array to column-major ('F') memory representation")
             if copy:
                 ary = ary.copy()
             if dtype is not None and not dtype_equal(dtype, ary.dtype):
@@ -119,10 +118,8 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
                 ary = numpy.expand_dims(ary, i)
             return ary
         else:
-            ary = numpy.array(ary, dtype=dtype, copy=copy, order=order,\
-                            subok=subok, ndmin=ndmin)
-            ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', \
-                                                'OWNDATA'])
+            ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
+            ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
             ret = empty(ary.shape, dtype=ary.dtype)
             if ret.size > 0:
                 ret._data_fill(ary)
@@ -130,11 +127,9 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
     else:
         if bhary.check(ary):
             ret = ary.copy2numpy()
-            return numpy.array(ret, dtype=dtype, copy=copy, order=order, \
-                               subok=subok, ndmin=ndmin)
+            return numpy.array(ret, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
         else:
-            return numpy.array(ary, dtype=dtype, copy=copy, order=order, \
-                               subok=subok, ndmin=ndmin)
+            return numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
 
 @fix_returned_biclass
 def empty(shape, dtype=float, bohrium=True):
@@ -546,8 +541,7 @@ def range(size, dtype=numpy.uint64):
         return A
 
 @fix_returned_biclass
-def linspace(start, stop, num=50, endpoint=True, retstep=False,\
-             dtype=float, bohrium=True):
+def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, bohrium=True):
     """
     Return evenly spaced numbers over a specified interval.
 
@@ -617,8 +611,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False,\
     """
     if not bohrium:
         #TODO: add copy=False to .astype()
-        return numpy.linspace(start, stop, num=num, endpoint=endpoint, \
-                              retstep=retstep).astype(dtype)
+        return numpy.linspace(start, stop, num=num, endpoint=endpoint, retstep=retstep).astype(dtype)
     num = int(num)
     if num <= 0:
         return array([], dtype=dtype)
