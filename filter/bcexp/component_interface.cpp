@@ -25,27 +25,22 @@ using namespace bohrium;
 using namespace component;
 using namespace std;
 
-class Impl : public ComponentImpl {
+class Impl : public ComponentImplWithChild {
 private:
     filter::composite::Expander expander;
-    ComponentFace child;
 public:
-    Impl(unsigned int stack_level) : ComponentImpl(stack_level),
-                                     expander(config.defaultGet<int>("gc_threshold", 400),
+    Impl(unsigned int stack_level) : ComponentImplWithChild(stack_level),
+                                       expander(config.defaultGet<int>("gc_threshold", 400),
                                                 config.defaultGet<bool>("matmul", true),
                                                 config.defaultGet<bool>("sign", true),
                                                 config.defaultGet<bool>("powk", true),
                                                 config.defaultGet<bool>("reduce1d", false),
-                                                config.defaultGet<bool>("repeat", true)),
-                                     child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {};
+                                                config.defaultGet<bool>("repeat", true)) {};
 
     ~Impl() {}; // NB: a destructor implementation must exist
     void execute(bh_ir *bhir) {
         expander.expand(*bhir);
         child.execute(bhir);
-    };
-    void extmethod(const string &name, bh_opcode opcode) {
-        child.extmethod(name, opcode);
     };
 };
 

@@ -25,21 +25,16 @@ using namespace bohrium;
 using namespace component;
 using namespace std;
 
-class Impl : public ComponentImpl {
+class Impl : public ComponentImplWithChild {
   private:
-    ComponentFace child;
     //Allocated base arrays
     set<bh_base*> _allocated_bases;
     //Inspect one instruction and throws exception on error
     void inspect(bh_instruction *instr);
   public:
-    Impl(unsigned int stack_level) : ComponentImpl(stack_level),
-                child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {}
+    Impl(unsigned int stack_level) : ComponentImplWithChild(stack_level) {}
     ~Impl(); // NB: a destructor implementation must exist
     void execute(bh_ir *bhir);
-    void extmethod(const string &name, bh_opcode opcode) {
-        child.extmethod(name, opcode);
-    };
 };
 
 extern "C" ComponentImpl* create(unsigned int stack_level) {

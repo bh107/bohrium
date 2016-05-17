@@ -25,26 +25,21 @@ using namespace bohrium;
 using namespace component;
 using namespace std;
 
-class Impl : public ComponentImpl {
+class Impl : public ComponentImplWithChild {
 private:
-    filter::composite::Contracter contracter;
-    ComponentFace child;
+    filter::composite::Contracter contractor;
 public:
-    Impl(unsigned int stack_level) : ComponentImpl(stack_level),
-                                     contracter(config.defaultGet<bool>("find_repeats", false),
+    Impl(unsigned int stack_level) : ComponentImplWithChild(stack_level),
+                                     contractor(config.defaultGet<bool>("find_repeats", false),
                                                 config.defaultGet<bool>("reduction", false),
                                                 config.defaultGet<bool>("stupidmath", false),
                                                 config.defaultGet<bool>("collect", false),
-                                                config.defaultGet<bool>("muladd", false)),
-                                     child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {};
+                                                config.defaultGet<bool>("muladd", false)) {};
 
     ~Impl() {}; // NB: a destructor implementation must exist
     void execute(bh_ir *bhir) {
-        contracter.contract(*bhir);
+        contractor.contract(*bhir);
         child.execute(bhir);
-    };
-    void extmethod(const string &name, bh_opcode opcode) {
-        child.extmethod(name, opcode);
     };
 };
 
