@@ -439,7 +439,7 @@ static void manual_merges(GraphDW &dag)
 */
 ;}
 
-void do_fusion(bh_ir &bhir)
+void do_optimal_fusion(bh_ir &bhir)
 {
     GraphDW dag;
     from_bhir(bhir, dag);
@@ -459,25 +459,5 @@ void do_fusion(bh_ir &bhir)
     assert(dag_validate(bhir, dags));
     BOOST_FOREACH(GraphDW &d, dags)
         fill_kernel_list(d.bglD(), bhir.kernel_list);
-}
-
-void fuser(bh_ir &bhir, FuseCache &cache)
-{
-    ++bhir_count;
-    if(bhir.kernel_list.size() != 0)
-        throw logic_error("The kernel_list is not empty!");
-
-    if(cache.enabled)
-    {
-        BatchHash hash(bhir.instr_list);
-        if(cache.lookup(hash, bhir, bhir.kernel_list))
-            return;//Fuse cache hit!
-        do_fusion(bhir);
-        cache.insert(hash, bhir.kernel_list);
-    }
-    else
-    {
-        do_fusion(bhir);
-    }
 }
 
