@@ -25,6 +25,7 @@ using namespace bohrium;
 using namespace component;
 using namespace std;
 
+namespace {
 class Impl : public ComponentFuser {
 public:
     Impl(int stack_level) : ComponentFuser(stack_level) {}
@@ -51,6 +52,7 @@ public:
         }
     }
 };
+} //Unnamed namespace
 
 extern "C" ComponentImpl* create(int stack_level) {
     return new Impl(stack_level);

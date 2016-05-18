@@ -25,6 +25,7 @@ using namespace bohrium;
 using namespace component;
 using namespace std;
 
+namespace {
 class Impl : public ComponentImplWithChild {
 private:
     filter::composite::Expander expander;
@@ -43,6 +44,7 @@ public:
         child.execute(bhir);
     };
 };
+} //Unnamed namespace
 
 extern "C" ComponentImpl* create(int stack_level) {
     return new Impl(stack_level);
