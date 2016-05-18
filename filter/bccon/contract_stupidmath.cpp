@@ -19,8 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include "contracter.hpp"
 
-#include <set>
-
 #include <bh_component.h>
 
 using namespace std;
@@ -29,66 +27,32 @@ namespace bohrium {
 namespace filter {
 namespace composite {
 
-static bool bh_constant_is_value(const bh_constant constant, float_t value)
-{
-    switch(constant.type) {
-        case BH_UINT8:
-            return constant.value.uint8 == (uint8_t)value;
-        case BH_UINT16:
-            return constant.value.uint16 == (uint16_t)value;
-        case BH_UINT32:
-            return constant.value.uint32 == (uint32_t)value;
-        case BH_UINT64:
-            return constant.value.uint64 == (uint64_t)value;
-
-        case BH_INT8:
-            return constant.value.int8 == (int8_t)value;
-        case BH_INT16:
-            return constant.value.int16 == (int16_t)value;
-        case BH_INT32:
-            return constant.value.int32 == (int32_t)value;
-        case BH_INT64:
-            return constant.value.int64 == (int64_t)value;
-
-        // We can't use floating point, since we'll lose precision
-        /*
-        case BH_FLOAT32:
-            return constant.value.float32 == value;
-        case BH_FLOAT64:
-            return constant.value.float64 == value;
-        */
-
-        default:
-            return false;
-    }
-}
-
 static inline bool is_multiplying_by_one(const bh_instruction& instr)
 {
     return instr.opcode == BH_MULTIPLY and
            bh_is_constant(&(instr.operand[2])) and
-           bh_constant_is_value(instr.constant, 1.0);
+           instr.constant.get_double() == 1.0;
 }
 
 static inline bool is_dividing_by_one(const bh_instruction& instr)
 {
     return instr.opcode == BH_DIVIDE and
            bh_is_constant(&(instr.operand[2])) and
-           bh_constant_is_value(instr.constant, 1.0);
+           instr.constant.get_double() == 1.0;
 }
 
 static inline bool is_adding_zero(const bh_instruction& instr)
 {
     return instr.opcode == BH_ADD and
            bh_is_constant(&(instr.operand[2])) and
-           bh_constant_is_value(instr.constant, 0.0);
+           instr.constant.get_double() == 0.0;
 }
 
 static inline bool is_subtracting_zero(const bh_instruction& instr)
 {
     return instr.opcode == BH_SUBTRACT and
            bh_is_constant(&(instr.operand[2])) and
-           bh_constant_is_value(instr.constant, 0.0);
+           instr.constant.get_double() == 0.0;
 }
 
 static inline bool is_free_or_discard(const bh_instruction& instr)
@@ -99,10 +63,12 @@ static inline bool is_free_or_discard(const bh_instruction& instr)
 
 static inline bool is_doing_stupid_math(const bh_instruction& instr)
 {
-    return is_multiplying_by_one(instr) or
-           is_dividing_by_one(instr) or
-           is_adding_zero(instr) or
-           is_subtracting_zero(instr);
+    return bh_type_is_integer(instr.constant.type) and (
+        is_multiplying_by_one(instr) or
+        is_dividing_by_one(instr) or
+        is_adding_zero(instr) or
+        is_subtracting_zero(instr)
+    );
 }
 
 void Contracter::contract_stupidmath(bh_ir &bhir)
@@ -131,6 +97,9 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
                     freed     = freed     or other_instr.opcode == BH_FREE;
                     discarded = discarded or other_instr.opcode == BH_DISCARD;
                 }
+
+                if (freed and discarded)
+                    break;
             }
 
             // Check that B is created by us, that is, it isn't created prior to this stupid math call.
