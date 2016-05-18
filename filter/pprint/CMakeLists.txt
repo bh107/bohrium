@@ -7,7 +7,7 @@ endif()
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
-file(GLOB SRC *.cpp)
+file(GLOB SRC main.cpp)
 
 add_library(bh_filter_pprint SHARED ${SRC})
 
