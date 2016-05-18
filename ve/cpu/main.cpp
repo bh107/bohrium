@@ -47,6 +47,7 @@ using namespace extmethod;
 typedef vector<bh_instruction> instr_iter;
 typedef vector<bh_ir_kernel>::iterator krnl_iter;
 
+namespace {
 class Impl : public ComponentImpl {
   private:
     // This is where the actual engine implementation is
@@ -72,6 +73,7 @@ class Impl : public ComponentImpl {
         extensions.insert(make_pair(opcode, ExtmethodFace(config, name)));
     }
 };
+} //Unnamed namespace
 
 extern "C" ComponentImpl* create(int stack_level) {
     return new Impl(stack_level);
