@@ -17,22 +17,30 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BH_FILTER_FUSE_optimal_H
-#define __BH_FILTER_FUSE_optimal_H
 
-#include "interface.h"
+#include <bh_component.hpp>
+#include <bh_fuser.hpp>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "fuser.hpp"
 
-DLLEXPORT bh_error bh_fuser_optimal_init(const char* name);
-DLLEXPORT bh_error bh_fuser_optimal_execute(bh_ir* bhir);
-DLLEXPORT bh_error bh_fuser_optimal_shutdown(void);
-DLLEXPORT bh_error bh_fuser_optimal_extmethod(const char *name, bh_opcode opcode);
+using namespace bohrium;
+using namespace component;
+using namespace std;
 
-#ifdef __cplusplus
+namespace {
+class Impl : public ComponentFuser {
+public:
+    Impl(int stack_level) : ComponentFuser(stack_level) {}
+    ~Impl() {};
+    void do_fusion(bh_ir &bhir) {
+        do_optimal_fusion(bhir);
+    }
+};
+} //Unnamed namespace
+
+extern "C" ComponentImpl* create(int stack_level) {
+    return new Impl(stack_level);
 }
-#endif
-
-#endif
+extern "C" void destroy(ComponentImpl* self) {
+    delete self;
+}
