@@ -26,6 +26,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <deque>
 #include <mutex>
+
+#include <bh_array.hpp>
+#include <bh_instruction.hpp>
+#include <bh_extmethod.hpp>
+
 #include "ResourceManager.hpp"
 #include "SourceKernelCall.hpp"
 
@@ -33,7 +38,7 @@ class InstructionScheduler
 {
 private:
     typedef std::map<bh_base*, BaseArray*> ArrayMap;
-    typedef std::map<bh_opcode, bh_extmethod_impl> FunctionMap;
+    typedef std::map<bh_opcode, bohrium::extmethod::ExtmethodFace*> FunctionMap;
 
     typedef std::map<KernelID, Kernel> KernelMap;
     typedef std::pair<KernelID, SourceKernelCall> KernelCall;
@@ -76,7 +81,7 @@ private:
 public:
     InstructionScheduler() {}
     ~InstructionScheduler();
-    void registerFunction(bh_opcode opcode, bh_extmethod_impl extmothod);
+    void registerFunction(bh_opcode opcode, bohrium::extmethod::ExtmethodFace *extmethod);
     bh_error schedule(const bh_ir* bhir);
 };
 

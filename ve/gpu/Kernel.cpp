@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <sstream>
 #include "Kernel.hpp"
+#include "main.hpp"
 
 Kernel::Kernel(const std::string& source, 
                const std::string& name,

@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "cl.hpp"
 #include <vector>
-#include "bh_ve_gpu.h"
 #include "ResourceManager.hpp"
 #include "BaseArray.hpp"
 

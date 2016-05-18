@@ -17,33 +17,13 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BH_VE_GPU_H
-#define __BH_VE_GPU_H
+#ifndef __BH_MAIN_H
+#define __BH_MAIN_H
 
 #include "ResourceManager.hpp"
 #include <bh_win.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 extern ResourceManager* resourceManager;
 
-/* Component interface: init (see bh_component.h) */
-DLLEXPORT bh_error bh_ve_gpu_init(const char *name);
-
-/* Component interface: execute (see bh_component.h) */
-DLLEXPORT bh_error bh_ve_gpu_execute(bh_ir* bhir);
-
-/* Component interface: shutdown (see bh_component.h) */
-DLLEXPORT bh_error bh_ve_gpu_shutdown(void);
-
-/* Component interface: extmethod (see bh_component.h) */
-DLLEXPORT bh_error bh_ve_gpu_extmethod(const char *name, bh_opcode opcode);
-
-
-#ifdef __cplusplus
-}
 #endif
 
-#endif

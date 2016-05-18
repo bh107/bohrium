@@ -26,13 +26,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #define BH_TIMING_SUM
 #include <bh_timing.hpp>
-#include <bh_component.h>
+#include <bh_config_parser.hpp>
+#include <bh_component.hpp>
 #include "OCLtype.h"
 
 class ResourceManager
 {
 private:
-    bh_component* component;
+    const bohrium::ConfigParser* config;
+    bohrium::component::ComponentFace *child;
     cl::Context context;
     std::vector<cl::Device> devices;
     std::vector<cl::CommandQueue> commandQueues;
@@ -64,7 +66,8 @@ public:
     ~ResourceManager();
     void tally();
     static void CL_CALLBACK eventProfiler(cl::Event event, cl_int eventStatus, void* total);
-    ResourceManager(bh_component* _component);
+    ResourceManager(const bohrium::ConfigParser* _config,
+                    bohrium::component::ComponentFace *child);
     cl::Buffer* createBuffer(size_t size);
     void freeBuffer(size_t size);
     // We allways read synchronous with at most one event to wait for.
@@ -95,7 +98,7 @@ public:
                                    const std::vector<cl::Event>* waitFor,
                                    unsigned int device);
     std::vector<size_t> localShape(const std::vector<size_t>& globalShape);
-    bh_error childExecute(bh_ir* bhir);
+    void childExecute(bh_ir* bhir);
     OCLtype intpType() const { return _intpType; }
     bool float64() const { return _float64; }
     bool fixedSizeKernel() const { return _fixedSizeKernel; }
