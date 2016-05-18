@@ -1,6 +1,6 @@
 #
 # Stack configurations, which are a comma separated lists of components.
-# NB: 'stacks' is a reversed section name and 'default'
+# NB: 'stacks' is a reserved section name and 'default'
 #     is used when 'BH_STACKS' is unset.
 #     The bridge is never part of the list
 #
