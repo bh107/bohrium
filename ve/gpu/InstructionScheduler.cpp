@@ -24,11 +24,18 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <thread>
 #include <chrono>
 #include <sstream>
+
+#include <bh_extmethod.hpp>
+
+#include "main.hpp"
 #include "InstructionScheduler.hpp"
 #include "UserFuncArg.hpp"
 #include "Scalar.hpp"
 #include "StringHasher.hpp"
 #include "GenerateSourceCode.hpp"
+
+using namespace std;
+using namespace bohrium;
 
 bh_error InstructionScheduler::schedule(const bh_ir* bhir)
 {
@@ -239,14 +246,14 @@ void InstructionScheduler::build(KernelID kernelID, const std::string source)
     kernelMutex.unlock();
 }
 
-void InstructionScheduler::registerFunction(bh_opcode opcode, bh_extmethod_impl extmethod_impl)
+void InstructionScheduler::registerFunction(bh_opcode opcode, extmethod::ExtmethodFace *extmethod)
 {
     if(functionMap.find(opcode) != functionMap.end())
     {
         std::cerr << "[GPU-VE] Warning, multiple registrations of the same extension method: " <<
             opcode << std::endl;
     }
-    functionMap[opcode] = extmethod_impl;
+    functionMap[opcode] = extmethod;
 }
 
 bh_error InstructionScheduler::extmethod(bh_instruction* inst)
@@ -275,9 +282,7 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
     {
         bh_instruction instr = kernel.bhir->instr_list[idx];
         bh_ir bhir = bh_ir(instr);
-        bh_error err = resourceManager->childExecute(&bhir);
-        if (err != BH_SUCCESS)
-            return err;
+        resourceManager->childExecute(&bhir);
     }
     // Discard the discards
     discard(kernel.get_discards());
