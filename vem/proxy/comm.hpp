@@ -19,38 +19,41 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string>
+#include <boost/asio.hpp>
+
 #include <bh_serialize.hpp>
 
 #ifndef __BH_VEM_PROXY_COMM_H
 #define __BH_VEM_PROXY_COMM_H
 
-namespace bohrium {
-namespace proxy {
-
 class CommFrontend
 {
 private:
-    serialize::ExecuteFrontend exec_serializer;
+    bohrium::serialize::ExecuteFrontend exec_serializer;
+
+    boost::asio::io_service io_service;
+    boost::asio::ip::tcp::socket socket;
 public:
-    CommFrontend(){};
-    CommFrontend(const char* component_name, const std::string &address, int port=4200);
-    void shutdown();
+    CommFrontend(int stack_level, const std::string &address, int port);
+    ~CommFrontend();
     void execute(bh_ir &bhir);
     void send_array_data(const bh_base *base);
     void recv_array_data(bh_base *base);
 };
 
-struct CommBackend
+class CommBackend
 {
-    CommBackend(){};
+private:
+    boost::asio::io_service io_service;
+    boost::asio::ip::tcp::socket socket;
+public:
+    CommBackend();
+    ~CommBackend();
     CommBackend(const std::string &address, int port=4200);
     bohrium::serialize::Header next_message_head();
     void next_message_body(std::vector<char> &buffer);
-    void shutdown();
     void send_array_data(const bh_base *base);
     void recv_array_data(bh_base *base);
 };
-
-}}
 
 #endif
