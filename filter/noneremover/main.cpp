@@ -18,10 +18,13 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_component.h>
+#include <bh_component.hpp>
 
+using namespace bohrium;
+using namespace component;
 using namespace std;
 
+namespace {
 int remove_none(vector<bh_instruction> &bh_instr_list, int from, int to, int decrementer)
 {
     int i = from;
@@ -52,8 +55,21 @@ int remove_none(vector<bh_instruction> &bh_instr_list, int from, int to, int dec
     return decrementer;
 }
 
-void noneremover_filter(bh_ir &bhir)
-{
-    // Remove BH_NONE from entire instruction list
-    remove_none(bhir.instr_list, 0, bhir.instr_list.size(), 0);
+class Impl : public ComponentImplWithChild {
+  public:
+    Impl(int stack_level) : ComponentImplWithChild(stack_level) {};
+    ~Impl() {}; // NB: a destructor implementation must exist
+    void execute(bh_ir *bhir) {
+        // Remove BH_NONE from entire instruction list
+        remove_none(bhir->instr_list, 0, bhir->instr_list.size(), 0);
+        child.execute(bhir);
+    };
+};
+} //Unnamed namespace
+
+extern "C" ComponentImpl* create(int stack_level) {
+    return new Impl(stack_level);
+}
+extern "C" void destroy(ComponentImpl* self) {
+    delete self;
 }
