@@ -139,9 +139,9 @@ add_subdirectory(ve/gpu)
  add_subdirectory(bridge/cpp)
  add_subdirectory(bridge/c)
  add_subdirectory(bridge/npbackend)
-# add_subdirectory(bridge/NumCIL)
-# add_subdirectory(bridge/cil)
-# add_subdirectory(test)
+ add_subdirectory(bridge/NumCIL)
+ add_subdirectory(bridge/cil)
+ add_subdirectory(test)
 
 #
 # Thirdparty headers
