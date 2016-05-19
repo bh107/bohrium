@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/foreach.hpp>
 
 using namespace std;
-using namespace boost;
 using namespace bohrium::dag;
 
 static int64_t sum=0, sum_uv=0, sum_wedges=0;

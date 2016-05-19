@@ -18,7 +18,6 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ResourceManager.hpp"
 #include <cassert>
 #include <stdexcept>
 #include <iostream>
@@ -26,6 +25,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <algorithm>
 #include <cmath>
+
+#include <bh_component.hpp>
+
+#include "ResourceManager.hpp"
 
 #ifdef _WIN32
 #define STD_MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -35,8 +38,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #define STD_MAX(a, b) std::max(a, b)
 #endif
 
-ResourceManager::ResourceManager(bh_component* _component) 
-    : component(_component)
+using namespace std;
+using namespace bohrium;
+using namespace component;
+
+ResourceManager::ResourceManager(const ConfigParser* _config, ComponentFace *child)
+    : config(_config), child(child)
     , _fixedSizeKernel(true)
     , _dynamicSizeKernel(true)
     , _asyncCompile(true)
@@ -45,26 +52,26 @@ ResourceManager::ResourceManager(bh_component* _component)
 
 
 {
-    _verbose = bh_component_config_lookup_bool(component, "verbose", false);
-    _timing = bh_component_config_lookup_bool(component, "timing", false);
-    _printSource = bh_component_config_lookup_bool(component, "print_source", false);
-    bool forceCPU  = bh_component_config_lookup_bool(component, "force_cpu", false);
-    char* dir = bh_component_config_lookup(component, "include");
-    if (dir == NULL)
+    _verbose = config->defaultGet<bool>("verbose", false);
+    _timing = config->defaultGet<bool>("timing", false);
+    _printSource = config->defaultGet<bool>("print_source", false);
+    bool forceCPU  = config->defaultGet<bool>("force_cpu", false);
+    string dir = config->defaultGet<string>("include", "");
+    if (dir.empty())
         compilerOptions = std::string("-I/opt/bohrium/gpu/include");
     else
         compilerOptions = std::string("-I") + std::string(dir);
 
-    char* compiler_options = bh_component_config_lookup(component, "compiler_options");
-    if (compiler_options != NULL)
+    string compiler_options = config->defaultGet<string>("compiler_options", "");
+    if (not compiler_options.empty())
     {
         compilerOptions += std::string(" ") + std::string(compiler_options);
         if (_verbose)
             std::cout << "[Info] [GPU] Compiler options: " << compiler_options << std::endl;
 
     }
-    char* kernel_type = bh_component_config_lookup(component, "kernel");
-    if (kernel_type != NULL)
+    string kernel_type = config->defaultGet<string>("kernel", "");
+    if (not kernel_type.empty())
     {
         std::string kernelType(kernel_type);
         if (kernelType.find("fixed") != std::string::npos)
@@ -76,8 +83,8 @@ ResourceManager::ResourceManager(bh_component* _component)
         std::cout << "[Info] [GPU] Kernel type: " <<
             (_dynamicSizeKernel&&_fixedSizeKernel?"both":(_dynamicSizeKernel?"dynamic":"fixed")) << std::endl;
 
-    char* compile_type = bh_component_config_lookup(component, "compile");
-    if (compile_type != NULL)
+    string compile_type = config->defaultGet<string>("compile", "");
+    if (not compile_type.empty())
     {
         std::string compileType(compile_type);
         if (compileType.find("sync") != std::string::npos && compileType.find("async") == std::string::npos)
@@ -86,12 +93,12 @@ ResourceManager::ResourceManager(bh_component* _component)
     if (_verbose)
         std::cout << "[Info] [GPU] Compile type: " << (_asyncCompile?"async.":"sync.") << std::endl;
 
-    localShape1D.push_back(bh_component_config_lookup_int(component, "work_goup_size_1dx",128));
-    localShape2D.push_back(bh_component_config_lookup_int(component, "work_goup_size_2dx",32));
-    localShape2D.push_back(bh_component_config_lookup_int(component, "work_goup_size_2dy",4));
-    localShape3D.push_back(bh_component_config_lookup_int(component, "work_goup_size_3dx",32));
-    localShape3D.push_back(bh_component_config_lookup_int(component, "work_goup_size_3dy",2));
-    localShape3D.push_back(bh_component_config_lookup_int(component, "work_goup_size_3dz",2));
+    localShape1D.push_back(config->defaultGet<int>("work_goup_size_1dx",128));
+    localShape2D.push_back(config->defaultGet<int>("work_goup_size_2dx",32));
+    localShape2D.push_back(config->defaultGet<int>("work_goup_size_2dy",4));
+    localShape3D.push_back(config->defaultGet<int>("work_goup_size_3dx",32));
+    localShape3D.push_back(config->defaultGet<int>("work_goup_size_3dy",2));
+    localShape3D.push_back(config->defaultGet<int>("work_goup_size_3dz",2));
 
     if (_verbose)
         std::cout << "[Info] [GPU] Work group sizes: 1D[" << localShape1D[0] << "], 2D[" <<
@@ -366,15 +373,7 @@ void CL_CALLBACK ResourceManager::eventProfiler(cl::Event event, cl_int eventSta
                 event.getProfilingInfo<CL_PROFILING_COMMAND_END>()});
 }
 
-bh_error ResourceManager::childExecute(bh_ir* bhir)
+void ResourceManager::childExecute(bh_ir* bhir)
 {
-    bh_error err = BH_ERROR;
-    for (int i = 0; i < component->nchildren; ++i)
-    {
-        bh_component_iface* child = &component->children[i];
-        err = child->execute(bhir);
-        if (err == BH_SUCCESS)
-            break;
-    }
-    return err;
+    child->execute(bhir);
 }

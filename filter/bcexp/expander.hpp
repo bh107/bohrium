@@ -1,7 +1,7 @@
 #ifndef __BH_FILTER_COMPOSITE_EXPANDER
 #define __BH_FILTER_COMPOSITE_EXPANDER
 
-#include <bh_component.h>
+#include <bh_component.hpp>
 
 namespace bohrium {
 namespace filter {

@@ -13,7 +13,7 @@ set_package_properties(FFTW PROPERTIES DESCRIPTION "Fastest Fourier Transform in
 set_package_properties(FFTW PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the FFTW extended method")
 
 if(FFTW_FOUND)
-    file(GLOB SRC *.cpp)
+    file(GLOB SRC main.cpp)
 
     add_library(bh_fftw SHARED ${SRC})
 

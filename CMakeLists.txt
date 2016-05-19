@@ -4,6 +4,10 @@ include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 include(FeatureSummary)
 
+# Write all compile commands to 'compile_commands.json', which can be used by YouCompleteMe
+# and other auto-completion software
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
+
 if (APPLE)  # Build multi-arch OSX binaries
     set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
 endif()
@@ -126,9 +130,9 @@ add_subdirectory(filter/noneremover)
 add_subdirectory(fuser/singleton)
 add_subdirectory(fuser/topological)
 add_subdirectory(fuser/gentle)
-add_subdirectory(fuser/optimal)
 add_subdirectory(fuser/greedy)
-#add_subdirectory(vem/cluster)
+add_subdirectory(fuser/optimal)
+# #add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(extmethods/fftw)
 add_subdirectory(extmethods/visualizer)
@@ -174,3 +178,4 @@ MESSAGE(STATUS "CXX min size flags:" ${CMAKE_CXX_FLAGS_MINSIZEREL})
 MESSAGE(STATUS "CXX flags:" ${CMAKE_CXX_FLAGS})
 
 feature_summary(WHAT ALL)
+

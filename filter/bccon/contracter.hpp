@@ -1,7 +1,7 @@
 #ifndef __BH_FILTER_COMPOSITE_CONTRACTER
 #define __BH_FILTER_COMPOSITE_CONTRACTER
 
-#include <bh_component.h>
+#include <bh_component.hpp>
 
 namespace bohrium {
 namespace filter {

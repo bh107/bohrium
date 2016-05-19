@@ -18,20 +18,20 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "comm.h"
-#include "exec.h"
+#include <bh_component.hpp>
+
+#include "comm.hpp"
 
 using namespace std;
 using namespace bohrium;
-using namespace bohrium::proxy;
+using namespace component;
 
-
-
-bh_error service(const std::string &address, int port)
+static void service(const std::string &address, int port)
 {
-    bh_error e;
-    CommBackend comm_backend = CommBackend(address, port);
+    CommBackend comm_backend(address, port);
     serialize::ExecuteBackend exec;
+    unique_ptr<ConfigParser> config;
+    unique_ptr<ComponentFace> child;
 
     while(1)
     {
@@ -43,16 +43,16 @@ bh_error service(const std::string &address, int port)
                 std::vector<char> buffer(head.body_size);
                 comm_backend.next_message_body(buffer);
                 serialize::Init body(buffer);
-
-                if((e = exec_init(body.component_name.c_str())) != BH_SUCCESS)
-                    return e;
+                if (child.get() != nullptr) {
+                    throw runtime_error("[VEM-PROXY] Received INIT messages multiple times!");
+                }
+                config.reset(new ConfigParser(body.stack_level));
+                child.reset(new ComponentFace(config->getChildLibraryPath(), config->stack_level+1));
                 break;
             }
             case serialize::TYPE_SHUTDOWN:
             {
-                e = exec_shutdown();
-                comm_backend.shutdown();
-                return e;
+                return;
             }
             case serialize::TYPE_EXEC:
             {
@@ -72,9 +72,7 @@ bh_error service(const std::string &address, int port)
                     comm_backend.recv_array_data(base);
                 }
 
-                bh_error e = exec_execute(&bhir);
-                if(e != BH_SUCCESS)
-                    return e;
+                child->execute(&bhir);
 
                 //Send sync'ed array data
                 for(size_t i=0; i<data_send.size(); ++i)
@@ -88,13 +86,10 @@ bh_error service(const std::string &address, int port)
             }
             default:
             {
-                cerr << "[VEM-PROXY] the backend received a unknown message type" << endl;
-                return -1;
+                throw runtime_error("[VEM-PROXY] the backend received a unknown message type");
             }
         }
     }
-
-    return 0;
 }
 
 int main(int argc, char * argv[])

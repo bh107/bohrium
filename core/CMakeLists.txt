@@ -16,8 +16,6 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${INCLUDE_DIR})
 file(GLOB SRC *.cpp )
 add_library(bh SHARED ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/bh_opcode.cpp)
 
-add_subdirectory(iniparser)                     # bh_component depends on iniparser
-target_link_libraries(bh iniparser)
 target_link_libraries(bh ${CMAKE_DL_LIBS})      # bh_component depends on dlopen etc.
 target_link_libraries(bh ${Boost_LIBRARIES})    # A shit ton of stuff depends on boost
 

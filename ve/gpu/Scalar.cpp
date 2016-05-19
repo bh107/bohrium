@@ -20,8 +20,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <stdexcept>
+
+#include <bh_constant.hpp>
+
 #include "Scalar.hpp"
-#include "bh_ve_gpu.h"
+#include "main.hpp"
 
 Scalar::Scalar(bh_constant constant)
     : mytype(oclType(constant.type))

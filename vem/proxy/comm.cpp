@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <chrono>         // std::chrono::seconds
 
 #include <bh_serialize.hpp>
-#include "comm.h"
+#include "comm.hpp"
 
 #include "zlib.h"
 
@@ -33,15 +33,40 @@ using boost::asio::ip::tcp;
 using namespace std;
 using namespace bohrium;
 
-namespace bohrium {
-namespace proxy {
-
-boost::asio::io_service io_service;
-tcp::socket socket(io_service);
-
-static void init_client_socket(tcp::socket &socket, const std::string &address, int port)
+static void comm_send_array_data(boost::asio::ip::tcp::socket &socket, const bh_base *base)
 {
-    const unsigned int retries = 100;
+    assert(base->data != NULL);
+
+    const size_t org_size = bh_base_size(base);
+    size_t new_size = compressBound(org_size);
+    vector<Bytef> buffer(new_size);
+    compress(&buffer[0], &new_size, (Bytef*)base->data, org_size);
+
+    const size_t size[] = {new_size};
+    boost::asio::write(socket, boost::asio::buffer(size));
+    boost::asio::write(socket, boost::asio::buffer(&buffer[0], new_size));
+}
+
+static void comm_recv_array_data(boost::asio::ip::tcp::socket &socket, bh_base *base)
+{
+    assert(base->data != NULL);
+
+    size_t size[1];
+    boost::asio::read(socket, boost::asio::buffer(size));
+
+    const size_t org_size = bh_base_size(base);
+    size_t new_size = org_size;
+
+    vector<char> compressed(size[0]);
+    boost::asio::read(socket, boost::asio::buffer(compressed));
+
+    uncompress((Bytef*)base->data, &new_size, (Bytef*) (&compressed[0]), compressed.size());
+    assert(new_size == org_size);
+}
+
+CommFrontend::CommFrontend(int stack_level, const std::string &address, int port) : socket(io_service)
+{
+    constexpr unsigned int retries = 100;
     for(unsigned int i = 1; i <= retries; ++i)
     {
         try
@@ -63,125 +88,21 @@ static void init_client_socket(tcp::socket &socket, const std::string &address, 
             if (error)
                 throw boost::system::system_error(error);
             socket.set_option(boost::asio::ip::tcp::no_delay(true));
-            return;
+            goto connected;
         }
-        catch(...)
+        catch(const boost::system::system_error &e)
         {
             this_thread::sleep_for(chrono::seconds(1));
+            cerr << e.what() << endl;
             cout << "Retrying - attempt number " << i << " of " << retries << endl;
         }
     }
-}
+    throw runtime_error("[PROXY-VEM] No connection!");
 
-static void init_server_socket(tcp::socket &socket, int port)
-{
-    cout << "[PROXY-VEM] Server listen on port " << port << endl;
-    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
-    acceptor.accept(socket);
-    socket.set_option(boost::asio::ip::tcp::no_delay(true));
-}
-
-static void comm_send_array_data(const bh_base *base)
-{
-    assert(base->data != NULL);
-
-    const size_t org_size = bh_base_size(base);
-    size_t new_size = compressBound(org_size);
-    vector<Bytef> buffer(new_size);
-    compress(&buffer[0], &new_size, (Bytef*)base->data, org_size);
-
-    const size_t size[] = {new_size};
-    boost::asio::write(socket, boost::asio::buffer(size));
-    boost::asio::write(socket, boost::asio::buffer(&buffer[0], new_size));
-}
-
-static void comm_recv_array_data(bh_base *base)
-{
-    assert(base->data != NULL);
-
-    size_t size[1];
-    boost::asio::read(socket, boost::asio::buffer(size));
-
-    const size_t org_size = bh_base_size(base);
-    size_t new_size = org_size;
-
-    vector<char> compressed(size[0]);
-    boost::asio::read(socket, boost::asio::buffer(compressed));
-
-    uncompress((Bytef*)base->data, &new_size, (Bytef*) (&compressed[0]), compressed.size());
-    assert(new_size == org_size);
-}
-/*
-static void comm_send_array_dataOLD(const bh_base *base)
-{
-    cout << "comm_send_array_data()" << endl;
-    assert(base->data != NULL);
-
-    vector<char> compressed;
-    {
-        boost::iostreams::filtering_ostream os;
-        os.push(boost::iostreams::gzip_compressor());
-        os.push(boost::iostreams::back_inserter(compressed));
-
-        char *data = reinterpret_cast<char*>(const_cast<bh_base*>(base)->data);
-        boost::iostreams::basic_array_source<char> source(data, bh_base_size(base));
-        boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-        os << input_stream;
-        boost::iostreams::flush(os);
-        boost::iostreams::close(os);
-    }
-    cout << "decompressed size: " << bh_base_size(base) << endl;
-    const size_t size[] = {compressed.size()};
-    cout << "sending compressed size: " << size[0] << endl;
-    boost::asio::write(socket, boost::asio::buffer(size));
-    cout << "sending compressed data " << endl;
-    boost::asio::write(socket, boost::asio::buffer(compressed, compressed.size()));
-    cout << "comm_send_array_data() END" << endl;
-}
-
-static void comm_recv_array_dataOLD(bh_base *base)
-{
-    cout << "comm_recv_array_data()" << endl;
-    assert(base->data != NULL);
-
-    size_t size[1];
-    boost::asio::read(socket, boost::asio::buffer(size));
-    cout << "receiving compressed size: " << size[0] << endl;
-
-    vector<char> compressed(size[0]);
-    boost::asio::read(socket, boost::asio::buffer(compressed));
-    cout << "received data, let's decompress!" << endl;
-
-    vector<char> decompressed;
-    {
-        boost::iostreams::filtering_ostream os;
-        os.push(boost::iostreams::gzip_decompressor());
-        os.push(boost::iostreams::back_inserter(decompressed));
-
-        //boost::iostreams::write(os, &compressed[0], compressed.size());
-
-        boost::iostreams::basic_array_source<char> source(&compressed[0], compressed.size());
-        boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-        os << input_stream;
-        boost::iostreams::flush(os);
-        boost::iostreams::close(os);
-    }
-    cout << "decompressed size: " << decompressed.size() << " == array size: " << bh_base_size(base) << endl;
-    assert(decompressed.size() == (size_t)bh_base_size(base));
-    std::memcpy(base->data, &decompressed[0], decompressed.size());
-
-
-    cout << "comm_recv_array_data() END" << endl;
-}
-*/
-
-CommFrontend::CommFrontend(const char* component_name, const std::string &address, int port)
-{
-    init_client_socket(socket, address, port);
-
+connected:
     //Serialize message body
     vector<char> buf_body;
-    serialize::Init body(component_name);
+    serialize::Init body(stack_level);
     body.serialize(buf_body);
 
     //Serialize message head
@@ -194,7 +115,7 @@ CommFrontend::CommFrontend(const char* component_name, const std::string &addres
     boost::asio::write(socket, boost::asio::buffer(buf_body));
 }
 
-void CommFrontend::shutdown()
+CommFrontend::~CommFrontend()
 {
     //Serialize message head
     vector<char> buf_head;
@@ -205,7 +126,6 @@ void CommFrontend::shutdown()
     boost::asio::write(socket, boost::asio::buffer(buf_head));
     socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     socket.close();
-
 }
 
 void CommFrontend::execute(bh_ir &bhir)
@@ -248,20 +168,28 @@ void CommFrontend::execute(bh_ir &bhir)
 void CommFrontend::send_array_data(const bh_base *base)
 {
     assert(base->data != NULL);
-    //boost::asio::write(socket, boost::asio::buffer(base->data, bh_base_size(base)));
-    comm_send_array_data(base);
+    comm_send_array_data(socket, base);
 }
 
 void CommFrontend::recv_array_data(bh_base *base)
 {
     assert(base->data != NULL);
-    //boost::asio::read(socket, boost::asio::buffer(base->data, bh_base_size(base)));
-    comm_recv_array_data(base);
+    comm_recv_array_data(socket, base);
 }
 
 
-CommBackend::CommBackend(const std::string &address, int port) {
-    init_server_socket(socket, port);
+
+CommBackend::CommBackend(const std::string &address, int port) : socket(io_service) {
+    cout << "[PROXY-VEM] Server listen on port " << port << endl;
+    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
+    acceptor.accept(socket);
+    socket.set_option(boost::asio::ip::tcp::no_delay(true));
+}
+
+CommBackend::~CommBackend()
+{
+    socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+    socket.close();
 }
 
 serialize::Header CommBackend::next_message_head()
@@ -278,22 +206,15 @@ void CommBackend::next_message_body(std::vector<char> &buffer)
     boost::asio::read(socket, boost::asio::buffer(buffer));
 }
 
-void CommBackend::shutdown()
-{
-    socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-    socket.close();
-}
 
 void CommBackend::send_array_data(const bh_base *base)
 {
     assert(base->data != NULL);
-    comm_send_array_data(base);
+    comm_send_array_data(socket, base);
 }
 
 void CommBackend::recv_array_data(bh_base *base)
 {
     assert(base->data != NULL);
-    comm_recv_array_data(base);
+    comm_recv_array_data(socket, base);
 }
-
-}}

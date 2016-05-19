@@ -17,88 +17,37 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <stdio.h>
-#define BH_TIMING_SUM
-#include <bh_timing.hpp>
-#include <bh_component.h>
 
-#include "component_interface.h"
+#include <bh_component.hpp>
 #include "contracter.hpp"
 
-//
-// Components
-//
-static bh_component myself;
-static bh_component_iface *child;
+using namespace bohrium;
+using namespace component;
+using namespace std;
 
-// The timing ID for the filter
-static bh_intp exec_timing;
-static bool timing;
+namespace {
+class Impl : public ComponentImplWithChild {
+private:
+    filter::composite::Contracter contractor;
+public:
+    Impl(int stack_level) : ComponentImplWithChild(stack_level),
+                            contractor(config.defaultGet<bool>("find_repeats", false),
+                                       config.defaultGet<bool>("reduction", false),
+                                       config.defaultGet<bool>("stupidmath", false),
+                                       config.defaultGet<bool>("collect", false),
+                                       config.defaultGet<bool>("muladd", false)) {};
 
-static bohrium::filter::composite::Contracter* contracter = NULL;
+    ~Impl() {}; // NB: a destructor implementation must exist
+    void execute(bh_ir *bhir) {
+        contractor.contract(*bhir);
+        child.execute(bhir);
+    };
+};
+} //Unnamed namespace
 
-//
-// Component interface init/execute/shutdown
-//
-
-bh_error bh_filter_bccon_init(const char* name)
-{
-    bh_error err;
-    if ((err = bh_component_init(&myself, name)) != BH_SUCCESS) {
-        return err;
-    }
-
-    // For now, we have one child exactly
-    if (myself.nchildren != 1) {
-        fprintf(stderr, "[reduction-FILTER] Unexpected number of children, must be 1");
-        return BH_ERROR;
-    }
-
-    timing = bh_component_config_lookup_bool(&myself, "timing", false);
-    if (timing)
-        exec_timing = bh_timer_new("[BC-Con] Execution");
-
-    // Let us initiate the child.
-    child = &myself.children[0];
-    if ((err = child->init(child->name)) != 0) {
-        return err;
-    }
-
-    contracter = new bohrium::filter::composite::Contracter(
-        bh_component_config_lookup_bool(&myself, "find_repeats", false),
-        bh_component_config_lookup_bool(&myself, "reduction",    false),
-        bh_component_config_lookup_bool(&myself, "stupidmath",   false),
-        bh_component_config_lookup_bool(&myself, "collect",      false),
-        bh_component_config_lookup_bool(&myself, "muladd",       false)
-    );
-
-    return BH_SUCCESS;
+extern "C" ComponentImpl* create(int stack_level) {
+    return new Impl(stack_level);
 }
-
-bh_error bh_filter_bccon_shutdown(void)
-{
-    bh_error err = child->shutdown();
-    bh_component_destroy(&myself);
-    if (timing)
-        bh_timer_finalize(exec_timing);
-    return err;
-}
-
-bh_error bh_filter_bccon_extmethod(const char *name, bh_opcode opcode)
-{
-    return child->extmethod(name, opcode);
-}
-
-bh_error bh_filter_bccon_execute(bh_ir* bhir)
-{
-    bh_uint64 start = 0;
-    if (timing)
-        start = bh_timer_stamp();
-
-    contracter->contract(*bhir);
-
-    if (timing)
-        bh_timer_add(exec_timing, start, bh_timer_stamp());
-
-    return child->execute(bhir);       // Execute the filtered bhir
+extern "C" void destroy(ComponentImpl* self) {
+    delete self;
 }

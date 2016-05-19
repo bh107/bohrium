@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <unordered_map>
 
-#include <bh_component.h>
+#include <bh_component.hpp>
 
 using namespace std;
 

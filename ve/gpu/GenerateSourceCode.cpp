@@ -22,8 +22,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <algorithm>
 
+#include <bh_opcode.h>
+
 #include "GenerateSourceCode.hpp"
-#include "bh_ve_gpu.h"
 
 void generateGIDSource(size_t kdims, std::ostream& source)
 {
@@ -323,7 +324,6 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = " << parameters[1] << ".s1;\n";
             break;
         default:
-            if (resourceManager->verbose())
                 std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode <<
                     ") not supported for complex operations." << std::endl;
             throw std::runtime_error("Instruction not supported.");
@@ -522,7 +522,6 @@ void generateInstructionSource(const bh_opcode opcode,
             source << indent << parameters[0] << " = random("  << parameters[1] << ", " << parameters[2] << ");\n";
             break;
         default:
-            if (resourceManager->verbose())
                 std::cerr << "Instruction \"" << bh_opcode_text(opcode) << "\" (" << opcode <<
                     ") not supported for non complex operations." << std::endl;
             throw std::runtime_error("Instruction not supported.");
