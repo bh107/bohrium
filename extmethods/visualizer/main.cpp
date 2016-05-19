@@ -26,6 +26,7 @@ using namespace bohrium;
 using namespace extmethod;
 using namespace std;
 
+namespace {
 class VisualizerImpl : public ExtmethodImpl {
 private:
     bool bh_visualize_initialized = false;
@@ -82,6 +83,7 @@ public:
         Visualizer::getInstance().run(subject);
     }
 };
+}
 
 extern "C" ExtmethodImpl* visualizer_create() {
     return new VisualizerImpl();
