@@ -5,8 +5,9 @@
 #     The bridge is never part of the list
 #
 [stacks]
-default = bcexp_cpu, bccon, topological, node, cpu
-gpu = bcexp_gpu, dimclean, greedy, node, gpu, cpu
+default    = bcexp_cpu, bccon, topological, node, cpu
+cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
+gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
 
 [bridge] # 'bridge' is a reversed section name that always refers to the bridge.
 
