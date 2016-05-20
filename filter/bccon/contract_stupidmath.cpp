@@ -49,6 +49,17 @@ static inline bool is_subtracting_zero(const bh_instruction& instr)
            instr.constant.get_double() == 0.0;
 }
 
+static inline bool is_entire_view(const bh_instruction& instr)
+{
+    for(int i = 0; i < bh_noperands(instr.opcode); ++i) {
+        if (bh_is_contiguous(&(instr.operand[i]))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static inline bool is_constant(const bh_instruction& instr)
 {
     for(int i = 0; i < bh_noperands(instr.opcode); ++i) {
@@ -69,7 +80,8 @@ static inline bool is_doing_stupid_math(const bh_instruction& instr)
                is_dividing_by_one(instr) or
                is_adding_zero(instr) or
                is_subtracting_zero(instr)
-           );
+           ) and
+           is_entire_view(instr);
 }
 
 void Contracter::contract_stupidmath(bh_ir &bhir)
@@ -78,13 +90,22 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
         bh_instruction& instr = bhir.instr_list[pc];
 
         if (is_doing_stupid_math(instr)) {
+
             // We could have the following:
             //   BH_MULTIPLY B A 0
             //   ...
             //   BH_FREE A
 
-            bh_base* B = instr.operand[0].base;
-            bh_base* A = instr.operand[1].base;
+            // Output operand
+            bh_view* B = &(instr.operand[0]);
+
+            // The one operand, that isn't constant
+            bh_view* A;
+            if (bh_is_constant(&(instr.operand[1]))) {
+                A = &(instr.operand[2]);
+            } else {
+                A = &(instr.operand[1]);
+            }
 
             bool freed = false;
 
@@ -92,45 +113,51 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
                 // Look for matching FREE for B
-                if (other_instr.opcode == BH_FREE and (other_instr.operand[0].base == B)) {
+                if (other_instr.opcode == BH_FREE and bh_view_same(&(other_instr.operand[0]), B)) {
                     freed = true;
                     break;
                 }
             }
 
+            if (!freed) {
+                continue;
+            }
+
             // Check that B is created by us, that is, it isn't created prior to this stupid math call.
             bool created_before = false;
+
             for (size_t pc_chain = 0; pc_chain < pc; ++pc_chain) {
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
-                for (int idx = 0; idx < bh_noperands(other_instr.opcode); ++idx) {
-                    created_before = created_before or other_instr.operand[idx].base == B;
-                }
 
-                if (created_before)
+                if (bh_view_same(&(other_instr.operand[0]), B)) {
+                    created_before = true;
                     break;
+                }
             }
 
             // Only if we FREE B in the same flush, are we allowed to change things.
-            if (freed and !created_before) {
-                for (size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
-                    bh_instruction& other_instr = bhir.instr_list[pc_chain];
+            if (created_before) {
+                continue;
+            }
 
-                    // Look for matching FREE for A
-                    if (other_instr.opcode == BH_FREE and (other_instr.operand[0].base == A)) {
-                        other_instr.opcode = BH_NONE; // Remove instruction
-                    }
+            for (size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
+                bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
+                // Look for matching FREE for A
+                if (other_instr.opcode == BH_FREE and bh_view_same(&(other_instr.operand[0]), A)) {
+                    other_instr.opcode = BH_NONE; // Remove instruction
+                } else {
                     // Rewrite all uses of B to A
                     for (int idx = 0; idx < bh_noperands(other_instr.opcode); ++idx) {
-                        if (other_instr.operand[idx].base == B) {
-                            other_instr.operand[idx].base = A;
+                        if (other_instr.operand[idx].base == B->base) {
+                            other_instr.operand[idx].base = A->base;
                         }
                     }
                 }
-
-                // Remove self
-                instr.opcode = BH_NONE;
             }
+
+            // Remove self
+            instr.opcode = BH_NONE;
         }
     }
 }

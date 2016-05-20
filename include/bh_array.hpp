@@ -315,7 +315,7 @@ DLLEXPORT bool bh_is_constant(const bh_view* o);
 
 /* Flag operand as a constant
  *
- * @o      The operand
+ * @o The operand
  */
 DLLEXPORT void bh_flag_constant(bh_view* o);
 
@@ -335,6 +335,13 @@ DLLEXPORT bool bh_view_same_shape(const bh_view *a, const bh_view *b);
  * @return The boolean answer
  */
 DLLEXPORT bool bh_view_same(const bh_view *a, const bh_view *b);
+
+/* Determines whether a view is contiguous
+ *
+ * @a The view
+ * @return The boolean answer
+ */
+DLLEXPORT bool bh_is_contiguous(const bh_view *a);
 
 /* Determines whether two views are aligned and points
  * to the same base array.
