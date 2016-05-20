@@ -28,39 +28,48 @@ namespace composite {
 static inline bool is_multiplying_by_one(const bh_instruction& instr)
 {
     return instr.opcode == BH_MULTIPLY and
-           bh_is_constant(&(instr.operand[2])) and
            instr.constant.get_double() == 1.0;
 }
 
 static inline bool is_dividing_by_one(const bh_instruction& instr)
 {
     return instr.opcode == BH_DIVIDE and
-           bh_is_constant(&(instr.operand[2])) and
            instr.constant.get_double() == 1.0;
 }
 
 static inline bool is_adding_zero(const bh_instruction& instr)
 {
     return instr.opcode == BH_ADD and
-           bh_is_constant(&(instr.operand[2])) and
            instr.constant.get_double() == 0.0;
 }
 
 static inline bool is_subtracting_zero(const bh_instruction& instr)
 {
     return instr.opcode == BH_SUBTRACT and
-           bh_is_constant(&(instr.operand[2])) and
            instr.constant.get_double() == 0.0;
+}
+
+static inline bool is_constant(const bh_instruction& instr)
+{
+    for(int i = 0; i < bh_noperands(instr.opcode); ++i) {
+        if (bh_is_constant(&(instr.operand[i]))) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static inline bool is_doing_stupid_math(const bh_instruction& instr)
 {
-    return bh_type_is_integer(instr.constant.type) and (
-        is_multiplying_by_one(instr) or
-        is_dividing_by_one(instr) or
-        is_adding_zero(instr) or
-        is_subtracting_zero(instr)
-    );
+    return bh_type_is_integer(instr.constant.type) and
+           is_constant(instr) and
+           (
+               is_multiplying_by_one(instr) or
+               is_dividing_by_one(instr) or
+               is_adding_zero(instr) or
+               is_subtracting_zero(instr)
+           );
 }
 
 void Contracter::contract_stupidmath(bh_ir &bhir)
