@@ -11,11 +11,11 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
 
   sudo apt-get build-dep python
   sudo apt-get install zlib1g-dev valgrind
-  
+
   mkdir python_debug_env
   cd python_debug_env
   export INSTALL_DIR=$PWD
-  
+
   # Build and install Python:
   export VERSION=2.7.11
   wget http://www.python.org/ftp/python/$VERSION/Python-$VERSION.tgz
@@ -27,7 +27,7 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   sudo ln -s $INSTALL_DIR/bin/python /usr/bin/dython
   cd ..
   rm Python-$VERSION.tgz
-  
+
   # Build and install Cython
   export VERSION=0.24
   wget http://cython.org/release/Cython-$VERSION.tar.gz
@@ -36,18 +36,17 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   dython setup.py install
   cd ..
   rm Cython-$VERSION.tar.gz
-  
-  # Build and install Cheetah
-  export VERSION=2.4.4
-  wget https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$VERSION.tar.gz
-  tar -xzf Cheetah-$VERSION.tar.gz
-  cd Cheetah-$VERSION
+
+  export VERSION=21.1.0
+  wget https://pypi.python.org/packages/f0/32/99ead2d74cba43bd59aa213e9c6e8212a9d3ed07805bb66b8bf9affbb541/setuptools-$VERSION.tar.gz#md5=8fd8bdbf05c286063e1052be20a5bd98
+  tar -xzf setuptools-$VERSION.tar.gz
+  cd setuptools-$VERSION
   dython setup.py install
   cd ..
-  rm Cheetah-$VERSION.tar.gz
-  
+  rm setuptools-$VERSION.tar.gz
+
   # Build and install NumPy
-  export VERSION=1.9.2
+  export VERSION=1.11.0
   wget http://optimate.dl.sourceforge.net/project/numpy/NumPy/$VERSION/numpy-$VERSION.tar.gz
   tar -xzf numpy-$VERSION.tar.gz
   cd numpy-$VERSION
@@ -76,9 +75,9 @@ Most Used Commands
 **GDB**
 
 GDB supports some helpful Python commands (https://docs.python.org/devguide/gdb.html). To activate, ``source`` the ``python-gdb.py`` file within GDB::
-  
+
   source /usr/bin/python-gdb.py
-  
+
 Then you can use Python specific GDB commands such as ``py-list`` or ``py-bt``.
 
 
