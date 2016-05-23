@@ -134,7 +134,7 @@ gacutil -u NumCIL.Unsafe
 exit 0
 """
 
-UBUNTU_RELEASES = ['trusty', 'wily']
+UBUNTU_RELEASES = ['trusty', 'wily', 'xenial']
 
 
 SRC = path.join(path.dirname(os.path.realpath(__file__)),"..","..")
