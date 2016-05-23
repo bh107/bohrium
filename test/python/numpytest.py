@@ -167,29 +167,18 @@ class numpytest:
         return np.asarray(res, dtype=dtype)
 
 def shell_cmd(cmd, cwd=None, verbose=False, env=None):
-
-    from subprocess import Popen, PIPE, STDOUT
-    if verbose:
-        cmd.append('--verbose')
+    if verbose: cmd.append('--verbose')
     cmd = " ".join(cmd)
-    if verbose:
-        print (cmd)
-    out = ""
+    if verbose: print(cmd)
+
     try:
-        p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True, cwd=cwd, env=env)
-        while p.poll() is None:
-            t = p.stdout.readline()
-            out += t
-            if verbose:
-                print (t,)
-        t = p.stdout.read()
-        out += t
-        if verbose:
-            print (t,)
-        p.wait()
+        pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, cwd=cwd, env=env)
+        (out, err) = pipe.communicate()
+        if verbose: print(out, err)
     except KeyboardInterrupt:
-        p.kill()
+        pipe.kill()
         raise
+
     return out
 
 class BenchHelper:
