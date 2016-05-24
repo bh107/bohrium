@@ -26,8 +26,7 @@ template <typename T>
 T* bh_data_export(multi_array<T>& op, Export::Option option)
 {
     bh_sync(op);                                            // Ensure operations..
-    bh_discard(op);                                         // .. are completed.
-    Runtime::instance().flush();
+    Runtime::instance().flush();                            // .. are completed.
 
     if (!op.initialized()) {
         throw std::runtime_error("Array is non-initialized => no relation to data.");
@@ -57,6 +56,7 @@ T* bh_data_export(multi_array<T>& op, Export::Option option)
     if ((data) && ((option & Export::RELEASED)>0)) {        // Release it from Bohrium
         base->data = NULL;
     }
+    bh_free(op);
 
     // Note: The returned data-pointer might still be NULL at this point.
     //       If allocation is disabled.

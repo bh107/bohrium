@@ -54,10 +54,9 @@ static inline bool is_subtracting_zero(const bh_instruction& instr)
            instr.constant.get_double() == 0.0;
 }
 
-static inline bool is_free_or_discard(const bh_instruction& instr)
+static inline bool is_free(const bh_instruction& instr)
 {
-    return instr.opcode == BH_FREE or
-           instr.opcode == BH_DISCARD;
+    return instr.opcode == BH_FREE;
 }
 
 static inline bool is_doing_stupid_math(const bh_instruction& instr)
@@ -91,13 +90,12 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
             for (size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
-                // Look for matching FREE and DISCARD for B
-                if (is_free_or_discard(other_instr) and (other_instr.operand[0].base == B)) {
+                // Look for matching FREE for B
+                if (is_free(other_instr) and (other_instr.operand[0].base == B)) {
                     freed     = freed     or other_instr.opcode == BH_FREE;
-                    discarded = discarded or other_instr.opcode == BH_DISCARD;
                 }
 
-                if (freed and discarded)
+                if (freed)
                     break;
             }
 
@@ -113,13 +111,13 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
                     break;
             }
 
-            // Only if we FREE and DISCARD B in the same flush, are we allowed to change things.
-            if (freed and discarded and !created_before) {
+            // Only if we FREE B in the same flush, are we allowed to change things.
+            if (freed and !created_before) {
                 for (size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
                     bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
                     // Look for matching FREE and DISCARD for A
-                    if (is_free_or_discard(other_instr) and (other_instr.operand[0].base == A)) {
+                    if (is_free(other_instr) and (other_instr.operand[0].base == A)) {
                         other_instr.opcode = BH_NONE; // Remove instruction
                     }
 

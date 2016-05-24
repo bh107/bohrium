@@ -60,7 +60,6 @@ size_t kp_tac_noperands(const kp_tac* tac)
             return 3;
         case KP_SYSTEM:
             switch(oper) {
-                case KP_DISCARD:
                 case KP_FREE:
                 case KP_SYNC:
                     return 1;

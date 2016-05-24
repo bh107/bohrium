@@ -1339,15 +1339,6 @@ void bh_sync (multi_array<T>& res)
     Runtime::instance().enqueue((bh_opcode)BH_SYNC, res);
 }
 
-// bh_discard - BH_DISCARD - runtime.nops1 - 1 (A)
-template <typename T>
-inline
-void bh_discard (multi_array<T>& res)
-{
-    Runtime::instance().typecheck<BH_DISCARD, T>();
-    Runtime::instance().enqueue((bh_opcode)BH_DISCARD, res);
-}
-
 // bh_repeat - BH_REPEAT - runtime.nops1 - 1 (A)
 template <typename T>
 inline

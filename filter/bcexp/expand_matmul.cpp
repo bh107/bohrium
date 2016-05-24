@@ -91,7 +91,6 @@ int Expander::expand_matmul(bh_ir& bhir, int pc)
     inject(bhir, ++pc, BH_MULTIPLY,   c_3d, a_3d, b_3d);
     inject(bhir, ++pc, BH_ADD_REDUCE, out,  c_3d, (int64_t)2, BH_INT64);
     inject(bhir, ++pc, BH_FREE,       c_3d);
-    inject(bhir, ++pc, BH_DISCARD,    c_3d);
 
     return pc - start_pc;
 }

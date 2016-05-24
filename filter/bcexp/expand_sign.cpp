@@ -114,18 +114,14 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
         inject(bhir, ++pc, BH_GREATER,  t_bool, input, 0.0);
         inject(bhir, ++pc, BH_IDENTITY, lss,    t_bool);
         inject(bhir, ++pc, BH_FREE,     t_bool);
-        inject(bhir, ++pc, BH_DISCARD,  t_bool);
 
         inject(bhir, ++pc, BH_LESS,     t_bool, input, 0.0);
         inject(bhir, ++pc, BH_IDENTITY, gtr,    t_bool);
         inject(bhir, ++pc, BH_FREE,     t_bool);
-        inject(bhir, ++pc, BH_DISCARD,  t_bool);
 
         inject(bhir, ++pc, BH_SUBTRACT, output, lss, gtr);
         inject(bhir, ++pc, BH_FREE,     lss);
-        inject(bhir, ++pc, BH_DISCARD,  lss);
         inject(bhir, ++pc, BH_FREE,     gtr);
-        inject(bhir, ++pc, BH_DISCARD,  gtr);
     } else {
         // For complex: sign(0) = 0, sign(z) = z/|z|
         bh_type float_type = (input_type == BH_COMPLEX64) ? BH_FLOAT32 : BH_FLOAT64;
@@ -141,15 +137,12 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
         inject(bhir, ++pc, BH_EQUAL,    b_zero, f_abs, 0.0, float_type);
         inject(bhir, ++pc, BH_IDENTITY, f_zero, b_zero);
         inject(bhir, ++pc, BH_FREE,     b_zero);
-        inject(bhir, ++pc, BH_DISCARD,  b_zero);
 
         inject(bhir, ++pc, BH_ADD,     f_abs, f_abs, f_zero);
         inject(bhir, ++pc, BH_FREE,    f_zero);
-        inject(bhir, ++pc, BH_DISCARD, f_zero);
 
         inject(bhir, ++pc, BH_IDENTITY, output, f_abs);
         inject(bhir, ++pc, BH_FREE,     f_abs);
-        inject(bhir, ++pc, BH_DISCARD,  f_abs);
 
         inject(bhir, ++pc, BH_DIVIDE, output, input, output);
     }

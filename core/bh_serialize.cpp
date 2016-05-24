@@ -120,7 +120,7 @@ void ExecuteFrontend::serialize(const bh_ir &bhir, vector<char> &buffer, vector<
         assert(instr.opcode >= 0);
         switch(instr.opcode)
         {
-            case BH_DISCARD:
+            case BH_FREE:
             {
                 known_base_arrays.erase(instr.operand[0].base);
                 break;
@@ -169,7 +169,7 @@ bh_ir ExecuteBackend::deserialize(vector<char> &buffer, vector<bh_base*> &data_s
         assert(instr.opcode >= 0);
         switch(instr.opcode)
         {
-            case BH_DISCARD:
+            case BH_FREE:
             {
                 remote_discards.insert(instr.operand[0].base);
                 break;

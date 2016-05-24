@@ -441,7 +441,6 @@ static std::vector<uint64_t> getInstIndexes(const bh_ir_kernel& kernel,
         bh_instruction& instr = kernel.bhir->instr_list[idx];
         switch (instr.opcode)
         {
-        case BH_DISCARD:
         case BH_FREE:
         case BH_SYNC:
         case BH_NONE:

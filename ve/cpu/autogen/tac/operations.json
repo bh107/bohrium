@@ -158,7 +158,6 @@
     "layouts": ["C", "S"],
     "operators": [
         "KP_FREE",
-        "KP_DISCARD",
         "KP_SYNC",
         "KP_TALLY",
         "KP_REPEAT"

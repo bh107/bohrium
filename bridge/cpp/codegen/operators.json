@@ -237,7 +237,6 @@
 ["bh_tally",    "BH_TALLY",     "runtime.nops0", true],
 ["bh_free",     "BH_FREE",      "runtime.nops1", true],
 ["bh_sync",     "BH_SYNC",      "runtime.nops1", true],
-["bh_discard",  "BH_DISCARD",   "runtime.nops1", true],
 ["bh_repeat",   "BH_REPEAT",    "runtime.nops1", true]
 
 ]
