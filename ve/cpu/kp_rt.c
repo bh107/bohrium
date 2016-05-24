@@ -224,12 +224,6 @@ bool kp_rt_execute(kp_rt* rt, kp_program* program, kp_symboltable* symbols, kp_b
                 }
                 break;
 
-            case KP_DISCARD:                                    // Free buffer on accelerator
-                if (rt->acc) {
-                    kp_acc_free(rt->acc, operand->base);
-                }
-                break;
-
             case KP_FREE:
                 if (rt->acc) {                                      // Free buffer on accelerator
                     kp_acc_free(rt->acc, operand->base);            // Note: must be done prior to

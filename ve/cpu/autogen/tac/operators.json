@@ -60,7 +60,6 @@
     {"id": 58, "name": "KP_GATHER",        "nop": 3, "types": []},
     {"id": 59, "name": "KP_SCATTER",       "nop": 3, "types": []},
 
-    {"id": 60, "name": "KP_DISCARD",       "nop": 1, "types": []},
     {"id": 61, "name": "KP_FREE",          "nop": 1, "types": []},
     {"id": 62, "name": "KP_SYNC",          "nop": 1, "types": []},
     {"id": 63, "name": "KP_TALLY",         "nop": 0, "types": []},

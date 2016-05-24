@@ -78,7 +78,6 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     dtype = dtype_name(ary)
     ary = ary.bhc_obj
     exec("bhc.bhc_sync_A%s(ary)" % dtype)
-    exec("bhc.bhc_discard_A%s(ary)" % dtype)
     exec("bhc.bhc_flush()")
     exec("data = bhc.bhc_data_get_A%s(ary, allocate, nullify)" % dtype)
     if data is None:

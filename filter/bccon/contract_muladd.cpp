@@ -33,7 +33,6 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
     bh_instruction& second = *chain.at(1); // BH_MULTIPLY
     bh_instruction& third  = *chain.at(2); // BH_ADD or BH_SUBTRACT
 
-    vector<bh_instruction*> discards;
     vector<bh_instruction*> frees;
 
     for(size_t pc = 0; pc < bhir.instr_list.size(); ++pc) {
@@ -47,11 +46,7 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
         for(auto it : temps) {
             bh_view view = *it;
 
-            if (instr.opcode == BH_DISCARD) {
-                if (view == instr.operand[0]) {
-                    discards.push_back(&instr);
-                }
-            } else if (instr.opcode == BH_FREE) {
+            if (instr.opcode == BH_FREE) {
                 if (view == instr.operand[0]) {
                     frees.push_back(&instr);
                 }
@@ -66,7 +61,7 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
         }
     }
 
-    if (discards.size() != temps.size() or frees.size() != temps.size()) {
+    if (frees.size() != temps.size()) {
         // Can't rewrite - Not same amount of views as discards and frees
         return false;
     }
@@ -82,11 +77,6 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
 
     // The result of the first operations should be that of the thrid
     first.operand[0] = third.operand[0];
-
-    // Remove unnecessary BH_DISCARD
-    for (auto it : discards) {
-        it->opcode = BH_NONE;
-    }
 
     // Remove unnecessary BH_FREE
     for (auto it : frees) {

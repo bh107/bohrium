@@ -1431,38 +1431,9 @@
     "system_opcode": false
 },
 {
-    "opcode": "BH_DISCARD",
-    "doc":  "System instruction that informs the child component to forget the array and release any metadata allocated.",
-    "code": "forget(op1)",
-    "id":   "54",
-    "nop":   1,
-    "types": [
-            [ "BH_BOOL" ],
-            [ "BH_COMPLEX128" ],
-            [ "BH_COMPLEX64" ],
-            [ "BH_FLOAT32" ],
-            [ "BH_FLOAT64" ],
-            [ "BH_INT16" ],
-            [ "BH_INT32" ],
-            [ "BH_INT64" ],
-            [ "BH_INT8" ],
-            [ "BH_UINT16" ],
-            [ "BH_UINT32" ],
-            [ "BH_UINT64" ],
-            [ "BH_UINT8" ]
-    ],
-    "layout": [
-            [ "A" ]
-    ],
-    "elementwise":   false,
-    "composite":     false,
-    "reduction":     false,
-    "accumulate":    false,
-    "system_opcode": true
-},
-{
     "opcode": "BH_FREE",
-    "doc":  "System instruction that informs the child component to deallocate the data storage associated with the array.",
+    "doc":  "System instruction that informs the child component to deallocate the data storage associated with the array and discard the meta data.",
+
     "code": "free(op1)",
     "id":   "55",
     "nop":   1,

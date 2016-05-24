@@ -85,10 +85,9 @@ void Contracter::contract_reduction(bh_ir &bhir)
 
                 bool is_none      = other_instr.opcode == BH_NONE;
                 bool is_freed     = other_instr.opcode == BH_FREE;
-                bool is_discarded = other_instr.opcode == BH_DISCARD;
                 bool is_reduced   = other_instr.opcode == reduce_opcode;
 
-                if (!(is_none or is_freed or is_discarded or is_reduced)) { // Chain is broken
+                if (!(is_none or is_freed or is_reduced)) { // Chain is broken
                     first = NULL;
                     break;                                                  // Reset the search
                 } else if (other_instr.operand[0].base->nelem == 1) {       // Scalar output

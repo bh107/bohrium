@@ -159,7 +159,6 @@ string Walker::oper(KP_OPERATOR oper, KP_ETYPE etype, string in1, string in2)
                 case KP_COMPLEX64:     return _ccoshf(in1);
                 default:            return _cosh(in1);
             }
-        case KP_DISCARD:               break;  // TODO: Raise exception
         case KP_DIVIDE:                return _div(in1, in2);
         case KP_EQUAL:                 return _eq(in1, in2);
         case KP_EXP:

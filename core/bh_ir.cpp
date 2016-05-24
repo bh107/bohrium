@@ -177,12 +177,16 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
     case BH_SYNC:
         syncs.insert(instr.operand[0].base);
         break;
-    case  BH_DISCARD:
+    case BH_FREE:
     {
+	bh_base* base = instr.operand[0].base;
+        if (temps.find(base) == temps.end())
+            // It is a free of an array created elsewhere
+            frees.insert(base);
+
         bool temp = false;
-        //When discarding we might have to remove arrays from 'outputs' and add
-        //them to 'temps' (if the discared array isn't synchronized)
-        bh_base* base = instr.operand[0].base;
+        //When freeing we might have to remove arrays from 'outputs' and add
+        //them to 'temps' (if the array isn't synchronized)
         if(syncs.find(base) == syncs.end())
         {
             auto range = output_map.equal_range(base);
@@ -205,16 +209,9 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         }
         if (!temp) // It is a discard of an array created elsewhere
             discards.insert(base);
+
+        break;
     }
-    break;
-    case BH_FREE:
-    {
-        bh_base* base = instr.operand[0].base;
-        if (temps.find(base) == temps.end())
-            // It is a free of an array created elsewhere
-            frees.insert(base);
-    }
-    break;
     default:
     {
         bool sweep = bh_opcode_is_sweep(instr.opcode);

@@ -193,9 +193,8 @@ void Contracter::contract_collect(bh_ir &bhir)
                 } else {
                     bool is_none      = other_instr.opcode == BH_NONE;
                     bool is_freed     = other_instr.opcode == BH_FREE;
-                    bool is_discarded = other_instr.opcode == BH_DISCARD;
 
-                    if (is_none or is_freed or is_discarded) {
+                    if (is_none or is_freed) {
                         continue;
                     } else {
                         // Is not ADD, SUBTRACT, MULTIPLY, DIVIDE, NONE, FREE, DISCARD

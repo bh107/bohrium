@@ -75,8 +75,8 @@ void Impl::inspect(bh_instruction *instr) {
             _allocated_bases.insert(operands[o].base);
     }
 
-    //And remove discarded arrays
-    if(instr->opcode == BH_DISCARD)
+    //And remove freed arrays
+    if(instr->opcode == BH_FREE)
     {
         bh_base *base = operands[0].base;
         if(_allocated_bases.erase(base) != 1)
