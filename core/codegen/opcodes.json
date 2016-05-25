@@ -1432,7 +1432,7 @@
 },
 {
     "opcode": "BH_FREE",
-    "doc":  "System instruction that informs the child component to deallocate the data storage associated with the array and discard the meta data.",
+    "doc":  "System instruction that informs the child component to deallocate the data storage associated with the array and free the meta data.",
 
     "code": "free(op1)",
     "id":   "55",

@@ -37,7 +37,7 @@ Destroy the view and base array (but not the associated memory):
 
 .. code-block:: c
 
-    void bh_multi_array_{TYPE}_discard(const bh_multi_array_{TYPE}_p self);
+    void bh_multi_array_{TYPE}_free(const bh_multi_array_{TYPE}_p self);
 
 Some meta-data access functions:
 
@@ -86,6 +86,3 @@ Some of the reduction and accumulate (aka scan) functions where `axis` is the di
 
     //Prefix sum
     void bh_multi_array_{TYPE}_add_accumulate(bh_multi_array_{TYPE}_p out, const bh_multi_array_{TYPE}_p in, bh_int64 axis);
-
-
-

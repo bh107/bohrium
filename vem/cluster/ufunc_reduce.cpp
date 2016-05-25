@@ -110,12 +110,10 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
 
                 //Lets free the tmp array
                 batch_schedule_inst_on_base(BH_FREE, bh_base_array(&ltmp));
-                batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(&ltmp));
             }
             if(in->temporary)
             {
                 batch_schedule_inst_on_base(BH_FREE, bh_base_array(&in->ary));
-                batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(&in->ary));
             }
         }
 
@@ -156,7 +154,6 @@ static void reduce_vector(bh_instruction *inst, bh_opcode opcode)
         reduce_chunk(inst->opcode, axis, out->ary, tmp);
         //Only the master needs to cleanup 'mtmp'
         batch_schedule_inst_on_base(BH_FREE, mtmp);
-        batch_schedule_inst_on_base(BH_DISCARD, mtmp);
     }
 }
 
@@ -223,7 +220,6 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
                 if(in_chunk->temporary)
                 {
                     batch_schedule_inst_on_base(BH_FREE, bh_base_array(in));
-                    batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(in));
                 }
             }
 
@@ -239,11 +235,9 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
 
             //Cleanup
             batch_schedule_inst_on_base(BH_FREE, bh_base_array(&tmp));
-            batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(&tmp));
             if(out_chunk->temporary)
             {
                 batch_schedule_inst_on_base(BH_FREE, bh_base_array(out));
-                batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(out));
             }
         }
 
@@ -278,7 +272,6 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
                 if(in_chunk->temporary)
                 {
                     batch_schedule_inst_on_base(BH_FREE, bh_base_array(in));
-                    batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(in));
                 }
             }
 
@@ -294,11 +287,9 @@ void ufunc_reduce(bh_instruction *inst, bh_opcode opcode)
 
             //Cleanup
             batch_schedule_inst_on_base(BH_FREE, bh_base_array(&tmp));
-            batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(&tmp));
             if(out_chunk->temporary)
             {
                 batch_schedule_inst_on_base(BH_FREE, bh_base_array(out));
-                batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(out));
             }
         }
     }

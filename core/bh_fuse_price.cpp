@@ -70,40 +70,6 @@ static uint64_t savings_unique(const bh_ir_kernel &k1, const bh_ir_kernel &k2)
     assert(old_cost >= new_cost);
     return old_cost - new_cost;
 }
-/*
-static uint64_t savings_unique_old(const bh_ir_kernel &a, const bh_ir_kernel &b)
-{
-    int64_t price_drop = 0;
-    //Subtract inputs in 'a' that comes from 'b' or is already an input in 'b'
-    for(const bh_view &i: a.get_input_set())
-    {
-        for(const bh_view &o: b.get_output_set())
-        {
-            if(bh_view_aligned(&i, &o))
-                price_drop += bytes_in_view(i);
-        }
-        for(const bh_view &o: b.get_input_set())
-        {
-            if(bh_view_aligned(&i, &o))
-                price_drop += bytes_in_view(i);
-        }
-    }
-    //Subtract outputs from 'b' that are discared in 'a'
-    for(const bh_view &o: b.get_output_set())
-    {
-        for(uint64_t a_instr_idx: a.instr_indexes())
-        {
-            const bh_instruction &a_instr = a.bhir->instr_list[a_instr_idx];
-            if(a_instr.opcode == BH_DISCARD and a_instr.operand[0].base == o.base)
-            {
-                price_drop += bytes_in_view(o);
-                break;
-            }
-        }
-    }
-    return price_drop;
-}
-*/
 
 /* The cost of a kernel is 'number of instruction' * 3 - 'number of temp arrays' */
 static uint64_t cost_temp_elemination(const bh_ir_kernel &k)

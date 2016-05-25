@@ -75,7 +75,7 @@ public:
 class ExecuteBackend
 {
     std::map<const bh_base*, bh_base> remote2local;
-    std::set<const bh_base*> remote_discards;
+    std::set<const bh_base*> remote_frees;
 public:
     bh_ir deserialize(std::vector<char> &buffer, std::vector<bh_base*> &data_send, std::vector<bh_base*> &data_recv);
     void cleanup(const bh_ir &bhir);

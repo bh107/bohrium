@@ -22,7 +22,7 @@ Visualizing the trace: parse.py
 
 Execute 'parse.py' to generate an image of the bytecode::
 
-    ./parse.py traces/example.trace --output output/ --exclude FREE DISCARD
+    ./parse.py traces/example.trace --output output/ --exclude FREE
 
 This will generate the file: "output/example.svg", try opening it with your browser.
 parse.py has other options, inspect them with "-h".

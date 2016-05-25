@@ -106,9 +106,6 @@ private:
     // Set of base-arrays that are freed and not in temps i.e. created elsewhere
     std::set<bh_base*> frees;
 
-    // Set of base-arrays that are discarded and not in temps i.e. created elsewhere
-    std::set<bh_base*> discards;
-
     // Set of base-arrays that are synced by this kernel.
     std::set<bh_base*> syncs;
 
@@ -119,7 +116,7 @@ private:
     seqset<bh_base*> parameters;
 
     // List of input and output to this kernel.
-    // NB: system instruction (e.g. BH_DISCARD) is
+    // NB: system instruction (e.g. BH_FREE) is
     // never part of kernel input or output
     std::multimap<bh_base*,bh_view> output_map;
     std::set<bh_view>               output_set;
@@ -165,7 +162,6 @@ public:
     const std::set<bh_base*>& get_bases() const {return bases;}
     const std::set<bh_base*>& get_temps() const {return temps;}
     const std::set<bh_base*>& get_frees() const {return frees;}
-    const std::set<bh_base*>& get_discards() const {return discards;}
     const std::set<bh_base*>& get_syncs() const {return syncs;}
     const seqset<bh_base*>& get_parameters() const {return parameters;}
     const std::map<uint64_t, bh_constant>& get_constants() const {return constants;}
@@ -190,7 +186,7 @@ public:
     void add_instr(uint64_t instr_idx);
 
     /* Determines whether all instructions in 'this' kernel
-     * are system opcodes (e.g. BH_DISCARD, BH_FREE, etc.)
+     * are system opcodes (e.g. BH_FREE, BH_NONE, etc.)
      *
      * @return The boolean answer
      */
@@ -270,4 +266,3 @@ public:
 };
 
 #endif
-

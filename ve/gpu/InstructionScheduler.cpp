@@ -52,42 +52,42 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
             }
             SourceKernelCall sourceKernel = generateKernel(kernel);
             if (kernel.get_syncs().size() > 0)
-            { // There are syncs in this kernel so we postpone the discards
+            { // There are syncs in this kernel so we postpone the frees
                 compileAndRun(sourceKernel);
                 sync(kernel.get_syncs());
-                discard(kernel.get_discards()); // After sync the queue is empty so we just discard
-            } else { // No syncs: so we simply attach the discards to the kernel
-                for (bh_base* base: kernel.get_discards())
+                free(kernel.get_frees()); // After sync the queue is empty so we just free
+            } else { // No syncs: so we simply attach the frees to the kernel
+                for (bh_base* base: kernel.get_frees())
                 {
-                    // We may recieve discard for arrays I don't own
+                    // We may recieve free for arrays I don't own
                     ArrayMap::iterator it = arrayMap.find(base);
                     if  (it == arrayMap.end())
                         continue;
-                    sourceKernel.addDiscard(it->second);
+                    sourceKernel.addFree(it->second);
                     arrayMap.erase(it);
                 }
                 compileAndRun(sourceKernel);
             }
         } else { // Kernel with out computations
             sync(kernel.get_syncs());
-            if (kernel.get_discards().size() > 0)
+            if (kernel.get_frees().size() > 0)
             {
                 kernelMutex.lock();
                 if (!callQueue.empty())
-                { // attach the discards to the last kernel in the call queue
-                    for (bh_base* base: kernel.get_discards())
+                { // attach the frees to the last kernel in the call queue
+                    for (bh_base* base: kernel.get_frees())
                     {
-                        // We may recieve discard for arrays I don't own
+                        // We may recieve free for arrays I don't own
                         ArrayMap::iterator it = arrayMap.find(base);
                         if  (it == arrayMap.end())
                             continue;
-                        callQueue.back().second.addDiscard(it->second);
+                        callQueue.back().second.addFree(it->second);
                         arrayMap.erase(it);
                     }
                     kernelMutex.unlock();
-                } else { // Call queue empty. So we just discard
+                } else { // Call queue empty. So we just free
                     kernelMutex.unlock();
-                    discard(kernel.get_discards());
+                    free(kernel.get_frees());
                 }
             }
         }
@@ -97,12 +97,12 @@ bh_error InstructionScheduler::schedule(const bh_ir* bhir)
         }
     }
     if (bhir->tally)
-    {   
+    {
         while (!callQueueEmpty())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        resourceManager->tally();        
+        resourceManager->tally();
     }
     return BH_SUCCESS;
 }
@@ -130,11 +130,11 @@ void InstructionScheduler::sync(const std::set<bh_base*>& arrays)
     }
 }
 
-void InstructionScheduler::discard(const std::set<bh_base*>& arrays)
+void InstructionScheduler::free(const std::set<bh_base*>& arrays)
 {
     for (bh_base* base: arrays)
     {
-        // We may recieve discard for arrays I don't own
+        // We may recieve free for arrays I don't own
         ArrayMap::iterator it = arrayMap.find(base);
         if  (it == arrayMap.end())
             continue;
@@ -272,11 +272,11 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
     sync(kernel.get_syncs());
     // sync operands
     sync(kernel.get_parameters().set());
-    // discard outputs
+    // free outputs
     std::set<bh_base*> output;
     for (const bh_view& view: kernel.get_output_set())
         output.insert(view.base);
-    discard(output);
+    free(output);
     // Run instructions in the kernel one at a time
     for (uint64_t idx: kernel.instr_indexes())
     {
@@ -284,8 +284,8 @@ bh_error InstructionScheduler::call_child(const bh_ir_kernel& kernel)
         bh_ir bhir = bh_ir(instr);
         resourceManager->childExecute(&bhir);
     }
-    // Discard the discards
-    discard(kernel.get_discards());
+    // Free the frees
+    free(kernel.get_frees());
     // Frees have been freed by child
     return BH_SUCCESS;
 }

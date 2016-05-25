@@ -36,7 +36,7 @@ class Instruction(object):
             self.i_ops  = [] + operands[1:]
             self.order  = order
 
-            if (opcode in ["SYNC", "FREE", "DISCARD"]):
+            if (opcode in ["SYNC", "FREE"]):
                 self.i_ops.append(operands[0])
         except:
             print "Something went unbelievably wrong! [%s,%s,%s]" % (str(opcode), str(operands), str(order))
@@ -213,8 +213,8 @@ class Parser(object):
                 instructions.append( instr )
                 count += 1
 
-                # When a view is discarded the address no longer refers to the same symbol
-                if 'DISCARD' in instr.opcode:
+                # When a view is freed the address no longer refers to the same symbol
+                if 'FREE' in instr.opcode:
                     for op in instr.operands():
                         self._desymbolize( op )
 
@@ -337,7 +337,7 @@ def main():
         '--exclude',
         nargs='+',
         default=[],
-        help="List of opcodes to exclude from parsing.\nExample: FREE,DISCARD,SYNC"
+        help="List of opcodes to exclude from parsing.\nExample: FREE,SYNC"
     )
     p.add_argument(
         '--formats',
@@ -375,4 +375,3 @@ if __name__ == "__main__":
         print "Error: %s" % err
     if out:
         print "Info: %s" % out
-

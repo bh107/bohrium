@@ -82,7 +82,6 @@ numpy_map = {
     "BH_RANDOM":    "np.random.random",
     "BH_RANGE":     "np.arange",
     "BH_IDENTITY":  "copy_operands",
-    "BH_DISCARD":   "np.discard",
     "BH_FREE":      "np.free",
     "BH_SYNC":      "np.sync",
     "BH_NONE":      "np.none",
@@ -96,7 +95,7 @@ ignore_types = []
 def genesis(bytecodes, types):
 
     times=[('start', time.time())]  # Why this? Well because it is always fun to know
-                                    # how long it took to do everything in the 
+                                    # how long it took to do everything in the
                                     # world of bytecode through the ether of Python/NumPy
 
     # 1) Grab Bohrium/NumPy
@@ -142,12 +141,12 @@ def genesis(bytecodes, types):
             for op in [0,1,2]:                  # Create three
                 operands[tn][ndim][op] = {      # Of different layout
                     'C': np.ones([3]*ndim,      dtype = typemap[tn] ),
-                    'S': np.ones(pow(3,ndim)*2, dtype = typemap[tn])[::2].reshape([3]*ndim), 
+                    'S': np.ones(pow(3,ndim)*2, dtype = typemap[tn])[::2].reshape([3]*ndim),
                     'K': typemap[tn](3)
                 }
 
     times.append(('setup', time.time()))
-    
+
     earth = []                                  # Flatten bytecode
     for bytecode in (bytecode for bytecode in bytecodes):
         opcode  = bytecode['opcode']
@@ -177,7 +176,7 @@ def genesis(bytecodes, types):
     times.append(('flatten', time.time()))
 
     #
-    # Execute it 
+    # Execute it
     #
     for opcode, typesig, layout in earth:
         func = eval(numpy_map[opcode])  # Grab the NumPy functions
@@ -188,7 +187,7 @@ def genesis(bytecodes, types):
             continue
 
         for ndim in [1,2,3,4]:          # Setup operands
-            
+
             if "BH_RANGE" in opcode:    # Specialcases
                 op_setup = [
                     1, 10, 1,
@@ -215,7 +214,7 @@ def genesis(bytecodes, types):
                     0,
                     typemap[typesig[0]],
                     operands[typesig[0]][ndim][1][layout[1]]
-                ]               
+                ]
             else:
                 if len(typesig) == 3:
                     op_setup = [
@@ -243,11 +242,10 @@ def genesis(bytecodes, types):
                 print "Error when executing: %s {%s}_%s, err[%s]." % (
                     opcode, ','.join(typesig), ''.join(layout), e
                 )
-    
+
     times.append(('execute', time.time()))
-    
+
     bhutils.print_timings(times)
     print "Run 'bohrium --merge_kernels' to create a stand-alone library."
 
     return (None, None)
-

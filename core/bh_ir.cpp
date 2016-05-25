@@ -132,7 +132,6 @@ void bh_ir_kernel::clear()
     views.clear();
     syncs.clear();
     frees.clear();
-    discards.clear();
     parameters.clear();
     input_shape.clear();
     constants.clear();
@@ -179,36 +178,42 @@ void bh_ir_kernel::add_instr(uint64_t instr_idx)
         break;
     case BH_FREE:
     {
-	bh_base* base = instr.operand[0].base;
-        if (temps.find(base) == temps.end())
+        bh_base* base = instr.operand[0].base;
+        
+        if (temps.find(base) == temps.end()) {
             // It is a free of an array created elsewhere
             frees.insert(base);
+        }
 
         bool temp = false;
-        //When freeing we might have to remove arrays from 'outputs' and add
-        //them to 'temps' (if the array isn't synchronized)
-        if(syncs.find(base) == syncs.end())
-        {
+        // When freeing we might have to remove arrays from 'outputs' and add
+        // them to 'temps' (if the array isn't synchronized)
+        if (syncs.find(base) == syncs.end()) {
             auto range = output_map.equal_range(base);
-            if (range.first != range.second)
+
+            if (range.first != range.second) {
                 temp = true;
-            for (auto it = range.first; it != range.second; ++it)
+            }
+
+            for(auto it = range.first; it != range.second; ++it) {
                 output_set.erase(it->second);
+            }
+
             output_map.erase(base);
-            //If the discarded array isn't in 'inputs' (and not in 'outputs')
-            //then it is a temp array
-            if(temp && input_map.find(base) == input_map.end())
-            {
+            // If the freed array isn't in 'inputs' (and not in 'outputs')
+            // then it is a temp array
+            if (temp and input_map.find(base) == input_map.end()) {
                 temps.insert(base);
                 frees.erase(base);
                 parameters.erase(base);
-            }
-            else
+            } else {
                 temp = false;
+            }
 
+            if (!temp) {
+                frees.insert(base);
+            }
         }
-        if (!temp) // It is a discard of an array created elsewhere
-            discards.insert(base);
 
         break;
     }
@@ -278,7 +283,7 @@ std::vector<bh_index> bh_ir_kernel::get_output_shape() const
 }
 
 /* Determines whether all instructions in 'this' kernel
- * are system opcodes (e.g. BH_DISCARD, BH_FREE, etc.)
+ * are system opcodes (e.g. BH_FREE, BH_NONE, etc.)
  *
  * @return The boolean answer
  */
@@ -483,4 +488,3 @@ int64_t bh_ir_kernel::id() const
         return -1;
     return *std::min_element(_instr_indexes.begin(), _instr_indexes.end());
 }
-

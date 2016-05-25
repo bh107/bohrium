@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
 http://bohrium.bitbucket.org
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -38,7 +38,7 @@ T* bh_data_export(multi_array<T>& op, Export::Option option)
     //
     // Handle export options
     //
-    
+
     if ((NULL==data) && ((option & Export::WO_ALLOC)==0)) { // Allocate data
         bh_error res = bh_data_malloc(base);
         data = (T*)base->data;
@@ -48,7 +48,6 @@ T* bh_data_export(multi_array<T>& op, Export::Option option)
         if ((option & Export::WO_ZEROING)==0) {             // Zero-initialize by..
             bh_identity(op, (T)0);                          // ..default, to ensure..
             bh_sync(op);                                    // ..first-touch policy.
-            bh_discard(op);                                     
             Runtime::instance().flush();
         }
     }
@@ -76,12 +75,12 @@ void bh_data_import(multi_array<T>& op, T* data)
         throw std::runtime_error(
             "multi_array is  non-initialized => Initialize before importing.");
     }
-    
+
     bh_base* base = op.getBase();
     if (base->data == data) {       // All is good
         return;
     }
-    
+
     //
     // Importing "foreign" data.
     //
@@ -99,4 +98,3 @@ void bh_data_import(multi_array<T>& op, T* data)
 
 }
 #endif
-

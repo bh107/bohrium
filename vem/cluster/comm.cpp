@@ -182,7 +182,6 @@ void comm_array_data(const bh_view &chunk, int sending_rank, int receiving_rank)
 
         //Cleanup the local arrays
         batch_schedule_inst_on_base(BH_FREE, bh_base_array(&tmp_view));
-        batch_schedule_inst_on_base(BH_DISCARD, bh_base_array(&tmp_view));
     }
 }
 
@@ -200,7 +199,3 @@ void comm_array_data(const ary_chunk &chunk, int receiving_rank)
 {
     comm_array_data(chunk.ary, chunk.rank, receiving_rank);
 }
-
-
-
-

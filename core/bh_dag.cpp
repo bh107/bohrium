@@ -595,11 +595,6 @@ void pprint(const GraphDW &dag, const char filename[])
             {
                 out << *i << "\\l";
             }
-            out << "Discard base-arrays: \\l";
-            BOOST_FOREACH(const bh_base* i, graph[v].get_discards())
-            {
-                out << *i << "\\l";
-            }
             out << "Sync base-arrays: \\l";
             BOOST_FOREACH(const bh_base* i, graph[v].get_syncs())
             {

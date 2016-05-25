@@ -49,8 +49,8 @@ typedef struct
     //If True we send the array else we receive it
     bool direction;
     //The local view to send or receive
-	//NB: This view should never be seen by the rest of Bohrium 
-	//    and thus never discarded. 
+	//NB: This view should never be seen by the rest of Bohrium
+	//    and thus never freed. 
     //    Furthermore, it must be contiguous (row-major)
     bh_view local_view;
     //The process to send to or receive from

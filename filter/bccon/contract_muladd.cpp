@@ -62,7 +62,7 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
     }
 
     if (frees.size() != temps.size()) {
-        // Can't rewrite - Not same amount of views as discards and frees
+        // Can't rewrite - Not same amount of views as frees
         return false;
     }
 
