@@ -36,13 +36,21 @@ static inline bool is_mul_div(const bh_opcode& opc)
     return opc == BH_MULTIPLY or opc == BH_DIVIDE;
 }
 
+static inline bool is_none_free(const bh_opcode& opc)
+{
+    return opc == BH_NONE or opc == BH_FREE;
+}
+
 static bool chain_has_same_type(vector<bh_instruction*>& chain)
 {
     const bh_type type = chain.front()->constant.type;
+
     for(auto const instr : chain) {
-        if (type != instr->constant.type)
+        if (type != instr->constant.type) {
             return false;
+        }
     }
+
     return true;
 }
 
@@ -191,16 +199,14 @@ void Contracter::contract_collect(bh_ir &bhir)
                         chain.push_back(&other_instr);
                     }
                 } else {
-                    bool is_none      = other_instr.opcode == BH_NONE;
-                    bool is_freed     = other_instr.opcode == BH_FREE;
-
-                    if (is_none or is_freed) {
+                    if (is_none_free(other_instr.opcode)) {
                         continue;
                     } else {
                         // Is not ADD, SUBTRACT, MULTIPLY, DIVIDE, NONE, FREE, DISCARD
                         // End chain
-                        if (chain.size() > 1)
+                        if (chain.size() > 1) {
                             rewrite_chain(chain);
+                        }
 
                         // Reset
                         chain.clear();
@@ -212,8 +218,9 @@ void Contracter::contract_collect(bh_ir &bhir)
         }
 
         // Rewrite if end of instruction list
-        if (chain.size() > 1)
+        if (chain.size() > 1) {
             rewrite_chain(chain);
+        }
 
         chain.clear();
         views.clear();

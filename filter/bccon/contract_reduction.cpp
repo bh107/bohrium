@@ -68,43 +68,47 @@ void Contracter::contract_reduction(bh_ir &bhir)
             for(size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
-                bool other_use = false;                                     // Check for other use
+                bool other_use = false;
                 for(int oidx = 0; oidx < bh_noperands(other_instr.opcode); ++oidx) {
                     if (bh_is_constant(&other_instr.operand[oidx])) {
                         continue;
                     }
+
                     if (bases.find(other_instr.operand[oidx].base) != bases.end()) {
                         other_use = true;
                         break;
                     }
                 }
 
-                if (!other_use) {                                           // Ignore it
+                if (!other_use) {
                     continue;
                 }
 
-                bool is_none      = other_instr.opcode == BH_NONE;
-                bool is_freed     = other_instr.opcode == BH_FREE;
-                bool is_reduced   = other_instr.opcode == reduce_opcode;
+                bool is_none    = other_instr.opcode == BH_NONE;
+                bool is_freed   = other_instr.opcode == BH_FREE;
+                bool is_reduced = other_instr.opcode == reduce_opcode;
 
-                if (!(is_none or is_freed or is_reduced)) { // Chain is broken
+                if (!(is_none or is_freed or is_reduced)) {
+                    // Chain is broken - Reset the search
                     first = NULL;
-                    break;                                                  // Reset the search
-                } else if (other_instr.operand[0].base->nelem == 1) {       // Scalar output
-                    last = &other_instr;                                    // End of the chain
-                } else {                                                    // Continuation
+                    break;
+                } else if (other_instr.operand[0].base->nelem == 1) {
+                    // Scalar output - End of the chain
+                    last = &other_instr;
+                } else {
                     links.push_back(&other_instr);
-                    if (other_instr.opcode == reduce_opcode) {              // Update reduce_output
+                    if (other_instr.opcode == reduce_opcode) {
                         bases.insert(other_instr.operand[0].base);
                     }
                 }
             }
 
-            if (first and last) {                                           // Rewrite the chain
+            if (first and last) {
                 rewrite_chain(links, first, last);
             }
 
-            reduce_opcode = BH_NONE;                                        // Reset the search
+            // Reset the search
+            reduce_opcode = BH_NONE;
             first         = NULL;
             last          = NULL;
             links.clear();

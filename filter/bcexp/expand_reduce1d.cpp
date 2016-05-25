@@ -79,9 +79,9 @@ int Expander::expand_reduce1d(bh_ir& bhir, int pc, int thread_limit)
 
     bh_view temp = make_temp(in.base->type, elements/fold);
 
-    inject(bhir, ++pc, opcode,     temp, in,   0, BH_INT64);
-    inject(bhir, ++pc, opcode,     out,  temp, 0, BH_INT64);
-    inject(bhir, ++pc, BH_FREE,    temp);
+    inject(bhir, ++pc, opcode,  temp, in,   0, BH_INT64);
+    inject(bhir, ++pc, opcode,  out,  temp, 0, BH_INT64);
+    inject(bhir, ++pc, BH_FREE, temp);
 
     return pc - start_pc;
 }

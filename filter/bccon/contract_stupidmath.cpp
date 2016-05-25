@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include "contracter.hpp"
 
-
 using namespace std;
 
 namespace bohrium {
@@ -54,11 +53,6 @@ static inline bool is_subtracting_zero(const bh_instruction& instr)
            instr.constant.get_double() == 0.0;
 }
 
-static inline bool is_free(const bh_instruction& instr)
-{
-    return instr.opcode == BH_FREE;
-}
-
 static inline bool is_doing_stupid_math(const bh_instruction& instr)
 {
     return bh_type_is_integer(instr.constant.type) and (
@@ -79,24 +73,20 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
             //   BH_MULTIPLY B A 0
             //   ...
             //   BH_FREE A
-            //   BH_DISCARD A
 
             bh_base* B = instr.operand[0].base;
             bh_base* A = instr.operand[1].base;
 
-            bool freed     = false;
-            bool discarded = false;
+            bool freed = false;
 
             for (size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
                 // Look for matching FREE for B
-                if (is_free(other_instr) and (other_instr.operand[0].base == B)) {
-                    freed     = freed     or other_instr.opcode == BH_FREE;
-                }
-
-                if (freed)
+                if (other_instr.opcode == BH_FREE and (other_instr.operand[0].base == B)) {
+                    freed = true;
                     break;
+                }
             }
 
             // Check that B is created by us, that is, it isn't created prior to this stupid math call.
@@ -116,8 +106,8 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
                 for (size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
                     bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
-                    // Look for matching FREE and DISCARD for A
-                    if (is_free(other_instr) and (other_instr.operand[0].base == A)) {
+                    // Look for matching FREE for A
+                    if (other_instr.opcode == BH_FREE and (other_instr.operand[0].base == A)) {
                         other_instr.opcode = BH_NONE; // Remove instruction
                     }
 
