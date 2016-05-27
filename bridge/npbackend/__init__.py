@@ -28,6 +28,14 @@ asanyarray = array
 for f in UFUNCS:
     exec("%s = f" % f.info['name'])
 
+# Aliases
+aliases = [
+    ('abs', 'absolute')
+]
+
+for f, t in aliases:
+    exec("%s = %s" % (f, t))
+
 # Expose all data types
 for t in numpy_types:
     exec("%s = numpy.%s"%(t.__str__(),t.__str__()))

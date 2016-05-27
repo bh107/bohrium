@@ -494,14 +494,18 @@ class Sign(Ufunc):
             out[...] = (ary < 0)*ary.dtype.type(-1) + (ary>0)*ary.dtype.type(1)
             return out
 
+# Expose via UFUNCS
 UFUNCS = [
     Negative({'name':'negative'}),
     Sign({'name':'sign'})
-]    # Expose via UFUNCS
+]
+
 for op in _info.op.itervalues():
     UFUNCS.append(Ufunc(op))
 
-for ufunc in UFUNCS:                        # Expose via their name.
+# Expose via their name.
+for ufunc in UFUNCS:
     exec("%s = ufunc" % ufunc.info['name'])
 
-del ufunc # We do not want to expose a function named "ufunc"
+# We do not want to expose a function named "ufunc"
+del ufunc
