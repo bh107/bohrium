@@ -7,6 +7,9 @@ namespace bohrium {
 namespace filter {
 namespace bcexp {
 
+extern bool __verbose;
+extern void verbose_print(std::string str);
+
 template <typename T>
 inline void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, T value);
 
@@ -16,7 +19,7 @@ public:
     /**
      *  Construct the expander.
      */
-    Expander(size_t threshold, int matmul, int sign, int powk, int reduce_1d, int repeat);
+    Expander(bool verbose, size_t threshold, int matmul, int sign, int powk, int reduce_1d, int repeat);
 
     /**
      *  Tear down the expander.

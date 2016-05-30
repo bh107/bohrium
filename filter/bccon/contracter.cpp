@@ -24,9 +24,22 @@ using namespace std;
 namespace bohrium {
 namespace filter {
 namespace bccon {
+    bool __verbose = false;
 
-Contracter::Contracter(bool repeats, bool reduction, bool stupidmath, bool collect, bool muladd)
-    : repeats_(repeats), reduction_(reduction), stupidmath_(stupidmath), collect_(collect), muladd_(muladd) {}
+Contracter::Contracter(
+    bool verbose,
+    bool repeats,
+    bool reduction,
+    bool stupidmath,
+    bool collect,
+    bool muladd)
+    : repeats_(repeats),
+      reduction_(reduction),
+      stupidmath_(stupidmath),
+      collect_(collect),
+      muladd_(muladd) {
+            __verbose = verbose;
+      }
 
 Contracter::~Contracter(void) {}
 
@@ -38,5 +51,12 @@ void Contracter::contract(bh_ir& bhir)
     if(collect_)    contract_collect(bhir);
     if(muladd_)     contract_muladd(bhir);
 }
+
+void verbose_print(std::string str)
+{
+    if (__verbose) {
+        std::cout << "[Contracter] " << str << std::endl;
+    }
+};
 
 }}}
