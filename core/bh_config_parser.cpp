@@ -173,9 +173,10 @@ string get_config_path() {
 // Return section/option as an environment variable
 // or the empty string if the environment variable wasn't found
 string lookup_env(const string &section, const string &option) {
-    string s = "BH_" + section + option;
+    string s = "BH_" + section + "_" + option;
     to_lower(s);
     const char *env = getenv(s.c_str());
+
     if (env == NULL) {
         return string();
     } else {
