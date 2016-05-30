@@ -157,6 +157,7 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
             }
 
             // Remove self
+            verbose_print("[Stupid math] Removing " + std::string(bh_opcode_text(instr.opcode)));
             instr.opcode = BH_NONE;
         }
     }

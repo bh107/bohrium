@@ -54,7 +54,7 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
                 if (view == instr.operand[0] or
                     view == instr.operand[1] or
                     view == instr.operand[2]) {
-                    // Can't rewrite - Found use of view in other place!
+                    verbose_print("[Muladd] Can't rewrite - Found use of view in other place!");
                     return false;
                 }
             }
@@ -62,7 +62,7 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
     }
 
     if (frees.size() != temps.size()) {
-        // Can't rewrite - Not same amount of views as frees
+        verbose_print("[Muladd] Can't rewrite - Not same amount of views as frees!");
         return false;
     }
 
@@ -170,6 +170,7 @@ void Contracter::contract_muladd(bh_ir &bhir)
 
                             if (found >= 2) {
                                 instruction_chain.push_back(&yet_another_instr);
+                                verbose_print("[Muladd] Rewriting chain of length " + std::to_string(instruction_chain.size()));
                                 rewritten = rewrite_chain(bhir, instruction_chain, temp_results);
                             }
                         }
