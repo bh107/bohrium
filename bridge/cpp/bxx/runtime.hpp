@@ -59,7 +59,7 @@ inline size_t Runtime::get_queue_size()
 }
 
 /**
- * De-allocate all bh_base associated with BH_DISCARD instruction in the queue.
+ * De-allocate all bh_base associated with BH_FREE instruction in the queue.
  *
  * @param count The max number of instructions to look at.
  * @return The number of bh_base that got de-allocated.
@@ -440,4 +440,3 @@ inline void Runtime::setRandState(uint64_t state) {
 
 }
 #endif
-

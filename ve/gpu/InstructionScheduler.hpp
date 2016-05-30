@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -57,18 +57,18 @@ private:
     bh_error call_child(const bh_ir_kernel& kernel);
     SourceKernelCall generateKernel(const bh_ir_kernel& kernel);
     std::string generateFunctionBody(const bh_ir_kernel& kernel, const size_t kdims,
-                                     const std::vector<bh_index>& shape,    
+                                     const std::vector<bh_index>& shape,
                                      const std::vector<std::vector<size_t> >& dimOrders,
                                      bool& float64, bool& complex, bool& integer, bool& random);
     void sync(const std::set<bh_base*>& arrays);
-    void discard(const std::set<bh_base*>& arrays);
-    void beginDim(std::ostringstream& source, 
-                  std::ostringstream& indentss, 
-                  std::vector<std::string>& beforesource, 
+    void free(const std::set<bh_base*>& arrays);
+    void beginDim(std::ostringstream& source,
+                  std::ostringstream& indentss,
+                  std::vector<std::string>& beforesource,
                   const size_t dims);
-    void endDim(std::ostringstream& source, 
-                std::ostringstream& indentss, 
-                std::vector<std::string>& beforesource, 
+    void endDim(std::ostringstream& source,
+                std::ostringstream& indentss,
+                std::vector<std::string>& beforesource,
                 std::map<size_t,bh_view>& save,
                 std::map<size_t,size_t>& incr_idx,
                 const std::vector<bh_index>& shape,

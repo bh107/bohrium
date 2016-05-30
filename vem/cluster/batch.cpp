@@ -30,7 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "timing.h"
 
 static std::vector<task> task_store;
-static std::set<bh_base *> discard_store;
+static std::set<bh_base *> free_store;
 
 /* Schedule an task.
  * @t  The task to schedule
@@ -60,9 +60,9 @@ void batch_schedule_inst(const bh_instruction& inst)
  */
 void batch_schedule_inst_on_base(bh_opcode opcode, bh_base *base)
 {
-    //insert returns True if the operand didn't exist in the discard_store
-    if(opcode == BH_DISCARD && !discard_store.insert(base).second)
-        return;//Avoid discarding a base array multiple times
+    //insert returns True if the operand didn't exist in the free_store
+    if(opcode == BH_Free && !free_store.insert(base).second)
+        return;//Avoid freeing a base array multiple times
 
     task t;
     t.inst.type = TASK_INST;
@@ -127,7 +127,7 @@ void batch_flush()
                 if((e = mychild->execute(&bhir)) != BH_SUCCESS)
                     EXCEPT_INST(inst->opcode, e);
 
-                if(inst->opcode == BH_DISCARD)
+                if(inst->opcode == BH_FREE)
                     array_rm_local(bh_base_array(&inst->operand[0]));
                 break;
             }
@@ -173,10 +173,6 @@ void batch_flush()
         }
     }
     task_store.clear();
-    discard_store.clear();
+    free_store.clear();
     bh_timer_add(timing_flush, stime, bh_timer_stamp());
 }
-
-
-
-

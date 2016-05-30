@@ -33,18 +33,14 @@ namespace composite {
  *  LESS, t1_bool, input, 0.0
  *  IDENTITY, t1, t1_bool
  *  FREE, t1_bool
- *  DISCARD, t1_bool
  *
  *  GREATER, t2_bool, input, 0.0
  *  IDENTITY, t2, t2_bool
  *  FREE, t2_bool
- *  DISCARD, t2_bool
  *
  *  SUBTRACT, out, t2, t1
  *  FREE, t1
- *  DISCARD, t1
  *  FREE, t2
- *  DISCARD, t2
  *
  *          BH_SIGN OUT, IN1 (When IN1.type == COMPLEX):
  *
@@ -53,25 +49,19 @@ namespace composite {
  *  LESS, t1_bool, input_r, 0.0
  *  IDENTITY, t1, t1_bool
  *  FREE, t1_bool
- *  DISCARD, t1_bool
  *
  *  GREATER, t2_bool, input_r, 0.0
  *  FREE, input_r
- *  DISCARD, input_r
  *
  *  IDENTITY, t2, t2_bool
  *  FREE, t2_bool
- *  DISCARD, t2_bool
  *
  *  SUBTRACT, t3, t2, t1
  *  FREE, t1
- *  DISCARD, t1
  *  FREE, t2
- *  DISCARD, t2
  *
  *  IDENTITY, out, t3
  *  FREE, t3
- *  DISCARD, t3
  *
  *  Returns the number of instructions used (12 or 17).
  */

@@ -51,10 +51,10 @@ Impl::~Impl() {
     {
         long s = (long) _allocated_bases.size();
         if (s > 20) {
-            cerr << "[NODE-VEM] Warning " << s << " base arrays were not discarded "
+            cerr << "[NODE-VEM] Warning " << s << " base arrays were not freed "
                     "on exit (too many to show here)." << endl;
         } else {
-            cerr << "[NODE-VEM] Warning " << s << " base arrays were not discarded "
+            cerr << "[NODE-VEM] Warning " << s << " base arrays were not freed "
                     "on exit (only showing the array IDs because the view list may "
                     "be corrupted due to reuse of base struct):" << endl;
             for (bh_base *b: _allocated_bases) {
@@ -81,8 +81,8 @@ void Impl::inspect(bh_instruction *instr) {
         bh_base *base = operands[0].base;
         if(_allocated_bases.erase(base) != 1)
         {
-            cerr << "[NODE-VEM] discarding unknown base array: " << *base << endl;
-            throw runtime_error("[NODE-VEM] discarding unknown base array");
+            cerr << "[NODE-VEM] freeing unknown base array: " << *base << endl;
+            throw runtime_error("[NODE-VEM] freeing unknown base array");
         }
     }
 }
@@ -92,4 +92,3 @@ void Impl::execute(bh_ir *bhir) {
         inspect(&bhir->instr_list[i]);
     child.execute(bhir);
 }
-

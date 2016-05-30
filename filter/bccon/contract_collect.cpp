@@ -202,7 +202,7 @@ void Contracter::contract_collect(bh_ir &bhir)
                     if (is_none_free(other_instr.opcode)) {
                         continue;
                     } else {
-                        // Is not ADD, SUBTRACT, MULTIPLY, DIVIDE, NONE, FREE, DISCARD
+                        // Is not ADD, SUBTRACT, MULTIPLY, DIVIDE, NONE, FREE
                         // End chain
                         if (chain.size() > 1) {
                             rewrite_chain(chain);

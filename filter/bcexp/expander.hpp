@@ -32,7 +32,7 @@ public:
     /**
      *  Collect garbage, that is de-allocate an amount of bh_base.
      *
-     *  Make sure that BH_FREE and BH_DISCARD has been sent down the stack.
+     *  Make sure that BH_FREE has been sent down the stack.
      *
      *  It seems likely that re-use would be an idea so default
      *  strategy should probably be to keep some amount for re-use

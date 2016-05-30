@@ -163,18 +163,12 @@ bh_ir ExecuteBackend::deserialize(vector<char> &buffer, vector<bh_base*> &data_s
     bh_ir bhir;
     ia >> bhir;
 
-    //Find all discarded base arrays (remote base pointers)
+    //Find all freed base arrays (remote base pointers)
     for(const bh_instruction &instr: bhir.instr_list)
     {
         assert(instr.opcode >= 0);
-        switch(instr.opcode)
-        {
-            case BH_FREE:
-            {
-                remote_discards.insert(instr.operand[0].base);
-                break;
-            }
-            default: {}
+        if (instr.opcode == BH_FREE) {
+            remote_frees.insert(instr.operand[0].base);
         }
     }
 
@@ -234,13 +228,13 @@ bh_ir ExecuteBackend::deserialize(vector<char> &buffer, vector<bh_base*> &data_s
 
 void ExecuteBackend::cleanup(const bh_ir &bhir)
 {
-    //Let's remove previously discarded base arrays (remote base pointers)
-    for(const bh_base *base: remote_discards)
+    //Let's remove previously freed base arrays (remote base pointers)
+    for(const bh_base *base: remote_frees)
     {
         bh_data_free(&remote2local[base]);
         remote2local.erase(base);
     }
-    remote_discards.clear();
+    remote_frees.clear();
 }
 
 }}
