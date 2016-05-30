@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
 
 int Expander::expand_repeat(bh_ir& bhir, int pc)
 {

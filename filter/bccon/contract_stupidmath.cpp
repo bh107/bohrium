@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 static inline bool is_multiplying_by_one(const bh_instruction& instr)
 {

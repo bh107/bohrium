@@ -25,7 +25,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, const vector<bh_view*>& temps)
 {

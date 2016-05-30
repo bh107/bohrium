@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
 
 /**
  *  Expand BH_SIGN at the given PC into the sequence:

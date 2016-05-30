@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
 
 /**
  *  Expand matmul at the given pc in the bhir instruction list.

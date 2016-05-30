@@ -24,7 +24,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
 
 static const int64_t max_exponent_unfolding = 100;
 

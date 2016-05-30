@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
 
 Expander::Expander(size_t threshold, int matmul, int sign, int powk, int reduce1d, int repeat)
     : gc_threshold_(threshold), matmul_(matmul), sign_(sign), powk_(powk), reduce1d_(reduce1d), repeat_(repeat){}

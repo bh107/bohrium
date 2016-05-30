@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 Contracter::Contracter(bool repeats, bool reduction, bool stupidmath, bool collect, bool muladd)
     : repeats_(repeats), reduction_(reduction), stupidmath_(stupidmath), collect_(collect), muladd_(muladd) {}

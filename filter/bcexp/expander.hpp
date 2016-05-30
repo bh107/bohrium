@@ -5,7 +5,7 @@
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
 
 template <typename T>
 inline void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, T value);

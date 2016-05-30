@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 static void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* &first, bh_instruction* &last)
 {

@@ -24,7 +24,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 static inline bool is_add_sub(const bh_opcode& opc)
 {

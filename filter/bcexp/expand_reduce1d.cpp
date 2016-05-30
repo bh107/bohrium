@@ -24,7 +24,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
 
 static std::map<int, int> fold_map;
 

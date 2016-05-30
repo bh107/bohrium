@@ -5,7 +5,7 @@
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 class Contracter
 {

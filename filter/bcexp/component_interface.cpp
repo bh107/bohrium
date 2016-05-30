@@ -28,7 +28,7 @@ using namespace std;
 namespace {
 class Impl : public ComponentImplWithChild {
 private:
-    filter::composite::Expander expander;
+    filter::bcexp::Expander expander;
 public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level),
                             expander(config.defaultGet<int>("gc_threshold", 400),

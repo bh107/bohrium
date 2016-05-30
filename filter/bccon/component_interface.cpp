@@ -28,7 +28,7 @@ using namespace std;
 namespace {
 class Impl : public ComponentImplWithChild {
 private:
-    filter::composite::Contracter contractor;
+    filter::bccon::Contracter contractor;
 public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level),
                             contractor(config.defaultGet<bool>("find_repeats", false),

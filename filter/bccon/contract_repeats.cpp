@@ -30,7 +30,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 // Regex matcher. This regex will match all repeating groups in a string
 // ie. will match 'bc' in 'abcbcbcde'
