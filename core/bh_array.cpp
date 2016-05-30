@@ -559,6 +559,30 @@ bool bh_view_same(const bh_view *a, const bh_view *b)
     return *a == *b;
 }
 
+/* Determines whether a view is contiguous
+ *
+ * @a The view
+ * @return The boolean answer
+ */
+bool bh_is_contiguous(const bh_view* a)
+{
+    if (bh_is_constant(a)) {
+        return false;
+    }
+
+    size_t weight = 1;
+
+    for(int dim = a->ndim-1; dim >= 0; --dim) {
+        if (a->stride[dim] != weight) {
+            return false;
+        }
+
+        weight *= a->shape[dim];
+    }
+
+    return true;
+}
+
 /* Determines whether two views are aligned and points
  * to the same base array.
  *
