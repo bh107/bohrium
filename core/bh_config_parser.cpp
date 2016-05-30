@@ -222,10 +222,10 @@ ConfigParser::ConfigParser(int stack_level) : file_path(get_config_path()),
     if (stack_level >= static_cast<int>(_stack_list.size()) or stack_level < -1) {
         throw ConfigError("ConfigParser: stack level is out of bound");
     }
-    if (stack_level > 0) {
-        _default_section = _stack_list[stack_level];
-    } else {
+    if (stack_level == -1) {
         _default_section = "bridge";
+    } else {
+        _default_section = _stack_list[stack_level];
     }
 }
 
