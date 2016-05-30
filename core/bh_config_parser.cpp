@@ -174,7 +174,7 @@ string get_config_path() {
 // or the empty string if the environment variable wasn't found
 string lookup_env(const string &section, const string &option) {
     string s = "BH_" + section + "_" + option;
-    to_lower(s);
+    to_upper(s);
     const char *env = getenv(s.c_str());
 
     if (env == NULL) {
