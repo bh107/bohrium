@@ -97,10 +97,12 @@ find_repeats = false
 stupidmath = true
 muladd = true
 timing = false
+verbose = false
 
 [noneremover]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_noneremover${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = false
+verbose = false
 
 [bcexp]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
@@ -111,6 +113,7 @@ powk = 1
 reduce1d = 0
 repeat = 0
 timing = false
+verbose = false
 
 [bcexp_gpu]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
@@ -121,6 +124,7 @@ powk = 1
 reduce1d = 32000
 repeat = 0
 timing = false
+verbose = false
 
 [bcexp_cpu]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
@@ -131,6 +135,7 @@ powk = 1
 reduce1d = 0
 repeat = 0
 timing = false
+verbose = false
 
 
 #
