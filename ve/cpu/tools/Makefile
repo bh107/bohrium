@@ -1,11 +1,18 @@
 BH_SRC=$(realpath ../../..)
 CPU=$(BH_SRC)/ve/cpu
 BDIR=/tmp/bhbuild_cpu/
-#PAR_LVL=-j$(shell expr $(shell nproc) / 2)
-PAR_LVL=-j1
 BH_PYTHON=python
 TEST_EXCLUDE=
 DUMPSRC=1
+
+UNAME=$(shell uname)
+PAR_LVL=-j1
+ifeq ($(UNAME), Darwin)
+	PAR_LVL=-j$(shell sysctl -n hw.ncpu)
+endif
+ifeq ($(UNAME), Linux)
+	PAR_LVL=-j$(shell expr $(shell nproc) / 2)
+endif
 
 BUILD_OPTIONS=
 
