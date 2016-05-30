@@ -32,11 +32,11 @@ private:
 public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level),
                             expander(config.defaultGet<int>("gc_threshold", 400),
-                            config.defaultGet<bool>("matmul", true),
-                            config.defaultGet<bool>("sign", true),
-                            config.defaultGet<bool>("powk", true),
-                            config.defaultGet<bool>("reduce1d", false),
-                            config.defaultGet<bool>("repeat", true)) {};
+                                     config.defaultGet<bool>("matmul", true),
+                                     config.defaultGet<bool>("sign", true),
+                                     config.defaultGet<bool>("powk", true),
+                                     config.defaultGet<int>("reduce1d", 32000),
+                                     config.defaultGet<bool>("repeat", true)) {};
 
     ~Impl() {}; // NB: a destructor implementation must exist
     void execute(bh_ir *bhir) {
