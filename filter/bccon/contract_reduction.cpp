@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 static void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* &first, bh_instruction* &last)
 {
@@ -104,6 +104,7 @@ void Contracter::contract_reduction(bh_ir &bhir)
             }
 
             if (first and last) {
+                verbose_print("[Reduction] Rewriting chain of length " + std::to_string(links.size()));
                 rewrite_chain(links, first, last);
             }
 

@@ -23,10 +23,11 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
 
 int Expander::expand_repeat(bh_ir& bhir, int pc)
 {
+    verbose_print("[Repeat] Expanding BH_REPEAT");
     // Grab the BH_REPEAT instruction
     bh_instruction& instr = bhir.instr_list[pc];
 

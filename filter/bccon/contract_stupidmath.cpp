@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 static inline bool is_multiplying_by_one(const bh_instruction& instr)
 {
@@ -157,6 +157,7 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
             }
 
             // Remove self
+            verbose_print("[Stupid math] Removing " + std::string(bh_opcode_text(instr.opcode)));
             instr.opcode = BH_NONE;
         }
     }

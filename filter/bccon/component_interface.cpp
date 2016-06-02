@@ -28,10 +28,11 @@ using namespace std;
 namespace {
 class Impl : public ComponentImplWithChild {
 private:
-    filter::composite::Contracter contractor;
+    filter::bccon::Contracter contractor;
 public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level),
-                            contractor(config.defaultGet<bool>("find_repeats", false),
+                            contractor(config.defaultGet<bool>("verbose", false),
+                                       config.defaultGet<bool>("find_repeats", false),
                                        config.defaultGet<bool>("reduction", false),
                                        config.defaultGet<bool>("stupidmath", false),
                                        config.defaultGet<bool>("collect", false),

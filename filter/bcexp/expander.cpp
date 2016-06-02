@@ -23,10 +23,25 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
+    bool __verbose = false;
 
-Expander::Expander(size_t threshold, int matmul, int sign, int powk, int reduce1d, int repeat)
-    : gc_threshold_(threshold), matmul_(matmul), sign_(sign), powk_(powk), reduce1d_(reduce1d), repeat_(repeat){}
+Expander::Expander(
+    bool verbose,
+    size_t threshold,
+    int matmul,
+    int sign,
+    int powk,
+    int reduce1d,
+    int repeat)
+    : gc_threshold_(threshold),
+      matmul_(matmul),
+      sign_(sign),
+      powk_(powk),
+      reduce1d_(reduce1d),
+      repeat_(repeat) {
+          __verbose = verbose;
+      }
 
 void Expander::expand(bh_ir& bhir)
 {
@@ -166,6 +181,13 @@ Expander::~Expander(void)
     while(bases_.size()>0) {
         delete bases_.back();
         bases_.pop_back();
+    }
+}
+
+void verbose_print(std::string str)
+{
+    if (__verbose) {
+        std::cout << "[Expander] " << str << std::endl;
     }
 }
 

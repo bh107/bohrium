@@ -30,7 +30,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 // Regex matcher. This regex will match all repeating groups in a string
 // ie. will match 'bc' in 'abcbcbcde'
@@ -94,6 +94,8 @@ void Contracter::contract_repeats(bh_ir &bhir)
             int size  = matches.str(1).size(); // How many instructions
             int occur = count_occur(matches.str(0), matches.str(1)); // How many repeats
 
+            verbose_print("[Repeat] Found repeating sequence of length " + std::to_string(occur) + ". It repeats " + std::to_string(size) + " times.");
+
             // Replace the matches with 'R'
             string instr_list_str;
             boost::regex_replace(back_inserter(instr_list_str), bh_string_instr_list.begin(), bh_string_instr_list.end(), re, "R");
@@ -132,7 +134,7 @@ void Contracter::contract_repeats(bh_ir &bhir)
             bhir.instr_list = new_bh_instr_list;
         }
     } catch(std::runtime_error& e) {
-        printf("Regex failed - Moving on\n");
+        verbose_print("[Repeat] Regex failed - Moving on");
         return;
     }
 

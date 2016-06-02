@@ -24,7 +24,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bccon {
 
 static inline bool is_add_sub(const bh_opcode& opc)
 {
@@ -59,15 +59,17 @@ static void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
 
-    if (!chain_has_same_type(chain))
+    if (!chain_has_same_type(chain)) {
+        verbose_print("[Collect] Addsub chain doesn't have same type.");
         return;
+    }
 
     switch (first.constant.type) {
-        // Don't know how to do complex types, yet.
         case BH_BOOL:
         case BH_COMPLEX64:
         case BH_COMPLEX128:
         case BH_R123:
+            verbose_print("[Collect] Don't know how to do complex types, yet.");
             return;
     }
 
@@ -113,15 +115,17 @@ static void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
 
-    if (!chain_has_same_type(chain))
+    if (!chain_has_same_type(chain)) {
+        verbose_print("[Collect] Muldiv chain doesn't have same type.");
         return;
+    }
 
     switch (first.constant.type) {
-        // Don't know how to do complex types, yet.
         case BH_BOOL:
         case BH_COMPLEX64:
         case BH_COMPLEX128:
         case BH_R123:
+            verbose_print("[Collect] Don't know how to do complex types, yet.");
             return;
     }
 
@@ -205,6 +209,7 @@ void Contracter::contract_collect(bh_ir &bhir)
                         // Is not ADD, SUBTRACT, MULTIPLY, DIVIDE, NONE, FREE
                         // End chain
                         if (chain.size() > 1) {
+                            verbose_print("[Collect] Rewriting chain of length " + std::to_string(chain.size()));
                             rewrite_chain(chain);
                         }
 

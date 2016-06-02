@@ -28,10 +28,11 @@ using namespace std;
 namespace {
 class Impl : public ComponentImplWithChild {
 private:
-    filter::composite::Expander expander;
+    filter::bcexp::Expander expander;
 public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level),
-                            expander(config.defaultGet<int>("gc_threshold", 400),
+                            expander(config.defaultGet<bool>("verbose", false),
+                                     config.defaultGet<int>("gc_threshold", 400),
                                      config.defaultGet<bool>("matmul", true),
                                      config.defaultGet<bool>("sign", true),
                                      config.defaultGet<bool>("powk", true),

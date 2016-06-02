@@ -23,7 +23,7 @@ using namespace std;
 
 namespace bohrium {
 namespace filter {
-namespace composite {
+namespace bcexp {
 
 /**
  *  Expand BH_SIGN at the given PC into the sequence:
@@ -94,6 +94,7 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
     }
 
     if (!((input_type == BH_COMPLEX64) || (input_type == BH_COMPLEX128))) {
+        verbose_print("[Sign] Expanding complex sign");
         // For non-complex: sign(x) = (x>0)-(x<0)
         // Temps
         bh_view lss    = make_temp(meta, input_type, nelements);
@@ -113,6 +114,7 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
         inject(bhir, ++pc, BH_FREE,     lss);
         inject(bhir, ++pc, BH_FREE,     gtr);
     } else {
+        verbose_print("[Sign] Expanding normal sign");
         // For complex: sign(0) = 0, sign(z) = z/|z|
         bh_type float_type = (input_type == BH_COMPLEX64) ? BH_FLOAT32 : BH_FLOAT64;
 
