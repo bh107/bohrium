@@ -90,6 +90,7 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
         bh_instruction& instr = bhir.instr_list[pc];
 
         if (is_doing_stupid_math(instr)) {
+            verbose_print("[Stupid math] Is doing stupid math with a " + std::string(bh_opcode_text(instr.opcode)));
 
             // We could have the following:
             //   BH_MULTIPLY B A 0
@@ -120,6 +121,7 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
             }
 
             if (!freed) {
+                verbose_print("[Stupid math] \tCan't rectify as it isn't freeing in same flush.");
                 continue;
             }
 
@@ -137,6 +139,7 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
 
             // Only if we FREE B in the same flush, are we allowed to change things.
             if (created_before) {
+                verbose_print("[Stupid math] \tCan't rectify as other view isn't created in same flush.");
                 continue;
             }
 
@@ -157,7 +160,7 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
             }
 
             // Remove self
-            verbose_print("[Stupid math] Removing " + std::string(bh_opcode_text(instr.opcode)));
+            verbose_print("[Stupid math] \tRemoving " + std::string(bh_opcode_text(instr.opcode)));
             instr.opcode = BH_NONE;
         }
     }

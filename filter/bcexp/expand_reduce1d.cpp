@@ -45,6 +45,7 @@ int Expander::expand_reduce1d(bh_ir& bhir, int pc, int thread_limit)
     bh_instruction& instr = bhir.instr_list[pc];
     bh_opcode opcode = instr.opcode;
     bh_index elements = bh_nelements(instr.operand[1]);
+    verbose_print("[Reduce1D] Expanding " + string(bh_opcode_text(opcode)));
 
     if (elements * 2 < thread_limit) {
         return 0;
@@ -59,7 +60,7 @@ int Expander::expand_reduce1d(bh_ir& bhir, int pc, int thread_limit)
     }
 
     if (fold < 2) {
-        verbose_print("[Reduce1D] Can't expand " + string(bh_opcode_text(opcode)) + " with a fold less than 2.");
+        verbose_print("[Reduce1D] \tCan't expand " + string(bh_opcode_text(opcode)) + " with a fold less than 2.");
         return 0;
     }
 
@@ -83,7 +84,6 @@ int Expander::expand_reduce1d(bh_ir& bhir, int pc, int thread_limit)
     inject(bhir, ++pc, opcode,  out,  temp, 0, BH_INT64);
     inject(bhir, ++pc, BH_FREE, temp);
 
-    verbose_print("[Reduce1D] Expanding " + string(bh_opcode_text(opcode)));
     return pc - start_pc;
 }
 

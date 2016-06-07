@@ -60,7 +60,7 @@ static void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
     bh_instruction& last = *chain.back();
 
     if (!chain_has_same_type(chain)) {
-        verbose_print("[Collect] Addsub chain doesn't have same type.");
+        verbose_print("[Collect] \tAddsub chain doesn't have same type.");
         return;
     }
 
@@ -69,7 +69,7 @@ static void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
         case BH_COMPLEX64:
         case BH_COMPLEX128:
         case BH_R123:
-            verbose_print("[Collect] Don't know how to do complex types, yet.");
+            verbose_print("[Collect] \tDon't know how to do complex types, yet.");
             return;
     }
 
@@ -116,7 +116,7 @@ static void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
     bh_instruction& last = *chain.back();
 
     if (!chain_has_same_type(chain)) {
-        verbose_print("[Collect] Muldiv chain doesn't have same type.");
+        verbose_print("[Collect] \tMuldiv chain doesn't have same type.");
         return;
     }
 
@@ -125,7 +125,7 @@ static void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
         case BH_COMPLEX64:
         case BH_COMPLEX128:
         case BH_R123:
-            verbose_print("[Collect] Don't know how to do complex types, yet.");
+            verbose_print("[Collect] \tDon't know how to do complex types, yet.");
             return;
     }
 

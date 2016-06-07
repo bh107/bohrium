@@ -134,7 +134,7 @@ void Contracter::contract_repeats(bh_ir &bhir)
             bhir.instr_list = new_bh_instr_list;
         }
     } catch(std::runtime_error& e) {
-        verbose_print("[Repeat] Regex failed - Moving on");
+        verbose_print("[Repeat] \tRegex failed - Moving on");
         return;
     }
 

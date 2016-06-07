@@ -30,6 +30,8 @@ static const int64_t max_exponent_unfolding = 100;
 
 int Expander::expand_powk(bh_ir& bhir, int pc)
 {
+    verbose_print("[Powk] Expanding BH_POWER");
+
     int start_pc = pc;
 
     // Grab the BH_POWER instruction
@@ -50,22 +52,21 @@ int Expander::expand_powk(bh_ir& bhir, int pc)
         exponent = instr.constant.get_int64();
     } catch (overflow_error& e) {
         // Give up, if we cannot get a signed integer
-        verbose_print("[Powk] Can't expand BH_POWER with non-integer");
+        verbose_print("[Powk] \tCan't expand BH_POWER with non-integer");
         return 0;
     }
 
     if (0 > exponent || exponent > max_exponent_unfolding) {
-        verbose_print("[Powk] Can't expand BH_POWER with exponent " + std::to_string(exponent));
+        verbose_print("[Powk] \tCan't expand BH_POWER with exponent " + std::to_string(exponent));
         return 0;
     }
 
     // TODO: Add support for this case by using intermediates.
     if (instr.operand[0].base == instr.operand[1].base) {
-        verbose_print("[Powk] Can't expand BH_POWER without intermediates.");
+        verbose_print("[Powk] \tCan't expand BH_POWER without intermediates.");
         return 0;
     }
 
-    verbose_print("[Powk] Expanding BH_POWER");
     // Lazy choice... no re-use just NOP it.
     instr.opcode = BH_NONE;
 

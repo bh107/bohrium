@@ -54,7 +54,7 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
                 if (view == instr.operand[0] or
                     view == instr.operand[1] or
                     view == instr.operand[2]) {
-                    verbose_print("[Muladd] Can't rewrite - Found use of view in other place!");
+                    verbose_print("[Muladd] \tCan't rewrite - Found use of view in other place!");
                     return false;
                 }
             }
@@ -62,7 +62,7 @@ static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, con
     }
 
     if (frees.size() != temps.size()) {
-        verbose_print("[Muladd] Can't rewrite - Not same amount of views as frees!");
+        verbose_print("[Muladd] \tCan't rewrite - Not same amount of views as frees!");
         return false;
     }
 
