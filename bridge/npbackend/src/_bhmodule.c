@@ -356,6 +356,11 @@ BhArray_finalize(PyObject *self, PyObject *args)
     if(_protected_malloc((BhArray *) self) != 0)
         return NULL;
 
+    if(PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*)self), NPY_ITEM_REFCOUNT)) {
+        PyErr_Format(PyExc_RuntimeError, "Array of objects not supported by Bohrium.");
+        return NULL;
+    }
+
     Py_RETURN_NONE;
 }
 
