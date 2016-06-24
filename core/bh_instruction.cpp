@@ -29,6 +29,16 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
+set<bh_base*> bh_instruction::get_bases() {
+    set<bh_base*> ret;
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        const bh_view &view = operand[o];
+        if (not bh_is_constant(&view))
+            ret.insert(view.base);
+    }
+    return ret;
+}
 
 //Implements pprint of an instruction
 ostream& operator<<(ostream& out, const bh_instruction& instr)

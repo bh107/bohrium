@@ -3,6 +3,8 @@
 
 #include <boost/serialization/is_bitwise_serializable.hpp>
 #include <boost/serialization/array.hpp>
+#include <set>
+
 #include "bh_opcode.h"
 #include <bh_array.hpp>
 #include "bh_error.h"
@@ -30,6 +32,9 @@ struct bh_instruction
         constant = instr.constant;
         std::memcpy(operand, instr.operand, bh_noperands(opcode) * sizeof(bh_view));
     }
+
+    // Return a set of all bases used by the instruction
+    std::set<bh_base*> get_bases();
 
     // Serialization using Boost
     friend class boost::serialization::access;
