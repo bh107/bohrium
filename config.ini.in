@@ -8,6 +8,7 @@
 default    = bcexp_cpu, bccon, topological, node, cpu
 cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
 gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
+uni        = node, uni
 
 [bridge] # 'bridge' is a reversed section name that always refers to the bridge.
 
@@ -141,6 +142,16 @@ verbose = false
 #
 # Engines
 #
+[uni]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_uni${CMAKE_SHARED_LIBRARY_SUFFIX}
+object_dir=${CMAKE_INSTALL_PREFIX}/var/bohrium/object
+source_dir=${CMAKE_INSTALL_PREFIX}/var/bohrium/source
+compiler_cmd="${VE_UNI_COMPILER_CMD}"
+compiler_inc="${VE_UNI_COMPILER_INC}"
+compiler_lib="${VE_UNI_COMPILER_LIB}"
+compiler_flg="${VE_UNI_COMPILER_FLG}"
+
+
 [cpu]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
