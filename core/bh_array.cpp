@@ -90,6 +90,26 @@ string bh_base::str() const
     return ss.str();
 }
 
+void bh_view::insert_dim(bh_index dim, bh_index size, bh_index stride) {
+    assert(dim <= ndim);
+    if (dim == ndim) { // Appending
+        this->shape[dim] = size;
+        this->stride[dim] = stride;
+    } else { // Inserting
+        for (bh_index i=ndim-1; i >= 0; --i) {
+            if (i >= dim) { // Move shape and stride one to the right
+                this->shape[i+1] = this->shape[i];
+                this->stride[i+1] = this->stride[i];
+                if (i == dim) { // Insert the new dimension
+                    this->shape[i] = size;
+                    this->stride[i] = stride;
+                }
+            }
+        }
+    }
+    ++ndim;
+}
+
 vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const
 {
     //stride&shape&index for each dimension (in that order)
@@ -570,16 +590,14 @@ bool bh_is_contiguous(const bh_view* a)
         return false;
     }
 
-    size_t weight = 1;
-
-    for(int dim = a->ndim-1; dim >= 0; --dim) {
+    bh_index weight = 1;
+    for(bh_index dim = a->ndim-1; dim >= 0; --dim) {
         if (a->stride[dim] != weight) {
             return false;
         }
 
         weight *= a->shape[dim];
     }
-
     return true;
 }
 

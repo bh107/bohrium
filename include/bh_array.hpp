@@ -111,10 +111,14 @@ struct bh_view
     /// The stride for each dimensions
     bh_index      stride[BH_MAXDIM];
 
-    //Returns a vector of tuples that describe the view using (almost)
-    //Python Notation.
-    //NB: in this notation the stride is always absolute eg. [2:4:3, 0:3:1]
+    // Returns a vector of tuples that describe the view using (almost)
+    // Python Notation.
+    // NB: in this notation the stride is always absolute eg. [2:4:3, 0:3:1]
     std::vector<std::tuple<int64_t, int64_t, int64_t> > python_notation() const;
+
+    // Insert a new dimension at 'dim' with the size of 'size' and stride of 'stride'
+    // NB: 0 <= 'dim' <= ndim
+    void insert_dim(bh_index dim, bh_index size, bh_index stride);
 
     bool operator<(const bh_view& other) const
     {
