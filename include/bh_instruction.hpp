@@ -16,6 +16,13 @@ namespace boost {namespace serialization {class access;}}
 //Memory layout of the Bohrium instruction
 struct bh_instruction
 {
+    //Opcode: Identifies the operation
+    bh_opcode  opcode;
+    //Id of each operand
+    bh_view  operand[BH_MAX_NO_OPERANDS];
+    //Constant included in the instruction (Used if one of the operands == NULL)
+    bh_constant constant;
+
     bh_instruction(){}
     bh_instruction(const bh_instruction& instr)
     {
@@ -23,13 +30,6 @@ struct bh_instruction
         constant = instr.constant;
         std::memcpy(operand, instr.operand, bh_noperands(opcode) * sizeof(bh_view));
     }
-
-    //Opcode: Identifies the operation
-    bh_opcode  opcode;
-    //Id of each operand
-    bh_view  operand[BH_MAX_NO_OPERANDS];
-    //Constant included in the instruction (Used if one of the operands == NULL)
-    bh_constant constant;
 
     // Serialization using Boost
     friend class boost::serialization::access;

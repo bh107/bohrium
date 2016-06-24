@@ -29,62 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-static string const2str(const bh_constant &constant)
-{
-    stringstream ss;
-    switch(constant.type)
-    {
-        case BH_BOOL:
-            ss << constant.value.bool8;
-            break;
-        case BH_INT8:
-            ss << constant.value.int8;
-            break;
-        case BH_INT16:
-            ss << constant.value.int16;
-            break;
-        case BH_INT32:
-            ss << constant.value.int32;
-            break;
-        case BH_INT64:
-            ss << constant.value.int64;
-            break;
-        case BH_UINT8:
-            ss << constant.value.uint8;
-            break;
-        case BH_UINT16:
-            ss << constant.value.uint16;
-            break;
-        case BH_UINT32:
-            ss << constant.value.uint32;
-            break;
-        case BH_UINT64:
-            ss << constant.value.uint64;
-            break;
-        case BH_FLOAT32:
-            ss << constant.value.float32;
-            break;
-        case BH_FLOAT64:
-            ss << constant.value.float64;
-            break;
-        case BH_R123:
-            ss << "{start: " << constant.value.r123.start << ", key: "\
-               << constant.value.r123.key << "}";
-            break;
-        case BH_COMPLEX64:
-            ss << constant.value.complex64.real << "+" \
-               << constant.value.complex64.imag << "i";
-            break;
-        case BH_COMPLEX128:
-            ss << constant.value.complex128.real << "+" \
-               << constant.value.complex128.imag << "i";
-            break;
-        case BH_UNKNOWN:
-        default:
-            ss << "?";
-    }
-    return ss.str();
-}
 
 //Implements pprint of an instruction
 ostream& operator<<(ostream& out, const bh_instruction& instr)
@@ -101,7 +45,7 @@ ostream& operator<<(ostream& out, const bh_instruction& instr)
         const bh_view &v = instr.operand[i];
         out << " ";
         if(bh_is_constant(&v))
-            out << const2str(instr.constant);
+            out << instr.constant;
         else
             out << v;
     }
