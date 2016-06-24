@@ -49,13 +49,13 @@ if(APPLE)
     # Fallback on APPLE, this will run but without optimizations and parallelization.
     #
     set(VE_UNI_COMPILER_INC "")
-    set(VE_UNI_COMPILER_FLG "-dynamiclib -arch i386 -arch x86_64")
+    set(VE_UNI_COMPILER_FLG "-x c -dynamiclib -arch i386 -arch x86_64")
     set(VE_UNI_COMPILER_LIB "-lm -L${VE_UNI_COMPILER_INC}/lib -lbh")
     set(VE_UNI_COMPILER_EXT "")
 else()
     #
     # Mandatory flags
-    set(VE_UNI_COMPILER_FLG "-fPIC -shared ${C99_FLAG}")
+    set(VE_UNI_COMPILER_FLG "-x c -fPIC -shared ${C99_FLAG}")
     #
     # Optimizations
     if (FLAG_03_FOUND)                                                      # Optimization Level
