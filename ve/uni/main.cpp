@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 
 #include <bh_component.hpp>
+#include <bh_extmethod.hpp>
 
 #include "kernel.hpp"
 #include "block.hpp"
@@ -36,11 +37,16 @@ namespace {
 class Impl : public ComponentImpl {
   private:
     Store _store;
+    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
   public:
     Impl(int stack_level) : ComponentImpl(stack_level), _store(config) {}
     ~Impl() {}; // NB: a destructor implementation must exist
     void execute(bh_ir *bhir);
-    void extmethod(const string &name, bh_opcode opcode) {}
+    void extmethod(const string &name, bh_opcode opcode) {
+        // ExtmethodFace does not have a default or copy constructor thus
+        // we have to use its move constructor.
+        extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
+    }
 };
 }
 
