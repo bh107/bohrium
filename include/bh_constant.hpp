@@ -21,6 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_CONSTANT_H
 #define __BH_CONSTANT_H
 
+#include <iostream>
+
 #include <bh_type.h>
 
 union bh_constant_value
@@ -67,5 +69,8 @@ struct bh_constant
         return !(other == *this);
     }
 };
+
+//Implements pprint of a constant
+DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_constant& constant);
 
 #endif

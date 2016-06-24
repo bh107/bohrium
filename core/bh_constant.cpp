@@ -188,3 +188,55 @@ bool bh_constant::operator==(const bh_constant& other) const
             return false;
     }
 }
+ostream& operator<<(ostream& out, const bh_constant& constant)
+{
+    switch(constant.type)
+    {
+        case BH_BOOL:
+            out << constant.value.bool8;
+            break;
+        case BH_INT8:
+            out << constant.value.int8;
+            break;
+        case BH_INT16:
+            out << constant.value.int16;
+            break;
+        case BH_INT32:
+            out << constant.value.int32;
+            break;
+        case BH_INT64:
+            out << constant.value.int64;
+            break;
+        case BH_UINT8:
+            out << constant.value.uint8;
+            break;
+        case BH_UINT16:
+            out << constant.value.uint16;
+            break;
+        case BH_UINT32:
+            out << constant.value.uint32;
+            break;
+        case BH_UINT64:
+            out << constant.value.uint64;
+            break;
+        case BH_FLOAT32:
+            out << constant.value.float32;
+            break;
+        case BH_FLOAT64:
+            out << constant.value.float64;
+            break;
+        case BH_R123:
+            out << "{.start = " << constant.value.r123.start << ", .key = " << constant.value.r123.key << "}";
+            break;
+        case BH_COMPLEX64:
+            out << constant.value.complex64.real << "+" << constant.value.complex64.imag << "*I";
+            break;
+        case BH_COMPLEX128:
+            out << constant.value.complex128.real << "+" << constant.value.complex128.imag << "*I";
+            break;
+        case BH_UNKNOWN:
+        default:
+            out << "?";
+    }
+return out;
+}
