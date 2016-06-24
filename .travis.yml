@@ -17,6 +17,10 @@ env:
       - BH_GPU_VERBOSE=true
 
   matrix:
+
+      # UNI stack
+      - BH_STACK=uni
+
       # Default stack
       - BH_STACK=default BH_CPU_JIT_LEVEL=3
       - BH_STACK=default BH_CPU_JIT_LEVEL=1
