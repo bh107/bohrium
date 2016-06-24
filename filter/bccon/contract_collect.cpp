@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include "contracter.hpp"
 
-
 using namespace std;
 
 namespace bohrium {
@@ -54,7 +53,40 @@ static bool chain_has_same_type(vector<bh_instruction*>& chain)
     return true;
 }
 
-static void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
+static bool view_in_use(bh_ir &bhir, vector<bh_instruction*> &chain)
+{
+    for(size_t pc = 0; pc < bhir.instr_list.size(); ++pc) {
+        bh_instruction& instr = bhir.instr_list[pc];
+
+        // Skip if the instruction is one in the chain
+        bool in_chain = false;
+
+        for(auto it : chain) {
+            if (&instr == it) {
+                in_chain = true;
+                break;
+            }
+        }
+
+        if (in_chain) continue;
+
+        for(size_t i = 0; i < chain.size()-1; ++i) {
+            if (instr.opcode != BH_FREE and instr.opcode != BH_NONE) {
+                bh_view view = (*chain[i]).operand[1];
+
+                for(size_t j = 0; j < bh_noperands(instr.opcode); ++j) {
+                    if (view == instr.operand[j]) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+static void rewrite_chain_add_sub(bh_ir &bhir, vector<bh_instruction*>& chain)
 {
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
@@ -110,7 +142,7 @@ static void rewrite_chain_add_sub(vector<bh_instruction*>& chain)
     first.constant.set_double(sum);
 }
 
-static void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
+static void rewrite_chain_mul_div(bh_ir &bhir, vector<bh_instruction*>& chain)
 {
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
@@ -157,13 +189,19 @@ static void rewrite_chain_mul_div(vector<bh_instruction*>& chain)
     first.constant.set_double(result);
 }
 
-static void rewrite_chain(vector<bh_instruction*>& chain)
+static void rewrite_chain(bh_ir &bhir, vector<bh_instruction*>& chain)
 {
-    bh_opcode opc = chain[0]->opcode;
-    if (is_add_sub(opc)) {
-        rewrite_chain_add_sub(chain);
-    } else if (is_mul_div(opc)) {
-        rewrite_chain_mul_div(chain);
+    if (view_in_use(bhir, chain)) {
+        verbose_print("[Collect] \tCan't rewrite as some views are in use.");
+    } else {
+        bh_opcode opc = chain[0]->opcode;
+        if (is_add_sub(opc)) {
+            verbose_print("[Collect] \tAddSub rewrite.");
+            rewrite_chain_add_sub(bhir, chain);
+        } else if (is_mul_div(opc)) {
+            verbose_print("[Collect] \tMulDiv rewrite.");
+            rewrite_chain_mul_div(bhir, chain);
+        }
     }
 }
 
@@ -210,7 +248,7 @@ void Contracter::contract_collect(bh_ir &bhir)
                         // End chain
                         if (chain.size() > 1) {
                             verbose_print("[Collect] Rewriting chain of length " + std::to_string(chain.size()));
-                            rewrite_chain(chain);
+                            rewrite_chain(bhir, chain);
                         }
 
                         // Reset
@@ -224,7 +262,8 @@ void Contracter::contract_collect(bh_ir &bhir)
 
         // Rewrite if end of instruction list
         if (chain.size() > 1) {
-            rewrite_chain(chain);
+            verbose_print("[Collect] End of loop rewriting chain of length " + std::to_string(chain.size()));
+            rewrite_chain(bhir, chain);
         }
 
         chain.clear();
