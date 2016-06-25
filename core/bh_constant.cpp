@@ -52,6 +52,22 @@ int64_t bh_constant::get_int64() const
     }
 }
 
+uint64_t bh_constant::get_uint64() const
+{
+    switch(type) {
+        case BH_UINT8:
+            return uint64_t{value.uint8};
+        case BH_UINT16:
+            return uint64_t{value.uint16};
+        case BH_UINT32:
+            return uint64_t{value.uint32};
+        case BH_UINT64:
+            return value.uint64;
+        default:
+            throw overflow_error("Constant cannot be converted to uint64_t");
+    }
+}
+
 double bh_constant::get_double() const
 {
     switch(type) {
@@ -190,53 +206,33 @@ bool bh_constant::operator==(const bh_constant& other) const
 }
 ostream& operator<<(ostream& out, const bh_constant& constant)
 {
-    switch(constant.type)
-    {
-        case BH_BOOL:
-            out << constant.value.bool8;
-            break;
-        case BH_INT8:
-            out << constant.value.int8;
-            break;
-        case BH_INT16:
-            out << constant.value.int16;
-            break;
-        case BH_INT32:
-            out << constant.value.int32;
-            break;
-        case BH_INT64:
-            out << constant.value.int64;
-            break;
-        case BH_UINT8:
-            out << constant.value.uint8;
-            break;
-        case BH_UINT16:
-            out << constant.value.uint16;
-            break;
-        case BH_UINT32:
-            out << constant.value.uint32;
-            break;
-        case BH_UINT64:
-            out << constant.value.uint64;
-            break;
-        case BH_FLOAT32:
-            out << constant.value.float32;
-            break;
-        case BH_FLOAT64:
-            out << constant.value.float64;
-            break;
-        case BH_R123:
-            out << "{.start = " << constant.value.r123.start << ", .key = " << constant.value.r123.key << "}";
-            break;
-        case BH_COMPLEX64:
-            out << constant.value.complex64.real << "+" << constant.value.complex64.imag << "*I";
-            break;
-        case BH_COMPLEX128:
-            out << constant.value.complex128.real << "+" << constant.value.complex128.imag << "*I";
-            break;
-        case BH_UNKNOWN:
-        default:
-            out << "?";
+    if (bh_type_is_integer(constant.type)) {
+        if (bh_type_is_signed_integer(constant.type)) {
+            out << constant.get_int64();
+        } else {
+            out << constant.get_uint64() << "u";
+        }
+    } else {
+        switch(constant.type) {
+            case BH_FLOAT32:
+                out << constant.value.float32;
+                break;
+            case BH_FLOAT64:
+                out << constant.value.float64;
+                break;
+            case BH_R123:
+                out << "{.start = " << constant.value.r123.start << ", .key = " << constant.value.r123.key << "}";
+                break;
+            case BH_COMPLEX64:
+                out << constant.value.complex64.real << "+" << constant.value.complex64.imag << "*I";
+                break;
+            case BH_COMPLEX128:
+                out << constant.value.complex128.real << "+" << constant.value.complex128.imag << "*I";
+                break;
+            case BH_UNKNOWN:
+            default:
+                out << "?";
+        }
     }
-return out;
+    return out;
 }
