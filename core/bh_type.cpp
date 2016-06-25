@@ -113,3 +113,17 @@ int bh_type_is_integer(bh_type type)
         return false;
     }
 }
+
+int bh_type_is_signed_integer(bh_type type)
+{
+    switch(type)
+    {
+        case BH_INT8:
+        case BH_INT16:
+        case BH_INT32:
+        case BH_INT64:
+            return true;
+        default:
+            return false;
+    }
+}
