@@ -8,7 +8,7 @@
 default    = bcexp_cpu, bccon, topological, node, cpu
 cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
 gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
-uni        = node, uni
+uni        = bccon, node, uni
 
 [bridge] # 'bridge' is a reversed section name that always refers to the bridge.
 
