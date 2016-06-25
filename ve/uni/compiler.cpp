@@ -93,8 +93,7 @@ void Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
 
 void Compiler::compile(string object_abspath, string src_abspath) const {
     string cmd = process_str(object_abspath, src_abspath);
-
-//    cout << "compile command: " << cmd << endl;
+    // cout << "compile command: " << cmd << endl;
 
     // Execute the process
     FILE *cmd_stdin = NULL;                     // Handle for library-file
@@ -104,6 +103,12 @@ void Compiler::compile(string object_abspath, string src_abspath) const {
         throw runtime_error("Compiler: error!");
     }
     fflush(cmd_stdin);
+    int exit_code = (pclose(cmd_stdin)/256);
+    if (0!=exit_code) {
+        perror("pclose()");
+        fprintf(stderr, "pclose() failed.\n");
+        throw runtime_error("Compiler: pclose() failed");
+    }
 }
 
 }
