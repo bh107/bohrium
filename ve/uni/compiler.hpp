@@ -50,14 +50,22 @@ public:
     std::string process_str(std::string object_abspath, std::string source_abspath) const;
 
     /**
-     *  Compile by piping sourcecode to stdin.
+     *  Compile by piping, the given sourcecode into a shared object.
+     *
+     *  Throws runtime_error on compilation failure
      */
-    bool compile(std::string object_abspath, const char* sourcecode,size_t source_len) const;
+    void compile(std::string object_abspath, const char* sourcecode,size_t source_len) const;
 
     /**
      *  Compile source on disk.
      */
-    bool compile(std::string object_abspath, std::string src_abspath) const;
+
+    /**
+     *  Compile by disk writting, the given sourcecode into a shared object.
+     *
+     *  Throws runtime_error on compilation failure
+     */
+    void compile(std::string object_abspath, std::string src_abspath) const;
 
 private:
     std::string cmd_, inc_, lib_, flg_, ext_;

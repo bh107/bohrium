@@ -55,12 +55,7 @@ string Compiler::process_str(string object_abspath, string source_abspath) const
     return ss.str();
 }
 
-/**
- *  Compile the given sourcecode into a shared object.
- *
- *  @returns True the system compiler returns exit-code 0 and False othervise.
- */
-bool Compiler::compile(string object_abspath, const char* sourcecode, size_t source_len) const {
+void Compiler::compile(string object_abspath, const char* sourcecode, size_t source_len) const {
     string cmd = process_str(object_abspath, " - ");
 //    cout << "compile command: " << cmd << endl;
 
@@ -69,7 +64,7 @@ bool Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
         perror("popen()");
         fprintf(stderr, "popen() failed for: [%s]", sourcecode);
         pclose(cmd_stdin);
-        return false;
+        throw runtime_error("Compiler: popen() failed");
     }
                                                 // Write / pipe to stdin
     int write_res = fwrite(sourcecode, sizeof(char), source_len, cmd_stdin);
@@ -77,7 +72,7 @@ bool Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
         perror("fwrite()");
         fprintf(stderr, "fwrite() failed in file %s at line # %d\n", __FILE__, __LINE__-5);
         pclose(cmd_stdin);
-        return false;
+        throw runtime_error("Compiler: error!");
     }
 
     int flush_res = fflush(cmd_stdin);          // Flush stdin
@@ -85,24 +80,18 @@ bool Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
         perror("fflush()");
         fprintf(stderr, "fflush() failed in file %s at line # %d\n", __FILE__, __LINE__-5);
         pclose(cmd_stdin);
-        return false;
+        throw runtime_error("Compiler: fflush() failed");
     }
 
     int exit_code = (pclose(cmd_stdin)/256);
     if (0!=exit_code) {
         perror("pclose()");
         fprintf(stderr, "pclose() failed.\n");
+        throw runtime_error("Compiler: pclose() failed");
     }
-    
-    return (exit_code==0);
 }
 
-/**
- *  Compile the given sourcecode into a shared object.
- *
- *  @returns True the system compiler returns exit-code 0 and False otherwise.
- */
-bool Compiler::compile(string object_abspath, string src_abspath) const {
+void Compiler::compile(string object_abspath, string src_abspath) const {
     string cmd = process_str(object_abspath, src_abspath);
 
 //    cout << "compile command: " << cmd << endl;
@@ -112,12 +101,9 @@ bool Compiler::compile(string object_abspath, string src_abspath) const {
     cmd_stdin = popen(cmd.c_str(), "w");        // Execute the command
     if (!cmd_stdin) {
         std::cout << "Err: Could not execute process! ["<< cmd <<"]" << std::endl;
-        return false;
+        throw runtime_error("Compiler: error!");
     }
-
     fflush(cmd_stdin);
-    int exit_code = (pclose(cmd_stdin)/256);
-    return (exit_code==0);
 }
 
 }
