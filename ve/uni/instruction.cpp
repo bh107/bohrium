@@ -290,7 +290,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             out << operands[0] << " = " << operands[0] << " > " << operands[1] << " ? " << operands[0] << " : " << operands[1] << ";" << endl;
             break;
         case BH_MINIMUM:
-            out << operands[0] << " = " << operands[1] << " > " << operands[2] << " ? " << operands[1] << " : " << operands[2] << ";" << endl;
+            out << operands[0] << " = " << operands[1] << " < " << operands[2] << " ? " << operands[1] << " : " << operands[2] << ";" << endl;
             break;
         case BH_MINIMUM_REDUCE:
             out << operands[0] << " = " << operands[0] << " < " << operands[1] << " ? " << operands[0] << " : " << operands[1] << ";" << endl;
