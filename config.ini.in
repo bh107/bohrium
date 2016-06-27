@@ -8,7 +8,7 @@
 default    = bcexp_cpu, bccon, topological, node, cpu
 cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
 gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
-uni        = bccon, node, uni
+uni        = bcexp_uni, bccon_uni, node, uni
 
 [bridge] # 'bridge' is a reversed section name that always refers to the bridge.
 
@@ -86,6 +86,21 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pricer${CMAKE_SHARED_LIBRARY_SUF
 #
 # Filters - Bytecode transformers
 #
+[bccon_uni]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
+collect = true
+stupidmath = true
+muladd = true
+reduction = false
+find_repeats = false
+
+[bcexp_uni]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
+matmul = true
+powk = true
+sign = false
+repeat = false
+
 [dimclean]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_dimclean${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = false
