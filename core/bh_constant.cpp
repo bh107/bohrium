@@ -213,6 +213,7 @@ ostream& operator<<(ostream& out, const bh_constant& constant)
             out << constant.get_uint64() << "u";
         }
     } else {
+        out.precision(numeric_limits<double>::max_digits10);
         switch(constant.type) {
             case BH_FLOAT32:
                 out << constant.value.float32;
