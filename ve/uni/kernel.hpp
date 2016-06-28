@@ -30,12 +30,12 @@ namespace bohrium {
 
 class Kernel {
 public:
+    Kernel() {}
+
     std::vector <Block> block_list;
     bool useRandom = false;
 
-    // All used array bases
-    std::set<bh_base*> bases;
-
+    // All freed array bases
     std::set<bh_base*> frees;
 };
 

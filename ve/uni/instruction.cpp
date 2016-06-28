@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "block.hpp"
 #include "type.hpp"
+#include "instruction.hpp"
 
 using namespace std;
 
@@ -47,14 +48,14 @@ void write_array_subscription(const bh_view &view, stringstream &out, int hidden
     out << "]";
 }
 
-void write_system_operation(const map<const bh_base*, size_t> &base_ids, const bh_instruction &instr, stringstream &out) {
+void write_system_operation(const IdMap<bh_base*> &base_ids, const bh_instruction &instr, stringstream &out) {
 
     switch (instr.opcode) {
         case BH_FREE:
-            out << "bh_memory_free(a" << base_ids.at(instr.operand[0].base) << ", " << bh_base_size(instr.operand[0].base) << ");";
+            out << "bh_memory_free(a" << base_ids[instr.operand[0].base] << ", " << bh_base_size(instr.operand[0].base) << ");";
             break;
         case BH_SYNC:
-            out << "// SYNC a" << base_ids.at(instr.operand[0].base);
+            out << "// SYNC a" << base_ids[instr.operand[0].base];
             break;
         case BH_NONE:
             out << "// NONE ";
@@ -371,7 +372,7 @@ int sweep_axis(const bh_instruction &instr) {
     return BH_MAXDIM;
 }
 
-void write_instr(const map<const bh_base*, size_t> &base_ids, const bh_instruction &instr,
+void write_instr(const IdMap<bh_base*> &base_ids, const bh_instruction &instr,
                  stringstream &out) {
     if (bh_opcode_is_system(instr.opcode)) {
         write_system_operation(base_ids, instr, out);
@@ -382,7 +383,7 @@ void write_instr(const map<const bh_base*, size_t> &base_ids, const bh_instructi
         vector<string> operands;
         {
             stringstream ss;
-            ss << "a" << base_ids.at(instr.operand[0].base);
+            ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
             operands.push_back(ss.str());
         }
@@ -396,7 +397,7 @@ void write_instr(const map<const bh_base*, size_t> &base_ids, const bh_instructi
         // Write output operand
         {
             stringstream ss;
-            ss << "a" << base_ids.at(instr.operand[0].base);
+            ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
             operands.push_back(ss.str());
 
@@ -416,7 +417,7 @@ void write_instr(const map<const bh_base*, size_t> &base_ids, const bh_instructi
         // Write output operand
         {
             stringstream ss;
-            ss << "a" << base_ids.at(instr.operand[0].base);
+            ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
             operands.push_back(ss.str());
 
@@ -424,14 +425,14 @@ void write_instr(const map<const bh_base*, size_t> &base_ids, const bh_instructi
         // Write the previous element access, NB: this works because of loop peeling
         {
             stringstream ss;
-            ss << "a" << base_ids.at(instr.operand[0].base);
+            ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss, BH_MAXDIM, make_pair(sweep_axis(instr), -1));
             operands.push_back(ss.str());
         }
         // Write the current element access
         {
             stringstream ss;
-            ss << "a" << base_ids.at(instr.operand[1].base);
+            ss << "a" << base_ids[instr.operand[1].base];
             write_array_subscription(instr.operand[1], ss);
             operands.push_back(ss.str());
         }
@@ -445,7 +446,7 @@ void write_instr(const map<const bh_base*, size_t> &base_ids, const bh_instructi
         if (bh_is_constant(&view)) {
             ss << instr.constant;
         } else {
-            ss << "a" << base_ids.at(view.base);
+            ss << "a" << base_ids[view.base];
             if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
                 // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
                 // reducing to a non-scalar

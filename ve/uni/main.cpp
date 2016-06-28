@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
+#include <bh_idmap.hpp>
 
 #include "kernel.hpp"
 #include "block.hpp"
@@ -106,7 +107,7 @@ void spaces(stringstream &out, int num) {
 }
 }
 
-void write_block(const map<const bh_base*, size_t> &base_ids, const Block &block, stringstream &out) {
+void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstream &out) {
     spaces(out, 4 + block.rank*4);
     if (block._instr != NULL) {
         write_instr(base_ids, *block._instr, out);
@@ -204,10 +205,8 @@ Kernel fuser_singleton(vector<bh_instruction> &instr_list) {
         ret.block_list.push_back(root);
     }
 
-    // Find all used array bases and kernel flags such as 'useRandom'
+    // Find all frees and kernel flags such as 'useRandom'
     for(bh_instruction &instr: instr_list) {
-        set<bh_base*> b = instr.get_bases();
-        ret.bases.insert(b.begin(), b.end());
         if (instr.opcode == BH_RANDOM) {
             ret.useRandom = true;
         } else if (instr.opcode == BH_FREE) {
@@ -219,20 +218,25 @@ Kernel fuser_singleton(vector<bh_instruction> &instr_list) {
 
 void Impl::execute(bh_ir *bhir) {
 
-    Kernel kernel = fuser_singleton(bhir->instr_list);
-
-    // Do we have anything to do?
-    if (kernel.bases.size() == 0)
-        return;
-
-    // Assign an id to all array bases
-    map<const bh_base*, size_t> base_ids;
-    {
-        size_t i = 0;
-        for(const bh_base *base: kernel.bases) {
-            base_ids[base] = i++;
+    // Assign IDs to all base arrays
+    IdMap<bh_base *> base_ids;
+    // NB: by assigning the IDs in the order they appear in the 'instr_list',
+    //     we kernels can better be reused
+    for(const bh_instruction &instr: bhir->instr_list) {
+        const int nop = bh_noperands(instr.opcode);
+        for(int i=0; i<nop; ++i) {
+            const bh_view &v = instr.operand[i];
+            if (not bh_is_constant(&v)) {
+                base_ids.insert(v.base);
+            }
         }
     }
+    // Do we have anything to do?
+    if (base_ids.size() == 0)
+        return;
+
+    // Let's fuse
+    Kernel kernel = fuser_singleton(bhir->instr_list);
 
     // Debug print
     //cout << block_list;
@@ -241,7 +245,7 @@ void Impl::execute(bh_ir *bhir) {
     stringstream ss;
 
     // Make sure all arrays are allocated
-    for(bh_base *base: kernel.bases) {
+    for(bh_base *base: base_ids.getKeys()) {
         bh_data_malloc(base);
     }
 
@@ -269,15 +273,11 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the header of the execute function
     ss << "void execute(";
-    if (kernel.bases.size() > 0) {
-        for (auto it = kernel.bases.begin(); ;) {
-            const bh_base *b = *it;
-            ss << write_type(b->type) << " a" << base_ids.at(b) << "[]";
-            if (++it != kernel.bases.end()) {
-                ss << ", ";
-            } else {
-                break;
-            }
+    for(size_t id=0; id < base_ids.size(); ++id) {
+        const bh_base *b = base_ids.getKeys()[id];
+        ss << write_type(b->type) << " a" << id << "[]";
+        if (id+1 < base_ids.size()) {
+            ss << ", ";
         }
     }
     ss << ") {" << endl;
@@ -294,21 +294,18 @@ void Impl::execute(bh_ir *bhir) {
     {
         ss << "void launcher(void* data_list[]) {" << endl;
         size_t i=0;
-        for (const bh_base *b: kernel.bases) {
+        for (bh_base *b: base_ids.getKeys()) {
             spaces(ss, 4);
-            ss << write_type(b->type) << " *a" << base_ids.at(b)
-            << " = data_list[" << i << "];" << endl;
+            ss << write_type(b->type) << " *a" << base_ids[b];
+            ss << " = data_list[" << i << "];" << endl;
             ++i;
         }
         spaces(ss, 4);
         ss << "execute(";
-        for (auto it = kernel.bases.begin(); ;) {
-            const bh_base *b = *it;
-            ss << "a" << base_ids.at(b);
-            if (++it != kernel.bases.end()) {
+        for(size_t id=0; id < base_ids.size(); ++id) {
+            ss << "a" << id;
+            if (id+1 < base_ids.size()) {
                 ss << ", ";
-            } else {
-                break;
             }
         }
         ss << ");" << endl;
@@ -322,8 +319,8 @@ void Impl::execute(bh_ir *bhir) {
 
     // Create a 'data_list' of data pointers
     vector<void*> data_list;
-    data_list.reserve(kernel.bases.size());
-    for(bh_base *base: kernel.bases) {
+    data_list.reserve(base_ids.size());
+    for(bh_base *base: base_ids.getKeys()) {
         assert(base->data != NULL);
         data_list.push_back(base->data);
     }
