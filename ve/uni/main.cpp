@@ -163,10 +163,10 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstre
     }
 }
 
-Kernel fuser_singleton(vector<bh_instruction> &instr_list) {
+vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
 
     // Creates the block_list based on the instr_list
-    Kernel ret;
+    vector<Block> block_list;
     for(const bh_instruction &instr: instr_list) {
         int nop = bh_noperands(instr.opcode);
         if (nop == 0)
@@ -202,16 +202,77 @@ Kernel fuser_singleton(vector<bh_instruction> &instr_list) {
         instr_block._instr = &instr;
         instr_block.rank = (int)shape.size();
         bottom->_block_list.push_back(instr_block);
-        ret.block_list.push_back(root);
+        block_list.push_back(root);
     }
+    return block_list;
+}
 
-    // Find all frees and kernel flags such as 'useRandom'
-    for(bh_instruction &instr: instr_list) {
-        if (instr.opcode == BH_RANDOM) {
-            ret.useRandom = true;
-        } else if (instr.opcode == BH_FREE) {
-            ret.frees.insert(instr.operand[0].base);
+// Check if 'a' and 'b' supports data-parallelism when merged
+static bool data_parallel_compatible(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    const int a_nop = bh_noperands(a->opcode);
+    for(int i=0; i<a_nop; ++i)
+    {
+        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
+           && not bh_view_aligned(&b->operand[0], &a->operand[i]))
+            return false;
+    }
+    const int b_nop = bh_noperands(b->opcode);
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
+           && not bh_view_aligned(&a->operand[0], &b->operand[i]))
+            return false;
+    }
+    return true;
+}
+
+// Check if 'b1' and 'b2' supports data-parallelism when merged
+static bool data_parallel_compatible(const Block &b1, const Block &b2) {
+    for (const bh_instruction *i1 : b1.getAllInstr()) {
+        for (const bh_instruction *i2 : b2.getAllInstr()) {
+            if (not data_parallel_compatible(i1, i2))
+                return false;
         }
+    }
+    return true;
+}
+
+// Check if 'b1' and 'b2' is fusible.
+static bool fusible(const Block &b1, const Block &b2) {
+    if (not data_parallel_compatible(b1, b2))
+        return false;
+
+    if (b1.rank != b2.rank or b1.size != b2.size)
+        return false;
+
+    if (b1._sweeps.size() > 0)
+        return false;
+
+    return true;
+}
+
+vector<Block> fuser_serial(vector<Block> &block_list) {
+    vector<Block> ret;
+    for (auto it = block_list.begin(); it != block_list.end(); ) {
+        ret.push_back(*it);
+        Block &cur = ret.back();
+        ++it;
+        if (cur._instr != NULL) {
+            continue; // We should never fuse instruction blocks
+        }
+        for (; it != block_list.end(); ++it) {
+            if (it->_instr == NULL and fusible(cur, *it)) {
+                cur.merge(*it);
+            } else {
+                break;
+            }
+        }
+        // Let's fuse at the next rank level
+        cur._block_list = fuser_serial(cur._block_list);
     }
     return ret;
 }
@@ -221,7 +282,7 @@ void Impl::execute(bh_ir *bhir) {
     // Assign IDs to all base arrays
     IdMap<bh_base *> base_ids;
     // NB: by assigning the IDs in the order they appear in the 'instr_list',
-    //     we kernels can better be reused
+    //     the kernels can better be reused
     for(const bh_instruction &instr: bhir->instr_list) {
         const int nop = bh_noperands(instr.opcode);
         for(int i=0; i<nop; ++i) {
@@ -235,8 +296,22 @@ void Impl::execute(bh_ir *bhir) {
     if (base_ids.size() == 0)
         return;
 
-    // Let's fuse
-    Kernel kernel = fuser_singleton(bhir->instr_list);
+    //Let's create a kernel
+    Kernel kernel;
+    {
+        // Let's fuse the 'instr_list' into blocks
+        kernel.block_list = fuser_singleton(bhir->instr_list);
+        kernel.block_list = fuser_serial(kernel.block_list);
+
+        // And fill kernel attributes
+        for (bh_instruction &instr: bhir->instr_list) {
+            if (instr.opcode == BH_RANDOM) {
+                kernel.useRandom = true;
+            } else if (instr.opcode == BH_FREE) {
+                kernel.frees.insert(instr.operand[0].base);
+            }
+        }
+    }
 
     // Debug print
     //cout << block_list;

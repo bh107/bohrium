@@ -75,6 +75,30 @@ string Block::pprint() const {
     return ss.str();
 }
 
+void Block::getAllInstr(vector<const bh_instruction *> &out) const {
+    if (_instr != NULL) {
+        assert(_block_list.size() == 0);
+        out.push_back(_instr);
+    } else {
+        for (const Block &b : _block_list) {
+            b.getAllInstr(out);
+        }
+    }
+}
+
+vector<const bh_instruction *> Block::getAllInstr() const {
+    vector<const bh_instruction *> ret;
+    getAllInstr(ret);
+    return ret;
+}
+
+void Block::merge(const Block &b) {
+    assert(_instr == NULL);
+    assert(b._instr == NULL);
+    _block_list.insert(_block_list.end(), b._block_list.begin(), b._block_list.end());
+    _sweeps.insert(b._sweeps.begin(), b._sweeps.end());
+}
+
 ostream& operator<<(ostream& out, const Block& b) {
     out << b.pprint();
     return out;

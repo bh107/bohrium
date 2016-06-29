@@ -40,6 +40,13 @@ public:
     Block* findInstrBlock(const bh_instruction *instr);
 
     std::string pprint() const;
+
+    // Return all instructions in the block (incl. nested blocks)
+    void getAllInstr(std::vector<const bh_instruction *> &out) const;
+    std::vector<const bh_instruction *> getAllInstr() const;
+
+    // Merge this block with 'block' (in that order)
+    void merge(const Block &block);
 };
 
 //Implements pprint of block
