@@ -193,8 +193,11 @@ multi_array<T>& range(const int64_t start, const int64_t end, const int64_t skip
         bh_identity(*result, *base_range);                  // Convert the type to T
     }
 
-    bh_multiply(*result, *result, (T)skip);                 // Expand the range
-    bh_add(*result, *result, (T)start);
+    if (skip != 1)
+        bh_multiply(*result, *result, (T)skip);             // Expand the range
+
+    if (start != 0)
+        bh_add(*result, *result, (T)start);
 
     result->setTemp(true);
     return *result;
@@ -233,8 +236,11 @@ multi_array<T>& linspace(int64_t begin, int64_t end, uint64_t nelem, bool endpoi
     }
 
     // Expand the range
-    bh_multiply(*result, *result, skip);
-    bh_add(*result, *result, (T)begin);
+    if (skip != 1)
+        bh_multiply(*result, *result, (T)skip);             // Expand the range
+
+    if (begin != 0)
+        bh_add(*result, *result, (T)begin);
 
     result->setTemp(true);
     return *result;

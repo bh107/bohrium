@@ -511,7 +511,11 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
         start = numpy.dtype(dtype).type(start)
         stop = numpy.dtype(dtype).type(stop)
         step = numpy.dtype(dtype).type(step)
-    return range(size, dtype=dtype) * step + start
+
+    result = range(size, dtype=dtype)
+    if  step != 1: result *= step
+    if start != 0: result += start
+    return result
 
 @fix_returned_biclass
 def range(size, dtype=numpy.uint64):
@@ -621,7 +625,11 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
         step = (stop-start)/float((num-1))
     else:
         step = (stop-start)/float(num)
-    y = range(num, dtype=dtype) * step + start
+
+    y = range(num, dtype=dtype)
+    if  step != 1: y *= step
+    if start != 0: y += start
+
     if retstep:
         return y, step
     else:
