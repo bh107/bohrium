@@ -47,6 +47,17 @@ public:
         return _block_list.size() == 0;
     }
 
+    // Finds the total size of this block and its children
+    int64_t totalSize() const {
+        if (isInstr())
+            return 0;
+        int64_t ret = size;
+        for (const Block &b: _block_list) {
+            ret += b.totalSize();
+        }
+        return ret;
+    }
+
     Block* findInstrBlock(const bh_instruction *instr);
 
     std::string pprint() const;
