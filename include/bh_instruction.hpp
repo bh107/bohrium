@@ -39,6 +39,12 @@ struct bh_instruction
     // Check if all views by this instruction is contiguous
     bool is_contiguous() const;
 
+    // Is this instruction (and all its views) reshapable?
+    bool reshapable() const;
+
+    // Reshape the views of the instruction to 'shape'
+    void reshape(const std::vector<int64_t> &shape);
+
     // Serialization using Boost
     friend class boost::serialization::access;
     template<class Archive>

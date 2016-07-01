@@ -50,6 +50,35 @@ bool bh_instruction::is_contiguous() const {
     return true;
 }
 
+bool bh_instruction::reshapable() const {
+   return (bh_opcode_is_elementwise(opcode) or bh_opcode_is_system(opcode)) and is_contiguous();
+}
+
+void bh_instruction::reshape(const vector<int64_t> &shape) {
+    if (not reshapable()) {
+        throw runtime_error("Reshape: instruction not reshapable!");
+    }
+    int64_t sum = 0;
+    for (int64_t dim: shape) {
+        sum += dim;
+    }
+
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        bh_view &view = operand[o];
+        if (bh_is_constant(&view))
+            continue;
+        if (sum != bh_nelements(view)) {
+            throw runtime_error("Reshape: shape mismatch!");
+        }
+
+        // Let's assign the new shape and strides
+        view.ndim = shape.size();
+        copy(shape.begin(), shape.end(), view.shape);
+        bh_set_contiguous_stride(&view);
+    }
+}
+
 //Implements pprint of an instruction
 ostream& operator<<(ostream& out, const bh_instruction& instr)
 {
