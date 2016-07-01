@@ -66,8 +66,8 @@ string Block::pprint() const {
             }
             ss << "}";
         }
-        if (_isContiguous) {
-            ss << ", contiguous";
+        if (_reshapable) {
+            ss << ", reshapable";
         }
         if (_news.size() > 0) {
             ss << ", news: {";
@@ -126,7 +126,7 @@ void Block::merge(const Block &b) {
     _frees.insert(b._frees.begin(), b._frees.end());
     std::set_intersection(_news.begin(), _news.end(), _frees.begin(), _frees.end(), \
                           std::inserter(_temps, _temps.begin()));
-    _isContiguous = _isContiguous and b._isContiguous;
+    _reshapable = _reshapable and b._reshapable;
 }
 
 ostream& operator<<(ostream& out, const Block& b) {

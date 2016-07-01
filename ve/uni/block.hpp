@@ -39,7 +39,7 @@ public:
     std::set<bh_base *> _news;
     std::set<bh_base *> _frees;
     std::set<bh_base *> _temps;
-    bool _isContiguous = false;
+    bool _reshapable = false;
 
     // Returns true if this block is an instruction block
     // NB: Even an instruction block can have '_instr == NULL'
