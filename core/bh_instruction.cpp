@@ -40,6 +40,16 @@ set<bh_base*> bh_instruction::get_bases() {
     return ret;
 }
 
+bool bh_instruction::is_contiguous() const {
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        const bh_view &view = operand[o];
+        if ((not bh_is_constant(&view)) and (not bh_is_contiguous(&view)))
+            return false;
+    }
+    return true;
+}
+
 //Implements pprint of an instruction
 ostream& operator<<(ostream& out, const bh_instruction& instr)
 {

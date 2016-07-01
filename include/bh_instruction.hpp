@@ -36,6 +36,9 @@ struct bh_instruction
     // Return a set of all bases used by the instruction
     std::set<bh_base*> get_bases();
 
+    // Check if all views by this instruction is contiguous
+    bool is_contiguous() const;
+
     // Serialization using Boost
     friend class boost::serialization::access;
     template<class Archive>
