@@ -58,8 +58,11 @@ public:
         return ret;
     }
 
+    // Find the 'instr' in this block or in its children
+    // Returns NULL if not found
     Block* findInstrBlock(const bh_instruction *instr);
 
+    // Pretty print this block
     std::string pprint() const;
 
     // Return all instructions in the block (incl. nested blocks)
