@@ -238,6 +238,8 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
         if (destroyed_array != NULL) {
             bottom->_frees.insert(destroyed_array);
         }
+        if (instr.is_contiguous())
+            bottom->_isContiguous = true;
         block_list.push_back(root);
     }
     return block_list;

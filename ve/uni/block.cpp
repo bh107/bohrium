@@ -66,6 +66,9 @@ string Block::pprint() const {
             }
             ss << "}";
         }
+        if (_isContiguous) {
+            ss << ", contiguous";
+        }
         if (_news.size() > 0) {
             ss << ", news: {";
             for (const bh_base *b : _news) {
@@ -123,6 +126,7 @@ void Block::merge(const Block &b) {
     _frees.insert(b._frees.begin(), b._frees.end());
     std::set_intersection(_news.begin(), _news.end(), _frees.begin(), _frees.end(), \
                           std::inserter(_temps, _temps.begin()));
+    _isContiguous = _isContiguous and b._isContiguous;
 }
 
 ostream& operator<<(ostream& out, const Block& b) {
