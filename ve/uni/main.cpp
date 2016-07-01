@@ -109,7 +109,7 @@ void spaces(stringstream &out, int num) {
 
 void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstream &out) {
     spaces(out, 4 + block.rank*4);
-    if (block._instr != NULL) {
+    if (block.isInstr()) {
         write_instr(base_ids, *block._instr, out);
     } else {
 
@@ -261,11 +261,11 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
         ret.push_back(*it);
         Block &cur = ret.back();
         ++it;
-        if (cur._instr != NULL) {
+        if (cur.isInstr()) {
             continue; // We should never fuse instruction blocks
         }
         for (; it != block_list.end(); ++it) {
-            if (it->_instr == NULL and fusible(cur, *it)) {
+            if ((not it->isInstr()) and fusible(cur, *it)) {
                 cur.merge(*it);
             } else {
                 break;

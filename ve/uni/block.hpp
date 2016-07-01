@@ -37,6 +37,12 @@ public:
     int64_t size;
     std::set<const bh_instruction*> _sweeps;
 
+    // Returns true if this block is an instruction block
+    // NB: Even an instruction block can have '_instr == NULL'
+    bool isInstr() const {
+        return _block_list.size() == 0;
+    }
+
     Block* findInstrBlock(const bh_instruction *instr);
 
     std::string pprint() const;
