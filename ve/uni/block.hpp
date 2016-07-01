@@ -36,6 +36,9 @@ public:
     int rank;
     int64_t size;
     std::set<const bh_instruction*> _sweeps;
+    std::set<bh_base *> _news;
+    std::set<bh_base *> _frees;
+    std::set<bh_base *> _temps;
 
     // Returns true if this block is an instruction block
     // NB: Even an instruction block can have '_instr == NULL'

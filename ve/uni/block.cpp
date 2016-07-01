@@ -36,9 +36,8 @@ void spaces(stringstream &out, int num) {
 }
 
 Block* Block::findInstrBlock(const bh_instruction *instr) {
-    if (_block_list.size() == 0) {
-        assert(_instr != NULL);
-        if (_instr == instr)
+    if (isInstr()) {
+        if (_instr != NULL and _instr == instr)
             return this;
     } else {
         for(Block &b: this->_block_list) {
@@ -52,23 +51,46 @@ Block* Block::findInstrBlock(const bh_instruction *instr) {
 
 string Block::pprint() const {
     stringstream ss;
-    spaces(ss, rank*4);
-    if (_instr != NULL) {
-        assert(_block_list.size() == 0);
-        ss << *_instr << endl;
+    if (isInstr()) {
+        if (_instr != NULL) {
+            spaces(ss, rank*4);
+            ss << *_instr << endl;
+        }
     } else {
+        spaces(ss, rank*4);
         ss << "rank: " << rank << ", size: " << size;
         if (_sweeps.size() > 0) {
             ss << ", sweeps: { ";
-            for (const bh_instruction *b : _sweeps) {
-                ss << *b << ",";
+            for (const bh_instruction *i : _sweeps) {
+                ss << *i << ",";
+            }
+            ss << "}";
+        }
+        if (_news.size() > 0) {
+            ss << ", news: {";
+            for (const bh_base *b : _news) {
+                ss << "a" << b->get_label() << ",";
+            }
+            ss << "}";
+        }
+        if (_frees.size() > 0) {
+            ss << ", frees: {";
+            for (const bh_base *b : _frees) {
+                ss << "a" << b->get_label() << ",";
+            }
+            ss << "}";
+        }
+        if (_temps.size() > 0) {
+            ss << ", temps: {";
+            for (const bh_base *b : _temps) {
+                ss << "a" << b->get_label() << ",";
             }
             ss << "}";
         }
         if (_block_list.size() > 0) {
             ss << ", block list:" << endl;
             for (const Block &b : _block_list) {
-                ss << b.pprint() << endl;
+                ss << b.pprint();
             }
         }
     }
@@ -76,9 +98,9 @@ string Block::pprint() const {
 }
 
 void Block::getAllInstr(vector<const bh_instruction *> &out) const {
-    if (_instr != NULL) {
-        assert(_block_list.size() == 0);
-        out.push_back(_instr);
+    if (isInstr()) {
+        if (_instr != NULL)
+            out.push_back(_instr);
     } else {
         for (const Block &b : _block_list) {
             b.getAllInstr(out);
@@ -93,10 +115,14 @@ vector<const bh_instruction *> Block::getAllInstr() const {
 }
 
 void Block::merge(const Block &b) {
-    assert(_instr == NULL);
-    assert(b._instr == NULL);
+    assert(not isInstr());
+    assert(not b.isInstr());
     _block_list.insert(_block_list.end(), b._block_list.begin(), b._block_list.end());
     _sweeps.insert(b._sweeps.begin(), b._sweeps.end());
+    _news.insert(b._news.begin(), b._news.end());
+    _frees.insert(b._frees.begin(), b._frees.end());
+    std::set_intersection(_news.begin(), _news.end(), _frees.begin(), _frees.end(), \
+                          std::inserter(_temps, _temps.begin()));
 }
 
 ostream& operator<<(ostream& out, const Block& b) {
@@ -111,6 +137,5 @@ ostream& operator<<(ostream& out, const vector<Block>& block_list) {
     }
     return out;
 }
-
 
 } // bohrium

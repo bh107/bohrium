@@ -52,7 +52,7 @@ void write_system_operation(const IdMap<bh_base*> &base_ids, const bh_instructio
 
     switch (instr.opcode) {
         case BH_FREE:
-            out << "bh_memory_free(a" << base_ids[instr.operand[0].base] << ", " << bh_base_size(instr.operand[0].base) << ");";
+            out << "// FREE a" << base_ids[instr.operand[0].base];
             break;
         case BH_SYNC:
             out << "// SYNC a" << base_ids[instr.operand[0].base];

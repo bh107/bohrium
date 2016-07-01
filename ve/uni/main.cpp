@@ -108,11 +108,13 @@ void spaces(stringstream &out, int num) {
 }
 
 void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstream &out) {
-    spaces(out, 4 + block.rank*4);
     if (block.isInstr()) {
-        write_instr(base_ids, *block._instr, out);
+        if (block._instr != NULL) {
+            spaces(out, 4 + block.rank*4);
+            write_instr(base_ids, *block._instr, out);
+        }
     } else {
-
+        spaces(out, 4 + block.rank*4);
         // If this block is sweeped, we will "peel" the for-loop such that the
         // sweep instruction is replaced with BH_IDENTITY in the first iteration
         if (block._sweeps.size() > 0) {
@@ -165,15 +167,43 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstre
 
 vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
 
+    set<bh_base*> bases; // Set of all known bases
+    set<bh_base*> syncs; // Set of all sync'ed bases
+
     // Creates the block_list based on the instr_list
     vector<Block> block_list;
-    for(const bh_instruction &instr: instr_list) {
+    for(bh_instruction &instr: instr_list) {
         int nop = bh_noperands(instr.opcode);
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
-        if (bh_opcode_is_system(instr.opcode)) {
-            continue; // Ignore system instructions, we will have BH_FREE later
+        bh_base *created_array = NULL; // Is this instruction creating a new array?
+        bh_base *destroyed_array = NULL;// Is this instruction destroying an array?
+
+        // Add inputs to 'bases'
+        for (int i=1; i<nop; ++i) {
+            bh_view &v = instr.operand[i];
+            if (not bh_is_constant(&v)) {
+                bases.insert(v.base);
+            }
+        }
+        // Add output to 'bases' and check if 'instr' creates a new array
+        {
+            bh_view &v = instr.operand[0];
+            if (bases.find(v.base) == bases.end()) { // TODO: check if writing to whole array
+                created_array = v.base;
+            }
+            bases.insert(v.base);
+        }
+        if (instr.opcode == BH_SYNC) {
+            assert(nop == 1);
+            syncs.insert(instr.operand[0].base);
+        } else if (instr.opcode == BH_FREE){
+            assert(nop == 1);
+            if (syncs.find(instr.operand[0].base) == syncs.end()) {
+                // If the array is free'ed and not sync'ed, it can be destroyed
+                destroyed_array = instr.operand[0].base;
+            }
         }
 
         int sweep_rank = sweep_axis(instr);
@@ -199,9 +229,15 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
             parent = bottom;
         }
         Block instr_block;
-        instr_block._instr = &instr;
+        if (not bh_opcode_is_system(instr.opcode))
+            instr_block._instr = &instr;
         instr_block.rank = (int)shape.size();
         bottom->_block_list.push_back(instr_block);
+        if (created_array != NULL)
+            bottom->_news.insert(created_array);
+        if (destroyed_array != NULL) {
+            bottom->_frees.insert(destroyed_array);
+        }
         block_list.push_back(root);
     }
     return block_list;
@@ -333,7 +369,7 @@ void Impl::execute(bh_ir *bhir) {
     }
 
     // Debug print
-    //cout << block_list;
+    //cout << kernel.block_list;
 
     // Code generation
     stringstream ss;
