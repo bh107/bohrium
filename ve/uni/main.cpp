@@ -277,6 +277,15 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
     return ret;
 }
 
+vector<Block> remove_empty_blocks(vector<Block> &block_list) {
+    vector<Block> ret;
+    for (Block &b: block_list) {
+        if (b.getAllInstr().size() > 0)
+            ret.push_back(b);
+    }
+    return ret;
+}
+
 void Impl::execute(bh_ir *bhir) {
 
     // Assign IDs to all base arrays
@@ -302,6 +311,7 @@ void Impl::execute(bh_ir *bhir) {
         // Let's fuse the 'instr_list' into blocks
         kernel.block_list = fuser_singleton(bhir->instr_list);
         kernel.block_list = fuser_serial(kernel.block_list);
+        kernel.block_list = remove_empty_blocks(kernel.block_list);
 
         // And fill kernel attributes
         for (bh_instruction &instr: bhir->instr_list) {
@@ -311,6 +321,15 @@ void Impl::execute(bh_ir *bhir) {
                 kernel.frees.insert(instr.operand[0].base);
             }
         }
+    }
+
+    // Do we even have any "real" operations to perform?
+    if (kernel.block_list.size() == 0) {
+        // Finally, let's cleanup
+        for(bh_base *base: kernel.frees) {
+            bh_data_free(base);
+        }
+        return;
     }
 
     // Debug print
