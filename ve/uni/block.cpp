@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 
 #include "block.hpp"
+#include "instruction.hpp"
 
 using namespace std;
 
@@ -33,6 +34,102 @@ void spaces(stringstream &out, int num) {
         out << " ";
     }
 }
+
+// Returns the views with the greatest number of dimensions
+vector<const bh_view*> max_ndim_views(int64_t nviews, const bh_view view_list[]) {
+    // Find the max ndim
+    int64_t ndim = 0;
+    for (int64_t i=0; i < nviews; ++i) {
+        const bh_view *view = &view_list[i];
+        if (not bh_is_constant(view)) {
+            if (view->ndim > ndim)
+                ndim = view->ndim;
+        }
+    }
+    vector<const bh_view*> ret;
+    for (int64_t i=0; i < nviews; ++i) {
+        const bh_view *view = &view_list[i];
+        if (not bh_is_constant(view)) {
+            if (view->ndim == ndim) {
+                ret.push_back(view);
+            }
+        }
+    }
+    return ret;
+}
+
+// Returns the shape of the view with the greatest number of dimensions
+// if equal, the greatest shape is returned
+vector<int64_t> dominating_shape(int64_t nviews, const bh_view *view_list) {
+    vector<const bh_view*> views = max_ndim_views(nviews, view_list);
+    vector<int64_t > shape;
+    for(const bh_view *view: views) {
+        for (int64_t j=0; j < view->ndim; ++j) {
+            if (shape.size() > (size_t)j) {
+                if (shape[j] < view->shape[j])
+                    shape[j] = view->shape[j];
+            } else {
+                shape.push_back(view->shape[j]);
+            }
+        }
+    }
+    return shape;
+}
+}
+
+Block create_nested_block(vector<bh_instruction>::iterator begin, vector<bh_instruction>::iterator end, int rank, set<bh_base *> &news, set<bh_base *> &frees, set<bh_base *> &temps, bool reshapable) {
+    Block ret;
+    if (begin == end)
+        return ret;
+
+    vector<int64_t> shape = dominating_shape(bh_noperands(begin->opcode), begin->operand);
+#ifndef NDEBUG
+    // Let's make sure that all instructions has the same dominating shape
+    for (auto instr=begin; instr != end; ++instr) {
+        int nop = bh_noperands(instr->opcode);
+        auto t = dominating_shape(nop, instr->operand);
+        assert(t == shape);
+    }
+#endif
+    assert((int)shape.size() > rank);
+
+    // Find the sweeped axes
+    vector<set<const bh_instruction*> > sweeps(shape.size());
+    for (auto instr=begin; instr != end; ++instr) {
+        int axis = sweep_axis(*instr);
+        if (axis < BH_MAXDIM) {
+            assert(axis < (int)shape.size());
+            sweeps[axis].insert(&instr[0]);
+        }
+    }
+
+    // Let's build the nested block from the 'rank' level to the instruction block
+    ret.rank = rank;
+    ret.size = shape[rank];
+    Block *parent = &ret;
+    Block *bottom = &ret;
+    ret._sweeps.insert(sweeps[rank].begin(), sweeps[rank].end());
+    for(int i=rank+1; i < (int)shape.size(); ++i) {
+        Block b;
+        b.rank = i;
+        b.size = shape[i];
+        b._sweeps.insert(sweeps[i].begin(), sweeps[i].end());
+        parent->_block_list.push_back(b);
+        bottom = &parent->_block_list[0];
+        parent = bottom;
+    }
+    for (auto instr=begin; instr != end; ++instr) {
+        Block instr_block;
+        if (not bh_opcode_is_system(instr->opcode))
+            instr_block._instr = &instr[0];
+        instr_block.rank = (int)shape.size();
+        bottom->_block_list.push_back(instr_block);
+    }
+    bottom->_news = news;
+    bottom->_frees = frees;
+    bottom->_temps = temps;
+    bottom->_reshapable = reshapable;
+    return ret;
 }
 
 Block* Block::findInstrBlock(const bh_instruction *instr) {

@@ -58,47 +58,6 @@ extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 
-// Returns the views with the greatest number of dimensions
-vector<const bh_view*> max_ndim_views(int64_t nviews, const bh_view view_list[]) {
-    // Find the max ndim
-    int64_t ndim = 0;
-    for (int64_t i=0; i < nviews; ++i) {
-        const bh_view *view = &view_list[i];
-        if (not bh_is_constant(view)) {
-            if (view->ndim > ndim)
-                ndim = view->ndim;
-        }
-    }
-    vector<const bh_view*> ret;
-    for (int64_t i=0; i < nviews; ++i) {
-        const bh_view *view = &view_list[i];
-        if (not bh_is_constant(view)) {
-            if (view->ndim == ndim) {
-                ret.push_back(view);
-            }
-        }
-    }
-    return ret;
-}
-
-// Returns the shape of the view with the greatest number of dimensions
-// if equal, the greatest shape is returned
-vector<int64_t> shape_of_views(int64_t nviews, const bh_view *view_list) {
-    vector<const bh_view*> views = max_ndim_views(nviews, view_list);
-    vector<int64_t > shape;
-    for(const bh_view *view: views) {
-        for (int64_t j=0; j < view->ndim; ++j) {
-            if (shape.size() > (size_t)j) {
-                if (shape[j] < view->shape[j])
-                    shape[j] = view->shape[j];
-            } else {
-                shape.push_back(view->shape[j]);
-            }
-        }
-    }
-    return shape;
-}
-
 namespace {
 void spaces(stringstream &out, int num) {
     for (int i = 0; i < num; ++i) {
@@ -172,8 +131,8 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
 
     // Creates the block_list based on the instr_list
     vector<Block> block_list;
-    for(bh_instruction &instr: instr_list) {
-        int nop = bh_noperands(instr.opcode);
+    for (auto instr=instr_list.begin(); instr != instr_list.end(); ++instr) {
+        int nop = bh_noperands(instr->opcode);
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
@@ -182,65 +141,37 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
 
         // Add inputs to 'bases'
         for (int i=1; i<nop; ++i) {
-            bh_view &v = instr.operand[i];
+            bh_view &v = instr->operand[i];
             if (not bh_is_constant(&v)) {
                 bases.insert(v.base);
             }
         }
         // Add output to 'bases' and check if 'instr' creates a new array
         {
-            bh_view &v = instr.operand[0];
+            bh_view &v = instr->operand[0];
             if (bases.find(v.base) == bases.end()) { // TODO: check if writing to whole array
                 created_array = v.base;
             }
             bases.insert(v.base);
         }
-        if (instr.opcode == BH_SYNC) {
+        if (instr->opcode == BH_SYNC) {
             assert(nop == 1);
-            syncs.insert(instr.operand[0].base);
-        } else if (instr.opcode == BH_FREE){
+            syncs.insert(instr->operand[0].base);
+        } else if (instr->opcode == BH_FREE){
             assert(nop == 1);
-            if (syncs.find(instr.operand[0].base) == syncs.end()) {
+            if (syncs.find(instr->operand[0].base) == syncs.end()) {
                 // If the array is free'ed and not sync'ed, it can be destroyed
-                destroyed_array = instr.operand[0].base;
+                destroyed_array = instr->operand[0].base;
             }
         }
-
-        int sweep_rank = sweep_axis(instr);
-        vector<int64_t> shape = shape_of_views(nop, instr.operand);
-        Block root;
-        if (sweep_rank == 0) {
-            root._sweeps.insert(&instr);
-        }
-        root.rank = 0;
-        root.size = shape[0];
-        Block *parent = &root;
-        Block *bottom = &root;
-        for(int i=1; i < (int)shape.size(); ++i) {
-            Block b;
-            if (sweep_rank == i) {
-                b._sweeps.insert(&instr);
-                shape_of_views(nop, instr.operand);
-            }
-            b.rank = i;
-            b.size = shape[i];
-            parent->_block_list.push_back(b);
-            bottom = &parent->_block_list[0];
-            parent = bottom;
-        }
-        Block instr_block;
-        if (not bh_opcode_is_system(instr.opcode))
-            instr_block._instr = &instr;
-        instr_block.rank = (int)shape.size();
-        bottom->_block_list.push_back(instr_block);
+        set<bh_base*> news, frees, tmps;
         if (created_array != NULL)
-            bottom->_news.insert(created_array);
-        if (destroyed_array != NULL) {
-            bottom->_frees.insert(destroyed_array);
-        }
-        if (instr.reshapable())
-            bottom->_reshapable = true;
-        block_list.push_back(root);
+            news.insert(created_array);
+        if (destroyed_array != NULL)
+            frees.insert(destroyed_array);
+
+        // Now that we have the news, frees, and tmps, we can create the single instruction block
+        block_list.push_back(create_nested_block(instr, instr+1, 0, news, frees, tmps, instr->reshapable()));
     }
     return block_list;
 }
