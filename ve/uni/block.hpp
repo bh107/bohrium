@@ -32,10 +32,10 @@ namespace bohrium {
 class Block {
 public:
     std::vector <Block> _block_list;
-    const bh_instruction *_instr = NULL;
+    bh_instruction *_instr = NULL;
     int rank;
     int64_t size;
-    std::set<const bh_instruction*> _sweeps;
+    std::set<bh_instruction*> _sweeps;
     std::set<bh_base *> _news;
     std::set<bh_base *> _frees;
     std::set<bh_base *> _temps;
@@ -66,8 +66,8 @@ public:
     std::string pprint() const;
 
     // Return all instructions in the block (incl. nested blocks)
-    void getAllInstr(std::vector<const bh_instruction *> &out) const;
-    std::vector<const bh_instruction *> getAllInstr() const;
+    void getAllInstr(std::vector<bh_instruction *> &out) const;
+    std::vector<bh_instruction *> getAllInstr() const;
 
     // Merge this block with 'block' (in that order)
     void merge(const Block &block);

@@ -94,7 +94,7 @@ Block create_nested_block(vector<bh_instruction>::iterator begin, vector<bh_inst
     assert((int)shape.size() > rank);
 
     // Find the sweeped axes
-    vector<set<const bh_instruction*> > sweeps(shape.size());
+    vector<set<bh_instruction*> > sweeps(shape.size());
     for (auto instr=begin; instr != end; ++instr) {
         int axis = sweep_axis(*instr);
         if (axis < BH_MAXDIM) {
@@ -197,7 +197,7 @@ string Block::pprint() const {
     return ss.str();
 }
 
-void Block::getAllInstr(vector<const bh_instruction *> &out) const {
+void Block::getAllInstr(vector<bh_instruction *> &out) const {
     if (isInstr()) {
         if (_instr != NULL)
             out.push_back(_instr);
@@ -208,8 +208,8 @@ void Block::getAllInstr(vector<const bh_instruction *> &out) const {
     }
 }
 
-vector<const bh_instruction *> Block::getAllInstr() const {
-    vector<const bh_instruction *> ret;
+vector<bh_instruction *> Block::getAllInstr() const {
+    vector<bh_instruction *> ret;
     getAllInstr(ret);
     return ret;
 }
