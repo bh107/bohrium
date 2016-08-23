@@ -51,11 +51,11 @@ public:
     int64_t totalSize() const {
         if (isInstr())
             return 0;
-        int64_t ret = size;
+        int64_t sum = 0;
         for (const Block &b: _block_list) {
-            ret += b.totalSize();
+            sum += b.totalSize();
         }
-        return ret;
+        return sum * size;
     }
 
     // Find the 'instr' in this block or in its children
