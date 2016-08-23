@@ -45,7 +45,7 @@ class IdMap {
         }
     };
 
-    // Return a vector of all keys in the irder they where inserted
+    // Return a vector of all keys in the order they where inserted
     const std::vector<T> &getKeys() const {
         return _vec;
     }
