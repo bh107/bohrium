@@ -157,7 +157,7 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
         if (instr->opcode == BH_SYNC) {
             assert(nop == 1);
             syncs.insert(instr->operand[0].base);
-        } else if (instr->opcode == BH_FREE){
+        } else if (instr->opcode == BH_FREE) {
             assert(nop == 1);
             if (syncs.find(instr->operand[0].base) == syncs.end()) {
                 // If the array is free'ed and not sync'ed, it can be destroyed
@@ -171,7 +171,8 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
             frees.insert(destroyed_array);
 
         // Now that we have the news, frees, and tmps, we can create the single instruction block
-        block_list.push_back(create_nested_block(instr, instr+1, 0, news, frees, tmps, instr->reshapable()));
+        vector<bh_instruction*> single_instr = {&instr[0]};
+        block_list.push_back(create_nested_block(single_instr, 0, news, frees, tmps, instr->reshapable()));
     }
     return block_list;
 }

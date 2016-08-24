@@ -77,15 +77,15 @@ vector<int64_t> dominating_shape(int64_t nviews, const bh_view *view_list) {
 }
 }
 
-Block create_nested_block(vector<bh_instruction>::iterator begin, vector<bh_instruction>::iterator end, int rank, set<bh_base *> &news, set<bh_base *> &frees, set<bh_base *> &temps, bool reshapable) {
+Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, set<bh_base *> &news, set<bh_base *> &frees, set<bh_base *> &temps, bool reshapable) {
     Block ret;
-    if (begin == end)
+    if (instr_list.empty())
         return ret;
 
-    vector<int64_t> shape = dominating_shape(bh_noperands(begin->opcode), begin->operand);
+    vector<int64_t> shape = dominating_shape(bh_noperands(instr_list[0]->opcode), instr_list[0]->operand);
 #ifndef NDEBUG
     // Let's make sure that all instructions has the same dominating shape
-    for (auto instr=begin; instr != end; ++instr) {
+    for (auto instr: instr_list) {
         int nop = bh_noperands(instr->opcode);
         auto t = dominating_shape(nop, instr->operand);
         assert(t == shape);
@@ -95,7 +95,7 @@ Block create_nested_block(vector<bh_instruction>::iterator begin, vector<bh_inst
 
     // Find the sweeped axes
     vector<set<bh_instruction*> > sweeps(shape.size());
-    for (auto instr=begin; instr != end; ++instr) {
+    for (auto instr: instr_list) {
         int axis = sweep_axis(*instr);
         if (axis < BH_MAXDIM) {
             assert(axis < (int)shape.size());
@@ -118,7 +118,7 @@ Block create_nested_block(vector<bh_instruction>::iterator begin, vector<bh_inst
         bottom = &parent->_block_list[0];
         parent = bottom;
     }
-    for (auto instr=begin; instr != end; ++instr) {
+    for (auto instr: instr_list) {
         Block instr_block;
         if (not bh_opcode_is_system(instr->opcode))
             instr_block._instr = &instr[0];

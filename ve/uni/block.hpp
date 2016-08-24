@@ -71,9 +71,11 @@ public:
 
     // Merge this block with 'block' (in that order)
     void merge(const Block &block);
+
+    std::vector<int64_t> shape() const;
 };
 
-Block create_nested_block(std::vector<bh_instruction>::iterator begin, std::vector<bh_instruction>::iterator end, int rank, std::set<bh_base *> &news, std::set<bh_base *> &frees, std::set<bh_base *> &temps, bool reshapable);
+Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, std::set<bh_base *> &news, std::set<bh_base *> &frees, std::set<bh_base *> &temps, bool reshapable);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);
