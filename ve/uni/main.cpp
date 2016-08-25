@@ -211,20 +211,6 @@ static bool data_parallel_compatible(const Block &b1, const Block &b2) {
     return true;
 }
 
-// Check if 'b1' and 'b2' is fusible.
-static bool fusible(const Block &b1, const Block &b2) {
-    if (not data_parallel_compatible(b1, b2))
-        return false;
-
-    if (b1.rank != b2.rank or b1.size != b2.size)
-        return false;
-
-    if (b1._sweeps.size() > 0)
-        return false;
-
-    return true;
-}
-
 vector<Block> fuser_serial(vector<Block> &block_list) {
     vector<Block> ret;
     for (auto it = block_list.begin(); it != block_list.end(); ) {
@@ -235,10 +221,20 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
             continue; // We should never fuse instruction blocks
         }
         for (; it != block_list.end(); ++it) {
-            if ((not it->isInstr()) and fusible(cur, *it)) {
+            // We start with general checks of fusibility
+            if (it->isInstr())
+                break;
+            if (not data_parallel_compatible(cur, *it))
+                break;
+            if (cur._sweeps.size() > 0) //TODO: support merge of reduction
+                break;
+            assert(cur.rank == it->rank);
+
+            // And then we check for shape match
+            if (cur.size == it->size) { // Perfect match, directly mergeable
                 cur.merge(*it);
             } else {
-                break;
+                break; // We couldn't find any shape match
             }
         }
         // Let's fuse at the next rank level
