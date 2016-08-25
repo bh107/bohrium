@@ -54,6 +54,20 @@ bool bh_instruction::reshapable() const {
    return (bh_opcode_is_elementwise(opcode) or bh_opcode_is_system(opcode)) and is_contiguous();
 }
 
+int64_t bh_instruction::dominating_rank() const {
+    // Let's find the view with the greatest number of dimension and returns its 'ndim'
+    int64_t ret = 0;
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        const bh_view &view = operand[o];
+        if (not bh_is_constant(&view)) {
+            if (view.ndim > ret)
+                ret = view.ndim;
+        }
+    }
+    return ret;
+}
+
 void bh_instruction::reshape(const vector<int64_t> &shape) {
     if (not reshapable()) {
         throw runtime_error("Reshape: instruction not reshapable!");
