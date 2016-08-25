@@ -88,7 +88,7 @@ KernelFunction Store::getFunction(const string &source) {
             ofs.flush();
             ofs.close();
         }
-        cout << "Write file " << srcfile << endl;
+        //cout << "Write file " << srcfile << endl;
         compiler.compile(objfile.string(), srcfile.string());
     } else {
         // Pipe the source directly into the compiler thus no source file is written

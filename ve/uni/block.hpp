@@ -75,7 +75,7 @@ public:
     std::vector<int64_t> shape() const;
 };
 
-Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, std::set<bh_base *> &news, std::set<bh_base *> &frees, std::set<bh_base *> &temps, bool reshapable);
+Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, std::set<bh_base *> &news, std::set<bh_base *> &frees, std::set<bh_base *> &temps);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);

@@ -172,7 +172,7 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
 
         // Now that we have the news, frees, and tmps, we can create the single instruction block
         vector<bh_instruction*> single_instr = {&instr[0]};
-        block_list.push_back(create_nested_block(single_instr, 0, news, frees, tmps, instr->reshapable()));
+        block_list.push_back(create_nested_block(single_instr, 0, news, frees, tmps));
     }
     return block_list;
 }
