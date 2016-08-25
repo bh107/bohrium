@@ -10,8 +10,6 @@ cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
 gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
 uni        = bcexp_uni, bccon_uni, node, uni
 
-[bridge] # 'bridge' is a reversed section name that always refers to the bridge.
-
 #
 # Managers
 #
