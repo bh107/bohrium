@@ -220,22 +220,35 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
         if (cur.isInstr()) {
             continue; // We should never fuse instruction blocks
         }
+        // Let's search for fusible blocks
         for (; it != block_list.end(); ++it) {
-            // We start with general checks of fusibility
             if (it->isInstr())
                 break;
+
+            // If one of the blocks are only system instructions, they are directly mergeable
+            if (cur.getAllInstr().size() == 0) {
+                cur = merge(cur, *it, true); // Merge based on 'it'
+                continue;
+            }
+            if (it->getAllInstr().size() == 0) {
+                cur = merge(cur, *it, false); // Merge based on 'cur'
+                continue;
+            }
+
             if (not data_parallel_compatible(cur, *it))
                 break;
             if (cur._sweeps.size() > 0) //TODO: support merge of reduction
                 break;
             assert(cur.rank == it->rank);
 
-            // And then we check for shape match
+            // Check for shape match
             if (cur.size == it->size) { // Perfect match, directly mergeable
                 cur = merge(cur, *it);
-            } else {
-                break; // We couldn't find any shape match
+                continue;
             }
+
+            // We couldn't find any shape match
+            break;
         }
         // Let's fuse at the next rank level
         cur._block_list = fuser_serial(cur._block_list);
