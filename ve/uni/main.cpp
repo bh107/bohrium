@@ -232,7 +232,7 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
 
             // And then we check for shape match
             if (cur.size == it->size) { // Perfect match, directly mergeable
-                cur.merge(*it);
+                cur = merge(cur, *it);
             } else {
                 break; // We couldn't find any shape match
             }

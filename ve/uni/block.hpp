@@ -57,12 +57,13 @@ public:
     // Return all instructions in the block (incl. nested blocks)
     void getAllInstr(std::vector<bh_instruction *> &out) const;
     std::vector<bh_instruction *> getAllInstr() const;
-
-    // Merge this block with 'block' (in that order)
-    void merge(const Block &block);
-
-    std::vector<int64_t> shape() const;
+    
 };
+
+
+// Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is
+// true, the meta-data such at size, rank etc. is taken from 'b' rather than 'a'
+Block merge(const Block &a, const Block &b, bool based_on_block_b=false);
 
 Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, std::set<bh_base *> &news, std::set<bh_base *> &frees, std::set<bh_base *> &temps);
 

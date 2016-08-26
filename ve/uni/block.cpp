@@ -254,16 +254,25 @@ vector<bh_instruction *> Block::getAllInstr() const {
     return ret;
 }
 
-void Block::merge(const Block &b) {
-    assert(not isInstr());
+Block merge(const Block &a, const Block &b, bool based_on_block_b) {
+    assert(not a.isInstr());
     assert(not b.isInstr());
-    _block_list.insert(_block_list.end(), b._block_list.begin(), b._block_list.end());
-    _sweeps.insert(b._sweeps.begin(), b._sweeps.end());
-    _news.insert(b._news.begin(), b._news.end());
-    _frees.insert(b._frees.begin(), b._frees.end());
-    std::set_intersection(_news.begin(), _news.end(), _frees.begin(), _frees.end(), \
-                          std::inserter(_temps, _temps.begin()));
-    _reshapable = _reshapable and b._reshapable;
+    // For convenient such that the new block always depend on 't1'
+    const Block &t1 = based_on_block_b?b:a;
+    const Block &t2 = based_on_block_b?a:b;
+    Block ret(t1);
+    // The block list should always be in order: 'a' before 'b'
+    ret._block_list.clear();
+    ret._block_list.insert(ret._block_list.end(), a._block_list.begin(), a._block_list.end());
+    ret._block_list.insert(ret._block_list.end(), b._block_list.begin(), b._block_list.end());
+    // The order of the sets doesn't matter
+    ret._sweeps.insert(t2._sweeps.begin(), t2._sweeps.end());
+    ret._news.insert(t2._news.begin(), t2._news.end());
+    ret._frees.insert(t2._frees.begin(), t2._frees.end());
+    std::set_intersection(ret._news.begin(), ret._news.end(), ret._frees.begin(), ret._frees.end(), \
+                          std::inserter(ret._temps, ret._temps.begin()));
+    ret._reshapable = a._reshapable and b._reshapable;
+    return ret;
 }
 
 ostream& operator<<(ostream& out, const Block& b) {
