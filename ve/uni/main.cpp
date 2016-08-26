@@ -172,7 +172,7 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
 
         // Now that we have the news, frees, and tmps, we can create the single instruction block
         vector<bh_instruction*> single_instr = {&instr[0]};
-        block_list.push_back(create_nested_block(single_instr, 0, news, frees, tmps));
+        block_list.push_back(create_nested_block(single_instr, news, frees, tmps, 0));
     }
     return block_list;
 }
@@ -225,7 +225,7 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
             if (it->isInstr())
                 break;
 
-            // If one of the blocks are only system instructions, they are directly mergeable
+            // If one of the blocks are system instructions only, they are directly mergeable
             if (cur.getAllInstr().size() == 0) {
                 cur = merge(cur, *it, true); // Merge based on 'it'
                 continue;
@@ -241,9 +241,25 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
                 break;
             assert(cur.rank == it->rank);
 
-            // Check for shape match
-            if (cur.size == it->size) { // Perfect match, directly mergeable
+            // Check for perfect match, which is directly mergeable
+            if (cur.size == it->size) {
                 cur = merge(cur, *it);
+                continue;
+            }
+
+            // Check fusibility of reshapable blocks
+            if (it->_reshapable && it->size % cur.size == 0) {
+                vector<bh_instruction *> t = it->getAllInstr();
+                Block t2 = create_nested_block(t, it->_news, it->_frees, it->_temps, it->rank, cur.size);
+                assert(cur.size == t2.size);
+                cur = merge(cur, t2);
+                continue;
+            }
+            if (cur._reshapable && cur.size % it->size == 0) {
+                vector<bh_instruction *> t = cur.getAllInstr();
+                cur = create_nested_block(t, cur._news, cur._frees, cur._temps, cur.rank, it->size);
+                assert(cur.size == it->size);
+                cur = merge(cur, *it, true); // Merge based on 'cur'
                 continue;
             }
 

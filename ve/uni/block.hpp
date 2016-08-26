@@ -60,12 +60,16 @@ public:
     
 };
 
-
 // Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is
 // true, the meta-data such at size, rank etc. is taken from 'b' rather than 'a'
 Block merge(const Block &a, const Block &b, bool based_on_block_b=false);
 
-Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, std::set<bh_base *> &news, std::set<bh_base *> &frees, std::set<bh_base *> &temps);
+// Create a nested block based on 'instr_list' with the sets of new, free, and temp arrays given.
+// The dimensions from zero to 'rank-1' are ignored.
+// The 'size_of_rank_dim' (if not -1) specifies the size of the dimension 'rank' when all instructions are reshapable.
+Block create_nested_block(std::vector<bh_instruction*> &instr_list, std::set<bh_base *> &news,
+                          std::set<bh_base *> &frees, std::set<bh_base *> &temps,
+                          int rank, int64_t size_of_rank_dim=-1);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);

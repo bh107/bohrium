@@ -75,7 +75,6 @@ vector<int64_t> dominating_shape(int64_t nviews, const bh_view *view_list) {
     }
     return shape;
 }
-}
 
 bool is_reshapeable(const vector<bh_instruction*> &instr_list) {
     assert(instr_list.size() > 0);
@@ -90,41 +89,44 @@ bool is_reshapeable(const vector<bh_instruction*> &instr_list) {
     }
     return true;
 }
+} // Anonymous name space
 
-Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, set<bh_base *> &news, set<bh_base *> &frees, set<bh_base *> &temps) {
-
+Block create_nested_block(vector<bh_instruction*> &instr_list, set<bh_base *> &news, set<bh_base *> &frees,
+                          set<bh_base *> &temps, int rank, int64_t size_of_rank_dim) {
     Block ret;
-    // Let's return an empty block when 'instr_list' is empty
-    if (instr_list.empty())
-        return ret;
+    ret._news = news;
+    ret._frees = frees;
+    ret._temps = temps;
 
-    // When all instructions are reshapable, we will reshape them into the same shape before proceeding
+    if (instr_list.empty()) {
+        throw runtime_error("create_nested_block: 'instr_list' is empty!");
+    }
+
     if (is_reshapeable(instr_list)) {
-        // We known that the shape of the first instruction matches all the other instructions up until 'rank'
-        // Furthermore, we known that the total size of the dimensions from 'rank' and beyond are the same thus
-        // we can collapse the dimension into one.
-        assert(instr_list[0]->operand[0].ndim > rank);
-
-        vector<int64_t> shape((size_t) rank + 1);
-        for (int64_t r=0; r < rank; ++r) {
-            shape[r] = instr_list[0]->operand[0].shape[r];
-        }
-        int64_t size = 1; // The size of the reshapeable block
-        for (int64_t r=rank; r < instr_list[0]->operand[0].ndim; ++r) {
-            size *= instr_list[0]->operand[0].shape[r];
-        }
-        shape[rank] = size; // The size of the collapsed last dimensions
-
-        // Let's reshape all instructions to the same shape
         for (bh_instruction *instr: instr_list) {
+            vector<int64_t> shape((size_t) rank + 1);
+            // The dimensions up til 'rank' (not including 'rank') are unchanged
+            for (int64_t r=0; r < rank; ++r) {
+                shape[r] = instr_list[0]->operand[0].shape[r];
+            }
+
+            int64_t size = 1; // The size of the reshapeable block
+            for (int64_t r=rank; r < instr->operand[0].ndim; ++r) {
+                size *= instr->operand[0].shape[r];
+            }
+            if (size_of_rank_dim == -1)
+                size_of_rank_dim = size;
+            assert(size >= size_of_rank_dim);
+            shape[rank] = size_of_rank_dim;
+            if (size != size_of_rank_dim) {
+                if (size % size_of_rank_dim != 0)
+                    throw runtime_error("create_nested_block: shape is not divisible with 'size_of_rank_dim'");
+                shape.push_back(size / size_of_rank_dim);
+            }
             instr->reshape(shape);
         }
         ret._reshapable = true;
     }
-
-    ret._news = news;
-    ret._frees = frees;
-    ret._temps = temps;
 
     vector<int64_t> shape = dominating_shape(bh_noperands(instr_list[0]->opcode), instr_list[0]->operand);
 #ifndef NDEBUG
