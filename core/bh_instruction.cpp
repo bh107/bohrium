@@ -72,9 +72,9 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
     if (not reshapable()) {
         throw runtime_error("Reshape: instruction not reshapable!");
     }
-    int64_t sum = 0;
+    int64_t totalsize = 1;
     for (int64_t dim: shape) {
-        sum += dim;
+        totalsize *= dim;
     }
 
     int nop = bh_noperands(opcode);
@@ -82,7 +82,7 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
         bh_view &view = operand[o];
         if (bh_is_constant(&view))
             continue;
-        if (sum != bh_nelements(view)) {
+        if (totalsize != bh_nelements(view)) {
             throw runtime_error("Reshape: shape mismatch!");
         }
 
