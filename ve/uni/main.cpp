@@ -226,11 +226,11 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
                 break;
 
             // If one of the blocks are system instructions only, they are directly mergeable
-            if (cur.getAllInstr().size() == 0) {
+            if (cur.isSystemOnly()) {
                 cur = merge(cur, *it, true); // Merge based on 'it'
                 continue;
             }
-            if (it->getAllInstr().size() == 0) {
+            if (it->isSystemOnly()) {
                 cur = merge(cur, *it, false); // Merge based on 'cur'
                 continue;
             }

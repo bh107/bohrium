@@ -57,7 +57,16 @@ public:
     // Return all instructions in the block (incl. nested blocks)
     void getAllInstr(std::vector<bh_instruction *> &out) const;
     std::vector<bh_instruction *> getAllInstr() const;
-    
+
+    // Returns true when all instructions within the block is system or if the block is empty()
+    bool isSystemOnly() const {
+        for (bh_instruction *instr: getAllInstr()) {
+            if (not bh_opcode_is_system(instr->opcode)) {
+                return false;
+            }
+        }
+        return true;
+    }
 };
 
 // Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is
