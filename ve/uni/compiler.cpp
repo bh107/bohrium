@@ -19,12 +19,13 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <sstream>
+#include <stdexcept>
 
 #include "compiler.hpp"
 
 using namespace std;
 
-namespace bohrium{
+namespace bohrium {
 
 Compiler::Compiler(string cmd, string inc, string lib, string flg, string ext) : cmd_(cmd), inc_(inc), lib_(lib), flg_(flg), ext_(ext) {}
 
