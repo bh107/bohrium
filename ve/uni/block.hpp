@@ -41,9 +41,10 @@ public:
     std::set<bh_base *> _temps;
     bool _reshapable = false;
 
-    // Returns true if this block is an instruction block
-    // NB: Even an instruction block can have '_instr == NULL'
+    // Returns true if this block is an instruction block, which has a
+    // empty block list and a non-NULL instruction pointer
     bool isInstr() const {
+        assert(_block_list.size() > 0 or _instr != NULL);
         return _block_list.size() == 0;
     }
 

@@ -130,11 +130,13 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, set<bh_base *> &n
 
     vector<int64_t> shape = dominating_shape(bh_noperands(instr_list[0]->opcode), instr_list[0]->operand);
 #ifndef NDEBUG
-    // Let's make sure that all instructions has the same dominating shape
-    for (auto instr: instr_list) {
-        int nop = bh_noperands(instr->opcode);
-        auto t = dominating_shape(nop, instr->operand);
-        assert(t == shape);
+    // Let's make sure that all (non-system) instructions has the same dominating shape
+    for (bh_instruction *instr: instr_list) {
+        if (not bh_opcode_is_system(instr->opcode)) {
+            int nop = bh_noperands(instr->opcode);
+            auto t = dominating_shape(nop, instr->operand);
+            assert(t == shape);
+        }
     }
 #endif
     assert((int)shape.size() > rank);
@@ -166,9 +168,8 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, set<bh_base *> &n
     }
     for (bh_instruction *instr: instr_list) {
         Block instr_block;
-        if (not bh_opcode_is_system(instr->opcode))
-            instr_block._instr = &instr[0];
-        instr_block.rank = (int)shape.size();
+        instr_block._instr = &instr[0];
+        instr_block.rank = (int)shape.size(); // The rank is only to make pretty printing easier
         bottom->_block_list.push_back(instr_block);
     }
     return ret;

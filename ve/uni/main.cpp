@@ -275,7 +275,7 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
 vector<Block> remove_empty_blocks(vector<Block> &block_list) {
     vector<Block> ret;
     for (Block &b: block_list) {
-        if (b.getAllInstr().size() > 0)
+        if (b.getAllInstr().size() > 0 and not b.isSystemOnly())
             ret.push_back(b);
     }
     return ret;
