@@ -42,8 +42,12 @@ struct bh_instruction
     // Is this instruction (and all its views) reshapable?
     bool reshapable() const;
 
-    // The rank is the greatest number of dimensions involved in the instruction
-    int64_t dominating_rank() const;
+    // The maximum number of dimensions of a view in this instruction
+    int64_t max_ndim() const;
+
+    // Returns the shape of the view with the greatest number of dimensions
+    // if equal, the combined maximum is returned
+    std::vector<int64_t> dominating_shape() const;
 
     // Reshape the views of the instruction to 'shape'
     void reshape(const std::vector<int64_t> &shape);

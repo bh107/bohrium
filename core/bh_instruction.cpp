@@ -54,7 +54,7 @@ bool bh_instruction::reshapable() const {
    return (bh_opcode_is_elementwise(opcode) or bh_opcode_is_system(opcode)) and is_contiguous();
 }
 
-int64_t bh_instruction::dominating_rank() const {
+int64_t bh_instruction::max_ndim() const {
     // Let's find the view with the greatest number of dimension and returns its 'ndim'
     int64_t ret = 0;
     int nop = bh_noperands(opcode);
@@ -66,6 +66,26 @@ int64_t bh_instruction::dominating_rank() const {
         }
     }
     return ret;
+}
+
+vector<int64_t> bh_instruction::dominating_shape() const {
+    int64_t ndim = max_ndim();
+    vector<int64_t > shape;
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        const bh_view &view = operand[o];
+        if ((not bh_is_constant(&view)) and view.ndim == ndim) {
+            for (int64_t j=0; j < view.ndim; ++j) {
+                if (shape.size() > (size_t)j) {
+                    if (shape[j] < view.shape[j])
+                        shape[j] = view.shape[j];
+                } else {
+                    shape.push_back(view.shape[j]);
+                }
+            }
+        }
+    }
+    return shape;
 }
 
 void bh_instruction::reshape(const vector<int64_t> &shape) {
