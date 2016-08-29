@@ -35,56 +35,16 @@ void spaces(stringstream &out, int num) {
     }
 }
 
-// Returns the views with the greatest number of dimensions
-vector<const bh_view*> max_ndim_views(int64_t nviews, const bh_view view_list[]) {
-    // Find the max ndim
-    int64_t ndim = 0;
-    for (int64_t i=0; i < nviews; ++i) {
-        const bh_view *view = &view_list[i];
-        if (not bh_is_constant(view)) {
-            if (view->ndim > ndim)
-                ndim = view->ndim;
-        }
-    }
-    vector<const bh_view*> ret;
-    for (int64_t i=0; i < nviews; ++i) {
-        const bh_view *view = &view_list[i];
-        if (not bh_is_constant(view)) {
-            if (view->ndim == ndim) {
-                ret.push_back(view);
-            }
-        }
-    }
-    return ret;
-}
-
-// Returns the shape of the view with the greatest number of dimensions
-// if equal, the greatest shape is returned
-vector<int64_t> dominating_shape(int64_t nviews, const bh_view *view_list) {
-    vector<const bh_view*> views = max_ndim_views(nviews, view_list);
-    vector<int64_t > shape;
-    for(const bh_view *view: views) {
-        for (int64_t j=0; j < view->ndim; ++j) {
-            if (shape.size() > (size_t)j) {
-                if (shape[j] < view->shape[j])
-                    shape[j] = view->shape[j];
-            } else {
-                shape.push_back(view->shape[j]);
-            }
-        }
-    }
-    return shape;
-}
-
+// Returns true if a block consisting of 'instr_list' is reshapable
 bool is_reshapeable(const vector<bh_instruction*> &instr_list) {
     assert(instr_list.size() > 0);
 
     // In order to be reshapeable, all instructions must have the same rank and be reshapeable
-    int64_t rank = instr_list[0]->dominating_rank();
+    int64_t rank = instr_list[0]->max_ndim();
     for (auto instr: instr_list) {
         if (not instr->reshapable())
             return false;
-        if (instr->dominating_rank() != rank)
+        if (instr->max_ndim() != rank)
             return false;
     }
     return true;
@@ -93,85 +53,83 @@ bool is_reshapeable(const vector<bh_instruction*> &instr_list) {
 
 Block create_nested_block(vector<bh_instruction*> &instr_list, set<bh_base *> &news, set<bh_base *> &frees,
                           set<bh_base *> &temps, int rank, int64_t size_of_rank_dim) {
-    Block ret;
-    ret._news = news;
-    ret._frees = frees;
-    ret._temps = temps;
 
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
     }
 
-    if (is_reshapeable(instr_list)) {
-        for (bh_instruction *instr: instr_list) {
+    for (bh_instruction *instr: instr_list) {
+        if (instr->max_ndim() <= rank)
+            throw runtime_error("create_nested_block() was given an instruction with max_ndim <= 'rank'");
+    }
+
+    // Let's reshape instructions to match 'size_of_rank_dim'
+    for (bh_instruction *instr: instr_list) {
+        if (instr->reshapable() and instr->operand[0].shape[rank] != size_of_rank_dim) {
             vector<int64_t> shape((size_t) rank + 1);
             // The dimensions up til 'rank' (not including 'rank') are unchanged
             for (int64_t r=0; r < rank; ++r) {
-                shape[r] = instr_list[0]->operand[0].shape[r];
+                shape[r] = instr->operand[0].shape[r];
             }
-
             int64_t size = 1; // The size of the reshapeable block
             for (int64_t r=rank; r < instr->operand[0].ndim; ++r) {
                 size *= instr->operand[0].shape[r];
             }
-            if (size_of_rank_dim == -1)
-                size_of_rank_dim = size;
             assert(size >= size_of_rank_dim);
             shape[rank] = size_of_rank_dim;
-            if (size != size_of_rank_dim) {
+            if (size != size_of_rank_dim) { // We might have to add an extra dimension
                 if (size % size_of_rank_dim != 0)
                     throw runtime_error("create_nested_block: shape is not divisible with 'size_of_rank_dim'");
                 shape.push_back(size / size_of_rank_dim);
             }
             instr->reshape(shape);
         }
-        ret._reshapable = true;
     }
 
-    vector<int64_t> shape = dominating_shape(bh_noperands(instr_list[0]->opcode), instr_list[0]->operand);
-#ifndef NDEBUG
-    // Let's make sure that all (non-system) instructions has the same dominating shape
-    for (bh_instruction *instr: instr_list) {
-        if (not bh_opcode_is_system(instr->opcode)) {
-            int nop = bh_noperands(instr->opcode);
-            auto t = dominating_shape(nop, instr->operand);
-            assert(t == shape);
-        }
+    for (const bh_instruction *instr: instr_list) {
+        vector<int64_t> shape = instr->dominating_shape();
+        assert(shape.size() > (uint64_t)rank);
+        if (shape[rank] != size_of_rank_dim)
+            throw runtime_error("create_nested_block() was given an instruction where shape[rank] != 'rank'");
     }
-#endif
-    assert((int)shape.size() > rank);
 
     // Find the sweeped axes
-    vector<set<bh_instruction*> > sweeps(shape.size());
+    vector<set<bh_instruction*> > sweeps(BH_MAXDIM);
     for (auto instr: instr_list) {
         int axis = sweep_axis(*instr);
         if (axis < BH_MAXDIM) {
-            assert(axis < (int)shape.size());
             sweeps[axis].insert(&instr[0]);
         }
     }
 
     // Let's build the nested block from the 'rank' level to the instruction block
-    ret.rank = rank;
-    ret.size = shape[rank];
-    Block *parent = &ret;
-    Block *bottom = &ret;
-    ret._sweeps.insert(sweeps[rank].begin(), sweeps[rank].end());
-    for(int i=rank+1; i < (int)shape.size(); ++i) {
-        Block b;
-        b.rank = i;
-        b.size = shape[i];
-        b._sweeps.insert(sweeps[i].begin(), sweeps[i].end());
-        parent->_block_list.push_back(b);
-        bottom = &parent->_block_list[0];
-        parent = bottom;
-    }
+    Block ret;
     for (bh_instruction *instr: instr_list) {
-        Block instr_block;
-        instr_block._instr = &instr[0];
-        instr_block.rank = (int)shape.size(); // The rank is only to make pretty printing easier
-        bottom->_block_list.push_back(instr_block);
+        const int64_t max_ndim = instr->max_ndim();
+        assert(max_ndim > rank);
+
+        // Create the rest of the dimension as a singleton block
+        if (max_ndim > rank+1) {
+            vector<int64_t > shape = instr->dominating_shape();
+            assert(shape.size() > 0);
+            vector<bh_instruction*> single_instr = {instr};
+            ret._block_list.push_back(create_nested_block(single_instr, news, frees, temps, rank + 1, shape[rank + 1]));
+        } else { // No more dimensions -- let's write the instruction block
+            assert(max_ndim == rank+1);
+            Block instr_block;
+            instr_block._instr = &instr[0];
+            instr_block.rank = rank+1; // This rank is only to make pretty printing easier
+            ret._block_list.push_back(instr_block);
+        }
     }
+    ret.rank = rank;
+    ret.size = size_of_rank_dim;
+    ret._sweeps.insert(sweeps[rank].begin(), sweeps[rank].end());
+    ret._news = news;
+    ret._frees = frees;
+    ret._temps = temps;
+    ret._reshapable = is_reshapeable(ret.getAllInstr());
+    assert(ret.validation());
     return ret;
 }
 
@@ -257,6 +215,39 @@ vector<bh_instruction *> Block::getAllInstr() const {
     return ret;
 }
 
+bool Block::validation() const {
+    if (isInstr()) {
+        if (_instr == NULL) {
+            assert(1==2);
+            return false;
+        }
+        if (_block_list.size() != 0) {
+            assert(1==2);
+            return false;
+        }
+        return true;
+    }
+    for (const bh_instruction *instr: getAllInstr()) {
+        if (instr->max_ndim() <= rank) {
+            assert(1==2);
+            return false;
+        }
+        if (instr->dominating_shape()[rank] != size) {
+            assert(1==2);
+            return false;
+        }
+    }
+    if (_block_list.size() == 0) {
+        assert(1==2);
+        return false;
+    }
+    for (const Block &b: _block_list) {
+        if (not b.validation())
+            return false;
+    }
+    return true;
+}
+
 Block merge(const Block &a, const Block &b, bool based_on_block_b) {
     assert(not a.isInstr());
     assert(not b.isInstr());
@@ -274,7 +265,7 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b) {
     ret._frees.insert(t2._frees.begin(), t2._frees.end());
     std::set_intersection(ret._news.begin(), ret._news.end(), ret._frees.begin(), ret._frees.end(), \
                           std::inserter(ret._temps, ret._temps.begin()));
-    ret._reshapable = a._reshapable and b._reshapable;
+    ret._reshapable = is_reshapeable(ret.getAllInstr());
     return ret;
 }
 

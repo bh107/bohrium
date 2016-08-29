@@ -172,7 +172,9 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
 
         // Now that we have the news, frees, and tmps, we can create the single instruction block
         vector<bh_instruction*> single_instr = {&instr[0]};
-        block_list.push_back(create_nested_block(single_instr, news, frees, tmps, 0));
+        assert(instr->dominating_shape().size() > (uint64_t)0);
+        int64_t size_of_rank_dim = instr->dominating_shape()[0];
+        block_list.push_back(create_nested_block(single_instr, news, frees, tmps, 0, size_of_rank_dim));
     }
     return block_list;
 }
@@ -224,17 +226,6 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
         for (; it != block_list.end(); ++it) {
             if (it->isInstr())
                 break;
-
-            // If one of the blocks are system instructions only, they are directly mergeable
-            if (cur.isSystemOnly()) {
-                cur = merge(cur, *it, true); // Merge based on 'it'
-                continue;
-            }
-            if (it->isSystemOnly()) {
-                cur = merge(cur, *it, false); // Merge based on 'cur'
-                continue;
-            }
-
             if (not data_parallel_compatible(cur, *it))
                 break;
             if (cur._sweeps.size() > 0) //TODO: support merge of reduction
@@ -246,20 +237,23 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
                 cur = merge(cur, *it);
                 continue;
             }
-
             // Check fusibility of reshapable blocks
             if (it->_reshapable && it->size % cur.size == 0) {
-                vector<bh_instruction *> t = it->getAllInstr();
-                Block t2 = create_nested_block(t, it->_news, it->_frees, it->_temps, it->rank, cur.size);
-                assert(cur.size == t2.size);
-                cur = merge(cur, t2);
+                vector<bh_instruction *> cur_instr = cur.getAllInstr();
+                vector<bh_instruction *> it_instr = it->getAllInstr();
+                cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
+                Block b = create_nested_block(cur_instr, it->_news, it->_frees, it->_temps, it->rank, cur.size);
+                assert(b.size == cur.size);
+                cur = b;
                 continue;
             }
             if (cur._reshapable && cur.size % it->size == 0) {
-                vector<bh_instruction *> t = cur.getAllInstr();
-                cur = create_nested_block(t, cur._news, cur._frees, cur._temps, cur.rank, it->size);
-                assert(cur.size == it->size);
-                cur = merge(cur, *it, true); // Merge based on 'cur'
+                vector<bh_instruction *> cur_instr = cur.getAllInstr();
+                vector<bh_instruction *> it_instr = it->getAllInstr();
+                cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
+                Block b = create_nested_block(cur_instr, cur._news, cur._frees, cur._temps, cur.rank, it->size);
+                assert(b.size == it->size);
+                cur = b;
                 continue;
             }
 
