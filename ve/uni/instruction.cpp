@@ -372,8 +372,7 @@ int sweep_axis(const bh_instruction &instr) {
     return BH_MAXDIM;
 }
 
-void write_instr(const IdMap<bh_base*> &base_ids, const bh_instruction &instr,
-                 stringstream &out) {
+void write_instr(const IdMap<bh_base*> &base_ids, const set<bh_base*> &temps, const bh_instruction &instr, stringstream &out) {
     if (bh_opcode_is_system(instr.opcode)) {
         write_system_operation(base_ids, instr, out);
         return;
@@ -381,10 +380,14 @@ void write_instr(const IdMap<bh_base*> &base_ids, const bh_instruction &instr,
     if (instr.opcode == BH_RANGE) {
         assert(instr.operand[0].ndim == 1); //TODO: support multidimensional output
         vector<string> operands;
-        {
+        if (temps.find(instr.operand[0].base) == temps.end()){
             stringstream ss;
             ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
+            operands.push_back(ss.str());
+        } else {
+            stringstream ss;
+            ss << "t" << base_ids[instr.operand[0].base];
             operands.push_back(ss.str());
         }
         operands.push_back("i0");
@@ -395,12 +398,16 @@ void write_instr(const IdMap<bh_base*> &base_ids, const bh_instruction &instr,
         assert(instr.operand[0].ndim == 1); //TODO: support multidimensional output
         vector<string> operands;
         // Write output operand
-        {
+        if (temps.find(instr.operand[0].base) == temps.end()) {
             stringstream ss;
             ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
             operands.push_back(ss.str());
 
+        } else {
+            stringstream ss;
+            ss << "t" << base_ids[instr.operand[0].base];
+            operands.push_back(ss.str());
         }
         // Write the random generation
         {
@@ -415,12 +422,16 @@ void write_instr(const IdMap<bh_base*> &base_ids, const bh_instruction &instr,
     if (bh_opcode_is_accumulate(instr.opcode)) {
         vector<string> operands;
         // Write output operand
-        {
+        if (temps.find(instr.operand[0].base) == temps.end()) {
             stringstream ss;
             ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
             operands.push_back(ss.str());
 
+        } else {
+            stringstream ss;
+            ss << "t" << base_ids[instr.operand[0].base];
+            operands.push_back(ss.str());
         }
         // Write the previous element access, NB: this works because of loop peeling
         {
@@ -446,13 +457,17 @@ void write_instr(const IdMap<bh_base*> &base_ids, const bh_instruction &instr,
         if (bh_is_constant(&view)) {
             ss << instr.constant;
         } else {
-            ss << "a" << base_ids[view.base];
-            if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
-                // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
-                // reducing to a non-scalar
-                write_array_subscription(view, ss, sweep_axis(instr));
+            if (temps.find(view.base) == temps.end()) {
+                ss << "a" << base_ids[view.base];
+                if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
+                    // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
+                    // reducing to a non-scalar
+                    write_array_subscription(view, ss, sweep_axis(instr));
+                } else {
+                    write_array_subscription(view, ss);
+                }
             } else {
-                write_array_subscription(view, ss);
+                ss << "t" << base_ids[view.base];
             }
         }
         operands.push_back(ss.str());

@@ -102,61 +102,93 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
 }
 
 void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstream &out) {
-    if (block.isInstr()) {
-        if (block._instr != NULL) {
-            spaces(out, 4 + block.rank*4);
-            write_instr(base_ids, *block._instr, out);
-        }
-    } else {
-        spaces(out, 4 + block.rank*4);
-        // If this block is sweeped, we will "peel" the for-loop such that the
-        // sweep instruction is replaced with BH_IDENTITY in the first iteration
-        if (block._sweeps.size() > 0) {
-            Block peeled_block(block);
-            vector<bh_instruction> sweep_instr_list(block._sweeps.size());
-            {
-                size_t i = 0;
-                for (const bh_instruction *instr: block._sweeps) {
-                    Block *sweep_instr_block = peeled_block.findInstrBlock(instr);
-                    assert(sweep_instr_block != NULL);
-                    bh_instruction *sweep_instr = &sweep_instr_list[i++];
-                    sweep_instr->opcode = BH_IDENTITY;
-                    sweep_instr->operand[1] = instr->operand[1]; // The input is the same as in the sweep
-                    sweep_instr->operand[0] = instr->operand[0];
-                    // But the output needs an extra dimension when we are reducing to a non-scalar
-                    if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                        sweep_instr->operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
-                    }
-                    sweep_instr_block->_instr = sweep_instr;
+    assert(not block.isInstr());
+    spaces(out, 4 + block.rank*4);
+    // If this block is sweeped, we will "peel" the for-loop such that the
+    // sweep instruction is replaced with BH_IDENTITY in the first iteration
+    if (block._sweeps.size() > 0) {
+        Block peeled_block(block);
+        vector<bh_instruction> sweep_instr_list(block._sweeps.size());
+        {
+            size_t i = 0;
+            for (const bh_instruction *instr: block._sweeps) {
+                Block *sweep_instr_block = peeled_block.findInstrBlock(instr);
+                assert(sweep_instr_block != NULL);
+                bh_instruction *sweep_instr = &sweep_instr_list[i++];
+                sweep_instr->opcode = BH_IDENTITY;
+                sweep_instr->operand[1] = instr->operand[1]; // The input is the same as in the sweep
+                sweep_instr->operand[0] = instr->operand[0];
+                // But the output needs an extra dimension when we are reducing to a non-scalar
+                if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
+                    sweep_instr->operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
                 }
+                sweep_instr_block->_instr = sweep_instr;
             }
-            string itername;
-            {stringstream t; t << "i" << block.rank; itername = t.str();}
-            out << "{ // Peeled loop, 1. iteration" << endl;
-            spaces(out, 8 + block.rank*4);
-            out << "uint64_t " << itername << " = 0;" << endl;
-            for (const Block &b: peeled_block._block_list) {
-                write_block(base_ids, b, out);
-            }
-            spaces(out, 4 + block.rank*4);
-            out << "}" << endl;
-            spaces(out, 4 + block.rank*4);
         }
-
         string itername;
         {stringstream t; t << "i" << block.rank; itername = t.str();}
-        out << "for(uint64_t " << itername;
-        if (block._sweeps.size() > 0) // If the for-loop has been peeled, we should that at 1
-            out << "=1; ";
-        else
-            out << "=0; ";
-        out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
-        for (const Block &b: block._block_list) {
-            write_block(base_ids, b, out);
+        out << "{ // Peeled loop, 1. sweep iteration " << endl;
+        spaces(out, 8 + block.rank*4);
+        out << "uint64_t " << itername << " = 0;" << endl;
+        // Write temporary array declarations
+        if (block._temps.size() > 0) {
+            spaces(out, 8 + block.rank*4);
+            out << "// Temporary array declarations" << endl;
+            for(bh_base* temp: block._temps) {
+                spaces(out, 8 + block.rank*4);
+                out <<  write_type(temp->type) << " t" << base_ids[temp] << ";" << endl;
+            }
+            out << endl;
+        }
+        for (const Block &b: peeled_block._block_list) {
+            if (b.isInstr()) {
+                if (b._instr != NULL) {
+                    spaces(out, 4 + b.rank*4);
+                    write_instr(base_ids, block._temps, *b._instr, out);
+                }
+            } else {
+                write_block(base_ids, b, out);
+            }
         }
         spaces(out, 4 + block.rank*4);
         out << "}" << endl;
+        spaces(out, 4 + block.rank*4);
     }
+
+    // Write the for-loop header
+    string itername;
+    {stringstream t; t << "i" << block.rank; itername = t.str();}
+    out << "for(uint64_t " << itername;
+    if (block._sweeps.size() > 0) // If the for-loop has been peeled, we should that at 1
+        out << "=1; ";
+    else
+        out << "=0; ";
+    out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
+
+    // Write temporary array declarations
+    if (block._temps.size() > 0) {
+        spaces(out, 8 + block.rank*4);
+        out << "// Temporary array declarations" << endl;
+        for(bh_base* temp: block._temps) {
+            spaces(out, 8 + block.rank*4);
+            out <<  write_type(temp->type) << " t" << base_ids[temp] << ";" << endl;
+        }
+        out << endl;
+    }
+
+    // Write the for-loop body
+    for (const Block &b: block._block_list) {
+        if (b.isInstr()) { // Finally, let's write the instruction
+            if (b._instr != NULL) {
+                spaces(out, 4 + b.rank*4);
+                write_instr(base_ids, block._temps, *b._instr, out);
+            }
+        } else {
+            write_block(base_ids, b, out);
+        }
+    }
+    spaces(out, 4 + block.rank*4);
+    out << "}" << endl;
 }
 
 vector<Block> fuser_singleton(vector<bh_instruction> &instr_list, const set<bh_instruction*> &news) {
