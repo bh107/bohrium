@@ -80,9 +80,7 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b=false);
 // Create a nested block based on 'instr_list' with the sets of new, free, and temp arrays given.
 // The dimensions from zero to 'rank-1' are ignored.
 // The 'size_of_rank_dim' specifies the size of the dimension 'rank'.
-Block create_nested_block(std::vector<bh_instruction*> &instr_list, std::set<bh_base *> &news,
-                          std::set<bh_base *> &frees, std::set<bh_base *> &temps,
-                          int rank, int64_t size_of_rank_dim);
+Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, int64_t size_of_rank_dim);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);

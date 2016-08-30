@@ -126,9 +126,6 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstre
 
 vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
 
-    set<bh_base*> bases; // Set of all known bases
-    set<bh_base*> syncs; // Set of all sync'ed bases
-
     // Creates the block_list based on the instr_list
     vector<Block> block_list;
     for (auto instr=instr_list.begin(); instr != instr_list.end(); ++instr) {
@@ -136,45 +133,10 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
-        bh_base *created_array = NULL; // Is this instruction creating a new array?
-        bh_base *destroyed_array = NULL;// Is this instruction destroying an array?
-
-        // Add inputs to 'bases'
-        for (int i=1; i<nop; ++i) {
-            bh_view &v = instr->operand[i];
-            if (not bh_is_constant(&v)) {
-                bases.insert(v.base);
-            }
-        }
-        // Add output to 'bases' and check if 'instr' creates a new array
-        {
-            bh_view &v = instr->operand[0];
-            if (bases.find(v.base) == bases.end()) { // TODO: check if writing to whole array
-                created_array = v.base;
-            }
-            bases.insert(v.base);
-        }
-        if (instr->opcode == BH_SYNC) {
-            assert(nop == 1);
-            syncs.insert(instr->operand[0].base);
-        } else if (instr->opcode == BH_FREE) {
-            assert(nop == 1);
-            if (syncs.find(instr->operand[0].base) == syncs.end()) {
-                // If the array is free'ed and not sync'ed, it can be destroyed
-                destroyed_array = instr->operand[0].base;
-            }
-        }
-        set<bh_base*> news, frees, tmps;
-        if (created_array != NULL)
-            news.insert(created_array);
-        if (destroyed_array != NULL)
-            frees.insert(destroyed_array);
-
-        // Now that we have the news, frees, and tmps, we can create the single instruction block
         vector<bh_instruction*> single_instr = {&instr[0]};
         assert(instr->dominating_shape().size() > (uint64_t)0);
         int64_t size_of_rank_dim = instr->dominating_shape()[0];
-        block_list.push_back(create_nested_block(single_instr, news, frees, tmps, 0, size_of_rank_dim));
+        block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim));
     }
     return block_list;
 }
@@ -242,7 +204,7 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
                 vector<bh_instruction *> cur_instr = cur.getAllInstr();
                 vector<bh_instruction *> it_instr = it->getAllInstr();
                 cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-                Block b = create_nested_block(cur_instr, it->_news, it->_frees, it->_temps, it->rank, cur.size);
+                Block b = create_nested_block(cur_instr, it->rank, cur.size);
                 assert(b.size == cur.size);
                 cur = b;
                 continue;
@@ -251,7 +213,7 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
                 vector<bh_instruction *> cur_instr = cur.getAllInstr();
                 vector<bh_instruction *> it_instr = it->getAllInstr();
                 cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-                Block b = create_nested_block(cur_instr, cur._news, cur._frees, cur._temps, cur.rank, it->size);
+                Block b = create_nested_block(cur_instr, cur.rank, it->size);
                 assert(b.size == it->size);
                 cur = b;
                 continue;

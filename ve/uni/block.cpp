@@ -51,8 +51,7 @@ bool is_reshapeable(const vector<bh_instruction*> &instr_list) {
 }
 } // Anonymous name space
 
-Block create_nested_block(vector<bh_instruction*> &instr_list, set<bh_base *> &news, set<bh_base *> &frees,
-                          set<bh_base *> &temps, int rank, int64_t size_of_rank_dim) {
+Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t size_of_rank_dim) {
 
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
@@ -104,6 +103,8 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, set<bh_base *> &n
 
     // Let's build the nested block from the 'rank' level to the instruction block
     Block ret;
+    set<bh_base*> bases; // Set of all known bases
+    set<bh_base*> syncs; // Set of all sync'ed bases
     for (bh_instruction *instr: instr_list) {
         const int64_t max_ndim = instr->max_ndim();
         assert(max_ndim > rank);
@@ -113,21 +114,57 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, set<bh_base *> &n
             vector<int64_t > shape = instr->dominating_shape();
             assert(shape.size() > 0);
             vector<bh_instruction*> single_instr = {instr};
-            ret._block_list.push_back(create_nested_block(single_instr, news, frees, temps, rank + 1, shape[rank + 1]));
+            ret._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1]));
         } else { // No more dimensions -- let's write the instruction block
             assert(max_ndim == rank+1);
             Block instr_block;
             instr_block._instr = &instr[0];
             instr_block.rank = rank+1; // This rank is only to make pretty printing easier
             ret._block_list.push_back(instr_block);
+
+
+            // Since 'instr' execute at this 'rank' level, we can calculate news, syncs, frees, and temps.
+            bh_base *created_array = NULL; // Is this instruction creating a new array?
+            bh_base *destroyed_array = NULL;// Is this instruction destroying an array?
+
+            // Add inputs to 'bases'
+            int nop = bh_noperands(instr->opcode);
+            for (int i=1; i<nop; ++i) {
+                bh_view &v = instr->operand[i];
+                if (not bh_is_constant(&v)) {
+                    bases.insert(v.base);
+                }
+            }
+            // Add output to 'bases' and check if 'instr' creates a new array
+            if (not bh_opcode_is_system(instr->opcode)) {
+                bh_view &v = instr->operand[0];
+                if (bases.find(v.base) == bases.end()) { // TODO: check if writing to whole array
+                    created_array = v.base;
+                }
+                bases.insert(v.base);
+            }
+            if (instr->opcode == BH_SYNC) {
+                assert(nop == 1);
+                syncs.insert(instr->operand[0].base);
+            } else if (instr->opcode == BH_FREE) {
+                assert(nop == 1);
+                if (syncs.find(instr->operand[0].base) == syncs.end()) {
+                    // If the array is free'ed and not sync'ed, it can be destroyed
+                    destroyed_array = instr->operand[0].base;
+                }
+            }
+            if (created_array != NULL)
+                ret._news.insert(created_array);
+            if (destroyed_array != NULL)
+                ret._frees.insert(destroyed_array);
         }
     }
     ret.rank = rank;
     ret.size = size_of_rank_dim;
     ret._sweeps.insert(sweeps[rank].begin(), sweeps[rank].end());
-    ret._news = news;
-    ret._frees = frees;
-    ret._temps = temps;
+    // Temps are the arrays both created and freed in this block
+    std::set_intersection(ret._news.begin(), ret._news.end(), ret._frees.begin(), ret._frees.end(), \
+                          std::inserter(ret._temps, ret._temps.begin()));
     ret._reshapable = is_reshapeable(ret.getAllInstr());
     assert(ret.validation());
     return ret;
