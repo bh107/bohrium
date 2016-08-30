@@ -135,7 +135,7 @@ ostream& operator<<(ostream& out, const bh_instruction& instr)
     return out;
 }
 
-/* Retrive the operands of a instruction.
+/* Retrieve the operands of a instruction.
  *
  * @instruction  The instruction in question
  * @return The operand list
