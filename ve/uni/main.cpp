@@ -263,13 +263,19 @@ vector<Block> fuser_serial(vector<Block> &block_list, const set<bh_instruction*>
     return ret;
 }
 
-vector<Block> remove_empty_blocks(vector<Block> &block_list) {
-    vector<Block> ret;
-    for (Block &b: block_list) {
-        if (b.getAllInstr().size() > 0 and not b.isSystemOnly())
-            ret.push_back(b);
+// Remove empty blocks inplace
+void remove_empty_blocks(vector<Block> &block_list) {
+    for (size_t i=0; i < block_list.size(); ) {
+        Block &b = block_list[i];
+        if (b.isInstr()) {
+            ++i;
+        } else if (b.isSystemOnly()) {
+            block_list.erase(block_list.begin()+i);
+        } else {
+            remove_empty_blocks(b._block_list);
+            ++i;
+        }
     }
-    return ret;
 }
 
 void Impl::execute(bh_ir *bhir) {
@@ -300,7 +306,7 @@ void Impl::execute(bh_ir *bhir) {
         // Let's fuse the 'instr_list' into blocks
         kernel.block_list = fuser_singleton(bhir->instr_list, news);
         kernel.block_list = fuser_serial(kernel.block_list, news);
-        kernel.block_list = remove_empty_blocks(kernel.block_list);
+        remove_empty_blocks(kernel.block_list);
 
         // And fill kernel attributes
         for (bh_instruction &instr: bhir->instr_list) {
