@@ -164,7 +164,7 @@ compiler_inc="${VE_UNI_COMPILER_INC}"
 compiler_lib="${VE_UNI_COMPILER_LIB}"
 compiler_flg="${VE_UNI_COMPILER_FLG}"
 dump_src = true
-verbose = true
+verbose = false
 
 
 [cpu]
