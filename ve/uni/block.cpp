@@ -93,15 +93,6 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
             throw runtime_error("create_nested_block() was given an instruction where shape[rank] != 'rank'");
     }
 
-    // Find the sweeped axes
-    vector<set<bh_instruction*> > sweeps(BH_MAXDIM);
-    for (auto instr: instr_list) {
-        int axis = sweep_axis(*instr);
-        if (axis < BH_MAXDIM) {
-            sweeps[axis].insert(&instr[0]);
-        }
-    }
-
     // Let's build the nested block from the 'rank' level to the instruction block
     Block ret;
     set<bh_base*> syncs; // Set of all sync'ed bases
@@ -139,10 +130,12 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
                 }
             }
         }
+        if (sweep_axis(*instr) == rank) {
+            ret._sweeps.insert(instr);
+        }
     }
     ret.rank = rank;
     ret.size = size_of_rank_dim;
-    ret._sweeps.insert(sweeps[rank].begin(), sweeps[rank].end());
     // Temps are the arrays both created and freed in this block
     std::set_intersection(ret._news.begin(), ret._news.end(), ret._frees.begin(), ret._frees.end(), \
                           std::inserter(ret._temps, ret._temps.begin()));
