@@ -37,8 +37,15 @@ using namespace std;
 namespace {
 class Impl : public ComponentImpl {
   private:
+    // Compiled kernels store
     Store _store;
+    // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
+    //Allocated base arrays
+    set<bh_base*> _allocated_bases;
+    // Update the allocate bases and returns a set of instructions that creates new arrays
+    // This function should be called at each BhIR execution
+    set<bh_instruction*> update_allocated_bases(bh_ir *bhir);
   public:
     Impl(int stack_level) : ComponentImpl(stack_level), _store(config) {}
     ~Impl() {}; // NB: a destructor implementation must exist
@@ -64,6 +71,34 @@ void spaces(stringstream &out, int num) {
         out << " ";
     }
 }
+}
+
+set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
+    set<bh_instruction*> ret;
+    for(bh_instruction &instr: bhir->instr_list) {
+        bh_view *operands = bh_inst_operands(&instr);
+
+        //Save all new base arrays
+        int nop = bh_noperands(instr.opcode);
+        for (bh_intp o = 0; o < nop; ++o) {
+            if (!bh_is_constant(&operands[o])) {
+                if (_allocated_bases.insert(operands[o].base).second and o == 0){
+                    // The base was in fact a new output array
+                    ret.insert(&instr);
+                }
+            }
+        }
+
+        //And remove freed arrays
+        if (instr.opcode == BH_FREE) {
+            bh_base *base = operands[0].base;
+            if (_allocated_bases.erase(base) != 1) {
+                cerr << "[UNI-VE] freeing unknown base array: " << *base << endl;
+                throw runtime_error("[UNI-VE] freeing unknown base array");
+            }
+        }
+    }
+    return ret;
 }
 
 void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstream &out) {
@@ -124,7 +159,7 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstre
     }
 }
 
-vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
+vector<Block> fuser_singleton(vector<bh_instruction> &instr_list, const set<bh_instruction*> &news) {
 
     // Creates the block_list based on the instr_list
     vector<Block> block_list;
@@ -136,7 +171,7 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list) {
         vector<bh_instruction*> single_instr = {&instr[0]};
         assert(instr->dominating_shape().size() > (uint64_t)0);
         int64_t size_of_rank_dim = instr->dominating_shape()[0];
-        block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim));
+        block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim, news));
     }
     return block_list;
 }
@@ -175,7 +210,7 @@ static bool data_parallel_compatible(const Block &b1, const Block &b2) {
     return true;
 }
 
-vector<Block> fuser_serial(vector<Block> &block_list) {
+vector<Block> fuser_serial(vector<Block> &block_list, const set<bh_instruction*> &news) {
     vector<Block> ret;
     for (auto it = block_list.begin(); it != block_list.end(); ) {
         ret.push_back(*it);
@@ -204,7 +239,7 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
                 vector<bh_instruction *> cur_instr = cur.getAllInstr();
                 vector<bh_instruction *> it_instr = it->getAllInstr();
                 cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-                Block b = create_nested_block(cur_instr, it->rank, cur.size);
+                Block b = create_nested_block(cur_instr, it->rank, cur.size, news);
                 assert(b.size == cur.size);
                 cur = b;
                 continue;
@@ -213,7 +248,7 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
                 vector<bh_instruction *> cur_instr = cur.getAllInstr();
                 vector<bh_instruction *> it_instr = it->getAllInstr();
                 cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-                Block b = create_nested_block(cur_instr, cur.rank, it->size);
+                Block b = create_nested_block(cur_instr, cur.rank, it->size, news);
                 assert(b.size == it->size);
                 cur = b;
                 continue;
@@ -223,7 +258,7 @@ vector<Block> fuser_serial(vector<Block> &block_list) {
             break;
         }
         // Let's fuse at the next rank level
-        cur._block_list = fuser_serial(cur._block_list);
+        cur._block_list = fuser_serial(cur._block_list, news);
     }
     return ret;
 }
@@ -238,6 +273,9 @@ vector<Block> remove_empty_blocks(vector<Block> &block_list) {
 }
 
 void Impl::execute(bh_ir *bhir) {
+
+    // Get the set of new arrays in 'bhir'
+    const set<bh_instruction*> news = update_allocated_bases(bhir);
 
     // Assign IDs to all base arrays
     IdMap<bh_base *> base_ids;
@@ -260,8 +298,8 @@ void Impl::execute(bh_ir *bhir) {
     Kernel kernel;
     {
         // Let's fuse the 'instr_list' into blocks
-        kernel.block_list = fuser_singleton(bhir->instr_list);
-        kernel.block_list = fuser_serial(kernel.block_list);
+        kernel.block_list = fuser_singleton(bhir->instr_list, news);
+        kernel.block_list = fuser_serial(kernel.block_list, news);
         kernel.block_list = remove_empty_blocks(kernel.block_list);
 
         // And fill kernel attributes

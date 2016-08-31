@@ -51,7 +51,8 @@ bool is_reshapeable(const vector<bh_instruction*> &instr_list) {
 }
 } // Anonymous name space
 
-Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t size_of_rank_dim) {
+Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t size_of_rank_dim,
+                          const set<bh_instruction*> &news) {
 
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
@@ -103,9 +104,9 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
 
     // Let's build the nested block from the 'rank' level to the instruction block
     Block ret;
-    set<bh_base*> bases; // Set of all known bases
     set<bh_base*> syncs; // Set of all sync'ed bases
     for (bh_instruction *instr: instr_list) {
+        const int nop = bh_noperands(instr->opcode);
         const int64_t max_ndim = instr->max_ndim();
         assert(max_ndim > rank);
 
@@ -114,7 +115,7 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
             vector<int64_t > shape = instr->dominating_shape();
             assert(shape.size() > 0);
             vector<bh_instruction*> single_instr = {instr};
-            ret._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1]));
+            ret._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1], news));
         } else { // No more dimensions -- let's write the instruction block
             assert(max_ndim == rank+1);
             Block instr_block;
@@ -122,26 +123,10 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
             instr_block.rank = rank+1; // This rank is only to make pretty printing easier
             ret._block_list.push_back(instr_block);
 
-
             // Since 'instr' execute at this 'rank' level, we can calculate news, syncs, frees, and temps.
-            bh_base *created_array = NULL; // Is this instruction creating a new array?
-            bh_base *destroyed_array = NULL;// Is this instruction destroying an array?
-
-            // Add inputs to 'bases'
-            int nop = bh_noperands(instr->opcode);
-            for (int i=1; i<nop; ++i) {
-                bh_view &v = instr->operand[i];
-                if (not bh_is_constant(&v)) {
-                    bases.insert(v.base);
-                }
-            }
-            // Add output to 'bases' and check if 'instr' creates a new array
-            if (not bh_opcode_is_system(instr->opcode)) {
-                bh_view &v = instr->operand[0];
-                if (bases.find(v.base) == bases.end()) { // TODO: check if writing to whole array
-                    created_array = v.base;
-                }
-                bases.insert(v.base);
+            if (news.find(instr) != news.end()) {
+                if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
+                    ret._news.insert(instr->operand[0].base);
             }
             if (instr->opcode == BH_SYNC) {
                 assert(nop == 1);
@@ -150,13 +135,9 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
                 assert(nop == 1);
                 if (syncs.find(instr->operand[0].base) == syncs.end()) {
                     // If the array is free'ed and not sync'ed, it can be destroyed
-                    destroyed_array = instr->operand[0].base;
+                    ret._frees.insert(instr->operand[0].base);
                 }
             }
-            if (created_array != NULL)
-                ret._news.insert(created_array);
-            if (destroyed_array != NULL)
-                ret._frees.insert(destroyed_array);
         }
     }
     ret.rank = rank;
