@@ -59,6 +59,16 @@ public:
     void getAllInstr(std::vector<bh_instruction *> &out) const;
     std::vector<bh_instruction *> getAllInstr() const;
 
+    // Return all bases accessed by this block
+    std::set<bh_base*> getAllBases() const {
+        std::set<bh_base*> ret;
+        for (bh_instruction *instr: getAllInstr()) {
+            std::set<bh_base*> t = instr->get_bases();
+            ret.insert(t.begin(), t.end());
+        }
+        return ret;
+    }
+
     // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const {
         for (bh_instruction *instr: getAllInstr()) {
