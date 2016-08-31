@@ -22,15 +22,15 @@ env:
       - BH_STACK=uni NUMPYTEST_ARGS="--exclude-test=test_csign_mixed --exclude=test_trace.py"
 
       # Default stack
-      - BH_STACK=default BH_CPU_JIT_LEVEL=3
-      - BH_STACK=default BH_CPU_JIT_LEVEL=1
+      #- BH_STACK=default BH_CPU_JIT_LEVEL=3
+      #- BH_STACK=default BH_CPU_JIT_LEVEL=1
 
       # CPU greedy stack
-      - BH_STACK=cpu_greedy BH_CPU_JIT_LEVEL=3
-      - BH_STACK=cpu_greedy BH_CPU_JIT_LEVEL=1
+      #- BH_STACK=cpu_greedy BH_CPU_JIT_LEVEL=3
+      #- BH_STACK=cpu_greedy BH_CPU_JIT_LEVEL=1
 
       # GPU stack
-      - BH_STACK=gpu BH_BCEXP_GPU_REDUCE1D=100
+      #- BH_STACK=gpu BH_BCEXP_GPU_REDUCE1D=100
 
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
