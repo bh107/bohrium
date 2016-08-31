@@ -51,6 +51,9 @@ class Store {
     // Whether we should write the kernel sources (.c files)
     const bool dump_src;
 
+    // Component config
+    const ConfigParser &config;
+
   public:
     Store(const ConfigParser &config);
     ~Store();

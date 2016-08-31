@@ -322,7 +322,8 @@ void Impl::execute(bh_ir *bhir) {
     }
 
     // Debug print
-    //cout << kernel.block_list;
+    if (config.defaultGet<bool>("verbose", false))
+        cout << kernel.block_list;
 
     // Code generation
     stringstream ss;
