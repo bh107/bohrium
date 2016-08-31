@@ -210,6 +210,17 @@ static bool data_parallel_compatible(const Block &b1, const Block &b2) {
     return true;
 }
 
+// Check if 'block' accesses the output of a sweep in 'sweeps'
+static bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &block) {
+    for (bh_instruction *instr: sweeps) {
+        assert(bh_noperands(instr->opcode) > 0);
+        auto bases = block.getAllBases();
+        if (bases.find(instr->operand[0].base) != bases.end())
+            return true;
+    }
+    return false;
+}
+
 vector<Block> fuser_serial(vector<Block> &block_list, const set<bh_instruction*> &news) {
     vector<Block> ret;
     for (auto it = block_list.begin(); it != block_list.end(); ) {
@@ -225,7 +236,7 @@ vector<Block> fuser_serial(vector<Block> &block_list, const set<bh_instruction*>
                 break;
             if (not data_parallel_compatible(cur, *it))
                 break;
-            if (cur._sweeps.size() > 0) //TODO: support merge of reduction
+            if (sweeps_accessed_by_block(cur._sweeps, *it))
                 break;
             assert(cur.rank == it->rank);
 
