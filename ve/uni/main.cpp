@@ -405,8 +405,6 @@ void Impl::execute(bh_ir *bhir) {
     ss << "#include <complex.h>" << endl;
     ss << "#include <tgmath.h>" << endl;
     ss << "#include <math.h>" << endl;
-    ss << "#include <bh_memory.h>" << endl;
-    ss << "#include <bh_type.h>" << endl;
     ss << endl;
 
     if (kernel.useRandom) { // Write the random function
