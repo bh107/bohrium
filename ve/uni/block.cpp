@@ -52,7 +52,7 @@ bool is_reshapeable(const vector<bh_instruction*> &instr_list) {
 } // Anonymous name space
 
 Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t size_of_rank_dim,
-                          const set<bh_instruction*> &news) {
+                          const set<bh_instruction*> &news, const set<bh_base*> &temps) {
 
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
@@ -139,6 +139,8 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
     // Temps are the arrays both created and freed in this block
     std::set_intersection(ret._news.begin(), ret._news.end(), ret._frees.begin(), ret._frees.end(), \
                           std::inserter(ret._temps, ret._temps.begin()));
+    // Plus the temp arrays inherited from parent blocks
+    ret._temps.insert(temps.begin(), temps.end());
     ret._reshapable = is_reshapeable(ret.getAllInstr());
     assert(ret.validation());
     return ret;
@@ -274,8 +276,7 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b) {
     ret._sweeps.insert(t2._sweeps.begin(), t2._sweeps.end());
     ret._news.insert(t2._news.begin(), t2._news.end());
     ret._frees.insert(t2._frees.begin(), t2._frees.end());
-    std::set_intersection(ret._news.begin(), ret._news.end(), ret._frees.begin(), ret._frees.end(), \
-                          std::inserter(ret._temps, ret._temps.begin()));
+    ret._temps.insert(t2._temps.begin(), t2._temps.end());
     ret._reshapable = is_reshapeable(ret.getAllInstr());
     return ret;
 }
