@@ -56,7 +56,7 @@ class IdMap {
     }
 
     // Get the ID of 'key', throws exception if 'key' doesn't exist
-    size_t operator[] (T key) const {
+    size_t operator[] (const T key) const {
         return _map.at(key);
     }
 };

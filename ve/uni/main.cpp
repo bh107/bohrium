@@ -374,13 +374,29 @@ void Impl::execute(bh_ir *bhir) {
     if (config.defaultGet<bool>("verbose", false))
         cout << kernel.block_list;
 
-    // Code generation
-    stringstream ss;
+    // Find all non-temporary arrays
+    vector<bh_base*> non_temps;
+    {
+        set<bh_base*> temps;
+        for (Block &b: kernel.block_list) {
+            set<bh_base*> t = b.getAllTemps();
+            temps.insert(t.begin(), t.end());
+        }
+        for (bh_base *base: base_ids.getKeys()) {
+            if (temps.find(base) == temps.end()) {
+                assert(std::find(non_temps.begin(), non_temps.end(), base) == non_temps.end());
+                non_temps.push_back(base);
+            }
+        }
+    }
 
     // Make sure all arrays are allocated
-    for(bh_base *base: base_ids.getKeys()) {
+    for (bh_base *base: non_temps) {
         bh_data_malloc(base);
     }
+
+    // Code generation
+    stringstream ss;
 
     // Write the need includes
     ss << "#include <stdint.h>" << endl;
@@ -406,10 +422,10 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the header of the execute function
     ss << "void execute(";
-    for(size_t id=0; id < base_ids.size(); ++id) {
-        const bh_base *b = base_ids.getKeys()[id];
-        ss << write_type(b->type) << " a" << id << "[]";
-        if (id+1 < base_ids.size()) {
+    for(size_t i=0; i < non_temps.size(); ++i) {
+        bh_base *b = non_temps[i];
+        ss << write_type(b->type) << " a" << base_ids[b] << "[]";
+        if (i+1 < non_temps.size()) {
             ss << ", ";
         }
     }
@@ -426,18 +442,17 @@ void Impl::execute(bh_ir *bhir) {
     // to typed arrays and call the execute function
     {
         ss << "void launcher(void* data_list[]) {" << endl;
-        size_t i=0;
-        for (bh_base *b: base_ids.getKeys()) {
-            spaces(ss, 4);
+        for(size_t i=0; i < non_temps.size(); ++i) {
+            bh_base *b = non_temps[i];
             ss << write_type(b->type) << " *a" << base_ids[b];
             ss << " = data_list[" << i << "];" << endl;
-            ++i;
         }
         spaces(ss, 4);
         ss << "execute(";
-        for(size_t id=0; id < base_ids.size(); ++id) {
-            ss << "a" << id;
-            if (id+1 < base_ids.size()) {
+        for(size_t i=0; i < non_temps.size(); ++i) {
+            bh_base *b = non_temps[i];
+            ss << "a" << base_ids[b];
+            if (i+1 < non_temps.size()) {
                 ss << ", ";
             }
         }
@@ -445,15 +460,13 @@ void Impl::execute(bh_ir *bhir) {
         ss << "}" << endl;
     }
 
-  //  cout << ss.str();
-
     KernelFunction func = _store.getFunction(ss.str());
     assert(func != NULL);
 
     // Create a 'data_list' of data pointers
     vector<void*> data_list;
-    data_list.reserve(base_ids.size());
-    for(bh_base *base: base_ids.getKeys()) {
+    data_list.reserve(non_temps.size());
+    for(bh_base *base: non_temps) {
         assert(base->data != NULL);
         data_list.push_back(base->data);
     }

@@ -69,6 +69,16 @@ public:
         return ret;
     }
 
+    // Return all temporary arrays within the block
+    std::set<bh_base*> getAllTemps() const {
+        std::set<bh_base*> ret(_temps);
+        for (const Block &b: _block_list) {
+            std::set<bh_base*> t = b.getAllTemps();
+            ret.insert(t.begin(), t.end());
+        }
+        return ret;
+    }
+
     // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const {
         for (bh_instruction *instr: getAllInstr()) {
