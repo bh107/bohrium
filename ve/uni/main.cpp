@@ -142,9 +142,11 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstre
         if (block._temps.size() > 0) {
             spaces(out, 8 + block.rank*4);
             out << "// Temporary array declarations" << endl;
-            for(bh_base* temp: block._temps) {
-                spaces(out, 8 + block.rank*4);
-                out <<  write_type(temp->type) << " t" << base_ids[temp] << ";" << endl;
+            for (bh_base* base: base_ids.getKeys()) {
+                if (block._temps.find(base) != block._temps.end()) {
+                    spaces(out, 8 + block.rank * 4);
+                    out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
+                }
             }
             out << endl;
         }
@@ -177,9 +179,11 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstre
     if (block._temps.size() > 0) {
         spaces(out, 8 + block.rank*4);
         out << "// Temporary array declarations" << endl;
-        for(bh_base* temp: block._temps) {
-            spaces(out, 8 + block.rank*4);
-            out <<  write_type(temp->type) << " t" << base_ids[temp] << ";" << endl;
+        for (bh_base* base: base_ids.getKeys()) {
+            if (block._temps.find(base) != block._temps.end()) {
+                spaces(out, 8 + block.rank * 4);
+                out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
+            }
         }
         out << endl;
     }
