@@ -277,6 +277,8 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b) {
     ret._news.insert(t2._news.begin(), t2._news.end());
     ret._frees.insert(t2._frees.begin(), t2._frees.end());
     ret._temps.insert(t2._temps.begin(), t2._temps.end());
+    std::set_intersection(ret._news.begin(), ret._news.end(), ret._frees.begin(), ret._frees.end(), \
+                          std::inserter(ret._temps, ret._temps.begin()));
     ret._reshapable = is_reshapeable(ret.getAllInstr());
     return ret;
 }
