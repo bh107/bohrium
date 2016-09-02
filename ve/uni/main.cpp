@@ -48,7 +48,7 @@ class Impl : public ComponentImpl {
     set<bh_instruction*> update_allocated_bases(bh_ir *bhir);
   public:
     Impl(int stack_level) : ComponentImpl(stack_level), _store(config) {}
-    ~Impl() {}; // NB: a destructor implementation must exist
+    ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
         // ExtmethodFace does not have a default or copy constructor thus
@@ -71,6 +71,14 @@ void spaces(stringstream &out, int num) {
         out << " ";
     }
 }
+}
+
+Impl::~Impl() {
+    if (config.defaultGet<bool>("prof", false)) {
+        cout << "[UNI-VE] Profiling: " << endl;
+        cout << "\tKernel store hits:   " << _store.num_lookups - _store.num_lookup_misses << endl;
+        cout << "\tKernel store misses: " << _store.num_lookup_misses << endl;
+    }
 }
 
 set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {

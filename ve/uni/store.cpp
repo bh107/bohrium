@@ -68,11 +68,13 @@ static string hash_filename(size_t hash, string extension=".so") {
 
 KernelFunction Store::getFunction(const string &source) {
     size_t hash = hasher(source);
+    ++num_lookups;
 
     // Do we have the function compiled and ready already?
     if (_functions.find(hash) != _functions.end()) {
         return _functions.at(hash);
     }
+    ++num_lookup_misses;
 
     // The object file path
     fs::path objfile = object_dir / hash_filename(hash);

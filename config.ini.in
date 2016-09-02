@@ -165,6 +165,7 @@ compiler_lib="${VE_UNI_COMPILER_LIB}"
 compiler_flg="${VE_UNI_COMPILER_FLG}"
 dump_src = true
 verbose = false
+prof = false #Profiling statistics
 
 
 [cpu]

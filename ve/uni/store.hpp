@@ -58,6 +58,11 @@ class Store {
     Store(const ConfigParser &config);
     ~Store();
 
+    // Some statistics
+    int64_t num_lookups = 0;
+    int64_t num_lookup_misses = 0;
+
+    // Return a kernel function based on the given 'source'
     KernelFunction getFunction(const std::string &source);
 };
 
