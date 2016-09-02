@@ -46,6 +46,9 @@ class Impl : public ComponentImpl {
     // Update the allocate bases and returns a set of instructions that creates new arrays
     // This function should be called at each BhIR execution
     set<bh_instruction*> update_allocated_bases(bh_ir *bhir);
+    // Some statistics
+    uint64_t num_base_arrays=0;
+    uint64_t num_temp_arrays=0;
   public:
     Impl(int stack_level) : ComponentImpl(stack_level), _store(config) {}
     ~Impl();
@@ -76,8 +79,9 @@ void spaces(stringstream &out, int num) {
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
         cout << "[UNI-VE] Profiling: " << endl;
-        cout << "\tKernel store hits:   " << _store.num_lookups - _store.num_lookup_misses << endl;
-        cout << "\tKernel store misses: " << _store.num_lookup_misses << endl;
+        cout << "\tKernel store hits:   " << _store.num_lookups - _store.num_lookup_misses \
+                                          << "/" << _store.num_lookups << endl;
+        cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
     }
 }
 
@@ -96,7 +100,6 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
                 }
             }
         }
-
         //And remove freed arrays
         if (instr.opcode == BH_FREE) {
             bh_base *base = operands[0].base;
@@ -400,6 +403,8 @@ void Impl::execute(bh_ir *bhir) {
                 non_temps.push_back(base);
             }
         }
+        num_base_arrays += base_ids.getKeys().size();
+        num_temp_arrays += temps.size();
     }
 
     // Make sure all arrays are allocated

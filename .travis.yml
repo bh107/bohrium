@@ -19,7 +19,7 @@ env:
   matrix:
 
       # UNI stack
-      - BH_STACK=uni NUMPYTEST_ARGS="--exclude-test=test_csign_mixed --exclude=test_trace.py"
+      - BH_STACK=uni BH_UNI_PROF=true NUMPYTEST_ARGS="--exclude-test=test_csign_mixed --exclude=test_trace.py"
 
       # Default stack
       #- BH_STACK=default BH_CPU_JIT_LEVEL=3
