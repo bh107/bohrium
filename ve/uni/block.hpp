@@ -38,7 +38,6 @@ public:
     std::set<bh_instruction*> _sweeps;
     std::set<bh_base *> _news;
     std::set<bh_base *> _frees;
-    std::set<bh_base *> _temps;
     bool _reshapable = false;
 
     // Returns true if this block is an instruction block, which has a
@@ -56,8 +55,8 @@ public:
     std::string pprint() const;
 
     // Return all instructions in the block (incl. nested blocks)
-    void getAllInstr(std::vector<bh_instruction *> &out) const;
-    std::vector<bh_instruction *> getAllInstr() const;
+    void getAllInstr(std::vector<bh_instruction*> &out) const;
+    std::vector<bh_instruction*> getAllInstr() const;
 
     // Return all bases accessed by this block
     std::set<bh_base*> getAllBases() const {
@@ -70,14 +69,8 @@ public:
     }
 
     // Return all temporary arrays within the block
-    std::set<bh_base*> getAllTemps() const {
-        std::set<bh_base*> ret(_temps);
-        for (const Block &b: _block_list) {
-            std::set<bh_base*> t = b.getAllTemps();
-            ret.insert(t.begin(), t.end());
-        }
-        return ret;
-    }
+    void getAllTemps(std::set<bh_base*> &out) const;
+    std::set<bh_base*> getAllTemps() const;
 
     // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const {

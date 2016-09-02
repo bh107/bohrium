@@ -112,7 +112,7 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
     return ret;
 }
 
-void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstream &out) {
+void write_block(const IdMap<bh_base*> &base_ids, const Block &block, const set<bh_base*> &temps, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
     // If this block is sweeped, we will "peel" the for-loop such that the
@@ -142,25 +142,21 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstre
         spaces(out, 8 + block.rank*4);
         out << "uint64_t " << itername << " = 0;" << endl;
         // Write temporary array declarations
-        if (block._temps.size() > 0) {
-            spaces(out, 8 + block.rank*4);
-            out << "// Temporary array declarations" << endl;
-            for (bh_base* base: base_ids.getKeys()) {
-                if (block._temps.find(base) != block._temps.end()) {
-                    spaces(out, 8 + block.rank * 4);
-                    out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-                }
+        for (bh_base* base: base_ids.getKeys()) {
+            if (temps.find(base) != temps.end()) {
+                spaces(out, 8 + block.rank * 4);
+                out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
             }
-            out << endl;
         }
+        out << endl;
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
                 if (b._instr != NULL) {
                     spaces(out, 4 + b.rank*4);
-                    write_instr(base_ids, block._temps, *b._instr, out);
+                    write_instr(base_ids, temps, *b._instr, out);
                 }
             } else {
-                write_block(base_ids, b, out);
+                write_block(base_ids, b, temps, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -179,16 +175,11 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstre
     out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
 
     // Write temporary array declarations
-    if (block._temps.size() > 0) {
-        spaces(out, 8 + block.rank*4);
-        out << "// Temporary array declarations" << endl;
-        for (bh_base* base: base_ids.getKeys()) {
-            if (block._temps.find(base) != block._temps.end()) {
-                spaces(out, 8 + block.rank * 4);
-                out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-            }
+    for (bh_base* base: base_ids.getKeys()) {
+        if (temps.find(base) != temps.end()) {
+            spaces(out, 8 + block.rank * 4);
+            out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
         }
-        out << endl;
     }
 
     // Write the for-loop body
@@ -196,10 +187,10 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstre
         if (b.isInstr()) { // Finally, let's write the instruction
             if (b._instr != NULL) {
                 spaces(out, 4 + b.rank*4);
-                write_instr(base_ids, block._temps, *b._instr, out);
+                write_instr(base_ids, temps, *b._instr, out);
             }
         } else {
-            write_block(base_ids, b, out);
+            write_block(base_ids, b, temps, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -389,10 +380,10 @@ void Impl::execute(bh_ir *bhir) {
     if (config.defaultGet<bool>("verbose", false))
         cout << kernel.block_list;
 
-    // Find all non-temporary arrays
+    // Find all temporary and non-temporary arrays
     vector<bh_base*> non_temps;
+    set<bh_base*> temps;
     {
-        set<bh_base*> temps;
         for (Block &b: kernel.block_list) {
             set<bh_base*> t = b.getAllTemps();
             temps.insert(t.begin(), t.end());
@@ -448,7 +439,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the blocks that makes up the body of 'execute()'
     for(const Block &block: kernel.block_list) {
-        write_block(base_ids, block, ss);
+        write_block(base_ids, block, temps, ss);
     }
 
     ss << "}" << endl << endl;

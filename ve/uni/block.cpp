@@ -136,11 +136,6 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
     }
     ret.rank = rank;
     ret.size = size_of_rank_dim;
-    // Temps are the arrays both created and freed in this block
-    std::set_intersection(ret._news.begin(), ret._news.end(), ret._frees.begin(), ret._frees.end(), \
-                          std::inserter(ret._temps, ret._temps.begin()));
-    // Plus the temp arrays inherited from parent blocks
-    ret._temps.insert(temps.begin(), temps.end());
     ret._reshapable = is_reshapeable(ret.getAllInstr());
     assert(ret.validation());
     return ret;
@@ -194,13 +189,6 @@ string Block::pprint() const {
             }
             ss << "}";
         }
-        if (_temps.size() > 0) {
-            ss << ", temps: {";
-            for (const bh_base *b : _temps) {
-                ss << "a" << b->get_label() << ",";
-            }
-            ss << "}";
-        }
         if (_block_list.size() > 0) {
             ss << ", block list:" << endl;
             for (const Block &b : _block_list) {
@@ -211,7 +199,7 @@ string Block::pprint() const {
     return ss.str();
 }
 
-void Block::getAllInstr(vector<bh_instruction *> &out) const {
+void Block::getAllInstr(vector<bh_instruction*> &out) const {
     if (isInstr()) {
         if (_instr != NULL)
             out.push_back(_instr);
@@ -222,9 +210,24 @@ void Block::getAllInstr(vector<bh_instruction *> &out) const {
     }
 }
 
-vector<bh_instruction *> Block::getAllInstr() const {
+vector<bh_instruction*> Block::getAllInstr() const {
     vector<bh_instruction *> ret;
     getAllInstr(ret);
+    return ret;
+}
+
+void Block::getAllTemps(set<bh_base*> &out) const {
+    // Add temps at this rank level
+    std::set_intersection(_news.begin(), _news.end(), _frees.begin(), _frees.end(), \
+                          std::inserter(out, out.begin()));
+    // Add temps at the next rank level
+    for (const Block &b: _block_list) {
+        b.getAllTemps(out);
+    }
+}
+set<bh_base*> Block::getAllTemps() const {
+    set<bh_base*> ret;
+    getAllTemps(ret);
     return ret;
 }
 
@@ -276,9 +279,6 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b) {
     ret._sweeps.insert(t2._sweeps.begin(), t2._sweeps.end());
     ret._news.insert(t2._news.begin(), t2._news.end());
     ret._frees.insert(t2._frees.begin(), t2._frees.end());
-    ret._temps.insert(t2._temps.begin(), t2._temps.end());
-    std::set_intersection(ret._news.begin(), ret._news.end(), ret._frees.begin(), ret._frees.end(), \
-                          std::inserter(ret._temps, ret._temps.begin()));
     ret._reshapable = is_reshapeable(ret.getAllInstr());
     return ret;
 }
