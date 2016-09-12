@@ -142,12 +142,13 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, const set<
         spaces(out, 8 + block.rank*4);
         out << "uint64_t " << itername << " = 0;" << endl;
         // Write temporary array declarations
+        /*
         for (bh_base* base: base_ids.getKeys()) {
             if (temps.find(base) != temps.end()) {
                 spaces(out, 8 + block.rank * 4);
                 out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
             }
-        }
+        }*/
         out << endl;
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
@@ -175,12 +176,13 @@ void write_block(const IdMap<bh_base*> &base_ids, const Block &block, const set<
     out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
 
     // Write temporary array declarations
+    /*
     for (bh_base* base: base_ids.getKeys()) {
         if (temps.find(base) != temps.end()) {
             spaces(out, 8 + block.rank * 4);
             out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
         }
-    }
+    }*/
 
     // Write the for-loop body
     for (const Block &b: block._block_list) {
@@ -436,6 +438,15 @@ void Impl::execute(bh_ir *bhir) {
         }
     }
     ss << ") {" << endl;
+
+    // Write temporary array declarations
+    // TODO: define tmp arrays within local for-loops rather than global as we do now.
+    for (bh_base* base: base_ids.getKeys()) {
+        if (temps.find(base) != temps.end()) {
+            spaces(ss, 4);
+            ss << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
+        }
+    }
 
     // Write the blocks that makes up the body of 'execute()'
     for(const Block &block: kernel.block_list) {
