@@ -111,7 +111,7 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
     return ret;
 }
 
-void write_block(const BaseDB &base_ids, const Block &block, stringstream &out) {
+void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &block, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
     // If this block is sweeped, we will "peel" the for-loop such that the
@@ -141,13 +141,14 @@ void write_block(const BaseDB &base_ids, const Block &block, stringstream &out) 
         spaces(out, 8 + block.rank*4);
         out << "uint64_t " << itername << " = 0;" << endl;
         // Write temporary array declarations
-        /*
-        for (bh_base* base: base_ids.getKeys()) {
-            if (temps.find(base) != temps.end()) {
+        set<bh_base*> new_declared(declared);
+        for (bh_base* base: base_ids.getBases()) {
+            if (base_ids.isTmp(base) and new_declared.find(base) == new_declared.end()) {
                 spaces(out, 8 + block.rank * 4);
                 out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
+                new_declared.insert(base);
             }
-        }*/
+        }
         out << endl;
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
@@ -156,7 +157,7 @@ void write_block(const BaseDB &base_ids, const Block &block, stringstream &out) 
                     write_instr(base_ids, *b._instr, out);
                 }
             } else {
-                write_block(base_ids, b, out);
+                write_block(base_ids, new_declared, b, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -175,13 +176,14 @@ void write_block(const BaseDB &base_ids, const Block &block, stringstream &out) 
     out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
 
     // Write temporary array declarations
-    /*
-    for (bh_base* base: base_ids.getKeys()) {
-        if (temps.find(base) != temps.end()) {
+    set<bh_base*> new_declared(declared);
+    for (bh_base* base: base_ids.getBases()) {
+        if (base_ids.isTmp(base) and new_declared.find(base) == new_declared.end()) {
             spaces(out, 8 + block.rank * 4);
             out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
+            new_declared.insert(base);
         }
-    }*/
+    }
 
     // Write the for-loop body
     for (const Block &b: block._block_list) {
@@ -191,7 +193,7 @@ void write_block(const BaseDB &base_ids, const Block &block, stringstream &out) 
                 write_instr(base_ids, *b._instr, out);
             }
         } else {
-            write_block(base_ids, b, out);
+            write_block(base_ids, new_declared, b, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -439,18 +441,10 @@ void Impl::execute(bh_ir *bhir) {
     }
     ss << ") {" << endl;
 
-    // Write temporary array declarations
-    // TODO: define tmp arrays within local for-loops rather than global as we do now.
-    for (bh_base* base: base_ids.getBases()) {
-        if (temps.find(base) != temps.end()) {
-            spaces(ss, 4);
-            ss << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-        }
-    }
-
     // Write the blocks that makes up the body of 'execute()'
     for(const Block &block: kernel.block_list) {
-        write_block(base_ids, block, ss);
+        set<bh_base*> declared;
+        write_block(base_ids, declared, block, ss);
     }
 
     ss << "}" << endl << endl;
