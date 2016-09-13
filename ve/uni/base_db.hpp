@@ -18,46 +18,47 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_IDMAP_H
-#define __BH_IDMAP_H
+#ifndef __BH_BASE_DB_H
+#define __BH_BASE_DB_H
 
 #include <map>
 #include <vector>
 
-/* IdMap is a map of keys to IDs. The main feature is getKeys(),
- * which always returns the keys in the order they where inserted.
+#include <bh_array.hpp>
+
+/* BaseDB is a database over base arrays. The main feature is getBases(),
+ * which always returns the bases in the order they where inserted.
  */
-template <typename T>
-class IdMap {
+class BaseDB {
   private:
-    std::map<T, size_t> _map;
-    std::vector<T> _vec; // Vector of the keys where the vector index corresponds to a ID.
+    std::map<bh_base*, size_t> _map;
+    std::vector<bh_base*> _vec; // Vector of the bases where the vector index corresponds to a ID.
   public:
-    IdMap() {};
+    BaseDB() {};
 
     // Insert a 'key'. Returns false and does nothing if 'key' exist, else true
-    bool insert(T key) {
-        if (_map.insert(std::make_pair(key, _vec.size())).second) {
-            _vec.push_back(key);
+    bool insert(bh_base* base) {
+        if (_map.insert(std::make_pair(base, _vec.size())).second) {
+            _vec.push_back(base);
             return true;
         } else {
             return false;
         }
     };
 
-    // Return a vector of all keys in the order they where inserted
-    const std::vector<T> &getKeys() const {
+    // Return a vector of all bases in the order they where inserted
+    const std::vector<bh_base*> &getBases() const {
         return _vec;
     }
 
-    // Number of keys/IDs in the collection
+    // Number of bases in the collection
     size_t size() const {
         return _vec.size();
     }
 
-    // Get the ID of 'key', throws exception if 'key' doesn't exist
-    size_t operator[] (const T key) const {
-        return _map.at(key);
+    // Get the ID of 'base', throws exception if 'base' doesn't exist
+    size_t operator[] (bh_base* base) const {
+        return _map.at(base);
     }
 };
 

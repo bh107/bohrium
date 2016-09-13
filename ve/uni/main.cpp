@@ -112,7 +112,7 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
     return ret;
 }
 
-void write_block(const IdMap<bh_base*> &base_ids, const Block &block, const set<bh_base*> &temps, stringstream &out) {
+void write_block(const BaseDB &base_ids, const Block &block, const set<bh_base*> &temps, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
     // If this block is sweeped, we will "peel" the for-loop such that the
@@ -335,7 +335,7 @@ void Impl::execute(bh_ir *bhir) {
     const set<bh_instruction*> news = update_allocated_bases(bhir);
 
     // Assign IDs to all base arrays
-    IdMap<bh_base *> base_ids;
+    BaseDB base_ids;
     // NB: by assigning the IDs in the order they appear in the 'instr_list',
     //     the kernels can better be reused
     for(const bh_instruction &instr: bhir->instr_list) {
@@ -390,13 +390,13 @@ void Impl::execute(bh_ir *bhir) {
             set<bh_base*> t = b.getAllTemps();
             temps.insert(t.begin(), t.end());
         }
-        for (bh_base *base: base_ids.getKeys()) {
+        for (bh_base *base: base_ids.getBases()) {
             if (temps.find(base) == temps.end()) {
                 assert(std::find(non_temps.begin(), non_temps.end(), base) == non_temps.end());
                 non_temps.push_back(base);
             }
         }
-        num_base_arrays += base_ids.getKeys().size();
+        num_base_arrays += base_ids.getBases().size();
         num_temp_arrays += temps.size();
     }
 
@@ -441,7 +441,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write temporary array declarations
     // TODO: define tmp arrays within local for-loops rather than global as we do now.
-    for (bh_base* base: base_ids.getKeys()) {
+    for (bh_base* base: base_ids.getBases()) {
         if (temps.find(base) != temps.end()) {
             spaces(ss, 4);
             ss << write_type(base->type) << " t" << base_ids[base] << ";" << endl;

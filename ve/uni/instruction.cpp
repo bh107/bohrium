@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "block.hpp"
 #include "type.hpp"
 #include "instruction.hpp"
+#include "base_db.hpp"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ void write_array_subscription(const bh_view &view, stringstream &out, int hidden
     out << "]";
 }
 
-void write_system_operation(const IdMap<bh_base*> &base_ids, const bh_instruction &instr, stringstream &out) {
+void write_system_operation(const BaseDB &base_ids, const bh_instruction &instr, stringstream &out) {
 
     switch (instr.opcode) {
         case BH_FREE:
@@ -372,7 +373,7 @@ int sweep_axis(const bh_instruction &instr) {
     return BH_MAXDIM;
 }
 
-void write_instr(const IdMap<bh_base*> &base_ids, const set<bh_base*> &temps, const bh_instruction &instr, stringstream &out) {
+void write_instr(const BaseDB &base_ids, const set<bh_base*> &temps, const bh_instruction &instr, stringstream &out) {
     if (bh_opcode_is_system(instr.opcode)) {
         write_system_operation(base_ids, instr, out);
         return;

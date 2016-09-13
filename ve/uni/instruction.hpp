@@ -26,10 +26,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_idmap.hpp>
 #include <bh_instruction.hpp>
 
+#include "base_db.hpp"
+
 namespace bohrium {
 
 // Write the source code of an instruction
-void write_instr(const IdMap<bh_base*> &base_ids, const std::set<bh_base*> &temps, const bh_instruction &instr, std::stringstream &out);
+void write_instr(const BaseDB &base_ids, const std::set<bh_base*> &temps, const bh_instruction &instr, std::stringstream &out);
 
 // Return the axis that 'instr' reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
 int sweep_axis(const bh_instruction &instr);
