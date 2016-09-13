@@ -43,7 +43,7 @@ Store::Store(const ConfigParser &config) : source_dir(fs::absolute(config.get<st
                                                     config.defaultGet<string>("compiler_lib", "-lm"),
                                                     config.defaultGet<string>("compiler_flg", ""),
                                                     config.defaultGet<string>("compiler_ext", "")),
-                                           dump_src(config.defaultGet<bool>("dump_src", false))
+                                           dump_src(config.defaultGet<bool>("dump_src", false)), config(config)
 {
     // Let's make sure that the directories exist
     fs::create_directories(source_dir);
@@ -68,11 +68,13 @@ static string hash_filename(size_t hash, string extension=".so") {
 
 KernelFunction Store::getFunction(const string &source) {
     size_t hash = hasher(source);
+    ++num_lookups;
 
     // Do we have the function compiled and ready already?
     if (_functions.find(hash) != _functions.end()) {
         return _functions.at(hash);
     }
+    ++num_lookup_misses;
 
     // The object file path
     fs::path objfile = object_dir / hash_filename(hash);
@@ -88,7 +90,8 @@ KernelFunction Store::getFunction(const string &source) {
             ofs.flush();
             ofs.close();
         }
-        cout << "Write file " << srcfile << endl;
+        if (config.defaultGet<bool>("verbose", false))
+            cout << "Write file " << srcfile << endl;
         compiler.compile(objfile.string(), srcfile.string());
     } else {
         // Pipe the source directly into the compiler thus no source file is written

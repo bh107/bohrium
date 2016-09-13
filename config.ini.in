@@ -10,8 +10,6 @@ cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
 gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
 uni        = bcexp_uni, bccon_uni, node, uni
 
-[bridge] # 'bridge' is a reversed section name that always refers to the bridge.
-
 #
 # Managers
 #
@@ -165,6 +163,9 @@ compiler_cmd="${VE_UNI_COMPILER_CMD}"
 compiler_inc="${VE_UNI_COMPILER_INC}"
 compiler_lib="${VE_UNI_COMPILER_LIB}"
 compiler_flg="${VE_UNI_COMPILER_FLG}"
+dump_src = true
+verbose = false
+prof = false #Profiling statistics
 
 
 [cpu]

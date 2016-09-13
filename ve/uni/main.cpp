@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
-#include <bh_idmap.hpp>
 
 #include "kernel.hpp"
 #include "block.hpp"
@@ -37,11 +36,21 @@ using namespace std;
 namespace {
 class Impl : public ComponentImpl {
   private:
+    // Compiled kernels store
     Store _store;
+    // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
+    //Allocated base arrays
+    set<bh_base*> _allocated_bases;
+    // Update the allocate bases and returns a set of instructions that creates new arrays
+    // This function should be called at each BhIR execution
+    set<bh_instruction*> update_allocated_bases(bh_ir *bhir);
+    // Some statistics
+    uint64_t num_base_arrays=0;
+    uint64_t num_temp_arrays=0;
   public:
     Impl(int stack_level) : ComponentImpl(stack_level), _store(config) {}
-    ~Impl() {}; // NB: a destructor implementation must exist
+    ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
         // ExtmethodFace does not have a default or copy constructor thus
@@ -58,47 +67,6 @@ extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 
-// Returns the views with the greatest number of dimensions
-vector<const bh_view*> max_ndim_views(int64_t nviews, const bh_view view_list[]) {
-    // Find the max ndim
-    int64_t ndim = 0;
-    for (int64_t i=0; i < nviews; ++i) {
-        const bh_view *view = &view_list[i];
-        if (not bh_is_constant(view)) {
-            if (view->ndim > ndim)
-                ndim = view->ndim;
-        }
-    }
-    vector<const bh_view*> ret;
-    for (int64_t i=0; i < nviews; ++i) {
-        const bh_view *view = &view_list[i];
-        if (not bh_is_constant(view)) {
-            if (view->ndim == ndim) {
-                ret.push_back(view);
-            }
-        }
-    }
-    return ret;
-}
-
-// Returns the shape of the view with the greatest number of dimensions
-// if equal, the greatest shape is returned
-vector<int64_t> shape_of_views(int64_t nviews, const bh_view *view_list) {
-    vector<const bh_view*> views = max_ndim_views(nviews, view_list);
-    vector<int64_t > shape;
-    for(const bh_view *view: views) {
-        for (int64_t j=0; j < view->ndim; ++j) {
-            if (shape.size() > (size_t)j) {
-                if (shape[j] < view->shape[j])
-                    shape[j] = view->shape[j];
-            } else {
-                shape.push_back(view->shape[j]);
-            }
-        }
-    }
-    return shape;
-}
-
 namespace {
 void spaces(stringstream &out, int num) {
     for (int i = 0; i < num; ++i) {
@@ -107,121 +75,270 @@ void spaces(stringstream &out, int num) {
 }
 }
 
-void write_block(const IdMap<bh_base*> &base_ids, const Block &block, stringstream &out) {
-    spaces(out, 4 + block.rank*4);
-    if (block._instr != NULL) {
-        write_instr(base_ids, *block._instr, out);
-    } else {
-
-        // If this block is sweeped, we will "peel" the for-loop such that the
-        // sweep instruction is replaced with BH_IDENTITY in the first iteration
-        if (block._sweeps.size() > 0) {
-            Block peeled_block(block);
-            vector<bh_instruction> sweep_instr_list(block._sweeps.size());
-            {
-                size_t i = 0;
-                for (const bh_instruction *instr: block._sweeps) {
-                    Block *sweep_instr_block = peeled_block.findInstrBlock(instr);
-                    assert(sweep_instr_block != NULL);
-                    bh_instruction *sweep_instr = &sweep_instr_list[i++];
-                    sweep_instr->opcode = BH_IDENTITY;
-                    sweep_instr->operand[1] = instr->operand[1]; // The input is the same as in the sweep
-                    sweep_instr->operand[0] = instr->operand[0];
-                    // But the output needs an extra dimension when we are reducing to a non-scalar
-                    if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                        sweep_instr->operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
-                    }
-                    sweep_instr_block->_instr = sweep_instr;
-                }
-            }
-            string itername;
-            {stringstream t; t << "i" << block.rank; itername = t.str();}
-            out << "{ // Peeled loop, 1. iteration" << endl;
-            spaces(out, 8 + block.rank*4);
-            out << "uint64_t " << itername << " = 0;" << endl;
-            for (const Block &b: peeled_block._block_list) {
-                write_block(base_ids, b, out);
-            }
-            spaces(out, 4 + block.rank*4);
-            out << "}" << endl;
-            spaces(out, 4 + block.rank*4);
-        }
-
-        string itername;
-        {stringstream t; t << "i" << block.rank; itername = t.str();}
-        out << "for(uint64_t " << itername;
-        if (block._sweeps.size() > 0) // If the for-loop has been peeled, we should that at 1
-            out << "=1; ";
-        else
-            out << "=0; ";
-        out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
-        for (const Block &b: block._block_list) {
-            write_block(base_ids, b, out);
-        }
-        spaces(out, 4 + block.rank*4);
-        out << "}" << endl;
+Impl::~Impl() {
+    if (config.defaultGet<bool>("prof", false)) {
+        cout << "[UNI-VE] Profiling: " << endl;
+        cout << "\tKernel store hits:   " << _store.num_lookups - _store.num_lookup_misses \
+                                          << "/" << _store.num_lookups << endl;
+        cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
     }
 }
 
-Kernel fuser_singleton(vector<bh_instruction> &instr_list) {
+set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
+    set<bh_instruction*> ret;
+    for(bh_instruction &instr: bhir->instr_list) {
+        bh_view *operands = bh_inst_operands(&instr);
 
-    // Creates the block_list based on the instr_list
-    Kernel ret;
-    for(const bh_instruction &instr: instr_list) {
+        //Save all new base arrays
         int nop = bh_noperands(instr.opcode);
-        if (nop == 0)
-            continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
-
-        if (bh_opcode_is_system(instr.opcode)) {
-            continue; // Ignore system instructions, we will have BH_FREE later
-        }
-
-        int sweep_rank = sweep_axis(instr);
-        vector<int64_t> shape = shape_of_views(nop, instr.operand);
-        Block root;
-        if (sweep_rank == 0) {
-            root._sweeps.insert(&instr);
-        }
-        root.rank = 0;
-        root.size = shape[0];
-        Block *parent = &root;
-        Block *bottom = &root;
-        for(int i=1; i < (int)shape.size(); ++i) {
-            Block b;
-            if (sweep_rank == i) {
-                b._sweeps.insert(&instr);
-                shape_of_views(nop, instr.operand);
+        for (bh_intp o = 0; o < nop; ++o) {
+            if (!bh_is_constant(&operands[o])) {
+                if (_allocated_bases.insert(operands[o].base).second and o == 0){
+                    // The base was in fact a new output array
+                    ret.insert(&instr);
+                }
             }
-            b.rank = i;
-            b.size = shape[i];
-            parent->_block_list.push_back(b);
-            bottom = &parent->_block_list[0];
-            parent = bottom;
         }
-        Block instr_block;
-        instr_block._instr = &instr;
-        instr_block.rank = (int)shape.size();
-        bottom->_block_list.push_back(instr_block);
-        ret.block_list.push_back(root);
-    }
-
-    // Find all frees and kernel flags such as 'useRandom'
-    for(bh_instruction &instr: instr_list) {
-        if (instr.opcode == BH_RANDOM) {
-            ret.useRandom = true;
-        } else if (instr.opcode == BH_FREE) {
-            ret.frees.insert(instr.operand[0].base);
+        //And remove freed arrays
+        if (instr.opcode == BH_FREE) {
+            bh_base *base = operands[0].base;
+            if (_allocated_bases.erase(base) != 1) {
+                cerr << "[UNI-VE] freeing unknown base array: " << *base << endl;
+                throw runtime_error("[UNI-VE] freeing unknown base array");
+            }
         }
     }
     return ret;
 }
 
+void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &block, stringstream &out) {
+    assert(not block.isInstr());
+    spaces(out, 4 + block.rank*4);
+    // If this block is sweeped, we will "peel" the for-loop such that the
+    // sweep instruction is replaced with BH_IDENTITY in the first iteration
+    if (block._sweeps.size() > 0) {
+        Block peeled_block(block);
+        vector<bh_instruction> sweep_instr_list(block._sweeps.size());
+        {
+            size_t i = 0;
+            for (const bh_instruction *instr: block._sweeps) {
+                Block *sweep_instr_block = peeled_block.findInstrBlock(instr);
+                assert(sweep_instr_block != NULL);
+                bh_instruction *sweep_instr = &sweep_instr_list[i++];
+                sweep_instr->opcode = BH_IDENTITY;
+                sweep_instr->operand[1] = instr->operand[1]; // The input is the same as in the sweep
+                sweep_instr->operand[0] = instr->operand[0];
+                // But the output needs an extra dimension when we are reducing to a non-scalar
+                if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
+                    sweep_instr->operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
+                }
+                sweep_instr_block->_instr = sweep_instr;
+            }
+        }
+        string itername;
+        {stringstream t; t << "i" << block.rank; itername = t.str();}
+        out << "{ // Peeled loop, 1. sweep iteration " << endl;
+        spaces(out, 8 + block.rank*4);
+        out << "uint64_t " << itername << " = 0;" << endl;
+        // Write temporary array declarations
+        set<bh_base*> new_declared(declared);
+        for (bh_base* base: base_ids.getBases()) {
+            if (base_ids.isTmp(base) and new_declared.find(base) == new_declared.end()) {
+                spaces(out, 8 + block.rank * 4);
+                out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
+                new_declared.insert(base);
+            }
+        }
+        out << endl;
+        for (const Block &b: peeled_block._block_list) {
+            if (b.isInstr()) {
+                if (b._instr != NULL) {
+                    spaces(out, 4 + b.rank*4);
+                    write_instr(base_ids, *b._instr, out);
+                }
+            } else {
+                write_block(base_ids, new_declared, b, out);
+            }
+        }
+        spaces(out, 4 + block.rank*4);
+        out << "}" << endl;
+        spaces(out, 4 + block.rank*4);
+    }
+
+    // Write the for-loop header
+    string itername;
+    {stringstream t; t << "i" << block.rank; itername = t.str();}
+    out << "for(uint64_t " << itername;
+    if (block._sweeps.size() > 0) // If the for-loop has been peeled, we should that at 1
+        out << "=1; ";
+    else
+        out << "=0; ";
+    out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
+
+    // Write temporary array declarations
+    set<bh_base*> new_declared(declared);
+    for (bh_base* base: base_ids.getBases()) {
+        if (base_ids.isTmp(base) and new_declared.find(base) == new_declared.end()) {
+            spaces(out, 8 + block.rank * 4);
+            out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
+            new_declared.insert(base);
+        }
+    }
+
+    // Write the for-loop body
+    for (const Block &b: block._block_list) {
+        if (b.isInstr()) { // Finally, let's write the instruction
+            if (b._instr != NULL) {
+                spaces(out, 4 + b.rank*4);
+                write_instr(base_ids, *b._instr, out);
+            }
+        } else {
+            write_block(base_ids, new_declared, b, out);
+        }
+    }
+    spaces(out, 4 + block.rank*4);
+    out << "}" << endl;
+}
+
+vector<Block> fuser_singleton(vector<bh_instruction> &instr_list, const set<bh_instruction*> &news) {
+
+    // Creates the block_list based on the instr_list
+    vector<Block> block_list;
+    for (auto instr=instr_list.begin(); instr != instr_list.end(); ++instr) {
+        int nop = bh_noperands(instr->opcode);
+        if (nop == 0)
+            continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
+
+        vector<bh_instruction*> single_instr = {&instr[0]};
+        assert(instr->dominating_shape().size() > (uint64_t)0);
+        int64_t size_of_rank_dim = instr->dominating_shape()[0];
+        block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim, news));
+    }
+    return block_list;
+}
+
+// Check if 'a' and 'b' supports data-parallelism when merged
+static bool data_parallel_compatible(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    const int a_nop = bh_noperands(a->opcode);
+    for(int i=0; i<a_nop; ++i)
+    {
+        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
+           && not bh_view_aligned(&b->operand[0], &a->operand[i]))
+            return false;
+    }
+    const int b_nop = bh_noperands(b->opcode);
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
+           && not bh_view_aligned(&a->operand[0], &b->operand[i]))
+            return false;
+    }
+    return true;
+}
+
+// Check if 'b1' and 'b2' supports data-parallelism when merged
+static bool data_parallel_compatible(const Block &b1, const Block &b2) {
+    for (const bh_instruction *i1 : b1.getAllInstr()) {
+        for (const bh_instruction *i2 : b2.getAllInstr()) {
+            if (not data_parallel_compatible(i1, i2))
+                return false;
+        }
+    }
+    return true;
+}
+
+// Check if 'block' accesses the output of a sweep in 'sweeps'
+static bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &block) {
+    for (bh_instruction *instr: sweeps) {
+        assert(bh_noperands(instr->opcode) > 0);
+        auto bases = block.getAllBases();
+        if (bases.find(instr->operand[0].base) != bases.end())
+            return true;
+    }
+    return false;
+}
+
+vector<Block> fuser_serial(vector<Block> &block_list, const set<bh_instruction*> &news) {
+    vector<Block> ret;
+    for (auto it = block_list.begin(); it != block_list.end(); ) {
+        ret.push_back(*it);
+        Block &cur = ret.back();
+        ++it;
+        if (cur.isInstr()) {
+            continue; // We should never fuse instruction blocks
+        }
+        // Let's search for fusible blocks
+        for (; it != block_list.end(); ++it) {
+            if (it->isInstr())
+                break;
+            if (not data_parallel_compatible(cur, *it))
+                break;
+            if (sweeps_accessed_by_block(cur._sweeps, *it))
+                break;
+            assert(cur.rank == it->rank);
+
+            // Check for perfect match, which is directly mergeable
+            if (cur.size == it->size) {
+                cur = merge(cur, *it);
+                continue;
+            }
+            // Check fusibility of reshapable blocks
+            if (it->_reshapable && it->size % cur.size == 0) {
+                vector<bh_instruction *> cur_instr = cur.getAllInstr();
+                vector<bh_instruction *> it_instr = it->getAllInstr();
+                cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
+                Block b = create_nested_block(cur_instr, it->rank, cur.size, news);
+                assert(b.size == cur.size);
+                cur = b;
+                continue;
+            }
+            if (cur._reshapable && cur.size % it->size == 0) {
+                vector<bh_instruction *> cur_instr = cur.getAllInstr();
+                vector<bh_instruction *> it_instr = it->getAllInstr();
+                cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
+                Block b = create_nested_block(cur_instr, cur.rank, it->size, news);
+                assert(b.size == it->size);
+                cur = b;
+                continue;
+            }
+
+            // We couldn't find any shape match
+            break;
+        }
+        // Let's fuse at the next rank level
+        cur._block_list = fuser_serial(cur._block_list, news);
+    }
+    return ret;
+}
+
+// Remove empty blocks inplace
+void remove_empty_blocks(vector<Block> &block_list) {
+    for (size_t i=0; i < block_list.size(); ) {
+        Block &b = block_list[i];
+        if (b.isInstr()) {
+            ++i;
+        } else if (b.isSystemOnly()) {
+            block_list.erase(block_list.begin()+i);
+        } else {
+            remove_empty_blocks(b._block_list);
+            ++i;
+        }
+    }
+}
+
 void Impl::execute(bh_ir *bhir) {
 
+    // Get the set of new arrays in 'bhir'
+    const set<bh_instruction*> news = update_allocated_bases(bhir);
+
     // Assign IDs to all base arrays
-    IdMap<bh_base *> base_ids;
+    BaseDB base_ids;
     // NB: by assigning the IDs in the order they appear in the 'instr_list',
-    //     we kernels can better be reused
+    //     the kernels can better be reused
     for(const bh_instruction &instr: bhir->instr_list) {
         const int nop = bh_noperands(instr.opcode);
         for(int i=0; i<nop; ++i) {
@@ -235,19 +352,63 @@ void Impl::execute(bh_ir *bhir) {
     if (base_ids.size() == 0)
         return;
 
-    // Let's fuse
-    Kernel kernel = fuser_singleton(bhir->instr_list);
+    //Let's create a kernel
+    Kernel kernel;
+    {
+        // Let's fuse the 'instr_list' into blocks
+        kernel.block_list = fuser_singleton(bhir->instr_list, news);
+        kernel.block_list = fuser_serial(kernel.block_list, news);
+        remove_empty_blocks(kernel.block_list);
+
+        // And fill kernel attributes
+        for (bh_instruction &instr: bhir->instr_list) {
+            if (instr.opcode == BH_RANDOM) {
+                kernel.useRandom = true;
+            } else if (instr.opcode == BH_FREE) {
+                kernel.frees.insert(instr.operand[0].base);
+            }
+        }
+    }
+
+    // Do we even have any "real" operations to perform?
+    if (kernel.block_list.size() == 0) {
+        // Finally, let's cleanup
+        for(bh_base *base: kernel.frees) {
+            bh_data_free(base);
+        }
+        return;
+    }
 
     // Debug print
-    //cout << block_list;
+    if (config.defaultGet<bool>("verbose", false))
+        cout << kernel.block_list;
+
+    // Find all temporary and non-temporary arrays
+    vector<bh_base*> non_temps;
+    set<bh_base*> temps;
+    {
+        for (Block &b: kernel.block_list) {
+            set<bh_base*> t = b.getAllTemps();
+            temps.insert(t.begin(), t.end());
+            base_ids.insertTmp(t);
+        }
+        for (bh_base *base: base_ids.getBases()) {
+            if (temps.find(base) == temps.end()) {
+                assert(std::find(non_temps.begin(), non_temps.end(), base) == non_temps.end());
+                non_temps.push_back(base);
+            }
+        }
+        num_base_arrays += base_ids.getBases().size();
+        num_temp_arrays += temps.size();
+    }
+
+    // Make sure all arrays are allocated
+    for (bh_base *base: non_temps) {
+        bh_data_malloc(base);
+    }
 
     // Code generation
     stringstream ss;
-
-    // Make sure all arrays are allocated
-    for(bh_base *base: base_ids.getKeys()) {
-        bh_data_malloc(base);
-    }
 
     // Write the need includes
     ss << "#include <stdint.h>" << endl;
@@ -256,8 +417,6 @@ void Impl::execute(bh_ir *bhir) {
     ss << "#include <complex.h>" << endl;
     ss << "#include <tgmath.h>" << endl;
     ss << "#include <math.h>" << endl;
-    ss << "#include <bh_memory.h>" << endl;
-    ss << "#include <bh_type.h>" << endl;
     ss << endl;
 
     if (kernel.useRandom) { // Write the random function
@@ -273,10 +432,10 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the header of the execute function
     ss << "void execute(";
-    for(size_t id=0; id < base_ids.size(); ++id) {
-        const bh_base *b = base_ids.getKeys()[id];
-        ss << write_type(b->type) << " a" << id << "[]";
-        if (id+1 < base_ids.size()) {
+    for(size_t i=0; i < non_temps.size(); ++i) {
+        bh_base *b = non_temps[i];
+        ss << write_type(b->type) << " a" << base_ids[b] << "[]";
+        if (i+1 < non_temps.size()) {
             ss << ", ";
         }
     }
@@ -284,7 +443,8 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the blocks that makes up the body of 'execute()'
     for(const Block &block: kernel.block_list) {
-        write_block(base_ids, block, ss);
+        set<bh_base*> declared;
+        write_block(base_ids, declared, block, ss);
     }
 
     ss << "}" << endl << endl;
@@ -293,18 +453,17 @@ void Impl::execute(bh_ir *bhir) {
     // to typed arrays and call the execute function
     {
         ss << "void launcher(void* data_list[]) {" << endl;
-        size_t i=0;
-        for (bh_base *b: base_ids.getKeys()) {
-            spaces(ss, 4);
+        for(size_t i=0; i < non_temps.size(); ++i) {
+            bh_base *b = non_temps[i];
             ss << write_type(b->type) << " *a" << base_ids[b];
             ss << " = data_list[" << i << "];" << endl;
-            ++i;
         }
         spaces(ss, 4);
         ss << "execute(";
-        for(size_t id=0; id < base_ids.size(); ++id) {
-            ss << "a" << id;
-            if (id+1 < base_ids.size()) {
+        for(size_t i=0; i < non_temps.size(); ++i) {
+            bh_base *b = non_temps[i];
+            ss << "a" << base_ids[b];
+            if (i+1 < non_temps.size()) {
                 ss << ", ";
             }
         }
@@ -312,15 +471,13 @@ void Impl::execute(bh_ir *bhir) {
         ss << "}" << endl;
     }
 
-  //  cout << ss.str();
-
     KernelFunction func = _store.getFunction(ss.str());
     assert(func != NULL);
 
     // Create a 'data_list' of data pointers
     vector<void*> data_list;
-    data_list.reserve(base_ids.size());
-    for(bh_base *base: base_ids.getKeys()) {
+    data_list.reserve(non_temps.size());
+    for(bh_base *base: non_temps) {
         assert(base->data != NULL);
         data_list.push_back(base->data);
     }

@@ -36,6 +36,22 @@ struct bh_instruction
     // Return a set of all bases used by the instruction
     std::set<bh_base*> get_bases();
 
+    // Check if all views by this instruction is contiguous
+    bool is_contiguous() const;
+
+    // Is this instruction (and all its views) reshapable?
+    bool reshapable() const;
+
+    // The maximum number of dimensions of a view in this instruction
+    int64_t max_ndim() const;
+
+    // Returns the shape of the view with the greatest number of dimensions
+    // if equal, the combined maximum is returned
+    std::vector<int64_t> dominating_shape() const;
+
+    // Reshape the views of the instruction to 'shape'
+    void reshape(const std::vector<int64_t> &shape);
+
     // Serialization using Boost
     friend class boost::serialization::access;
     template<class Archive>

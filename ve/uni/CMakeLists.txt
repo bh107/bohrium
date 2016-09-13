@@ -40,6 +40,7 @@ endif()
 check_c_compiler_flag(-O3 FLAG_03_FOUND)
 check_c_compiler_flag(-march=native FLAG_MARCH_NATIVE_FOUND)
 check_c_compiler_flag("--param vect-max-version-for-alias-checks=100" PARAM_VECTMAX_FOUND)
+check_c_compiler_flag(-Werror FLAG_WERROR_FOUND)
 
 #
 # JIT-compiler capabilities: optimization, and parallelization
@@ -66,6 +67,9 @@ else()
     endif()
     if (PARAM_VECTMAX_FOUND)                                                # Upper bound on alias-checks
         set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} --param vect-max-version-for-alias-checks=100")
+    endif()
+    if (FLAG_WERROR_FOUND)                                                      # Optimization Level
+        set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} -Werror")
     endif()
     #
     # Parallelization

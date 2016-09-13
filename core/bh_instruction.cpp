@@ -40,6 +40,79 @@ set<bh_base*> bh_instruction::get_bases() {
     return ret;
 }
 
+bool bh_instruction::is_contiguous() const {
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        const bh_view &view = operand[o];
+        if ((not bh_is_constant(&view)) and (not bh_is_contiguous(&view)))
+            return false;
+    }
+    return true;
+}
+
+bool bh_instruction::reshapable() const {
+   return (bh_opcode_is_elementwise(opcode) or bh_opcode_is_system(opcode)) and is_contiguous();
+}
+
+int64_t bh_instruction::max_ndim() const {
+    // Let's find the view with the greatest number of dimension and returns its 'ndim'
+    int64_t ret = 0;
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        const bh_view &view = operand[o];
+        if (not bh_is_constant(&view)) {
+            if (view.ndim > ret)
+                ret = view.ndim;
+        }
+    }
+    return ret;
+}
+
+vector<int64_t> bh_instruction::dominating_shape() const {
+    int64_t ndim = max_ndim();
+    vector<int64_t > shape;
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        const bh_view &view = operand[o];
+        if ((not bh_is_constant(&view)) and view.ndim == ndim) {
+            for (int64_t j=0; j < view.ndim; ++j) {
+                if (shape.size() > (size_t)j) {
+                    if (shape[j] < view.shape[j])
+                        shape[j] = view.shape[j];
+                } else {
+                    shape.push_back(view.shape[j]);
+                }
+            }
+        }
+    }
+    return shape;
+}
+
+void bh_instruction::reshape(const vector<int64_t> &shape) {
+    if (not reshapable()) {
+        throw runtime_error("Reshape: instruction not reshapable!");
+    }
+    int64_t totalsize = 1;
+    for (int64_t dim: shape) {
+        totalsize *= dim;
+    }
+
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        bh_view &view = operand[o];
+        if (bh_is_constant(&view))
+            continue;
+        if (totalsize != bh_nelements(view)) {
+            throw runtime_error("Reshape: shape mismatch!");
+        }
+
+        // Let's assign the new shape and strides
+        view.ndim = shape.size();
+        copy(shape.begin(), shape.end(), view.shape);
+        bh_set_contiguous_stride(&view);
+    }
+}
+
 //Implements pprint of an instruction
 ostream& operator<<(ostream& out, const bh_instruction& instr)
 {
@@ -62,7 +135,7 @@ ostream& operator<<(ostream& out, const bh_instruction& instr)
     return out;
 }
 
-/* Retrive the operands of a instruction.
+/* Retrieve the operands of a instruction.
  *
  * @instruction  The instruction in question
  * @return The operand list

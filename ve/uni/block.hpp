@@ -32,15 +32,71 @@ namespace bohrium {
 class Block {
 public:
     std::vector <Block> _block_list;
-    const bh_instruction *_instr = NULL;
+    bh_instruction *_instr = NULL;
     int rank;
     int64_t size;
-    std::set<const bh_instruction*> _sweeps;
+    std::set<bh_instruction*> _sweeps;
+    std::set<bh_base *> _news;
+    std::set<bh_base *> _frees;
+    bool _reshapable = false;
 
+    // Returns true if this block is an instruction block, which has a
+    // empty block list and a non-NULL instruction pointer
+    bool isInstr() const {
+        assert(_block_list.size() > 0 or _instr != NULL);
+        return _block_list.size() == 0;
+    }
+
+    // Find the 'instr' in this block or in its children
+    // Returns NULL if not found
     Block* findInstrBlock(const bh_instruction *instr);
 
+    // Pretty print this block
     std::string pprint() const;
+
+    // Return all instructions in the block (incl. nested blocks)
+    void getAllInstr(std::vector<bh_instruction*> &out) const;
+    std::vector<bh_instruction*> getAllInstr() const;
+
+    // Return all bases accessed by this block
+    std::set<bh_base*> getAllBases() const {
+        std::set<bh_base*> ret;
+        for (bh_instruction *instr: getAllInstr()) {
+            std::set<bh_base*> t = instr->get_bases();
+            ret.insert(t.begin(), t.end());
+        }
+        return ret;
+    }
+
+    // Return all temporary arrays within the block
+    void getAllTemps(std::set<bh_base*> &out) const;
+    std::set<bh_base*> getAllTemps() const;
+
+    // Returns true when all instructions within the block is system or if the block is empty()
+    bool isSystemOnly() const {
+        for (bh_instruction *instr: getAllInstr()) {
+            if (not bh_opcode_is_system(instr->opcode)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Validation check of this block
+    bool validation() const;
 };
+
+// Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is
+// true, the meta-data such at size, rank etc. is taken from 'b' rather than 'a'
+Block merge(const Block &a, const Block &b, bool based_on_block_b=false);
+
+// Create a nested block based on 'instr_list' with the sets of new, free, and temp arrays given.
+// The dimensions from zero to 'rank-1' are ignored.
+// The 'size_of_rank_dim' specifies the size of the dimension 'rank'.
+// 'news' is the set of instructions that creates new arrays
+// 'temps' is the set of arrays that a temporary in the blocks "above" this block
+Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, int64_t size_of_rank_dim,
+                          const std::set<bh_instruction*> &news, const std::set<bh_base*> &temps = std::set<bh_base*>());
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);
