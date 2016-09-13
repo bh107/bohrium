@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_BASE_DB_H
-#define __BH_BASE_DB_H
+#ifndef __BH_VE_UNI_BASE_DB_H
+#define __BH_VE_UNI_BASE_DB_H
 
 #include <map>
 #include <vector>
@@ -33,6 +33,7 @@ class BaseDB {
   private:
     std::map<bh_base*, size_t> _map;
     std::vector<bh_base*> _vec; // Vector of the bases where the vector index corresponds to a ID.
+    std::set<bh_base*> _tmps; //Set of temporary arrays
   public:
     BaseDB() {};
 
@@ -60,7 +61,21 @@ class BaseDB {
     size_t operator[] (bh_base* base) const {
         return _map.at(base);
     }
-};
 
+    // Add the set of 'temps' as temporary arrays.
+    // NB: the arrays should exist in this database already
+    void insertTmp(const std::set<bh_base*> &temps) {
+        #ifndef NDEBUG
+        for (bh_base* b: temps)
+            assert(_map.find(b) != _map.end());
+        #endif
+        _tmps.insert(temps.begin(), temps.end());
+    }
+
+    // Check if 'base' is temporary
+    bool isTmp(bh_base* base) const {
+        return _tmps.find(base) != _tmps.end();
+    }
+};
 
 #endif

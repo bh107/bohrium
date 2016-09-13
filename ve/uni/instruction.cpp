@@ -373,7 +373,7 @@ int sweep_axis(const bh_instruction &instr) {
     return BH_MAXDIM;
 }
 
-void write_instr(const BaseDB &base_ids, const set<bh_base*> &temps, const bh_instruction &instr, stringstream &out) {
+void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstream &out) {
     if (bh_opcode_is_system(instr.opcode)) {
         write_system_operation(base_ids, instr, out);
         return;
@@ -381,7 +381,7 @@ void write_instr(const BaseDB &base_ids, const set<bh_base*> &temps, const bh_in
     if (instr.opcode == BH_RANGE) {
         assert(instr.operand[0].ndim == 1); //TODO: support multidimensional output
         vector<string> operands;
-        if (temps.find(instr.operand[0].base) == temps.end()){
+        if (not base_ids.isTmp(instr.operand[0].base)){
             stringstream ss;
             ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
@@ -399,7 +399,7 @@ void write_instr(const BaseDB &base_ids, const set<bh_base*> &temps, const bh_in
         assert(instr.operand[0].ndim == 1); //TODO: support multidimensional output
         vector<string> operands;
         // Write output operand
-        if (temps.find(instr.operand[0].base) == temps.end()) {
+        if (not base_ids.isTmp(instr.operand[0].base)) {
             stringstream ss;
             ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
@@ -423,7 +423,7 @@ void write_instr(const BaseDB &base_ids, const set<bh_base*> &temps, const bh_in
     if (bh_opcode_is_accumulate(instr.opcode)) {
         vector<string> operands;
         // Write output operand
-        if (temps.find(instr.operand[0].base) == temps.end()) {
+        if (not base_ids.isTmp(instr.operand[0].base)){
             stringstream ss;
             ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
@@ -458,7 +458,7 @@ void write_instr(const BaseDB &base_ids, const set<bh_base*> &temps, const bh_in
         if (bh_is_constant(&view)) {
             ss << instr.constant;
         } else {
-            if (temps.find(view.base) == temps.end()) {
+            if (not base_ids.isTmp(view.base)) {
                 ss << "a" << base_ids[view.base];
                 if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
                     // If 'instr' is a reduction we have to ignore the reduced axis of the output array when

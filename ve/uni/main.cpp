@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
-#include <bh_idmap.hpp>
 
 #include "kernel.hpp"
 #include "block.hpp"
@@ -112,7 +111,7 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
     return ret;
 }
 
-void write_block(const BaseDB &base_ids, const Block &block, const set<bh_base*> &temps, stringstream &out) {
+void write_block(const BaseDB &base_ids, const Block &block, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
     // If this block is sweeped, we will "peel" the for-loop such that the
@@ -154,10 +153,10 @@ void write_block(const BaseDB &base_ids, const Block &block, const set<bh_base*>
             if (b.isInstr()) {
                 if (b._instr != NULL) {
                     spaces(out, 4 + b.rank*4);
-                    write_instr(base_ids, temps, *b._instr, out);
+                    write_instr(base_ids, *b._instr, out);
                 }
             } else {
-                write_block(base_ids, b, temps, out);
+                write_block(base_ids, b, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -189,10 +188,10 @@ void write_block(const BaseDB &base_ids, const Block &block, const set<bh_base*>
         if (b.isInstr()) { // Finally, let's write the instruction
             if (b._instr != NULL) {
                 spaces(out, 4 + b.rank*4);
-                write_instr(base_ids, temps, *b._instr, out);
+                write_instr(base_ids, *b._instr, out);
             }
         } else {
-            write_block(base_ids, b, temps, out);
+            write_block(base_ids, b, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -389,6 +388,7 @@ void Impl::execute(bh_ir *bhir) {
         for (Block &b: kernel.block_list) {
             set<bh_base*> t = b.getAllTemps();
             temps.insert(t.begin(), t.end());
+            base_ids.insertTmp(t);
         }
         for (bh_base *base: base_ids.getBases()) {
             if (temps.find(base) == temps.end()) {
@@ -450,7 +450,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the blocks that makes up the body of 'execute()'
     for(const Block &block: kernel.block_list) {
-        write_block(base_ids, block, temps, ss);
+        write_block(base_ids, block, ss);
     }
 
     ss << "}" << endl << endl;
