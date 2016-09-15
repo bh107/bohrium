@@ -97,7 +97,6 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
     Block ret;
     set<bh_base*> syncs; // Set of all sync'ed bases
     for (bh_instruction *instr: instr_list) {
-        const int nop = bh_noperands(instr->opcode);
         const int64_t max_ndim = instr->max_ndim();
         assert(max_ndim > rank);
 
@@ -120,10 +119,8 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
                     ret._news.insert(instr->operand[0].base);
             }
             if (instr->opcode == BH_SYNC) {
-                assert(nop == 1);
                 syncs.insert(instr->operand[0].base);
             } else if (instr->opcode == BH_FREE) {
-                assert(nop == 1);
                 if (syncs.find(instr->operand[0].base) == syncs.end()) {
                     // If the array is free'ed and not sync'ed, it can be destroyed
                     ret._frees.insert(instr->operand[0].base);
@@ -228,6 +225,13 @@ void Block::getAllTemps(set<bh_base*> &out) const {
 set<bh_base*> Block::getAllTemps() const {
     set<bh_base*> ret;
     getAllTemps(ret);
+    return ret;
+}
+
+set<bh_base*> Block::getLocalTemps() const {
+    set<bh_base*> ret;
+    std::set_intersection(_news.begin(), _news.end(), _frees.begin(), _frees.end(), \
+                          std::inserter(ret, ret.begin()));
     return ret;
 }
 

@@ -111,9 +111,13 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
     return ret;
 }
 
-void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &block, stringstream &out) {
+void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
+
+    // All local temporary arrays needs an variable declaration
+    const set<bh_base*> local_tmps = block.getLocalTemps();
+
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0) {
@@ -141,12 +145,10 @@ void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &b
         spaces(out, 8 + block.rank*4);
         out << "uint64_t " << itername << " = 0;" << endl;
         // Write temporary array declarations
-        set<bh_base*> new_declared(declared);
         for (bh_base* base: base_ids.getBases()) {
-            if (base_ids.isTmp(base) and new_declared.find(base) == new_declared.end()) {
+            if (local_tmps.find(base) != local_tmps.end()) {
                 spaces(out, 8 + block.rank * 4);
                 out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-                new_declared.insert(base);
             }
         }
         out << endl;
@@ -157,7 +159,7 @@ void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &b
                     write_instr(base_ids, *b._instr, out);
                 }
             } else {
-                write_block(base_ids, new_declared, b, out);
+                write_block(base_ids, b, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -176,12 +178,10 @@ void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &b
     out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
 
     // Write temporary array declarations
-    set<bh_base*> new_declared(declared);
     for (bh_base* base: base_ids.getBases()) {
-        if (base_ids.isTmp(base) and new_declared.find(base) == new_declared.end()) {
+        if (local_tmps.find(base) != local_tmps.end()) {
             spaces(out, 8 + block.rank * 4);
             out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-            new_declared.insert(base);
         }
     }
 
@@ -193,7 +193,7 @@ void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &b
                 write_instr(base_ids, *b._instr, out);
             }
         } else {
-            write_block(base_ids, new_declared, b, out);
+            write_block(base_ids, b, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -443,8 +443,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the blocks that makes up the body of 'execute()'
     for(const Block &block: kernel.block_list) {
-        set<bh_base*> declared;
-        write_block(base_ids, declared, block, ss);
+        write_block(base_ids, block, ss);
     }
 
     ss << "}" << endl << endl;

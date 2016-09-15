@@ -68,9 +68,12 @@ public:
         return ret;
     }
 
-    // Return all temporary arrays within the block
+    // Return all temporary arrays within the block (incl. nested blocks)
     void getAllTemps(std::set<bh_base*> &out) const;
     std::set<bh_base*> getAllTemps() const;
+
+    // Return all local temporary arrays within the block (excl. nested blocks)
+    std::set<bh_base*> getLocalTemps() const;
 
     // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const {
