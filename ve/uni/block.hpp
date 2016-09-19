@@ -68,11 +68,20 @@ public:
         return ret;
     }
 
-    // Return all temporary arrays within the block (incl. nested blocks)
+    // Return all new arrays in this block (incl. nested blocks)
+    void getAllNews(std::set<bh_base*> &out) const;
+    std::set<bh_base*> getAllNews() const;
+
+    // Return all freed arrays in this block (incl. nested blocks)
+    void getAllFrees(std::set<bh_base*> &out) const;
+    std::set<bh_base*> getAllFrees() const;
+
+    // Return all temporary arrays in this block (incl. nested blocks)
     void getAllTemps(std::set<bh_base*> &out) const;
     std::set<bh_base*> getAllTemps() const;
 
-    // Return all local temporary arrays within the block (excl. nested blocks)
+    // Return all local temporary arrays in this block (excl. nested blocks)
+    // NB: The returned temporary arrays are the arrays that this block should declare
     std::set<bh_base*> getLocalTemps() const;
 
     // Returns true when all instructions within the block is system or if the block is empty()

@@ -186,6 +186,14 @@ string Block::pprint() const {
             }
             ss << "}";
         }
+        const set<bh_base*> temps = getLocalTemps();
+        if (temps.size() > 0) {
+            ss << ", temps: {";
+            for (const bh_base *b : temps) {
+                ss << "a" << b->get_label() << ",";
+            }
+            ss << "}";
+        }
         if (_block_list.size() > 0) {
             ss << ", block list:" << endl;
             for (const Block &b : _block_list) {
@@ -213,14 +221,38 @@ vector<bh_instruction*> Block::getAllInstr() const {
     return ret;
 }
 
-void Block::getAllTemps(set<bh_base*> &out) const {
-    // Add temps at this rank level
-    std::set_intersection(_news.begin(), _news.end(), _frees.begin(), _frees.end(), \
-                          std::inserter(out, out.begin()));
-    // Add temps at the next rank level
+
+void Block::getAllNews(set<bh_base*> &out) const {
+    out.insert(_news.begin(), _news.end());
     for (const Block &b: _block_list) {
-        b.getAllTemps(out);
+        b.getAllNews(out);
     }
+}
+set<bh_base*> Block::getAllNews() const {
+    set<bh_base*> ret;
+    getAllNews(ret);
+    return ret;
+}
+
+void Block::getAllFrees(set<bh_base*> &out) const {
+    out.insert(_frees.begin(), _frees.end());
+    for (const Block &b: _block_list) {
+        b.getAllFrees(out);
+    }
+}
+set<bh_base*> Block::getAllFrees() const {
+    set<bh_base*> ret;
+    getAllFrees(ret);
+    return ret;
+}
+
+void Block::getAllTemps(set<bh_base*> &out) const {
+    // The temporary arrays are the ones that are created in this block (or its children blocks)
+    // and freed in this block  (or its children blocks)
+    const set<bh_base*> news = getAllNews();
+    const set<bh_base*> frees = getAllFrees();
+    std::set_intersection(news.begin(), news.end(), frees.begin(), frees.end(), \
+                          std::inserter(out, out.begin()));
 }
 set<bh_base*> Block::getAllTemps() const {
     set<bh_base*> ret;
@@ -230,7 +262,11 @@ set<bh_base*> Block::getAllTemps() const {
 
 set<bh_base*> Block::getLocalTemps() const {
     set<bh_base*> ret;
-    std::set_intersection(_news.begin(), _news.end(), _frees.begin(), _frees.end(), \
+
+    const set<bh_base*> temps = getAllTemps();
+    std::set_intersection(_news.begin(), _news.end(), temps.begin(), temps.end(), \
+                          std::inserter(ret, ret.begin()));
+    std::set_intersection(_frees.begin(), _frees.end(), temps.begin(), temps.end(), \
                           std::inserter(ret, ret.begin()));
     return ret;
 }
