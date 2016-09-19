@@ -177,6 +177,8 @@ elseif(OPENMP_FOUND)                                                # OpenMP
     if (OPENMP_ATOMIC_FOUND)    # Enable codegen "#omp atomic" for synchronization
         add_definitions(-DCAPE_WITH_OMP_ATOMIC)
     endif()
+else()
+    set(VE_CPU_JIT_OFFLOAD "0")
 endif()
 
 install(
