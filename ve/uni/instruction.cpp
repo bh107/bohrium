@@ -33,12 +33,13 @@ namespace bohrium {
 void write_array_subscription(const bh_view &view, stringstream &out, int hidden_axis=BH_MAXDIM,
                               const pair<int, int> axis_offset=make_pair(BH_MAXDIM, 0)) {
     assert(view.base != NULL); // Not a constant
+    bool empty_subscription = true;
     if (view.start > 0) {
         out << "[" << view.start;
+        empty_subscription = false;
     } else {
         out << "[";
     }
-    bool empty_subscription = true;
     if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
         for(int i=0; i<view.ndim; ++i) {
             int t = i;
