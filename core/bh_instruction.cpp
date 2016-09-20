@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <tuple>
 #include <iostream>
 #include <sstream>
+#include <numeric>
 
 #include <bh_instruction.hpp>
 
@@ -92,11 +93,7 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
     if (not reshapable()) {
         throw runtime_error("Reshape: instruction not reshapable!");
     }
-    int64_t totalsize = 1;
-    for (int64_t dim: shape) {
-        totalsize *= dim;
-    }
-
+    const int64_t totalsize = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int64_t>());
     int nop = bh_noperands(opcode);
     for(int o=0; o<nop; ++o) {
         bh_view &view = operand[o];

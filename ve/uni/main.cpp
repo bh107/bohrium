@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cassert>
+#include <numeric>
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
