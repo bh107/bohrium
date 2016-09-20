@@ -45,15 +45,15 @@ void write_array_subscription(const bh_view &view, stringstream &out, int hidden
             int t = i;
             if (i >= hidden_axis)
                 ++t;
-            if (axis_offset.first == t) {
-                out << " +(i" << t << "+(" << axis_offset.second << ")) ";
-            } else {
-                out << " +i" << t;
-            }
-            if (view.stride[i] > 1) {
+            if (view.stride[i] > 0) {
+                if (axis_offset.first == t) {
+                    out << " +(i" << t << "+(" << axis_offset.second << ")) ";
+                } else {
+                    out << " +i" << t;
+                }
                 out << "*" << view.stride[i];
+                empty_subscription = false;
             }
-            empty_subscription = false;
         }
     }
     if (empty_subscription)
