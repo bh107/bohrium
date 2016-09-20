@@ -51,7 +51,9 @@ void write_array_subscription(const bh_view &view, stringstream &out, int hidden
                 } else {
                     out << " +i" << t;
                 }
-                out << "*" << view.stride[i];
+                if (view.stride[i] != 1) {
+                    out << "*" << view.stride[i];
+                }
                 empty_subscription = false;
             }
         }
