@@ -90,7 +90,7 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
         vector<int64_t> shape = instr->dominating_shape();
         assert(shape.size() > (uint64_t)rank);
         if (shape[rank] != size_of_rank_dim)
-            throw runtime_error("create_nested_block() was given an instruction where shape[rank] != 'rank'");
+            throw runtime_error("create_nested_block() was given an instruction where shape[rank] != size_of_rank_dim");
     }
 
     // Let's build the nested block from the 'rank' level to the instruction block
