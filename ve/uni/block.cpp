@@ -246,28 +246,27 @@ set<bh_base*> Block::getAllFrees() const {
     return ret;
 }
 
-void Block::getAllTemps(set<bh_base*> &out) const {
-    // The temporary arrays are the ones that are created in this block (or its children blocks)
-    // and freed in this block  (or its children blocks)
-    const set<bh_base*> news = getAllNews();
+void Block::getLocalTemps(set<bh_base*> &out) const {
     const set<bh_base*> frees = getAllFrees();
-    std::set_intersection(news.begin(), news.end(), frees.begin(), frees.end(), \
-                          std::inserter(out, out.begin()));
+    std::set_intersection(_news.begin(), _news.end(), frees.begin(), frees.end(), std::inserter(out, out.begin()));
+    const set<bh_base*> news = getAllNews();
+    std::set_intersection(_frees.begin(), _frees.end(), news.begin(), news.end(), std::inserter(out, out.begin()));
+}
+set<bh_base*> Block::getLocalTemps() const {
+    set<bh_base*> ret;
+    getLocalTemps(ret);
+    return ret;
+}
+
+void Block::getAllTemps(set<bh_base*> &out) const {
+    getLocalTemps(out);
+    for (const Block &b: _block_list) {
+        b.getAllTemps(out);
+    }
 }
 set<bh_base*> Block::getAllTemps() const {
     set<bh_base*> ret;
     getAllTemps(ret);
-    return ret;
-}
-
-set<bh_base*> Block::getLocalTemps() const {
-    set<bh_base*> ret;
-
-    const set<bh_base*> temps = getAllTemps();
-    std::set_intersection(_news.begin(), _news.end(), temps.begin(), temps.end(), \
-                          std::inserter(ret, ret.begin()));
-    std::set_intersection(_frees.begin(), _frees.end(), temps.begin(), temps.end(), \
-                          std::inserter(ret, ret.begin()));
     return ret;
 }
 
