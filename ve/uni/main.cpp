@@ -209,9 +209,21 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list, const set<bh_i
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
+        // Let's try to simplify the shape of the instruction
+        if (instr->reshapable()) {
+            const vector<int64_t> dominating_shape = instr->dominating_shape();
+            assert(dominating_shape.size() > 0);
+
+            const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), 1, \
+                                                      std::multiplies<int64_t>());
+            const vector<int64_t> shape = {totalsize};
+            instr->reshape(shape);
+        }
+        // Let's create the block
+        const vector<int64_t> dominating_shape = instr->dominating_shape();
+        assert(dominating_shape.size() > 0);
+        int64_t size_of_rank_dim = dominating_shape[0];
         vector<bh_instruction*> single_instr = {&instr[0]};
-        assert(instr->dominating_shape().size() > (uint64_t)0);
-        int64_t size_of_rank_dim = instr->dominating_shape()[0];
         block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim, news));
     }
     return block_list;
