@@ -395,14 +395,14 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
     if (instr.opcode == BH_RANGE) {
         assert(instr.operand[0].ndim == 1); //TODO: support multidimensional output
         vector<string> operands;
-        if (not base_ids.isTmp(instr.operand[0].base)){
+        if (base_ids.isTmp(instr.operand[0].base)){
             stringstream ss;
-            ss << "a" << base_ids[instr.operand[0].base];
-            write_array_subscription(instr.operand[0], ss);
+            ss << "t" << base_ids[instr.operand[0].base];
             operands.push_back(ss.str());
         } else {
             stringstream ss;
-            ss << "t" << base_ids[instr.operand[0].base];
+            ss << "a" << base_ids[instr.operand[0].base];
+            write_array_subscription(instr.operand[0], ss);
             operands.push_back(ss.str());
         }
         operands.push_back("i0");
@@ -413,15 +413,14 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         assert(instr.operand[0].ndim == 1); //TODO: support multidimensional output
         vector<string> operands;
         // Write output operand
-        if (not base_ids.isTmp(instr.operand[0].base)) {
+        if (base_ids.isTmp(instr.operand[0].base)) {
+            stringstream ss;
+            ss << "t" << base_ids[instr.operand[0].base];
+            operands.push_back(ss.str());
+        } else {
             stringstream ss;
             ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
-            operands.push_back(ss.str());
-
-        } else {
-            stringstream ss;
-            ss << "t" << base_ids[instr.operand[0].base];
             operands.push_back(ss.str());
         }
         // Write the random generation
@@ -437,15 +436,14 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
     if (bh_opcode_is_accumulate(instr.opcode)) {
         vector<string> operands;
         // Write output operand
-        if (not base_ids.isTmp(instr.operand[0].base)){
+        if (base_ids.isTmp(instr.operand[0].base)){
+            stringstream ss;
+            ss << "t" << base_ids[instr.operand[0].base];
+            operands.push_back(ss.str());
+        } else {
             stringstream ss;
             ss << "a" << base_ids[instr.operand[0].base];
             write_array_subscription(instr.operand[0], ss);
-            operands.push_back(ss.str());
-
-        } else {
-            stringstream ss;
-            ss << "t" << base_ids[instr.operand[0].base];
             operands.push_back(ss.str());
         }
         // Write the previous element access, NB: this works because of loop peeling
@@ -472,7 +470,9 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         if (bh_is_constant(&view)) {
             ss << instr.constant;
         } else {
-            if (not base_ids.isTmp(view.base)) {
+            if (base_ids.isTmp(view.base)) {
+                ss << "t" << base_ids[view.base];
+            } else {
                 ss << "a" << base_ids[view.base];
                 if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
                     // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
@@ -481,8 +481,6 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
                 } else {
                     write_array_subscription(view, ss);
                 }
-            } else {
-                ss << "t" << base_ids[view.base];
             }
         }
         operands.push_back(ss.str());
