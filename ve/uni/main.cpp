@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cassert>
+#include <numeric>
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
@@ -111,9 +112,13 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
     return ret;
 }
 
-void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &block, stringstream &out) {
+void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
+
+    // All local temporary arrays needs an variable declaration
+    const set<bh_base*> local_tmps = block.getLocalTemps();
+
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0) {
@@ -141,12 +146,10 @@ void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &b
         spaces(out, 8 + block.rank*4);
         out << "uint64_t " << itername << " = 0;" << endl;
         // Write temporary array declarations
-        set<bh_base*> new_declared(declared);
         for (bh_base* base: base_ids.getBases()) {
-            if (base_ids.isTmp(base) and new_declared.find(base) == new_declared.end()) {
+            if (local_tmps.find(base) != local_tmps.end()) {
                 spaces(out, 8 + block.rank * 4);
                 out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-                new_declared.insert(base);
             }
         }
         out << endl;
@@ -157,7 +160,7 @@ void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &b
                     write_instr(base_ids, *b._instr, out);
                 }
             } else {
-                write_block(base_ids, new_declared, b, out);
+                write_block(base_ids, b, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -176,12 +179,10 @@ void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &b
     out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
 
     // Write temporary array declarations
-    set<bh_base*> new_declared(declared);
     for (bh_base* base: base_ids.getBases()) {
-        if (base_ids.isTmp(base) and new_declared.find(base) == new_declared.end()) {
+        if (local_tmps.find(base) != local_tmps.end()) {
             spaces(out, 8 + block.rank * 4);
             out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-            new_declared.insert(base);
         }
     }
 
@@ -193,7 +194,7 @@ void write_block(BaseDB &base_ids, const set<bh_base*> &declared, const Block &b
                 write_instr(base_ids, *b._instr, out);
             }
         } else {
-            write_block(base_ids, new_declared, b, out);
+            write_block(base_ids, b, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -209,9 +210,21 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list, const set<bh_i
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
+        // Let's try to simplify the shape of the instruction
+        if (instr->reshapable()) {
+            const vector<int64_t> dominating_shape = instr->dominating_shape();
+            assert(dominating_shape.size() > 0);
+
+            const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), 1, \
+                                                      std::multiplies<int64_t>());
+            const vector<int64_t> shape = {totalsize};
+            instr->reshape(shape);
+        }
+        // Let's create the block
+        const vector<int64_t> dominating_shape = instr->dominating_shape();
+        assert(dominating_shape.size() > 0);
+        int64_t size_of_rank_dim = dominating_shape[0];
         vector<bh_instruction*> single_instr = {&instr[0]};
-        assert(instr->dominating_shape().size() > (uint64_t)0);
-        int64_t size_of_rank_dim = instr->dominating_shape()[0];
         block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim, news));
     }
     return block_list;
@@ -443,8 +456,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the blocks that makes up the body of 'execute()'
     for(const Block &block: kernel.block_list) {
-        set<bh_base*> declared;
-        write_block(base_ids, declared, block, ss);
+        write_block(base_ids, block, ss);
     }
 
     ss << "}" << endl << endl;

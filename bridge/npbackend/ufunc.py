@@ -335,13 +335,13 @@ class Ufunc(object):
             raise ValueError("duplicate value in 'axis'")
         axis = sorted(axis,reverse=True)
 
-        #When reducting booleans numerically, we count the number of True values
+        #When reducing booleans numerically, we count the number of True values
         if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
             ary = array_create.array(ary, dtype=np.uint64)
 
         #Check for out of bounds and convert negative axis values
         if len(axis) > ary.ndim:
-            raise ValueError("number of 'axises' to reduce is out of bounds")
+            raise ValueError("number of 'axes' to reduce is out of bounds")
         for i in xrange(len(axis)):
             if axis[i] < 0:
                 axis[i] = ary.ndim+axis[i]
@@ -369,13 +369,16 @@ class Ufunc(object):
                 out = tmp
             return out
         else:
-            tmp1 = self.reduce(ary, axis[0])
+            # Let's reduce the first axis
+            ary = self.reduce(ary, axis[0])
+            # Then we reduce the rest of the axes
             axis = axis[1:]
-            tmp2 = self.reduce(tmp1, axis)
+            ary = self.reduce(ary, axis)
+            # Finally, we may have to copy the result to 'out'
             if out is not None:
-                out[...] = tmp2
+                out[...] = ary
             else:
-                out = tmp2
+                out = ary
             return out
 
     @fix_returned_biclass

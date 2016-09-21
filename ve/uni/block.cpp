@@ -90,14 +90,13 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
         vector<int64_t> shape = instr->dominating_shape();
         assert(shape.size() > (uint64_t)rank);
         if (shape[rank] != size_of_rank_dim)
-            throw runtime_error("create_nested_block() was given an instruction where shape[rank] != 'rank'");
+            throw runtime_error("create_nested_block() was given an instruction where shape[rank] != size_of_rank_dim");
     }
 
     // Let's build the nested block from the 'rank' level to the instruction block
     Block ret;
     set<bh_base*> syncs; // Set of all sync'ed bases
     for (bh_instruction *instr: instr_list) {
-        const int nop = bh_noperands(instr->opcode);
         const int64_t max_ndim = instr->max_ndim();
         assert(max_ndim > rank);
 
@@ -120,10 +119,8 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
                     ret._news.insert(instr->operand[0].base);
             }
             if (instr->opcode == BH_SYNC) {
-                assert(nop == 1);
                 syncs.insert(instr->operand[0].base);
             } else if (instr->opcode == BH_FREE) {
-                assert(nop == 1);
                 if (syncs.find(instr->operand[0].base) == syncs.end()) {
                     // If the array is free'ed and not sync'ed, it can be destroyed
                     ret._frees.insert(instr->operand[0].base);
@@ -189,6 +186,14 @@ string Block::pprint() const {
             }
             ss << "}";
         }
+        const set<bh_base*> temps = getLocalTemps();
+        if (temps.size() > 0) {
+            ss << ", temps: {";
+            for (const bh_base *b : temps) {
+                ss << "a" << b->get_label() << ",";
+            }
+            ss << "}";
+        }
         if (_block_list.size() > 0) {
             ss << ", block list:" << endl;
             for (const Block &b : _block_list) {
@@ -216,11 +221,45 @@ vector<bh_instruction*> Block::getAllInstr() const {
     return ret;
 }
 
+
+void Block::getAllNews(set<bh_base*> &out) const {
+    out.insert(_news.begin(), _news.end());
+    for (const Block &b: _block_list) {
+        b.getAllNews(out);
+    }
+}
+set<bh_base*> Block::getAllNews() const {
+    set<bh_base*> ret;
+    getAllNews(ret);
+    return ret;
+}
+
+void Block::getAllFrees(set<bh_base*> &out) const {
+    out.insert(_frees.begin(), _frees.end());
+    for (const Block &b: _block_list) {
+        b.getAllFrees(out);
+    }
+}
+set<bh_base*> Block::getAllFrees() const {
+    set<bh_base*> ret;
+    getAllFrees(ret);
+    return ret;
+}
+
+void Block::getLocalTemps(set<bh_base*> &out) const {
+    const set<bh_base*> frees = getAllFrees();
+    std::set_intersection(_news.begin(), _news.end(), frees.begin(), frees.end(), std::inserter(out, out.begin()));
+    const set<bh_base*> news = getAllNews();
+    std::set_intersection(_frees.begin(), _frees.end(), news.begin(), news.end(), std::inserter(out, out.begin()));
+}
+set<bh_base*> Block::getLocalTemps() const {
+    set<bh_base*> ret;
+    getLocalTemps(ret);
+    return ret;
+}
+
 void Block::getAllTemps(set<bh_base*> &out) const {
-    // Add temps at this rank level
-    std::set_intersection(_news.begin(), _news.end(), _frees.begin(), _frees.end(), \
-                          std::inserter(out, out.begin()));
-    // Add temps at the next rank level
+    getLocalTemps(out);
     for (const Block &b: _block_list) {
         b.getAllTemps(out);
     }
