@@ -184,6 +184,12 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
         spaces(out, 4 + block.rank*4);
     }
 
+    // Parallelization of the outermost loop without reduction is easy!
+    if (block.rank == 0 and block._sweeps.size() == 0) {
+        out << "#pragma omp parallel for" << endl;
+        spaces(out, 4 + block.rank*4);
+    }
+
     // Write the for-loop header
     string itername;
     {stringstream t; t << "i" << block.rank; itername = t.str();}
