@@ -472,6 +472,8 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         } else {
             if (base_ids.isTmp(view.base)) {
                 ss << "t" << base_ids[view.base];
+            } else if (base_ids.isScalarReplaced(view.base)) {
+                ss << "s" << base_ids[view.base];
             } else {
                 ss << "a" << base_ids[view.base];
                 if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {

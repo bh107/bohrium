@@ -33,7 +33,8 @@ class BaseDB {
   private:
     std::map<bh_base*, size_t> _map;
     std::vector<bh_base*> _vec; // Vector of the bases where the vector index corresponds to a ID.
-    std::set<bh_base*> _tmps; //Set of temporary arrays
+    std::set<bh_base*> _tmps; // Set of temporary arrays
+    std::set<bh_base*> _scalar_replacements; // Set of scalar replaced arrays
   public:
     BaseDB() {};
 
@@ -75,6 +76,23 @@ class BaseDB {
     // Check if 'base' is temporary
     bool isTmp(bh_base* base) const {
         return _tmps.find(base) != _tmps.end();
+    }
+
+    // Add the 'base' as scalar replaced array
+    // NB: 'base' should exist in this database already
+    void insertScalarReplacement(bh_base* base) {
+        assert(_map.find(base) != _map.end());
+        _scalar_replacements.insert(base);
+    }
+
+    // Erase 'base' from the set of scalar replaced arrays
+    void eraseScalarReplacement(bh_base* base) {
+        _scalar_replacements.erase(base);
+    }
+
+    // Check if 'base' has been scalar replaced
+    bool isScalarReplaced(bh_base* base) const {
+        return _scalar_replacements.find(base) != _scalar_replacements.end();
     }
 };
 
