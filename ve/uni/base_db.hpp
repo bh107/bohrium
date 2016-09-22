@@ -35,6 +35,8 @@ class BaseDB {
     std::vector<bh_base*> _vec; // Vector of the bases where the vector index corresponds to a ID.
     std::set<bh_base*> _tmps; // Set of temporary arrays
     std::set<bh_base*> _scalar_replacements; // Set of scalar replaced arrays
+    std::set<bh_base*> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
+    std::set<bh_base*> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
   public:
     BaseDB() {};
 
@@ -93,6 +95,22 @@ class BaseDB {
     // Check if 'base' has been scalar replaced
     bool isScalarReplaced(bh_base* base) const {
         return _scalar_replacements.find(base) != _scalar_replacements.end();
+    }
+
+    // Insert and check if 'base' should be guarded by OpenMP atomic
+    void insertOpenmpAtomic(bh_base* base) {
+        _omp_atomic.insert(base);
+    }
+    bool isOpenmpAtomic(bh_base* base) const {
+        return _omp_atomic.find(base) != _omp_atomic.end();
+    }
+
+    // Insert and check if 'base' should be guarded by OpenMP critical
+    void insertOpenmpCritical(bh_base* base) {
+        _omp_critical.insert(base);
+    }
+    bool isOpenmpCritical(bh_base* base) const {
+        return _omp_critical.find(base) != _omp_critical.end();
     }
 };
 

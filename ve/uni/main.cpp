@@ -112,6 +112,31 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
     return ret;
 }
 
+// Is the 'block' compatible with OpenMP
+bool openmp_compatible(const Block &block) {
+    // For now, all sweeps must be reductions
+    for (const bh_instruction *instr: block._sweeps) {
+        if (not bh_opcode_is_reduction(instr->opcode)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Does 'opcode' support the OpenMP Atomic guard
+bool openmp_atomic_compatible(bh_opcode opcode) {
+    switch (opcode) {
+        case BH_ADD_REDUCE:
+        case BH_MULTIPLY_REDUCE:
+        case BH_BITWISE_AND_REDUCE:
+        case BH_BITWISE_OR_REDUCE:
+        case BH_BITWISE_XOR_REDUCE:
+            return true;
+        default:
+            return false;
+    }
+}
+
 void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
@@ -184,10 +209,17 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
         spaces(out, 4 + block.rank*4);
     }
 
-    // Parallelization of the outermost loop without reduction is easy!
-    if (block.rank == 0 and block._sweeps.size() == 0) {
+    // Parallelization of the outermost loop
+    if (block.rank == 0 and openmp_compatible(block)) {
         out << "#pragma omp parallel for" << endl;
         spaces(out, 4 + block.rank*4);
+        for (const bh_instruction *instr: block._sweeps) {
+            if (openmp_atomic_compatible(instr->opcode)) {
+                base_ids.insertOpenmpAtomic(instr->operand[0].base);
+            } else {
+                base_ids.insertOpenmpCritical(instr->operand[0].base);
+            }
+        }
     }
 
     // Write the for-loop header
@@ -212,6 +244,15 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
     for (const Block &b: block._block_list) {
         if (b.isInstr()) { // Finally, let's write the instruction
             if (b._instr != NULL) {
+                if (bh_noperands(b._instr->opcode) > 0 and not bh_opcode_is_system(b._instr->opcode)) {
+                    if (base_ids.isOpenmpAtomic(b._instr->operand[0].base)) {
+                        spaces(out, 4 + b.rank*4);
+                        out << "#pragma omp atomic" << endl;
+                    } else if (base_ids.isOpenmpCritical(b._instr->operand[0].base)) {
+                        spaces(out, 4 + b.rank*4);
+                        out << "#pragma omp critical" << endl;
+                    }
+                }
                 spaces(out, 4 + b.rank*4);
                 write_instr(base_ids, *b._instr, out);
             }
