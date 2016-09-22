@@ -123,7 +123,7 @@ bool openmp_compatible(const Block &block) {
     return true;
 }
 
-// Does 'opcode' support the OpenMP Atomic guard
+// Does 'opcode' support the OpenMP Atomic guard?
 bool openmp_atomic_compatible(bh_opcode opcode) {
     switch (opcode) {
         case BH_ADD_REDUCE:
@@ -137,6 +137,16 @@ bool openmp_atomic_compatible(bh_opcode opcode) {
     }
 }
 
+// Does 'instr' reduce over the innermost axis?
+// Notice, that such a reduction computes each output element completely before moving
+// to the next element.
+bool sweeping_innermost_axis(const bh_instruction *instr) {
+    if (not bh_opcode_is_sweep(instr->opcode))
+        return false;
+    assert(bh_noperands(instr->opcode) == 3);
+    return sweep_axis(*instr) == instr->operand[1].ndim-1;
+}
+
 void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
@@ -144,19 +154,17 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
     // All local temporary arrays needs an variable declaration
     const set<bh_base*> local_tmps = block.getLocalTemps();
 
-    // Let's scalar replace vector-reduction outputs
-    vector<bh_base*> scalar_replacements;
-    if (block.rank == 0) {
-        for (const bh_instruction *instr: block._sweeps) {
-            if (bh_opcode_is_reduction(instr->opcode)) {
-                bh_base *base = instr->operand[0].base;
-                if (base_ids.isTmp(base) or base->nelem > 1)
-                    continue; // No need to replace temporary arrays
-                out << write_type(base->type) << " s" << base_ids[base] << ";" << endl;
-                spaces(out, 4 + block.rank * 4);
-                scalar_replacements.push_back(base);
-                base_ids.insertScalarReplacement(base);
-            }
+    // Let's scalar replace reduction outputs that reduces over the innermost axis
+    vector<bh_view> scalar_replacements;
+    for (const bh_instruction *instr: block._sweeps) {
+        if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
+            bh_base *base = instr->operand[0].base;
+            if (base_ids.isTmp(base))
+                continue; // No need to replace temporary arrays
+            out << write_type(base->type) << " s" << base_ids[base] << ";" << endl;
+            spaces(out, 4 + block.rank * 4);
+            scalar_replacements.push_back(instr->operand[0]);
+            base_ids.insertScalarReplacement(base);
         }
     }
 
@@ -263,14 +271,14 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
     spaces(out, 4 + block.rank*4);
     out << "}" << endl;
 
-    // Let's copy the scalar back to the original array
-    for (bh_base* base: scalar_replacements) {
-        if (not base_ids.isTmp(base)) {
-            spaces(out, 4 + block.rank*4);
-            const size_t id = base_ids[base];
-            out << "a" << id << "[0] = s" << id << ";" << endl;
-            base_ids.eraseScalarReplacement(base); // It is not scalar replaced anymore
-        }
+    // Let's copy the scalar replacement back to the original array
+    for (const bh_view &view: scalar_replacements) {
+        spaces(out, 4 + block.rank*4);
+        const size_t id = base_ids[view.base];
+        out << "a" << id;
+        write_array_subscription(view, out);
+        out << " = s" << id << ";" << endl;
+        base_ids.eraseScalarReplacement(view.base); // It is not scalar replaced anymore
     }
 }
 
