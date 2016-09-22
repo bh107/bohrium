@@ -29,9 +29,7 @@ using namespace std;
 
 namespace bohrium {
 
-// Write the array subscription, e.g. A[2+i0*1+i1*10], but ignore the loop-variant of 'hidden_axis' if it isn't 'BH_MAXDIM'
-void write_array_subscription(const bh_view &view, stringstream &out, int hidden_axis=BH_MAXDIM,
-                              const pair<int, int> axis_offset=make_pair(BH_MAXDIM, 0)) {
+void write_array_subscription(const bh_view &view, stringstream &out, int hidden_axis, const pair<int, int> axis_offset) {
     assert(view.base != NULL); // Not a constant
     bool empty_subscription = true;
     if (view.start > 0) {
