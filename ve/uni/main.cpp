@@ -112,6 +112,33 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
     return ret;
 }
 
+// Return the OpenMP reduction symbol
+const char* openmp_reduce_symbol(bh_opcode opcode) {
+    switch (opcode) {
+        case BH_ADD_REDUCE:
+            return "+";
+        case BH_MULTIPLY_REDUCE:
+            return "*";
+        case BH_BITWISE_AND_REDUCE:
+            return "&";
+        case BH_BITWISE_OR_REDUCE:
+            return "|";
+        case BH_BITWISE_XOR_REDUCE:
+            return "^";
+        case BH_MAXIMUM_REDUCE:
+            return "max";
+        case BH_MINIMUM_REDUCE:
+            return "min";
+        default:
+            return NULL;
+    }
+}
+
+// Is 'opcode' compatible with OpenMP reductions such as reduction(+:var)
+bool openmp_reduce_compatible(bh_opcode opcode) {
+    return openmp_reduce_symbol(opcode) != NULL;
+}
+
 // Is the 'block' compatible with OpenMP
 bool openmp_compatible(const Block &block) {
     // For now, all sweeps must be reductions
@@ -125,8 +152,12 @@ bool openmp_compatible(const Block &block) {
 
 // Is the 'block' compatible with OpenMP SIMD
 bool simd_compatible(const Block &block, const BaseDB &base_ids) {
-    if (block._sweeps.size() > 0)
-        return false; // For now, sweeps are not supported
+
+    // Check for non-compatible reductions
+    for (const bh_instruction *instr: block._sweeps) {
+        if (not openmp_reduce_compatible(instr->opcode))
+            return false;
+    }
 
     // An OpenMP SIMD loop does not support ANY OpenMP pragmas
     for (bh_base* b: block.getAllBases()) {
@@ -152,33 +183,47 @@ bool openmp_atomic_compatible(bh_opcode opcode) {
 
 // Writing the OpenMP header, which include "parallel for" and "simd"
 void write_openmp_header(const Block &block, BaseDB &base_ids, stringstream &out) {
+    out << "#pragma omp";
+
+    // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
+    vector<const bh_instruction*> openmp_reductions;
 
     // OpenMP for goes to the outermost loop
-    const bool writing_openmp_for = block.rank == 0 and openmp_compatible(block);
-    // OpenMP SIMD goes to the innermost loop (which might also be the outermost loop)
-    const bool writing_openmp_simd = block.isInnermost() and simd_compatible(block, base_ids);
-
-    // Writing any openmp at all?
-    if (not (writing_openmp_for or writing_openmp_simd)) {
-        return;
-    }
-
-    // Let's write it
-    out << "#pragma omp";
-    if (writing_openmp_for) {
+    if (block.rank == 0 and openmp_compatible(block)) {
         out << " parallel for";
-        // Since we are doing parallel for, we need to protect sweep instructions
+        // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
         for (const bh_instruction *instr: block._sweeps) {
-            if (openmp_atomic_compatible(instr->opcode)) {
+            assert(bh_noperands(instr->opcode) == 3);
+            bh_base *base = instr->operand[0].base;
+            if (openmp_reduce_compatible(instr->opcode) and (base_ids.isScalarReplaced(base) or base_ids.isTmp(base))) {
+                openmp_reductions.push_back(instr);
+            } else if (openmp_atomic_compatible(instr->opcode)) {
                 base_ids.insertOpenmpAtomic(instr->operand[0].base);
             } else {
                 base_ids.insertOpenmpCritical(instr->operand[0].base);
             }
         }
     }
-    if (writing_openmp_simd) {
-       out << " simd";
+
+    // OpenMP SIMD goes to the innermost loop (which might also be the outermost loop)
+    if (block.isInnermost() and simd_compatible(block, base_ids)) {
+        out << " simd";
+        if (block.rank > 0) { //NB: avoid multiple reduction declarations
+            for (const bh_instruction *instr: block._sweeps) {
+                openmp_reductions.push_back(instr);
+            }
+        }
     }
+
+    //Let's write the OpenMP reductions
+    for (const bh_instruction* instr: openmp_reductions) {
+        assert(bh_noperands(instr->opcode) == 3);
+        bh_base *base = instr->operand[0].base;
+        out << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
+        out << (base_ids.isScalarReplaced(base)?"s":"t");
+        out << base_ids[base] << ")";
+    }
+
     out << endl;
     spaces(out, 4 + block.rank*4);
 }
