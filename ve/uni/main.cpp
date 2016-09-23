@@ -123,6 +123,19 @@ bool openmp_compatible(const Block &block) {
     return true;
 }
 
+// Is the 'block' compatible with OpenMP SIMD
+bool simd_compatible(const Block &block, const BaseDB &base_ids) {
+    if (block._sweeps.size() > 0)
+        return false; // For now, sweeps are not supported
+
+    // An OpenMP SIMD loop does not support ANY OpenMP pragmas
+    for (bh_base* b: block.getAllBases()) {
+        if (base_ids.isOpenmpAtomic(b) or base_ids.isOpenmpCritical(b))
+            return false;
+    }
+    return true;
+}
+
 // Does 'opcode' support the OpenMP Atomic guard?
 bool openmp_atomic_compatible(bh_opcode opcode) {
     switch (opcode) {
@@ -135,6 +148,39 @@ bool openmp_atomic_compatible(bh_opcode opcode) {
         default:
             return false;
     }
+}
+
+// Writing the OpenMP header, which include "parallel for" and "simd"
+void write_openmp_header(const Block &block, BaseDB &base_ids, stringstream &out) {
+
+    // OpenMP for goes to the outermost loop
+    const bool writing_openmp_for = block.rank == 0 and openmp_compatible(block);
+    // OpenMP SIMD goes to the innermost loop (which might also be the outermost loop)
+    const bool writing_openmp_simd = block.isInnermost() and simd_compatible(block, base_ids);
+
+    // Writing any openmp at all?
+    if (not (writing_openmp_for or writing_openmp_simd)) {
+        return;
+    }
+
+    // Let's write it
+    out << "#pragma omp";
+    if (writing_openmp_for) {
+        out << " parallel for";
+        // Since we are doing parallel for, we need to protect sweep instructions
+        for (const bh_instruction *instr: block._sweeps) {
+            if (openmp_atomic_compatible(instr->opcode)) {
+                base_ids.insertOpenmpAtomic(instr->operand[0].base);
+            } else {
+                base_ids.insertOpenmpCritical(instr->operand[0].base);
+            }
+        }
+    }
+    if (writing_openmp_simd) {
+       out << " simd";
+    }
+    out << endl;
+    spaces(out, 4 + block.rank*4);
 }
 
 // Does 'instr' reduce over the innermost axis?
@@ -217,18 +263,8 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
         spaces(out, 4 + block.rank*4);
     }
 
-    // Parallelization of the outermost loop
-    if (block.rank == 0 and openmp_compatible(block)) {
-        out << "#pragma omp parallel for" << endl;
-        spaces(out, 4 + block.rank*4);
-        for (const bh_instruction *instr: block._sweeps) {
-            if (openmp_atomic_compatible(instr->opcode)) {
-                base_ids.insertOpenmpAtomic(instr->operand[0].base);
-            } else {
-                base_ids.insertOpenmpCritical(instr->operand[0].base);
-            }
-        }
-    }
+    // Let's write the OpenMP loop header
+    write_openmp_header(block, base_ids, out);
 
     // Write the for-loop header
     string itername;
