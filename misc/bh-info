@@ -42,8 +42,7 @@ def parse_config(verbose=True):
     ]
 
     for guess in guesses:
-        if guess != None and guess != "":
-            assert(os.path.isfile(guess))
+        if guess != None and os.path.isfile(guess):
             if verbose:
                 print("%sFound config file%s:\n\t%s"%(OKBLUE, END, guess))
             confparser = SafeConfigParser()
