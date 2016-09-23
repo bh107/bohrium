@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
+
+If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import argparse
+import os
+from ConfigParser import SafeConfigParser, NoOptionError
+
+HEADER = '\033[95m'
+OKBLUE = '\033[94m'
+OKGREEN = '\033[92m'
+WARNING = '\033[93m'
+FAIL = '\033[91m'
+END = '\033[0m'
+
+def parse_config(verbose=True):
+    guesses = [
+              os.getenv('BH_CONFIG'),
+              os.path.join(os.getenv('HOME'),     '.bohrium', 'config.ini'),
+        '/' + os.path.join('etc',                 'bohrium', 'config.ini'),
+        '/' + os.path.join('usr', 'etc',          'bohrium', 'config.ini'),
+        '/' + os.path.join('usr', 'local', 'etc', 'bohrium', 'config.ini'),
+        '/' + os.path.join('opt', 'etc',          'bohrium', 'config.ini')
+    ]
+
+    for guess in guesses:
+        if guess != None and guess != "":
+            assert(os.path.isfile(guess))
+            if verbose:
+                print("%sFound config file%s:\n\t%s"%(OKBLUE, END, guess))
+            confparser = SafeConfigParser()
+            confparser.read(guess)
+            return confparser
+    raise RuntimeError("Config file now found")
+
+
+def get_stack(config, verbose=True):
+    name = os.getenv("BH_STACK", "default")
+    stack = config.get("stacks", name)
+    if verbose:
+        print("%sComponent stack:%s \n\t%s = %s"%(OKBLUE, END, name, stack))
+    return [s.strip() for s in stack.split(",")]
+
+
+def print_stack_keys(config, stack, key, prefix="\t"):
+    for comp in stack:
+        try:
+            val = config.get(comp, key)
+            print("%s%s.%s = %s"%(prefix, comp, key, val))
+        except NoOptionError:
+            pass
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Bohrium Information Tool')
+    args = parser.parse_args()
+
+    print ("%sbh-info - Printing formation of the current Bohrium setup%s"%(HEADER, END))
+    args.config = parse_config()
+    args.stack = get_stack(args.config)
+    print ("%sJIT compiler options:%s"%(OKBLUE, END))
+    print_stack_keys(args.config, args.stack, "compiler_cmd")
+    print_stack_keys(args.config, args.stack, "compiler_lib")
+    print_stack_keys(args.config, args.stack, "compiler_flg")
+
+    print ("%sOpenMP Environment Variables:%s"%(OKBLUE, END))
+    for key, val in os.environ.iteritems():
+        if key.startswith("OMP_"):
+            print ("\t%s: %s"%(key, val))
+
+    print ("%sbh-info - End of output%s"%(HEADER, END))
