@@ -51,12 +51,12 @@ RUN rm ../Python-$PV.tgz
 
 RUN mkdir -p /opt/cython
 WORKDIR /opt/cython
-ENV CV 0.24
-RUN wget -q http://cython.org/release/Cython-$CV.tar.gz
-RUN tar -xzf Cython-$CV.tar.gz
-WORKDIR Cython-$CV
+ENV CV 0.24.1
+RUN wget -q https://github.com/cython/cython/archive/$CV.tar.gz
+RUN tar -xzf $CV.tar.gz
+WORKDIR cython-$CV
 RUN dython setup.py install
-RUN rm ../Cython-$CV.tar.gz
+RUN rm ../$CV.tar.gz
 
 RUN mkdir -p /opt/cheetah
 WORKDIR /opt/cheetah

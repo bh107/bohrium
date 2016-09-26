@@ -151,6 +151,12 @@ install(DIRECTORY thirdparty/Random123-1.08/include/Random123
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
 #
+# Install misc
+#
+
+install(PROGRAMS misc/bh-info DESTINATION bin COMPONENT bohrium)
+
+#
 # Bohrium configuration file
 #
 configure_file(${CMAKE_SOURCE_DIR}/config.ini.in ${CMAKE_BINARY_DIR}/config.ini)    # Fill out the config-template

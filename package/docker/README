@@ -1,0 +1,8 @@
+In order to update the docker image that travis builds at each run, simply modify bohrium.dockerfile.
+NB: no need to upload a new image to docker hub!
+
+When modifying the base image, you have to upload a new docker image to docker hub.
+In the root dir of Bohrium run:
+
+sudo docker build -t bohrium/ubuntu:16.04 -f package/docker/bohrium.dockerfile .
+sudo docker push
