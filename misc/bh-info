@@ -23,6 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 import argparse
 import os
 from ConfigParser import SafeConfigParser, NoOptionError
+import subprocess
+import re
 
 HEADER = '\033[95m'
 OKBLUE = '\033[94m'
@@ -42,7 +44,7 @@ def parse_config(verbose=True):
     ]
 
     for guess in guesses:
-        if guess != None and os.path.isfile(guess):
+        if guess is not None and os.path.isfile(guess):
             if verbose:
                 print("%sFound config file%s:\n\t%s"%(OKBLUE, END, guess))
             confparser = SafeConfigParser()
@@ -59,13 +61,39 @@ def get_stack(config, verbose=True):
     return [s.strip() for s in stack.split(",")]
 
 
+def get_value(config, component, key, default=None, verbose=False, prefix="\t"):
+    if not config.has_section(component) or not config.has_option(component, key):
+        ret = default
+    else:
+        ret = config.get(component, key)
+
+    if verbose:
+        print("%s%s.%s = %s"%(prefix, component, key, ret))
+    return ret
+
+
 def print_stack_keys(config, stack, key, prefix="\t"):
     for comp in stack:
-        try:
-            val = config.get(comp, key)
-            print("%s%s.%s = %s"%(prefix, comp, key, val))
-        except NoOptionError:
-            pass
+        value = get_value(config, comp, key, verbose=False, prefix=prefix)
+        if value is not None:
+            print("%s%s.%s = %s"%(prefix, comp, key, value))
+
+
+def print_compiler(config, component, prefix="\t"):
+
+    cmd = get_value(config, component, "compiler_cmd", verbose=True, prefix=prefix)
+    try:
+        cmd_version = "%s -v"%cmd
+        version = subprocess.check_output(cmd_version, stderr=subprocess.STDOUT, shell=True)
+        version = version.split("\n")[-2].strip()
+    except subprocess.CalledProcessError:
+        print ('%sFail cmd "%s"%s'%(FAIL, cmd_version, END))
+        raise
+    print('%s%s.%s = "%s"'%(prefix, component, "compiler_ver", version))
+    lib = get_value(config, component, "compiler_lib", verbose=True, prefix=prefix)
+    flg = get_value(config, component, "compiler_flg", verbose=True, prefix=prefix)
+
+
 
 
 
@@ -77,9 +105,11 @@ if __name__ == "__main__":
     args.config = parse_config()
     args.stack = get_stack(args.config)
     print ("%sJIT compiler options:%s"%(OKBLUE, END))
-    print_stack_keys(args.config, args.stack, "compiler_cmd")
-    print_stack_keys(args.config, args.stack, "compiler_lib")
-    print_stack_keys(args.config, args.stack, "compiler_flg")
+    print_compiler(args.config, args.stack[-1])
+
+   # print_stack_keys(args.config, args.stack, "compiler_cmd")
+    #print_stack_keys(args.config, args.stack, "compiler_lib")
+   # print_stack_keys(args.config, args.stack, "compiler_flg")
 
     print ("%sOpenMP Environment Variables:%s"%(OKBLUE, END))
     for key, val in os.environ.iteritems():
