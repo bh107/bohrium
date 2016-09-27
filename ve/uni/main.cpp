@@ -182,12 +182,20 @@ bool openmp_atomic_compatible(bh_opcode opcode) {
 }
 
 // Writing the OpenMP header, which include "parallel for" and "simd"
-void write_openmp_header(const Block &block, BaseDB &base_ids, stringstream &out) {
-    out << "#pragma omp";
+void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParser &config, stringstream &out) {
+    if (not config.defaultGet<bool>("compiler_openmp", false)) {
+        return;
+    }
+    bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
+    // If this is the outermost block we might not support both parallel for and simd
+    if (block.rank == 0 and not config.defaultGet<bool>("compiler_openmp_for_simd", false)) {
+        enable_simd = false;
+    }
 
     // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
     vector<const bh_instruction*> openmp_reductions;
 
+    out << "#pragma omp";
     // OpenMP for goes to the outermost loop
     if (block.rank == 0 and openmp_compatible(block)) {
         out << " parallel for";
@@ -206,7 +214,7 @@ void write_openmp_header(const Block &block, BaseDB &base_ids, stringstream &out
     }
 
     // OpenMP SIMD goes to the innermost loop (which might also be the outermost loop)
-    if (block.isInnermost() and simd_compatible(block, base_ids)) {
+    if (enable_simd and block.isInnermost() and simd_compatible(block, base_ids)) {
         out << " simd";
         if (block.rank > 0) { //NB: avoid multiple reduction declarations
             for (const bh_instruction *instr: block._sweeps) {
@@ -238,7 +246,7 @@ bool sweeping_innermost_axis(const bh_instruction *instr) {
     return sweep_axis(*instr) == instr->operand[1].ndim-1;
 }
 
-void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
+void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &config, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
 
@@ -300,7 +308,7 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
                     write_instr(base_ids, *b._instr, out);
                 }
             } else {
-                write_block(base_ids, b, out);
+                write_block(base_ids, b, config, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -309,7 +317,7 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
     }
 
     // Let's write the OpenMP loop header
-    write_openmp_header(block, base_ids, out);
+    write_openmp_header(block, base_ids, config, out);
 
     // Write the for-loop header
     string itername;
@@ -346,7 +354,7 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
                 write_instr(base_ids, *b._instr, out);
             }
         } else {
-            write_block(base_ids, b, out);
+            write_block(base_ids, b, config, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -618,7 +626,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the blocks that makes up the body of 'execute()'
     for(const Block &block: kernel.block_list) {
-        write_block(base_ids, block, ss);
+        write_block(base_ids, block, config, ss);
     }
 
     ss << "}" << endl << endl;
