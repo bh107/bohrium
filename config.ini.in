@@ -157,15 +157,18 @@ verbose = false
 #
 [uni]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_uni${CMAKE_SHARED_LIBRARY_SUFFIX}
-object_dir=${CMAKE_INSTALL_PREFIX}/var/bohrium/object
-source_dir=${CMAKE_INSTALL_PREFIX}/var/bohrium/source
-compiler_cmd="${VE_UNI_COMPILER_CMD}"
-compiler_inc="${VE_UNI_COMPILER_INC}"
-compiler_lib="${VE_UNI_COMPILER_LIB}"
-compiler_flg="${VE_UNI_COMPILER_FLG}"
+object_dir = ${CMAKE_INSTALL_PREFIX}/var/bohrium/object
+source_dir = ${CMAKE_INSTALL_PREFIX}/var/bohrium/source
 dump_src = true
 verbose = false
 prof = false #Profiling statistics
+compiler_cmd = "${VE_UNI_COMPILER_CMD}"
+compiler_inc = "${VE_UNI_COMPILER_INC}"
+compiler_lib = "${VE_UNI_COMPILER_LIB}"
+compiler_flg = "${VE_UNI_COMPILER_FLG}"
+compiler_openmp = ${_VE_UNI_COMPILER_OPENMP}
+compiler_openmp_simd = ${_VE_UNI_COMPILER_OPENMP_SIMD}
+compiler_openmp_for_simd = ${_VE_UNI_COMPILER_OPENMP_FOR_SIMD}
 
 
 [cpu]
