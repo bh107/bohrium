@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+
 set(VE_UNI true CACHE BOOL "VE-UNI: Build the Universial code generator.")
 if(NOT VE_UNI)
     return()
@@ -20,26 +21,38 @@ install(TARGETS bh_ve_uni DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
 #   The rest of the this file is finding the compiler and flags to write in the config file
 #
 
-include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 include(FeatureSummary)
 
-# External code, libraries, and macros
+# Import and detect OpenMP features
 find_package(OpenMP COMPONENTS bohrium)
 set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "Multicore processing, essential for performance of the CPU VE.")
+set(OpenMP_SIMD_C_FLAGS "${OpenMP_C_FLAGS} ${OpenMP_C_FLAGS}-simd")
+check_c_compiler_flag("${OpenMP_SIMD_C_FLAGS}" OPENMP_SIMD_FOUND)
 
-#find_package(OpenACC COMPONENTS bohrium)
-#set_package_properties(OpenACC PROPERTIES TYPE RECOMMENDED PURPOSE "For experimental support for offloading to GPU in CPU VE.")
-
-set(OpenACC false CACHE BOOL "For OpenACC support.")
-if (NOT OpenACC)
-    set(OPENACC_FOUND false)
+# If the openmp-simd flag is supported, we should use it as the OpenMP flags
+if(OPENMP_SIMD_FOUND)
+    set(OpenMP_C_FLAGS "${OpenMP_SIMD_C_FLAGS}")
 endif()
+
+# Check support for combined parallel for and simd loops
+set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+check_c_source_compiles("
+#include <omp.h>
+int main() {
+  int i;
+  int sum=42;
+  #pragma parallel for simd reduction(+:sum)
+  for(i=0; i<100; ++i)
+    sum += i;
+  return 0;
+}
+" OPENMP_FOR_SIMD_FOUND)
+unset(CMAKE_REQUIRED_FLAGS)
 
 # Check highly RECOMMENDED flags
 check_c_compiler_flag(-O3 FLAG_03_FOUND)
 check_c_compiler_flag(-march=native FLAG_MARCH_NATIVE_FOUND)
-check_c_compiler_flag("--param vect-max-version-for-alias-checks=100" PARAM_VECTMAX_FOUND)
 check_c_compiler_flag(-Werror FLAG_WERROR_FOUND)
 
 #
@@ -65,31 +78,41 @@ else()
     if (FLAG_MARCH_NATIVE_FOUND)                                            # Machine specific code
         set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} -march=native")
     endif()
-    if (PARAM_VECTMAX_FOUND)                                                # Upper bound on alias-checks
-        set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} --param vect-max-version-for-alias-checks=100")
-    endif()
-    if (FLAG_WERROR_FOUND)                                                      # Optimization Level
+    if (FLAG_WERROR_FOUND)                                                  # Optimization Level
         set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} -Werror")
     endif()
     #
     # Parallelization
     #
-    # Assume that when OpenACC is available then we want to use it.
-    #
-    if (OPENACC_FOUND)
-        set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} ${OpenACC_C_FLAGS}")# OpenACC
-    elseif(OPENMP_FOUND)
+    if(OPENMP_FOUND)
         set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} ${OpenMP_C_FLAGS}") # OpenMP
-        if (FLAG_OPENMP_SIMD_FOUND)
-            set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} -fopenmp-simd") # OpenMP - SIMD
-        endif()
     endif()
 endif()
 
-set(VE_UNI_COMPILER_CMD "${CMAKE_C_COMPILER}"       CACHE STRING                            "VE_UNI: JIT-Compiler")
+set(VE_UNI_COMPILER_CMD "${CMAKE_C_COMPILER}"       CACHE STRING                "VE_UNI: JIT-Compiler")
 set(VE_UNI_COMPILER_INC "-I${CMAKE_INSTALL_PREFIX}/include")
 set(VE_UNI_COMPILER_INC "${VE_UNI_COMPILER_INC} -I${CMAKE_INSTALL_PREFIX}/include/bohrium")
 set(VE_UNI_COMPILER_INC "${VE_UNI_COMPILER_INC} -I${CMAKE_INSTALL_PREFIX}/share/bohrium/include")
-set(VE_UNI_COMPILER_INC "${VE_UNI_COMPILER_INC}"    CACHE STRING                            "VE_UNI: JIT-Compiler includes")
-set(VE_UNI_COMPILER_LIB "-lm -L${CMAKE_INSTALL_PREFIX}/lib -lbh"  CACHE STRING              "VE_UNI: JIT-Compiler libraries")
-set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG}"    CACHE STRING                            "VE_UNI: JIT-Compiler flags")
+set(VE_UNI_COMPILER_INC "${VE_UNI_COMPILER_INC}"                  CACHE STRING  "VE_UNI: JIT-Compiler includes")
+set(VE_UNI_COMPILER_LIB "-lm -L${CMAKE_INSTALL_PREFIX}/lib -lbh"  CACHE STRING  "VE_UNI: JIT-Compiler libraries")
+set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG}"                  CACHE STRING  "VE_UNI: JIT-Compiler flags")
+set(VE_UNI_COMPILER_OPENMP          ${OPENMP_FOUND}             CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP")
+set(VE_UNI_COMPILER_OPENMP_SIMD     ${OPENMP_SIMD_FOUND}        CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP-SIMD")
+set(VE_UNI_COMPILER_OPENMP_FOR_SIMD ${OPENMP_FOR_SIMD_FOUND}    CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP-FOR-SIMD")
+
+# We need to cleanup the variables for the config file
+if(VE_UNI_COMPILER_OPENMP)
+    set(_VE_UNI_COMPILER_OPENMP "true" CACHE INTERNAL "config version")
+else()
+    set(_VE_UNI_COMPILER_OPENMP "false" CACHE INTERNAL "config version")
+endif()
+if(VE_UNI_COMPILER_OPENMP_SIMD)
+    set(_VE_UNI_COMPILER_OPENMP_SIMD "true" CACHE INTERNAL "config version")
+else()
+    set(_VE_UNI_COMPILER_OPENMP_SIMD "false" CACHE INTERNAL "config version")
+endif()
+if(VE_UNI_COMPILER_OPENMP_FOR_SIMD)
+    set(_VE_UNI_COMPILER_OPENMP_FOR_SIMD "true" CACHE INTERNAL "config version")
+else()
+    set(_VE_UNI_COMPILER_OPENMP_FOR_SIMD "false" CACHE INTERNAL "config version")
+endif()
