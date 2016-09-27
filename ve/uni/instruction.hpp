@@ -35,6 +35,10 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, std::strin
 // Return the axis that 'instr' reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
 int sweep_axis(const bh_instruction &instr);
 
+// Write the array subscription, e.g. A[2+i0*1+i1*10], but ignore the loop-variant of 'hidden_axis' if it isn't 'BH_MAXDIM'
+void write_array_subscription(const bh_view &view, std::stringstream &out, int hidden_axis=BH_MAXDIM,
+                              const std::pair<int, int> axis_offset=std::make_pair(BH_MAXDIM, 0));
+
 } // bohrium
 
 #endif

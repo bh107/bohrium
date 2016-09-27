@@ -112,6 +112,33 @@ set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
     return ret;
 }
 
+// Return the OpenMP reduction symbol
+const char* openmp_reduce_symbol(bh_opcode opcode) {
+    switch (opcode) {
+        case BH_ADD_REDUCE:
+            return "+";
+        case BH_MULTIPLY_REDUCE:
+            return "*";
+        case BH_BITWISE_AND_REDUCE:
+            return "&";
+        case BH_BITWISE_OR_REDUCE:
+            return "|";
+        case BH_BITWISE_XOR_REDUCE:
+            return "^";
+        case BH_MAXIMUM_REDUCE:
+            return "max";
+        case BH_MINIMUM_REDUCE:
+            return "min";
+        default:
+            return NULL;
+    }
+}
+
+// Is 'opcode' compatible with OpenMP reductions such as reduction(+:var)
+bool openmp_reduce_compatible(bh_opcode opcode) {
+    return openmp_reduce_symbol(opcode) != NULL;
+}
+
 // Is the 'block' compatible with OpenMP
 bool openmp_compatible(const Block &block) {
     // For now, all sweeps must be reductions
@@ -123,7 +150,24 @@ bool openmp_compatible(const Block &block) {
     return true;
 }
 
-// Does 'opcode' support the OpenMP Atomic guard
+// Is the 'block' compatible with OpenMP SIMD
+bool simd_compatible(const Block &block, const BaseDB &base_ids) {
+
+    // Check for non-compatible reductions
+    for (const bh_instruction *instr: block._sweeps) {
+        if (not openmp_reduce_compatible(instr->opcode))
+            return false;
+    }
+
+    // An OpenMP SIMD loop does not support ANY OpenMP pragmas
+    for (bh_base* b: block.getAllBases()) {
+        if (base_ids.isOpenmpAtomic(b) or base_ids.isOpenmpCritical(b))
+            return false;
+    }
+    return true;
+}
+
+// Does 'opcode' support the OpenMP Atomic guard?
 bool openmp_atomic_compatible(bh_opcode opcode) {
     switch (opcode) {
         case BH_ADD_REDUCE:
@@ -137,26 +181,89 @@ bool openmp_atomic_compatible(bh_opcode opcode) {
     }
 }
 
-void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
+// Writing the OpenMP header, which include "parallel for" and "simd"
+void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParser &config, stringstream &out) {
+    if (not config.defaultGet<bool>("compiler_openmp", false)) {
+        return;
+    }
+    bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
+    // If this is the outermost block we might not support both parallel for and simd
+    if (block.rank == 0 and not config.defaultGet<bool>("compiler_openmp_for_simd", false)) {
+        enable_simd = false;
+    }
+
+    // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
+    vector<const bh_instruction*> openmp_reductions;
+
+    out << "#pragma omp";
+    // OpenMP for goes to the outermost loop
+    if (block.rank == 0 and openmp_compatible(block)) {
+        out << " parallel for";
+        // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
+        for (const bh_instruction *instr: block._sweeps) {
+            assert(bh_noperands(instr->opcode) == 3);
+            bh_base *base = instr->operand[0].base;
+            if (openmp_reduce_compatible(instr->opcode) and (base_ids.isScalarReplaced(base) or base_ids.isTmp(base))) {
+                openmp_reductions.push_back(instr);
+            } else if (openmp_atomic_compatible(instr->opcode)) {
+                base_ids.insertOpenmpAtomic(instr->operand[0].base);
+            } else {
+                base_ids.insertOpenmpCritical(instr->operand[0].base);
+            }
+        }
+    }
+
+    // OpenMP SIMD goes to the innermost loop (which might also be the outermost loop)
+    if (enable_simd and block.isInnermost() and simd_compatible(block, base_ids)) {
+        out << " simd";
+        if (block.rank > 0) { //NB: avoid multiple reduction declarations
+            for (const bh_instruction *instr: block._sweeps) {
+                openmp_reductions.push_back(instr);
+            }
+        }
+    }
+
+    //Let's write the OpenMP reductions
+    for (const bh_instruction* instr: openmp_reductions) {
+        assert(bh_noperands(instr->opcode) == 3);
+        bh_base *base = instr->operand[0].base;
+        out << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
+        out << (base_ids.isScalarReplaced(base)?"s":"t");
+        out << base_ids[base] << ")";
+    }
+
+    out << endl;
+    spaces(out, 4 + block.rank*4);
+}
+
+// Does 'instr' reduce over the innermost axis?
+// Notice, that such a reduction computes each output element completely before moving
+// to the next element.
+bool sweeping_innermost_axis(const bh_instruction *instr) {
+    if (not bh_opcode_is_sweep(instr->opcode))
+        return false;
+    assert(bh_noperands(instr->opcode) == 3);
+    return sweep_axis(*instr) == instr->operand[1].ndim-1;
+}
+
+void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &config, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
 
     // All local temporary arrays needs an variable declaration
     const set<bh_base*> local_tmps = block.getLocalTemps();
 
-    // Let's scalar replace vector-reduction outputs
-    vector<bh_base*> scalar_replacements;
-    if (block.rank == 0) {
-        for (const bh_instruction *instr: block._sweeps) {
-            if (bh_opcode_is_reduction(instr->opcode)) {
-                bh_base *base = instr->operand[0].base;
-                if (base_ids.isTmp(base) or base->nelem > 1)
-                    continue; // No need to replace temporary arrays
-                out << write_type(base->type) << " s" << base_ids[base] << ";" << endl;
-                spaces(out, 4 + block.rank * 4);
-                scalar_replacements.push_back(base);
-                base_ids.insertScalarReplacement(base);
-            }
+    // Let's scalar replace reduction outputs that reduces over the innermost axis
+    vector<bh_view> scalar_replacements;
+    for (const bh_instruction *instr: block._sweeps) {
+        if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
+            bh_base *base = instr->operand[0].base;
+            if (base_ids.isTmp(base))
+                continue; // No need to replace temporary arrays
+            out << write_type(base->type) << " s" << base_ids[base] << ";" << endl;
+            spaces(out, 4 + block.rank * 4);
+            scalar_replacements.push_back(instr->operand[0]);
+            base_ids.insertScalarReplacement(base);
         }
     }
 
@@ -201,7 +308,7 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
                     write_instr(base_ids, *b._instr, out);
                 }
             } else {
-                write_block(base_ids, b, out);
+                write_block(base_ids, b, config, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -209,18 +316,8 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
         spaces(out, 4 + block.rank*4);
     }
 
-    // Parallelization of the outermost loop
-    if (block.rank == 0 and openmp_compatible(block)) {
-        out << "#pragma omp parallel for" << endl;
-        spaces(out, 4 + block.rank*4);
-        for (const bh_instruction *instr: block._sweeps) {
-            if (openmp_atomic_compatible(instr->opcode)) {
-                base_ids.insertOpenmpAtomic(instr->operand[0].base);
-            } else {
-                base_ids.insertOpenmpCritical(instr->operand[0].base);
-            }
-        }
-    }
+    // Let's write the OpenMP loop header
+    write_openmp_header(block, base_ids, config, out);
 
     // Write the for-loop header
     string itername;
@@ -257,20 +354,20 @@ void write_block(BaseDB &base_ids, const Block &block, stringstream &out) {
                 write_instr(base_ids, *b._instr, out);
             }
         } else {
-            write_block(base_ids, b, out);
+            write_block(base_ids, b, config, out);
         }
     }
     spaces(out, 4 + block.rank*4);
     out << "}" << endl;
 
-    // Let's copy the scalar back to the original array
-    for (bh_base* base: scalar_replacements) {
-        if (not base_ids.isTmp(base)) {
-            spaces(out, 4 + block.rank*4);
-            const size_t id = base_ids[base];
-            out << "a" << id << "[0] = s" << id << ";" << endl;
-            base_ids.eraseScalarReplacement(base); // It is not scalar replaced anymore
-        }
+    // Let's copy the scalar replacement back to the original array
+    for (const bh_view &view: scalar_replacements) {
+        spaces(out, 4 + block.rank*4);
+        const size_t id = base_ids[view.base];
+        out << "a" << id;
+        write_array_subscription(view, out);
+        out << " = s" << id << ";" << endl;
+        base_ids.eraseScalarReplacement(view.base); // It is not scalar replaced anymore
     }
 }
 
@@ -529,7 +626,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the blocks that makes up the body of 'execute()'
     for(const Block &block: kernel.block_list) {
-        write_block(base_ids, block, ss);
+        write_block(base_ids, block, config, ss);
     }
 
     ss << "}" << endl << endl;

@@ -51,6 +51,16 @@ public:
     // Returns NULL if not found
     Block* findInstrBlock(const bh_instruction *instr);
 
+    // Is this block innermost? (not counting instruction blocks)
+    bool isInnermost() const {
+        for (const Block &b: _block_list) {
+            if (not b.isInstr()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Pretty print this block
     std::string pprint() const;
 
