@@ -868,6 +868,48 @@ cdef class RandomState:
             raise ValueError("scale <= 0")
         return self.standard_exponential(size=size, dtype=dtype, bohrium=bohrium) * scale
 
+    def random(self, shape, dtype, bohrium=True):
+        """
+        Return random numbers of 'dtype'.
+
+        Parameters
+        ----------
+        shape : int or tuple of ints, optional
+            Defines the shape of the returned array of random floats. If None
+            (the default), returns a single float.
+
+        Returns
+        -------
+        out : float or ndarray of floats
+            Array of random floats of shape `shape` (unless ``shape=None``, in which
+            case a single float is returned).
+        """
+        try:
+            total = reduce(operator.mul, shape)
+        except TypeError:
+            total = shape
+            shape = (shape,)
+        dtype = np.dtype(dtype).type
+        if dtype is np.bool:
+            res = self.random_integers(0,1,shape,bohrium=bohrium)
+        elif dtype in [np.int8, np.uint8]:
+            res = self.random_integers(1,3,shape,bohrium=bohrium)
+        elif dtype is np.int16:
+            res = self.random_integers(1,5,shape,bohrium=bohrium)
+        elif dtype is np.uint16:
+            res = self.random_integers(1,6,shape,bohrium=bohrium)
+        elif dtype in [np.float32, np.float64]:
+            res = self.random_sample(size=shape,bohrium=bohrium)
+        elif dtype in [np.complex64, np.complex128]:
+            res = self.random_sample(size=shape,bohrium=bohrium) + \
+                  self.random_sample(size=shape,bohrium=bohrium)*1j
+        else:
+            res = self.random_integers(1,8,size=shape,bohrium=bohrium)
+        if len(res.shape) == 0:#Make sure scalars is arrays.
+            res = np.asarray(res,bohrium=bohrium)
+            res.shape = shape
+        return np.asarray(res, dtype=dtype,bohrium=bohrium)
+
 
 #The default random object
 _inst = RandomState()
