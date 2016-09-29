@@ -48,7 +48,7 @@ def run(args):
                         cmd_np = cmd
                         cmd_bh = cmd
                     if args.verbose:
-                        print("%s  [BH CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
+                        print("%s  [BH CMD] %s%s" % (OKBLUE, cmd_bh, ENDC))
 
                     # Let's execute the two commands
                     env = {"np": numpy, "bh": bohrium, "M": numpy}
