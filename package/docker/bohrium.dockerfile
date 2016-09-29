@@ -32,4 +32,5 @@ ENV PYTHONPATH "/usr/lib/python2.7/site-packages:$PYTHONPATH"
 
 # Test Suite
 WORKDIR /bohrium
-ENTRYPOINT /usr/bin/bh-info && echo "python /bohrium/test/python/numpytest.py $NUMPYTEST_ARGS" && python /bohrium/test/python/numpytest.py $NUMPYTEST_ARGS
+#ENTRYPOINT /usr/bin/bh-info && echo "python /bohrium/test/python/numpytest.py $NUMPYTEST_ARGS" && python /bohrium/test/python/numpytest.py $NUMPYTEST_ARGS && python /bohrium/test/python/run.py --file /bohrium/test/python/tests/test_array_create.py
+ENTRYPOINT /usr/bin/bh-info && echo "$RUN" && eval $RUN
