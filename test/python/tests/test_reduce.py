@@ -1,7 +1,7 @@
 import util
 
 
-class tes1t_reduce_views:
+class test_reduce_views:
     """ Test reduction of all kind of views"""
     def init(self):
         for cmd, ndim in util.gen_random_arrays("R", 4, dtype="np.float32"):
@@ -16,7 +16,7 @@ class tes1t_reduce_views:
         return cmd
 
 
-class tes1t_reduce_sum:
+class test_reduce_sum:
     """ Test reduction of sum() and prod()"""
     def init(self):
         for cmd, ndim in util.gen_random_arrays("R", 3, dtype="np.float32"):
