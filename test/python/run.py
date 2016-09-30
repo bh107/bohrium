@@ -27,7 +27,9 @@ def get_test_object_names(obj):
 
 
 def run(args):
-    for filename in args.file:
+    for filename in args.files:
+        if not filename.endswith("py"):
+            continue # Ignore non-python files
         module_name = os.path.basename(filename)[:-3]  # Remove ".py"
         m = imp.load_source(module_name, filename)
         for cls_name in get_test_object_names(m):
@@ -73,11 +75,10 @@ def run(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Runs the test suite')
     parser.add_argument(
-        '--file',
+        'files',
         type=str,
-        action='append',
-        default=[],
-        help='Add test file (supports multiple use of this argument)'
+        nargs='+',
+        help='The test files to run'
     )
     parser.add_argument(
         '--verbose',
