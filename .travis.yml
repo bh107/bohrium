@@ -19,7 +19,7 @@ env:
   matrix:
 
       # UNI stack
-      - BH_STACK=uni BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py --file /bohrium/test/python/tests/test_primitives.py --cont-on-error"
+      - BH_STACK=uni BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
 
 
 notifications:
