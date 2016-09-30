@@ -225,10 +225,10 @@ ostream& operator<<(ostream& out, const bh_constant& constant)
                 out << "{.start = " << constant.value.r123.start << ", .key = " << constant.value.r123.key << "}";
                 break;
             case BH_COMPLEX64:
-                out << constant.value.complex64.real << "+" << constant.value.complex64.imag << "*I";
+                out << "(" << constant.value.complex64.real << "+" << constant.value.complex64.imag << "*I)";
                 break;
             case BH_COMPLEX128:
-                out << constant.value.complex128.real << "+" << constant.value.complex128.imag << "*I";
+                out << "(" << constant.value.complex128.real << "+" << constant.value.complex128.imag << "*I)";
                 break;
             case BH_UNKNOWN:
             default:
