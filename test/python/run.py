@@ -8,7 +8,6 @@ import sys
 import os
 import imp
 
-
 # Terminal colors
 HEADER = '\033[95m'
 OKBLUE = '\033[94m'
@@ -47,14 +46,17 @@ def run(args):
                     else:  # if not returning a pair, the NumPy and Bohrium command are identical
                         cmd_np = cmd
                         cmd_bh = cmd
+                    # For convenient, we replace "M" and "BH" in the command to represent NumPy or Bohrium
+                    cmd_np = cmd_np.replace("M", "np").replace("BH", "False")
+                    cmd_bh = cmd_bh.replace("M", "bh").replace("BH", "True")
                     if args.verbose:
                         print("%s  [BH CMD] %s%s" % (OKBLUE, cmd_bh, ENDC))
 
                     # Let's execute the two commands
-                    env = {"np": numpy, "bh": bohrium, "M": numpy}
+                    env = {"np": numpy, "bh": bohrium}
                     exec(cmd_np, env)
                     res_np = env['res']
-                    env = {"np": numpy, "bh": bohrium, "M": bohrium}
+                    env = {"np": numpy, "bh": bohrium}
                     exec (cmd_bh, env)
                     res_bh = env['res'].copy2numpy()
                     if not numpy.allclose(res_np, res_bh, equal_nan=True):
