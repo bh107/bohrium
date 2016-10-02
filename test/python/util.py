@@ -82,7 +82,7 @@ def random_subscription(shape):
     for dim in shape:
         start = random.randint(0, dim-1)
         if dim > 3:
-            step = random.randint(1, dim/2)
+            step = random.randint(1, dim/3)
         else:
             step = 1
         if start+1 < dim-1:
@@ -95,7 +95,7 @@ def random_subscription(shape):
     return write_subscription(view), view_shape
 
 
-def gen_random_arrays(random_state_name, max_ndim, max_dim=10, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32", bh_arg="BH"):
+def gen_random_arrays(random_state_name, max_ndim, max_dim=20, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32", bh_arg="BH"):
     for cmd, shape in gen_arrays(random_state_name, max_ndim, max_dim, min_ndim, samples_in_each_ndim, dtype, bh_arg):
         yield ("%s" % cmd, shape)
         if reduce(operator.mul, shape) > 1:
