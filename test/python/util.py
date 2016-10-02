@@ -56,8 +56,16 @@ class ViewOfDim:
         self.step = step
         self.end = end
 
+    def size(self):
+        ret = 0
+        i = self.start
+        while i < self.end:
+            ret += 1
+            i += self.step
+        return ret
+
     def write(self):
-        return "%d:%d:%d"%(self.start, self.end, self.step)
+        return "%d:%d:%d" % (self.start, self.end, self.step)
 
 
 def write_subscription(view):
@@ -70,6 +78,7 @@ def write_subscription(view):
 
 def random_subscription(shape):
     view = []
+    view_shape = []
     for dim in shape:
         start = random.randint(0, dim-1)
         if dim > 3:
@@ -80,17 +89,19 @@ def random_subscription(shape):
             end = random.randint(start+1, dim-1)
         else:
             end = start+1
-        view.append(ViewOfDim(start, step, end))
-    return write_subscription(view)
+        v = ViewOfDim(start, step, end)
+        view.append(v)
+        view_shape.append(v.size())
+    return write_subscription(view), view_shape
 
 
 def gen_random_arrays(random_state_name, max_ndim, max_dim=10, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32", bh_arg="BH"):
     for cmd, shape in gen_arrays(random_state_name, max_ndim, max_dim, min_ndim, samples_in_each_ndim, dtype, bh_arg):
-        yield ("%s" % cmd, len(shape))
+        yield ("%s" % cmd, shape)
         if reduce(operator.mul, shape) > 1:
             sub_tried = set()
             for _ in range(samples_in_each_ndim):
-                sub = random_subscription(shape)
+                sub, vshape = random_subscription(shape)
                 if sub not in sub_tried:
-                    yield ("%s%s" % (cmd, random_subscription(shape)), len(shape))
+                    yield ("%s%s" % (cmd, sub), vshape)
                     sub_tried.add(sub)

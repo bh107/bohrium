@@ -4,11 +4,11 @@ import util
 class test_reduce_views:
     """ Test reduction of all kind of views"""
     def init(self):
-        for cmd, ndim in util.gen_random_arrays("R", 4, dtype="np.float32"):
+        for cmd, shape in util.gen_random_arrays("R", 4, dtype="np.float32"):
             cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
-            for i in range(ndim):
+            for i in range(len(shape)):
                 yield (cmd, i)
-            for i in range(ndim):
+            for i in range(len(shape)):
                 yield (cmd, -i)
 
     def test_reduce(self, (cmd, axis)):
@@ -19,7 +19,7 @@ class test_reduce_views:
 class test_reduce_sum:
     """ Test reduction of sum() and prod()"""
     def init(self):
-        for cmd, ndim in util.gen_random_arrays("R", 3, dtype="np.float32"):
+        for cmd, shape in util.gen_random_arrays("R", 3, dtype="np.float32"):
             cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
             for op in ["sum", "prod"]:
                 yield (cmd, op)
