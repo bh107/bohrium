@@ -1,10 +1,4 @@
 import bohrium
-import numpy
-
-
-def type_is_integer(dtype):
-    return eval("numpy.issubdtype(numpy.%s, numpy.integer)" % dtype)
-
 
 class test_bh_opcodes:
     def init(self):
