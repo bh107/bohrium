@@ -69,8 +69,8 @@ def run(args):
                     res_bh = env['res'].copy2numpy()
                     if not numpy.allclose(res_np, res_bh, equal_nan=True):
                         print("%s  [Error] %s%s" % (FAIL, name, ENDC))
-                        print("%s  [BH CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
-                        print("%s  [BH RES]\n%s%s" % (OKGREEN, res_np, ENDC))
+                        print("%s  [NP CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
+                        print("%s  [NP RES]\n%s%s" % (OKGREEN, res_np, ENDC))
                         print("%s  [BH CMD] %s%s" % (OKBLUE, cmd_bh, ENDC))
                         print("%s  [BH RES]\n%s%s" % (FAIL, res_bh, ENDC))
                         if not args.cont_on_error:
