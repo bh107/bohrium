@@ -57,3 +57,23 @@ class test_transpose:
     def test_transpose(self, cmd):
         cmd += "res = bh.transpose(a)"
         return cmd
+
+    def test_doubletranspose(self, cmd):
+        cmd += "res = a.T + a.T"
+        return cmd
+
+
+class test_overlapping:
+    def init(self):
+        cmd = "R = bh.random.RandomState(42); res = R.random(100, np.float32, bohrium=BH); "
+        yield cmd
+
+    def test_identity(self, cmd):
+        cmd += "res[1:] = res[:-1]"
+        return cmd
+
+    def test_add(self, cmd):
+        cmd_np = cmd + "t = np.add(res[:-1], 42); res[1:] = t"
+        cmd_bh = cmd + "bh.add(res[:-1], 42, res[1:])"
+        return cmd_np, cmd_bh
+
