@@ -315,8 +315,14 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
     }
 
     // Let's write the OpenMP loop header
-    if (block.size > 1) {// No need to parallel one-sized loops
-        write_openmp_header(block, base_ids, config, out);
+    {
+        int64_t for_loop_size = block.size;
+        if (block._sweeps.size() > 0) // If the for-loop has been peeled, its size is one less
+            --for_loop_size;
+        // No need to parallel one-sized loops
+        if (for_loop_size > 1) {
+            write_openmp_header(block, base_ids, config, out);
+        }
     }
 
     // Write the for-loop header
