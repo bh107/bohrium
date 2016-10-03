@@ -168,7 +168,7 @@ compiler_lib = "${VE_UNI_COMPILER_LIB}"
 compiler_flg = "${VE_UNI_COMPILER_FLG}"
 compiler_openmp = ${_VE_UNI_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_UNI_COMPILER_OPENMP_SIMD}
-compiler_openmp_for_simd = ${_VE_UNI_COMPILER_OPENMP_FOR_SIMD}
+
 
 
 [cpu]

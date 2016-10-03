@@ -27,25 +27,28 @@ include(FeatureSummary)
 # Import and detect OpenMP features
 find_package(OpenMP COMPONENTS bohrium)
 set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "Multicore processing, essential for performance of the CPU VE.")
-set(OpenMP_SIMD_C_FLAGS "${OpenMP_C_FLAGS} ${OpenMP_C_FLAGS}-simd")
-check_c_compiler_flag("${OpenMP_SIMD_C_FLAGS}" OPENMP_SIMD_FOUND)
+if(OPENMP_FOUND)
+    # Check for the SIMD flag
+    set(OpenMP_SIMD_C_FLAGS "${OpenMP_C_FLAGS} ${OpenMP_C_FLAGS}-simd")
+    check_c_compiler_flag("${OpenMP_SIMD_C_FLAGS}" OPENMP_SIMD_FLAG_FOUND)
+    # If the openmp-simd flag is supported, we should use it
+    if(OPENMP_SIMD_FLAG_FOUND)
+        set(OpenMP_C_FLAGS "${OpenMP_SIMD_C_FLAGS}")
+    endif()
 
-# If the openmp-simd flag is supported, we should use it as the OpenMP flags
-if(OPENMP_SIMD_FOUND)
-    set(OpenMP_C_FLAGS "${OpenMP_SIMD_C_FLAGS}")
-    # Check support for combined parallel for and simd loops
+    # Check for SIMD support
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     check_c_source_compiles("
     #include <omp.h>
     int main() {
       int i;
       int sum=42;
-      #pragma parallel for simd reduction(+:sum)
+      #pragma omp parallel for simd reduction(+:sum)
       for(i=0; i<100; ++i)
         sum += i;
       return 0;
     }
-    " OPENMP_FOR_SIMD_FOUND)
+    " OPENMP_SIMD_FOUND)
     unset(CMAKE_REQUIRED_FLAGS)
 endif()
 
@@ -95,9 +98,8 @@ set(VE_UNI_COMPILER_INC "${VE_UNI_COMPILER_INC} -I${CMAKE_INSTALL_PREFIX}/share/
 set(VE_UNI_COMPILER_INC "${VE_UNI_COMPILER_INC}"                  CACHE STRING  "VE_UNI: JIT-Compiler includes")
 set(VE_UNI_COMPILER_LIB "-lm -L${CMAKE_INSTALL_PREFIX}/lib -lbh"  CACHE STRING  "VE_UNI: JIT-Compiler libraries")
 set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG}"                  CACHE STRING  "VE_UNI: JIT-Compiler flags")
-set(VE_UNI_COMPILER_OPENMP          ${OPENMP_FOUND}             CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP")
-set(VE_UNI_COMPILER_OPENMP_SIMD     ${OPENMP_SIMD_FOUND}        CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP-SIMD")
-set(VE_UNI_COMPILER_OPENMP_FOR_SIMD ${OPENMP_FOR_SIMD_FOUND}    CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP-FOR-SIMD")
+set(VE_UNI_COMPILER_OPENMP       ${OPENMP_FOUND}                  CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP")
+set(VE_UNI_COMPILER_OPENMP_SIMD  ${OPENMP_SIMD_FOUND}             CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP-SIMD")
 
 # We need to cleanup the variables for the config file
 if(VE_UNI_COMPILER_OPENMP)
@@ -109,9 +111,4 @@ if(VE_UNI_COMPILER_OPENMP_SIMD)
     set(_VE_UNI_COMPILER_OPENMP_SIMD "true" CACHE INTERNAL "config version")
 else()
     set(_VE_UNI_COMPILER_OPENMP_SIMD "false" CACHE INTERNAL "config version")
-endif()
-if(VE_UNI_COMPILER_OPENMP_FOR_SIMD)
-    set(_VE_UNI_COMPILER_OPENMP_FOR_SIMD "true" CACHE INTERNAL "config version")
-else()
-    set(_VE_UNI_COMPILER_OPENMP_FOR_SIMD "false" CACHE INTERNAL "config version")
 endif()

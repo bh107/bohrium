@@ -187,18 +187,14 @@ void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParse
         return;
     }
     bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
-    // If this is the outermost block we might not support both parallel for and simd
-    if (block.rank == 0 and not config.defaultGet<bool>("compiler_openmp_for_simd", false)) {
-        enable_simd = false;
-    }
 
     // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
     vector<const bh_instruction*> openmp_reductions;
 
-    out << "#pragma omp";
+    stringstream ss;
     // OpenMP for goes to the outermost loop
     if (block.rank == 0 and openmp_compatible(block)) {
-        out << " parallel for";
+        ss << " parallel for";
         // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
         for (const bh_instruction *instr: block._sweeps) {
             assert(bh_noperands(instr->opcode) == 3);
@@ -215,7 +211,7 @@ void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParse
 
     // OpenMP SIMD goes to the innermost loop (which might also be the outermost loop)
     if (enable_simd and block.isInnermost() and simd_compatible(block, base_ids)) {
-        out << " simd";
+        ss << " simd";
         if (block.rank > 0) { //NB: avoid multiple reduction declarations
             for (const bh_instruction *instr: block._sweeps) {
                 openmp_reductions.push_back(instr);
@@ -227,13 +223,15 @@ void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParse
     for (const bh_instruction* instr: openmp_reductions) {
         assert(bh_noperands(instr->opcode) == 3);
         bh_base *base = instr->operand[0].base;
-        out << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
-        out << (base_ids.isScalarReplaced(base)?"s":"t");
-        out << base_ids[base] << ")";
+        ss << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
+        ss << (base_ids.isScalarReplaced(base)?"s":"t");
+        ss << base_ids[base] << ")";
     }
-
-    out << endl;
-    spaces(out, 4 + block.rank*4);
+    const string ss_str = ss.str();
+    if(not ss_str.empty()) {
+        out << "#pragma omp" << ss_str << endl;
+        spaces(out, 4 + block.rank*4);
+    }
 }
 
 // Does 'instr' reduce over the innermost axis?
@@ -317,7 +315,9 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
     }
 
     // Let's write the OpenMP loop header
-    write_openmp_header(block, base_ids, config, out);
+    if (block.size > 1) {// No need to parallel one-sized loops
+        write_openmp_header(block, base_ids, config, out);
+    }
 
     // Write the for-loop header
     string itername;
