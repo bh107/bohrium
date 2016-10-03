@@ -19,8 +19,16 @@ env:
   matrix:
 
       # UNI stack
-      - BH_STACK=uni BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
+      - BH_STACK=uni BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
+      # Default stack
+      - BH_STACK=default BH_CPU_JIT_LEVEL=3 RUN="python /bohrium/test/python/numpytest.py"
+
+      # CPU greedy stack
+      - BH_STACK=cpu_greedy BH_CPU_JIT_LEVEL=3 RUN="python /bohrium/test/python/numpytest.py"
+
+      # GPU stack
+      - BH_STACK=gpu BH_BCEXP_GPU_REDUCE1D=100 RUN="python /bohrium/test/python/numpytest.py"
 
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
