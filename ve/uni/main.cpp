@@ -617,7 +617,7 @@ void Impl::execute(bh_ir *bhir) {
     ss << "void execute(";
     for(size_t i=0; i < non_temps.size(); ++i) {
         bh_base *b = non_temps[i];
-        ss << write_type(b->type) << " a" << base_ids[b] << "[]";
+        ss << write_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
         if (i+1 < non_temps.size()) {
             ss << ", ";
         }
