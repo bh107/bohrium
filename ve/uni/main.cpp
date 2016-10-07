@@ -244,7 +244,7 @@ void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParse
     vector<const bh_instruction*> openmp_reductions;
 
     stringstream ss;
-    // OpenMP for goes to the outermost loop
+    // "OpenMP for" goes to the outermost loop
     if (block.rank == 0 and openmp_compatible(block)) {
         ss << " parallel for";
         // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
@@ -261,7 +261,7 @@ void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParse
         }
     }
 
-    // OpenMP SIMD goes to the innermost loop (which might also be the outermost loop)
+    // "OpenMP SIMD" goes to the innermost loop (which might also be the outermost loop)
     if (enable_simd and block.isInnermost() and simd_compatible(block, base_ids)) {
         ss << " simd";
         if (block.rank > 0) { //NB: avoid multiple reduction declarations
@@ -601,85 +601,12 @@ void remove_empty_blocks(vector<Block> &block_list) {
     }
 }
 
-void Impl::execute(bh_ir *bhir) {
-
-    // Get the set of new arrays in 'bhir'
-    const set<bh_instruction*> news = update_allocated_bases(bhir);
-
-    // Assign IDs to all base arrays
-    BaseDB base_ids;
-    // NB: by assigning the IDs in the order they appear in the 'instr_list',
-    //     the kernels can better be reused
-    for(const bh_instruction &instr: bhir->instr_list) {
-        const int nop = bh_noperands(instr.opcode);
-        for(int i=0; i<nop; ++i) {
-            const bh_view &v = instr.operand[i];
-            if (not bh_is_constant(&v)) {
-                base_ids.insert(v.base);
-            }
-        }
-    }
-    // Do we have anything to do?
-    if (base_ids.size() == 0)
-        return;
-
-    //Let's create a kernel
-    Kernel kernel;
-    {
-        // Let's fuse the 'instr_list' into blocks
-        kernel.block_list = fuser_singleton(bhir->instr_list, news);
-        kernel.block_list = fuser_serial(kernel.block_list, news);
-        remove_empty_blocks(kernel.block_list);
-
-        // And fill kernel attributes
-        for (bh_instruction &instr: bhir->instr_list) {
-            if (instr.opcode == BH_RANDOM) {
-                kernel.useRandom = true;
-            } else if (instr.opcode == BH_FREE) {
-                kernel.frees.insert(instr.operand[0].base);
-            }
-        }
-    }
-
-    // Do we even have any "real" operations to perform?
-    if (kernel.block_list.size() == 0) {
-        // Finally, let's cleanup
-        for(bh_base *base: kernel.frees) {
-            bh_data_free(base);
-        }
-        return;
-    }
-
-    // Debug print
-    if (config.defaultGet<bool>("verbose", false))
-        cout << kernel.block_list;
-
-    // Find all temporary and non-temporary arrays
-    vector<bh_base*> non_temps;
-    set<bh_base*> temps;
-    {
-        for (Block &b: kernel.block_list) {
-            set<bh_base*> t = b.getAllTemps();
-            temps.insert(t.begin(), t.end());
-            base_ids.insertTmp(t);
-        }
-        for (bh_base *base: base_ids.getBases()) {
-            if (temps.find(base) == temps.end()) {
-                assert(std::find(non_temps.begin(), non_temps.end(), base) == non_temps.end());
-                non_temps.push_back(base);
-            }
-        }
-        num_base_arrays += base_ids.getBases().size();
-        num_temp_arrays += temps.size();
-    }
+void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, stringstream &ss) {
 
     // Make sure all arrays are allocated
-    for (bh_base *base: non_temps) {
+    for (bh_base *base: kernel.non_temps) {
         bh_data_malloc(base);
     }
-
-    // Code generation
-    stringstream ss;
 
     // Write the need includes
     ss << "#include <stdint.h>" << endl;
@@ -703,10 +630,10 @@ void Impl::execute(bh_ir *bhir) {
 
     // Write the header of the execute function
     ss << "void execute(";
-    for(size_t i=0; i < non_temps.size(); ++i) {
-        bh_base *b = non_temps[i];
+    for(size_t i=0; i < kernel.non_temps.size(); ++i) {
+        bh_base *b = kernel.non_temps[i];
         ss << write_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
-        if (i+1 < non_temps.size()) {
+        if (i+1 < kernel.non_temps.size()) {
             ss << ", ";
         }
     }
@@ -723,31 +650,101 @@ void Impl::execute(bh_ir *bhir) {
     // to typed arrays and call the execute function
     {
         ss << "void launcher(void* data_list[]) {" << endl;
-        for(size_t i=0; i < non_temps.size(); ++i) {
-            bh_base *b = non_temps[i];
+        for(size_t i=0; i < kernel.non_temps.size(); ++i) {
+            bh_base *b = kernel.non_temps[i];
             ss << write_type(b->type) << " *a" << base_ids[b];
             ss << " = data_list[" << i << "];" << endl;
         }
         spaces(ss, 4);
         ss << "execute(";
-        for(size_t i=0; i < non_temps.size(); ++i) {
-            bh_base *b = non_temps[i];
+        for(size_t i=0; i < kernel.non_temps.size(); ++i) {
+            bh_base *b = kernel.non_temps[i];
             ss << "a" << base_ids[b];
-            if (i+1 < non_temps.size()) {
+            if (i+1 < kernel.non_temps.size()) {
                 ss << ", ";
             }
         }
         ss << ");" << endl;
         ss << "}" << endl;
     }
+}
 
+void Impl::execute(bh_ir *bhir) {
+
+    // Get the set of new arrays in 'bhir'
+    const set<bh_instruction*> news = update_allocated_bases(bhir);
+
+
+    //Let's create a kernel
+    Kernel kernel;
+    {
+        // Let's fuse the 'instr_list' into blocks
+        kernel.block_list = fuser_singleton(bhir->instr_list, news);
+        kernel.block_list = fuser_serial(kernel.block_list, news);
+        remove_empty_blocks(kernel.block_list);
+
+        // And fill kernel attributes
+        const set<bh_base*> temps = kernel.getAllTemps();
+        for (const bh_instruction *instr: kernel.getAllInstr()) {
+            if (instr->opcode == BH_RANDOM) {
+                kernel.useRandom = true;
+            } else if (instr->opcode == BH_FREE) {
+                kernel.frees.insert(instr->operand[0].base);
+            }
+            // Find non-temporary arrays
+            const int nop = bh_noperands(instr->opcode);
+            for(int i=0; i<nop; ++i) {
+                const bh_view &v = instr->operand[i];
+                if (not bh_is_constant(&v) and temps.find(v.base) == temps.end()) {
+                    kernel.insertNonTemp(v.base);
+                }
+            }
+        }
+        // For profiling statistic
+        num_base_arrays += kernel.non_temps.size();
+        num_temp_arrays += temps.size();
+    }
+
+    // Do we even have any "real" operations to perform?
+    if (kernel.block_list.size() == 0) {
+        // Finally, let's cleanup
+        for(bh_base *base: kernel.frees) {
+            bh_data_free(base);
+        }
+        return;
+    }
+
+    // Assign IDs to all base arrays
+    BaseDB base_ids;
+    // NB: by assigning the IDs in the order they appear in the 'instr_list',
+    //     the kernels can better be reused
+    for (const bh_instruction *instr: kernel.getAllInstr()) {
+        const int nop = bh_noperands(instr->opcode);
+        for(int i=0; i<nop; ++i) {
+            const bh_view &v = instr->operand[i];
+            if (not bh_is_constant(&v)) {
+                base_ids.insert(v.base);
+            }
+        }
+    }
+    base_ids.insertTmp(kernel.getAllTemps());
+
+    // Debug print
+    if (config.defaultGet<bool>("verbose", false))
+        cout << kernel.block_list;
+
+    // Code generation
+    stringstream ss;
+    write_kernel(kernel, base_ids, config, ss);
+
+    // Compile the kernel
     KernelFunction func = _store.getFunction(ss.str());
     assert(func != NULL);
 
     // Create a 'data_list' of data pointers
     vector<void*> data_list;
-    data_list.reserve(non_temps.size());
-    for(bh_base *base: non_temps) {
+    data_list.reserve(kernel.non_temps.size());
+    for(bh_base *base: kernel.non_temps) {
         assert(base->data != NULL);
         data_list.push_back(base->data);
     }

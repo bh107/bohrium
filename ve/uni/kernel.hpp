@@ -35,8 +35,39 @@ public:
     std::vector <Block> block_list;
     bool useRandom = false;
 
-    // All freed array bases
+    std::vector<bh_base*> non_temps;
     std::set<bh_base*> frees;
+    std::set<bh_base*> sync;
+
+    // Return all instructions in the kernel
+    void getAllInstr(std::vector<bh_instruction*> &out) const {
+        for(const Block &b: block_list) {
+            b.getAllInstr(out);
+        }
+    }
+    std::vector<bh_instruction*> getAllInstr() const {
+        std::vector<bh_instruction *> ret;
+        getAllInstr(ret);
+        return ret;
+    }
+
+    // Return all temporary arrays in the kernel
+    void getAllTemps(std::set<bh_base*> &out) const {
+        for(const Block &b: block_list) {
+            b.getAllTemps(out);
+        }
+    }
+    std::set<bh_base*> getAllTemps() const {
+        std::set<bh_base*> ret;
+        getAllTemps(ret);
+        return ret;
+    }
+
+    // Insert a non-temporary array
+    void insertNonTemp(bh_base *base) {
+        if (std::find(non_temps.begin(), non_temps.end(), base) == non_temps.end())
+            non_temps.push_back(base);
+    }
 };
 
 } // bohrium
