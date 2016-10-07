@@ -95,4 +95,28 @@ DLLEXPORT int bh_type_is_integer(bh_type type);
  */
 DLLEXPORT int bh_type_is_signed_integer(bh_type type);
 
+/* Maximum value of integer type (incl. boolean)
+ *
+ * @type   The type.
+ */
+DLLEXPORT uint64_t bh_type_limit_max_integer(bh_type type);
+
+/* Minimum value of integer type (incl. boolean)
+ *
+ * @type   The type.
+ */
+DLLEXPORT int64_t bh_type_limit_min_integer(bh_type type);
+
+/* Maximum value of float type (excl. complex)
+ *
+ * @type   The type.
+ */
+DLLEXPORT double bh_type_limit_max_float(bh_type type);
+
+/* Minimum value of float type (excl. complex)
+ *
+ * @type   The type.
+ */
+DLLEXPORT double bh_type_limit_min_float(bh_type type);
+
 #endif
