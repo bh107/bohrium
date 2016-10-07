@@ -674,68 +674,70 @@ void Impl::execute(bh_ir *bhir) {
     // Get the set of new arrays in 'bhir'
     const set<bh_instruction*> news = update_allocated_bases(bhir);
 
-
     // Let's fuse the 'instr_list' into blocks
     vector<Block> block_list = fuser_singleton(bhir->instr_list, news);
     block_list = fuser_serial(block_list, news);
     remove_empty_blocks(block_list);
 
-    //Let's create a kernel
-    Kernel kernel(block_list);
+    for(const Block &block: block_list) {
 
-    // For profiling statistic
-    num_base_arrays += kernel.getNonTemps().size();
-    num_temp_arrays += kernel.getAllTemps().size();
+        //Let's create a kernel
+        Kernel kernel({block});
 
-    // Do we even have any "real" operations to perform?
-    if (kernel.getBlockList().size() == 0) {
+        // For profiling statistic
+        num_base_arrays += kernel.getNonTemps().size();
+        num_temp_arrays += kernel.getAllTemps().size();
+
+        // Do we even have any "real" operations to perform?
+        if (kernel.getBlockList().size() == 0) {
+            // Finally, let's cleanup
+            for(bh_base *base: kernel.getFrees()) {
+                bh_data_free(base);
+            }
+            return;
+        }
+
+        // Assign IDs to all base arrays
+        BaseDB base_ids;
+        // NB: by assigning the IDs in the order they appear in the 'instr_list',
+        //     the kernels can better be reused
+        for (const bh_instruction *instr: kernel.getAllInstr()) {
+            const int nop = bh_noperands(instr->opcode);
+            for(int i=0; i<nop; ++i) {
+                const bh_view &v = instr->operand[i];
+                if (not bh_is_constant(&v)) {
+                    base_ids.insert(v.base);
+                }
+            }
+        }
+        base_ids.insertTmp(kernel.getAllTemps());
+
+        // Debug print
+        if (config.defaultGet<bool>("verbose", false))
+            cout << kernel.getBlockList();
+
+        // Code generation
+        stringstream ss;
+        write_kernel(kernel, base_ids, config, ss);
+
+        // Compile the kernel
+        KernelFunction func = _store.getFunction(ss.str());
+        assert(func != NULL);
+
+        // Create a 'data_list' of data pointers
+        vector<void*> data_list;
+        data_list.reserve(kernel.getNonTemps().size());
+        for(bh_base *base: kernel.getNonTemps()) {
+            assert(base->data != NULL);
+            data_list.push_back(base->data);
+        }
+
+        // Call the launcher function with the 'data_list', which will execute the kernel
+        func(&data_list[0]);
         // Finally, let's cleanup
         for(bh_base *base: kernel.getFrees()) {
             bh_data_free(base);
         }
-        return;
-    }
-
-    // Assign IDs to all base arrays
-    BaseDB base_ids;
-    // NB: by assigning the IDs in the order they appear in the 'instr_list',
-    //     the kernels can better be reused
-    for (const bh_instruction *instr: kernel.getAllInstr()) {
-        const int nop = bh_noperands(instr->opcode);
-        for(int i=0; i<nop; ++i) {
-            const bh_view &v = instr->operand[i];
-            if (not bh_is_constant(&v)) {
-                base_ids.insert(v.base);
-            }
-        }
-    }
-    base_ids.insertTmp(kernel.getAllTemps());
-
-    // Debug print
-    if (config.defaultGet<bool>("verbose", false))
-        cout << kernel.getBlockList();
-
-    // Code generation
-    stringstream ss;
-    write_kernel(kernel, base_ids, config, ss);
-
-    // Compile the kernel
-    KernelFunction func = _store.getFunction(ss.str());
-    assert(func != NULL);
-
-    // Create a 'data_list' of data pointers
-    vector<void*> data_list;
-    data_list.reserve(kernel.getNonTemps().size());
-    for(bh_base *base: kernel.getNonTemps()) {
-        assert(base->data != NULL);
-        data_list.push_back(base->data);
-    }
-
-    // Call the launcher function with the 'data_list', which will execute the kernel
-    func(&data_list[0]);
-    // Finally, let's cleanup
-    for(bh_base *base: kernel.getFrees()) {
-        bh_data_free(base);
     }
 }
 
