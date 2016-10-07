@@ -29,6 +29,7 @@ namespace bohrium {
 
 Kernel::Kernel(const vector <Block> &block_list) : _block_list(block_list) {
 
+    _useRandom = false;
     const set<bh_base*> temps = getAllTemps();
     for (const bh_instruction *instr: getAllInstr()) {
         if (instr->opcode == BH_RANDOM) {
