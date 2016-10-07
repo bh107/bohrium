@@ -134,6 +134,58 @@ const char* openmp_reduce_symbol(bh_opcode opcode) {
     }
 }
 
+// Print the maximum value of 'dtype'
+void dtype_max(bh_type dtype, stringstream &out)
+{
+    if (bh_type_is_integer(dtype)) {
+        out << bh_type_limit_max_integer(dtype);
+        if (not bh_type_is_signed_integer(dtype)) {
+            out << "u";
+        }
+    } else {
+        out.precision(std::numeric_limits<double>::max_digits10);
+        out << bh_type_limit_max_float(dtype);
+    }
+}
+
+// Print the minimum value of 'dtype'
+void dtype_min(bh_type dtype, stringstream &out)
+{
+    if (bh_type_is_integer(dtype)) {
+        out << bh_type_limit_min_integer(dtype);
+    } else {
+        out.precision(std::numeric_limits<double>::max_digits10);
+        out << bh_type_limit_min_float(dtype);
+    }
+}
+
+// Return the OpenMP reduction identity/neutral value
+void openmp_reduce_identity(bh_opcode opcode, bh_type dtype, stringstream &out) {
+    switch (opcode) {
+        case BH_ADD_REDUCE:
+        case BH_BITWISE_OR_REDUCE:
+        case BH_BITWISE_XOR_REDUCE:
+            out << "0";
+            break;
+        case BH_MULTIPLY_REDUCE:
+            out << "1";
+            break;
+        case BH_BITWISE_AND_REDUCE:
+            out << "~0";
+            break;
+        case BH_MAXIMUM_REDUCE:
+            dtype_min(dtype, out);
+            break;
+        case BH_MINIMUM_REDUCE:
+            dtype_max(dtype, out);
+            break;
+        default:
+            cout << "openmp_reduce_identity: unsupported operation: " << bh_opcode_text(opcode) << endl;
+            throw runtime_error("openmp_reduce_identity: unsupported operation");
+    }
+}
+
+
 // Is 'opcode' compatible with OpenMP reductions such as reduction(+:var)
 bool openmp_reduce_compatible(bh_opcode opcode) {
     return openmp_reduce_symbol(opcode) != NULL;
@@ -265,9 +317,39 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
         }
     }
 
+    // We might not have to loop "peel" if only OpenMP supported reductions are used
+    bool need_to_peel = false;
+    if (config.defaultGet<bool>("compiler_openmp", false)) {
+        for (const bh_instruction *instr: block._sweeps) {
+            bh_base *b = instr->operand[0].base;
+            if (not (openmp_reduce_compatible(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
+                need_to_peel = true;
+                break;
+            }
+        }
+    } else {
+        need_to_peel = true;
+    }
+
+    // When not peeling, we need a neutral initial reduction value
+    if (not need_to_peel) {
+        for (const bh_instruction *instr: block._sweeps) {
+            bh_base *base = instr->operand[0].base;
+            if (base_ids.isTmp(base))
+                out << "t";
+            else
+                out << "s";
+            out << base_ids[base] << " = ";
+            openmp_reduce_identity(instr->opcode, base->type, out);
+            out << ";" << endl;
+            spaces(out, 4 + block.rank * 4);
+        }
+    }
+
+
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
-    if (block._sweeps.size() > 0) {
+    if (block._sweeps.size() > 0 and need_to_peel) {
         Block peeled_block(block);
         vector<bh_instruction> sweep_instr_list(block._sweeps.size());
         {
@@ -317,7 +399,7 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
     // Let's write the OpenMP loop header
     {
         int64_t for_loop_size = block.size;
-        if (block._sweeps.size() > 0) // If the for-loop has been peeled, its size is one less
+        if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, its size is one less
             --for_loop_size;
         // No need to parallel one-sized loops
         if (for_loop_size > 1) {
@@ -329,7 +411,7 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
     string itername;
     {stringstream t; t << "i" << block.rank; itername = t.str();}
     out << "for(uint64_t " << itername;
-    if (block._sweeps.size() > 0) // If the for-loop has been peeled, we should start at 1
+    if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, we should start at 1
         out << "=1; ";
     else
         out << "=0; ";
