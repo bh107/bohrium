@@ -29,19 +29,46 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 
 class Kernel {
+private:
+    // List of blocks that makes up this kernel
+    std::vector <Block> _block_list;
+    // Do the kernel use random?
+    bool _useRandom;
+    // Arrays freed
+    std::set<bh_base*> _frees;
+    // Non-temporary arrays, which makes up the parameters to a kernel
+    std::vector<bh_base*> _non_temps;
+
 public:
-    Kernel() {}
 
-    std::vector <Block> block_list;
-    bool useRandom = false;
+    // Constructor
+    Kernel(const std::vector <Block> &block_list);
 
-    std::vector<bh_base*> non_temps;
-    std::set<bh_base*> frees;
+    // Return the block list
+    const std::vector <Block> &getBlockList() const {
+        return _block_list;
+    }
+
+    // Do the kernel use random?
+    bool useRandom() const {
+        return _useRandom;
+    }
+
+    // Return the freed arrays
+    const std::set<bh_base*> &getFrees() const {
+        return _frees;
+    }
+
+    // Return the non-temporary arrays
+    const std::vector<bh_base*> &getNonTemps() const {
+        return _non_temps;
+    }
+
     std::set<bh_base*> sync;
 
     // Return all instructions in the kernel
     void getAllInstr(std::vector<bh_instruction*> &out) const {
-        for(const Block &b: block_list) {
+        for(const Block &b: _block_list) {
             b.getAllInstr(out);
         }
     }
@@ -53,7 +80,7 @@ public:
 
     // Return all temporary arrays in the kernel
     void getAllTemps(std::set<bh_base*> &out) const {
-        for(const Block &b: block_list) {
+        for(const Block &b: _block_list) {
             b.getAllTemps(out);
         }
     }
@@ -63,11 +90,6 @@ public:
         return ret;
     }
 
-    // Insert a non-temporary array
-    void insertNonTemp(bh_base *base) {
-        if (std::find(non_temps.begin(), non_temps.end(), base) == non_temps.end())
-            non_temps.push_back(base);
-    }
 };
 
 } // bohrium

@@ -461,7 +461,7 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
 
 vector<Block> fuser_singleton(vector<bh_instruction> &instr_list, const set<bh_instruction*> &news) {
 
-    // Creates the block_list based on the instr_list
+    // Creates the _block_list based on the instr_list
     vector<Block> block_list;
     for (auto instr=instr_list.begin(); instr != instr_list.end(); ++instr) {
         int nop = bh_noperands(instr->opcode);
@@ -604,7 +604,7 @@ void remove_empty_blocks(vector<Block> &block_list) {
 void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, stringstream &ss) {
 
     // Make sure all arrays are allocated
-    for (bh_base *base: kernel.non_temps) {
+    for (bh_base *base: kernel.getNonTemps()) {
         bh_data_malloc(base);
     }
 
@@ -617,7 +617,7 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     ss << "#include <math.h>" << endl;
     ss << endl;
 
-    if (kernel.useRandom) { // Write the random function
+    if (kernel.useRandom()) { // Write the random function
         ss << "#include <Random123/philox.h>" << endl;
         ss << "uint64_t random123(uint64_t start, uint64_t key, uint64_t index) {" << endl;
         ss << "    union {philox2x32_ctr_t c; uint64_t ul;} ctr, res; " << endl;
@@ -630,17 +630,17 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
 
     // Write the header of the execute function
     ss << "void execute(";
-    for(size_t i=0; i < kernel.non_temps.size(); ++i) {
-        bh_base *b = kernel.non_temps[i];
+    for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
+        bh_base *b = kernel.getNonTemps()[i];
         ss << write_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
-        if (i+1 < kernel.non_temps.size()) {
+        if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
         }
     }
     ss << ") {" << endl;
 
     // Write the blocks that makes up the body of 'execute()'
-    for(const Block &block: kernel.block_list) {
+    for(const Block &block: kernel.getBlockList()) {
         write_block(base_ids, block, config, ss);
     }
 
@@ -650,17 +650,17 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     // to typed arrays and call the execute function
     {
         ss << "void launcher(void* data_list[]) {" << endl;
-        for(size_t i=0; i < kernel.non_temps.size(); ++i) {
-            bh_base *b = kernel.non_temps[i];
+        for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
+            bh_base *b = kernel.getNonTemps()[i];
             ss << write_type(b->type) << " *a" << base_ids[b];
             ss << " = data_list[" << i << "];" << endl;
         }
         spaces(ss, 4);
         ss << "execute(";
-        for(size_t i=0; i < kernel.non_temps.size(); ++i) {
-            bh_base *b = kernel.non_temps[i];
+        for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
+            bh_base *b = kernel.getNonTemps()[i];
             ss << "a" << base_ids[b];
-            if (i+1 < kernel.non_temps.size()) {
+            if (i+1 < kernel.getNonTemps().size()) {
                 ss << ", ";
             }
         }
@@ -675,40 +675,22 @@ void Impl::execute(bh_ir *bhir) {
     const set<bh_instruction*> news = update_allocated_bases(bhir);
 
 
-    //Let's create a kernel
-    Kernel kernel;
-    {
-        // Let's fuse the 'instr_list' into blocks
-        kernel.block_list = fuser_singleton(bhir->instr_list, news);
-        kernel.block_list = fuser_serial(kernel.block_list, news);
-        remove_empty_blocks(kernel.block_list);
+    // Let's fuse the 'instr_list' into blocks
+    vector<Block> block_list = fuser_singleton(bhir->instr_list, news);
+    block_list = fuser_serial(block_list, news);
+    remove_empty_blocks(block_list);
 
-        // And fill kernel attributes
-        const set<bh_base*> temps = kernel.getAllTemps();
-        for (const bh_instruction *instr: kernel.getAllInstr()) {
-            if (instr->opcode == BH_RANDOM) {
-                kernel.useRandom = true;
-            } else if (instr->opcode == BH_FREE) {
-                kernel.frees.insert(instr->operand[0].base);
-            }
-            // Find non-temporary arrays
-            const int nop = bh_noperands(instr->opcode);
-            for(int i=0; i<nop; ++i) {
-                const bh_view &v = instr->operand[i];
-                if (not bh_is_constant(&v) and temps.find(v.base) == temps.end()) {
-                    kernel.insertNonTemp(v.base);
-                }
-            }
-        }
-        // For profiling statistic
-        num_base_arrays += kernel.non_temps.size();
-        num_temp_arrays += temps.size();
-    }
+    //Let's create a kernel
+    Kernel kernel(block_list);
+
+    // For profiling statistic
+    num_base_arrays += kernel.getNonTemps().size();
+    num_temp_arrays += kernel.getAllTemps().size();
 
     // Do we even have any "real" operations to perform?
-    if (kernel.block_list.size() == 0) {
+    if (kernel.getBlockList().size() == 0) {
         // Finally, let's cleanup
-        for(bh_base *base: kernel.frees) {
+        for(bh_base *base: kernel.getFrees()) {
             bh_data_free(base);
         }
         return;
@@ -731,7 +713,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Debug print
     if (config.defaultGet<bool>("verbose", false))
-        cout << kernel.block_list;
+        cout << kernel.getBlockList();
 
     // Code generation
     stringstream ss;
@@ -743,8 +725,8 @@ void Impl::execute(bh_ir *bhir) {
 
     // Create a 'data_list' of data pointers
     vector<void*> data_list;
-    data_list.reserve(kernel.non_temps.size());
-    for(bh_base *base: kernel.non_temps) {
+    data_list.reserve(kernel.getNonTemps().size());
+    for(bh_base *base: kernel.getNonTemps()) {
         assert(base->data != NULL);
         data_list.push_back(base->data);
     }
@@ -752,7 +734,7 @@ void Impl::execute(bh_ir *bhir) {
     // Call the launcher function with the 'data_list', which will execute the kernel
     func(&data_list[0]);
     // Finally, let's cleanup
-    for(bh_base *base: kernel.frees) {
+    for(bh_base *base: kernel.getFrees()) {
         bh_data_free(base);
     }
 }
