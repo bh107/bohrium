@@ -9,6 +9,7 @@ default    = bcexp_cpu, bccon, topological, node, cpu
 cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
 gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
 uni        = bcexp_uni, bccon_uni, node, uni
+opencl     = bcexp_uni, bccon_uni, node, opencl
 
 #
 # Managers
@@ -169,7 +170,17 @@ compiler_flg = "${VE_UNI_COMPILER_FLG}"
 compiler_openmp = ${_VE_UNI_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_UNI_COMPILER_OPENMP_SIMD}
 
-
+[opencl]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}
+object_dir = ${CMAKE_INSTALL_PREFIX}/var/bohrium/object
+source_dir = ${CMAKE_INSTALL_PREFIX}/var/bohrium/source
+dump_src = true
+verbose = false
+prof = false #Profiling statistics
+compiler_cmd = "${VE_UNI_COMPILER_CMD}"
+compiler_inc = "${VE_UNI_COMPILER_INC}"
+compiler_lib = "${VE_UNI_COMPILER_LIB}"
+compiler_flg = "${VE_UNI_COMPILER_FLG}"
 
 [cpu]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
