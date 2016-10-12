@@ -30,8 +30,6 @@ namespace bohrium {
 
 class Kernel {
 private:
-    // List of blocks that makes up this kernel
-    std::vector <Block> _block_list;
     // Do the kernel use random?
     bool _useRandom;
     // Arrays freed
@@ -41,13 +39,11 @@ private:
 
 public:
 
-    // Constructor
-    Kernel(const std::vector <Block> &block_list);
+    // The block that makes up this kernel
+    const Block block;
 
-    // Return the block list
-    const std::vector <Block> &getBlockList() const {
-        return _block_list;
-    }
+    // Constructor
+    Kernel(const Block &block);
 
     // Do the kernel use random?
     bool useRandom() const {
@@ -68,9 +64,7 @@ public:
 
     // Return all instructions in the kernel
     void getAllInstr(std::vector<bh_instruction*> &out) const {
-        for(const Block &b: _block_list) {
-            b.getAllInstr(out);
-        }
+        block.getAllInstr(out);
     }
     std::vector<bh_instruction*> getAllInstr() const {
         std::vector<bh_instruction *> ret;
@@ -80,9 +74,7 @@ public:
 
     // Return all temporary arrays in the kernel
     void getAllTemps(std::set<bh_base*> &out) const {
-        for(const Block &b: _block_list) {
-            b.getAllTemps(out);
-        }
+        block.getAllTemps(out);
     }
     std::set<bh_base*> getAllTemps() const {
         std::set<bh_base*> ret;

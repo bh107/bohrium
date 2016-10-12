@@ -27,7 +27,7 @@ using namespace std;
 namespace bohrium {
 
 
-Kernel::Kernel(const vector <Block> &block_list) : _block_list(block_list) {
+Kernel::Kernel(const Block &block) : block(block) {
 
     _useRandom = false;
     const set<bh_base*> temps = getAllTemps();

@@ -639,11 +639,9 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     }
     ss << ") {" << endl;
 
-    // Write the blocks that makes up the body of 'execute()'
-    for(const Block &block: kernel.getBlockList()) {
-        write_block(base_ids, block, config, ss);
-    }
-
+    // Write the block that makes up the body of 'execute()'
+    write_block(base_ids, kernel.block, config, ss);
+    
     ss << "}" << endl << endl;
 
     // Write the launcher function, which will convert the data_list of void pointers
@@ -682,20 +680,11 @@ void Impl::execute(bh_ir *bhir) {
     for(const Block &block: block_list) {
 
         //Let's create a kernel
-        Kernel kernel({block});
+        Kernel kernel(block);
 
         // For profiling statistic
         num_base_arrays += kernel.getNonTemps().size();
         num_temp_arrays += kernel.getAllTemps().size();
-
-        // Do we even have any "real" operations to perform?
-        if (kernel.getBlockList().size() == 0) {
-            // Finally, let's cleanup
-            for(bh_base *base: kernel.getFrees()) {
-                bh_data_free(base);
-            }
-            return;
-        }
 
         // Assign IDs to all base arrays
         BaseDB base_ids;
@@ -714,7 +703,7 @@ void Impl::execute(bh_ir *bhir) {
 
         // Debug print
         if (config.defaultGet<bool>("verbose", false))
-            cout << kernel.getBlockList();
+            cout << kernel.block;
 
         // Code generation
         stringstream ss;
