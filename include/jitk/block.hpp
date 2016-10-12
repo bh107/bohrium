@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VE_UNI_BLOCK_HPP
-#define __BH_VE_UNI_BLOCK_HPP
+#ifndef __BH_JITK_BLOCK_HPP
+#define __BH_JITK_BLOCK_HPP
 
 #include <set>
 #include <vector>
@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 
 namespace bohrium {
+namespace jitk {
 
 class Block {
 public:
@@ -128,6 +129,8 @@ std::ostream& operator<<(std::ostream& out, const Block& b);
 //Implements pprint of a vector of blocks
 std::ostream& operator<<(std::ostream& out, const std::vector<Block>& b);
 
+} // jit
 } // bohrium
+
 
 #endif

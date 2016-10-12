@@ -20,17 +20,18 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 
-#include "kernel.hpp"
+#include <jitk/kernel.hpp>
 
 using namespace std;
 
 namespace bohrium {
+namespace jitk {
 
 
 Kernel::Kernel(const Block &block) : block(block) {
 
     _useRandom = false;
-    const set<bh_base*> temps = getAllTemps();
+    const set<bh_base *> temps = getAllTemps();
     for (const bh_instruction *instr: getAllInstr()) {
         if (instr->opcode == BH_RANDOM) {
             _useRandom = true;
@@ -39,7 +40,7 @@ Kernel::Kernel(const Block &block) : block(block) {
         }
         // Find non-temporary arrays
         const int nop = bh_noperands(instr->opcode);
-        for(int i=0; i<nop; ++i) {
+        for (int i = 0; i < nop; ++i) {
             const bh_view &v = instr->operand[i];
             if (not bh_is_constant(&v) and temps.find(v.base) == temps.end()) {
                 if (std::find(_non_temps.begin(), _non_temps.end(), v.base) == _non_temps.end()) {
@@ -50,4 +51,5 @@ Kernel::Kernel(const Block &block) : block(block) {
     }
 }
 
+} // jitk
 } // bohrium

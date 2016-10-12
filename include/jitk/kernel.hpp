@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VE_UNI_KERNEL_HPP
-#define __BH_VE_UNI_KERNEL_HPP
+#ifndef __BH_JITK_KERNEL_HPP
+#define __BH_JITK_KERNEL_HPP
 
 #include <set>
 #include <vector>
@@ -27,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "block.hpp"
 
 namespace bohrium {
+namespace jitk {
 
 class Kernel {
 private:
@@ -84,6 +85,7 @@ public:
 
 };
 
+} // jit
 } // bohrium
 
 #endif

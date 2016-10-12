@@ -21,12 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <cassert>
 
-#include "block.hpp"
-#include "instruction.hpp"
+#include <jitk/block.hpp>
+#include <jitk/instruction.hpp>
 
 using namespace std;
 
 namespace bohrium {
+namespace jitk {
 
 namespace {
 void spaces(stringstream &out, int num) {
@@ -36,7 +37,7 @@ void spaces(stringstream &out, int num) {
 }
 
 // Returns true if a block consisting of 'instr_list' is reshapable
-bool is_reshapeable(const vector<bh_instruction*> &instr_list) {
+bool is_reshapeable(const vector<bh_instruction *> &instr_list) {
     assert(instr_list.size() > 0);
 
     // In order to be reshapeable, all instructions must have the same rank and be reshapeable
@@ -51,8 +52,8 @@ bool is_reshapeable(const vector<bh_instruction*> &instr_list) {
 }
 } // Anonymous name space
 
-Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t size_of_rank_dim,
-                          const set<bh_instruction*> &news, const set<bh_base*> &temps) {
+Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim,
+                          const set<bh_instruction *> &news, const set<bh_base *> &temps) {
 
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
@@ -68,11 +69,11 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
         if (instr->reshapable() and instr->operand[0].shape[rank] != size_of_rank_dim) {
             vector<int64_t> shape((size_t) rank + 1);
             // The dimensions up til 'rank' (not including 'rank') are unchanged
-            for (int64_t r=0; r < rank; ++r) {
+            for (int64_t r = 0; r < rank; ++r) {
                 shape[r] = instr->operand[0].shape[r];
             }
             int64_t size = 1; // The size of the reshapeable block
-            for (int64_t r=rank; r < instr->operand[0].ndim; ++r) {
+            for (int64_t r = rank; r < instr->operand[0].ndim; ++r) {
                 size *= instr->operand[0].shape[r];
             }
             assert(size >= size_of_rank_dim);
@@ -88,29 +89,29 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
 
     for (const bh_instruction *instr: instr_list) {
         vector<int64_t> shape = instr->dominating_shape();
-        assert(shape.size() > (uint64_t)rank);
+        assert(shape.size() > (uint64_t) rank);
         if (shape[rank] != size_of_rank_dim)
             throw runtime_error("create_nested_block() was given an instruction where shape[rank] != size_of_rank_dim");
     }
 
     // Let's build the nested block from the 'rank' level to the instruction block
     Block ret;
-    set<bh_base*> syncs; // Set of all sync'ed bases
+    set<bh_base *> syncs; // Set of all sync'ed bases
     for (bh_instruction *instr: instr_list) {
         const int64_t max_ndim = instr->max_ndim();
         assert(max_ndim > rank);
 
         // Create the rest of the dimension as a singleton block
-        if (max_ndim > rank+1) {
-            vector<int64_t > shape = instr->dominating_shape();
+        if (max_ndim > rank + 1) {
+            vector<int64_t> shape = instr->dominating_shape();
             assert(shape.size() > 0);
-            vector<bh_instruction*> single_instr = {instr};
+            vector<bh_instruction *> single_instr = {instr};
             ret._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1], news));
         } else { // No more dimensions -- let's write the instruction block
-            assert(max_ndim == rank+1);
+            assert(max_ndim == rank + 1);
             Block instr_block;
             instr_block._instr = &instr[0];
-            instr_block.rank = rank+1; // This rank is only to make pretty printing easier
+            instr_block.rank = rank + 1; // This rank is only to make pretty printing easier
             ret._block_list.push_back(instr_block);
 
             // Since 'instr' execute at this 'rank' level, we can calculate news, syncs, frees, and temps.
@@ -138,12 +139,12 @@ Block create_nested_block(vector<bh_instruction*> &instr_list, int rank, int64_t
     return ret;
 }
 
-Block* Block::findInstrBlock(const bh_instruction *instr) {
+Block *Block::findInstrBlock(const bh_instruction *instr) {
     if (isInstr()) {
         if (_instr != NULL and _instr == instr)
             return this;
     } else {
-        for(Block &b: this->_block_list) {
+        for (Block &b: this->_block_list) {
             Block *ret = b.findInstrBlock(instr);
             if (ret != NULL)
                 return ret;
@@ -156,11 +157,11 @@ string Block::pprint() const {
     stringstream ss;
     if (isInstr()) {
         if (_instr != NULL) {
-            spaces(ss, rank*4);
+            spaces(ss, rank * 4);
             ss << *_instr << endl;
         }
     } else {
-        spaces(ss, rank*4);
+        spaces(ss, rank * 4);
         ss << "rank: " << rank << ", size: " << size;
         if (_sweeps.size() > 0) {
             ss << ", sweeps: { ";
@@ -186,7 +187,7 @@ string Block::pprint() const {
             }
             ss << "}";
         }
-        const set<bh_base*> temps = getLocalTemps();
+        const set<bh_base *> temps = getLocalTemps();
         if (temps.size() > 0) {
             ss << ", temps: {";
             for (const bh_base *b : temps) {
@@ -204,7 +205,7 @@ string Block::pprint() const {
     return ss.str();
 }
 
-void Block::getAllInstr(vector<bh_instruction*> &out) const {
+void Block::getAllInstr(vector<bh_instruction *> &out) const {
     if (isInstr()) {
         if (_instr != NULL)
             out.push_back(_instr);
@@ -215,57 +216,61 @@ void Block::getAllInstr(vector<bh_instruction*> &out) const {
     }
 }
 
-vector<bh_instruction*> Block::getAllInstr() const {
+vector<bh_instruction *> Block::getAllInstr() const {
     vector<bh_instruction *> ret;
     getAllInstr(ret);
     return ret;
 }
 
 
-void Block::getAllNews(set<bh_base*> &out) const {
+void Block::getAllNews(set<bh_base *> &out) const {
     out.insert(_news.begin(), _news.end());
     for (const Block &b: _block_list) {
         b.getAllNews(out);
     }
 }
-set<bh_base*> Block::getAllNews() const {
-    set<bh_base*> ret;
+
+set<bh_base *> Block::getAllNews() const {
+    set<bh_base *> ret;
     getAllNews(ret);
     return ret;
 }
 
-void Block::getAllFrees(set<bh_base*> &out) const {
+void Block::getAllFrees(set<bh_base *> &out) const {
     out.insert(_frees.begin(), _frees.end());
     for (const Block &b: _block_list) {
         b.getAllFrees(out);
     }
 }
-set<bh_base*> Block::getAllFrees() const {
-    set<bh_base*> ret;
+
+set<bh_base *> Block::getAllFrees() const {
+    set<bh_base *> ret;
     getAllFrees(ret);
     return ret;
 }
 
-void Block::getLocalTemps(set<bh_base*> &out) const {
-    const set<bh_base*> frees = getAllFrees();
+void Block::getLocalTemps(set<bh_base *> &out) const {
+    const set<bh_base *> frees = getAllFrees();
     std::set_intersection(_news.begin(), _news.end(), frees.begin(), frees.end(), std::inserter(out, out.begin()));
-    const set<bh_base*> news = getAllNews();
+    const set<bh_base *> news = getAllNews();
     std::set_intersection(_frees.begin(), _frees.end(), news.begin(), news.end(), std::inserter(out, out.begin()));
 }
-set<bh_base*> Block::getLocalTemps() const {
-    set<bh_base*> ret;
+
+set<bh_base *> Block::getLocalTemps() const {
+    set<bh_base *> ret;
     getLocalTemps(ret);
     return ret;
 }
 
-void Block::getAllTemps(set<bh_base*> &out) const {
+void Block::getAllTemps(set<bh_base *> &out) const {
     getLocalTemps(out);
     for (const Block &b: _block_list) {
         b.getAllTemps(out);
     }
 }
-set<bh_base*> Block::getAllTemps() const {
-    set<bh_base*> ret;
+
+set<bh_base *> Block::getAllTemps() const {
+    set<bh_base *> ret;
     getAllTemps(ret);
     return ret;
 }
@@ -273,27 +278,27 @@ set<bh_base*> Block::getAllTemps() const {
 bool Block::validation() const {
     if (isInstr()) {
         if (_instr == NULL) {
-            assert(1==2);
+            assert(1 == 2);
             return false;
         }
         if (_block_list.size() != 0) {
-            assert(1==2);
+            assert(1 == 2);
             return false;
         }
         return true;
     }
     for (const bh_instruction *instr: getAllInstr()) {
         if (instr->max_ndim() <= rank) {
-            assert(1==2);
+            assert(1 == 2);
             return false;
         }
         if (instr->dominating_shape()[rank] != size) {
-            assert(1==2);
+            assert(1 == 2);
             return false;
         }
     }
     if (_block_list.size() == 0) {
-        assert(1==2);
+        assert(1 == 2);
         return false;
     }
     for (const Block &b: _block_list) {
@@ -307,8 +312,8 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b) {
     assert(not a.isInstr());
     assert(not b.isInstr());
     // For convenient such that the new block always depend on 't1'
-    const Block &t1 = based_on_block_b?b:a;
-    const Block &t2 = based_on_block_b?a:b;
+    const Block &t1 = based_on_block_b ? b : a;
+    const Block &t2 = based_on_block_b ? a : b;
     Block ret(t1);
     // The block list should always be in order: 'a' before 'b'
     ret._block_list.clear();
@@ -322,17 +327,19 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b) {
     return ret;
 }
 
-ostream& operator<<(ostream& out, const Block& b) {
+ostream &operator<<(ostream &out, const Block &b) {
     out << b.pprint();
     return out;
 }
 
-ostream& operator<<(ostream& out, const vector<Block>& block_list) {
+ostream &operator<<(ostream &out, const vector<Block> &block_list) {
     out << "Block list: " << endl;
-    for(const Block &b: block_list) {
+    for (const Block &b: block_list) {
         out << b;
     }
     return out;
 }
 
+
+} // jitk
 } // bohrium

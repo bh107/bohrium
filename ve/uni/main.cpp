@@ -23,14 +23,15 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
+#include <jitk/kernel.hpp>
+#include <jitk/block.hpp>
+#include <jitk/instruction.hpp>
+#include <jitk/type.hpp>
 
-#include "kernel.hpp"
-#include "block.hpp"
-#include "instruction.hpp"
-#include "type.hpp"
 #include "store.hpp"
 
 using namespace bohrium;
+using namespace jitk;
 using namespace component;
 using namespace std;
 

@@ -18,18 +18,20 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VE_UNI_TYPE_HPP
-#define __BH_VE_UNI_TYPE_HPP
+#ifndef __BH_JITK_TYPE_HPP
+#define __BH_JITK_TYPE_HPP
 
 #include <stdexcept>
 
 #include <bh_type.h>
 
 namespace bohrium {
+namespace jitk {
 
-const char* write_type(bh_type type);
+const char *write_type(bh_type type);
 
 
+} // jitk
 } // bohrium
 
 #endif

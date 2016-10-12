@@ -20,14 +20,16 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 
-#include "block.hpp"
-#include "type.hpp"
-#include "instruction.hpp"
-#include "base_db.hpp"
+#include <bh_instruction.hpp>
+#include <jitk/block.hpp>
+#include <jitk/type.hpp>
+#include <jitk/instruction.hpp>
+#include <jitk/base_db.hpp>
 
 using namespace std;
 
 namespace bohrium {
+namespace jitk {
 
 void write_array_subscription(const bh_view &view, stringstream &out, int hidden_axis, const pair<int, int> axis_offset) {
     assert(view.base != NULL); // Not a constant
@@ -39,7 +41,7 @@ void write_array_subscription(const bh_view &view, stringstream &out, int hidden
         out << "[";
     }
     if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
-        for(int i=0; i<view.ndim; ++i) {
+        for (int i = 0; i < view.ndim; ++i) {
             int t = i;
             if (i >= hidden_axis)
                 ++t;
@@ -81,16 +83,14 @@ void write_system_operation(const BaseDB &base_ids, const bh_instruction &instr,
             break;
         default:
             std::cerr << "Instruction \"" << bh_opcode_text(instr.opcode) << "\" (" << instr.opcode <<
-            ") not supported for non complex operations." << endl;
+                      ") not supported for non complex operations." << endl;
             throw std::runtime_error("Instruction not supported.");
     }
     out << endl;
 }
 
-bool isFloat(bh_type type)
-{
-    switch (type)
-    {
+bool isFloat(bh_type type) {
+    switch (type) {
         case BH_FLOAT32:
         case BH_FLOAT64:
         case BH_COMPLEX64:
@@ -101,10 +101,8 @@ bool isFloat(bh_type type)
     }
 }
 
-bool isComplex(bh_type type)
-{
-    switch (type)
-    {
+bool isComplex(bh_type type) {
+    switch (type) {
         case BH_COMPLEX64:
         case BH_COMPLEX128:
             return true;
@@ -171,7 +169,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             out << operands[0] << " = exp2(" << operands[1] << ");" << endl;
             break;
         case BH_LOG:
-                out << operands[0] << " = log(" << operands[1] << ");" << endl;
+            out << operands[0] << " = log(" << operands[1] << ");" << endl;
             break;
         case BH_LOG10:
             // C99 does not have log10 for complex, so we use the formula: clog(z) = log(z)/log(10)
@@ -298,16 +296,20 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             out << operands[0] << " = " << operands[1] << " == " << operands[2] << ";" << endl;
             break;
         case BH_MAXIMUM:
-            out << operands[0] << " = " << operands[1] << " > " << operands[2] << " ? " << operands[1] << " : " << operands[2] << ";" << endl;
+            out << operands[0] << " = " << operands[1] << " > " << operands[2] << " ? " << operands[1] << " : "
+                << operands[2] << ";" << endl;
             break;
         case BH_MAXIMUM_REDUCE:
-            out << operands[0] << " = " << operands[0] << " > " << operands[1] << " ? " << operands[0] << " : " << operands[1] << ";" << endl;
+            out << operands[0] << " = " << operands[0] << " > " << operands[1] << " ? " << operands[0] << " : "
+                << operands[1] << ";" << endl;
             break;
         case BH_MINIMUM:
-            out << operands[0] << " = " << operands[1] << " < " << operands[2] << " ? " << operands[1] << " : " << operands[2] << ";" << endl;
+            out << operands[0] << " = " << operands[1] << " < " << operands[2] << " ? " << operands[1] << " : "
+                << operands[2] << ";" << endl;
             break;
         case BH_MINIMUM_REDUCE:
-            out << operands[0] << " = " << operands[0] << " < " << operands[1] << " ? " << operands[0] << " : " << operands[1] << ";" << endl;
+            out << operands[0] << " = " << operands[0] << " < " << operands[1] << " ? " << operands[0] << " : "
+                << operands[1] << ";" << endl;
             break;
         case BH_IDENTITY:
             out << operands[0] << " = " << operands[1] << ";" << endl;
@@ -342,8 +344,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
         case BH_IMAG:
             out << operands[0] << " = cimag(" << operands[1] << ");" << endl;
             break;
-        case BH_SIGN:
-        {
+        case BH_SIGN: {
             /* NB: there are different ways to define sign of complex numbers.
              *     We uses the same definition as in NumPy
              *     <http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.sign.html>
@@ -393,7 +394,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
     if (instr.opcode == BH_RANGE) {
         assert(instr.operand[0].ndim == 1); //TODO: support multidimensional output
         vector<string> operands;
-        if (base_ids.isTmp(instr.operand[0].base)){
+        if (base_ids.isTmp(instr.operand[0].base)) {
             stringstream ss;
             ss << "t" << base_ids[instr.operand[0].base];
             operands.push_back(ss.str());
@@ -425,7 +426,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         {
             stringstream ss;
             ss << "random123(" << instr.constant.value.r123.start \
-               << ", " << instr.constant.value.r123.key << ", i0)";
+ << ", " << instr.constant.value.r123.key << ", i0)";
             operands.push_back(ss.str());
         }
         write_operation(instr, operands, out);
@@ -434,7 +435,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
     if (bh_opcode_is_accumulate(instr.opcode)) {
         vector<string> operands;
         // Write output operand
-        if (base_ids.isTmp(instr.operand[0].base)){
+        if (base_ids.isTmp(instr.operand[0].base)) {
             stringstream ss;
             ss << "t" << base_ids[instr.operand[0].base];
             operands.push_back(ss.str());
@@ -462,7 +463,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         return;
     }
     vector<string> operands;
-    for(int o=0; o<bh_noperands(instr.opcode); ++o) {
+    for (int o = 0; o < bh_noperands(instr.opcode); ++o) {
         const bh_view &view = instr.operand[o];
         stringstream ss;
         if (bh_is_constant(&view)) {
@@ -488,5 +489,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
     write_operation(instr, operands, out);
 }
 
+
+} // jitk
 } // bohrium
 

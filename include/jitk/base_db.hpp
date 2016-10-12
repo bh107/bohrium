@@ -18,13 +18,16 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VE_UNI_BASE_DB_H
-#define __BH_VE_UNI_BASE_DB_H
+#ifndef __BH_JITK_BASE_DB_H
+#define __BH_JITK_BASE_DB_H
 
 #include <map>
 #include <vector>
 
 #include <bh_array.hpp>
+
+namespace bohrium {
+namespace jitk {
 
 /* BaseDB is a database over base arrays. The main feature is getBases(),
  * which always returns the bases in the order they where inserted.
@@ -113,5 +116,9 @@ class BaseDB {
         return _omp_critical.find(base) != _omp_critical.end();
     }
 };
+
+
+} // jitk
+} // bohrium
 
 #endif
