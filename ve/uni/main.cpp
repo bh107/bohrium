@@ -44,9 +44,6 @@ class Impl : public ComponentImpl {
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     //Allocated base arrays
     set<bh_base*> _allocated_bases;
-    // Update the allocate bases and returns a set of instructions that creates new arrays
-    // This function should be called at each BhIR execution
-    set<bh_instruction*> update_allocated_bases(bh_ir *bhir);
     // Some statistics
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
@@ -84,33 +81,6 @@ Impl::~Impl() {
                                           << "/" << _store.num_lookups << endl;
         cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
     }
-}
-
-set<bh_instruction*> Impl::update_allocated_bases(bh_ir *bhir) {
-    set<bh_instruction*> ret;
-    for(bh_instruction &instr: bhir->instr_list) {
-        bh_view *operands = bh_inst_operands(&instr);
-
-        //Save all new base arrays
-        int nop = bh_noperands(instr.opcode);
-        for (bh_intp o = 0; o < nop; ++o) {
-            if (!bh_is_constant(&operands[o])) {
-                if (_allocated_bases.insert(operands[o].base).second and o == 0){
-                    // The base was in fact a new output array
-                    ret.insert(&instr);
-                }
-            }
-        }
-        //And remove freed arrays
-        if (instr.opcode == BH_FREE) {
-            bh_base *base = operands[0].base;
-            if (_allocated_bases.erase(base) != 1) {
-                cerr << "[UNI-VE] freeing unknown base array: " << *base << endl;
-                throw runtime_error("[UNI-VE] freeing unknown base array");
-            }
-        }
-    }
-    return ret;
 }
 
 // Return the OpenMP reduction symbol
@@ -668,10 +638,32 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     }
 }
 
+// Returns the instructions that initiate base arrays in 'instr_list'
+set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) {
+    set<bh_base*> initiated; // Arrays initiated in 'instr_list'
+    set<bh_instruction*> ret;
+    for(bh_instruction &instr: instr_list) {
+        int nop = bh_noperands(instr.opcode);
+        for (bh_intp o = 0; o < nop; ++o) {
+            const bh_view &v = instr.operand[o];
+            if (!bh_is_constant(&v)) {
+                assert(v.base != NULL);
+                if (v.base->data == NULL and initiated.find(v.base) == initiated.end()) {
+                    if (o == 0) { // It is only the output that is initiated
+                        initiated.insert(v.base);
+                        ret.insert(&instr); // Add the instruction that initiate 'v.base'
+                    }
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 void Impl::execute(bh_ir *bhir) {
 
-    // Get the set of new arrays in 'bhir'
-    const set<bh_instruction*> news = update_allocated_bases(bhir);
+    // Get the set of initiaing instructions
+    const set<bh_instruction*> news = find_initiating_instr(bhir->instr_list);
 
     // Let's fuse the 'instr_list' into blocks
     vector<Block> block_list = fuser_singleton(bhir->instr_list, news);
