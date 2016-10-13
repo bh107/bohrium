@@ -82,6 +82,10 @@ public:
     void getAllInstr(std::vector<bh_instruction*> &out) const;
     std::vector<bh_instruction*> getAllInstr() const;
 
+    // Return instructions in the block (excl. nested blocks)
+    void getLocalInstr(std::vector<bh_instruction*> &out) const;
+    std::vector<bh_instruction*> getLocalInstr() const;
+
     // Return all bases accessed by this block
     std::set<bh_base*> getAllBases() const {
         std::set<bh_base*> ret;

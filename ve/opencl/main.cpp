@@ -638,11 +638,12 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     // Find threaded blocks
     vector<const Block*> threaded_blocks;
     for (const Block *b: kernel.getAllBlocks()) {
-        if (b->getLocalSubBlocks().size() > 1) {
-            break; // Multiple blocks at the same level cannot be threaded
-        }
         if (b->_sweeps.size() == 0) {
             threaded_blocks.push_back(b);
+        }
+        // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
+        if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
+            break;
         }
     }
 

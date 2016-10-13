@@ -239,13 +239,24 @@ void Block::getAllInstr(vector<bh_instruction *> &out) const {
         }
     }
 }
-
 vector<bh_instruction *> Block::getAllInstr() const {
     vector<bh_instruction *> ret;
     getAllInstr(ret);
     return ret;
 }
 
+void Block::getLocalInstr(vector<bh_instruction *> &out) const {
+    for (const Block &b : _block_list) {
+        if (b.isInstr() and b._instr != NULL) {
+            out.push_back(b._instr);
+        }
+    }
+}
+vector<bh_instruction *> Block::getLocalInstr() const {
+    vector<bh_instruction *> ret;
+    getLocalInstr(ret);
+    return ret;
+}
 
 void Block::getAllNews(set<bh_base *> &out) const {
     out.insert(_news.begin(), _news.end());
