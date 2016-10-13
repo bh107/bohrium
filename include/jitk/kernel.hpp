@@ -63,6 +63,17 @@ public:
 
     std::set<bh_base*> sync;
 
+    // Return all blocks within this kernel (incl. nested blocks)
+    // in a depth first order
+    std::vector<const Block*> getAllBlocks() const {
+        std::vector<const Block*> ret;
+        if (not block.isInstr()) {
+            ret.push_back(&block);
+            block.getAllSubBlocks(ret);
+        }
+        return ret;
+    }
+
     // Return all instructions in the kernel
     void getAllInstr(std::vector<bh_instruction*> &out) const {
         block.getAllInstr(out);

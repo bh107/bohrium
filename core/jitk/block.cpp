@@ -205,6 +205,30 @@ string Block::pprint() const {
     return ss.str();
 }
 
+void Block::getAllSubBlocks(std::vector<const Block *> &out) const {
+    for (const Block &b : _block_list) {
+        if (not b.isInstr()) {
+            out.push_back(&b);
+            b.getAllSubBlocks(out);
+        }
+    }
+}
+vector<const Block *> Block::getAllSubBlocks() const {
+    vector<const Block *> ret;
+    getAllSubBlocks(ret);
+    return ret;
+}
+
+vector<const Block *> Block::getLocalSubBlocks() const {
+    vector<const Block *> ret;
+    for (const Block &b : _block_list) {
+        if (not b.isInstr()) {
+            ret.push_back(&b);
+        }
+    }
+    return ret;
+}
+
 void Block::getAllInstr(vector<bh_instruction *> &out) const {
     if (isInstr()) {
         if (_instr != NULL)

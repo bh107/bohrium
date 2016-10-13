@@ -41,6 +41,12 @@ public:
     std::set<bh_base *> _frees;
     bool _reshapable = false;
 
+    // Unique id of this block
+    int _id;
+
+    // Default constructor
+    Block() { static int id_count = 0; _id = id_count++; }
+
     // Returns true if this block is an instruction block, which has a
     // empty block list and a non-NULL instruction pointer
     bool isInstr() const {
@@ -64,6 +70,13 @@ public:
 
     // Pretty print this block
     std::string pprint() const;
+
+    // Return all sub-blocks (incl. nested blocks)
+    void getAllSubBlocks(std::vector<const Block *> &out) const;
+    std::vector<const Block*> getAllSubBlocks() const;
+
+    // Return all sub-blocks (excl. nested blocks)
+    std::vector<const Block*> getLocalSubBlocks() const;
 
     // Return all instructions in the block (incl. nested blocks)
     void getAllInstr(std::vector<bh_instruction*> &out) const;
@@ -108,6 +121,10 @@ public:
 
     // Validation check of this block
     bool validation() const;
+
+    bool operator==(const Block &block) const {
+        return this->_id == block._id;
+    }
 };
 
 // Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is

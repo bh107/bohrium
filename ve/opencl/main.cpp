@@ -297,7 +297,7 @@ bool sweeping_innermost_axis(const bh_instruction *instr) {
     return sweep_axis(*instr) == instr->operand[1].ndim-1;
 }
 
-void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &config, stringstream &out) {
+void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &config, vector<const Block*> &threaded_blocks, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
 
@@ -347,7 +347,6 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
         }
     }
 
-
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0 and need_to_peel) {
@@ -389,7 +388,7 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
                     write_instr(base_ids, *b._instr, out);
                 }
             } else {
-                write_block(base_ids, b, config, out);
+                write_block(base_ids, b, config, threaded_blocks, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -411,12 +410,19 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
     // Write the for-loop header
     string itername;
     {stringstream t; t << "i" << block.rank; itername = t.str();}
-    out << "for(uint64_t " << itername;
-    if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, we should start at 1
-        out << "=1; ";
-    else
-        out << "=0; ";
-    out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
+    // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
+    if (std::find_if(threaded_blocks.begin(), threaded_blocks.end(),
+                     [&block](const Block* b){return *b == block;}) == threaded_blocks.end()) {
+        out << "for(uint64_t " << itername;
+        if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, we should start at 1
+            out << "=1; ";
+        else
+            out << "=0; ";
+        out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
+    } else {
+        assert(block._sweeps.size() == 0);
+        out << "{ // Threaded rank (thread id " << itername << ")" << endl;
+    }
 
     // Write temporary array declarations
     for (bh_base* base: base_ids.getBases()) {
@@ -443,7 +449,7 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
                 write_instr(base_ids, *b._instr, out);
             }
         } else {
-            write_block(base_ids, b, config, out);
+            write_block(base_ids, b, config, threaded_blocks, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -629,6 +635,17 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     }
     ss << endl;
 
+    // Find threaded blocks
+    vector<const Block*> threaded_blocks;
+    for (const Block *b: kernel.getAllBlocks()) {
+        if (b->getLocalSubBlocks().size() > 1) {
+            break; // Multiple blocks at the same level cannot be threaded
+        }
+        if (b->_sweeps.size() == 0) {
+            threaded_blocks.push_back(b);
+        }
+    }
+
     // Write the header of the execute function
     ss << "void execute(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
@@ -638,11 +655,14 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
             ss << ", ";
         }
     }
+    for (const Block *b: threaded_blocks) {
+        ss << ", uint64_t i" << b->rank;
+    }
     ss << ") {" << endl;
 
     // Write the block that makes up the body of 'execute()'
-    write_block(base_ids, kernel.block, config, ss);
-    
+    write_block(base_ids, kernel.block, config, threaded_blocks, ss);
+
     ss << "}" << endl << endl;
 
     // Write the launcher function, which will convert the data_list of void pointers
@@ -655,6 +675,12 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
             ss << " = data_list[" << i << "];" << endl;
         }
         spaces(ss, 4);
+
+        for (const Block *b: threaded_blocks) {
+            ss << "for(uint64_t i" << b->rank << "=0; i" << b->rank << " < " << b->size << "; ++i" << b->rank << ") {" << endl;
+            spaces(ss, 4);
+        }
+
         ss << "execute(";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             bh_base *b = kernel.getNonTemps()[i];
@@ -663,7 +689,14 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
                 ss << ", ";
             }
         }
+        for (const Block *b: threaded_blocks) {
+            ss << ", i" << b->rank;
+        }
         ss << ");" << endl;
+        for (size_t i=0; i < threaded_blocks.size(); ++i) {
+            spaces(ss, 4);
+            ss << "}" << endl;
+        }
         ss << "}" << endl;
     }
 }
