@@ -662,7 +662,7 @@ set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) {
 
 void Impl::execute(bh_ir *bhir) {
 
-    // Get the set of initiaing instructions
+    // Get the set of initiating instructions
     const set<bh_instruction*> news = find_initiating_instr(bhir->instr_list);
 
     // Let's fuse the 'instr_list' into blocks
