@@ -36,7 +36,7 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImpl {
+class Impl : public ComponentImplWithChild {
   private:
     // Compiled kernels store
     Store _store;
@@ -51,7 +51,7 @@ class Impl : public ComponentImpl {
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
   public:
-    Impl(int stack_level) : ComponentImpl(stack_level), _store(config) {}
+    Impl(int stack_level) : ComponentImplWithChild(stack_level), _store(config) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -297,7 +297,8 @@ bool sweeping_innermost_axis(const bh_instruction *instr) {
     return sweep_axis(*instr) == instr->operand[1].ndim-1;
 }
 
-void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &config, vector<const Block*> &threaded_blocks, stringstream &out) {
+void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &config,
+                 const vector<const Block*> &threaded_blocks, stringstream &out) {
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
 
@@ -608,7 +609,8 @@ void remove_empty_blocks(vector<Block> &block_list) {
     }
 }
 
-void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, stringstream &ss) {
+void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks,
+                  const ConfigParser &config, stringstream &ss) {
 
     // Make sure all arrays are allocated
     for (bh_base *base: kernel.getNonTemps()) {
@@ -634,18 +636,6 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
         ss << "} " << endl;
     }
     ss << endl;
-
-    // Find threaded blocks
-    vector<const Block*> threaded_blocks;
-    for (const Block *b: kernel.getAllBlocks()) {
-        if (b->_sweeps.size() == 0) {
-            threaded_blocks.push_back(b);
-        }
-        // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
-        if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
-            break;
-        }
-    }
 
     // Write the header of the execute function
     ss << "void execute(";
@@ -740,9 +730,31 @@ void Impl::execute(bh_ir *bhir) {
         if (config.defaultGet<bool>("verbose", false))
             cout << kernel.block;
 
+        // Find threaded blocks
+        vector<const Block*> threaded_blocks;
+        for (const Block *b: kernel.getAllBlocks()) {
+            if (b->_sweeps.size() == 0) {
+                threaded_blocks.push_back(b);
+            }
+            // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
+            if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
+                break;
+            }
+        }
+
+        if (threaded_blocks.size() == 0) {
+            vector<bh_instruction> instr_list;
+            for (const bh_instruction* instr: block.getAllInstr()) {
+                instr_list.push_back(*instr);
+            }
+            bh_ir tmp_bhir(instr_list.size(), &instr_list[0]);
+            child.execute(&tmp_bhir);
+            continue;
+        }
+
         // Code generation
         stringstream ss;
-        write_kernel(kernel, base_ids, config, ss);
+        write_kernel(kernel, base_ids, threaded_blocks, config, ss);
 
         // Compile the kernel
         KernelFunction func = _store.getFunction(ss.str());
@@ -758,6 +770,7 @@ void Impl::execute(bh_ir *bhir) {
 
         // Call the launcher function with the 'data_list', which will execute the kernel
         func(&data_list[0]);
+
         // Finally, let's cleanup
         for(bh_base *base: kernel.getFrees()) {
             bh_data_free(base);

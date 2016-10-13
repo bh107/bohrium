@@ -9,7 +9,7 @@ default    = bcexp_cpu, bccon, topological, node, cpu
 cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
 gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
 uni        = bcexp_uni, bccon_uni, node, uni
-opencl     = bcexp_uni, bccon_uni, node, opencl
+opencl     = bcexp_uni, bccon_uni, node, opencl, uni
 
 #
 # Managers
