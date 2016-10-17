@@ -21,6 +21,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <numeric>
 
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl2.hpp>
+
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
 #include <jitk/kernel.hpp>
@@ -29,6 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/type.hpp>
 
 #include "store.hpp"
+#include "opencl_type.hpp"
 
 using namespace bohrium;
 using namespace jitk;
@@ -42,13 +48,36 @@ class Impl : public ComponentImplWithChild {
     Store _store;
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
-    //Allocated base arrays
-    set<bh_base*> _allocated_bases;
     // Some statistics
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
+
+    cl::Context context;
+    cl::Device default_device;
+    void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss);
+
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level), _store(config) {}
+    Impl(int stack_level) : ComponentImplWithChild(stack_level), _store(config) {
+
+        vector<cl::Platform> platforms;
+        cl::Platform::get(&platforms);
+        if(platforms.size() == 0) {
+            throw runtime_error("No OpenCL platforms found");
+        }
+        cl::Platform default_platform=platforms[0];
+        cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << endl;
+
+        //get default device of the default platform
+        vector<cl::Device> devices;
+        default_platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+        if(devices.size()==0){
+            throw runtime_error("No OpenCL device found");
+        }
+        default_device = devices[0];
+        cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() << endl;
+
+        context = cl::Context({default_device});
+    }
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -282,7 +311,7 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
             bh_base *base = instr->operand[0].base;
             if (base_ids.isTmp(base))
                 continue; // No need to replace temporary arrays
-            out << write_type(base->type) << " s" << base_ids[base] << ";" << endl;
+            out << write_opencl_type(base->type) << " s" << base_ids[base] << ";" << endl;
             spaces(out, 4 + block.rank * 4);
             scalar_replacements.push_back(instr->operand[0]);
             base_ids.insertScalarReplacement(base);
@@ -348,7 +377,7 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         for (bh_base* base: base_ids.getBases()) {
             if (local_tmps.find(base) != local_tmps.end()) {
                 spaces(out, 8 + block.rank * 4);
-                out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
+                out << write_opencl_type(base->type) << " t" << base_ids[base] << ";" << endl;
             }
         }
         out << endl;
@@ -392,14 +421,14 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
     } else {
         assert(block._sweeps.size() == 0);
-        out << "{ // Threaded rank (thread id " << itername << ")" << endl;
+        out << "{ // Threaded block (ID " << itername << ")" << endl;
     }
 
     // Write temporary array declarations
     for (bh_base* base: base_ids.getBases()) {
         if (local_tmps.find(base) != local_tmps.end()) {
             spaces(out, 8 + block.rank * 4);
-            out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
+            out << write_opencl_type(base->type) << " t" << base_ids[base] << ";" << endl;
         }
     }
 
@@ -579,15 +608,12 @@ void remove_empty_blocks(vector<Block> &block_list) {
     }
 }
 
-void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks,
-                  const ConfigParser &config, stringstream &ss) {
-
-    // Make sure all arrays are allocated
-    for (bh_base *base: kernel.getNonTemps()) {
-        bh_data_malloc(base);
-    }
+void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
+    /*
+    ss << "#include <stdlib.h>" << endl;
+
     ss << "#include <stdint.h>" << endl;
     ss << "#include <stdlib.h>" << endl;
     ss << "#include <stdbool.h>" << endl;
@@ -605,61 +631,35 @@ void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Blo
         ss << "    return res.ul; " << endl;
         ss << "} " << endl;
     }
+    */
     ss << endl;
 
     // Write the header of the execute function
-    ss << "void execute(";
+    ss << "__kernel void execute(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
-        ss << write_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
+        ss << "__global " << write_opencl_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
         if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
         }
     }
-    for (const Block *b: threaded_blocks) {
-        ss << ", uint64_t i" << b->rank;
-    }
     ss << ") {" << endl;
+
+    // Write the IDs of the threaded blocks
+    if (threaded_blocks.size() > 0) {
+        spaces(ss, 4);
+        ss << "// The IDs of the threaded blocks: " << endl;
+        for (const Block *b: threaded_blocks) {
+            spaces(ss, 4);
+            ss << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << b->rank << ");" << endl;
+        }
+        ss << endl;
+    }
 
     // Write the block that makes up the body of 'execute()'
     write_block(base_ids, kernel.block, config, threaded_blocks, ss);
-
     ss << "}" << endl << endl;
 
-    // Write the launcher function, which will convert the data_list of void pointers
-    // to typed arrays and call the execute function
-    {
-        ss << "void launcher(void* data_list[]) {" << endl;
-        for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
-            bh_base *b = kernel.getNonTemps()[i];
-            ss << write_type(b->type) << " *a" << base_ids[b];
-            ss << " = data_list[" << i << "];" << endl;
-        }
-        spaces(ss, 4);
-
-        for (const Block *b: threaded_blocks) {
-            ss << "for(uint64_t i" << b->rank << "=0; i" << b->rank << " < " << b->size << "; ++i" << b->rank << ") {" << endl;
-            spaces(ss, 4);
-        }
-
-        ss << "execute(";
-        for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
-            bh_base *b = kernel.getNonTemps()[i];
-            ss << "a" << base_ids[b];
-            if (i+1 < kernel.getNonTemps().size()) {
-                ss << ", ";
-            }
-        }
-        for (const Block *b: threaded_blocks) {
-            ss << ", i" << b->rank;
-        }
-        ss << ");" << endl;
-        for (size_t i=0; i < threaded_blocks.size(); ++i) {
-            spaces(ss, 4);
-            ss << "}" << endl;
-        }
-        ss << "}" << endl;
-    }
 }
 
 // Returns the instructions that initiate base arrays in 'instr_list'
@@ -736,8 +736,12 @@ void Impl::execute(bh_ir *bhir) {
 
         if (threaded_blocks.size() == 0) {
             vector<bh_instruction> instr_list;
-            for (const bh_instruction* instr: block.getAllInstr()) {
+            for (const bh_instruction* instr: kernel.block.getAllInstr()) {
                 instr_list.push_back(*instr);
+            }
+            // Make sure all arrays are allocated
+            for (bh_base *base: kernel.getNonTemps()) {
+                bh_data_malloc(base);
             }
             bh_ir tmp_bhir(instr_list.size(), &instr_list[0]);
             child.execute(&tmp_bhir);
@@ -746,25 +750,57 @@ void Impl::execute(bh_ir *bhir) {
 
         // Code generation
         stringstream ss;
-        write_kernel(kernel, base_ids, threaded_blocks, config, ss);
+        write_kernel(kernel, base_ids, threaded_blocks, ss);
 
-        // Compile the kernel
-        KernelFunction func = _store.getFunction(ss.str());
-        assert(func != NULL);
+        cout << ss.str() << endl;
 
-        // Create a 'data_list' of data pointers
-        vector<void*> data_list;
-        data_list.reserve(kernel.getNonTemps().size());
-        for(bh_base *base: kernel.getNonTemps()) {
-            assert(base->data != NULL);
-            data_list.push_back(base->data);
+        cl::Program::Sources sources;
+        sources.push_back({ss.str().c_str(), ss.str().length()});
+        cl::Program program(context,sources);
+        if(program.build({default_device})!=CL_SUCCESS){
+            cout << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
+            exit(1);
         }
 
-        // Call the launcher function with the 'data_list', which will execute the kernel
-        func(&data_list[0]);
+        map<bh_base*, unique_ptr<cl::Buffer> > buffers;
+        for(bh_base *base: kernel.getNonTemps()) {
+                assert(buffers.find(base) == buffers.end());
+                buffers[base].reset(new cl::Buffer(context, CL_MEM_READ_WRITE, (size_t)bh_base_size(base)));
+        }
+
+        cl::CommandQueue queue(context, default_device);
+        for(auto &item: buffers) {
+            bh_base *base = item.first;
+            unique_ptr<cl::Buffer> &buf = item.second;
+            if (base->data != NULL) {
+                queue.enqueueWriteBuffer(*buf, CL_TRUE, 0, (size_t) bh_base_size(base), base->data);
+            }
+        }
+
+        cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
+        {
+            cl_uint i=0;
+            for(auto &item: buffers) {
+                opencl_kernel.setArg(i++, *item.second);
+            }
+        }
+        assert(threaded_blocks.size() == 1);
+        queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, cl::NDRange((cl_uint)threaded_blocks[0]->size), cl::NullRange);
+        queue.finish();
+
+        const auto &kernel_frees = kernel.getFrees();
+        for(auto &item: buffers) {
+            bh_base *base = item.first;
+            unique_ptr<cl::Buffer> &buf = item.second;
+            if (kernel_frees.find(base) == kernel_frees.end()) {
+                bh_data_malloc(base);
+                queue.enqueueReadBuffer(*buf, CL_TRUE, 0, (size_t)bh_base_size(base), base->data);
+            }
+        }
+        queue.finish();
 
         // Finally, let's cleanup
-        for(bh_base *base: kernel.getFrees()) {
+        for(bh_base *base: kernel_frees) {
             bh_data_free(base);
         }
     }
