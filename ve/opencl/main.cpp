@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120
 #define CL_HPP_TARGET_OPENCL_VERSION 120
-#define __CL_ENABLE_EXCEPTIONS
+#define CL_HPP_ENABLE_EXCEPTIONS
 #include <CL/cl2.hpp>
 
 #include <bh_component.hpp>
@@ -685,6 +685,21 @@ set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) {
     return ret;
 }
 
+// Returns a OpenCL range based on the 'threaded_blocks'
+cl::NDRange NDRange(const vector<const Block*> &threaded_blocks) {
+    auto &b = threaded_blocks;
+    switch (b.size()) {
+        case 1:
+            return cl::NDRange((cl_uint) b[0]->size);
+        case 2:
+            return cl::NDRange((cl_uint) b[0]->size, (cl_uint) b[1]->size);
+        case 3:
+            return cl::NDRange((cl_uint) b[0]->size, (cl_uint) b[1]->size, (cl_uint) b[2]->size);
+        default:
+            throw runtime_error("NDRange: maximum of three dimensions!");
+    }
+}
+
 void Impl::execute(bh_ir *bhir) {
 
     // Get the set of initiating instructions
@@ -724,7 +739,7 @@ void Impl::execute(bh_ir *bhir) {
             cout << kernel.block;
 
         // Find threaded blocks
-        constexpr int MAX_NUM_OF_THREADED_BLOCKS = 1;
+        constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
         vector<const Block*> threaded_blocks;
         for (const Block *b: kernel.getAllBlocks()) {
             if (b->_sweeps.size() == 0) {
@@ -761,7 +776,7 @@ void Impl::execute(bh_ir *bhir) {
 
         cl::Program::Sources sources;
         sources.push_back({ss.str().c_str(), ss.str().length()});
-        cl::Program program(context,sources);
+        cl::Program program(context, sources);
         const string compile_inc = config.defaultGet<string>("compiler_inc", "");
         try {
             program.build({default_device}, compile_inc.c_str());
@@ -772,8 +787,8 @@ void Impl::execute(bh_ir *bhir) {
 
         map<bh_base*, unique_ptr<cl::Buffer> > buffers;
         for(bh_base *base: kernel.getNonTemps()) {
-                assert(buffers.find(base) == buffers.end());
-                buffers[base].reset(new cl::Buffer(context, CL_MEM_READ_WRITE, (size_t)bh_base_size(base)));
+            assert(buffers.find(base) == buffers.end());
+            buffers[base].reset(new cl::Buffer(context, CL_MEM_READ_WRITE, (size_t) bh_base_size(base)));
         }
 
         cl::CommandQueue queue(context, default_device);
@@ -792,8 +807,7 @@ void Impl::execute(bh_ir *bhir) {
                 opencl_kernel.setArg(i++, *item.second);
             }
         }
-        assert(threaded_blocks.size() == 1);
-        queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, cl::NDRange((cl_uint)threaded_blocks[0]->size), cl::NullRange);
+        queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
         queue.finish();
 
         const auto &kernel_frees = kernel.getFrees();
