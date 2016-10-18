@@ -621,6 +621,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     ss << "#include <tgmath.h>" << endl;
     ss << "#include <math.h>" << endl;
     ss << endl;
+    */
 
     if (kernel.useRandom()) { // Write the random function
         ss << "#include <Random123/philox.h>" << endl;
@@ -631,7 +632,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
         ss << "    return res.ul; " << endl;
         ss << "} " << endl;
     }
-    */
+
     ss << endl;
 
     // Write the header of the execute function
@@ -723,6 +724,7 @@ void Impl::execute(bh_ir *bhir) {
             cout << kernel.block;
 
         // Find threaded blocks
+        constexpr int MAX_NUM_OF_THREADED_BLOCKS = 1;
         vector<const Block*> threaded_blocks;
         for (const Block *b: kernel.getAllBlocks()) {
             if (b->_sweeps.size() == 0) {
@@ -730,6 +732,9 @@ void Impl::execute(bh_ir *bhir) {
             }
             // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
             if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
+                break;
+            }
+            if (threaded_blocks.size() == MAX_NUM_OF_THREADED_BLOCKS) {
                 break;
             }
         }
@@ -757,9 +762,12 @@ void Impl::execute(bh_ir *bhir) {
         cl::Program::Sources sources;
         sources.push_back({ss.str().c_str(), ss.str().length()});
         cl::Program program(context,sources);
-        if(program.build({default_device})!=CL_SUCCESS){
-            cout << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
-            exit(1);
+        const string compile_inc = config.defaultGet<string>("compiler_inc", "");
+        try {
+            program.build({default_device}, compile_inc.c_str());
+        } catch (cl::Error e) {
+            cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
+            throw;
         }
 
         map<bh_base*, unique_ptr<cl::Buffer> > buffers;
