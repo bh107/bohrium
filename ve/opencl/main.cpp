@@ -793,7 +793,7 @@ void Impl::execute(bh_ir *bhir) {
         map<bh_base*, unique_ptr<cl::Buffer> > buffers;
         for(bh_base *base: kernel.getNonTemps()) {
             assert(buffers.find(base) == buffers.end());
-            buffers[base].reset(new cl::Buffer(context, CL_MEM_READ_WRITE, (size_t) bh_base_size(base)));
+            buffers[base].reset(new cl::Buffer(context, CL_MEM_READ_WRITE, (cl::size_type) bh_base_size(base)));
         }
 
         cl::CommandQueue queue(context, default_device);
@@ -801,15 +801,15 @@ void Impl::execute(bh_ir *bhir) {
             bh_base *base = item.first;
             unique_ptr<cl::Buffer> &buf = item.second;
             if (base->data != NULL) {
-                queue.enqueueWriteBuffer(*buf, CL_TRUE, 0, (size_t) bh_base_size(base), base->data);
+                queue.enqueueWriteBuffer(*buf, CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
             }
         }
 
         cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
         {
             cl_uint i=0;
-            for(auto &item: buffers) {
-                opencl_kernel.setArg(i++, *item.second);
+            for(bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
+                opencl_kernel.setArg(i++, *buffers.at(base));
             }
         }
         queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
@@ -821,7 +821,7 @@ void Impl::execute(bh_ir *bhir) {
             unique_ptr<cl::Buffer> &buf = item.second;
             if (kernel_frees.find(base) == kernel_frees.end()) {
                 bh_data_malloc(base);
-                queue.enqueueReadBuffer(*buf, CL_TRUE, 0, (size_t)bh_base_size(base), base->data);
+                queue.enqueueReadBuffer(*buf, CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
             }
         }
         queue.finish();
