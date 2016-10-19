@@ -20,6 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <numeric>
+#include <set>
+#include <map>
 
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120
 #define CL_HPP_TARGET_OPENCL_VERSION 120
@@ -372,7 +374,7 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         {stringstream t; t << "i" << block.rank; itername = t.str();}
         out << "{ // Peeled loop, 1. sweep iteration " << endl;
         spaces(out, 8 + block.rank*4);
-        out << "uint64_t " << itername << " = 0;" << endl;
+        out << write_opencl_type(BH_UINT64) << " " << itername << " = 0;" << endl;
         // Write temporary array declarations
         for (bh_base* base: base_ids.getBases()) {
             if (local_tmps.find(base) != local_tmps.end()) {
@@ -413,7 +415,7 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
     if (std::find_if(threaded_blocks.begin(), threaded_blocks.end(),
                      [&block](const Block* b){return *b == block;}) == threaded_blocks.end()) {
-        out << "for(uint64_t " << itername;
+        out << "for(" << write_opencl_type(BH_UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, we should start at 1
             out << "=1; ";
         else
@@ -625,8 +627,10 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
 
     if (kernel.useRandom()) { // Write the random function
         ss << "#include <Random123/philox.h>" << endl;
-        ss << "uint64_t random123(uint64_t start, uint64_t key, uint64_t index) {" << endl;
-        ss << "    union {philox2x32_ctr_t c; uint64_t ul;} ctr, res; " << endl;
+        ss << write_opencl_type(BH_UINT64) << " random123(" << write_opencl_type(BH_UINT64) << " start, " \
+                                           << write_opencl_type(BH_UINT64) << " key, " \
+                                           << write_opencl_type(BH_UINT64) << " index) {" << endl;
+        ss << "    union {philox2x32_ctr_t c; " << write_opencl_type(BH_UINT64) << " ul;} ctr, res; " << endl;
         ss << "    ctr.ul = start + index; " << endl;
         ss << "    res.c = philox2x32(ctr.c, (philox2x32_key_t){{key}}); " << endl;
         ss << "    return res.ul; " << endl;
@@ -650,9 +654,10 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     if (threaded_blocks.size() > 0) {
         spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: " << endl;
-        for (const Block *b: threaded_blocks) {
+        for (int i=0; i < threaded_blocks.size(); ++i) {
+            const Block *b = threaded_blocks[i];
             spaces(ss, 4);
-            ss << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << b->rank << ");" << endl;
+            ss << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << i << ");" << endl;
         }
         ss << endl;
     }
@@ -690,11 +695,11 @@ cl::NDRange NDRange(const vector<const Block*> &threaded_blocks) {
     auto &b = threaded_blocks;
     switch (b.size()) {
         case 1:
-            return cl::NDRange((cl_uint) b[0]->size);
+            return cl::NDRange((cl::size_type) b[0]->size);
         case 2:
-            return cl::NDRange((cl_uint) b[0]->size, (cl_uint) b[1]->size);
+            return cl::NDRange((cl::size_type) b[0]->size, (cl::size_type) b[1]->size);
         case 3:
-            return cl::NDRange((cl_uint) b[0]->size, (cl_uint) b[1]->size, (cl_uint) b[2]->size);
+            return cl::NDRange((cl::size_type) b[0]->size, (cl::size_type) b[1]->size, (cl::size_type) b[2]->size);
         default:
             throw runtime_error("NDRange: maximum of three dimensions!");
     }
