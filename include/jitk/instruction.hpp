@@ -31,8 +31,8 @@ namespace bohrium {
 namespace jitk {
 
 
-// Write the source code of an instruction
-void write_instr(const BaseDB &base_ids, const bh_instruction &instr, std::stringstream &out);
+// Write the source code of an instruction (set 'opencl' for OpenCL specific output)
+void write_instr(const BaseDB &base_ids, const bh_instruction &instr, std::stringstream &out, bool opencl=false);
 
 // Return the axis that 'instr' reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
 int sweep_axis(const bh_instruction &instr);

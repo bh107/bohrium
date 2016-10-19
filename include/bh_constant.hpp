@@ -72,9 +72,12 @@ struct bh_constant
     {
         return !(other == *this);
     }
+    //Implements pprint of a constant
+    // Set 'opencl' for OpenCL specific output
+    void pprint(std::ostream& out, bool opencl=false) const;
 };
 
-//Implements pprint of a constant
+//Implements pprint of a constant (by streaming)
 DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_constant& constant);
 
 #endif

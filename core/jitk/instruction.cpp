@@ -364,7 +364,7 @@ int sweep_axis(const bh_instruction &instr) {
     return BH_MAXDIM;
 }
 
-void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstream &out) {
+void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstream &out, bool opencl) {
     if (bh_opcode_is_system(instr.opcode)) {
         write_system_operation(base_ids, instr, out);
         return;
@@ -445,11 +445,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         const bh_view &view = instr.operand[o];
         stringstream ss;
         if (bh_is_constant(&view)) {
-            if(bh_type_is_complex(instr.constant.type)) {
-                instr.constant.pprint(ss, true);
-            } else {
-                instr.constant.pprint(ss, true);
-            }
+            instr.constant.pprint(ss, opencl);
         } else {
             if (base_ids.isTmp(view.base)) {
                 ss << "t" << base_ids[view.base];

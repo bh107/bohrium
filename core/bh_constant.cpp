@@ -18,10 +18,12 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_constant.hpp>
-#include <bh_type.h>
 #include <stdexcept>
 #include <limits>
+#include <iostream>
+
+#include <bh_constant.hpp>
+#include <bh_type.h>
 
 using namespace std;
 
@@ -204,36 +206,50 @@ bool bh_constant::operator==(const bh_constant& other) const
             return false;
     }
 }
-ostream& operator<<(ostream& out, const bh_constant& constant)
+
+void bh_constant::pprint(ostream& out, bool opencl) const
 {
-    if (bh_type_is_integer(constant.type)) {
-        if (bh_type_is_signed_integer(constant.type)) {
-            out << constant.get_int64();
+    if (bh_type_is_integer(type)) {
+        if (bh_type_is_signed_integer(type)) {
+            out << get_int64();
         } else {
-            out << constant.get_uint64() << "u";
+            out << get_uint64() << "u";
         }
     } else {
         out.precision(numeric_limits<double>::max_digits10);
-        switch(constant.type) {
+        switch(type) {
             case BH_FLOAT32:
-                out << constant.value.float32;
+                out << value.float32;
                 break;
             case BH_FLOAT64:
-                out << constant.value.float64;
+                out << value.float64;
                 break;
             case BH_R123:
-                out << "{.start = " << constant.value.r123.start << ", .key = " << constant.value.r123.key << "}";
+                out << "{.start = " << value.r123.start << ", .key = " << value.r123.key << "}";
                 break;
             case BH_COMPLEX64:
-                out << "(" << constant.value.complex64.real << "+" << constant.value.complex64.imag << "*I)";
+                if (opencl) {
+                    out << "(float2)(" << value.complex64.real << ", " << value.complex64.imag << ")";
+                } else {
+                    out << "(" << value.complex64.real << "+" << value.complex64.imag << "*I)";
+                }
                 break;
             case BH_COMPLEX128:
-                out << "(" << constant.value.complex128.real << "+" << constant.value.complex128.imag << "*I)";
+                if (opencl) {
+                    out << "(double2)(" << value.complex128.real << ", " << value.complex128.imag << ")";
+                } else {
+                    out << "(" << value.complex128.real << "+" << value.complex128.imag << "*I)";
+                }
                 break;
             case BH_UNKNOWN:
             default:
                 out << "?";
         }
     }
+}
+
+ostream& operator<<(ostream& out, const bh_constant& constant)
+{
+    constant.pprint(out);
     return out;
 }
