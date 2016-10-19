@@ -95,6 +95,20 @@ DLLEXPORT int bh_type_is_integer(bh_type type);
  */
 DLLEXPORT int bh_type_is_signed_integer(bh_type type);
 
+/* Is type an float type
+ *
+ * @type   The type.
+ * @return 1 if integer type else 0.
+ */
+DLLEXPORT int bh_type_is_float(bh_type type);
+
+/* Is type an complex type
+ *
+ * @type   The type.
+ * @return 1 if integer type else 0.
+ */
+DLLEXPORT int bh_type_is_complex(bh_type type);
+
 /* Maximum value of integer type (incl. boolean)
  *
  * @type   The type.

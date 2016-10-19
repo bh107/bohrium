@@ -133,6 +133,31 @@ int bh_type_is_signed_integer(bh_type type)
     }
 }
 
+int bh_type_is_float(bh_type type)
+{
+    switch (type) {
+        case BH_FLOAT32:
+        case BH_FLOAT64:
+        case BH_COMPLEX64:
+        case BH_COMPLEX128:
+            return true;
+        default:
+            return false;
+    }
+}
+
+int bh_type_is_complex(bh_type type)
+{
+    switch(type)
+    {
+        case BH_COMPLEX64:
+        case BH_COMPLEX128:
+            return true;
+        default:
+            return false;
+    }
+}
+
 uint64_t bh_type_limit_max_integer(bh_type type)
 {
     switch(type)

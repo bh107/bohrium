@@ -89,28 +89,6 @@ void write_system_operation(const BaseDB &base_ids, const bh_instruction &instr,
     out << endl;
 }
 
-bool isFloat(bh_type type) {
-    switch (type) {
-        case BH_FLOAT32:
-        case BH_FLOAT64:
-        case BH_COMPLEX64:
-        case BH_COMPLEX128:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool isComplex(bh_type type) {
-    switch (type) {
-        case BH_COMPLEX64:
-        case BH_COMPLEX128:
-            return true;
-        default:
-            return false;
-    }
-}
-
 // Write the sign function ((x > 0) - (0 > x)) to 'out'
 void write_sign_function(const string &operand, stringstream &out) {
 
@@ -148,13 +126,13 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             out << operands[0] << " = pow(" << operands[1] << ", " << operands[2] << ");" << endl;
             break;
         case BH_MOD:
-            if (isFloat(instr.operand[0].base->type))
+            if (bh_type_is_float(instr.operand[0].base->type))
                 out << operands[0] << " = fmod(" << operands[1] << ", " << operands[2] << ");" << endl;
             else
                 out << operands[0] << " = " << operands[1] << " % " << operands[2] << ";" << endl;
             break;
         case BH_ABSOLUTE:
-            if (isFloat(instr.operand[0].base->type))
+            if (bh_type_is_float(instr.operand[0].base->type))
                 out << operands[0] << " = fabs(" << operands[1] << ");" << endl;
             else
                 out << operands[0] << " = abs(" << operands[1] << ");" << endl;
@@ -173,7 +151,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             break;
         case BH_LOG10:
             // C99 does not have log10 for complex, so we use the formula: clog(z) = log(z)/log(10)
-            if (isComplex(instr.operand[0].base->type))
+            if (bh_type_is_complex(instr.operand[0].base->type))
                 out << operands[0] << " = clog(" << operands[1] << ") / log(10);" << endl;
             else
                 out << operands[0] << " = log10(" << operands[1] << ");" << endl;
@@ -350,7 +328,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
              *     <http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.sign.html>
              */
             bh_type t = instr.operand[0].base->type;
-            if (isComplex(t)) {
+            if (bh_type_is_complex(t)) {
                 if (t == BH_COMPLEX64) {
                     out << "float real = creal(" << operands[1] << "); ";
                     out << "float imag = cimag(" << operands[1] << "); ";
@@ -426,7 +404,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         {
             stringstream ss;
             ss << "random123(" << instr.constant.value.r123.start \
- << ", " << instr.constant.value.r123.key << ", i0)";
+               << ", " << instr.constant.value.r123.key << ", i0)";
             operands.push_back(ss.str());
         }
         write_operation(instr, operands, out);
@@ -467,7 +445,11 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         const bh_view &view = instr.operand[o];
         stringstream ss;
         if (bh_is_constant(&view)) {
-            ss << instr.constant;
+            if(bh_type_is_complex(instr.constant.type)) {
+                instr.constant.pprint(ss, true);
+            } else {
+                instr.constant.pprint(ss, true);
+            }
         } else {
             if (base_ids.isTmp(view.base)) {
                 ss << "t" << base_ids[view.base];
