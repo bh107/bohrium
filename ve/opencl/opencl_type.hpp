@@ -30,7 +30,7 @@ const char* write_opencl_type(bh_type dtype)
 {
     switch (dtype)
     {
-        case BH_BOOL: return "bool";
+        case BH_BOOL: return "uchar";
         case BH_INT8: return "char";
         case BH_INT16: return "short";
         case BH_INT32: return "int";

@@ -625,6 +625,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     */
 
     ss << "#include <ocl_complex.h>" << endl;
+    ss << "#include <ocl_integer.h>" << endl;
     ss << endl;
 
     if (kernel.useRandom()) { // Write the random function
@@ -779,7 +780,7 @@ void Impl::execute(bh_ir *bhir) {
         stringstream ss;
         write_kernel(kernel, base_ids, threaded_blocks, ss);
 
-        cout << ss.str() << endl;
+        // cout << ss.str() << endl;
 
         cl::Program::Sources sources;
         sources.push_back({ss.str().c_str(), ss.str().length()});
@@ -816,6 +817,7 @@ void Impl::execute(bh_ir *bhir) {
         }
         queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
         queue.finish();
+        assert(sizeof(cl_uchar) == sizeof(bh_bool));
 
         const auto &kernel_frees = kernel.getFrees();
         for(auto &item: buffers) {

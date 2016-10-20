@@ -95,9 +95,24 @@ void write_sign_function(const string &operand, stringstream &out) {
     out << "((" << operand << " > 0) - (0 > " << operand << "))";
 }
 
+// Write opcodes that uses a different complex functions when targeting OpenCL
+void write_opcodes_with_special_opencl_complex(const bh_instruction &instr, const vector<string> &operands,
+                                               stringstream &out, int opencl, const char* fname,
+                                               const char* fname_complex) {
+    const bh_type t0 = instr.operand_type(0);
+    if (opencl and bh_type_is_complex(t0)) {
+        out << fname_complex << "(" << (t0 == BH_COMPLEX64?"float":"double") << ", " << operands[0] \
+            << ", " << operands[1] << ");" << endl;
+    } else {
+        out << operands[0] << " = " << fname << "(" << operands[1] << ");" << endl;
+    }
+}
+
 void write_operation(const bh_instruction &instr, const vector<string> &operands, stringstream &out, bool opencl) {
 
     switch (instr.opcode) {
+
+        // Opcodes that are Complex/OpenCL agnostic
         case BH_ADD:
             out << operands[0] << " = " << operands[1] << " + " << operands[2] << ";" << endl;
             break;
@@ -109,100 +124,6 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             break;
         case BH_SUBTRACT:
             out << operands[0] << " = " << operands[1] << " - " << operands[2] << ";" << endl;
-            break;
-        case BH_MULTIPLY:
-            out << operands[0] << " = " << operands[1] << " * " << operands[2] << ";" << endl;
-            break;
-        case BH_MULTIPLY_REDUCE:
-            out << operands[0] << " *= " << operands[1] << ";" << endl;
-            break;
-        case BH_MULTIPLY_ACCUMULATE:
-            out << operands[0] << " = " << operands[1] << " * " << operands[2] << ";" << endl;
-            break;
-        case BH_DIVIDE:
-            out << operands[0] << " = " << operands[1] << " / " << operands[2] << ";" << endl;
-            break;
-        case BH_POWER:
-            out << operands[0] << " = pow(" << operands[1] << ", " << operands[2] << ");" << endl;
-            break;
-        case BH_MOD:
-            if (bh_type_is_float(instr.operand[0].base->type))
-                out << operands[0] << " = fmod(" << operands[1] << ", " << operands[2] << ");" << endl;
-            else
-                out << operands[0] << " = " << operands[1] << " % " << operands[2] << ";" << endl;
-            break;
-        case BH_ABSOLUTE:
-            if (bh_type_is_float(instr.operand[0].base->type))
-                out << operands[0] << " = fabs(" << operands[1] << ");" << endl;
-            else
-                out << operands[0] << " = abs(" << operands[1] << ");" << endl;
-            break;
-        case BH_RINT:
-            out << operands[0] << " = rint(" << operands[1] << ");" << endl;
-            break;
-        case BH_EXP:
-            out << operands[0] << " = exp(" << operands[1] << ");" << endl;
-            break;
-        case BH_EXP2:
-            out << operands[0] << " = exp2(" << operands[1] << ");" << endl;
-            break;
-        case BH_LOG:
-            out << operands[0] << " = log(" << operands[1] << ");" << endl;
-            break;
-        case BH_LOG10:
-            // C99 does not have log10 for complex, so we use the formula: clog(z) = log(z)/log(10)
-            if (bh_type_is_complex(instr.operand[0].base->type))
-                out << operands[0] << " = clog(" << operands[1] << ") / log(10);" << endl;
-            else
-                out << operands[0] << " = log10(" << operands[1] << ");" << endl;
-            break;
-        case BH_EXPM1:
-            out << operands[0] << " = expm1(" << operands[1] << ");" << endl;
-            break;
-        case BH_LOG1P:
-            out << operands[0] << " = log1p(" << operands[1] << ");" << endl;
-            break;
-        case BH_SQRT:
-            out << operands[0] << " = sqrt(" << operands[1] << ");" << endl;
-            break;
-        case BH_SIN:
-            out << operands[0] << " = sin(" << operands[1] << ");" << endl;
-            break;
-        case BH_COS:
-            out << operands[0] << " = cos(" << operands[1] << ");" << endl;
-            break;
-        case BH_TAN:
-            out << operands[0] << " = tan(" << operands[1] << ");" << endl;
-            break;
-        case BH_ARCSIN:
-            out << operands[0] << " = asin(" << operands[1] << ");" << endl;
-            break;
-        case BH_ARCCOS:
-            out << operands[0] << " = acos(" << operands[1] << ");" << endl;
-            break;
-        case BH_ARCTAN:
-            out << operands[0] << " = atan(" << operands[1] << ");" << endl;
-            break;
-        case BH_ARCTAN2:
-            out << operands[0] << " = atan2(" << operands[1] << ", " << operands[2] << ");" << endl;
-            break;
-        case BH_SINH:
-            out << operands[0] << " = sinh(" << operands[1] << ");" << endl;
-            break;
-        case BH_COSH:
-            out << operands[0] << " = cosh(" << operands[1] << ");" << endl;
-            break;
-        case BH_TANH:
-            out << operands[0] << " = tanh(" << operands[1] << ");" << endl;
-            break;
-        case BH_ARCSINH:
-            out << operands[0] << " = asinh(" << operands[1] << ");" << endl;
-            break;
-        case BH_ARCCOSH:
-            out << operands[0] << " = acosh(" << operands[1] << ");" << endl;
-            break;
-        case BH_ARCTANH:
-            out << operands[0] << " = atanh(" << operands[1] << ");" << endl;
             break;
         case BH_BITWISE_AND:
             out << operands[0] << " = " << operands[1] << " & " << operands[2] << ";" << endl;
@@ -243,12 +164,6 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
         case BH_LOGICAL_XOR_REDUCE:
             out << operands[0] << " = !" << operands[0] << " != !" << operands[1] << ";" << endl;
             break;
-        case BH_INVERT:
-            if (instr.operand[0].base->type == BH_BOOL)
-                out << operands[0] << " = !" << operands[1] << ";" << endl;
-            else
-                out << operands[0] << " = ~" << operands[1] << ";" << endl;
-            break;
         case BH_LEFT_SHIFT:
             out << operands[0] << " = " << operands[1] << " << " << operands[2] << ";" << endl;
             break;
@@ -267,12 +182,6 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
         case BH_LESS_EQUAL:
             out << operands[0] << " = " << operands[1] << " <= " << operands[2] << ";" << endl;
             break;
-        case BH_NOT_EQUAL:
-            out << operands[0] << " = " << operands[1] << " != " << operands[2] << ";" << endl;
-            break;
-        case BH_EQUAL:
-            out << operands[0] << " = " << operands[1] << " == " << operands[2] << ";" << endl;
-            break;
         case BH_MAXIMUM:
             out << operands[0] << " = " << operands[1] << " > " << operands[2] << " ? " << operands[1] << " : "
                 << operands[2] << ";" << endl;
@@ -289,23 +198,51 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             out << operands[0] << " = " << operands[0] << " < " << operands[1] << " ? " << operands[0] << " : "
                 << operands[1] << ";" << endl;
             break;
-        case BH_IDENTITY: {
-            out << operands[0] << " = ";
-            const bh_type t0 = instr.operand_type(0);
-            const bh_type t1 = instr.operand_type(1);
-            // In OpenCL we have to do explicit conversion of complex numbers
-            if (opencl and t0 == BH_COMPLEX64 and t1 == BH_COMPLEX128) {
-                out << "convert_float2(" << operands[1] << ")";
-            } else if (opencl and t0 == BH_COMPLEX128 and t1 == BH_COMPLEX64) {
-                out << "convert_double2(" << operands[1] << ")";
-            } else if (opencl and bh_type_is_complex(t0) and not bh_type_is_complex(t1)){
-                out << "(" << (t0 == BH_COMPLEX64?"float2":"double2") << ")(" << operands[1] << ", 0.0)";
-            } else {
-                out << operands[1];
-            }
-            out << ";" << endl;
+        case BH_INVERT:
+            if (instr.operand[0].base->type == BH_BOOL)
+                out << operands[0] << " = !" << operands[1] << ";" << endl;
+            else
+                out << operands[0] << " = ~" << operands[1] << ";" << endl;
             break;
-        }
+        case BH_MOD:
+            if (bh_type_is_float(instr.operand[0].base->type))
+                out << operands[0] << " = fmod(" << operands[1] << ", " << operands[2] << ");" << endl;
+            else
+                out << operands[0] << " = " << operands[1] << " % " << operands[2] << ";" << endl;
+            break;
+        case BH_RINT:
+            out << operands[0] << " = rint(" << operands[1] << ");" << endl;
+            break;
+        case BH_EXP2:
+            out << operands[0] << " = exp2(" << operands[1] << ");" << endl;
+            break;
+        case BH_EXPM1:
+            out << operands[0] << " = expm1(" << operands[1] << ");" << endl;
+            break;
+        case BH_LOG1P:
+            out << operands[0] << " = log1p(" << operands[1] << ");" << endl;
+            break;
+        case BH_ARCSIN:
+            out << operands[0] << " = asin(" << operands[1] << ");" << endl;
+            break;
+        case BH_ARCCOS:
+            out << operands[0] << " = acos(" << operands[1] << ");" << endl;
+            break;
+        case BH_ARCTAN:
+            out << operands[0] << " = atan(" << operands[1] << ");" << endl;
+            break;
+        case BH_ARCTAN2:
+            out << operands[0] << " = atan2(" << operands[1] << ", " << operands[2] << ");" << endl;
+            break;
+        case BH_ARCSINH:
+            out << operands[0] << " = asinh(" << operands[1] << ");" << endl;
+            break;
+        case BH_ARCCOSH:
+            out << operands[0] << " = acosh(" << operands[1] << ");" << endl;
+            break;
+        case BH_ARCTANH:
+            out << operands[0] << " = atanh(" << operands[1] << ");" << endl;
+            break;
         case BH_FLOOR:
             out << operands[0] << " = floor(" << operands[1] << ");" << endl;
             break;
@@ -330,25 +267,181 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
         case BH_RANDOM:
             out << operands[0] << " = " << operands[1] << ";" << endl;
             break;
+
+
+        // Opcodes that uses a different function name in OpenCL
+        case BH_SIN:
+            write_opcodes_with_special_opencl_complex(instr, operands, out, opencl, "sin", "CSIN");
+            break;
+        case BH_COS:
+            write_opcodes_with_special_opencl_complex(instr, operands, out, opencl, "cos", "CCOS");
+            break;
+        case BH_TAN:
+            write_opcodes_with_special_opencl_complex(instr, operands, out, opencl, "tan", "CTAN");
+            break;
+        case BH_SINH:
+            write_opcodes_with_special_opencl_complex(instr, operands, out, opencl, "sinh", "CSINH");
+            break;
+        case BH_COSH:
+            write_opcodes_with_special_opencl_complex(instr, operands, out, opencl, "cosh", "CCOSH");
+            break;
+        case BH_TANH:
+            write_opcodes_with_special_opencl_complex(instr, operands, out, opencl, "tanh", "CTANH");
+            break;
+        case BH_EXP:
+            write_opcodes_with_special_opencl_complex(instr, operands, out, opencl, "exp", "CEXP");
+            break;
+        case BH_ABSOLUTE: {
+            const bh_type t0 = instr.operand_type(1);
+            if (opencl and bh_type_is_complex(t0)) {
+                out << "CABS(" << operands[0] << ", " << operands[1] << ");" << endl;
+            } else if (bh_type_is_float(t0)) {
+                out << operands[0] << " = fabs(" << operands[1] << ");" << endl;
+            } else {
+                out << operands[0] << " = abs(" << operands[1] << ");" << endl;
+            }
+            break;
+        }
+        case BH_SQRT:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CSQRT(" << operands[0] << ", " << operands[1] << ");" << endl;
+            } else {
+                out << operands[0] << " = sqrt(" << operands[1] << ");" << endl;
+            }
+            break;
+        case BH_LOG:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CLOG(" << operands[0] << ", " << operands[1] << ");" << endl;
+            } else {
+                out << operands[0] << " = log(" << operands[1] << ");" << endl;
+            }
+            break;
+        case BH_NOT_EQUAL:
+            if (opencl and bh_type_is_complex(instr.operand_type(1))) {
+                out << "CNEQ(" << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
+            } else {
+                out << operands[0] << " = " << operands[1] << " != " << operands[2] << ";" << endl;
+            }
+            break;
+        case BH_EQUAL:
+            if (opencl and bh_type_is_complex(instr.operand_type(1))) {
+                out << "CEQ(" << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
+            } else {
+                out << operands[0] << " = " << operands[1] << " == " << operands[2] << ";" << endl;
+            }
+            break;
+        case BH_POWER: {
+            const bh_type t0 = instr.operand_type(0);
+            if (opencl and bh_type_is_complex(t0)) {
+                out << "CPOW(" << (t0 == BH_COMPLEX64?"float":"double") << ", " \
+                    << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
+            } else if (opencl and bh_type_is_integer(t0)){
+                out << "IPOW(" << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
+            } else {
+                out << operands[0] << " = pow(" << operands[1] << ", " << operands[2] << ");" << endl;
+            }
+            break;
+        }
+
+
+        // Multiplication and division are handled differently in OpenCL
+        case BH_MULTIPLY:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CMUL(" << operands[0] << ", " << operands[1] << ", " << operands[2] <<");" << endl;
+            } else {
+                out << operands[0] << " = " << operands[1] << " * " << operands[2] << ";" << endl;
+            }
+            break;
+        case BH_MULTIPLY_REDUCE:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CMUL(" << operands[0] << ", " << operands[1] << ", " << operands[1] <<");" << endl;
+            } else {
+                out << operands[0] << " *= " << operands[1] << ";" << endl;
+            }
+            break;
+        case BH_MULTIPLY_ACCUMULATE:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CMUL(" << operands[0] << ", " << operands[1] << ", " << operands[2] <<");" << endl;
+            } else {
+                out << operands[0] << " = " << operands[1] << " * " << operands[2] << ";" << endl;
+            }
+            break;
+        case BH_DIVIDE: {
+            const bh_type t0 = instr.operand_type(0);
+            if (opencl and bh_type_is_complex(t0)) {
+                out << "CDIV(" << (t0 == BH_COMPLEX64?"float":"double") << ", " \
+                    << operands[0] << ", " << operands[1] << ", " << operands[2] <<");" << endl;
+            } else {
+                out << operands[0] << " = " << operands[1] << " / " << operands[2] << ";" << endl;
+            }
+            break;
+        }
+
+        // In OpenCL we have to do explicit conversion of complex numbers
+        case BH_IDENTITY: {
+            out << operands[0] << " = ";
+            const bh_type t0 = instr.operand_type(0);
+            const bh_type t1 = instr.operand_type(1);
+
+            if (opencl and t0 == BH_COMPLEX64 and t1 == BH_COMPLEX128) {
+                out << "convert_float2(" << operands[1] << ")";
+            } else if (opencl and t0 == BH_COMPLEX128 and t1 == BH_COMPLEX64) {
+                out << "convert_double2(" << operands[1] << ")";
+            } else if (opencl and bh_type_is_complex(t0) and not bh_type_is_complex(t1)) {
+                out << "(" << (t0 == BH_COMPLEX64?"float2":"double2") << ")(" << operands[1] << ", 0.0)";
+            } else if (opencl and t0 == BH_BOOL and t1 != BH_BOOL) {
+                out << "(" << operands[1] << "==0?0:1)";
+            } else {
+                out << operands[1];
+            }
+            out << ";" << endl;
+            break;
+        }
+
+        // C99 does not have log10 for complex, so we use the formula: clog(z) = log(z)/log(10)
+        case BH_LOG10: {
+            const bh_type t0 = instr.operand_type(0);
+            if (opencl and bh_type_is_complex(t0)) {
+                out << "CLOG(" << operands[0] << ", " << operands[1] << "); " \
+                    << operands[0] << " /= log(10.0f);" << endl;
+            } else if (bh_type_is_complex(t0)) {
+                out << operands[0] << " = clog(" << operands[1] << ") / log(10.0f);" << endl;
+            } else {
+                out << operands[0] << " = log10(" << operands[1] << ");" << endl;
+            }
+            break;
+        }
+
+        // Extracting the real or imaginary part differ in OpenCL
         case BH_REAL:
-            out << operands[0] << " = creal(" << operands[1] << ");" << endl;
+            if (opencl) {
+                out << operands[0] << " = " << operands[1] << ".s0;" << endl;
+            } else {
+                out << operands[0] << " = creal(" << operands[1] << ");" << endl;
+            }
             break;
         case BH_IMAG:
-            out << operands[0] << " = cimag(" << operands[1] << ");" << endl;
+            if (opencl) {
+                out << operands[0] << " = " << operands[1] << ".s1;" << endl;
+            } else {
+                out << operands[0] << " = cimag(" << operands[1] << ");" << endl;
+            }
             break;
+
+        /* NB: there are different ways to define sign of complex numbers.
+           *     We uses the same definition as in NumPy
+           *     <http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.sign.html>
+           */
         case BH_SIGN: {
-            /* NB: there are different ways to define sign of complex numbers.
-             *     We uses the same definition as in NumPy
-             *     <http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.sign.html>
-             */
-            bh_type t = instr.operand[0].base->type;
-            if (bh_type_is_complex(t)) {
-                if (t == BH_COMPLEX64) {
-                    out << "float real = creal(" << operands[1] << "); ";
-                    out << "float imag = cimag(" << operands[1] << "); ";
+            const bh_type t0 = instr.operand_type(0);
+            if (bh_type_is_complex(t0)) {
+                const char* ctype = (t0 == BH_COMPLEX64?"float":"double");
+                if (opencl) {
+                    out << ctype << " real = " << operands[1] << ".s0; ";
+                    out << ctype << " imag = " << operands[1] << ".s1; ";
                 } else {
-                    out << "double real = creal(" << operands[1] << "); ";
-                    out << "double imag = cimag(" << operands[1] << "); ";
+                    out << ctype << " real = creal(" << operands[1] << "); ";
+                    out << ctype << " imag = cimag(" << operands[1] << "); ";
                 }
                 out << operands[0] << " = real != 0 ? ";
                 write_sign_function("real", out);
