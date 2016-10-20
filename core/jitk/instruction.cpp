@@ -95,7 +95,7 @@ void write_sign_function(const string &operand, stringstream &out) {
     out << "((" << operand << " > 0) - (0 > " << operand << "))";
 }
 
-void write_operation(const bh_instruction &instr, const vector<string> &operands, stringstream &out) {
+void write_operation(const bh_instruction &instr, const vector<string> &operands, stringstream &out, bool opencl) {
 
     switch (instr.opcode) {
         case BH_ADD:
@@ -289,9 +289,23 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             out << operands[0] << " = " << operands[0] << " < " << operands[1] << " ? " << operands[0] << " : "
                 << operands[1] << ";" << endl;
             break;
-        case BH_IDENTITY:
-            out << operands[0] << " = " << operands[1] << ";" << endl;
+        case BH_IDENTITY: {
+            out << operands[0] << " = ";
+            const bh_type t0 = instr.operand_type(0);
+            const bh_type t1 = instr.operand_type(1);
+            // In OpenCL we have to do explicit conversion of complex numbers
+            if (opencl and t0 == BH_COMPLEX64 and t1 == BH_COMPLEX128) {
+                out << "convert_float2(" << operands[1] << ")";
+            } else if (opencl and t0 == BH_COMPLEX128 and t1 == BH_COMPLEX64) {
+                out << "convert_double2(" << operands[1] << ")";
+            } else if (opencl and bh_type_is_complex(t0) and not bh_type_is_complex(t1)){
+                out << "(" << (t0 == BH_COMPLEX64?"float2":"double2") << ")(" << operands[1] << ", 0.0)";
+            } else {
+                out << operands[1];
+            }
+            out << ";" << endl;
             break;
+        }
         case BH_FLOOR:
             out << operands[0] << " = floor(" << operands[1] << ");" << endl;
             break;
@@ -383,7 +397,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
             operands.push_back(ss.str());
         }
         operands.push_back("i0");
-        write_operation(instr, operands, out);
+        write_operation(instr, operands, out, opencl);
         return;
     }
     if (instr.opcode == BH_RANDOM) {
@@ -407,7 +421,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
                << ", " << instr.constant.value.r123.key << ", i0)";
             operands.push_back(ss.str());
         }
-        write_operation(instr, operands, out);
+        write_operation(instr, operands, out, opencl);
         return;
     }
     if (bh_opcode_is_accumulate(instr.opcode)) {
@@ -437,7 +451,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
             write_array_subscription(instr.operand[1], ss);
             operands.push_back(ss.str());
         }
-        write_operation(instr, operands, out);
+        write_operation(instr, operands, out, opencl);
         return;
     }
     vector<string> operands;
@@ -464,7 +478,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         }
         operands.push_back(ss.str());
     }
-    write_operation(instr, operands, out);
+    write_operation(instr, operands, out, opencl);
 }
 
 

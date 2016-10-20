@@ -387,7 +387,7 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
             if (b.isInstr()) {
                 if (b._instr != NULL) {
                     spaces(out, 4 + b.rank*4);
-                    write_instr(base_ids, *b._instr, out);
+                    write_instr(base_ids, *b._instr, out, true);
                 }
             } else {
                 write_block(base_ids, b, config, threaded_blocks, out);
@@ -448,7 +448,7 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
                     }
                 }
                 spaces(out, 4 + b.rank*4);
-                write_instr(base_ids, *b._instr, out);
+                write_instr(base_ids, *b._instr, out, true);
             }
         } else {
             write_block(base_ids, b, config, threaded_blocks, out);
