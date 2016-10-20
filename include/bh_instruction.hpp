@@ -52,19 +52,10 @@ struct bh_instruction
     // Reshape the views of the instruction to 'shape'
     void reshape(const std::vector<int64_t> &shape);
 
-    // Serialization using Boost
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
-    {
-        ar & opcode;
-        //We use make_array as a hack to make bh_constant BOOST_IS_BITWISE_SERIALIZABLE
-        ar & boost::serialization::make_array(&constant, 1);
-        const size_t nop = bh_noperands(opcode);
-        for(size_t i=0; i<nop; ++i)
-            ar & operand[i];
-    }
+    // Returns the type of the operand at given index (support constants)
+    bh_type operand_type(int operand_index) const;
 
+    // Equality
     bool operator==(const bh_instruction& other) const
     {
         if (opcode != other.opcode) return false;
@@ -77,9 +68,23 @@ struct bh_instruction
         return true;
     }
 
+    // Inequality
     bool operator!=(const bh_instruction& other) const
     {
         return !(*this == other);
+    }
+
+    // Serialization using Boost
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & opcode;
+        //We use make_array as a hack to make bh_constant BOOST_IS_BITWISE_SERIALIZABLE
+        ar & boost::serialization::make_array(&constant, 1);
+        const size_t nop = bh_noperands(opcode);
+        for(size_t i=0; i<nop; ++i)
+            ar & operand[i];
     }
 };
 BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)

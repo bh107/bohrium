@@ -110,6 +110,16 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
     }
 }
 
+bh_type bh_instruction::operand_type(int operand_index) const {
+    assert(bh_noperands(opcode) > operand_index);
+    const bh_view &view = operand[operand_index];
+    if (bh_is_constant(&view)) {
+        return constant.type;
+    } else {
+        return view.base->type;
+    }
+}
+
 //Implements pprint of an instruction
 ostream& operator<<(ostream& out, const bh_instruction& instr)
 {
