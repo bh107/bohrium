@@ -622,8 +622,10 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     ss << "#include <complex.h>" << endl;
     ss << "#include <tgmath.h>" << endl;
     ss << "#include <math.h>" << endl;
-    ss << endl;
     */
+
+    ss << "#include <ocl_complex.h>" << endl;
+    ss << endl;
 
     if (kernel.useRandom()) { // Write the random function
         ss << "#include <Random123/philox.h>" << endl;
