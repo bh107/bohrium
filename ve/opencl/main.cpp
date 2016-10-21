@@ -613,31 +613,13 @@ void remove_empty_blocks(vector<Block> &block_list) {
 void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
-    /*
-    ss << "#include <stdlib.h>" << endl;
-
-    ss << "#include <stdint.h>" << endl;
-    ss << "#include <stdlib.h>" << endl;
-    ss << "#include <stdbool.h>" << endl;
-    ss << "#include <complex.h>" << endl;
-    ss << "#include <tgmath.h>" << endl;
-    ss << "#include <math.h>" << endl;
-    */
-
-    ss << "#include <ocl_complex.h>" << endl;
-    ss << "#include <ocl_integer.h>" << endl;
+    ss << "#include <kernel_dependencies/complex_operations.h>" << endl;
+    ss << "#include <kernel_dependencies/integer_operations.h>" << endl;
     ss << endl;
 
     if (kernel.useRandom()) { // Write the random function
-        ss << "#include <Random123/philox.h>" << endl;
-        ss << write_opencl_type(BH_UINT64) << " random123(" << write_opencl_type(BH_UINT64) << " start, " \
-                                           << write_opencl_type(BH_UINT64) << " key, " \
-                                           << write_opencl_type(BH_UINT64) << " index) {" << endl;
-        ss << "    union {philox2x32_ctr_t c; " << write_opencl_type(BH_UINT64) << " ul;} ctr, res; " << endl;
-        ss << "    ctr.ul = start + index; " << endl;
-        ss << "    res.c = philox2x32(ctr.c, (philox2x32_key_t){{key}}); " << endl;
-        ss << "    return res.ul; " << endl;
-        ss << "} " << endl;
+        ss << "#include <kernel_dependencies/random123.h>" << endl;
+        ss << "DEF_RANDOM123(" << write_opencl_type(BH_UINT64) << ")" << endl;
     }
 
     ss << endl;

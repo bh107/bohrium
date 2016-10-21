@@ -589,13 +589,8 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     ss << endl;
 
     if (kernel.useRandom()) { // Write the random function
-        ss << "#include <Random123/philox.h>" << endl;
-        ss << "uint64_t random123(uint64_t start, uint64_t key, uint64_t index) {" << endl;
-        ss << "    union {philox2x32_ctr_t c; uint64_t ul;} ctr, res; " << endl;
-        ss << "    ctr.ul = start + index; " << endl;
-        ss << "    res.c = philox2x32(ctr.c, (philox2x32_key_t){{key}}); " << endl;
-        ss << "    return res.ul; " << endl;
-        ss << "} " << endl;
+        ss << "#include <kernel_dependencies/random123.h>" << endl;
+        ss << "DEF_RANDOM123(uint64_t)" << endl;
     }
     ss << endl;
 

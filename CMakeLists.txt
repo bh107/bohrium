@@ -146,9 +146,15 @@ add_subdirectory(bridge/cil)
 add_subdirectory(test)
 
 #
-# Thirdparty headers
+# Install thirdparty headers
 #
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
+        DESTINATION share/bohrium/include COMPONENT bohrium)
+
+#
+# Install JIT-kernels dependency headers
+#
+install(DIRECTORY include/jitk/kernel_dependencies
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
 #
