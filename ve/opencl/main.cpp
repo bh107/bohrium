@@ -80,7 +80,8 @@ class Impl : public ComponentImplWithChild {
         default_device = devices[0];
         cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() << endl;
 
-        context = cl::Context({default_device});
+        vector<cl::Device> dev_list = {default_device};
+        context = cl::Context(dev_list);
     }
     ~Impl();
     void execute(bh_ir *bhir);
