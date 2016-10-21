@@ -37,6 +37,8 @@ Kernel::Kernel(const Block &block) : block(block) {
             _useRandom = true;
         } else if (instr->opcode == BH_FREE) {
             _frees.insert(instr->operand[0].base);
+        } else if (instr->opcode == BH_SYNC) {
+            _syncs.insert(instr->operand[0].base);
         }
         // Find non-temporary arrays
         const int nop = bh_noperands(instr->opcode);

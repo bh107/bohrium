@@ -35,6 +35,8 @@ private:
     bool _useRandom;
     // Arrays freed
     std::set<bh_base*> _frees;
+    // Arrays sync'ed
+    std::set<bh_base*> _syncs;
     // Non-temporary arrays, which makes up the parameters to a kernel
     std::vector<bh_base*> _non_temps;
 
@@ -56,12 +58,15 @@ public:
         return _frees;
     }
 
+    // Return the sync'ed arrays
+    const std::set<bh_base*> &getSyncs() const {
+        return _syncs;
+    }
+
     // Return the non-temporary arrays
     const std::vector<bh_base*> &getNonTemps() const {
         return _non_temps;
     }
-
-    std::set<bh_base*> sync;
 
     // Return all blocks within this kernel (incl. nested blocks)
     // in a depth first order
