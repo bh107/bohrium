@@ -56,6 +56,7 @@ class Impl : public ComponentImplWithChild {
 
     cl::Context context;
     cl::Device default_device;
+    map<bh_base*, unique_ptr<cl::Buffer> > buffers;
     void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss);
 
   public:
@@ -595,21 +596,6 @@ vector<Block> fuser_serial(vector<Block> &block_list, const set<bh_instruction*>
     return ret;
 }
 
-// Remove empty blocks inplace
-void remove_empty_blocks(vector<Block> &block_list) {
-    for (size_t i=0; i < block_list.size(); ) {
-        Block &b = block_list[i];
-        if (b.isInstr()) {
-            ++i;
-        } else if (b.isSystemOnly()) {
-            block_list.erase(block_list.begin()+i);
-        } else {
-            remove_empty_blocks(b._block_list);
-            ++i;
-        }
-    }
-}
-
 void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
@@ -692,13 +678,14 @@ cl::NDRange NDRange(const vector<const Block*> &threaded_blocks) {
 
 void Impl::execute(bh_ir *bhir) {
 
+    cl::CommandQueue queue(context, default_device);
+
     // Get the set of initiating instructions
     const set<bh_instruction*> news = find_initiating_instr(bhir->instr_list);
 
     // Let's fuse the 'instr_list' into blocks
     vector<Block> block_list = fuser_singleton(bhir->instr_list, news);
     block_list = fuser_serial(block_list, news);
-    remove_empty_blocks(block_list);
 
     for(const Block &block: block_list) {
 
@@ -745,13 +732,27 @@ void Impl::execute(bh_ir *bhir) {
         }
 
         if (threaded_blocks.size() == 0) {
+            // Let's copy all non-temporary to the host
+            for (bh_base *base: kernel.getNonTemps()) {
+                if (buffers.find(base) != buffers.end()) {
+                    bh_data_malloc(base);
+                    queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                }
+            }
+            queue.finish();
+
+            // Let's free device buffers
+            for (bh_base *base: kernel.getFrees()) {
+                buffers.erase(base);
+            }
+            for (bh_base *base: kernel.getNonTemps()) {
+                buffers.erase(base);
+            }
+
+            // Let's send the kernel instructions to our child
             vector<bh_instruction> instr_list;
             for (const bh_instruction* instr: kernel.block.getAllInstr()) {
                 instr_list.push_back(*instr);
-            }
-            // Make sure all arrays are allocated
-            for (bh_base *base: kernel.getNonTemps()) {
-                bh_data_malloc(base);
             }
             bh_ir tmp_bhir(instr_list.size(), &instr_list[0]);
             child.execute(&tmp_bhir);
@@ -762,55 +763,62 @@ void Impl::execute(bh_ir *bhir) {
         stringstream ss;
         write_kernel(kernel, base_ids, threaded_blocks, ss);
 
-        // cout << ss.str() << endl;
+        // cout << endl << ss.str() << endl;
 
         cl::Program::Sources sources;
         sources.push_back({ss.str().c_str(), ss.str().length()});
         cl::Program program(context, sources);
-        const string compile_inc = config.defaultGet<string>("compiler_inc", "");
-        try {
-            program.build({default_device}, compile_inc.c_str());
-        } catch (cl::Error e) {
-            cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
-            throw;
+        if (not kernel.block.isSystemOnly()) {
+            const string compile_inc = config.defaultGet<string>("compiler_inc", "");
+            try {
+                program.build({default_device}, compile_inc.c_str());
+            } catch (cl::Error e) {
+                cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
+                throw;
+            }
         }
 
-        map<bh_base*, unique_ptr<cl::Buffer> > buffers;
+        // We need a memory buffer on the device for each non-temporary array in the kernel
         for(bh_base *base: kernel.getNonTemps()) {
-            assert(buffers.find(base) == buffers.end());
-            buffers[base].reset(new cl::Buffer(context, CL_MEM_READ_WRITE, (cl::size_type) bh_base_size(base)));
-        }
+            if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
+                cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl::size_type) bh_base_size(base));
+                buffers[base].reset(b);
 
-        cl::CommandQueue queue(context, default_device);
-        for(auto &item: buffers) {
-            bh_base *base = item.first;
-            unique_ptr<cl::Buffer> &buf = item.second;
-            if (base->data != NULL) {
-                queue.enqueueWriteBuffer(*buf, CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                // If the host data is non-null we should copy it to the device
+                if (base->data != NULL) {
+                    queue.enqueueWriteBuffer(*b, CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                }
             }
         }
-
-        cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
-        {
-            cl_uint i=0;
-            for(bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
-                opencl_kernel.setArg(i++, *buffers.at(base));
-            }
-        }
-        queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
         queue.finish();
-        assert(sizeof(cl_uchar) == sizeof(bh_bool));
 
-        const auto &kernel_frees = kernel.getFrees();
-        for(auto &item: buffers) {
-            bh_base *base = item.first;
-            unique_ptr<cl::Buffer> &buf = item.second;
-            if (kernel_frees.find(base) == kernel_frees.end()) {
+        if (not kernel.block.isSystemOnly()) {
+            cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
+            {
+                cl_uint i = 0;
+                for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
+                    opencl_kernel.setArg(i++, *buffers.at(base));
+                }
+            }
+            queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
+            queue.finish();
+            assert(sizeof(cl_uchar) == sizeof(bh_bool));
+        }
+
+        // Let's copy sync'ed arrays back to the host
+        for(bh_base *base: kernel.getSyncs()) {
+            if (buffers.find(base) != buffers.end()) {
                 bh_data_malloc(base);
-                queue.enqueueReadBuffer(*buf, CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
             }
         }
         queue.finish();
+
+        // Let's free device buffers
+        const auto &kernel_frees = kernel.getFrees();
+        for(bh_base *base: kernel.getFrees()) {
+            buffers.erase(base);
+        }
 
         // Finally, let's cleanup
         for(bh_base *base: kernel_frees) {
