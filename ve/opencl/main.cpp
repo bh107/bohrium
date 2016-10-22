@@ -58,6 +58,7 @@ class Impl : public ComponentImplWithChild {
     cl::Device default_device;
     map<bh_base*, unique_ptr<cl::Buffer> > buffers;
     void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss);
+    set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) ;
 
   public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level), _store(config) {
@@ -640,7 +641,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
 }
 
 // Returns the instructions that initiate base arrays in 'instr_list'
-set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) {
+set<bh_instruction*> Impl::find_initiating_instr(vector<bh_instruction> &instr_list) {
     set<bh_base*> initiated; // Arrays initiated in 'instr_list'
     set<bh_instruction*> ret;
     for(bh_instruction &instr: instr_list) {
@@ -649,7 +650,7 @@ set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) {
             const bh_view &v = instr.operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);
-                if (v.base->data == NULL and initiated.find(v.base) == initiated.end()) {
+                if (v.base->data == NULL and initiated.find(v.base) == initiated.end() and buffers.find(v.base) == buffers.end()) {
                     if (o == 0) { // It is only the output that is initiated
                         initiated.insert(v.base);
                         ret.insert(&instr); // Add the instruction that initiate 'v.base'
@@ -785,7 +786,7 @@ void Impl::execute(bh_ir *bhir) {
                 cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
                 throw;
             }
-    
+
             // We need a memory buffer on the device for each non-temporary array in the kernel
             for(bh_base *base: kernel.getNonTemps()) {
                 if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
