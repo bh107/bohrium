@@ -677,6 +677,7 @@ cl::NDRange NDRange(const vector<const Block*> &threaded_blocks) {
 }
 
 void Impl::execute(bh_ir *bhir) {
+    const bool verbose = config.defaultGet<bool>("verbose", false);
 
     cl::CommandQueue queue(context, default_device);
 
@@ -712,7 +713,7 @@ void Impl::execute(bh_ir *bhir) {
         base_ids.insertTmp(kernel.getAllTemps());
 
         // Debug print
-        if (config.defaultGet<bool>("verbose", false))
+        if (verbose)
             cout << kernel.block;
 
         // Find threaded blocks
@@ -732,6 +733,9 @@ void Impl::execute(bh_ir *bhir) {
         }
 
         if (threaded_blocks.size() == 0) {
+            if (verbose)
+                cout << "Offloading to CPU" << endl;
+
             // Let's copy all non-temporary to the host
             for (bh_base *base: kernel.getNonTemps()) {
                 if (buffers.find(base) != buffers.end()) {
@@ -763,12 +767,17 @@ void Impl::execute(bh_ir *bhir) {
         stringstream ss;
         write_kernel(kernel, base_ids, threaded_blocks, ss);
 
-        // cout << endl << ss.str() << endl;
-
-        cl::Program::Sources sources;
-        sources.push_back({ss.str().c_str(), ss.str().length()});
-        cl::Program program(context, sources);
+        // Let's execute the kernel
         if (not kernel.block.isSystemOnly()) {
+            if (verbose) {
+                cout << endl << "************ GPU Kernel ************" << endl << ss.str()
+                             << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl << endl;
+            }
+
+            cl::Program::Sources sources;
+            sources.push_back({ss.str().c_str(), ss.str().length()});
+            cl::Program program(context, sources);
+
             const string compile_inc = config.defaultGet<string>("compiler_inc", "");
             try {
                 program.build({default_device}, compile_inc.c_str());
@@ -776,23 +785,21 @@ void Impl::execute(bh_ir *bhir) {
                 cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
                 throw;
             }
-        }
+    
+            // We need a memory buffer on the device for each non-temporary array in the kernel
+            for(bh_base *base: kernel.getNonTemps()) {
+                if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
+                    cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl::size_type) bh_base_size(base));
+                    buffers[base].reset(b);
 
-        // We need a memory buffer on the device for each non-temporary array in the kernel
-        for(bh_base *base: kernel.getNonTemps()) {
-            if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl::size_type) bh_base_size(base));
-                buffers[base].reset(b);
-
-                // If the host data is non-null we should copy it to the device
-                if (base->data != NULL) {
-                    queue.enqueueWriteBuffer(*b, CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                    // If the host data is non-null we should copy it to the device
+                    if (base->data != NULL) {
+                        queue.enqueueWriteBuffer(*b, CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                    }
                 }
             }
-        }
-        queue.finish();
+            queue.finish();
 
-        if (not kernel.block.isSystemOnly()) {
             cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
             {
                 cl_uint i = 0;
