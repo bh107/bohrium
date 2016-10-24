@@ -18,19 +18,19 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_JITK_KERNEL_DEPENDENCIES_RANDOM123_H
-#define __BH_JITK_KERNEL_DEPENDENCIES_RANDOM123_H
+// This is the C99/OpenMP interface to Random123
+
+#ifndef __BH_JITK_KERNEL_DEPENDENCIES_RANDOM123_OPENMP_H
+#define __BH_JITK_KERNEL_DEPENDENCIES_RANDOM123_OPENMP_H
 
 #include <Random123/philox.h>
 
-// This macro defines the random123 function using 'type' as input and output.
-// Should be called once in JIT-kernels that uses random123()
-#define DEF_RANDOM123(type)                                  \
-type random123(type start, type key, type index) {           \
-    union {philox2x32_ctr_t c; type ul;} ctr, res;           \
-    ctr.ul = start + index;                                  \
-    res.c = philox2x32(ctr.c, (philox2x32_key_t){{key}});    \
-    return res.ul;                                           \
+
+uint64_t random123(uint64_t start, uint64_t key, uint64_t index) {
+    union {philox2x32_ctr_t c; uint64_t ul;} ctr, res;
+    ctr.ul = start + index;
+    res.c = philox2x32(ctr.c, (philox2x32_key_t){{key}});
+    return res.ul;
 }
 
 #endif

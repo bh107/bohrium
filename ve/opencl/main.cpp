@@ -607,11 +607,8 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     // Write the need includes
     ss << "#include <kernel_dependencies/complex_operations.h>" << endl;
     ss << "#include <kernel_dependencies/integer_operations.h>" << endl;
-    ss << endl;
-
     if (kernel.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123.h>" << endl;
-        ss << "DEF_RANDOM123(" << write_opencl_type(BH_UINT64) << ")" << endl;
+        ss << "#include <kernel_dependencies/random123_opencl.h>" << endl;
     }
 
     ss << endl;

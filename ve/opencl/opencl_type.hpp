@@ -34,7 +34,7 @@ const char* write_opencl_type(bh_type dtype)
         case BH_INT8: return "char";
         case BH_INT16: return "short";
         case BH_INT32: return "int";
-        case BH_INT64: return"long";
+        case BH_INT64: return "long";
         case BH_UINT8: return "uchar";
         case BH_UINT16: return "ushort";
         case BH_UINT32: return "uint";

@@ -586,11 +586,8 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     ss << "#include <complex.h>" << endl;
     ss << "#include <tgmath.h>" << endl;
     ss << "#include <math.h>" << endl;
-    ss << endl;
-
     if (kernel.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123.h>" << endl;
-        ss << "DEF_RANDOM123(uint64_t)" << endl;
+        ss << "#include <kernel_dependencies/random123_openmp.h>" << endl;
     }
     ss << endl;
 
