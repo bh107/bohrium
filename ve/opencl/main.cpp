@@ -732,7 +732,7 @@ void Impl::execute(bh_ir *bhir) {
         constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
         vector<const Block*> threaded_blocks;
         for (const Block *b: kernel.getAllBlocks()) {
-            if (b->_sweeps.size() == 0) {
+            if (b->_sweeps.size() == 0 and not b->isSystemOnly()) {
                 threaded_blocks.push_back(b);
             }
             // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
