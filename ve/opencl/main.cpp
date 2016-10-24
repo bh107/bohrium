@@ -305,6 +305,11 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     assert(not block.isInstr());
     spaces(out, 4 + block.rank*4);
 
+    if (block.isSystemOnly()) {
+        out << "// Removed loop with only system instructions" << endl;
+        return;
+    }
+
     // All local temporary arrays needs an variable declaration
     const set<bh_base*> local_tmps = block.getLocalTemps();
 
