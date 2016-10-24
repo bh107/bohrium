@@ -714,8 +714,14 @@ void Impl::execute(bh_ir *bhir) {
         base_ids.insertTmp(kernel.getAllTemps());
 
         // Debug print
-        if (verbose)
+        if (verbose) {
+            cout << "Kernel's non-temps: " << endl;
+            for (bh_base *base: kernel.getNonTemps()) {
+                cout << "\t" << *base << endl;
+            }
             cout << kernel.block;
+        }
+
 
         // Find threaded blocks
         constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
@@ -741,6 +747,9 @@ void Impl::execute(bh_ir *bhir) {
             for (bh_base *base: kernel.getNonTemps()) {
                 if (buffers.find(base) != buffers.end()) {
                     bh_data_malloc(base);
+                    if (verbose) {
+                        cout << "Copy to host: " << *base << endl;
+                    }
                     queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
                 }
             }
@@ -795,6 +804,9 @@ void Impl::execute(bh_ir *bhir) {
 
                     // If the host data is non-null we should copy it to the device
                     if (base->data != NULL) {
+                        if (verbose) {
+                            cout << "Copy to device: " << *base << endl;
+                        }
                         queue.enqueueWriteBuffer(*b, CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
                     }
                 }
@@ -817,7 +829,13 @@ void Impl::execute(bh_ir *bhir) {
         for(bh_base *base: kernel.getSyncs()) {
             if (buffers.find(base) != buffers.end()) {
                 bh_data_malloc(base);
+                if (verbose) {
+                    cout << "Copy to host: " << *base << endl;
+                }
                 queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                // When syncing we assume that the host writes to the data and invalidate the device data thus
+                // we have to remove its data buffer
+                buffers.erase(base);
             }
         }
         queue.finish();
