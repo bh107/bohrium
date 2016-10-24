@@ -669,11 +669,11 @@ cl::NDRange NDRange(const vector<const Block*> &threaded_blocks) {
     auto &b = threaded_blocks;
     switch (b.size()) {
         case 1:
-            return cl::NDRange((cl::size_type) b[0]->size);
+            return cl::NDRange((cl_ulong) b[0]->size);
         case 2:
-            return cl::NDRange((cl::size_type) b[0]->size, (cl::size_type) b[1]->size);
+            return cl::NDRange((cl_ulong) b[0]->size, (cl_ulong) b[1]->size);
         case 3:
-            return cl::NDRange((cl::size_type) b[0]->size, (cl::size_type) b[1]->size, (cl::size_type) b[2]->size);
+            return cl::NDRange((cl_ulong) b[0]->size, (cl_ulong) b[1]->size, (cl_ulong) b[2]->size);
         default:
             throw runtime_error("NDRange: maximum of three dimensions!");
     }
@@ -752,7 +752,7 @@ void Impl::execute(bh_ir *bhir) {
                     if (verbose) {
                         cout << "Copy to host: " << *base << endl;
                     }
-                    queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                    queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
                 }
             }
             queue.finish();
@@ -801,7 +801,7 @@ void Impl::execute(bh_ir *bhir) {
             // We need a memory buffer on the device for each non-temporary array in the kernel
             for(bh_base *base: kernel.getNonTemps()) {
                 if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                    cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl::size_type) bh_base_size(base));
+                    cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
                     buffers[base].reset(b);
 
                     // If the host data is non-null we should copy it to the device
@@ -809,7 +809,7 @@ void Impl::execute(bh_ir *bhir) {
                         if (verbose) {
                             cout << "Copy to device: " << *base << endl;
                         }
-                        queue.enqueueWriteBuffer(*b, CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                        queue.enqueueWriteBuffer(*b, CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
                     }
                 }
             }
@@ -834,7 +834,7 @@ void Impl::execute(bh_ir *bhir) {
                 if (verbose) {
                     cout << "Copy to host: " << *base << endl;
                 }
-                queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl::size_type) bh_base_size(base), base->data);
+                queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
                 // When syncing we assume that the host writes to the data and invalidate the device data thus
                 // we have to remove its data buffer
                 buffers.erase(base);
