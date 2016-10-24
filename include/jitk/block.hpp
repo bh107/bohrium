@@ -115,8 +115,11 @@ public:
 
     // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const {
-        for (bh_instruction *instr: getAllInstr()) {
-            if (not bh_opcode_is_system(instr->opcode)) {
+        if (isInstr()) {
+            return bh_opcode_is_system(_instr->opcode);
+        }
+        for (const Block &b: _block_list) {
+            if (not b.isSystemOnly()) {
                 return false;
             }
         }
