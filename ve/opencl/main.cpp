@@ -815,16 +815,24 @@ void Impl::execute(bh_ir *bhir) {
             }
             queue.finish();
 
-            cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
+            // Let's execute the OpenCL kernel
             {
-                cl_uint i = 0;
-                for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
-                    opencl_kernel.setArg(i++, *buffers.at(base));
+                cl_int err; // Error code
+                try {
+                    cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
+                    {
+                        cl_uint i = 0;
+                        for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
+                            opencl_kernel.setArg(i++, *buffers.at(base));
+                        }
+                    }
+                    queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
+                    queue.finish();
+                } catch (cl::Error e) {
+                    cerr << "[OpenCL] Execution error: " << err << endl;
+                    throw;
                 }
             }
-            queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
-            queue.finish();
-            assert(sizeof(cl_uchar) == sizeof(bh_bool));
         }
 
         // Let's copy sync'ed arrays back to the host
