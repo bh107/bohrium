@@ -602,6 +602,7 @@ vector<Block> fuser_serial(vector<Block> &block_list, const set<bh_instruction*>
 void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
+    ss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable" << endl;
     ss << "#include <kernel_dependencies/complex_operations.h>" << endl;
     ss << "#include <kernel_dependencies/integer_operations.h>" << endl;
     if (kernel.useRandom()) { // Write the random function
@@ -783,7 +784,7 @@ void Impl::execute(bh_ir *bhir) {
 
             if (verbose) {
                 cout << endl << "************ GPU Kernel ************" << endl << ss.str()
-                             << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl << endl;
+                             << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
             }
 
             cl::Program program(context, ss.str());
@@ -791,6 +792,11 @@ void Impl::execute(bh_ir *bhir) {
             const string compile_inc = config.defaultGet<string>("compiler_inc", "");
             try {
                 program.build({default_device}, compile_inc.c_str());
+                if (verbose) {
+                    cout << "************ Build Log ************" << endl \
+                         << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) \
+                         << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
+                }
             } catch (cl::Error e) {
                 cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
                 throw;
