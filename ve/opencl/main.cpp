@@ -23,11 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <map>
 
-#define CL_HPP_MINIMUM_OPENCL_VERSION 120
-#define CL_HPP_TARGET_OPENCL_VERSION 120
-#define CL_HPP_ENABLE_EXCEPTIONS
-#include <CL/cl2.hpp>
-
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
 #include <jitk/kernel.hpp>
@@ -37,6 +32,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "store.hpp"
 #include "opencl_type.hpp"
+#include "cl.hpp"
 
 using namespace bohrium;
 using namespace jitk;
