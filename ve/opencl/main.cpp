@@ -696,6 +696,9 @@ void Impl::execute(bh_ir *bhir) {
         //Let's create a kernel
         Kernel kernel(block);
 
+        // We can skip a lot of steps if the kernel does no computation
+        const bool kernel_is_computing = not kernel.block.isSystemOnly();
+
         // For profiling statistic
         num_base_arrays += kernel.getNonTemps().size();
         num_temp_arrays += kernel.getAllTemps().size();
@@ -741,7 +744,7 @@ void Impl::execute(bh_ir *bhir) {
             }
         }
 
-        if (threaded_blocks.size() == 0) {
+        if (threaded_blocks.size() == 0 and kernel_is_computing) {
             if (verbose)
                 cout << "Offloading to CPU" << endl;
 
@@ -775,12 +778,13 @@ void Impl::execute(bh_ir *bhir) {
             continue;
         }
 
-        // Code generation
-        stringstream ss;
-        write_kernel(kernel, base_ids, threaded_blocks, ss);
-
         // Let's execute the kernel
-        if (not kernel.block.isSystemOnly()) {
+        if (kernel_is_computing) {
+
+            // Code generation
+            stringstream ss;
+            write_kernel(kernel, base_ids, threaded_blocks, ss);
+
             if (verbose) {
                 cout << endl << "************ GPU Kernel ************" << endl << ss.str()
                              << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl << endl;
