@@ -611,7 +611,6 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     if (kernel.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_opencl.h>" << endl;
     }
-
     ss << endl;
 
     // Write the header of the execute function
@@ -787,9 +786,7 @@ void Impl::execute(bh_ir *bhir) {
                              << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl << endl;
             }
 
-            cl::Program::Sources sources;
-            sources.push_back({ss.str().c_str(), ss.str().length()});
-            cl::Program program(context, sources);
+            cl::Program program(context, ss.str());
 
             const string compile_inc = config.defaultGet<string>("compiler_inc", "");
             try {
