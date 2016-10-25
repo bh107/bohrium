@@ -629,7 +629,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     if (threaded_blocks.size() > 0) {
         spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: " << endl;
-        for (int i=0; i < threaded_blocks.size(); ++i) {
+        for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
             const Block *b = threaded_blocks[i];
             spaces(ss, 4);
             ss << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << i << ");" << endl;
@@ -817,23 +817,15 @@ void Impl::execute(bh_ir *bhir) {
             queue.finish();
 
             // Let's execute the OpenCL kernel
+            cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
             {
-                cl_int err; // Error code
-                try {
-                    cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
-                    {
-                        cl_uint i = 0;
-                        for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
-                            opencl_kernel.setArg(i++, *buffers.at(base));
-                        }
-                    }
-                    queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
-                    queue.finish();
-                } catch (cl::Error e) {
-                    cerr << "[OpenCL] Execution error: " << err << endl;
-                    throw;
+                cl_uint i = 0;
+                for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
+                    opencl_kernel.setArg(i++, *buffers.at(base));
                 }
             }
+            queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
+            queue.finish();
         }
 
         // Let's copy sync'ed arrays back to the host
