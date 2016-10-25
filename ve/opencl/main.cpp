@@ -42,22 +42,23 @@ using namespace std;
 namespace {
 class Impl : public ComponentImplWithChild {
   private:
-    // Compiled kernels store
-    Store _store;
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     // Some statistics
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
 
+    // The OpenCL context and device used throughout the execution
     cl::Context context;
     cl::Device default_device;
+    // A map of allcated buffers on the device
     map<bh_base*, unique_ptr<cl::Buffer> > buffers;
+    
     void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss);
     set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) ;
 
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level), _store(config) {
+    Impl(int stack_level) : ComponentImplWithChild(stack_level) {
 
         vector<cl::Platform> platforms;
         cl::Platform::get(&platforms);
@@ -107,8 +108,6 @@ void spaces(stringstream &out, int num) {
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
         cout << "[OPENCL] Profiling: " << endl;
-        cout << "\tKernel store hits:   " << _store.num_lookups - _store.num_lookup_misses \
-                                          << "/" << _store.num_lookups << endl;
         cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
     }
 }
@@ -789,7 +788,7 @@ void Impl::execute(bh_ir *bhir) {
 
             cl::Program program(context, ss.str());
 
-            const string compile_inc = config.defaultGet<string>("compiler_inc", "");
+            const string compile_inc = config.defaultGet<string>("compiler_flg", "");
             try {
                 program.build({default_device}, compile_inc.c_str());
                 if (verbose) {
