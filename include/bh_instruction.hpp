@@ -36,8 +36,11 @@ struct bh_instruction
     // Return a set of all bases used by the instruction
     std::set<bh_base*> get_bases();
 
-    // Check if all views by this instruction is contiguous
+    // Check if all views in this instruction is contiguous
     bool is_contiguous() const;
+
+    // Check if all view in this instruction have the same shape
+    bool all_same_shape() const;
 
     // Is this instruction (and all its views) reshapable?
     bool reshapable() const;

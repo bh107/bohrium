@@ -477,7 +477,6 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         return;
     }
     if (instr.opcode == BH_RANGE) {
-        assert(instr.operand[0].ndim == 1); //TODO: support multidimensional output
         vector<string> operands;
         if (base_ids.isTmp(instr.operand[0].base)) {
             stringstream ss;
@@ -489,12 +488,19 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
             write_array_subscription(instr.operand[0], ss);
             operands.push_back(ss.str());
         }
-        operands.push_back("i0");
+        {   // Let's find the flatten index of the output view
+            stringstream ss;
+            uint64_t stride = 1;
+            for(int64_t i=instr.operand[0].ndim-1; i >= 0 ; --i) {
+                ss << "+i" << i << "*" << stride;
+                stride *= instr.operand[0].shape[i];
+            }
+            operands.push_back(ss.str());
+        }
         write_operation(instr, operands, out, opencl);
         return;
     }
     if (instr.opcode == BH_RANDOM) {
-        assert(instr.operand[0].ndim == 1); //TODO: support multidimensional output
         vector<string> operands;
         // Write output operand
         if (base_ids.isTmp(instr.operand[0].base)) {
@@ -511,7 +517,16 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         {
             stringstream ss;
             ss << "random123(" << instr.constant.value.r123.start \
-               << ", " << instr.constant.value.r123.key << ", i0)";
+               << ", " << instr.constant.value.r123.key << ", ";
+
+            // Let's find the flatten index of the output view
+            uint64_t stride = 1;
+            for(int64_t i=instr.operand[0].ndim-1; i >= 0 ; --i) {
+                ss << "+i" << i << "*" << stride;
+                stride *= instr.operand[0].shape[i];
+            }
+            ss << ")";
+
             operands.push_back(ss.str());
         }
         write_operation(instr, operands, out, opencl);
