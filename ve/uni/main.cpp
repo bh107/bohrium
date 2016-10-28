@@ -532,7 +532,11 @@ void Impl::execute(bh_ir *bhir) {
 
     // Let's fuse the 'instr_list' into blocks
     vector<Block> block_list = fuser_singleton(bhir->instr_list, news);
-    block_list = fuser_serial(block_list, news);
+    if (config.defaultGet<bool>("topo", false)) {
+        block_list = fuser_topological(block_list, news);
+    } else {
+        block_list = fuser_serial(block_list, news);
+    }
     remove_empty_blocks(block_list);
 
     for(const Block &block: block_list) {
