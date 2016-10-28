@@ -129,8 +129,24 @@ public:
     // Validation check of this block
     bool validation() const;
 
+    // Equality test based on the unique ID
     bool operator==(const Block &block) const {
         return this->_id == block._id;
+    }
+
+    // Determines whether this block must be executed after 'other'
+    bool depend_on(const Block &other) const {
+        const std::vector<bh_instruction*> this_instr_list = getAllInstr();
+        const std::vector<bh_instruction*> other_instr_list = other.getAllInstr();
+        for (const bh_instruction *this_instr: this_instr_list) {
+            for (const bh_instruction *other_instr: other_instr_list) {
+                if (this_instr != other_instr and
+                    bh_instr_dependency(this_instr, other_instr)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 };
 
