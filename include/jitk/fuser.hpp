@@ -39,6 +39,10 @@ std::vector<Block> fuser_singleton(std::vector<bh_instruction> &instr_list, cons
 // 'news' is the set of instructions in 'instr_list' that initiates new base arrays
 std::vector<Block> fuser_serial(std::vector<Block> &block_list, const std::set<bh_instruction*> &news);
 
+// Fuses 'block_list' in a topological breath first manner
+// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
+std::vector<Block> fuser_topological(std::vector<Block> &block_list, const std::set<bh_instruction*> &news);
+
 } // jit
 } // bohrium
 

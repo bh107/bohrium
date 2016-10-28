@@ -18,6 +18,13 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/breadth_first_search.hpp>
+#include <boost/graph/graphviz.hpp>
+#include <boost/foreach.hpp>
+#include <fstream>
+
 #include <jitk/fuser.hpp>
 
 using namespace std;
@@ -158,6 +165,192 @@ vector<Block> fuser_serial(vector<Block> &block_list, const set<bh_instruction*>
     return ret;
 }
 
+namespace dag {
+
+//The type declaration of the boost graphs, vertices and edges.
+typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, const Block*> DAG;
+typedef typename boost::graph_traits<DAG>::edge_descriptor Edge;
+typedef uint64_t Vertex;
+
+/* Determines whether there exist a path from 'a' to 'b'
+ *
+ * Complexity: O(E + V)
+ *
+ * @a               The first vertex
+ * @b               The second vertex
+ * @dag             The DAG
+ * @only_long_path  Only accept path of length greater than one
+ * @return          True if there is a path
+ */
+bool path_exist(Vertex a, Vertex b, const DAG &dag, bool only_long_path) {
+    using namespace boost;
+
+    struct path_visitor:default_bfs_visitor {
+        const Vertex dst;
+        path_visitor(Vertex b):dst(b){};
+
+        void examine_edge(Edge e, const DAG &g) const {
+            if(target(e,g) == dst)
+                throw runtime_error("");
+        }
+    };
+    struct long_visitor:default_bfs_visitor {
+        const Vertex src, dst;
+        long_visitor(Vertex a, Vertex b):src(a),dst(b){};
+
+        void examine_edge(Edge e, const DAG &g) const
+        {
+            if(source(e,g) != src and target(e,g) == dst)
+                throw runtime_error("");
+        }
+    };
+    try {
+        if(only_long_path)
+            breadth_first_search(dag, a, visitor(long_visitor(a,b)));
+        else
+            breadth_first_search(dag, a, visitor(path_visitor(b)));
+    }
+    catch (const runtime_error &e) {
+        return true;
+    }
+    return false;
+}
+
+
+DAG from_block_list(const vector<Block> &block_list) {
+    DAG graph;
+    map<bh_base*, set<Vertex> > base2vertices;
+    for (const Block &block: block_list) {
+        Vertex vertex = boost::add_vertex(&block, graph);
+
+        // Find all vertices that must connect to 'vertex'
+        // using and updating 'base2vertices'
+        set<Vertex> connecting_vertices;
+        for (bh_base *base: block.getAllBases()) {
+            set<Vertex> &vs = base2vertices[base];
+            connecting_vertices.insert(vs.begin(), vs.end());
+            vs.insert(vertex);
+        }
+
+        // Finally, let's add edges to 'vertex'
+        BOOST_REVERSE_FOREACH (Vertex v, connecting_vertices) {
+            if (vertex != v and block.depend_on(*graph[v])) {
+                boost::add_edge(v, vertex, graph);
+            }
+        }
+    }
+    return graph;
+}
+
+void pprint(const DAG &dag, const string &filename) {
+
+    //We define a graph and a kernel writer for graphviz
+    struct graph_writer
+    {
+        const DAG &graph;
+        graph_writer(const DAG &g) : graph(g) {};
+        void operator()(std::ostream& out) const
+        {
+            out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
+            out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
+        }
+    };
+    struct kernel_writer
+    {
+        const DAG &graph;
+        kernel_writer(const DAG &g) : graph(g) {};
+        void operator()(std::ostream& out, const Vertex& v) const
+        {
+            out << "[label=\"Kernel " << v;
+
+            out << ", Instructions: \\l";
+            for (const bh_instruction *instr: graph[v]->getAllInstr()) {
+                out << *instr << "\\l";
+            }
+            out << "\"]";
+        }
+    };
+
+    static int count=0;
+    stringstream ss;
+    ss << filename << "-" << count++ << ".dot";
+    ofstream file;
+    cout << ss.str() << endl;
+    file.open(ss.str());
+    boost::write_graphviz(file, dag, kernel_writer(dag));
+    file.close();
+}
+
+vector<Block> topological(DAG &dag) {
+    vector<Block> ret;
+    pprint(dag, "before");
+
+    set<Vertex> roots; // Set of root vertices
+    // Initiate 'roots'
+    BOOST_FOREACH (Vertex v, boost::vertices(dag)) {
+        if (boost::in_degree(v, dag) == 0) {
+            roots.insert(v);
+        }
+    }
+
+    while (not roots.empty()) {
+        pprint(dag, "start");
+        Vertex vertex = *roots.begin();
+        roots.erase(vertex);
+        ret.emplace_back(*dag[vertex]);
+        Block &block = ret.back();
+
+        BOOST_FOREACH (Vertex v, boost::adjacent_vertices(vertex, dag)) {
+            if (boost::in_degree(v, dag) <= 1) {
+                roots.insert(v);
+            }
+        }
+        boost::clear_vertex(vertex, dag);
+
+        vector<Vertex> merged_roots;
+        for (Vertex v: roots) {
+            const Block &b = *dag[v];
+            if (b.isInstr())
+                continue;
+            if (not data_parallel_compatible(block, b))
+                continue;
+            if (sweeps_accessed_by_block(block._sweeps, b))
+                continue;
+            assert(block.rank == b.rank);
+
+            // Check for perfect match, which is directly mergeable
+            if (block.size == b.size) {
+                block = merge(block, b);
+            } else {
+                continue;
+            }
+            pprint(dag, "merged");
+
+            // Merged succeed
+            merged_roots.push_back(v);
+        }
+
+        for (Vertex root: merged_roots) {
+            roots.erase(root);
+            BOOST_FOREACH (Vertex v, boost::adjacent_vertices(root, dag)) {
+                if (boost::in_degree(v, dag) <= 1) {
+                    roots.insert(v);
+                }
+            }
+            boost::clear_vertex(root, dag);
+        }
+    }
+    return ret;
+}
+
+} // dag
+
+vector<Block> fuser_topological(vector<Block> &block_list, const set<bh_instruction*> &news) {
+
+    dag::DAG dag = dag::from_block_list(block_list);
+
+    return dag::topological(dag);
+}
 
 } // jitk
 } // bohrium
