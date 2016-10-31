@@ -52,7 +52,7 @@ class Impl : public ComponentImplWithChild {
     // The OpenCL context and device used throughout the execution
     cl::Context context;
     cl::Device default_device;
-    // A map of allcated buffers on the device
+    // A map of allocated buffers on the device
     map<bh_base*, unique_ptr<cl::Buffer> > buffers;
     
     void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss);
@@ -559,7 +559,11 @@ void Impl::execute(bh_ir *bhir) {
 
     // Let's fuse the 'instr_list' into blocks
     vector<Block> block_list = fuser_singleton(bhir->instr_list, news);
-    block_list = fuser_serial(block_list, news);
+    if (config.defaultGet<bool>("serial_fusion", false)) {
+        block_list = fuser_serial(block_list, news);
+    } else {
+        block_list = fuser_topological(block_list, news);
+    }
 
     for(const Block &block: block_list) {
 

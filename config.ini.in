@@ -176,6 +176,8 @@ verbose = false
 prof = false #Profiling statistics
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
 compiler_flg = "${VE_UNI_COMPILER_INC}"
+serial_fusion = false # Topological fusion is default
+
 
 [cpu]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}

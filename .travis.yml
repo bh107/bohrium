@@ -21,7 +21,7 @@ env:
       # UNI stack
       - BH_STACK=uni BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
-      - BH_STACK=uni BH_UNI_TOPO=true BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      - BH_STACK=uni BH_UNI_SERIAL_FUSION=true BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
       - BH_STACK=opencl BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
