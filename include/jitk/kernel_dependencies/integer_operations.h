@@ -18,27 +18,18 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VE_UNI_KERNEL_HPP
-#define __BH_VE_UNI_KERNEL_HPP
+#ifndef __BH_JITK_KERNEL_DEPENDENCIES_INTEGER_OPERATIONS_H
+#define __BH_JITK_KERNEL_DEPENDENCIES_INTEGER_OPERATIONS_H
 
-#include <set>
-#include <vector>
-
-#include "block.hpp"
-
-namespace bohrium {
-
-class Kernel {
-public:
-    Kernel() {}
-
-    std::vector <Block> block_list;
-    bool useRandom = false;
-
-    // All freed array bases
-    std::set<bh_base*> frees;
-};
-
-} // bohrium
+#define IPOW(r,b,e) {                         \
+                    r = 1;                    \
+                    while (e)                 \
+                    {                         \
+                        if (e & 1)            \
+                            r *= b;           \
+                        e >>= 1;              \
+                        b *= b;               \
+                    }                         \
+                    }
 
 #endif

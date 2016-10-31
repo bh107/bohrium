@@ -35,8 +35,13 @@ class test_reduce_sum:
 
 class test_reduce_primitives:
     def init(self):
+        for op in ["add", "multiply"]:
+            yield (op, "np.float64")
+            yield (op, "np.complex128")
+
         for op in ["add", "multiply", "minimum", "maximum"]:
             yield (op, "np.float64")
+            yield (op, "np.bool")
 
         for op in ["bitwise_or", "bitwise_xor"]:
             yield (op, "np.uint64")

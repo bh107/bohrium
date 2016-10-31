@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VE_UNI_BLOCK_HPP
-#define __BH_VE_UNI_BLOCK_HPP
+#ifndef __BH_JITK_BLOCK_HPP
+#define __BH_JITK_BLOCK_HPP
 
 #include <set>
 #include <vector>
@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 
 namespace bohrium {
+namespace jitk {
 
 class Block {
 public:
@@ -39,6 +40,12 @@ public:
     std::set<bh_base *> _news;
     std::set<bh_base *> _frees;
     bool _reshapable = false;
+
+    // Unique id of this block
+    int _id;
+
+    // Default constructor
+    Block() { static int id_count = 0; _id = id_count++; }
 
     // Returns true if this block is an instruction block, which has a
     // empty block list and a non-NULL instruction pointer
@@ -64,9 +71,20 @@ public:
     // Pretty print this block
     std::string pprint() const;
 
+    // Return all sub-blocks (incl. nested blocks)
+    void getAllSubBlocks(std::vector<const Block *> &out) const;
+    std::vector<const Block*> getAllSubBlocks() const;
+
+    // Return all sub-blocks (excl. nested blocks)
+    std::vector<const Block*> getLocalSubBlocks() const;
+
     // Return all instructions in the block (incl. nested blocks)
     void getAllInstr(std::vector<bh_instruction*> &out) const;
     std::vector<bh_instruction*> getAllInstr() const;
+
+    // Return instructions in the block (excl. nested blocks)
+    void getLocalInstr(std::vector<bh_instruction*> &out) const;
+    std::vector<bh_instruction*> getLocalInstr() const;
 
     // Return all bases accessed by this block
     std::set<bh_base*> getAllBases() const {
@@ -97,8 +115,11 @@ public:
 
     // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const {
-        for (bh_instruction *instr: getAllInstr()) {
-            if (not bh_opcode_is_system(instr->opcode)) {
+        if (isInstr()) {
+            return bh_opcode_is_system(_instr->opcode);
+        }
+        for (const Block &b: _block_list) {
+            if (not b.isSystemOnly()) {
                 return false;
             }
         }
@@ -107,6 +128,26 @@ public:
 
     // Validation check of this block
     bool validation() const;
+
+    // Equality test based on the unique ID
+    bool operator==(const Block &block) const {
+        return this->_id == block._id;
+    }
+
+    // Determines whether this block must be executed after 'other'
+    bool depend_on(const Block &other) const {
+        const std::vector<bh_instruction*> this_instr_list = getAllInstr();
+        const std::vector<bh_instruction*> other_instr_list = other.getAllInstr();
+        for (const bh_instruction *this_instr: this_instr_list) {
+            for (const bh_instruction *other_instr: other_instr_list) {
+                if (this_instr != other_instr and
+                    bh_instr_dependency(this_instr, other_instr)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 };
 
 // Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is
@@ -128,6 +169,8 @@ std::ostream& operator<<(std::ostream& out, const Block& b);
 //Implements pprint of a vector of blocks
 std::ostream& operator<<(std::ostream& out, const std::vector<Block>& b);
 
+} // jit
 } // bohrium
+
 
 #endif

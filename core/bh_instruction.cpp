@@ -51,8 +51,26 @@ bool bh_instruction::is_contiguous() const {
     return true;
 }
 
+bool bh_instruction::all_same_shape() const {
+    const int nop = bh_noperands(opcode);
+    if (nop > 0) {
+        assert(not bh_is_constant(&operand[0]));
+        const bh_view &first = operand[0];
+        for(int o=1; o<nop; ++o) {
+            const bh_view &view = operand[o];
+            if (not bh_is_constant(&view)) {
+                if (not bh_view_same_shape(&first, &view))
+                    return false;
+            }
+        }
+    }
+    return true;
+}
+
 bool bh_instruction::reshapable() const {
-   return (bh_opcode_is_elementwise(opcode) or bh_opcode_is_system(opcode)) and is_contiguous();
+    // It is not meaningful to reshape instructions with different shaped views
+    // and for now we cannot reshape non-contiguous or sweeping instructions
+    return all_same_shape() and is_contiguous() and not bh_opcode_is_sweep(opcode);
 }
 
 int64_t bh_instruction::max_ndim() const {
@@ -103,10 +121,20 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
             throw runtime_error("Reshape: shape mismatch!");
         }
 
-        // Let's assign the new shape and strides
+        // Let's assign the new shape and stride
         view.ndim = shape.size();
         copy(shape.begin(), shape.end(), view.shape);
         bh_set_contiguous_stride(&view);
+    }
+}
+
+bh_type bh_instruction::operand_type(int operand_index) const {
+    assert(bh_noperands(opcode) > operand_index);
+    const bh_view &view = operand[operand_index];
+    if (bh_is_constant(&view)) {
+        return constant.type;
+    } else {
+        return view.base->type;
     }
 }
 

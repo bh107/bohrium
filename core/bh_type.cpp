@@ -19,6 +19,11 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bh_type.h>
+#include <climits>
+#include <cfloat>
+#include <cassert>
+#include <sstream>
+#include <limits>
 
 int bh_type_size(bh_type type)
 {
@@ -125,5 +130,114 @@ int bh_type_is_signed_integer(bh_type type)
             return true;
         default:
             return false;
+    }
+}
+
+int bh_type_is_float(bh_type type)
+{
+    switch (type) {
+        case BH_FLOAT32:
+        case BH_FLOAT64:
+        case BH_COMPLEX64:
+        case BH_COMPLEX128:
+            return true;
+        default:
+            return false;
+    }
+}
+
+int bh_type_is_complex(bh_type type)
+{
+    switch(type)
+    {
+        case BH_COMPLEX64:
+        case BH_COMPLEX128:
+            return true;
+        default:
+            return false;
+    }
+}
+
+uint64_t bh_type_limit_max_integer(bh_type type)
+{
+    switch(type)
+    {
+        case BH_BOOL:
+            return 1;
+        case BH_INT8:
+            return SCHAR_MAX;
+        case BH_INT16:
+            return SHRT_MAX;
+        case BH_INT32:
+            return INT_MAX;
+        case BH_INT64:
+            return LONG_MAX;
+        case BH_UINT8:
+            return UCHAR_MAX;
+        case BH_UINT16:
+            return USHRT_MAX;
+        case BH_UINT32:
+            return UINT_MAX;
+        case BH_UINT64:
+            return ULONG_MAX;
+        default:
+            assert(1 == 2);
+            return 0;
+    }
+}
+
+int64_t bh_type_limit_min_integer(bh_type type)
+{
+    switch(type)
+    {
+        case BH_BOOL:
+            return 1;
+        case BH_INT8:
+            return SCHAR_MIN;
+        case BH_INT16:
+            return SHRT_MIN;
+        case BH_INT32:
+            return INT_MIN;
+        case BH_INT64:
+            return LONG_MIN;
+        case BH_UINT8:
+            return 0;
+        case BH_UINT16:
+            return 0;
+        case BH_UINT32:
+            return 0;
+        case BH_UINT64:
+            return 0;
+        default:
+            assert(1 == 2);
+            return 0;
+    }
+}
+
+double bh_type_limit_max_float(bh_type type)
+{
+    switch(type)
+    {
+        case BH_FLOAT32:
+            return FLT_MAX_EXP;
+        case BH_FLOAT64:
+            return DBL_MAX_EXP;
+        default:
+            assert(1 == 2);
+            return 0;
+    }
+}
+
+double bh_type_limit_min_float(bh_type type)
+{
+    switch(type)
+    {
+        case BH_FLOAT32:
+            return FLT_MIN_EXP;
+        case BH_FLOAT64:
+            return DBL_MIN_EXP;
+        default:
+            assert(1 == 2);
+            return 0;
     }
 }

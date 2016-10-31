@@ -18,32 +18,20 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __BH_JITK_TYPE_HPP
+#define __BH_JITK_TYPE_HPP
+
 #include <stdexcept>
 
-#include "type.hpp"
+#include <bh_type.h>
 
 namespace bohrium {
+namespace jitk {
 
-const char* write_type(bh_type type) {
-    switch (type)
-    {
-        case BH_BOOL: return "bool";
-        case BH_INT8:  return "int8_t";
-        case BH_INT16: return "int16_t";
-        case BH_INT32: return "int32_t";
-        case BH_INT64: return "int64_t";
-        case BH_UINT8:  return "uint8_t";
-        case BH_UINT16: return "uint16_t";
-        case BH_UINT32: return "uint32_t";
-        case BH_UINT64: return "uint64_t";
-        case BH_FLOAT32: return "float";
-        case BH_FLOAT64: return "double";
-        case BH_COMPLEX64:  return "float complex";
-        case BH_COMPLEX128: return "double complex";
-        case BH_R123: return "bh_r123";
-        default: throw std::runtime_error("Unknown bh_type");
-    }
-}
+const char *write_type(bh_type type);
 
+
+} // jitk
 } // bohrium
 
+#endif

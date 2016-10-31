@@ -135,6 +135,7 @@ add_subdirectory(fuser/optimal)
 # #add_subdirectory(vem/cluster)
 add_subdirectory(ve/gpu)
 add_subdirectory(ve/uni)
+add_subdirectory(ve/opencl)
 add_subdirectory(extmethods/fftw)
 add_subdirectory(extmethods/visualizer)
 add_subdirectory(bridge/cpp)
@@ -145,9 +146,15 @@ add_subdirectory(bridge/cil)
 add_subdirectory(test)
 
 #
-# Thirdparty headers
+# Install thirdparty headers
 #
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
+        DESTINATION share/bohrium/include COMPONENT bohrium)
+
+#
+# Install JIT-kernels dependency headers
+#
+install(DIRECTORY include/jitk/kernel_dependencies
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
 #

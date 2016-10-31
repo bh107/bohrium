@@ -67,7 +67,16 @@ def run(args):
                     env = {"np": numpy, "bh": bohrium}
                     exec (cmd_bh, env)
                     res_bh = env['res'].copy2numpy()
-                    if not numpy.allclose(res_np, res_bh, equal_nan=True):
+                    try:
+                        similar = numpy.allclose(res_np, res_bh, equal_nan=True)
+                    except TypeError as err:
+                        # Old versions of NumPy do not have the 'equal_nan' option
+                        if "equal_nan" in err.message:
+                            similar = numpy.allclose(res_np, res_bh)
+                        else:
+                            raise # Must be another error
+
+                    if not similar:
                         print("%s  [Error] %s%s" % (FAIL, name, ENDC))
                         print("%s  [NP CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
                         print("%s  [NP RES]\n%s%s" % (OKGREEN, res_np, ENDC))

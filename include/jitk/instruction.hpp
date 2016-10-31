@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VE_UNI_INSTRUCTION_HPP
-#define __BH_VE_UNI_INSTRUCTION_HPP
+#ifndef __BH_JITK_INSTRUCTION_HPP
+#define __BH_JITK_INSTRUCTION_HPP
 
 #include <iostream>
 
@@ -28,17 +28,21 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "base_db.hpp"
 
 namespace bohrium {
+namespace jitk {
 
-// Write the source code of an instruction
-void write_instr(const BaseDB &base_ids, const bh_instruction &instr, std::stringstream &out);
+
+// Write the source code of an instruction (set 'opencl' for OpenCL specific output)
+void write_instr(const BaseDB &base_ids, const bh_instruction &instr, std::stringstream &out, bool opencl=false);
 
 // Return the axis that 'instr' reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
 int sweep_axis(const bh_instruction &instr);
 
 // Write the array subscription, e.g. A[2+i0*1+i1*10], but ignore the loop-variant of 'hidden_axis' if it isn't 'BH_MAXDIM'
-void write_array_subscription(const bh_view &view, std::stringstream &out, int hidden_axis=BH_MAXDIM,
-                              const std::pair<int, int> axis_offset=std::make_pair(BH_MAXDIM, 0));
+void write_array_subscription(const bh_view &view, std::stringstream &out, int hidden_axis = BH_MAXDIM,
+                              const std::pair<int, int> axis_offset = std::make_pair(BH_MAXDIM, 0));
 
+
+} // jitk
 } // bohrium
 
 #endif

@@ -9,6 +9,7 @@ default    = bcexp_cpu, bccon, topological, node, cpu
 cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
 gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
 uni        = bcexp_uni, bccon_uni, node, uni
+opencl     = bcexp_uni, bccon_uni, node, opencl, uni
 
 #
 # Managers
@@ -168,7 +169,14 @@ compiler_lib = "${VE_UNI_COMPILER_LIB}"
 compiler_flg = "${VE_UNI_COMPILER_FLG}"
 compiler_openmp = ${_VE_UNI_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_UNI_COMPILER_OPENMP_SIMD}
-compiler_openmp_for_simd = ${_VE_UNI_COMPILER_OPENMP_FOR_SIMD}
+
+[opencl]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}
+verbose = false
+prof = false #Profiling statistics
+# Additional options given to the opencl compiler. See documentation for clBuildProgram
+compiler_flg = "${VE_UNI_COMPILER_INC}"
+serial_fusion = false # Topological fusion is default
 
 
 [cpu]
