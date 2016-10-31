@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/graph/graphviz.hpp>
 #include <boost/foreach.hpp>
 #include <fstream>
+#include <numeric>
 
 #include <jitk/fuser.hpp>
 
