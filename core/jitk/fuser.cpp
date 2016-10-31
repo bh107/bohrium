@@ -245,22 +245,18 @@ DAG from_block_list(const vector<Block> &block_list) {
 void pprint(const DAG &dag, const string &filename) {
 
     //We define a graph and a kernel writer for graphviz
-    struct graph_writer
-    {
+    struct graph_writer {
         const DAG &graph;
         graph_writer(const DAG &g) : graph(g) {};
-        void operator()(std::ostream& out) const
-        {
+        void operator()(std::ostream& out) const {
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
         }
     };
-    struct kernel_writer
-    {
+    struct kernel_writer {
         const DAG &graph;
         kernel_writer(const DAG &g) : graph(g) {};
-        void operator()(std::ostream& out, const Vertex& v) const
-        {
+        void operator()(std::ostream& out, const Vertex& v) const {
             out << "[label=\"Kernel " << v;
 
             out << ", Instructions: \\l";
@@ -270,6 +266,13 @@ void pprint(const DAG &dag, const string &filename) {
             out << "\"]";
         }
     };
+    struct edge_writer {
+        const DAG &graph;
+        edge_writer(const DAG &g) : graph(g) {};
+        void operator()(std::ostream& out, const Edge& e) const {
+
+        }
+    };
 
     static int count=0;
     stringstream ss;
@@ -277,7 +280,7 @@ void pprint(const DAG &dag, const string &filename) {
     ofstream file;
     cout << ss.str() << endl;
     file.open(ss.str());
-    boost::write_graphviz(file, dag, kernel_writer(dag));
+    boost::write_graphviz(file, dag, kernel_writer(dag), edge_writer(dag), graph_writer(dag));
     file.close();
 }
 
