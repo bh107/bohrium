@@ -118,7 +118,6 @@ pair<Block, bool> block_merge(const Block &a, const Block &b, const set<bh_instr
     if (b.isInstr() or not data_parallel_compatible(a, b) or sweeps_accessed_by_block(a._sweeps, b)) {
         return make_pair(Block(), false);
     }
-
     // Check for perfect match, which is directly mergeable
     if (a.size == b.size) {
         return make_pair(merge(a, b), true);
@@ -282,64 +281,54 @@ void pprint(const DAG &dag, const string &filename) {
     file.close();
 }
 
-vector<Block> topological(DAG &dag) {
+vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
     vector<Block> ret;
-    pprint(dag, "before");
-
-    set<Vertex> roots; // Set of root vertices
+    vector<Vertex> roots; // Set of root vertices
     // Initiate 'roots'
     BOOST_FOREACH (Vertex v, boost::vertices(dag)) {
         if (boost::in_degree(v, dag) == 0) {
-            roots.insert(v);
+            roots.push_back(v);
         }
     }
 
-    while (not roots.empty()) {
-        pprint(dag, "start");
-        Vertex vertex = *roots.begin();
-        roots.erase(vertex);
+    while (not roots.empty()) { // Each iteration creates a new block
+        const Vertex vertex = roots.back();
+        roots.erase(roots.end()-1);
         ret.emplace_back(*dag[vertex]);
         Block &block = ret.back();
 
-        BOOST_FOREACH (Vertex v, boost::adjacent_vertices(vertex, dag)) {
+        // Add adjacent vertices and remove the block from 'dag'
+        BOOST_FOREACH (const Vertex v, boost::adjacent_vertices(vertex, dag)) {
             if (boost::in_degree(v, dag) <= 1) {
-                roots.insert(v);
+                roots.push_back(v);
             }
         }
         boost::clear_vertex(vertex, dag);
 
-        vector<Vertex> merged_roots;
-        for (Vertex v: roots) {
+        // Roots not fusible with 'block'
+        vector<Vertex> nonfusible_roots;
+        // Search for fusible blocks within the root blocks
+        while (not roots.empty()) {
+            const Vertex v = roots.back();
+            roots.erase(roots.end()-1);
             const Block &b = *dag[v];
-            if (b.isInstr())
-                continue;
-            if (not data_parallel_compatible(block, b))
-                continue;
-            if (sweeps_accessed_by_block(block._sweeps, b))
-                continue;
-            assert(block.rank == b.rank);
 
-            // Check for perfect match, which is directly mergeable
-            if (block.size == b.size) {
-                block = merge(block, b);
-            } else {
-                continue;
-            }
-            pprint(dag, "merged");
+            const pair<Block, bool> res = block_merge(block, b, news);
+            if (res.second) {
+                block = res.first;
 
-            // Merged succeed
-            merged_roots.push_back(v);
-        }
-
-        for (Vertex root: merged_roots) {
-            roots.erase(root);
-            BOOST_FOREACH (Vertex v, boost::adjacent_vertices(root, dag)) {
-                if (boost::in_degree(v, dag) <= 1) {
-                    roots.insert(v);
+                // Add adjacent vertices and remove the block 'b' from 'dag'
+                BOOST_FOREACH (const Vertex adj, boost::adjacent_vertices(v, dag)) {
+                    if (boost::in_degree(adj, dag) <= 1) {
+                        roots.push_back(adj);
+                    }
                 }
+                boost::clear_vertex(v, dag);
+            } else {
+                nonfusible_roots.push_back(v);
             }
-            boost::clear_vertex(root, dag);
         }
+        roots = nonfusible_roots;
     }
     return ret;
 }
@@ -350,7 +339,7 @@ vector<Block> fuser_topological(vector<Block> &block_list, const set<bh_instruct
 
     dag::DAG dag = dag::from_block_list(block_list);
 
-    return dag::topological(dag);
+    return dag::topological(dag, news);
 }
 
 } // jitk
