@@ -139,7 +139,7 @@ pair<Block, bool> block_merge(const Block &a, const Block &b, const set<bh_instr
     return make_pair(Block(), false);
 }
 
-vector<Block> fuser_serial(vector<Block> &block_list, const set<bh_instruction*> &news) {
+vector<Block> fuser_serial(const vector<Block> &block_list, const set<bh_instruction*> &news) {
     vector<Block> ret;
     for (auto it = block_list.begin(); it != block_list.end(); ) {
         ret.push_back(*it);
@@ -214,7 +214,7 @@ bool path_exist(Vertex a, Vertex b, const DAG &dag, bool only_long_path) {
     return false;
 }
 
-
+// Create a DAG based on the 'block_list'
 DAG from_block_list(const vector<Block> &block_list) {
     DAG graph;
     map<bh_base*, set<Vertex> > base2vertices;
@@ -240,6 +240,7 @@ DAG from_block_list(const vector<Block> &block_list) {
     return graph;
 }
 
+// Pretty print the DAG. A "-<id>.dot" is append the filename.
 void pprint(const DAG &dag, const string &filename) {
 
     //We define a graph and a kernel writer for graphviz
@@ -306,6 +307,11 @@ vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
         }
         boost::clear_vertex(vertex, dag);
 
+        // Instruction blocks should never be merged
+        if (block.isInstr()) {
+            continue;
+        }
+
         // Roots not fusible with 'block'
         vector<Vertex> nonfusible_roots;
         // Search for fusible blocks within the root blocks
@@ -336,11 +342,18 @@ vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
 
 } // dag
 
-vector<Block> fuser_topological(vector<Block> &block_list, const set<bh_instruction*> &news) {
+vector<Block> fuser_topological(const vector<Block> &block_list, const set<bh_instruction*> &news) {
 
     dag::DAG dag = dag::from_block_list(block_list);
+    vector<Block> ret = dag::topological(dag, news);
 
-    return dag::topological(dag, news);
+    // Let's fuse at the next rank level
+    for (Block &b: ret) {
+        if (not b.isInstr()) {
+            b._block_list = fuser_topological(b._block_list, news);
+        }
+    }
+    return ret;
 }
 
 } // jitk
