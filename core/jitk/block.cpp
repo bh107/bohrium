@@ -109,10 +109,7 @@ Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_
             ret._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1], news));
         } else { // No more dimensions -- let's write the instruction block
             assert(max_ndim == rank + 1);
-            Block instr_block;
-            instr_block._instr = &instr[0];
-            instr_block.rank = rank + 1; // This rank is only to make pretty printing easier
-            ret._block_list.push_back(instr_block);
+            ret._block_list.emplace_back(instr, rank + 1);
 
             // Since 'instr' execute at this 'rank' level, we can calculate news, syncs, frees, and temps.
             if (news.find(instr) != news.end()) {
