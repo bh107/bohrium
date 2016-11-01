@@ -114,9 +114,11 @@ vector<Block> fuser_singleton(vector<bh_instruction> &instr_list, const set<bh_i
 
 // Merges the two blocks 'a' and 'a' (in that order)
 pair<Block, bool> block_merge(const Block &a, const Block &b, const set<bh_instruction*> &news) {
+    assert(a.validation());
+    assert(b.validation());
 
     // First we check for data incompatibility
-    if (b.isInstr() or not data_parallel_compatible(a, b) or sweeps_accessed_by_block(a._sweeps, b)) {
+    if (a.isInstr() or b.isInstr() or not data_parallel_compatible(a, b) or sweeps_accessed_by_block(a._sweeps, b)) {
         return make_pair(Block(), false);
     }
     // Check for perfect match, which is directly mergeable
@@ -219,6 +221,7 @@ DAG from_block_list(const vector<Block> &block_list) {
     DAG graph;
     map<bh_base*, set<Vertex> > base2vertices;
     for (const Block &block: block_list) {
+        assert(block.validation());
         Vertex vertex = boost::add_vertex(&block, graph);
 
         // Find all vertices that must connect to 'vertex'
@@ -323,6 +326,7 @@ vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
             const pair<Block, bool> res = block_merge(block, b, news);
             if (res.second) {
                 block = res.first;
+                assert(block.validation());
 
                 // Add adjacent vertices and remove the block 'b' from 'dag'
                 BOOST_FOREACH (const Vertex adj, boost::adjacent_vertices(v, dag)) {
