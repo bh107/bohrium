@@ -55,6 +55,9 @@ struct bh_instruction
     // Reshape the views of the instruction to 'shape'
     void reshape(const std::vector<int64_t> &shape);
 
+    // Reshape the views of the instruction to 'shape' (no checks!)
+    void reshape_force(const std::vector<int64_t> &shape);
+
     // Returns the type of the operand at given index (support constants)
     bh_type operand_type(int operand_index) const;
 

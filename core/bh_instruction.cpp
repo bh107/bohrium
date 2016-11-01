@@ -128,6 +128,19 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
     }
 }
 
+void bh_instruction::reshape_force(const vector<int64_t> &shape) {
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        bh_view &view = operand[o];
+        if (bh_is_constant(&view))
+            continue;
+        // Let's assign the new shape and stride
+        view.ndim = shape.size();
+        copy(shape.begin(), shape.end(), view.shape);
+        bh_set_contiguous_stride(&view);
+    }
+}
+
 bh_type bh_instruction::operand_type(int operand_index) const {
     assert(bh_noperands(opcode) > operand_index);
     const bh_view &view = operand[operand_index];

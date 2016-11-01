@@ -47,6 +47,13 @@ public:
     // Default constructor
     Block() { static int id_count = 0; _id = id_count++; }
 
+    // Block Instruction Constructor
+    // Note, the rank is only to make pretty printing easier
+    Block(bh_instruction *instr, int rank) : Block() {
+        _instr = instr;
+        this->rank = rank;
+    }
+
     // Returns true if this block is an instruction block, which has a
     // empty block list and a non-NULL instruction pointer
     bool isInstr() const {
