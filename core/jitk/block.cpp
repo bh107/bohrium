@@ -319,7 +319,12 @@ bool Block::validation() const {
         }
         return true;
     }
-    for (const bh_instruction *instr: getAllInstr()) {
+    const vector<bh_instruction *> allInstr = getAllInstr();
+    if (allInstr.empty()) {
+        assert(1 == 2);
+        return false;
+    }
+    for (const bh_instruction *instr: allInstr) {
         if (bh_opcode_is_system(instr->opcode))
             continue;
         if (instr->max_ndim() <= rank) {
