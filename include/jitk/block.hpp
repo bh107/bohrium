@@ -157,51 +157,29 @@ public:
     }
 
     // Append an instruction list to this block.
-    // NB: The instructions are forced reshaped to match the instructions in the block.
+    // NB: No shape or fusibility checks!
     void append_instr_list(const std::vector<bh_instruction*> &instr_list) {
         assert(this->validation());
         assert(not this->isInstr());
 
-        if (instr_list.empty())
-            return; // No instructions to append
-
-        if (isInnermost()) {
-            assert(_block_list.back().isInstr());
-            const bh_instruction *last_instr = _block_list.back()._instr;
-            std::vector<int64_t> shape = last_instr->dominating_shape();
-            for (bh_instruction *instr: instr_list) {
-                instr->reshape_force(shape);
-                _block_list.emplace_back(instr, rank+1);
-            }
-        } else {
-            _block_list.back().append_instr_list(instr_list);
+        for (bh_instruction *instr: instr_list) {
+            _block_list.emplace_back(instr, rank+1);
         }
     }
 
     // Prepend an instruction list to this block.
-    // NB: The instructions are forced reshaped to match the instructions in the block.
+    // NB: No shape or fusibility checks!
     void prepend_instr_list(const std::vector<bh_instruction*> &instr_list) {
         assert(this->validation());
         assert(not this->isInstr());
 
-        if (instr_list.empty())
-            return; // No instructions to prepend
-
-        if (isInnermost()) {
-            assert(_block_list.back().isInstr());
-            const bh_instruction *last_instr = _block_list.back()._instr;
-            std::vector<int64_t> shape = last_instr->dominating_shape();
-            std::vector<Block> new_block_list;
-            new_block_list.reserve(instr_list.size());
-            for (bh_instruction *instr: instr_list) {
-                instr->reshape_force(shape);
-                new_block_list.emplace_back(instr, rank+1);
-            }
-            new_block_list.insert(new_block_list.end(), _block_list.begin(), _block_list.end());
-            _block_list = new_block_list;
-        } else {
-            _block_list.back().append_instr_list(instr_list);
+        std::vector<Block> new_block_list;
+        new_block_list.reserve(instr_list.size());
+        for (bh_instruction *instr: instr_list) {
+            new_block_list.emplace_back(instr, rank+1);
         }
+        new_block_list.insert(new_block_list.end(), _block_list.begin(), _block_list.end());
+        _block_list = new_block_list;
     }
 };
 

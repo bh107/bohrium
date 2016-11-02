@@ -320,6 +320,8 @@ bool Block::validation() const {
         return true;
     }
     for (const bh_instruction *instr: getAllInstr()) {
+        if (bh_opcode_is_system(instr->opcode))
+            continue;
         if (instr->max_ndim() <= rank) {
             assert(1 == 2);
             return false;
