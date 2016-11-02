@@ -304,9 +304,12 @@ void pprint(const DAG &dag, const string &filename) {
     file.close();
 }
 
-vector<Block> breadth_first(DAG &dag, const set<bh_instruction*> &news) {
+// Merges the vertices in 'dag' topologically using 'Queue' as the Vertex qeueue.
+// 'Queue' is a collection of 'Vertex' that support push(), pop(), and empty().
+template <typename Queue>
+vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
     vector<Block> ret;
-    queue<Vertex> roots; // The root vertices
+    Queue roots; // The root vertices
 
     // Initiate 'roots'
     BOOST_FOREACH (Vertex v, boost::vertices(dag)) {
@@ -316,12 +319,9 @@ vector<Block> breadth_first(DAG &dag, const set<bh_instruction*> &news) {
     }
 
     while (not roots.empty()) { // Each iteration creates a new block
-        const Vertex vertex = roots.front(); roots.pop();
+        const Vertex vertex = roots.pop();
         ret.emplace_back(*dag[vertex]);
         Block &block = ret.back();
-        pprint(dag, "start");
-        cout << block << endl;
-
 
         // Add adjacent vertices and remove the block from 'dag'
         BOOST_FOREACH (const Vertex v, boost::adjacent_vertices(vertex, dag)) {
@@ -337,17 +337,15 @@ vector<Block> breadth_first(DAG &dag, const set<bh_instruction*> &news) {
         }
 
         // Roots not fusible with 'block'
-        queue<Vertex> nonfusible_roots;
+        Queue nonfusible_roots;
         // Search for fusible blocks within the root blocks
         while (not roots.empty()) {
-            const Vertex v = roots.front(); roots.pop();
+            const Vertex v = roots.pop();
             const Block &b = *dag[v];
             const pair<Block, bool> res = block_merge(block, b, news);
             if (res.second) {
                 block = res.first;
                 assert(block.validation());
-                pprint(dag, "merge");
-                cout << block << endl;
 
                 // Add adjacent vertices and remove the block 'b' from 'dag'
                 BOOST_FOREACH (const Vertex adj, boost::adjacent_vertices(v, dag)) {
@@ -369,8 +367,25 @@ vector<Block> breadth_first(DAG &dag, const set<bh_instruction*> &news) {
 
 vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_instruction *> &news) {
 
+    // Let's define a FIFO queue, which makes dag::topological() do a breadth first search
+    class FifoQueue {
+        queue<dag::Vertex> _queue;
+    public:
+        void push(dag::Vertex v) {
+            _queue.push(v);
+        }
+        dag::Vertex pop() {
+            dag::Vertex ret = _queue.front();
+            _queue.pop();
+            return ret;
+        }
+        bool empty() {
+            return _queue.empty();
+        }
+    };
+
     dag::DAG dag = dag::from_block_list(block_list);
-    vector<Block> ret = dag::breadth_first(dag, news);
+    vector<Block> ret = dag::topological<FifoQueue>(dag, news);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
