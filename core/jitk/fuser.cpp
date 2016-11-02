@@ -304,7 +304,7 @@ void pprint(const DAG &dag, const string &filename) {
     file.close();
 }
 
-vector<Block> breath_first(DAG &dag, const set<bh_instruction*> &news) {
+vector<Block> breadth_first(DAG &dag, const set<bh_instruction*> &news) {
     vector<Block> ret;
     queue<Vertex> roots; // The root vertices
     // Initiate 'roots'
@@ -364,7 +364,7 @@ vector<Block> breath_first(DAG &dag, const set<bh_instruction*> &news) {
 vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_instruction *> &news) {
 
     dag::DAG dag = dag::from_block_list(block_list);
-    vector<Block> ret = dag::topological(dag, news);
+    vector<Block> ret = dag::breadth_first(dag, news);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
