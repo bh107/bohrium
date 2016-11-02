@@ -304,8 +304,8 @@ void pprint(const DAG &dag, const string &filename) {
     file.close();
 }
 
-// Merges the vertices in 'dag' topologically using 'Queue' as the Vertex qeueue.
-// 'Queue' is a collection of 'Vertex' that is constructoed with the DAG and supports push(), pop(), and empty()
+// Merges the vertices in 'dag' topologically using 'Queue' as the Vertex queue.
+// 'Queue' is a collection of 'Vertex' that is constructed with the DAG and supports push(), pop(), and empty()
 template <typename Queue>
 vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
     vector<Block> ret;
