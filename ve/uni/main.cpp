@@ -535,7 +535,7 @@ void Impl::execute(bh_ir *bhir) {
     if (config.defaultGet<bool>("serial_fusion", false)) {
         block_list = fuser_serial(block_list, news);
     } else {
-        block_list = fuser_topological(block_list, news);
+        block_list = fuser_breadth_first(block_list, news);
     }
     remove_empty_blocks(block_list);
 

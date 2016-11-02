@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/foreach.hpp>
 #include <fstream>
 #include <numeric>
+#include <queue>
 
 #include <jitk/fuser.hpp>
 
@@ -303,26 +304,25 @@ void pprint(const DAG &dag, const string &filename) {
     file.close();
 }
 
-vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
+vector<Block> breath_first(DAG &dag, const set<bh_instruction*> &news) {
     vector<Block> ret;
-    vector<Vertex> roots; // Set of root vertices
+    queue<Vertex> roots; // The root vertices
     // Initiate 'roots'
     BOOST_FOREACH (Vertex v, boost::vertices(dag)) {
         if (boost::in_degree(v, dag) == 0) {
-            roots.push_back(v);
+            roots.push(v);
         }
     }
 
     while (not roots.empty()) { // Each iteration creates a new block
-        const Vertex vertex = roots.back();
-        roots.erase(roots.end()-1);
+        const Vertex vertex = roots.front(); roots.pop();
         ret.emplace_back(*dag[vertex]);
         Block &block = ret.back();
 
         // Add adjacent vertices and remove the block from 'dag'
         BOOST_FOREACH (const Vertex v, boost::adjacent_vertices(vertex, dag)) {
             if (boost::in_degree(v, dag) <= 1) {
-                roots.push_back(v);
+                roots.push(v);
             }
         }
         boost::clear_vertex(vertex, dag);
@@ -333,13 +333,11 @@ vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
         }
 
         // Roots not fusible with 'block'
-        vector<Vertex> nonfusible_roots;
+        queue<Vertex> nonfusible_roots;
         // Search for fusible blocks within the root blocks
         while (not roots.empty()) {
-            const Vertex v = roots.back();
-            roots.erase(roots.end()-1);
+            const Vertex v = roots.front(); roots.pop();
             const Block &b = *dag[v];
-
             const pair<Block, bool> res = block_merge(block, b, news);
             if (res.second) {
                 block = res.first;
@@ -348,12 +346,12 @@ vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
                 // Add adjacent vertices and remove the block 'b' from 'dag'
                 BOOST_FOREACH (const Vertex adj, boost::adjacent_vertices(v, dag)) {
                     if (boost::in_degree(adj, dag) <= 1) {
-                        roots.push_back(adj);
+                        roots.push(adj);
                     }
                 }
                 boost::clear_vertex(v, dag);
             } else {
-                nonfusible_roots.push_back(v);
+                nonfusible_roots.push(v);
             }
         }
         roots = nonfusible_roots;
@@ -363,7 +361,7 @@ vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
 
 } // dag
 
-vector<Block> fuser_topological(const vector<Block> &block_list, const set<bh_instruction*> &news) {
+vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_instruction *> &news) {
 
     dag::DAG dag = dag::from_block_list(block_list);
     vector<Block> ret = dag::topological(dag, news);
@@ -371,7 +369,7 @@ vector<Block> fuser_topological(const vector<Block> &block_list, const set<bh_in
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            b._block_list = fuser_topological(b._block_list, news);
+            b._block_list = fuser_breadth_first(b._block_list, news);
         }
     }
     return ret;
