@@ -305,11 +305,11 @@ void pprint(const DAG &dag, const string &filename) {
 }
 
 // Merges the vertices in 'dag' topologically using 'Queue' as the Vertex qeueue.
-// 'Queue' is a collection of 'Vertex' that support push(), pop(), and empty().
+// 'Queue' is a collection of 'Vertex' that is constructoed with the DAG and supports push(), pop(), and empty()
 template <typename Queue>
 vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
     vector<Block> ret;
-    Queue roots; // The root vertices
+    Queue roots(dag); // The root vertices
 
     // Initiate 'roots'
     BOOST_FOREACH (Vertex v, boost::vertices(dag)) {
@@ -337,7 +337,7 @@ vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
         }
 
         // Roots not fusible with 'block'
-        Queue nonfusible_roots;
+        Queue nonfusible_roots(dag);
         // Search for fusible blocks within the root blocks
         while (not roots.empty()) {
             const Vertex v = roots.pop();
@@ -371,6 +371,7 @@ vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_
     class FifoQueue {
         queue<dag::Vertex> _queue;
     public:
+        FifoQueue(const dag::DAG &dag) {}
         void push(dag::Vertex v) {
             _queue.push(v);
         }
