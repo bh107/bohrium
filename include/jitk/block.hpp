@@ -159,30 +159,34 @@ public:
     // Append an instruction list to this block.
     // NB: Force reshape the instructions to match the last instructions within this block
     void append_instr_list(const std::vector<bh_instruction*> &instr_list) {
-        assert(this->validation());
-        assert(not this->isInstr());
+        assert(validation());
+        assert(not isInstr());
 
-        // Find the shape of last instruction
-        const std::vector<bh_instruction *> allInstr = getAllInstr();
-        assert(not allInstr.empty());
-        const std::vector<int64_t> &shape = allInstr.back()->dominating_shape();
+        // Find the shape of the last instruction within this block
+        if (not _block_list.back().isInstr()) {
+            return _block_list.back().append_instr_list(instr_list);
+        }
+        const std::vector<int64_t> &shape = _block_list.back()._instr->dominating_shape();
 
+        // Reshape and insert the instructions
         for (bh_instruction *instr: instr_list) {
             instr->reshape_force(shape);
             _block_list.emplace_back(instr, rank+1);
         }
+        assert(validation());
     }
 
     // Prepend an instruction list to this block.
     // NB: Force reshape the instructions to match the last instructions within this block
     void prepend_instr_list(const std::vector<bh_instruction*> &instr_list) {
-        assert(this->validation());
-        assert(not this->isInstr());
+        assert(validation());
+        assert(not isInstr());
 
-        // Find the shape of last instruction
-        const std::vector<bh_instruction *> allInstr = getAllInstr();
-        assert(not allInstr.empty());
-        const std::vector<int64_t> &shape = allInstr.back()->dominating_shape();
+        // Find the shape of the first instruction within this block
+        if (not _block_list.front().isInstr()) {
+            return _block_list.front().prepend_instr_list(instr_list);
+        }
+        const std::vector<int64_t> &shape = _block_list.front()._instr->dominating_shape();
 
         std::vector<Block> new_block_list;
         new_block_list.reserve(instr_list.size());
@@ -192,6 +196,7 @@ public:
         }
         new_block_list.insert(new_block_list.end(), _block_list.begin(), _block_list.end());
         _block_list = new_block_list;
+        assert(validation());
     }
 };
 

@@ -307,6 +307,7 @@ void pprint(const DAG &dag, const string &filename) {
 vector<Block> breadth_first(DAG &dag, const set<bh_instruction*> &news) {
     vector<Block> ret;
     queue<Vertex> roots; // The root vertices
+
     // Initiate 'roots'
     BOOST_FOREACH (Vertex v, boost::vertices(dag)) {
         if (boost::in_degree(v, dag) == 0) {
@@ -318,6 +319,9 @@ vector<Block> breadth_first(DAG &dag, const set<bh_instruction*> &news) {
         const Vertex vertex = roots.front(); roots.pop();
         ret.emplace_back(*dag[vertex]);
         Block &block = ret.back();
+        pprint(dag, "start");
+        cout << block << endl;
+
 
         // Add adjacent vertices and remove the block from 'dag'
         BOOST_FOREACH (const Vertex v, boost::adjacent_vertices(vertex, dag)) {
@@ -342,6 +346,8 @@ vector<Block> breadth_first(DAG &dag, const set<bh_instruction*> &news) {
             if (res.second) {
                 block = res.first;
                 assert(block.validation());
+                pprint(dag, "merge");
+                cout << block << endl;
 
                 // Add adjacent vertices and remove the block 'b' from 'dag'
                 BOOST_FOREACH (const Vertex adj, boost::adjacent_vertices(v, dag)) {

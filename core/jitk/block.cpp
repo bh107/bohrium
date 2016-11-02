@@ -137,6 +137,7 @@ Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_
 }
 
 Block *Block::findInstrBlock(const bh_instruction *instr) {
+    assert(validation());
     if (isInstr()) {
         if (_instr != NULL and _instr == instr)
             return this;
@@ -151,6 +152,7 @@ Block *Block::findInstrBlock(const bh_instruction *instr) {
 }
 
 string Block::pprint() const {
+    assert(validation());
     stringstream ss;
     if (isInstr()) {
         if (_instr != NULL) {
@@ -318,6 +320,10 @@ bool Block::validation() const {
             return false;
         }
         return true;
+    }
+    if (size < 0 or rank < 0) {
+        assert(1 == 2);
+        return false;
     }
     const vector<bh_instruction *> allInstr = getAllInstr();
     if (allInstr.empty()) {
