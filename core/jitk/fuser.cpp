@@ -358,7 +358,7 @@ vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
                 nonfusible_roots.push(v);
             }
         }
-        roots = nonfusible_roots;
+        roots = std::move(nonfusible_roots);
     }
     return ret;
 }
@@ -376,6 +376,7 @@ vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_
             _queue.push(v);
         }
         dag::Vertex pop() {
+            assert(not _queue.empty());
             dag::Vertex ret = _queue.front();
             _queue.pop();
             return ret;
@@ -392,6 +393,51 @@ vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_
     for (Block &b: ret) {
         if (not b.isInstr()) {
             b._block_list = fuser_breadth_first(b._block_list, news);
+        }
+    }
+    return ret;
+}
+
+vector<Block> fuser_reshapable_first(const vector<Block> &block_list, const set<bh_instruction *> &news) {
+
+    // Let's define a queue that priorities fusion of reshapable blocks
+    class ReshapableQueue {
+        std::reference_wrapper<const dag::DAG> _dag; // Using a wrapper to get a default move constructor
+        set<dag::Vertex> _queue;
+    public:
+        // Regular Constructor
+        ReshapableQueue(const dag::DAG &dag) : _dag(dag) {}
+
+        // Push(), pop(), and empty()
+        void push(dag::Vertex v) {
+            _queue.insert(v);
+        }
+        dag::Vertex pop() {
+            assert(not _queue.empty());
+            dag::Vertex ret = boost::graph_traits<dag::DAG>::null_vertex();
+            for (dag::Vertex v: _queue) {
+                if (_dag.get()[v]->_reshapable) {
+                    ret = v;
+                }
+            }
+            if (ret == boost::graph_traits<dag::DAG>::null_vertex()) {
+                ret = *_queue.begin();
+            }
+            _queue.erase(ret);
+            return ret;
+        }
+        bool empty() {
+            return _queue.empty();
+        }
+    };
+
+    dag::DAG dag = dag::from_block_list(block_list);
+    vector<Block> ret = dag::topological<ReshapableQueue>(dag, news);
+
+    // Let's fuse at the next rank level
+    for (Block &b: ret) {
+        if (not b.isInstr()) {
+            b._block_list = fuser_reshapable_first(b._block_list, news);
         }
     }
     return ret;
