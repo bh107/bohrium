@@ -48,6 +48,7 @@ class Impl : public ComponentImplWithChild {
     // Some statistics
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
+    uint64_t max_memory_usage=0;
 
     // The OpenCL context and device used throughout the execution
     cl::Context context;
@@ -109,7 +110,8 @@ void spaces(stringstream &out, int num) {
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
         cout << "[OPENCL] Profiling: " << endl;
-        cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
+        cout << "\tArray contractions:   " << num_temp_arrays << "/" << num_base_arrays << endl;
+        cout << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB" << endl;
     }
 }
 
@@ -695,6 +697,15 @@ void Impl::execute(bh_ir *bhir) {
                 }
             }
             queue.finish();
+
+            if (config.defaultGet<bool>("prof", false)) {
+                // Let's check the current memory usage on the device
+                uint64_t sum = 0;
+                for (const auto &b: buffers) {
+                    sum += bh_base_size(b.first);
+                }
+                max_memory_usage = sum > max_memory_usage?sum:max_memory_usage;
+            }
 
             // Let's execute the OpenCL kernel
             cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
