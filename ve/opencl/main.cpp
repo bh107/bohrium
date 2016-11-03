@@ -690,7 +690,7 @@ void Impl::execute(bh_ir *bhir) {
                         if (verbose) {
                             cout << "Copy to device: " << *base << endl;
                         }
-                        queue.enqueueWriteBuffer(*b, CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
+                        queue.enqueueWriteBuffer(*b, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
                     }
                 }
             }
@@ -715,7 +715,7 @@ void Impl::execute(bh_ir *bhir) {
                 if (verbose) {
                     cout << "Copy to host: " << *base << endl;
                 }
-                queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
+                queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
                 // When syncing we assume that the host writes to the data and invalidate the device data thus
                 // we have to remove its data buffer
                 buffers.erase(base);
