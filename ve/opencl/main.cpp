@@ -114,180 +114,6 @@ Impl::~Impl() {
     }
 }
 
-// Return the OpenMP reduction symbol
-const char* openmp_reduce_symbol(bh_opcode opcode) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-            return "+";
-        case BH_MULTIPLY_REDUCE:
-            return "*";
-        case BH_BITWISE_AND_REDUCE:
-            return "&";
-        case BH_BITWISE_OR_REDUCE:
-            return "|";
-        case BH_BITWISE_XOR_REDUCE:
-            return "^";
-        case BH_MAXIMUM_REDUCE:
-            return "max";
-        case BH_MINIMUM_REDUCE:
-            return "min";
-        default:
-            return NULL;
-    }
-}
-
-// Print the maximum value of 'dtype'
-void dtype_max(bh_type dtype, stringstream &out)
-{
-    if (bh_type_is_integer(dtype)) {
-        out << bh_type_limit_max_integer(dtype);
-        if (not bh_type_is_signed_integer(dtype)) {
-            out << "u";
-        }
-    } else {
-        out.precision(std::numeric_limits<double>::max_digits10);
-        out << bh_type_limit_max_float(dtype);
-    }
-}
-
-// Print the minimum value of 'dtype'
-void dtype_min(bh_type dtype, stringstream &out)
-{
-    if (bh_type_is_integer(dtype)) {
-        out << bh_type_limit_min_integer(dtype);
-    } else {
-        out.precision(std::numeric_limits<double>::max_digits10);
-        out << bh_type_limit_min_float(dtype);
-    }
-}
-
-// Return the OpenMP reduction identity/neutral value
-void openmp_reduce_identity(bh_opcode opcode, bh_type dtype, stringstream &out) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-            out << "0";
-            break;
-        case BH_MULTIPLY_REDUCE:
-            out << "1";
-            break;
-        case BH_BITWISE_AND_REDUCE:
-            out << "~0";
-            break;
-        case BH_MAXIMUM_REDUCE:
-            dtype_min(dtype, out);
-            break;
-        case BH_MINIMUM_REDUCE:
-            dtype_max(dtype, out);
-            break;
-        default:
-            cout << "openmp_reduce_identity: unsupported operation: " << bh_opcode_text(opcode) << endl;
-            throw runtime_error("openmp_reduce_identity: unsupported operation");
-    }
-}
-
-
-// Is 'opcode' compatible with OpenMP reductions such as reduction(+:var)
-bool openmp_reduce_compatible(bh_opcode opcode) {
-    return openmp_reduce_symbol(opcode) != NULL;
-}
-
-// Is the 'block' compatible with OpenMP
-bool openmp_compatible(const Block &block) {
-    // For now, all sweeps must be reductions
-    for (const bh_instruction *instr: block._sweeps) {
-        if (not bh_opcode_is_reduction(instr->opcode)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// Is the 'block' compatible with OpenMP SIMD
-bool simd_compatible(const Block &block, const BaseDB &base_ids) {
-
-    // Check for non-compatible reductions
-    for (const bh_instruction *instr: block._sweeps) {
-        if (not openmp_reduce_compatible(instr->opcode))
-            return false;
-    }
-
-    // An OpenMP SIMD loop does not support ANY OpenMP pragmas
-    for (bh_base* b: block.getAllBases()) {
-        if (base_ids.isOpenmpAtomic(b) or base_ids.isOpenmpCritical(b))
-            return false;
-    }
-    return true;
-}
-
-// Does 'opcode' support the OpenMP Atomic guard?
-bool openmp_atomic_compatible(bh_opcode opcode) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-        case BH_MULTIPLY_REDUCE:
-        case BH_BITWISE_AND_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-            return true;
-        default:
-            return false;
-    }
-}
-
-// Writing the OpenMP header, which include "parallel for" and "simd"
-void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParser &config, stringstream &out) {
-    if (not config.defaultGet<bool>("compiler_openmp", false)) {
-        return;
-    }
-    bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
-
-    // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
-    vector<const bh_instruction*> openmp_reductions;
-
-    stringstream ss;
-    // "OpenMP for" goes to the outermost loop
-    if (block.rank == 0 and openmp_compatible(block)) {
-        ss << " parallel for";
-        // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
-        for (const bh_instruction *instr: block._sweeps) {
-            assert(bh_noperands(instr->opcode) == 3);
-            bh_base *base = instr->operand[0].base;
-            if (openmp_reduce_compatible(instr->opcode) and (base_ids.isScalarReplaced(base) or base_ids.isTmp(base))) {
-                openmp_reductions.push_back(instr);
-            } else if (openmp_atomic_compatible(instr->opcode)) {
-                base_ids.insertOpenmpAtomic(instr->operand[0].base);
-            } else {
-                base_ids.insertOpenmpCritical(instr->operand[0].base);
-            }
-        }
-    }
-
-    // "OpenMP SIMD" goes to the innermost loop (which might also be the outermost loop)
-    if (enable_simd and block.isInnermost() and simd_compatible(block, base_ids)) {
-        ss << " simd";
-        if (block.rank > 0) { //NB: avoid multiple reduction declarations
-            for (const bh_instruction *instr: block._sweeps) {
-                openmp_reductions.push_back(instr);
-            }
-        }
-    }
-
-    //Let's write the OpenMP reductions
-    for (const bh_instruction* instr: openmp_reductions) {
-        assert(bh_noperands(instr->opcode) == 3);
-        bh_base *base = instr->operand[0].base;
-        ss << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
-        ss << (base_ids.isScalarReplaced(base)?"s":"t");
-        ss << base_ids[base] << ")";
-    }
-    const string ss_str = ss.str();
-    if(not ss_str.empty()) {
-        out << "#pragma omp" << ss_str << endl;
-        spaces(out, 4 + block.rank*4);
-    }
-}
-
 // Does 'instr' reduce over the innermost axis?
 // Notice, that such a reduction computes each output element completely before moving
 // to the next element.
@@ -325,18 +151,16 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         }
     }
 
-    // We might not have to loop "peel" if only OpenMP supported reductions are used
+    // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
     bool need_to_peel = false;
-    if (config.defaultGet<bool>("compiler_openmp", false)) {
-        for (const bh_instruction *instr: block._sweeps) {
+    {
+       for (const bh_instruction *instr: block._sweeps) {
             bh_base *b = instr->operand[0].base;
-            if (not (openmp_reduce_compatible(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
+            if (not (has_reduce_identity(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
                 need_to_peel = true;
                 break;
             }
         }
-    } else {
-        need_to_peel = true;
     }
 
     // When not peeling, we need a neutral initial reduction value
@@ -348,8 +172,8 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
             else
                 out << "s";
             out << base_ids[base] << " = ";
-            openmp_reduce_identity(instr->opcode, base->type, out);
-            out << ";" << endl;
+            write_reduce_identity(instr->opcode, base->type, out);
+            out << "; // Neutral initial reduction value" << endl;
             spaces(out, 4 + block.rank * 4);
         }
     }
@@ -401,17 +225,6 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         spaces(out, 4 + block.rank*4);
         out << "}" << endl;
         spaces(out, 4 + block.rank*4);
-    }
-
-    // Let's write the OpenMP loop header
-    {
-        int64_t for_loop_size = block.size;
-        if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, its size is one less
-            --for_loop_size;
-        // No need to parallel one-sized loops
-        if (for_loop_size > 1) {
-            write_openmp_header(block, base_ids, config, out);
-        }
     }
 
     // Write the for-loop header

@@ -41,6 +41,11 @@ int sweep_axis(const bh_instruction &instr);
 void write_array_subscription(const bh_view &view, std::stringstream &out, int hidden_axis = BH_MAXDIM,
                               const std::pair<int, int> axis_offset = std::make_pair(BH_MAXDIM, 0));
 
+// Return true when 'opcode' has a neutral initial reduction value
+bool has_reduce_identity(bh_opcode opcode);
+
+// Write the neutral value of a reduction
+void write_reduce_identity(bh_opcode opcode, bh_type dtype, std::stringstream &out);
 
 } // jitk
 } // bohrium
