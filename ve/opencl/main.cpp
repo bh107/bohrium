@@ -134,9 +134,6 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         return;
     }
 
-    // All local temporary arrays needs an variable declaration
-    const set<bh_base*> local_tmps = block.getLocalTemps();
-
     // Let's scalar replace reduction outputs that reduces over the innermost axis
     vector<bh_view> scalar_replacements;
     for (const bh_instruction *instr: block._sweeps) {
@@ -177,6 +174,9 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
             spaces(out, 4 + block.rank * 4);
         }
     }
+
+    // All local temporary arrays needs an variable declaration
+    const set<bh_base*> local_tmps = block.getLocalTemps();
 
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
