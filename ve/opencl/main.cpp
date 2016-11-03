@@ -31,7 +31,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/type.hpp>
 #include <jitk/fuser.hpp>
 
-#include "store.hpp"
 #include "opencl_type.hpp"
 #include "cl.hpp"
 
