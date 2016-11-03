@@ -154,7 +154,7 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
     bool need_to_peel = false;
     {
-       for (const bh_instruction *instr: block._sweeps) {
+        for (const bh_instruction *instr: block._sweeps) {
             bh_base *b = instr->operand[0].base;
             if (not (has_reduce_identity(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
                 need_to_peel = true;
@@ -256,15 +256,6 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     for (const Block &b: block._block_list) {
         if (b.isInstr()) { // Finally, let's write the instruction
             if (b._instr != NULL) {
-                if (bh_noperands(b._instr->opcode) > 0 and not bh_opcode_is_system(b._instr->opcode)) {
-                    if (base_ids.isOpenmpAtomic(b._instr->operand[0].base)) {
-                        spaces(out, 4 + b.rank*4);
-                        out << "#pragma omp atomic" << endl;
-                    } else if (base_ids.isOpenmpCritical(b._instr->operand[0].base)) {
-                        spaces(out, 4 + b.rank*4);
-                        out << "#pragma omp critical" << endl;
-                    }
-                }
                 spaces(out, 4 + b.rank*4);
                 write_instr(base_ids, *b._instr, out, true);
             }
