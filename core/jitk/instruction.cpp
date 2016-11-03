@@ -619,13 +619,18 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
 }
 
 bool has_reduce_identity(bh_opcode opcode) {
-    return BH_ADD_REDUCE or \
-           BH_BITWISE_OR_REDUCE or \
-           BH_BITWISE_XOR_REDUCE or \
-           BH_MULTIPLY_REDUCE or \
-           BH_BITWISE_AND_REDUCE or \
-           BH_MAXIMUM_REDUCE or \
-           BH_MINIMUM_REDUCE;
+    switch (opcode) {
+        case BH_ADD_REDUCE:
+        case BH_MULTIPLY_REDUCE:
+        case BH_BITWISE_OR_REDUCE:
+        case BH_BITWISE_XOR_REDUCE:
+        case BH_BITWISE_AND_REDUCE:
+        case BH_MINIMUM_REDUCE:
+        case BH_MAXIMUM_REDUCE:
+            return true;
+        default:
+            return false;
+    }
 }
 
 void write_reduce_identity(bh_opcode opcode, bh_type dtype, stringstream &out) {
