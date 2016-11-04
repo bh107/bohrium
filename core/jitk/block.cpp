@@ -395,41 +395,6 @@ void Block::append_instr_list(const vector<bh_instruction*> &instr_list) {
     assert(validation());
 }
 
-void Block::prepend_instr_list(const vector<bh_instruction*> &instr_list) {
-    assert(validation());
-    assert(not isInstr());
-
-    // Find the shape of the first instruction within this block
-    if (not _block_list.front().isInstr()) {
-        return _block_list.front().prepend_instr_list(instr_list);
-    }
-    const std::vector<int64_t> &shape = _block_list.front()._instr->dominating_shape();
-
-    std::vector<Block> new_block_list;
-    new_block_list.reserve(instr_list.size());
-    for (bh_instruction *instr: instr_list) {
-        instr->reshape_force(shape);
-        new_block_list.emplace_back(instr, rank+1);
-    }
-    new_block_list.insert(new_block_list.end(), _block_list.begin(), _block_list.end());
-    _block_list = new_block_list;
-
-    // Let's update the '_free' set
-    const vector<bh_instruction *> local_instr = getLocalInstr();
-    set<bh_base *> syncs;
-    for (bh_instruction *instr: instr_list) {
-        if (instr->opcode == BH_SYNC) {
-            syncs.insert(instr->operand[0].base);
-        } else if (instr->opcode == BH_FREE) {
-            if (syncs.find(instr->operand[0].base) == syncs.end()) {
-                // If the array is free'ed and not sync'ed, it can be destroyed
-                _frees.insert(instr->operand[0].base);
-            }
-        }
-    }
-    assert(validation());
-}
-
 Block merge(const Block &a, const Block &b, bool based_on_block_b) {
     assert(not a.isInstr());
     assert(not b.isInstr());

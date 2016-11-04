@@ -159,10 +159,7 @@ public:
     // Append an instruction list to this block.
     // NB: Force reshape the instructions to match the last instructions within this block
     void append_instr_list(const std::vector<bh_instruction*> &instr_list);
-
-    // Prepend an instruction list to this block.
-    // NB: Force reshape the instructions to match the last instructions within this block
-    void prepend_instr_list(const std::vector<bh_instruction*> &instr_list);
+    
 };
 
 // Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is

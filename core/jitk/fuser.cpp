@@ -128,18 +128,10 @@ pair<Block, bool> block_merge(const Block &a, const Block &b, const set<bh_instr
     }
 
     // System-only blocks are very flexible because they array sizes does not have to match when reshaping
-    // thus we can simply prepend/append system instructions without further checks.
+    // thus we can simply append system instructions without further checks.
     if (b.isSystemOnly()) {
         Block block(a);
-        assert(block.validation());
         block.append_instr_list(b.getAllInstr());
-        assert(block.validation());
-        return make_pair(block, true);
-    } else if (a.isSystemOnly()){
-        Block block(b);
-        assert(block.validation());
-        block.prepend_instr_list(a.getAllInstr());
-        assert(block.validation());
         return make_pair(block, true);
     }
 
