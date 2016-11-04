@@ -472,12 +472,15 @@ set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) {
 }
 
 void Impl::execute(bh_ir *bhir) {
+    
+    // Let's start by extracting a clean list of instructions from the 'bhir'
+    vector<bh_instruction*> instr_list = remove_non_computed_system_instr(bhir->instr_list);
 
     // Get the set of initiating instructions
     const set<bh_instruction*> news = find_initiating_instr(bhir->instr_list);
 
     // Let's fuse the 'instr_list' into blocks
-    vector<Block> block_list = fuser_singleton(bhir->instr_list, news);
+    vector<Block> block_list = fuser_singleton(instr_list, news);
     if (config.defaultGet<bool>("serial_fusion", false)) {
         block_list = fuser_serial(block_list, news);
     } else {

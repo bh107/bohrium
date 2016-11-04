@@ -56,7 +56,7 @@ class Impl : public ComponentImplWithChild {
     map<bh_base*, unique_ptr<cl::Buffer> > buffers;
     
     void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss);
-    set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) ;
+    set<bh_instruction*> find_initiating_instr(vector<bh_instruction*> &instr_list);
 
   public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level) {
@@ -319,19 +319,19 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
 }
 
 // Returns the instructions that initiate base arrays in 'instr_list'
-set<bh_instruction*> Impl::find_initiating_instr(vector<bh_instruction> &instr_list) {
+set<bh_instruction*> Impl::find_initiating_instr(vector<bh_instruction*> &instr_list) {
     set<bh_base*> initiated; // Arrays initiated in 'instr_list'
     set<bh_instruction*> ret;
-    for(bh_instruction &instr: instr_list) {
-        int nop = bh_noperands(instr.opcode);
+    for(bh_instruction *instr: instr_list) {
+        int nop = bh_noperands(instr->opcode);
         for (bh_intp o = 0; o < nop; ++o) {
-            const bh_view &v = instr.operand[o];
+            const bh_view &v = instr->operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);
                 if (v.base->data == NULL and initiated.find(v.base) == initiated.end() and buffers.find(v.base) == buffers.end()) {
                     if (o == 0) { // It is only the output that is initiated
                         initiated.insert(v.base);
-                        ret.insert(&instr); // Add the instruction that initiate 'v.base'
+                        ret.insert(instr); // Add the instruction that initiate 'v.base'
                     }
                 }
             }
@@ -360,11 +360,39 @@ void Impl::execute(bh_ir *bhir) {
 
     cl::CommandQueue queue(context, default_device);
 
+    // Let's start by cleanup the instructions from the 'bhir'
+    vector<bh_instruction*> instr_list;
+    {
+        set<bh_base*> syncs;
+        set<bh_base*> frees;
+        instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
+
+        // Let's copy sync'ed arrays back to the host
+        for(bh_base *base: syncs) {
+            if (buffers.find(base) != buffers.end()) {
+                bh_data_malloc(base);
+                if (verbose) {
+                    cout << "Copy to host: " << *base << endl;
+                }
+                queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                // When syncing we assume that the host writes to the data and invalidate the device data thus
+                // we have to remove its data buffer
+                buffers.erase(base);
+            }
+        }
+        queue.finish();
+
+        // Let's free device buffers
+        for(bh_base *base: frees) {
+            buffers.erase(base);
+        }
+    }
+
     // Get the set of initiating instructions
-    const set<bh_instruction*> news = find_initiating_instr(bhir->instr_list);
+    const set<bh_instruction*> news = find_initiating_instr(instr_list);
 
     // Let's fuse the 'instr_list' into blocks
-    vector<Block> block_list = fuser_singleton(bhir->instr_list, news);
+    vector<Block> block_list = fuser_singleton(instr_list, news);
     if (config.defaultGet<bool>("serial_fusion", false)) {
         block_list = fuser_serial(block_list, news);
     } else {
@@ -449,11 +477,11 @@ void Impl::execute(bh_ir *bhir) {
             }
 
             // Let's send the kernel instructions to our child
-            vector<bh_instruction> instr_list;
+            vector<bh_instruction> child_instr_list;
             for (const bh_instruction* instr: kernel.block.getAllInstr()) {
-                instr_list.push_back(*instr);
+                child_instr_list.push_back(*instr);
             }
-            bh_ir tmp_bhir(instr_list.size(), &instr_list[0]);
+            bh_ir tmp_bhir(child_instr_list.size(), &child_instr_list[0]);
             child.execute(&tmp_bhir);
             continue;
         }
