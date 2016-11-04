@@ -80,7 +80,9 @@ public:
 
     // Return all sub-blocks (incl. nested blocks)
     void getAllSubBlocks(std::vector<const Block *> &out) const;
+    void getAllSubBlocks(std::vector<Block *> &out);
     std::vector<const Block*> getAllSubBlocks() const;
+    std::vector<Block*> getAllSubBlocks();
 
     // Return all sub-blocks (excl. nested blocks)
     std::vector<const Block*> getLocalSubBlocks() const;

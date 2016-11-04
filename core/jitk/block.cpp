@@ -212,8 +212,21 @@ void Block::getAllSubBlocks(std::vector<const Block *> &out) const {
         }
     }
 }
+void Block::getAllSubBlocks(std::vector<Block *> &out) {
+    for (Block &b : _block_list) {
+        if (not b.isInstr()) {
+            out.push_back(&b);
+            b.getAllSubBlocks(out);
+        }
+    }
+}
 vector<const Block *> Block::getAllSubBlocks() const {
     vector<const Block *> ret;
+    getAllSubBlocks(ret);
+    return ret;
+}
+vector<Block *> Block::getAllSubBlocks() {
+    vector<Block *> ret;
     getAllSubBlocks(ret);
     return ret;
 }
