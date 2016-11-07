@@ -373,7 +373,7 @@ bool Block::validation() const {
 pair<Block*, int64_t> Block::findLastAccessBy(const bh_base *base) {
     assert(validation());
     assert(not isInstr());
-    for (uint64_t i=_block_list.size()-1; i >= 0; --i) {
+    for (int64_t i=_block_list.size()-1; i >= 0; --i) {
         if (_block_list[i].isInstr()) {
             if (base == NULL) { // Searching for any access
                 return make_pair(this, i);
