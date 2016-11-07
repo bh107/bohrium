@@ -407,8 +407,7 @@ void Block::insert_system_after(bh_instruction *instr, const bh_base *base) {
         assert(block != NULL);
     }
 
-    const std::vector<int64_t> &shape = block->_block_list[index]._instr->dominating_shape();
-    instr->reshape_force(shape);
+    instr->reshape_force(block->_block_list[index]._instr->dominating_shape());
     block->_block_list.insert(block->_block_list.begin()+index+1, Block(instr, block->rank+1));
 
     // Let's update the '_free' set
