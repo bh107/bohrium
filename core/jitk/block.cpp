@@ -409,7 +409,7 @@ void Block::insert_system_after(bh_instruction *instr, const bh_base *base) {
 
     const std::vector<int64_t> &shape = block->_block_list[index]._instr->dominating_shape();
     instr->reshape_force(shape);
-    block->_block_list.insert(block->_block_list.begin()+index, Block(instr, block->rank+2));
+    block->_block_list.insert(block->_block_list.begin()+index+1, Block(instr, block->rank+1));
 
     // Let's update the '_free' set
     if (instr->opcode == BH_FREE) {
