@@ -96,7 +96,6 @@ Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_
 
     // Let's build the nested block from the 'rank' level to the instruction block
     Block ret;
-    set<bh_base *> syncs; // Set of all sync'ed bases
     for (bh_instruction *instr: instr_list) {
         const int64_t max_ndim = instr->max_ndim();
         assert(max_ndim > rank);
@@ -111,18 +110,13 @@ Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_
             assert(max_ndim == rank + 1);
             ret._block_list.emplace_back(instr, rank + 1);
 
-            // Since 'instr' execute at this 'rank' level, we can calculate news, syncs, frees, and temps.
+            // Since 'instr' execute at this 'rank' level, we can calculate news, frees, and temps.
             if (news.find(instr) != news.end()) {
                 if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
                     ret._news.insert(instr->operand[0].base);
             }
-            if (instr->opcode == BH_SYNC) {
-                syncs.insert(instr->operand[0].base);
-            } else if (instr->opcode == BH_FREE) {
-                if (syncs.find(instr->operand[0].base) == syncs.end()) {
-                    // If the array is free'ed and not sync'ed, it can be destroyed
-                    ret._frees.insert(instr->operand[0].base);
-                }
+            if (instr->opcode == BH_FREE) {
+                ret._frees.insert(instr->operand[0].base);
             }
         }
         if (sweep_axis(*instr) == rank) {
@@ -394,15 +388,9 @@ void Block::append_instr_list(const vector<bh_instruction*> &instr_list) {
 
     // Let's update the '_free' set
     const vector<bh_instruction *> local_instr = getLocalInstr();
-    set<bh_base *> syncs;
     for (bh_instruction *instr: instr_list) {
-        if (instr->opcode == BH_SYNC) {
-            syncs.insert(instr->operand[0].base);
-        } else if (instr->opcode == BH_FREE) {
-            if (syncs.find(instr->operand[0].base) == syncs.end()) {
-                // If the array is free'ed and not sync'ed, it can be destroyed
-                _frees.insert(instr->operand[0].base);
-            }
+        if (instr->opcode == BH_FREE) {
+            _frees.insert(instr->operand[0].base);
         }
     }
     assert(validation());
