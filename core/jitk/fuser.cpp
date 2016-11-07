@@ -131,7 +131,11 @@ pair<Block, bool> block_merge(const Block &a, const Block &b, const set<bh_instr
     // thus we can simply append system instructions without further checks.
     if (b.isSystemOnly()) {
         Block block(a);
-        block.append_instr_list(b.getAllInstr());
+        for (bh_instruction *instr: b.getAllInstr()) {
+            if (bh_noperands(instr->opcode) > 0) {
+                block.insert_system_after(instr, instr->operand[0].base);
+            }
+        }
         return make_pair(block, true);
     }
 

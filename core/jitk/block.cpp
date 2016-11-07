@@ -370,28 +370,50 @@ bool Block::validation() const {
     return true;
 }
 
-void Block::append_instr_list(const vector<bh_instruction*> &instr_list) {
+pair<Block*, int64_t> Block::findLastAccessBy(const bh_base *base) {
+    assert(validation());
+    assert(not isInstr());
+    for (uint64_t i=_block_list.size()-1; i >= 0; --i) {
+        if (_block_list[i].isInstr()) {
+            if (base == NULL) { // Searching for any access
+                return make_pair(this, i);
+            } else {
+                const set<bh_base*> bases = _block_list[i]._instr->get_bases();
+                if (bases.find(const_cast<bh_base*>(base)) != bases.end()) {
+                    return make_pair(this, i);
+                }
+            }
+        } else {
+            // Check if the sub block accesses 'base'
+            pair<Block*, int64_t> block = _block_list[i].findLastAccessBy(base);
+            if (block.first != NULL) {
+                return block; // We found the block and instruction that accesses 'base'
+            }
+        }
+    }
+    return make_pair((Block *)NULL, -1); // Not found
+}
+
+void Block::insert_system_after(bh_instruction *instr, const bh_base *base) {
     assert(validation());
     assert(not isInstr());
 
-    // Find the shape of the last instruction within this block
-    if (not _block_list.back().isInstr()) {
-        return _block_list.back().append_instr_list(instr_list);
+    Block *block;
+    int64_t index;
+    tie(block, index) = findLastAccessBy(base);
+    // If no instruction accesses 'base' we insert it after the last instruction
+    if (block == NULL) {
+        tie(block, index) = findLastAccessBy(NULL); //NB: findLastAccessBy(NULL) will always find an instruction
+        assert(block != NULL);
     }
 
-    // Reshape and insert the instructions
-    const std::vector<int64_t> &shape = _block_list.back()._instr->dominating_shape();
-    for (bh_instruction *instr: instr_list) {
-        instr->reshape_force(shape);
-        _block_list.emplace_back(instr, rank+1);
-    }
+    const std::vector<int64_t> &shape = block->_block_list[index]._instr->dominating_shape();
+    instr->reshape_force(shape);
+    block->_block_list.insert(block->_block_list.begin()+index, Block(instr, block->rank+2));
 
     // Let's update the '_free' set
-    const vector<bh_instruction *> local_instr = getLocalInstr();
-    for (bh_instruction *instr: instr_list) {
-        if (instr->opcode == BH_FREE) {
-            _frees.insert(instr->operand[0].base);
-        }
+    if (instr->opcode == BH_FREE) {
+        block->_frees.insert(instr->operand[0].base);
     }
     assert(validation());
 }

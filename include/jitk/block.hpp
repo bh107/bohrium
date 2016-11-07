@@ -157,11 +157,16 @@ public:
         }
         return false;
     }
-
-    // Append an instruction list to this block.
-    // NB: Force reshape the instructions to match the last instructions within this block
-    void append_instr_list(const std::vector<bh_instruction*> &instr_list);
     
+    // Finds the block and instruction that accesses 'base' last. If 'base' is NULL, any data access
+    // is accepted thus the last instruction is returned.
+    // Returns the block and the index of the instruction (or NULL and -1 if not accessed)
+    std::pair<Block*, int64_t> findLastAccessBy(const bh_base *base);
+
+    // Insert the system instruction 'instr' after the instruction that accesses 'base' last.
+    // NB: Force reshape the instruction to match the instructions accesses 'base' last.
+    void insert_system_after(bh_instruction *instr, const bh_base *base);
+
 };
 
 // Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is
