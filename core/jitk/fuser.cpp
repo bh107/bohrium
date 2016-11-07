@@ -257,6 +257,19 @@ DAG from_block_list(const vector<Block> &block_list) {
     return graph;
 }
 
+uint64_t weight(const Block &a, const Block &b) {
+    const set<bh_base *> news = a.getAllNews();
+    const set<bh_base *> frees = b.getAllFrees();
+    vector<bh_base *> new_temps;
+    set_intersection(news.begin(), news.end(), frees.begin(), frees.end(), back_inserter(new_temps));
+
+    uint64_t totalsize = 0;
+    for (const bh_base *base: new_temps) {
+        totalsize += bh_base_size(base);
+    }
+    return totalsize;
+}
+
 // Pretty print the DAG. A "-<id>.dot" is append the filename.
 void pprint(const DAG &dag, const string &filename) {
 
@@ -286,7 +299,11 @@ void pprint(const DAG &dag, const string &filename) {
         const DAG &graph;
         edge_writer(const DAG &g) : graph(g) {};
         void operator()(std::ostream& out, const Edge& e) const {
-
+            Vertex src = source(e, graph);
+            Vertex dst = target(e, graph);
+            out << "[label=\" ";
+            out << weight(*graph[src], *graph[dst]) << " bytes\"";
+            out << "]";
         }
     };
 
