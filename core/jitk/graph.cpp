@@ -167,7 +167,7 @@ void pprint(const DAG &dag, const string &filename) {
         kernel_writer(const DAG &g) : graph(g) {};
         void operator()(std::ostream& out, const Vertex& v) const {
             out << "[label=\"Kernel " << v;
-            out << ", Cost: " << block_cost(*graph[v]);
+            out << ", Cost: " << (double) block_cost(*graph[v]);
             out << ", Instructions: \\l";
             for (const bh_instruction *instr: graph[v]->getAllInstr()) {
                 out << *instr << "\\l";
@@ -182,7 +182,7 @@ void pprint(const DAG &dag, const string &filename) {
             Vertex src = source(e, graph);
             Vertex dst = target(e, graph);
             out << "[label=\" ";
-            out << weight(*graph[src], *graph[dst]) << " bytes\"";
+            out << (double) weight(*graph[src], *graph[dst]) << " bytes\"";
             out << "]";
         }
     };
