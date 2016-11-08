@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/instruction.hpp>
 #include <jitk/type.hpp>
 #include <jitk/fuser.hpp>
+#include <jitk/graph.hpp>
 
 #include "opencl_type.hpp"
 #include "cl.hpp"
@@ -397,6 +398,12 @@ void Impl::execute(bh_ir *bhir) {
         block_list = fuser_serial(block_list, news);
     } else {
         block_list = fuser_reshapable_first(block_list, news);
+    }
+
+    // Pretty printing the block
+    if (config.defaultGet<bool>("dump_graph", false)) {
+        graph::DAG dag = graph::from_block_list(block_list);
+        graph::pprint(dag, "dag");
     }
 
     for(const Block &block: block_list) {
