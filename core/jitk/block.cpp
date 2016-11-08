@@ -436,6 +436,95 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b) {
     return ret;
 }
 
+// Unnamed namespace for all some merge help functions
+namespace {
+// Check if 'a' and 'b' supports data-parallelism when merged
+bool data_parallel_compatible(const bh_instruction *a, const bh_instruction *b)
+{
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    const int a_nop = bh_noperands(a->opcode);
+    for(int i=0; i<a_nop; ++i)
+    {
+        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
+           && not bh_view_aligned(&b->operand[0], &a->operand[i]))
+            return false;
+    }
+    const int b_nop = bh_noperands(b->opcode);
+    for(int i=0; i<b_nop; ++i)
+    {
+        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
+           && not bh_view_aligned(&a->operand[0], &b->operand[i]))
+            return false;
+    }
+    return true;
+}
+
+// Check if 'b1' and 'b2' supports data-parallelism when merged
+bool data_parallel_compatible(const Block &b1, const Block &b2) {
+    for (const bh_instruction *i1 : b1.getAllInstr()) {
+        for (const bh_instruction *i2 : b2.getAllInstr()) {
+            if (not data_parallel_compatible(i1, i2))
+                return false;
+        }
+    }
+    return true;
+}
+
+// Check if 'block' accesses the output of a sweep in 'sweeps'
+bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &block) {
+    for (bh_instruction *instr: sweeps) {
+        assert(bh_noperands(instr->opcode) > 0);
+        auto bases = block.getAllBases();
+        if (bases.find(instr->operand[0].base) != bases.end())
+            return true;
+    }
+    return false;
+}
+} // Unnamed namespace
+
+pair<Block, bool> merge_if_possible(const Block &a, const Block &b, const set<bh_instruction*> &news) {
+    assert(a.validation());
+    assert(b.validation());
+
+    // First we check for data incompatibility
+    if (a.isInstr() or b.isInstr() or not data_parallel_compatible(a, b) or sweeps_accessed_by_block(a._sweeps, b)) {
+        return make_pair(Block(), false);
+    }
+    // Check for perfect match, which is directly mergeable
+    if (a.size == b.size) {
+        return make_pair(merge(a, b), true);
+    }
+
+    // System-only blocks are very flexible because they array sizes does not have to match when reshaping
+    // thus we can simply append system instructions without further checks.
+    if (b.isSystemOnly()) {
+        Block block(a);
+        for (bh_instruction *instr: b.getAllInstr()) {
+            if (bh_noperands(instr->opcode) > 0) {
+                block.insert_system_after(instr, instr->operand[0].base);
+            }
+        }
+        return make_pair(block, true);
+    }
+
+    // Check fusibility of reshapable blocks
+    if (b._reshapable && b.size % a.size == 0) {
+        vector<bh_instruction *> cur_instr = a.getAllInstr();
+        vector<bh_instruction *> it_instr = b.getAllInstr();
+        cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
+        return make_pair(create_nested_block(cur_instr, b.rank, a.size, news), true);
+    }
+    if (a._reshapable && a.size % b.size == 0) {
+        vector<bh_instruction *> cur_instr = a.getAllInstr();
+        vector<bh_instruction *> it_instr = b.getAllInstr();
+        cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
+        return make_pair(create_nested_block(cur_instr, a.rank, b.size, news), true);
+    }
+    return make_pair(Block(), false);
+}
+
 ostream &operator<<(ostream &out, const Block &b) {
     out << b.pprint();
     return out;

@@ -34,55 +34,6 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-// Unnamed namespace for all fuser help functions
-namespace {
-
-// Check if 'a' and 'b' supports data-parallelism when merged
-bool data_parallel_compatible(const bh_instruction *a, const bh_instruction *b)
-{
-    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
-        return true;
-
-    const int a_nop = bh_noperands(a->opcode);
-    for(int i=0; i<a_nop; ++i)
-    {
-        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
-           && not bh_view_aligned(&b->operand[0], &a->operand[i]))
-            return false;
-    }
-    const int b_nop = bh_noperands(b->opcode);
-    for(int i=0; i<b_nop; ++i)
-    {
-        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
-           && not bh_view_aligned(&a->operand[0], &b->operand[i]))
-            return false;
-    }
-    return true;
-}
-
-// Check if 'b1' and 'b2' supports data-parallelism when merged
-bool data_parallel_compatible(const Block &b1, const Block &b2) {
-    for (const bh_instruction *i1 : b1.getAllInstr()) {
-        for (const bh_instruction *i2 : b2.getAllInstr()) {
-            if (not data_parallel_compatible(i1, i2))
-                return false;
-        }
-    }
-    return true;
-}
-
-// Check if 'block' accesses the output of a sweep in 'sweeps'
-bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &block) {
-    for (bh_instruction *instr: sweeps) {
-        assert(bh_noperands(instr->opcode) > 0);
-        auto bases = block.getAllBases();
-        if (bases.find(instr->operand[0].base) != bases.end())
-            return true;
-    }
-    return false;
-}
-} // Unnamed namespace
-
 
 vector<Block> fuser_singleton(vector<bh_instruction*> &instr_list, const set<bh_instruction*> &news) {
 
@@ -113,48 +64,6 @@ vector<Block> fuser_singleton(vector<bh_instruction*> &instr_list, const set<bh_
     return block_list;
 }
 
-// Merges the two blocks 'a' and 'a' (in that order)
-pair<Block, bool> block_merge(const Block &a, const Block &b, const set<bh_instruction*> &news) {
-    assert(a.validation());
-    assert(b.validation());
-
-    // First we check for data incompatibility
-    if (a.isInstr() or b.isInstr() or not data_parallel_compatible(a, b) or sweeps_accessed_by_block(a._sweeps, b)) {
-        return make_pair(Block(), false);
-    }
-    // Check for perfect match, which is directly mergeable
-    if (a.size == b.size) {
-        return make_pair(merge(a, b), true);
-    }
-
-    // System-only blocks are very flexible because they array sizes does not have to match when reshaping
-    // thus we can simply append system instructions without further checks.
-    if (b.isSystemOnly()) {
-        Block block(a);
-        for (bh_instruction *instr: b.getAllInstr()) {
-            if (bh_noperands(instr->opcode) > 0) {
-                block.insert_system_after(instr, instr->operand[0].base);
-            }
-        }
-        return make_pair(block, true);
-    }
-
-    // Check fusibility of reshapable blocks
-    if (b._reshapable && b.size % a.size == 0) {
-        vector<bh_instruction *> cur_instr = a.getAllInstr();
-        vector<bh_instruction *> it_instr = b.getAllInstr();
-        cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-        return make_pair(create_nested_block(cur_instr, b.rank, a.size, news), true);
-    }
-    if (a._reshapable && a.size % b.size == 0) {
-        vector<bh_instruction *> cur_instr = a.getAllInstr();
-        vector<bh_instruction *> it_instr = b.getAllInstr();
-        cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-        return make_pair(create_nested_block(cur_instr, a.rank, b.size, news), true);
-    }
-    return make_pair(Block(), false);
-}
-
 vector<Block> fuser_serial(const vector<Block> &block_list, const set<bh_instruction*> &news) {
     vector<Block> ret;
     for (auto it = block_list.begin(); it != block_list.end(); ) {
@@ -166,7 +75,7 @@ vector<Block> fuser_serial(const vector<Block> &block_list, const set<bh_instruc
         }
         // Let's search for fusible blocks
         for (; it != block_list.end(); ++it) {
-            const pair<Block, bool> res = block_merge(cur, *it, news);
+            const pair<Block, bool> res = merge_if_possible(cur, *it, news);
             if (res.second) {
                 cur = res.first;
             } else {
@@ -355,10 +264,14 @@ vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
         while (not roots.empty()) {
             const Vertex v = roots.pop();
             const Block &b = *dag[v];
-            const pair<Block, bool> res = block_merge(block, b, news);
+            const pair<Block, bool> res = merge_if_possible(block, b, news);
             if (res.second) {
                 block = res.first;
                 assert(block.validation());
+
+
+
+
 
                 // Add adjacent vertices and remove the block 'b' from 'dag'
                 BOOST_FOREACH (const Vertex adj, boost::adjacent_vertices(v, dag)) {
