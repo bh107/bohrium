@@ -27,7 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/block.hpp>
 #include <bh_instruction.hpp>
 
-
 namespace bohrium {
 namespace jitk {
 

@@ -18,16 +18,13 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/breadth_first_search.hpp>
-#include <boost/graph/graphviz.hpp>
-#include <boost/foreach.hpp>
 #include <fstream>
 #include <numeric>
 #include <queue>
+#include <cassert>
 
 #include <jitk/fuser.hpp>
+#include <jitk/graph.hpp>
 
 using namespace std;
 
@@ -88,222 +85,19 @@ vector<Block> fuser_serial(const vector<Block> &block_list, const set<bh_instruc
     return ret;
 }
 
-namespace dag {
-
-//The type declaration of the boost graphs, vertices and edges.
-typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, const Block*> DAG;
-typedef typename boost::graph_traits<DAG>::edge_descriptor Edge;
-typedef uint64_t Vertex;
-
-/* Determines whether there exist a path from 'a' to 'b'
- *
- * Complexity: O(E + V)
- *
- * @a               The first vertex
- * @b               The second vertex
- * @dag             The DAG
- * @only_long_path  Only accept path of length greater than one
- * @return          True if there is a path
- */
-bool path_exist(Vertex a, Vertex b, const DAG &dag, bool only_long_path) {
-    using namespace boost;
-
-    struct path_visitor:default_bfs_visitor {
-        const Vertex dst;
-        path_visitor(Vertex b):dst(b){};
-
-        void examine_edge(Edge e, const DAG &g) const {
-            if(target(e,g) == dst)
-                throw runtime_error("");
-        }
-    };
-    struct long_visitor:default_bfs_visitor {
-        const Vertex src, dst;
-        long_visitor(Vertex a, Vertex b):src(a),dst(b){};
-
-        void examine_edge(Edge e, const DAG &g) const
-        {
-            if(source(e,g) != src and target(e,g) == dst)
-                throw runtime_error("");
-        }
-    };
-    try {
-        if(only_long_path)
-            breadth_first_search(dag, a, visitor(long_visitor(a,b)));
-        else
-            breadth_first_search(dag, a, visitor(path_visitor(b)));
-    }
-    catch (const runtime_error &e) {
-        return true;
-    }
-    return false;
-}
-
-// Create a DAG based on the 'block_list'
-DAG from_block_list(const vector<Block> &block_list) {
-    DAG graph;
-    map<bh_base*, set<Vertex> > base2vertices;
-    for (const Block &block: block_list) {
-        assert(block.validation());
-        Vertex vertex = boost::add_vertex(&block, graph);
-
-        // Find all vertices that must connect to 'vertex'
-        // using and updating 'base2vertices'
-        set<Vertex> connecting_vertices;
-        for (bh_base *base: block.getAllBases()) {
-            set<Vertex> &vs = base2vertices[base];
-            connecting_vertices.insert(vs.begin(), vs.end());
-            vs.insert(vertex);
-        }
-
-        // Finally, let's add edges to 'vertex'
-        BOOST_REVERSE_FOREACH (Vertex v, connecting_vertices) {
-            if (vertex != v and block.depend_on(*graph[v])) {
-                boost::add_edge(v, vertex, graph);
-            }
-        }
-    }
-    return graph;
-}
-
-uint64_t weight(const Block &a, const Block &b) {
-    const set<bh_base *> news = a.getAllNews();
-    const set<bh_base *> frees = b.getAllFrees();
-    vector<bh_base *> new_temps;
-    set_intersection(news.begin(), news.end(), frees.begin(), frees.end(), back_inserter(new_temps));
-
-    uint64_t totalsize = 0;
-    for (const bh_base *base: new_temps) {
-        totalsize += bh_base_size(base);
-    }
-    return totalsize;
-}
-
-// Pretty print the DAG. A "-<id>.dot" is append the filename.
-void pprint(const DAG &dag, const string &filename) {
-
-    //We define a graph and a kernel writer for graphviz
-    struct graph_writer {
-        const DAG &graph;
-        graph_writer(const DAG &g) : graph(g) {};
-        void operator()(std::ostream& out) const {
-            out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
-            out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
-        }
-    };
-    struct kernel_writer {
-        const DAG &graph;
-        kernel_writer(const DAG &g) : graph(g) {};
-        void operator()(std::ostream& out, const Vertex& v) const {
-            out << "[label=\"Kernel " << v;
-
-            out << ", Instructions: \\l";
-            for (const bh_instruction *instr: graph[v]->getAllInstr()) {
-                out << *instr << "\\l";
-            }
-            out << "\"]";
-        }
-    };
-    struct edge_writer {
-        const DAG &graph;
-        edge_writer(const DAG &g) : graph(g) {};
-        void operator()(std::ostream& out, const Edge& e) const {
-            Vertex src = source(e, graph);
-            Vertex dst = target(e, graph);
-            out << "[label=\" ";
-            out << weight(*graph[src], *graph[dst]) << " bytes\"";
-            out << "]";
-        }
-    };
-
-    static int count=0;
-    stringstream ss;
-    ss << filename << "-" << count++ << ".dot";
-    ofstream file;
-    cout << ss.str() << endl;
-    file.open(ss.str());
-    boost::write_graphviz(file, dag, kernel_writer(dag), edge_writer(dag), graph_writer(dag));
-    file.close();
-}
-
-// Merges the vertices in 'dag' topologically using 'Queue' as the Vertex queue.
-// 'Queue' is a collection of 'Vertex' that is constructed with the DAG and supports push(), pop(), and empty()
-template <typename Queue>
-vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
-    vector<Block> ret;
-    Queue roots(dag); // The root vertices
-
-    // Initiate 'roots'
-    BOOST_FOREACH (Vertex v, boost::vertices(dag)) {
-        if (boost::in_degree(v, dag) == 0) {
-            roots.push(v);
-        }
-    }
-
-    while (not roots.empty()) { // Each iteration creates a new block
-        const Vertex vertex = roots.pop();
-        ret.emplace_back(*dag[vertex]);
-        Block &block = ret.back();
-
-        // Add adjacent vertices and remove the block from 'dag'
-        BOOST_FOREACH (const Vertex v, boost::adjacent_vertices(vertex, dag)) {
-            if (boost::in_degree(v, dag) <= 1) {
-                roots.push(v);
-            }
-        }
-        boost::clear_vertex(vertex, dag);
-
-        // Instruction blocks should never be merged
-        if (block.isInstr()) {
-            continue;
-        }
-
-        // Roots not fusible with 'block'
-        Queue nonfusible_roots(dag);
-        // Search for fusible blocks within the root blocks
-        while (not roots.empty()) {
-            const Vertex v = roots.pop();
-            const Block &b = *dag[v];
-            const pair<Block, bool> res = merge_if_possible(block, b, news);
-            if (res.second) {
-                block = res.first;
-                assert(block.validation());
-
-
-
-
-
-                // Add adjacent vertices and remove the block 'b' from 'dag'
-                BOOST_FOREACH (const Vertex adj, boost::adjacent_vertices(v, dag)) {
-                    if (boost::in_degree(adj, dag) <= 1) {
-                        roots.push(adj);
-                    }
-                }
-                boost::clear_vertex(v, dag);
-            } else {
-                nonfusible_roots.push(v);
-            }
-        }
-        roots = std::move(nonfusible_roots);
-    }
-    return ret;
-}
-
-} // dag
-
 vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_instruction *> &news) {
 
-    // Let's define a FIFO queue, which makes dag::topological() do a breadth first search
+    // Let's define a FIFO queue, which makes graph::topological() do a breadth first search
     class FifoQueue {
-        queue<dag::Vertex> _queue;
+        queue<graph::Vertex> _queue;
     public:
-        FifoQueue(const dag::DAG &dag) {}
-        void push(dag::Vertex v) {
+        FifoQueue(const graph::DAG &dag) {}
+        void push(graph::Vertex v) {
             _queue.push(v);
         }
-        dag::Vertex pop() {
+        graph::Vertex pop() {
             assert(not _queue.empty());
-            dag::Vertex ret = _queue.front();
+            graph::Vertex ret = _queue.front();
             _queue.pop();
             return ret;
         }
@@ -312,8 +106,8 @@ vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_
         }
     };
 
-    dag::DAG dag = dag::from_block_list(block_list);
-    vector<Block> ret = dag::topological<FifoQueue>(dag, news);
+    graph::DAG dag = graph::from_block_list(block_list);
+    vector<Block> ret = graph::topological<FifoQueue>(dag, news);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
@@ -328,25 +122,25 @@ vector<Block> fuser_reshapable_first(const vector<Block> &block_list, const set<
 
     // Let's define a queue that priorities fusion of reshapable blocks
     class ReshapableQueue {
-        std::reference_wrapper<const dag::DAG> _dag; // Using a wrapper to get a default move constructor
-        set<dag::Vertex> _queue;
+        std::reference_wrapper<const graph::DAG> _dag; // Using a wrapper to get a default move constructor
+        set<graph::Vertex> _queue;
     public:
         // Regular Constructor
-        ReshapableQueue(const dag::DAG &dag) : _dag(dag) {}
+        ReshapableQueue(const graph::DAG &dag) : _dag(dag) {}
 
         // Push(), pop(), and empty()
-        void push(dag::Vertex v) {
+        void push(graph::Vertex v) {
             _queue.insert(v);
         }
-        dag::Vertex pop() {
+        graph::Vertex pop() {
             assert(not _queue.empty());
-            dag::Vertex ret = boost::graph_traits<dag::DAG>::null_vertex();
-            for (dag::Vertex v: _queue) {
+            graph::Vertex ret = boost::graph_traits<graph::DAG>::null_vertex();
+            for (graph::Vertex v: _queue) {
                 if (_dag.get()[v]->_reshapable) {
                     ret = v;
                 }
             }
-            if (ret == boost::graph_traits<dag::DAG>::null_vertex()) {
+            if (ret == boost::graph_traits<graph::DAG>::null_vertex()) {
                 ret = *_queue.begin();
             }
             _queue.erase(ret);
@@ -357,8 +151,8 @@ vector<Block> fuser_reshapable_first(const vector<Block> &block_list, const set<
         }
     };
 
-    dag::DAG dag = dag::from_block_list(block_list);
-    vector<Block> ret = dag::topological<ReshapableQueue>(dag, news);
+    graph::DAG dag = graph::from_block_list(block_list);
+    vector<Block> ret = graph::topological<ReshapableQueue>(dag, news);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
