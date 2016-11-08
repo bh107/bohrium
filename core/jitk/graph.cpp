@@ -86,7 +86,7 @@ DAG from_block_list(const vector<Block> &block_list) {
     map<bh_base*, set<Vertex> > base2vertices;
     for (const Block &block: block_list) {
         assert(block.validation());
-        Vertex vertex = boost::add_vertex(&block, graph);
+        Vertex vertex = boost::add_vertex(block, graph);
 
         // Find all vertices that must connect to 'vertex'
         // using and updating 'base2vertices'
@@ -99,7 +99,7 @@ DAG from_block_list(const vector<Block> &block_list) {
 
         // Finally, let's add edges to 'vertex'
         BOOST_REVERSE_FOREACH (Vertex v, connecting_vertices) {
-            if (vertex != v and block.depend_on(*graph[v])) {
+            if (vertex != v and block.depend_on(graph[v])) {
                 boost::add_edge(v, vertex, graph);
             }
         }
@@ -152,7 +152,7 @@ void pprint(const DAG &dag, const string &filename) {
             uint64_t totalcost = 0;
 
             BOOST_FOREACH(Vertex v, boost::vertices(graph)) {
-                totalcost += block_cost(*graph[v]);
+                totalcost += block_cost(graph[v]);
             }
 
             out << "labelloc=\"t\";" << endl;
@@ -167,9 +167,9 @@ void pprint(const DAG &dag, const string &filename) {
         kernel_writer(const DAG &g) : graph(g) {};
         void operator()(std::ostream& out, const Vertex& v) const {
             out << "[label=\"Kernel " << v;
-            out << ", Cost: " << (double) block_cost(*graph[v]);
+            out << ", Cost: " << (double) block_cost(graph[v]);
             out << ", Instructions: \\l";
-            for (const bh_instruction *instr: graph[v]->getAllInstr()) {
+            for (const bh_instruction *instr: graph[v].getAllInstr()) {
                 out << *instr << "\\l";
             }
             out << "\"]";
@@ -182,7 +182,7 @@ void pprint(const DAG &dag, const string &filename) {
             Vertex src = source(e, graph);
             Vertex dst = target(e, graph);
             out << "[label=\" ";
-            out << (double) weight(*graph[src], *graph[dst]) << " bytes\"";
+            out << (double) weight(graph[src], graph[dst]) << " bytes\"";
             out << "]";
         }
     };

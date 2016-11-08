@@ -37,7 +37,7 @@ namespace jitk {
 namespace graph {
 
 //The type declaration of the boost graphs, vertices and edges.
-typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, const Block *> DAG;
+typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, Block> DAG;
 typedef typename boost::graph_traits<DAG>::edge_descriptor Edge;
 typedef uint64_t Vertex;
 
@@ -65,7 +65,7 @@ std::vector<Block> topological(DAG &dag, const std::set<bh_instruction*> &news) 
     // Each iteration creates a new block
     while (not roots.empty()) {
         const Vertex vertex = roots.pop();
-        ret.emplace_back(*dag[vertex]);
+        ret.emplace_back(dag[vertex]);
         Block &block = ret.back();
 
         // Add adjacent vertices and remove the block from 'dag'
@@ -86,7 +86,7 @@ std::vector<Block> topological(DAG &dag, const std::set<bh_instruction*> &news) 
         // Search for fusible blocks within the root blocks
         while (not roots.empty()) {
             const Vertex v = roots.pop();
-            const Block &b = *dag[v];
+            const Block &b = dag[v];
             const pair<Block, bool> res = merge_if_possible(block, b, news);
             if (res.second) {
                 block = res.first;

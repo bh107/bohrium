@@ -136,7 +136,7 @@ vector<Block> fuser_reshapable_first(const vector<Block> &block_list, const set<
             assert(not _queue.empty());
             graph::Vertex ret = boost::graph_traits<graph::DAG>::null_vertex();
             for (graph::Vertex v: _queue) {
-                if (_dag.get()[v]->_reshapable) {
+                if (_dag.get()[v]._reshapable) {
                     ret = v;
                 }
             }
