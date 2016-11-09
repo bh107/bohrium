@@ -350,18 +350,42 @@ set<bh_instruction*> Impl::find_initiating_instr(vector<bh_instruction*> &instr_
     return ret;
 }
 
-// Returns a OpenCL range based on the 'threaded_blocks'
-cl::NDRange NDRange(const vector<const Block*> &threaded_blocks) {
-    auto &b = threaded_blocks;
+// Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
+pair<cl::NDRange, cl::NDRange> NDRanges(const vector<const Block*> &threaded_blocks, const ConfigParser &config) {
+    const auto &b = threaded_blocks;
     switch (b.size()) {
         case 1:
-            return cl::NDRange((cl_ulong) b[0]->size);
+        {
+            const cl_ulong lsize = config.defaultGet<cl_ulong>("work_group_size_1dx", 128);
+            const cl_ulong rem = b[0]->size % lsize;
+            const cl_ulong gsize = b[0]->size + (rem==0?0:(lsize-rem));
+            return make_pair(cl::NDRange(gsize), cl::NDRange(lsize));
+        }
         case 2:
-            return cl::NDRange((cl_ulong) b[0]->size, (cl_ulong) b[1]->size);
+        {
+            const cl_ulong lsize_x = config.defaultGet<cl_ulong>("work_group_size_2dx", 32);
+            const cl_ulong lsize_y = config.defaultGet<cl_ulong>("work_group_size_2dy", 4);
+            const cl_ulong rem_x = b[0]->size % lsize_x;
+            const cl_ulong rem_y = b[1]->size % lsize_y;
+            const cl_ulong gsize_x = b[0]->size + (rem_x==0?0:(lsize_x-rem_x));
+            const cl_ulong gsize_y = b[1]->size + (rem_y==0?0:(lsize_y-rem_y));
+            return make_pair(cl::NDRange(gsize_x, gsize_y), cl::NDRange(lsize_x, lsize_y));
+        }
         case 3:
-            return cl::NDRange((cl_ulong) b[0]->size, (cl_ulong) b[1]->size, (cl_ulong) b[2]->size);
+        {
+            const cl_ulong lsize_x = config.defaultGet<cl_ulong>("work_group_size_3dx", 32);
+            const cl_ulong lsize_y = config.defaultGet<cl_ulong>("work_group_size_3dy", 2);
+            const cl_ulong lsize_z = config.defaultGet<cl_ulong>("work_group_size_3dz", 2);
+            const cl_ulong rem_x = b[0]->size % lsize_x;
+            const cl_ulong rem_y = b[1]->size % lsize_y;
+            const cl_ulong rem_z = b[2]->size % lsize_z;
+            const cl_ulong gsize_x = b[0]->size + (rem_x==0?0:(lsize_x-rem_x));
+            const cl_ulong gsize_y = b[1]->size + (rem_y==0?0:(lsize_y-rem_y));
+            const cl_ulong gsize_z = b[2]->size + (rem_z==0?0:(lsize_z-rem_z));
+            return make_pair(cl::NDRange(gsize_x, gsize_y, gsize_z), cl::NDRange(lsize_x, lsize_y, lsize_z));
+        }
         default:
-            throw runtime_error("NDRange: maximum of three dimensions!");
+            throw runtime_error("NDRanges: maximum of three dimensions!");
     }
 }
 
@@ -572,7 +596,8 @@ void Impl::execute(bh_ir *bhir) {
                     opencl_kernel.setArg(i++, *buffers.at(base));
                 }
             }
-            queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
+            const auto ranges = NDRanges(threaded_blocks, config);
+            queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
             queue.finish();
             time_exec += chrono::steady_clock::now() - tkernel_exec;
         }
