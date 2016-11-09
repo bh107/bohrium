@@ -483,6 +483,33 @@ bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &b
 }
 } // Unnamed namespace
 
+bool merge_possible(const Block &a, const Block &b) {
+    assert(a.validation());
+    assert(b.validation());
+
+    // First we check for data incompatibility
+    if (a.isInstr() or b.isInstr() or not data_parallel_compatible(a, b) or sweeps_accessed_by_block(a._sweeps, b)) {
+        return false;
+    }
+    // Check for perfect match, which is directly mergeable
+    if (a.size == b.size) {
+        return true;
+    }
+    // System-only blocks are very flexible because they array sizes does not have to match when reshaping
+    // thus we can simply append system instructions without further checks.
+    if (b.isSystemOnly()) {
+        return true;
+    }
+    // Check fusibility of reshapable blocks
+    if (b._reshapable && b.size % a.size == 0) {
+        return true;
+    }
+    if (a._reshapable && a.size % b.size == 0) {
+        return true;
+    }
+    return false;
+}
+
 pair<Block, bool> merge_if_possible(Block &a, Block &b, const set<bh_instruction *> &news) {
     assert(a.validation());
     assert(b.validation());

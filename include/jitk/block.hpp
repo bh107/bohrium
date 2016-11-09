@@ -186,6 +186,9 @@ Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, in
 // Returns the new block and a flag indicating whether the merge was performed
 std::pair<Block, bool> merge_if_possible(Block &a, Block &b, const std::set<bh_instruction *> &news);
 
+// Check if it is possible to merge 'a' and 'a' (in that order)
+bool merge_possible(const Block &a, const Block &b);
+
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);
 
