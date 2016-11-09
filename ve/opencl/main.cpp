@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <numeric>
 #include <set>
 #include <map>
+#include <chrono>
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
@@ -49,6 +50,10 @@ class Impl : public ComponentImplWithChild {
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
     uint64_t max_memory_usage=0;
+    chrono::duration<double> time_total_execution{0};
+    chrono::duration<double> time_fusion{0};
+    chrono::duration<double> time_exec{0};
+    chrono::duration<double> time_build{0};
 
     // The OpenCL context and device used throughout the execution
     cl::Context context;
@@ -112,6 +117,10 @@ Impl::~Impl() {
         cout << "[OPENCL] Profiling: " << endl;
         cout << "\tArray contractions:   " << num_temp_arrays << "/" << num_base_arrays << endl;
         cout << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB" << endl;
+        cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
+        cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
+        cout << "\t  Build:  " << time_build.count() << "s" << endl;
+        cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
     }
 }
 
@@ -357,6 +366,8 @@ cl::NDRange NDRange(const vector<const Block*> &threaded_blocks) {
 }
 
 void Impl::execute(bh_ir *bhir) {
+    auto texecution = chrono::steady_clock::now();
+
     const bool verbose = config.defaultGet<bool>("verbose", false);
 
     cl::CommandQueue queue(context, default_device);
@@ -389,6 +400,8 @@ void Impl::execute(bh_ir *bhir) {
         }
     }
 
+    auto tfusion = chrono::steady_clock::now();
+
     // Get the set of initiating instructions
     const set<bh_instruction*> news = find_initiating_instr(instr_list);
 
@@ -406,6 +419,8 @@ void Impl::execute(bh_ir *bhir) {
         graph::DAG dag = graph::from_block_list(block_list);
         graph::pprint(dag, "dag");
     }
+
+    time_fusion += chrono::steady_clock::now() - tfusion;
 
     for(const Block &block: block_list) {
 
@@ -506,8 +521,8 @@ void Impl::execute(bh_ir *bhir) {
                              << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
             }
 
+            auto tkernel_build = chrono::steady_clock::now();
             cl::Program program(context, ss.str());
-
             const string compile_inc = config.defaultGet<string>("compiler_flg", "");
             try {
                 program.build({default_device}, compile_inc.c_str());
@@ -520,6 +535,7 @@ void Impl::execute(bh_ir *bhir) {
                 cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
                 throw;
             }
+            time_build += chrono::steady_clock::now() - tkernel_build;
 
             // We need a memory buffer on the device for each non-temporary array in the kernel
             for(bh_base *base: kernel.getNonTemps()) {
@@ -547,6 +563,7 @@ void Impl::execute(bh_ir *bhir) {
                 max_memory_usage = sum > max_memory_usage?sum:max_memory_usage;
             }
 
+            auto tkernel_exec = chrono::steady_clock::now();
             // Let's execute the OpenCL kernel
             cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
             {
@@ -557,6 +574,7 @@ void Impl::execute(bh_ir *bhir) {
             }
             queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
             queue.finish();
+            time_exec += chrono::steady_clock::now() - tkernel_exec;
         }
 
         // Let's copy sync'ed arrays back to the host
@@ -585,5 +603,6 @@ void Impl::execute(bh_ir *bhir) {
             bh_data_free(base);
         }
     }
+    time_total_execution += chrono::steady_clock::now() - texecution;
 }
 

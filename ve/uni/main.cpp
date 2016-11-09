@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <numeric>
+#include <chrono>
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
@@ -49,6 +50,9 @@ class Impl : public ComponentImpl {
     // Some statistics
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
+    chrono::duration<double> time_total_execution{0};
+    chrono::duration<double> time_fusion{0};
+    chrono::duration<double> time_exec{0};
   public:
     Impl(int stack_level) : ComponentImpl(stack_level), _store(config) {}
     ~Impl();
@@ -82,6 +86,9 @@ Impl::~Impl() {
         cout << "\tKernel store hits:   " << _store.num_lookups - _store.num_lookup_misses \
                                           << "/" << _store.num_lookups << endl;
         cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
+        cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
+        cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
+        cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
     }
 }
 
@@ -473,7 +480,8 @@ set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) {
 }
 
 void Impl::execute(bh_ir *bhir) {
-    
+    auto texecution = chrono::steady_clock::now();
+
     // Let's start by extracting a clean list of instructions from the 'bhir'
     vector<bh_instruction*> instr_list = remove_non_computed_system_instr(bhir->instr_list);
 
@@ -495,6 +503,8 @@ void Impl::execute(bh_ir *bhir) {
         graph::DAG dag = graph::from_block_list(block_list);
         graph::pprint(dag, "dag");
     }
+
+    time_fusion += chrono::steady_clock::now() - texecution;
 
     for(const Block &block: block_list) {
 
@@ -540,12 +550,16 @@ void Impl::execute(bh_ir *bhir) {
             data_list.push_back(base->data);
         }
 
+        auto texec = chrono::steady_clock::now();
         // Call the launcher function with the 'data_list', which will execute the kernel
         func(&data_list[0]);
+        time_exec += chrono::steady_clock::now() - texec;
+
         // Finally, let's cleanup
         for(bh_base *base: kernel.getFrees()) {
             bh_data_free(base);
         }
     }
+    time_total_execution += chrono::steady_clock::now() - texecution;
 }
 
