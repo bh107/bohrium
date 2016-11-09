@@ -502,7 +502,7 @@ void Impl::execute(bh_ir *bhir) {
         Kernel kernel(block);
 
         // For profiling statistic
-        num_base_arrays += kernel.getNonTemps().size();
+        num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
         num_temp_arrays += kernel.getAllTemps().size();
 
         // Assign IDs to all base arrays
