@@ -197,6 +197,54 @@ void pprint(const DAG &dag, const string &filename) {
     file.close();
 }
 
+void greedy(DAG &dag, const set<bh_instruction *> &news) {
+    while(1) {
+        // First we find all fusible edges
+        vector<Edge> fusibles;
+        BOOST_FOREACH(Edge e, edges(dag)) {
+            if (merge_possible(dag[source(e, dag)], dag[target(e, dag)])) {
+                fusibles.push_back(e);
+            }
+        }
+        if (fusibles.size() == 0) {
+            break;
+        }
+
+        // Let's find the greatest weight edge.
+        Edge greatest = fusibles.front();
+        uint64_t greatest_weight = weight(dag[source(greatest, dag)], dag[target(greatest, dag)]);
+        for (Edge e: fusibles) {
+            uint64_t w = weight(dag[source(e, dag)], dag[target(e, dag)]);
+            if (w > greatest_weight) {
+                greatest = e;
+                greatest_weight = w;
+            }
+        }
+        Vertex v1 = source(greatest, dag);
+        Vertex v2 = target(greatest, dag);
+
+        // And either remove it, if it is transitive
+        if(path_exist(v1, v2, dag, true)) {
+            boost::remove_edge(greatest, dag);
+        } else { // Or merge it away (if legal)
+            const pair<Block, bool> res = merge_if_possible(dag[v1], dag[v2], news);
+            assert(res.second);
+            if (res.second) {
+                assert(res.first.validation());
+                (dag[v1]) = res.first;
+                BOOST_FOREACH(Vertex adj, boost::adjacent_vertices(v2, dag)) {
+                    assert(adj != v1);
+                    if (adj != v1) {
+                        boost::add_edge(v1, adj, dag);
+                    }
+                }
+                boost::clear_vertex(v2, dag);
+                boost::remove_vertex(v2, dag);
+            }
+        }
+    }
+}
+
 } // graph
 } // jitk
 } // bohrium

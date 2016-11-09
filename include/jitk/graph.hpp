@@ -107,6 +107,9 @@ std::vector<Block> topological(DAG &dag, const std::set<bh_instruction*> &news) 
     return ret;
 }
 
+// Merges the vertices in 'dag' greedily.
+void greedy(DAG &dag, const std::set<bh_instruction *> &news);
+
 } // graph
 } // jit
 } // bohrium
