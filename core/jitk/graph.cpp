@@ -231,11 +231,16 @@ void greedy(DAG &dag, const set<bh_instruction *> &news) {
             assert(res.second);
             if (res.second) {
                 assert(res.first.validation());
-                (dag[v1]) = res.first;
-                BOOST_FOREACH(Vertex adj, boost::adjacent_vertices(v2, dag)) {
-                    assert(adj != v1);
-                    if (adj != v1) {
-                        boost::add_edge(v1, adj, dag);
+                dag[v1] = res.first;
+                // Add new children
+                BOOST_FOREACH(Vertex child, boost::adjacent_vertices(v2, dag)) {
+                    assert(child != v1);
+                    boost::add_edge(v1, child, dag);
+                }
+                // Add new parents
+                BOOST_FOREACH(Vertex parent, boost::inv_adjacent_vertices(v2, dag)) {
+                    if(parent != v1) {
+                        boost::add_edge(parent, v1, dag);
                     }
                 }
                 boost::clear_vertex(v2, dag);
