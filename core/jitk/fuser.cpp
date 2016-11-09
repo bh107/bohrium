@@ -85,26 +85,28 @@ void fuser_serial(vector<Block> &block_list, const set<bh_instruction *> &news) 
     block_list = ret;
 }
 
-void fuser_breadth_first(vector<Block> &block_list, const set<bh_instruction *> &news) {
+namespace {
+// A FIFO queue, which makes graph::topological() do a breadth first search
+class FifoQueue {
+    queue<graph::Vertex> _queue;
+public:
+    FifoQueue(const graph::DAG &dag) {}
+    void push(graph::Vertex v) {
+        _queue.push(v);
+    }
+    graph::Vertex pop() {
+        assert(not _queue.empty());
+        graph::Vertex ret = _queue.front();
+        _queue.pop();
+        return ret;
+    }
+    bool empty() {
+        return _queue.empty();
+    }
+};
+} // Anon namespace
 
-    // Let's define a FIFO queue, which makes graph::topological() do a breadth first search
-    class FifoQueue {
-        queue<graph::Vertex> _queue;
-    public:
-        FifoQueue(const graph::DAG &dag) {}
-        void push(graph::Vertex v) {
-            _queue.push(v);
-        }
-        graph::Vertex pop() {
-            assert(not _queue.empty());
-            graph::Vertex ret = _queue.front();
-            _queue.pop();
-            return ret;
-        }
-        bool empty() {
-            return _queue.empty();
-        }
-    };
+void fuser_breadth_first(vector<Block> &block_list, const set<bh_instruction *> &news) {
 
     graph::DAG dag = graph::from_block_list(block_list);
     vector<Block> ret = graph::topological<FifoQueue>(dag, news);
@@ -158,6 +160,21 @@ void fuser_reshapable_first(vector<Block> &block_list, const set<bh_instruction 
     for (Block &b: ret) {
         if (not b.isInstr()) {
             fuser_reshapable_first(b._block_list, news);
+        }
+    }
+    block_list = ret;
+}
+
+void fuser_greedy(vector<Block> &block_list, const set<bh_instruction *> &news) {
+
+    graph::DAG dag = graph::from_block_list(block_list);
+    graph::greedy(dag, news);
+    vector<Block> ret = graph::topological<FifoQueue>(dag, news);
+
+    // Let's fuse at the next rank level
+    for (Block &b: ret) {
+        if (not b.isInstr()) {
+            fuser_breadth_first(b._block_list, news);
         }
     }
     block_list = ret;

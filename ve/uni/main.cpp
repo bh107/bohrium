@@ -485,7 +485,8 @@ void Impl::execute(bh_ir *bhir) {
     if (config.defaultGet<bool>("serial_fusion", false)) {
         fuser_serial(block_list, news);
     } else {
-        fuser_reshapable_first(block_list, news);
+    //  fuser_reshapable_first(block_list, news);
+        fuser_greedy(block_list, news);
     }
     remove_empty_blocks(block_list);
 

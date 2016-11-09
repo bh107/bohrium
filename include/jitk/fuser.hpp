@@ -47,6 +47,10 @@ void fuser_breadth_first(std::vector<Block> &block_list, const std::set<bh_instr
 // 'news' is the set of instructions in 'instr_list' that initiates new base arrays
 void fuser_reshapable_first(std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
 
+// Fuses 'block_list' greedily
+// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
+void fuser_greedy(std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
+
 } // jit
 } // bohrium
 
