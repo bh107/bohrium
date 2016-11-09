@@ -86,8 +86,7 @@ std::vector<Block> topological(DAG &dag, const std::set<bh_instruction*> &news) 
         // Search for fusible blocks within the root blocks
         while (not roots.empty()) {
             const Vertex v = roots.pop();
-            const Block &b = dag[v];
-            const pair<Block, bool> res = merge_if_possible(block, b, news);
+            const pair<Block, bool> res = merge_if_possible(block, dag[v], news);
             if (res.second) {
                 block = res.first;
                 assert(block.validation());

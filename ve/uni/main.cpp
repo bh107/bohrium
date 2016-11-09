@@ -483,9 +483,9 @@ void Impl::execute(bh_ir *bhir) {
     // Let's fuse the 'instr_list' into blocks
     vector<Block> block_list = fuser_singleton(instr_list, news);
     if (config.defaultGet<bool>("serial_fusion", false)) {
-        block_list = fuser_serial(block_list, news);
+        fuser_serial(block_list, news);
     } else {
-        block_list = fuser_reshapable_first(block_list, news);
+        fuser_reshapable_first(block_list, news);
     }
     remove_empty_blocks(block_list);
 

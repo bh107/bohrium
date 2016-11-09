@@ -146,7 +146,6 @@ Block *Block::findInstrBlock(const bh_instruction *instr) {
 }
 
 string Block::pprint() const {
-    assert(validation());
     stringstream ss;
     if (isInstr()) {
         if (_instr != NULL) {
@@ -484,7 +483,7 @@ bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &b
 }
 } // Unnamed namespace
 
-pair<Block, bool> merge_if_possible(const Block &a, const Block &b, const set<bh_instruction*> &news) {
+pair<Block, bool> merge_if_possible(Block &a, Block &b, const set<bh_instruction *> &news) {
     assert(a.validation());
     assert(b.validation());
 

@@ -184,7 +184,7 @@ Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, in
 // Merges the two blocks 'a' and 'a' (in that order) if they are fusible.
 // NB: 'a' or 'b' might be reshaped in order to make the merge legal
 // Returns the new block and a flag indicating whether the merge was performed
-std::pair<Block, bool> merge_if_possible(const Block &a, const Block &b, const std::set<bh_instruction*> &news);
+std::pair<Block, bool> merge_if_possible(Block &a, Block &b, const std::set<bh_instruction *> &news);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);

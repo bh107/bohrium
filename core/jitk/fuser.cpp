@@ -61,7 +61,7 @@ vector<Block> fuser_singleton(vector<bh_instruction*> &instr_list, const set<bh_
     return block_list;
 }
 
-vector<Block> fuser_serial(const vector<Block> &block_list, const set<bh_instruction*> &news) {
+void fuser_serial(vector<Block> &block_list, const set<bh_instruction *> &news) {
     vector<Block> ret;
     for (auto it = block_list.begin(); it != block_list.end(); ) {
         ret.push_back(*it);
@@ -80,12 +80,12 @@ vector<Block> fuser_serial(const vector<Block> &block_list, const set<bh_instruc
             }
         }
         // Let's fuse at the next rank level
-        cur._block_list = fuser_serial(cur._block_list, news);
+        fuser_serial(cur._block_list, news);
     }
-    return ret;
+    block_list = ret;
 }
 
-vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_instruction *> &news) {
+void fuser_breadth_first(vector<Block> &block_list, const set<bh_instruction *> &news) {
 
     // Let's define a FIFO queue, which makes graph::topological() do a breadth first search
     class FifoQueue {
@@ -112,13 +112,13 @@ vector<Block> fuser_breadth_first(const vector<Block> &block_list, const set<bh_
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            b._block_list = fuser_breadth_first(b._block_list, news);
+            fuser_breadth_first(b._block_list, news);
         }
     }
-    return ret;
+    block_list = ret;
 }
 
-vector<Block> fuser_reshapable_first(const vector<Block> &block_list, const set<bh_instruction *> &news) {
+void fuser_reshapable_first(vector<Block> &block_list, const set<bh_instruction *> &news) {
 
     // Let's define a queue that priorities fusion of reshapable blocks
     class ReshapableQueue {
@@ -157,10 +157,10 @@ vector<Block> fuser_reshapable_first(const vector<Block> &block_list, const set<
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            b._block_list = fuser_reshapable_first(b._block_list, news);
+            fuser_reshapable_first(b._block_list, news);
         }
     }
-    return ret;
+    block_list = ret;
 }
 
 } // jitk

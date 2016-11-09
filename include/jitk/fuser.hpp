@@ -37,15 +37,15 @@ std::vector<Block> fuser_singleton(std::vector<bh_instruction*> &instr_list, con
 
 // Fuses 'block_list' in a serial naive manner
 // 'news' is the set of instructions in 'instr_list' that initiates new base arrays
-std::vector<Block> fuser_serial(const std::vector<Block> &block_list, const std::set<bh_instruction*> &news);
+void fuser_serial(std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
 
 // Fuses 'block_list' in a topological breadth first manner
 // 'news' is the set of instructions in 'instr_list' that initiates new base arrays
-std::vector<Block> fuser_breadth_first(const std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
+void fuser_breadth_first(std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
 
 // Fuses 'block_list' in a topological manner prioritizing fusion of reshapable blocks
 // 'news' is the set of instructions in 'instr_list' that initiates new base arrays
-std::vector<Block> fuser_reshapable_first(const std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
+void fuser_reshapable_first(std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
 
 } // jit
 } // bohrium
