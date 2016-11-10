@@ -150,11 +150,9 @@ void pprint(const DAG &dag, const string &filename) {
         graph_writer(const DAG &g) : graph(g) {};
         void operator()(std::ostream& out) const {
             uint64_t totalcost = 0;
-
             BOOST_FOREACH(Vertex v, boost::vertices(graph)) {
                 totalcost += block_cost(graph[v]);
             }
-
             out << "labelloc=\"t\";" << endl;
             out << "label=\"Total cost: " << (double) totalcost;
             out << "\";";
@@ -168,7 +166,16 @@ void pprint(const DAG &dag, const string &filename) {
         void operator()(std::ostream& out, const Vertex& v) const {
             out << "[label=\"Kernel " << v;
             out << ", Cost: " << (double) block_cost(graph[v]);
-            out << ", Instructions: \\l";
+            out << ", parloops [";
+            const auto parloops = find_threaded_blocks(graph[v]);
+            for (size_t i=0, j=0; i<parloops.size(); ++i) {
+                if (parloops[j]->rank == (int64_t)i) {
+                    out << parloops[j++]->size << " ";
+                } else {
+                    out << "NA ";
+                }
+            }
+            out << "], Instructions: \\l";
             for (const bh_instruction *instr: graph[v].getAllInstr()) {
                 out << *instr << "\\l";
             }
