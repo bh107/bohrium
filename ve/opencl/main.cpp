@@ -495,10 +495,9 @@ void Impl::execute(bh_ir *bhir) {
         }
 
         // Find the parallel blocks
-        const vector<const Block*> threaded_blocks = find_threaded_blocks(kernel.block);
-        uint64_t total_threading = 1;
-        for (const Block *b: threaded_blocks)
-            total_threading *= b->size;
+        vector<const Block*> threaded_blocks;
+        uint64_t total_threading;
+        tie(threaded_blocks, total_threading) = find_threaded_blocks(kernel.block);
         if (total_threading < config.defaultGet<uint64_t>("parallel_threshold", 1000)) {
             for (const bh_instruction *instr: kernel.getAllInstr()) {
                 if (not bh_opcode_is_system(instr->opcode)) {

@@ -167,11 +167,11 @@ void pprint(const DAG &dag, const string &filename) {
         void operator()(std::ostream& out, const Vertex& v) const {
             out << "[label=\"Kernel " << v;
             out << ", Cost: " << (double) block_cost(graph[v]);
-            out << ", parloops [";
             const auto parloops = find_threaded_blocks(graph[v]);
-            for (size_t i=0, j=0; i<parloops.size(); ++i) {
-                if (parloops[j]->rank == (int64_t)i) {
-                    out << parloops[j++]->size << " ";
+            out << ", parloops(" << (double)parloops.second << ")[";
+            for (size_t i=0, j=0; i<parloops.first.size(); ++i) {
+                if (parloops.first[j]->rank == (int64_t)i) {
+                    out << parloops.first[j++]->size << " ";
                 } else {
                     out << "NA ";
                 }

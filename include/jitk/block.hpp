@@ -182,7 +182,8 @@ Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, in
                           const std::set<bh_instruction*> &news, const std::set<bh_base*> &temps = std::set<bh_base*>());
 
 // Returns the blocks that can be parallelized in 'block' (incl. 'block' and its sub-blocks)
-std::vector<const Block*> find_threaded_blocks(const Block &block);
+// and the total amount of parallelism (in number of possible parallel threads)
+std::pair<std::vector<const Block *>, uint64_t> find_threaded_blocks(const Block &block);
 
 // Check if it is possible to merge 'a' and 'a' (in that order)
 bool merge_possible(const Block &a, const Block &b);
