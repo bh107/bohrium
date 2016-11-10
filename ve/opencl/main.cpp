@@ -51,6 +51,7 @@ class Impl : public ComponentImplWithChild {
     uint64_t num_temp_arrays=0;
     uint64_t max_memory_usage=0;
     uint64_t totalwork=0;
+    uint64_t threading_below_threshold=0;
     chrono::duration<double> time_total_execution{0};
     chrono::duration<double> time_fusion{0};
     chrono::duration<double> time_exec{0};
@@ -119,6 +120,7 @@ Impl::~Impl() {
         cout << "\tArray Contractions:   " << num_temp_arrays << "/" << num_base_arrays << endl;
         cout << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB" << endl;
         cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
+        cout << "\tWork below par-threshold(1000): " << threading_below_threshold / (double)totalwork * 100 << endl;
         cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
         cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
         cout << "\t  Build:  " << time_build.count() << "s" << endl;
@@ -494,7 +496,18 @@ void Impl::execute(bh_ir *bhir) {
 
         // Find the parallel blocks
         const vector<const Block*> threaded_blocks = find_threaded_blocks(kernel.block);
+        uint64_t total_threading = 1;
+        for (const Block *b: threaded_blocks)
+            total_threading *= b->size;
+        if (total_threading < config.defaultGet<uint64_t>("parallel_threshold", 1000)) {
+            for (const bh_instruction *instr: kernel.getAllInstr()) {
+                if (not bh_opcode_is_system(instr->opcode)) {
+                    threading_below_threshold += bh_nelements(instr->operand[0]);
+                }
+            }
+        }
 
+        // We might have to offload the execution to the CPU
         if (threaded_blocks.size() == 0 and kernel_is_computing) {
             if (verbose)
                 cout << "Offloading to CPU" << endl;
