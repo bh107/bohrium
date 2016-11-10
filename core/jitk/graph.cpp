@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <numeric>
 #include <queue>
+#include <cassert>
 
 #include <jitk/graph.hpp>
 #include <jitk/block.hpp>
