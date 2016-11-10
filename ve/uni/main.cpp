@@ -50,6 +50,7 @@ class Impl : public ComponentImpl {
     // Some statistics
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
+    uint64_t totalwork=0;
     chrono::duration<double> time_total_execution{0};
     chrono::duration<double> time_fusion{0};
     chrono::duration<double> time_exec{0};
@@ -86,6 +87,7 @@ Impl::~Impl() {
         cout << "\tKernel store hits:   " << _store.num_lookups - _store.num_lookup_misses \
                                           << "/" << _store.num_lookups << endl;
         cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
+        cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
         cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
         cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
         cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
@@ -504,7 +506,15 @@ void Impl::execute(bh_ir *bhir) {
         graph::pprint(dag, "dag");
     }
 
+    // Some statistics
     time_fusion += chrono::steady_clock::now() - texecution;
+    if (config.defaultGet<bool>("prof", false)) {
+        for (const bh_instruction *instr: instr_list) {
+            if (not bh_opcode_is_system(instr->opcode)) {
+                totalwork += bh_nelements(instr->operand[0]);
+            }
+        }
+    }
 
     for(const Block &block: block_list) {
 

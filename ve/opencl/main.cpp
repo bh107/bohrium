@@ -50,6 +50,7 @@ class Impl : public ComponentImplWithChild {
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
     uint64_t max_memory_usage=0;
+    uint64_t totalwork=0;
     chrono::duration<double> time_total_execution{0};
     chrono::duration<double> time_fusion{0};
     chrono::duration<double> time_exec{0};
@@ -115,8 +116,9 @@ void spaces(stringstream &out, int num) {
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
         cout << "[OPENCL] Profiling: " << endl;
-        cout << "\tArray contractions:   " << num_temp_arrays << "/" << num_base_arrays << endl;
+        cout << "\tArray Contractions:   " << num_temp_arrays << "/" << num_base_arrays << endl;
         cout << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB" << endl;
+        cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
         cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
         cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
         cout << "\t  Build:  " << time_build.count() << "s" << endl;
@@ -424,6 +426,14 @@ void Impl::execute(bh_ir *bhir) {
         }
     }
 
+    // Some statistics
+    if (config.defaultGet<bool>("prof", false)) {
+        for (const bh_instruction *instr: instr_list) {
+            if (not bh_opcode_is_system(instr->opcode)) {
+                totalwork += bh_nelements(instr->operand[0]);
+            }
+        }
+    }
     auto tfusion = chrono::steady_clock::now();
 
     // Get the set of initiating instructions
