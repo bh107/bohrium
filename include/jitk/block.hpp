@@ -181,13 +181,16 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b=false);
 Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, int64_t size_of_rank_dim,
                           const std::set<bh_instruction*> &news, const std::set<bh_base*> &temps = std::set<bh_base*>());
 
+// Returns the blocks that can be parallelized in 'block' (incl. 'block' and its sub-blocks)
+std::vector<const Block*> find_threaded_blocks(const Block &block);
+
+// Check if it is possible to merge 'a' and 'a' (in that order)
+bool merge_possible(const Block &a, const Block &b);
+
 // Merges the two blocks 'a' and 'a' (in that order) if they are fusible.
 // NB: 'a' or 'b' might be reshaped in order to make the merge legal
 // Returns the new block and a flag indicating whether the merge was performed
 std::pair<Block, bool> merge_if_possible(Block &a, Block &b, const std::set<bh_instruction *> &news);
-
-// Check if it is possible to merge 'a' and 'a' (in that order)
-bool merge_possible(const Block &a, const Block &b);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);

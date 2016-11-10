@@ -483,6 +483,28 @@ bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &b
 }
 } // Unnamed namespace
 
+vector<const Block*> find_threaded_blocks(const Block &block) {
+    vector<const Block *> block_list = {&block};
+    block.getAllSubBlocks(block_list);
+
+    // Find threaded blocks
+    constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
+    vector<const Block*> ret;
+    for (const Block *b: block_list) {
+        if (b->_sweeps.size() == 0 and not b->isSystemOnly()) {
+            ret.push_back(b);
+        }
+        // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
+        if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
+            break;
+        }
+        if (ret.size() == MAX_NUM_OF_THREADED_BLOCKS) {
+            break;
+        }
+    }
+    return ret;
+}
+
 bool merge_possible(const Block &a, const Block &b) {
     assert(a.validation());
     assert(b.validation());

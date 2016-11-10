@@ -482,22 +482,8 @@ void Impl::execute(bh_ir *bhir) {
             cout << kernel.block;
         }
 
-
-        // Find threaded blocks
-        constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
-        vector<const Block*> threaded_blocks;
-        for (const Block *b: kernel.getAllBlocks()) {
-            if (b->_sweeps.size() == 0 and not b->isSystemOnly()) {
-                threaded_blocks.push_back(b);
-            }
-            // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
-            if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
-                break;
-            }
-            if (threaded_blocks.size() == MAX_NUM_OF_THREADED_BLOCKS) {
-                break;
-            }
-        }
+        // Find the parallel blocks
+        const vector<const Block*> threaded_blocks = find_threaded_blocks(kernel.block);
 
         if (threaded_blocks.size() == 0 and kernel_is_computing) {
             if (verbose)
