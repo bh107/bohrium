@@ -120,7 +120,8 @@ Impl::~Impl() {
         cout << "\tArray Contractions:   " << num_temp_arrays << "/" << num_base_arrays << endl;
         cout << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB" << endl;
         cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
-        cout << "\tWork below par-threshold(1000): " << threading_below_threshold / (double)totalwork * 100 << endl;
+        cout << "\tWork below par-threshold(1000): " \
+             << threading_below_threshold / (double)totalwork * 100 << "%" << endl;
         cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
         cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
         cout << "\t  Build:  " << time_build.count() << "s" << endl;

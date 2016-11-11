@@ -156,6 +156,23 @@ void pprint(const DAG &dag, const string &filename) {
             }
             out << "labelloc=\"t\";" << endl;
             out << "label=\"Total cost: " << (double) totalcost;
+
+            // Find "work below par-threshold"
+            uint64_t threading_below_threshold=0, totalwork=0;
+            BOOST_FOREACH(Vertex v, boost::vertices(graph)) {
+                vector<const Block*> threaded_blocks;
+                uint64_t total_threading;
+                tie(threaded_blocks, total_threading) = find_threaded_blocks(graph[v]);
+                for (const bh_instruction *instr: graph[v].getAllInstr()) {
+                    if (bh_opcode_is_system(instr->opcode))
+                        continue;
+                    if (total_threading < 1000) {
+                        threading_below_threshold += bh_nelements(instr->operand[0]);
+                    }
+                    totalwork += bh_nelements(instr->operand[0]);
+                }
+            }
+            out << ", Work below par-threshold(1000): " << threading_below_threshold / (double)totalwork * 100 << "%";
             out << "\";";
             out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
             out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
@@ -207,6 +224,7 @@ void pprint(const DAG &dag, const string &filename) {
 
 void greedy(DAG &dag, const set<bh_instruction *> &news) {
     while(1) {
+        pprint(dag, "merge");
         // First we find all fusible edges
         vector<Edge> fusibles;
         BOOST_FOREACH(Edge e, edges(dag)) {
@@ -230,6 +248,7 @@ void greedy(DAG &dag, const set<bh_instruction *> &news) {
         }
         Vertex v1 = source(greatest, dag);
         Vertex v2 = target(greatest, dag);
+        cout << "merge: " << v1 << ", " << v2 << endl;
 
         // And either remove it, if it is transitive
         if(path_exist(v1, v2, dag, true)) {
