@@ -145,15 +145,14 @@ Block *Block::findInstrBlock(const bh_instruction *instr) {
     return NULL;
 }
 
-string Block::pprint() const {
+string Block::pprint(const char *newline) const {
     stringstream ss;
+    spaces(ss, rank * 4);
     if (isInstr()) {
         if (_instr != NULL) {
-            spaces(ss, rank * 4);
-            ss << *_instr << endl;
+            ss << *_instr << newline;
         }
     } else {
-        spaces(ss, rank * 4);
         ss << "rank: " << rank << ", size: " << size;
         if (_sweeps.size() > 0) {
             ss << ", sweeps: { ";
@@ -188,9 +187,9 @@ string Block::pprint() const {
             ss << "}";
         }
         if (_block_list.size() > 0) {
-            ss << ", block list:" << endl;
+            ss << ", block list:" << newline;
             for (const Block &b : _block_list) {
-                ss << b.pprint();
+                ss << b.pprint(newline);
             }
         }
     }

@@ -193,10 +193,7 @@ void pprint(const DAG &dag, const string &filename) {
                     out << "NA ";
                 }
             }
-            out << "], Instructions: \\l";
-            for (const bh_instruction *instr: graph[v].getAllInstr()) {
-                out << *instr << "\\l";
-            }
+            out << "], Instructions: \\l" << graph[v].pprint("\\l");
             out << "\"]";
         }
     };

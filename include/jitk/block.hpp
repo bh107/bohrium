@@ -76,7 +76,7 @@ public:
     }
 
     // Pretty print this block
-    std::string pprint() const;
+    std::string pprint(const char *newline="\n") const;
 
     // Return all sub-blocks (incl. nested blocks)
     void getAllSubBlocks(std::vector<const Block *> &out) const;
