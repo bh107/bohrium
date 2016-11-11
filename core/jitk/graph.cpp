@@ -221,7 +221,7 @@ void pprint(const DAG &dag, const string &filename) {
 
 void greedy(DAG &dag, const set<bh_instruction *> &news) {
     while(1) {
-        pprint(dag, "merge");
+//        pprint(dag, "merge");
         // First we find all fusible edges
         vector<Edge> fusibles;
         BOOST_FOREACH(Edge e, edges(dag)) {
@@ -245,7 +245,7 @@ void greedy(DAG &dag, const set<bh_instruction *> &news) {
         }
         Vertex v1 = source(greatest, dag);
         Vertex v2 = target(greatest, dag);
-        cout << "merge: " << v1 << ", " << v2 << endl;
+//        cout << "merge: " << v1 << ", " << v2 << endl;
 
         // And either remove it, if it is transitive
         if(path_exist(v1, v2, dag, true)) {
