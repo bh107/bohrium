@@ -143,6 +143,17 @@ uint64_t block_cost(const Block &block) {
     return totalsize;
 }
 
+void transitive_reduction(DAG &dag) {
+    vector<Edge> removals;
+    BOOST_FOREACH(Edge e, boost::edges(dag)) {
+        if(path_exist(source(e,dag), target(e,dag), dag, true))
+            removals.push_back(e);
+    }
+    for (Edge &e: removals) {
+        remove_edge(e, dag);
+    }
+}
+
 void pprint(const DAG &dag, const string &filename) {
 
     //We define a graph and a kernel writer for graphviz

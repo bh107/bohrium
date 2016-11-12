@@ -41,6 +41,13 @@ typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, B
 typedef typename boost::graph_traits<DAG>::edge_descriptor Edge;
 typedef uint64_t Vertex;
 
+/* Transitive reduce the 'dag', i.e. remove all redundant edges,
+ *
+ * Complexity: O(E * (E + V))
+ *
+ */
+void transitive_reduction(DAG &dag);
+
 // Pretty print the DAG. A "-<id>.dot" is append the filename.
 void pprint(const DAG &dag, const std::string &filename);
 
