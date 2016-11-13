@@ -143,7 +143,7 @@ uint64_t block_cost(const Block &block) {
     return totalsize;
 }
 
-void merge_vertices(DAG &dag, Vertex a, Vertex b, const set<bh_instruction *> &news, const bool remove_vertices) {
+void merge_vertices(DAG &dag, Vertex a, Vertex b, const set<bh_instruction *> &news, const bool remove_b) {
     // Let's merge the two blocks and save it in vertex 'a'
     bool merge_possible;
     tie(dag[a], merge_possible) = merge_if_possible(dag[a], dag[b], news);
@@ -163,7 +163,7 @@ void merge_vertices(DAG &dag, Vertex a, Vertex b, const set<bh_instruction *> &n
                 }
     // Finally, cleanup of 'b'
     boost::clear_vertex(b, dag);
-    if (remove_vertices) {
+    if (remove_b) {
         boost::remove_vertex(b, dag);
     }
 }
