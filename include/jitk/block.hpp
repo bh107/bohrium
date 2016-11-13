@@ -164,6 +164,7 @@ public:
     std::pair<Block*, int64_t> findLastAccessBy(const bh_base *base);
 
     // Insert the system instruction 'instr' after the instruction that accesses 'base' last.
+    // If no instruction accesses 'base' we insert it after the last instruction.
     // NB: Force reshape the instruction to match the instructions accesses 'base' last.
     void insert_system_after(bh_instruction *instr, const bh_base *base);
 
