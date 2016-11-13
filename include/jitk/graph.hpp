@@ -58,6 +58,9 @@ void merge_vertices(DAG &dag, Vertex a, Vertex b, const std::set<bh_instruction 
  */
 void transitive_reduction(DAG &dag);
 
+// Merge pendant vertices that are system only
+void merge_system_pendants(DAG &dag, const std::set<bh_instruction *> &news);
+
 // Pretty print the DAG. A "-<id>.dot" is append the filename.
 void pprint(const DAG &dag, const std::string &filename);
 

@@ -179,6 +179,35 @@ void transitive_reduction(DAG &dag) {
     }
 }
 
+void merge_system_pendants(DAG &dag, const set<bh_instruction *> &news) {
+    // Find edges to merge over
+    vector<Edge> merges;
+    BOOST_FOREACH(Edge e, boost::edges(dag)) {
+        Vertex src = boost::source(e, dag);
+        Vertex dst = boost::target(e, dag);
+        if (boost::in_degree(dst, dag) == 1 and boost::out_degree(dst, dag) == 0) { // Leaf
+            if (dag[dst].isSystemOnly()) {
+                merges.push_back(e);
+            }
+        } else if (boost::in_degree(src, dag) == 0 and boost::out_degree(src, dag) == 1) { //Root
+            if (dag[src].isSystemOnly()) {
+                merges.push_back(e);
+            }
+        }
+    }
+    // Do merge
+    for (Edge &e: merges) {
+        Vertex src = boost::source(e, dag);
+        Vertex dst = boost::target(e, dag);
+        merge_vertices(dag, src, dst, news, false);
+    }
+    // Remove the vertex leftover from the merge
+    // NB: because of Vertex invalidation, we have to traverse in reverse
+    BOOST_REVERSE_FOREACH(Edge &e, merges) {
+        boost::remove_vertex(boost::target(e, dag), dag);
+    }
+}
+
 void pprint(const DAG &dag, const string &filename) {
 
     //We define a graph and a kernel writer for graphviz
