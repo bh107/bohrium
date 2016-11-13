@@ -41,6 +41,16 @@ typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, B
 typedef typename boost::graph_traits<DAG>::edge_descriptor Edge;
 typedef uint64_t Vertex;
 
+/* Merge vertices 'a' and 'b' (in that order)
+ * If 'remove_vertices==false' than the vertices are only cleared not removed graph 'dag'
+ * NB: 'a' and 'b' MUST be fusible
+ *
+ * Complexity: O(V)
+ *
+ */
+void merge_vertices(DAG &dag, Vertex a, Vertex b, const std::set<bh_instruction *> &news,
+                    const bool remove_vertices=true);
+
 /* Transitive reduce the 'dag', i.e. remove all redundant edges,
  *
  * Complexity: O(E * (E + V))

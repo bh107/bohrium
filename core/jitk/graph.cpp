@@ -143,6 +143,31 @@ uint64_t block_cost(const Block &block) {
     return totalsize;
 }
 
+void merge_vertices(DAG &dag, Vertex a, Vertex b, const set<bh_instruction *> &news, const bool remove_vertices) {
+    // Let's merge the two blocks and save it in vertex 'a'
+    bool merge_possible;
+    tie(dag[a], merge_possible) = merge_if_possible(dag[a], dag[b], news);
+    assert(merge_possible);
+    assert(dag[a].validation());
+
+    // Add new children
+    BOOST_FOREACH(Vertex child, boost::adjacent_vertices(b, dag)) {
+                    assert(child != a);
+                    boost::add_edge(a, child, dag);
+                }
+    // Add new parents
+    BOOST_FOREACH(Vertex parent, boost::inv_adjacent_vertices(b, dag)) {
+                    if (parent != a) {
+                        boost::add_edge(parent, a, dag);
+                    }
+                }
+    // Finally, cleanup of 'b'
+    boost::clear_vertex(b, dag);
+    if (remove_vertices) {
+        boost::remove_vertex(b, dag);
+    }
+}
+
 void transitive_reduction(DAG &dag) {
     vector<Edge> removals;
     BOOST_FOREACH(Edge e, boost::edges(dag)) {
@@ -262,25 +287,7 @@ void greedy(DAG &dag, const set<bh_instruction *> &news) {
         if(path_exist(v1, v2, dag, true)) {
             boost::remove_edge(greatest, dag);
         } else { // Or merge it away (if legal)
-            const pair<Block, bool> res = merge_if_possible(dag[v1], dag[v2], news);
-            assert(res.second);
-            if (res.second) {
-                assert(res.first.validation());
-                dag[v1] = res.first;
-                // Add new children
-                BOOST_FOREACH(Vertex child, boost::adjacent_vertices(v2, dag)) {
-                    assert(child != v1);
-                    boost::add_edge(v1, child, dag);
-                }
-                // Add new parents
-                BOOST_FOREACH(Vertex parent, boost::inv_adjacent_vertices(v2, dag)) {
-                    if(parent != v1) {
-                        boost::add_edge(parent, v1, dag);
-                    }
-                }
-                boost::clear_vertex(v2, dag);
-                boost::remove_vertex(v2, dag);
-            }
+            merge_vertices(dag, v1, v2, news);
         }
     }
 }
