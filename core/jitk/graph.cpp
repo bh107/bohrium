@@ -289,11 +289,23 @@ void greedy(DAG &dag, const set<bh_instruction *> &news) {
 //        pprint(dag, "merge");
         // First we find all fusible edges
         vector<Edge> fusibles;
-        BOOST_FOREACH(Edge e, edges(dag)) {
-            if (merge_possible(dag[source(e, dag)], dag[target(e, dag)])) {
-                fusibles.push_back(e);
+        {
+            auto edges = boost::edges(dag);
+            for (auto it = edges.first; it != edges.second;) {
+                Edge e = *it; ++it; // NB: we iterate here because boost::remove_edge() invalidates 'it'
+                Vertex v1 = source(e, dag);
+                Vertex v2 = target(e, dag);
+                // Remove transitive edges
+                if(path_exist(v1, v2, dag, true)) {
+                    boost::remove_edge(e, dag);
+                } else {
+                    if (merge_possible(dag[source(e, dag)], dag[target(e, dag)])) {
+                        fusibles.push_back(e);
+                    }
+                }
             }
         }
+        // Any more vertices to fuse?
         if (fusibles.size() == 0) {
             break;
         }
@@ -312,12 +324,9 @@ void greedy(DAG &dag, const set<bh_instruction *> &news) {
         Vertex v2 = target(greatest, dag);
 //        cout << "merge: " << v1 << ", " << v2 << endl;
 
-        // And either remove it, if it is transitive
-        if(path_exist(v1, v2, dag, true)) {
-            boost::remove_edge(greatest, dag);
-        } else { // Or merge it away (if legal)
-            merge_vertices(dag, v1, v2, news);
-        }
+        assert(not path_exist(v1, v2, dag, true)); // Transitive edges should have been removed by now
+
+        merge_vertices(dag, v1, v2, news);
     }
 }
 
