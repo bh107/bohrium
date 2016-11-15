@@ -483,12 +483,19 @@ bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &b
 } // Unnamed namespace
 
 pair<vector<const Block *>, uint64_t> find_threaded_blocks(const Block &block) {
+    pair<vector<const Block*>, uint64_t> ret;
+
+    if (block.isInstr()) {
+        ret.second = 0;
+        return ret; // Instruction blocks are not threaded
+    }
+
+    // We should search in 'this' block and its sub-blocks
     vector<const Block *> block_list = {&block};
     block.getAllSubBlocks(block_list);
 
     // Find threaded blocks
     constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
-    pair<vector<const Block*>, uint64_t> ret;
     ret.second = 1;
     for (const Block *b: block_list) {
         if (b->_sweeps.size() == 0 and not b->isSystemOnly()) {
