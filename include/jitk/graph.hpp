@@ -41,6 +41,9 @@ typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, B
 typedef typename boost::graph_traits<DAG>::edge_descriptor Edge;
 typedef uint64_t Vertex;
 
+// Validate the 'dag'
+bool validate(DAG &dag);
+
 /* Merge vertices 'a' and 'b' (in that order) into 'a'
  * If 'remove_b==false' than the 'b' vertex is only cleared not removed graph 'dag'.
  * NB: 'a' and 'b' MUST be fusible

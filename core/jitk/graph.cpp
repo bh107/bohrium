@@ -143,6 +143,10 @@ uint64_t block_cost(const Block &block) {
     return totalsize;
 }
 
+bool validate(DAG &dag) {
+    return true;
+}
+
 void merge_vertices(DAG &dag, Vertex a, Vertex b, const set<bh_instruction *> &news, const bool remove_b) {
     // Let's merge the two blocks and save it in vertex 'a'
     bool merge_possible;
@@ -166,6 +170,7 @@ void merge_vertices(DAG &dag, Vertex a, Vertex b, const set<bh_instruction *> &n
     if (remove_b) {
         boost::remove_vertex(b, dag);
     }
+    assert(validate(dag));
 }
 
 void transitive_reduction(DAG &dag) {
@@ -177,6 +182,7 @@ void transitive_reduction(DAG &dag) {
     for (Edge &e: removals) {
         remove_edge(e, dag);
     }
+    assert(validate(dag));
 }
 
 void merge_system_pendants(DAG &dag, const set<bh_instruction *> &news) {
@@ -206,6 +212,7 @@ void merge_system_pendants(DAG &dag, const set<bh_instruction *> &news) {
     BOOST_REVERSE_FOREACH(Edge &e, merges) {
         boost::remove_vertex(boost::target(e, dag), dag);
     }
+    assert(validate(dag));
 }
 
 void pprint(const DAG &dag, const string &filename) {
@@ -328,6 +335,7 @@ void greedy(DAG &dag, const set<bh_instruction *> &news) {
 
         merge_vertices(dag, v1, v2, news);
     }
+    assert(validate(dag));
 }
 
 } // graph
