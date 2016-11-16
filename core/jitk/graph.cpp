@@ -109,6 +109,9 @@ DAG from_block_list(const vector<Block> &block_list) {
 }
 
 uint64_t weight(const Block &a, const Block &b) {
+    if (a.isInstr() or b.isInstr()) {
+        return 0; // Instruction blocks cannot be fused
+    }
     const set<bh_base *> news = a.getAllNews();
     const set<bh_base *> frees = b.getAllFrees();
     vector<bh_base *> new_temps;
@@ -123,7 +126,7 @@ uint64_t weight(const Block &a, const Block &b) {
 
 uint64_t block_cost(const Block &block) {
     std::vector<bh_base*> non_temps;
-    const set<bh_base *> temps = block.getAllTemps();
+    const set<bh_base *> temps = block.isInstr()?set<bh_base *>():block.getAllTemps();
     for (const bh_instruction *instr: block.getAllInstr()) {
         // Find non-temporary arrays
         const int nop = bh_noperands(instr->opcode);
@@ -321,7 +324,7 @@ void greedy(DAG &dag) {
         Edge greatest = fusibles.front();
         uint64_t greatest_weight = weight(dag[source(greatest, dag)], dag[target(greatest, dag)]);
         for (Edge e: fusibles) {
-            uint64_t w = weight(dag[source(e, dag)], dag[target(e, dag)]);
+            const uint64_t w = weight(dag[source(e, dag)], dag[target(e, dag)]);
             if (w > greatest_weight) {
                 greatest = e;
                 greatest_weight = w;

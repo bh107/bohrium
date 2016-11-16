@@ -180,6 +180,7 @@ string Block::pprint(const char *newline) const {
 }
 
 void Block::getAllSubBlocks(std::vector<const Block *> &out) const {
+    assert(not isInstr());
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
             out.push_back(&b);
@@ -187,26 +188,9 @@ void Block::getAllSubBlocks(std::vector<const Block *> &out) const {
         }
     }
 }
-void Block::getAllSubBlocks(std::vector<Block *> &out) {
-    for (Block &b : _block_list) {
-        if (not b.isInstr()) {
-            out.push_back(&b);
-            b.getAllSubBlocks(out);
-        }
-    }
-}
-vector<const Block *> Block::getAllSubBlocks() const {
-    vector<const Block *> ret;
-    getAllSubBlocks(ret);
-    return ret;
-}
-vector<Block *> Block::getAllSubBlocks() {
-    vector<Block *> ret;
-    getAllSubBlocks(ret);
-    return ret;
-}
 
 vector<const Block *> Block::getLocalSubBlocks() const {
+    assert(not isInstr());
     vector<const Block *> ret;
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
@@ -233,6 +217,7 @@ vector<bh_instruction *> Block::getAllInstr() const {
 }
 
 void Block::getLocalInstr(vector<bh_instruction *> &out) const {
+    assert(not isInstr());
     for (const Block &b : _block_list) {
         if (b.isInstr() and b._instr != NULL) {
             out.push_back(b._instr);
@@ -240,38 +225,48 @@ void Block::getLocalInstr(vector<bh_instruction *> &out) const {
     }
 }
 vector<bh_instruction *> Block::getLocalInstr() const {
+    assert(not isInstr());
     vector<bh_instruction *> ret;
     getLocalInstr(ret);
     return ret;
 }
 
 void Block::getAllNews(set<bh_base *> &out) const {
+    assert(not isInstr());
     out.insert(_news.begin(), _news.end());
     for (const Block &b: _block_list) {
-        b.getAllNews(out);
+        if (not b.isInstr()){
+            b.getAllNews(out);
+        }
     }
 }
 
 set<bh_base *> Block::getAllNews() const {
+    assert(not isInstr());
     set<bh_base *> ret;
     getAllNews(ret);
     return ret;
 }
 
 void Block::getAllFrees(set<bh_base *> &out) const {
+    assert(not isInstr());
     out.insert(_frees.begin(), _frees.end());
     for (const Block &b: _block_list) {
-        b.getAllFrees(out);
+        if (not b.isInstr()){
+            b.getAllFrees(out);
+        }
     }
 }
 
 set<bh_base *> Block::getAllFrees() const {
+    assert(not isInstr());
     set<bh_base *> ret;
     getAllFrees(ret);
     return ret;
 }
 
 void Block::getLocalTemps(set<bh_base *> &out) const {
+    assert(not isInstr());
     const set<bh_base *> frees = getAllFrees();
     std::set_intersection(_news.begin(), _news.end(), frees.begin(), frees.end(), std::inserter(out, out.begin()));
     const set<bh_base *> news = getAllNews();
@@ -279,19 +274,24 @@ void Block::getLocalTemps(set<bh_base *> &out) const {
 }
 
 set<bh_base *> Block::getLocalTemps() const {
+    assert(not isInstr());
     set<bh_base *> ret;
     getLocalTemps(ret);
     return ret;
 }
 
 void Block::getAllTemps(set<bh_base *> &out) const {
+    assert(not isInstr());
     getLocalTemps(out);
     for (const Block &b: _block_list) {
-        b.getAllTemps(out);
+        if (not b.isInstr()){
+            b.getAllTemps(out);
+        }
     }
 }
 
 set<bh_base *> Block::getAllTemps() const {
+    assert(not isInstr());
     set<bh_base *> ret;
     getAllTemps(ret);
     return ret;
@@ -444,6 +444,8 @@ bool data_parallel_compatible(const bh_instruction *a, const bh_instruction *b)
 
 // Check if 'b1' and 'b2' supports data-parallelism when merged
 bool data_parallel_compatible(const Block &b1, const Block &b2) {
+    assert(not b1.isInstr());
+    assert(not b2.isInstr());
     for (const bh_instruction *i1 : b1.getAllInstr()) {
         for (const bh_instruction *i2 : b2.getAllInstr()) {
             if (not data_parallel_compatible(i1, i2))
@@ -455,6 +457,7 @@ bool data_parallel_compatible(const Block &b1, const Block &b2) {
 
 // Check if 'block' accesses the output of a sweep in 'sweeps'
 bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &block) {
+    assert(not block.isInstr());
     for (bh_instruction *instr: sweeps) {
         assert(bh_noperands(instr->opcode) > 0);
         auto bases = block.getAllBases();
