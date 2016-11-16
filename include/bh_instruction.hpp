@@ -24,12 +24,16 @@ struct bh_instruction
     bh_view  operand[BH_MAX_NO_OPERANDS];
     //Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
+    //Flag that indicates whether this instruction construct the output array (i.e. is the first operation on that array)
+    //For now, this flag is only used by the code generators.
+    bool constructor;
 
     bh_instruction(){}
     bh_instruction(const bh_instruction& instr)
     {
         opcode = instr.opcode;
         constant = instr.constant;
+        constructor = instr.constructor;
         std::memcpy(operand, instr.operand, bh_noperands(opcode) * sizeof(bh_view));
     }
 
