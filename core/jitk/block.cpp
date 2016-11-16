@@ -35,21 +35,6 @@ void spaces(stringstream &out, int num) {
         out << " ";
     }
 }
-
-// Returns true if a block consisting of 'instr_list' is reshapable
-bool is_reshapeable(const vector<bh_instruction *> &instr_list) {
-    assert(instr_list.size() > 0);
-
-    // In order to be reshapeable, all instructions must have the same rank and be reshapeable
-    int64_t rank = instr_list[0]->max_ndim();
-    for (auto instr: instr_list) {
-        if (not instr->reshapable())
-            return false;
-        if (instr->max_ndim() != rank)
-            return false;
-    }
-    return true;
-}
 } // Anonymous name space
 
 Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim) {
@@ -94,7 +79,10 @@ Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_
     }
 
     // Let's build the nested block from the 'rank' level to the instruction block
-    Block ret;
+    vector <Block> block_list;
+    set<bh_instruction*> sweeps;
+    set<bh_base *> news;
+    set<bh_base *> frees;
     for (bh_instruction *instr: instr_list) {
         const int64_t max_ndim = instr->max_ndim();
         assert(max_ndim > rank);
@@ -104,29 +92,25 @@ Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_
             vector<int64_t> shape = instr->dominating_shape();
             assert(shape.size() > 0);
             vector<bh_instruction *> single_instr = {instr};
-            ret._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1]));
+            block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1]));
         } else { // No more dimensions -- let's write the instruction block
             assert(max_ndim == rank + 1);
-            ret._block_list.emplace_back(instr, rank + 1);
+            block_list.emplace_back(instr, rank + 1);
 
             // Since 'instr' execute at this 'rank' level, we can calculate news, frees, and temps.
             if (instr->constructor) {
                 if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
-                    ret._news.insert(instr->operand[0].base);
+                    news.insert(instr->operand[0].base);
             }
             if (instr->opcode == BH_FREE) {
-                ret._frees.insert(instr->operand[0].base);
+                frees.insert(instr->operand[0].base);
             }
         }
         if (sweep_axis(*instr) == rank) {
-            ret._sweeps.insert(instr);
+            sweeps.insert(instr);
         }
     }
-    ret.rank = rank;
-    ret.size = size_of_rank_dim;
-    ret._reshapable = is_reshapeable(ret.getAllInstr());
-    assert(ret.validation());
-    return ret;
+    return Block(rank, size_of_rank_dim, std::move(block_list), std::move(sweeps), std::move(news), std::move(frees));
 }
 
 Block *Block::findInstrBlock(const bh_instruction *instr) {

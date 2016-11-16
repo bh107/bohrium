@@ -30,6 +30,23 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
+namespace {
+// Returns true if a block consisting of 'instr_list' is reshapable
+bool is_reshapeable(const std::vector<bh_instruction *> &instr_list) {
+    assert(instr_list.size() > 0);
+
+    // In order to be reshapeable, all instructions must have the same rank and be reshapeable
+    int64_t rank = instr_list[0]->max_ndim();
+    for (auto instr: instr_list) {
+        if (not instr->reshapable())
+            return false;
+        if (instr->max_ndim() != rank)
+            return false;
+    }
+    return true;
+}
+} // Anonymous name space
+
 class Block {
 public:
     std::vector <Block> _block_list;
@@ -44,10 +61,26 @@ public:
     // Unique id of this block
     int _id;
 
-    // Default constructor
+    // Default Constructor
     Block() { static int id_count = 0; _id = id_count++; }
 
-    // Block Instruction Constructor
+    // Loop Block Constructor
+    Block(int rank,
+          int64_t size,
+          std::vector <Block> &&block_list,
+          std::set<bh_instruction*> &&sweeps,
+          std::set<bh_base *> &&news,
+          std::set<bh_base *> &&frees) : Block() {
+        this->rank = rank;
+        this->size = size;
+        this->_block_list = block_list;
+        this->_sweeps = sweeps;
+        this->_news = news;
+        this->_frees = frees;
+        this->_reshapable = is_reshapeable(getAllInstr());
+    }
+
+    // Instruction Block  Constructor
     // Note, the rank is only to make pretty printing easier
     Block(bh_instruction *instr, int rank) : Block() {
         _instr = instr;
