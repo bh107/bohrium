@@ -52,8 +52,8 @@ bool is_reshapeable(const vector<bh_instruction *> &instr_list) {
 }
 } // Anonymous name space
 
-Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim,
-                          const set<bh_instruction *> &news, const set<bh_base *> &temps) {
+Block create_nested_block(std::vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim,
+                          const std::set<bh_instruction *> &news) {
 
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
@@ -526,7 +526,7 @@ bool merge_possible(const Block &a, const Block &b) {
             instr_list_ptr.push_back(&instr_list.back());
         }
         set<bh_base *> temps;
-        a1 = create_nested_block(instr_list_ptr, a.rank, a.size, news_dummy, temps);
+        a1 = create_nested_block(instr_list_ptr, a.rank, a.size, news_dummy);
     }
     Block b1;
     {
@@ -536,7 +536,7 @@ bool merge_possible(const Block &a, const Block &b) {
             instr_list_ptr.push_back(&instr_list.back());
         }
         set<bh_base *> temps;
-        b1 = create_nested_block(instr_list_ptr, b.rank, b.size, news_dummy, temps);
+        b1 = create_nested_block(instr_list_ptr, b.rank, b.size, news_dummy);
     }
     return merge_if_possible(a1, b1, news_dummy).second;
 }
