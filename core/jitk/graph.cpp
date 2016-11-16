@@ -215,7 +215,7 @@ void merge_system_pendants(DAG &dag, const set<bh_instruction *> &news) {
     assert(validate(dag));
 }
 
-void pprint(const DAG &dag, const string &filename) {
+void pprint(const DAG &dag, const char *filename) {
 
     //We define a graph and a kernel writer for graphviz
     struct graph_writer {

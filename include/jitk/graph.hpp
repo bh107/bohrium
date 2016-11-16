@@ -65,7 +65,7 @@ void transitive_reduction(DAG &dag);
 void merge_system_pendants(DAG &dag, const std::set<bh_instruction *> &news);
 
 // Pretty print the DAG. A "-<id>.dot" is append the filename.
-void pprint(const DAG &dag, const std::string &filename);
+void pprint(const DAG &dag, const char *filename);
 
 // Create a dag based on the 'block_list'
 DAG from_block_list(const std::vector <Block> &block_list);
