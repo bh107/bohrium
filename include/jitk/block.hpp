@@ -177,9 +177,7 @@ Block merge(const Block &a, const Block &b, bool based_on_block_b=false);
 // Create a nested block based on 'instr_list' with the sets of new, free, and temp arrays given.
 // The dimensions from zero to 'rank-1' are ignored.
 // The 'size_of_rank_dim' specifies the size of the dimension 'rank'.
-// 'news' is the set of instructions that creates new arrays
-Block create_nested_block(std::vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim,
-                          const std::set<bh_instruction *> &news);
+Block create_nested_block(std::vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim);
 
 // Returns the blocks that can be parallelized in 'block' (incl. 'block' and its sub-blocks)
 // and the total amount of parallelism (in number of possible parallel threads)
@@ -191,7 +189,7 @@ bool merge_possible(const Block &a, const Block &b);
 // Merges the two blocks 'a' and 'a' (in that order) if they are fusible.
 // NB: 'a' or 'b' might be reshaped in order to make the merge legal
 // Returns the new block and a flag indicating whether the merge was performed
-std::pair<Block, bool> merge_if_possible(Block &a, Block &b, const std::set<bh_instruction *> &news);
+std::pair<Block, bool> merge_if_possible(Block &a, Block &b);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);

@@ -147,10 +147,10 @@ bool validate(DAG &dag) {
     return true;
 }
 
-void merge_vertices(DAG &dag, Vertex a, Vertex b, const set<bh_instruction *> &news, const bool remove_b) {
+void merge_vertices(DAG &dag, Vertex a, Vertex b, const bool remove_b) {
     // Let's merge the two blocks and save it in vertex 'a'
     bool merge_possible;
-    tie(dag[a], merge_possible) = merge_if_possible(dag[a], dag[b], news);
+    tie(dag[a], merge_possible) = merge_if_possible(dag[a], dag[b]);
     assert(merge_possible);
     assert(dag[a].validation());
 
@@ -185,7 +185,7 @@ void transitive_reduction(DAG &dag) {
     assert(validate(dag));
 }
 
-void merge_system_pendants(DAG &dag, const set<bh_instruction *> &news) {
+void merge_system_pendants(DAG &dag) {
     // Find edges to merge over
     vector<Edge> merges;
     BOOST_FOREACH(Edge e, boost::edges(dag)) {
@@ -205,7 +205,7 @@ void merge_system_pendants(DAG &dag, const set<bh_instruction *> &news) {
     for (Edge &e: merges) {
         Vertex src = boost::source(e, dag);
         Vertex dst = boost::target(e, dag);
-        merge_vertices(dag, src, dst, news, false);
+        merge_vertices(dag, src, dst, false);
     }
     // Remove the vertex leftover from the merge
     // NB: because of Vertex invalidation, we have to traverse in reverse
@@ -291,7 +291,7 @@ void pprint(const DAG &dag, const char *filename) {
     file.close();
 }
 
-void greedy(DAG &dag, const set<bh_instruction *> &news) {
+void greedy(DAG &dag) {
     while(1) {
 //        pprint(dag, "merge");
         // First we find all fusible edges
@@ -333,7 +333,7 @@ void greedy(DAG &dag, const set<bh_instruction *> &news) {
 
         assert(not path_exist(v1, v2, dag, true)); // Transitive edges should have been removed by now
 
-        merge_vertices(dag, v1, v2, news);
+        merge_vertices(dag, v1, v2);
     }
     assert(validate(dag));
 }

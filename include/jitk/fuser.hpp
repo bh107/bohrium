@@ -31,25 +31,20 @@ namespace bohrium {
 namespace jitk {
 
 // Creates a block list based on the 'instr_list' where each instruction gets its own nested block
-// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
 // NB: this function might reshape the instructions in 'instr_list'
-std::vector<Block> fuser_singleton(std::vector<bh_instruction*> &instr_list, const std::set<bh_instruction*> &news);
+std::vector<Block> fuser_singleton(std::vector<bh_instruction *> &instr_list);
 
 // Fuses 'block_list' in a serial naive manner
-// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
-void fuser_serial(std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
+void fuser_serial(std::vector<Block> &block_list);
 
 // Fuses 'block_list' in a topological breadth first manner
-// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
-void fuser_breadth_first(std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
+void fuser_breadth_first(std::vector<Block> &block_list);
 
 // Fuses 'block_list' in a topological manner prioritizing fusion of reshapable blocks
-// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
-void fuser_reshapable_first(std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
+void fuser_reshapable_first(std::vector<Block> &block_list);
 
 // Fuses 'block_list' greedily
-// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
-void fuser_greedy(std::vector<Block> &block_list, const std::set<bh_instruction *> &news);
+void fuser_greedy(std::vector<Block> &block_list);
 
 } // jit
 } // bohrium

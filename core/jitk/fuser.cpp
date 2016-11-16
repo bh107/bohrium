@@ -32,7 +32,7 @@ namespace bohrium {
 namespace jitk {
 
 
-vector<Block> fuser_singleton(vector<bh_instruction*> &instr_list, const set<bh_instruction*> &news) {
+vector<Block> fuser_singleton(vector<bh_instruction *> &instr_list) {
 
     // Creates the _block_list based on the instr_list
     vector<Block> block_list;
@@ -56,12 +56,12 @@ vector<Block> fuser_singleton(vector<bh_instruction*> &instr_list, const set<bh_
         assert(dominating_shape.size() > 0);
         int64_t size_of_rank_dim = dominating_shape[0];
         vector<bh_instruction*> single_instr = {instr[0]};
-        block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim, news));
+        block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim));
     }
     return block_list;
 }
 
-void fuser_serial(vector<Block> &block_list, const set<bh_instruction *> &news) {
+void fuser_serial(vector<Block> &block_list) {
     vector<Block> ret;
     for (auto it = block_list.begin(); it != block_list.end(); ) {
         ret.push_back(*it);
@@ -72,7 +72,7 @@ void fuser_serial(vector<Block> &block_list, const set<bh_instruction *> &news) 
         }
         // Let's search for fusible blocks
         for (; it != block_list.end(); ++it) {
-            const pair<Block, bool> res = merge_if_possible(cur, *it, news);
+            const pair<Block, bool> res = merge_if_possible(cur, *it);
             if (res.second) {
                 cur = res.first;
             } else {
@@ -80,7 +80,7 @@ void fuser_serial(vector<Block> &block_list, const set<bh_instruction *> &news) 
             }
         }
         // Let's fuse at the next rank level
-        fuser_serial(cur._block_list, news);
+        fuser_serial(cur._block_list);
     }
     block_list = ret;
 }
@@ -106,21 +106,21 @@ public:
 };
 } // Anon namespace
 
-void fuser_breadth_first(vector<Block> &block_list, const set<bh_instruction *> &news) {
+void fuser_breadth_first(vector<Block> &block_list) {
 
     graph::DAG dag = graph::from_block_list(block_list);
-    vector<Block> ret = graph::topological<FifoQueue>(dag, news);
+    vector<Block> ret = graph::topological<FifoQueue>(dag);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_breadth_first(b._block_list, news);
+            fuser_breadth_first(b._block_list);
         }
     }
     block_list = ret;
 }
 
-void fuser_reshapable_first(vector<Block> &block_list, const set<bh_instruction *> &news) {
+void fuser_reshapable_first(vector<Block> &block_list) {
 
     // Let's define a queue that priorities fusion of reshapable blocks
     class ReshapableQueue {
@@ -154,27 +154,27 @@ void fuser_reshapable_first(vector<Block> &block_list, const set<bh_instruction 
     };
 
     graph::DAG dag = graph::from_block_list(block_list);
-    vector<Block> ret = graph::topological<ReshapableQueue>(dag, news);
+    vector<Block> ret = graph::topological<ReshapableQueue>(dag);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_reshapable_first(b._block_list, news);
+            fuser_reshapable_first(b._block_list);
         }
     }
     block_list = ret;
 }
 
-void fuser_greedy(vector<Block> &block_list, const set<bh_instruction *> &news) {
+void fuser_greedy(vector<Block> &block_list) {
 
     graph::DAG dag = graph::from_block_list(block_list);
-    graph::greedy(dag, news);
-    vector<Block> ret = graph::topological<FifoQueue>(dag, news);
+    graph::greedy(dag);
+    vector<Block> ret = graph::topological<FifoQueue>(dag);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_breadth_first(b._block_list, news);
+            fuser_breadth_first(b._block_list);
         }
     }
     block_list = ret;

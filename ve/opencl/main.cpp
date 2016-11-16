@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
+#include <bh_util.hpp>
 #include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
@@ -64,7 +65,6 @@ class Impl : public ComponentImplWithChild {
     map<bh_base*, unique_ptr<cl::Buffer> > buffers;
     
     void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss);
-    set<bh_instruction*> find_initiating_instr(vector<bh_instruction*> &instr_list);
 
   public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level) {
@@ -333,26 +333,25 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
 
 }
 
-// Returns the instructions that initiate base arrays in 'instr_list'
-set<bh_instruction*> Impl::find_initiating_instr(vector<bh_instruction*> &instr_list) {
+// Sets the constructor flag of each instruction in 'instr_list'
+void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base*, unique_ptr<cl::Buffer> > &buffers) {
     set<bh_base*> initiated; // Arrays initiated in 'instr_list'
-    set<bh_instruction*> ret;
     for(bh_instruction *instr: instr_list) {
+        instr->constructor = false;
         int nop = bh_noperands(instr->opcode);
         for (bh_intp o = 0; o < nop; ++o) {
             const bh_view &v = instr->operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);
-                if (v.base->data == NULL and initiated.find(v.base) == initiated.end() and buffers.find(v.base) == buffers.end()) {
+                if (v.base->data == NULL and not (util::exist(initiated, v.base) or util::exist(buffers, v.base))) {
                     if (o == 0) { // It is only the output that is initiated
                         initiated.insert(v.base);
-                        ret.insert(instr); // Add the instruction that initiate 'v.base'
+                        instr->constructor = true;
                     }
                 }
             }
         }
     }
-    return ret;
 }
 
 // Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
@@ -439,16 +438,16 @@ void Impl::execute(bh_ir *bhir) {
     }
     auto tfusion = chrono::steady_clock::now();
 
-    // Get the set of initiating instructions
-    const set<bh_instruction*> news = find_initiating_instr(instr_list);
+    // Set the constructor flag
+    set_constructor_flag(instr_list, buffers);
 
     // Let's fuse the 'instr_list' into blocks
-    vector<Block> block_list = fuser_singleton(instr_list, news);
+    vector<Block> block_list = fuser_singleton(instr_list);
     if (config.defaultGet<bool>("serial_fusion", false)) {
-       fuser_serial(block_list, news);
+        fuser_serial(block_list);
     } else {
-    //  fuser_reshapable_first(block_list, news);
-        fuser_greedy(block_list, news);
+    //  fuser_reshapable_first(block_list);
+        fuser_greedy(block_list);
     }
 
     // Pretty printing the block

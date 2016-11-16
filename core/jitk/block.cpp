@@ -52,8 +52,7 @@ bool is_reshapeable(const vector<bh_instruction *> &instr_list) {
 }
 } // Anonymous name space
 
-Block create_nested_block(std::vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim,
-                          const std::set<bh_instruction *> &news) {
+Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim) {
 
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
@@ -105,13 +104,13 @@ Block create_nested_block(std::vector<bh_instruction *> &instr_list, int rank, i
             vector<int64_t> shape = instr->dominating_shape();
             assert(shape.size() > 0);
             vector<bh_instruction *> single_instr = {instr};
-            ret._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1], news));
+            ret._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1]));
         } else { // No more dimensions -- let's write the instruction block
             assert(max_ndim == rank + 1);
             ret._block_list.emplace_back(instr, rank + 1);
 
             // Since 'instr' execute at this 'rank' level, we can calculate news, frees, and temps.
-            if (news.find(instr) != news.end()) {
+            if (instr->constructor) {
                 if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
                     ret._news.insert(instr->operand[0].base);
             }
@@ -515,7 +514,6 @@ pair<vector<const Block *>, uint64_t> find_threaded_blocks(const Block &block) {
 
 bool merge_possible(const Block &a, const Block &b) {
 
-    const set<bh_instruction *> news_dummy;
     vector<bh_instruction> instr_list;
     instr_list.reserve(a.getAllInstr().size() + b.getAllInstr().size());
     Block a1;
@@ -525,8 +523,7 @@ bool merge_possible(const Block &a, const Block &b) {
             instr_list.push_back(*instr);
             instr_list_ptr.push_back(&instr_list.back());
         }
-        set<bh_base *> temps;
-        a1 = create_nested_block(instr_list_ptr, a.rank, a.size, news_dummy);
+        a1 = create_nested_block(instr_list_ptr, a.rank, a.size);
     }
     Block b1;
     {
@@ -535,13 +532,12 @@ bool merge_possible(const Block &a, const Block &b) {
             instr_list.push_back(*instr);
             instr_list_ptr.push_back(&instr_list.back());
         }
-        set<bh_base *> temps;
-        b1 = create_nested_block(instr_list_ptr, b.rank, b.size, news_dummy);
+        b1 = create_nested_block(instr_list_ptr, b.rank, b.size);
     }
-    return merge_if_possible(a1, b1, news_dummy).second;
+    return merge_if_possible(a1, b1).second;
 }
 
-pair<Block, bool> merge_if_possible(Block &a, Block &b, const set<bh_instruction *> &news) {
+std::pair<Block, bool> merge_if_possible(Block &a, Block &b) {
     assert(a.validation());
     assert(b.validation());
 
@@ -571,13 +567,13 @@ pair<Block, bool> merge_if_possible(Block &a, Block &b, const set<bh_instruction
         vector<bh_instruction *> cur_instr = a.getAllInstr();
         vector<bh_instruction *> it_instr = b.getAllInstr();
         cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-        return make_pair(create_nested_block(cur_instr, b.rank, a.size, news), true);
+        return make_pair(create_nested_block(cur_instr, b.rank, a.size), true);
     }
     if (a._reshapable && a.size % b.size == 0) {
         vector<bh_instruction *> cur_instr = a.getAllInstr();
         vector<bh_instruction *> it_instr = b.getAllInstr();
         cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-        return make_pair(create_nested_block(cur_instr, a.rank, b.size, news), true);
+        return make_pair(create_nested_block(cur_instr, a.rank, b.size), true);
     }
     return make_pair(Block(), false);
 }

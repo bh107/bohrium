@@ -51,8 +51,7 @@ bool validate(DAG &dag);
  * Complexity: O(V)
  *
  */
-void merge_vertices(DAG &dag, Vertex a, Vertex b, const std::set<bh_instruction *> &news,
-                    const bool remove_b=true);
+void merge_vertices(DAG &dag, Vertex a, Vertex b, const bool remove_b=true);
 
 /* Transitive reduce the 'dag', i.e. remove all redundant edges,
  *
@@ -62,7 +61,7 @@ void merge_vertices(DAG &dag, Vertex a, Vertex b, const std::set<bh_instruction 
 void transitive_reduction(DAG &dag);
 
 // Merge pendant vertices that are system only
-void merge_system_pendants(DAG &dag, const std::set<bh_instruction *> &news);
+void merge_system_pendants(DAG &dag);
 
 // Pretty print the DAG. A "-<id>.dot" is append the filename.
 void pprint(const DAG &dag, const char *filename);
@@ -73,7 +72,7 @@ DAG from_block_list(const std::vector <Block> &block_list);
 // Merges the vertices in 'dag' topologically using 'Queue' as the Vertex queue.
 // 'Queue' is a collection of 'Vertex' that is constructed with the DAG and supports push(), pop(), and empty()
 template <typename Queue>
-std::vector<Block> topological(DAG &dag, const std::set<bh_instruction*> &news) {
+std::vector<Block> topological(DAG &dag) {
     using namespace std;
     vector<Block> ret;
     Queue roots(dag); // The root vertices
@@ -109,7 +108,7 @@ std::vector<Block> topological(DAG &dag, const std::set<bh_instruction*> &news) 
         // Search for fusible blocks within the root blocks
         while (not roots.empty()) {
             const Vertex v = roots.pop();
-            const pair<Block, bool> res = merge_if_possible(block, dag[v], news);
+            const pair<Block, bool> res = merge_if_possible(block, dag[v]);
             if (res.second) {
                 block = res.first;
                 assert(block.validation());
@@ -131,7 +130,7 @@ std::vector<Block> topological(DAG &dag, const std::set<bh_instruction*> &news) 
 }
 
 // Merges the vertices in 'dag' greedily.
-void greedy(DAG &dag, const std::set<bh_instruction *> &news);
+void greedy(DAG &dag);
 
 } // graph
 } // jit

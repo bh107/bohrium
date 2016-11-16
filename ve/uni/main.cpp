@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
+#include <bh_util.hpp>
 #include <jitk/fuser.hpp>
 #include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
@@ -459,26 +460,25 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     }
 }
 
-// Returns the instructions that initiate base arrays in 'instr_list'
-set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) {
+// Sets the constructor flag of each instruction in 'instr_list'
+void set_constructor_flag(vector<bh_instruction> &instr_list) {
     set<bh_base*> initiated; // Arrays initiated in 'instr_list'
-    set<bh_instruction*> ret;
     for(bh_instruction &instr: instr_list) {
+        instr.constructor = false;
         int nop = bh_noperands(instr.opcode);
         for (bh_intp o = 0; o < nop; ++o) {
             const bh_view &v = instr.operand[o];
-            if (!bh_is_constant(&v)) {
+            if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);
-                if (v.base->data == NULL and initiated.find(v.base) == initiated.end()) {
+                if (v.base->data == NULL and not util::exist(initiated, v.base)) {
                     if (o == 0) { // It is only the output that is initiated
                         initiated.insert(v.base);
-                        ret.insert(&instr); // Add the instruction that initiate 'v.base'
+                        instr.constructor = true;
                     }
                 }
             }
         }
     }
-    return ret;
 }
 
 void Impl::execute(bh_ir *bhir) {
@@ -487,16 +487,16 @@ void Impl::execute(bh_ir *bhir) {
     // Let's start by extracting a clean list of instructions from the 'bhir'
     vector<bh_instruction*> instr_list = remove_non_computed_system_instr(bhir->instr_list);
 
-    // Get the set of initiating instructions
-    const set<bh_instruction*> news = find_initiating_instr(bhir->instr_list);
+    // Set the constructor flag
+    set_constructor_flag(bhir->instr_list);
 
     // Let's fuse the 'instr_list' into blocks
-    vector<Block> block_list = fuser_singleton(instr_list, news);
+    vector<Block> block_list = fuser_singleton(instr_list);
     if (config.defaultGet<bool>("serial_fusion", false)) {
-        fuser_serial(block_list, news);
+        fuser_serial(block_list);
     } else {
-    //  fuser_reshapable_first(block_list, news);
-        fuser_greedy(block_list, news);
+    //  fuser_reshapable_first(block_list);
+        fuser_greedy(block_list);
     }
     remove_empty_blocks(block_list);
 

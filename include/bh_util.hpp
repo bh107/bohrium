@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_UTIL_H
 #define __BH_UTIL_H
 
-namespace bohrium {
+namespace util {
 
 // Concatenate two vectors
 template <typename T>
@@ -33,7 +33,12 @@ std::vector<T> vector_cat(const std::vector<T> &a, const std::vector<T> &b) {
     return ret;
 }
 
-} // bohrium
+template <typename container_type, typename element_type>
+bool exist(const container_type &container, const element_type &element) {
+    return container.find(element) != container.end();
+}
+
+} // util
 
 
 
