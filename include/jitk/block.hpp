@@ -30,28 +30,12 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
-namespace {
-// Returns true if a block consisting of 'instr_list' is reshapable
-bool is_reshapeable(const std::vector<bh_instruction *> &instr_list) {
-    assert(instr_list.size() > 0);
+class Block;
 
-    // In order to be reshapeable, all instructions must have the same rank and be reshapeable
-    int64_t rank = instr_list[0]->max_ndim();
-    for (auto instr: instr_list) {
-        if (not instr->reshapable())
-            return false;
-        if (instr->max_ndim() != rank)
-            return false;
-    }
-    return true;
-}
-} // Anonymous name space
-
-class Block {
+class LoopB {
 public:
-    std::vector <Block> _block_list;
-    bh_instruction *_instr = NULL;
     int rank;
+    std::vector <Block> _block_list;
     int64_t size;
     std::set<bh_instruction*> _sweeps;
     std::set<bh_base *> _news;
@@ -62,57 +46,17 @@ public:
     int _id;
 
     // Default Constructor
-    Block() { static int id_count = 0; _id = id_count++; }
-
-    // Loop Block Constructor
-    Block(int rank,
-          int64_t size,
-          std::vector <Block> &&block_list,
-          std::set<bh_instruction*> &&sweeps,
-          std::set<bh_base *> &&news,
-          std::set<bh_base *> &&frees) : Block() {
-        this->rank = rank;
-        this->size = size;
-        this->_block_list = block_list;
-        this->_sweeps = sweeps;
-        this->_news = news;
-        this->_frees = frees;
-        this->_reshapable = is_reshapeable(getAllInstr());
-    }
-
-    // Instruction Block  Constructor
-    // Note, the rank is only to make pretty printing easier
-    Block(bh_instruction *instr, int rank) : Block() {
-        _instr = instr;
-        this->rank = rank;
-    }
-
-    // Returns true if this block is an instruction block, which has a
-    // empty block list and a non-NULL instruction pointer
-    bool isInstr() const {
-        assert(_block_list.size() > 0 or _instr != NULL);
-        return _block_list.size() == 0;
-    }
+    LoopB() { static int id_count = 0; _id = id_count++; }
 
     // Find the 'instr' in this block or in its children
     // Returns NULL if not found
     Block* findInstrBlock(const bh_instruction *instr);
 
     // Is this block innermost? (not counting instruction blocks)
-    bool isInnermost() const {
-        for (const Block &b: _block_list) {
-            if (not b.isInstr()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Pretty print this block
-    std::string pprint(const char *newline="\n") const;
+    bool isInnermost() const;
 
     // Return all sub-blocks (incl. nested blocks)
-    void getAllSubBlocks(std::vector<const Block *> &out) const;
+    void getAllSubBlocks(std::vector<const LoopB *> &out) const;
 
     // Return all sub-blocks (excl. nested blocks)
     std::vector<const Block*> getLocalSubBlocks() const;
@@ -153,11 +97,100 @@ public:
     std::set<bh_base*> getAllTemps() const;
 
     // Returns true when all instructions within the block is system or if the block is empty()
+    bool isSystemOnly() const;
+
+    // Validation check of this block
+    bool validation() const;
+
+    // Determines whether this block must be executed after 'other'
+    bool depend_on(const Block &other) const;
+
+    // Finds the block and instruction that accesses 'base' last. If 'base' is NULL, any data access
+    // is accepted thus the last instruction is returned.
+    // Returns the block and the index of the instruction (or NULL and -1 if not accessed)
+    std::pair<LoopB*, int64_t> findLastAccessBy(const bh_base *base);
+
+    // Insert the system instruction 'instr' after the instruction that accesses 'base' last.
+    // If no instruction accesses 'base' we insert it after the last instruction.
+    // NB: Force reshape the instruction to match the instructions accesses 'base' last.
+    void insert_system_after(bh_instruction *instr, const bh_base *base);
+
+    // Pretty print this block
+    std::string pprint(const char *newline="\n") const;
+
+    // Equality test based on the unique ID
+    bool operator==(const LoopB &loop_block) const {
+        return this->_id == loop_block._id;
+    }
+};
+
+
+class Block {
+    LoopB loop;
+public:
+
+    bh_instruction *_instr = NULL;
+    int _rank=-1;
+
+    // Default Constructor
+    Block() {}
+
+    // Loop Block Constructor
+    explicit Block(const LoopB &loop_block) {
+        loop = loop_block;
+    }
+    explicit Block(LoopB &&loop_block) {
+        loop = loop_block;
+    }
+
+    // Instruction Block  Constructor
+    // Note, the rank is only to make pretty printing easier
+    Block(bh_instruction *instr, int rank) {
+        _instr = instr;
+        this->_rank = rank;
+        assert(rank < 20);
+    }
+
+    // Returns true if this block is an instruction block, which has a
+    // empty block list and a non-NULL instruction pointer
+    bool isInstr() const {
+        return loop._block_list.size() == 0;
+    }
+
+    LoopB &getLoop() {return loop;}
+    const LoopB &getLoop() const {return loop;}
+
+    int rank() const {
+        if (isInstr()) {
+            return _rank;
+        } else {
+            return loop.rank;
+        }
+    }
+
+    // Pretty print this block
+    std::string pprint(const char *newline="\n") const;
+
+    // Return all instructions in the block (incl. nested blocks)
+    void getAllInstr(std::vector<bh_instruction*> &out) const;
+    std::vector<bh_instruction*> getAllInstr() const;
+
+    // Return all bases accessed by this block
+    std::set<bh_base*> getAllBases() const {
+        std::set<bh_base*> ret;
+        for (bh_instruction *instr: getAllInstr()) {
+            std::set<bh_base*> t = instr->get_bases();
+            ret.insert(t.begin(), t.end());
+        }
+        return ret;
+    }
+
+    // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const {
         if (isInstr()) {
             return bh_opcode_is_system(_instr->opcode);
         }
-        for (const Block &b: _block_list) {
+        for (const Block &b: loop._block_list) {
             if (not b.isSystemOnly()) {
                 return false;
             }
@@ -165,13 +198,17 @@ public:
         return true;
     }
 
+    bool isReshapable() const {
+        if (isInstr()) {
+            assert(_instr != NULL);
+            return _instr->reshapable();
+        } else {
+            return loop._reshapable;
+        }
+    }
+
     // Validation check of this block
     bool validation() const;
-
-    // Equality test based on the unique ID
-    bool operator==(const Block &block) const {
-        return this->_id == block._id;
-    }
 
     // Determines whether this block must be executed after 'other'
     bool depend_on(const Block &other) const {
@@ -187,22 +224,10 @@ public:
         }
         return false;
     }
-    
-    // Finds the block and instruction that accesses 'base' last. If 'base' is NULL, any data access
-    // is accepted thus the last instruction is returned.
-    // Returns the block and the index of the instruction (or NULL and -1 if not accessed)
-    std::pair<Block*, int64_t> findLastAccessBy(const bh_base *base);
-
-    // Insert the system instruction 'instr' after the instruction that accesses 'base' last.
-    // If no instruction accesses 'base' we insert it after the last instruction.
-    // NB: Force reshape the instruction to match the instructions accesses 'base' last.
-    void insert_system_after(bh_instruction *instr, const bh_base *base);
-
 };
 
-// Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is
-// true, the meta-data such at size, rank etc. is taken from 'b' rather than 'a'
-Block merge(const Block &a, const Block &b, bool based_on_block_b=false);
+// Merge the two loop blocks, 'a' and 'b', in that order.
+LoopB merge(const LoopB &a, const LoopB &b);
 
 // Create a nested block based on 'instr_list' with the sets of new, free, and temp arrays given.
 // The dimensions from zero to 'rank-1' are ignored.
@@ -211,7 +236,7 @@ Block create_nested_block(std::vector<bh_instruction *> &instr_list, int rank, i
 
 // Returns the blocks that can be parallelized in 'block' (incl. 'block' and its sub-blocks)
 // and the total amount of parallelism (in number of possible parallel threads)
-std::pair<std::vector<const Block *>, uint64_t> find_threaded_blocks(const Block &block);
+std::pair<std::vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block);
 
 // Check if it is possible to merge 'a' and 'a' (in that order)
 bool merge_possible(const Block &a, const Block &b);
@@ -222,8 +247,10 @@ bool merge_possible(const Block &a, const Block &b);
 std::pair<Block, bool> merge_if_possible(Block &a, Block &b);
 
 //Implements pprint of block
-std::ostream& operator<<(std::ostream& out, const Block& b);
+std::ostream& operator<<(std::ostream& out, const LoopB& b);
 
+//Implements pprint of block
+std::ostream& operator<<(std::ostream& out, const Block& b);
 
 //Implements pprint of a vector of blocks
 std::ostream& operator<<(std::ostream& out, const std::vector<Block>& b);

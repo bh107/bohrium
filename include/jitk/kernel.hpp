@@ -42,11 +42,11 @@ private:
 
 public:
 
-    // The block that makes up this kernel
-    const Block block;
+    // The loop block that makes up this kernel
+    const LoopB block;
 
     // Constructor
-    Kernel(const Block &block);
+    Kernel(const LoopB &block);
 
     // Do the kernel use random?
     bool useRandom() const {
@@ -66,17 +66,6 @@ public:
     // Return the non-temporary arrays
     const std::vector<bh_base*> &getNonTemps() const {
         return _non_temps;
-    }
-
-    // Return all blocks within this kernel (incl. nested blocks)
-    // in a depth first order
-    std::vector<const Block*> getAllBlocks() const {
-        std::vector<const Block*> ret;
-        if (not block.isInstr()) {
-            ret.push_back(&block);
-            block.getAllSubBlocks(ret);
-        }
-        return ret;
     }
 
     // Return all instructions in the kernel

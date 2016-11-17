@@ -123,7 +123,7 @@ bool openmp_reduce_compatible(bh_opcode opcode) {
 }
 
 // Is the 'block' compatible with OpenMP
-bool openmp_compatible(const Block &block) {
+bool openmp_compatible(const LoopB &block) {
     // For now, all sweeps must be reductions
     for (const bh_instruction *instr: block._sweeps) {
         if (not bh_opcode_is_reduction(instr->opcode)) {
@@ -134,7 +134,7 @@ bool openmp_compatible(const Block &block) {
 }
 
 // Is the 'block' compatible with OpenMP SIMD
-bool simd_compatible(const Block &block, const BaseDB &base_ids) {
+bool simd_compatible(const LoopB &block, const BaseDB &base_ids) {
 
     // Check for non-compatible reductions
     for (const bh_instruction *instr: block._sweeps) {
@@ -165,7 +165,7 @@ bool openmp_atomic_compatible(bh_opcode opcode) {
 }
 
 // Writing the OpenMP header, which include "parallel for" and "simd"
-void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParser &config, stringstream &out) {
+void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParser &config, stringstream &out) {
     if (not config.defaultGet<bool>("compiler_openmp", false)) {
         return;
     }
@@ -227,8 +227,7 @@ bool sweeping_innermost_axis(const bh_instruction *instr) {
     return sweep_axis(*instr) == instr->operand[1].ndim-1;
 }
 
-void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &config, stringstream &out) {
-    assert(not block.isInstr());
+void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, stringstream &out) {
     spaces(out, 4 + block.rank*4);
 
     // All local temporary arrays needs an variable declaration
@@ -278,7 +277,7 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0 and need_to_peel) {
-        Block peeled_block(block);
+        LoopB peeled_block(block);
         vector<bh_instruction> sweep_instr_list(block._sweeps.size());
         {
             size_t i = 0;
@@ -312,11 +311,11 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
                 if (b._instr != NULL) {
-                    spaces(out, 4 + b.rank*4);
+                    spaces(out, 4 + b.rank()*4);
                     write_instr(base_ids, *b._instr, out);
                 }
             } else {
-                write_block(base_ids, b, config, out);
+                write_loop_block(base_ids, b.getLoop(), config, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -359,18 +358,18 @@ void write_block(BaseDB &base_ids, const Block &block,  const ConfigParser &conf
             if (b._instr != NULL) {
                 if (bh_noperands(b._instr->opcode) > 0 and not bh_opcode_is_system(b._instr->opcode)) {
                     if (base_ids.isOpenmpAtomic(b._instr->operand[0].base)) {
-                        spaces(out, 4 + b.rank*4);
+                        spaces(out, 4 + b.rank()*4);
                         out << "#pragma omp atomic" << endl;
                     } else if (base_ids.isOpenmpCritical(b._instr->operand[0].base)) {
-                        spaces(out, 4 + b.rank*4);
+                        spaces(out, 4 + b.rank()*4);
                         out << "#pragma omp critical" << endl;
                     }
                 }
-                spaces(out, 4 + b.rank*4);
+                spaces(out, 4 + b.rank()*4);
                 write_instr(base_ids, *b._instr, out);
             }
         } else {
-            write_block(base_ids, b, config, out);
+            write_loop_block(base_ids, b.getLoop(), config, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -396,7 +395,7 @@ void remove_empty_blocks(vector<Block> &block_list) {
         } else if (b.isSystemOnly()) {
             block_list.erase(block_list.begin()+i);
         } else {
-            remove_empty_blocks(b._block_list);
+            remove_empty_blocks(b.getLoop()._block_list);
             ++i;
         }
     }
@@ -433,7 +432,7 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     ss << ") {" << endl;
 
     // Write the block that makes up the body of 'execute()'
-    write_block(base_ids, kernel.block, config, ss);
+    write_loop_block(base_ids, kernel.block, config, ss);
     
     ss << "}" << endl << endl;
 
@@ -517,9 +516,10 @@ void Impl::execute(bh_ir *bhir) {
     }
 
     for(const Block &block: block_list) {
+        assert(not block.isInstr());
 
         //Let's create a kernel
-        Kernel kernel(block);
+        Kernel kernel(block.getLoop());
 
         // For profiling statistic
         num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();

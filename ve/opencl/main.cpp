@@ -64,7 +64,8 @@ class Impl : public ComponentImplWithChild {
     // A map of allocated buffers on the device
     map<bh_base*, unique_ptr<cl::Buffer> > buffers;
     
-    void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss);
+    void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const LoopB *> &threaded_blocks,
+                      stringstream &ss);
 
   public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level) {
@@ -139,9 +140,8 @@ bool sweeping_innermost_axis(const bh_instruction *instr) {
     return sweep_axis(*instr) == instr->operand[1].ndim-1;
 }
 
-void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &config,
-                 const vector<const Block*> &threaded_blocks, stringstream &out) {
-    assert(not block.isInstr());
+void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &config,
+                      const vector<const LoopB *> &threaded_blocks, stringstream &out) {
     spaces(out, 4 + block.rank*4);
 
     if (block.isSystemOnly()) {
@@ -196,7 +196,7 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0 and need_to_peel) {
-        Block peeled_block(block);
+        LoopB peeled_block(block);
         vector<bh_instruction> sweep_instr_list(block._sweeps.size());
         {
             size_t i = 0;
@@ -230,11 +230,11 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
                 if (b._instr != NULL) {
-                    spaces(out, 4 + b.rank*4);
+                    spaces(out, 4 + b.rank()*4);
                     write_instr(base_ids, *b._instr, out, true);
                 }
             } else {
-                write_block(base_ids, b, config, threaded_blocks, out);
+                write_loop_block(base_ids, b.getLoop(), config, threaded_blocks, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -247,7 +247,7 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     {stringstream t; t << "i" << block.rank; itername = t.str();}
     // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
     if (std::find_if(threaded_blocks.begin(), threaded_blocks.end(),
-                     [&block](const Block* b){return *b == block;}) == threaded_blocks.end()) {
+                     [&block](const LoopB* b){return *b == block;}) == threaded_blocks.end()) {
         out << "for(" << write_opencl_type(BH_UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, we should start at 1
             out << "=1; ";
@@ -271,11 +271,11 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     for (const Block &b: block._block_list) {
         if (b.isInstr()) { // Finally, let's write the instruction
             if (b._instr != NULL) {
-                spaces(out, 4 + b.rank*4);
+                spaces(out, 4 + b.rank()*4);
                 write_instr(base_ids, *b._instr, out, true);
             }
         } else {
-            write_block(base_ids, b, config, threaded_blocks, out);
+            write_loop_block(base_ids, b.getLoop(), config, threaded_blocks, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -292,7 +292,8 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     }
 }
 
-void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss) {
+void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const LoopB *> &threaded_blocks,
+                        stringstream &ss) {
 
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable" << endl;
@@ -319,7 +320,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
         spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: " << endl;
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
-            const Block *b = threaded_blocks[i];
+            const LoopB *b = threaded_blocks[i];
             spaces(ss, 4);
             ss << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << i << "); " \
                << "if (i" << b->rank << " >= " << b->size << ") {return;} // Prevent overflow" << endl;
@@ -328,7 +329,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_block(base_ids, kernel.block, config, threaded_blocks, ss);
+    write_loop_block(base_ids, kernel.block, config, threaded_blocks, ss);
     ss << "}" << endl << endl;
 
 }
@@ -355,7 +356,7 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base
 }
 
 // Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
-pair<cl::NDRange, cl::NDRange> NDRanges(const vector<const Block*> &threaded_blocks, const ConfigParser &config) {
+pair<cl::NDRange, cl::NDRange> NDRanges(const vector<const LoopB*> &threaded_blocks, const ConfigParser &config) {
     const auto &b = threaded_blocks;
     switch (b.size()) {
         case 1:
@@ -459,9 +460,10 @@ void Impl::execute(bh_ir *bhir) {
     time_fusion += chrono::steady_clock::now() - tfusion;
 
     for(const Block &block: block_list) {
+        assert(not block.isInstr());
 
         //Let's create a kernel
-        Kernel kernel(block);
+        Kernel kernel(block.getLoop());
 
         // We can skip a lot of steps if the kernel does no computation
         const bool kernel_is_computing = not kernel.block.isSystemOnly();
@@ -495,7 +497,7 @@ void Impl::execute(bh_ir *bhir) {
         }
 
         // Find the parallel blocks
-        vector<const Block*> threaded_blocks;
+        vector<const LoopB*> threaded_blocks;
         uint64_t total_threading;
         tie(threaded_blocks, total_threading) = find_threaded_blocks(kernel.block);
         if (total_threading < config.defaultGet<uint64_t>("parallel_threshold", 1000)) {

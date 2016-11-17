@@ -28,7 +28,7 @@ namespace bohrium {
 namespace jitk {
 
 
-Kernel::Kernel(const Block &block) : block(block) {
+Kernel::Kernel(const LoopB &block) : block(block) {
 
     _useRandom = false;
     const set<bh_base *> temps = getAllTemps();

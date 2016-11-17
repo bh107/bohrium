@@ -80,7 +80,7 @@ void fuser_serial(vector<Block> &block_list) {
             }
         }
         // Let's fuse at the next rank level
-        fuser_serial(cur._block_list);
+        fuser_serial(cur.getLoop()._block_list);
     }
     block_list = ret;
 }
@@ -114,7 +114,7 @@ void fuser_breadth_first(vector<Block> &block_list) {
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_breadth_first(b._block_list);
+            fuser_breadth_first(b.getLoop()._block_list);
         }
     }
     block_list = ret;
@@ -138,7 +138,7 @@ void fuser_reshapable_first(vector<Block> &block_list) {
             assert(not _queue.empty());
             graph::Vertex ret = boost::graph_traits<graph::DAG>::null_vertex();
             for (graph::Vertex v: _queue) {
-                if (_dag.get()[v]._reshapable) {
+                if (_dag.get()[v].isReshapable()) {
                     ret = v;
                 }
             }
@@ -159,7 +159,7 @@ void fuser_reshapable_first(vector<Block> &block_list) {
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_reshapable_first(b._block_list);
+            fuser_reshapable_first(b.getLoop()._block_list);
         }
     }
     block_list = ret;
@@ -174,7 +174,7 @@ void fuser_greedy(vector<Block> &block_list) {
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_breadth_first(b._block_list);
+            fuser_breadth_first(b.getLoop()._block_list);
         }
     }
     block_list = ret;

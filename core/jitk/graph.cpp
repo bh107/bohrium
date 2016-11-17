@@ -108,12 +108,12 @@ DAG from_block_list(const vector<Block> &block_list) {
     return graph;
 }
 
-uint64_t weight(const Block &a, const Block &b) {
-    if (a.isInstr() or b.isInstr()) {
+uint64_t weight(const Block &b1, const Block &b2) {
+    if (b1.isInstr() or b2.isInstr()) {
         return 0; // Instruction blocks cannot be fused
     }
-    const set<bh_base *> news = a.getAllNews();
-    const set<bh_base *> frees = b.getAllFrees();
+    const set<bh_base *> news = b1.getLoop().getAllNews();
+    const set<bh_base *> frees = b2.getLoop().getAllFrees();
     vector<bh_base *> new_temps;
     set_intersection(news.begin(), news.end(), frees.begin(), frees.end(), back_inserter(new_temps));
 
@@ -126,7 +126,7 @@ uint64_t weight(const Block &a, const Block &b) {
 
 uint64_t block_cost(const Block &block) {
     std::vector<bh_base*> non_temps;
-    const set<bh_base *> temps = block.isInstr()?set<bh_base *>():block.getAllTemps();
+    const set<bh_base *> temps = block.isInstr()?set<bh_base *>():block.getLoop().getAllTemps();
     for (const bh_instruction *instr: block.getAllInstr()) {
         // Find non-temporary arrays
         const int nop = bh_noperands(instr->opcode);
@@ -235,9 +235,10 @@ void pprint(const DAG &dag, const char *filename) {
             // Find "work below par-threshold"
             uint64_t threading_below_threshold=0, totalwork=0;
             BOOST_FOREACH(Vertex v, boost::vertices(graph)) {
-                vector<const Block*> threaded_blocks;
-                uint64_t total_threading;
-                tie(threaded_blocks, total_threading) = find_threaded_blocks(graph[v]);
+                uint64_t total_threading = 0;
+                if (not graph[v].isInstr()) {
+                    tie(std::ignore, total_threading) = find_threaded_blocks(graph[v].getLoop());
+                }
                 for (const bh_instruction *instr: graph[v].getAllInstr()) {
                     if (bh_opcode_is_system(instr->opcode))
                         continue;
@@ -259,15 +260,6 @@ void pprint(const DAG &dag, const char *filename) {
         void operator()(std::ostream& out, const Vertex& v) const {
             out << "[label=\"Kernel " << v;
             out << ", Cost: " << (double) block_cost(graph[v]);
-            const auto parloops = find_threaded_blocks(graph[v]);
-            out << ", parloops(" << (double)parloops.second << ")[";
-            for (size_t i=0, j=0; i<parloops.first.size(); ++i) {
-                if (parloops.first[j]->rank == (int64_t)i) {
-                    out << parloops.first[j++]->size << " ";
-                } else {
-                    out << "NA ";
-                }
-            }
             out << "], Instructions: \\l" << graph[v].pprint("\\l");
             out << "\"]";
         }
