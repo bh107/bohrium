@@ -131,8 +131,9 @@ Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_
 
 Block* LoopB::findInstrBlock(const bh_instruction *instr) {
     for (Block &b: _block_list) {
-        if (b.isInstr() and b._instr == instr) {
-            return &b;
+        if (b.isInstr()) {
+            if (b.getInstr() == instr)
+                return &b;
         } else {
             Block *ret = b.getLoop().findInstrBlock(instr);
             if (ret != NULL)
@@ -209,13 +210,13 @@ string Block::pprint(const char *newline) const {
 
     if (isInstr()) {
         stringstream ss;
-        if (_instr != NULL) {
+        if (getInstr() != NULL) {
             spaces(ss, rank() * 4);
-            ss << *_instr << newline;
+            ss << *getInstr() << newline;
         }
         return ss.str();
     } else {
-        return loop.pprint(newline);
+        return getLoop().pprint(newline);
     }
 }
 
@@ -240,8 +241,7 @@ vector<const Block *> LoopB::getLocalSubBlocks() const {
 
 void Block::getAllInstr(vector<bh_instruction *> &out) const {
     if (isInstr()) {
-        if (_instr != NULL)
-            out.push_back(_instr);
+        out.push_back(getInstr());
     } else {
         for (const Block &b : getLoop()._block_list) {
             b.getAllInstr(out);
@@ -267,8 +267,8 @@ vector<bh_instruction *> LoopB::getAllInstr() const {
 
 void LoopB::getLocalInstr(vector<bh_instruction *> &out) const {
     for (const Block &b : _block_list) {
-        if (b.isInstr() and b._instr != NULL) {
-            out.push_back(b._instr);
+        if (b.isInstr() and b.getInstr() != NULL) {
+            out.push_back(b.getInstr());
         }
     }
 }
@@ -396,13 +396,9 @@ bool LoopB::validation() const {
 
 bool Block::validation() const {
     if (isInstr()) {
-        if (_instr == NULL) {
-            assert(1 == 2);
-            return false;
-        }
         return true;
     } else {
-        return loop.validation();
+        return getLoop().validation();
     }
 }
 
@@ -413,7 +409,7 @@ pair<LoopB*, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
             if (base == NULL) { // Searching for any access
                 return make_pair(this, i);
             } else {
-                const set<bh_base*> bases = _block_list[i]._instr->get_bases();
+                const set<bh_base*> bases = _block_list[i].getInstr()->get_bases();
                 if (bases.find(const_cast<bh_base*>(base)) != bases.end()) {
                     return make_pair(this, i);
                 }
@@ -441,7 +437,7 @@ void LoopB::insert_system_after(bh_instruction *instr, const bh_base *base) {
         assert(block != NULL);
     }
 
-    instr->reshape_force(block->_block_list[index]._instr->dominating_shape());
+    instr->reshape_force(block->_block_list[index].getInstr()->dominating_shape());
     block->_block_list.insert(block->_block_list.begin()+index+1, Block(instr, block->rank+1));
 
     // Let's update the '_free' set

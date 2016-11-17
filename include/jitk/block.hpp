@@ -24,6 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <vector>
 #include <iostream>
+#include <boost/variant/variant.hpp>
+#include <boost/variant/get.hpp>
+
 
 #include <bh_instruction.hpp>
 
@@ -124,47 +127,56 @@ public:
     }
 };
 
+class InstrB {
+public:
+    bh_instruction *instr;
+    int rank;
+};
 
 class Block {
-    LoopB loop;
-public:
+private:
+    boost::variant<LoopB, InstrB> _var;
 
-    bh_instruction *_instr = NULL;
-    int _rank=-1;
+public:
 
     // Default Constructor
     Block() {}
 
     // Loop Block Constructor
     explicit Block(const LoopB &loop_block) {
-        loop = loop_block;
+        _var = loop_block;
     }
     explicit Block(LoopB &&loop_block) {
-        loop = loop_block;
+        _var = loop_block;
     }
 
-    // Instruction Block  Constructor
+    // Instruction Block Constructor
     // Note, the rank is only to make pretty printing easier
     Block(bh_instruction *instr, int rank) {
-        _instr = instr;
-        this->_rank = rank;
-        assert(rank < 20);
+        assert(instr != NULL);
+        InstrB _instr{instr, rank};
+        _var = std::move(_instr);
     }
 
-    // Returns true if this block is an instruction block, which has a
-    // empty block list and a non-NULL instruction pointer
+    // Returns true if this block is an instruction block
     bool isInstr() const {
-        return loop._block_list.size() == 0;
+        return _var.which() == 1; // Notice, the second type in '_var' is 'InstrB'
     }
 
-    LoopB &getLoop() {return loop;}
-    const LoopB &getLoop() const {return loop;}
+    // Retrieve the Loop Block
+    LoopB &getLoop() {return boost::get<LoopB>(_var);}
+    const LoopB &getLoop() const {return boost::get<LoopB>(_var);}
+
+    // Retrieve the instruction within the instruction block
+    // bh_instruction *getInstr() const {return boost::get<InstrB>(_var).instr;}
+    bh_instruction *getInstr() const {return boost::get<InstrB>(_var).instr;}
+    void setInstr(bh_instruction *instr) {boost::get<InstrB>(_var).instr = instr;}
 
     int rank() const {
         if (isInstr()) {
-            return _rank;
+            return boost::get<InstrB>(_var).rank;
         } else {
-            return loop.rank;
+            return getLoop().rank;
         }
     }
 
@@ -188,9 +200,9 @@ public:
     // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const {
         if (isInstr()) {
-            return bh_opcode_is_system(_instr->opcode);
+            return bh_opcode_is_system(getInstr()->opcode);
         }
-        for (const Block &b: loop._block_list) {
+        for (const Block &b: getLoop()._block_list) {
             if (not b.isSystemOnly()) {
                 return false;
             }
@@ -200,10 +212,9 @@ public:
 
     bool isReshapable() const {
         if (isInstr()) {
-            assert(_instr != NULL);
-            return _instr->reshapable();
+            return getInstr()->reshapable();
         } else {
-            return loop._reshapable;
+            return getLoop()._reshapable;
         }
     }
 

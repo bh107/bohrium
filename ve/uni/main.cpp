@@ -292,7 +292,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
                 if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
                     sweep_instr->operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
                 }
-                sweep_instr_block->_instr = sweep_instr;
+                sweep_instr_block->setInstr(sweep_instr);
             }
         }
         string itername;
@@ -310,10 +310,8 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
         out << endl;
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
-                if (b._instr != NULL) {
-                    spaces(out, 4 + b.rank()*4);
-                    write_instr(base_ids, *b._instr, out);
-                }
+                spaces(out, 4 + b.rank()*4);
+                write_instr(base_ids, *b.getInstr(), out);
             } else {
                 write_loop_block(base_ids, b.getLoop(), config, out);
             }
@@ -355,19 +353,18 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     // Write the for-loop body
     for (const Block &b: block._block_list) {
         if (b.isInstr()) { // Finally, let's write the instruction
-            if (b._instr != NULL) {
-                if (bh_noperands(b._instr->opcode) > 0 and not bh_opcode_is_system(b._instr->opcode)) {
-                    if (base_ids.isOpenmpAtomic(b._instr->operand[0].base)) {
-                        spaces(out, 4 + b.rank()*4);
-                        out << "#pragma omp atomic" << endl;
-                    } else if (base_ids.isOpenmpCritical(b._instr->operand[0].base)) {
-                        spaces(out, 4 + b.rank()*4);
-                        out << "#pragma omp critical" << endl;
-                    }
+            const bh_instruction *instr = b.getInstr();
+            if (bh_noperands(instr->opcode) > 0 and not bh_opcode_is_system(instr->opcode)) {
+                if (base_ids.isOpenmpAtomic(instr->operand[0].base)) {
+                    spaces(out, 4 + b.rank()*4);
+                    out << "#pragma omp atomic" << endl;
+                } else if (base_ids.isOpenmpCritical(instr->operand[0].base)) {
+                    spaces(out, 4 + b.rank()*4);
+                    out << "#pragma omp critical" << endl;
                 }
-                spaces(out, 4 + b.rank()*4);
-                write_instr(base_ids, *b._instr, out);
             }
+            spaces(out, 4 + b.rank()*4);
+            write_instr(base_ids, *instr, out);
         } else {
             write_loop_block(base_ids, b.getLoop(), config, out);
         }
