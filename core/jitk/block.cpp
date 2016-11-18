@@ -52,75 +52,75 @@ bool is_reshapeable(const std::vector<bh_instruction *> &instr_list) {
 }
 } // Anonymous name space
 
+
+// Append 'instr' to the loop block 'block'
+void add_instr_to_block(LoopB &block, bh_instruction *instr, int rank, int64_t size_of_rank_dim) {
+    if (instr->max_ndim() <= rank)
+        throw runtime_error("add_instr_to_block() was given an instruction with max_ndim <= 'rank'");
+
+    // Let's reshape the instruction to match 'size_of_rank_dim'
+    if (instr->reshapable() and instr->operand[0].shape[rank] != size_of_rank_dim) {
+        vector<int64_t> shape((size_t) rank + 1);
+        // The dimensions up til 'rank' (not including 'rank') are unchanged
+        for (int64_t r = 0; r < rank; ++r) {
+            shape[r] = instr->operand[0].shape[r];
+        }
+        int64_t size = 1; // The size of the reshapeable block
+        for (int64_t r = rank; r < instr->operand[0].ndim; ++r) {
+            size *= instr->operand[0].shape[r];
+        }
+        assert(size >= size_of_rank_dim);
+        shape[rank] = size_of_rank_dim;
+        if (size != size_of_rank_dim) { // We might have to add an extra dimension
+            if (size % size_of_rank_dim != 0)
+                throw runtime_error("add_instr_to_block(): shape is not divisible with 'size_of_rank_dim'");
+            shape.push_back(size / size_of_rank_dim);
+        }
+        instr->reshape(shape);
+    }
+
+    vector<int64_t> shape = instr->dominating_shape();
+    
+    // Sanity check
+    assert(shape.size() > (uint64_t) rank);
+    if (shape[rank] != size_of_rank_dim)
+        throw runtime_error("create_nested_block() was given an instruction where shape[rank] != size_of_rank_dim");
+    const int64_t max_ndim = instr->max_ndim();
+    assert(max_ndim > rank);
+
+    // Create the rest of the dimension as a singleton block
+    if (max_ndim > rank + 1) {
+        assert(shape.size() > 0);
+        vector<bh_instruction *> single_instr = {instr};
+        block._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1]));
+    } else { // No more dimensions -- let's write the instruction block
+        assert(max_ndim == rank + 1);
+        block._block_list.emplace_back(instr, rank + 1);
+
+        // Since 'instr' execute at this 'rank' level, we can calculate news, frees, and temps.
+        if (instr->constructor) {
+            if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
+                block._news.insert(instr->operand[0].base);
+        }
+        if (instr->opcode == BH_FREE) {
+            block._frees.insert(instr->operand[0].base);
+        }
+    }
+    if (sweep_axis(*instr) == rank) {
+        block._sweeps.insert(instr);
+    }
+}
+
 Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim) {
 
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
     }
 
-    for (bh_instruction *instr: instr_list) {
-        if (instr->max_ndim() <= rank)
-            throw runtime_error("create_nested_block() was given an instruction with max_ndim <= 'rank'");
-    }
-
-    // Let's reshape instructions to match 'size_of_rank_dim'
-    for (bh_instruction *instr: instr_list) {
-        if (instr->reshapable() and instr->operand[0].shape[rank] != size_of_rank_dim) {
-            vector<int64_t> shape((size_t) rank + 1);
-            // The dimensions up til 'rank' (not including 'rank') are unchanged
-            for (int64_t r = 0; r < rank; ++r) {
-                shape[r] = instr->operand[0].shape[r];
-            }
-            int64_t size = 1; // The size of the reshapeable block
-            for (int64_t r = rank; r < instr->operand[0].ndim; ++r) {
-                size *= instr->operand[0].shape[r];
-            }
-            assert(size >= size_of_rank_dim);
-            shape[rank] = size_of_rank_dim;
-            if (size != size_of_rank_dim) { // We might have to add an extra dimension
-                if (size % size_of_rank_dim != 0)
-                    throw runtime_error("create_nested_block: shape is not divisible with 'size_of_rank_dim'");
-                shape.push_back(size / size_of_rank_dim);
-            }
-            instr->reshape(shape);
-        }
-    }
-
-    for (const bh_instruction *instr: instr_list) {
-        vector<int64_t> shape = instr->dominating_shape();
-        assert(shape.size() > (uint64_t) rank);
-        if (shape[rank] != size_of_rank_dim)
-            throw runtime_error("create_nested_block() was given an instruction where shape[rank] != size_of_rank_dim");
-    }
-
     // Let's build the nested block from the 'rank' level to the instruction block
     LoopB ret;
     for (bh_instruction *instr: instr_list) {
-        const int64_t max_ndim = instr->max_ndim();
-        assert(max_ndim > rank);
-
-        // Create the rest of the dimension as a singleton block
-        if (max_ndim > rank + 1) {
-            vector<int64_t> shape = instr->dominating_shape();
-            assert(shape.size() > 0);
-            vector<bh_instruction *> single_instr = {instr};
-            ret._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1]));
-        } else { // No more dimensions -- let's write the instruction block
-            assert(max_ndim == rank + 1);
-            ret._block_list.emplace_back(instr, rank + 1);
-
-            // Since 'instr' execute at this 'rank' level, we can calculate news, frees, and temps.
-            if (instr->constructor) {
-                if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
-                    ret._news.insert(instr->operand[0].base);
-            }
-            if (instr->opcode == BH_FREE) {
-                ret._frees.insert(instr->operand[0].base);
-            }
-        }
-        if (sweep_axis(*instr) == rank) {
-            ret._sweeps.insert(instr);
-        }
+        add_instr_to_block(ret, instr, rank, size_of_rank_dim);
     }
     ret.rank = rank;
     ret.size = size_of_rank_dim;
