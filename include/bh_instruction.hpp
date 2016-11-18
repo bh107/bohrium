@@ -68,13 +68,21 @@ struct bh_instruction
     // Equality
     bool operator==(const bh_instruction& other) const
     {
-        if (opcode != other.opcode) return false;
-        if (constant != other.constant) return false;
-
-        for (bh_intp i = 0; i < BH_MAX_NO_OPERANDS; ++i) {
-            if (operand[i] != other.operand[i]) return false;
+        if (opcode != other.opcode) {
+            return false;
         }
-
+        const bh_intp nop = bh_noperands(opcode);
+        for (bh_intp i = 0; i < nop; ++i) {
+            if (bh_is_constant(&operand[i]) xor bh_is_constant(&other.operand[i])) {
+                return false;
+            } else if (bh_is_constant(&operand[i])) { // Both are constant
+                if (constant != other.constant)
+                    return false;
+            } else {
+                if (operand[i] != other.operand[i])
+                    return false;
+            }
+        }
         return true;
     }
 

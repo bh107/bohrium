@@ -143,6 +143,7 @@ struct bh_view
 
     bool operator==(const bh_view& other) const
     {
+        if (base == NULL or this->base == NULL) return false;
         if (base != other.base) return false;
         if (ndim != other.ndim) return false;
         if (start != other.start) return false;
