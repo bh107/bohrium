@@ -37,12 +37,12 @@ void spaces(stringstream &out, int num) {
 }
 
 // Returns true if a block consisting of 'instr_list' is reshapable
-bool is_reshapeable(const std::vector<bh_instruction *> &instr_list) {
+bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
     assert(instr_list.size() > 0);
 
     // In order to be reshapeable, all instructions must have the same rank and be reshapeable
     int64_t rank = instr_list[0]->max_ndim();
-    for (auto instr: instr_list) {
+    for (InstrPtr instr: instr_list) {
         if (not instr->reshapable())
             return false;
         if (instr->max_ndim() != rank)
@@ -54,7 +54,7 @@ bool is_reshapeable(const std::vector<bh_instruction *> &instr_list) {
 
 
 // Append 'instr' to the loop block 'block'
-void add_instr_to_block(LoopB &block, bh_instruction *instr, int rank, int64_t size_of_rank_dim) {
+void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_rank_dim) {
     if (instr->max_ndim() <= rank)
         throw runtime_error("add_instr_to_block() was given an instruction with max_ndim <= 'rank'");
 
@@ -76,7 +76,9 @@ void add_instr_to_block(LoopB &block, bh_instruction *instr, int rank, int64_t s
                 throw runtime_error("add_instr_to_block(): shape is not divisible with 'size_of_rank_dim'");
             shape.push_back(size / size_of_rank_dim);
         }
-        instr->reshape(shape);
+        bh_instruction instr_reshaped = bh_instruction(*instr);
+        instr_reshaped.reshape(shape);
+        instr.reset(new bh_instruction(instr_reshaped));
     }
 
     vector<int64_t> shape = instr->dominating_shape();
@@ -91,11 +93,11 @@ void add_instr_to_block(LoopB &block, bh_instruction *instr, int rank, int64_t s
     // Create the rest of the dimension as a singleton block
     if (max_ndim > rank + 1) {
         assert(shape.size() > 0);
-        vector<bh_instruction *> single_instr = {instr};
+        vector<InstrPtr> single_instr = {instr};
         block._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1]));
     } else { // No more dimensions -- let's write the instruction block
         assert(max_ndim == rank + 1);
-        block._block_list.emplace_back(instr, rank + 1);
+        block._block_list.emplace_back(*instr, rank + 1);
 
         // Since 'instr' execute at this 'rank' level, we can calculate news, frees, and temps.
         if (instr->constructor) {
@@ -111,7 +113,7 @@ void add_instr_to_block(LoopB &block, bh_instruction *instr, int rank, int64_t s
     }
 }
 
-Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim) {
+Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim) {
 
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
@@ -119,7 +121,7 @@ Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_
 
     // Let's build the nested block from the 'rank' level to the instruction block
     LoopB ret;
-    for (bh_instruction *instr: instr_list) {
+    for (InstrPtr instr: instr_list) {
         add_instr_to_block(ret, instr, rank, size_of_rank_dim);
     }
     ret.rank = rank;
@@ -129,18 +131,16 @@ Block create_nested_block(vector<bh_instruction *> &instr_list, int rank, int64_
     return Block(std::move(ret));
 }
 
-Block* LoopB::findInstrBlock(const bh_instruction *instr) {
+void LoopB::replaceInstr(InstrPtr subject, const bh_instruction &replacement) {
     for (Block &b: _block_list) {
         if (b.isInstr()) {
-            if (b.getInstr() == instr)
-                return &b;
+            if (*b.getInstr() == *subject) {
+                b.setInstr(replacement);
+            }
         } else {
-            Block *ret = b.getLoop().findInstrBlock(instr);
-            if (ret != NULL)
-                return ret;
+            b.getLoop().replaceInstr(subject, replacement);
         }
     }
-    return NULL;
 }
 
 bool LoopB::isInnermost() const {
@@ -167,8 +167,8 @@ string LoopB::pprint(const char *newline) const {
     ss << "rank: " << rank << ", size: " << size;
     if (_sweeps.size() > 0) {
         ss << ", sweeps: { ";
-        for (const bh_instruction *i : _sweeps) {
-            ss << *i << ",";
+        for (const InstrPtr instr : _sweeps) {
+            ss << *instr << ",";
         }
         ss << "}";
     }
@@ -239,7 +239,7 @@ vector<const Block *> LoopB::getLocalSubBlocks() const {
     return ret;
 }
 
-void Block::getAllInstr(vector<bh_instruction *> &out) const {
+void Block::getAllInstr(vector<InstrPtr> &out) const {
     if (isInstr()) {
         out.push_back(getInstr());
     } else {
@@ -248,32 +248,32 @@ void Block::getAllInstr(vector<bh_instruction *> &out) const {
         }
     }
 }
-vector<bh_instruction *> Block::getAllInstr() const {
-    vector<bh_instruction *> ret;
+vector<InstrPtr> Block::getAllInstr() const {
+    vector<InstrPtr> ret;
     getAllInstr(ret);
     return ret;
 }
 
-void LoopB::getAllInstr(vector<bh_instruction *> &out) const {
+void LoopB::getAllInstr(vector<InstrPtr> &out) const {
     for (const Block &b : _block_list) {
         b.getAllInstr(out);
     }
 }
-vector<bh_instruction *> LoopB::getAllInstr() const {
-    vector<bh_instruction *> ret;
+vector<InstrPtr> LoopB::getAllInstr() const {
+    vector<InstrPtr> ret;
     getAllInstr(ret);
     return ret;
 }
 
-void LoopB::getLocalInstr(vector<bh_instruction *> &out) const {
+void LoopB::getLocalInstr(vector<InstrPtr> &out) const {
     for (const Block &b : _block_list) {
         if (b.isInstr() and b.getInstr() != NULL) {
             out.push_back(b.getInstr());
         }
     }
 }
-vector<bh_instruction *> LoopB::getLocalInstr() const {
-    vector<bh_instruction *> ret;
+vector<InstrPtr> LoopB::getLocalInstr() const {
+    vector<InstrPtr> ret;
     getLocalInstr(ret);
     return ret;
 }
@@ -338,12 +338,12 @@ set<bh_base *> LoopB::getAllTemps() const {
 
 // Determines whether this block must be executed after 'other'
 bool LoopB::depend_on(const Block &other) const {
-    const std::vector<bh_instruction*> this_instr_list = getAllInstr();
-    const std::vector<bh_instruction*> other_instr_list = other.getAllInstr();
-    for (const bh_instruction *this_instr: this_instr_list) {
-        for (const bh_instruction *other_instr: other_instr_list) {
+    const std::vector<InstrPtr> this_instr_list = getAllInstr();
+    const std::vector<InstrPtr> other_instr_list = other.getAllInstr();
+    for (const InstrPtr this_instr: this_instr_list) {
+        for (const InstrPtr other_instr: other_instr_list) {
             if (this_instr != other_instr and
-                bh_instr_dependency(this_instr, other_instr)) {
+                bh_instr_dependency(&(*this_instr), &(*other_instr))) {
                 return true;
             }
         }
@@ -356,12 +356,12 @@ bool LoopB::validation() const {
         assert(1 == 2);
         return false;
     }
-    const vector<bh_instruction *> allInstr = getAllInstr();
+    const vector<InstrPtr> allInstr = getAllInstr();
     if (allInstr.empty()) {
         assert(1 == 2);
         return false;
     }
-    for (const bh_instruction *instr: allInstr) {
+    for (const InstrPtr instr: allInstr) {
         if (bh_opcode_is_system(instr->opcode))
             continue;
         if (instr->max_ndim() <= rank) {
@@ -382,7 +382,7 @@ bool LoopB::validation() const {
             return false;
     }
     set<bh_base*> frees;
-    for (const bh_instruction *instr: getLocalInstr()) {
+    for (const InstrPtr instr: getLocalInstr()) {
         if (instr->opcode == BH_FREE) {
             frees.insert(instr->operand[0].base);
         }
@@ -409,8 +409,8 @@ pair<LoopB*, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
             if (base == NULL) { // Searching for any access
                 return make_pair(this, i);
             } else {
-                const set<bh_base*> bases = _block_list[i].getInstr()->get_bases();
-                if (bases.find(const_cast<bh_base*>(base)) != bases.end()) {
+                const set<const bh_base*> bases = _block_list[i].getInstr()->get_bases();
+                if (bases.find(base) != bases.end()) {
                     return make_pair(this, i);
                 }
             }
@@ -425,7 +425,7 @@ pair<LoopB*, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
     return make_pair((LoopB *)NULL, -1); // Not found
 }
 
-void LoopB::insert_system_after(bh_instruction *instr, const bh_base *base) {
+void LoopB::insert_system_after(InstrPtr instr, const bh_base *base) {
     assert(validation());
 
     LoopB *block;
@@ -436,9 +436,10 @@ void LoopB::insert_system_after(bh_instruction *instr, const bh_base *base) {
         tie(block, index) = findLastAccessBy(NULL); //NB: findLastAccessBy(NULL) will always find an instruction
         assert(block != NULL);
     }
-
-    instr->reshape_force(block->_block_list[index].getInstr()->dominating_shape());
-    block->_block_list.insert(block->_block_list.begin()+index+1, Block(instr, block->rank+1));
+    bh_instruction instr_reshaped(*instr);
+    instr_reshaped.reshape_force(block->_block_list[index].getInstr()->dominating_shape());
+    Block instr_block(instr_reshaped, block->rank+1);
+    block->_block_list.insert(block->_block_list.begin()+index+1, instr_block);
 
     // Let's update the '_free' set
     if (instr->opcode == BH_FREE) {
@@ -464,7 +465,7 @@ LoopB merge(const LoopB &l1, const LoopB &l2) {
 // Unnamed namespace for all some merge help functions
 namespace {
 // Check if 'a' and 'b' supports data-parallelism when merged
-bool data_parallel_compatible(const bh_instruction *a, const bh_instruction *b)
+bool data_parallel_compatible(const InstrPtr a, const InstrPtr b)
 {
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
@@ -488,8 +489,8 @@ bool data_parallel_compatible(const bh_instruction *a, const bh_instruction *b)
 
 // Check if loop block 'l1' and 'l2' supports data-parallelism when merged
 bool data_parallel_compatible(const LoopB &l1, const LoopB &l2) {
-    for (const bh_instruction *i1 : l1.getAllInstr()) {
-        for (const bh_instruction *i2 : l2.getAllInstr()) {
+    for (const InstrPtr i1 : l1.getAllInstr()) {
+        for (const InstrPtr i2 : l2.getAllInstr()) {
             if (not data_parallel_compatible(i1, i2))
                 return false;
         }
@@ -498,8 +499,8 @@ bool data_parallel_compatible(const LoopB &l1, const LoopB &l2) {
 }
 
 // Check if 'block' accesses the output of a sweep in 'sweeps'
-bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const LoopB &loop_block) {
-    for (bh_instruction *instr: sweeps) {
+bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_block) {
+    for (InstrPtr instr: sweeps) {
         assert(bh_noperands(instr->opcode) > 0);
         auto bases = loop_block.getAllBases();
         if (bases.find(instr->operand[0].base) != bases.end())
@@ -536,36 +537,10 @@ pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
 }
 
 bool merge_possible(const Block &b1, const Block &b2) {
-    if (b1.isInstr() or b2.isInstr()) {
-        return false;
-    }
-    const LoopB &l1 = b1.getLoop();
-    const LoopB &l2 = b2.getLoop();
-
-    vector<bh_instruction> instr_list;
-    instr_list.reserve(l1.getAllInstr().size() + l2.getAllInstr().size());
-    Block t1;
-    {
-        vector<bh_instruction*> instr_list_ptr;
-        for (bh_instruction *instr: l1.getAllInstr()) {
-            instr_list.push_back(*instr);
-            instr_list_ptr.push_back(&instr_list.back());
-        }
-        t1 = create_nested_block(instr_list_ptr, l1.rank, l1.size);
-    }
-    Block t2;
-    {
-        vector<bh_instruction*> instr_list_ptr;
-        for (bh_instruction *instr: l2.getAllInstr()) {
-            instr_list.push_back(*instr);
-            instr_list_ptr.push_back(&instr_list.back());
-        }
-        t2 = create_nested_block(instr_list_ptr, l2.rank, l2.size);
-    }
-    return merge_if_possible(t1, t2).second;
+    return merge_if_possible(b1, b2).second;
 }
 
-std::pair<Block, bool> merge_if_possible(Block &b1, Block &b2) {
+std::pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2) {
     if (b1.isInstr() or b2.isInstr()) {
         return make_pair(Block(), false);
     }
@@ -585,7 +560,7 @@ std::pair<Block, bool> merge_if_possible(Block &b1, Block &b2) {
     // thus we can simply append system instructions without further checks.
     if (l2.isSystemOnly()) {
         LoopB block(l1);
-        for (bh_instruction *instr: l2.getAllInstr()) {
+        for (const InstrPtr instr: l2.getAllInstr()) {
             if (bh_noperands(instr->opcode) > 0) {
                 block.insert_system_after(instr, instr->operand[0].base);
             }
@@ -595,14 +570,14 @@ std::pair<Block, bool> merge_if_possible(Block &b1, Block &b2) {
 
     // Check fusibility of reshapable blocks
     if (l2._reshapable && l2.size % l1.size == 0) {
-        vector<bh_instruction *> cur_instr = l1.getAllInstr();
-        vector<bh_instruction *> it_instr = l2.getAllInstr();
+        vector<InstrPtr> cur_instr = l1.getAllInstr();
+        vector<InstrPtr> it_instr = l2.getAllInstr();
         cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
         return make_pair(create_nested_block(cur_instr, l2.rank, l1.size), true);
     }
     if (l1._reshapable && l1.size % l2.size == 0) {
-        vector<bh_instruction *> cur_instr = l1.getAllInstr();
-        vector<bh_instruction *> it_instr = l2.getAllInstr();
+        vector<InstrPtr> cur_instr = l1.getAllInstr();
+        vector<InstrPtr> it_instr = l2.getAllInstr();
         cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
         return make_pair(create_nested_block(cur_instr, l1.rank, l2.size), true);
     }

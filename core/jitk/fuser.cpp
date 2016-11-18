@@ -32,30 +32,31 @@ namespace bohrium {
 namespace jitk {
 
 
-vector<Block> fuser_singleton(vector<bh_instruction *> &instr_list) {
+vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
 
     // Creates the _block_list based on the instr_list
     vector<Block> block_list;
-    for (auto instr=instr_list.begin(); instr != instr_list.end(); ++instr) {
-        int nop = bh_noperands((*instr)->opcode);
+    for (auto it=instr_list.begin(); it != instr_list.end(); ++it) {
+        bh_instruction instr(**it);
+        int nop = bh_noperands(instr.opcode);
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
         // Let's try to simplify the shape of the instruction
-        if ((*instr)->reshapable()) {
-            const vector<int64_t> dominating_shape = (*instr)->dominating_shape();
+        if (instr.reshapable()) {
+            const vector<int64_t> dominating_shape = instr.dominating_shape();
             assert(dominating_shape.size() > 0);
 
             const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), 1, \
                                                       std::multiplies<int64_t>());
             const vector<int64_t> shape = {totalsize};
-            (*instr)->reshape(shape);
+            instr.reshape(shape);
         }
         // Let's create the block
-        const vector<int64_t> dominating_shape = (*instr)->dominating_shape();
+        const vector<int64_t> dominating_shape = instr.dominating_shape();
         assert(dominating_shape.size() > 0);
         int64_t size_of_rank_dim = dominating_shape[0];
-        vector<bh_instruction*> single_instr = {instr[0]};
+        vector<InstrPtr> single_instr = {std::make_shared<bh_instruction>(instr)};
         block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim));
     }
     return block_list;

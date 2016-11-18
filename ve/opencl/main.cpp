@@ -133,7 +133,7 @@ Impl::~Impl() {
 // Does 'instr' reduce over the innermost axis?
 // Notice, that such a reduction computes each output element completely before moving
 // to the next element.
-bool sweeping_innermost_axis(const bh_instruction *instr) {
+bool sweeping_innermost_axis(InstrPtr instr) {
     if (not bh_opcode_is_sweep(instr->opcode))
         return false;
     assert(bh_noperands(instr->opcode) == 3);
@@ -151,7 +151,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
 
     // Let's scalar replace reduction outputs that reduces over the innermost axis
     vector<bh_view> scalar_replacements;
-    for (const bh_instruction *instr: block._sweeps) {
+    for (const InstrPtr instr: block._sweeps) {
         if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
             bh_base *base = instr->operand[0].base;
             if (base_ids.isTmp(base))
@@ -166,7 +166,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
     bool need_to_peel = false;
     {
-        for (const bh_instruction *instr: block._sweeps) {
+        for (const InstrPtr instr: block._sweeps) {
             bh_base *b = instr->operand[0].base;
             if (not (has_reduce_identity(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
                 need_to_peel = true;
@@ -177,7 +177,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
 
     // When not peeling, we need a neutral initial reduction value
     if (not need_to_peel) {
-        for (const bh_instruction *instr: block._sweeps) {
+        for (const InstrPtr instr: block._sweeps) {
             bh_base *base = instr->operand[0].base;
             if (base_ids.isTmp(base))
                 out << "t";
@@ -197,22 +197,16 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0 and need_to_peel) {
         LoopB peeled_block(block);
-        vector<bh_instruction> sweep_instr_list(block._sweeps.size());
-        {
-            size_t i = 0;
-            for (const bh_instruction *instr: block._sweeps) {
-                Block *sweep_instr_block = peeled_block.findInstrBlock(instr);
-                assert(sweep_instr_block != NULL);
-                bh_instruction *sweep_instr = &sweep_instr_list[i++];
-                sweep_instr->opcode = BH_IDENTITY;
-                sweep_instr->operand[1] = instr->operand[1]; // The input is the same as in the sweep
-                sweep_instr->operand[0] = instr->operand[0];
-                // But the output needs an extra dimension when we are reducing to a non-scalar
-                if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                    sweep_instr->operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
-                }
-                sweep_instr_block->setInstr(sweep_instr);
+        for (const InstrPtr instr: block._sweeps) {
+            bh_instruction sweep_instr;
+            sweep_instr.opcode = BH_IDENTITY;
+            sweep_instr.operand[1] = instr->operand[1]; // The input is the same as in the sweep
+            sweep_instr.operand[0] = instr->operand[0];
+            // But the output needs an extra dimension when we are reducing to a non-scalar
+            if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
+                sweep_instr.operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
             }
+            peeled_block.replaceInstr(instr, sweep_instr);
         }
         string itername;
         {stringstream t; t << "i" << block.rank; itername = t.str();}
@@ -476,7 +470,7 @@ void Impl::execute(bh_ir *bhir) {
         BaseDB base_ids;
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
-        for (const bh_instruction *instr: kernel.getAllInstr()) {
+        for (const InstrPtr instr: kernel.getAllInstr()) {
             const int nop = bh_noperands(instr->opcode);
             for(int i=0; i<nop; ++i) {
                 const bh_view &v = instr->operand[i];
@@ -501,7 +495,7 @@ void Impl::execute(bh_ir *bhir) {
         uint64_t total_threading;
         tie(threaded_blocks, total_threading) = find_threaded_blocks(kernel.block);
         if (total_threading < config.defaultGet<uint64_t>("parallel_threshold", 1000)) {
-            for (const bh_instruction *instr: kernel.getAllInstr()) {
+            for (const InstrPtr instr: kernel.getAllInstr()) {
                 if (not bh_opcode_is_system(instr->opcode)) {
                     threading_below_threshold += bh_nelements(instr->operand[0]);
                 }
@@ -535,7 +529,7 @@ void Impl::execute(bh_ir *bhir) {
 
             // Let's send the kernel instructions to our child
             vector<bh_instruction> child_instr_list;
-            for (const bh_instruction* instr: kernel.block.getAllInstr()) {
+            for (const InstrPtr instr: kernel.block.getAllInstr()) {
                 child_instr_list.push_back(*instr);
             }
             bh_ir tmp_bhir(child_instr_list.size(), &child_instr_list[0]);

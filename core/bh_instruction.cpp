@@ -30,8 +30,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-set<bh_base*> bh_instruction::get_bases() {
-    set<bh_base*> ret;
+set<const bh_base *> bh_instruction::get_bases() const {
+    set<const bh_base*> ret;
     int nop = bh_noperands(opcode);
     for(int o=0; o<nop; ++o) {
         const bh_view &view = operand[o];

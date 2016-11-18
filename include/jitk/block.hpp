@@ -33,14 +33,21 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
+// Forward declaration
 class Block;
+
+// We use a shared pointer of an const instruction. The idea is to never change an instruction inplace
+// instead, create a whole new instruction.
+typedef std::shared_ptr<const bh_instruction> InstrPtr;
+
+
 
 class LoopB {
 public:
     int rank;
     std::vector <Block> _block_list;
     int64_t size;
-    std::set<bh_instruction*> _sweeps;
+    std::set<InstrPtr> _sweeps;
     std::set<bh_base *> _news;
     std::set<bh_base *> _frees;
     bool _reshapable = false;
@@ -51,9 +58,7 @@ public:
     // Default Constructor
     LoopB() { static int id_count = 0; _id = id_count++; }
 
-    // Find the 'instr' in this block or in its children
-    // Returns NULL if not found
-    Block* findInstrBlock(const bh_instruction *instr);
+    void replaceInstr(InstrPtr subject, const bh_instruction &replacement);
 
     // Is this block innermost? (not counting instruction blocks)
     bool isInnermost() const;
@@ -65,18 +70,18 @@ public:
     std::vector<const Block*> getLocalSubBlocks() const;
 
     // Return all instructions in the block (incl. nested blocks)
-    void getAllInstr(std::vector<bh_instruction*> &out) const;
-    std::vector<bh_instruction*> getAllInstr() const;
+    void getAllInstr(std::vector<InstrPtr> &out) const;
+    std::vector<InstrPtr> getAllInstr() const;
 
     // Return instructions in the block (excl. nested blocks)
-    void getLocalInstr(std::vector<bh_instruction*> &out) const;
-    std::vector<bh_instruction*> getLocalInstr() const;
+    void getLocalInstr(std::vector<InstrPtr> &out) const;
+    std::vector<InstrPtr> getLocalInstr() const;
 
     // Return all bases accessed by this block
-    std::set<bh_base*> getAllBases() const {
-        std::set<bh_base*> ret;
-        for (bh_instruction *instr: getAllInstr()) {
-            std::set<bh_base*> t = instr->get_bases();
+    std::set<const bh_base*> getAllBases() const {
+        std::set<const bh_base*> ret;
+        for (InstrPtr instr: getAllInstr()) {
+            std::set<const bh_base*> t = instr->get_bases();
             ret.insert(t.begin(), t.end());
         }
         return ret;
@@ -116,7 +121,7 @@ public:
     // Insert the system instruction 'instr' after the instruction that accesses 'base' last.
     // If no instruction accesses 'base' we insert it after the last instruction.
     // NB: Force reshape the instruction to match the instructions accesses 'base' last.
-    void insert_system_after(bh_instruction *instr, const bh_base *base);
+    void insert_system_after(InstrPtr instr, const bh_base *base);
 
     // Pretty print this block
     std::string pprint(const char *newline="\n") const;
@@ -129,7 +134,7 @@ public:
 
 class InstrB {
 public:
-    bh_instruction *instr;
+    InstrPtr instr;
     int rank;
 };
 
@@ -154,10 +159,9 @@ public:
 
     // Instruction Block Constructor
     // Note, the rank is only to make pretty printing easier
-    Block(bh_instruction *instr, int rank) {
-        assert(instr != NULL);
+    Block(const bh_instruction &instr, int rank) {
         assert(_var.which() == 0);
-        InstrB _instr{instr, rank};
+        InstrB _instr{std::make_shared<bh_instruction>(instr), rank};
         _var = std::move(_instr);
     }
 
@@ -171,11 +175,11 @@ public:
     const LoopB &getLoop() const {return boost::get<LoopB>(_var);}
 
     // Retrieve the instruction within the instruction block
-    // bh_instruction *getInstr() const {return boost::get<InstrB>(_var).instr;}
-    bh_instruction *getInstr() const {return boost::get<InstrB>(_var).instr;}
-    void setInstr(bh_instruction *instr) {
+    const InstrPtr getInstr() const {return boost::get<InstrB>(_var).instr;}
+    InstrPtr getInstr() {return boost::get<InstrB>(_var).instr;}
+    void setInstr(const bh_instruction &instr) {
         assert(_var.which() == 0 or _var.which() == 2);
-        boost::get<InstrB>(_var).instr = instr;
+        boost::get<InstrB>(_var).instr.reset(new bh_instruction(instr));
     }
 
     // Return the rank of this block
@@ -191,14 +195,14 @@ public:
     std::string pprint(const char *newline="\n") const;
 
     // Return all instructions in the block (incl. nested blocks)
-    void getAllInstr(std::vector<bh_instruction*> &out) const;
-    std::vector<bh_instruction*> getAllInstr() const;
+    void getAllInstr(std::vector<InstrPtr> &out) const;
+    std::vector<InstrPtr> getAllInstr() const;
 
     // Return all bases accessed by this block
-    std::set<bh_base*> getAllBases() const {
-        std::set<bh_base*> ret;
-        for (bh_instruction *instr: getAllInstr()) {
-            std::set<bh_base*> t = instr->get_bases();
+    std::set<const bh_base*> getAllBases() const {
+        std::set<const bh_base*> ret;
+        for (InstrPtr instr: getAllInstr()) {
+            std::set<const bh_base*> t = instr->get_bases();
             ret.insert(t.begin(), t.end());
         }
         return ret;
@@ -231,12 +235,12 @@ public:
 
     // Determines whether this block must be executed after 'other'
     bool depend_on(const Block &other) const {
-        const std::vector<bh_instruction*> this_instr_list = getAllInstr();
-        const std::vector<bh_instruction*> other_instr_list = other.getAllInstr();
-        for (const bh_instruction *this_instr: this_instr_list) {
-            for (const bh_instruction *other_instr: other_instr_list) {
-                if (this_instr != other_instr and
-                    bh_instr_dependency(this_instr, other_instr)) {
+        const std::vector<InstrPtr> this_instr_list = getAllInstr();
+        const std::vector<InstrPtr> other_instr_list = other.getAllInstr();
+        for (const InstrPtr this_instr: this_instr_list) {
+            for (const InstrPtr other_instr: other_instr_list) {
+                if (*this_instr != *other_instr and
+                    bh_instr_dependency(&(*this_instr), &(*other_instr))) {
                     return true;
                 }
             }
@@ -251,7 +255,7 @@ LoopB merge(const LoopB &a, const LoopB &b);
 // Create a nested block based on 'instr_list' with the sets of new, free, and temp arrays given.
 // The dimensions from zero to 'rank-1' are ignored.
 // The 'size_of_rank_dim' specifies the size of the dimension 'rank'.
-Block create_nested_block(std::vector<bh_instruction *> &instr_list, int rank, int64_t size_of_rank_dim);
+Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim);
 
 // Returns the blocks that can be parallelized in 'block' (incl. 'block' and its sub-blocks)
 // and the total amount of parallelism (in number of possible parallel threads)
@@ -263,7 +267,7 @@ bool merge_possible(const Block &a, const Block &b);
 // Merges the two blocks 'a' and 'a' (in that order) if they are fusible.
 // NB: 'a' or 'b' might be reshaped in order to make the merge legal
 // Returns the new block and a flag indicating whether the merge was performed
-std::pair<Block, bool> merge_if_possible(Block &a, Block &b);
+std::pair<Block, bool> merge_if_possible(const Block &a, const Block &b);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const LoopB& b);

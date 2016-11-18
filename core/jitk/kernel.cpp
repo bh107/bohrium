@@ -32,7 +32,7 @@ Kernel::Kernel(const LoopB &block) : block(block) {
 
     _useRandom = false;
     const set<bh_base *> temps = getAllTemps();
-    for (const bh_instruction *instr: getAllInstr()) {
+    for (const InstrPtr instr: getAllInstr()) {
         if (instr->opcode == BH_RANDOM) {
             _useRandom = true;
         } else if (instr->opcode == BH_FREE) {

@@ -84,7 +84,7 @@ bool path_exist(Vertex a, Vertex b, const DAG &dag, bool only_long_path) {
 // Create a DAG based on the 'block_list'
 DAG from_block_list(const vector<Block> &block_list) {
     DAG graph;
-    map<bh_base*, set<Vertex> > base2vertices;
+    map<const bh_base*, set<Vertex> > base2vertices;
     for (const Block &block: block_list) {
         assert(block.validation());
         Vertex vertex = boost::add_vertex(block, graph);
@@ -92,7 +92,7 @@ DAG from_block_list(const vector<Block> &block_list) {
         // Find all vertices that must connect to 'vertex'
         // using and updating 'base2vertices'
         set<Vertex> connecting_vertices;
-        for (bh_base *base: block.getAllBases()) {
+        for (const bh_base *base: block.getAllBases()) {
             set<Vertex> &vs = base2vertices[base];
             connecting_vertices.insert(vs.begin(), vs.end());
             vs.insert(vertex);
@@ -127,7 +127,7 @@ uint64_t weight(const Block &b1, const Block &b2) {
 uint64_t block_cost(const Block &block) {
     std::vector<bh_base*> non_temps;
     const set<bh_base *> temps = block.isInstr()?set<bh_base *>():block.getLoop().getAllTemps();
-    for (const bh_instruction *instr: block.getAllInstr()) {
+    for (const InstrPtr instr: block.getAllInstr()) {
         // Find non-temporary arrays
         const int nop = bh_noperands(instr->opcode);
         for (int i = 0; i < nop; ++i) {
@@ -239,7 +239,7 @@ void pprint(const DAG &dag, const char *filename) {
                 if (not graph[v].isInstr()) {
                     tie(std::ignore, total_threading) = find_threaded_blocks(graph[v].getLoop());
                 }
-                for (const bh_instruction *instr: graph[v].getAllInstr()) {
+                for (const InstrPtr instr: graph[v].getAllInstr()) {
                     if (bh_opcode_is_system(instr->opcode))
                         continue;
                     if (total_threading < 1000) {

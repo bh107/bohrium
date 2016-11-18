@@ -32,7 +32,7 @@ namespace jitk {
 
 // Creates a block list based on the 'instr_list' where each instruction gets its own nested block
 // NB: this function might reshape the instructions in 'instr_list'
-std::vector<Block> fuser_singleton(std::vector<bh_instruction *> &instr_list);
+std::vector<Block> fuser_singleton(const std::vector<bh_instruction *> &instr_list);
 
 // Fuses 'block_list' in a serial naive manner
 void fuser_serial(std::vector<Block> &block_list);

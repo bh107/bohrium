@@ -125,7 +125,7 @@ bool openmp_reduce_compatible(bh_opcode opcode) {
 // Is the 'block' compatible with OpenMP
 bool openmp_compatible(const LoopB &block) {
     // For now, all sweeps must be reductions
-    for (const bh_instruction *instr: block._sweeps) {
+    for (const InstrPtr instr: block._sweeps) {
         if (not bh_opcode_is_reduction(instr->opcode)) {
             return false;
         }
@@ -137,13 +137,13 @@ bool openmp_compatible(const LoopB &block) {
 bool simd_compatible(const LoopB &block, const BaseDB &base_ids) {
 
     // Check for non-compatible reductions
-    for (const bh_instruction *instr: block._sweeps) {
+    for (const InstrPtr instr: block._sweeps) {
         if (not openmp_reduce_compatible(instr->opcode))
             return false;
     }
 
     // An OpenMP SIMD loop does not support ANY OpenMP pragmas
-    for (bh_base* b: block.getAllBases()) {
+    for (const bh_base* b: block.getAllBases()) {
         if (base_ids.isOpenmpAtomic(b) or base_ids.isOpenmpCritical(b))
             return false;
     }
@@ -172,14 +172,14 @@ void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParse
     bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
 
     // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
-    vector<const bh_instruction*> openmp_reductions;
+    vector<InstrPtr> openmp_reductions;
 
     stringstream ss;
     // "OpenMP for" goes to the outermost loop
     if (block.rank == 0 and openmp_compatible(block)) {
         ss << " parallel for";
         // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
-        for (const bh_instruction *instr: block._sweeps) {
+        for (const InstrPtr instr: block._sweeps) {
             assert(bh_noperands(instr->opcode) == 3);
             bh_base *base = instr->operand[0].base;
             if (openmp_reduce_compatible(instr->opcode) and (base_ids.isScalarReplaced(base) or base_ids.isTmp(base))) {
@@ -196,14 +196,14 @@ void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParse
     if (enable_simd and block.isInnermost() and simd_compatible(block, base_ids)) {
         ss << " simd";
         if (block.rank > 0) { //NB: avoid multiple reduction declarations
-            for (const bh_instruction *instr: block._sweeps) {
+            for (const InstrPtr instr: block._sweeps) {
                 openmp_reductions.push_back(instr);
             }
         }
     }
 
     //Let's write the OpenMP reductions
-    for (const bh_instruction* instr: openmp_reductions) {
+    for (const InstrPtr instr: openmp_reductions) {
         assert(bh_noperands(instr->opcode) == 3);
         bh_base *base = instr->operand[0].base;
         ss << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
@@ -220,7 +220,7 @@ void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParse
 // Does 'instr' reduce over the innermost axis?
 // Notice, that such a reduction computes each output element completely before moving
 // to the next element.
-bool sweeping_innermost_axis(const bh_instruction *instr) {
+bool sweeping_innermost_axis(InstrPtr instr) {
     if (not bh_opcode_is_sweep(instr->opcode))
         return false;
     assert(bh_noperands(instr->opcode) == 3);
@@ -235,7 +235,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
 
     // Let's scalar replace reduction outputs that reduces over the innermost axis
     vector<bh_view> scalar_replacements;
-    for (const bh_instruction *instr: block._sweeps) {
+    for (const InstrPtr instr: block._sweeps) {
         if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
             bh_base *base = instr->operand[0].base;
             if (base_ids.isTmp(base))
@@ -250,7 +250,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
     bool need_to_peel = false;
     {
-        for (const bh_instruction *instr: block._sweeps) {
+        for (const InstrPtr instr: block._sweeps) {
             bh_base *b = instr->operand[0].base;
             if (not (has_reduce_identity(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
                 need_to_peel = true;
@@ -261,7 +261,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
 
     // When not peeling, we need a neutral initial reduction value
     if (not need_to_peel) {
-        for (const bh_instruction *instr: block._sweeps) {
+        for (const InstrPtr instr: block._sweeps) {
             bh_base *base = instr->operand[0].base;
             if (base_ids.isTmp(base))
                 out << "t";
@@ -278,22 +278,16 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0 and need_to_peel) {
         LoopB peeled_block(block);
-        vector<bh_instruction> sweep_instr_list(block._sweeps.size());
-        {
-            size_t i = 0;
-            for (const bh_instruction *instr: block._sweeps) {
-                Block *sweep_instr_block = peeled_block.findInstrBlock(instr);
-                assert(sweep_instr_block != NULL);
-                bh_instruction *sweep_instr = &sweep_instr_list[i++];
-                sweep_instr->opcode = BH_IDENTITY;
-                sweep_instr->operand[1] = instr->operand[1]; // The input is the same as in the sweep
-                sweep_instr->operand[0] = instr->operand[0];
-                // But the output needs an extra dimension when we are reducing to a non-scalar
-                if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                    sweep_instr->operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
-                }
-                sweep_instr_block->setInstr(sweep_instr);
+        for (const InstrPtr instr: block._sweeps) {
+            bh_instruction sweep_instr;
+            sweep_instr.opcode = BH_IDENTITY;
+            sweep_instr.operand[1] = instr->operand[1]; // The input is the same as in the sweep
+            sweep_instr.operand[0] = instr->operand[0];
+            // But the output needs an extra dimension when we are reducing to a non-scalar
+            if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
+                sweep_instr.operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
             }
+            peeled_block.replaceInstr(instr, sweep_instr);
         }
         string itername;
         {stringstream t; t << "i" << block.rank; itername = t.str();}
@@ -353,7 +347,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     // Write the for-loop body
     for (const Block &b: block._block_list) {
         if (b.isInstr()) { // Finally, let's write the instruction
-            const bh_instruction *instr = b.getInstr();
+            const InstrPtr instr = b.getInstr();
             if (bh_noperands(instr->opcode) > 0 and not bh_opcode_is_system(instr->opcode)) {
                 if (base_ids.isOpenmpAtomic(instr->operand[0].base)) {
                     spaces(out, 4 + b.rank()*4);
@@ -526,7 +520,7 @@ void Impl::execute(bh_ir *bhir) {
         BaseDB base_ids;
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
-        for (const bh_instruction *instr: kernel.getAllInstr()) {
+        for (const InstrPtr instr: kernel.getAllInstr()) {
             const int nop = bh_noperands(instr->opcode);
             for(int i=0; i<nop; ++i) {
                 const bh_view &v = instr->operand[i];

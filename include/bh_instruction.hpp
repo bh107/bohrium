@@ -38,7 +38,7 @@ struct bh_instruction
     }
 
     // Return a set of all bases used by the instruction
-    std::set<bh_base*> get_bases();
+    std::set<const bh_base *> get_bases() const;
 
     // Check if all views in this instruction is contiguous
     bool is_contiguous() const;

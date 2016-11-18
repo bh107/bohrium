@@ -69,11 +69,11 @@ public:
     }
 
     // Return all instructions in the kernel
-    void getAllInstr(std::vector<bh_instruction*> &out) const {
+    void getAllInstr(std::vector<InstrPtr> &out) const {
         block.getAllInstr(out);
     }
-    std::vector<bh_instruction*> getAllInstr() const {
-        std::vector<bh_instruction *> ret;
+    std::vector<InstrPtr> getAllInstr() const {
+        std::vector<InstrPtr> ret;
         getAllInstr(ret);
         return ret;
     }
