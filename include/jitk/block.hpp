@@ -33,6 +33,14 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
+/* Design Overview
+
+   A block can represent two things in Bohrium:
+    * A for-loop, i.e. a traversal of arrays over an axis/dimension (class LoopB)
+    * A single instruction such as BH_ADD or BH_MULTIPLY (class InstrB)
+
+*/
+
 // Forward declaration
 class Block;
 
@@ -40,16 +48,22 @@ class Block;
 // instead, create a whole new instruction.
 typedef std::shared_ptr<const bh_instruction> InstrPtr;
 
-
-
+// Representation of a for-loop, which contains a list of nested loops (_block_list)
 class LoopB {
 public:
+    // The rank of this loop block
     int rank;
+    // List of sub-blocks
     std::vector <Block> _block_list;
+    // Size of the loop
     int64_t size;
+    // Sweep instructions within this loop
     std::set<InstrPtr> _sweeps;
+    // New arrays within this loop
     std::set<bh_base *> _news;
+    // Freed arrays within this loop
     std::set<bh_base *> _frees;
+    // Is this loop and all its sub-blocks reshapable
     bool _reshapable = false;
 
     // Unique id of this block
@@ -110,9 +124,6 @@ public:
     // Validation check of this block
     bool validation() const;
 
-    // Determines whether this block must be executed after 'other'
-    bool depend_on(const Block &other) const;
-
     // Finds the block and instruction that accesses 'base' last. If 'base' is NULL, any data access
     // is accepted thus the last instruction is returned.
     // Returns the block and the index of the instruction (or NULL and -1 if not accessed)
@@ -132,14 +143,18 @@ public:
     }
 };
 
+// Representation of a single instruction
 class InstrB {
 public:
     InstrPtr instr;
     int rank;
 };
 
+// A block can represent a for-loop (LoopB) or an instruction (InstrB)
 class Block {
 private:
+    // This is the variant that contains either a LoopB or a InstrB.
+    // Note, boost::blank is only used to catch programming errors
     boost::variant<boost::blank, LoopB, InstrB> _var;
 
 public:
@@ -191,8 +206,8 @@ public:
         }
     }
 
-    // Pretty print this block
-    std::string pprint(const char *newline="\n") const;
+    // Validation check of this block
+    bool validation() const;
 
     // Return all instructions in the block (incl. nested blocks)
     void getAllInstr(std::vector<InstrPtr> &out) const;
@@ -230,9 +245,6 @@ public:
         }
     }
 
-    // Validation check of this block
-    bool validation() const;
-
     // Determines whether this block must be executed after 'other'
     bool depend_on(const Block &other) const {
         const std::vector<InstrPtr> this_instr_list = getAllInstr();
@@ -240,13 +252,16 @@ public:
         for (const InstrPtr this_instr: this_instr_list) {
             for (const InstrPtr other_instr: other_instr_list) {
                 if (*this_instr != *other_instr and
-                    bh_instr_dependency(&(*this_instr), &(*other_instr))) {
+                    bh_instr_dependency(this_instr.get(), other_instr.get())) {
                     return true;
                 }
             }
         }
         return false;
     }
+
+    // Pretty print this block
+    std::string pprint(const char *newline="\n") const;
 };
 
 // Merge the two loop blocks, 'a' and 'b', in that order.

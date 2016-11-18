@@ -50,8 +50,6 @@ bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
     }
     return true;
 }
-} // Anonymous name space
-
 
 // Append 'instr' to the loop block 'block'
 void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_rank_dim) {
@@ -82,7 +80,7 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
     }
 
     vector<int64_t> shape = instr->dominating_shape();
-    
+
     // Sanity check
     assert(shape.size() > (uint64_t) rank);
     if (shape[rank] != size_of_rank_dim)
@@ -113,23 +111,9 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
     }
 }
 
-Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim) {
+} // Anonymous name space
 
-    if (instr_list.empty()) {
-        throw runtime_error("create_nested_block: 'instr_list' is empty!");
-    }
-
-    // Let's build the nested block from the 'rank' level to the instruction block
-    LoopB ret;
-    for (InstrPtr instr: instr_list) {
-        add_instr_to_block(ret, instr, rank, size_of_rank_dim);
-    }
-    ret.rank = rank;
-    ret.size = size_of_rank_dim;
-    ret._reshapable = is_reshapeable(ret.getAllInstr());
-    assert(ret.validation());
-    return Block(std::move(ret));
-}
+// *** LoopB Methods *** //
 
 void LoopB::replaceInstr(InstrPtr subject, const bh_instruction &replacement) {
     for (Block &b: _block_list) {
@@ -161,65 +145,6 @@ bool LoopB::isSystemOnly() const {
     return true;
 }
 
-string LoopB::pprint(const char *newline) const {
-    stringstream ss;
-    spaces(ss, rank * 4);
-    ss << "rank: " << rank << ", size: " << size;
-    if (_sweeps.size() > 0) {
-        ss << ", sweeps: { ";
-        for (const InstrPtr instr : _sweeps) {
-            ss << *instr << ",";
-        }
-        ss << "}";
-    }
-    if (_reshapable) {
-        ss << ", reshapable";
-    }
-    if (_news.size() > 0) {
-        ss << ", news: {";
-        for (const bh_base *b : _news) {
-            ss << "a" << b->get_label() << ",";
-        }
-        ss << "}";
-    }
-    if (_frees.size() > 0) {
-        ss << ", frees: {";
-        for (const bh_base *b : _frees) {
-            ss << "a" << b->get_label() << ",";
-        }
-        ss << "}";
-    }
-    const set<bh_base *> temps = getLocalTemps();
-    if (temps.size() > 0) {
-        ss << ", temps: {";
-        for (const bh_base *b : temps) {
-            ss << "a" << b->get_label() << ",";
-        }
-        ss << "}";
-    }
-    if (_block_list.size() > 0) {
-        ss << ", block list:" << newline;
-        for (const Block &b : _block_list) {
-            ss << b.pprint(newline);
-        }
-    }
-    return ss.str();
-}
-
-string Block::pprint(const char *newline) const {
-
-    if (isInstr()) {
-        stringstream ss;
-        if (getInstr() != NULL) {
-            spaces(ss, rank() * 4);
-            ss << *getInstr() << newline;
-        }
-        return ss.str();
-    } else {
-        return getLoop().pprint(newline);
-    }
-}
-
 void LoopB::getAllSubBlocks(std::vector<const LoopB *> &out) const {
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
@@ -236,21 +161,6 @@ vector<const Block *> LoopB::getLocalSubBlocks() const {
             ret.push_back(&b);
         }
     }
-    return ret;
-}
-
-void Block::getAllInstr(vector<InstrPtr> &out) const {
-    if (isInstr()) {
-        out.push_back(getInstr());
-    } else {
-        for (const Block &b : getLoop()._block_list) {
-            b.getAllInstr(out);
-        }
-    }
-}
-vector<InstrPtr> Block::getAllInstr() const {
-    vector<InstrPtr> ret;
-    getAllInstr(ret);
     return ret;
 }
 
@@ -336,19 +246,27 @@ set<bh_base *> LoopB::getAllTemps() const {
     return ret;
 }
 
-// Determines whether this block must be executed after 'other'
-bool LoopB::depend_on(const Block &other) const {
-    const std::vector<InstrPtr> this_instr_list = getAllInstr();
-    const std::vector<InstrPtr> other_instr_list = other.getAllInstr();
-    for (const InstrPtr this_instr: this_instr_list) {
-        for (const InstrPtr other_instr: other_instr_list) {
-            if (this_instr != other_instr and
-                bh_instr_dependency(&(*this_instr), &(*other_instr))) {
-                return true;
+pair<LoopB*, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
+    assert(validation());
+    for (int64_t i=_block_list.size()-1; i >= 0; --i) {
+        if (_block_list[i].isInstr()) {
+            if (base == NULL) { // Searching for any access
+                return make_pair(this, i);
+            } else {
+                const set<const bh_base*> bases = _block_list[i].getInstr()->get_bases();
+                if (bases.find(base) != bases.end()) {
+                    return make_pair(this, i);
+                }
+            }
+        } else {
+            // Check if the sub block accesses 'base'
+            pair<LoopB*, int64_t> block = _block_list[i].getLoop().findLastAccessBy(base);
+            if (block.first != NULL) {
+                return block; // We found the block and instruction that accesses 'base'
             }
         }
     }
-    return false;
+    return make_pair((LoopB *)NULL, -1); // Not found
 }
 
 bool LoopB::validation() const {
@@ -394,37 +312,6 @@ bool LoopB::validation() const {
     return true;
 }
 
-bool Block::validation() const {
-    if (isInstr()) {
-        return true;
-    } else {
-        return getLoop().validation();
-    }
-}
-
-pair<LoopB*, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
-    assert(validation());
-    for (int64_t i=_block_list.size()-1; i >= 0; --i) {
-        if (_block_list[i].isInstr()) {
-            if (base == NULL) { // Searching for any access
-                return make_pair(this, i);
-            } else {
-                const set<const bh_base*> bases = _block_list[i].getInstr()->get_bases();
-                if (bases.find(base) != bases.end()) {
-                    return make_pair(this, i);
-                }
-            }
-        } else {
-            // Check if the sub block accesses 'base'
-            pair<LoopB*, int64_t> block = _block_list[i].getLoop().findLastAccessBy(base);
-            if (block.first != NULL) {
-                return block; // We found the block and instruction that accesses 'base'
-            }
-        }
-    }
-    return make_pair((LoopB *)NULL, -1); // Not found
-}
-
 void LoopB::insert_system_after(InstrPtr instr, const bh_base *base) {
     assert(validation());
 
@@ -448,6 +335,95 @@ void LoopB::insert_system_after(InstrPtr instr, const bh_base *base) {
     assert(validation());
 }
 
+string LoopB::pprint(const char *newline) const {
+    stringstream ss;
+    spaces(ss, rank * 4);
+    ss << "rank: " << rank << ", size: " << size;
+    if (_sweeps.size() > 0) {
+        ss << ", sweeps: { ";
+        for (const InstrPtr instr : _sweeps) {
+            ss << *instr << ",";
+        }
+        ss << "}";
+    }
+    if (_reshapable) {
+        ss << ", reshapable";
+    }
+    if (_news.size() > 0) {
+        ss << ", news: {";
+        for (const bh_base *b : _news) {
+            ss << "a" << b->get_label() << ",";
+        }
+        ss << "}";
+    }
+    if (_frees.size() > 0) {
+        ss << ", frees: {";
+        for (const bh_base *b : _frees) {
+            ss << "a" << b->get_label() << ",";
+        }
+        ss << "}";
+    }
+    const set<bh_base *> temps = getLocalTemps();
+    if (temps.size() > 0) {
+        ss << ", temps: {";
+        for (const bh_base *b : temps) {
+            ss << "a" << b->get_label() << ",";
+        }
+        ss << "}";
+    }
+    if (_block_list.size() > 0) {
+        ss << ", block list:" << newline;
+        for (const Block &b : _block_list) {
+            ss << b.pprint(newline);
+        }
+    }
+    return ss.str();
+}
+
+
+// *** Block Methods *** //
+
+bool Block::validation() const {
+    if (isInstr()) {
+        return true;
+    } else {
+        return getLoop().validation();
+    }
+}
+
+void Block::getAllInstr(vector<InstrPtr> &out) const {
+    if (isInstr()) {
+        out.push_back(getInstr());
+    } else {
+        for (const Block &b : getLoop()._block_list) {
+            b.getAllInstr(out);
+        }
+    }
+}
+
+vector<InstrPtr> Block::getAllInstr() const {
+    vector<InstrPtr> ret;
+    getAllInstr(ret);
+    return ret;
+}
+
+string Block::pprint(const char *newline) const {
+
+    if (isInstr()) {
+        stringstream ss;
+        if (getInstr() != NULL) {
+            spaces(ss, rank() * 4);
+            ss << *getInstr() << newline;
+        }
+        return ss.str();
+    } else {
+        return getLoop().pprint(newline);
+    }
+}
+
+
+// *** Block Functions *** //
+
 LoopB merge(const LoopB &l1, const LoopB &l2) {
     LoopB ret(l1);
     // The block list should always be in order: 'a' before 'b'
@@ -461,6 +437,50 @@ LoopB merge(const LoopB &l1, const LoopB &l2) {
     ret._reshapable = is_reshapeable(ret.getAllInstr());
     return ret;
 }
+
+Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim) {
+    if (instr_list.empty()) {
+        throw runtime_error("create_nested_block: 'instr_list' is empty!");
+    }
+
+    // Let's build the nested block from the 'rank' level to the instruction block
+    LoopB ret;
+    for (InstrPtr instr: instr_list) {
+        add_instr_to_block(ret, instr, rank, size_of_rank_dim);
+    }
+    ret.rank = rank;
+    ret.size = size_of_rank_dim;
+    ret._reshapable = is_reshapeable(ret.getAllInstr());
+    assert(ret.validation());
+    return Block(std::move(ret));
+}
+
+pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
+    pair<vector<const LoopB*>, uint64_t> ret;
+
+    // We should search in 'this' block and its sub-blocks
+    vector<const LoopB *> block_list = {&block};
+    block.getAllSubBlocks(block_list);
+
+    // Find threaded blocks
+    constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
+    ret.second = 1;
+    for (const LoopB *b: block_list) {
+        if (b->_sweeps.size() == 0 and not b->isSystemOnly()) {
+            ret.first.push_back(b);
+            ret.second *= b->size;
+        }
+        // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
+        if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
+            break;
+        }
+        if (ret.first.size() == MAX_NUM_OF_THREADED_BLOCKS) {
+            break;
+        }
+    }
+    return ret;
+}
+
 
 // Unnamed namespace for all some merge help functions
 namespace {
@@ -509,32 +529,6 @@ bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_blo
     return false;
 }
 } // Unnamed namespace
-
-pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
-    pair<vector<const LoopB*>, uint64_t> ret;
-
-    // We should search in 'this' block and its sub-blocks
-    vector<const LoopB *> block_list = {&block};
-    block.getAllSubBlocks(block_list);
-
-    // Find threaded blocks
-    constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
-    ret.second = 1;
-    for (const LoopB *b: block_list) {
-        if (b->_sweeps.size() == 0 and not b->isSystemOnly()) {
-            ret.first.push_back(b);
-            ret.second *= b->size;
-        }
-        // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
-        if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
-            break;
-        }
-        if (ret.first.size() == MAX_NUM_OF_THREADED_BLOCKS) {
-            break;
-        }
-    }
-    return ret;
-}
 
 bool merge_possible(const Block &b1, const Block &b2) {
     return merge_if_possible(b1, b2).second;
