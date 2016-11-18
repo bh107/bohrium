@@ -135,7 +135,7 @@ public:
 
 class Block {
 private:
-    boost::variant<LoopB, InstrB> _var;
+    boost::variant<boost::blank, LoopB, InstrB> _var;
 
 public:
 
@@ -144,9 +144,11 @@ public:
 
     // Loop Block Constructor
     explicit Block(const LoopB &loop_block) {
+        assert(_var.which() == 0);
         _var = loop_block;
     }
     explicit Block(LoopB &&loop_block) {
+        assert(_var.which() == 0);
         _var = loop_block;
     }
 
@@ -154,13 +156,14 @@ public:
     // Note, the rank is only to make pretty printing easier
     Block(bh_instruction *instr, int rank) {
         assert(instr != NULL);
+        assert(_var.which() == 0);
         InstrB _instr{instr, rank};
         _var = std::move(_instr);
     }
 
     // Returns true if this block is an instruction block
     bool isInstr() const {
-        return _var.which() == 1; // Notice, the second type in '_var' is 'InstrB'
+        return _var.which() == 2; // Notice, the third type in '_var' is 'InstrB'
     }
 
     // Retrieve the Loop Block
@@ -170,8 +173,12 @@ public:
     // Retrieve the instruction within the instruction block
     // bh_instruction *getInstr() const {return boost::get<InstrB>(_var).instr;}
     bh_instruction *getInstr() const {return boost::get<InstrB>(_var).instr;}
-    void setInstr(bh_instruction *instr) {boost::get<InstrB>(_var).instr = instr;}
+    void setInstr(bh_instruction *instr) {
+        assert(_var.which() == 0 or _var.which() == 2);
+        boost::get<InstrB>(_var).instr = instr;
+    }
 
+    // Return the rank of this block
     int rank() const {
         if (isInstr()) {
             return boost::get<InstrB>(_var).rank;
@@ -197,7 +204,7 @@ public:
         return ret;
     }
 
-    // Returns true when all instructions within the block is system or if the block is empty()
+    // Returns true when all instructions within this block is system or if the block is empty()
     bool isSystemOnly() const {
         if (isInstr()) {
             return bh_opcode_is_system(getInstr()->opcode);
@@ -210,6 +217,7 @@ public:
         return true;
     }
 
+    // Returns true when all instructions within this block is reshapable
     bool isReshapable() const {
         if (isInstr()) {
             return getInstr()->reshapable();
