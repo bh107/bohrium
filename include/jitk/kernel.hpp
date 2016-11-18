@@ -43,7 +43,7 @@ private:
 public:
 
     // The loop block that makes up this kernel
-    const LoopB block;
+    const LoopB &block;
 
     // Constructor
     Kernel(const LoopB &block);
