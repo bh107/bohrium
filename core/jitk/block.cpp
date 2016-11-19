@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <cassert>
 
+#include <bh_util.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
 
@@ -573,16 +574,6 @@ std::pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2) {
     }
     const LoopB &l1 = b1.getLoop();
     const LoopB &l2 = b2.getLoop();
-
-    // First we check for data incompatibility
-    if (not data_parallel_compatible(l1, l2) or sweeps_accessed_by_block(l1._sweeps, l2)) {
-        return make_pair(Block(), false);
-    }
-    // Check for perfect match, which is directly mergeable
-    if (l1.size == l2.size) {
-        return make_pair(Block(merge(l1, l2)), true);
-    }
-
     // System-only blocks are very flexible because they array sizes does not have to match when reshaping
     // thus we can simply append system instructions without further checks.
     if (l2.isSystemOnly()) {
@@ -594,19 +585,33 @@ std::pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2) {
         }
         return make_pair(Block(std::move(block)), true);
     }
-
-    // Check fusibility of reshapable blocks
-    if (l2._reshapable && l2.size % l1.size == 0) {
-        vector<InstrPtr> cur_instr = l1.getAllInstr();
-        vector<InstrPtr> it_instr = l2.getAllInstr();
-        cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-        return make_pair(create_nested_block(cur_instr, l2.rank, l1.size), true);
+    // If instructions in 'b2' reads the sweep output of 'b1' than we cannot merge them
+    if (sweeps_accessed_by_block(l1._sweeps, l2)) {
+        return make_pair(Block(), false);
     }
+    // Check for perfect match, which is directly mergeable
+    if (l1.size == l2.size) {
+        if (data_parallel_compatible(l1, l2)) {
+            return make_pair(Block(merge(l1, l2)), true);
+        } else {
+            return make_pair(Block(), false);
+        }
+    }
+    // Let's try to reshape 'b2' to see if it can match the shape of 'b1'
+    if (l2._reshapable && l2.size % l1.size == 0) {
+        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
+        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
+        if (data_parallel_compatible(l1, create_nested_block(l2_instrs, l1.rank, l1.size).getLoop())) {
+           return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l1.size), true);
+        }
+    }
+    // Let's try to reshape 'b1' to see if it can match the shape of 'b2'
     if (l1._reshapable && l1.size % l2.size == 0) {
-        vector<InstrPtr> cur_instr = l1.getAllInstr();
-        vector<InstrPtr> it_instr = l2.getAllInstr();
-        cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-        return make_pair(create_nested_block(cur_instr, l1.rank, l2.size), true);
+        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
+        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
+        if (data_parallel_compatible(create_nested_block(l1_instrs, l1.rank, l2.size).getLoop(), l2)) {
+            return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l2.size), true);
+        }
     }
     return make_pair(Block(), false);
 }

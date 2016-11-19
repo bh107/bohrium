@@ -175,7 +175,7 @@ void fuser_greedy(vector<Block> &block_list) {
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_breadth_first(b.getLoop()._block_list);
+            fuser_greedy(b.getLoop()._block_list);
         }
     }
     block_list = ret;
