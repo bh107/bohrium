@@ -484,35 +484,72 @@ pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
 
 // Unnamed namespace for all some merge help functions
 namespace {
-// Check if 'a' and 'b' supports data-parallelism when merged
-bool data_parallel_compatible(const InstrPtr a, const InstrPtr b)
-{
+
+bool data_parallel_compatible(const bh_view &a, const bh_view &b, const int rank) {
+
+    // Disjoint views or constants are obviously compatible
+    if (bh_is_constant(&a) or bh_is_constant(&b) or bh_view_disjoint(&a, &b)) {
+        return true;
+    }
+
+    // This is possible if 'a' or 'b' is the output of a reduction
+    if (a.ndim <= rank or b.ndim <= rank) {
+        return false;
+    }
+
+    // A output array that uses broadcast is never data parallel compatible!
+    for (int64_t i=0; i<a.ndim; ++i) {
+        if (a.stride[rank] == 0) {
+            assert(1==2); // Is this even possible?
+            return false;
+        }
+    }
+
+    // The views must have the same offset
+    if (a.start != b.start) {
+        return false;
+    }
+
+    if (a.stride[rank] == 0 or b.stride[rank] == 0) {
+        return true;
+    }
+    return a.stride[rank] == b.stride[rank];
+}
+
+// Check if 'a' and 'b' (in that order) supports data-parallelism when merged
+bool data_parallel_compatible(const InstrPtr a, const InstrPtr b, const int rank) {
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
 
-    const int a_nop = bh_noperands(a->opcode);
-    for(int i=0; i<a_nop; ++i)
-    {
-        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
-           && not bh_view_aligned(&b->operand[0], &a->operand[i]))
-            return false;
+    {// The output of 'a' cannot conflict with the input and output of 'b'
+        const bh_view &src = a->operand[0];
+        const int b_nop = bh_noperands(b->opcode);
+        for(int i=0; i<b_nop; ++i) {
+            if (not data_parallel_compatible(src, b->operand[i], rank)) {
+                return false;
+            }
+        }
     }
-    const int b_nop = bh_noperands(b->opcode);
-    for(int i=0; i<b_nop; ++i)
-    {
-        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
-           && not bh_view_aligned(&a->operand[0], &b->operand[i]))
-            return false;
+    {// The output of 'b' cannot conflict with the input and output of 'a'
+        const bh_view &src = b->operand[0];
+        const int a_nop = bh_noperands(a->opcode);
+        for(int i=0; i<a_nop; ++i) {
+            if (not data_parallel_compatible(src, a->operand[i], rank)) {
+                return false;
+            }
+        }
     }
     return true;
 }
 
-// Check if loop block 'l1' and 'l2' supports data-parallelism when merged
-bool data_parallel_compatible(const LoopB &l1, const LoopB &l2) {
-    for (const InstrPtr i1 : l1.getAllInstr()) {
-        for (const InstrPtr i2 : l2.getAllInstr()) {
-            if (not data_parallel_compatible(i1, i2))
+// Check if 'b1' and 'b2' (in that order) supports data-parallelism when merged
+bool data_parallel_compatible(const LoopB &b1, const LoopB &b2) {
+    assert(b1.rank == b2.rank);
+    for (const InstrPtr i1 : b1.getAllInstr()) {
+        for (const InstrPtr i2 : b2.getAllInstr()) {
+            if (not data_parallel_compatible(i1, i2, b1.rank)) {
                 return false;
+            }
         }
     }
     return true;
@@ -529,10 +566,6 @@ bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_blo
     return false;
 }
 } // Unnamed namespace
-
-bool merge_possible(const Block &b1, const Block &b2) {
-    return merge_if_possible(b1, b2).second;
-}
 
 std::pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2) {
     if (b1.isInstr() or b2.isInstr()) {

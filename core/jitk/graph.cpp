@@ -301,7 +301,7 @@ void greedy(DAG &dag) {
                 if(path_exist(v1, v2, dag, true)) {
                     boost::remove_edge(e, dag);
                 } else {
-                    if (merge_possible(dag[source(e, dag)], dag[target(e, dag)])) {
+                    if (merge_if_possible(dag[source(e, dag)], dag[target(e, dag)]).second) {
                         fusibles.push_back(e);
                     }
                 }

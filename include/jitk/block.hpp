@@ -276,9 +276,6 @@ Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int
 // and the total amount of parallelism (in number of possible parallel threads)
 std::pair<std::vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block);
 
-// Check if it is possible to merge 'a' and 'a' (in that order)
-bool merge_possible(const Block &a, const Block &b);
-
 // Merges the two blocks 'a' and 'a' (in that order) if they are fusible.
 // NB: 'a' or 'b' might be reshaped in order to make the merge legal
 // Returns the new block and a flag indicating whether the merge was performed
