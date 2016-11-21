@@ -563,6 +563,36 @@ bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_blo
 }
 } // Unnamed namespace
 
+// Reshape and merges the two loop blocks 'l1' and 'l2' (in that order).
+// Returns a new block and a flag indicating whether the merge were possible
+std::pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
+    // Check for perfect match, which is directly mergeable
+    if (l1.size == l2.size) {
+        if (data_parallel_compatible(l1, l2)) {
+            return make_pair(Block(merge(l1, l2)), true);
+        } else {
+            return make_pair(Block(), false);
+        }
+    }
+    // Let's try to reshape 'l2' to see if it can match the shape of 'l1'
+    if (l2._reshapable && l2.size % l1.size == 0) {
+        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
+        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
+        if (data_parallel_compatible(l1, create_nested_block(l2_instrs, l1.rank, l1.size).getLoop())) {
+            return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l1.size), true);
+        }
+    }
+    // Let's try to reshape 'l1' to see if it can match the shape of 'l2'
+    if (l1._reshapable && l1.size % l2.size == 0) {
+        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
+        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
+        if (data_parallel_compatible(create_nested_block(l1_instrs, l1.rank, l2.size).getLoop(), l2)) {
+            return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l2.size), true);
+        }
+    }
+    return make_pair(Block(), false); // No match found
+}
+
 std::pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2) {
     if (b1.isInstr() or b2.isInstr()) {
         return make_pair(Block(), false);
@@ -584,31 +614,8 @@ std::pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2) {
     if (sweeps_accessed_by_block(l1._sweeps, l2)) {
         return make_pair(Block(), false);
     }
-    // Check for perfect match, which is directly mergeable
-    if (l1.size == l2.size) {
-        if (data_parallel_compatible(l1, l2)) {
-            return make_pair(Block(merge(l1, l2)), true);
-        } else {
-            return make_pair(Block(), false);
-        }
-    }
-    // Let's try to reshape 'b2' to see if it can match the shape of 'b1'
-    if (l2._reshapable && l2.size % l1.size == 0) {
-        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
-        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
-        if (data_parallel_compatible(l1, create_nested_block(l2_instrs, l1.rank, l1.size).getLoop())) {
-           return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l1.size), true);
-        }
-    }
-    // Let's try to reshape 'b1' to see if it can match the shape of 'b2'
-    if (l1._reshapable && l1.size % l2.size == 0) {
-        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
-        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
-        if (data_parallel_compatible(create_nested_block(l1_instrs, l1.rank, l2.size).getLoop(), l2)) {
-            return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l2.size), true);
-        }
-    }
-    return make_pair(Block(), false);
+
+    return reshape_and_merge(l1, l2);
 }
 
 ostream &operator<<(ostream &out, const LoopB &b) {
