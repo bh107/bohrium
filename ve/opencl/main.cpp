@@ -316,7 +316,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
             const LoopB *b = threaded_blocks[i];
             spaces(ss, 4);
-            ss << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << i << "); " \
+            ss << "const " << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << i << "); " \
                << "if (i" << b->rank << " >= " << b->size << ") {return;} // Prevent overflow" << endl;
         }
         ss << endl;
